@@ -8,3 +8,9 @@ wheels/
 
 # Virtual environments
 .venv
+
+# Private local evaluation corpus
+eval/reference/
+
+# Local calibration and rendering artifacts
+tmp/
