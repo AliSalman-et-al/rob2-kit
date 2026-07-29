@@ -59,6 +59,8 @@ def test_text_projections_escape_hostile_content() -> None:
     assert r"\<img" in markdown
     assert r"\<script\>" in markdown
     assert r"\*\*at 30 days\*\*" in markdown
+    assert "DRAFT-ONLY HANDS-ON PREVIEW" in html
+    assert "DRAFT-ONLY HANDS-ON PREVIEW" in markdown
 
 
 def test_robvis_csv_and_xlsx_share_the_canonical_assessment() -> None:
@@ -129,8 +131,8 @@ def test_all_formats_match_golden_hashes() -> None:
     } == {
         "json": "790ec38413f41d7740f81b2e3fed9c38db185180220e1fadcea08e120cbe3e5d",
         "summary": "248b0cd8e9afc6e89cf5126536c4f8576896ff0cc4eb7b9f0b4dd686a0be1e78",
-        "html": "5c1ed1ff2eec9874f20cd99450c274cd455d7faa22ae5352fe4d45d210e124bd",
-        "markdown": "57e17588a1bee6982ffd16e8264df6d3e8409ff4ec91d4d3eac244bee2b37f8e",
+        "html": "671e41730490096def3a0d92e45e4866ea39589558664ea9a786ff5ad770b001",
+        "markdown": "41038b718e6526e25cf0b2682c2a3e176c133225de119189e22223e485297b53",
         "csv": "c61ac51a9d471a6354be5a37af0e809f05c778f7990d5334c21d5c2a90285285",
         "xlsx": "b449a650c57a69d6f430c77e761cc6aa504dfc2b6e10c3fe564383c29da5f7b8",
     }

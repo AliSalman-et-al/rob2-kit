@@ -105,3 +105,10 @@ button {
     grid-template-columns: 1fr;
   }
 }
+.preview-banner {
+  background: #fff0c2;
+  border-bottom: 3px solid #8a5a00;
+  color: #3d2900;
+  padding: 0.75rem 1rem;
+  text-align: center;
+}

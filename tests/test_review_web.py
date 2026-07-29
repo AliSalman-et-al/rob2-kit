@@ -61,6 +61,8 @@ def test_evidence_is_inert_and_answer_stays_hidden_until_confirmation(
     ]
     assert 'class="review-layout"' in page
     assert "Mortality at 30 days" in page
+    assert "Draft-only hands-on preview" in page
+    assert "Only a human reviewer can sign off" in page
 
 
 def test_csrf_origin_and_stale_forms_are_rejected_without_a_commit(tmp_path: Path) -> None:

@@ -1,1 +1,1 @@
-uvx --python 3.13 --from rob2-kit==0.1.0 rob2-mcp
+uv run --locked --project . rob2-mcp

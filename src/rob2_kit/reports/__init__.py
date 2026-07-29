@@ -27,6 +27,7 @@ from rob2_kit.storage.ledger import RevisionProjection, WorkflowLedger
 
 _FIXED_TIME = datetime(2000, 1, 1, tzinfo=UTC)
 _MARKDOWN_SPECIAL = re.compile(r"([\\`*{}[\]()#+.!_|<>~-])")
+_PREVIEW_LABEL = "DRAFT-ONLY HANDS-ON PREVIEW"
 
 
 class ReportModel(BaseModel):
@@ -93,6 +94,8 @@ class ReportProjector:
             "<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">"
             "<title>RoB 2 assessment report</title></head><body>"
             "<main><h1>RoB 2 assessment report</h1>"
+            f"<p><strong>{_PREVIEW_LABEL}</strong>: not a public-v1 release. "
+            "Only a human reviewer can sign off an exact Assessment revision.</p>"
             f"<p><strong>Assessment revision:</strong> "
             f"{html.escape(assessment.assessment_revision_id)}</p>"
             f"<p><strong>Trial:</strong> {html.escape(assessment.trial)}</p>"
@@ -113,6 +116,9 @@ class ReportProjector:
         assessment = self.assessment
         lines = [
             "# RoB 2 assessment report",
+            "",
+            f"**{_PREVIEW_LABEL}** — not a public-v1 release. "
+            "Only a human reviewer can sign off an exact Assessment revision.",
             "",
             f"- Assessment revision: {_escape_markdown(assessment.assessment_revision_id)}",
             f"- Trial: {_escape_markdown(assessment.trial)}",

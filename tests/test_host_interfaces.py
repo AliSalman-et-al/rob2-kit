@@ -697,13 +697,18 @@ def test_generated_adapters_share_canonical_skill_and_exact_launcher(
 
     expected_hash = "sha256:" + hashlib.sha256(canonical.read_bytes()).hexdigest()
     assert manifest.canonical_skill_hash == expected_hash
-    assert manifest.launcher == "uvx --python 3.13 --from rob2-kit==0.1.0 rob2-mcp"
+    assert manifest.launcher == "uv run --locked --project . rob2-mcp"
+    assert manifest.release_status == "draft_only_preview"
+    assert manifest.sign_off_authority == "human_only"
+    assert manifest.launcher_working_directory == "repository_root"
     assert (tmp_path / "adapters" / "codex" / "SKILL.md").read_bytes() == canonical.read_bytes()
     assert (tmp_path / "adapters" / "claude" / "SKILL.md").read_bytes() == canonical.read_bytes()
     codex = json.loads((tmp_path / "adapters" / "codex" / "adapter.json").read_text())
     claude = json.loads((tmp_path / "adapters" / "claude" / "adapter.json").read_text())
     assert codex["skill_hash"] == claude["skill_hash"] == expected_hash
     assert codex["trigger_description"] == claude["trigger_description"]
+    assert codex["launcher_working_directory"] == "repository_root"
+    assert claude["launcher_working_directory"] == "repository_root"
     assert (tmp_path / "adapters" / "codex" / "activation-fixtures.json").read_bytes() == (
         tmp_path / "adapters" / "claude" / "activation-fixtures.json"
     ).read_bytes()

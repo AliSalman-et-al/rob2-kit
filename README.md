@@ -1,0 +1,13 @@
+# rob2-kit
+
+> **Draft-only hands-on preview.** This is not a public-v1 release. Only a
+> human reviewer can sign off an exact Assessment revision.
+
+Start the locked Windows preview from the repository root:
+
+```powershell
+uv run --locked --project . rob2 doctor
+```
+
+See [the hands-on preview gate](docs/HANDS-ON-PREVIEW.md) for the dual-host
+verification and feedback checklist.

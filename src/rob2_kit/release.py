@@ -6,6 +6,7 @@ import hashlib
 import json
 import shutil
 from pathlib import Path
+from typing import Literal
 
 from pydantic import BaseModel, ConfigDict
 
@@ -17,9 +18,12 @@ class ReleaseManifest(BaseModel):
 
     package: str
     package_version: str
+    release_status: Literal["draft_only_preview"]
+    sign_off_authority: Literal["human_only"]
     canonical_skill_hash: str
     application_contract: str
     launcher: str
+    launcher_working_directory: Literal["repository_root"]
     codex_adapter_version: str
     claude_adapter_version: str
     logic_pack: str
@@ -34,7 +38,7 @@ def build_host_adapters(root: Path, *, package_version: str) -> ReleaseManifest:
         root / "skills" / "rob2-assess" / "activation-fixtures.json"
     )
     skill_hash = _hash(canonical)
-    launcher = f"uvx --python 3.13 --from rob2-kit=={package_version} rob2-mcp"
+    launcher = "uv run --locked --project . rob2-mcp"
     for host in ("codex", "claude"):
         descriptor = _descriptor(host, skill_hash, launcher)
         destination = root / "adapters" / host
@@ -53,9 +57,12 @@ def build_host_adapters(root: Path, *, package_version: str) -> ReleaseManifest:
     manifest = ReleaseManifest(
         package="rob2-kit",
         package_version=package_version,
+        release_status="draft_only_preview",
+        sign_off_authority="human_only",
         canonical_skill_hash=skill_hash,
         application_contract=CONTRACT_VERSION,
         launcher=launcher,
+        launcher_working_directory="repository_root",
         codex_adapter_version="1",
         claude_adapter_version="1",
         logic_pack="rob2-parallel-assignment-2019.1",
@@ -134,6 +141,7 @@ def _descriptor(host: str, skill_hash: str, launcher: str) -> dict[str, str]:
                 "to a human reviewer."
             ),
             "launcher": launcher,
+            "launcher_working_directory": "repository_root",
         }
     )
     return descriptor
