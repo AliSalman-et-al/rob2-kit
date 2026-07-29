@@ -1,0 +1,132 @@
+schema_version: 1.0.0
+required_schema_version: 1.0.0
+family_id: guidance:rob2-parallel-assignment-en
+release_id: "2019.1"
+authors: [RoB 2 Kit maintainers]
+content_hash: sha256:c7e816cf1fbd49827506bef6b55673caabb019e2155a1fffcdd6f725438159e1
+language: en
+# Replaced by the release build with the exact validated Logic-pack content hash.
+compatible_logic_hashes:
+  - sha256:7649a3c7ac87b452d9af7a2143fdee49add1e4ab3bf4331ad549511368472dbf
+items:
+  - logic_element_id: sq:randomization:sequence
+    content_origin: official
+    text: "Was the allocation sequence random?"
+    affected_change: decision_relevant
+  - logic_element_id: sq:randomization:concealment
+    content_origin: official
+    text: "Was the allocation sequence concealed until participants were enrolled and assigned to interventions?"
+    affected_change: decision_relevant
+  - logic_element_id: sq:randomization:baseline-imbalance
+    content_origin: official
+    text: "Did baseline differences between intervention groups suggest a problem with the randomization process?"
+    affected_change: decision_relevant
+  - logic_element_id: sq:deviations:participants-aware
+    content_origin: official
+    text: "Were participants aware of their assigned intervention during the trial?"
+    affected_change: decision_relevant
+  - logic_element_id: sq:deviations:personnel-aware
+    content_origin: official
+    text: "Were carers and people delivering the interventions aware of participants' assigned intervention during the trial?"
+    affected_change: decision_relevant
+  - logic_element_id: sq:deviations:context-deviations
+    content_origin: official
+    text: "If applicable: Were there deviations from the intended intervention that arose because of the trial context?"
+    affected_change: decision_relevant
+  - logic_element_id: sq:deviations:affected-outcome
+    content_origin: official
+    text: "If applicable: Were these deviations likely to have affected the outcome?"
+    affected_change: decision_relevant
+  - logic_element_id: sq:deviations:balanced
+    content_origin: official
+    text: "If applicable: Were these deviations from intended intervention balanced between groups?"
+    affected_change: decision_relevant
+  - logic_element_id: sq:deviations:appropriate-analysis
+    content_origin: official
+    text: "Was an appropriate analysis used to estimate the effect of assignment to intervention?"
+    affected_change: decision_relevant
+  - logic_element_id: sq:deviations:substantial-impact
+    content_origin: official
+    text: "If applicable: Was there potential for a substantial impact on the result of the failure to analyse participants in the group to which they were randomized?"
+    affected_change: decision_relevant
+  - logic_element_id: sq:missing:data-available
+    content_origin: official
+    text: "Were data for this outcome available for all, or nearly all, participants randomized?"
+    affected_change: decision_relevant
+  - logic_element_id: sq:missing:evidence-unbiased
+    content_origin: official
+    text: "If applicable: Is there evidence that the result was not biased by missing outcome data?"
+    affected_change: decision_relevant
+  - logic_element_id: sq:missing:true-value-dependent
+    content_origin: official
+    text: "If applicable: Could missingness in the outcome depend on its true value?"
+    affected_change: decision_relevant
+  - logic_element_id: sq:missing:likely-dependent
+    content_origin: official
+    text: "If applicable: Is it likely that missingness in the outcome depended on its true value?"
+    affected_change: decision_relevant
+  - logic_element_id: sq:measurement:method-inappropriate
+    content_origin: official
+    text: "Was the method of measuring the outcome inappropriate?"
+    affected_change: decision_relevant
+  - logic_element_id: sq:measurement:differential
+    content_origin: official
+    text: "Could measurement or ascertainment of the outcome have differed between intervention groups?"
+    affected_change: decision_relevant
+  - logic_element_id: sq:measurement:assessor-aware
+    content_origin: official
+    text: "If applicable: Were outcome assessors aware of the intervention received by study participants?"
+    affected_change: decision_relevant
+  - logic_element_id: sq:measurement:influence-possible
+    content_origin: official
+    text: "If applicable: Could assessment of the outcome have been influenced by knowledge of intervention received?"
+    affected_change: decision_relevant
+  - logic_element_id: sq:measurement:influence-likely
+    content_origin: official
+    text: "If applicable: Is it likely that assessment of the outcome was influenced by knowledge of intervention received?"
+    affected_change: decision_relevant
+  - logic_element_id: sq:selection:prespecified-analysis
+    content_origin: official
+    text: "Were the data that produced this result analysed in accordance with a pre-specified analysis plan finalized before unblinded outcome data were available?"
+    affected_change: decision_relevant
+  - logic_element_id: sq:selection:multiple-measurements
+    content_origin: official
+    text: "Is the numerical result likely to have been selected, on the basis of the results, from multiple eligible outcome measurements within the outcome domain?"
+    affected_change: decision_relevant
+  - logic_element_id: sq:selection:multiple-analyses
+    content_origin: official
+    text: "Is the numerical result likely to have been selected, on the basis of the results, from multiple eligible analyses of the data?"
+    affected_change: decision_relevant
+  - logic_element_id: input:combined-concerns
+    content_origin: rob2_kit
+    text: "Do concerns in multiple domains together substantially lower confidence in this result?"
+    affected_change: presentation_only
+inventory:
+  - sq:randomization:sequence
+  - sq:randomization:concealment
+  - sq:randomization:baseline-imbalance
+  - sq:deviations:participants-aware
+  - sq:deviations:personnel-aware
+  - sq:deviations:context-deviations
+  - sq:deviations:affected-outcome
+  - sq:deviations:balanced
+  - sq:deviations:appropriate-analysis
+  - sq:deviations:substantial-impact
+  - sq:missing:data-available
+  - sq:missing:evidence-unbiased
+  - sq:missing:true-value-dependent
+  - sq:missing:likely-dependent
+  - sq:measurement:method-inappropriate
+  - sq:measurement:differential
+  - sq:measurement:assessor-aware
+  - sq:measurement:influence-possible
+  - sq:measurement:influence-likely
+  - sq:selection:prespecified-analysis
+  - sq:selection:multiple-measurements
+  - sq:selection:multiple-analyses
+  - input:combined-concerns
+provenance:
+  - title: "RoB 2: a revised tool for assessing risk of bias in randomised trials"
+    version: "22 August 2019"
+    url: "https://www.riskofbias.info/welcome/rob-2-0-tool/current-version-of-rob-2"
+    license: "CC BY-NC-ND 4.0; redistribution permission recorded by the project owner"
