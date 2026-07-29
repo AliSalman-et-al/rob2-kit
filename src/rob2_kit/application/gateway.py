@@ -1123,6 +1123,15 @@ def _normalize_submission(
             for answer in submitted["answers"]
         ):
             raise ValueError("SQ identifier was not issued by the pinned Logic pack")
+        LogicEvaluator(load_logic_pack(_logic_pack_path())).evaluate(
+            EvaluationRequest(
+                answers={
+                    answer["question_id"]: answer["answer"]
+                    for answer in submitted["answers"]
+                },
+                assessor_inputs=submitted.get("assessor_inputs", {}),
+            )
+        )
     return submitted
 
 

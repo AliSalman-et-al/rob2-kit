@@ -483,6 +483,34 @@ def test_preparation_work_items_enforce_order_and_reach_review(tmp_path: Path) -
         if tool_name == "submit_sq_answers":
             assert work_item["sq_context"][0]["sq_id"].startswith("sq:")
             assert work_item["sq_context"][0]["guidance"]
+            invalid_answers = low_risk_sq_answers()
+            invalid_answers["answers"].append(
+                {
+                    "question_id": "sq:deviations:affected-outcome",
+                    "answer": "yes",
+                    "rationale": "This question is inactive for the preceding answers.",
+                }
+            )
+            with pytest.raises(
+                ValueError,
+                match="answers supplied for not_applicable questions",
+            ):
+                gateway.call(
+                    tool_name,
+                    project_id,
+                    arguments=invalid_answers,
+                    mutation_context={
+                        "idempotency_key": "idempotency:invalid-sq-answers",
+                        "work_item_id": work_item["work_item_id"],
+                        "contract_version": "1.0.0",
+                        "expected_dependency_fingerprint": work_item[
+                            "dependency_fingerprint"
+                        ],
+                    },
+                )
+            assert gateway.call(
+                "get_next_work", project_id
+            ).payload["work_item"] == work_item
         if tool_name == "submit_visual_transcription":
             visual_page = gateway.call("inspect_visual_candidate", project_id)
             arguments["transcription"]["candidate_id"] = visual_page.payload[
