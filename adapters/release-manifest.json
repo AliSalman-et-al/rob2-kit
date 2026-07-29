@@ -4,8 +4,10 @@
   "claude_adapter_version": "1",
   "codex_adapter_version": "1",
   "guidance_pack": "rob2-parallel-assignment-en-2019.1",
+  "guidance_pack_hash": "sha256:5957d173f0daebf214a9787babb0497427469b046118a1e91293b79314a69dd9",
   "launcher": "uvx --python 3.13 --from rob2-kit==0.1.0 rob2-mcp",
   "logic_pack": "rob2-parallel-assignment-2019.1",
+  "logic_pack_hash": "sha256:7bd0471a05fe263ed70f1b6b5f7c3412759c1002fa8cc759c79abc701f0333d6",
   "package": "rob2-kit",
   "package_version": "0.1.0"
 }

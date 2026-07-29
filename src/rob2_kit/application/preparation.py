@@ -100,6 +100,10 @@ class ReviewReceipt(Revision):
 
 
 class SubmissionKind(StrEnum):
+    SOURCE_CLASSIFICATION = "source_classification"
+    RESULT_RESOLUTION = "result_resolution"
+    SOURCE_INVENTORY = "source_inventory"
+    EVIDENCE_DISPOSITIONS = "evidence_dispositions"
     ACQUISITION = "acquisition"
     PARSE = "parse"
     SEARCH_COVERAGE = "search_coverage"
@@ -325,11 +329,21 @@ class AutonomousPreparation:
         if isinstance(outcome, DraftReady):
             if submission.submission_kind is not SubmissionKind.ASSESSMENT:
                 raise ValueError("draft_ready requires an assessment submission")
-            if (
-                outcome.assessment.entity_id != submission.entity_id
-                or outcome.assessment.revision_id != submission.revision_id
-            ):
-                raise ValueError("draft_ready must reference the submitted assessment")
+            submitted_matches = (
+                outcome.assessment.entity_id == submission.entity_id
+                and outcome.assessment.revision_id == submission.revision_id
+            )
+            dependency_matches = any(
+                dependency.entity_id == outcome.assessment.entity_id
+                and dependency.revision_id == outcome.assessment.revision_id
+                and dependency.content_hash == outcome.assessment.content_hash
+                for dependency in work_item.dependencies
+            )
+            if not submitted_matches and not dependency_matches:
+                raise ValueError(
+                    "draft_ready must reference the submitted or deterministically "
+                    "derived assessment"
+                )
         elif isinstance(outcome, PreparationIncomplete):
             if not work_item.dependencies:
                 raise ValueError(

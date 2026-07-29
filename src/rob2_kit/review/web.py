@@ -114,6 +114,7 @@ def create_review_app(
         session = _authenticated_session(request, app.state.sessions)
         if session is None:
             return HTMLResponse("Review session expired", status_code=401)
+        review_service.heartbeat()
         template = environment.get_template("review.html")
         return HTMLResponse(
             template.render(

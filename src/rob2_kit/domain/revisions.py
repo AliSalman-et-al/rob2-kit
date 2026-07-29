@@ -8,7 +8,10 @@ from typing import Annotated, Any, ClassVar, Literal
 from pydantic import BaseModel, ConfigDict, Field, StringConstraints, model_validator
 
 SCHEMA_VERSION = "1.0.0"
-Identifier = Annotated[str, StringConstraints(pattern=r"^[a-z][a-z0-9_-]*:[A-Za-z0-9._~-]+$")]
+Identifier = Annotated[
+    str,
+    StringConstraints(pattern=r"^[a-z][a-z0-9_-]*:[A-Za-z0-9._~:-]+$"),
+]
 ContentHash = Annotated[str, StringConstraints(pattern=r"^sha256:[0-9a-f]{64}$")]
 SchemaVersion = Annotated[str, StringConstraints(pattern=r"^[1-9]\d*\.\d+\.\d+$")]
 

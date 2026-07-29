@@ -408,6 +408,12 @@ class ReviewService:
     def last_contact(self) -> datetime:
         return self._last_contact
 
+    def heartbeat(self) -> None:
+        """Record local browser activity without changing authoritative review state."""
+        if self._connection_state is not ConnectionState.COMPLETE:
+            self._connection_state = ConnectionState.CONNECTED_WAITING
+        self._last_contact = datetime.now(UTC)
+
     def is_stale(self) -> bool:
         current = next(
             (

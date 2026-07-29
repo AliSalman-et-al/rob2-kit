@@ -113,7 +113,10 @@ class ReviewHandoff:
         inactivity_timeout: timedelta,
         cancelled: Event | None = None,
     ) -> ReviewWaitResult:
-        deadline = monotonic() + max(0.0, inactivity_timeout.total_seconds())
+        inactivity_seconds = max(0.0, inactivity_timeout.total_seconds())
+        poll_interval = min(0.1, max(0.01, inactivity_seconds / 4))
+        last_contact = self.review_service.last_contact()
+        deadline = monotonic() + inactivity_seconds
         cancel_event = cancelled or Event()
         while not cancel_event.is_set() and monotonic() < deadline:
             receipt = self.review_service.latest_receipt(after_sequence=after_sequence)
@@ -122,7 +125,13 @@ class ReviewHandoff:
                     outcome=ReviewWaitOutcome.RECEIPT_AVAILABLE,
                     receipt=receipt,
                 )
-            cancel_event.wait(min(0.1, max(0.0, deadline - monotonic())))
+            current_contact = self.review_service.last_contact()
+            if current_contact > last_contact:
+                last_contact = current_contact
+                deadline = monotonic() + inactivity_seconds
+            cancel_event.wait(
+                min(poll_interval, max(0.0, deadline - monotonic()))
+            )
         return ReviewWaitResult(outcome=ReviewWaitOutcome.REVIEW_PENDING)
 
     def close(self) -> None:

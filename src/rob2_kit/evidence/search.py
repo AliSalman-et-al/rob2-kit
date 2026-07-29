@@ -254,6 +254,14 @@ class EvidenceSearchIndex:
             spatial=None if row["spatial"] == "null" else tuple(json.loads(row["spatial"])),
         )
 
+    def unit_ids(self) -> frozenset[Identifier]:
+        """Return the stable engine-issued unit identities in the current snapshot."""
+        with self._connect() as connection:
+            rows = connection.execute(
+                "SELECT unit_id FROM evidence_units ORDER BY unit_id"
+            ).fetchall()
+        return frozenset(row["unit_id"] for row in rows)
+
     def search(
         self,
         query: SearchQuery,

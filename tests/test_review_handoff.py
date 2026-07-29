@@ -1,6 +1,7 @@
 from datetime import timedelta
 from pathlib import Path
-from threading import Event
+from threading import Event, Thread
+from time import monotonic
 
 from rob2_kit.review.handoff import ReviewHandoff, ReviewWaitOutcome
 from rob2_kit.review.service import ActionKind, ReviewService
@@ -73,3 +74,27 @@ def test_wait_for_review_is_cancellable_and_returns_pending_without_model_work(
 
     assert result.outcome is ReviewWaitOutcome.REVIEW_PENDING
     assert result.receipt is None
+
+
+def test_wait_for_review_resets_inactivity_after_local_heartbeat(
+    tmp_path: Path,
+) -> None:
+    review = service(tmp_path, case())
+    handoff = ReviewHandoff(review, config(tmp_path), browser_open=lambda _url: True)
+
+    def heartbeat() -> None:
+        Event().wait(0.06)
+        review.heartbeat()
+
+    thread = Thread(target=heartbeat)
+    thread.start()
+    started = monotonic()
+    result = handoff.wait_for_review(
+        after_sequence=0,
+        inactivity_timeout=timedelta(seconds=0.1),
+    )
+    elapsed = monotonic() - started
+    thread.join()
+
+    assert result.outcome is ReviewWaitOutcome.REVIEW_PENDING
+    assert elapsed >= 0.14

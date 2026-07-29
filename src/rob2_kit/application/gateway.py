@@ -15,20 +15,60 @@ from rob2_kit.application.interfaces import (
     OperationEnvelope,
     WorkflowStatus,
 )
-from rob2_kit.domain.revisions import Actor
-from rob2_kit.evidence.search import EvidenceSearchIndex, SearchQuery
-from rob2_kit.evidence.visual import VisualInspectionQueue
-from rob2_kit.ingestion.project import ProjectInitialization
+from rob2_kit.application.preparation import (
+    AutonomousPreparation,
+    DraftReady,
+    PreparationPlan,
+    PreparationStep,
+    PreparationWorkItem,
+    SubmissionKind,
+    WorkSubmission,
+)
+from rob2_kit.domain.assessment import (
+    AlgorithmicJudgmentRevision,
+    AssessmentRevision,
+    DecisionTrace,
+)
+from rob2_kit.domain.evidence import EvidenceBundle
+from rob2_kit.domain.results import ResultSpecRevision
+from rob2_kit.domain.revisions import Actor, Dependency, RecordReference
+from rob2_kit.domain.sources import SourceInventoryRevision
+from rob2_kit.evidence.search import (
+    CanonicalBlock,
+    CanonicalPage,
+    CanonicalUnitKind,
+    EvidenceSearchIndex,
+    SearchQuery,
+    canonicalize_evidence_units,
+)
+from rob2_kit.evidence.visual import (
+    VisualCandidate,
+    VisualInspectionPolicy,
+    VisualInspectionQueue,
+)
+from rob2_kit.ingestion.project import (
+    DocumentParser,
+    LiteParseAdapter,
+    ProjectInitialization,
+)
 from rob2_kit.ingestion.project import initialize_project as ingest_project
+from rob2_kit.logic.evaluator import EvaluationRequest, LogicEvaluator
+from rob2_kit.logic.packs import (
+    load_guidance_pack,
+    load_logic_pack,
+    validate_guidance_compatibility,
+)
 from rob2_kit.reports import ReportProjector, latest_assessment_view
 from rob2_kit.reports.archives import ArchiveBuilder
 from rob2_kit.review.handoff import ReviewHandoff, ReviewWaitOutcome
-from rob2_kit.review.service import ReviewCase, ReviewService
+from rob2_kit.review.service import ReviewCase, ReviewPolicy, ReviewService
 from rob2_kit.review.web import ReviewWebConfig
 from rob2_kit.storage.artifacts import ArtifactStore
 from rob2_kit.storage.ledger import (
     DependencyInput,
+    LeaseToken,
     Transition,
+    WorkflowEvent,
     WorkflowEventOutcome,
     WorkflowLedger,
     dependency_fingerprint,
@@ -65,18 +105,29 @@ MUTATION_TOOLS = frozenset(
         "submit_sq_answers",
     }
 )
+SUBMISSION_KINDS = {
+    "submit_source_classification": SubmissionKind.SOURCE_CLASSIFICATION,
+    "submit_result_resolution": SubmissionKind.RESULT_RESOLUTION,
+    "submit_evidence_dispositions": SubmissionKind.EVIDENCE_DISPOSITIONS,
+    "submit_visual_transcription": SubmissionKind.VISUAL_INSPECTION,
+    "freeze_evidence_bundle": SubmissionKind.EVIDENCE_BUNDLE,
+    "submit_sq_answers": SubmissionKind.SQ_ANSWERS,
+}
 
 
 class ApplicationGateway:
     """Expose bounded application operations without transport-specific types."""
 
-    def __init__(self) -> None:
+    def __init__(self, *, parser: DocumentParser | None = None) -> None:
         self._projects: dict[str, Path] = {}
+        self._review_handoffs: dict[tuple[str, bool], ReviewHandoff] = {}
+        self._parser = parser
 
     def initialize_project(self, project_root: Path, *, authorized: bool) -> OperationEnvelope:
-        if not authorized:
-            raise PermissionError("project initialization requires explicit authorization")
         root = project_root.resolve()
+        already_initialized = (root / ".rob2" / "ledger.sqlite3").is_file()
+        if not authorized and not already_initialized:
+            raise PermissionError("project initialization requires explicit authorization")
         root.mkdir(parents=True, exist_ok=True)
         state_dir = root / ".rob2"
         state_dir.mkdir(exist_ok=True)
@@ -85,11 +136,20 @@ class ApplicationGateway:
         ledger = _ledger(root)
         existing = ledger.events()
         if not existing:
-            initialization = ingest_project(root, actor=_actor("initializer"))
-            EvidenceSearchIndex(state_dir / "evidence.sqlite3").replace_units(())
+            initialization = ingest_project(
+                root,
+                actor=_actor("initializer"),
+                parser=self._parser,
+            )
+            plans = _preparation_plans(initialization)
+            _index_initial_evidence(
+                root,
+                initialization,
+                self._parser or LiteParseAdapter(),
+            )
             now = datetime.now(UTC)
             lease = ledger.acquire_lease(
-                "interface:initializer", now, timedelta(minutes=1)
+                "owner:application", now, timedelta(minutes=5)
             )
             payload = json.dumps(
                 {
@@ -97,6 +157,9 @@ class ApplicationGateway:
                     "root": str(root),
                     "authorized": True,
                     "initialization": initialization.model_dump(mode="json"),
+                    "preparation_plans": [
+                        plan.model_dump(mode="json") for plan in plans
+                    ],
                 },
                 sort_keys=True,
             ).encode()
@@ -117,24 +180,36 @@ class ApplicationGateway:
                     artifact_media_type="application/json",
                     expected_dependency_fingerprint=dependency_fingerprint(()),
                     checkpoint="checkpoint:initialized",
-                    outcome=WorkflowEventOutcome.WORK_REQUIRED,
+                    outcome=(
+                        WorkflowEventOutcome.WORK_REQUIRED
+                        if plans
+                        else WorkflowEventOutcome.TRIAL_PROBLEM
+                    ),
                 ),
                 lease,
             )
             existing = ledger.events()
-        work_item = _work_item(ledger)
+        plans = _stored_plans(ledger)
+        work_items = _available_work_items(ledger, plans)
         event = existing[0]
+        status = (
+            WorkflowStatus.WORK_REQUIRED
+            if work_items
+            else WorkflowStatus.TRIAL_PROBLEM
+        )
         return OperationEnvelope(
             operation_id=event.operation_id,
             ledger_cursor=f"ledger:{len(existing)}",
             affected_scope=(project_id,),
-            status=WorkflowStatus.WORK_REQUIRED,
+            status=status,
             committed=True,
-            next_permitted_action="action:get-next-work",
+            next_permitted_action=(
+                "action:get-next-work" if work_items else "action:add-trial-input"
+            ),
             payload={
                 "project_id": project_id,
                 "contract_version": CONTRACT_VERSION,
-                "work_item": work_item,
+                "work_item": _work_item_payload(work_items[0]) if work_items else None,
             },
         )
 
@@ -239,8 +314,15 @@ class ApplicationGateway:
     def register_review_case(self, project_root: Path, review_case: ReviewCase) -> None:
         """Persist the immutable review input needed for cross-process handoff."""
         self.resume_project(project_root)
-        path = project_root.resolve() / ".rob2" / "review-case.json"
-        path.write_text(review_case.model_dump_json(indent=2), encoding="utf-8")
+        ledger = _ledger(project_root.resolve())
+        now = datetime.now(UTC)
+        lease = ledger.acquire_lease(
+            "owner:application",
+            now,
+            timedelta(minutes=5),
+            owner_is_dead=lambda _owner: True,
+        )
+        _commit_review_case(ledger, lease, review_case, now)
 
     def call(
         self,
@@ -279,13 +361,21 @@ class ApplicationGateway:
                     "broad_query_justification"
                 ),
             )
+            search_payload = page.model_dump(mode="json")
+            search_payload["hits"] = [
+                {
+                    **hit,
+                    "candidate_id": _candidate_identifier(hit["unit"]["unit_id"]),
+                }
+                for hit in search_payload["hits"]
+            ]
             return OperationEnvelope(
                 operation_id=_identifier("operation", f"{project_id}|search-evidence"),
                 ledger_cursor=f"ledger:{len(ledger.events())}",
                 affected_scope=(project_id,),
                 status=WorkflowStatus.COMPLETED,
                 committed=False,
-                payload=page.model_dump(mode="json"),
+                payload=search_payload,
             )
         if tool_name == "read_evidence_context":
             unit_id = (arguments or {}).get("unit_id")
@@ -303,41 +393,48 @@ class ApplicationGateway:
                 payload={"unit": unit.model_dump(mode="json")},
             )
         if tool_name == "inspect_visual_candidate":
-            page = VisualInspectionQueue(()).page(
+            trial_id = (arguments or {}).get("trial_id")
+            if trial_id is not None and not any(
+                plan.trial_id == trial_id for plan in _stored_plans(ledger)
+            ):
+                raise ValueError("trial identifier was not issued by this project")
+            scope = (
+                f"preparation:{trial_id.removeprefix('trial:')}"
+                if isinstance(trial_id, str)
+                else None
+            )
+            candidates = _visual_candidates(ledger, scope)
+            page = VisualInspectionQueue(candidates).page(
                 limit=int((arguments or {}).get("limit", 1)),
                 cursor=(arguments or {}).get("cursor"),
             )
+            policy = VisualInspectionPolicy()
             return OperationEnvelope(
                 operation_id=_identifier("operation", f"{project_id}|inspect-visual"),
                 ledger_cursor=f"ledger:{len(ledger.events())}",
                 affected_scope=(project_id,),
                 status=WorkflowStatus.COMPLETED,
                 committed=False,
-                payload=page.model_dump(mode="json"),
+                payload={
+                    **page.model_dump(mode="json"),
+                    "render_requests": [
+                        policy.initial_request(candidate).model_dump(mode="json")
+                        for candidate in page.candidates
+                    ],
+                },
             )
         if tool_name in {"continue_preparation", "get_next_work"}:
-            latest_status = WorkflowStatus(ledger.events()[-1].outcome.value)
-            if latest_status not in {
-                WorkflowStatus.WORK_REQUIRED,
-                WorkflowStatus.COMPLETED,
-            }:
-                return self._project_status(project_id, ledger)
-            work_item = _work_item(ledger)
-            return OperationEnvelope(
-                operation_id=_identifier("operation", f"{project_id}|{tool_name}"),
-                ledger_cursor=f"ledger:{len(ledger.events())}",
-                affected_scope=(project_id,),
-                status=WorkflowStatus.WORK_REQUIRED,
-                committed=False,
-                next_permitted_action="action:submit-work",
-                payload={"work_item": work_item},
+            return self._continue_or_next(
+                tool_name, project_id, ledger, root
             )
         if tool_name == "wait_for_review":
             return self._wait_for_review(
                 project_id, ledger, root, arguments or {}
             )
         if tool_name == "review_queue":
-            handoff = self._review_handoff(root, ledger)
+            handoff = self._review_handoff(
+                root, ledger, (arguments or {}).get("review_id")
+            )
             return OperationEnvelope(
                 operation_id=_identifier("operation", f"{project_id}|review-queue"),
                 ledger_cursor=f"ledger:{len(ledger.events())}",
@@ -352,7 +449,12 @@ class ApplicationGateway:
                 },
             )
         if tool_name == "open_review":
-            handoff = self._review_handoff(root, ledger)
+            handoff = self._review_handoff(
+                root,
+                ledger,
+                (arguments or {}).get("review_id"),
+                writable=True,
+            )
             opened = handoff.open_review(
                 start_server=bool((arguments or {}).get("start_server", True))
             )
@@ -369,43 +471,219 @@ class ApplicationGateway:
             if mutation_context is None:
                 raise ValueError("mutation context is required")
             context = MutationContext.model_validate(mutation_context)
-            prior = next(
-                (
-                    event
-                    for event in ledger.events()
-                    if event.operation_key == context.idempotency_key
-                ),
-                None,
+            return self._commit(
+                tool_name, project_id, ledger, root, context, arguments or {}
             )
-            if prior is not None:
-                expected_operation = f"operation:{tool_name.replace('_', '-')}"
-                if prior.operation != expected_operation:
-                    raise ValueError("idempotency key was already used for another operation")
-                return OperationEnvelope(
-                    operation_id=prior.operation_id,
-                    ledger_cursor=f"ledger:{prior.sequence}",
-                    affected_scope=(project_id,),
-                    status=WorkflowStatus.COMPLETED,
-                    committed=True,
-                    next_permitted_action="action:get-next-work",
-                    payload={"tool": tool_name},
+        raise AssertionError(f"static tool {tool_name!r} has no application handler")
+
+    def _continue_or_next(
+        self,
+        tool_name: str,
+        project_id: str,
+        ledger: WorkflowLedger,
+        root: Path,
+    ) -> OperationEnvelope:
+        plans = _stored_plans(ledger)
+        coordinator = _coordinator(ledger, plans)
+        work_items = list(coordinator.continue_preparation())
+        committed = False
+        writable_coordinator: AutonomousPreparation | None = None
+        for item in tuple(work_items):
+            if (
+                item.submission_kind is SubmissionKind.VISUAL_INSPECTION
+                and not _visual_candidates(ledger, item.scope)
+            ):
+                if writable_coordinator is None:
+                    writable_coordinator = _coordinator(ledger, plans, writable=True)
+                writable_item = writable_coordinator.next_work_item(item.scope)
+                if writable_item != item:
+                    raise ValueError(
+                        "visual-inspection work item changed before deterministic skip"
+                    )
+                writable_coordinator.submit(
+                    writable_item,
+                    WorkSubmission(
+                        work_item_id=writable_item.work_item_id,
+                        operation_key=(
+                            "idempotency:skip-visual-"
+                            f"{item.trial_id.removeprefix('trial:')}"
+                        ),
+                        expected_dependency_fingerprint=(
+                            writable_item.dependency_fingerprint
+                        ),
+                        submission_kind=SubmissionKind.VISUAL_INSPECTION,
+                        entity_id=(
+                            "visual-inspection:"
+                            f"{item.trial_id.removeprefix('trial:')}"
+                        ),
+                        revision_id=_derived_revision_id(
+                            "visual-inspection-not-required",
+                            writable_item.dependency_fingerprint,
+                        ),
+                        artifact=b'{"status":"not_required"}',
+                        artifact_media_type="application/json",
+                    ),
                 )
-            expected = _work_item(ledger)
-            if context.work_item_id != expected["work_item_id"]:
-                raise ValueError("work item identifier was not issued by the engine")
-            if context.contract_version != CONTRACT_VERSION:
-                raise ValueError("unsupported application contract version")
-            if context.expected_dependency_fingerprint != expected["dependency_fingerprint"]:
-                raise ValueError("work item dependency fingerprint is stale")
-            return self._commit(tool_name, project_id, ledger, context, arguments or {})
+                committed = True
+                continue
+            if item.submission_kind is SubmissionKind.SOURCE_INVENTORY:
+                if writable_coordinator is None:
+                    writable_coordinator = _coordinator(ledger, plans, writable=True)
+                writable_item = writable_coordinator.next_work_item(item.scope)
+                if writable_item != item:
+                    raise ValueError(
+                        "source-inventory work item changed before deterministic commit"
+                    )
+                result_spec = _reference_for_operation(
+                    ledger, item.scope, "operation:submit-result-resolution"
+                )
+                initialization = _stored_initialization(ledger)
+                trial = next(
+                    trial
+                    for trial in initialization.trials
+                    if trial.trial_id == item.trial_id
+                )
+                inventory = SourceInventoryRevision(
+                    entity_id=f"source-inventory:{item.trial_id.removeprefix('trial:')}",
+                    revision_id=_derived_revision_id(
+                        "source-inventory", item.dependency_fingerprint
+                    ),
+                    actor=_actor("application"),
+                    observed_at=datetime.now(UTC),
+                    dependencies=(
+                        Dependency(
+                            **result_spec.model_dump(),
+                            role="dependency:result-spec",
+                        ),
+                    ),
+                    result_spec=result_spec,
+                    sources=trial.inventory.sources,
+                    coverage_limitations=trial.inventory.coverage_limitations,
+                )
+                writable_coordinator.submit(
+                    writable_item,
+                    WorkSubmission(
+                        work_item_id=writable_item.work_item_id,
+                        operation_key=(
+                            "idempotency:derive-source-inventory-"
+                            f"{item.trial_id.removeprefix('trial:')}"
+                        ),
+                        expected_dependency_fingerprint=(
+                            writable_item.dependency_fingerprint
+                        ),
+                        submission_kind=SubmissionKind.SOURCE_INVENTORY,
+                        entity_id=inventory.entity_id,
+                        revision_id=inventory.revision_id,
+                        artifact=inventory.model_dump_json().encode(),
+                        artifact_media_type="application/json",
+                    ),
+                )
+                committed = True
+                continue
+            if item.submission_kind is not SubmissionKind.ASSESSMENT:
+                continue
+            if writable_coordinator is None:
+                writable_coordinator = _coordinator(ledger, plans, writable=True)
+            writable_item = writable_coordinator.next_work_item(item.scope)
+            if writable_item != item:
+                raise ValueError("assessment work item changed before deterministic commit")
+            assessment, domain_ids = _derive_assessment(
+                ledger,
+                writable_coordinator.lease,
+                item,
+            )
+            writable_item = writable_coordinator.next_work_item(item.scope)
+            if writable_item is None:
+                raise ValueError("assessment finalization work item disappeared")
+            writable_coordinator.submit(
+                writable_item,
+                WorkSubmission(
+                    work_item_id=writable_item.work_item_id,
+                    operation_key=(
+                        "idempotency:finalize-"
+                        f"{item.trial_id.removeprefix('trial:')}"
+                    ),
+                    expected_dependency_fingerprint=(
+                        writable_item.dependency_fingerprint
+                    ),
+                    submission_kind=SubmissionKind.ASSESSMENT,
+                    entity_id=(
+                        "preparation-outcome:"
+                        f"{item.trial_id.removeprefix('trial:')}"
+                    ),
+                    revision_id=(
+                        "revision:preparation-outcome-"
+                        f"{item.trial_id.removeprefix('trial:')}"
+                    ),
+                    artifact=b"{}",
+                    artifact_media_type="application/json",
+                    outcome=WorkflowEventOutcome.PREPARATION_OUTCOME_REACHED,
+                    terminal_outcome=DraftReady(
+                        assessment=assessment
+                    ),
+                ),
+            )
+            review_hash = "sha256:" + ("0" * 64)
+            review_case = ReviewCase(
+                review_id=f"review:{item.trial_id.removeprefix('trial:')}",
+                review_revision=RecordReference(
+                    entity_id=f"review:{item.trial_id.removeprefix('trial:')}",
+                    revision_id=f"revision:review-{item.trial_id.removeprefix('trial:')}",
+                    content_hash=review_hash,
+                ),
+                assessment=assessment,
+                policy=ReviewPolicy(
+                    reference=RecordReference(
+                        entity_id="policy:review",
+                        revision_id="revision:review-policy-1",
+                        content_hash=review_hash,
+                    ),
+                    domain_ids=domain_ids,
+                ),
+                assessment_revision_id=assessment.revision_id,
+                assessment_content_hash=assessment.content_hash,
+                result_label=item.trial_id,
+                domain_ids=domain_ids,
+                preparation_scopes=(item.scope,),
+            )
+            _commit_review_case(
+                ledger,
+                writable_coordinator.lease,
+                review_case,
+                datetime.now(UTC),
+            )
+            committed = True
+        coordinator = writable_coordinator or coordinator
+        work_items = list(coordinator.continue_preparation())
+        if work_items:
+            first = work_items[0]
+            return OperationEnvelope(
+                operation_id=_identifier("operation", f"{project_id}|{tool_name}"),
+                ledger_cursor=f"ledger:{len(ledger.events())}",
+                affected_scope=tuple(item.scope for item in work_items),
+                status=WorkflowStatus.WORK_REQUIRED,
+                committed=committed,
+                next_permitted_action="action:submit-work",
+                payload={"work_item": _work_item_payload(first)},
+            )
+        statuses = coordinator.batch_status()
+        status = (
+            WorkflowStatus.PREPARATION_OUTCOME_REACHED
+            if statuses
+            else WorkflowStatus.TRIAL_PROBLEM
+        )
         return OperationEnvelope(
             operation_id=_identifier("operation", f"{project_id}|{tool_name}"),
             ledger_cursor=f"ledger:{len(ledger.events())}",
-            affected_scope=(project_id,),
-            status=WorkflowStatus.WORK_REQUIRED,
-            committed=False,
-            next_permitted_action="action:get-next-work",
-            payload={"tool": tool_name, "arguments": arguments or {}},
+            affected_scope=tuple(statuses) or (project_id,),
+            status=status,
+            committed=committed,
+            next_permitted_action=(
+                "action:open-review"
+                if status is WorkflowStatus.PREPARATION_OUTCOME_REACHED
+                else None
+            ),
+            payload={"batch_status": statuses},
         )
 
     def _initialization_read(
@@ -482,7 +760,9 @@ class ApplicationGateway:
     ) -> OperationEnvelope:
         after_sequence = int(arguments.get("after_sequence", len(ledger.events())))
         timeout = max(0.0, min(float(arguments.get("inactivity_timeout_seconds", 30)), 300.0))
-        result = self._review_handoff(root, ledger).wait_for_review(
+        result = self._review_handoff(
+            root, ledger, arguments.get("review_id")
+        ).wait_for_review(
             after_sequence=after_sequence,
             inactivity_timeout=timedelta(seconds=timeout),
         )
@@ -510,20 +790,50 @@ class ApplicationGateway:
         )
 
     def _review_handoff(
-        self, root: Path, ledger: WorkflowLedger
+        self,
+        root: Path,
+        ledger: WorkflowLedger,
+        review_id: str | None = None,
+        *,
+        writable: bool = False,
     ) -> ReviewHandoff:
-        case_path = root / ".rob2" / "review-case.json"
-        if not case_path.is_file():
+        cases = tuple(
+            event
+            for event in ledger.events()
+            if event.operation == "operation:create-review-case"
+            and (review_id is None or event.entity_id == review_id)
+        )
+        if not cases:
             raise ValueError("no durable review case is registered for this project")
+        if len(cases) > 1:
+            raise ValueError("review_id is required when multiple reviews are pending")
+        case_event = cases[0]
+        cache_key = (case_event.entity_id, writable)
+        cached = (
+            self._review_handoffs.get((case_event.entity_id, True))
+            if not writable
+            else None
+        ) or self._review_handoffs.get(cache_key)
+        if cached is not None:
+            return cached
         review_case = ReviewCase.model_validate_json(
-            case_path.read_text(encoding="utf-8")
+            ledger.artifacts.read(case_event.output_revision_hashes[0])
         )
         now = datetime.now(UTC)
-        lease = ledger.acquire_lease(
-            "owner:review-gui",
-            now,
-            timedelta(minutes=30),
-            owner_is_dead=lambda _owner: True,
+        lease = (
+            ledger.acquire_lease(
+                "owner:review-gui",
+                now,
+                timedelta(minutes=30),
+                owner_is_dead=lambda owner: owner
+                in {"owner:application", "owner:preparation"},
+            )
+            if writable
+            else LeaseToken(
+                owner_id="owner:read-only",
+                fencing_token=0,
+                expires_at=now,
+            )
         )
         service = ReviewService(ledger, lease, review_case)
         config = ReviewWebConfig(
@@ -531,51 +841,95 @@ class ApplicationGateway:
             session_lifetime=timedelta(minutes=30),
             allowed_origin="http://127.0.0.1:0",
         )
-        return ReviewHandoff(service, config)
+        handoff = ReviewHandoff(service, config)
+        self._review_handoffs[cache_key] = handoff
+        return handoff
 
     def _commit(
         self,
         tool_name: str,
         project_id: str,
         ledger: WorkflowLedger,
+        root: Path,
         context: MutationContext,
         arguments: dict[str, Any],
     ) -> OperationEnvelope:
-        dependencies = _current_dependencies(ledger)
-        normalized = SUBMISSION_ARGUMENTS[tool_name].validate_python(arguments)
-        payload = normalized.model_dump_json().encode()
+        submitted = SUBMISSION_ARGUMENTS[tool_name].validate_python(
+            arguments
+        ).model_dump(mode="json")
+        submission_actor = _submission_actor(context.idempotency_key)
+        if context.contract_version != CONTRACT_VERSION:
+            raise ValueError("unsupported application contract version")
+        prior = next(
+            (
+                event
+                for event in ledger.events()
+                if event.operation_key == context.idempotency_key
+            ),
+            None,
+        )
+        if prior is not None:
+            normalized = _normalize_submission(
+                tool_name,
+                submitted,
+                root,
+                ledger,
+                context.work_item_id,
+                f"trial:{prior.scope.removeprefix('preparation:')}",
+                submission_actor,
+            )
+            payload = _canonical_json(normalized)
+            return _event_envelope(project_id, prior, tool_name, payload, ledger)
+        coordinator = _coordinator(
+            ledger,
+            _stored_plans(ledger),
+            writable=True,
+            actor=submission_actor,
+        )
+        work_item = next(
+            (
+                item
+                for item in coordinator.continue_preparation()
+                if item.work_item_id == context.work_item_id
+            ),
+            None,
+        )
+        if work_item is None:
+            raise ValueError("work item identifier was not issued by the engine")
+        if work_item.submission_kind is not SUBMISSION_KINDS[tool_name]:
+            raise ValueError("submission tool is not permitted for this work item")
+        if context.expected_dependency_fingerprint != work_item.dependency_fingerprint:
+            raise ValueError("work item dependency fingerprint is stale")
+        normalized = _normalize_submission(
+            tool_name,
+            submitted,
+            root,
+            ledger,
+            work_item.work_item_id,
+            work_item.trial_id,
+            submission_actor,
+        )
+        payload = _canonical_json(normalized)
         digest = hashlib.sha256(
             f"{tool_name}|{context.idempotency_key}".encode()
         ).hexdigest()[:24]
-        now = datetime.now(UTC)
-        lease = ledger.acquire_lease(
-            "interface:mutation",
-            now,
-            timedelta(minutes=1),
-            owner_is_dead=lambda _owner: True,
-        )
-        result = ledger.commit(
-            Transition(
-                scope=project_id,
-                operation=f"operation:{tool_name.replace('_', '-')}",
+        result = coordinator.submit(
+            work_item,
+            WorkSubmission(
+                work_item_id=work_item.work_item_id,
                 operation_key=context.idempotency_key,
-                actor=_actor("host-interface"),
-                observed_at=now,
+                expected_dependency_fingerprint=work_item.dependency_fingerprint,
+                submission_kind=work_item.submission_kind,
                 entity_id=f"submission:{digest}",
                 revision_id=f"revision:{digest}",
                 artifact=payload,
                 artifact_media_type="application/json",
-                dependencies=dependencies,
-                expected_dependency_fingerprint=context.expected_dependency_fingerprint,
-                checkpoint=f"checkpoint:{tool_name.replace('_', '-')}",
-                outcome=WorkflowEventOutcome.COMPLETED,
             ),
-            lease,
         )
         return OperationEnvelope(
             operation_id=result.operation_id,
             ledger_cursor=f"ledger:{result.sequence}",
-            affected_scope=(project_id,),
+            affected_scope=(work_item.scope,),
             status=WorkflowStatus.COMPLETED,
             committed=True,
             next_permitted_action="action:get-next-work",
@@ -586,6 +940,508 @@ class ApplicationGateway:
 def _ledger(root: Path) -> WorkflowLedger:
     state = root / ".rob2"
     return WorkflowLedger(state / "ledger.sqlite3", ArtifactStore(state / "artifacts"))
+
+
+def _index_initial_evidence(
+    root: Path,
+    initialization: ProjectInitialization,
+    parser: DocumentParser,
+) -> None:
+    artifacts = ArtifactStore(root / ".rob2" / "artifacts")
+    units = []
+    for trial in initialization.trials:
+        for source in trial.inventory.sources:
+            if source.artifact_hash is None or not source.parse_records:
+                continue
+            parsed = parser.parse(
+                artifacts.read(source.artifact_hash),
+                ocr_enabled=False,
+            )
+            pages = tuple(
+                CanonicalPage(
+                    page=item.page_number,
+                    blocks=(
+                        CanonicalBlock(
+                            kind=CanonicalUnitKind.PARAGRAPH,
+                            text=item.text,
+                            spatial=(0.0, 0.0, item.width, item.height),
+                        ),
+                    )
+                    if item.text.strip()
+                    else (),
+                )
+                for item in parsed.pages
+            )
+            units.extend(
+                canonicalize_evidence_units(
+                    source_id=source.source_id,
+                    source_artifact_hash=source.artifact_hash,
+                    parse_id=source.parse_records[0].parse_id,
+                    pages=pages,
+                )
+            )
+    EvidenceSearchIndex(root / ".rob2" / "evidence.sqlite3").replace_units(
+        tuple(units)
+    )
+
+
+def _visual_candidates(
+    ledger: WorkflowLedger,
+    scope: str | None = None,
+) -> tuple[VisualCandidate, ...]:
+    candidates: dict[str, VisualCandidate] = {}
+    for event in ledger.events():
+        if (
+            event.operation != "operation:submit-evidence-dispositions"
+            or (scope is not None and event.scope != scope)
+        ):
+            continue
+        payload = json.loads(ledger.artifacts.read(event.output_revision_hashes[0]))
+        for item in payload.get("visual_candidates", ()):
+            candidate = VisualCandidate.model_validate(item)
+            candidates[candidate.candidate_id] = candidate
+    return tuple(candidates.values())
+
+
+def _normalize_submission(
+    tool_name: str,
+    submitted: dict[str, Any],
+    root: Path,
+    ledger: WorkflowLedger,
+    work_item_id: str,
+    trial_id: str,
+    actor: Actor,
+) -> dict[str, Any]:
+    if tool_name == "submit_source_classification":
+        source_ids = {
+            source["source_id"]
+            for source in _initialization_payload(ledger)["sources"]
+        }
+        submitted_ids = {
+            item["source_id"] for item in submitted["classifications"]
+        }
+        initialization = _stored_initialization(ledger)
+        expected_ids = {
+            source.source_id
+            for trial in initialization.trials
+            if trial.trial_id == trial_id
+            for source in trial.inventory.sources
+        }
+        if not submitted_ids <= source_ids:
+            raise ValueError("source identifier was not issued by this project")
+        if submitted_ids != expected_ids:
+            raise ValueError("classifications must account for every issued trial source")
+    elif tool_name == "submit_result_resolution":
+        expected = f"result:{trial_id.removeprefix('trial:')}"
+        result_id = submitted["result"].get("result_id")
+        if result_id != expected:
+            raise ValueError(f"result identifier must be the engine-issued {expected}")
+        digest = hashlib.sha256(_canonical_json(submitted)).hexdigest()[:24]
+        result_spec = ResultSpecRevision(
+            entity_id=f"result-spec:{trial_id.removeprefix('trial:')}",
+            revision_id=f"revision:result-spec-{digest}",
+            actor=actor,
+            observed_at=ledger.events()[0].observed_at,
+            result=submitted["result"],
+            estimate=submitted["estimate"],
+            provenance_note=submitted["provenance_note"],
+        )
+        submitted = result_spec.model_dump(mode="json")
+    elif tool_name == "submit_evidence_dispositions":
+        issued_candidates = {
+            _candidate_identifier(unit_id)
+            for unit_id in EvidenceSearchIndex(
+                root / ".rob2" / "evidence.sqlite3"
+            ).unit_ids()
+        }
+        if any(
+            item.get("candidate_id") not in issued_candidates
+            for item in submitted["dispositions"]
+        ):
+            raise ValueError("evidence candidate identifier was not issued by search")
+        visual_candidates = []
+        for index, item in enumerate(submitted["visual_candidates"], start=1):
+            if item.get("candidate_id") is not None:
+                raise ValueError("visual candidate identifiers are assigned by the engine")
+            item["candidate_id"] = _identifier(
+                "visual", f"{work_item_id}|{index}"
+            )
+            visual_candidates.append(
+                VisualCandidate.model_validate(item).model_dump(mode="json")
+            )
+        submitted["visual_candidates"] = visual_candidates
+    elif tool_name == "submit_visual_transcription":
+        candidate_id = submitted["transcription"].get("candidate_id")
+        if candidate_id not in {
+            candidate.candidate_id
+            for candidate in _visual_candidates(
+                ledger,
+                f"preparation:{trial_id.removeprefix('trial:')}",
+            )
+        }:
+            raise ValueError("visual candidate identifier was not issued by the engine")
+    elif tool_name == "freeze_evidence_bundle":
+        expected = f"bundle:{trial_id.removeprefix('trial:')}"
+        result_spec = _reference_for_operation(
+            ledger,
+            f"preparation:{trial_id.removeprefix('trial:')}",
+            "operation:submit-result-resolution",
+        )
+        dependencies = (
+            Dependency(
+                **result_spec.model_dump(),
+                role="dependency:result-spec",
+            ),
+            *(
+                Dependency(
+                    **RecordReference.model_validate(item).model_dump(),
+                    role="dependency:evidence-item",
+                )
+                for item in submitted["items"]
+            ),
+        )
+        digest = hashlib.sha256(_canonical_json(submitted)).hexdigest()[:24]
+        bundle = EvidenceBundle(
+            entity_id=expected,
+            revision_id=f"revision:evidence-bundle-{digest}",
+            actor=_actor("application"),
+            observed_at=ledger.events()[0].observed_at,
+            dependencies=dependencies,
+            result_spec=result_spec,
+            items=tuple(
+                RecordReference.model_validate(item) for item in submitted["items"]
+            ),
+            frozen_content_hash=submitted["frozen_content_hash"],
+        )
+        submitted = bundle.model_dump(mode="json")
+    elif tool_name == "submit_sq_answers":
+        known_questions = {
+            question.id for question in load_logic_pack(_logic_pack_path()).questions
+        }
+        if any(
+            answer.get("question_id") not in known_questions
+            for answer in submitted["answers"]
+        ):
+            raise ValueError("SQ identifier was not issued by the pinned Logic pack")
+    return submitted
+
+
+def _initialization_payload(ledger: WorkflowLedger) -> dict[str, Any]:
+    initialization = _stored_initialization(ledger)
+    return {
+        "sources": [
+            source.model_dump(mode="json")
+            for trial in initialization.trials
+            for source in trial.inventory.sources
+        ]
+    }
+
+
+def _stored_initialization(ledger: WorkflowLedger) -> ProjectInitialization:
+    first = ledger.events()[0]
+    payload = json.loads(ledger.artifacts.read(first.output_revision_hashes[0]))
+    return ProjectInitialization.model_validate(payload["initialization"])
+
+
+def _reference_for_operation(
+    ledger: WorkflowLedger,
+    scope: str,
+    operation: str,
+) -> RecordReference:
+    event = next(
+        (
+            item
+            for item in reversed(ledger.events())
+            if item.scope == scope and item.operation == operation
+        ),
+        None,
+    )
+    if event is None:
+        raise ValueError(f"required operation has not completed: {operation}")
+    return RecordReference(
+        entity_id=event.entity_id,
+        revision_id=event.revision_id,
+        content_hash=event.output_revision_hashes[0],
+    )
+
+
+def _derived_revision_id(prefix: str, seed: str) -> str:
+    digest = hashlib.sha256(f"{prefix}|{seed}".encode()).hexdigest()[:24]
+    return f"revision:{prefix}-{digest}"
+
+
+def _commit_derived_revision(
+    ledger: WorkflowLedger,
+    lease: LeaseToken,
+    *,
+    scope: str,
+    operation: str,
+    operation_key: str,
+    record: DecisionTrace | AlgorithmicJudgmentRevision | AssessmentRevision,
+) -> RecordReference:
+    dependencies = tuple(
+        DependencyInput.model_validate(item.model_dump())
+        for item in record.dependencies
+    )
+    result = ledger.commit(
+        Transition(
+            scope=scope,
+            operation=operation,
+            operation_key=operation_key,
+            actor=record.actor,
+            observed_at=record.observed_at,
+            entity_id=record.entity_id,
+            revision_id=record.revision_id,
+            artifact=record.model_dump_json().encode(),
+            artifact_media_type="application/json",
+            dependencies=dependencies,
+            expected_dependency_fingerprint=dependency_fingerprint(dependencies),
+            checkpoint=None,
+            outcome=WorkflowEventOutcome.COMPLETED,
+        ),
+        lease,
+        now=record.observed_at,
+    )
+    return RecordReference(
+        entity_id=record.entity_id,
+        revision_id=record.revision_id,
+        content_hash=result.artifact_hash,
+    )
+
+
+def _commit_review_case(
+    ledger: WorkflowLedger,
+    lease: LeaseToken,
+    review_case: ReviewCase,
+    observed_at: datetime,
+) -> RecordReference:
+    current = {
+        (item.entity_id, item.revision_id, item.artifact_hash)
+        for item in ledger.current_revisions()
+    }
+    assessment = review_case.assessment
+    dependencies = (
+        (
+            DependencyInput(
+                **assessment.model_dump(),
+                role="dependency:assessment",
+            ),
+        )
+        if (
+            assessment.entity_id,
+            assessment.revision_id,
+            assessment.content_hash,
+        )
+        in current
+        else ()
+    )
+    result = ledger.commit(
+        Transition(
+            scope=review_case.review_id,
+            operation="operation:create-review-case",
+            operation_key=(
+                "idempotency:create-"
+                f"{review_case.review_id.removeprefix('review:')}"
+            ),
+            actor=_actor("application"),
+            observed_at=observed_at,
+            entity_id=review_case.review_id,
+            revision_id=review_case.review_revision.revision_id,
+            artifact=review_case.model_dump_json().encode(),
+            artifact_media_type="application/json",
+            dependencies=dependencies,
+            expected_dependency_fingerprint=dependency_fingerprint(dependencies),
+            checkpoint="checkpoint:review-pending",
+            outcome=WorkflowEventOutcome.REVIEW_PENDING,
+        ),
+        lease,
+        now=observed_at,
+    )
+    return RecordReference(
+        entity_id=review_case.review_id,
+        revision_id=review_case.review_revision.revision_id,
+        content_hash=result.artifact_hash,
+    )
+
+
+def _derive_assessment(
+    ledger: WorkflowLedger,
+    lease: LeaseToken,
+    work_item: PreparationWorkItem,
+) -> tuple[RecordReference, tuple[str, ...]]:
+    scope = work_item.scope
+    trial_slug = work_item.trial_id.removeprefix("trial:")
+    result_spec = _reference_for_operation(
+        ledger, scope, "operation:submit-result-resolution"
+    )
+    source_inventory = _reference_for_operation(
+        ledger, scope, "operation:derive-source-inventory"
+    )
+    evidence_bundle = _reference_for_operation(
+        ledger, scope, "operation:freeze-evidence-bundle"
+    )
+    sq_answers = _reference_for_operation(
+        ledger, scope, "operation:submit-sq-answers"
+    )
+    sq_payload = json.loads(ledger.artifacts.read(sq_answers.content_hash))
+    evaluation = LogicEvaluator(load_logic_pack(_logic_pack_path())).evaluate(
+        EvaluationRequest(
+            answers={
+                item["question_id"]: item["answer"]
+                for item in sq_payload["answers"]
+            },
+            assessor_inputs=sq_payload.get("assessor_inputs", {}),
+        )
+    )
+    observed_at = datetime.now(UTC)
+    answer_dependency = Dependency(
+        **sq_answers.model_dump(),
+        role="dependency:sq-answer",
+    )
+    judgments: list[RecordReference] = []
+    for domain_id, judgment_level in evaluation.domain_judgments.items():
+        domain_slug = domain_id.removeprefix("domain:")
+        trace = DecisionTrace(
+            entity_id=f"decision-trace:{trial_slug}-{domain_slug}",
+            revision_id=_derived_revision_id(
+                f"decision-trace-{trial_slug}-{domain_slug}",
+                work_item.dependency_fingerprint,
+            ),
+            actor=_actor("application"),
+            observed_at=observed_at,
+            active_question_ids=evaluation.active_question_ids,
+            inactive_question_ids=evaluation.inactive_question_ids,
+            matched_rule_ids=evaluation.matched_rule_ids,
+            resulting_judgment=judgment_level,
+        )
+        trace_ref = _commit_derived_revision(
+            ledger,
+            lease,
+            scope=scope,
+            operation="operation:derive-decision-trace",
+            operation_key=f"idempotency:derive-trace-{trial_slug}-{domain_slug}",
+            record=trace,
+        )
+        trace_dependency = Dependency(
+            **trace_ref.model_dump(),
+            role="dependency:decision-trace",
+        )
+        judgment = AlgorithmicJudgmentRevision(
+            entity_id=f"judgment:{trial_slug}-{domain_slug}",
+            revision_id=_derived_revision_id(
+                f"judgment-{trial_slug}-{domain_slug}",
+                work_item.dependency_fingerprint,
+            ),
+            actor=_actor("application"),
+            observed_at=observed_at,
+            dependencies=(answer_dependency, trace_dependency),
+            domain_id=domain_id,
+            judgment=judgment_level,
+            answer_revisions=(sq_answers,),
+            decision_trace=trace_ref,
+        )
+        judgments.append(
+            _commit_derived_revision(
+                ledger,
+                lease,
+                scope=scope,
+                operation="operation:derive-judgment",
+                operation_key=(
+                    f"idempotency:derive-judgment-{trial_slug}-{domain_slug}"
+                ),
+                record=judgment,
+            )
+        )
+    dependencies = (
+        Dependency(**result_spec.model_dump(), role="dependency:result-spec"),
+        Dependency(
+            **source_inventory.model_dump(),
+            role="dependency:source-inventory",
+        ),
+        Dependency(
+            **evidence_bundle.model_dump(),
+            role="dependency:evidence-bundle",
+        ),
+        answer_dependency,
+        *(
+            Dependency(
+                **judgment.model_dump(),
+                role="dependency:algorithmic-judgment",
+            )
+            for judgment in judgments
+        ),
+    )
+    assessment = AssessmentRevision(
+        entity_id=f"assessment:{trial_slug}",
+        revision_id=_derived_revision_id(
+            f"assessment-{trial_slug}",
+            work_item.dependency_fingerprint,
+        ),
+        actor=_actor("application"),
+        observed_at=observed_at,
+        dependencies=dependencies,
+        result_spec=result_spec,
+        source_inventory=source_inventory,
+        evidence_bundles=(evidence_bundle,),
+        answers=(sq_answers,),
+        judgments=tuple(judgments),
+    )
+    assessment_ref = _commit_derived_revision(
+        ledger,
+        lease,
+        scope=scope,
+        operation="operation:derive-assessment-record",
+        operation_key=f"idempotency:derive-assessment-record-{trial_slug}",
+        record=assessment,
+    )
+    return assessment_ref, tuple(evaluation.domain_judgments)
+
+
+def _logic_pack_path() -> Path:
+    package_path = (
+        Path(__file__).resolve().parents[1]
+        / "packs"
+        / "logic"
+        / "rob2-parallel-assignment-2019.1.yaml"
+    )
+    if package_path.is_file():
+        return package_path
+    return (
+        Path(__file__).resolve().parents[3]
+        / "packs"
+        / "logic"
+        / "rob2-parallel-assignment-2019.1.yaml"
+    )
+
+
+def _guidance_pack_path() -> Path:
+    package_path = (
+        Path(__file__).resolve().parents[1]
+        / "packs"
+        / "guidance"
+        / "rob2-parallel-assignment-en-2019.1.yaml"
+    )
+    if package_path.is_file():
+        return package_path
+    return (
+        Path(__file__).resolve().parents[3]
+        / "packs"
+        / "guidance"
+        / "rob2-parallel-assignment-en-2019.1.yaml"
+    )
+
+
+def _canonical_json(value: object) -> bytes:
+    return json.dumps(
+        value,
+        ensure_ascii=False,
+        sort_keys=True,
+        separators=(",", ":"),
+    ).encode()
+
+
+def _candidate_identifier(unit_id: str) -> str:
+    return _identifier("candidate", unit_id)
 
 
 def _archive_pins() -> dict[str, bytes]:
@@ -606,26 +1462,148 @@ def _archive_pins() -> dict[str, bytes]:
     return pins
 
 
-def _current_dependencies(ledger: WorkflowLedger) -> tuple[DependencyInput, ...]:
-    revisions = {item.revision_id: item for item in ledger.current_revisions()}
+def _preparation_plans(
+    initialization: ProjectInitialization,
+) -> tuple[PreparationPlan, ...]:
+    steps = (
+        (
+            "source-classification",
+            "submit-source-classification",
+            SubmissionKind.SOURCE_CLASSIFICATION,
+        ),
+        ("result-resolution", "submit-result-resolution", SubmissionKind.RESULT_RESOLUTION),
+        (
+            "source-inventory",
+            "derive-source-inventory",
+            SubmissionKind.SOURCE_INVENTORY,
+        ),
+        (
+            "evidence-dispositions",
+            "submit-evidence-dispositions",
+            SubmissionKind.EVIDENCE_DISPOSITIONS,
+        ),
+        ("visual-transcription", "submit-visual-transcription", SubmissionKind.VISUAL_INSPECTION),
+        ("evidence-bundle", "freeze-evidence-bundle", SubmissionKind.EVIDENCE_BUNDLE),
+        ("sq-answers", "submit-sq-answers", SubmissionKind.SQ_ANSWERS),
+        ("assessment", "derive-assessment", SubmissionKind.ASSESSMENT),
+    )
     return tuple(
-        DependencyInput(
-            entity_id=event.entity_id,
-            revision_id=event.revision_id,
-            role="dependency:workflow-state",
-            content_hash=revisions[event.revision_id].artifact_hash,
+        PreparationPlan(
+            scope=f"preparation:{trial.trial_id.removeprefix('trial:')}",
+            trial_id=trial.trial_id,
+            steps=tuple(
+                PreparationStep(
+                    step_id=f"step:{name}",
+                    operation=f"operation:{operation}",
+                    checkpoint=f"checkpoint:{name}",
+                    submission_kind=kind,
+                )
+                for name, operation, kind in steps
+            ),
         )
-        for event in ledger.events()
-        if event.revision_id in revisions
+        for trial in initialization.trials
+        if trial.status == "inventory_ready"
     )
 
 
-def _work_item(ledger: WorkflowLedger) -> dict[str, str]:
-    fingerprint = dependency_fingerprint(_current_dependencies(ledger))
-    return {
-        "work_item_id": _identifier("work-item", fingerprint),
-        "dependency_fingerprint": fingerprint,
+def _stored_plans(ledger: WorkflowLedger) -> tuple[PreparationPlan, ...]:
+    first = ledger.events()[0]
+    payload = json.loads(ledger.artifacts.read(first.output_revision_hashes[0]))
+    return tuple(
+        PreparationPlan.model_validate(item)
+        for item in payload.get("preparation_plans", ())
+    )
+
+
+def _coordinator(
+    ledger: WorkflowLedger,
+    plans: tuple[PreparationPlan, ...],
+    *,
+    writable: bool = False,
+    actor: Actor | None = None,
+) -> AutonomousPreparation:
+    if writable:
+        now = datetime.now(UTC)
+        lease = ledger.acquire_lease(
+            "owner:application",
+            now,
+            timedelta(minutes=5),
+        )
+    else:
+        lease = LeaseToken(
+            owner_id="owner:read-only",
+            fencing_token=0,
+            expires_at=datetime.now(UTC),
+        )
+    return AutonomousPreparation(
+        ledger,
+        lease,
+        actor or _actor("application"),
+        plans,
+    )
+
+
+def _available_work_items(
+    ledger: WorkflowLedger, plans: tuple[PreparationPlan, ...]
+) -> tuple[PreparationWorkItem, ...]:
+    return _coordinator(ledger, plans).continue_preparation() if plans else ()
+
+
+def _work_item_payload(work_item: PreparationWorkItem) -> dict[str, Any]:
+    tool_name = next(
+        name
+        for name, kind in SUBMISSION_KINDS.items()
+        if kind is work_item.submission_kind
+    )
+    issued_identifiers: dict[str, str] = {}
+    trial_slug = work_item.trial_id.removeprefix("trial:")
+    if work_item.submission_kind is SubmissionKind.RESULT_RESOLUTION:
+        issued_identifiers["result_id"] = f"result:{trial_slug}"
+    elif work_item.submission_kind is SubmissionKind.EVIDENCE_BUNDLE:
+        issued_identifiers["bundle_id"] = f"bundle:{trial_slug}"
+    elif work_item.submission_kind is SubmissionKind.VISUAL_INSPECTION:
+        issued_identifiers["visual_candidate_source"] = "inspect_visual_candidate"
+    payload = {
+        **work_item.model_dump(mode="json"),
+        "permitted_tool": tool_name,
+        "contract_version": CONTRACT_VERSION,
+        "issued_identifiers": issued_identifiers,
     }
+    if work_item.submission_kind is SubmissionKind.SQ_ANSWERS:
+        logic = load_logic_pack(_logic_pack_path())
+        guidance = load_guidance_pack(_guidance_pack_path())
+        validate_guidance_compatibility(logic, guidance)
+        wording = {
+            item.logic_element_id: item.text for item in guidance.items
+        }
+        payload["sq_context"] = [
+            {"sq_id": question.id, "guidance": wording[question.id]}
+            for question in logic.questions
+        ]
+    return payload
+
+
+def _event_envelope(
+    project_id: str,
+    event: WorkflowEvent,
+    tool_name: str,
+    payload: bytes,
+    ledger: WorkflowLedger,
+) -> OperationEnvelope:
+    expected_operation = f"operation:{tool_name.replace('_', '-')}"
+    if event.operation != expected_operation:
+        raise ValueError("idempotency key was already used for another operation")
+    if ledger.artifacts.read(event.output_revision_hashes[0]) != payload:
+        raise ValueError("idempotency key was already used with a different payload")
+    return OperationEnvelope(
+        operation_id=event.operation_id,
+        ledger_cursor=f"ledger:{event.sequence}",
+        affected_scope=(event.scope,),
+        status=WorkflowStatus.COMPLETED,
+        committed=True,
+        next_permitted_action="action:get-next-work",
+        payload={"tool": tool_name},
+    )
 
 
 def _identifier(prefix: str, value: str) -> str:
@@ -658,6 +1636,17 @@ def _actor(component: str) -> Actor:
         actor_id=f"system:{component}",
         kind="system",
         display_name=component,
+        software_name="rob2-kit",
+        software_version="0.1.0",
+    )
+
+
+def _submission_actor(idempotency_key: str) -> Actor:
+    digest = hashlib.sha256(idempotency_key.encode()).hexdigest()[:24]
+    return Actor(
+        actor_id=f"agent:submission-{digest}",
+        kind="agent",
+        display_name="Host agent submission",
         software_name="rob2-kit",
         software_version="0.1.0",
     )

@@ -5,7 +5,16 @@ from typing import Any
 
 from pydantic import Field, TypeAdapter
 
-from rob2_kit.domain.revisions import FrozenModel, Identifier, SchemaVersion
+from rob2_kit.domain.assessment import SQAnswerCategory
+from rob2_kit.domain.results import Estimate, Result
+from rob2_kit.domain.revisions import (
+    FrozenModel,
+    Identifier,
+    RecordReference,
+    SchemaVersion,
+)
+from rob2_kit.domain.sources import SourceRole
+from rob2_kit.evidence.workflow import CandidateDisposition
 
 
 class WorkflowStatus(StrEnum):
@@ -36,17 +45,24 @@ class OperationEnvelope(FrozenModel):
     payload: dict[str, Any] = Field(default_factory=dict)
 
 
-class SourceClassificationSubmission(FrozenModel):
+class SourceClassification(FrozenModel):
     source_id: Identifier
-    roles: tuple[Identifier, ...] = Field(min_length=1)
+    roles: tuple[SourceRole, ...] = Field(min_length=1)
+
+
+class SourceClassificationSubmission(FrozenModel):
+    classifications: tuple[SourceClassification, ...] = Field(min_length=1)
 
 
 class ResultResolutionSubmission(FrozenModel):
-    result_spec: dict[str, Any]
+    result: Result
+    estimate: Estimate
+    provenance_note: str = Field(min_length=1)
 
 
 class EvidenceDispositionsSubmission(FrozenModel):
-    dispositions: tuple[dict[str, Any], ...] = Field(min_length=1)
+    dispositions: tuple[CandidateDisposition, ...] = Field(min_length=1)
+    visual_candidates: tuple[dict[str, Any], ...] = ()
 
 
 class VisualTranscriptionSubmission(FrozenModel):
@@ -54,11 +70,19 @@ class VisualTranscriptionSubmission(FrozenModel):
 
 
 class EvidenceBundleSubmission(FrozenModel):
-    bundle: dict[str, Any]
+    items: tuple[RecordReference, ...] = ()
+    frozen_content_hash: str = Field(pattern=r"^sha256:[0-9a-f]{64}$")
+
+
+class SQAnswerDraft(FrozenModel):
+    question_id: Identifier
+    answer: SQAnswerCategory
+    rationale: str = Field(min_length=1)
 
 
 class SQAnswersSubmission(FrozenModel):
-    answers: tuple[dict[str, Any], ...] = Field(min_length=1)
+    answers: tuple[SQAnswerDraft, ...] = Field(min_length=1)
+    assessor_inputs: dict[Identifier, bool] = Field(default_factory=dict)
 
 
 SUBMISSION_ARGUMENTS = {
