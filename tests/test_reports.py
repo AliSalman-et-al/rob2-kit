@@ -1,7 +1,9 @@
 import csv
 import hashlib
+import html
 import io
 import json
+from pathlib import Path
 from zipfile import ZipFile
 
 from rob2_kit.reports import AssessmentView, DomainView, ReportProjector
@@ -61,6 +63,25 @@ def test_text_projections_escape_hostile_content() -> None:
     assert r"\*\*at 30 days\*\*" in markdown
     assert "DRAFT-ONLY HANDS-ON PREVIEW" in html
     assert "DRAFT-ONLY HANDS-ON PREVIEW" in markdown
+
+
+def test_distributable_prompt_injection_and_markup_are_inert() -> None:
+    fixture_root = Path(__file__).parent / "public_fixtures" / "adversarial"
+    payloads = (
+        (fixture_root / "visible-prompt-injection.txt").read_text(encoding="utf-8"),
+        (fixture_root / "hidden-prompt-injection.html").read_text(encoding="utf-8"),
+        (fixture_root / "hostile-markup.html").read_text(encoding="utf-8"),
+        (fixture_root / "hostile-unicode.txt").read_text(encoding="utf-8"),
+    )
+
+    for payload in payloads:
+        rendered = ReportProjector(
+            assessment_view().model_copy(update={"trial": payload})
+        ).html().decode()
+        assert html.escape(payload) in rendered
+        assert "<script>" not in rendered
+        assert 'href="javascript:' not in rendered
+        assert 'src="https://tracking.invalid' not in rendered
 
 
 def test_robvis_csv_and_xlsx_share_the_canonical_assessment() -> None:

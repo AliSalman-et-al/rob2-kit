@@ -1,0 +1,4 @@
+{
+  "codex": {"operation":"status","project_id":"project:fixture","arguments":{}},
+  "claude": {"operation":"status","project_id":"project:fixture","arguments":{}}
+}

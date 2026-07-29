@@ -1,0 +1,6 @@
+{
+  "cases": [
+    {"from":"result:mortality-30d","to":"result:qol-6m","expected":"allowed","reason":"same randomization"},
+    {"from":"result:mortality-30d","to":"result:response-12w","expected":"rejected","reason":"different randomization"}
+  ]
+}

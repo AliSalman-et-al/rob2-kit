@@ -11,7 +11,7 @@ from datetime import UTC, datetime
 from enum import StrEnum
 from importlib.metadata import version
 from io import BytesIO
-from pathlib import Path
+from pathlib import Path, PurePosixPath, PureWindowsPath
 from typing import Literal, Protocol
 from zipfile import BadZipFile, ZipFile
 
@@ -71,8 +71,14 @@ def read_bounded_zip(
                 raise BoundedZipError("ZIP exceeds the member-count limit")
             total = 0
             for info in members:
-                normalized = Path(info.filename.replace("\\", "/"))
-                if normalized.is_absolute() or ".." in normalized.parts:
+                normalized = PurePosixPath(info.filename.replace("\\", "/"))
+                windows_path = PureWindowsPath(info.filename)
+                if (
+                    normalized.is_absolute()
+                    or windows_path.is_absolute()
+                    or windows_path.drive
+                    or ".." in normalized.parts
+                ):
                     raise BoundedZipError(f"ZIP contains unsafe member path: {info.filename}")
                 total += info.file_size
                 if total > max_expanded_bytes:

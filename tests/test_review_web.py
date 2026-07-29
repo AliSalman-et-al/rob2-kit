@@ -1,4 +1,5 @@
 from datetime import timedelta
+from html.parser import HTMLParser
 from pathlib import Path
 
 from fastapi.testclient import TestClient
@@ -34,6 +35,55 @@ def csrf_from(page: str) -> str:
     return page.split(marker, 1)[1].split('"', 1)[0]
 
 
+class AccessibilityParser(HTMLParser):
+    def __init__(self) -> None:
+        super().__init__()
+        self.label_depth = 0
+        self.html_language: str | None = None
+        self.landmarks: set[str] = set()
+        self.live_regions = 0
+        self.alerts = 0
+        self.unlabelled_controls: list[str] = []
+        self.buttons_without_text = 0
+        self._button_text: list[str] | None = None
+
+    def handle_starttag(
+        self, tag: str, attrs: list[tuple[str, str | None]]
+    ) -> None:
+        attributes = dict(attrs)
+        if tag == "html":
+            self.html_language = attributes.get("lang")
+        if tag in {"header", "main"}:
+            self.landmarks.add(tag)
+        if attributes.get("aria-live"):
+            self.live_regions += 1
+        if attributes.get("role") == "alert":
+            self.alerts += 1
+        if tag == "label":
+            self.label_depth += 1
+        if (
+            tag in {"input", "textarea"}
+            and attributes.get("type") != "hidden"
+            and not self.label_depth
+            and not attributes.get("aria-label")
+        ):
+            self.unlabelled_controls.append(attributes.get("name", tag))
+        if tag == "button":
+            self._button_text = []
+
+    def handle_endtag(self, tag: str) -> None:
+        if tag == "label":
+            self.label_depth -= 1
+        if tag == "button" and self._button_text is not None:
+            if not "".join(self._button_text).strip():
+                self.buttons_without_text += 1
+            self._button_text = None
+
+    def handle_data(self, data: str) -> None:
+        if self._button_text is not None:
+            self._button_text.append(data)
+
+
 def test_one_time_token_exchanges_for_secured_session_and_cannot_be_reused(
     tmp_path: Path,
 ) -> None:
@@ -63,6 +113,21 @@ def test_evidence_is_inert_and_answer_stays_hidden_until_confirmation(
     assert "Mortality at 30 days" in page
     assert "Draft-only hands-on preview" in page
     assert "Only a human reviewer can sign off" in page
+
+
+def test_rendered_critical_flow_has_accessible_controls_and_status(
+    tmp_path: Path,
+) -> None:
+    browser, token = client(tmp_path)
+    parser = AccessibilityParser()
+    parser.feed(enter_review(browser, token))
+
+    assert parser.html_language == "en"
+    assert parser.landmarks == {"header", "main"}
+    assert parser.live_regions >= 1
+    assert parser.alerts == 0
+    assert parser.unlabelled_controls == []
+    assert parser.buttons_without_text == 0
 
 
 def test_csrf_origin_and_stale_forms_are_rejected_without_a_commit(tmp_path: Path) -> None:
