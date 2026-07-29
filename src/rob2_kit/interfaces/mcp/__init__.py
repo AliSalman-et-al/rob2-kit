@@ -1,0 +1,1 @@
+"""Static stdio MCP transport."""

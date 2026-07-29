@@ -234,6 +234,26 @@ class EvidenceSearchIndex:
             ),
         )
 
+    def read_unit(self, unit_id: Identifier) -> CanonicalEvidenceUnit:
+        """Read one engine-issued canonical unit without accepting raw source locators."""
+        with self._connect() as connection:
+            row = connection.execute(
+                "SELECT * FROM evidence_units WHERE unit_id = ?",
+                (unit_id,),
+            ).fetchone()
+        if row is None:
+            raise ValueError("canonical evidence unit identifier was not issued by this index")
+        return CanonicalEvidenceUnit(
+            unit_id=row["unit_id"],
+            source_id=row["source_id"],
+            source_artifact_hash=row["source_artifact_hash"],
+            parse_id=row["parse_id"],
+            page=row["page"],
+            kind=row["kind"],
+            text=row["text"],
+            spatial=None if row["spatial"] == "null" else tuple(json.loads(row["spatial"])),
+        )
+
     def search(
         self,
         query: SearchQuery,

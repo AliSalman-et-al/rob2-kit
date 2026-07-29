@@ -1,0 +1,7 @@
+{
+  "host": "claude",
+  "launcher": "uvx --python 3.13 --from rob2-kit==0.1.0 rob2-mcp",
+  "skill": "rob2-assess",
+  "skill_hash": "sha256:23f8567f219d3afa1186af0d732ec0e386309fa20092f56628444818f354a007",
+  "trigger_description": "Prepare an evidence-grounded RoB 2 assessment and hand it to a human reviewer."
+}
