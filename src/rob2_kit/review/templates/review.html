@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Review {{ review.result_label }}</title>
+    <link rel="stylesheet" href="/static/review.css">
+  </head>
+  <body>
+    <header class="review-header">
+      <div>
+        <p class="eyebrow">RoB 2 evidence review</p>
+        <h1>{{ review.result_label }}</h1>
+      </div>
+      <div class="connection" aria-live="polite">
+        <strong>{{ connection_state }}</strong>
+        <time datetime="{{ last_contact.isoformat() }}">
+          Last contact {{ last_contact.strftime("%Y-%m-%d %H:%M UTC") }}
+        </time>
+        <span>Your review is saved independently of the agent connection.</span>
+      </div>
+    </header>
+    <main class="review-layout">
+      <aside class="position-pane">
+        <h2>Remaining checks</h2>
+        <ol>
+          {% for item in queue %}
+          <li{% if item.completed %} class="completed"{% endif %}>
+            {{ item.title }}
+          </li>
+          {% endfor %}
+        </ol>
+        <details>
+          <summary>Technical details</summary>
+          <p>Assessment revision: {{ review.assessment_revision_id }}</p>
+          <p>Review scope: {{ review.review_id }}</p>
+        </details>
+      </aside>
+      <section class="evidence-pane">
+        <p class="eyebrow">Exact source evidence</p>
+        {% for item in queue if item.evidence_text %}
+        <article>
+          <h2>{{ item.title }}</h2>
+          <p class="locator">{{ item.source_locator }}</p>
+          <blockquote>{{ item.evidence_text }}</blockquote>
+          <details>
+            <summary>Context and provenance</summary>
+            <p>{{ item.source_locator }}</p>
+          </details>
+        </article>
+        {% else %}
+        <p>No evidence verification is currently required.</p>
+        {% endfor %}
+      </section>
+      <section class="decision-pane">
+        <p class="eyebrow">Your decision</p>
+        {% if stale %}
+        <div class="stale" role="alert">
+          This session is read-only because a newer Assessment revision exists.
+        </div>
+        {% endif %}
+        {% for item in queue %}
+        <article class="decision-card">
+          <h2>{{ item.title }}</h2>
+          {% if item.answer_visible %}
+          <p class="answer-label">Prepared answer</p>
+          <p><strong>{{ item.staged_answer }}</strong></p>
+          <p>{{ item.staged_rationale }}</p>
+          {% elif not item.completed and not stale %}
+          <form method="post" action="/review/actions">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            <input type="hidden" name="action_id" value="{{ item.action_id }}">
+            <input type="hidden" name="kind" value="{{ item.kind.value }}">
+            <input type="hidden" name="expected_assessment_revision_id"
+                   value="{{ review.assessment_revision_id }}">
+            <input type="hidden" name="idempotency_key"
+                   value="idempotency:{{ item.action_id.split(':', 1)[1] }}-{{ review.assessment_revision_id.split(':', 1)[1] }}">
+            {% if item.kind.value == "sign_off" %}
+            <label>Confirm reviewer
+              <input name="confirmed_display_name" required
+                     value="{{ reviewer.display_name }}">
+            </label>
+            {% else %}
+            <label>Review note
+              <textarea name="rationale" required></textarea>
+            </label>
+            {% endif %}
+            {% if item.kind.value == "verify_evidence" %}
+            <button type="submit" name="value" value="accepted">
+              Confirm evidence and reveal answer
+            </button>
+            <button type="submit" name="value" value="correction_requested">
+              Request an evidence correction
+            </button>
+            {% elif item.kind.value == "sign_off" %}
+            <dl class="sign-off-scope">
+              <dt>Result</dt><dd>{{ review.result_label }}</dd>
+              <dt>Assessment revision</dt><dd>{{ review.assessment_revision_id }}</dd>
+              <dt>Hash-bound scope</dt><dd>{{ review.assessment_content_hash }}</dd>
+              <dt>Unresolved findings</dt>
+              <dd>
+                {% set unresolved = queue | rejectattr("completed") | list %}
+                {{ unresolved | length - 1 }}
+              </dd>
+            </dl>
+            <button type="submit" name="value" value="signed">
+              Sign off this Assessment revision
+            </button>
+            {% elif item.kind.value == "domain_review" %}
+            <button type="submit" name="value" value="accepted">
+              Accept domain
+            </button>
+            <button type="submit" name="value" value="correction_requested">
+              Correct domain
+            </button>
+            <button type="submit" name="value" value="deferred">
+              Defer domain
+            </button>
+            {% else %}
+            <button type="submit" name="value" value="accepted">
+              Commit decision
+            </button>
+            {% endif %}
+          </form>
+          {% else %}
+          <p class="saved">Decision saved</p>
+          {% endif %}
+        </article>
+        {% endfor %}
+      </section>
+    </main>
+  </body>
+</html>
