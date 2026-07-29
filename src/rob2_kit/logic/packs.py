@@ -222,6 +222,11 @@ def _load_yaml(path: Path) -> Any:
         return yaml.load(source, Loader=_PackSafeLoader)
 
 
+def parse_pack_yaml(content: bytes) -> Any:
+    """Parse pinned pack bytes with the same safe YAML 1.2 rules as live packs."""
+    return yaml.load(content, Loader=_PackSafeLoader)
+
+
 def load_logic_pack(path: Path) -> LogicPack:
     """Safely parse and schema-validate a reviewable Logic pack source."""
     return LogicPack.model_validate(_load_yaml(path))

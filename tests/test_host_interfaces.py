@@ -10,11 +10,24 @@ from mcp.client.stdio import stdio_client
 from typer.testing import CliRunner
 
 from rob2_kit.application.gateway import STATIC_TOOL_NAMES, ApplicationGateway
+from rob2_kit.domain.assessment import (
+    AlgorithmicJudgmentRevision,
+    AssessmentRevision,
+    AssessmentSignOff,
+    DecisionTrace,
+    JudgmentOverride,
+    ReviewerProfileRevision,
+)
+from rob2_kit.domain.releases import PolicyRelease
+from rob2_kit.domain.results import Comparison, Estimate, Result, ResultSpecRevision
+from rob2_kit.domain.revisions import Dependency, RecordReference
+from rob2_kit.domain.sources import SourceInventoryRevision
 from rob2_kit.interfaces.cli.app import app
 from rob2_kit.interfaces.mcp.server import registered_tool_names
 from rob2_kit.release import build_host_adapters, verify_host_adapters
 from rob2_kit.storage.artifacts import ArtifactStore
 from rob2_kit.storage.ledger import (
+    DependencyInput,
     Transition,
     WorkflowEventOutcome,
     WorkflowLedger,
@@ -207,3 +220,284 @@ def test_generated_adapters_share_canonical_skill_and_exact_launcher(
         tmp_path / "adapters" / "claude" / "activation-fixtures.json"
     ).read_bytes()
     verify_host_adapters(tmp_path)
+
+
+def test_cli_report_export_archive_and_offline_verify(tmp_path: Path) -> None:
+    gateway = ApplicationGateway()
+    gateway.initialize_project(tmp_path, authorized=True)
+    ledger = WorkflowLedger(
+        tmp_path / ".rob2" / "ledger.sqlite3",
+        ArtifactStore(tmp_path / ".rob2" / "artifacts"),
+    )
+    now = datetime.now(UTC)
+    lease = ledger.acquire_lease(
+        "owner:report-test",
+        now,
+        timedelta(minutes=1),
+        owner_is_dead=lambda _owner: True,
+    )
+    def commit(record: object, dependencies: tuple[DependencyInput, ...] = ()) -> str:
+        revision_id = getattr(record, "revision_id")
+        committed = ledger.commit(
+            Transition(
+                scope="assessment:cli",
+                operation="operation:freeze-record",
+                operation_key=f"idempotency:{revision_id.removeprefix('revision:')}",
+                actor=reviewer(),
+                observed_at=now,
+                entity_id=getattr(record, "entity_id"),
+                revision_id=revision_id,
+                artifact=getattr(record, "model_dump_json")().encode(),
+                artifact_media_type="application/json",
+                dependencies=dependencies,
+                expected_dependency_fingerprint=dependency_fingerprint(dependencies),
+                checkpoint="checkpoint:assessment",
+                outcome=WorkflowEventOutcome.REVIEW_PENDING,
+            ),
+            lease,
+            now=now,
+        )
+        return committed.artifact_hash
+
+    common = {"actor": reviewer(), "observed_at": now}
+    result_spec = ResultSpecRevision(
+        entity_id="result-spec:cli",
+        revision_id="revision:result-spec-cli",
+        result=Result(
+            result_id="result:cli",
+            trial_id="trial:cli",
+            randomization_id="randomization:cli",
+            comparison=Comparison(
+                experimental_arm_id="arm:treatment",
+                comparator_arm_id="arm:control",
+            ),
+            effect_of_interest="assignment",
+            outcome_construct="Mortality",
+            measurement_instrument="Vital status",
+            time_point="30 days",
+            analysis_population="Intention to treat",
+            analysis_model="Risk ratio",
+            effect_measure="RR",
+            source_locator="source:cli#result",
+        ),
+        estimate=Estimate(value="0.8"),
+        provenance_note="Test fixture",
+        **common,
+    )
+    result_hash = commit(result_spec)
+    result_reference = RecordReference(
+        entity_id=result_spec.entity_id,
+        revision_id=result_spec.revision_id,
+        content_hash=result_hash,
+    )
+    source_dependency = Dependency(
+        **result_reference.model_dump(),
+        role="dependency:result-spec",
+    )
+    source_inventory = SourceInventoryRevision(
+        entity_id="source-inventory:cli",
+        revision_id="revision:source-inventory-cli",
+        dependencies=(source_dependency,),
+        result_spec=result_reference,
+        sources=(),
+        **common,
+    )
+    source_hash = commit(
+        source_inventory,
+        (DependencyInput.model_validate(source_dependency.model_dump()),),
+    )
+    trace = DecisionTrace(
+        entity_id="decision-trace:cli",
+        revision_id="revision:decision-trace-cli",
+        active_question_ids=("sq:1.1",),
+        inactive_question_ids=(),
+        matched_rule_ids=("rule:low",),
+        resulting_judgment="low",
+        **common,
+    )
+    trace_hash = commit(trace)
+    trace_reference = RecordReference(
+        entity_id=trace.entity_id,
+        revision_id=trace.revision_id,
+        content_hash=trace_hash,
+    )
+    trace_dependency = Dependency(
+        **trace_reference.model_dump(),
+        role="dependency:decision-trace",
+    )
+    judgment = AlgorithmicJudgmentRevision(
+        entity_id="judgment:cli-domain-1",
+        revision_id="revision:judgment-cli-domain-1",
+        dependencies=(trace_dependency,),
+        domain_id="domain:1",
+        judgment="low",
+        answer_revisions=(),
+        decision_trace=trace_reference,
+        **common,
+    )
+    judgment_hash = commit(
+        judgment,
+        (DependencyInput.model_validate(trace_dependency.model_dump()),),
+    )
+    policy = PolicyRelease(
+        entity_id="policy-release:cli",
+        revision_id="revision:policy-cli",
+        kind="review_policy",
+        family_id="policy:review",
+        release_id="1.0.0",
+        canonical_content_hash="sha256:" + ("b" * 64),
+        required_schema_version="1.0.0",
+        inventory=(),
+        **common,
+    )
+    policy_hash = commit(policy)
+    policy_reference = RecordReference(
+        entity_id=policy.entity_id,
+        revision_id=policy.revision_id,
+        content_hash=policy_hash,
+    )
+    judgment_reference = RecordReference(
+        entity_id=judgment.entity_id,
+        revision_id=judgment.revision_id,
+        content_hash=judgment_hash,
+    )
+    override_dependencies = (
+        Dependency(
+            **judgment_reference.model_dump(),
+            role="dependency:algorithmic-judgment",
+        ),
+        Dependency(
+            **policy_reference.model_dump(), role="dependency:review-policy"
+        ),
+    )
+    override = JudgmentOverride(
+        entity_id="judgment-override:cli",
+        revision_id="revision:judgment-override-cli",
+        dependencies=override_dependencies,
+        judgment_revision=judgment_reference,
+        replacement="high",
+        rationale="Reviewer identified a material concern.",
+        policy_authority=policy_reference,
+        **common,
+    )
+    override_hash = commit(
+        override,
+        tuple(
+            DependencyInput.model_validate(dependency.model_dump())
+            for dependency in override_dependencies
+        ),
+    )
+    source_reference = RecordReference(
+        entity_id=source_inventory.entity_id,
+        revision_id=source_inventory.revision_id,
+        content_hash=source_hash,
+    )
+    override_reference = RecordReference(
+        entity_id=override.entity_id,
+        revision_id=override.revision_id,
+        content_hash=override_hash,
+    )
+    assessment_dependencies = (
+        Dependency(
+            **result_reference.model_dump(), role="dependency:result-spec"
+        ),
+        Dependency(
+            **source_reference.model_dump(), role="dependency:source-inventory"
+        ),
+        Dependency(
+            **judgment_reference.model_dump(),
+            role="dependency:algorithmic-judgment",
+        ),
+        Dependency(
+            **override_reference.model_dump(),
+            role="dependency:judgment-override",
+        ),
+    )
+    assessment = AssessmentRevision(
+        entity_id="assessment:cli",
+        revision_id="revision:assessment-cli",
+        dependencies=assessment_dependencies,
+        result_spec=result_reference,
+        source_inventory=source_reference,
+        evidence_bundles=(),
+        answers=(),
+        judgments=(judgment_reference,),
+        judgment_overrides=(override_reference,),
+        review_findings=(),
+        **common,
+    )
+    assessment_hash = commit(
+        assessment,
+        tuple(
+            DependencyInput.model_validate(dependency.model_dump())
+            for dependency in assessment_dependencies
+        ),
+    )
+    reviewer_profile = ReviewerProfileRevision(
+        entity_id="reviewer-profile:cli",
+        revision_id="revision:reviewer-profile-cli",
+        display_name="Test reviewer",
+        **common,
+    )
+    reviewer_hash = commit(reviewer_profile)
+    reviewer_reference = RecordReference(
+        entity_id=reviewer_profile.entity_id,
+        revision_id=reviewer_profile.revision_id,
+        content_hash=reviewer_hash,
+    )
+    assessment_reference = RecordReference(
+        entity_id=assessment.entity_id,
+        revision_id=assessment.revision_id,
+        content_hash=assessment_hash,
+    )
+    sign_off_dependencies = (
+        Dependency(
+            **assessment_reference.model_dump(),
+            role="dependency:assessment",
+        ),
+        Dependency(
+            **reviewer_reference.model_dump(),
+            role="dependency:reviewer-profile",
+        ),
+    )
+    sign_off = AssessmentSignOff(
+        entity_id="assessment-sign-off:cli",
+        revision_id="revision:assessment-sign-off-cli",
+        dependencies=sign_off_dependencies,
+        assessment=assessment_reference,
+        reviewer_profile=reviewer_reference,
+        **common,
+    )
+    commit(
+        sign_off,
+        tuple(
+            DependencyInput.model_validate(dependency.model_dump())
+            for dependency in sign_off_dependencies
+        ),
+    )
+
+    report = CliRunner().invoke(app, ["report", str(tmp_path)])
+    export = CliRunner().invoke(app, ["export", str(tmp_path)])
+    archive = CliRunner().invoke(
+        app,
+        ["archive", str(tmp_path), "--kind", "reference"],
+    )
+    archive_path = tmp_path / "output" / "revision_assessment-cli.reference.rob2.zip"
+    verified = CliRunner().invoke(app, ["verify", str(archive_path)])
+
+    assert report.exit_code == export.exit_code == archive.exit_code == verified.exit_code == 0
+    assert (tmp_path / "output" / "revision_assessment-cli.html").exists()
+    assert (tmp_path / "output" / "revision_assessment-cli.md").exists()
+    assert (tmp_path / "output" / "revision_assessment-cli.json").exists()
+    assert (tmp_path / "output" / "revision_assessment-cli.robvis.csv").exists()
+    assert (tmp_path / "output" / "revision_assessment-cli.xlsx").exists()
+    assert archive_path.exists()
+    assert "High" in (
+        tmp_path / "output" / "revision_assessment-cli.robvis.csv"
+    ).read_text(encoding="utf-8-sig")
+    assert "Signed off" in (
+        tmp_path / "output" / "revision_assessment-cli.html"
+    ).read_text()
+    assert json.loads(verified.stdout)["message"] == (
+        "source integrity not independently verifiable"
+    )

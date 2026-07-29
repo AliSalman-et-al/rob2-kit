@@ -981,6 +981,34 @@ def _hash_json(value: object) -> str:
     return f"sha256:{hashlib.sha256(payload).hexdigest()}"
 
 
+def workflow_event_hash_payload(event: WorkflowEvent) -> dict[str, Any]:
+    """Return the exact public payload covered by a Workflow event hash."""
+    return {
+        "sequence": event.sequence,
+        "event_id": event.event_id,
+        "scope": event.scope,
+        "actor": event.actor.model_dump(mode="json"),
+        "observed_at": event.observed_at.isoformat(),
+        "operation": event.operation,
+        "operation_key": event.operation_key,
+        "operation_id": event.operation_id,
+        "causation_id": event.causation_id,
+        "correlation_id": event.correlation_id,
+        "entity_id": event.entity_id,
+        "revision_id": event.revision_id,
+        "record_schema_version": event.record_schema_version,
+        "dependencies": [
+            dependency.model_dump(mode="json") for dependency in event.dependencies
+        ],
+        "checkpoint": event.checkpoint,
+        "supersedes_revision_id": event.supersedes_revision_id,
+        "input_revision_hashes": list(event.input_revision_hashes),
+        "output_revision_hashes": list(event.output_revision_hashes),
+        "outcome": event.outcome,
+        "previous_event_hash": event.previous_event_hash,
+    }
+
+
 def _revision_sequence(revision: RevisionProjection) -> int:
     return revision.sequence
 

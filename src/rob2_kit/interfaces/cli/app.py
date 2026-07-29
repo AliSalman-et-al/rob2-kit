@@ -8,6 +8,7 @@ from pathlib import Path
 import typer
 
 from rob2_kit.application.gateway import ApplicationGateway
+from rob2_kit.reports.archives import verify_archive
 
 app = typer.Typer(no_args_is_help=True)
 
@@ -70,13 +71,20 @@ def export(project_root: Path = typer.Argument(Path("."))) -> None:
 
 
 @app.command()
-def archive(project_root: Path = typer.Argument(Path("."))) -> None:
-    _expert(project_root, "archive")
+def archive(
+    project_root: Path = typer.Argument(Path(".")),
+    kind: str = typer.Option("complete", "--kind"),
+) -> None:
+    _archive(project_root, kind)
 
 
 @app.command()
-def verify(project_root: Path = typer.Argument(Path("."))) -> None:
-    _expert(project_root, "verify")
+def verify(target: Path = typer.Argument(Path("."))) -> None:
+    if target.is_file():
+        receipt = verify_archive(target.read_bytes())
+        typer.echo(json.dumps(receipt.model_dump(mode="json"), sort_keys=True))
+    else:
+        _expert(target, "verify")
 
 
 @app.command()
@@ -107,6 +115,22 @@ def _expert(project_root: Path, command: str) -> None:
     typer.echo(
         json.dumps(
             ApplicationGateway().expert_command(project_root, command),
+            sort_keys=True,
+        )
+    )
+
+
+def _archive(
+    project_root: Path,
+    kind: str,
+) -> None:
+    typer.echo(
+        json.dumps(
+            ApplicationGateway().expert_command(
+                project_root,
+                "archive",
+                archive_kind=kind,
+            ),
             sort_keys=True,
         )
     )

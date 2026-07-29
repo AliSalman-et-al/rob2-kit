@@ -20,6 +20,8 @@ from rob2_kit.evidence.search import EvidenceSearchIndex, SearchQuery
 from rob2_kit.evidence.visual import VisualInspectionQueue
 from rob2_kit.ingestion.project import ProjectInitialization
 from rob2_kit.ingestion.project import initialize_project as ingest_project
+from rob2_kit.reports import ReportProjector, latest_assessment_view
+from rob2_kit.reports.archives import ArchiveBuilder
 from rob2_kit.review.handoff import ReviewHandoff, ReviewWaitOutcome
 from rob2_kit.review.service import ReviewCase, ReviewService
 from rob2_kit.review.web import ReviewWebConfig
@@ -151,7 +153,13 @@ class ApplicationGateway:
         self._projects[project_id] = root
         return project_id
 
-    def expert_command(self, project_root: Path, command: str) -> dict[str, Any]:
+    def expert_command(
+        self,
+        project_root: Path,
+        command: str,
+        *,
+        archive_kind: str = "complete",
+    ) -> dict[str, Any]:
         """Execute CLI-only diagnostics or report an explicitly deferred projection."""
         project_id = self.resume_project(project_root)
         ledger = _ledger(project_root.resolve())
@@ -172,11 +180,58 @@ class ApplicationGateway:
                     event.model_dump(mode="json") for event in ledger.events()
                 ],
             }
-        if command in {"report", "export", "archive"}:
+        if command in {"report", "export"}:
+            assessment = latest_assessment_view(ledger)
+            projector = ReportProjector(assessment)
+            output = project_root.resolve() / "output"
+            output.mkdir(exist_ok=True)
+            stem = assessment.assessment_revision_id.replace(":", "_")
+            projections = (
+                {
+                    f"{stem}.html": projector.html(),
+                    f"{stem}.md": projector.markdown(),
+                }
+                if command == "report"
+                else {
+                    f"{stem}.json": projector.json(),
+                    f"{stem}.summary.json": projector.summary(),
+                    f"{stem}.robvis.csv": projector.robvis_csv(),
+                    f"{stem}.xlsx": projector.xlsx(),
+                }
+            )
+            paths = []
+            for name, content in projections.items():
+                path = output / name
+                path.write_bytes(content)
+                paths.append(str(path))
             return {
                 "command": command,
-                "status": WorkflowStatus.WORK_REQUIRED,
-                "condition": "condition:projection-owned-by-issue-24",
+                "status": WorkflowStatus.COMPLETED,
+                "assessment_revision_id": assessment.assessment_revision_id,
+                "outputs": paths,
+                "committed": False,
+            }
+        if command == "archive":
+            if archive_kind not in {"complete", "reference"}:
+                raise ValueError("archive kind must be complete or reference")
+            assessment = latest_assessment_view(ledger)
+            output = project_root.resolve() / "output"
+            output.mkdir(exist_ok=True)
+            stem = assessment.assessment_revision_id.replace(":", "_")
+            path = output / f"{stem}.{archive_kind}.rob2.zip"
+            path.write_bytes(
+                ArchiveBuilder(ledger).build(
+                    assessment.assessment_revision_id,
+                    kind=archive_kind,
+                    pinned_files=_archive_pins(),
+                )
+            )
+            return {
+                "command": command,
+                "status": WorkflowStatus.COMPLETED,
+                "assessment_revision_id": assessment.assessment_revision_id,
+                "archive_kind": archive_kind,
+                "output": str(path),
                 "committed": False,
             }
         raise ValueError(f"unknown expert command {command!r}")
@@ -531,6 +586,24 @@ class ApplicationGateway:
 def _ledger(root: Path) -> WorkflowLedger:
     state = root / ".rob2"
     return WorkflowLedger(state / "ledger.sqlite3", ArtifactStore(state / "artifacts"))
+
+
+def _archive_pins() -> dict[str, bytes]:
+    package_root = Path(__file__).resolve().parents[1]
+    repository_root = Path(__file__).resolve().parents[3]
+    pins: dict[str, bytes] = {}
+    for directory_name in ("schemas", "packs"):
+        candidates = (
+            package_root / directory_name,
+            repository_root / directory_name,
+        )
+        directory = next((path for path in candidates if path.is_dir()), None)
+        if directory is None:
+            continue
+        for path in sorted(item for item in directory.rglob("*") if item.is_file()):
+            relative = path.relative_to(directory).as_posix()
+            pins[f"{directory_name}/{relative}"] = path.read_bytes()
+    return pins
 
 
 def _current_dependencies(ledger: WorkflowLedger) -> tuple[DependencyInput, ...]:

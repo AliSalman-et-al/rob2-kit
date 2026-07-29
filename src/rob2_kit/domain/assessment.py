@@ -96,6 +96,7 @@ class AssessmentRevision(Revision):
         "evidence_bundles": "dependency:evidence-bundle",
         "answers": "dependency:sq-answer",
         "judgments": "dependency:algorithmic-judgment",
+        "judgment_overrides": "dependency:judgment-override",
         "review_findings": "dependency:review-finding",
     }
     result_spec: RecordReference
@@ -103,6 +104,7 @@ class AssessmentRevision(Revision):
     evidence_bundles: tuple[RecordReference, ...]
     answers: tuple[RecordReference, ...]
     judgments: tuple[RecordReference, ...]
+    judgment_overrides: tuple[RecordReference, ...] = ()
     review_findings: tuple[RecordReference, ...] = ()
 
 
