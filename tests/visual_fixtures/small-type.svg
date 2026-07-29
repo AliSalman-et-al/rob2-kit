@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="800">
+  <rect width="100%" height="100%" fill="white"/>
+  <text x="40" y="60" font-size="24">Supplementary exclusions</text>
+  <text x="900" y="740" font-size="7">Nine participants were excluded after randomization.</text>
+</svg>

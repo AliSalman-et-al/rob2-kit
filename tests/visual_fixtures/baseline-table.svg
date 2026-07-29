@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600">
+  <rect width="100%" height="100%" fill="white"/>
+  <text x="40" y="50" font-size="24">Table 1. Baseline characteristics</text>
+  <path d="M40 80H760M40 130H760M40 180H760M40 230H760M40 80V230M300 80V230M530 80V230M760 80V230" stroke="black"/>
+  <text x="50" y="115">Characteristic</text><text x="320" y="115">Intervention</text><text x="550" y="115">Control</text>
+  <text x="50" y="165">Randomized, n</text><text x="320" y="165">51</text><text x="550" y="165">49</text>
+</svg>

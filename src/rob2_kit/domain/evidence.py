@@ -1,6 +1,7 @@
 """Evidence boundary schemas; search and bundle workflows belong to issue #19."""
 
 from enum import StrEnum
+from typing import Literal
 
 from pydantic import Field, model_validator
 
@@ -56,8 +57,19 @@ class VisualTranscription(Revision):
     source: RecordReference
     page: int = Field(ge=1)
     region: tuple[float, float, float, float]
+    render_mode: Literal["crop", "full_page"]
+    dpi: Literal[144, 180, 216]
     transcription: str = Field(min_length=1)
-    verification_status: VerificationStatus = VerificationStatus.REVIEW_REQUIRED
+    verification_status: Literal[VerificationStatus.VISUAL_ONLY] = VerificationStatus.VISUAL_ONLY
+    review_required: Literal[True] = True
+    decision_critical: tuple[Identifier, ...] = ()
+
+    @model_validator(mode="after")
+    def validate_region(self) -> "VisualTranscription":
+        left, top, right, bottom = self.region
+        if min(self.region) < 0 or right <= left or bottom <= top:
+            raise ValueError("visual transcription region must have positive extent")
+        return self
 
 
 class EvidenceBundle(Revision):

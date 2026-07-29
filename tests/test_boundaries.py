@@ -13,7 +13,12 @@ from rob2_kit.application.preparation import (
     TrialFailureReason,
 )
 from rob2_kit.domain.assessment import SQAnswerCategory
-from rob2_kit.domain.evidence import EvidenceBundle, EvidenceClaim, VerificationStatus
+from rob2_kit.domain.evidence import (
+    EvidenceBundle,
+    EvidenceClaim,
+    VerificationStatus,
+    VisualTranscription,
+)
 from rob2_kit.domain.releases import PackKind, PackRelease, PolicyKind, PolicyRelease
 from rob2_kit.domain.results import Comparison, Estimate, Result, ResultSpecRevision
 from tests.fixtures import HASH, dependency, reference, revision_fields
@@ -136,6 +141,28 @@ def test_evidence_claim_rejects_reversed_span() -> None:
             quoted_text_hash=HASH,
             claim_type="claim:randomization",
             verification_status=VerificationStatus.MACHINE_VERIFIED,
+        )
+
+
+def test_visual_transcription_is_permanently_visual_only_and_review_required() -> None:
+    transcription = VisualTranscription(
+        **revision_fields("visual-transcription"),
+        dependencies=(dependency("source", "dependency:source"),),
+        source=reference("source"),
+        page=4,
+        region=(10.0, 20.0, 300.0, 160.0),
+        render_mode="crop",
+        dpi=216,
+        transcription="42 of 51 participants were analysed.",
+        decision_critical=("content:denominator",),
+    )
+
+    assert transcription.verification_status is VerificationStatus.VISUAL_ONLY
+    assert transcription.review_required is True
+    with pytest.raises(ValidationError):
+        VisualTranscription.model_validate(
+            transcription.model_dump()
+            | {"verification_status": VerificationStatus.MACHINE_VERIFIED}
         )
 
 
