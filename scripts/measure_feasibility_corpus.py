@@ -17,6 +17,7 @@ import sqlite3
 import statistics
 import time
 from collections import Counter
+from collections.abc import Sequence
 from pathlib import Path
 from typing import Any
 
@@ -38,7 +39,7 @@ PROBES = {
 }
 
 
-def percentile(values: list[int | float], probability: float) -> float:
+def percentile(values: Sequence[int | float], probability: float) -> float:
     if not values:
         return 0
     ordered = sorted(values)
@@ -52,7 +53,7 @@ def percentile(values: list[int | float], probability: float) -> float:
     )
 
 
-def distribution(values: list[int | float]) -> dict[str, float]:
+def distribution(values: Sequence[int | float]) -> dict[str, float]:
     return {
         "min": float(min(values, default=0)),
         "median": float(statistics.median(values)) if values else 0,
@@ -64,10 +65,11 @@ def distribution(values: list[int | float]) -> dict[str, float]:
 
 
 def trial_label(pdf: Path, corpus_root: Path) -> tuple[str, str]:
-    relative = pdf.relative_to(corpus_root / "pdfs")
-    if relative.parent == Path("."):
-        return pdf.stem, "primary_report"
-    return relative.parts[1], "supporting_source"
+    relative = pdf.relative_to(corpus_root / "sources")
+    return (
+        relative.parts[0],
+        "primary_report" if relative.parts[1] == "primary" else "supporting_source",
+    )
 
 
 def canonical_units(markdown: str, fallback_text: str) -> list[str]:
@@ -93,7 +95,7 @@ def main() -> None:
     args = parser.parse_args()
 
     corpus_root = args.corpus_root.resolve()
-    pdfs = sorted((corpus_root / "pdfs").rglob("*.pdf"))
+    pdfs = sorted((corpus_root / "sources").rglob("*.pdf"))
     liteparse = LiteParse(
         ocr_enabled=False,
         include_complexity=True,
@@ -157,16 +159,15 @@ def main() -> None:
                 if complexity.is_garbled:
                     garbled_pages.append(page.page_num)
                 complexity_reasons.update(complexity.reasons)
-                if complexity.layout.is_complex:
-                    complex_pages.append(page.page_num)
-                if (
-                    complexity.layout.ruled_table_count
-                    or complexity.layout.text_table_run_count
-                ):
-                    table_pages.append(page.page_num)
-                if complexity.layout.figure_count:
-                    figure_pages.append(page.page_num)
-                layout_reasons.update(complexity.layout.reasons)
+                layout = complexity.layout
+                if layout is not None:
+                    if layout.is_complex:
+                        complex_pages.append(page.page_num)
+                    if layout.ruled_table_count or layout.text_table_run_count:
+                        table_pages.append(page.page_num)
+                    if layout.figure_count:
+                        figure_pages.append(page.page_num)
+                    layout_reasons.update(layout.reasons)
 
             for unit in canonical_units(page.markdown, page.text):
                 unit_lengths.append(len(unit))

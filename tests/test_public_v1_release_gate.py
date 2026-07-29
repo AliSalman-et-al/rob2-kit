@@ -141,7 +141,7 @@ version = 1
 [[fixtures]]
 id = "private"
 kind = "born-digital"
-path = "eval/reference/pdfs/private.pdf"
+path = "eval/reference/sources/private.pdf"
 description = "Provisional reference label used as a correctness oracle"
 evidence = "tests/test_gate.py::test_logic"
 

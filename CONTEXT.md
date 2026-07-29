@@ -276,6 +276,14 @@ _Avoid_: Warning, No information
 The policy-derived, ordered view of human actions available after every Trial in scope reaches a Preparation outcome. It may contain repair, verification, acknowledgment, domain-review, and Assessment sign-off actions, but the underlying findings, revisions, dispositions, and sign-offs remain the authoritative records.
 _Avoid_: Final queue, mutable task list, warning list
 
+**Guided review flow**:
+The reviewer-facing traversal of a Review queue that prioritizes required human actions and higher-concern domains while keeping every domain, signaling-question answer, rationale, evidence claim, decision trace, and relevant Visual transcription available for optional inspection. It guides attention without hiding auditable work or replacing the Review policy.
+_Avoid_: Mandatory wizard, exception-only review, opaque approval queue
+
+**Companion workspace**:
+The reopenable browser projection of durable project, preparation, evidence, Assessment, and review state that a supported agent host may display beside its conversation from project start through sign-off. Opening, refreshing, closing, or reconnecting it performs no model inference and does not affect authoritative progress.
+_Avoid_: Agent transcript, live model session, standalone project editor
+
 **Review handoff**:
 The durable transfer from Autonomous preparation to direct human review, independent of whether an agent connection or browser session remains active. It preserves the exact next human action and returns control through a Review receipt.
 _Avoid_: Live agent session, temporary review link

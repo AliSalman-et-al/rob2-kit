@@ -12,6 +12,7 @@ wheels/
 
 # Private local evaluation corpus
 eval/reference/
+eval/runs/
 
 # Local calibration and rendering artifacts
 tmp/

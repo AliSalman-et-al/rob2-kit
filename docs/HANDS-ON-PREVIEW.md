@@ -22,10 +22,11 @@ the host to start it with the repository root as its working directory.
 
 Do not mark the preview gate passed until every row has dated evidence. On the
 owner's machine, use the private `ARASENS` Overall Survival entry in
-`eval/reference/manifest.csv` as the same hands-on fixture Trial and use a fresh
-project copy for each host. Its CSV judgment is a Provisional reference label,
-not a correctness oracle. The private PDFs must not be copied into distributable
-fixtures or committed.
+`eval/reference/catalog/trials.csv` as the same hands-on fixture Trial and use a
+fresh project copy for each host. Materialize it with `eval/workspace.py` as
+described in `eval/README.md`. Its CSV judgment is a Provisional reference
+label, not a correctness oracle. The private PDFs must not be copied into
+distributable fixtures or committed.
 
 | Check | Required evidence |
 |---|---|
