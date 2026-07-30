@@ -14,6 +14,12 @@ class VerificationStatus(StrEnum):
     VISUAL_ONLY = "visual_only"
 
 
+class EvidenceCoverageState(StrEnum):
+    COMPLETE = "complete"
+    COMPLETE_WITH_LIMITATIONS = "complete_with_limitations"
+    INCOMPLETE = "incomplete"
+
+
 class EvidenceCandidate(Revision):
     dependency_roles = {
         "canonical_unit": "dependency:canonical-unit",
@@ -75,11 +81,29 @@ class VisualTranscription(Revision):
 class EvidenceBundle(Revision):
     dependency_roles = {
         "result_spec": "dependency:result-spec",
+        "disposition": "dependency:evidence-disposition",
         "items": "dependency:evidence-item",
     }
     result_spec: RecordReference
+    disposition: RecordReference
     items: tuple[RecordReference, ...]
     frozen_content_hash: ContentHash
+    coverage_state: EvidenceCoverageState = EvidenceCoverageState.COMPLETE
+    coverage_limitations: tuple[str, ...] = ()
+    no_information_basis: bool = False
+    conflicts: tuple[tuple[Identifier, ...], ...] = ()
+
+    @model_validator(mode="after")
+    def validate_audit_metadata(self) -> "EvidenceBundle":
+        item_ids = {item.entity_id for item in self.items}
+        if any(len(conflict) < 2 or not set(conflict) <= item_ids for conflict in self.conflicts):
+            raise ValueError("source conflicts must bind at least two frozen Evidence items")
+        if self.no_information_basis and (
+            self.coverage_state is not EvidenceCoverageState.COMPLETE
+            or self.coverage_limitations
+        ):
+            raise ValueError("no-information basis requires complete, unlimited coverage")
+        return self
 
 
 class EvidenceConsiderationManifest(Revision):

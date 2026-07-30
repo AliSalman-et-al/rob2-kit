@@ -4,11 +4,14 @@ from __future__ import annotations
 
 import json
 from enum import StrEnum
+from pathlib import Path
 from typing import Any
 
+import yaml
 from pydantic import Field
 
-from rob2_kit.domain.revisions import FrozenModel
+from rob2_kit.domain.revisions import FrozenModel, RecordReference
+from rob2_kit.storage.artifacts import ArtifactNotFoundError
 from rob2_kit.storage.ledger import WorkflowEventOutcome, WorkflowLedger
 
 
@@ -53,6 +56,39 @@ class WorkspaceProjection(FrozenModel):
     review_locked: bool
 
 
+class AuditEvidenceItem(FrozenModel):
+    claim_id: str
+    stance: str
+    exact_text: str
+    source_id: str
+    source_artifact_hash: str
+    page: int
+    provenance: str
+    spatial: tuple[float, float, float, float] | None = None
+    source_conflict: bool = False
+    visual_transcription: str | None = None
+    visual_review_required: bool = False
+    visual_current: bool = True
+
+
+class SignalingQuestionAudit(FrozenModel):
+    result_id: str
+    domain_id: str
+    sq_id: str
+    guidance: str
+    answer: str
+    rationale: str
+    matched_rules: tuple[str, ...]
+    judgment: str
+    coverage_state: str
+    coverage_limitations: tuple[str, ...]
+    no_information_basis: bool
+    evidence: tuple[AuditEvidenceItem, ...]
+    selected_evidence_id: str
+    assessment_current: bool
+    view: str = "crop"
+
+
 def project_workspace(
     ledger: WorkflowLedger,
     *,
@@ -67,6 +103,359 @@ def project_workspace(
     )
     if initialization_event is None:
         return None
+    return _project_workspace_from_initialization(
+        ledger,
+        events,
+        initialization_event,
+        connection_state=connection_state,
+        selected_result_id=selected_result_id,
+    )
+
+
+def signaling_question_audit(
+    ledger: WorkflowLedger,
+    *,
+    result_id: str,
+    domain_id: str | None,
+    sq_id: str | None,
+    evidence_id: str | None,
+    assessment_current: bool,
+    assessment: RecordReference | None,
+    view: str = "crop",
+) -> SignalingQuestionAudit | None:
+    """Project one SQ audit from immutable preparation records and canonical units."""
+    if assessment is None:
+        return None
+    events = ledger.events()
+    try:
+        assessment_payload = json.loads(ledger.artifacts.read(assessment.content_hash))
+    except (ValueError, ArtifactNotFoundError):
+        return None
+    answer_references = tuple(assessment_payload.get("answers", ()))
+    answer_events = tuple(
+        event
+        for reference in answer_references
+        if (
+            event := _referenced_event(
+                events, reference, "operation:submit-sq-answers"
+            )
+        )
+        is not None
+    )
+    result_key = result_id.split(":", 1)[-1]
+    answer_event = next(
+        (event for event in answer_events if event.scope == f"preparation:{result_key}"),
+        None,
+    )
+    if answer_event is None:
+        return None
+    scope = answer_event.scope
+    answer_payload = _event_payload(ledger, answer_event)
+    answers = tuple(answer_payload.get("answers", ()))
+    answer = next(
+        (item for item in answers if sq_id is not None and item["question_id"] == sq_id),
+        answers[0] if answers else None,
+    )
+    if answer is None:
+        return None
+    selected_sq = str(answer["question_id"])
+    selected_domain = _domain_for_sq(selected_sq)
+    if domain_id is not None and domain_id != selected_domain:
+        return None
+
+    bundle_event = next(
+        (
+            event
+            for reference in assessment_payload.get("evidence_bundles", ())
+            if (
+                event := _referenced_event(
+                    events, reference, "operation:freeze-evidence-bundle"
+                )
+            )
+            is not None
+            and event.scope == scope
+        ),
+        None,
+    )
+    if bundle_event is None:
+        return None
+    bundle = _event_payload(ledger, bundle_event)
+    disposition_event = _referenced_event(
+        events,
+        bundle.get("disposition"),
+        "operation:submit-evidence-dispositions",
+    )
+    judgment_event = _assessment_judgment(
+        ledger,
+        events,
+        assessment_payload,
+        answer_event,
+        selected_domain,
+    )
+    trace_event = (
+        _referenced_event(
+            events,
+            _event_payload(ledger, judgment_event).get("decision_trace"),
+            "operation:derive-decision-trace",
+        )
+        if judgment_event is not None
+        else None
+    )
+    trace = _event_payload(ledger, trace_event) if trace_event is not None else {}
+    conflicts = {
+        claim_id
+        for conflict in bundle.get("conflicts", ())
+        for claim_id in conflict
+    }
+    transcriptions = _visual_transcriptions(
+        ledger, events, bundle_event, selected_sq
+    )
+    evidence = _audit_evidence(
+        ledger,
+        _event_payload(ledger, disposition_event) if disposition_event is not None else {},
+        bundle,
+        conflicts,
+        transcriptions,
+    )
+    if not evidence:
+        return None
+    selected_evidence = (
+        evidence_id
+        if evidence_id in {item.claim_id for item in evidence}
+        else evidence[0].claim_id
+    )
+    return SignalingQuestionAudit(
+        result_id=result_id,
+        domain_id=selected_domain,
+        sq_id=selected_sq,
+        guidance=_guidance_wording(selected_sq),
+        answer=_humanize(str(answer["answer"])),
+        rationale=str(answer["rationale"]),
+        matched_rules=tuple(str(item) for item in trace.get("matched_rule_ids", ())),
+        judgment=_humanize(str(trace.get("resulting_judgment", "not available"))),
+        coverage_state=_humanize(str(bundle.get("coverage_state", "not recorded"))),
+        coverage_limitations=tuple(
+            str(item) for item in bundle.get("coverage_limitations", ())
+        ),
+        no_information_basis=bool(bundle.get("no_information_basis", False)),
+        evidence=evidence,
+        selected_evidence_id=selected_evidence,
+        assessment_current=assessment_current,
+        view="page" if view == "page" else "crop",
+    )
+
+
+def _audit_evidence(
+    ledger: WorkflowLedger,
+    dispositions_payload: dict[str, Any],
+    bundle: dict[str, Any],
+    conflicts: set[str],
+    transcriptions: tuple[dict[str, Any], ...],
+) -> tuple[AuditEvidenceItem, ...]:
+    stances = {
+        str(claim_id): (
+            "Context"
+            if disposition["kind"] == "accepted_contextual"
+            else _humanize(str(disposition["kind"]).removeprefix("accepted_"))
+        )
+        for disposition in dispositions_payload.get("dispositions", ())
+        if str(disposition.get("kind", "")).startswith("accepted_")
+        for claim_id in disposition.get("claim_ids", ())
+    }
+    items: list[AuditEvidenceItem] = []
+    for reference in bundle.get("items", ()):
+        try:
+            claim = json.loads(ledger.artifacts.read(str(reference["content_hash"])))
+        except (KeyError, ValueError):
+            continue
+        claim_id = str(claim.get("claim_id", claim.get("entity_id", "")))
+        if claim_id not in stances or not claim.get("quoted_text"):
+            continue
+        transcription = next(
+            (
+                item
+                for item in transcriptions
+                if item.get("source_id") == claim.get("source_id")
+                and _visual_page(item) == int(claim.get("page", 0))
+            ),
+            None,
+        )
+        items.append(
+            AuditEvidenceItem(
+                claim_id=claim_id,
+                stance=stances[claim_id],
+                exact_text=str(claim["quoted_text"]),
+                source_id=str(claim["source_id"]),
+                source_artifact_hash=str(claim["source_artifact_hash"]),
+                page=int(claim["page"]),
+                provenance=(
+                    f"{claim['parse_id']} · {claim['source_artifact_hash']} · "
+                    f"span {claim['span_start']}:{claim['span_end']}"
+                ),
+                spatial=claim.get("spatial"),
+                source_conflict=claim_id in conflicts,
+                visual_transcription=(
+                    str(transcription["transcription"]) if transcription else None
+                ),
+                visual_review_required=bool(
+                    transcription and transcription.get("review_required", True)
+                ),
+                visual_current=bool(
+                    transcription is None or transcription.get("_current", False)
+                ),
+            )
+        )
+    return tuple(items)
+
+
+def _visual_transcriptions(
+    ledger: WorkflowLedger,
+    events: tuple[Any, ...],
+    bundle_event: Any,
+    sq_id: str,
+) -> tuple[dict[str, Any], ...]:
+    items = []
+    current = {
+        (revision.entity_id, revision.revision_id)
+        for revision in ledger.current_revisions()
+    }
+    seen: set[tuple[str, int]] = set()
+    bound = {
+        (dependency.revision_id, dependency.content_hash)
+        for dependency in bundle_event.dependencies
+    }
+    for event in reversed(events):
+        if (
+            event.operation != "operation:submit-visual-transcription"
+            or (event.revision_id, event.output_revision_hashes[0]) not in bound
+        ):
+            continue
+        transcription = _event_payload(ledger, event).get("transcription")
+        if not transcription or (
+            transcription.get("sq_id")
+            and transcription["sq_id"] != sq_id
+        ) or (
+            not transcription.get("sq_id")
+            and transcription.get("decision_critical")
+            and sq_id not in transcription["decision_critical"]
+        ):
+            continue
+        key = (str(transcription.get("source_id")), _visual_page(transcription))
+        if key in seen:
+            continue
+        seen.add(key)
+        items.append(
+            {
+                **transcription,
+                "_current": (event.entity_id, event.revision_id) in current,
+            }
+        )
+    return tuple(items)
+
+
+def _visual_page(transcription: dict[str, Any]) -> int:
+    render = transcription.get("render") or {}
+    return int(transcription.get("page", render.get("page", 0)))
+
+
+def _dependency_event(
+    events: tuple[Any, ...], record_event: Any, operation: str
+) -> Any | None:
+    bound = {
+        (dependency.revision_id, dependency.content_hash)
+        for dependency in record_event.dependencies
+    }
+    return next(
+        (
+            event
+            for event in reversed(events)
+            if event.operation == operation
+            and (event.revision_id, event.output_revision_hashes[0]) in bound
+        ),
+        None,
+    )
+
+
+def _assessment_judgment(
+    ledger: WorkflowLedger,
+    events: tuple[Any, ...],
+    assessment: dict[str, Any],
+    answer_event: Any,
+    domain_id: str,
+) -> Any | None:
+    answer_hash = answer_event.output_revision_hashes[0]
+    for reference in assessment.get("judgments", ()):
+        event = _referenced_event(events, reference, "operation:derive-judgment")
+        if event is None:
+            continue
+        payload = _event_payload(ledger, event)
+        if payload.get("domain_id") != domain_id:
+            continue
+        if any(
+            reference.get("revision_id") == answer_event.revision_id
+            and reference.get("content_hash") == answer_hash
+            for reference in payload.get("answer_revisions", ())
+        ):
+            return event
+    return None
+
+
+def _referenced_event(
+    events: tuple[Any, ...], reference: dict[str, Any] | None, operation: str
+) -> Any | None:
+    if not reference:
+        return None
+    return next(
+        (
+            event
+            for event in reversed(events)
+            if event.operation == operation
+            and event.revision_id == reference.get("revision_id")
+            and event.output_revision_hashes[0] == reference.get("content_hash")
+        ),
+        None,
+    )
+
+
+def _event_payload(ledger: WorkflowLedger, event: Any) -> dict[str, Any]:
+    return json.loads(ledger.artifacts.read(event.output_revision_hashes[0]))
+
+
+def _domain_for_sq(sq_id: str) -> str:
+    parts = sq_id.split(":")
+    return f"domain:{parts[1]}" if len(parts) > 2 else "domain:unknown"
+
+
+def _guidance_wording(sq_id: str) -> str:
+    package = Path(__file__).resolve().parents[1]
+    repository = Path(__file__).resolve().parents[3]
+    path = next(
+        candidate
+        for candidate in (
+            package / "packs" / "guidance" / "rob2-parallel-assignment-en-2019.1.yaml",
+            repository / "packs" / "guidance" / "rob2-parallel-assignment-en-2019.1.yaml",
+        )
+        if candidate.is_file()
+    )
+    pack = yaml.safe_load(path.read_text(encoding="utf-8"))
+    return next(
+        (
+            str(item["text"])
+            for item in pack["items"]
+            if item["logic_element_id"] == sq_id
+        ),
+        sq_id,
+    )
+
+
+def _project_workspace_from_initialization(
+    ledger: WorkflowLedger,
+    events: tuple[Any, ...],
+    initialization_event: Any,
+    *,
+    connection_state: str,
+    selected_result_id: str | None,
+) -> WorkspaceProjection:
     payload = json.loads(ledger.artifacts.read(initialization_event.output_revision_hashes[0]))
     initialization = payload["initialization"]
     manifest = initialization["manifest"]
@@ -142,6 +531,10 @@ def project_workspace(
         connection_state=connection_state,
         review_locked=not all_terminal,
     )
+
+
+def _humanize(value: str) -> str:
+    return value.replace("_", " ").capitalize()
 
 
 def _result_card(

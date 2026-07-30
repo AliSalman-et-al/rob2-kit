@@ -6,6 +6,7 @@ from typing import Any
 from pydantic import Field, TypeAdapter
 
 from rob2_kit.domain.assessment import SQAnswerCategory
+from rob2_kit.domain.evidence import EvidenceCoverageState
 from rob2_kit.domain.results import Estimate, Result
 from rob2_kit.domain.revisions import (
     FrozenModel,
@@ -72,6 +73,10 @@ class VisualTranscriptionSubmission(FrozenModel):
 class EvidenceBundleSubmission(FrozenModel):
     items: tuple[RecordReference, ...] = ()
     frozen_content_hash: str = Field(pattern=r"^sha256:[0-9a-f]{64}$")
+    coverage_state: EvidenceCoverageState = EvidenceCoverageState.COMPLETE
+    coverage_limitations: tuple[str, ...] = ()
+    no_information_basis: bool = False
+    conflicts: tuple[tuple[Identifier, ...], ...] = ()
 
 
 class SQAnswerDraft(FrozenModel):

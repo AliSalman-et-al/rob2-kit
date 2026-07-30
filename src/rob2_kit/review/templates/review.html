@@ -141,6 +141,109 @@
       </section>
     </main>
     {% endif %}
+    {% if audit %}
+    <main class="pinned-evidence-desk" aria-labelledby="audit-title">
+      <header class="audit-header">
+        <div>
+          <p class="eyebrow">Pinned Evidence Desk · {{ audit.result_id }} · {{ audit.domain_id }}</p>
+          <h1 id="audit-title">{{ audit.guidance }}</h1>
+        </div>
+        {% if not audit.assessment_current %}
+        <p class="stale" role="alert">
+          Read-only: this visual or Assessment dependency has been superseded.
+        </p>
+        {% endif %}
+      </header>
+      <section class="audit-decision" aria-label="Prepared decision">
+        <div>
+          <p class="answer-label">Prepared answer</p>
+          <h2>{{ audit.answer }}</h2>
+          <p>{{ audit.rationale }}</p>
+        </div>
+        <div>
+          <p class="answer-label">Deterministic Decision trace</p>
+          <p><strong>{{ audit.judgment }}</strong></p>
+          <ol>
+            {% for rule in audit.matched_rules %}<li>{{ rule }}</li>{% endfor %}
+          </ol>
+        </div>
+        <div class="coverage-state">
+          <p class="answer-label">Coverage state</p>
+          <p><strong>{{ audit.coverage_state }}</strong></p>
+          <p>
+            <strong>No-information basis:</strong>
+            {{ "established" if audit.no_information_basis else "not established" }}
+          </p>
+          {% for limitation in audit.coverage_limitations %}
+          <p class="coverage-limitation">{{ limitation }}</p>
+          {% endfor %}
+        </div>
+      </section>
+      <nav class="evidence-set" aria-label="Complete ordered Evidence set">
+        {% for item in audit.evidence %}
+        <a class="evidence-choice stance-{{ item.stance | lower }}"
+           href="/review?result={{ audit.result_id | urlencode }}&amp;domain={{ audit.domain_id | urlencode }}&amp;sq={{ audit.sq_id | urlencode }}&amp;evidence={{ item.claim_id | urlencode }}"
+           {% if item.claim_id == audit.selected_evidence_id %}aria-current="true"{% endif %}>
+          <strong>{{ loop.index }}. {{ item.stance }}</strong>
+          <span>{{ item.source_id }} · page {{ item.page }}</span>
+          {% if item.source_conflict %}<span class="conflict-label">Source conflict</span>{% endif %}
+        </a>
+        {% endfor %}
+      </nav>
+      {% for item in audit.evidence if item.claim_id == audit.selected_evidence_id %}
+      <section class="paired-evidence" aria-label="Selected paired text and visual context">
+        <article class="exact-evidence">
+          <p class="eyebrow">{{ item.stance }} evidence · exact selectable text</p>
+          <p class="locator">{{ item.source_id }} · page {{ item.page }}</p>
+          <blockquote>{{ item.exact_text }}</blockquote>
+          <details open>
+            <summary>Provenance</summary>
+            <p>{{ item.provenance }}</p>
+          </details>
+          {% if item.source_conflict %}
+          <aside class="source-conflict"><strong>Source conflict</strong> — this claim
+            materially conflicts with another preserved Evidence claim.</aside>
+          {% endif %}
+          {% if item.visual_transcription %}
+          <aside class="visual-transcription">
+            <strong>Visual transcription{% if item.visual_review_required %} · review required{% endif %}</strong>
+            <p>{{ item.visual_transcription }}</p>
+            {% if not item.visual_current %}
+            <p class="stale" role="alert">Read-only: this visual dependency has been superseded.</p>
+            {% endif %}
+          </aside>
+          {% endif %}
+        </article>
+        <article class="visual-context view-{{ audit.view }}">
+          <p class="eyebrow">
+            Paired highlighted {{ "full page" if audit.view == "page" else "crop" }}
+            · page {{ item.page }}
+          </p>
+          <div class="bounded-pan" tabindex="0" aria-label="Horizontally pannable evidence page">
+            <div class="source-page">
+              {% if item.spatial %}
+              <img alt="Secured source {{ 'page' if audit.view == 'page' else 'crop' }} with bound evidence highlighted"
+                   src="/review/evidence-images/{{ item.source_id | urlencode }}?artifact_hash={{ item.source_artifact_hash | urlencode }}&amp;page={{ item.page }}&amp;left={{ item.spatial[0] }}&amp;top={{ item.spatial[1] }}&amp;right={{ item.spatial[2] }}&amp;bottom={{ item.spatial[3] }}&amp;mode={{ audit.view }}">
+              {% else %}
+              <img alt="Secured full source page with page-level Evidence binding"
+                   src="/review/evidence-images/{{ item.source_id | urlencode }}?artifact_hash={{ item.source_artifact_hash | urlencode }}&amp;page={{ item.page }}&amp;mode=page">
+              {% endif %}
+            </div>
+          </div>
+          <mark class="crop-transcript">{{ item.exact_text }}</mark>
+          <p class="crop-binding">
+            Crop {{ item.spatial or "full canonical unit" }} · bound to {{ item.claim_id }}
+          </p>
+          {% if audit.view == "crop" %}
+          <a href="/review?result={{ audit.result_id | urlencode }}&amp;domain={{ audit.domain_id | urlencode }}&amp;sq={{ audit.sq_id | urlencode }}&amp;evidence={{ item.claim_id | urlencode }}&amp;view=page">Crop to full page</a>
+          {% else %}
+          <a href="/review?result={{ audit.result_id | urlencode }}&amp;domain={{ audit.domain_id | urlencode }}&amp;sq={{ audit.sq_id | urlencode }}&amp;evidence={{ item.claim_id | urlencode }}&amp;view=crop">Full page to bound crop</a>
+          {% endif %}
+        </article>
+      </section>
+      {% endfor %}
+    </main>
+    {% endif %}
     {% if review and (not workspace or not workspace.review_locked) %}
     <main class="review-layout">
       <aside class="position-pane">

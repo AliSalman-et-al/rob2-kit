@@ -1,16 +1,25 @@
+import hashlib
 import json
 from datetime import timedelta
 from html.parser import HTMLParser
 from pathlib import Path
 
+import pymupdf
 import yaml
 from fastapi.testclient import TestClient
 
 from rob2_kit.application.gateway import ApplicationGateway
+from rob2_kit.domain.revisions import RecordReference
+from rob2_kit.evidence.search import (
+    CanonicalEvidenceUnit,
+    CanonicalUnitKind,
+    EvidenceSearchIndex,
+)
 from rob2_kit.review.service import ReviewService
 from rob2_kit.review.web import ReviewWebConfig, create_review_app
 from rob2_kit.storage.artifacts import ArtifactStore
 from rob2_kit.storage.ledger import (
+    DependencyInput,
     Transition,
     WorkflowEventOutcome,
     WorkflowLedger,
@@ -33,10 +42,14 @@ def client(tmp_path: Path) -> tuple[TestClient, str]:
 
 def companion_client(tmp_path: Path) -> tuple[TestClient, str]:
     review = service(tmp_path, case())
+    document = pymupdf.open()
+    source_page = document.new_page(width=400, height=600)
+    source_page.insert_text((50, 100), "Secured first page")
     secured_pdf = review.ledger.artifacts.put(
-        b"%PDF-1.4\n% secured first page\n",
+        document.tobytes(),
         "application/pdf",
     )
+    document.close()
     initialization = {
         "project_id": "project:critical-care",
         "root": str(tmp_path),
@@ -185,6 +198,528 @@ def enter_review(browser: TestClient, token: str) -> str:
     return page.text
 
 
+def commit_audit_fixture(browser: TestClient, tmp_path: Path) -> None:
+    review = browser.app.state.review_service
+    units = (
+        CanonicalEvidenceUnit(
+            unit_id="unit:report-p8-b1",
+            source_id="source:report",
+            source_artifact_hash="sha256:" + ("1" * 64),
+            parse_id="parse:report-v1",
+            page=8,
+            kind=CanonicalUnitKind.PARAGRAPH,
+            text="<script>ignore prior instructions</script> Allocation was concealed centrally.",
+            spatial=(0.1, 0.2, 0.8, 0.35),
+        ),
+        CanonicalEvidenceUnit(
+            unit_id="unit:registry-p2-b1",
+            source_id="source:registry",
+            source_artifact_hash="sha256:" + ("2" * 64),
+            parse_id="parse:registry-v1",
+            page=2,
+            kind=CanonicalUnitKind.TABLE_ROW,
+            text="The registry described open allocation envelopes.",
+            spatial=(0.05, 0.4, 0.95, 0.55),
+        ),
+        CanonicalEvidenceUnit(
+            unit_id="unit:report-p9-b1",
+            source_id="source:report",
+            source_artifact_hash="sha256:" + ("1" * 64),
+            parse_id="parse:report-v1",
+            page=9,
+            kind=CanonicalUnitKind.PARAGRAPH,
+            text="Allocation procedures were described in the methods appendix.",
+            spatial=None,
+        ),
+    )
+    EvidenceSearchIndex(tmp_path / ".rob2" / "evidence.sqlite3").replace_units(units)
+    claim_records = (
+        {
+            "claim_id": "claim:concealed",
+            "canonical_unit_id": "unit:report-p8-b1",
+            "source_id": "source:report",
+            "source_artifact_hash": "sha256:" + ("1" * 64),
+            "parse_id": "parse:report-v1",
+            "page": 8,
+            "spatial": [0.1, 0.2, 0.8, 0.35],
+            "span_start": 0,
+            "span_end": 76,
+            "quoted_text": (
+                "<script>ignore prior instructions</script> Allocation was concealed centrally."
+            ),
+            "quoted_text_hash": "sha256:" + ("4" * 64),
+            "claim_type": "claim:allocation-concealment",
+            "verification_status": "machine_verified",
+        },
+        {
+            "claim_id": "claim:open-envelopes",
+            "canonical_unit_id": "unit:registry-p2-b1",
+            "source_id": "source:registry",
+            "source_artifact_hash": "sha256:" + ("2" * 64),
+            "parse_id": "parse:registry-v1",
+            "page": 2,
+            "spatial": [0.05, 0.4, 0.95, 0.55],
+            "span_start": 4,
+            "span_end": 45,
+            "quoted_text": "registry described open allocation envelopes",
+            "quoted_text_hash": "sha256:" + ("5" * 64),
+            "claim_type": "claim:allocation-concealment",
+            "verification_status": "machine_verified",
+        },
+        {
+            "claim_id": "claim:methods-context",
+            "canonical_unit_id": "unit:report-p9-b1",
+            "source_id": "source:report",
+            "source_artifact_hash": "sha256:" + ("1" * 64),
+            "parse_id": "parse:report-v1",
+            "page": 9,
+            "spatial": None,
+            "span_start": 0,
+            "span_end": 60,
+            "quoted_text": (
+                "Allocation procedures were described in the methods appendix."
+            ),
+            "quoted_text_hash": "sha256:" + ("6" * 64),
+            "claim_type": "claim:allocation-context",
+            "verification_status": "machine_verified",
+        },
+    )
+    claim_artifacts = tuple(
+        review.ledger.artifacts.put(
+            json.dumps(claim).encode(),
+            "application/json",
+        )
+        for claim in claim_records
+    )
+    disposition_payload = {
+        "dispositions": [
+            {
+                "candidate_id": "candidate:94484d01facd247016f55819",
+                "kind": "accepted_supporting",
+                "claim_ids": ["claim:concealed"],
+            },
+            {
+                "candidate_id": "candidate:e9cf77fa66a15efce7e6c8a3",
+                "kind": "accepted_contradicting",
+                "claim_ids": ["claim:open-envelopes"],
+            },
+            {
+                "candidate_id": "candidate:90801117443316582573310b",
+                "kind": "accepted_contextual",
+                "claim_ids": ["claim:methods-context"],
+            },
+        ]
+    }
+    disposition_artifact = review.ledger.artifacts.put(
+        json.dumps(disposition_payload).encode(),
+        "application/json",
+    )
+    payloads = (
+        (
+            "operation:submit-evidence-dispositions",
+            disposition_payload,
+        ),
+        (
+            "operation:submit-visual-transcription",
+            {
+                "transcription": {
+                    "candidate_id": "visual:concealment",
+                    "source_id": "source:registry",
+                    "page": 2,
+                    "region": [0.05, 0.4, 0.95, 0.55],
+                    "render_mode": "crop",
+                    "dpi": 180,
+                    "transcription": "Open allocation envelopes",
+                    "verification_status": "visual_only",
+                    "review_required": True,
+                    "decision_critical": ["sq:randomization:concealment"],
+                }
+            },
+        ),
+        (
+            "operation:freeze-evidence-bundle",
+            {
+                "entity_id": "bundle:ready",
+                "revision_id": "revision:bundle-ready",
+                "disposition": {
+                    "entity_id": "audit-record:0",
+                    "revision_id": "revision:audit-0",
+                    "content_hash": disposition_artifact.content_hash,
+                },
+                "items": [
+                    {
+                        "entity_id": claim["claim_id"],
+                        "revision_id": f"revision:{claim['claim_id'].removeprefix('claim:')}",
+                        "content_hash": artifact.content_hash,
+                    }
+                    for claim, artifact in zip(
+                        claim_records, claim_artifacts, strict=True
+                    )
+                ],
+                "frozen_content_hash": "sha256:" + ("3" * 64),
+                "coverage_state": "complete_with_limitations",
+                "coverage_limitations": ["Supplement pages 10–12 were unreadable."],
+                "no_information_basis": False,
+                "conflicts": [["claim:concealed", "claim:open-envelopes"]],
+            },
+        ),
+        (
+            "operation:submit-sq-answers",
+            {
+                "answers": [
+                    {
+                        "question_id": "sq:randomization:concealment",
+                        "answer": "probably_yes",
+                        "rationale": (
+                            "The report states central concealment, while the registry conflicts."
+                        ),
+                    }
+                ]
+            },
+        ),
+        (
+            "operation:derive-decision-trace",
+            {
+                "entity_id": "decision-trace:ready-randomization",
+                "active_question_ids": ["sq:randomization:concealment"],
+                "inactive_question_ids": [],
+                "matched_rule_ids": ["rule:randomization-some-concerns"],
+                "resulting_judgment": "some_concerns",
+            },
+        ),
+    )
+    for index, (operation, payload) in enumerate(payloads):
+        dependencies = tuple(
+            DependencyInput(
+                entity_id=event.entity_id,
+                revision_id=event.revision_id,
+                role="dependency:preparation-state",
+                content_hash=event.output_revision_hashes[0],
+            )
+            for event in review.ledger.events()
+            if event.scope == "preparation:ready"
+        )
+        review.ledger.commit(
+            Transition(
+                scope="preparation:ready",
+                operation=operation,
+                operation_key=f"idempotency:audit-{index}",
+                actor=reviewer(),
+                observed_at=NOW,
+                entity_id=f"audit-record:{index}",
+                revision_id=f"revision:audit-{index}",
+                artifact=json.dumps(payload).encode(),
+                artifact_media_type="application/json",
+                dependencies=dependencies,
+                expected_dependency_fingerprint=dependency_fingerprint(dependencies),
+                outcome=WorkflowEventOutcome.COMPLETED,
+            ),
+            review.lease,
+            now=NOW,
+        )
+    answer_event = next(
+        event
+        for event in review.ledger.events()
+        if event.operation == "operation:submit-sq-answers"
+    )
+    trace_event = next(
+        event
+        for event in review.ledger.events()
+        if event.operation == "operation:derive-decision-trace"
+    )
+    judgment_payload = {
+        "entity_id": "judgment:ready-randomization",
+        "domain_id": "domain:randomization",
+        "judgment": "some_concerns",
+        "answer_revisions": [
+            {
+                "entity_id": answer_event.entity_id,
+                "revision_id": answer_event.revision_id,
+                "content_hash": answer_event.output_revision_hashes[0],
+            }
+        ],
+        "decision_trace": {
+            "entity_id": trace_event.entity_id,
+            "revision_id": trace_event.revision_id,
+            "content_hash": trace_event.output_revision_hashes[0],
+        },
+    }
+    dependencies = tuple(
+        DependencyInput(
+            entity_id=event.entity_id,
+            revision_id=event.revision_id,
+            role="dependency:assessment-state",
+            content_hash=event.output_revision_hashes[0],
+        )
+        for event in review.ledger.events()
+        if event.scope == "preparation:ready"
+    )
+    review.ledger.commit(
+        Transition(
+            scope="preparation:ready",
+            operation="operation:derive-judgment",
+            operation_key="idempotency:audit-judgment",
+            actor=reviewer(),
+            observed_at=NOW,
+            entity_id="audit-record:judgment",
+            revision_id="revision:audit-judgment",
+            artifact=json.dumps(judgment_payload).encode(),
+            artifact_media_type="application/json",
+            dependencies=dependencies,
+            expected_dependency_fingerprint=dependency_fingerprint(dependencies),
+            outcome=WorkflowEventOutcome.COMPLETED,
+        ),
+        review.lease,
+        now=NOW,
+    )
+    bundle_event = next(
+        event
+        for event in review.ledger.events()
+        if event.operation == "operation:freeze-evidence-bundle"
+    )
+    judgment_event = next(
+        event
+        for event in review.ledger.events()
+        if event.operation == "operation:derive-judgment"
+    )
+    assessment_payload = {
+        "entity_id": "assessment:ready",
+        "revision_id": "revision:assessment-ready",
+        "evidence_bundles": [
+            {
+                "entity_id": bundle_event.entity_id,
+                "revision_id": bundle_event.revision_id,
+                "content_hash": bundle_event.output_revision_hashes[0],
+            }
+        ],
+        "answers": [
+            {
+                "entity_id": answer_event.entity_id,
+                "revision_id": answer_event.revision_id,
+                "content_hash": answer_event.output_revision_hashes[0],
+            }
+        ],
+        "judgments": [
+            {
+                "entity_id": judgment_event.entity_id,
+                "revision_id": judgment_event.revision_id,
+                "content_hash": judgment_event.output_revision_hashes[0],
+            }
+        ],
+    }
+    dependencies = tuple(
+        DependencyInput(
+            entity_id=event.entity_id,
+            revision_id=event.revision_id,
+            role="dependency:assessment-input",
+            content_hash=event.output_revision_hashes[0],
+        )
+        for event in (bundle_event, answer_event, judgment_event)
+    )
+    committed_assessment = review.ledger.commit(
+        Transition(
+            scope="preparation:ready",
+            operation="operation:derive-assessment-record",
+            operation_key="idempotency:audit-assessment",
+            actor=reviewer(),
+            observed_at=NOW,
+            entity_id="assessment:ready",
+            revision_id="revision:assessment-ready",
+            artifact=json.dumps(assessment_payload).encode(),
+            artifact_media_type="application/json",
+            dependencies=dependencies,
+            expected_dependency_fingerprint=dependency_fingerprint(dependencies),
+            outcome=WorkflowEventOutcome.COMPLETED,
+        ),
+        review.lease,
+        now=NOW,
+    )
+    assessment_reference = RecordReference(
+        entity_id="assessment:ready",
+        revision_id="revision:assessment-ready",
+        content_hash=committed_assessment.artifact_hash,
+    )
+    review.review_case = review.review_case.model_copy(
+        update={
+            "assessment": assessment_reference,
+            "assessment_revision_id": assessment_reference.revision_id,
+            "assessment_content_hash": assessment_reference.content_hash,
+        }
+    )
+
+
+def test_active_sq_audit_coordinates_answer_trace_and_complete_evidence(
+    tmp_path: Path,
+) -> None:
+    browser, token = client(tmp_path)
+    commit_audit_fixture(browser, tmp_path)
+    enter_review(browser, token)
+
+    page = browser.get(
+        "/review?result=result:ready&domain=domain:randomization"
+        "&sq=sq:randomization:concealment"
+        "&evidence=claim:open-envelopes"
+    )
+
+    assert page.status_code == 200
+    assert "Was the allocation sequence concealed" in page.text
+    assert "Probably yes" in page.text
+    assert "The report states central concealment" in page.text
+    assert "rule:randomization-some-concerns" in page.text
+    assert "Some concerns" in page.text
+    assert page.text.count('class="evidence-choice') == 3
+    assert "Supporting" in page.text
+    assert "Contradicting" in page.text
+    assert "Context" in page.text
+    assert "registry described open allocation envelopes" in page.text
+    assert "source:registry · page 2" in page.text
+    assert "parse:registry-v1" in page.text
+    assert "Supplement pages 10–12 were unreadable." in page.text
+    assert "Source conflict" in page.text
+    assert "Visual transcription" in page.text
+    assert 'class="bounded-pan"' in page.text
+    assert 'class="source-page"' in page.text
+    assert (
+        'src="/review/evidence-images/source%3Aregistry?artifact_hash=sha256%3A'
+        + ("2" * 64)
+        + "&amp;page=2"
+        "&amp;left=0.05&amp;top=0.4&amp;right=0.95&amp;bottom=0.55&amp;mode=crop"
+    ) in page.text
+    assert "view=page" in page.text
+    assert (
+        "result=result%3Aready&amp;domain=domain%3Arandomization"
+        "&amp;sq=sq%3Arandomization%3Aconcealment"
+    ) in page.text
+    hostile = browser.get(
+        "/review?result=result:ready&domain=domain:randomization"
+        "&sq=sq:randomization:concealment&evidence=claim:concealed"
+    ).text
+    assert "&lt;script&gt;ignore prior instructions&lt;/script&gt;" in hostile
+    assert "<script>ignore prior instructions</script>" not in hostile
+
+
+def test_stale_assessment_keeps_bound_audit_visible_but_read_only(tmp_path: Path) -> None:
+    browser, token = client(tmp_path)
+    commit_audit_fixture(browser, tmp_path)
+    review = browser.app.state.review_service
+    review.ledger.commit(
+        Transition(
+            scope="assessment:replacement",
+            operation="operation:derive-assessment-record",
+            operation_key="idempotency:replacement-assessment",
+            actor=reviewer(),
+            observed_at=NOW,
+            entity_id=review.review_case.assessment.entity_id,
+            revision_id="revision:assessment-2",
+            supersedes_revision_id=review.review_case.assessment.revision_id,
+            artifact=b'{"status":"superseding"}',
+            artifact_media_type="application/json",
+            dependencies=(),
+            expected_dependency_fingerprint=dependency_fingerprint(()),
+            outcome=WorkflowEventOutcome.COMPLETED,
+        ),
+        review.lease,
+        now=NOW,
+    )
+    enter_review(browser, token)
+
+    page = browser.get(
+        "/review?result=result:ready&domain=domain:randomization"
+        "&sq=sq:randomization:concealment&evidence=claim:concealed"
+    ).text
+
+    assert "Read-only: this visual or Assessment dependency has been superseded." in page
+    assert "Allocation was concealed centrally." in page
+
+
+def test_full_page_round_trip_preserves_result_domain_sq_and_claim(tmp_path: Path) -> None:
+    browser, token = client(tmp_path)
+    commit_audit_fixture(browser, tmp_path)
+    enter_review(browser, token)
+
+    page = browser.get(
+        "/review?result=result:ready&domain=domain:randomization"
+        "&sq=sq:randomization:concealment&evidence=claim:open-envelopes&view=page"
+    ).text
+
+    assert "Paired highlighted full page" in page
+    assert (
+        "result=result%3Aready&amp;domain=domain%3Arandomization"
+        "&amp;sq=sq%3Arandomization%3Aconcealment"
+        "&amp;evidence=claim%3Aopen-envelopes&amp;view=crop"
+    ) in page
+
+
+def test_non_spatial_claim_uses_hash_bound_full_page_visual(tmp_path: Path) -> None:
+    browser, token = client(tmp_path)
+    commit_audit_fixture(browser, tmp_path)
+    enter_review(browser, token)
+
+    page = browser.get(
+        "/review?result=result:ready&domain=domain:randomization"
+        "&sq=sq:randomization:concealment&evidence=claim:methods-context"
+    ).text
+
+    assert "Context" in page
+    assert "Secured full source page with page-level Evidence binding" in page
+    assert (
+        "artifact_hash=sha256%3A"
+        + ("1" * 64)
+        + "&amp;page=9&amp;mode=page"
+    ) in page
+
+
+def test_superseded_visual_transcription_is_marked_read_only(tmp_path: Path) -> None:
+    browser, token = client(tmp_path)
+    commit_audit_fixture(browser, tmp_path)
+    review = browser.app.state.review_service
+    review.ledger.commit(
+        Transition(
+            scope="preparation:ready",
+            operation="operation:invalidate-visual-transcription",
+            operation_key="idempotency:invalidate-audit-visual",
+            actor=reviewer(),
+            observed_at=NOW,
+            entity_id="audit-record:1",
+            revision_id="revision:audit-visual-superseded",
+            supersedes_revision_id="revision:audit-1",
+            artifact=b'{"status":"superseded"}',
+            artifact_media_type="application/json",
+            dependencies=(),
+            expected_dependency_fingerprint=dependency_fingerprint(()),
+            outcome=WorkflowEventOutcome.COMPLETED,
+        ),
+        review.lease,
+        now=NOW,
+    )
+    enter_review(browser, token)
+
+    page = browser.get(
+        "/review?result=result:ready&domain=domain:randomization"
+        "&sq=sq:randomization:concealment&evidence=claim:open-envelopes"
+    ).text
+
+    assert "Read-only: this visual dependency has been superseded." in page
+
+
+def test_mismatched_result_or_domain_never_relabels_an_audit(tmp_path: Path) -> None:
+    browser, token = client(tmp_path)
+    commit_audit_fixture(browser, tmp_path)
+    enter_review(browser, token)
+
+    wrong_result = browser.get(
+        "/review?result=result:other&domain=domain:randomization"
+        "&sq=sq:randomization:concealment"
+    ).text
+    wrong_domain = browser.get(
+        "/review?result=result:ready&domain=domain:missing"
+        "&sq=sq:randomization:concealment"
+    ).text
+
+    assert "Pinned Evidence Desk" not in wrong_result
+    assert "Pinned Evidence Desk" not in wrong_domain
+
+
 def csrf_from(page: str) -> str:
     marker = 'name="csrf_token" value="'
     return page.split(marker, 1)[1].split('"', 1)[0]
@@ -317,7 +852,33 @@ def test_ready_workspace_shows_exact_result_sources_and_copyable_prompt(
     preview = browser.get("/review/sources/source:ready-primary")
     assert preview.status_code == 200
     assert preview.headers["content-type"] == "application/pdf"
-    assert preview.content.startswith(b"%PDF-1.4")
+    assert preview.content.startswith(b"%PDF-")
+    artifact_hash = f"sha256:{hashlib.sha256(preview.content).hexdigest()}"
+    crop = browser.get(
+        "/review/evidence-images/source:ready-primary"
+        f"?artifact_hash={artifact_hash}"
+        "&page=1&left=0.1&top=0.1&right=0.8&bottom=0.3&mode=crop"
+    )
+    full_page = browser.get(
+        "/review/evidence-images/source:ready-primary"
+        f"?artifact_hash={artifact_hash}"
+        "&page=1&left=0.1&top=0.1&right=0.8&bottom=0.3&mode=page"
+    )
+    page_fallback = browser.get(
+        "/review/evidence-images/source:ready-primary"
+        f"?artifact_hash={artifact_hash}&page=1&mode=page"
+    )
+    assert crop.status_code == full_page.status_code == page_fallback.status_code == 200
+    assert crop.headers["content-type"] == "image/png"
+    assert crop.content.startswith(b"\x89PNG\r\n\x1a\n")
+    assert len(crop.content) < len(full_page.content)
+    stale = browser.get(
+        "/review/evidence-images/source:ready-primary"
+        "?artifact_hash=sha256:"
+        + ("0" * 64)
+        + "&page=1&left=0.1&top=0.1&right=0.8&bottom=0.3"
+    )
+    assert stale.status_code == 409
 
 
 def test_real_initialized_project_shows_every_declared_exact_result_in_ready(

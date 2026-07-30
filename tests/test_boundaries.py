@@ -69,9 +69,11 @@ def test_evidence_bundle_round_trips() -> None:
         **revision_fields("bundle"),
         dependencies=(
             dependency("result-spec", "dependency:result-spec"),
+            dependency("disposition", "dependency:evidence-disposition"),
             dependency("claim", "dependency:evidence-item"),
         ),
         result_spec=reference("result-spec"),
+        disposition=reference("disposition"),
         items=(reference("claim"),),
         frozen_content_hash=HASH,
     )

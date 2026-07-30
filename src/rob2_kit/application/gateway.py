@@ -1136,10 +1136,19 @@ def _normalize_submission(
         result_key = (expected_result_id or trial_id).split(":", 1)[1]
         expected = f"bundle:{result_key}"
         result_spec = _result_spec_reference(ledger, preparation_scope)
+        disposition = _reference_for_operation(
+            ledger,
+            preparation_scope,
+            "operation:submit-evidence-dispositions",
+        )
         dependencies = (
             Dependency(
                 **result_spec.model_dump(),
                 role="dependency:result-spec",
+            ),
+            Dependency(
+                **disposition.model_dump(),
+                role="dependency:evidence-disposition",
             ),
             *(
                 Dependency(
@@ -1157,10 +1166,15 @@ def _normalize_submission(
             observed_at=ledger.events()[0].observed_at,
             dependencies=dependencies,
             result_spec=result_spec,
+            disposition=disposition,
             items=tuple(
                 RecordReference.model_validate(item) for item in submitted["items"]
             ),
             frozen_content_hash=submitted["frozen_content_hash"],
+            coverage_state=submitted["coverage_state"],
+            coverage_limitations=tuple(submitted["coverage_limitations"]),
+            no_information_basis=submitted["no_information_basis"],
+            conflicts=tuple(tuple(item) for item in submitted["conflicts"]),
         )
         submitted = bundle.model_dump(mode="json")
     elif tool_name == "submit_sq_answers":

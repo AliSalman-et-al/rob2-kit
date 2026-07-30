@@ -2,15 +2,19 @@
 
 from __future__ import annotations
 
+import hashlib
+import io
 import secrets
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from urllib.parse import parse_qs
 
+import pymupdf
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse, RedirectResponse, Response
 from fastapi.staticfiles import StaticFiles
 from jinja2 import Environment, PackageLoader, select_autoescape
+from PIL import Image, ImageDraw
 from pydantic import BaseModel, ConfigDict
 
 from rob2_kit.domain.revisions import Actor, ActorKind, RecordReference
@@ -22,7 +26,11 @@ from rob2_kit.review.service import (
     SignOffBlockedError,
     StaleReviewError,
 )
-from rob2_kit.review.workspace import project_workspace, secured_source_pdf
+from rob2_kit.review.workspace import (
+    project_workspace,
+    secured_source_pdf,
+    signaling_question_audit,
+)
 from rob2_kit.storage.ledger import WorkflowLedger
 
 SESSION_COOKIE = "rob2_review_session"
@@ -102,6 +110,10 @@ def create_review_app(
         request: Request,
         token: str | None = None,
         result: str | None = None,
+        domain: str | None = None,
+        sq: str | None = None,
+        evidence: str | None = None,
+        view: str = "crop",
     ):
         if token is not None:
             if not secrets.compare_digest(token, app.state.bootstrap_token):
@@ -137,10 +149,35 @@ def create_review_app(
             connection_state=connection_state,
             selected_result_id=result,
         )
+        selected_result = (
+            result
+            or (workspace.selected_result_id if workspace is not None else None)
+            or (
+                review_service.review_case.result_label
+                if review_service is not None
+                else "result:unknown"
+            )
+        )
+        stale = review_service.is_stale() if review_service is not None else False
+        audit = signaling_question_audit(
+            workspace_ledger,
+            result_id=selected_result,
+            domain_id=domain,
+            sq_id=sq,
+            evidence_id=evidence,
+            assessment_current=not stale,
+            assessment=(
+                review_service.review_case.assessment
+                if review_service is not None
+                else None
+            ),
+            view=view,
+        )
         template = environment.get_template("review.html")
         return HTMLResponse(
             template.render(
                 workspace=workspace,
+                audit=audit,
                 review=review_service.review_case if review_service is not None else None,
                 queue=review_service.queue() if review_service is not None else (),
                 csrf_token=session.csrf_token,
@@ -151,7 +188,7 @@ def create_review_app(
                     else datetime.now(UTC)
                 ),
                 reviewer=config.reviewer,
-                stale=review_service.is_stale() if review_service is not None else False,
+                stale=stale,
             )
         )
 
@@ -212,6 +249,49 @@ def create_review_app(
             },
         )
 
+    @app.get("/review/evidence-images/{source_id:path}")
+    async def evidence_image(
+        request: Request,
+        source_id: str,
+        artifact_hash: str,
+        page: int,
+        left: float | None = None,
+        top: float | None = None,
+        right: float | None = None,
+        bottom: float | None = None,
+        mode: str = "crop",
+    ):
+        if _authenticated_session(request, app.state.sessions) is None:
+            return HTMLResponse("Review session expired", status_code=401)
+        source = secured_source_pdf(workspace_ledger, source_id)
+        if source is None:
+            return HTMLResponse("Secured PDF source not found", status_code=404)
+        actual_hash = f"sha256:{hashlib.sha256(source).hexdigest()}"
+        if not secrets.compare_digest(actual_hash, artifact_hash):
+            return HTMLResponse("Evidence source revision is stale", status_code=409)
+        spatial = (
+            (left, top, right, bottom)
+            if left is not None
+            and top is not None
+            and right is not None
+            and bottom is not None
+            else None
+        )
+        try:
+            rendered = _render_evidence_image(
+                source,
+                page=page,
+                spatial=spatial,
+                crop=mode != "page" and spatial is not None,
+            )
+        except ValueError as error:
+            return HTMLResponse(f"Invalid evidence image request: {error}", status_code=422)
+        return Response(
+            rendered,
+            media_type="image/png",
+            headers={"Content-Disposition": "inline"},
+        )
+
     return app, app.state.bootstrap_token
 
 
@@ -231,3 +311,66 @@ async def _urlencoded_form(request: Request) -> dict[str, str]:
         return {}
     parsed = parse_qs((await request.body()).decode("utf-8"), keep_blank_values=True)
     return {key: values[-1] for key, values in parsed.items()}
+
+
+def _render_evidence_image(
+    source: bytes,
+    *,
+    page: int,
+    spatial: tuple[float, float, float, float] | None,
+    crop: bool,
+    dpi: int = 144,
+) -> bytes:
+    """Render one immutable PDF page/crop and burn in its bound evidence outline."""
+    if page < 1:
+        raise ValueError("page must be positive")
+    if spatial is not None:
+        left, top, right, bottom = spatial
+        if min(spatial) < 0 or right <= left or bottom <= top:
+            raise ValueError("spatial extent must be positive")
+    try:
+        document = pymupdf.open(stream=source, filetype="pdf")
+    except Exception as error:
+        raise ValueError("source is not a readable PDF") from error
+    with document:
+        if page > document.page_count:
+            raise ValueError("page is outside the secured source")
+        pdf_page = document[page - 1]
+        page_rect = pdf_page.rect
+        if spatial is None:
+            region = page_rect
+        elif max(spatial) <= 1:
+            region = pymupdf.Rect(
+                page_rect.x0 + left * page_rect.width,
+                page_rect.y0 + top * page_rect.height,
+                page_rect.x0 + right * page_rect.width,
+                page_rect.y0 + bottom * page_rect.height,
+            )
+        else:
+            region = pymupdf.Rect(left, top, right, bottom)
+        region &= page_rect
+        if region.is_empty:
+            raise ValueError("spatial extent does not intersect the page")
+        pixmap = pdf_page.get_pixmap(
+            dpi=dpi,
+            clip=region if crop else page_rect,
+            alpha=False,
+            annots=True,
+        )
+        image = Image.open(io.BytesIO(pixmap.tobytes("png"))).convert("RGB")
+        draw = ImageDraw.Draw(image)
+        if crop:
+            outline = (2, 2, image.width - 3, image.height - 3)
+        else:
+            scale_x = image.width / page_rect.width
+            scale_y = image.height / page_rect.height
+            outline = (
+                round((region.x0 - page_rect.x0) * scale_x),
+                round((region.y0 - page_rect.y0) * scale_y),
+                round((region.x1 - page_rect.x0) * scale_x),
+                round((region.y1 - page_rect.y0) * scale_y),
+            )
+        draw.rectangle(outline, outline="#d18400", width=max(3, dpi // 36))
+        output = io.BytesIO()
+        image.save(output, format="PNG")
+        return output.getvalue()

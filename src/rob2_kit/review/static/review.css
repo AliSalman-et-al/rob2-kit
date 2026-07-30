@@ -312,3 +312,146 @@ summary:focus-visible {
     width: 100%;
   }
 }
+
+.pinned-evidence-desk {
+  background: #eef1ef;
+  border-block: 1px solid #c6cfcc;
+  padding: 2rem;
+}
+
+.audit-header,
+.audit-decision,
+.evidence-set,
+.paired-evidence {
+  margin-inline: auto;
+  max-width: 88rem;
+}
+
+.audit-header {
+  align-items: start;
+  display: flex;
+  gap: 2rem;
+  justify-content: space-between;
+}
+
+.audit-decision {
+  display: grid;
+  gap: 1px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-block: 1rem;
+  overflow: hidden;
+  border: 1px solid #c6cfcc;
+  border-radius: 0.5rem;
+}
+
+.audit-decision > div {
+  background: white;
+  padding: 1rem;
+}
+
+.coverage-limitation,
+.source-conflict,
+.visual-transcription {
+  border-left: 0.25rem solid #8a5a00;
+  padding: 0.75rem;
+}
+
+.evidence-set {
+  display: grid;
+  gap: 0.5rem;
+  grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+}
+
+.evidence-choice {
+  background: white;
+  border: 1px solid #c6cfcc;
+  border-left: 0.3rem solid #617b9b;
+  display: grid;
+  padding: 0.8rem;
+  text-decoration: none;
+}
+
+.evidence-choice[aria-current="true"] {
+  box-shadow: inset 0 -0.2rem #173f38;
+}
+
+.stance-supporting {
+  border-left-color: #17695b;
+}
+
+.stance-contradicting,
+.source-conflict {
+  border-left-color: #a5453b;
+}
+
+.conflict-label {
+  color: #8b3029;
+  font-weight: 700;
+}
+
+.paired-evidence {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: minmax(18rem, 0.9fr) minmax(0, 1.1fr);
+  margin-top: 1rem;
+}
+
+.paired-evidence > article {
+  background: white;
+  border: 1px solid #c6cfcc;
+  min-width: 0;
+  padding: 1rem;
+}
+
+.bounded-pan {
+  background: #cbd3d4;
+  max-width: 100%;
+  overflow-x: auto;
+  padding: 1.5rem;
+}
+
+.source-page {
+  background: #fffefa;
+  box-shadow: 0 0.8rem 2rem #10262c35;
+  min-height: 16rem;
+  min-width: 42rem;
+  position: relative;
+}
+
+.source-page img {
+  display: block;
+  height: auto;
+  min-width: 42rem;
+  width: 100%;
+}
+
+.crop-transcript {
+  background: #ffe28c;
+  display: block;
+  margin-top: 0.75rem;
+  padding: 0.5rem;
+}
+
+.view-page .source-page img {
+  min-width: 56rem;
+}
+
+.crop-binding {
+  overflow-wrap: anywhere;
+}
+
+.visual-context > a {
+  display: inline-block;
+  margin: 0.5rem 1rem 0 0;
+}
+
+@media (max-width: 900px) {
+  .audit-decision,
+  .paired-evidence {
+    grid-template-columns: 1fr;
+  }
+
+  .pinned-evidence-desk {
+    padding: 1rem;
+  }
+}
