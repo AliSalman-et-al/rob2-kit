@@ -3,7 +3,7 @@
 **Status:** canonical implementation specification  
 **Product:** `rob2-kit`  
 **Supported runtime:** Python 3.13  
-**Last reconciled:** 2026-07-29
+**Last reconciled:** 2026-07-30
 
 This document is the normative implementation source for v1. It supersedes
 `BLUEPRINT-Codex.md` and `BLUEPRINT-Claude.md`, which remain as historical
@@ -55,15 +55,21 @@ experienced. The normal workflow MUST:
 2. initialize or resume a project without configuration-file editing;
 3. prepare every Trial autonomously without mid-run questions;
 4. preserve progress across host, browser, or computer absence;
-5. open the local GUI at the next required human action;
-6. present source text and relevant crops before revealing the agent answer;
-7. commit each human action immediately; and
-8. return a durable Review receipt to the agent harness.
+5. keep a reopenable local Companion workspace available from project start;
+6. move every Trial × Result through Ready, Prepare, Review, and Complete with
+   its exact identity and current state visible;
+7. present the prepared answer together with its rationale, complete evidence
+   set, relevant crops, coverage, and deterministic Decision trace;
+8. commit each human action immediately; and
+9. return a durable Review receipt to the agent harness.
 
 The agent harness is the control plane for setup, preparation, progress, and
-opening review. The GUI is the only v1 surface for direct human review actions.
-The CLI is for CI, diagnostics, recovery, and expert use. Researchers MUST NOT
-need to move back and forth between the CLI and the agent harness.
+opening or resuming review. The Companion workspace is a deterministic
+projection of durable project state and the only v1 surface for direct human
+review actions. Opening, refreshing, reconnecting to, or closing it MUST NOT
+invoke a model. The CLI is for CI, diagnostics, recovery, and expert use.
+Researchers MUST NOT need to move back and forth between the CLI and the agent
+harness.
 
 Preparation MUST NOT pause to ask about uncertain source roles, optional-source
 failures, registry candidates, or other reviewable conditions. It records them
@@ -536,6 +542,26 @@ A legible but text-unanchorable reading is a Visual transcription. It remains
 critical visual denominators, exclusions, missing-data counts, and analysis
 populations require review beside the crop.
 
+LiteParse 2.10.0 is the parsing and base-render dependency, not the durable
+citation verifier. The adapter MUST preserve:
+
+- 1-based page identity and page dimensions;
+- spatial text and, when configured, word boxes in LiteParse's top-left,
+  72-DPI viewport coordinate system;
+- the complete requested parser configuration fingerprint; and
+- a content-addressed reference to the spatial parse and base page PNG.
+
+Rob2-kit MUST own the exact Canonical-span-to-one-or-more-box binding, coordinate
+scaling, highlight overlays, contextual crops, DPI escalation, crop/full-page
+navigation, content-addressed base and derived PNG storage, and dependency-based
+stale invalidation. LiteParse `search_items()` is discovery-only because its
+synthetic union box does not preserve the source indexes and character offsets
+needed to verify a quote.
+
+V1 MUST keep `render_form_fields=False`. A page whose decision-relevant content
+depends on a form field is detected and marked `coverage_limited`; the system
+MUST NOT execute PDF document actions to render filled values.
+
 ## 9. Evidence search and answer protocol
 
 ### 9.1 Canonical units and index
@@ -689,6 +715,26 @@ unisolatable unauthorized operation—stops the batch.
 Host, model, tool, or usage-window interruption is a resumable pause, not a
 Preparation outcome or Review finding.
 
+### 10.3 Batch presentation and review gate
+
+The Companion workspace presents Preparation as a Result-level board:
+
+```text
+Queue → Processing → Review queue
+```
+
+Each card represents one Trial × Result. A prepared judgment MUST appear only
+after that card reaches the Review queue; Queue and Processing MUST NOT imply
+that a decision exists. The board is read-only while preparation owns the
+single-writer lease and shows the last durable checkpoint, connection state,
+plain-language interruption or terminal reason, and a copyable resume prompt
+where applicable.
+
+Prepared Results MAY accumulate in the Review queue, but human review remains
+locked until every Trial in the requested batch has reached a terminal
+Preparation outcome. `preparation_incomplete` and `trial_failed` cards remain
+visible with their consequences and available recovery action.
+
 ## 11. Ledger, invalidation, and replay
 
 SQLite is the single live Workflow ledger. JSONL is a generated archive view,
@@ -721,56 +767,156 @@ prior output.
 
 ## 12. Human review and sign-off
 
-### 12.1 Review queue
+### 12.1 Continuous Companion workspace
 
-The Review queue is derived from authoritative revisions and policy. It orders:
+The local Companion workspace uses one reopenable shell with a persistent:
 
-1. blocking repair;
-2. evidence/visual verification;
-3. permitted limitation acknowledgment;
-4. Domain review;
-5. final Assessment sign-off.
+```text
+Ready → Prepare → Review → Complete
+```
 
-The v1 Review policy defaults to per-domain review with SQ drill-down for
-triaged concerns. There is no global approve-all action. Corrections create
-new revisions and targeted recomputation; they never mutate the reviewed draft.
+lifecycle rail. Project → Trial → Result → Assessment is the navigation
+hierarchy. Cards and consequential actions repeat the exact Trial × Result
+identity in researcher-facing language; raw identifiers and hashes remain under
+technical details.
 
-The consolidated queue opens only after every Trial in the requested batch has
-reached a Preparation outcome. One underlying source limitation produces one
-finding card rather than copies under each affected SQ. It shows the source,
-role, criticality, relevant dates, attempts, final coverage, affected
-Results/Domains/SQs, available text or crop, consequence, and one clear action.
+Ready uses Trial × Result cards. Selecting a card shows only its secured sources
+with a compact first-page preview, filename, source type, page count, and
+custody/LiteParse status. Ready leads with a context-aware copyable agent prompt
+for starting or resuming uninterrupted preparation.
 
-Final sign-off is available only when all five Domains satisfy the exact Review
-policy and every finding has its required disposition.
+Prepare uses the read-only board in section 10.3. Review uses the Guided review
+and Full evidence audit views below. Complete progressively shows signed Results
+and their outputs as specified in sections 12.6 and 15.
 
-### 12.2 Evidence-first GUI
+The UI reads joined, researcher-facing projections over the Workflow ledger,
+artifact store, evidence index, pinned packs/policies, and generated outputs.
+It MUST NOT infer authoritative state from board position or present a declared
+schema as if the runtime had materialized its canonical revision. Required
+projections include:
 
-The local GUI MUST implement the selected evidence-first split-pane design:
+- current batch, Trial, Result, Assessment, and revision status;
+- source inventory, acquisition, parsing, coverage, and limitations;
+- Domain/SQ answers, rationales, Evidence consideration, and Decision traces;
+- required actions and attention reasons;
+- correction, supersession, sign-off, withdrawal, and invalidation history; and
+- report, export, archive, and verification readiness.
 
-- left: Result, Domain/SQ position, and remaining checks;
-- center: exact source text, locator, relevant crop, and progressively disclosed
-  context/provenance;
-- right: staged evidence decision, then agent answer/rationale/Decision trace,
-  then Domain disposition and final sign-off when eligible.
+### 12.2 Review queue and attention
 
-The answer stays hidden until the reviewer confirms or corrects the evidence.
-Reviewer-facing language is biomedical and task-oriented; hashes and raw
-diagnostics remain under technical details. At final sign-off, the exact Result,
-Assessment revision, unresolved findings, and hash-bound scope are always
-visible.
+The Review queue is derived from authoritative revisions and Review policy. The
+v1 default requires individual review of every Domain and has no bulk
+approve-all action. Guided review uses three policy-derived attention tiers:
+
+1. **Action required** — a condition blocks sign-off: incomplete preparation or
+   unresolved identity; required evidence/visual verification; a required
+   limitation acknowledgment; stale review; or correction awaiting rework.
+2. **Inspect carefully** — work is signable after the required scrutiny:
+   Some concerns or High; accepted contradiction or Source conflict;
+   acknowledged coverage limitation; elevated Visual transcription;
+   `no_information`; or materially influential Project rule or override.
+3. **Routine review** — no higher-tier condition applies.
+
+`Probably yes` and `Probably no` do not by themselves elevate attention.
+Several reasons may apply; the highest tier controls placement while every
+reason remains visible.
+
+Trial × Result cards are ranked by their highest tier. After the reviewer opens
+a Result, ordering stays Result-scoped: Action required, Inspect carefully,
+Routine review, then D1–D5 and stable item order as tie-breakers. Action-required
+items follow dependency order:
+
+1. Result/source repair;
+2. evidence or visual verification;
+3. limitation acknowledgment;
+4. Domain review; and
+5. Assessment sign-off.
+
+Items waiting on targeted agent work remain visible but do not displace an
+action the human can perform now. Each item states why it appears, the exact
+Result/Domain/SQ and sign-off consequence it affects, and one concrete next
+action linked to the same context in Full evidence audit.
+
+One underlying limitation produces one finding with its source, role,
+criticality, attempts, coverage, affected scope, available text/visual,
+consequence, and action—not copies under every SQ.
+
+### 12.3 Guided review and Full evidence audit
+
+Guided review and Full evidence audit are two views of the same current
+Assessment and review state. Switching views preserves Result, Domain, SQ,
+selected Evidence claim, completed actions, and return position.
+
+Full evidence audit uses the selected Pinned Evidence Desk:
+
+- persistent Domain/SQ navigation showing answer state, judgment, limitation,
+  and contradiction markers;
+- a central evidence canvas pairing exact selectable text with its highlighted
+  LiteParse crop or full-page context and source locator; and
+- a decision inspector showing the prepared answer and rationale, preserved
+  contradicting evidence, deterministic Decision trace, and coverage and
+  provenance details.
+
+Every active SQ exposes its prepared answer, rationale, complete ordered
+Evidence set, coverage limitations, and Decision trace. Every Evidence item is
+an explicit Supporting, Contradicting, or Context item pairing exact text with
+its source/page locator, highlighted region, and provenance. Selecting among
+multiple items changes the paired text-and-visual view without losing decision
+context. Contradicting evidence MUST NOT be collapsed into a rationale or
+hidden by Guided review.
+
+A Routine Domain begins as a compact card showing its full name, accessible
+judgment label, active-SQ and evidence counts, coverage status, and one-sentence
+deterministic basis. The reviewer MUST open every Domain before confirming it
+individually. Opening exposes every active answer and rationale, with each
+Evidence set one action away; policy need not require opening every claim.
 
 Every explicit human action commits immediately. Stale pages are read-only and
-cannot overwrite a newer revision. Refresh, back, reopen, retries, and
-double-clicks MUST neither lose work nor duplicate decisions.
+cannot overwrite a newer revision. Refresh, back, reopen, retry, and
+double-click MUST neither lose work nor duplicate decisions.
 
-### 12.3 Handoff and connection state
+### 12.4 Corrections and superseding work
 
-The GUI runs as a separate resumable local process, not a daemon or hosted
-service. `open_review` starts or reconnects, transfers write authority, attempts
-browser launch, and returns the URL as fallback.
+Correction uses an impact sidecar that keeps the triggering SQ, Evidence claim,
+exact text, highlighted region, and prepared decision pinned while the reviewer
+writes the request.
 
-The GUI reports:
+The smallest starting target is derived from the invocation context. The
+reviewer MAY expand it to a Domain or Result/source-identity repair but MUST NOT
+remove downstream consequences derived from recorded dependencies. Submission
+creates an attributable Review receipt bound to the challenged Assessment,
+immediately blocks the affected Domain and sign-off as **pending targeted
+rework**, and leaves the challenged revision immutable and valid history.
+
+The workspace then becomes read-only for affected work and provides a
+context-aware copyable agent prompt bound to the receipt. It shows only the
+affected dependency path regenerating. Interruption preserves the request,
+draft, blocked/current dispositions, last checkpoint, failure reason, and a
+copyable resume prompt.
+
+A successful run makes the regenerated Assessment the current proposed
+revision. The comparison covers changed Evidence consideration, answer and
+rationale, Domain/overall judgments, limitations, and reopened review decisions,
+plus a compact list of reused unaffected work. The actions are **Continue
+review** and **Request another correction**. Continue returns to the corrected
+SQ and its evidence; the affected Domain requires review again. Repeated
+corrections form a visible linear chain.
+
+### 12.5 Handoff and connection state
+
+The Companion workspace runs as a separate resumable loopback process, not a
+daemon or hosted service. `open_review` idempotently starts or reconnects it,
+transfers write authority when appropriate, attempts one host-supported
+embedded launch, and always returns a URL. Embedded side-by-side display is a
+preferred enhancement, never a portability or durability requirement. If
+embedded launch is unavailable, use the system browser or returned URL.
+
+The page self-updates from local durable state through SSE or polling without
+model inference. Browser closure is harmless; reopening obtains a fresh
+URL/session. No host adapter may treat pane placement, visibility, or browser
+process survival as authoritative.
+
+The workspace reports:
 
 ```text
 connected—waiting
@@ -780,14 +926,10 @@ reconnect needed
 review complete
 ```
 
-It also shows last contact and the plain-language consequence. This state is
-informational; the ledger is authoritative. Reviewer waiting MUST NOT cause
-repeated model turns.
-
-`wait_for_review` is one cancellable activity-aware long-running call. Local
-heartbeats use no model inference. After configurable inactivity it returns
-`review_pending`, ends the agent turn, and leaves GUI/ledger state intact. A
-later agent invocation consumes any durable Review receipt.
+It also shows last contact and the plain-language consequence. `wait_for_review`
+is one cancellable, activity-aware long-running call. After configurable
+inactivity it returns `review_pending`, ends the agent turn, and preserves the
+workspace and ledger.
 
 A Review receipt has one typed outcome:
 
@@ -798,22 +940,85 @@ deferred
 assessment_signed_off
 ```
 
-It binds the exact review action, Assessment/review revisions, Actor, and ledger
-event. Conversation history is never required to interpret it.
+It binds the exact action, Assessment/review revisions, Actor, and ledger event.
+Conversation history is never required to interpret it.
 
-### 12.4 Human attribution
+### 12.6 Result sign-off and human attribution
 
 Human actions bind an immutable Reviewer profile revision, review session,
 Review policy, and Assessment revision. Display name is required; affiliation,
-email, and ORCID are optional. Final sign-off reconfirms the visible identity.
-
-V1 Sign-off assurance is local human attribution bound to an
-integrity-verifiable Assessment revision. It does not claim independently
-verified or cryptographic identity. Passwords, PINs, typed-name ceremonies, and
+email, and ORCID are optional. V1 Sign-off assurance is local attribution bound
+to an integrity-verifiable Assessment revision; it is neither independently
+verified nor cryptographic. Passwords, PINs, routine typed-name ceremonies, and
 project-held signing keys are excluded.
 
-No agent, MCP tool, CLI command, or autonomous path may create a Domain
-disposition, acknowledgment, Judgment override, or Assessment sign-off.
+Sign-off is a dedicated Result-level checkpoint available only when every
+Domain disposition is current and no Action required item remains. It shows the
+exact Trial × Result, Assessment revision, overall and D1–D5 judgments, Domain
+review state, accepted caveats, reviewer identity, and invalidation
+consequences. Each summary item links to Full evidence audit. There is no bulk
+sign-off.
+
+The control reads **Sign this Result as [display name]**. Retyping is required
+only after session expiry or a Reviewer profile change. The attestation is:
+
+> I reviewed this exact Result Assessment under the stated Review policy and
+> approve its recorded answers, final judgments, overrides, and acknowledged
+> limitations as the current assessment.
+
+The UI explains that signing does not claim exhaustive source discovery,
+absence of error, or independently verified identity. Only explicit human
+action in the Companion workspace may create a Domain disposition,
+acknowledgment, Judgment override, Assessment sign-off, or Sign-off withdrawal.
+
+Sign-off commits atomically before deterministic output materialization. Output
+failure preserves **Signed — outputs incomplete** and offers retry. **Reopen
+review** creates a Sign-off withdrawal without deleting the signed revision or
+its outputs. A dependency change retains the old sign-off and outputs as
+**Invalidated — review required**, identifies the changed path, and returns only
+the affected Result to Review.
+
+### 12.7 Clinical canvas visual system
+
+Ready, Prepare, Review, and Complete use the selected Clinical canvas system:
+deep evergreen structure, warm neutral surfaces, restrained shadows, and
+amber/red only for semantic attention and RoB states. Serif is reserved for
+major headings and prominent prepared answers, sans-serif for controls and
+operational content, and monospace for copyable prompts and technical records.
+
+One workspace shell, lifecycle rail, contextual guidance banner, heading/status
+pill, and local-state footer frame all four stages. Reusable components are:
+agent-prompt panels, Trial × Result cards, source-preview cards, Preparation
+columns, Result judgment cards, the Pinned Evidence Desk, attention notices,
+accessible traffic-light previews, output cards, and action groups. Semantic
+variants—neutral, active, complete, attention, blocking, coverage-limited, and
+signed—always retain textual labels.
+
+Controls use one visually primary action per decision context, with secondary
+actions beside it and technical/exhaustive detail behind explicit disclosure.
+Progressive disclosure MUST NOT hide material evidence, limitations,
+contradictions, exact Result/revision identity, or action consequences.
+
+The three density tiers are:
+
+1. **Orientation** — spacious Ready and Complete summaries.
+2. **Operational** — moderately compact boards, sources, and Result cards.
+3. **Evidence** — dense Guided review and Full evidence audit.
+
+Desktop uses a bounded canvas with multi-column boards and the pinned evidence
+desk. Intermediate widths collapse secondary columns first. At 320 CSS pixels,
+content has a single-column reading order, actions become full-width where
+needed, secondary header navigation recedes, and stage/next action remain
+explicit. Domain strips, evidence sets, metrics, and the page image MAY scroll
+within bounded regions, but equivalent exact text, provenance, decision context,
+and essential controls remain readable without page-level horizontal scrolling.
+Keyboard access, visible focus, programmatic labels, and non-color cues apply at
+every width.
+
+The approved prototype at
+`prototype/final-companion-visual-system@c03d356` is a visual reference only.
+Production code MUST implement these rules deliberately and MUST NOT promote the
+throwaway prototype directly.
 
 ## 13. Interfaces
 
@@ -955,15 +1160,37 @@ The immutable Assessment revision is the canonical output. It binds exact:
   provenance;
 - active Assessment sign-off, if any.
 
+Signing one Result triggers deterministic materialization of:
+
+- a self-contained, print-friendly HTML report and equivalent portable Markdown
+  report containing exact identity and status, overall/D1–D5 judgments, every
+  active SQ answer and rationale, numbered exact-text citations, contradictions,
+  conflicts, limitations, `no_information` bases, Visual transcriptions,
+  overrides, review attribution, and concise provenance;
+- lossless, schema-versioned canonical Assessment JSON;
+- a judgment-only robvis CSV compatibility projection; and
+- a researcher-facing Project XLSX with separate Result, Domain, SQ, evidence,
+  limitation, and review-attribution sheets.
+
+A Project completion report lists every expected Trial × Result, terminal
+disposition, judgment and sign-off state, key limitations, and links to its
+Result report. Project CSV/XLSX exports include signed, excluded, incomplete,
+and failed Results without implying a signed Assessment for non-signed rows.
 HTML, Markdown, robvis CSV, XLSX, and summary reports are deterministic derived
 views and MUST NOT be editable inputs.
 
-A complete Verification archive contains the canonical manifest and every
+A Complete Verification archive contains the canonical manifest and every
 transitive source/decision dependency, including source bytes and pinned
-schemas/packs/policies. A reference archive MAY omit restricted or large source
-bytes but MUST say `source integrity not independently verifiable`.
-Verification recomputes hashes, validates schemas/dependencies and event order,
-and produces a plain-language receipt without requiring the live SQLite file.
+schemas/packs/policies. The workspace shows size, source count, generation time,
+SHA-256, latest verification result, and a copyrighted/sensitive-content
+warning. A Reference archive MAY omit source bytes but MUST say
+`source integrity not independently verifiable`. Verification recomputes
+hashes, validates schemas, dependencies, event order, and completeness, and
+produces a plain-language receipt without requiring the live SQLite file.
+
+Every artifact binds one exact Assessment or Project-state revision and remains
+immutable. Stable current links MAY resolve to the latest valid artifact;
+historical and invalidated artifacts remain available with unmistakable status.
 
 Raw PDFs, registry payloads, renders, crops, and local state are excluded from
 Git and ordinary shareable exports by default.
@@ -991,7 +1218,7 @@ when missing coverage may be material.
 
 ### 17.1 Hands-on preview
 
-The earliest owner/lab build is ready when both Codex and Claude Code can:
+The earliest owner build is ready when both Codex and Claude Code can:
 
 - install and start on the owner’s Windows environment;
 - process the same supported Trial end to end;
@@ -1002,9 +1229,9 @@ The earliest owner/lab build is ready when both Codex and Claude Code can:
 - prevent all nonhuman sign-off paths.
 
 Preview schemas may change incompatibly, but upgrades MUST retain a recoverable
-archive or migrate a copy and explain incompatibility. Broader usability,
-formal accessibility review, research validation, and cosmetic polish are not
-preview blockers.
+archive or migrate a copy and explain incompatibility. External usability
+testing, formal accessibility review, research validation, and cosmetic polish
+are not preview blockers.
 
 ### 17.2 Public v1 blockers
 
@@ -1024,13 +1251,28 @@ Public v1 requires executable gates for:
 - installation, canonical outputs, exports, and archive verification.
 
 WCAG 2.2 AA is the design target. Known defects that prevent or dangerously
-mislead the critical workflow block public v1. A formal conformance audit and a
-large usability study do not.
+mislead the critical workflow block public v1. A formal conformance audit and
+external usability study do not.
 
-The owner completes the critical flow and a small convenience sample from the
-lab tries it without CLI use, configuration editing, or step-by-step coaching.
-Dangerous misunderstandings and blockers are fixed and retested; minor friction
-becomes follow-up work.
+The owner completes the critical flow without step-by-step assistance.
+Dangerous misunderstandings and blockers are fixed and their affected scenarios
+rerun; cosmetic issues, extra clicks, and recoverable friction with a clear safe
+path become follow-up work. Owner-only acceptance MUST NOT be described as
+independent validation of first-time-user comprehension.
+
+Automated acceptance includes three end-to-end journeys:
+
+1. multi-Result preparation, evidence review, Result sign-off, and export;
+2. interruption/resume followed by correction and a superseding revision; and
+3. a material limitation and terminal preparation failure plus rejected stale
+   or wrong-Result action.
+
+Representative Ready, Prepare, Review, correction, sign-off, and Complete states
+MUST have no serious or critical accessibility scanner findings, expose
+programmatic names and keyboard activation, manage dialog focus, announce
+important state changes, retain textual status equivalents, and keep the
+critical path usable at 320 CSS pixels. The owner smoke check confirms keyboard
+operation and a comfortably enlarged display size.
 
 ### 17.3 Platform claims
 
