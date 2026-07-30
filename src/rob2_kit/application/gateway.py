@@ -61,7 +61,16 @@ from rob2_kit.logic.packs import (
 from rob2_kit.reports import ReportProjector, latest_assessment_view
 from rob2_kit.reports.archives import ArchiveBuilder
 from rob2_kit.review.handoff import ReviewHandoff, ReviewWaitOutcome
-from rob2_kit.review.service import ReviewCase, ReviewPolicy, ReviewService
+from rob2_kit.review.service import (
+    ActionKind,
+    DomainQuestionSummary,
+    DomainReviewSummary,
+    FindingRequirement,
+    ReviewAction,
+    ReviewCase,
+    ReviewPolicy,
+    ReviewService,
+)
 from rob2_kit.review.web import ReviewWebConfig
 from rob2_kit.storage.artifacts import ArtifactStore
 from rob2_kit.storage.ledger import (
@@ -616,7 +625,7 @@ class ApplicationGateway:
             writable_item = writable_coordinator.next_work_item(item.scope)
             if writable_item != item:
                 raise ValueError("assessment work item changed before deterministic commit")
-            assessment, domain_ids = _derive_assessment(
+            assessment, domain_ids, domain_summaries, review_actions = _derive_assessment(
                 ledger,
                 writable_coordinator.lease,
                 item,
@@ -673,6 +682,8 @@ class ApplicationGateway:
                 assessment_content_hash=assessment.content_hash,
                 result_label=item.result_id or item.trial_id,
                 domain_ids=domain_ids,
+                domain_summaries=domain_summaries,
+                actions=review_actions,
                 preparation_scopes=(item.scope,),
             )
             _commit_review_case(
@@ -1355,7 +1366,12 @@ def _derive_assessment(
     ledger: WorkflowLedger,
     lease: LeaseToken,
     work_item: PreparationWorkItem,
-) -> tuple[RecordReference, tuple[str, ...]]:
+) -> tuple[
+    RecordReference,
+    tuple[str, ...],
+    tuple[DomainReviewSummary, ...],
+    tuple[ReviewAction, ...],
+]:
     scope = work_item.scope
     result_key = _work_item_result_key(work_item)
     result_spec = _result_spec_reference(ledger, scope)
@@ -1364,6 +1380,12 @@ def _derive_assessment(
     )
     evidence_bundle = _reference_for_operation(
         ledger, scope, "operation:freeze-evidence-bundle"
+    )
+    bundle_payload = json.loads(ledger.artifacts.read(evidence_bundle.content_hash))
+    disposition_payload = json.loads(
+        ledger.artifacts.read(
+            RecordReference.model_validate(bundle_payload["disposition"]).content_hash
+        )
     )
     sq_answers = _reference_for_operation(
         ledger, scope, "operation:submit-sq-answers"
@@ -1479,7 +1501,199 @@ def _derive_assessment(
         operation_key=f"idempotency:derive-assessment-record-{result_key}",
         record=assessment,
     )
-    return assessment_ref, tuple(evaluation.domain_judgments)
+    domain_names = {
+        "domain:randomization": "Bias arising from the randomization process",
+        "domain:deviations": "Bias due to deviations from intended interventions",
+        "domain:missing": "Bias due to missing outcome data",
+        "domain:measurement": "Bias in measurement of the outcome",
+        "domain:selection": "Bias in selection of the reported result",
+    }
+    answers_by_id = {
+        answer["question_id"]: answer for answer in sq_payload["answers"]
+    }
+    guidance_by_id = {
+        item.logic_element_id: item.text
+        for item in load_guidance_pack(_guidance_pack_path()).items
+    }
+    domain_summaries = []
+    review_actions = []
+    accepted_contradiction_claims = {
+        claim_id
+        for item in disposition_payload["dispositions"]
+        if item["kind"] == "accepted_contradicting"
+        for claim_id in item.get("claim_ids", ())
+    }
+    source_conflict_claims = {
+        claim_id
+        for conflict in bundle_payload["conflicts"]
+        for claim_id in conflict
+    }
+    elevated_visual_questions: set[str] = set()
+    claim_question_ids: dict[str, set[str]] = {}
+    references_by_entity: dict[str, RecordReference] = {}
+    for item in bundle_payload["items"]:
+        reference = RecordReference.model_validate(item)
+        references_by_entity[reference.entity_id] = reference
+        payload = json.loads(ledger.artifacts.read(reference.content_hash))
+        if payload.get("review_required"):
+            elevated_visual_questions.update(payload.get("decision_critical", ()))
+        if sq_id := payload.get("sq_id"):
+            claim_ids = set(payload.get("evidence_claim_ids", ()))
+            for considered in payload.get("considered_items", ()):
+                considered_reference = RecordReference.model_validate(considered)
+                considered_payload = json.loads(
+                    ledger.artifacts.read(considered_reference.content_hash)
+                )
+                if item_id := considered_payload.get("item_id"):
+                    claim_ids.add(item_id)
+            for claim_id in claim_ids:
+                claim_question_ids.setdefault(claim_id, set()).add(sq_id)
+    for question_id, answer in answers_by_id.items():
+        for claim_id in answer.get("evidence_claim_ids", ()):
+            claim_question_ids.setdefault(claim_id, set()).add(question_id)
+    judgment_override_domains: set[str] = set()
+    for override_reference in assessment.judgment_overrides:
+        override_payload = json.loads(
+            ledger.artifacts.read(override_reference.content_hash)
+        )
+        judgment_reference = RecordReference.model_validate(
+            override_payload["judgment_revision"]
+        )
+        judgment_payload = json.loads(
+            ledger.artifacts.read(judgment_reference.content_hash)
+        )
+        judgment_override_domains.add(judgment_payload["domain_id"])
+    for domain_id, judgment_level in evaluation.domain_judgments.items():
+        domain_key = domain_id.removeprefix("domain:")
+        active_questions = tuple(
+            DomainQuestionSummary(
+                sq_id=question_id,
+                guidance=guidance_by_id[question_id],
+                answer=answers_by_id[question_id]["answer"].replace("_", " ").title(),
+                rationale=answers_by_id[question_id]["rationale"],
+                evidence_count=sum(
+                    question_id in question_ids
+                    for question_ids in claim_question_ids.values()
+                ),
+            )
+            for question_id in evaluation.active_question_ids
+            if question_id.startswith(f"sq:{domain_key}:")
+        )
+        judgment_display = judgment_level.value.replace("_", " ").title()
+        domain_summaries.append(
+            DomainReviewSummary(
+                domain_id=domain_id,
+                full_name=domain_names[domain_id],
+                judgment=judgment_display,
+                active_sq_count=len(active_questions),
+                evidence_count=sum(
+                    question.evidence_count for question in active_questions
+                ),
+                coverage=bundle_payload["coverage_state"].replace("_", " ").title(),
+                deterministic_basis=(
+                    "The pinned Logic pack maps the active answers to "
+                    f"{judgment_display}."
+                ),
+                active_questions=active_questions,
+            )
+        )
+        domain_question_ids = {question.sq_id for question in active_questions}
+        review_actions.append(
+            ReviewAction(
+                action_id=(
+                    "review-action:domain-"
+                    f"{domain_id.removeprefix('domain:')}"
+                ),
+                kind=ActionKind.DOMAIN_REVIEW,
+                domain_id=domain_id,
+                title=f"Review {domain_names[domain_id]}",
+                judgment_override=domain_id in judgment_override_domains,
+            )
+        )
+        for question_id in sorted(domain_question_ids):
+            question_claims = {
+                claim_id
+                for claim_id, question_ids in claim_question_ids.items()
+                if question_id in question_ids
+            }
+            contradiction_claims = (
+                question_claims & accepted_contradiction_claims
+            )
+            conflict_claims = question_claims & source_conflict_claims
+            influential_project_rule = bool(
+                answers_by_id[question_id].get("project_rule_ids")
+                or answers_by_id[question_id].get("project_rules")
+            )
+            flags = (
+                contradiction_claims,
+                conflict_claims,
+                question_id in elevated_visual_questions,
+                answers_by_id[question_id]["answer"] == "no_information",
+                influential_project_rule,
+            )
+            if any(flags):
+                linked_claim_id = next(
+                    iter(sorted(contradiction_claims | conflict_claims)),
+                    None,
+                )
+                review_actions.append(
+                    ReviewAction(
+                        action_id=(
+                            "review-action:inspect-"
+                            f"{question_id.removeprefix('sq:').replace(':', '-')}"
+                        ),
+                        kind=ActionKind.INSPECT_FINDING,
+                        domain_id=domain_id,
+                        sq_id=question_id,
+                        title=f"Inspect {guidance_by_id[question_id]}",
+                        evidence_claim=(
+                            references_by_entity.get(linked_claim_id)
+                            if linked_claim_id is not None
+                            else None
+                        ),
+                        accepted_contradiction=bool(contradiction_claims),
+                        source_conflict=bool(conflict_claims),
+                        elevated_visual_transcription=(
+                            question_id in elevated_visual_questions
+                        ),
+                        no_information=(
+                            answers_by_id[question_id]["answer"]
+                            == "no_information"
+                        ),
+                        influential_project_rule=influential_project_rule,
+                    )
+                )
+    scoped_claims = set(claim_question_ids)
+    unscoped_contradictions = accepted_contradiction_claims - scoped_claims
+    unscoped_conflicts = source_conflict_claims - scoped_claims
+    if unscoped_contradictions or unscoped_conflicts:
+        review_actions.append(
+            ReviewAction(
+                action_id="review-action:inspect-result-evidence",
+                kind=ActionKind.INSPECT_FINDING,
+                title="Inspect Result-level contradictory or conflicting evidence",
+                accepted_contradiction=bool(unscoped_contradictions),
+                source_conflict=bool(unscoped_conflicts),
+            )
+        )
+    if bundle_payload["coverage_limitations"]:
+        review_actions.append(
+            ReviewAction(
+                action_id="review-action:coverage-limitation",
+                kind=ActionKind.ACKNOWLEDGE_LIMITATION,
+                title="Acknowledge material evidence coverage limitations",
+                finding_requirement=FindingRequirement.ACKNOWLEDGE,
+                finding_id="finding:evidence-coverage",
+                consequence="Result sign-off remains blocked until acknowledgment.",
+                affected_scope=tuple(evaluation.domain_judgments),
+            )
+        )
+    return (
+        assessment_ref,
+        tuple(evaluation.domain_judgments),
+        tuple(domain_summaries),
+        tuple(review_actions),
+    )
 
 
 def _logic_pack_path() -> Path:

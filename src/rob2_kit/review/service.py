@@ -44,6 +44,7 @@ class ActionKind(StrEnum):
     BLOCKING_REPAIR = "blocking_repair"
     VERIFY_EVIDENCE = "verify_evidence"
     ACKNOWLEDGE_LIMITATION = "acknowledge_limitation"
+    INSPECT_FINDING = "inspect_finding"
     DOMAIN_REVIEW = "domain_review"
     SIGN_OFF = "sign_off"
 
@@ -60,6 +61,12 @@ class ActionDecision(StrEnum):
     DEFERRED = "deferred"
     OVERRIDDEN = "overridden"
     SIGNED = "signed"
+
+
+class AttentionTier(StrEnum):
+    ACTION_REQUIRED = "Action required"
+    INSPECT_CAREFULLY = "Inspect carefully"
+    ROUTINE_REVIEW = "Routine review"
 
 
 class BoundEvidence(FrozenModel):
@@ -100,6 +107,7 @@ class ReviewAction(FrozenModel):
     kind: ActionKind
     title: str = Field(min_length=1)
     domain_id: Identifier | None = None
+    sq_id: Identifier | None = None
     source_locator: str | None = None
     bound_evidence: BoundEvidence | None = None
     prepared_answer: PreparedAnswer | None = None
@@ -118,6 +126,12 @@ class ReviewAction(FrozenModel):
     affected_scope: tuple[Identifier, ...] = ()
     crop_reference: RecordReference | None = None
     next_action: str | None = None
+    accepted_contradiction: bool = False
+    source_conflict: bool = False
+    elevated_visual_transcription: bool = False
+    no_information: bool = False
+    influential_project_rule: bool = False
+    judgment_override: bool = False
 
     @model_validator(mode="after")
     def validate_evidence_binding(self) -> ReviewAction:
@@ -143,6 +157,26 @@ class ReviewPolicy(FrozenModel):
     required_finding_requirements: tuple[FindingRequirement, ...] = tuple(FindingRequirement)
 
 
+class DomainQuestionSummary(FrozenModel):
+    sq_id: Identifier
+    guidance: str = Field(min_length=1)
+    answer: str = Field(min_length=1)
+    rationale: str = Field(min_length=1)
+    evidence_count: int = Field(ge=0)
+
+
+class DomainReviewSummary(FrozenModel):
+    domain_id: Identifier
+    full_name: str = Field(min_length=1)
+    judgment: str = Field(min_length=1)
+    active_sq_count: int = Field(ge=0)
+    evidence_count: int = Field(ge=0)
+    coverage: str = Field(min_length=1)
+    deterministic_basis: str = Field(min_length=1)
+    coverage_acknowledged: bool = False
+    active_questions: tuple[DomainQuestionSummary, ...] = ()
+
+
 class ReviewCase(FrozenModel):
     review_id: Identifier
     review_revision: RecordReference
@@ -153,6 +187,7 @@ class ReviewCase(FrozenModel):
     result_label: str = Field(min_length=1)
     domain_ids: tuple[Identifier, ...] = Field(min_length=1)
     actions: tuple[ReviewAction, ...] = ()
+    domain_summaries: tuple[DomainReviewSummary, ...] = ()
     preparation_scopes: tuple[Identifier, ...] = Field(min_length=1)
 
     @model_validator(mode="after")
@@ -170,6 +205,9 @@ class ReviewCase(FrozenModel):
         ]
         if len(finding_ids) != len(set(finding_ids)):
             raise ValueError("one underlying finding must produce one Review action")
+        summary_ids = {summary.domain_id for summary in self.domain_summaries}
+        if summary_ids and summary_ids != set(self.domain_ids):
+            raise ValueError("Domain summaries must cover every reviewed Domain exactly once")
         return self
 
 
@@ -178,6 +216,7 @@ class QueueItem(FrozenModel):
     kind: ActionKind
     title: str
     domain_id: Identifier | None = None
+    sq_id: Identifier | None = None
     evidence_text: str | None = None
     source_locator: str | None = None
     answer_visible: bool = False
@@ -198,6 +237,11 @@ class QueueItem(FrozenModel):
     affected_scope: tuple[Identifier, ...] = ()
     crop_reference: RecordReference | None = None
     next_action: str | None = None
+    attention_tier: AttentionTier
+    reasons: tuple[str, ...] = ()
+    affected_context: str
+    actionable: bool = True
+    domain_summary: DomainReviewSummary | None = None
 
 
 class ReviewCommand(FrozenModel):
@@ -212,6 +256,7 @@ class ReviewCommand(FrozenModel):
     reviewer_profile: RecordReference
     review_session_id: Identifier
     observed_at: datetime
+    domain_opened: bool = False
 
     @model_validator(mode="after")
     def validate_time(self) -> ReviewCommand:
@@ -262,6 +307,23 @@ class ReviewService:
 
     def queue(self) -> tuple[QueueItem, ...]:
         completed = self._receipts_by_action()
+        stale = self.is_stale()
+        limitation_acknowledged = any(
+            action.kind is ActionKind.ACKNOWLEDGE_LIMITATION
+            and completed.get(action.action_id) is not None
+            and completed[action.action_id].outcome
+            is ReviewReceiptOutcome.ACTION_COMPLETED
+            for action in self.review_case.actions
+        )
+        summaries = {
+            summary.domain_id: (
+                summary.model_copy(update={"coverage_acknowledged": True})
+                if limitation_acknowledged
+                and summary.coverage.casefold() not in {"complete", "adequate"}
+                else summary
+            )
+            for summary in self.review_case.domain_summaries
+        }
         actions = {action.action_id: action for action in self.review_case.actions}
         for domain_id in self.review_case.policy.domain_ids:
             action_id = _domain_action_id(domain_id)
@@ -284,11 +346,30 @@ class ReviewService:
         order = {
             kind: position for position, kind in enumerate(self.review_case.policy.action_order)
         }
-        ordered_actions = sorted(
-            actions.values(), key=lambda item: (order[item.kind], item.action_id)
-        )
+
+        def queue_key(action: ReviewAction) -> tuple[int, int, int, int, str]:
+            receipt = completed.get(action.action_id)
+            actionable = receipt is None and not stale
+            if receipt is not None and receipt.outcome is ReviewReceiptOutcome.CORRECTION_REQUESTED:
+                actionable = False
+            tier, _ = self._attention(
+                action, receipt, summaries.get(action.domain_id), stale=stale
+            )
+            return (
+                0 if actionable else 1,
+                tuple(AttentionTier).index(tier),
+                order[action.kind],
+                _domain_order(action.domain_id),
+                action.action_id,
+            )
+
+        ordered_actions = sorted(actions.values(), key=queue_key)
         for action in ordered_actions:
             receipt = completed.get(action.action_id)
+            summary = summaries.get(action.domain_id)
+            attention_tier, reasons = self._attention(
+                action, receipt, summary, stale=stale
+            )
             answer_visible = (
                 action.kind is ActionKind.VERIFY_EVIDENCE
                 and receipt is not None
@@ -301,6 +382,14 @@ class ReviewService:
                             "bound_evidence",
                             "prepared_answer",
                             "finding_requirement",
+                            "consequence",
+                            "next_action",
+                            "accepted_contradiction",
+                            "source_conflict",
+                            "elevated_visual_transcription",
+                            "no_information",
+                            "influential_project_rule",
+                            "judgment_override",
                         }
                     ),
                     evidence_text=(
@@ -318,6 +407,13 @@ class ReviewService:
                         else None
                     ),
                     completed=receipt is not None,
+                    attention_tier=attention_tier,
+                    reasons=reasons,
+                    affected_context=self._affected_context(action),
+                    actionable=receipt is None and not stale,
+                    domain_summary=summary,
+                    consequence=action.consequence or self._default_consequence(action),
+                    next_action=action.next_action or self._default_next_action(action),
                 )
             )
         return tuple(items)
@@ -327,12 +423,20 @@ class ReviewService:
             raise ValueError("review actions require a human actor")
         prior = self._receipt_for_operation(command.idempotency_key)
         if prior is not None:
+            if (
+                prior.review_action_id != command.action_id
+                or prior.assessment_revision_id != command.expected_assessment_revision_id
+            ):
+                raise ReviewError("idempotency key was already used for different review work")
             return ReviewCommit(receipt=prior, duplicate=True)
         if (
             command.expected_assessment_revision_id != self.review_case.assessment_revision_id
             or self.is_stale()
         ):
             raise StaleReviewError("this review page is stale and is now read-only")
+        completed_action = self._receipts_by_action().get(command.action_id)
+        if completed_action is not None:
+            return ReviewCommit(receipt=completed_action, duplicate=True)
         actions = {item.action_id: item for item in self.queue()}
         if command.kind is ActionKind.SIGN_OFF:
             if not self._sign_off_eligible(self._receipts_by_action()):
@@ -344,6 +448,8 @@ class ReviewService:
             or actions[command.action_id].kind is not command.kind
         ):
             raise ReviewError("review action is not currently permitted")
+        elif command.kind is ActionKind.DOMAIN_REVIEW and not command.domain_opened:
+            raise ReviewError("the individual Domain must be opened before confirmation")
 
         self._connection_state = ConnectionState.WORKING
         receipt_id = self._receipt_revision_id(command)
@@ -501,6 +607,107 @@ class ReviewService:
             return ReviewReceiptOutcome.DEFERRED
         return ReviewReceiptOutcome.ACTION_COMPLETED
 
+    def _attention(
+        self,
+        action: ReviewAction,
+        receipt: DurableReviewReceipt | None,
+        summary: DomainReviewSummary | None,
+        *,
+        stale: bool,
+    ) -> tuple[AttentionTier, tuple[str, ...]]:
+        action_required: list[str] = []
+        inspect_carefully: list[str] = []
+        if stale:
+            action_required.append(
+                "A newer Assessment revision makes this review read-only."
+            )
+        if receipt is not None and receipt.outcome is ReviewReceiptOutcome.CORRECTION_REQUESTED:
+            action_required.append(
+                "A requested correction is waiting for targeted agent rework."
+            )
+        if action.kind is ActionKind.BLOCKING_REPAIR and receipt is None:
+            action_required.append(
+                "Result or source identity must be resolved before sign-off."
+            )
+        if action.kind is ActionKind.VERIFY_EVIDENCE and receipt is None:
+            action_required.append(
+                "Required evidence or visual material must be verified."
+            )
+        if (
+            action.kind is ActionKind.ACKNOWLEDGE_LIMITATION
+            and action.finding_requirement is FindingRequirement.ACKNOWLEDGE
+            and receipt is None
+        ):
+            action_required.append(
+                "A required coverage limitation must be acknowledged."
+            )
+
+        if action.accepted_contradiction:
+            inspect_carefully.append(
+                "Accepted contradicting evidence requires careful inspection."
+            )
+        if action.source_conflict:
+            inspect_carefully.append(
+                "An accepted Source conflict requires careful inspection."
+            )
+        if action.elevated_visual_transcription:
+            inspect_carefully.append(
+                "An elevated Visual transcription requires careful inspection."
+            )
+        if action.no_information:
+            inspect_carefully.append(
+                "A No information answer requires its search basis to be inspected."
+            )
+        if action.influential_project_rule:
+            inspect_carefully.append(
+                "A materially influential Project rule requires careful inspection."
+            )
+        if action.judgment_override:
+            inspect_carefully.append(
+                "A Judgment override requires careful inspection."
+            )
+        if summary is not None:
+            if summary.judgment.casefold() in {"some concerns", "high", "high risk"}:
+                inspect_carefully.append(f"The Domain judgment is {summary.judgment}.")
+            if (
+                summary.coverage.casefold() not in {"complete", "adequate"}
+                and summary.coverage_acknowledged
+            ):
+                inspect_carefully.append(
+                    "An acknowledged coverage limitation remains material to sign-off."
+                )
+        reasons = (*action_required, *inspect_carefully)
+        if action_required:
+            return AttentionTier.ACTION_REQUIRED, reasons
+        if inspect_carefully:
+            return AttentionTier.INSPECT_CAREFULLY, reasons
+        return AttentionTier.ROUTINE_REVIEW, ("No higher-tier Review policy condition applies.",)
+
+    def _affected_context(self, action: ReviewAction) -> str:
+        parts = [self.review_case.result_label]
+        if action.domain_id is not None:
+            parts.append(action.domain_id.replace("domain:", "Domain "))
+        if action.sq_id is not None:
+            parts.append(action.sq_id.replace("sq:", "SQ "))
+        return " · ".join(parts)
+
+    def _default_consequence(self, action: ReviewAction) -> str:
+        if action.kind is ActionKind.SIGN_OFF:
+            return "This commits sign-off for only this exact Result Assessment revision."
+        if action.kind is ActionKind.DOMAIN_REVIEW:
+            return "This Domain must be confirmed before Result sign-off is available."
+        return "This item must be completed before Result sign-off is available."
+
+    def _default_next_action(self, action: ReviewAction) -> str:
+        return {
+            ActionKind.BLOCKING_REPAIR: "Resolve the Result or source identity.",
+            ActionKind.VERIFY_EVIDENCE: "Open the bound evidence and record a decision.",
+            ActionKind.ACKNOWLEDGE_LIMITATION: "Review and acknowledge the limitation.",
+            ActionKind.INSPECT_FINDING: "Inspect the preserved finding in Full evidence audit.",
+            ActionKind.DOMAIN_REVIEW: "Open this Domain and confirm it individually.",
+            ActionKind.SIGN_OFF: "Review the Result summary and sign this revision.",
+        }[action.kind]
+
     def _workflow_outcome(self, command: ReviewCommand) -> WorkflowEventOutcome:
         if command.value is ActionDecision.CORRECTION_REQUESTED:
             return WorkflowEventOutcome.WORK_REQUIRED
@@ -539,3 +746,10 @@ def _domain_action_id(domain_id: str) -> str:
 
 def _domain_id_from_action(action_id: str) -> str:
     return f"domain:{action_id.removeprefix('review-action:domain-')}"
+
+
+def _domain_order(domain_id: str | None) -> int:
+    if domain_id is None:
+        return 0
+    suffix = domain_id.rsplit(":", 1)[-1].removeprefix("D")
+    return int(suffix) if suffix.isdigit() else 99

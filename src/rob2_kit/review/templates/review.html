@@ -141,13 +141,87 @@
       </section>
     </main>
     {% endif %}
-    {% if audit %}
+    {% if review and review_mode == "guided" and (not workspace or not workspace.review_locked) %}
+    <main class="guided-review" aria-labelledby="guided-title">
+      <header class="guided-header">
+        <div>
+          <p class="eyebrow">Guided review · {{ review.assessment_revision_id }}</p>
+          <h1 id="guided-title">Review this Result by attention</h1>
+        </div>
+        <a class="view-switch" href="{{ full_audit_url }}">Open Full evidence audit</a>
+      </header>
+      {% for tier in ["Action required", "Inspect carefully", "Routine review"] %}
+      <section class="attention-group" aria-labelledby="tier-{{ loop.index }}">
+        <h2 id="tier-{{ loop.index }}">{{ tier }}</h2>
+        {% for item in queue if item.attention_tier.value == tier %}
+        <article class="attention-card tier-{{ loop.index }}"{% if item.action_id == return_position %} id="return-position"{% endif %}>
+          <h3>{{ item.title }}</h3>
+          <p><strong>Affects:</strong> {{ item.affected_context }}</p>
+          <div class="attention-reasons">
+            <strong>Why this appears</strong>
+            <ul>{% for reason in item.reasons %}<li>{{ reason }}</li>{% endfor %}</ul>
+          </div>
+          {% if item.consequence %}<p><strong>Sign-off consequence:</strong> {{ item.consequence }}</p>{% endif %}
+          {% if item.next_action %}
+          <p><strong>Available action:</strong>
+            <a href="/review?mode=full&amp;result={{ (selected_result or review.result_label) | urlencode }}{% if item.domain_id %}&amp;domain={{ item.domain_id | urlencode }}{% endif %}{% if item.sq_id %}&amp;sq={{ item.sq_id | urlencode }}{% endif %}{% if item.evidence_claim %}&amp;evidence={{ item.evidence_claim.entity_id | urlencode }}{% endif %}&amp;return_position={{ item.action_id | urlencode }}">
+              {{ item.next_action }}
+            </a>
+          </p>
+          {% endif %}
+          {% if item.domain_summary %}
+          <dl class="domain-summary">
+            <dt>Domain</dt><dd>{{ item.domain_summary.full_name }}</dd>
+            <dt>Judgment</dt><dd>{{ item.domain_summary.judgment }}</dd>
+            <dt>Active questions</dt><dd>{{ item.domain_summary.active_sq_count }} active SQs</dd>
+            <dt>Evidence</dt><dd>{{ item.domain_summary.evidence_count }} Evidence items</dd>
+            <dt>Coverage</dt><dd>{{ item.domain_summary.coverage }} coverage</dd>
+            <dt>Deterministic basis</dt><dd>{{ item.domain_summary.deterministic_basis }}</dd>
+          </dl>
+          {% endif %}
+          {% if item.kind.value == "domain_review" and not item.completed %}
+            {% if selected_domain == item.domain_id %}
+            <p><strong>Opened:</strong> {{ item.domain_summary.full_name if item.domain_summary else item.domain_id }}</p>
+            {% if item.domain_summary %}
+            <div class="domain-questions">
+              {% for question in item.domain_summary.active_questions %}
+              <article>
+                <h4>{{ question.guidance }}</h4>
+                <p><strong>{{ question.answer }}</strong> · {{ question.evidence_count }} Evidence items</p>
+                <p>{{ question.rationale }}</p>
+                <a href="/review?mode=full&amp;result={{ (selected_result or review.result_label) | urlencode }}&amp;domain={{ item.domain_id | urlencode }}&amp;sq={{ question.sq_id | urlencode }}&amp;return_position={{ item.action_id | urlencode }}">
+                  Audit {{ question.guidance }} evidence
+                </a>
+              </article>
+              {% else %}
+              <p>No active signaling questions.</p>
+              {% endfor %}
+            </div>
+            {% endif %}
+            {% else %}
+            <a href="/review?mode=guided&amp;result={{ selected_result | urlencode }}&amp;domain={{ item.domain_id | urlencode }}&amp;return_position={{ item.action_id | urlencode }}">
+              Open {{ item.domain_id | replace("domain:", "Domain ") }}
+            </a>
+            {% endif %}
+          {% elif item.kind.value == "domain_review" %}
+          <p class="saved">{{ item.domain_id | replace("domain:", "Domain ") }} review saved</p>
+          {% endif %}
+        </article>
+        {% else %}
+        <p>No {{ tier | lower }} items.</p>
+        {% endfor %}
+      </section>
+      {% endfor %}
+    </main>
+    {% endif %}
+    {% if audit and review_mode == "full" %}
     <main class="pinned-evidence-desk" aria-labelledby="audit-title">
       <header class="audit-header">
         <div>
           <p class="eyebrow">Pinned Evidence Desk · {{ audit.result_id }} · {{ audit.domain_id }}</p>
           <h1 id="audit-title">{{ audit.guidance }}</h1>
         </div>
+        <a class="view-switch" href="{{ guided_review_url }}">Return to Guided review</a>
         {% if not audit.assessment_current %}
         <p class="stale" role="alert">
           Read-only: this visual or Assessment dependency has been superseded.
@@ -244,7 +318,7 @@
       {% endfor %}
     </main>
     {% endif %}
-    {% if review and (not workspace or not workspace.review_locked) %}
+    {% if review and review_mode == "guided" and (not workspace or not workspace.review_locked) %}
     <main class="review-layout">
       <aside class="position-pane">
         <h2>Remaining checks</h2>
@@ -300,6 +374,12 @@
                    value="{{ review.assessment_revision_id }}">
             <input type="hidden" name="idempotency_key"
                    value="idempotency:{{ item.action_id.split(':', 1)[1] }}-{{ review.assessment_revision_id.split(':', 1)[1] }}">
+            <input type="hidden" name="mode" value="{{ review_mode }}">
+            {% if selected_result %}<input type="hidden" name="result" value="{{ selected_result }}">{% endif %}
+            {% if selected_domain %}<input type="hidden" name="domain" value="{{ selected_domain }}">{% endif %}
+            {% if selected_sq %}<input type="hidden" name="sq" value="{{ selected_sq }}">{% endif %}
+            {% if selected_evidence %}<input type="hidden" name="evidence" value="{{ selected_evidence }}">{% endif %}
+            {% if return_position %}<input type="hidden" name="return_position" value="{{ return_position }}">{% endif %}
             {% if item.kind.value == "sign_off" %}
             <label>Confirm reviewer
               <input name="confirmed_display_name" required
@@ -332,12 +412,19 @@
               Sign off this Assessment revision
             </button>
             {% elif item.kind.value == "domain_review" %}
+            {% if selected_domain == item.domain_id %}
+            <input type="hidden" name="domain_opened" value="true">
             <button type="submit" name="value" value="accepted">
-              Accept domain
+              Confirm {{ item.domain_id | replace("domain:", "Domain ") }}
             </button>
             <button type="submit" name="value" value="correction_requested">
               Correct domain
             </button>
+            {% else %}
+            <a href="/review?mode=guided&amp;result={{ selected_result | urlencode }}&amp;domain={{ item.domain_id | urlencode }}&amp;return_position={{ item.action_id | urlencode }}">
+              Open {{ item.domain_id | replace("domain:", "Domain ") }}
+            </a>
+            {% endif %}
             <button type="submit" name="value" value="deferred">
               Defer domain
             </button>

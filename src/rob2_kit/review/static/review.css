@@ -319,6 +319,64 @@ summary:focus-visible {
   padding: 2rem;
 }
 
+.guided-review {
+  display: grid;
+  gap: 1.5rem;
+  margin-inline: auto;
+  max-width: 88rem;
+  padding: 2rem;
+}
+
+.guided-header {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+}
+
+.view-switch {
+  background: #173f38;
+  border-radius: 0.25rem;
+  color: white;
+  padding: 0.65rem 0.9rem;
+  text-decoration: none;
+}
+
+.attention-group {
+  background: #ebe8de;
+  border-radius: 0.5rem;
+  padding: 1rem;
+}
+
+.attention-card {
+  background: white;
+  border-left: 0.3rem solid #4d625d;
+  margin-block: 0.75rem;
+  padding: 1rem;
+}
+
+.tier-1 {
+  border-left-color: #a5453b;
+}
+
+.tier-2 {
+  border-left-color: #8a5a00;
+}
+
+.domain-summary {
+  display: grid;
+  grid-template-columns: minmax(9rem, auto) 1fr;
+}
+
+.domain-questions {
+  border-top: 1px solid #d2cec2;
+  margin-top: 1rem;
+}
+
+.domain-questions article {
+  border-bottom: 1px solid #d2cec2;
+  padding-block: 0.75rem;
+}
+
 .audit-header,
 .audit-decision,
 .evidence-set,

@@ -7,7 +7,7 @@ import io
 import secrets
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
-from urllib.parse import parse_qs
+from urllib.parse import parse_qs, urlencode
 
 import pymupdf
 from fastapi import FastAPI, Request
@@ -63,6 +63,7 @@ class _Session(BaseModel):
 
     csrf_token: str
     expires_at: datetime
+    opened_domains: frozenset[str] = frozenset()
 
 
 def create_review_app(
@@ -114,6 +115,8 @@ def create_review_app(
         sq: str | None = None,
         evidence: str | None = None,
         view: str = "crop",
+        mode: str | None = None,
+        return_position: str | None = None,
     ):
         if token is not None:
             if not secrets.compare_digest(token, app.state.bootstrap_token):
@@ -139,6 +142,12 @@ def create_review_app(
             return HTMLResponse("Review session expired", status_code=401)
         if review_service is not None:
             review_service.heartbeat()
+            if domain in review_service.review_case.domain_ids:
+                session_id = request.cookies[SESSION_COOKIE]
+                session = session.model_copy(
+                    update={"opened_domains": session.opened_domains | {domain}}
+                )
+                app.state.sessions[session_id] = session
         connection_state = (
             review_service.connection_state().value
             if review_service is not None
@@ -173,6 +182,20 @@ def create_review_app(
             ),
             view=view,
         )
+        review_mode = mode if mode in {"guided", "full"} else ("full" if audit else "guided")
+        position = {
+            "result": result,
+            "domain": domain,
+            "sq": sq,
+            "evidence": evidence,
+            "return_position": return_position,
+        }
+        full_audit_url = "/review?" + urlencode(
+            {"mode": "full", **{key: value for key, value in position.items() if value}}
+        )
+        guided_review_url = "/review?" + urlencode(
+            {"mode": "guided", **{key: value for key, value in position.items() if value}}
+        )
         template = environment.get_template("review.html")
         return HTMLResponse(
             template.render(
@@ -189,6 +212,14 @@ def create_review_app(
                 ),
                 reviewer=config.reviewer,
                 stale=stale,
+                review_mode=review_mode,
+                selected_result=result,
+                selected_domain=domain,
+                selected_sq=sq,
+                selected_evidence=evidence,
+                return_position=return_position,
+                full_audit_url=full_audit_url,
+                guided_review_url=guided_review_url,
             )
         )
 
@@ -223,6 +254,9 @@ def create_review_app(
                     reviewer_profile=config.reviewer_profile,
                     review_session_id=f"review-session:{request.cookies[SESSION_COOKIE][:24]}",
                     observed_at=datetime.now(UTC),
+                    domain_opened=(
+                        form.get("domain", "") in session.opened_domains
+                    ),
                 )
             )
         except StaleReviewError as error:
@@ -231,7 +265,13 @@ def create_review_app(
             return HTMLResponse(f"Sign-off unavailable: {error}", status_code=409)
         except (ReviewError, ValueError) as error:
             return HTMLResponse(f"Invalid review action: {error}", status_code=422)
-        return RedirectResponse("/review", status_code=303)
+        position = {
+            key: form[key]
+            for key in ("mode", "result", "domain", "sq", "evidence", "return_position")
+            if form.get(key)
+        }
+        location = "/review" + (f"?{urlencode(position)}" if position else "")
+        return RedirectResponse(location, status_code=303)
 
     @app.get("/review/sources/{source_id:path}")
     async def source_preview(request: Request, source_id: str):

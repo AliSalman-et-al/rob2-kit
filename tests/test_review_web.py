@@ -26,11 +26,22 @@ from rob2_kit.storage.ledger import (
     dependency_fingerprint,
 )
 from tests.test_ingestion import StubParser, page
-from tests.test_review_service import NOW, case, reviewer, service
+from tests.test_review_service import NOW, case, guided_case, reviewer, service
 
 
 def client(tmp_path: Path) -> tuple[TestClient, str]:
     review = service(tmp_path, case())
+    config = ReviewWebConfig(
+        project_root=tmp_path.resolve(),
+        session_lifetime=timedelta(minutes=30),
+        allowed_origin="http://testserver",
+    )
+    app, token = create_review_app(review, config)
+    return TestClient(app), token
+
+
+def guided_client(tmp_path: Path) -> tuple[TestClient, str]:
+    review = service(tmp_path, guided_case())
     config = ReviewWebConfig(
         project_root=tmp_path.resolve(),
         session_lifetime=timedelta(minutes=30),
@@ -1187,3 +1198,108 @@ def test_double_click_is_idempotent_and_reopen_reveals_staged_answer(
         if event.operation.startswith("review:")
     ]
     assert len(review_events) == 1
+
+
+def test_guided_review_explains_attention_and_preserves_full_audit_position(
+    tmp_path: Path,
+) -> None:
+    browser, token = guided_client(tmp_path)
+    enter_review(browser, token)
+
+    page = browser.get(
+        "/review?mode=guided&result=Mortality%20at%2030%20days"
+        "&domain=domain%3A3&sq=sq%3A3.1&evidence=claim%3Acontext"
+        "&return_position=review-action%3Adomain-3"
+    ).text
+
+    assert "Action required" in page
+    assert "Inspect carefully" in page
+    assert "Routine review" in page
+    assert "Why this appears" in page
+    assert "Mortality at 30 days · Domain 2 · SQ 2.3" in page
+    assert "Domain 2 and Result sign-off remain blocked." in page
+    assert "Review and acknowledge the coverage limitation." in page
+    assert "Domain 3 full name" in page
+    assert "Low risk" in page
+    assert "3 active SQs" in page
+    assert "4 Evidence items" in page
+    assert "Complete coverage" in page
+    assert "Answers for Domain 3 map to this judgment." in page
+    assert "Question 3.1" in page
+    assert "Rationale for question 3.1." in page
+    assert "3 Evidence items" in page
+    assert "Audit Question 3.1 evidence" in page
+    assert "Open Domain 1" in page
+    assert "Confirm Domain 3" in page
+    assert "Approve all Domains" not in page
+    assert (
+        "mode=full&amp;result=Mortality+at+30+days&amp;domain=domain%3A3"
+        "&amp;sq=sq%3A3.1&amp;evidence=claim%3Acontext"
+        "&amp;return_position=review-action%3Adomain-3"
+    ) in page
+    assert (
+        "mode=full&amp;result=Mortality%20at%2030%20days&amp;domain=domain%3A2"
+        "&amp;sq=sq%3A2.3"
+    ) in page
+
+
+def test_domain_action_round_trip_preserves_guided_position(tmp_path: Path) -> None:
+    browser, token = guided_client(tmp_path)
+    enter_review(browser, token)
+    opened = browser.get(
+        "/review?mode=guided&result=Mortality%20at%2030%20days"
+        "&domain=domain%3A3&return_position=review-action%3Adomain-3"
+    ).text
+
+    response = browser.post(
+        "/review/actions",
+        data={
+            "csrf_token": csrf_from(opened),
+            "action_id": "review-action:domain-3",
+            "kind": "domain_review",
+            "expected_assessment_revision_id": "revision:assessment-1",
+            "idempotency_key": "idempotency:web-domain-3",
+            "value": "accepted",
+            "rationale": "Reviewed every active answer.",
+            "domain_opened": "true",
+            "mode": "guided",
+            "result": "Mortality at 30 days",
+            "domain": "domain:3",
+            "return_position": "review-action:domain-3",
+        },
+        headers={"Origin": "http://testserver"},
+        follow_redirects=False,
+    )
+
+    assert response.status_code == 303
+    assert (
+        response.headers["location"]
+        == "/review?mode=guided&result=Mortality+at+30+days"
+        "&domain=domain%3A3&return_position=review-action%3Adomain-3"
+    )
+    reopened = browser.get(response.headers["location"]).text
+    assert "Domain 3 review saved" in reopened
+
+
+def test_domain_confirmation_cannot_claim_an_unopened_domain(tmp_path: Path) -> None:
+    browser, token = guided_client(tmp_path)
+    page = enter_review(browser, token)
+
+    response = browser.post(
+        "/review/actions",
+        data={
+            "csrf_token": csrf_from(page),
+            "action_id": "review-action:domain-4",
+            "kind": "domain_review",
+            "expected_assessment_revision_id": "revision:assessment-1",
+            "idempotency_key": "idempotency:spoofed-open-domain-4",
+            "value": "accepted",
+            "rationale": "Attempted without opening.",
+            "domain_opened": "true",
+            "domain": "domain:4",
+        },
+        headers={"Origin": "http://testserver"},
+    )
+
+    assert response.status_code == 422
+    assert "must be opened" in response.text
