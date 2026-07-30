@@ -11,3 +11,6 @@ uv run --locked --project . rob2 doctor
 
 See [the hands-on preview gate](docs/HANDS-ON-PREVIEW.md) for the dual-host
 verification and feedback checklist.
+
+To show exact Trial × Result identities in the Companion Ready view before
+Preparation begins, see [declaring exact Results](docs/RESULT-DECLARATIONS.md).

@@ -70,11 +70,41 @@ def project_workspace(
     payload = json.loads(ledger.artifacts.read(initialization_event.output_revision_hashes[0]))
     initialization = payload["initialization"]
     manifest = initialization["manifest"]
-    plans = {plan["trial_id"]: plan for plan in payload.get("preparation_plans", ())}
-    results = tuple(
-        _result_card(ledger, trial, plans.get(trial["trial_id"]), events)
-        for trial in initialization["trials"]
+    plans = tuple(payload.get("preparation_plans", ()))
+    trials = {trial["trial_id"]: trial for trial in initialization["trials"]}
+    declared_specs = {
+        item["result"]["result_id"]: item
+        for item in initialization.get("result_specs", ())
+    }
+    planned_results = tuple(
+        _result_card(
+            ledger,
+            trials[plan["trial_id"]],
+            plan,
+            events,
+            declared_specs.get(plan.get("result_id")),
+        )
+        for plan in plans
     )
+    planned_trial_ids = {plan["trial_id"] for plan in plans}
+    unplanned_trials = tuple(
+        trial
+        for trial in initialization["trials"]
+        if trial["trial_id"] not in planned_trial_ids
+    )
+    failed_results = tuple(
+        _result_card(ledger, trial, None, events, result_spec)
+        for trial in unplanned_trials
+        for result_spec in (
+            tuple(
+                item
+                for item in declared_specs.values()
+                if item["result"]["trial_id"] == trial["trial_id"]
+            )
+            or (None,)
+        )
+    )
+    results = (*planned_results, *failed_results)
     selected = (
         selected_result_id
         if selected_result_id in {item.result_id for item in results}
@@ -119,6 +149,7 @@ def _result_card(
     trial: dict[str, Any],
     plan: dict[str, Any] | None,
     events: tuple[Any, ...],
+    declared_result_spec: dict[str, Any] | None = None,
 ) -> ResultCard:
     trial_id = str(trial["trial_id"])
     scope = (
@@ -135,6 +166,7 @@ def _result_card(
         if event.scope == scope
         and (
             event.operation in plan_operations
+            or event.operation == "operation:derive-assessment-record"
             or event.outcome
             in {
                 WorkflowEventOutcome.PREPARATION_OUTCOME_REACHED,
@@ -142,7 +174,11 @@ def _result_card(
             }
         )
     )
-    result_payload = _operation_payload(ledger, scope_events, "operation:submit-result-resolution")
+    result_payload = declared_result_spec or _operation_payload(
+        ledger,
+        scope_events,
+        "operation:submit-result-resolution",
+    )
     result = result_payload.get("result", {}) if result_payload else {}
     result_id = str(result.get("result_id", f"result:{trial_id.removeprefix('trial:')}"))
     identity = _identity(result, trial_id)
@@ -172,7 +208,11 @@ def _result_card(
         outcome=outcome,
         reason=reason,
         next_action=_next_action(outcome, reason),
-        judgment="Assessment committed" if outcome == "draft_ready" else None,
+        judgment=(
+            _committed_overall_judgment(ledger, scope_events)
+            if outcome == "draft_ready"
+            else None
+        ),
     )
 
 
@@ -299,3 +339,34 @@ def _next_action(outcome: str | None, reason: str | None) -> str | None:
     if outcome is None and reason:
         return "Reconnect the agent and resume from the last durable checkpoint."
     return None
+
+
+def _committed_overall_judgment(
+    ledger: WorkflowLedger,
+    events: tuple[Any, ...],
+) -> str:
+    assessment_event = next(
+        (
+            event
+            for event in reversed(events)
+            if event.operation == "operation:derive-assessment-record"
+        ),
+        None,
+    )
+    if assessment_event is None:
+        return "Assessment committed"
+    assessment = json.loads(
+        ledger.artifacts.read(assessment_event.output_revision_hashes[0])
+    )
+    levels = tuple(
+        json.loads(ledger.artifacts.read(reference["content_hash"]))["judgment"]
+        for reference in assessment["judgments"]
+    )
+    overall = (
+        "high"
+        if "high" in levels
+        else "some_concerns"
+        if "some_concerns" in levels
+        else "low"
+    )
+    return f"Overall judgment: {overall.replace('_', ' ').title()}"

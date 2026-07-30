@@ -155,6 +155,86 @@ def test_initialization_discovers_classifies_and_deduplicates_supplied_sources(
     assert len(result.acquisition_receipts) == 4
 
 
+def test_project_configuration_declares_multiple_exact_results_per_trial(
+    tmp_path: Path,
+) -> None:
+    trial = tmp_path / "input" / "trial-a"
+    trial.mkdir(parents=True)
+    (trial / "report.pdf").write_bytes(b"report")
+    (tmp_path / "rob2.yaml").write_text(
+        yaml.safe_dump(
+            {
+                "schema_version": 1,
+                "outcome_targets": [
+                    {"id": "mortality-30d", "label": "Mortality at 30 days"},
+                    {"id": "readmission-90d", "label": "Readmission at 90 days"},
+                ],
+                "results": [
+                    {
+                        "result": {
+                            "result_id": "result:trial-a-mortality-30d",
+                            "trial_id": "trial:trial-a",
+                            "randomization_id": "randomization:trial-a",
+                            "comparison": {
+                                "experimental_arm_id": "arm:treatment",
+                                "comparator_arm_id": "arm:control",
+                            },
+                            "effect_of_interest": "assignment",
+                            "outcome_construct": "Mortality",
+                            "measurement_instrument": "Vital status",
+                            "time_point": "30 days",
+                            "analysis_population": "Intention to treat",
+                            "analysis_model": "Risk ratio, unadjusted",
+                            "effect_measure": "RR",
+                            "source_locator": "report.pdf p. 8 table 2",
+                        },
+                        "estimate": {"value": "0.82"},
+                        "provenance_note": "Protocol-defined primary result.",
+                    },
+                    {
+                        "result": {
+                            "result_id": "result:trial-a-readmission-90d",
+                            "trial_id": "trial:trial-a",
+                            "randomization_id": "randomization:trial-a",
+                            "comparison": {
+                                "experimental_arm_id": "arm:treatment",
+                                "comparator_arm_id": "arm:control",
+                            },
+                            "effect_of_interest": "assignment",
+                            "outcome_construct": "Readmission",
+                            "measurement_instrument": "Hospital record",
+                            "time_point": "90 days",
+                            "analysis_population": "Intention to treat",
+                            "analysis_model": "Risk ratio, unadjusted",
+                            "effect_measure": "RR",
+                            "source_locator": "report.pdf p. 9 table 3",
+                        },
+                        "estimate": {"value": "0.91"},
+                        "provenance_note": "Protocol-defined secondary result.",
+                    },
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    initialized = initialize_project(
+        tmp_path,
+        actor=ACTOR,
+        parser=StubParser({"report": (page(1, "Report"),)}),
+    )
+
+    assert initialized.manifest.outcome_targets == (
+        "mortality-30d",
+        "readmission-90d",
+    )
+    assert [item.result.result_id for item in initialized.result_specs] == [
+        "result:trial-a-mortality-30d",
+        "result:trial-a-readmission-90d",
+    ]
+    assert initialized.result_specs[0].result.source_locator == "report.pdf p. 8 table 2"
+
+
 def test_multiple_primary_candidates_are_nonblocking_and_trial_yaml_disambiguates(
     tmp_path: Path,
 ) -> None:

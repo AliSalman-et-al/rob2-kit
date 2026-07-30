@@ -3,15 +3,20 @@ from datetime import timedelta
 from html.parser import HTMLParser
 from pathlib import Path
 
+import yaml
 from fastapi.testclient import TestClient
 
+from rob2_kit.application.gateway import ApplicationGateway
 from rob2_kit.review.service import ReviewService
 from rob2_kit.review.web import ReviewWebConfig, create_review_app
+from rob2_kit.storage.artifacts import ArtifactStore
 from rob2_kit.storage.ledger import (
     Transition,
     WorkflowEventOutcome,
+    WorkflowLedger,
     dependency_fingerprint,
 )
+from tests.test_ingestion import StubParser, page
 from tests.test_review_service import NOW, case, reviewer, service
 
 
@@ -185,6 +190,30 @@ def csrf_from(page: str) -> str:
     return page.split(marker, 1)[1].split('"', 1)[0]
 
 
+def declared_result(result_id: str, outcome: str, time_point: str) -> dict[str, object]:
+    return {
+        "result": {
+            "result_id": result_id,
+            "trial_id": "trial:trial-a",
+            "randomization_id": "randomization:trial-a",
+            "comparison": {
+                "experimental_arm_id": "arm:treatment",
+                "comparator_arm_id": "arm:control",
+            },
+            "effect_of_interest": "assignment",
+            "outcome_construct": outcome,
+            "measurement_instrument": "Hospital record",
+            "time_point": time_point,
+            "analysis_population": "Intention to treat",
+            "analysis_model": "Risk ratio, unadjusted",
+            "effect_measure": "RR",
+            "source_locator": f"report.pdf {outcome} table",
+        },
+        "estimate": {"value": "0.82"},
+        "provenance_note": "Declared before autonomous preparation.",
+    }
+
+
 class AccessibilityParser(HTMLParser):
     def __init__(self) -> None:
         super().__init__()
@@ -291,6 +320,81 @@ def test_ready_workspace_shows_exact_result_sources_and_copyable_prompt(
     assert preview.content.startswith(b"%PDF-1.4")
 
 
+def test_real_initialized_project_shows_every_declared_exact_result_in_ready(
+    tmp_path: Path,
+) -> None:
+    trial = tmp_path / "input" / "trial-a"
+    trial.mkdir(parents=True)
+    (trial / "report.pdf").write_bytes(b"report")
+    (tmp_path / "rob2.yaml").write_text(
+        yaml.safe_dump(
+            {
+                "schema_version": 1,
+                "results": [
+                    declared_result(
+                        "result:trial-a-mortality-30d",
+                        "Mortality",
+                        "30 days",
+                    ),
+                    declared_result(
+                        "result:trial-a-readmission-90d",
+                        "Readmission",
+                        "90 days",
+                    ),
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+    gateway = ApplicationGateway(
+        parser=StubParser({"report": (page(1, "Trial report"),)})
+    )
+    initialized = gateway.initialize_project(tmp_path, authorized=True)
+    ledger = WorkflowLedger(
+        tmp_path / ".rob2" / "ledger.sqlite3",
+        ArtifactStore(tmp_path / ".rob2" / "artifacts"),
+    )
+    app, token = create_review_app(
+        None,
+        ReviewWebConfig(
+            project_root=tmp_path.resolve(),
+            session_lifetime=timedelta(minutes=30),
+            allowed_origin="http://testserver",
+        ),
+        ledger=ledger,
+    )
+
+    browser = TestClient(app)
+    page_text = enter_review(browser, token)
+
+    assert "trial:trial-a · Mortality · 30 days" in page_text
+    assert "trial:trial-a · Readmission · 90 days" in page_text
+    assert "Result identity pending" not in page_text
+    assert page_text.count("1 secured source") == 2
+    assert page_text.count("Waiting for autonomous preparation to begin") == 2
+
+    first_work = initialized.payload["work_item"]
+    gateway.call(
+        "submit_source_classification",
+        initialized.payload["project_id"],
+        arguments={
+            "classifications": [
+                {"source_id": "source:trial-a-1", "roles": ["primary_report"]}
+            ]
+        },
+        mutation_context={
+            "idempotency_key": "idempotency:classify-first-result",
+            "work_item_id": first_work["work_item_id"],
+            "contract_version": "1.0.0",
+            "expected_dependency_fingerprint": first_work["dependency_fingerprint"],
+        },
+    )
+    prepared = browser.get("/review").text
+
+    assert prepared.count("Waiting for autonomous preparation to begin") == 1
+    assert prepared.count("No judgment has been committed") == 1
+
+
 def test_prepare_workspace_uses_durable_state_and_never_implies_an_early_judgment(
     tmp_path: Path,
 ) -> None:
@@ -336,6 +440,44 @@ def test_prepare_workspace_uses_durable_state_and_never_implies_an_early_judgmen
     assert "Resume uninterrupted autonomous preparation" in page
     assert refreshed.count("Preparation was interrupted safely") == 1
     assert reconnected.count("Preparation was interrupted safely") == 1
+
+
+def test_prepare_workspace_keeps_incomplete_result_reason_and_recovery_visible(
+    tmp_path: Path,
+) -> None:
+    browser, token = companion_client(tmp_path)
+    review = browser.app.state.review_service
+    review.ledger.commit(
+        Transition(
+            scope="preparation:ready",
+            operation="operation:derive-assessment",
+            operation_key="idempotency:incomplete-ready",
+            actor=reviewer(),
+            observed_at=NOW,
+            entity_id="preparation-outcome:ready",
+            revision_id="revision:preparation-incomplete-ready",
+            artifact=json.dumps(
+                {
+                    "outcome": "preparation_incomplete",
+                    "reason": "material_evidence_gap",
+                    "detail": "The analysis population could not be resolved.",
+                }
+            ).encode(),
+            artifact_media_type="application/json",
+            dependencies=(),
+            expected_dependency_fingerprint=dependency_fingerprint(()),
+            checkpoint="checkpoint:preparation-outcome",
+            outcome=WorkflowEventOutcome.PREPARATION_OUTCOME_REACHED,
+        ),
+        review.lease,
+        now=NOW,
+    )
+
+    page_text = enter_review(browser, token)
+
+    assert "preparation incomplete" in page_text
+    assert "The analysis population could not be resolved." in page_text
+    assert "Resolve the material preparation gap, then resume preparation." in page_text
 
 
 def test_ready_selection_uses_the_committed_exact_result_identity(tmp_path: Path) -> None:

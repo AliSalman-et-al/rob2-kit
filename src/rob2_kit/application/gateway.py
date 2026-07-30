@@ -188,6 +188,34 @@ class ApplicationGateway:
                 ),
                 lease,
             )
+            plans_by_result = {
+                plan.result_id: plan for plan in plans if plan.result_id is not None
+            }
+            for result_spec in initialization.result_specs:
+                plan = plans_by_result.get(result_spec.result.result_id)
+                if plan is None:
+                    continue
+                ledger.commit(
+                    Transition(
+                        scope=plan.scope,
+                        operation="operation:register-result-spec",
+                        operation_key=(
+                            "idempotency:register-"
+                            f"{result_spec.result.result_id.removeprefix('result:')}"
+                        ),
+                        actor=result_spec.actor,
+                        observed_at=result_spec.observed_at,
+                        entity_id=result_spec.entity_id,
+                        revision_id=result_spec.revision_id,
+                        artifact=result_spec.model_dump_json().encode(),
+                        artifact_media_type="application/json",
+                        expected_dependency_fingerprint=dependency_fingerprint(()),
+                        checkpoint="checkpoint:result-resolution",
+                        outcome=WorkflowEventOutcome.COMPLETED,
+                    ),
+                    lease,
+                    now=result_spec.observed_at,
+                )
             existing = ledger.events()
         plans = _stored_plans(ledger)
         work_items = _available_work_items(ledger, plans)
@@ -491,6 +519,7 @@ class ApplicationGateway:
         committed = False
         writable_coordinator: AutonomousPreparation | None = None
         for item in tuple(work_items):
+            result_key = _work_item_result_key(item)
             if (
                 item.submission_kind is SubmissionKind.VISUAL_INSPECTION
                 and not _visual_candidates(ledger, item.scope)
@@ -508,7 +537,7 @@ class ApplicationGateway:
                         work_item_id=writable_item.work_item_id,
                         operation_key=(
                             "idempotency:skip-visual-"
-                            f"{item.trial_id.removeprefix('trial:')}"
+                            f"{result_key}"
                         ),
                         expected_dependency_fingerprint=(
                             writable_item.dependency_fingerprint
@@ -516,7 +545,7 @@ class ApplicationGateway:
                         submission_kind=SubmissionKind.VISUAL_INSPECTION,
                         entity_id=(
                             "visual-inspection:"
-                            f"{item.trial_id.removeprefix('trial:')}"
+                            f"{result_key}"
                         ),
                         revision_id=_derived_revision_id(
                             "visual-inspection-not-required",
@@ -536,9 +565,7 @@ class ApplicationGateway:
                     raise ValueError(
                         "source-inventory work item changed before deterministic commit"
                     )
-                result_spec = _reference_for_operation(
-                    ledger, item.scope, "operation:submit-result-resolution"
-                )
+                result_spec = _result_spec_reference(ledger, item.scope)
                 initialization = _stored_initialization(ledger)
                 trial = next(
                     trial
@@ -546,7 +573,7 @@ class ApplicationGateway:
                     if trial.trial_id == item.trial_id
                 )
                 inventory = SourceInventoryRevision(
-                    entity_id=f"source-inventory:{item.trial_id.removeprefix('trial:')}",
+                    entity_id=f"source-inventory:{result_key}",
                     revision_id=_derived_revision_id(
                         "source-inventory", item.dependency_fingerprint
                     ),
@@ -568,7 +595,7 @@ class ApplicationGateway:
                         work_item_id=writable_item.work_item_id,
                         operation_key=(
                             "idempotency:derive-source-inventory-"
-                            f"{item.trial_id.removeprefix('trial:')}"
+                            f"{result_key}"
                         ),
                         expected_dependency_fingerprint=(
                             writable_item.dependency_fingerprint
@@ -603,7 +630,7 @@ class ApplicationGateway:
                     work_item_id=writable_item.work_item_id,
                     operation_key=(
                         "idempotency:finalize-"
-                        f"{item.trial_id.removeprefix('trial:')}"
+                        f"{result_key}"
                     ),
                     expected_dependency_fingerprint=(
                         writable_item.dependency_fingerprint
@@ -611,11 +638,11 @@ class ApplicationGateway:
                     submission_kind=SubmissionKind.ASSESSMENT,
                     entity_id=(
                         "preparation-outcome:"
-                        f"{item.trial_id.removeprefix('trial:')}"
+                        f"{result_key}"
                     ),
                     revision_id=(
                         "revision:preparation-outcome-"
-                        f"{item.trial_id.removeprefix('trial:')}"
+                        f"{result_key}"
                     ),
                     artifact=b"{}",
                     artifact_media_type="application/json",
@@ -627,10 +654,10 @@ class ApplicationGateway:
             )
             review_hash = "sha256:" + ("0" * 64)
             review_case = ReviewCase(
-                review_id=f"review:{item.trial_id.removeprefix('trial:')}",
+                review_id=f"review:{result_key}",
                 review_revision=RecordReference(
-                    entity_id=f"review:{item.trial_id.removeprefix('trial:')}",
-                    revision_id=f"revision:review-{item.trial_id.removeprefix('trial:')}",
+                    entity_id=f"review:{result_key}",
+                    revision_id=f"revision:review-{result_key}",
                     content_hash=review_hash,
                 ),
                 assessment=assessment,
@@ -644,7 +671,7 @@ class ApplicationGateway:
                 ),
                 assessment_revision_id=assessment.revision_id,
                 assessment_content_hash=assessment.content_hash,
-                result_label=item.trial_id,
+                result_label=item.result_id or item.trial_id,
                 domain_ids=domain_ids,
                 preparation_scopes=(item.scope,),
             )
@@ -805,7 +832,7 @@ class ApplicationGateway:
             if event.operation == "operation:create-review-case"
             and (review_id is None or event.entity_id == review_id)
         )
-        if not cases:
+        if not cases or (len(cases) > 1 and review_id is None):
             cache_key = ("workspace:project", False)
             cached = self._review_handoffs.get(cache_key)
             if cached is not None:
@@ -818,8 +845,6 @@ class ApplicationGateway:
             handoff = ReviewHandoff(None, config, ledger=ledger)
             self._review_handoffs[cache_key] = handoff
             return handoff
-        if len(cases) > 1:
-            raise ValueError("review_id is required when multiple reviews are pending")
         case_event = cases[0]
         cache_key = (case_event.entity_id, writable)
         cached = (
@@ -888,7 +913,17 @@ class ApplicationGateway:
                 root,
                 ledger,
                 context.work_item_id,
-                f"trial:{prior.scope.removeprefix('preparation:')}",
+                next(
+                    plan.trial_id
+                    for plan in _stored_plans(ledger)
+                    if plan.scope == prior.scope
+                ),
+                next(
+                    plan.result_id
+                    for plan in _stored_plans(ledger)
+                    if plan.scope == prior.scope
+                ),
+                prior.scope,
                 submission_actor,
             )
             payload = _canonical_json(normalized)
@@ -920,6 +955,8 @@ class ApplicationGateway:
             ledger,
             work_item.work_item_id,
             work_item.trial_id,
+            work_item.result_id,
+            work_item.scope,
             submission_actor,
         )
         payload = _canonical_json(normalized)
@@ -1023,6 +1060,8 @@ def _normalize_submission(
     ledger: WorkflowLedger,
     work_item_id: str,
     trial_id: str,
+    expected_result_id: str | None,
+    preparation_scope: str,
     actor: Actor,
 ) -> dict[str, Any]:
     if tool_name == "submit_source_classification":
@@ -1045,7 +1084,7 @@ def _normalize_submission(
         if submitted_ids != expected_ids:
             raise ValueError("classifications must account for every issued trial source")
     elif tool_name == "submit_result_resolution":
-        expected = f"result:{trial_id.removeprefix('trial:')}"
+        expected = expected_result_id or f"result:{trial_id.removeprefix('trial:')}"
         result_id = submitted["result"].get("result_id")
         if result_id != expected:
             raise ValueError(f"result identifier must be the engine-issued {expected}")
@@ -1089,17 +1128,14 @@ def _normalize_submission(
             candidate.candidate_id
             for candidate in _visual_candidates(
                 ledger,
-                f"preparation:{trial_id.removeprefix('trial:')}",
+                preparation_scope,
             )
         }:
             raise ValueError("visual candidate identifier was not issued by the engine")
     elif tool_name == "freeze_evidence_bundle":
-        expected = f"bundle:{trial_id.removeprefix('trial:')}"
-        result_spec = _reference_for_operation(
-            ledger,
-            f"preparation:{trial_id.removeprefix('trial:')}",
-            "operation:submit-result-resolution",
-        )
+        result_key = (expected_result_id or trial_id).split(":", 1)[1]
+        expected = f"bundle:{result_key}"
+        result_spec = _result_spec_reference(ledger, preparation_scope)
         dependencies = (
             Dependency(
                 **result_spec.model_dump(),
@@ -1185,6 +1221,21 @@ def _reference_for_operation(
         revision_id=event.revision_id,
         content_hash=event.output_revision_hashes[0],
     )
+
+
+def _result_spec_reference(
+    ledger: WorkflowLedger,
+    scope: str,
+) -> RecordReference:
+    for operation in (
+        "operation:register-result-spec",
+        "operation:submit-result-resolution",
+    ):
+        try:
+            return _reference_for_operation(ledger, scope, operation)
+        except ValueError:
+            continue
+    raise ValueError("required ResultSpec has not been resolved")
 
 
 def _derived_revision_id(prefix: str, seed: str) -> str:
@@ -1292,10 +1343,8 @@ def _derive_assessment(
     work_item: PreparationWorkItem,
 ) -> tuple[RecordReference, tuple[str, ...]]:
     scope = work_item.scope
-    trial_slug = work_item.trial_id.removeprefix("trial:")
-    result_spec = _reference_for_operation(
-        ledger, scope, "operation:submit-result-resolution"
-    )
+    result_key = _work_item_result_key(work_item)
+    result_spec = _result_spec_reference(ledger, scope)
     source_inventory = _reference_for_operation(
         ledger, scope, "operation:derive-source-inventory"
     )
@@ -1324,9 +1373,9 @@ def _derive_assessment(
     for domain_id, judgment_level in evaluation.domain_judgments.items():
         domain_slug = domain_id.removeprefix("domain:")
         trace = DecisionTrace(
-            entity_id=f"decision-trace:{trial_slug}-{domain_slug}",
+            entity_id=f"decision-trace:{result_key}-{domain_slug}",
             revision_id=_derived_revision_id(
-                f"decision-trace-{trial_slug}-{domain_slug}",
+                f"decision-trace-{result_key}-{domain_slug}",
                 work_item.dependency_fingerprint,
             ),
             actor=_actor("application"),
@@ -1341,7 +1390,7 @@ def _derive_assessment(
             lease,
             scope=scope,
             operation="operation:derive-decision-trace",
-            operation_key=f"idempotency:derive-trace-{trial_slug}-{domain_slug}",
+            operation_key=f"idempotency:derive-trace-{result_key}-{domain_slug}",
             record=trace,
         )
         trace_dependency = Dependency(
@@ -1349,9 +1398,9 @@ def _derive_assessment(
             role="dependency:decision-trace",
         )
         judgment = AlgorithmicJudgmentRevision(
-            entity_id=f"judgment:{trial_slug}-{domain_slug}",
+            entity_id=f"judgment:{result_key}-{domain_slug}",
             revision_id=_derived_revision_id(
-                f"judgment-{trial_slug}-{domain_slug}",
+                f"judgment-{result_key}-{domain_slug}",
                 work_item.dependency_fingerprint,
             ),
             actor=_actor("application"),
@@ -1369,7 +1418,7 @@ def _derive_assessment(
                 scope=scope,
                 operation="operation:derive-judgment",
                 operation_key=(
-                    f"idempotency:derive-judgment-{trial_slug}-{domain_slug}"
+                    f"idempotency:derive-judgment-{result_key}-{domain_slug}"
                 ),
                 record=judgment,
             )
@@ -1394,9 +1443,9 @@ def _derive_assessment(
         ),
     )
     assessment = AssessmentRevision(
-        entity_id=f"assessment:{trial_slug}",
+        entity_id=f"assessment:{result_key}",
         revision_id=_derived_revision_id(
-            f"assessment-{trial_slug}",
+            f"assessment-{result_key}",
             work_item.dependency_fingerprint,
         ),
         actor=_actor("application"),
@@ -1413,7 +1462,7 @@ def _derive_assessment(
         lease,
         scope=scope,
         operation="operation:derive-assessment-record",
-        operation_key=f"idempotency:derive-assessment-record-{trial_slug}",
+        operation_key=f"idempotency:derive-assessment-record-{result_key}",
         record=assessment,
     )
     return assessment_ref, tuple(evaluation.domain_judgments)
@@ -1509,7 +1558,7 @@ def _preparation_plans(
         ("sq-answers", "submit-sq-answers", SubmissionKind.SQ_ANSWERS),
         ("assessment", "derive-assessment", SubmissionKind.ASSESSMENT),
     )
-    return tuple(
+    legacy = tuple(
         PreparationPlan(
             scope=f"preparation:{trial.trial_id.removeprefix('trial:')}",
             trial_id=trial.trial_id,
@@ -1525,7 +1574,36 @@ def _preparation_plans(
         )
         for trial in initialization.trials
         if trial.status == "inventory_ready"
+        and not any(
+            spec.result.trial_id == trial.trial_id
+            for spec in initialization.result_specs
+        )
     )
+    declared = tuple(
+        PreparationPlan(
+            scope=f"preparation:{spec.result.result_id.removeprefix('result:')}",
+            trial_id=spec.result.trial_id,
+            result_id=spec.result.result_id,
+            steps=tuple(
+                PreparationStep(
+                    step_id=f"step:{name}",
+                    operation=f"operation:{operation}",
+                    checkpoint=f"checkpoint:{name}",
+                    submission_kind=kind,
+                )
+                for name, operation, kind in steps
+                if kind is not SubmissionKind.RESULT_RESOLUTION
+            ),
+        )
+        for spec in initialization.result_specs
+        if next(
+            trial
+            for trial in initialization.trials
+            if trial.trial_id == spec.result.trial_id
+        ).status
+        == "inventory_ready"
+    )
+    return (*legacy, *declared)
 
 
 def _stored_plans(ledger: WorkflowLedger) -> tuple[PreparationPlan, ...]:
@@ -1571,6 +1649,10 @@ def _available_work_items(
     return _coordinator(ledger, plans).continue_preparation() if plans else ()
 
 
+def _work_item_result_key(work_item: PreparationWorkItem) -> str:
+    return (work_item.result_id or work_item.trial_id).split(":", 1)[1]
+
+
 def _work_item_payload(work_item: PreparationWorkItem) -> dict[str, Any]:
     tool_name = next(
         name
@@ -1580,9 +1662,9 @@ def _work_item_payload(work_item: PreparationWorkItem) -> dict[str, Any]:
     issued_identifiers: dict[str, str] = {}
     trial_slug = work_item.trial_id.removeprefix("trial:")
     if work_item.submission_kind is SubmissionKind.RESULT_RESOLUTION:
-        issued_identifiers["result_id"] = f"result:{trial_slug}"
+        issued_identifiers["result_id"] = work_item.result_id or f"result:{trial_slug}"
     elif work_item.submission_kind is SubmissionKind.EVIDENCE_BUNDLE:
-        issued_identifiers["bundle_id"] = f"bundle:{trial_slug}"
+        issued_identifiers["bundle_id"] = f"bundle:{_work_item_result_key(work_item)}"
     elif work_item.submission_kind is SubmissionKind.VISUAL_INSPECTION:
         issued_identifiers["visual_candidate_source"] = "inspect_visual_candidate"
     payload = {

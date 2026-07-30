@@ -6,6 +6,7 @@ from pathlib import Path
 
 import anyio
 import pytest
+import yaml
 from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
 from typer.testing import CliRunner
@@ -26,6 +27,7 @@ from rob2_kit.domain.sources import SourceInventoryRevision
 from rob2_kit.interfaces.cli.app import app
 from rob2_kit.interfaces.mcp.server import registered_tool_names
 from rob2_kit.release import build_host_adapters, verify_host_adapters
+from rob2_kit.review.workspace import project_workspace
 from rob2_kit.storage.artifacts import ArtifactStore
 from rob2_kit.storage.ledger import (
     DependencyInput,
@@ -580,8 +582,80 @@ def test_preparation_work_items_enforce_order_and_reach_review(tmp_path: Path) -
     assert durable_status.status == "review_pending"
     assert pending.ledger_cursor == resumed_pending.ledger_cursor == "ledger:21"
     assert len(assessment.judgments) == 5
+    workspace = project_workspace(
+        ledger_for(tmp_path),
+        connection_state="not connected—review saved",
+    )
+    assert workspace is not None
+    assert workspace.results[0].judgment == "Overall judgment: Low"
     assert visual_page.payload["candidates"][0]["candidate_id"].startswith("visual:")
     assert visual_page.payload["render_requests"][0]["dpi"] == 144
+
+
+def test_declared_result_skips_resolution_and_uses_result_scoped_preparation(
+    tmp_path: Path,
+) -> None:
+    trial = tmp_path / "input" / "trial-a"
+    trial.mkdir(parents=True)
+    (trial / "report.pdf").write_bytes(b"report")
+    declared = result_resolution_submission()
+    declared["result"]["result_id"] = "result:trial-a-mortality-30d"
+    (tmp_path / "rob2.yaml").write_text(
+        yaml.safe_dump(
+            {
+                "schema_version": 1,
+                "results": [declared],
+            }
+        ),
+        encoding="utf-8",
+    )
+    gateway = ApplicationGateway(
+        parser=StubParser({"report": (page(1, "Trial report"),)})
+    )
+    initialized = gateway.initialize_project(tmp_path, authorized=True)
+    project_id = initialized.payload["project_id"]
+    first_work = initialized.payload["work_item"]
+
+    assert first_work["result_id"] == "result:trial-a-mortality-30d"
+    assert first_work["scope"] == "preparation:trial-a-mortality-30d"
+    assert first_work["permitted_tool"] == "submit_source_classification"
+
+    gateway.call(
+        "submit_source_classification",
+        project_id,
+        arguments={
+            "classifications": [
+                {"source_id": "source:trial-a-1", "roles": ["primary_report"]}
+            ]
+        },
+        mutation_context={
+            "idempotency_key": "idempotency:declared-classification",
+            "work_item_id": first_work["work_item_id"],
+            "contract_version": "1.0.0",
+            "expected_dependency_fingerprint": first_work["dependency_fingerprint"],
+        },
+    )
+    next_work = gateway.call("continue_preparation", project_id).payload["work_item"]
+
+    assert next_work["permitted_tool"] == "submit_evidence_dispositions"
+    assert next_work["issued_identifiers"] == {}
+
+
+def test_declared_result_for_failed_trial_remains_terminal_without_a_plan(
+    tmp_path: Path,
+) -> None:
+    (tmp_path / "input" / "trial-a").mkdir(parents=True)
+    declared = result_resolution_submission()
+    declared["result"]["result_id"] = "result:trial-a-mortality-30d"
+    (tmp_path / "rob2.yaml").write_text(
+        yaml.safe_dump({"schema_version": 1, "results": [declared]}),
+        encoding="utf-8",
+    )
+
+    initialized = ApplicationGateway().initialize_project(tmp_path, authorized=True)
+
+    assert initialized.status == "trial_problem"
+    assert initialized.payload["work_item"] is None
 
 
 def ledger_for(root: Path) -> WorkflowLedger:

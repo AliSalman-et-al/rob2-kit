@@ -124,6 +124,7 @@ class PreparationStep(FrozenModel):
 class PreparationPlan(FrozenModel):
     scope: Identifier
     trial_id: Identifier
+    result_id: Identifier | None = None
     steps: tuple[PreparationStep, ...] = Field(min_length=1)
 
     @model_validator(mode="after")
@@ -139,6 +140,7 @@ class PreparationWorkItem(FrozenModel):
     work_item_id: Identifier
     scope: Identifier
     trial_id: Identifier
+    result_id: Identifier | None = None
     step_id: Identifier
     operation: Identifier
     checkpoint: Identifier
@@ -207,6 +209,7 @@ class AutonomousPreparation:
             work_item_id=f"work-item:{digest}",
             scope=scope,
             trial_id=plan.trial_id,
+            result_id=plan.result_id,
             step_id=step.step_id,
             operation=step.operation,
             checkpoint=step.checkpoint,

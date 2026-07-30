@@ -12,13 +12,14 @@ from enum import StrEnum
 from importlib.metadata import version
 from io import BytesIO
 from pathlib import Path, PurePosixPath, PureWindowsPath
-from typing import Literal, Protocol
+from typing import Any, Literal, Protocol
 from zipfile import BadZipFile, ZipFile
 
 import yaml
 from pydantic import Field
 
 from rob2_kit.application.preparation import TrialFailed, TrialFailureReason
+from rob2_kit.domain.results import ResultSpecRevision
 from rob2_kit.domain.revisions import Actor, ContentHash, FrozenModel, Identifier
 from rob2_kit.domain.sources import (
     AcquisitionMethod,
@@ -219,6 +220,7 @@ class TrialInitialization(FrozenModel):
 class ProjectInitialization(FrozenModel):
     manifest: ProjectManifest
     trials: tuple[TrialInitialization, ...]
+    result_specs: tuple[ResultSpecRevision, ...] = ()
     acquisition_receipts: tuple[AcquisitionReceipt, ...]
     review_findings: tuple[ReviewFinding, ...]
 
@@ -246,11 +248,15 @@ def initialize_project(
     store = ArtifactStore(state_root / "artifacts")
     WorkflowLedger(state_root / "ledger.sqlite3", store)
     parser = parser or LiteParseAdapter()
+    configuration = _read_project_configuration(root)
     manifest = ProjectManifest(
         project_name=root.name,
         input_root="input",
         output_root="output",
         state_root=".rob2",
+        outcome_targets=tuple(
+            str(item["id"]) for item in configuration.get("outcome_targets", ())
+        ),
     )
     store.put(manifest.model_dump_json().encode(), "application/json")
 
@@ -262,12 +268,70 @@ def initialize_project(
         trials.append(trial)
         receipts.extend(trial_receipts)
         findings.extend(trial_findings)
+    result_specs = _declared_result_specs(
+        configuration,
+        actor,
+        {trial.trial_id for trial in trials},
+    )
     return ProjectInitialization(
         manifest=manifest,
         trials=tuple(trials),
+        result_specs=result_specs,
         acquisition_receipts=tuple(receipts),
         review_findings=tuple(findings),
     )
+
+
+def _read_project_configuration(root: Path) -> dict[str, Any]:
+    path = root / "rob2.yaml"
+    if not path.is_file():
+        return {}
+    payload = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+    if not isinstance(payload, dict):
+        raise ValueError("rob2.yaml must contain a mapping")
+    if payload.get("schema_version") != 1:
+        raise ValueError("rob2.yaml schema_version must be 1")
+    return payload
+
+
+def _declared_result_specs(
+    configuration: dict[str, Any],
+    actor: Actor,
+    trial_ids: set[str],
+) -> tuple[ResultSpecRevision, ...]:
+    declared = configuration.get("results", [])
+    if not isinstance(declared, list):
+        raise ValueError("rob2.yaml results must be a list")
+    observed_at = datetime.now(UTC)
+    specs = []
+    for item in declared:
+        if not isinstance(item, dict):
+            raise ValueError("each rob2.yaml result must be a mapping")
+        result = item.get("result")
+        if not isinstance(result, dict):
+            raise ValueError("each declared ResultSpec requires a result mapping")
+        trial_id = result.get("trial_id")
+        if trial_id not in trial_ids:
+            raise ValueError(f"declared Result references unknown Trial {trial_id}")
+        result_id = str(result.get("result_id", ""))
+        digest = hashlib.sha256(
+            json.dumps(item, sort_keys=True, separators=(",", ":")).encode()
+        ).hexdigest()[:24]
+        specs.append(
+            ResultSpecRevision(
+                entity_id=f"result-spec:{result_id.removeprefix('result:')}",
+                revision_id=f"revision:result-spec-{digest}",
+                actor=actor,
+                observed_at=observed_at,
+                result=result,
+                estimate=item.get("estimate", {}),
+                provenance_note=str(item.get("provenance_note", "")),
+            )
+        )
+    result_ids = [item.result.result_id for item in specs]
+    if len(result_ids) != len(set(result_ids)):
+        raise ValueError("rob2.yaml Result IDs must be unique")
+    return tuple(specs)
 
 
 def _initialize_trial(
