@@ -140,6 +140,10 @@ _Avoid_: Trial approval, agent sign-off
 The explicit strength of the identity claim attached to an Assessment sign-off. V1 uses local human attribution bound to an integrity-verifiable Assessment revision and does not claim independently or cryptographically verified identity.
 _Avoid_: Cryptographic signature, verified identity
 
+**Sign-off withdrawal**:
+An attributable Review receipt that ends the current applicability of an Assessment sign-off without changing the signed Assessment revision or its Domain review dispositions. The withdrawn sign-off and its outputs remain immutable history, while the unchanged Assessment may be inspected and signed again.
+_Avoid_: Delete signature, Assessment correction, dependency invalidation
+
 **Source descriptor**:
 The identity and expected roles of an obtained, missing, or discovered information source, including relevant dates and external identifiers. Roles are attributable classifications rather than forced labels, and the descriptor can exist even when no content was acquired.
 _Avoid_: PDF, source file
