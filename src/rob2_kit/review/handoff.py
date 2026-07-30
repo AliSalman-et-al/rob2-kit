@@ -17,6 +17,7 @@ from pydantic import BaseModel, ConfigDict
 
 from rob2_kit.review.service import DurableReviewReceipt, ReviewService
 from rob2_kit.review.web import ReviewWebConfig, create_review_app
+from rob2_kit.storage.ledger import WorkflowLedger
 
 LOOPBACK_HOST = "127.0.0.1"
 
@@ -47,12 +48,16 @@ class ReviewHandoff:
 
     def __init__(
         self,
-        review_service: ReviewService,
+        review_service: ReviewService | None,
         web_config: ReviewWebConfig,
         *,
+        ledger: WorkflowLedger | None = None,
         browser_open: Callable[[str], bool] = webbrowser.open,
     ) -> None:
         self.review_service = review_service
+        self.ledger = review_service.ledger if review_service is not None else ledger
+        if self.ledger is None:
+            raise ValueError("a Review service or Workflow ledger is required")
         self.web_config = web_config
         self.browser_open = browser_open
         self._server: uvicorn.Server | None = None
@@ -67,7 +72,11 @@ class ReviewHandoff:
             port = listener.getsockname()[1]
             origin = f"http://{LOOPBACK_HOST}:{port}"
             config = self.web_config.model_copy(update={"allowed_origin": origin})
-            app, token = create_review_app(self.review_service, config)
+            app, token = create_review_app(
+                self.review_service,
+                config,
+                ledger=self.ledger,
+            )
             self._app = app
             self._origin = origin
             self._url = f"{origin}/review?token={token}"
@@ -97,12 +106,17 @@ class ReviewHandoff:
             opened = bool(self.browser_open(self._url))
         except OSError:
             opened = False
-        if not opened:
+        if not opened and self.review_service is not None:
             self.review_service.mark_reconnect_needed()
+        connection_state = (
+            self.review_service.connection_state().value
+            if self.review_service is not None
+            else "not connected—review saved"
+        )
         return OpenReviewResult(
             url=self._url,
             browser_opened=opened,
-            connection_state=self.review_service.connection_state().value,
+            connection_state=connection_state,
             project_root=self.web_config.project_root,
         )
 
@@ -115,17 +129,20 @@ class ReviewHandoff:
     ) -> ReviewWaitResult:
         inactivity_seconds = max(0.0, inactivity_timeout.total_seconds())
         poll_interval = min(0.1, max(0.01, inactivity_seconds / 4))
-        last_contact = self.review_service.last_contact()
-        deadline = monotonic() + inactivity_seconds
         cancel_event = cancelled or Event()
+        if self.review_service is None:
+            return ReviewWaitResult(outcome=ReviewWaitOutcome.REVIEW_PENDING)
+        review_service = self.review_service
+        last_contact = review_service.last_contact()
+        deadline = monotonic() + inactivity_seconds
         while not cancel_event.is_set() and monotonic() < deadline:
-            receipt = self.review_service.latest_receipt(after_sequence=after_sequence)
+            receipt = review_service.latest_receipt(after_sequence=after_sequence)
             if receipt is not None:
                 return ReviewWaitResult(
                     outcome=ReviewWaitOutcome.RECEIPT_AVAILABLE,
                     receipt=receipt,
                 )
-            current_contact = self.review_service.last_contact()
+            current_contact = review_service.last_contact()
             if current_contact > last_contact:
                 last_contact = current_contact
                 deadline = monotonic() + inactivity_seconds
@@ -139,7 +156,8 @@ class ReviewHandoff:
             self._server.should_exit = True
         if self._thread is not None:
             self._thread.join(timeout=5)
-        self.review_service.mark_disconnected()
+        if self.review_service is not None:
+            self.review_service.mark_disconnected()
 
 
 def _loopback_listener() -> socket.socket:

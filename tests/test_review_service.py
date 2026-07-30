@@ -42,7 +42,7 @@ def reviewer() -> Actor:
 def service(tmp_path: Path, review_case: ReviewCase) -> ReviewService:
     artifacts = ArtifactStore(tmp_path / "artifacts")
     ledger = WorkflowLedger(tmp_path / "workflow.sqlite3", artifacts)
-    lease = ledger.acquire_lease("owner:review-gui", NOW, timedelta(days=1))
+    lease = ledger.acquire_lease("owner:review-gui", NOW, timedelta(days=7))
     ledger.commit(
         Transition(
             scope="preparation:trial-1",

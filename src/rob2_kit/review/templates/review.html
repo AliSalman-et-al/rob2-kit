@@ -25,6 +25,123 @@
         <span>Your review is saved independently of the agent connection.</span>
       </div>
     </header>
+    {% if workspace %}
+    <nav class="lifecycle-rail" aria-label="Assessment lifecycle">
+      <ol>
+        {% for stage in ["Ready", "Prepare", "Review", "Complete"] %}
+        <li{% if workspace.stage.value == stage.lower() %} aria-current="step"{% endif %}>
+          {{ stage }}
+        </li>
+        {% endfor %}
+      </ol>
+    </nav>
+    <main class="companion-workspace">
+      <section class="guidance-panel" aria-labelledby="agent-prompt-title">
+        <div>
+          <p class="eyebrow">Next agent action</p>
+          <h2 id="agent-prompt-title">Start or resume preparation</h2>
+        </div>
+        <label for="agent-prompt">Copy this context-bound prompt</label>
+        <textarea id="agent-prompt" readonly rows="4">{{ workspace.agent_prompt }}</textarea>
+      </section>
+
+      <section aria-labelledby="ready-title">
+        <p class="eyebrow">Ready</p>
+        <h2 id="ready-title">Trial × Result identity and secured sources</h2>
+        <div class="ready-grid">
+          <nav class="result-list" aria-label="Expected Results">
+            {% for card in workspace.results %}
+            <a href="/review?result={{ card.result_id | urlencode }}"
+               {% if card.result_id == workspace.selected_result_id %}aria-current="true"{% endif %}>
+              <strong>{{ card.label }}</strong>
+              <span>{{ card.sources | length }} secured source{% if card.sources | length != 1 %}s{% endif %}</span>
+            </a>
+            {% endfor %}
+          </nav>
+          {% for card in workspace.results if card.result_id == workspace.selected_result_id %}
+          <article class="selected-result">
+            <h3>{{ card.label }}</h3>
+            <dl class="result-identity">
+              {% for name, value in card.identity %}
+              <dt>{{ name }}</dt><dd>{{ value }}</dd>
+              {% endfor %}
+            </dl>
+            <div class="source-grid">
+              {% for source in card.sources %}
+              <article class="source-preview">
+                {% if source.preview_available %}
+                <iframe class="page-preview"
+                        title="First-page preview of {{ source.filename }}"
+                        src="/review/sources/{{ source.source_id | urlencode }}#page=1&view=FitH"
+                        sandbox></iframe>
+                {% else %}
+                <div class="page-preview" aria-label="Preview unavailable">
+                  <span>Page 1</span>
+                  <strong>Preview unavailable</strong>
+                </div>
+                {% endif %}
+                <h4>{{ source.filename }}</h4>
+                <p>{{ source.roles | join(", ") }}</p>
+                <dl>
+                  <dt>Pages</dt><dd>{{ source.page_count }} pages</dd>
+                  <dt>Custody</dt><dd>{{ source.custody_status }}</dd>
+                  <dt>LiteParse</dt><dd>{{ source.parse_status }}</dd>
+                </dl>
+              </article>
+              {% else %}
+              <p>No secured source is available for this Result.</p>
+              {% endfor %}
+            </div>
+          </article>
+          {% endfor %}
+        </div>
+      </section>
+
+      <section aria-labelledby="prepare-title">
+        <p class="eyebrow">Prepare</p>
+        <h2 id="prepare-title">Autonomous preparation</h2>
+        <p class="connection-summary" aria-live="polite">
+          <strong>{{ workspace.connection_state }}</strong>.
+          Board state comes from the durable Workflow ledger.
+        </p>
+        <div class="preparation-board">
+          {% for column, title in [("queue", "Queue"), ("processing", "Processing"), ("review_queue", "Review queue")] %}
+          <section class="preparation-column" aria-labelledby="column-{{ column }}">
+            <h3 id="column-{{ column }}">{{ title }}</h3>
+            {% for card in workspace.results if card.column == column %}
+            <article class="preparation-card status-{{ card.outcome or card.column }}">
+              <h4>{{ card.label }}</h4>
+              {% if card.checkpoint %}
+              <p><strong>Last durable checkpoint:</strong> {{ card.checkpoint }}</p>
+              {% endif %}
+              {% if column == "queue" %}
+              <p>Waiting for autonomous preparation to begin.</p>
+              {% elif column == "processing" %}
+              <p>Preparation is in progress. No judgment has been committed.</p>
+              {% if card.reason %}<p>{{ card.reason }}</p>{% endif %}
+              {% else %}
+              <p><strong>{{ card.outcome | replace("_", " ") }}</strong></p>
+              {% if card.judgment %}<p class="committed-judgment">{{ card.judgment }}</p>{% endif %}
+              {% if card.reason %}<p>{{ card.reason }}</p>{% endif %}
+              {% if card.next_action %}<p><strong>Next action:</strong> {{ card.next_action }}</p>{% endif %}
+              {% endif %}
+            </article>
+            {% else %}
+            <p class="empty-column">No Results</p>
+            {% endfor %}
+          </section>
+          {% endfor %}
+        </div>
+        {% if workspace.review_locked %}
+        <div class="review-gate" role="status">
+          <strong>Human review locked.</strong>
+          Review opens after every requested Trial reaches a terminal Preparation outcome.
+        </div>
+        {% endif %}
+      </section>
+    </main>
+    {% endif %}
+    {% if review and (not workspace or not workspace.review_locked) %}
     <main class="review-layout">
       <aside class="position-pane">
         <h2>Remaining checks</h2>
@@ -134,5 +251,6 @@
         {% endfor %}
       </section>
     </main>
+    {% endif %}
   </body>
 </html>

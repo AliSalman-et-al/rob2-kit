@@ -435,6 +435,8 @@ class ApplicationGateway:
             handoff = self._review_handoff(
                 root, ledger, (arguments or {}).get("review_id")
             )
+            if handoff.review_service is None:
+                raise ValueError("human review remains locked until preparation is terminal")
             return OperationEnvelope(
                 operation_id=_identifier("operation", f"{project_id}|review-queue"),
                 ledger_cursor=f"ledger:{len(ledger.events())}",
@@ -804,7 +806,18 @@ class ApplicationGateway:
             and (review_id is None or event.entity_id == review_id)
         )
         if not cases:
-            raise ValueError("no durable review case is registered for this project")
+            cache_key = ("workspace:project", False)
+            cached = self._review_handoffs.get(cache_key)
+            if cached is not None:
+                return cached
+            config = ReviewWebConfig(
+                project_root=root,
+                session_lifetime=timedelta(minutes=30),
+                allowed_origin="http://127.0.0.1:0",
+            )
+            handoff = ReviewHandoff(None, config, ledger=ledger)
+            self._review_handoffs[cache_key] = handoff
+            return handoff
         if len(cases) > 1:
             raise ValueError("review_id is required when multiple reviews are pending")
         case_event = cases[0]

@@ -8,7 +8,7 @@ from pathlib import Path
 from urllib.parse import parse_qs
 
 from fastapi import FastAPI, Request
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.responses import HTMLResponse, RedirectResponse, Response
 from fastapi.staticfiles import StaticFiles
 from jinja2 import Environment, PackageLoader, select_autoescape
 from pydantic import BaseModel, ConfigDict
@@ -22,10 +22,12 @@ from rob2_kit.review.service import (
     SignOffBlockedError,
     StaleReviewError,
 )
+from rob2_kit.review.workspace import project_workspace, secured_source_pdf
+from rob2_kit.storage.ledger import WorkflowLedger
 
 SESSION_COOKIE = "rob2_review_session"
 CONTENT_SECURITY_POLICY = (
-    "default-src 'none'; style-src 'self'; img-src 'self' data:; "
+    "default-src 'none'; style-src 'self'; img-src 'self' data:; frame-src 'self'; "
     "form-action 'self'; base-uri 'none'; frame-ancestors 'none'"
 )
 
@@ -56,10 +58,15 @@ class _Session(BaseModel):
 
 
 def create_review_app(
-    review_service: ReviewService,
+    review_service: ReviewService | None,
     config: ReviewWebConfig,
+    *,
+    ledger: WorkflowLedger | None = None,
 ) -> tuple[FastAPI, str]:
     """Create an app and a single-use bootstrap token for a fixed project root."""
+    workspace_ledger = review_service.ledger if review_service is not None else ledger
+    if workspace_ledger is None:
+        raise ValueError("a Review service or Workflow ledger is required")
     root = config.project_root.resolve()
     if not root.is_dir() or root != config.project_root:
         raise ValueError("project_root must be an existing, resolved directory")
@@ -91,7 +98,11 @@ def create_review_app(
         return response
 
     @app.get("/review", response_class=HTMLResponse)
-    async def review_page(request: Request, token: str | None = None):
+    async def review_page(
+        request: Request,
+        token: str | None = None,
+        result: str | None = None,
+    ):
         if token is not None:
             if not secrets.compare_digest(token, app.state.bootstrap_token):
                 return HTMLResponse("Invalid or expired review link", status_code=401)
@@ -114,17 +125,33 @@ def create_review_app(
         session = _authenticated_session(request, app.state.sessions)
         if session is None:
             return HTMLResponse("Review session expired", status_code=401)
-        review_service.heartbeat()
+        if review_service is not None:
+            review_service.heartbeat()
+        connection_state = (
+            review_service.connection_state().value
+            if review_service is not None
+            else "not connected—review saved"
+        )
+        workspace = project_workspace(
+            workspace_ledger,
+            connection_state=connection_state,
+            selected_result_id=result,
+        )
         template = environment.get_template("review.html")
         return HTMLResponse(
             template.render(
-                review=review_service.review_case,
-                queue=review_service.queue(),
+                workspace=workspace,
+                review=review_service.review_case if review_service is not None else None,
+                queue=review_service.queue() if review_service is not None else (),
                 csrf_token=session.csrf_token,
-                connection_state=review_service.connection_state().value,
-                last_contact=review_service.last_contact(),
+                connection_state=connection_state,
+                last_contact=(
+                    review_service.last_contact()
+                    if review_service is not None
+                    else datetime.now(UTC)
+                ),
                 reviewer=config.reviewer,
-                stale=review_service.is_stale(),
+                stale=review_service.is_stale() if review_service is not None else False,
             )
         )
 
@@ -133,6 +160,11 @@ def create_review_app(
         session = _authenticated_session(request, app.state.sessions)
         if session is None:
             return HTMLResponse("Review session expired", status_code=401)
+        if review_service is None:
+            return HTMLResponse(
+                "Human review is locked until preparation is complete",
+                status_code=409,
+            )
         if request.headers.get("origin") != config.allowed_origin:
             return HTMLResponse("Origin rejected", status_code=403)
         form = await _urlencoded_form(request)
@@ -163,6 +195,22 @@ def create_review_app(
         except (ReviewError, ValueError) as error:
             return HTMLResponse(f"Invalid review action: {error}", status_code=422)
         return RedirectResponse("/review", status_code=303)
+
+    @app.get("/review/sources/{source_id:path}")
+    async def source_preview(request: Request, source_id: str):
+        if _authenticated_session(request, app.state.sessions) is None:
+            return HTMLResponse("Review session expired", status_code=401)
+        source = secured_source_pdf(workspace_ledger, source_id)
+        if source is None:
+            return HTMLResponse("Secured PDF source not found", status_code=404)
+        return Response(
+            source,
+            media_type="application/pdf",
+            headers={
+                "Content-Disposition": "inline",
+                "X-Content-Type-Options": "nosniff",
+            },
+        )
 
     return app, app.state.bootstrap_token
 
