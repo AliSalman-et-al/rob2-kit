@@ -10,6 +10,7 @@ from rob2_kit.review.service import (
     ActionKind,
     AttentionTier,
     BoundEvidence,
+    CorrectionScope,
     DomainQuestionSummary,
     DomainReviewSummary,
     FindingRequirement,
@@ -453,6 +454,56 @@ def test_correction_request_is_attributable_and_does_not_satisfy_review_policy(
     assert correction.receipt.correction_checkpoint == "checkpoint:evidence"
     assert review.ledger.events()[-1].outcome == "work_required"
     assert all(item.kind is not ActionKind.SIGN_OFF for item in review.queue())
+    queue = {item.action_id: item for item in review.queue()}
+    assert queue["review-action:domain-1"].actionable is False
+    assert queue["review-action:domain-2"].actionable is True
+
+
+def test_correction_receipt_pins_context_and_derives_non_shrinkable_scope(
+    tmp_path: Path,
+) -> None:
+    review = service(tmp_path, case())
+
+    correction = review.commit(
+        command(
+            "review-action:finding-1",
+            ActionKind.VERIFY_EVIDENCE,
+            key="idempotency:targeted-correction",
+            value=ActionDecision.CORRECTION_REQUESTED,
+        ).model_copy(
+            update={
+                "rationale": "The quotation omits the sentence describing open allocation.",
+                "correction_scope": CorrectionScope.DOMAIN,
+            }
+        )
+    )
+
+    request = correction.receipt.correction_request
+    assert request is not None
+    assert request.challenged_assessment == reference("assessment")
+    assert request.result_label == "Mortality at 30 days"
+    assert request.domain_id == "domain:1"
+    assert request.evidence_claim == reference("evidence-claim")
+    assert request.exact_text == "<script>alert('source')</script> ‏trial text"
+    assert request.highlighted_region == (0, 44)
+    assert request.prepared_answer == "Probably yes"
+    assert request.prepared_rationale == "Allocation concealment was described."
+    assert request.minimum_scope is CorrectionScope.EVIDENCE
+    assert request.requested_scope is CorrectionScope.DOMAIN
+    assert request.affected_scope == ("domain:1",)
+    assert correction.receipt.revision_id in request.agent_prompt
+    assert "The quotation omits" in request.agent_prompt
+
+    separate_review = service(tmp_path / "narrow", case())
+    with pytest.raises(ValueError, match="cannot narrow"):
+        separate_review.commit(
+            command(
+                "review-action:domain-1",
+                ActionKind.DOMAIN_REVIEW,
+                key="idempotency:narrow-correction",
+                value=ActionDecision.CORRECTION_REQUESTED,
+            ).model_copy(update={"correction_scope": CorrectionScope.SIGNALING_QUESTION})
+        )
 
 
 def test_authoritative_newer_assessment_makes_session_stale(tmp_path: Path) -> None:

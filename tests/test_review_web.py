@@ -1200,6 +1200,39 @@ def test_double_click_is_idempotent_and_reopen_reveals_staged_answer(
     assert len(review_events) == 1
 
 
+def test_correction_sidecar_survives_reopen_and_exposes_receipt_bound_prompt(
+    tmp_path: Path,
+) -> None:
+    browser, token = client(tmp_path)
+    page = enter_review(browser, token)
+
+    response = browser.post(
+        "/review/actions",
+        data={
+            "csrf_token": csrf_from(page),
+            "action_id": "review-action:finding-1",
+            "kind": "verify_evidence",
+            "expected_assessment_revision_id": "revision:assessment-1",
+            "idempotency_key": "idempotency:web-correction",
+            "value": "correction_requested",
+            "rationale": "The quote excludes the open-allocation sentence.",
+            "correction_scope": "domain",
+        },
+        headers={"Origin": "http://testserver"},
+        follow_redirects=False,
+    )
+    reopened = browser.get("/review")
+
+    assert response.status_code == 303
+    assert "Correction request · pending targeted rework" in reopened.text
+    assert "The quote excludes the open-allocation sentence." in reopened.text
+    assert "Prepared answer" in reopened.text
+    assert "Probably yes" in reopened.text
+    assert "Copyable agent prompt" in reopened.text
+    assert "Targeted rob2-kit correction request" in reopened.text
+    assert "Affected work is read-only" in reopened.text
+
+
 def test_guided_review_explains_attention_and_preserves_full_audit_position(
     tmp_path: Path,
 ) -> None:

@@ -117,6 +117,7 @@ def create_review_app(
         view: str = "crop",
         mode: str | None = None,
         return_position: str | None = None,
+        correction_action: str | None = None,
     ):
         if token is not None:
             if not secrets.compare_digest(token, app.state.bootstrap_token):
@@ -203,6 +204,11 @@ def create_review_app(
                 audit=audit,
                 review=review_service.review_case if review_service is not None else None,
                 queue=review_service.queue() if review_service is not None else (),
+                corrections=(
+                    review_service.correction_receipts()
+                    if review_service is not None
+                    else ()
+                ),
                 csrf_token=session.csrf_token,
                 connection_state=connection_state,
                 last_contact=(
@@ -218,6 +224,7 @@ def create_review_app(
                 selected_sq=sq,
                 selected_evidence=evidence,
                 return_position=return_position,
+                correction_action=correction_action,
                 full_audit_url=full_audit_url,
                 guided_review_url=guided_review_url,
             )
@@ -256,6 +263,9 @@ def create_review_app(
                     observed_at=datetime.now(UTC),
                     domain_opened=(
                         form.get("domain", "") in session.opened_domains
+                    ),
+                    correction_scope=(
+                        form.get("correction_scope") or None
                     ),
                 )
             )

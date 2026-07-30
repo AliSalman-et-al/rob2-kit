@@ -141,6 +141,34 @@
       </section>
     </main>
     {% endif %}
+    {% if corrections %}
+    <aside class="correction-sidecar" aria-labelledby="correction-title">
+      <h2 id="correction-title">Correction request · pending targeted rework</h2>
+      {% for receipt in corrections %}
+      {% set correction = receipt.correction_request %}
+      <article>
+        <p><strong>Affected work is read-only</strong> while targeted rework is pending.</p>
+        <p>{{ correction.result_label }}{% if correction.domain_id %} · {{ correction.domain_id }}{% endif %}{% if correction.sq_id %} · {{ correction.sq_id }}{% endif %}</p>
+        {% if correction.evidence_claim %}
+        <p>Evidence claim: {{ correction.evidence_claim.entity_id }}</p>
+        <blockquote>{{ correction.exact_text }}</blockquote>
+        {% endif %}
+        {% if correction.prepared_answer %}
+        <h3>Prepared answer</h3>
+        <p><strong>{{ correction.prepared_answer }}</strong></p>
+        <p>{{ correction.prepared_rationale }}</p>
+        {% endif %}
+        <h3>Correction request</h3>
+        <p>{{ correction.request }}</p>
+        <p>Scope: {{ correction.requested_scope.value }} · required path:
+          {{ correction.affected_scope | join(", ") }}</p>
+        <label>Copyable agent prompt
+          <textarea readonly rows="9">{{ correction.agent_prompt }}</textarea>
+        </label>
+      </article>
+      {% endfor %}
+    </aside>
+    {% endif %}
     {% if review and review_mode == "guided" and (not workspace or not workspace.review_locked) %}
     <main class="guided-review" aria-labelledby="guided-title">
       <header class="guided-header">
@@ -366,6 +394,16 @@
           <p><strong>{{ item.staged_answer }}</strong></p>
           <p>{{ item.staged_rationale }}</p>
           {% elif not item.completed and not stale %}
+          {% if correction_action == item.action_id %}
+          <aside class="correction-draft" aria-label="Pinned correction context">
+            <p><strong>Pinned correction context</strong></p>
+            <p>{{ review.result_label }}{% if item.domain_id %} · {{ item.domain_id }}{% endif %}{% if item.sq_id %} · {{ item.sq_id }}{% endif %}</p>
+            {% if item.evidence_claim %}<p>Evidence claim: {{ item.evidence_claim.entity_id }}</p>{% endif %}
+            {% if item.evidence_text %}<blockquote>{{ item.evidence_text }}</blockquote>{% endif %}
+            {% if item.highlighted_region %}<p>Highlighted region: {{ item.highlighted_region[0] }}–{{ item.highlighted_region[1] }}</p>{% endif %}
+            {% if item.correction_prepared_answer %}<p>Prepared decision: {{ item.correction_prepared_answer }} · {{ item.correction_prepared_rationale }}</p>{% endif %}
+          </aside>
+          {% endif %}
           <form method="post" action="/review/actions">
             <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
             <input type="hidden" name="action_id" value="{{ item.action_id }}">
@@ -389,14 +427,28 @@
             <label>Review note
               <textarea name="rationale" required></textarea>
             </label>
+            <label>Correction scope
+              <select name="correction_scope">
+                {% if item.evidence_claim %}<option value="evidence">This evidence claim</option>{% endif %}
+                {% if item.sq_id %}<option value="signaling_question">This signaling question</option>{% endif %}
+                {% if item.domain_id %}<option value="domain">This Domain</option>{% endif %}
+                <option value="result">This Result</option>
+              </select>
+            </label>
             {% endif %}
             {% if item.kind.value == "verify_evidence" %}
             <button type="submit" name="value" value="accepted">
               Confirm evidence and reveal answer
             </button>
+            {% if correction_action == item.action_id %}
             <button type="submit" name="value" value="correction_requested">
-              Request an evidence correction
+              Submit correction request
             </button>
+            {% else %}
+            <a href="/review?mode=guided&amp;correction_action={{ item.action_id | urlencode }}">
+              Request an evidence correction
+            </a>
+            {% endif %}
             {% elif item.kind.value == "sign_off" %}
             <dl class="sign-off-scope">
               <dt>Result</dt><dd>{{ review.result_label }}</dd>

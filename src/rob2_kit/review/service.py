@@ -102,6 +102,13 @@ class ConnectionState(StrEnum):
     COMPLETE = "review complete"
 
 
+class CorrectionScope(StrEnum):
+    EVIDENCE = "evidence"
+    SIGNALING_QUESTION = "signaling_question"
+    DOMAIN = "domain"
+    RESULT = "result"
+
+
 class ReviewAction(FrozenModel):
     action_id: Identifier
     kind: ActionKind
@@ -218,10 +225,13 @@ class QueueItem(FrozenModel):
     domain_id: Identifier | None = None
     sq_id: Identifier | None = None
     evidence_text: str | None = None
+    highlighted_region: tuple[int, int] | None = None
     source_locator: str | None = None
     answer_visible: bool = False
     staged_answer: str | None = None
     staged_rationale: str | None = None
+    correction_prepared_answer: str | None = None
+    correction_prepared_rationale: str | None = None
     completed: bool = False
     finding_id: Identifier | None = None
     evidence_claim: RecordReference | None = None
@@ -257,12 +267,39 @@ class ReviewCommand(FrozenModel):
     review_session_id: Identifier
     observed_at: datetime
     domain_opened: bool = False
+    correction_scope: CorrectionScope | None = None
 
     @model_validator(mode="after")
     def validate_time(self) -> ReviewCommand:
         if self.observed_at.utcoffset() != UTC.utcoffset(self.observed_at):
             raise ValueError("observed_at must use UTC")
+        if (
+            self.value is ActionDecision.CORRECTION_REQUESTED
+            and not (self.rationale and self.rationale.strip())
+        ):
+            raise ValueError("correction requests require a request")
         return self
+
+
+class CorrectionRequest(FrozenModel):
+    challenged_assessment: RecordReference
+    result_label: str
+    domain_id: Identifier | None = None
+    sq_id: Identifier | None = None
+    evidence_claim: RecordReference | None = None
+    exact_text: str | None = None
+    highlighted_region: tuple[int, int] | None = None
+    prepared_answer: str | None = None
+    prepared_rationale: str | None = None
+    request: str = Field(min_length=1)
+    minimum_scope: CorrectionScope
+    requested_scope: CorrectionScope
+    affected_scope: tuple[Identifier, ...]
+    agent_prompt: str = Field(min_length=1)
+    disposition: str = "pending_targeted_rework"
+    last_checkpoint: Identifier | None = None
+    failure_reason: str | None = None
+    resume_action: str = Field(min_length=1)
 
 
 class DurableReviewReceipt(FrozenModel):
@@ -280,6 +317,7 @@ class DurableReviewReceipt(FrozenModel):
     value: ActionDecision
     rationale: str | None = None
     correction_checkpoint: Identifier | None = None
+    correction_request: CorrectionRequest | None = None
     assurance: str | None = None
 
 
@@ -308,6 +346,23 @@ class ReviewService:
     def queue(self) -> tuple[QueueItem, ...]:
         completed = self._receipts_by_action()
         stale = self.is_stale()
+        pending_corrections = tuple(
+            receipt.correction_request
+            for receipt in completed.values()
+            if receipt.correction_request is not None
+        )
+
+        def blocked_by_correction(action: ReviewAction) -> bool:
+            for correction in pending_corrections:
+                if correction.requested_scope is CorrectionScope.RESULT:
+                    return True
+                if (
+                    action.domain_id is not None
+                    and action.domain_id in correction.affected_scope
+                ):
+                    return True
+            return False
+
         limitation_acknowledged = any(
             action.kind is ActionKind.ACKNOWLEDGE_LIMITATION
             and completed.get(action.action_id) is not None
@@ -349,11 +404,15 @@ class ReviewService:
 
         def queue_key(action: ReviewAction) -> tuple[int, int, int, int, str]:
             receipt = completed.get(action.action_id)
-            actionable = receipt is None and not stale
+            actionable = receipt is None and not stale and not blocked_by_correction(action)
             if receipt is not None and receipt.outcome is ReviewReceiptOutcome.CORRECTION_REQUESTED:
                 actionable = False
             tier, _ = self._attention(
-                action, receipt, summaries.get(action.domain_id), stale=stale
+                action,
+                receipt,
+                summaries.get(action.domain_id),
+                stale=stale,
+                blocked_by_correction=blocked_by_correction(action),
             )
             return (
                 0 if actionable else 1,
@@ -368,7 +427,11 @@ class ReviewService:
             receipt = completed.get(action.action_id)
             summary = summaries.get(action.domain_id)
             attention_tier, reasons = self._attention(
-                action, receipt, summary, stale=stale
+                action,
+                receipt,
+                summary,
+                stale=stale,
+                blocked_by_correction=blocked_by_correction(action),
             )
             answer_visible = (
                 action.kind is ActionKind.VERIFY_EVIDENCE
@@ -395,6 +458,11 @@ class ReviewService:
                     evidence_text=(
                         action.bound_evidence.quote() if action.bound_evidence is not None else None
                     ),
+                    highlighted_region=(
+                        (action.bound_evidence.span_start, action.bound_evidence.span_end)
+                        if action.bound_evidence is not None
+                        else None
+                    ),
                     answer_visible=answer_visible,
                     staged_answer=(
                         action.prepared_answer.answer
@@ -406,11 +474,23 @@ class ReviewService:
                         if answer_visible and action.prepared_answer is not None
                         else None
                     ),
+                    correction_prepared_answer=(
+                        action.prepared_answer.answer
+                        if action.prepared_answer is not None
+                        else None
+                    ),
+                    correction_prepared_rationale=(
+                        action.prepared_answer.rationale
+                        if action.prepared_answer is not None
+                        else None
+                    ),
                     completed=receipt is not None,
                     attention_tier=attention_tier,
                     reasons=reasons,
                     affected_context=self._affected_context(action),
-                    actionable=receipt is None and not stale,
+                    actionable=(
+                        receipt is None and not stale and not blocked_by_correction(action)
+                    ),
                     domain_summary=summary,
                     consequence=action.consequence or self._default_consequence(action),
                     next_action=action.next_action or self._default_next_action(action),
@@ -448,12 +528,20 @@ class ReviewService:
             or actions[command.action_id].kind is not command.kind
         ):
             raise ReviewError("review action is not currently permitted")
+        elif not actions[command.action_id].actionable:
+            raise ReviewError("review action is read-only while targeted rework is pending")
         elif command.kind is ActionKind.DOMAIN_REVIEW and not command.domain_opened:
             raise ReviewError("the individual Domain must be opened before confirmation")
 
         self._connection_state = ConnectionState.WORKING
         receipt_id = self._receipt_revision_id(command)
         selected_action = actions.get(command.action_id)
+        correction_request = (
+            self._correction_request(command, selected_action, receipt_id)
+            if command.value is ActionDecision.CORRECTION_REQUESTED
+            and selected_action is not None
+            else None
+        )
         payload = {
             "revision_id": receipt_id,
             "outcome": self._receipt_outcome(command),
@@ -472,6 +560,11 @@ class ReviewService:
                 selected_action.correction_checkpoint
                 if command.value is ActionDecision.CORRECTION_REQUESTED
                 and selected_action is not None
+                else None
+            ),
+            "correction_request": (
+                correction_request.model_dump(mode="json")
+                if correction_request is not None
                 else None
             ),
             "assurance": (
@@ -544,6 +637,16 @@ class ReviewService:
                 return self._receipt_from_event(event)
         return None
 
+    def correction_receipts(self) -> tuple[DurableReviewReceipt, ...]:
+        """Return the durable linear correction chain for this review."""
+        receipts = (
+            self._receipt_from_event(event)
+            for event in self.ledger.events()
+            if event.scope == self.review_case.review_id
+            and event.operation.startswith("review:")
+        )
+        return tuple(receipt for receipt in receipts if receipt.correction_request is not None)
+
     def mark_disconnected(self) -> None:
         if self._connection_state is not ConnectionState.COMPLETE:
             self._connection_state = ConnectionState.NOT_CONNECTED
@@ -614,6 +717,7 @@ class ReviewService:
         summary: DomainReviewSummary | None,
         *,
         stale: bool,
+        blocked_by_correction: bool = False,
     ) -> tuple[AttentionTier, tuple[str, ...]]:
         action_required: list[str] = []
         inspect_carefully: list[str] = []
@@ -624,6 +728,10 @@ class ReviewService:
         if receipt is not None and receipt.outcome is ReviewReceiptOutcome.CORRECTION_REQUESTED:
             action_required.append(
                 "A requested correction is waiting for targeted agent rework."
+            )
+        elif blocked_by_correction:
+            action_required.append(
+                "This affected Domain is read-only pending targeted agent rework."
             )
         if action.kind is ActionKind.BLOCKING_REPAIR and receipt is None:
             action_required.append(
@@ -715,6 +823,84 @@ class ReviewService:
             return WorkflowEventOutcome.REVIEW_PENDING
         return WorkflowEventOutcome.COMPLETED
 
+    def _correction_request(
+        self,
+        command: ReviewCommand,
+        action: QueueItem,
+        receipt_id: Identifier,
+    ) -> CorrectionRequest:
+        source_action = next(
+            (
+                candidate
+                for candidate in self.review_case.actions
+                if candidate.action_id == action.action_id
+            ),
+            None,
+        )
+        minimum_scope = _minimum_correction_scope(action)
+        requested_scope = command.correction_scope or minimum_scope
+        if _scope_rank(requested_scope) < _scope_rank(minimum_scope):
+            raise ValueError(
+                f"correction scope cannot narrow the invocation context below {minimum_scope.value}"
+            )
+        affected = tuple(
+            dict.fromkeys(
+                (
+                    *(
+                        self.review_case.domain_ids
+                        if requested_scope is CorrectionScope.RESULT
+                        else ((action.domain_id,) if action.domain_id is not None else ())
+                    ),
+                    *action.affected_scope,
+                )
+            )
+        )
+        request_text = (command.rationale or "").strip()
+        prompt = (
+            "Targeted rob2-kit correction request\n"
+            f"Receipt: {receipt_id}\n"
+            f"Challenged Assessment: {self.review_case.assessment.revision_id}\n"
+            f"Result: {self.review_case.result_label}\n"
+            f"Starting scope: {requested_scope.value}\n"
+            f"Required affected path: {', '.join(affected) or self.review_case.result_label}\n"
+            f"Request: {request_text}\n"
+            "Preserve the challenged Assessment unchanged. Regenerate only the recorded "
+            "dependency path and create one superseding Assessment revision."
+        )
+        return CorrectionRequest(
+            challenged_assessment=self.review_case.assessment,
+            result_label=self.review_case.result_label,
+            domain_id=action.domain_id,
+            sq_id=action.sq_id,
+            evidence_claim=action.evidence_claim,
+            exact_text=action.evidence_text,
+            highlighted_region=(
+                (
+                    source_action.bound_evidence.span_start,
+                    source_action.bound_evidence.span_end,
+                )
+                if source_action is not None and source_action.bound_evidence is not None
+                else None
+            ),
+            prepared_answer=(
+                source_action.prepared_answer.answer
+                if source_action is not None and source_action.prepared_answer is not None
+                else None
+            ),
+            prepared_rationale=(
+                source_action.prepared_answer.rationale
+                if source_action is not None and source_action.prepared_answer is not None
+                else None
+            ),
+            request=request_text,
+            minimum_scope=minimum_scope,
+            requested_scope=requested_scope,
+            affected_scope=affected,
+            agent_prompt=prompt,
+            last_checkpoint=action.correction_checkpoint,
+            resume_action=prompt,
+        )
+
     def _receipt_from_event(self, event: WorkflowEvent) -> DurableReviewReceipt:
         payload = json.loads(self.ledger.artifacts.read(event.output_revision_hashes[0]))
         payload["ledger_event_id"] = event.event_id
@@ -753,3 +939,17 @@ def _domain_order(domain_id: str | None) -> int:
         return 0
     suffix = domain_id.rsplit(":", 1)[-1].removeprefix("D")
     return int(suffix) if suffix.isdigit() else 99
+
+
+def _minimum_correction_scope(action: QueueItem) -> CorrectionScope:
+    if action.evidence_claim is not None:
+        return CorrectionScope.EVIDENCE
+    if action.sq_id is not None:
+        return CorrectionScope.SIGNALING_QUESTION
+    if action.domain_id is not None:
+        return CorrectionScope.DOMAIN
+    return CorrectionScope.RESULT
+
+
+def _scope_rank(scope: CorrectionScope) -> int:
+    return tuple(CorrectionScope).index(scope)
