@@ -277,8 +277,12 @@ The policy-derived, ordered view of human actions available after every Trial in
 _Avoid_: Final queue, mutable task list, warning list
 
 **Guided review flow**:
-The reviewer-facing traversal of a Review queue that prioritizes required human actions and higher-concern domains while keeping every domain, signaling-question answer, rationale, evidence claim, decision trace, and relevant Visual transcription available for optional inspection. It guides attention without hiding auditable work or replacing the Review policy.
+The reviewer-facing traversal of a Review queue that ranks Trial × Result cards by their highest Review attention tier, then keeps review within the selected Result while presenting Action required, Inspect carefully, and Routine review items in that order. It guides attention without hiding any domain, signaling-question answer, rationale, Evidence claim, Decision trace, or relevant Visual transcription, and without replacing the Review policy.
 _Avoid_: Mandatory wizard, exception-only review, opaque approval queue
+
+**Review attention tier**:
+A policy-derived prioritization of human review as Action required, Inspect carefully, or Routine review. Action required is reserved for a condition that prevents Assessment sign-off under the Review policy; the tier changes ordering and review depth without changing the RoB 2 judgment or removing the requirement for per-domain human review.
+_Avoid_: Agent confidence, review severity, optional review
 
 **Companion workspace**:
 The reopenable browser projection of durable project, preparation, evidence, Assessment, and review state that a supported agent host may display beside its conversation from project start through sign-off. Opening, refreshing, closing, or reconnecting it performs no model inference and does not affect authoritative progress.
@@ -295,6 +299,10 @@ _Avoid_: Agent live status, preparation state, review status
 **Review receipt**:
 An immutable, typed outcome of a Review handoff, such as completed action, correction request, deferment, or Assessment sign-off, bound to the exact review and assessment revisions involved. It allows any later agent session to continue without relying on conversation history.
 _Avoid_: Chat confirmation, mutable completion flag
+
+**Correction request**:
+An attributable Review receipt that challenges an exact Assessment revision and identifies the smallest evidence, Result, signaling-question, or Domain scope requiring targeted rework. It blocks affected human review and sign-off without mutating or invalidating the challenged revision; successful rework creates a superseding Assessment revision whose actual affected scope is derived from recorded dependencies.
+_Avoid_: Inline correction, invalidated draft, reviewer-authored answer
 
 **Verification archive**:
 A portable, manifest-rooted package for checking an Assessment revision outside its working project. A complete archive materializes all transitive source and decision dependencies; a reference archive may omit bytes but must declare that source integrity is not independently verifiable.
