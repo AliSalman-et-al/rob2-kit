@@ -63,6 +63,8 @@ from rob2_kit.reports.archives import ArchiveBuilder
 from rob2_kit.review.handoff import ReviewHandoff, ReviewWaitOutcome
 from rob2_kit.review.service import (
     ActionKind,
+    CorrectionReworkCommand,
+    CorrectionReworkStatus,
     DomainQuestionSummary,
     DomainReviewSummary,
     FindingRequirement,
@@ -103,6 +105,7 @@ STATIC_TOOL_NAMES = (
     "review_queue",
     "open_review",
     "wait_for_review",
+    "submit_targeted_rework",
 )
 MUTATION_TOOLS = frozenset(
     {
@@ -112,6 +115,7 @@ MUTATION_TOOLS = frozenset(
         "submit_visual_transcription",
         "freeze_evidence_bundle",
         "submit_sq_answers",
+        "submit_targeted_rework",
     }
 )
 SUBMISSION_KINDS = {
@@ -505,6 +509,78 @@ class ApplicationGateway:
                 committed=False,
                 next_permitted_action="action:wait-for-review",
                 payload=opened.model_dump(mode="json"),
+            )
+        if tool_name == "submit_targeted_rework":
+            if mutation_context is None:
+                raise ValueError("mutation context is required")
+            context = MutationContext.model_validate(mutation_context)
+            submitted = arguments or {}
+            handoff = self._review_handoff(
+                root,
+                ledger,
+                submitted.get("review_id"),
+                writable=True,
+            )
+            if handoff.review_service is None:
+                raise ValueError("targeted rework requires a prepared Review handoff")
+            status = CorrectionReworkStatus(submitted.get("status"))
+            state = handoff.review_service.submit_targeted_rework(
+                CorrectionReworkCommand(
+                    operation_key=context.idempotency_key,
+                    correction_receipt_revision_id=submitted.get(
+                        "correction_receipt_revision_id", ""
+                    ),
+                    actor=_submission_actor(context.idempotency_key),
+                    observed_at=datetime.now(UTC),
+                    status=status,
+                    last_checkpoint=submitted.get("last_checkpoint", ""),
+                    failure_reason=submitted.get("failure_reason"),
+                    resume_action=submitted.get("resume_action"),
+                    superseding_assessment_revision_id=submitted.get(
+                        "superseding_assessment_revision_id"
+                    ),
+                    assessment_artifact=(
+                        json.dumps(
+                            submitted["assessment"],
+                            ensure_ascii=False,
+                            sort_keys=True,
+                            separators=(",", ":"),
+                        ).encode()
+                        if submitted.get("assessment") is not None
+                        else None
+                    ),
+                    corrected_sq_id=submitted.get("corrected_sq_id"),
+                    corrected_evidence_id=submitted.get("corrected_evidence_id"),
+                    superseding_review_case=(
+                        ReviewCase.model_validate(submitted["review_case"])
+                        if submitted.get("review_case") is not None
+                        else None
+                    ),
+                )
+            )
+            return OperationEnvelope(
+                operation_id=_identifier(
+                    "operation",
+                    f"{project_id}|targeted-rework|{state.revision_id}",
+                ),
+                ledger_cursor=f"ledger:{len(ledger.events())}",
+                affected_scope=(
+                    state.comparison.reopened_decisions
+                    if state.comparison is not None
+                    else (state.correction_receipt_revision_id,)
+                ),
+                status=(
+                    WorkflowStatus.COMPLETED
+                    if state.status is CorrectionReworkStatus.SUCCEEDED
+                    else WorkflowStatus.RETRYABLE_INTERRUPTION
+                ),
+                committed=True,
+                next_permitted_action=(
+                    "action:open-review"
+                    if state.status is CorrectionReworkStatus.SUCCEEDED
+                    else "action:submit-targeted-rework"
+                ),
+                payload=state.model_dump(mode="json"),
             )
         if tool_name in MUTATION_TOOLS:
             if mutation_context is None:

@@ -146,12 +146,26 @@
       <h2 id="correction-title">Correction request · pending targeted rework</h2>
       {% for receipt in corrections %}
       {% set correction = receipt.correction_request %}
+      {% set rework = correction_states.get(receipt.revision_id) %}
       <article>
+        <p>
+          Correction {{ loop.index }} of {{ corrections | length }}
+          {% if correction.predecessor_receipt_revision_id %}
+          · follows {{ correction.predecessor_receipt_revision_id }}
+          {% else %}
+          · first correction
+          {% endif %}
+        </p>
+        {% if not rework or rework.status.value != "succeeded" %}
         <p><strong>Affected work is read-only</strong> while targeted rework is pending.</p>
+        {% endif %}
         <p>{{ correction.result_label }}{% if correction.domain_id %} · {{ correction.domain_id }}{% endif %}{% if correction.sq_id %} · {{ correction.sq_id }}{% endif %}</p>
         {% if correction.evidence_claim %}
         <p>Evidence claim: {{ correction.evidence_claim.entity_id }}</p>
         <blockquote>{{ correction.exact_text }}</blockquote>
+        {% if correction.highlighted_region %}
+        <p>Highlighted region: {{ correction.highlighted_region[0] }}–{{ correction.highlighted_region[1] }}</p>
+        {% endif %}
         {% endif %}
         {% if correction.prepared_answer %}
         <h3>Prepared answer</h3>
@@ -165,6 +179,34 @@
         <label>Copyable agent prompt
           <textarea readonly rows="9">{{ correction.agent_prompt }}</textarea>
         </label>
+        {% if rework and rework.status.value != "succeeded" %}
+        <p><strong>Last checkpoint:</strong> {{ rework.last_checkpoint }}</p>
+        <p role="alert"><strong>Failure reason:</strong> {{ rework.failure_reason }}</p>
+        <label>Resume action
+          <textarea readonly>{{ rework.resume_action }}</textarea>
+        </label>
+        {% elif rework %}
+        <h3>Superseding Assessment comparison</h3>
+        <p>Current proposed revision: {{ rework.current_proposed_assessment.revision_id }}</p>
+        <h4>Evidence consideration</h4>
+        <ul>{% for change in rework.comparison.evidence_consideration %}<li>{{ change }}</li>{% endfor %}</ul>
+        <h4>Answer and rationale</h4>
+        <ul>{% for change in rework.comparison.answer_and_rationale %}<li>{{ change }}</li>{% endfor %}</ul>
+        <h4>Judgments</h4>
+        <ul>{% for change in rework.comparison.judgments %}<li>{{ change }}</li>{% endfor %}</ul>
+        <h4>Limitations</h4>
+        <ul>{% for change in rework.comparison.limitations %}<li>{{ change }}</li>{% endfor %}</ul>
+        <h4>Reopened decisions</h4>
+        <ul>{% for change in rework.comparison.reopened_decisions %}<li>{{ change }}</li>{% endfor %}</ul>
+        <h4>Reused unaffected work</h4>
+        <ul>{% for change in rework.comparison.reused_unaffected_work %}<li>{{ change }}</li>{% endfor %}</ul>
+        <a href="/review?mode=full&amp;result={{ selected_result | urlencode }}&amp;domain={{ correction.domain_id | urlencode }}&amp;sq={{ rework.corrected_sq_id | urlencode }}{% if rework.corrected_evidence_id %}&amp;evidence={{ rework.corrected_evidence_id | urlencode }}{% endif %}">
+          Continue review
+        </a>
+        <a href="/review?mode=guided&amp;result={{ selected_result | urlencode }}&amp;domain={{ correction.domain_id | urlencode }}&amp;correction_action={{ receipt.review_action_id | urlencode }}">
+          Request another correction
+        </a>
+        {% endif %}
       </article>
       {% endfor %}
     </aside>
@@ -469,9 +511,15 @@
             <button type="submit" name="value" value="accepted">
               Confirm {{ item.domain_id | replace("domain:", "Domain ") }}
             </button>
+            {% if correction_action == item.action_id %}
             <button type="submit" name="value" value="correction_requested">
-              Correct domain
+              Submit Domain correction
             </button>
+            {% else %}
+            <a href="/review?mode=guided&amp;result={{ selected_result | urlencode }}&amp;domain={{ item.domain_id | urlencode }}&amp;correction_action={{ item.action_id | urlencode }}">
+              Correct Domain
+            </a>
+            {% endif %}
             {% else %}
             <a href="/review?mode=guided&amp;result={{ selected_result | urlencode }}&amp;domain={{ item.domain_id | urlencode }}&amp;return_position={{ item.action_id | urlencode }}">
               Open {{ item.domain_id | replace("domain:", "Domain ") }}

@@ -209,6 +209,16 @@ def create_review_app(
                     if review_service is not None
                     else ()
                 ),
+                correction_states=(
+                    {
+                        receipt.revision_id: review_service.correction_state(
+                            receipt.revision_id
+                        )
+                        for receipt in review_service.correction_receipts()
+                    }
+                    if review_service is not None
+                    else {}
+                ),
                 csrf_token=session.csrf_token,
                 connection_state=connection_state,
                 last_contact=(

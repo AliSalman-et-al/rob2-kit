@@ -10,6 +10,7 @@ from enum import StrEnum
 from pydantic import Field, model_validator
 
 from rob2_kit.application.preparation import ReviewReceiptOutcome
+from rob2_kit.domain.assessment import AssessmentRevision
 from rob2_kit.domain.revisions import (
     Actor,
     ActorKind,
@@ -18,7 +19,9 @@ from rob2_kit.domain.revisions import (
     Identifier,
     RecordReference,
 )
+from rob2_kit.storage.artifacts import ArtifactNotFoundError
 from rob2_kit.storage.ledger import (
+    DependencyInput,
     LeaseToken,
     Transition,
     WorkflowEvent,
@@ -144,6 +147,7 @@ class ReviewAction(FrozenModel):
     def validate_evidence_binding(self) -> ReviewAction:
         if self.kind is ActionKind.VERIFY_EVIDENCE and not all(
             (
+                self.sq_id,
                 self.evidence_claim,
                 self.evidence_bundle,
                 self.answer_revision,
@@ -152,7 +156,7 @@ class ReviewAction(FrozenModel):
             )
         ):
             raise ValueError(
-                "evidence verification must bind canonical evidence and answer revisions"
+                "evidence verification must bind its SQ, canonical evidence, and answer revisions"
             )
         return self
 
@@ -300,6 +304,94 @@ class CorrectionRequest(FrozenModel):
     last_checkpoint: Identifier | None = None
     failure_reason: str | None = None
     resume_action: str = Field(min_length=1)
+    predecessor_receipt_revision_id: Identifier | None = None
+
+
+class CorrectionReworkStatus(StrEnum):
+    INTERRUPTED = "interrupted"
+    FAILED = "failed"
+    SUCCEEDED = "succeeded"
+
+
+class CorrectionComparison(FrozenModel):
+    evidence_consideration: tuple[str, ...] = Field(min_length=1)
+    answer_and_rationale: tuple[str, ...] = Field(min_length=1)
+    judgments: tuple[str, ...] = Field(min_length=1)
+    limitations: tuple[str, ...] = Field(min_length=1)
+    reopened_decisions: tuple[Identifier, ...] = Field(min_length=1)
+    reused_unaffected_work: tuple[str, ...] = Field(min_length=1)
+
+
+class CorrectionReworkCommand(FrozenModel):
+    operation_key: Identifier
+    correction_receipt_revision_id: Identifier
+    actor: Actor
+    observed_at: datetime
+    status: CorrectionReworkStatus
+    last_checkpoint: Identifier
+    failure_reason: str | None = None
+    resume_action: str | None = None
+    superseding_assessment_revision_id: Identifier | None = None
+    assessment_artifact: bytes | None = None
+    corrected_sq_id: Identifier | None = None
+    corrected_evidence_id: Identifier | None = None
+    superseding_review_case: ReviewCase | None = None
+
+    @model_validator(mode="after")
+    def validate_outcome(self) -> CorrectionReworkCommand:
+        if self.observed_at.utcoffset() != UTC.utcoffset(self.observed_at):
+            raise ValueError("observed_at must use UTC")
+        if self.status is CorrectionReworkStatus.SUCCEEDED and not all(
+            (
+                self.superseding_assessment_revision_id,
+                self.assessment_artifact,
+                self.corrected_sq_id,
+                self.superseding_review_case,
+            )
+        ):
+            raise ValueError(
+                "successful rework requires an Assessment and corrected SQ"
+            )
+        if self.status is CorrectionReworkStatus.SUCCEEDED and (
+            self.failure_reason is not None or self.resume_action is not None
+        ):
+            raise ValueError(
+                "successful rework cannot include failure or resume details"
+            )
+        if self.status is not CorrectionReworkStatus.SUCCEEDED and not (
+            self.failure_reason and self.resume_action
+        ):
+            raise ValueError("interrupted or failed rework requires failure and resume details")
+        if self.status is not CorrectionReworkStatus.SUCCEEDED and any(
+            value is not None
+            for value in (
+                self.superseding_assessment_revision_id,
+                self.assessment_artifact,
+                self.corrected_sq_id,
+                self.corrected_evidence_id,
+                self.superseding_review_case,
+            )
+        ):
+            raise ValueError(
+                "interrupted or failed rework cannot include successful outputs"
+            )
+        return self
+
+
+class CorrectionReworkState(FrozenModel):
+    revision_id: Identifier
+    correction_receipt_revision_id: Identifier
+    status: CorrectionReworkStatus
+    actor: Actor
+    last_checkpoint: Identifier
+    failure_reason: str | None = None
+    resume_action: str | None = None
+    challenged_assessment: RecordReference
+    current_proposed_assessment: RecordReference | None = None
+    corrected_sq_id: Identifier | None = None
+    corrected_evidence_id: Identifier | None = None
+    comparison: CorrectionComparison | None = None
+    current_review_case: ReviewCase | None = None
 
 
 class DurableReviewReceipt(FrozenModel):
@@ -342,6 +434,7 @@ class ReviewService:
         self._last_contact = datetime.now(UTC)
         self.ledger.preflight()
         self._validate_preparation_outcomes()
+        self._restore_current_proposed_assessment()
 
     def queue(self) -> tuple[QueueItem, ...]:
         completed = self._receipts_by_action()
@@ -501,6 +594,25 @@ class ReviewService:
     def commit(self, command: ReviewCommand) -> ReviewCommit:
         if command.actor.kind is not ActorKind.HUMAN:
             raise ValueError("review actions require a human actor")
+        if (
+            command.value is ActionDecision.CORRECTION_REQUESTED
+            and self._receipt_for_operation(command.idempotency_key) is None
+        ):
+            pending = next(
+                (
+                    receipt
+                    for receipt in reversed(self.correction_receipts())
+                    if (
+                        state := self.correction_state(receipt.revision_id)
+                    ) is None
+                    or state.status is not CorrectionReworkStatus.SUCCEEDED
+                ),
+                None,
+            )
+            if pending is not None:
+                raise ReviewError(
+                    "a correction is already pending; the revision chain cannot branch"
+                )
         prior = self._receipt_for_operation(command.idempotency_key)
         if prior is not None:
             if (
@@ -536,6 +648,15 @@ class ReviewService:
         self._connection_state = ConnectionState.WORKING
         receipt_id = self._receipt_revision_id(command)
         selected_action = actions.get(command.action_id)
+        receipt_entity_id = f"review-receipt:{command.action_id.split(':', 1)[1]}"
+        current_receipt = next(
+            (
+                revision
+                for revision in self.ledger.current_revisions()
+                if revision.entity_id == receipt_entity_id
+            ),
+            None,
+        )
         correction_request = (
             self._correction_request(command, selected_action, receipt_id)
             if command.value is ActionDecision.CORRECTION_REQUESTED
@@ -578,7 +699,7 @@ class ReviewService:
                 operation_key=command.idempotency_key,
                 actor=command.actor,
                 observed_at=command.observed_at,
-                entity_id=f"review-receipt:{command.action_id.split(':', 1)[1]}",
+                entity_id=receipt_entity_id,
                 revision_id=receipt_id,
                 artifact=json.dumps(payload, ensure_ascii=False).encode(),
                 artifact_media_type="application/json",
@@ -586,6 +707,9 @@ class ReviewService:
                 expected_dependency_fingerprint=dependency_fingerprint(()),
                 checkpoint=f"review-checkpoint:{command.action_id.split(':', 1)[1]}",
                 outcome=self._workflow_outcome(command),
+                supersedes_revision_id=(
+                    current_receipt.revision_id if current_receipt is not None else None
+                ),
             ),
             self.lease,
             now=command.observed_at,
@@ -647,6 +771,558 @@ class ReviewService:
         )
         return tuple(receipt for receipt in receipts if receipt.correction_request is not None)
 
+    def correction_state(
+        self, correction_receipt_revision_id: Identifier
+    ) -> CorrectionReworkState | None:
+        states = (
+            event
+            for event in reversed(self.ledger.events())
+            if event.operation.startswith("correction:targeted-rework")
+        )
+        for event in states:
+            payload = json.loads(self.ledger.artifacts.read(event.output_revision_hashes[0]))
+            if payload["correction_receipt_revision_id"] == correction_receipt_revision_id:
+                state = CorrectionReworkState.model_validate(payload)
+                proposed = state.current_proposed_assessment
+                if state.status is CorrectionReworkStatus.SUCCEEDED and proposed is not None:
+                    current = next(
+                        (
+                            revision
+                            for revision in self.ledger.current_revisions()
+                            if revision.entity_id == proposed.entity_id
+                        ),
+                        None,
+                    )
+                    if current is None or current.revision_id != proposed.revision_id:
+                        return state.model_copy(
+                            update={
+                                "status": CorrectionReworkStatus.INTERRUPTED,
+                                "failure_reason": (
+                                    "Assessment supersession was interrupted after rework."
+                                ),
+                                "resume_action": (
+                                    "Retry submit_targeted_rework with the same idempotency key."
+                                ),
+                            }
+                        )
+                return state
+        return None
+
+    def submit_targeted_rework(
+        self, command: CorrectionReworkCommand
+    ) -> CorrectionReworkState:
+        receipt = next(
+            (
+                candidate
+                for candidate in self.correction_receipts()
+                if candidate.revision_id == command.correction_receipt_revision_id
+            ),
+            None,
+        )
+        if receipt is None or receipt.correction_request is None:
+            raise ReviewError("targeted rework must bind an existing correction receipt")
+        duplicate = next(
+            (
+                event
+                for event in self.ledger.events()
+                if event.operation_key == command.operation_key
+                and event.operation == "correction:targeted-rework"
+            ),
+            None,
+        )
+        if duplicate is not None:
+            state = CorrectionReworkState.model_validate_json(
+                self.ledger.artifacts.read(duplicate.output_revision_hashes[0])
+            )
+            if (
+                state.correction_receipt_revision_id
+                != command.correction_receipt_revision_id
+                or state.status is not command.status
+                or state.actor != command.actor
+                or state.last_checkpoint != command.last_checkpoint
+                or state.failure_reason != command.failure_reason
+                or state.resume_action != command.resume_action
+                or state.corrected_sq_id != command.corrected_sq_id
+                or state.corrected_evidence_id != command.corrected_evidence_id
+                or state.current_review_case != command.superseding_review_case
+            ):
+                raise ReviewError("idempotency key was reused for different rework")
+            if state.status is CorrectionReworkStatus.SUCCEEDED:
+                submitted_hash = self.ledger.artifacts.put(
+                    command.assessment_artifact or b"", "application/json"
+                ).content_hash
+                if (
+                    state.current_proposed_assessment is None
+                    or state.current_proposed_assessment.revision_id
+                    != command.superseding_assessment_revision_id
+                    or state.current_proposed_assessment.content_hash != submitted_hash
+                ):
+                    raise ReviewError(
+                        "idempotency key was reused with different rework content"
+                    )
+            return self._apply_successful_rework(command, receipt, state)
+        prior = self.correction_state(command.correction_receipt_revision_id)
+        proposed: RecordReference | None = None
+        comparison: CorrectionComparison | None = None
+        if command.status is CorrectionReworkStatus.SUCCEEDED:
+            correction = receipt.correction_request
+            if (
+                correction.sq_id is not None
+                and command.corrected_sq_id != correction.sq_id
+            ):
+                raise ValueError("successful rework must resume at the challenged SQ")
+            if correction.sq_id is None:
+                allowed_questions = {
+                    question.sq_id
+                    for summary in self.review_case.domain_summaries
+                    if (
+                        correction.domain_id is None
+                        or summary.domain_id == correction.domain_id
+                    )
+                    for question in summary.active_questions
+                }
+                if (
+                    allowed_questions
+                    and command.corrected_sq_id not in allowed_questions
+                ):
+                    raise ValueError(
+                        "successful rework must resume within the challenged scope"
+                    )
+            if (
+                correction.evidence_claim is not None
+                and command.corrected_evidence_id
+                != correction.evidence_claim.entity_id
+            ):
+                raise ValueError(
+                    "evidence correction must resume with the triggering evidence context"
+                )
+            challenged = AssessmentRevision.model_validate_json(
+                self.ledger.artifacts.read(receipt.assessment.content_hash)
+            )
+            superseding = AssessmentRevision.model_validate_json(
+                command.assessment_artifact or b""
+            )
+            if (
+                superseding.entity_id != challenged.entity_id
+                or superseding.revision_id
+                != command.superseding_assessment_revision_id
+                or superseding.supersedes is None
+                or superseding.supersedes.entity_id != challenged.entity_id
+                or superseding.supersedes.revision_id != challenged.revision_id
+                or superseding.supersedes.content_hash != receipt.assessment.content_hash
+            ):
+                raise ValueError(
+                    "superseding Assessment must link the exact challenged revision"
+                )
+            comparison = _derive_correction_comparison(
+                challenged,
+                superseding,
+                correction.affected_scope,
+                correction.requested_scope,
+                self.review_case.domain_ids,
+                self.ledger,
+            )
+            artifact = self.ledger.artifacts.put(
+                command.assessment_artifact or b"", "application/json"
+            )
+            if artifact.content_hash == receipt.assessment.content_hash:
+                raise ValueError(
+                    "successful rework must produce a changed Assessment revision"
+                )
+            proposed = RecordReference(
+                entity_id=receipt.assessment.entity_id,
+                revision_id=command.superseding_assessment_revision_id or "",
+                content_hash=artifact.content_hash,
+            )
+            self._validate_superseding_review_case(
+                command.superseding_review_case,
+                proposed,
+                superseding,
+                correction,
+                command.corrected_sq_id,
+            )
+        state_id = self._rework_revision_id(command)
+        state = CorrectionReworkState(
+            revision_id=state_id,
+            correction_receipt_revision_id=command.correction_receipt_revision_id,
+            status=command.status,
+            actor=command.actor,
+            last_checkpoint=command.last_checkpoint,
+            failure_reason=command.failure_reason,
+            resume_action=command.resume_action,
+            challenged_assessment=receipt.assessment,
+            current_proposed_assessment=proposed,
+            corrected_sq_id=command.corrected_sq_id,
+            corrected_evidence_id=command.corrected_evidence_id,
+            comparison=comparison,
+            current_review_case=command.superseding_review_case,
+        )
+        entity_id = f"correction-rework:{command.correction_receipt_revision_id.split(':')[-1]}"
+        state_dependencies = self._rework_dependencies(receipt)
+        self.ledger.commit(
+            Transition(
+                scope=self.review_case.review_id,
+                operation="correction:targeted-rework",
+                operation_key=command.operation_key,
+                actor=command.actor,
+                observed_at=command.observed_at,
+                entity_id=entity_id,
+                revision_id=state_id,
+                artifact=state.model_dump_json().encode(),
+                artifact_media_type="application/json",
+                dependencies=state_dependencies,
+                expected_dependency_fingerprint=dependency_fingerprint(
+                    state_dependencies
+                ),
+                checkpoint=command.last_checkpoint,
+                outcome=(
+                    WorkflowEventOutcome.COMPLETED
+                    if command.status is CorrectionReworkStatus.SUCCEEDED
+                    else WorkflowEventOutcome.RETRYABLE_INTERRUPTION
+                ),
+                causation_id=receipt.ledger_event_id,
+                correlation_id=receipt.revision_id,
+                supersedes_revision_id=prior.revision_id if prior is not None else None,
+            ),
+            self.lease,
+            now=command.observed_at,
+        )
+        return self._apply_successful_rework(command, receipt, state)
+
+    def _apply_successful_rework(
+        self,
+        command: CorrectionReworkCommand,
+        receipt: DurableReviewReceipt,
+        state: CorrectionReworkState,
+    ) -> CorrectionReworkState:
+        proposed = state.current_proposed_assessment
+        if state.status is not CorrectionReworkStatus.SUCCEEDED or proposed is None:
+            return state
+        current = next(
+            (
+                revision
+                for revision in self.ledger.current_revisions()
+                if revision.entity_id == receipt.assessment.entity_id
+            ),
+            None,
+        )
+        if current is not None and current.revision_id == proposed.revision_id:
+            self._adopt_proposed_assessment(proposed, state.current_review_case)
+            return self._commit_applied_rework_state(command, receipt, state)
+        if current is None or current.revision_id != receipt.assessment.revision_id:
+            raise StaleReviewError(
+                "the challenged Assessment is no longer the single current revision"
+            )
+        assessment = AssessmentRevision.model_validate_json(
+            command.assessment_artifact or b""
+        )
+        dependencies = tuple(
+            DependencyInput(
+                entity_id=dependency.entity_id,
+                revision_id=dependency.revision_id,
+                role=dependency.role,
+                content_hash=dependency.content_hash,
+            )
+            for dependency in assessment.dependencies
+        )
+        committed = self.ledger.commit(
+            Transition(
+                scope=self.review_case.review_id,
+                operation="correction:supersede-assessment",
+                operation_key=f"{command.operation_key}:assessment",
+                actor=command.actor,
+                observed_at=command.observed_at,
+                entity_id=receipt.assessment.entity_id,
+                revision_id=proposed.revision_id,
+                artifact=command.assessment_artifact or b"",
+                artifact_media_type="application/json",
+                dependencies=dependencies,
+                expected_dependency_fingerprint=dependency_fingerprint(dependencies),
+                checkpoint=command.last_checkpoint,
+                outcome=WorkflowEventOutcome.COMPLETED,
+                causation_id=receipt.ledger_event_id,
+                correlation_id=receipt.revision_id,
+                supersedes_revision_id=receipt.assessment.revision_id,
+            ),
+            self.lease,
+            now=command.observed_at,
+        )
+        if committed.artifact_hash != proposed.content_hash:
+            raise ValueError("retried Assessment bytes differ from the recorded proposed revision")
+        self._adopt_proposed_assessment(proposed, state.current_review_case)
+        return self._commit_applied_rework_state(command, receipt, state)
+
+    def _rework_dependencies(
+        self,
+        receipt: DurableReviewReceipt,
+        proposed: RecordReference | None = None,
+    ) -> tuple[DependencyInput, ...]:
+        receipt_event = next(
+            event
+            for event in self.ledger.events()
+            if event.revision_id == receipt.revision_id
+        )
+        references = [
+            (
+                RecordReference(
+                    entity_id=receipt_event.entity_id,
+                    revision_id=receipt_event.revision_id,
+                    content_hash=receipt_event.output_revision_hashes[0],
+                ),
+                "dependency:correction-receipt",
+            ),
+            (receipt.assessment, "dependency:challenged-assessment"),
+        ]
+        if proposed is not None:
+            references.append((proposed, "dependency:proposed-assessment"))
+        return tuple(
+            DependencyInput(**reference.model_dump(), role=role)
+            for reference, role in references
+        )
+
+    def _commit_applied_rework_state(
+        self,
+        command: CorrectionReworkCommand,
+        receipt: DurableReviewReceipt,
+        state: CorrectionReworkState,
+    ) -> CorrectionReworkState:
+        proposed = state.current_proposed_assessment
+        assert proposed is not None
+        applied_id = f"{state.revision_id}-applied"
+        entity_id = (
+            f"correction-rework:{state.correction_receipt_revision_id.split(':')[-1]}"
+        )
+        current = next(
+            (
+                revision
+                for revision in self.ledger.current_revisions()
+                if revision.entity_id == entity_id
+            ),
+            None,
+        )
+        if current is not None and current.revision_id == applied_id:
+            return state.model_copy(update={"revision_id": applied_id})
+        applied = state.model_copy(update={"revision_id": applied_id})
+        dependencies = (
+            DependencyInput(
+                **proposed.model_dump(),
+                role="dependency:proposed-assessment",
+            ),
+        )
+        self.ledger.commit(
+            Transition(
+                scope=self.review_case.review_id,
+                operation="correction:targeted-rework-applied",
+                operation_key=f"{command.operation_key}:applied",
+                actor=command.actor,
+                observed_at=command.observed_at,
+                entity_id=entity_id,
+                revision_id=applied_id,
+                artifact=applied.model_dump_json().encode(),
+                artifact_media_type="application/json",
+                dependencies=dependencies,
+                expected_dependency_fingerprint=dependency_fingerprint(dependencies),
+                checkpoint=command.last_checkpoint,
+                outcome=WorkflowEventOutcome.COMPLETED,
+                causation_id=receipt.ledger_event_id,
+                correlation_id=receipt.revision_id,
+                supersedes_revision_id=(
+                    current.revision_id if current is not None else None
+                ),
+            ),
+            self.lease,
+            now=command.observed_at,
+        )
+        return applied
+
+    def _adopt_proposed_assessment(
+        self,
+        proposed: RecordReference,
+        projected_case: ReviewCase | None,
+    ) -> None:
+        if projected_case is None:
+            raise ValueError("successful rework requires its refreshed Review projection")
+        self.review_case = projected_case
+
+    def _validate_superseding_review_case(
+        self,
+        projected: ReviewCase | None,
+        proposed: RecordReference,
+        superseding: AssessmentRevision,
+        correction: CorrectionRequest,
+        corrected_sq_id: Identifier | None,
+    ) -> None:
+        if projected is None or projected.assessment != proposed:
+            raise ValueError("refreshed Review projection must bind the proposed Assessment")
+        for field in (
+            "review_id",
+            "review_revision",
+            "policy",
+            "result_label",
+            "domain_ids",
+            "preparation_scopes",
+        ):
+            if getattr(projected, field) != getattr(self.review_case, field):
+                raise ValueError(f"refreshed Review projection changes immutable {field}")
+        affected = set(correction.affected_scope)
+        old_summaries = {
+            summary.domain_id: summary for summary in self.review_case.domain_summaries
+        }
+        new_summaries = {
+            summary.domain_id: summary for summary in projected.domain_summaries
+        }
+        for domain_id in set(self.review_case.domain_ids) - affected:
+            if old_summaries.get(domain_id) != new_summaries.get(domain_id):
+                raise ValueError("refreshed Review projection changes an unaffected Domain")
+        old_actions = {
+            action.action_id: action for action in self.review_case.actions
+        }
+        new_actions = {action.action_id: action for action in projected.actions}
+        for action_id, old_action in old_actions.items():
+            if old_action.domain_id not in affected:
+                if new_actions.get(action_id) != old_action:
+                    raise ValueError(
+                        "refreshed Review projection changes an unaffected action"
+                    )
+        if any(
+            action_id not in old_actions and action.domain_id not in affected
+            for action_id, action in new_actions.items()
+        ):
+            raise ValueError("refreshed Review projection adds an unaffected action")
+        answer_references = set(superseding.answers)
+        evidence_changed = (
+            set(
+                (reference.entity_id, reference.revision_id)
+                for reference in AssessmentRevision.model_validate_json(
+                    self.ledger.artifacts.read(
+                        correction.challenged_assessment.content_hash
+                    )
+                ).evidence_bundles
+            )
+            != set(
+                (reference.entity_id, reference.revision_id)
+                for reference in superseding.evidence_bundles
+            )
+        )
+        current_claims = {
+            item["entity_id"]: RecordReference.model_validate(item)
+            for bundle in superseding.evidence_bundles
+            for item in json.loads(
+                self.ledger.artifacts.read(bundle.content_hash)
+            ).get("items", ())
+            if isinstance(item, dict)
+            and isinstance(item.get("entity_id"), str)
+            and {"revision_id", "content_hash"} <= item.keys()
+        }
+        answer_payloads: dict[str, dict] = {}
+        for reference in superseding.answers:
+            payload = json.loads(self.ledger.artifacts.read(reference.content_hash))
+            if isinstance(payload, dict) and isinstance(payload.get("sq_id"), str):
+                answer_payloads[payload["sq_id"]] = payload
+            if isinstance(payload, dict):
+                answer_payloads.update(
+                    {
+                        item["question_id"]: item
+                        for item in payload.get("answers", ())
+                        if isinstance(item, dict)
+                        and isinstance(item.get("question_id"), str)
+                    }
+                )
+        judgment_payloads = {
+            payload["domain_id"]: payload
+            for reference in superseding.judgments
+            if isinstance(
+                payload := json.loads(
+                    self.ledger.artifacts.read(reference.content_hash)
+                ),
+                dict,
+            )
+            and isinstance(payload.get("domain_id"), str)
+        }
+        for action in projected.actions:
+            if (
+                action.domain_id in affected
+                and action.prepared_answer is not None
+                and action.prepared_answer.revision not in answer_references
+            ):
+                raise ValueError(
+                    "refreshed Review projection retains a stale prepared answer"
+                )
+            if (
+                action.domain_id in affected
+                and action.answer_revision is not None
+                and action.answer_revision not in answer_references
+            ):
+                raise ValueError(
+                    "refreshed Review projection retains a stale answer binding"
+                )
+            if (
+                evidence_changed
+                and action.domain_id in affected
+                and action.evidence_claim is not None
+            ):
+                current_claim = current_claims.get(action.evidence_claim.entity_id)
+                if current_claim != action.evidence_claim:
+                    raise ValueError(
+                        "refreshed Review projection retains stale Evidence"
+                    )
+                claim_payload = json.loads(
+                    self.ledger.artifacts.read(current_claim.content_hash)
+                )
+                quoted = claim_payload.get("quoted_text")
+                if (
+                    quoted is not None
+                    and action.bound_evidence is not None
+                    and action.bound_evidence.quote() != quoted
+                ):
+                    raise ValueError(
+                        "refreshed Review projection retains stale exact Evidence text"
+                    )
+        for summary in projected.domain_summaries:
+            if summary.domain_id not in affected:
+                continue
+            current_judgment = judgment_payloads.get(summary.domain_id)
+            if current_judgment is not None:
+                expected_judgment = str(
+                    current_judgment.get("judgment", "")
+                ).replace("_", " ").casefold()
+                if summary.judgment.casefold() != expected_judgment:
+                    raise ValueError(
+                        "refreshed Review projection retains a stale Domain judgment"
+                    )
+                previous_summary = old_summaries.get(summary.domain_id)
+                if (
+                    previous_summary is not None
+                    and previous_summary.judgment != summary.judgment
+                    and previous_summary.deterministic_basis
+                    == summary.deterministic_basis
+                ):
+                    raise ValueError(
+                        "refreshed Review projection retains a stale judgment basis"
+                    )
+            for question in summary.active_questions:
+                current_answer = answer_payloads.get(question.sq_id)
+                if current_answer is None:
+                    raise ValueError(
+                        "refreshed Review projection lacks current SQ decision content"
+                    )
+                expected = str(current_answer.get("answer", "")).replace("_", " ").casefold()
+                if (
+                    question.answer.casefold() != expected
+                    or question.rationale != current_answer.get("rationale")
+                ):
+                    raise ValueError(
+                        "refreshed Review projection retains stale SQ decision content"
+                    )
+        available_questions = {
+            question.sq_id
+            for summary in projected.domain_summaries
+            if summary.domain_id in affected
+            for question in summary.active_questions
+        }
+        if available_questions and corrected_sq_id not in available_questions:
+            raise ValueError("corrected SQ is absent from the refreshed Review projection")
+
     def mark_disconnected(self) -> None:
         if self._connection_state is not ConnectionState.COMPLETE:
             self._connection_state = ConnectionState.NOT_CONNECTED
@@ -666,6 +1342,34 @@ class ReviewService:
             ):
                 continue
             receipt = self._receipt_from_event(event)
+            if receipt.assessment_revision_id != self.review_case.assessment_revision_id:
+                state = (
+                    self.correction_state(receipt.revision_id)
+                    if receipt.correction_request is not None
+                    else None
+                )
+                if state is not None and state.status is CorrectionReworkStatus.SUCCEEDED:
+                    continue
+                action = next(
+                    (
+                        candidate
+                        for candidate in self.review_case.actions
+                        if candidate.action_id == receipt.review_action_id
+                    ),
+                    None,
+                )
+                reopened = {
+                    decision
+                    for correction in self.correction_receipts()
+                    if (
+                        rework := self.correction_state(correction.revision_id)
+                    ) is not None
+                    and rework.status is CorrectionReworkStatus.SUCCEEDED
+                    and rework.comparison is not None
+                    for decision in rework.comparison.reopened_decisions
+                }
+                if action is None or action.domain_id in reopened:
+                    continue
             receipts[receipt.review_action_id] = receipt
         return receipts
 
@@ -837,24 +1541,22 @@ class ReviewService:
             ),
             None,
         )
+        domain_summary = next(
+            (
+                summary
+                for summary in self.review_case.domain_summaries
+                if summary.domain_id == action.domain_id
+            ),
+            None,
+        )
+        prior_correction = next(reversed(self.correction_receipts()), None)
         minimum_scope = _minimum_correction_scope(action)
         requested_scope = command.correction_scope or minimum_scope
         if _scope_rank(requested_scope) < _scope_rank(minimum_scope):
             raise ValueError(
                 f"correction scope cannot narrow the invocation context below {minimum_scope.value}"
             )
-        affected = tuple(
-            dict.fromkeys(
-                (
-                    *(
-                        self.review_case.domain_ids
-                        if requested_scope is CorrectionScope.RESULT
-                        else ((action.domain_id,) if action.domain_id is not None else ())
-                    ),
-                    *action.affected_scope,
-                )
-            )
-        )
+        affected = self._dependency_affected_scope(action, requested_scope)
         request_text = (command.rationale or "").strip()
         prompt = (
             "Targeted rob2-kit correction request\n"
@@ -865,7 +1567,8 @@ class ReviewService:
             f"Required affected path: {', '.join(affected) or self.review_case.result_label}\n"
             f"Request: {request_text}\n"
             "Preserve the challenged Assessment unchanged. Regenerate only the recorded "
-            "dependency path and create one superseding Assessment revision."
+            "dependency path and create one superseding Assessment revision. Report progress "
+            "and completion with submit_targeted_rework using this receipt revision."
         )
         return CorrectionRequest(
             challenged_assessment=self.review_case.assessment,
@@ -885,12 +1588,16 @@ class ReviewService:
             prepared_answer=(
                 source_action.prepared_answer.answer
                 if source_action is not None and source_action.prepared_answer is not None
-                else None
+                else (domain_summary.judgment if domain_summary is not None else None)
             ),
             prepared_rationale=(
                 source_action.prepared_answer.rationale
                 if source_action is not None and source_action.prepared_answer is not None
-                else None
+                else (
+                    domain_summary.deterministic_basis
+                    if domain_summary is not None
+                    else None
+                )
             ),
             request=request_text,
             minimum_scope=minimum_scope,
@@ -899,6 +1606,82 @@ class ReviewService:
             agent_prompt=prompt,
             last_checkpoint=action.correction_checkpoint,
             resume_action=prompt,
+            predecessor_receipt_revision_id=(
+                prior_correction.revision_id if prior_correction is not None else None
+            ),
+        )
+
+    def _dependency_affected_scope(
+        self,
+        action: QueueItem,
+        requested_scope: CorrectionScope,
+    ) -> tuple[Identifier, ...]:
+        if requested_scope is CorrectionScope.RESULT:
+            return self.review_case.domain_ids
+        if requested_scope is CorrectionScope.DOMAIN:
+            return tuple(
+                dict.fromkeys(
+                    (
+                        *((action.domain_id,) if action.domain_id is not None else ()),
+                        *action.affected_scope,
+                    )
+                )
+            )
+        seed_revisions = {
+            reference.revision_id
+            for reference in (
+                action.evidence_claim,
+                action.evidence_bundle,
+                action.answer_revision,
+            )
+            if reference is not None
+        }
+        affected_revisions = set(seed_revisions)
+        changed = True
+        events = self.ledger.events()
+        while changed:
+            changed = False
+            for event in events:
+                if event.revision_id in affected_revisions:
+                    continue
+                if any(
+                    dependency.revision_id in affected_revisions
+                    for dependency in event.dependencies
+                ):
+                    affected_revisions.add(event.revision_id)
+                    changed = True
+        domains = []
+        for candidate in self.review_case.actions:
+            if candidate.domain_id is None:
+                continue
+            candidate_revisions = {
+                reference.revision_id
+                for reference in (
+                    candidate.evidence_claim,
+                    candidate.evidence_bundle,
+                    candidate.answer_revision,
+                    (
+                        candidate.prepared_answer.revision
+                        if candidate.prepared_answer is not None
+                        else None
+                    ),
+                )
+                if reference is not None
+            }
+            if (
+                candidate.action_id == action.action_id
+                or candidate.sq_id == action.sq_id
+                or candidate_revisions & affected_revisions
+            ):
+                domains.append(candidate.domain_id)
+        return tuple(
+            dict.fromkeys(
+                (
+                    *((action.domain_id,) if action.domain_id is not None else ()),
+                    *domains,
+                    *action.affected_scope,
+                )
+            )
         )
 
     def _receipt_from_event(self, event: WorkflowEvent) -> DurableReviewReceipt:
@@ -915,6 +1698,15 @@ class ReviewService:
         ).hexdigest()[:24]
         return f"revision:review-receipt-{digest}"
 
+    def _rework_revision_id(self, command: CorrectionReworkCommand) -> str:
+        digest = hashlib.sha256(
+            (
+                f"{command.correction_receipt_revision_id}|{command.operation_key}|"
+                f"{command.status}"
+            ).encode()
+        ).hexdigest()[:24]
+        return f"revision:correction-rework-{digest}"
+
     def _validate_preparation_outcomes(self) -> None:
         completed_scopes = {
             event.scope
@@ -924,6 +1716,39 @@ class ReviewService:
         missing = set(self.review_case.preparation_scopes) - completed_scopes
         if missing:
             raise ValueError("review cannot open until every Trial has a Preparation outcome")
+
+    def _restore_current_proposed_assessment(self) -> None:
+        for event in reversed(self.ledger.events()):
+            if (
+                event.operation != "correction:targeted-rework"
+                or event.scope != self.review_case.review_id
+            ):
+                continue
+            state = CorrectionReworkState.model_validate_json(
+                self.ledger.artifacts.read(event.output_revision_hashes[0])
+            )
+            if (
+                state.status is CorrectionReworkStatus.SUCCEEDED
+                and state.current_proposed_assessment is not None
+                and state.challenged_assessment.entity_id
+                == self.review_case.assessment.entity_id
+            ):
+                proposed = state.current_proposed_assessment
+                current = next(
+                    (
+                        revision
+                        for revision in self.ledger.current_revisions()
+                        if revision.entity_id == proposed.entity_id
+                    ),
+                    None,
+                )
+                if current is None or current.revision_id != proposed.revision_id:
+                    continue
+                self._adopt_proposed_assessment(
+                    proposed,
+                    state.current_review_case,
+                )
+                return
 
 
 def _domain_action_id(domain_id: str) -> str:
@@ -953,3 +1778,285 @@ def _minimum_correction_scope(action: QueueItem) -> CorrectionScope:
 
 def _scope_rank(scope: CorrectionScope) -> int:
     return tuple(CorrectionScope).index(scope)
+
+
+def _derive_correction_comparison(
+    challenged: AssessmentRevision,
+    superseding: AssessmentRevision,
+    affected_scope: tuple[Identifier, ...],
+    requested_scope: CorrectionScope,
+    all_domains: tuple[Identifier, ...],
+    ledger: WorkflowLedger,
+) -> CorrectionComparison:
+    def payload(reference: RecordReference) -> dict:
+        loaded = json.loads(ledger.artifacts.read(reference.content_hash))
+        return loaded if isinstance(loaded, dict) else {"value": loaded}
+
+    def pairs(
+        before: tuple[RecordReference, ...],
+        after: tuple[RecordReference, ...],
+    ) -> tuple[tuple[dict, dict], ...]:
+        old = {reference.entity_id: payload(reference) for reference in before}
+        new = {reference.entity_id: payload(reference) for reference in after}
+        return tuple(
+            (old.get(entity_id, {}), new.get(entity_id, {}))
+            for entity_id in sorted(old.keys() | new.keys())
+            if old.get(entity_id) != new.get(entity_id)
+        )
+
+    evidence_pairs = pairs(
+        challenged.evidence_bundles,
+        superseding.evidence_bundles,
+    )
+    answer_pairs = pairs(challenged.answers, superseding.answers)
+    judgment_pairs = pairs(challenged.judgments, superseding.judgments)
+    finding_pairs = pairs(
+        challenged.review_findings,
+        superseding.review_findings,
+    )
+    override_pairs = pairs(
+        challenged.judgment_overrides,
+        superseding.judgment_overrides,
+    )
+    identity_changed = (
+        challenged.result_spec != superseding.result_spec
+        or challenged.source_inventory != superseding.source_inventory
+    )
+    if identity_changed and requested_scope is not CorrectionScope.RESULT:
+        raise ValueError("targeted correction changes Result identity outside its scope")
+    if not any((evidence_pairs, answer_pairs, judgment_pairs, finding_pairs)):
+        if not override_pairs and not identity_changed:
+            raise ValueError(
+                "successful correction must change an Assessment decision dependency"
+            )
+    evidence = tuple(
+        _payload_difference(
+            "Evidence consideration",
+            before,
+            after,
+            ("items", "coverage_state", "coverage_limitations", "conflicts"),
+        )
+        for before, after in evidence_pairs
+    ) or ("Evidence consideration: no substantive change.",)
+    answers = tuple(
+        _answer_difference(before, after) for before, after in answer_pairs
+    ) or ("Answer and rationale: no substantive change.",)
+    judgments = tuple(
+        _payload_difference("Judgment", before, after, ("domain_id", "judgment"))
+        for before, after in judgment_pairs
+    ) or ("Judgments: no substantive change.",)
+    limitations = tuple(
+        _payload_difference(
+            "Limitation",
+            before,
+            after,
+            ("summary", "severity", "finding_type", "affected_records"),
+        )
+        for before, after in finding_pairs
+    )
+    if not limitations:
+        limitations = tuple(
+            _payload_difference(
+                "Limitations",
+                before,
+                after,
+                ("coverage_state", "coverage_limitations"),
+            )
+            for before, after in evidence_pairs
+        ) or ("Limitations: no substantive change.",)
+    changed_domains = {
+        domain_id
+        for before, after in (
+            *evidence_pairs,
+            *answer_pairs,
+            *judgment_pairs,
+            *finding_pairs,
+            *override_pairs,
+        )
+        for domain_id in (
+            _payload_domains(before, ledger) | _payload_domains(after, ledger)
+        )
+    }
+    if evidence_pairs:
+        evidence_domains = _evidence_change_domains(
+            evidence_pairs,
+            (*pairs(challenged.answers, ()), *pairs((), superseding.answers)),
+            ledger,
+        )
+        changed_domains.update(evidence_domains or set(all_domains))
+    if changed_domains and not changed_domains <= set(affected_scope):
+        raise ValueError("superseding Assessment changes an unaffected Domain")
+    reopened = tuple(
+        domain_id
+        for domain_id in affected_scope
+        if not changed_domains or domain_id in changed_domains
+    )
+    reusable = []
+    def revisions(references: tuple[RecordReference, ...]) -> tuple[Identifier, ...]:
+        return tuple(reference.revision_id for reference in references)
+
+    for label, before, after in (
+        ("ResultSpec", (challenged.result_spec,), (superseding.result_spec,)),
+        ("Source inventory", (challenged.source_inventory,), (superseding.source_inventory,)),
+        ("Evidence Bundles", challenged.evidence_bundles, superseding.evidence_bundles),
+        ("SQ Answers", challenged.answers, superseding.answers),
+        ("Judgments", challenged.judgments, superseding.judgments),
+        (
+            "Judgment overrides",
+            challenged.judgment_overrides,
+            superseding.judgment_overrides,
+        ),
+        ("Review findings", challenged.review_findings, superseding.review_findings),
+    ):
+        if revisions(before) == revisions(after):
+            reusable.append(label)
+    return CorrectionComparison(
+        evidence_consideration=evidence,
+        answer_and_rationale=answers,
+        judgments=judgments,
+        limitations=limitations,
+        reopened_decisions=reopened,
+        reused_unaffected_work=tuple(reusable) or ("No unaffected Assessment work.",),
+    )
+
+
+def _payload_difference(
+    label: str,
+    before: dict,
+    after: dict,
+    keys: tuple[str, ...],
+) -> str:
+    changes = [
+        f"{key}: {before.get(key)!r} → {after.get(key)!r}"
+        for key in keys
+        if before.get(key) != after.get(key)
+    ]
+    if not changes:
+        changes = [f"record: {before!r} → {after!r}"]
+    return f"{label}: {'; '.join(changes)}."
+
+
+def _answer_difference(before: dict, after: dict) -> str:
+    old_answers = {
+        item.get("question_id"): item
+        for item in before.get("answers", ())
+        if isinstance(item, dict)
+    }
+    new_answers = {
+        item.get("question_id"): item
+        for item in after.get("answers", ())
+        if isinstance(item, dict)
+    }
+    changes = []
+    for sq_id in sorted(old_answers.keys() | new_answers.keys(), key=str):
+        old = old_answers.get(sq_id, {})
+        new = new_answers.get(sq_id, {})
+        if old != new:
+            changes.append(
+                f"{sq_id}: answer {old.get('answer')!r} → {new.get('answer')!r}; "
+                f"rationale {old.get('rationale')!r} → {new.get('rationale')!r}"
+            )
+    return (
+        f"Answer and rationale: {'; '.join(changes)}."
+        if changes
+        else _payload_difference("Answer and rationale", before, after, ("answers",))
+    )
+
+
+def _payload_domains(
+    payload: dict,
+    ledger: WorkflowLedger,
+    visited_hashes: set[str] | None = None,
+) -> set[Identifier]:
+    visited = visited_hashes or set()
+    domains: set[Identifier] = set()
+    for key, value in payload.items():
+        if key == "domain_id" and isinstance(value, str) and value.startswith("domain:"):
+            domains.add(value)
+        if key in {"sq_id", "question_id"} and isinstance(value, str) and value.startswith(
+            "sq:"
+        ):
+            domains.add(f"domain:{value.split(':', 2)[1]}")
+        if isinstance(value, dict):
+            domains.update(_payload_domains(value, ledger, visited))
+        elif isinstance(value, list):
+            for item in value:
+                if isinstance(item, dict):
+                    domains.update(_payload_domains(item, ledger, visited))
+        if (
+            isinstance(value, dict)
+            and isinstance(value.get("content_hash"), str)
+            and value["content_hash"] not in visited
+        ):
+            visited.add(value["content_hash"])
+            try:
+                referenced = json.loads(ledger.artifacts.read(value["content_hash"]))
+            except (ArtifactNotFoundError, ValueError):
+                continue
+            if isinstance(referenced, dict):
+                domains.update(_payload_domains(referenced, ledger, visited))
+    return domains
+
+
+def _evidence_change_domains(
+    evidence_pairs: tuple[tuple[dict, dict], ...],
+    answer_pairs: tuple[tuple[dict, dict], ...],
+    ledger: WorkflowLedger,
+) -> set[Identifier]:
+    changed_claims: set[str] = set()
+    for before, after in evidence_pairs:
+        old_items = {
+            json.dumps(item, sort_keys=True)
+            for item in before.get("items", ())
+            if isinstance(item, dict)
+        }
+        new_items = {
+            json.dumps(item, sort_keys=True)
+            for item in after.get("items", ())
+            if isinstance(item, dict)
+        }
+        for serialized in old_items ^ new_items:
+            item = json.loads(serialized)
+            entity_id = item.get("entity_id")
+            if isinstance(entity_id, str):
+                changed_claims.add(entity_id)
+    domains: set[Identifier] = set()
+    for before, after in answer_pairs:
+        for payload in (before, after):
+            answers = (
+                payload.get("answers", ())
+                if "answers" in payload
+                else (payload,)
+            )
+            for answer in answers:
+                if not isinstance(answer, dict):
+                    continue
+                sq_id = answer.get("question_id") or answer.get("sq_id")
+                claims = set(answer.get("evidence_claim_ids", ()))
+                evidence_bundle = answer.get("evidence_bundle")
+                if isinstance(evidence_bundle, dict):
+                    claims.update(
+                        _bundle_claim_ids(evidence_bundle, ledger)
+                    )
+                if (
+                    isinstance(sq_id, str)
+                    and sq_id.startswith("sq:")
+                    and changed_claims & claims
+                ):
+                    domains.add(f"domain:{sq_id.split(':', 2)[1]}")
+    return domains
+
+
+def _bundle_claim_ids(reference: dict, ledger: WorkflowLedger) -> set[str]:
+    content_hash = reference.get("content_hash")
+    if not isinstance(content_hash, str):
+        return set()
+    try:
+        payload = json.loads(ledger.artifacts.read(content_hash))
+    except (ArtifactNotFoundError, ValueError):
+        return set()
+    return {
+        item["entity_id"]
+        for item in payload.get("items", ())
+        if isinstance(item, dict) and isinstance(item.get("entity_id"), str)
+    }

@@ -1,15 +1,19 @@
 import hashlib
+import json
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 import pytest
 
-from rob2_kit.domain.revisions import Actor, ActorKind
+from rob2_kit.domain.assessment import AssessmentRevision
+from rob2_kit.domain.revisions import Actor, ActorKind, Dependency, Supersession
 from rob2_kit.review.service import (
     ActionDecision,
     ActionKind,
     AttentionTier,
     BoundEvidence,
+    CorrectionReworkCommand,
+    CorrectionReworkStatus,
     CorrectionScope,
     DomainQuestionSummary,
     DomainReviewSummary,
@@ -26,6 +30,7 @@ from rob2_kit.review.service import (
 )
 from rob2_kit.storage.artifacts import ArtifactStore
 from rob2_kit.storage.ledger import (
+    DependencyInput,
     Transition,
     WorkflowEventOutcome,
     WorkflowLedger,
@@ -70,6 +75,38 @@ def service(tmp_path: Path, review_case: ReviewCase) -> ReviewService:
     return ReviewService(ledger, lease, review_case)
 
 
+def committed_reference(
+    review: ReviewService,
+    name: str,
+    payload: dict | None = None,
+):
+    result = review.ledger.commit(
+        Transition(
+            scope="review:trial-1",
+            operation=f"test:materialize-{name}",
+            operation_key=f"idempotency:materialize-{name}",
+            actor=reviewer(),
+            observed_at=NOW,
+            entity_id=f"{name}:trial-1",
+            revision_id=f"revision:{name}-1",
+            artifact=json.dumps(payload or {"record": name}).encode(),
+            artifact_media_type="application/json",
+            dependencies=(),
+            expected_dependency_fingerprint=dependency_fingerprint(()),
+            outcome=WorkflowEventOutcome.COMPLETED,
+        ),
+        review.lease,
+        now=NOW,
+    )
+    return reference(name).model_copy(
+        update={
+            "entity_id": f"{name}:trial-1",
+            "revision_id": f"revision:{name}-1",
+            "content_hash": result.artifact_hash,
+        }
+    )
+
+
 def case() -> ReviewCase:
     evidence_text = "<script>alert('source')</script> ‏trial text"
     evidence_hash = f"sha256:{hashlib.sha256(evidence_text.encode()).hexdigest()}"
@@ -96,6 +133,7 @@ def case() -> ReviewCase:
                 action_id="review-action:finding-1",
                 kind=ActionKind.VERIFY_EVIDENCE,
                 domain_id="domain:1",
+                sq_id="sq:1:concealment",
                 title="Verify allocation evidence",
                 source_locator="Protocol p. 4",
                 bound_evidence=BoundEvidence(
@@ -329,7 +367,7 @@ def test_human_action_commits_once_and_reveals_answer(tmp_path: Path) -> None:
 def test_refreshed_submission_with_a_new_key_cannot_duplicate_an_action(
     tmp_path: Path,
 ) -> None:
-    review = service(tmp_path, case())
+    review = service(tmp_path, guided_case())
     first = review.commit(
         command(
             "review-action:finding-1",
@@ -506,6 +544,53 @@ def test_correction_receipt_pins_context_and_derives_non_shrinkable_scope(
         )
 
 
+def test_domain_correction_pins_prepared_judgment_and_basis(tmp_path: Path) -> None:
+    review = service(tmp_path, guided_case())
+
+    correction = review.commit(
+        command(
+            "review-action:domain-2",
+            ActionKind.DOMAIN_REVIEW,
+            key="idempotency:domain-correction",
+            value=ActionDecision.CORRECTION_REQUESTED,
+        )
+    ).receipt.correction_request
+
+    assert correction is not None
+    assert correction.prepared_answer == "Some concerns"
+    assert correction.prepared_rationale == "Answers for Domain 2 map to this judgment."
+
+
+def test_interrupted_rework_rejects_success_only_outputs() -> None:
+    with pytest.raises(ValueError, match="cannot include successful outputs"):
+        CorrectionReworkCommand(
+            operation_key="idempotency:invalid-interruption",
+            correction_receipt_revision_id="revision:correction-1",
+            actor=reviewer().model_copy(update={"kind": ActorKind.AGENT}),
+            observed_at=NOW,
+            status=CorrectionReworkStatus.INTERRUPTED,
+            last_checkpoint="checkpoint:evidence",
+            failure_reason="Connection closed.",
+            resume_action="Retry.",
+            superseding_assessment_revision_id="revision:assessment-2",
+        )
+
+    with pytest.raises(ValueError, match="cannot include failure"):
+        CorrectionReworkCommand(
+            operation_key="idempotency:invalid-success",
+            correction_receipt_revision_id="revision:correction-1",
+            actor=reviewer().model_copy(update={"kind": ActorKind.AGENT}),
+            observed_at=NOW,
+            status=CorrectionReworkStatus.SUCCEEDED,
+            last_checkpoint="checkpoint:assessment",
+            failure_reason="Old failure.",
+            superseding_assessment_revision_id="revision:assessment-2",
+            assessment_artifact=b"{}",
+            corrected_sq_id="sq:1:concealment",
+            superseding_review_case=guided_case(),
+        )
+
+
 def test_authoritative_newer_assessment_makes_session_stale(tmp_path: Path) -> None:
     review = service(tmp_path, case())
     review.ledger.commit(
@@ -529,6 +614,369 @@ def test_authoritative_newer_assessment_makes_session_stale(tmp_path: Path) -> N
     )
 
     assert review.is_stale() is True
+
+
+def test_targeted_rework_resumes_then_supersedes_exact_current_assessment(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    review = service(tmp_path, guided_case())
+    result_spec = committed_reference(review, "result-spec")
+    inventory = committed_reference(review, "source-inventory")
+    bundle = committed_reference(review, "evidence-bundle")
+    answer_before = committed_reference(
+        review,
+        "sq-answer-before",
+        {
+            "sq_id": "sq:1:concealment",
+            "answer": "probably_yes",
+            "rationale": "Allocation appeared concealed.",
+        },
+    )
+    answer_after = committed_reference(
+        review,
+        "sq-answer-after",
+        {
+            "sq_id": "sq:1:concealment",
+            "answer": "no",
+            "rationale": "Open allocation was reported.",
+        },
+    )
+    judgment = committed_reference(
+        review,
+        "judgment",
+        {"domain_id": "domain:1", "judgment": "low_risk"},
+    )
+    judgment_after = committed_reference(
+        review,
+        "judgment-after",
+        {"domain_id": "domain:1", "judgment": "some_concerns"},
+    )
+    unrelated_judgment = committed_reference(
+        review,
+        "judgment-unrelated",
+        {"domain_id": "domain:2", "judgment": "high"},
+    )
+
+    def assessment(
+        revision_id: str,
+        answer,
+        *,
+        judgment_reference=None,
+        supersedes: Supersession | None = None,
+    ) -> AssessmentRevision:
+        selected_judgment = judgment_reference or judgment
+        references = (
+            (result_spec, "dependency:result-spec"),
+            (inventory, "dependency:source-inventory"),
+            (bundle, "dependency:evidence-bundle"),
+            (answer, "dependency:sq-answer"),
+            (selected_judgment, "dependency:algorithmic-judgment"),
+        )
+        return AssessmentRevision(
+            entity_id=review.review_case.assessment.entity_id,
+            revision_id=revision_id,
+            actor=reviewer(),
+            observed_at=NOW,
+            supersedes=supersedes,
+            dependencies=tuple(
+                Dependency(**item.model_dump(), role=role)
+                for item, role in references
+            ),
+            result_spec=result_spec,
+            source_inventory=inventory,
+            evidence_bundles=(bundle,),
+            answers=(answer,),
+            judgments=(selected_judgment,),
+        )
+
+    challenged = assessment(review.review_case.assessment.revision_id, answer_before)
+    challenged_dependencies = tuple(
+        DependencyInput(**dependency.model_dump())
+        for dependency in challenged.dependencies
+    )
+    original = review.ledger.commit(
+        Transition(
+            scope="review:trial-1",
+            operation="assessment:materialize",
+            operation_key="idempotency:materialize-assessment",
+            actor=reviewer(),
+            observed_at=NOW,
+            entity_id=review.review_case.assessment.entity_id,
+            revision_id=review.review_case.assessment.revision_id,
+            artifact=challenged.model_dump_json().encode(),
+            artifact_media_type="application/json",
+            dependencies=challenged_dependencies,
+            expected_dependency_fingerprint=dependency_fingerprint(
+                challenged_dependencies
+            ),
+            checkpoint="checkpoint:assessment",
+            outcome=WorkflowEventOutcome.COMPLETED,
+        ),
+        review.lease,
+        now=NOW,
+    )
+    review.review_case = review.review_case.model_copy(
+        update={
+            "assessment": review.review_case.assessment.model_copy(
+                update={"content_hash": original.artifact_hash}
+            ),
+            "assessment_content_hash": original.artifact_hash,
+        }
+    )
+    challenged_case = review.review_case
+    correction = review.commit(
+        command(
+            "review-action:finding-1",
+            ActionKind.VERIFY_EVIDENCE,
+            key="idempotency:rework-correction",
+            value=ActionDecision.CORRECTION_REQUESTED,
+        )
+    )
+    interrupted = review.submit_targeted_rework(
+        CorrectionReworkCommand(
+            operation_key="idempotency:rework-interrupted",
+            correction_receipt_revision_id=correction.receipt.revision_id,
+            actor=reviewer().model_copy(update={"kind": ActorKind.AGENT}),
+            observed_at=NOW,
+            status=CorrectionReworkStatus.INTERRUPTED,
+            last_checkpoint="checkpoint:evidence",
+            failure_reason="Agent connection closed.",
+            resume_action="Resume from checkpoint:evidence.",
+        )
+    )
+    assert interrupted.status is CorrectionReworkStatus.INTERRUPTED
+    assert review.correction_state(correction.receipt.revision_id) == interrupted
+
+    corrected_assessment = assessment(
+        "revision:assessment-2",
+        answer_after,
+        judgment_reference=judgment_after,
+        supersedes=Supersession(
+            **review.review_case.assessment.model_dump(),
+            reason="Targeted correction",
+        ),
+    )
+    corrected_artifact = corrected_assessment.model_dump_json().encode()
+    proposed_reference = review.review_case.assessment.model_copy(
+        update={
+            "revision_id": "revision:assessment-2",
+            "content_hash": review.ledger.artifacts.put(
+                corrected_artifact, "application/json"
+            ).content_hash,
+        }
+    )
+    corrected_actions = tuple(
+        action.model_copy(
+            update={
+                "prepared_answer": PreparedAnswer(
+                    revision=answer_after,
+                    answer="No",
+                    rationale="Open allocation was reported.",
+                ),
+                "answer_revision": answer_after,
+            }
+        )
+        if action.action_id == "review-action:finding-1"
+        else action
+        for action in review.review_case.actions
+    )
+    corrected_summaries = tuple(
+        summary.model_copy(
+            update={
+                "judgment": "Some concerns",
+                "deterministic_basis": "Corrected answers map to Some concerns.",
+                "active_questions": (
+                    DomainQuestionSummary(
+                        sq_id="sq:1:concealment",
+                        guidance="Was allocation concealed?",
+                        answer="No",
+                        rationale="Open allocation was reported.",
+                        evidence_count=1,
+                    ),
+                ),
+            }
+        )
+        if summary.domain_id == "domain:1"
+        else summary
+        for summary in review.review_case.domain_summaries
+    )
+    corrected_case = review.review_case.model_copy(
+        update={
+            "assessment": proposed_reference,
+            "assessment_revision_id": proposed_reference.revision_id,
+            "assessment_content_hash": proposed_reference.content_hash,
+            "actions": corrected_actions,
+            "domain_summaries": corrected_summaries,
+        }
+    )
+    completion_command = CorrectionReworkCommand(
+            operation_key="idempotency:rework-complete",
+            correction_receipt_revision_id=correction.receipt.revision_id,
+            actor=reviewer().model_copy(update={"kind": ActorKind.AGENT}),
+            observed_at=NOW,
+            status=CorrectionReworkStatus.SUCCEEDED,
+            last_checkpoint="checkpoint:assessment",
+            superseding_assessment_revision_id="revision:assessment-2",
+            assessment_artifact=corrected_artifact,
+            corrected_sq_id="sq:1:concealment",
+            corrected_evidence_id="entity:evidence-claim",
+            superseding_review_case=corrected_case,
+        )
+    with pytest.raises(ValueError, match="stale Domain judgment"):
+        stale_summaries = tuple(
+            summary.model_copy(
+                update={
+                    "judgment": "Low risk",
+                    "deterministic_basis": "Answers map to Low risk.",
+                }
+            )
+            if summary.domain_id == "domain:1"
+            else summary
+            for summary in corrected_summaries
+        )
+        review.submit_targeted_rework(
+            completion_command.model_copy(
+                update={
+                    "operation_key": "idempotency:stale-judgment-projection",
+                    "superseding_review_case": corrected_case.model_copy(
+                        update={"domain_summaries": stale_summaries}
+                    ),
+                }
+            )
+        )
+    original_commit = review.ledger.commit
+    failed_once = False
+
+    def interrupt_between_success_and_supersession(*args, **kwargs):
+        nonlocal failed_once
+        transition = args[0]
+        if (
+            transition.operation == "correction:supersede-assessment"
+            and not failed_once
+        ):
+            failed_once = True
+            raise RuntimeError("simulated interruption")
+        return original_commit(*args, **kwargs)
+
+    monkeypatch.setattr(review.ledger, "commit", interrupt_between_success_and_supersession)
+    with pytest.raises(RuntimeError, match="simulated interruption"):
+        review.submit_targeted_rework(completion_command)
+    interrupted_apply = review.correction_state(correction.receipt.revision_id)
+    assert interrupted_apply.status is CorrectionReworkStatus.INTERRUPTED
+    assert "supersession was interrupted" in interrupted_apply.failure_reason
+    assert "same idempotency key" in interrupted_apply.resume_action
+    monkeypatch.setattr(review.ledger, "commit", original_commit)
+    completed = review.submit_targeted_rework(completion_command)
+
+    assert completed.current_proposed_assessment is not None
+    assert completed.current_proposed_assessment.revision_id == "revision:assessment-2"
+    current = {
+        revision.entity_id: revision.revision_id
+        for revision in review.ledger.current_revisions()
+    }
+    assert current[review.review_case.assessment.entity_id] == "revision:assessment-2"
+    assert completed.comparison is not None
+    assert "Answer and rationale" in completed.comparison.answer_and_rationale[0]
+    assert "Evidence Bundles" in completed.comparison.reused_unaffected_work
+    refreshed = next(
+        action
+        for action in review.review_case.actions
+        if action.action_id == "review-action:finding-1"
+    )
+    assert refreshed.prepared_answer.answer == "No"
+    assert review.submit_targeted_rework(completion_command) == completed
+    assert len(
+        [
+            event
+            for event in review.ledger.events()
+            if event.operation == "correction:supersede-assessment"
+        ]
+    ) == 1
+    rework_events = [
+        event
+        for event in review.ledger.events()
+        if event.operation.startswith("correction:targeted-rework")
+    ]
+    assert {dependency.role for dependency in rework_events[-2].dependencies} == {
+        "dependency:correction-receipt",
+        "dependency:challenged-assessment",
+    }
+    assert {dependency.role for dependency in rework_events[-1].dependencies} == {
+        "dependency:proposed-assessment"
+    }
+    with pytest.raises(ReviewError, match="different rework content"):
+        review.submit_targeted_rework(
+            completion_command.model_copy(update={"assessment_artifact": b"{}"})
+        )
+    resumed = ReviewService(review.ledger, review.lease, challenged_case)
+    assert resumed.review_case.assessment_revision_id == "revision:assessment-2"
+    assert resumed.correction_state(correction.receipt.revision_id) == completed
+
+    next_correction = review.commit(
+        command(
+            "review-action:finding-1",
+            ActionKind.VERIFY_EVIDENCE,
+            key="idempotency:second-correction",
+            expected="revision:assessment-2",
+            value=ActionDecision.CORRECTION_REQUESTED,
+        )
+    )
+    chain = review.correction_receipts()
+    assert [item.revision_id for item in chain] == [
+        correction.receipt.revision_id,
+        next_correction.receipt.revision_id,
+    ]
+    assert next_correction.receipt.correction_request is not None
+    assert (
+        next_correction.receipt.correction_request.challenged_assessment.revision_id
+        == "revision:assessment-2"
+    )
+    assert (
+        next_correction.receipt.correction_request.predecessor_receipt_revision_id
+        == correction.receipt.revision_id
+    )
+    unrelated_assessment = assessment(
+        "revision:assessment-3",
+        answer_after,
+        judgment_reference=unrelated_judgment,
+        supersedes=Supersession(
+            **review.review_case.assessment.model_dump(),
+            reason="Targeted correction",
+        ),
+    )
+    unrelated_artifact = unrelated_assessment.model_dump_json().encode()
+    unrelated_reference = review.review_case.assessment.model_copy(
+        update={
+            "revision_id": "revision:assessment-3",
+            "content_hash": review.ledger.artifacts.put(
+                unrelated_artifact, "application/json"
+            ).content_hash,
+        }
+    )
+    unrelated_case = review.review_case.model_copy(
+        update={
+            "assessment": unrelated_reference,
+            "assessment_revision_id": unrelated_reference.revision_id,
+            "assessment_content_hash": unrelated_reference.content_hash,
+        }
+    )
+    with pytest.raises(ValueError, match="unaffected Domain"):
+        review.submit_targeted_rework(
+            CorrectionReworkCommand(
+                operation_key="idempotency:unrelated-domain-rework",
+                correction_receipt_revision_id=next_correction.receipt.revision_id,
+                actor=reviewer().model_copy(update={"kind": ActorKind.AGENT}),
+                observed_at=NOW,
+                status=CorrectionReworkStatus.SUCCEEDED,
+                last_checkpoint="checkpoint:assessment",
+                superseding_assessment_revision_id="revision:assessment-3",
+                assessment_artifact=unrelated_artifact,
+                corrected_sq_id="sq:1:concealment",
+                corrected_evidence_id="entity:evidence-claim",
+                superseding_review_case=unrelated_case,
+            )
+        )
     with pytest.raises(StaleReviewError):
         review.commit(
             command(

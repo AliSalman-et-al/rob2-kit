@@ -9,13 +9,23 @@ import yaml
 from fastapi.testclient import TestClient
 
 from rob2_kit.application.gateway import ApplicationGateway
-from rob2_kit.domain.revisions import RecordReference
+from rob2_kit.domain.assessment import AssessmentRevision
+from rob2_kit.domain.revisions import (
+    ActorKind,
+    Dependency,
+    RecordReference,
+    Supersession,
+)
 from rob2_kit.evidence.search import (
     CanonicalEvidenceUnit,
     CanonicalUnitKind,
     EvidenceSearchIndex,
 )
-from rob2_kit.review.service import ReviewService
+from rob2_kit.review.service import (
+    CorrectionReworkCommand,
+    CorrectionReworkStatus,
+    ReviewService,
+)
 from rob2_kit.review.web import ReviewWebConfig, create_review_app
 from rob2_kit.storage.artifacts import ArtifactStore
 from rob2_kit.storage.ledger import (
@@ -26,7 +36,14 @@ from rob2_kit.storage.ledger import (
     dependency_fingerprint,
 )
 from tests.test_ingestion import StubParser, page
-from tests.test_review_service import NOW, case, guided_case, reviewer, service
+from tests.test_review_service import (
+    NOW,
+    case,
+    committed_reference,
+    guided_case,
+    reviewer,
+    service,
+)
 
 
 def client(tmp_path: Path) -> tuple[TestClient, str]:
@@ -1231,6 +1248,162 @@ def test_correction_sidecar_survives_reopen_and_exposes_receipt_bound_prompt(
     assert "Copyable agent prompt" in reopened.text
     assert "Targeted rob2-kit correction request" in reopened.text
     assert "Affected work is read-only" in reopened.text
+
+
+def test_successful_rework_compares_superseding_assessment_and_resumes_at_sq(
+    tmp_path: Path,
+) -> None:
+    browser, token = client(tmp_path)
+    review = browser.app.state.review_service
+    result_spec = committed_reference(review, "web-result-spec")
+    inventory = committed_reference(review, "web-source-inventory")
+    bundle = committed_reference(review, "web-evidence-bundle")
+    answer_before = committed_reference(review, "web-answer-before")
+    answer_after = committed_reference(review, "web-answer-after")
+    judgment = committed_reference(review, "web-judgment")
+
+    def assessment(revision_id: str, answer, supersedes=None):
+        references = (
+            (result_spec, "dependency:result-spec"),
+            (inventory, "dependency:source-inventory"),
+            (bundle, "dependency:evidence-bundle"),
+            (answer, "dependency:sq-answer"),
+            (judgment, "dependency:algorithmic-judgment"),
+        )
+        return AssessmentRevision(
+            entity_id=review.review_case.assessment.entity_id,
+            revision_id=revision_id,
+            actor=reviewer(),
+            observed_at=NOW,
+            supersedes=supersedes,
+            dependencies=tuple(
+                Dependency(**item.model_dump(), role=role)
+                for item, role in references
+            ),
+            result_spec=result_spec,
+            source_inventory=inventory,
+            evidence_bundles=(bundle,),
+            answers=(answer,),
+            judgments=(judgment,),
+        )
+
+    challenged = assessment("revision:assessment-1", answer_before)
+    challenged_dependencies = tuple(
+        DependencyInput(**dependency.model_dump())
+        for dependency in challenged.dependencies
+    )
+    original = review.ledger.commit(
+        Transition(
+            scope=review.review_case.review_id,
+            operation="assessment:materialize",
+            operation_key="idempotency:web-materialize-assessment",
+            actor=reviewer(),
+            observed_at=NOW,
+            entity_id=review.review_case.assessment.entity_id,
+            revision_id=review.review_case.assessment.revision_id,
+            artifact=challenged.model_dump_json().encode(),
+            artifact_media_type="application/json",
+            dependencies=challenged_dependencies,
+            expected_dependency_fingerprint=dependency_fingerprint(
+                challenged_dependencies
+            ),
+            checkpoint="checkpoint:assessment",
+            outcome=WorkflowEventOutcome.COMPLETED,
+        ),
+        review.lease,
+        now=NOW,
+    )
+    review.review_case = review.review_case.model_copy(
+        update={
+            "assessment": review.review_case.assessment.model_copy(
+                update={"content_hash": original.artifact_hash}
+            ),
+            "assessment_content_hash": original.artifact_hash,
+        }
+    )
+    page = enter_review(browser, token)
+    browser.post(
+        "/review/actions",
+        data={
+            "csrf_token": csrf_from(page),
+            "action_id": "review-action:finding-1",
+            "kind": "verify_evidence",
+            "expected_assessment_revision_id": "revision:assessment-1",
+            "idempotency_key": "idempotency:web-success-correction",
+            "value": "correction_requested",
+            "rationale": "Include the omitted allocation sentence.",
+            "correction_scope": "domain",
+        },
+        headers={"Origin": "http://testserver"},
+    )
+    receipt = review.correction_receipts()[-1]
+    corrected_assessment = assessment(
+        "revision:assessment-2",
+        answer_after,
+        Supersession(
+            **review.review_case.assessment.model_dump(),
+            reason="Targeted correction",
+        ),
+    )
+    corrected_artifact = corrected_assessment.model_dump_json().encode()
+    proposed_reference = review.review_case.assessment.model_copy(
+        update={
+            "revision_id": "revision:assessment-2",
+            "content_hash": review.ledger.artifacts.put(
+                corrected_artifact, "application/json"
+            ).content_hash,
+        }
+    )
+    corrected_actions = tuple(
+        action.model_copy(
+            update={
+                "prepared_answer": action.prepared_answer.model_copy(
+                    update={
+                        "revision": answer_after,
+                        "answer": "No",
+                        "rationale": "Open allocation was reported.",
+                    }
+                ),
+                "answer_revision": answer_after,
+            }
+        )
+        if action.action_id == "review-action:finding-1"
+        else action
+        for action in review.review_case.actions
+    )
+    corrected_case = review.review_case.model_copy(
+        update={
+            "assessment": proposed_reference,
+            "assessment_revision_id": proposed_reference.revision_id,
+            "assessment_content_hash": proposed_reference.content_hash,
+            "actions": corrected_actions,
+        }
+    )
+    review.submit_targeted_rework(
+        CorrectionReworkCommand(
+            operation_key="idempotency:web-rework-complete",
+            correction_receipt_revision_id=receipt.revision_id,
+            actor=reviewer().model_copy(update={"kind": ActorKind.AGENT}),
+            observed_at=NOW,
+            status=CorrectionReworkStatus.SUCCEEDED,
+            last_checkpoint="checkpoint:assessment",
+            superseding_assessment_revision_id="revision:assessment-2",
+            assessment_artifact=corrected_artifact,
+            corrected_sq_id="sq:1:concealment",
+            corrected_evidence_id="entity:evidence-claim",
+            superseding_review_case=corrected_case,
+        )
+    )
+
+    reopened = browser.get("/review?result=result:ready")
+
+    assert "Superseding Assessment comparison" in reopened.text
+    assert "revision:assessment-2" in reopened.text
+    assert "Answer and rationale" in reopened.text
+    assert "Evidence Bundles" in reopened.text
+    assert "Continue review" in reopened.text
+    assert "sq%3A1%3Aconcealment" in reopened.text
+    assert "Request another correction" in reopened.text
 
 
 def test_guided_review_explains_attention_and_preserves_full_audit_position(
