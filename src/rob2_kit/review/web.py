@@ -19,6 +19,7 @@ from pydantic import BaseModel, ConfigDict
 
 from rob2_kit.domain.revisions import Actor, ActorKind, RecordReference
 from rob2_kit.reports import ReportProjector, latest_assessment_view
+from rob2_kit.reports.archives import ArchiveBuilder, verify_archive
 from rob2_kit.review.service import (
     ActionKind,
     ReviewCommand,
@@ -29,6 +30,8 @@ from rob2_kit.review.service import (
     StaleReviewError,
 )
 from rob2_kit.review.workspace import (
+    WorkspaceStage,
+    project_completion,
     project_workspace,
     secured_source_pdf,
     signaling_question_audit,
@@ -162,6 +165,19 @@ def create_review_app(
             connection_state=connection_state,
             selected_result_id=result,
         )
+        completion = project_completion(
+            workspace_ledger,
+            workspace=workspace,
+            review_service=review_service,
+        )
+        if (
+            workspace is not None
+            and completion is not None
+            and completion.status == "Project Complete"
+        ):
+            workspace = workspace.model_copy(
+                update={"stage": WorkspaceStage.COMPLETE}
+            )
         selected_result = (
             result
             or (workspace.selected_result_id if workspace is not None else None)
@@ -216,6 +232,7 @@ def create_review_app(
         return HTMLResponse(
             template.render(
                 workspace=workspace,
+                completion=completion,
                 audit=audit,
                 review=review_service.review_case if review_service is not None else None,
                 queue=review_service.queue() if review_service is not None else (),
@@ -511,6 +528,28 @@ def _generate_signed_outputs(
         f"{stem}.robvis.csv": projector.robvis_csv(),
         f"{stem}.xlsx": projector.xlsx(),
     }
+    package_root = Path(__file__).resolve().parents[1]
+    repository_root = Path(__file__).resolve().parents[3]
+    release_root = next(
+        root
+        for root in (package_root, repository_root)
+        if (root / "schemas").is_dir() and (root / "packs").is_dir()
+    )
+    pinned_files = {
+        str(path.relative_to(release_root)).replace("\\", "/"): path.read_bytes()
+        for folder in ("schemas", "packs")
+        for path in (release_root / folder).rglob("*")
+        if path.is_file()
+    }
+    archives = ArchiveBuilder(ledger)
+    for archive_kind in ("complete", "reference"):
+        archive = archives.build(
+            assessment.assessment_revision_id,
+            kind=archive_kind,
+            pinned_files=pinned_files,
+        )
+        verify_archive(archive)
+        projections[f"{stem}.{archive_kind}.rob2.zip"] = archive
     paths = []
     for name, content in projections.items():
         path = output_root / name

@@ -503,6 +503,37 @@ summary:focus-visible {
   margin: 0.5rem 1rem 0 0;
 }
 
+.complete-results,
+.output-cards {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
+  margin-block: 1rem;
+}
+
+.complete-result,
+.output-cards > article {
+  background: #fffefa;
+  border: 1px solid #c6cfcc;
+  border-radius: 0.5rem;
+  min-width: 0;
+  padding: 1rem;
+}
+
+.complete-result.is-current {
+  border-top: 0.35rem solid #17695b;
+}
+
+.complete-surface dd,
+.complete-surface dt {
+  overflow-wrap: anywhere;
+}
+
+.status-label,
+.judgment-text {
+  font-weight: 700;
+}
+
 @media (max-width: 900px) {
   .audit-decision,
   .paired-evidence {
@@ -511,5 +542,23 @@ summary:focus-visible {
 
   .pinned-evidence-desk {
     padding: 1rem;
+  }
+}
+
+@media (max-width: 320px) {
+  .complete-surface,
+  .complete-result,
+  .output-cards > article {
+    padding: 0.75rem;
+  }
+
+  .complete-results,
+  .output-cards {
+    display: block;
+  }
+
+  .complete-result,
+  .output-cards > article {
+    margin-bottom: 0.75rem;
   }
 }

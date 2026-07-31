@@ -1,15 +1,18 @@
 import hashlib
 import json
 from datetime import timedelta
+from decimal import Decimal
 from html.parser import HTMLParser
 from pathlib import Path
 
 import pymupdf
 import yaml
 from fastapi.testclient import TestClient
+from openpyxl import Workbook
 
 from rob2_kit.application.gateway import ApplicationGateway
 from rob2_kit.domain.assessment import AssessmentRevision
+from rob2_kit.domain.results import Comparison, Estimate, Result, ResultSpecRevision
 from rob2_kit.domain.revisions import (
     ActorKind,
     Dependency,
@@ -21,7 +24,9 @@ from rob2_kit.evidence.search import (
     CanonicalUnitKind,
     EvidenceSearchIndex,
 )
+from rob2_kit.reports.archives import ArchiveBuilder
 from rob2_kit.review.service import (
+    ActionKind,
     CorrectionReworkCommand,
     CorrectionReworkStatus,
     ReviewService,
@@ -39,11 +44,13 @@ from tests.test_ingestion import StubParser, page
 from tests.test_review_service import (
     NOW,
     case,
+    command,
     committed_reference,
     guided_case,
     reviewer,
     service,
 )
+from tests.test_verification_archives import archive_ledger, verification_pins
 
 
 def client(tmp_path: Path) -> tuple[TestClient, str]:
@@ -224,6 +231,137 @@ def enter_review(browser: TestClient, token: str) -> str:
     page = browser.get(exchange.headers["location"])
     assert page.status_code == 200
     return page.text
+
+
+def bind_exact_ready_assessment(review: ReviewService) -> None:
+    source = review.ledger.commit(
+        Transition(
+            scope="preparation:ready",
+            operation="test:materialize-source-inventory",
+            operation_key="idempotency:complete-source-inventory",
+            actor=reviewer(),
+            observed_at=NOW,
+            entity_id="source-inventory:ready",
+            revision_id="revision:source-inventory-ready",
+            artifact=b'{"inventory":"ready"}',
+            artifact_media_type="application/json",
+            dependencies=(),
+            expected_dependency_fingerprint=dependency_fingerprint(()),
+            outcome=WorkflowEventOutcome.COMPLETED,
+        ),
+        review.lease,
+        now=NOW,
+    )
+    result_spec = ResultSpecRevision(
+        entity_id="result-spec:ready",
+        revision_id="revision:result-spec-complete-ready",
+        actor=reviewer(),
+        observed_at=NOW,
+        result=Result(
+            result_id="result:ready",
+            trial_id="trial:ready",
+            randomization_id="randomization:ready",
+            comparison=Comparison(
+                experimental_arm_id="arm:intervention",
+                comparator_arm_id="arm:control",
+            ),
+            effect_of_interest="assignment",
+            outcome_construct="Mortality",
+            measurement_instrument="All-cause mortality",
+            time_point="30 days",
+            analysis_population="intention to treat",
+            analysis_model="risk ratio",
+            effect_measure="risk ratio",
+            source_locator="primary-report.pdf:p2",
+        ),
+        estimate=Estimate(value=Decimal("0.90")),
+        provenance_note="Focused Complete journey fixture.",
+    )
+    result_commit = review.ledger.commit(
+        Transition(
+            scope="preparation:ready",
+            operation="test:materialize-result-spec",
+            operation_key="idempotency:complete-result-spec",
+            actor=reviewer(),
+            observed_at=NOW,
+            entity_id=result_spec.entity_id,
+            revision_id=result_spec.revision_id,
+            artifact=result_spec.model_dump_json().encode(),
+            artifact_media_type="application/json",
+            dependencies=(),
+            expected_dependency_fingerprint=dependency_fingerprint(()),
+            outcome=WorkflowEventOutcome.COMPLETED,
+        ),
+        review.lease,
+        now=NOW,
+    )
+    result_reference = RecordReference(
+        entity_id=result_spec.entity_id,
+        revision_id=result_spec.revision_id,
+        content_hash=result_commit.artifact_hash,
+    )
+    source_reference = RecordReference(
+        entity_id="source-inventory:ready",
+        revision_id="revision:source-inventory-ready",
+        content_hash=source.artifact_hash,
+    )
+    assessment_dependencies = (
+        Dependency(
+            **result_reference.model_dump(),
+            role="dependency:result-spec",
+        ),
+        Dependency(
+            **source_reference.model_dump(),
+            role="dependency:source-inventory",
+        ),
+    )
+    assessment = AssessmentRevision(
+        entity_id="assessment:trial-1",
+        revision_id="revision:assessment-1",
+        actor=reviewer(),
+        observed_at=NOW,
+        dependencies=assessment_dependencies,
+        result_spec=result_reference,
+        source_inventory=source_reference,
+        evidence_bundles=(),
+        answers=(),
+        judgments=(),
+        review_findings=(),
+    )
+    ledger_dependencies = tuple(
+        DependencyInput.model_validate(item.model_dump())
+        for item in assessment_dependencies
+    )
+    assessment_commit = review.ledger.commit(
+        Transition(
+            scope="preparation:ready",
+            operation="test:materialize-assessment",
+            operation_key="idempotency:complete-assessment",
+            actor=reviewer(),
+            observed_at=NOW,
+            entity_id=assessment.entity_id,
+            revision_id=assessment.revision_id,
+            artifact=assessment.model_dump_json().encode(),
+            artifact_media_type="application/json",
+            dependencies=ledger_dependencies,
+            expected_dependency_fingerprint=dependency_fingerprint(
+                ledger_dependencies
+            ),
+            outcome=WorkflowEventOutcome.COMPLETED,
+        ),
+        review.lease,
+        now=NOW,
+    )
+    review.review_case = review.review_case.model_copy(
+        update={
+            "assessment": RecordReference(
+                entity_id=assessment.entity_id,
+                revision_id=assessment.revision_id,
+                content_hash=assessment_commit.artifact_hash,
+            ),
+            "assessment_content_hash": assessment_commit.artifact_hash,
+        }
+    )
 
 
 def commit_audit_fixture(browser: TestClient, tmp_path: Path) -> None:
@@ -1067,6 +1205,8 @@ def test_prepare_workspace_keeps_incomplete_result_reason_and_recovery_visible(
     assert "preparation incomplete" in page_text
     assert "The analysis population could not be resolved." in page_text
     assert "Resolve the material preparation gap, then resume preparation." in page_text
+    assert "Completion in progress" in page_text
+    assert "No signed Assessment" in page_text
 
 
 def test_ready_selection_uses_the_committed_exact_result_identity(tmp_path: Path) -> None:
@@ -1509,3 +1649,153 @@ def test_domain_confirmation_cannot_claim_an_unopened_domain(tmp_path: Path) -> 
 
     assert response.status_code == 422
     assert "must be opened" in response.text
+
+
+def test_complete_progressively_reports_exact_results_and_retryable_outputs(
+    tmp_path: Path,
+) -> None:
+    browser, token = companion_client(tmp_path)
+    page = enter_review(browser, token)
+    review = browser.app.state.review_service
+    review.ledger.commit(
+        Transition(
+            scope="preparation:ready",
+            operation="operation:reach-preparation-outcome",
+            operation_key="idempotency:complete-ready",
+            actor=reviewer(),
+            observed_at=NOW,
+            entity_id="preparation-attempt:ready",
+            revision_id="revision:preparation-ready",
+            artifact=b'{"outcome":"draft_ready"}',
+            artifact_media_type="application/json",
+            dependencies=(),
+            expected_dependency_fingerprint=dependency_fingerprint(()),
+            checkpoint="checkpoint:preparation-outcome",
+            outcome=WorkflowEventOutcome.PREPARATION_OUTCOME_REACHED,
+        ),
+        review.lease,
+        now=NOW,
+    )
+    bind_exact_ready_assessment(review)
+
+    review.commit(
+        command(
+            "review-action:repair-1",
+            ActionKind.BLOCKING_REPAIR,
+            key="idempotency:complete-repair",
+        )
+    )
+    review.commit(
+        command(
+            "review-action:finding-1",
+            ActionKind.VERIFY_EVIDENCE,
+            key="idempotency:complete-evidence",
+        )
+    )
+    for domain in range(1, 6):
+        review.commit(
+            command(
+                f"review-action:domain-{domain}",
+                ActionKind.DOMAIN_REVIEW,
+                key=f"idempotency:complete-domain-{domain}",
+            )
+        )
+    page = browser.get("/review").text
+
+    def fail_outputs(project_root: Path, ledger: WorkflowLedger) -> tuple[str, ...]:
+        raise OSError("simulated output storage failure")
+
+    browser.app.state.output_generator = fail_outputs
+    signed = browser.post(
+        "/review/actions",
+        data={
+            "csrf_token": csrf_from(page),
+            "action_id": "review-action:sign-off",
+            "kind": "sign_off",
+            "expected_assessment_revision_id": "revision:assessment-1",
+            "idempotency_key": "idempotency:complete-sign-off",
+            "value": "signed",
+            "confirmed_display_name": "Local reviewer",
+        },
+        headers={"Origin": "http://testserver"},
+        follow_redirects=False,
+    )
+    assert signed.status_code == 303, signed.text
+
+    incomplete = browser.get("/review").text
+    assert "Signed — outputs incomplete" in incomplete
+    assert "trial:failed" in incomplete
+    assert "No signed Assessment" in incomplete
+    assert "simulated output storage failure" in incomplete
+    assert "revision:assessment-1" in incomplete
+    assert "Dr. Reviewer" in incomplete
+    assert "D1" in incomplete and "D5" in incomplete
+    assert "Current report" in incomplete
+    assert "Complete Verification archive" in incomplete
+
+    output_root = tmp_path / "outputs"
+    output_root.mkdir(exist_ok=True)
+    generated = tuple(
+        str(output_root / name)
+        for name in (
+            "revision_assessment-1.html",
+            "revision_assessment-1.json",
+            "revision_assessment-1.xlsx",
+            "revision_assessment-1.complete.rob2.zip",
+            "revision_assessment-1.reference.rob2.zip",
+        )
+    )
+    Path(generated[0]).write_text(
+        "<p>revision:assessment-1</p>",
+        encoding="utf-8",
+    )
+    Path(generated[1]).write_text(
+        '{"assessment_revision_id":"revision:assessment-1"}',
+        encoding="utf-8",
+    )
+    workbook = Workbook()
+    workbook.active.append(["Assessment", "revision:assessment-1"])
+    workbook.save(generated[2])
+    archive_builder = ArchiveBuilder(archive_ledger(tmp_path / "archive-fixture"))
+    Path(generated[3]).write_bytes(
+        archive_builder.build(
+            "revision:assessment-1",
+            pinned_files=verification_pins(),
+        )
+    )
+    Path(generated[4]).write_bytes(
+        archive_builder.build("revision:assessment-1", kind="reference")
+    )
+    browser.app.state.output_generator = lambda project_root, ledger: generated
+
+    retried = browser.post(
+        "/review/retry-outputs",
+        data={
+            "csrf_token": csrf_from(incomplete),
+            "sign_off_revision_id": review.current_sign_off().revision_id,
+            "idempotency_key": "output-retry:complete-success",
+        },
+        headers={"Origin": "http://testserver"},
+        follow_redirects=False,
+    )
+    assert retried.status_code == 303
+
+    complete = browser.get("/review").text
+    assert "Project Complete" in complete
+    assert "Verified and current" in complete
+    assert "source integrity not independently verifiable" in complete
+
+    Path(generated[0]).write_text("<p>superseded report</p>", encoding="utf-8")
+    current_sign_off = review.current_sign_off()
+    assert current_sign_off is not None
+    review.record_output_materialization(
+        sign_off=current_sign_off,
+        operation_key="output-attempt:stale-report",
+        actor=reviewer().model_copy(update={"kind": ActorKind.SYSTEM}),
+        observed_at=NOW,
+        paths=generated,
+    )
+    stale_output = browser.get("/review").text
+    assert "Revision binding failed" in stale_output
+    assert "Signed — outputs incomplete" in stale_output
+    assert "Project Complete" not in stale_output

@@ -33,24 +33,52 @@
       <p>The prior sign-off and outputs remain in history. Only this Result returns to Review.</p>
     </section>
     {% endif %}
-    {% if current_sign_off %}
-    <section class="signed-result" aria-labelledby="signed-result-title">
+    {% if completion and completion.results %}
+    <section class="signed-result complete-surface" aria-labelledby="complete-title">
       <p class="eyebrow">Complete</p>
-      <h2 id="signed-result-title">Signed Result Assessment</h2>
-      <p>This exact Assessment revision is signed as {{ reviewer.display_name }}.</p>
-      <dl>
-        <dt>Trial × Result</dt><dd>{{ trial_result_label }}</dd>
-        <dt>Assessment revision</dt><dd>{{ review.assessment_revision_id }}</dd>
-        <dt>Sign-off revision</dt><dd>{{ current_sign_off.revision_id }}</dd>
-        <dt>Outputs</dt>
-        <dd>
-          {% if output_materialization and output_materialization.status.value == "complete" %}
-          Complete
+      <h2 id="complete-title">{{ completion.status }}</h2>
+      <p>Every card is bound to an exact immutable revision. Colored judgments always include text.</p>
+      <div class="complete-results">
+        {% for result in completion.results %}
+        <article class="complete-result{% if result.current %} is-current{% endif %}">
+          <p class="status-label">{{ result.status }}</p>
+          <h3>{{ result.trial_result }}</h3>
+          {% if result.sign_off_revision_id %}
+          <dl>
+            {% for name, value in result.identity %}
+            <dt>{{ name }}</dt><dd>{{ value }}</dd>
+            {% endfor %}
+            <dt>Assessment revision</dt><dd>{{ result.assessment_revision_id }}</dd>
+            <dt>Sign-off revision</dt><dd>{{ result.sign_off_revision_id }}</dd>
+            <dt>Overall judgment</dt><dd>{{ result.overall_judgment }}</dd>
+            {% for domain, judgment in result.domain_judgments %}
+            <dt>{{ domain }}</dt><dd><span class="judgment-text">{{ judgment }}</span></dd>
+            {% endfor %}
+            <dt>Reviewer</dt><dd>{{ result.reviewer }}</dd>
+            <dt>Reviewed</dt><dd>{{ result.reviewed_at }}</dd>
+            <dt>Limitations</dt><dd>{{ result.limitation_count }}</dd>
+            <dt>Artifact readiness</dt><dd>{{ result.artifact_readiness }}</dd>
+          </dl>
           {% else %}
-          Signed — outputs incomplete
+          <p><strong>No signed Assessment.</strong> {{ result.reason or result.status }}</p>
           {% endif %}
-        </dd>
-      </dl>
+        </article>
+        {% endfor %}
+      </div>
+      <h3>Current project outputs</h3>
+      <div class="output-cards">
+        {% for output in completion.outputs %}
+        <article>
+          <h4>{{ output.title }}</h4>
+          <dl>
+            <dt>Revision binding</dt><dd>{{ output.revision_binding }}</dd>
+            <dt>Generation / verification</dt><dd>{{ output.state }}</dd>
+            {% if output.path %}<dt>Artifact</dt><dd>{{ output.path }}</dd>{% endif %}
+            {% if output.limitation %}<dt>Limitation</dt><dd>{{ output.limitation }}</dd>{% endif %}
+          </dl>
+        </article>
+        {% endfor %}
+      </div>
       {% if output_materialization and output_materialization.status.value == "incomplete" %}
       <p role="alert">{{ output_materialization.failure_reason }}</p>
       <form method="post" action="/review/retry-outputs">
@@ -62,6 +90,7 @@
         <button type="submit">{{ output_materialization.retry_action }}</button>
       </form>
       {% endif %}
+      {% if current_sign_off %}
       <form method="post" action="/review/reopen">
         <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
         <input type="hidden" name="expected_assessment_revision_id"
@@ -75,6 +104,7 @@
         </label>
         <button type="submit">Reopen review</button>
       </form>
+      {% endif %}
     </section>
     {% endif %}
     {% if workspace %}

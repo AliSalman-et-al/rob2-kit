@@ -4,13 +4,23 @@ from __future__ import annotations
 
 import json
 from enum import StrEnum
+from io import BytesIO
 from pathlib import Path
 from typing import Any
 
 import yaml
-from pydantic import Field
+from openpyxl import load_workbook
+from pydantic import Field, ValidationError
 
+from rob2_kit.domain.assessment import (
+    AlgorithmicJudgmentRevision,
+    AssessmentRevision,
+    JudgmentOverride,
+    ReviewerProfileRevision,
+)
+from rob2_kit.domain.results import ResultSpecRevision
 from rob2_kit.domain.revisions import FrozenModel, RecordReference
+from rob2_kit.reports.archives import ArchiveVerificationError, verify_archive
 from rob2_kit.storage.artifacts import ArtifactNotFoundError
 from rob2_kit.storage.ledger import WorkflowEventOutcome, WorkflowLedger
 
@@ -54,6 +64,384 @@ class WorkspaceProjection(FrozenModel):
     agent_prompt: str
     connection_state: str
     review_locked: bool
+
+
+class CompletionResultCard(FrozenModel):
+    result_id: str | None = None
+    trial_result: str
+    identity: tuple[tuple[str, str], ...] = ()
+    status: str
+    assessment_revision_id: str | None = None
+    sign_off_revision_id: str | None = None
+    overall_judgment: str | None = None
+    domain_judgments: tuple[tuple[str, str], ...] = ()
+    reviewer: str | None = None
+    reviewed_at: str | None = None
+    limitation_count: int = 0
+    artifact_readiness: str = "No signed Assessment"
+    reason: str | None = None
+    current: bool = False
+
+
+class CompletionOutputCard(FrozenModel):
+    title: str
+    revision_binding: str
+    state: str
+    path: str | None = None
+    limitation: str | None = None
+
+
+class ProjectCompletion(FrozenModel):
+    status: str
+    results: tuple[CompletionResultCard, ...]
+    outputs: tuple[CompletionOutputCard, ...]
+    primary_action: str | None = None
+
+
+def project_completion(
+    ledger: WorkflowLedger,
+    *,
+    workspace: WorkspaceProjection | None,
+    review_service: Any | None,
+) -> ProjectCompletion | None:
+    """Project progressive signed history and exact output bindings for Complete."""
+    if review_service is None:
+        return None
+    sign_off = review_service.current_sign_off()
+    materialization = review_service.output_materialization()
+    events = ledger.events()
+    sign_off_events = tuple(
+        event
+        for event in events
+        if event.operation == "review:canonical-assessment-sign-off"
+    )
+    if not sign_off_events and not (
+        workspace is not None
+        and all(card.outcome is not None for card in workspace.results)
+    ):
+        return None
+    withdrawal_ids = {
+        str(_event_payload(ledger, event)["sign_off"]["revision_id"])
+        for event in events
+        if event.operation == "review:canonical-sign-off-withdrawal"
+    }
+    current_ids = {revision.revision_id for revision in ledger.current_revisions()}
+    result_cards: list[CompletionResultCard] = []
+    for event in sign_off_events:
+        payload = _event_payload(ledger, event)
+        is_current = (
+            event.revision_id in current_ids
+            and event.revision_id not in withdrawal_ids
+        )
+        status = (
+            "Current signed Result"
+            if is_current
+            else "Withdrawn history"
+            if event.revision_id in withdrawal_ids
+            else "Invalidated history"
+        )
+        assessment = _assessment_details(ledger, payload["assessment"])
+        event_materialization = _output_payload_for_sign_off(
+            ledger, events, event.revision_id
+        )
+        result_cards.append(
+            CompletionResultCard(
+                result_id=assessment["result_id"],
+                trial_result=assessment["trial_result"],
+                identity=assessment["identity"],
+                status=status,
+                assessment_revision_id=str(payload["assessment"]["revision_id"]),
+                sign_off_revision_id=event.revision_id,
+                overall_judgment=assessment["overall_judgment"],
+                domain_judgments=assessment["domain_judgments"],
+                reviewer=_reviewer_display_name(ledger, payload),
+                reviewed_at=str(payload["observed_at"]),
+                limitation_count=assessment["limitation_count"],
+                artifact_readiness=(
+                    "Generated and current"
+                    if is_current
+                    and event_materialization is not None
+                    and event_materialization.get("status") == "complete"
+                    else "Signed — outputs incomplete"
+                    if is_current
+                    else "Immutable historical artifacts"
+                    if event_materialization is not None
+                    and event_materialization.get("status") == "complete"
+                    else "Historical outputs incomplete"
+                ),
+                current=is_current,
+            )
+        )
+    signed_result_ids = {
+        card.result_id
+        for card in result_cards
+        if card.current and card.result_id is not None
+    }
+    if workspace is not None:
+        for card in workspace.results:
+            label = f"{card.trial_id} × {card.label}"
+            if card.result_id in signed_result_ids:
+                continue
+            result_cards.append(
+                CompletionResultCard(
+                    result_id=card.result_id,
+                    trial_result=label,
+                    identity=card.identity,
+                    status=_humanize(card.outcome or "not terminal"),
+                    reason=card.reason,
+                )
+            )
+
+    binding = (
+        sign_off.revision_id if sign_off is not None else "No current Result sign-off"
+    )
+    paths = tuple(materialization.paths) if materialization is not None else ()
+    output_specs = (
+        ("Current report", (".html", ".md"), None),
+        ("Structured export", (".json", ".csv"), None),
+        ("Project workbook", (".xlsx",), None),
+        ("Complete Verification archive", (".complete.rob2.zip",), None),
+        (
+            "Reference Verification archive",
+            (".reference.rob2.zip",),
+            "source integrity not independently verifiable",
+        ),
+    )
+    outputs = tuple(
+        _completion_output_card(
+            title=title,
+            suffixes=suffixes,
+            limitation=limitation,
+            binding=binding,
+            paths=paths,
+            assessment_revision_id=(
+                review_service.review_case.assessment_revision_id
+                if sign_off is not None
+                else None
+            ),
+            generation_failed=bool(
+                materialization is not None and materialization.failure_reason
+            ),
+        )
+        for title, suffixes, limitation in output_specs
+    )
+    all_terminal = workspace is None or all(
+        (
+            card.result_id in signed_result_ids
+            if card.outcome == "draft_ready"
+            else card.outcome
+            in {"excluded", "preparation_incomplete", "trial_failed", "failed"}
+        )
+        for card in workspace.results
+    )
+    no_deferred = not review_service.has_deferred_review()
+    outputs_ready = bool(outputs) and all(
+        output.state in {"Generated and current", "Verified and current"}
+        for output in outputs
+    )
+    complete = all_terminal and no_deferred and sign_off is not None and outputs_ready
+    status = (
+        "Project Complete"
+        if complete
+        else "Signed — outputs incomplete"
+        if sign_off is not None
+        else "Completion in progress"
+    )
+    return ProjectCompletion(
+        status=status,
+        results=tuple(result_cards),
+        outputs=outputs,
+        primary_action=(
+            materialization.retry_action
+            if materialization is not None and materialization.failure_reason
+            else None
+        ),
+    )
+
+
+def _assessment_details(
+    ledger: WorkflowLedger, reference: dict[str, Any]
+) -> dict[str, Any]:
+    """Resolve display facts only from one sign-off's immutable Assessment graph."""
+    unavailable = {
+        "result_id": None,
+        "trial_result": str(reference.get("entity_id", "Assessment unavailable")),
+        "identity": (),
+        "overall_judgment": "Not available",
+        "domain_judgments": tuple(
+            (f"D{index}", "Not available") for index in range(1, 6)
+        ),
+        "limitation_count": 0,
+    }
+    try:
+        assessment = AssessmentRevision.model_validate_json(
+            ledger.artifacts.read(str(reference["content_hash"]))
+        )
+        result_spec = ResultSpecRevision.model_validate_json(
+            ledger.artifacts.read(assessment.result_spec.content_hash)
+        )
+        judgments = tuple(
+            AlgorithmicJudgmentRevision.model_validate_json(
+                ledger.artifacts.read(item.content_hash)
+            )
+            for item in assessment.judgments
+        )
+        overrides = tuple(
+            JudgmentOverride.model_validate_json(
+                ledger.artifacts.read(item.content_hash)
+            )
+            for item in assessment.judgment_overrides
+        )
+    except (
+        ArtifactNotFoundError,
+        KeyError,
+        ValidationError,
+        ValueError,
+    ):
+        return unavailable
+    replacements = {
+        item.judgment_revision.revision_id: item.replacement.value
+        for item in overrides
+    }
+    by_domain = {
+        item.domain_id: replacements.get(item.revision_id, item.judgment.value)
+        for item in judgments
+    }
+    displayed = tuple(
+        (
+            f"D{index}",
+            _humanize(by_domain.get(f"domain:{index}", "not available")),
+        )
+        for index in range(1, 6)
+    )
+    rank = {"low": 0, "some_concerns": 1, "high": 2}
+    overall = (
+        _humanize(max(by_domain.values(), key=lambda item: rank.get(item, -1)))
+        if by_domain
+        else "Not available"
+    )
+    result = result_spec.result
+    return {
+        "result_id": result.result_id,
+        "trial_result": (
+            f"{result.trial_id} × {result.outcome_construct} · {result.time_point}"
+        ),
+        "identity": (
+            ("Result", result.result_id),
+            ("Trial", result.trial_id),
+            ("Randomization", result.randomization_id),
+            (
+                "Comparison",
+                f"{result.comparison.experimental_arm_id} vs "
+                f"{result.comparison.comparator_arm_id}",
+            ),
+            ("Effect of interest", result.effect_of_interest),
+            ("Outcome", result.outcome_construct),
+            ("Measurement", result.measurement_instrument),
+            ("Time point", result.time_point),
+            ("Analysis population", result.analysis_population),
+            ("Analysis model", result.analysis_model),
+            ("Effect measure", result.effect_measure),
+            ("Source locator", result.source_locator),
+        ),
+        "overall_judgment": overall,
+        "domain_judgments": displayed,
+        "limitation_count": len(assessment.review_findings),
+    }
+
+
+def _output_payload_for_sign_off(
+    ledger: WorkflowLedger, events: tuple[Any, ...], sign_off_revision_id: str
+) -> dict[str, Any] | None:
+    for event in reversed(events):
+        if event.operation != "review:materialize-signed-outputs":
+            continue
+        payload = _event_payload(ledger, event)
+        if payload.get("sign_off", {}).get("revision_id") == sign_off_revision_id:
+            return payload
+    return None
+
+
+def _reviewer_display_name(
+    ledger: WorkflowLedger, sign_off: dict[str, Any]
+) -> str:
+    reference = sign_off.get("reviewer_profile", {})
+    try:
+        profile = ReviewerProfileRevision.model_validate_json(
+            ledger.artifacts.read(str(reference["content_hash"]))
+        )
+    except (ArtifactNotFoundError, KeyError, ValidationError, ValueError):
+        return "Attribution unavailable"
+    return profile.display_name
+
+
+def _completion_output_card(
+    *,
+    title: str,
+    suffixes: tuple[str, ...],
+    limitation: str | None,
+    binding: str,
+    paths: tuple[str, ...],
+    assessment_revision_id: str | None,
+    generation_failed: bool,
+) -> CompletionOutputCard:
+    path = next((item for item in paths if item.endswith(suffixes)), None)
+    state = "Generation failed" if generation_failed else "Not generated"
+    if path is not None and Path(path).is_file():
+        if path.endswith((".complete.rob2.zip", ".reference.rob2.zip")):
+            try:
+                receipt = verify_archive(Path(path).read_bytes())
+            except (ArchiveVerificationError, OSError):
+                state = "Verification failed"
+            else:
+                state = (
+                    "Verified and current"
+                    if receipt.assessment_revision_id == assessment_revision_id
+                    else "Revision binding failed"
+                )
+        else:
+            state = (
+                "Verified and current"
+                if assessment_revision_id is not None
+                and _derived_output_binds_assessment(
+                    Path(path), assessment_revision_id
+                )
+                else "Revision binding failed"
+            )
+    return CompletionOutputCard(
+        title=title,
+        revision_binding=binding,
+        state=state,
+        path=path,
+        limitation=limitation,
+    )
+
+
+def _derived_output_binds_assessment(
+    path: Path, assessment_revision_id: str
+) -> bool:
+    try:
+        if path.suffix.casefold() == ".xlsx":
+            workbook = load_workbook(
+                BytesIO(path.read_bytes()),
+                read_only=True,
+                data_only=True,
+            )
+            try:
+                return any(
+                    cell.value == assessment_revision_id
+                    for sheet in workbook.worksheets
+                    for row in sheet.iter_rows()
+                    for cell in row
+                )
+            finally:
+                workbook.close()
+        content = path.read_bytes()
+        if path.suffix.casefold() == ".json":
+            return json.loads(content).get("assessment_revision_id") == assessment_revision_id
+        return assessment_revision_id.encode() in content
+    except (OSError, UnicodeError, ValueError, json.JSONDecodeError):
+        return False
 
 
 class AuditEvidenceItem(FrozenModel):

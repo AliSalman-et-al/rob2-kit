@@ -74,6 +74,11 @@ class ActionDecision(StrEnum):
     SIGNED = "signed"
 
 
+def _is_review_receipt_event(event: WorkflowEvent) -> bool:
+    """Distinguish human review receipts from canonical/output review records."""
+    return event.operation in {f"review:{kind.value}" for kind in ActionKind}
+
+
 class AttentionTier(StrEnum):
     ACTION_REQUIRED = "Action required"
     INSPECT_CAREFULLY = "Inspect carefully"
@@ -1098,6 +1103,13 @@ class ReviewService:
             None,
         )
 
+    def has_deferred_review(self) -> bool:
+        """Return whether any current human action explicitly deferred review."""
+        return any(
+            receipt.value is ActionDecision.DEFERRED
+            for receipt in self._receipts_by_action().values()
+        )
+
     def sign_off_invalidation(self) -> SignOffInvalidation | None:
         current_ids = {
             revision.revision_id for revision in self.ledger.current_revisions()
@@ -1301,8 +1313,7 @@ class ReviewService:
             if (
                 event.sequence > after_sequence
                 and event.scope == self.review_case.review_id
-                and event.operation.startswith("review:")
-                and not event.operation.startswith("review:canonical-")
+                and _is_review_receipt_event(event)
             ):
                 return self._receipt_from_event(event)
         return None
@@ -1313,8 +1324,7 @@ class ReviewService:
             self._receipt_from_event(event)
             for event in self.ledger.events()
             if event.scope == self.review_case.review_id
-            and event.operation.startswith("review:")
-            and not event.operation.startswith("review:canonical-")
+            and _is_review_receipt_event(event)
         )
         return tuple(receipt for receipt in receipts if receipt.correction_request is not None)
 
@@ -1885,8 +1895,7 @@ class ReviewService:
         for event in self.ledger.events():
             if (
                 event.scope != self.review_case.review_id
-                or not event.operation.startswith("review:")
-                or event.operation.startswith("review:canonical-")
+                or not _is_review_receipt_event(event)
             ):
                 continue
             receipt = self._receipt_from_event(event)
