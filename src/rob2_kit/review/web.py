@@ -18,12 +18,14 @@ from PIL import Image, ImageDraw
 from pydantic import BaseModel, ConfigDict
 
 from rob2_kit.domain.revisions import Actor, ActorKind, RecordReference
+from rob2_kit.reports import ReportProjector, latest_assessment_view
 from rob2_kit.review.service import (
     ActionKind,
     ReviewCommand,
     ReviewError,
     ReviewService,
     SignOffBlockedError,
+    SignOffWithdrawalCommand,
     StaleReviewError,
 )
 from rob2_kit.review.workspace import (
@@ -94,6 +96,7 @@ def create_review_app(
     app.state.project_root = root
     app.state.bootstrap_token = secrets.token_urlsafe(32)
     app.state.sessions = {}
+    app.state.output_generator = _generate_signed_outputs
     static_root = Path(__file__).with_name("static")
     app.mount("/static", StaticFiles(directory=static_root), name="static")
 
@@ -168,6 +171,18 @@ def create_review_app(
                 else "result:unknown"
             )
         )
+        selected_card = (
+            next(
+                (
+                    card
+                    for card in workspace.results
+                    if card.result_id == selected_result
+                ),
+                None,
+            )
+            if workspace is not None
+            else None
+        )
         stale = review_service.is_stale() if review_service is not None else False
         audit = signaling_question_audit(
             workspace_ledger,
@@ -237,6 +252,40 @@ def create_review_app(
                 correction_action=correction_action,
                 full_audit_url=full_audit_url,
                 guided_review_url=guided_review_url,
+                current_sign_off=(
+                    review_service.current_sign_off()
+                    if review_service is not None
+                    else None
+                ),
+                output_materialization=(
+                    review_service.output_materialization()
+                    if review_service is not None
+                    else None
+                ),
+                output_attempt_revision_id=(
+                    review_service.output_attempt_revision_id()
+                    if review_service is not None
+                    else None
+                ),
+                sign_off_invalidation=(
+                    review_service.sign_off_invalidation()
+                    if review_service is not None
+                    else None
+                ),
+                overall_judgment=(
+                    review_service.overall_judgment()
+                    if review_service is not None
+                    else "Not recorded"
+                ),
+                trial_result_label=(
+                    f"{selected_card.trial_id} × {selected_card.label}"
+                    if selected_card is not None
+                    else (
+                        review_service.review_case.result_label
+                        if review_service is not None
+                        else selected_result
+                    )
+                ),
             )
         )
 
@@ -256,7 +305,7 @@ def create_review_app(
         if not secrets.compare_digest(form.get("csrf_token", ""), session.csrf_token):
             return HTMLResponse("CSRF validation failed", status_code=403)
         try:
-            review_service.commit(
+            committed = review_service.commit(
                 ReviewCommand(
                     idempotency_key=form.get("idempotency_key", ""),
                     action_id=form.get("action_id", ""),
@@ -279,6 +328,30 @@ def create_review_app(
                     ),
                 )
             )
+            if ActionKind(form.get("kind", "")) is ActionKind.SIGN_OFF:
+                sign_off = review_service.current_sign_off()
+                if sign_off is None:
+                    raise ReviewError("canonical sign-off was not committed")
+                try:
+                    paths = app.state.output_generator(
+                        config.project_root, workspace_ledger
+                    )
+                    failure_reason = None
+                except Exception as error:
+                    paths = ()
+                    failure_reason = str(error) or type(error).__name__
+                review_service.record_output_materialization(
+                    sign_off=sign_off,
+                    operation_key=(
+                        f"output-attempt:{committed.receipt.revision_id.split(':', 1)[1]}"
+                    ),
+                    actor=config.reviewer.model_copy(
+                        update={"kind": ActorKind.SYSTEM}
+                    ),
+                    observed_at=datetime.now(UTC),
+                    paths=paths,
+                    failure_reason=failure_reason,
+                )
         except StaleReviewError as error:
             return HTMLResponse(f"Read-only: {error}", status_code=409)
         except SignOffBlockedError as error:
@@ -292,6 +365,71 @@ def create_review_app(
         }
         location = "/review" + (f"?{urlencode(position)}" if position else "")
         return RedirectResponse(location, status_code=303)
+
+    @app.post("/review/reopen")
+    async def reopen_review(request: Request):
+        session = _authenticated_session(request, app.state.sessions)
+        if session is None:
+            return HTMLResponse("Review session expired", status_code=401)
+        if review_service is None:
+            return HTMLResponse("No signed Result is available", status_code=409)
+        if request.headers.get("origin") != config.allowed_origin:
+            return HTMLResponse("Origin rejected", status_code=403)
+        form = await _urlencoded_form(request)
+        if not secrets.compare_digest(form.get("csrf_token", ""), session.csrf_token):
+            return HTMLResponse("CSRF validation failed", status_code=403)
+        try:
+            review_service.withdraw_sign_off(
+                SignOffWithdrawalCommand(
+                    idempotency_key=form.get("idempotency_key", ""),
+                    expected_assessment_revision_id=form.get(
+                        "expected_assessment_revision_id", ""
+                    ),
+                    expected_sign_off_revision_id=form.get(
+                        "expected_sign_off_revision_id", ""
+                    ),
+                    actor=config.reviewer,
+                    reviewer_profile=config.reviewer_profile,
+                    reason=form.get("reason", ""),
+                    observed_at=datetime.now(UTC),
+                )
+            )
+        except StaleReviewError as error:
+            return HTMLResponse(f"Read-only: {error}", status_code=409)
+        except (ReviewError, ValueError) as error:
+            return HTMLResponse(f"Invalid review action: {error}", status_code=422)
+        return RedirectResponse("/review?mode=guided", status_code=303)
+
+    @app.post("/review/retry-outputs")
+    async def retry_outputs(request: Request):
+        session = _authenticated_session(request, app.state.sessions)
+        if session is None:
+            return HTMLResponse("Review session expired", status_code=401)
+        if review_service is None:
+            return HTMLResponse("No signed Result is available", status_code=409)
+        if request.headers.get("origin") != config.allowed_origin:
+            return HTMLResponse("Origin rejected", status_code=403)
+        form = await _urlencoded_form(request)
+        if not secrets.compare_digest(form.get("csrf_token", ""), session.csrf_token):
+            return HTMLResponse("CSRF validation failed", status_code=403)
+        sign_off = review_service.current_sign_off()
+        if sign_off is None or sign_off.revision_id != form.get("sign_off_revision_id"):
+            return HTMLResponse("Signed Result is stale", status_code=409)
+        try:
+            paths = app.state.output_generator(config.project_root, workspace_ledger)
+            failure_reason = None
+        except Exception as error:
+            paths = ()
+            failure_reason = str(error) or type(error).__name__
+        review_service.record_output_materialization(
+            sign_off=sign_off,
+            operation_key=form.get("idempotency_key", ""),
+            actor=config.reviewer.model_copy(update={"kind": ActorKind.SYSTEM}),
+            observed_at=datetime.now(UTC),
+            paths=paths,
+            failure_reason=failure_reason,
+        )
+        return RedirectResponse("/review?mode=guided", status_code=303)
 
     @app.get("/review/sources/{source_id:path}")
     async def source_preview(request: Request, source_id: str):
@@ -353,6 +491,32 @@ def create_review_app(
         )
 
     return app, app.state.bootstrap_token
+
+
+def _generate_signed_outputs(
+    project_root: Path, ledger: WorkflowLedger
+) -> tuple[str, ...]:
+    assessment = latest_assessment_view(ledger)
+    if not assessment.signed_off:
+        raise ValueError("outputs require a current signed Assessment")
+    projector = ReportProjector(assessment)
+    output_root = project_root / "output"
+    output_root.mkdir(exist_ok=True)
+    stem = assessment.assessment_revision_id.replace(":", "_")
+    projections = {
+        f"{stem}.html": projector.html(),
+        f"{stem}.md": projector.markdown(),
+        f"{stem}.json": projector.json(),
+        f"{stem}.summary.json": projector.summary(),
+        f"{stem}.robvis.csv": projector.robvis_csv(),
+        f"{stem}.xlsx": projector.xlsx(),
+    }
+    paths = []
+    for name, content in projections.items():
+        path = output_root / name
+        path.write_bytes(content)
+        paths.append(str(path))
+    return tuple(paths)
 
 
 def _authenticated_session(request: Request, sessions: dict[str, _Session]) -> _Session | None:

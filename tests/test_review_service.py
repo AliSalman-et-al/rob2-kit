@@ -497,6 +497,27 @@ def test_sign_off_requires_findings_and_every_domain_then_reconfirms_identity(
     assert {item.revision_id for item in signed.domain_dispositions} == {
         disposition.revision_id for disposition in dispositions
     }
+    materialization = review.record_output_materialization(
+        sign_off=reference("sign-off").model_copy(
+            update={
+                "entity_id": signed.entity_id,
+                "revision_id": signed.revision_id,
+                "content_hash": next(
+                    event.output_revision_hashes[0]
+                    for event in review.ledger.events()
+                    if event.revision_id == signed.revision_id
+                ),
+            }
+        ),
+        operation_key="output-attempt:failed",
+        actor=reviewer().model_copy(update={"kind": ActorKind.SYSTEM}),
+        observed_at=NOW,
+        failure_reason="disk unavailable",
+    )
+    assert materialization.status == "incomplete"
+    assert materialization.retry_action == "Retry deterministic output generation"
+    assert review.current_sign_off() is not None
+    assert review.output_materialization() == materialization
 
     withdrawal_ref = review.withdraw_sign_off(
         SignOffWithdrawalCommand(

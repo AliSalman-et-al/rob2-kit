@@ -25,6 +25,58 @@
         <span>Your review is saved independently of the agent connection.</span>
       </div>
     </header>
+    {% if sign_off_invalidation %}
+    <section class="stale" role="alert">
+      <h2>{{ sign_off_invalidation.status }}</h2>
+      <p>{{ sign_off_invalidation.affected_result }}</p>
+      <p>Changed path: {{ sign_off_invalidation.changed_path | join(" → ") }}</p>
+      <p>The prior sign-off and outputs remain in history. Only this Result returns to Review.</p>
+    </section>
+    {% endif %}
+    {% if current_sign_off %}
+    <section class="signed-result" aria-labelledby="signed-result-title">
+      <p class="eyebrow">Complete</p>
+      <h2 id="signed-result-title">Signed Result Assessment</h2>
+      <p>This exact Assessment revision is signed as {{ reviewer.display_name }}.</p>
+      <dl>
+        <dt>Trial × Result</dt><dd>{{ trial_result_label }}</dd>
+        <dt>Assessment revision</dt><dd>{{ review.assessment_revision_id }}</dd>
+        <dt>Sign-off revision</dt><dd>{{ current_sign_off.revision_id }}</dd>
+        <dt>Outputs</dt>
+        <dd>
+          {% if output_materialization and output_materialization.status.value == "complete" %}
+          Complete
+          {% else %}
+          Signed — outputs incomplete
+          {% endif %}
+        </dd>
+      </dl>
+      {% if output_materialization and output_materialization.status.value == "incomplete" %}
+      <p role="alert">{{ output_materialization.failure_reason }}</p>
+      <form method="post" action="/review/retry-outputs">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <input type="hidden" name="sign_off_revision_id"
+               value="{{ current_sign_off.revision_id }}">
+        <input type="hidden" name="idempotency_key"
+               value="output-retry:{{ output_attempt_revision_id.split(':', 1)[1] }}">
+        <button type="submit">{{ output_materialization.retry_action }}</button>
+      </form>
+      {% endif %}
+      <form method="post" action="/review/reopen">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <input type="hidden" name="expected_assessment_revision_id"
+               value="{{ review.assessment_revision_id }}">
+        <input type="hidden" name="expected_sign_off_revision_id"
+               value="{{ current_sign_off.revision_id }}">
+        <input type="hidden" name="idempotency_key"
+               value="idempotency:withdraw-{{ current_sign_off.revision_id.split(':', 1)[1] }}">
+        <label>Reason for reopening
+          <textarea name="reason" required></textarea>
+        </label>
+        <button type="submit">Reopen review</button>
+      </form>
+    </section>
+    {% endif %}
     {% if workspace %}
     <nav class="lifecycle-rail" aria-label="Assessment lifecycle">
       <ol>
@@ -493,17 +545,48 @@
             {% endif %}
             {% elif item.kind.value == "sign_off" %}
             <dl class="sign-off-scope">
-              <dt>Result</dt><dd>{{ review.result_label }}</dd>
+              <dt>Trial × Result</dt><dd>{{ trial_result_label }}</dd>
               <dt>Assessment revision</dt><dd>{{ review.assessment_revision_id }}</dd>
               <dt>Hash-bound scope</dt><dd>{{ review.assessment_content_hash }}</dd>
+              <dt>Reviewer</dt><dd>{{ reviewer.display_name }}</dd>
+              <dt>Overall judgment</dt>
+              <dd>{{ overall_judgment }}</dd>
+              {% for summary in review.domain_summaries %}
+              <dt>{{ summary.domain_id | replace("domain:", "D") }}</dt>
+              <dd>
+                {{ summary.judgment }} ·
+                {% set domain_action = "review-action:domain-" ~ summary.domain_id.split(":", 1)[1] %}
+                {{ "reviewed" if queue | selectattr("action_id", "equalto", domain_action) | selectattr("completed") | list else "pending" }}
+                · <a href="/review?mode=full&amp;result={{ selected_result | urlencode }}&amp;domain={{ summary.domain_id | urlencode }}">Full evidence audit</a>
+              </dd>
+              {% endfor %}
+              <dt>Accepted caveats</dt>
+              <dd>
+                {% set caveats = queue | selectattr("attention_tier.value", "equalto", "Inspect carefully") | list %}
+                {{ caveats | map(attribute="title") | join("; ") if caveats else "None recorded" }}
+              </dd>
               <dt>Unresolved findings</dt>
               <dd>
                 {% set unresolved = queue | rejectattr("completed") | list %}
                 {{ unresolved | length - 1 }}
               </dd>
+              <dt>Invalidation consequence</dt>
+              <dd>
+                A changed Assessment dependency invalidates this Result sign-off and its
+                outputs, preserves history, and returns only this Result to Review.
+              </dd>
             </dl>
+            <blockquote>
+              I reviewed this exact Result Assessment under the stated Review policy and
+              approve its recorded answers, final judgments, overrides, and acknowledged
+              limitations as the current assessment.
+            </blockquote>
+            <p>
+              Signing does not claim exhaustive source discovery, absence of error, or
+              independently verified identity.
+            </p>
             <button type="submit" name="value" value="signed">
-              Sign off this Assessment revision
+              Sign this Result as {{ reviewer.display_name }}
             </button>
             {% elif item.kind.value == "domain_review" %}
             {% if selected_domain == item.domain_id %}

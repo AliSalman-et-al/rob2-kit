@@ -116,6 +116,37 @@ def test_failed_transaction_exposes_no_event_revision_or_reachable_artifact(
     assert ledger.reachable_artifact_hashes() == ()
 
 
+def test_failed_batch_exposes_none_of_the_related_revisions(
+    ledger: WorkflowLedger,
+) -> None:
+    lease = acquire(ledger)
+    with sqlite3.connect(ledger.path) as connection:
+        connection.execute(
+            """
+            CREATE TRIGGER interrupt_second_revision
+            BEFORE INSERT ON revisions
+            WHEN NEW.revision_id = 'revision:sign-off'
+            BEGIN
+                SELECT RAISE(ABORT, 'simulated sign-off interruption');
+            END
+            """
+        )
+
+    with pytest.raises(sqlite3.IntegrityError):
+        ledger.commit_batch(
+            (
+                transition("receipt", entity="review-receipt:sign-off"),
+                transition("sign-off", entity="assessment-sign-off:result"),
+            ),
+            lease,
+            now=NOW,
+        )
+
+    assert ledger.events() == ()
+    assert ledger.current_revisions() == ()
+    assert ledger.reachable_artifact_hashes() == ()
+
+
 def test_committed_transition_atomically_updates_event_current_and_checkpoint(
     ledger: WorkflowLedger,
 ) -> None:

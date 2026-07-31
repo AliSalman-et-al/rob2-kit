@@ -442,6 +442,26 @@ class SignOffWithdrawalCommand(FrozenModel):
         return self
 
 
+class OutputMaterializationStatus(StrEnum):
+    COMPLETE = "complete"
+    INCOMPLETE = "incomplete"
+
+
+class OutputMaterialization(FrozenModel):
+    status: OutputMaterializationStatus
+    sign_off: RecordReference
+    paths: tuple[str, ...] = ()
+    failure_reason: str | None = None
+    retry_action: str | None = None
+
+
+class SignOffInvalidation(FrozenModel):
+    sign_off_revision_id: Identifier
+    affected_result: str
+    changed_path: tuple[str, ...]
+    status: str = "Invalidated — review required"
+
+
 class ReviewService:
     """Commit human-only review decisions and derive all current review state."""
 
@@ -716,32 +736,42 @@ class ReviewService:
                 "local_human_attribution" if command.kind is ActionKind.SIGN_OFF else None
             ),
         }
-        result = self.ledger.commit(
-            Transition(
-                scope=self.review_case.review_id,
-                operation=f"review:{command.kind.value}",
-                operation_key=command.idempotency_key,
-                actor=command.actor,
-                observed_at=command.observed_at,
-                entity_id=receipt_entity_id,
-                revision_id=receipt_id,
-                artifact=json.dumps(payload, ensure_ascii=False).encode(),
-                artifact_media_type="application/json",
-                dependencies=(),
-                expected_dependency_fingerprint=dependency_fingerprint(()),
-                checkpoint=f"review-checkpoint:{command.action_id.split(':', 1)[1]}",
-                outcome=self._workflow_outcome(command),
-                supersedes_revision_id=(
-                    current_receipt.revision_id if current_receipt is not None else None
-                ),
+        receipt_transition = Transition(
+            scope=self.review_case.review_id,
+            operation=f"review:{command.kind.value}",
+            operation_key=command.idempotency_key,
+            actor=command.actor,
+            observed_at=command.observed_at,
+            entity_id=receipt_entity_id,
+            revision_id=receipt_id,
+            artifact=json.dumps(payload, ensure_ascii=False).encode(),
+            artifact_media_type="application/json",
+            dependencies=(),
+            expected_dependency_fingerprint=dependency_fingerprint(()),
+            checkpoint=f"review-checkpoint:{command.action_id.split(':', 1)[1]}",
+            outcome=self._workflow_outcome(command),
+            supersedes_revision_id=(
+                current_receipt.revision_id if current_receipt is not None else None
             ),
-            self.lease,
-            now=command.observed_at,
         )
+        if command.kind is ActionKind.SIGN_OFF:
+            sign_off_transition = self._pending_sign_off_transition(command, receipt_id)
+            result = self.ledger.commit_batch(
+                (receipt_transition, sign_off_transition),
+                self.lease,
+                now=command.observed_at,
+            )[0]
+        else:
+            result = self.ledger.commit(
+                receipt_transition,
+                self.lease,
+                now=command.observed_at,
+            )
         receipt = DurableReviewReceipt.model_validate(
             {**payload, "ledger_event_id": result.event_id}
         )
-        self._commit_canonical_review_revision(command, receipt)
+        if command.kind is not ActionKind.SIGN_OFF:
+            self._commit_canonical_review_revision(command, receipt)
         self._connection_state = (
             ConnectionState.COMPLETE
             if command.kind is ActionKind.SIGN_OFF
@@ -840,6 +870,64 @@ class ReviewService:
             operation_key=f"{command.idempotency_key}:canonical",
         )
 
+    def _pending_sign_off_transition(
+        self, command: ReviewCommand, receipt_id: Identifier
+    ) -> Transition:
+        profile = self._canonical_reviewer_profile(command)
+        current_revision_ids = {
+            revision.revision_id for revision in self.ledger.current_revisions()
+        }
+        dispositions = tuple(
+            self._canonical_reference(event)
+            for event in self.ledger.events()
+            if event.scope == self.review_case.review_id
+            and event.operation == "review:canonical-domain-disposition"
+            and event.revision_id in current_revision_ids
+        )
+        disposition_domains = {
+            DomainReviewDisposition.model_validate_json(
+                self.ledger.artifacts.read(reference.content_hash)
+            ).domain_id
+            for reference in dispositions
+        }
+        if (
+            len(dispositions) != len(self.review_case.policy.domain_ids)
+            or disposition_domains != set(self.review_case.policy.domain_ids)
+        ):
+            raise SignOffBlockedError(
+                "sign-off requires exactly one current disposition for every Domain"
+            )
+        assessment_key = self.review_case.assessment.entity_id.split(":", 1)[1]
+        sign_off = AssessmentSignOff(
+            entity_id=f"assessment-sign-off:{assessment_key}",
+            revision_id=f"revision:assessment-sign-off-{receipt_id.split(':', 1)[1]}",
+            dependencies=self._revision_dependencies(
+                (
+                    self.review_case.assessment,
+                    profile,
+                    *dispositions,
+                    self.review_case.policy.reference,
+                ),
+                (
+                    "dependency:assessment",
+                    "dependency:reviewer-profile",
+                    *(["dependency:domain-review-disposition"] * len(dispositions)),
+                    "dependency:review-policy",
+                ),
+            ),
+            actor=command.actor,
+            observed_at=command.observed_at,
+            assessment=self.review_case.assessment,
+            reviewer_profile=profile,
+            domain_dispositions=dispositions,
+            review_policy=self.review_case.policy.reference,
+        )
+        return self._canonical_transition(
+            sign_off,
+            operation="review:canonical-assessment-sign-off",
+            operation_key=f"{command.idempotency_key}:canonical",
+        )
+
     def _canonical_reviewer_profile(self, command: ReviewCommand) -> RecordReference:
         existing = next(
             (
@@ -869,6 +957,23 @@ class ReviewService:
     def _commit_canonical(
         self, revision, *, operation: str, operation_key: str
     ) -> RecordReference:
+        transition = self._canonical_transition(
+            revision, operation=operation, operation_key=operation_key
+        )
+        result = self.ledger.commit(
+            transition,
+            self.lease,
+            now=revision.observed_at,
+        )
+        return RecordReference(
+            entity_id=revision.entity_id,
+            revision_id=revision.revision_id,
+            content_hash=result.artifact_hash,
+        )
+
+    def _canonical_transition(
+        self, revision, *, operation: str, operation_key: str
+    ) -> Transition:
         ledger_dependencies = tuple(
             DependencyInput(
                 entity_id=item.entity_id,
@@ -884,28 +989,19 @@ class ReviewService:
                 for current in self.ledger.current_revisions()
             )
         )
-        result = self.ledger.commit(
-            Transition(
-                scope=self.review_case.review_id,
-                operation=operation,
-                operation_key=operation_key,
-                actor=revision.actor,
-                observed_at=revision.observed_at,
-                entity_id=revision.entity_id,
-                revision_id=revision.revision_id,
-                artifact=revision.model_dump_json().encode(),
-                artifact_media_type="application/json",
-                dependencies=ledger_dependencies,
-                expected_dependency_fingerprint=dependency_fingerprint(ledger_dependencies),
-                outcome=WorkflowEventOutcome.COMPLETED,
-            ),
-            self.lease,
-            now=revision.observed_at,
-        )
-        return RecordReference(
+        return Transition(
+            scope=self.review_case.review_id,
+            operation=operation,
+            operation_key=operation_key,
+            actor=revision.actor,
+            observed_at=revision.observed_at,
             entity_id=revision.entity_id,
             revision_id=revision.revision_id,
-            content_hash=result.artifact_hash,
+            artifact=revision.model_dump_json().encode(),
+            artifact_media_type="application/json",
+            dependencies=ledger_dependencies,
+            expected_dependency_fingerprint=dependency_fingerprint(ledger_dependencies),
+            outcome=WorkflowEventOutcome.COMPLETED,
         )
 
     def _canonical_reference(self, event: WorkflowEvent) -> RecordReference:
@@ -930,6 +1026,176 @@ class ReviewService:
 
     def connection_state(self) -> ConnectionState:
         return self._connection_state
+
+    def current_sign_off(self) -> RecordReference | None:
+        withdrawn = {
+            SignOffWithdrawal.model_validate_json(
+                self.ledger.artifacts.read(event.output_revision_hashes[0])
+            ).sign_off.revision_id
+            for event in self.ledger.events()
+            if event.scope == self.review_case.review_id
+            and event.operation == "review:canonical-sign-off-withdrawal"
+        }
+        return next(
+            (
+                self._canonical_reference(event)
+                for event in reversed(self.ledger.events())
+                if event.scope == self.review_case.review_id
+                and event.operation == "review:canonical-assessment-sign-off"
+                and event.revision_id not in withdrawn
+                and event.revision_id
+                in {
+                    revision.revision_id
+                    for revision in self.ledger.current_revisions()
+                }
+            ),
+            None,
+        )
+
+    def overall_judgment(self) -> str:
+        judgments = tuple(
+            summary.judgment.casefold().replace(" ", "_")
+            for summary in self.review_case.domain_summaries
+        )
+        if not judgments:
+            return "Not recorded"
+        rank = {"low": 0, "some_concerns": 1, "high": 2, "high_risk": 2}
+        return max(judgments, key=lambda item: rank.get(item, -1)).replace(
+            "_", " "
+        ).capitalize()
+
+    def output_materialization(self) -> OutputMaterialization | None:
+        sign_off = self.current_sign_off()
+        if sign_off is None:
+            return None
+        return next(
+            (
+                OutputMaterialization.model_validate_json(
+                    self.ledger.artifacts.read(event.output_revision_hashes[0])
+                )
+                for event in reversed(self.ledger.events())
+                if event.scope == self.review_case.review_id
+                and event.operation == "review:materialize-signed-outputs"
+                and json.loads(
+                    self.ledger.artifacts.read(event.output_revision_hashes[0])
+                )["sign_off"]["revision_id"]
+                == sign_off.revision_id
+            ),
+            None,
+        )
+
+    def output_attempt_revision_id(self) -> Identifier | None:
+        sign_off = self.current_sign_off()
+        if sign_off is None:
+            return None
+        return next(
+            (
+                event.revision_id
+                for event in reversed(self.ledger.events())
+                if event.scope == self.review_case.review_id
+                and event.operation == "review:materialize-signed-outputs"
+            ),
+            None,
+        )
+
+    def sign_off_invalidation(self) -> SignOffInvalidation | None:
+        current_ids = {
+            revision.revision_id for revision in self.ledger.current_revisions()
+        }
+        sign_off_event = next(
+            (
+                event
+                for event in reversed(self.ledger.events())
+                if event.scope == self.review_case.review_id
+                and event.operation == "review:canonical-assessment-sign-off"
+                and event.revision_id not in current_ids
+            ),
+            None,
+        )
+        if sign_off_event is None or not self.is_stale():
+            return None
+        return SignOffInvalidation(
+            sign_off_revision_id=sign_off_event.revision_id,
+            affected_result=self.review_case.result_label,
+            changed_path=(
+                self.review_case.assessment.revision_id,
+                sign_off_event.revision_id,
+                "assessment-outputs",
+            ),
+        )
+
+    def record_output_materialization(
+        self,
+        *,
+        sign_off: RecordReference,
+        operation_key: Identifier,
+        actor: Actor,
+        observed_at: datetime,
+        paths: tuple[str, ...] = (),
+        failure_reason: str | None = None,
+    ) -> OutputMaterialization:
+        if sign_off != self.current_sign_off():
+            raise StaleReviewError("outputs must bind the current Result sign-off")
+        status = (
+            OutputMaterializationStatus.COMPLETE
+            if failure_reason is None
+            else OutputMaterializationStatus.INCOMPLETE
+        )
+        materialization = OutputMaterialization(
+            status=status,
+            sign_off=sign_off,
+            paths=paths,
+            failure_reason=failure_reason,
+            retry_action=(
+                None
+                if status is OutputMaterializationStatus.COMPLETE
+                else "Retry deterministic output generation"
+            ),
+        )
+        current = next(
+            (
+                revision
+                for revision in self.ledger.current_revisions()
+                if revision.entity_id
+                == f"assessment-outputs:{sign_off.entity_id.split(':', 1)[1]}"
+            ),
+            None,
+        )
+        dependencies = (
+            DependencyInput(
+                entity_id=sign_off.entity_id,
+                revision_id=sign_off.revision_id,
+                role="dependency:assessment-sign-off",
+                content_hash=sign_off.content_hash,
+            ),
+        )
+        self.ledger.commit(
+            Transition(
+                scope=self.review_case.review_id,
+                operation="review:materialize-signed-outputs",
+                operation_key=operation_key,
+                actor=actor,
+                observed_at=observed_at,
+                entity_id=f"assessment-outputs:{sign_off.entity_id.split(':', 1)[1]}",
+                revision_id=f"revision:assessment-outputs-{operation_key.split(':', 1)[1]}",
+                artifact=materialization.model_dump_json().encode(),
+                artifact_media_type="application/json",
+                dependencies=dependencies,
+                expected_dependency_fingerprint=dependency_fingerprint(dependencies),
+                checkpoint="review-checkpoint:signed-outputs",
+                outcome=(
+                    WorkflowEventOutcome.COMPLETED
+                    if status is OutputMaterializationStatus.COMPLETE
+                    else WorkflowEventOutcome.RETRYABLE_INTERRUPTION
+                ),
+                supersedes_revision_id=(
+                    current.revision_id if current is not None else None
+                ),
+            ),
+            self.lease,
+            now=observed_at,
+        )
+        return materialization
 
     def withdraw_sign_off(
         self, command: SignOffWithdrawalCommand

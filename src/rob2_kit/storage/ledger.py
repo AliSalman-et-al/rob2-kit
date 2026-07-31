@@ -257,157 +257,191 @@ class WorkflowLedger:
         *,
         now: datetime | None = None,
     ) -> CommitResult:
+        return self.commit_batch((transition,), lease, now=now)[0]
+
+    def commit_batch(
+        self,
+        transitions: tuple[Transition, ...],
+        lease: LeaseToken,
+        *,
+        now: datetime | None = None,
+    ) -> tuple[CommitResult, ...]:
+        """Commit related revisions in one SQLite transaction."""
+        if not transitions:
+            raise ValueError("a commit batch must contain at least one transition")
+        operation_keys = [transition.operation_key for transition in transitions]
+        if len(operation_keys) != len(set(operation_keys)):
+            raise ValueError("operation keys must be unique within a commit batch")
         commit_time = now or datetime.now(UTC)
-        artifact = self.artifacts.put(transition.artifact, transition.artifact_media_type)
-        fingerprint = dependency_fingerprint(transition.dependencies)
+        artifacts = tuple(
+            self.artifacts.put(transition.artifact, transition.artifact_media_type)
+            for transition in transitions
+        )
         with self._transaction() as connection:
             self._validate_lease(connection, lease, commit_time)
-            duplicate = connection.execute(
-                "SELECT result_json FROM operations WHERE operation_key = ?",
-                (transition.operation_key,),
-            ).fetchone()
-            if duplicate is not None:
-                return CommitResult.model_validate_json(duplicate["result_json"]).model_copy(
-                    update={"duplicate": True}
+            duplicates = tuple(
+                connection.execute(
+                    "SELECT result_json FROM operations WHERE operation_key = ?",
+                    (transition.operation_key,),
+                ).fetchone()
+                for transition in transitions
+            )
+            if any(duplicate is not None for duplicate in duplicates):
+                if not all(duplicate is not None for duplicate in duplicates):
+                    raise StaleWriterError("commit batch is only partially present")
+                return tuple(
+                    CommitResult.model_validate_json(duplicate["result_json"]).model_copy(
+                        update={"duplicate": True}
+                    )
+                    for duplicate in duplicates
+                    if duplicate is not None
                 )
-            if transition.expected_dependency_fingerprint != fingerprint:
-                raise StaleWriterError("dependency fingerprint does not match submission")
-            self._validate_dependencies(connection, transition.dependencies)
-            self._validate_supersession(
-                connection, transition.entity_id, transition.supersedes_revision_id
-            )
-            previous = connection.execute(
-                "SELECT sequence, event_hash FROM workflow_events ORDER BY sequence DESC LIMIT 1"
-            ).fetchone()
-            sequence = 1 if previous is None else previous["sequence"] + 1
-            previous_hash = GENESIS_HASH if previous is None else previous["event_hash"]
-            operation_id = f"operation:{uuid.uuid4()}"
-            event_id = f"event:{uuid.uuid4()}"
-            event_data = self._event_data(
-                transition,
-                sequence=sequence,
-                event_id=event_id,
-                operation_id=operation_id,
-                artifact_hash=artifact.content_hash,
-                previous_hash=previous_hash,
-            )
-            event_hash = _hash_json(event_data)
-            connection.execute(
-                """
-                INSERT INTO workflow_events(
-                    sequence, event_id, scope, actor_json, observed_at, operation,
-                    operation_key, operation_id, causation_id, correlation_id, entity_id,
-                    revision_id, transition_json, input_hashes_json, output_hashes_json, outcome,
-                    previous_event_hash, event_hash
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                """,
-                (
-                    sequence,
-                    event_id,
-                    transition.scope,
-                    transition.actor.model_dump_json(),
-                    transition.observed_at.isoformat(),
-                    transition.operation,
-                    transition.operation_key,
-                    operation_id,
-                    transition.causation_id,
-                    transition.correlation_id,
-                    transition.entity_id,
-                    transition.revision_id,
-                    json.dumps(
-                        self._transition_projection(transition),
-                        sort_keys=True,
-                        separators=(",", ":"),
-                    ),
-                    json.dumps(event_data["input_revision_hashes"], separators=(",", ":")),
-                    json.dumps(event_data["output_revision_hashes"], separators=(",", ":")),
-                    transition.outcome,
-                    previous_hash,
-                    event_hash,
-                ),
-            )
-            earliest = self._apply_supersession(connection, transition.supersedes_revision_id)
-            connection.execute(
-                """
-                INSERT INTO revisions(
-                    entity_id, revision_id, artifact_hash, media_type, sequence, scope,
-                    checkpoint, supersedes_revision_id, dependency_fingerprint,
-                    record_schema_version
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                """,
-                (
-                    transition.entity_id,
-                    transition.revision_id,
-                    artifact.content_hash,
-                    transition.artifact_media_type,
-                    sequence,
-                    transition.scope,
-                    transition.checkpoint,
-                    transition.supersedes_revision_id,
-                    fingerprint,
-                    transition.record_schema_version,
-                ),
-            )
-            connection.execute(
-                """
-                INSERT INTO current_revisions(entity_id, revision_id) VALUES (?, ?)
-                ON CONFLICT(entity_id) DO UPDATE SET revision_id = excluded.revision_id
-                """,
-                (transition.entity_id, transition.revision_id),
-            )
-            if transition.checkpoint is not None:
+            results = []
+            for transition, artifact in zip(transitions, artifacts, strict=True):
+                fingerprint = dependency_fingerprint(transition.dependencies)
+                if transition.expected_dependency_fingerprint != fingerprint:
+                    raise StaleWriterError("dependency fingerprint does not match submission")
+                self._validate_dependencies(connection, transition.dependencies)
+                self._validate_supersession(
+                    connection, transition.entity_id, transition.supersedes_revision_id
+                )
+                previous = connection.execute(
+                    "SELECT sequence, event_hash FROM workflow_events "
+                    "ORDER BY sequence DESC LIMIT 1"
+                ).fetchone()
+                sequence = 1 if previous is None else previous["sequence"] + 1
+                previous_hash = GENESIS_HASH if previous is None else previous["event_hash"]
+                operation_id = f"operation:{uuid.uuid4()}"
+                event_id = f"event:{uuid.uuid4()}"
+                event_data = self._event_data(
+                    transition,
+                    sequence=sequence,
+                    event_id=event_id,
+                    operation_id=operation_id,
+                    artifact_hash=artifact.content_hash,
+                    previous_hash=previous_hash,
+                )
+                event_hash = _hash_json(event_data)
                 connection.execute(
                     """
-                    INSERT INTO current_checkpoints(scope, checkpoint, revision_id, sequence)
-                    VALUES (?, ?, ?, ?)
-                    ON CONFLICT(scope, checkpoint) DO UPDATE SET
-                        revision_id = excluded.revision_id,
-                        sequence = excluded.sequence
+                    INSERT INTO workflow_events(
+                        sequence, event_id, scope, actor_json, observed_at, operation,
+                        operation_key, operation_id, causation_id, correlation_id, entity_id,
+                        revision_id, transition_json, input_hashes_json, output_hashes_json,
+                        outcome, previous_event_hash, event_hash
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                     """,
                     (
+                        sequence,
+                        event_id,
+                        transition.scope,
+                        transition.actor.model_dump_json(),
+                        transition.observed_at.isoformat(),
+                        transition.operation,
+                        transition.operation_key,
+                        operation_id,
+                        transition.causation_id,
+                        transition.correlation_id,
+                        transition.entity_id,
+                        transition.revision_id,
+                        json.dumps(
+                            self._transition_projection(transition),
+                            sort_keys=True,
+                            separators=(",", ":"),
+                        ),
+                        json.dumps(event_data["input_revision_hashes"], separators=(",", ":")),
+                        json.dumps(event_data["output_revision_hashes"], separators=(",", ":")),
+                        transition.outcome,
+                        previous_hash,
+                        event_hash,
+                    ),
+                )
+                earliest = self._apply_supersession(
+                    connection, transition.supersedes_revision_id
+                )
+                connection.execute(
+                    """
+                    INSERT INTO revisions(
+                        entity_id, revision_id, artifact_hash, media_type, sequence, scope,
+                        checkpoint, supersedes_revision_id, dependency_fingerprint,
+                        record_schema_version
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    (
+                        transition.entity_id,
+                        transition.revision_id,
+                        artifact.content_hash,
+                        transition.artifact_media_type,
+                        sequence,
                         transition.scope,
                         transition.checkpoint,
-                        transition.revision_id,
-                        sequence,
+                        transition.supersedes_revision_id,
+                        fingerprint,
+                        transition.record_schema_version,
                     ),
                 )
-            for dependency in transition.dependencies:
                 connection.execute(
                     """
-                    INSERT INTO revision_dependencies(
-                        revision_id, dependency_entity_id, dependency_revision_id,
-                        dependency_role, dependency_hash
-                    ) VALUES (?, ?, ?, ?, ?)
+                    INSERT INTO current_revisions(entity_id, revision_id) VALUES (?, ?)
+                    ON CONFLICT(entity_id) DO UPDATE SET revision_id = excluded.revision_id
                     """,
-                    (
-                        transition.revision_id,
-                        dependency.entity_id,
-                        dependency.revision_id,
-                        dependency.role,
-                        dependency.content_hash,
-                    ),
+                    (transition.entity_id, transition.revision_id),
                 )
-            connection.execute(
-                """
-                INSERT INTO reachable_artifacts(content_hash, media_type, size, first_sequence)
-                VALUES (?, ?, ?, ?)
-                ON CONFLICT(content_hash) DO NOTHING
-                """,
-                (artifact.content_hash, artifact.media_type, artifact.size, sequence),
-            )
-            result = CommitResult(
-                operation_id=operation_id,
-                sequence=sequence,
-                event_id=event_id,
-                artifact_hash=artifact.content_hash,
-                dependency_fingerprint=fingerprint,
-                earliest_stale_checkpoint=earliest,
-            )
-            connection.execute(
-                "INSERT INTO operations(operation_key, result_json) VALUES (?, ?)",
-                (transition.operation_key, result.model_dump_json()),
-            )
-        return result
+                if transition.checkpoint is not None:
+                    connection.execute(
+                        """
+                        INSERT INTO current_checkpoints(scope, checkpoint, revision_id, sequence)
+                        VALUES (?, ?, ?, ?)
+                        ON CONFLICT(scope, checkpoint) DO UPDATE SET
+                            revision_id = excluded.revision_id,
+                            sequence = excluded.sequence
+                        """,
+                        (
+                            transition.scope,
+                            transition.checkpoint,
+                            transition.revision_id,
+                            sequence,
+                        ),
+                    )
+                for dependency in transition.dependencies:
+                    connection.execute(
+                        """
+                        INSERT INTO revision_dependencies(
+                            revision_id, dependency_entity_id, dependency_revision_id,
+                            dependency_role, dependency_hash
+                        ) VALUES (?, ?, ?, ?, ?)
+                        """,
+                        (
+                            transition.revision_id,
+                            dependency.entity_id,
+                            dependency.revision_id,
+                            dependency.role,
+                            dependency.content_hash,
+                        ),
+                    )
+                connection.execute(
+                    """
+                    INSERT INTO reachable_artifacts(
+                        content_hash, media_type, size, first_sequence
+                    ) VALUES (?, ?, ?, ?)
+                    ON CONFLICT(content_hash) DO NOTHING
+                    """,
+                    (artifact.content_hash, artifact.media_type, artifact.size, sequence),
+                )
+                result = CommitResult(
+                    operation_id=operation_id,
+                    sequence=sequence,
+                    event_id=event_id,
+                    artifact_hash=artifact.content_hash,
+                    dependency_fingerprint=fingerprint,
+                    earliest_stale_checkpoint=earliest,
+                )
+                connection.execute(
+                    "INSERT INTO operations(operation_key, result_json) VALUES (?, ?)",
+                    (transition.operation_key, result.model_dump_json()),
+                )
+                results.append(result)
+        return tuple(results)
 
     def events(self) -> tuple[WorkflowEvent, ...]:
         with self._connection() as connection:
