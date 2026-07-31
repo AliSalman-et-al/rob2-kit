@@ -5,7 +5,12 @@ from pathlib import Path
 
 import pytest
 
-from rob2_kit.domain.assessment import AssessmentRevision
+from rob2_kit.domain.assessment import (
+    AssessmentRevision,
+    AssessmentSignOff,
+    DomainReviewDisposition,
+    ReviewerProfileRevision,
+)
 from rob2_kit.domain.revisions import Actor, ActorKind, Dependency, Supersession
 from rob2_kit.review.service import (
     ActionDecision,
@@ -26,6 +31,7 @@ from rob2_kit.review.service import (
     ReviewPolicy,
     ReviewService,
     SignOffBlockedError,
+    SignOffWithdrawalCommand,
     StaleReviewError,
 )
 from rob2_kit.storage.artifacts import ArtifactStore
@@ -457,6 +463,64 @@ def test_sign_off_requires_findings_and_every_domain_then_reconfirms_identity(
     assert sign_off.receipt.review_policy == reference("review-policy")
     assert sign_off.receipt.reviewer_profile == reference("reviewer-profile")
     assert review.connection_state().value == "review complete"
+
+    canonical = {
+        event.operation: json.loads(
+            review.ledger.artifacts.read(event.output_revision_hashes[0])
+        )
+        for event in review.ledger.events()
+        if event.operation.startswith("review:canonical-")
+    }
+    profile = ReviewerProfileRevision.model_validate(
+        canonical["review:canonical-reviewer-profile"]
+    )
+    dispositions = [
+        DomainReviewDisposition.model_validate(
+            json.loads(review.ledger.artifacts.read(event.output_revision_hashes[0]))
+        )
+        for event in review.ledger.events()
+        if event.operation == "review:canonical-domain-disposition"
+    ]
+    signed = AssessmentSignOff.model_validate(
+        canonical["review:canonical-assessment-sign-off"]
+    )
+    assert profile.display_name == "Dr. Reviewer"
+    assert {item.domain_id for item in dispositions} == {
+        "domain:1",
+        "domain:2",
+        "domain:3",
+        "domain:4",
+        "domain:5",
+    }
+    assert signed.assessment == reference("assessment")
+    assert signed.reviewer_profile.revision_id == profile.revision_id
+    assert {item.revision_id for item in signed.domain_dispositions} == {
+        disposition.revision_id for disposition in dispositions
+    }
+
+    withdrawal_ref = review.withdraw_sign_off(
+        SignOffWithdrawalCommand(
+            idempotency_key="idempotency:reopen-review",
+            expected_assessment_revision_id="revision:assessment-1",
+            expected_sign_off_revision_id=signed.revision_id,
+            actor=reviewer(),
+            reviewer_profile=reference("reviewer-profile"),
+            reason="Reopen to inspect a newly reported concern.",
+            observed_at=NOW,
+        )
+    )
+    withdrawal_event = next(
+        event
+        for event in review.ledger.events()
+        if event.revision_id == withdrawal_ref.revision_id
+    )
+    withdrawal = json.loads(
+        review.ledger.artifacts.read(withdrawal_event.output_revision_hashes[0])
+    )
+    assert withdrawal["sign_off"]["revision_id"] == signed.revision_id
+    assert withdrawal["reason"] == "Reopen to inspect a newly reported concern."
+    assert any(event.revision_id == signed.revision_id for event in review.ledger.events())
+    assert review.connection_state().value == "connected—waiting"
 
 
 def test_nonhuman_actor_cannot_commit_review_action(tmp_path: Path) -> None:

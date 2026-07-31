@@ -10,11 +10,19 @@ from enum import StrEnum
 from pydantic import Field, model_validator
 
 from rob2_kit.application.preparation import ReviewReceiptOutcome
-from rob2_kit.domain.assessment import AssessmentRevision
+from rob2_kit.domain.assessment import (
+    AssessmentRevision,
+    AssessmentSignOff,
+    DomainReviewDisposition,
+    DomainReviewDispositionKind,
+    ReviewerProfileRevision,
+    SignOffWithdrawal,
+)
 from rob2_kit.domain.revisions import (
     Actor,
     ActorKind,
     ContentHash,
+    Dependency,
     FrozenModel,
     Identifier,
     RecordReference,
@@ -418,6 +426,22 @@ class ReviewCommit(FrozenModel):
     duplicate: bool
 
 
+class SignOffWithdrawalCommand(FrozenModel):
+    idempotency_key: Identifier
+    expected_assessment_revision_id: Identifier
+    expected_sign_off_revision_id: Identifier
+    actor: Actor
+    reviewer_profile: RecordReference
+    reason: str = Field(min_length=1)
+    observed_at: datetime
+
+    @model_validator(mode="after")
+    def validate_time(self) -> SignOffWithdrawalCommand:
+        if self.observed_at.utcoffset() != UTC.utcoffset(self.observed_at):
+            raise ValueError("observed_at must use UTC")
+        return self
+
+
 class ReviewService:
     """Commit human-only review decisions and derive all current review state."""
 
@@ -717,6 +741,7 @@ class ReviewService:
         receipt = DurableReviewReceipt.model_validate(
             {**payload, "ledger_event_id": result.event_id}
         )
+        self._commit_canonical_review_revision(command, receipt)
         self._connection_state = (
             ConnectionState.COMPLETE
             if command.kind is ActionKind.SIGN_OFF
@@ -725,8 +750,262 @@ class ReviewService:
         self._last_contact = command.observed_at
         return ReviewCommit(receipt=receipt, duplicate=False)
 
+    def _commit_canonical_review_revision(
+        self, command: ReviewCommand, receipt: DurableReviewReceipt
+    ) -> None:
+        if command.kind not in {ActionKind.DOMAIN_REVIEW, ActionKind.SIGN_OFF}:
+            return
+        profile = self._canonical_reviewer_profile(command)
+        if command.kind is ActionKind.DOMAIN_REVIEW:
+            domain_id = _domain_id_from_action(command.action_id)
+            review_key = self.review_case.review_id.split(":", 1)[1]
+            domain_key = domain_id.split(":", 1)[1]
+            disposition = DomainReviewDisposition(
+                entity_id=f"domain-review-disposition:{review_key}-{domain_key}",
+                revision_id=f"revision:domain-disposition-{receipt.revision_id.split(':', 1)[1]}",
+                dependencies=self._revision_dependencies(
+                    (self.review_case.assessment, profile),
+                    ("dependency:assessment", "dependency:reviewer-profile"),
+                ),
+                actor=command.actor,
+                observed_at=command.observed_at,
+                domain_id=domain_id,
+                disposition={
+                    ActionDecision.ACCEPTED: DomainReviewDispositionKind.ACCEPT,
+                    ActionDecision.CORRECTION_REQUESTED: DomainReviewDispositionKind.CORRECT,
+                    ActionDecision.OVERRIDDEN: DomainReviewDispositionKind.OVERRIDE,
+                    ActionDecision.DEFERRED: DomainReviewDispositionKind.DEFER,
+                }.get(command.value, DomainReviewDispositionKind.ACCEPT),
+                assessment=self.review_case.assessment,
+                reviewer_profile=profile,
+                rationale=command.rationale,
+            )
+            self._commit_canonical(
+                disposition,
+                operation="review:canonical-domain-disposition",
+                operation_key=f"{command.idempotency_key}:canonical",
+            )
+            return
+        current_revision_ids = {
+            revision.revision_id for revision in self.ledger.current_revisions()
+        }
+        dispositions = tuple(
+            self._canonical_reference(event)
+            for event in self.ledger.events()
+            if event.scope == self.review_case.review_id
+            and event.operation == "review:canonical-domain-disposition"
+            and event.revision_id in current_revision_ids
+        )
+        disposition_domains = {
+            DomainReviewDisposition.model_validate_json(
+                self.ledger.artifacts.read(reference.content_hash)
+            ).domain_id
+            for reference in dispositions
+        }
+        if (
+            len(dispositions) != len(self.review_case.policy.domain_ids)
+            or disposition_domains != set(self.review_case.policy.domain_ids)
+        ):
+            raise SignOffBlockedError(
+                "sign-off requires exactly one current disposition for every Domain"
+            )
+        assessment_key = self.review_case.assessment.entity_id.split(":", 1)[1]
+        sign_off = AssessmentSignOff(
+            entity_id=f"assessment-sign-off:{assessment_key}",
+            revision_id=f"revision:assessment-sign-off-{receipt.revision_id.split(':', 1)[1]}",
+            dependencies=self._revision_dependencies(
+                (
+                    self.review_case.assessment,
+                    profile,
+                    *dispositions,
+                    self.review_case.policy.reference,
+                ),
+                (
+                    "dependency:assessment",
+                    "dependency:reviewer-profile",
+                    *(["dependency:domain-review-disposition"] * len(dispositions)),
+                    "dependency:review-policy",
+                ),
+            ),
+            actor=command.actor,
+            observed_at=command.observed_at,
+            assessment=self.review_case.assessment,
+            reviewer_profile=profile,
+            domain_dispositions=dispositions,
+            review_policy=self.review_case.policy.reference,
+        )
+        self._commit_canonical(
+            sign_off,
+            operation="review:canonical-assessment-sign-off",
+            operation_key=f"{command.idempotency_key}:canonical",
+        )
+
+    def _canonical_reviewer_profile(self, command: ReviewCommand) -> RecordReference:
+        existing = next(
+            (
+                self._canonical_reference(event)
+                for event in reversed(self.ledger.events())
+                if event.scope == self.review_case.review_id
+                and event.operation == "review:canonical-reviewer-profile"
+            ),
+            None,
+        )
+        if existing is not None:
+            return existing
+        profile = ReviewerProfileRevision(
+            entity_id=f"reviewer-profile:{command.actor.actor_id.split(':', 1)[1]}",
+            revision_id=f"revision:reviewer-profile-{command.review_session_id.split(':', 1)[1]}",
+            dependencies=(),
+            actor=command.actor,
+            observed_at=command.observed_at,
+            display_name=command.actor.display_name,
+        )
+        return self._commit_canonical(
+            profile,
+            operation="review:canonical-reviewer-profile",
+            operation_key=f"canonical-profile:{command.review_session_id}",
+        )
+
+    def _commit_canonical(
+        self, revision, *, operation: str, operation_key: str
+    ) -> RecordReference:
+        ledger_dependencies = tuple(
+            DependencyInput(
+                entity_id=item.entity_id,
+                revision_id=item.revision_id,
+                role=item.role,
+                content_hash=item.content_hash,
+            )
+            for item in revision.dependencies
+            if any(
+                current.entity_id == item.entity_id
+                and current.revision_id == item.revision_id
+                and current.artifact_hash == item.content_hash
+                for current in self.ledger.current_revisions()
+            )
+        )
+        result = self.ledger.commit(
+            Transition(
+                scope=self.review_case.review_id,
+                operation=operation,
+                operation_key=operation_key,
+                actor=revision.actor,
+                observed_at=revision.observed_at,
+                entity_id=revision.entity_id,
+                revision_id=revision.revision_id,
+                artifact=revision.model_dump_json().encode(),
+                artifact_media_type="application/json",
+                dependencies=ledger_dependencies,
+                expected_dependency_fingerprint=dependency_fingerprint(ledger_dependencies),
+                outcome=WorkflowEventOutcome.COMPLETED,
+            ),
+            self.lease,
+            now=revision.observed_at,
+        )
+        return RecordReference(
+            entity_id=revision.entity_id,
+            revision_id=revision.revision_id,
+            content_hash=result.artifact_hash,
+        )
+
+    def _canonical_reference(self, event: WorkflowEvent) -> RecordReference:
+        return RecordReference(
+            entity_id=event.entity_id,
+            revision_id=event.revision_id,
+            content_hash=event.output_revision_hashes[0],
+        )
+
+    def _revision_dependencies(
+        self, references: tuple[RecordReference, ...], roles: tuple[str, ...]
+    ) -> tuple[Dependency, ...]:
+        return tuple(
+            Dependency(
+                entity_id=reference.entity_id,
+                revision_id=reference.revision_id,
+                role=role,
+                content_hash=reference.content_hash,
+            )
+            for reference, role in zip(references, roles, strict=True)
+        )
+
     def connection_state(self) -> ConnectionState:
         return self._connection_state
+
+    def withdraw_sign_off(
+        self, command: SignOffWithdrawalCommand
+    ) -> RecordReference:
+        """Reopen one exact signed Result without deleting its signed history."""
+        if command.actor.kind is not ActorKind.HUMAN:
+            raise ValueError("sign-off withdrawal requires a human actor")
+        if (
+            command.expected_assessment_revision_id
+            != self.review_case.assessment_revision_id
+            or self.is_stale()
+        ):
+            raise StaleReviewError("this review page is stale and is now read-only")
+        sign_off_event = next(
+            (
+                event
+                for event in reversed(self.ledger.events())
+                if event.scope == self.review_case.review_id
+                and event.operation == "review:canonical-assessment-sign-off"
+                and event.revision_id == command.expected_sign_off_revision_id
+            ),
+            None,
+        )
+        if sign_off_event is None:
+            raise ReviewError("the requested sign-off is not current for this Result")
+        existing = next(
+            (
+                event
+                for event in self.ledger.events()
+                if event.operation_key == command.idempotency_key
+            ),
+            None,
+        )
+        if existing is not None:
+            if existing.operation != "review:canonical-sign-off-withdrawal":
+                raise ReviewError("idempotency key was already used for different review work")
+            return self._canonical_reference(existing)
+        profile = self._canonical_reviewer_profile(
+            ReviewCommand(
+                idempotency_key=f"{command.idempotency_key}:profile",
+                action_id="review-action:sign-off",
+                kind=ActionKind.SIGN_OFF,
+                expected_assessment_revision_id=command.expected_assessment_revision_id,
+                actor=command.actor,
+                value=ActionDecision.SIGNED,
+                reviewer_profile=command.reviewer_profile,
+                review_session_id=(
+                    "review-session:withdraw-"
+                    f"{command.actor.actor_id.split(':', 1)[1]}"
+                ),
+                observed_at=command.observed_at,
+                confirmed_display_name=command.actor.display_name,
+            )
+        )
+        sign_off = self._canonical_reference(sign_off_event)
+        withdrawal = SignOffWithdrawal(
+            entity_id=f"sign-off-withdrawal:{sign_off.revision_id.split(':', 1)[1]}",
+            revision_id=f"revision:sign-off-withdrawal-{command.idempotency_key.split(':', 1)[1]}",
+            dependencies=self._revision_dependencies(
+                (sign_off, profile),
+                ("dependency:assessment-sign-off", "dependency:reviewer-profile"),
+            ),
+            actor=command.actor,
+            observed_at=command.observed_at,
+            sign_off=sign_off,
+            reviewer_profile=profile,
+            reason=command.reason,
+        )
+        reference = self._commit_canonical(
+            withdrawal,
+            operation="review:canonical-sign-off-withdrawal",
+            operation_key=command.idempotency_key,
+        )
+        self._connection_state = ConnectionState.CONNECTED_WAITING
+        self._last_contact = command.observed_at
+        return reference
 
     def last_contact(self) -> datetime:
         return self._last_contact
@@ -757,6 +1036,7 @@ class ReviewService:
                 event.sequence > after_sequence
                 and event.scope == self.review_case.review_id
                 and event.operation.startswith("review:")
+                and not event.operation.startswith("review:canonical-")
             ):
                 return self._receipt_from_event(event)
         return None
@@ -768,6 +1048,7 @@ class ReviewService:
             for event in self.ledger.events()
             if event.scope == self.review_case.review_id
             and event.operation.startswith("review:")
+            and not event.operation.startswith("review:canonical-")
         )
         return tuple(receipt for receipt in receipts if receipt.correction_request is not None)
 
@@ -1339,6 +1620,7 @@ class ReviewService:
             if (
                 event.scope != self.review_case.review_id
                 or not event.operation.startswith("review:")
+                or event.operation.startswith("review:canonical-")
             ):
                 continue
             receipt = self._receipt_from_event(event)

@@ -78,8 +78,14 @@ class DomainReviewDispositionKind(StrEnum):
 
 
 class DomainReviewDisposition(Revision):
+    dependency_roles = {
+        "assessment": "dependency:assessment",
+        "reviewer_profile": "dependency:reviewer-profile",
+    }
     domain_id: Identifier
     disposition: DomainReviewDispositionKind
+    assessment: RecordReference
+    reviewer_profile: RecordReference
     rationale: str | None = None
 
 
@@ -112,7 +118,26 @@ class AssessmentSignOff(Revision):
     dependency_roles = {
         "assessment": "dependency:assessment",
         "reviewer_profile": "dependency:reviewer-profile",
+        "domain_dispositions": "dependency:domain-review-disposition",
+        "review_policy": "dependency:review-policy",
     }
     assessment: RecordReference
     reviewer_profile: RecordReference
+    domain_dispositions: tuple[RecordReference, ...] = ()
+    review_policy: RecordReference | None = None
+    attestation: str = (
+        "I reviewed this exact Result Assessment under the stated Review policy and "
+        "approve its recorded answers, final judgments, overrides, and acknowledged "
+        "limitations as the current assessment."
+    )
     assurance: str = "local_human_attribution"
+
+
+class SignOffWithdrawal(Revision):
+    dependency_roles = {
+        "sign_off": "dependency:assessment-sign-off",
+        "reviewer_profile": "dependency:reviewer-profile",
+    }
+    sign_off: RecordReference
+    reviewer_profile: RecordReference
+    reason: str = Field(min_length=1)

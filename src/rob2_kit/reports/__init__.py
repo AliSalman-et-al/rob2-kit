@@ -18,6 +18,7 @@ from rob2_kit.domain.assessment import (
     AssessmentRevision,
     AssessmentSignOff,
     JudgmentOverride,
+    SignOffWithdrawal,
 )
 from rob2_kit.domain.canonical import canonical_json_bytes
 from rob2_kit.domain.results import ResultSpecRevision
@@ -315,6 +316,19 @@ def _is_sign_off_for(
         )
     except ValidationError:
         return False
+    for candidate in current.values():
+        try:
+            withdrawal = SignOffWithdrawal.model_validate_json(
+                ledger.artifacts.read(candidate.artifact_hash)
+            )
+        except ValidationError:
+            continue
+        if (
+            withdrawal.sign_off.entity_id == sign_off.entity_id
+            and withdrawal.sign_off.revision_id == sign_off.revision_id
+            and withdrawal.sign_off.content_hash == projection.artifact_hash
+        ):
+            return False
     return (
         sign_off.assessment.entity_id == assessment.entity_id
         and sign_off.assessment.revision_id == assessment.revision_id
