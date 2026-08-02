@@ -1,0 +1,5 @@
+# Private source corpus and provisional labels.
+reference/
+
+# Materialized rob2-kit projects and their ledgers/artifacts.
+runs/

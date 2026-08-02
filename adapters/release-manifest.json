@@ -1,0 +1,16 @@
+{
+  "application_contract": "1.0.0",
+  "canonical_skill_hash": "sha256:23f8567f219d3afa1186af0d732ec0e386309fa20092f56628444818f354a007",
+  "claude_adapter_version": "1",
+  "codex_adapter_version": "1",
+  "guidance_pack": "rob2-parallel-assignment-en-2019.1",
+  "guidance_pack_hash": "sha256:5957d173f0daebf214a9787babb0497427469b046118a1e91293b79314a69dd9",
+  "launcher": "uv run --locked --project . rob2-mcp",
+  "launcher_working_directory": "repository_root",
+  "logic_pack": "rob2-parallel-assignment-2019.1",
+  "logic_pack_hash": "sha256:7bd0471a05fe263ed70f1b6b5f7c3412759c1002fa8cc759c79abc701f0333d6",
+  "package": "rob2-kit",
+  "package_version": "0.1.0",
+  "release_status": "draft_only_preview",
+  "sign_off_authority": "human_only"
+}

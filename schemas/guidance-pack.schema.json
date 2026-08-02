@@ -1,0 +1,155 @@
+{
+  "$defs": {
+    "GuidanceItem": {
+      "additionalProperties": false,
+      "properties": {
+        "affected_change": {
+          "enum": [
+            "decision_relevant",
+            "presentation_only"
+          ],
+          "title": "Affected Change",
+          "type": "string"
+        },
+        "content_origin": {
+          "enum": [
+            "official",
+            "rob2_kit"
+          ],
+          "title": "Content Origin",
+          "type": "string"
+        },
+        "logic_element_id": {
+          "title": "Logic Element Id",
+          "type": "string"
+        },
+        "text": {
+          "minLength": 1,
+          "title": "Text",
+          "type": "string"
+        }
+      },
+      "required": [
+        "logic_element_id",
+        "content_origin",
+        "text",
+        "affected_change"
+      ],
+      "title": "GuidanceItem",
+      "type": "object"
+    },
+    "Provenance": {
+      "additionalProperties": false,
+      "properties": {
+        "license": {
+          "minLength": 1,
+          "title": "License",
+          "type": "string"
+        },
+        "title": {
+          "minLength": 1,
+          "title": "Title",
+          "type": "string"
+        },
+        "url": {
+          "pattern": "^https://",
+          "title": "Url",
+          "type": "string"
+        },
+        "version": {
+          "minLength": 1,
+          "title": "Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "title",
+        "version",
+        "url",
+        "license"
+      ],
+      "title": "Provenance",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "authors": {
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Authors",
+      "type": "array"
+    },
+    "compatible_logic_hashes": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Compatible Logic Hashes",
+      "type": "array"
+    },
+    "content_hash": {
+      "default": "",
+      "title": "Content Hash",
+      "type": "string"
+    },
+    "family_id": {
+      "title": "Family Id",
+      "type": "string"
+    },
+    "inventory": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Inventory",
+      "type": "array"
+    },
+    "items": {
+      "items": {
+        "$ref": "#/$defs/GuidanceItem"
+      },
+      "title": "Items",
+      "type": "array"
+    },
+    "language": {
+      "title": "Language",
+      "type": "string"
+    },
+    "provenance": {
+      "items": {
+        "$ref": "#/$defs/Provenance"
+      },
+      "title": "Provenance",
+      "type": "array"
+    },
+    "release_id": {
+      "title": "Release Id",
+      "type": "string"
+    },
+    "required_schema_version": {
+      "const": "1.0.0",
+      "title": "Required Schema Version",
+      "type": "string"
+    },
+    "schema_version": {
+      "const": "1.0.0",
+      "title": "Schema Version",
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema_version",
+    "required_schema_version",
+    "family_id",
+    "release_id",
+    "authors",
+    "language",
+    "compatible_logic_hashes",
+    "items",
+    "inventory",
+    "provenance"
+  ],
+  "title": "GuidancePack",
+  "type": "object"
+}

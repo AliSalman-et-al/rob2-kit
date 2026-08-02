@@ -1,6 +1,9 @@
 # Blueprint: an auditable agent plugin for Cochrane RoB 2
 
-**Status:** architecture and research plan  
+> **Superseded:** This research blueprint is retained for provenance. The
+> canonical implementation contract is [RoB 2 Kit v1 specification](V1-SPEC.md).
+
+**Status:** superseded research input
 **Date:** 2026-07-28  
 **Working name:** `rob2-assist`  
 **Initial target:** individually randomized, parallel-group RCTs; effect of assignment to intervention; English-language source documents  

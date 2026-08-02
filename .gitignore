@@ -1,6 +1,7 @@
 # Python-generated files
 __pycache__/
 *.py[oc]
+.coverage
 build/
 dist/
 wheels/
@@ -8,3 +9,10 @@ wheels/
 
 # Virtual environments
 .venv
+
+# Private local evaluation corpus
+eval/reference/
+eval/runs/
+
+# Local calibration and rendering artifacts
+tmp/

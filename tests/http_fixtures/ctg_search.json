@@ -1,0 +1,21 @@
+{
+  "studies": [
+    {
+      "protocolSection": {
+        "identificationModule": {
+          "nctId": "NCT01234567",
+          "briefTitle": "Beacon hypertension trial"
+        }
+      }
+    },
+    {
+      "protocolSection": {
+        "identificationModule": {
+          "nctId": "NCT07654321",
+          "briefTitle": "Beacon blood pressure study"
+        }
+      }
+    }
+  ],
+  "totalCount": 2
+}

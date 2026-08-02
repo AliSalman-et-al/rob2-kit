@@ -1,0 +1,6 @@
+{
+  "adapter_version": "1",
+  "host": "claude",
+  "integration": "mcp",
+  "skill": "rob2-assess"
+}

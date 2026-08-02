@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="500">
+  <rect width="100%" height="100%" fill="white"/>
+  <text x="40" y="50" font-size="24">Figure. Biomarker trajectory</text>
+  <path d="M60 400L180 300L300 350L420 180L540 230L700 90" fill="none" stroke="blue" stroke-width="4"/>
+</svg>

@@ -1,6 +1,9 @@
 # RoB 2 Automation Plugin — Design Blueprint
 
-Status: draft for review · Date: 2026-07-28
+> **Superseded:** This research blueprint is retained for provenance. The
+> canonical implementation contract is [RoB 2 Kit v1 specification](V1-SPEC.md).
+
+Status: superseded research input · Date: 2026-07-28
 
 ---
 
