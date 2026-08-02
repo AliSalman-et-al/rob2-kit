@@ -86,7 +86,10 @@ from rob2_kit.storage.ledger import (
 )
 
 CONTRACT_VERSION = "1.0.0"
-STATIC_TOOL_NAMES = (
+# The gateway's historical protocol is retained for expert/preview callers,
+# but is no longer the published stdio surface.  The MCP adapter imports the
+# typed RunEngine operation names below instead of these legacy names.
+LEGACY_TOOL_NAMES = (
     "initialize_project",
     "project_status",
     "continue_preparation",
@@ -106,6 +109,21 @@ STATIC_TOOL_NAMES = (
     "open_review",
     "wait_for_review",
     "submit_targeted_rework",
+)
+STATIC_TOOL_NAMES = (
+    "prepare_run",
+    "run_status",
+    "continue_run",
+    "get_work_context",
+    "submit_run_proposal",
+    "confirm_run_definition",
+    "search_evidence",
+    "read_evidence",
+    "inspect_visual_candidate",
+    "submit_source_classification",
+    "submit_result_resolution",
+    "submit_domain_evidence",
+    "submit_domain_answers",
 )
 MUTATION_TOOLS = frozenset(
     {
@@ -373,7 +391,7 @@ class ApplicationGateway:
         arguments: dict[str, Any] | None = None,
         mutation_context: dict[str, Any] | MutationContext | None = None,
     ) -> OperationEnvelope:
-        if tool_name not in STATIC_TOOL_NAMES or tool_name == "initialize_project":
+        if tool_name not in LEGACY_TOOL_NAMES or tool_name == "initialize_project":
             raise ValueError(f"unknown post-initialization tool {tool_name!r}")
         root = self._projects.get(project_id)
         if root is None:

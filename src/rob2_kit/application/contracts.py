@@ -185,6 +185,7 @@ class GetWorkContextRequest(FrozenModel):
 
 
 class SubmitRunProposalRequest(FrozenModel):
+    contract_version: Literal["1.0.0"]
     run_id: Identifier
     proposal_token: Identifier
     idempotency_key: Identifier
@@ -192,6 +193,7 @@ class SubmitRunProposalRequest(FrozenModel):
 
 
 class ConfirmRunDefinitionRequest(FrozenModel):
+    contract_version: Literal["1.0.0"]
     run_id: Identifier
     proposal_token: Identifier
     idempotency_key: Identifier
@@ -224,6 +226,7 @@ class SourceClassificationInput(FrozenModel):
 
 
 class SubmitSourceClassificationRequest(FrozenModel):
+    contract_version: Literal["1.0.0"]
     run_id: Identifier
     work_token: WorkToken
     idempotency_key: Identifier
@@ -231,6 +234,7 @@ class SubmitSourceClassificationRequest(FrozenModel):
 
 
 class SubmitResultResolutionRequest(FrozenModel):
+    contract_version: Literal["1.0.0"]
     run_id: Identifier
     work_token: WorkToken
     idempotency_key: Identifier
@@ -240,6 +244,7 @@ class SubmitResultResolutionRequest(FrozenModel):
 
 
 class SubmitDomainEvidenceRequest(FrozenModel):
+    contract_version: Literal["1.0.0"]
     run_id: Identifier
     work_token: WorkToken
     idempotency_key: Identifier
@@ -259,6 +264,7 @@ class SQAnswerInput(FrozenModel):
 
 
 class SubmitDomainAnswersRequest(FrozenModel):
+    contract_version: Literal["1.0.0"]
     run_id: Identifier
     work_token: WorkToken
     idempotency_key: Identifier

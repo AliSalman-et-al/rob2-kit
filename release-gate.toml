@@ -57,7 +57,7 @@ evidence = [
 id = "cross-host-equivalence"
 description = "Cross-host contract, deterministic, and workflow equivalence"
 evidence = [
-  "tests/test_host_interfaces.py::test_real_stdio_mcp_matches_application_initialization",
+  "tests/test_host_interfaces.py::test_real_stdio_mcp_exercises_the_typed_run_engine_surface",
   "tests/test_reports.py::test_all_formats_match_golden_hashes",
   "tests/test_public_v1_release_gate.py::test_ci_runs_the_same_release_gate_on_all_supported_platforms",
 ]
@@ -283,4 +283,4 @@ id = "normalized-host-submissions"
 kind = "normalized-host-submissions"
 path = "tests/public_fixtures/workflow/normalized-host-submissions.json"
 description = "Identical normalized submissions for both host adapters"
-evidence = "tests/test_host_interfaces.py::test_real_stdio_mcp_matches_application_initialization"
+evidence = "tests/test_host_interfaces.py::test_real_stdio_mcp_exercises_the_typed_run_engine_surface"

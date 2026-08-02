@@ -11,6 +11,7 @@ from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
 from typer.testing import CliRunner
 
+from rob2_kit.application.contracts import RUN_OPERATION_NAMES
 from rob2_kit.application.gateway import STATIC_TOOL_NAMES, ApplicationGateway
 from rob2_kit.domain.assessment import (
     AlgorithmicJudgmentRevision,
@@ -150,37 +151,14 @@ def test_static_mcp_surface_matches_specification() -> None:
     assert registered_tool_names() == STATIC_TOOL_NAMES
 
 
-def test_real_stdio_mcp_matches_application_initialization(tmp_path: Path) -> None:
-    direct_root = tmp_path / "direct"
+def test_real_stdio_mcp_exercises_the_typed_run_engine_surface(tmp_path: Path) -> None:
     host_roots = {
         "codex": tmp_path / "codex",
         "claude": tmp_path / "claude",
     }
-    for root in (direct_root, *host_roots.values()):
+    for root in host_roots.values():
         (root / "input" / "trial-a").mkdir(parents=True)
         (root / "input" / "trial-a" / "report.pdf").write_bytes(blank_pdf())
-    direct = ApplicationGateway().initialize_project(direct_root, authorized=True)
-    direct_work = direct.payload["work_item"]
-    direct_mutation = ApplicationGateway().call(
-        "submit_source_classification",
-        direct.payload["project_id"],
-        arguments={
-            "classifications": [
-                {
-                    "source_id": "source:trial-a-1",
-                    "roles": ["primary_report"],
-                }
-            ]
-        },
-        mutation_context={
-            "idempotency_key": "idempotency:cross-host",
-            "work_item_id": direct_work["work_item_id"],
-            "contract_version": "1.0.0",
-            "expected_dependency_fingerprint": direct_work[
-                "dependency_fingerprint"
-            ],
-        },
-    )
 
     async def invoke(host: str) -> tuple[dict[str, object], dict[str, object]]:
         descriptor = json.loads(
@@ -202,78 +180,80 @@ def test_real_stdio_mcp_matches_application_initialization(tmp_path: Path) -> No
             async with ClientSession(read, write) as session:
                 await session.initialize()
                 tools = await session.list_tools()
+                names = tuple(item.name for item in tools.tools)
+                assert names == RUN_OPERATION_NAMES
+                assert "initialize_project" not in names
                 mutation = next(
                     item
                     for item in tools.tools
                     if item.name == "submit_source_classification"
                 )
-                assert "mutation_context" in mutation.input_schema["required"]
+                assert "contract_version" in mutation.input_schema["required"]
+                assert "mutation_context" not in mutation.input_schema["properties"]
                 result = await session.call_tool(
-                    "initialize_project",
-                    {
-                        "project_root": str(host_roots[host]),
-                        "authorized": True,
-                    },
+                    "prepare_run",
+                    {"project_root": str(host_roots[host]), "authorized": True},
                 )
                 assert result.structured_content is not None
-                work_item = result.structured_content["payload"]["work_item"]
+                prepared = result.structured_content
+                proposal = prepared["proposal"]
+                submitted = await session.call_tool(
+                    "submit_run_proposal",
+                    {
+                        "run_id": prepared["run_id"],
+                        "proposal_token": proposal["proposal_token"],
+                        "idempotency_key": "idempotency:typed-proposal",
+                        "contract_version": "1.0.0",
+                    },
+                )
+                assert submitted.structured_content is not None
+                confirmed = await session.call_tool(
+                    "confirm_run_definition",
+                    {
+                        "run_id": prepared["run_id"],
+                        "proposal_token": submitted.structured_content["proposal"][
+                            "proposal_token"
+                        ],
+                        "idempotency_key": "idempotency:typed-confirm",
+                        "confirmed_by": {
+                            "kind": "human",
+                            "actor_id": f"actor:{host}",
+                            "display_name": host,
+                        },
+                        "contract_version": "1.0.0",
+                    },
+                )
+                assert confirmed.structured_content is not None
+                work = await session.call_tool(
+                    "continue_run", {"run_id": prepared["run_id"]}
+                )
+                assert work.structured_content is not None
                 mutation_result = await session.call_tool(
                     "submit_source_classification",
                     {
-                        "project_id": result.structured_content["payload"][
-                            "project_id"
+                        "run_id": prepared["run_id"],
+                        "work_token": work.structured_content["work_item"]["work_token"],
+                        "idempotency_key": "idempotency:typed-source",
+                        "classifications": [
+                            {"source_id": "source:trial-a-1", "roles": ["primary_report"]}
                         ],
-                        "arguments": {
-                            "classifications": [
-                                {
-                                    "source_id": "source:trial-a-1",
-                                    "roles": ["primary_report"],
-                                }
-                            ]
-                        },
-                        "mutation_context": {
-                            "idempotency_key": "idempotency:cross-host",
-                            "work_item_id": work_item["work_item_id"],
-                            "contract_version": "1.0.0",
-                            "expected_dependency_fingerprint": work_item[
-                                "dependency_fingerprint"
-                            ],
-                        },
+                        "contract_version": "1.0.0",
                     },
                 )
                 assert mutation_result.structured_content is not None
-                return result.structured_content, mutation_result.structured_content
+                return prepared, mutation_result.structured_content
 
     codex_init, codex_mutation = anyio.run(invoke, "codex")
     claude_init, claude_mutation = anyio.run(invoke, "claude")
 
-    assert codex_init["status"] == direct.status
-    assert codex_init["ledger_cursor"] == direct.ledger_cursor
-    assert codex_init["committed"] == direct.committed
-    normalized_direct = direct_mutation.model_dump(
-        mode="json",
-        exclude={"operation_id", "ledger_cursor", "affected_scope"},
-    )
-    for mutation in (codex_mutation, claude_mutation):
-        normalized = {
-            key: value
-            for key, value in mutation.items()
-            if key not in {"operation_id", "ledger_cursor", "affected_scope"}
-        }
-        assert normalized == normalized_direct
-    consequences = []
-    for root in (direct_root, *host_roots.values()):
-        ledger = ledger_for(root)
-        event = ledger.events()[1]
-        consequences.append(
-            (
-                event.operation,
-                event.checkpoint,
-                event.outcome,
-                ledger.artifacts.read(event.output_revision_hashes[0]),
-            )
-        )
-    assert consequences[0] == consequences[1] == consequences[2]
+    for initialization, mutation in (
+        (codex_init, codex_mutation),
+        (claude_init, claude_mutation),
+    ):
+        assert initialization["condition"] == "confirmation_required"
+        assert initialization["committed"] is True
+        assert mutation["condition"] == "accepted"
+        assert mutation["committed"] is True
 
 
 def test_fresh_process_can_resume_and_status_is_ledger_derived(tmp_path: Path) -> None:

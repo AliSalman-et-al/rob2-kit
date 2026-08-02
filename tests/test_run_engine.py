@@ -103,6 +103,7 @@ def test_run_proposal_confirmation_and_blocker_are_ledger_derived(tmp_path) -> N
 
     submitted = engine.submit_run_proposal(
         SubmitRunProposalRequest(
+            contract_version="1.0.0",
             run_id=prepared.run_id,
             proposal_token=prepared.proposal.proposal_token,
             idempotency_key="idempotency:submit-proposal",
@@ -110,6 +111,7 @@ def test_run_proposal_confirmation_and_blocker_are_ledger_derived(tmp_path) -> N
     )
     confirmed = engine.confirm_run_definition(
         ConfirmRunDefinitionRequest(
+            contract_version="1.0.0",
             run_id=prepared.run_id,
             proposal_token=submitted.proposal.proposal_token,
             idempotency_key="idempotency:confirm-proposal",
@@ -225,6 +227,7 @@ def test_run_proposal_rejects_identifiers_not_issued_by_the_engine(tmp_path) -> 
     with pytest.raises(ValueError, match="not issued"):
         engine.submit_run_proposal(
             SubmitRunProposalRequest(
+                contract_version="1.0.0",
                 run_id=prepared.run_id,
                 proposal_token=prepared.proposal.proposal_token,
                 idempotency_key="idempotency:forged-proposal",
@@ -246,6 +249,7 @@ def test_result_resolution_is_idempotent_without_double_discovery(tmp_path) -> N
         dependency_fingerprint="sha256:" + ("a" * 64),
     )
     request = SubmitResultResolutionRequest(
+        contract_version="1.0.0",
         run_id=prepared.run_id,
         work_token=token,
         idempotency_key="idempotency:result-resolution",

@@ -1050,34 +1050,24 @@ description, skill hashes, and activation fixtures.
 
 ### 13.2 MCP tools
 
-The static v1 stdio surface is:
+The typed tracer stdio surface is the fixed RunEngine inventory below.  The
+legacy preview gateway remains available to expert CLI callers but is not
+published through MCP.
 
 ```text
-Workflow
-  initialize_project
-  project_status
-  continue_preparation
-  get_next_work
-
-Evidence
-  get_trial_orientation
-  list_sources
-  search_evidence
-  read_evidence_context
-  inspect_visual_candidate
-
-Submissions
-  submit_source_classification
-  submit_result_resolution
-  submit_evidence_dispositions
-  submit_visual_transcription
-  freeze_evidence_bundle
-  submit_sq_answers
-
-Human handoff
-  review_queue
-  open_review
-  wait_for_review
+prepare_run
+run_status
+continue_run
+get_work_context
+submit_run_proposal
+confirm_run_definition
+search_evidence
+read_evidence
+inspect_visual_candidate
+submit_source_classification
+submit_result_resolution
+submit_domain_evidence
+submit_domain_answers
 ```
 
 Every mutation requires an idempotency key, work-item ID, negotiated contract

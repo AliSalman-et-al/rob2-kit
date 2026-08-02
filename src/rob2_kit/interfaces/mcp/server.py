@@ -1,88 +1,308 @@
-"""Official Python MCP SDK adapter over the application gateway."""
+"""Thin stdio MCP transport for the typed :class:`RunEngine` boundary.
+
+The functions in this module only translate JSON-shaped MCP arguments into
+Pydantic request contracts and serialize the resulting response.  Durable
+workflow decisions, work-item sequencing, and report publication remain in
+``RunEngine``.
+"""
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, Literal
 
-from rob2_kit.application.gateway import (
-    MUTATION_TOOLS,
-    STATIC_TOOL_NAMES,
-    ApplicationGateway,
+from rob2_kit.application.contracts import (
+    RUN_OPERATION_NAMES,
+    ConfirmRunDefinitionRequest,
+    ContinueRunRequest,
+    GetWorkContextRequest,
+    InspectVisualCandidateRequest,
+    PrepareRunRequest,
+    ReadEvidenceRequest,
+    RunStatusRequest,
+    SearchEvidenceRequest,
+    SubmitDomainAnswersRequest,
+    SubmitDomainEvidenceRequest,
+    SubmitResultResolutionRequest,
+    SubmitRunProposalRequest,
+    SubmitSourceClassificationRequest,
 )
+from rob2_kit.application.run_engine import RunEngine
 
 
 def registered_tool_names() -> tuple[str, ...]:
-    return STATIC_TOOL_NAMES
+    """Return the fixed public RunEngine inventory in wire order."""
+
+    return RUN_OPERATION_NAMES
+
+
+def _dump(response: Any) -> dict[str, Any]:
+    return response.model_dump(mode="json")
 
 
 def create_server() -> Any:
+    """Build one stdio server with exactly the 13 typed tools."""
+
     from mcp.server import MCPServer
 
-    server = MCPServer("rob2-kit")
-    gateway = ApplicationGateway()
+    engine = RunEngine()
+    server = MCPServer("rob2-kit", version="0.1.0")
 
-    def dispatch(
-        tool_name: str,
-        project_id: str,
-        arguments: dict[str, Any] | None = None,
-        mutation_context: dict[str, Any] | None = None,
+    @server.tool(name="prepare_run")
+    def prepare_run(
+        project_root: str,
+        authorized: bool = False,
+        start_new: bool = False,
     ) -> dict[str, Any]:
-        return gateway.call(
-            tool_name,
-            project_id,
-            arguments=arguments,
-            mutation_context=mutation_context,
-        ).model_dump(mode="json")
+        return _dump(
+            engine.prepare_run(
+                PrepareRunRequest.model_validate(
+                    {
+                        "project_root": project_root,
+                        "authorized": authorized,
+                        "start_new": start_new,
+                    }
+                )
+            )
+        )
 
-    for tool_name in STATIC_TOOL_NAMES:
-        if tool_name == "initialize_project":
-            initialize_project = _initialization_tool(gateway)
-            initialize_project.__name__ = tool_name
-            server.tool(name=tool_name)(initialize_project)
-        elif tool_name in MUTATION_TOOLS:
-            tool = _mutation_tool(dispatch, tool_name)
-            tool.__name__ = tool_name
-            server.tool(name=tool_name)(tool)
-        else:
-            tool = _query_tool(dispatch, tool_name)
-            tool.__name__ = tool_name
-            server.tool(name=tool_name)(tool)
+    @server.tool(name="run_status")
+    def run_status(
+        run_id: str,
+    ) -> dict[str, Any]:
+        return _dump(
+            engine.run_status(
+                RunStatusRequest.model_validate({"run_id": run_id})
+            )
+        )
+
+    @server.tool(name="continue_run")
+    def continue_run(
+        run_id: str,
+    ) -> dict[str, Any]:
+        return _dump(
+            engine.continue_run(
+                ContinueRunRequest.model_validate({"run_id": run_id})
+            )
+        )
+
+    @server.tool(name="get_work_context")
+    def get_work_context(
+        run_id: str,
+        work_token: dict[str, Any],
+    ) -> dict[str, Any]:
+        return _dump(
+            engine.get_work_context(
+                GetWorkContextRequest.model_validate(
+                    {"run_id": run_id, "work_token": work_token}
+                )
+            )
+        )
+
+    @server.tool(name="submit_run_proposal")
+    def submit_run_proposal(
+        run_id: str,
+        proposal_token: str,
+        idempotency_key: str,
+        contract_version: Literal["1.0.0"],
+        selections: list[dict[str, Any]] | None = None,
+    ) -> dict[str, Any]:
+        return _dump(
+            engine.submit_run_proposal(
+                SubmitRunProposalRequest.model_validate(
+                    {
+                        "run_id": run_id,
+                        "proposal_token": proposal_token,
+                        "idempotency_key": idempotency_key,
+                        "selections": selections or (),
+                        "contract_version": contract_version,
+                    }
+                )
+            )
+        )
+
+    @server.tool(name="confirm_run_definition")
+    def confirm_run_definition(
+        run_id: str,
+        proposal_token: str,
+        idempotency_key: str,
+        confirmed_by: dict[str, Any],
+        contract_version: Literal["1.0.0"],
+    ) -> dict[str, Any]:
+        return _dump(
+            engine.confirm_run_definition(
+                ConfirmRunDefinitionRequest.model_validate(
+                    {
+                        "run_id": run_id,
+                        "proposal_token": proposal_token,
+                        "idempotency_key": idempotency_key,
+                        "confirmed_by": confirmed_by,
+                        "contract_version": contract_version,
+                    }
+                )
+            )
+        )
+
+    @server.tool(name="search_evidence")
+    def search_evidence(
+        run_id: str,
+        query: dict[str, Any],
+        result_id: str | None = None,
+        cursor: str | None = None,
+        broad_query_justification: str | None = None,
+    ) -> dict[str, Any]:
+        return _dump(
+            engine.search_evidence(
+                SearchEvidenceRequest.model_validate(
+                    {
+                        "run_id": run_id,
+                        "query": query,
+                        "result_id": result_id,
+                        "cursor": cursor,
+                        "broad_query_justification": broad_query_justification,
+                    }
+                )
+            )
+        )
+
+    @server.tool(name="read_evidence")
+    def read_evidence(
+        run_id: str,
+        unit_id: str,
+        result_id: str | None = None,
+    ) -> dict[str, Any]:
+        return _dump(
+            engine.read_evidence(
+                ReadEvidenceRequest.model_validate(
+                    {"run_id": run_id, "unit_id": unit_id, "result_id": result_id}
+                )
+            )
+        )
+
+    @server.tool(name="inspect_visual_candidate")
+    def inspect_visual_candidate(
+        run_id: str,
+        candidate_id: str,
+        result_id: str | None = None,
+    ) -> dict[str, Any]:
+        return _dump(
+            engine.inspect_visual_candidate(
+                InspectVisualCandidateRequest.model_validate(
+                    {"run_id": run_id, "candidate_id": candidate_id, "result_id": result_id}
+                )
+            )
+        )
+
+    @server.tool(name="submit_source_classification")
+    def submit_source_classification(
+        run_id: str,
+        work_token: dict[str, Any],
+        idempotency_key: str,
+        classifications: list[dict[str, Any]],
+        contract_version: Literal["1.0.0"],
+    ) -> dict[str, Any]:
+        return _dump(
+            engine.submit_source_classification(
+                SubmitSourceClassificationRequest.model_validate(
+                    {
+                        "run_id": run_id,
+                        "work_token": work_token,
+                        "idempotency_key": idempotency_key,
+                        "classifications": classifications,
+                        "contract_version": contract_version,
+                    }
+                )
+            )
+        )
+
+    @server.tool(name="submit_result_resolution")
+    def submit_result_resolution(
+        run_id: str,
+        work_token: dict[str, Any],
+        idempotency_key: str,
+        result: dict[str, Any],
+        estimate: dict[str, Any],
+        provenance_note: str,
+        contract_version: Literal["1.0.0"],
+    ) -> dict[str, Any]:
+        return _dump(
+            engine.submit_result_resolution(
+                SubmitResultResolutionRequest.model_validate(
+                    {
+                        "run_id": run_id,
+                        "work_token": work_token,
+                        "idempotency_key": idempotency_key,
+                        "result": result,
+                        "estimate": estimate,
+                        "provenance_note": provenance_note,
+                        "contract_version": contract_version,
+                    }
+                )
+            )
+        )
+
+    @server.tool(name="submit_domain_evidence")
+    def submit_domain_evidence(
+        run_id: str,
+        work_token: dict[str, Any],
+        idempotency_key: str,
+        result_id: str,
+        domain_id: str,
+        contract_version: Literal["1.0.0"],
+        items: list[dict[str, Any]] | None = None,
+        coverage_state: str | None = None,
+        coverage_limitations: list[str] | None = None,
+        no_information_basis: bool = False,
+        conflicts: list[list[str]] | None = None,
+    ) -> dict[str, Any]:
+        return _dump(
+            engine.submit_domain_evidence(
+                SubmitDomainEvidenceRequest.model_validate(
+                    {
+                        "run_id": run_id,
+                        "work_token": work_token,
+                        "idempotency_key": idempotency_key,
+                        "result_id": result_id,
+                        "domain_id": domain_id,
+                        "items": items or (),
+                        "coverage_state": coverage_state or "complete",
+                        "coverage_limitations": coverage_limitations or (),
+                        "no_information_basis": no_information_basis,
+                        "conflicts": conflicts or (),
+                        "contract_version": contract_version,
+                    }
+                )
+            )
+        )
+
+    @server.tool(name="submit_domain_answers")
+    def submit_domain_answers(
+        run_id: str,
+        work_token: dict[str, Any],
+        idempotency_key: str,
+        result_id: str,
+        domain_id: str,
+        answers: list[dict[str, Any]],
+        contract_version: Literal["1.0.0"],
+        assessor_inputs: dict[str, bool] | None = None,
+    ) -> dict[str, Any]:
+        return _dump(
+            engine.submit_domain_answers(
+                SubmitDomainAnswersRequest.model_validate(
+                    {
+                        "run_id": run_id,
+                        "work_token": work_token,
+                        "idempotency_key": idempotency_key,
+                        "result_id": result_id,
+                        "domain_id": domain_id,
+                        "answers": answers,
+                        "assessor_inputs": assessor_inputs or {},
+                        "contract_version": contract_version,
+                    }
+                )
+            )
+        )
+
     return server
-
-
-def _initialization_tool(gateway: ApplicationGateway) -> Any:
-    def initialize_project(
-        project_root: str, authorized: bool = False
-    ) -> dict[str, Any]:
-        """Authorize and initialize one confined project root."""
-        return gateway.initialize_project(
-            __import__("pathlib").Path(project_root), authorized=authorized
-        ).model_dump(mode="json")
-
-    return initialize_project
-
-
-def _query_tool(dispatch: Any, tool_name: str) -> Any:
-    def tool(
-        project_id: str,
-        arguments: dict[str, Any] | None = None,
-    ) -> dict[str, Any]:
-        """Execute one bounded host-neutral operation."""
-        return dispatch(tool_name, project_id, arguments, None)
-
-    return tool
-
-
-def _mutation_tool(dispatch: Any, tool_name: str) -> Any:
-    def tool(
-        project_id: str,
-        arguments: dict[str, Any],
-        mutation_context: dict[str, Any],
-    ) -> dict[str, Any]:
-        """Commit one typed, engine-authorized preparation submission."""
-        return dispatch(tool_name, project_id, arguments, mutation_context)
-
-    return tool
 
 
 def main() -> None:
