@@ -283,6 +283,7 @@ def initialize_project(
     parser: DocumentParser | None = None,
     registry_adapter: Any | None = None,
     registry: Any | None = None,
+    allow_unknown_result_trials: bool = False,
 ) -> ProjectInitialization:
     """Initialize layout and build an immutable inventory for every Trial folder."""
     root = project_root.resolve()
@@ -361,6 +362,7 @@ def initialize_project(
         configuration,
         actor,
         {trial.trial_id for trial in trials},
+        allow_unknown_trial_refs=allow_unknown_result_trials,
     )
     result_candidates = _result_candidates(
         tuple(trials), result_specs, outcome_target_specs
@@ -617,6 +619,8 @@ def _declared_result_specs(
     configuration: dict[str, Any],
     actor: Actor,
     trial_ids: set[str],
+    *,
+    allow_unknown_trial_refs: bool = False,
 ) -> tuple[ResultSpecRevision, ...]:
     declared = configuration.get("results", [])
     if not isinstance(declared, list):
@@ -641,7 +645,7 @@ def _declared_result_specs(
                 "unsupported RoB 2 Result effect of interest "
                 f"{effect_of_interest!r}; supported effect is {SUPPORTED_EFFECT!r}"
             )
-        if trial_id not in trial_ids:
+        if trial_id not in trial_ids and not allow_unknown_trial_refs:
             raise ValueError(f"declared Result references unknown Trial {trial_id}")
         result_id = str(result.get("result_id", ""))
         digest = hashlib.sha256(

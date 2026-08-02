@@ -42,6 +42,8 @@ EXPECTED_RUN_TRANSITIONS = {
         RunLifecycleEvent.RETIRED: RunState.RETIRED,
     },
     RunState.COMPLETE: {
+        RunLifecycleEvent.WORK_STARTED: RunState.ASSESSING,
+        RunLifecycleEvent.BLOCKED: RunState.BLOCKED,
         RunLifecycleEvent.INTEGRITY_FAILED: RunState.INTEGRITY_FAILED,
     },
     RunState.INTEGRITY_FAILED: {
@@ -55,6 +57,7 @@ EXPECTED_RESULT_TRANSITIONS = {
     ResultState.PENDING: {
         ResultLifecycleEvent.STARTED: ResultState.ASSESSING,
         ResultLifecycleEvent.DIAGNOSTIC_READY: ResultState.DIAGNOSTIC_READY,
+        ResultLifecycleEvent.INVALIDATED: ResultState.PENDING,
     },
     ResultState.ASSESSING: {
         ResultLifecycleEvent.REPORT_READY: ResultState.REPORT_READY,

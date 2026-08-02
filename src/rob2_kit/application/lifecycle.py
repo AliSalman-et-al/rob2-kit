@@ -126,6 +126,8 @@ RUN_TRANSITIONS: Final[dict[RunState | None, dict[RunLifecycleEvent, RunState]]]
         RunLifecycleEvent.RETIRED: RunState.RETIRED,
     },
     RunState.COMPLETE: {
+        RunLifecycleEvent.WORK_STARTED: RunState.ASSESSING,
+        RunLifecycleEvent.BLOCKED: RunState.BLOCKED,
         RunLifecycleEvent.INTEGRITY_FAILED: RunState.INTEGRITY_FAILED,
     },
     RunState.INTEGRITY_FAILED: {
@@ -141,6 +143,10 @@ RESULT_TRANSITIONS: Final[dict[ResultState | None, dict[ResultLifecycleEvent, Re
     ResultState.PENDING: {
         ResultLifecycleEvent.STARTED: ResultState.ASSESSING,
         ResultLifecycleEvent.DIAGNOSTIC_READY: ResultState.DIAGNOSTIC_READY,
+        # A Result can have durable evidence/answer checkpoints while its
+        # coarse state is still pending.  Reconciliation must be able to mark
+        # those partial checkpoints stale before requesting them again.
+        ResultLifecycleEvent.INVALIDATED: ResultState.PENDING,
     },
     ResultState.ASSESSING: {
         ResultLifecycleEvent.REPORT_READY: ResultState.REPORT_READY,
@@ -278,6 +284,7 @@ def lifecycle_event_for(event: WorkflowEvent) -> RunLifecycleEvent | ResultLifec
         "operation:run-confirmed": RunLifecycleEvent.CONFIRMED,
         "operation:confirm-run-definition": RunLifecycleEvent.CONFIRMED,
         "operation:run-work-started": RunLifecycleEvent.WORK_STARTED,
+        "operation:run-reopened": RunLifecycleEvent.WORK_STARTED,
         "operation:run-blocked": RunLifecycleEvent.BLOCKED,
         "operation:run-unblocked": RunLifecycleEvent.UNBLOCKED,
         "operation:run-completed": RunLifecycleEvent.COMPLETED,

@@ -6,6 +6,7 @@ import errno
 import hashlib
 import json
 import os
+import re
 import shutil
 import uuid
 from datetime import UTC, datetime, timedelta
@@ -62,7 +63,7 @@ from rob2_kit.application.lifecycle import (
 )
 from rob2_kit.domain.assessment import JudgmentLevel
 from rob2_kit.domain.results import ResultSpecRevision
-from rob2_kit.domain.revisions import Actor, ActorKind, FrozenModel, Identifier
+from rob2_kit.domain.revisions import Actor, ActorKind, ContentHash, FrozenModel, Identifier
 from rob2_kit.domain.sources import SourceRole
 from rob2_kit.evidence.search import (
     CanonicalBlock,
@@ -76,6 +77,8 @@ from rob2_kit.ingestion.project import (
     DocumentParser,
     LiteParseAdapter,
     ProjectInitialization,
+    ResultCandidate,
+    TrialInitialization,
     _parse_source,
     _registry_source_descriptor,
     initialize_project,
@@ -169,6 +172,36 @@ class _ResultDiscoveredRecord(FrozenModel):
     result_spec: ResultSpecRevision
 
 
+class _ResultInvalidatedRecord(FrozenModel):
+    """Durable marker for Result work invalidated by a changed input."""
+
+    run_id: Identifier
+    result_id: Identifier
+    reason: str
+    affected_trial_id: Identifier
+    affected_source_ids: tuple[Identifier, ...] = ()
+    input_snapshot_hash: ContentHash
+
+
+class _RunReconciledRecord(FrozenModel):
+    """The immutable input reconciliation checkpoint for one Current Run."""
+
+    run_id: Identifier
+    proposal: RunProposal
+    input_snapshot_hash: ContentHash
+    active_trial_ids: tuple[Identifier, ...]
+    active_result_ids: tuple[Identifier, ...]
+    added_trial_ids: tuple[Identifier, ...] = ()
+    retired_trial_ids: tuple[Identifier, ...] = ()
+    added_result_ids: tuple[Identifier, ...] = ()
+    retired_result_ids: tuple[Identifier, ...] = ()
+    affected_trial_ids: tuple[Identifier, ...] = ()
+    affected_source_ids: tuple[Identifier, ...] = ()
+    invalidated_result_ids: tuple[Identifier, ...] = ()
+    diagnostic_result_ids: tuple[Identifier, ...] = ()
+    material_ambiguities: tuple[RunProposalAmbiguity, ...] = ()
+
+
 class _DiagnosticResultDiscoveredRecord(FrozenModel):
     """Typed lifecycle registration for a Trial with no assessable Result."""
 
@@ -194,6 +227,18 @@ class _RunBlockedRecord(FrozenModel):
     run_id: Identifier
     reason: str
     recovery: tuple[str, ...]
+
+
+class _RunUnblockedRecord(FrozenModel):
+    run_id: Identifier
+    input_snapshot_hash: ContentHash
+
+
+class _RunReopenedRecord(FrozenModel):
+    run_id: Identifier
+    input_snapshot_hash: ContentHash
+    invalidated_result_ids: tuple[Identifier, ...] = ()
+    added_result_ids: tuple[Identifier, ...] = ()
 
 
 class _RunRetiredRecord(FrozenModel):
@@ -562,6 +607,33 @@ class RunEngine:
                         run_state=projection.run_state,
                         proposal=refreshed,
                     )
+            # Once the Run definition is confirmed, local input changes are
+            # reconciled against the immutable definition before the Harness
+            # receives another continuation response.  An authorized
+            # prepare_run may commit the reconciliation; a read-only resume
+            # reports the same authorization requirement without mutating the
+            # ledger.
+            if projection.run_state in {
+                RunState.ASSESSING,
+                RunState.BLOCKED,
+                RunState.COMPLETE,
+            }:
+                try:
+                    changed = self._input_snapshot_hash(root) != self._latest_proposal(
+                        ledger, current.run_id
+                    ).input_snapshot_hash
+                except ValueError as error:
+                    return self._prepare_configuration_error(root, ledger, error)
+                if changed and not request.authorized:
+                    return self._prepare_authorization_error(
+                        ledger,
+                        current.run_id,
+                        self._latest_proposal(ledger, current.run_id),
+                        run_state=projection.run_state,
+                    )
+                if changed and request.authorized:
+                    self._reconcile_current_run(ledger, current.run_id)
+                    projection = self._projection(ledger, current.run_id)
             if projection.run_state is RunState.AWAITING_CONFIRMATION and not request.authorized:
                 existing = self._latest_proposal(ledger, current.run_id)
                 try:
@@ -807,12 +879,21 @@ class RunEngine:
             result_states=tuple(
                 ResultStatus(result_id=item.result_id, state=item.state)
                 for item in projection.results
+                if item.result_id in self._result_ids(
+                    ledger,
+                    request.run_id,
+                    self._latest_proposal(ledger, request.run_id),
+                )
             ),
         )
 
     def continue_run(self, request: ContinueRunRequest) -> ContinueRunResponse:
         try:
             ledger = self._bound_ledger(request.run_id)
+            # Reconciliation is part of every continuation.  It compares the
+            # current confined input snapshot with the last committed
+            # checkpoint and commits one idempotent batch when bytes changed.
+            self._reconcile_current_run(ledger, request.run_id)
             self._repair_report_publication(ledger, request.run_id)
             projection = self._projection(ledger, request.run_id)
         except (LifecycleIntegrityError, RunIntegrityFailure) as error:
@@ -835,9 +916,26 @@ class RunEngine:
                 RunDirective.CONFIRMATION_REQUIRED,
                 committed=False,
             )
+        reconciliation = self._latest_reconciliation(ledger, request.run_id)
+        reconciliation_error = None
+        if projection.run_state is RunState.BLOCKED and reconciliation is not None:
+            ambiguity = next(iter(reconciliation.material_ambiguities), None)
+            if ambiguity is not None:
+                reconciliation_error = OperationError(
+                    code="material_ambiguity",
+                    detail=ambiguity.detail,
+                    recovery=(
+                        "Correct or remove the incompatible input and continue the Run.",
+                        "Start a new Run explicitly if the confirmed meaning must change.",
+                    ),
+                )
         if (
             projection.run_state is RunState.ASSESSING
-            and not projection.results
+            and not self._result_ids(
+                ledger,
+                request.run_id,
+                self._latest_proposal(ledger, request.run_id),
+            )
             and self._next_work_item(ledger, request.run_id) is None
         ):
             now = datetime.now(UTC)
@@ -901,6 +999,7 @@ class RunEngine:
             projection,
             directive,
             committed=False,
+            error=reconciliation_error,
         )
 
     def get_work_context(self, request: GetWorkContextRequest) -> GetWorkContextResponse:
@@ -995,8 +1094,7 @@ class RunEngine:
             work_item.operation is RunOperation.SUBMIT_SOURCE_CLASSIFICATION
             and work_item.trial_id is None
         )
-        definition = self._confirmed_definition(ledger, request.run_id)
-        selected_trial_ids = set(definition.trial_ids) if definition is not None else set()
+        selected_trial_ids = self._active_trial_ids(ledger, request.run_id)
         trial = (
             None
             if is_global_source_work
@@ -1567,8 +1665,7 @@ class RunEngine:
                 )
             )
         proposal = self._latest_proposal(ledger, request.run_id)
-        definition = self._confirmed_definition(ledger, request.run_id)
-        selected_trial_ids = set(definition.trial_ids) if definition is not None else set()
+        selected_trial_ids = self._active_trial_ids(ledger, request.run_id)
         issued_sources = {
             source.source_id
             for trial in proposal.initialization.trials
@@ -2224,6 +2321,17 @@ class RunEngine:
         for event in events:
             if event.operation != "operation:result-report-ready":
                 continue
+            invalidated_at = max(
+                (
+                    prior.sequence
+                    for prior in events
+                    if prior.operation == "operation:result-invalidated"
+                    and prior.scope == event.scope
+                ),
+                default=0,
+            )
+            if event.sequence <= invalidated_at:
+                continue
             try:
                 record = _ReportMaterializedRecord.model_validate_json(
                     ledger.artifacts.read(event.output_revision_hashes[0])
@@ -2261,8 +2369,30 @@ class RunEngine:
     ) -> None:
         """Commit the terminal Run event only after every report is visible."""
 
+        lifecycle_state = self._projection(ledger, run_id).run_state
+        if lifecycle_state not in {RunState.ASSESSING, RunState.COMPLETE}:
+            # A material reconciliation blocker takes precedence over any
+            # diagnostic-only completion path.  Do not append run-completed
+            # after run-blocked; lifecycle replay must remain valid.
+            return
         events = self._events_for_run(ledger, run_id)
-        if any(event.operation == "operation:run-completed" for event in events):
+        latest_completed = max(
+            (
+                event.sequence
+                for event in events
+                if event.operation == "operation:run-completed"
+            ),
+            default=0,
+        )
+        latest_reopened = max(
+            (
+                event.sequence
+                for event in events
+                if event.operation == "operation:run-reopened"
+            ),
+            default=0,
+        )
+        if latest_completed and latest_reopened <= latest_completed:
             return
         proposal = self._latest_proposal(ledger, run_id)
         result_ids = self._result_ids(ledger, run_id, proposal)
@@ -2278,12 +2408,22 @@ class RunEngine:
         for result_id in result_ids:
             if result_id in diagnostic_results:
                 continue
+            invalidated_at = max(
+                (
+                    event.sequence
+                    for event in events
+                    if event.operation == "operation:result-invalidated"
+                    and event.scope == result_id
+                ),
+                default=0,
+            )
             report_event = next(
                 (
                     event
                     for event in events
                     if event.operation == "operation:result-report-ready"
                     and event.scope == result_id
+                    and event.sequence > invalidated_at
                 ),
                 None,
             )
@@ -2312,7 +2452,10 @@ class RunEngine:
             if report_records
             else "assessment:none"
         )
-        completion_digest = self._digest(f"{run_id}|run-completed")
+        # A reopened completed Run may reach a fresh terminal checkpoint.  The
+        # reconciliation sequence makes that completion idempotency key unique
+        # while preserving retries within the same reconciliation cycle.
+        completion_digest = self._digest(f"{run_id}|run-completed|{latest_reopened}")
         transition = self._transition(
             scope=run_id,
             operation="operation:run-completed",
@@ -2340,8 +2483,18 @@ class RunEngine:
         """Evaluate all five domains and publish a minimal static bundle once."""
 
         events = self._events_for_run(ledger, run_id)
+        invalidated_at = max(
+            (
+                event.sequence
+                for event in events
+                if event.operation == "operation:result-invalidated"
+                and event.scope == result_id
+            ),
+            default=0,
+        )
         if any(
             event.operation == "operation:result-report-ready" and event.scope == result_id
+            and event.sequence > invalidated_at
             for event in events
         ):
             self._repair_report_publication(ledger, run_id)
@@ -2352,11 +2505,13 @@ class RunEngine:
             self._event_payload(ledger, event).get("domain_id")
             for event in events
             if event.operation == "operation:submit-domain-evidence" and event.scope == result_id
+            and event.sequence > invalidated_at
         }
         answer_payloads = [
             self._event_payload(ledger, event)
             for event in events
             if event.operation == "operation:submit-domain-answers" and event.scope == result_id
+            and event.sequence > invalidated_at
         ]
         answer_domains = {payload.get("domain_id") for payload in answer_payloads}
         if not required_domains <= evidence_domains or not required_domains <= answer_domains:
@@ -2383,7 +2538,7 @@ class RunEngine:
             raise ValueError("a ResultSpec is required before terminal assessment")
         assessment_digest = self._digest(
             f"{run_id}|{result_id}|{json.dumps(answers, sort_keys=True)}|"
-            f"{json.dumps(assessor_inputs, sort_keys=True)}"
+            f"{json.dumps(assessor_inputs, sort_keys=True)}|invalidated:{invalidated_at}"
         )
         assessment_revision_id = f"assessment:{assessment_digest}"
         assessment = AssessmentView(
@@ -3024,6 +3179,24 @@ class RunEngine:
                 return None
         return None
 
+    def _active_trial_ids(
+        self, ledger: WorkflowLedger, run_id: Identifier
+    ) -> set[Identifier]:
+        reconciliation = self._latest_reconciliation(ledger, run_id)
+        if reconciliation is not None:
+            return set(reconciliation.active_trial_ids)
+        definition = self._confirmed_definition(ledger, run_id)
+        return set(definition.trial_ids) if definition is not None else set()
+
+    def _active_result_ids(
+        self, ledger: WorkflowLedger, run_id: Identifier
+    ) -> set[Identifier]:
+        reconciliation = self._latest_reconciliation(ledger, run_id)
+        if reconciliation is not None:
+            return set(reconciliation.active_result_ids)
+        definition = self._confirmed_definition(ledger, run_id)
+        return set(definition.result_ids) if definition is not None else set()
+
     def _next_work_item(self, ledger: WorkflowLedger, run_id: Identifier) -> WorkItem | None:
         """Derive the next bounded submission from committed checkpoints."""
 
@@ -3035,7 +3208,7 @@ class RunEngine:
         definition = self._confirmed_definition(ledger, run_id)
         if definition is None:
             return None
-        selected_trial_ids = set(definition.trial_ids)
+        selected_trial_ids = self._active_trial_ids(ledger, run_id)
         if (
             any(
                 trial.status == "inventory_ready" and trial.trial_id in selected_trial_ids
@@ -3177,8 +3350,8 @@ class RunEngine:
         *,
         definition: ConfirmedRunDefinition,
     ) -> Identifier | None:
-        selected_trial_ids = set(definition.trial_ids)
-        selected_result_ids = set(definition.result_ids)
+        selected_trial_ids = self._active_trial_ids(ledger, definition.run_id)
+        selected_result_ids = self._active_result_ids(ledger, definition.run_id)
         failed_trials = {
             trial.trial_id
             for trial in proposal.initialization.trials
@@ -3192,7 +3365,7 @@ class RunEngine:
         resolved_trials.update(
             candidate.trial_id
             for candidate in proposal.result_candidates
-            if candidate.result_id in selected_result_ids
+            if candidate.result_id in selected_result_ids and candidate.status == "resolved"
         )
         for event in events:
             if event.operation not in {
@@ -3246,9 +3419,19 @@ class RunEngine:
         kind: str,
     ) -> bool:
         operation = f"operation:submit-domain-{kind}"
+        invalidated_at = max(
+            (
+                event.sequence
+                for event in events
+                if event.operation == "operation:result-invalidated"
+                and event.scope == result_id
+            ),
+            default=0,
+        )
         return any(
             event.operation == operation
             and event.scope == result_id
+            and event.sequence > invalidated_at
             and event.checkpoint == f"checkpoint:{kind}-{domain_id.removeprefix('domain:')}"
             for event in events
         )
@@ -3264,11 +3447,18 @@ class RunEngine:
         definition = definition or self._confirmed_definition(ledger, run_id)
         if definition is None:
             return ()
-        ids = list(definition.result_ids)
-        allowed_event_ids = set(definition.result_ids)
+        active_ids = self._active_result_ids(ledger, run_id)
+        ordered_ids = tuple(
+            result_id
+            for result_id in proposal.result_ids
+            if result_id in active_ids
+        )
+        ids = list(ordered_ids)
+        ids.extend(sorted(active_ids - set(ordered_ids)))
+        allowed_event_ids = set(ids)
         allowed_event_ids.update(
             self._issued_unresolved_result_id(run_id, trial_id)
-            for trial_id in definition.trial_ids
+            for trial_id in self._active_trial_ids(ledger, run_id)
         )
         for event in self._events_for_run(ledger, run_id):
             if event.operation not in {
@@ -3490,9 +3680,1652 @@ class RunEngine:
             if event.operation == "operation:run-prepared"
         )
 
+    def _latest_reconciliation(
+        self, ledger: WorkflowLedger, run_id: Identifier
+    ) -> _RunReconciledRecord | None:
+        for event in reversed(self._events_for_run(ledger, run_id)):
+            if event.operation != "operation:run-reconciled":
+                continue
+            try:
+                return _RunReconciledRecord.model_validate_json(
+                    ledger.artifacts.read(event.output_revision_hashes[0])
+                )
+            except (IndexError, ValueError):
+                return None
+        return None
+
+    def _commit_snapshot_error_blocker(
+        self,
+        ledger: WorkflowLedger,
+        run_id: Identifier,
+        *,
+        projection: LifecycleProjection,
+        existing: RunProposal,
+        definition: ConfirmedRunDefinition,
+        previous_reconciliation: _RunReconciledRecord | None,
+        error: ValueError,
+    ) -> None:
+        """Durably block an input snapshot that cannot be safely read.
+
+        No reinventory or evidence mutation is attempted.  A deterministic
+        synthetic hash marks the failed snapshot so correcting the path later
+        always triggers a fresh reconciliation, even when the bytes return to
+        the prior valid scan.
+        """
+
+        detail = f"Input reconciliation could not safely snapshot project inputs: {error}"
+        invalid_hash = "sha256:" + hashlib.sha256(
+            f"{run_id}|invalid-input-snapshot|{detail}".encode()
+        ).hexdigest()
+        ambiguity = RunProposalAmbiguity(
+            ambiguity_id=f"ambiguity:{self._digest(f'{run_id}|{invalid_hash}|snapshot-error')}",
+            scope=run_id,
+            detail=detail,
+            material=True,
+        )
+        proposal = existing.model_copy(
+            update={
+                "proposal_id": f"run-proposal:{self._digest(f'{run_id}|{invalid_hash}|ambiguous')}",
+                "proposal_token": (
+                    f"proposal-token:{self._digest(f'{run_id}|{invalid_hash}|ambiguous')}"
+                ),
+                "input_snapshot_hash": invalid_hash,
+                "ambiguities": tuple(dict.fromkeys(existing.ambiguities + (ambiguity,))),
+            }
+        )
+        record = _RunReconciledRecord(
+            run_id=run_id,
+            proposal=proposal,
+            input_snapshot_hash=invalid_hash,
+            active_trial_ids=(
+                previous_reconciliation.active_trial_ids
+                if previous_reconciliation is not None
+                else definition.trial_ids
+            ),
+            active_result_ids=(
+                previous_reconciliation.active_result_ids
+                if previous_reconciliation is not None
+                else definition.result_ids
+            ),
+            material_ambiguities=(ambiguity,),
+        )
+        self._commit_reconciliation_batch(
+            ledger,
+            run_id,
+            record,
+            material_ambiguity=ambiguity,
+            projection=projection,
+        )
+
+    def _reconcile_current_run(self, ledger: WorkflowLedger, run_id: Identifier) -> bool:
+        """Reconcile changed local inputs for a confirmed Current Run.
+
+        The input hash is checked before any parser or registry work.  A
+        changed snapshot is represented by one append-only ``run-reconciled``
+        checkpoint and a single atomic batch of Result invalidations and scope
+        transitions.  Replaying the same snapshot is therefore a no-op even
+        when a host process was interrupted after the commit.
+        """
+
+        projection = self._projection(ledger, run_id)
+        if projection.run_state not in {
+            RunState.ASSESSING,
+            RunState.BLOCKED,
+            RunState.COMPLETE,
+        }:
+            return False
+        existing = self._latest_proposal(ledger, run_id)
+        definition = self._confirmed_definition(ledger, run_id)
+        if definition is None:
+            # A malformed ledger is surfaced through the normal lifecycle
+            # integrity path by the caller; there is no safe scope to mutate.
+            return False
+        previous_reconciliation = self._latest_reconciliation(ledger, run_id)
+        try:
+            current_hash = self._input_snapshot_hash(self._required_root())
+        except ValueError as error:
+            self._commit_snapshot_error_blocker(
+                ledger,
+                run_id,
+                projection=projection,
+                existing=existing,
+                definition=definition,
+                previous_reconciliation=previous_reconciliation,
+                error=error,
+            )
+            return True
+        if current_hash == existing.input_snapshot_hash:
+            return False
+        previous_active_trials = set(
+            previous_reconciliation.active_trial_ids
+            if previous_reconciliation is not None
+            else definition.trial_ids
+        )
+        previous_active_results = set(
+            previous_reconciliation.active_result_ids
+            if previous_reconciliation is not None
+            else definition.result_ids
+        )
+
+        initialization: ProjectInitialization | None = None
+        try:
+            initialization = initialize_project(
+                self._required_root(),
+                actor=ENGINE_ACTOR,
+                parser=self._parser,
+                # A continuation may come from a fresh Harness process.  Do
+                # not perform a new network request without explicit root
+                # authorization; injected deterministic adapters remain safe.
+                registry_adapter=(
+                    self._registry_adapter
+                    if self._registry_adapter is not None
+                    else self._registry_for_prepare(
+                        self._required_root(), self._authorized_root == self._required_root()
+                    )
+                ),
+            )
+        except ValueError as error:
+            # A declaration that points at a Trial folder removed after
+            # confirmation is a supported retirement, not semantic drift.
+            # Preserve the old proposal as history while removing that Trial
+            # and its Results from the active scope.
+            missing_trials = set(existing.trial_ids) - self._input_trial_ids(
+                self._required_root()
+            )
+            if missing_trials and "declared Result references unknown Trial" in str(error):
+                # A Trial folder may have been renamed while its declared
+                # Result still carries the confirmed identity.  Re-inventory
+                # with that reference retained so the fingerprint mapper can
+                # preserve the old Trial/Source IDs instead of retiring it.
+                try:
+                    initialization = initialize_project(
+                        self._required_root(),
+                        actor=ENGINE_ACTOR,
+                        parser=self._parser,
+                        registry_adapter=(
+                            self._registry_adapter
+                            if self._registry_adapter is not None
+                            else self._registry_for_prepare(
+                                self._required_root(),
+                                self._authorized_root == self._required_root(),
+                            )
+                        ),
+                        allow_unknown_result_trials=True,
+                    )
+                except ValueError:
+                    initialization = None
+            if (
+                initialization is None
+                and missing_trials
+                and "declared Result references unknown Trial" in str(error)
+            ):
+                retired_results = {
+                    result_id
+                    for result_id in (
+                        previous_reconciliation.active_result_ids
+                        if previous_reconciliation is not None
+                        else definition.result_ids
+                    )
+                    if self._trial_for_result(existing.initialization, result_id)
+                    in missing_trials
+                }
+                active_trials = set(
+                    previous_reconciliation.active_trial_ids
+                    if previous_reconciliation is not None
+                    else definition.trial_ids
+                ) - missing_trials
+                active_results = set(
+                    previous_reconciliation.active_result_ids
+                    if previous_reconciliation is not None
+                    else definition.result_ids
+                ) - retired_results
+                proposal = existing.model_copy(
+                    update={
+                        "proposal_id": (
+                            "run-proposal:"
+                            f"{self._digest(f'{run_id}|{current_hash}|retired')}"
+                        ),
+                        "proposal_token": (
+                            "proposal-token:"
+                            f"{self._digest(f'{run_id}|{current_hash}|retired')}"
+                        ),
+                        "input_snapshot_hash": current_hash,
+                        "trial_ids": tuple(
+                            sorted(self._input_trial_ids(self._required_root()))
+                        ),
+                        "result_ids": tuple(sorted(active_results)),
+                    }
+                )
+                record = _RunReconciledRecord(
+                    run_id=run_id,
+                    proposal=proposal,
+                    input_snapshot_hash=current_hash,
+                    active_trial_ids=tuple(sorted(active_trials)),
+                    active_result_ids=tuple(sorted(active_results)),
+                    retired_trial_ids=tuple(sorted(missing_trials)),
+                    retired_result_ids=tuple(sorted(retired_results)),
+                    affected_trial_ids=tuple(sorted(missing_trials)),
+                    invalidated_result_ids=tuple(
+                        item.result_id
+                        for item in self._projection(ledger, run_id).results
+                        if item.result_id in retired_results
+                        and item.state
+                        in {
+                            ResultState.ASSESSING,
+                            ResultState.REPORT_READY,
+                            ResultState.DIAGNOSTIC_READY,
+                        }
+                    ),
+                )
+                self._commit_reconciliation_batch(
+                    ledger,
+                    run_id,
+                    record,
+                    projection=projection,
+                    invalidated_result_ids=record.invalidated_result_ids,
+                )
+                return True
+            if initialization is None:
+                ambiguity = RunProposalAmbiguity(
+                    ambiguity_id=(
+                        f"ambiguity:{self._digest(f'{run_id}|reconcile|{current_hash}|{error}')}"
+                    ),
+                    scope=run_id,
+                    detail=(
+                        "Input reconciliation could not safely map the Confirmed run "
+                        f"definition: {error}"
+                    ),
+                    material=True,
+                )
+                proposal = existing.model_copy(
+                    update={
+                        "proposal_id": (
+                            "run-proposal:"
+                            f"{self._digest(f'{run_id}|{current_hash}|ambiguous')}"
+                        ),
+                        "proposal_token": (
+                            "proposal-token:"
+                            f"{self._digest(f'{run_id}|{current_hash}|ambiguous')}"
+                        ),
+                        "input_snapshot_hash": current_hash,
+                        "ambiguities": existing.ambiguities + (ambiguity,),
+                    }
+                )
+                record = _RunReconciledRecord(
+                    run_id=run_id,
+                    proposal=proposal,
+                    input_snapshot_hash=current_hash,
+                    active_trial_ids=(
+                        previous_reconciliation.active_trial_ids
+                        if previous_reconciliation is not None
+                        else definition.trial_ids
+                    ),
+                    active_result_ids=(
+                        previous_reconciliation.active_result_ids
+                        if previous_reconciliation is not None
+                        else definition.result_ids
+                    ),
+                    material_ambiguities=(ambiguity,),
+                )
+                self._commit_reconciliation_batch(
+                    ledger,
+                    run_id,
+                    record,
+                    material_ambiguity=ambiguity,
+                    projection=projection,
+                )
+                return True
+
+        assert initialization is not None
+        mapping_ambiguities = self._identity_mapping_ambiguities(
+            existing.initialization, initialization
+        )
+        initialization = self._remap_initialization_identities(
+            existing.initialization, initialization
+        )
+        historical_result_specs = self._historical_result_specs(ledger, run_id)
+        initialization = self._preserve_reconciled_result_mappings(
+            existing.initialization,
+            initialization,
+            historical_result_specs=historical_result_specs,
+            previous_active_result_ids=previous_active_results,
+            existing_result_ids=set(existing.result_ids),
+            run_id=run_id,
+        )
+        try:
+            refreshed = self._proposal(run_id, initialization)
+        except ValueError as error:
+            self._commit_snapshot_error_blocker(
+                ledger,
+                run_id,
+                projection=projection,
+                existing=existing,
+                definition=definition,
+                previous_reconciliation=previous_reconciliation,
+                error=error,
+            )
+            return True
+        # Index canonical units only after Trial/Source identity remapping.  A
+        # path move can change discovery order and therefore the provisional
+        # ordinal IDs emitted by the parser; indexing before remapping would
+        # leave search/citation units under those stale IDs.  Build the
+        # durable proposal first so a concurrent snapshot-read failure cannot
+        # leave a partially refreshed evidence index behind.
+        if not mapping_ambiguities:
+            self._index_initial_evidence(self._required_root(), initialization)
+        resolved_result_ids = tuple(
+            candidate.result_id
+            for candidate in initialization.result_candidates
+            if candidate.status == "resolved" and candidate.result_id is not None
+        )
+        refreshed = refreshed.model_copy(
+            update={
+                "result_ids": tuple(
+                    dict.fromkeys(refreshed.result_ids + resolved_result_ids)
+                ),
+                # Confirmation is immutable, but accepted proposal selections
+                # remain useful orientation metadata after a reconciliation.
+                "selections": tuple(
+                    item
+                    for item in existing.selections
+                    if item.trial_id in {trial.trial_id for trial in initialization.trials}
+                ),
+            }
+        )
+        old_trial_ids = set(existing.trial_ids)
+        new_trial_ids = {trial.trial_id for trial in initialization.trials}
+        added_trial_ids = new_trial_ids - old_trial_ids
+        retired_trial_ids = old_trial_ids - new_trial_ids
+        result_mapping_ambiguities = self._result_definition_ambiguities(
+            existing.initialization,
+            initialization,
+            set(existing.result_ids) | set(historical_result_specs),
+            retired_trial_ids,
+            added_trial_ids,
+            historical_result_specs=historical_result_specs,
+        )
+        old_sources = self._sources_by_trial(existing.initialization)
+        new_sources = self._sources_by_trial(initialization)
+        affected_trial_ids: set[Identifier] = set()
+        affected_source_ids: set[Identifier] = set()
+        for trial_id in sorted(old_trial_ids | new_trial_ids):
+            before = old_sources.get(trial_id, {})
+            after = new_sources.get(trial_id, {})
+            source_ids = set(before) | set(after)
+            changed = False
+            for source_id in source_ids:
+                previous = before.get(source_id)
+                current = after.get(source_id)
+                if previous is None or current is None:
+                    changed = True
+                    affected_source_ids.add(source_id)
+                    continue
+                if self._source_semantics_differ(previous, current):
+                    changed = True
+                    affected_source_ids.add(source_id)
+            if changed:
+                affected_trial_ids.add(trial_id)
+        affected_trial_ids.update(added_trial_ids)
+        affected_trial_ids.update(retired_trial_ids)
+
+        # A method/effect/Outcome-target change would silently alter the
+        # confirmed meaning.  Keep the definition immutable and block the Run
+        # until the input is corrected or a new Run is explicitly started.
+        material_ambiguities: list[RunProposalAmbiguity] = []
+        old_manifest = existing.initialization.manifest
+        new_manifest = initialization.manifest
+        semantic_changes = (
+            old_manifest.supported_scope != new_manifest.supported_scope
+            or old_manifest.method_version != new_manifest.method_version
+            or old_manifest.effect_of_interest != new_manifest.effect_of_interest
+            or old_manifest.outcome_targets != new_manifest.outcome_targets
+            or old_manifest.outcome_target_specs != new_manifest.outcome_target_specs
+        )
+        if semantic_changes:
+            material_ambiguities.append(
+                RunProposalAmbiguity(
+                    ambiguity_id=f"ambiguity:{self._digest(f'{run_id}|{current_hash}|semantic')}",
+                    scope=run_id,
+                    detail=(
+                        "Project method, effect, or Outcome-target meaning changed "
+                        "after Run confirmation."
+                    ),
+                    material=True,
+                )
+            )
+        material_ambiguities.extend(
+            RunProposalAmbiguity(
+                ambiguity_id=(
+                    f"ambiguity:{self._digest(f'{run_id}|{current_hash}|mapping|{detail}')}"
+                ),
+                scope=run_id,
+                detail=detail,
+                material=True,
+            )
+            for detail in mapping_ambiguities
+        )
+        material_ambiguities.extend(
+            RunProposalAmbiguity(
+                ambiguity_id=(
+                    f"ambiguity:{self._digest(f'{run_id}|{current_hash}|result|{detail}')}"
+                ),
+                scope=run_id,
+                detail=detail,
+                material=True,
+            )
+            for detail in result_mapping_ambiguities
+        )
+        # A new Outcome-target candidate is an engine work item (the agent can
+        # submit an exact ResultSpec); it is not itself a run-wide semantic
+        # ambiguity.  Retain all other unresolved findings, especially source
+        # identity and method drift, as material blockers.
+        added_candidate_ids = {
+            candidate.candidate_id
+            for candidate in initialization.result_candidates
+            if candidate.trial_id in added_trial_ids
+        }
+        material_ambiguities.extend(
+            item
+            for item in refreshed.unresolved_ambiguities
+            if item.scope not in added_candidate_ids
+        )
+        if material_ambiguities:
+            # Keep the last safe inventory/proposal as the reconciliation
+            # baseline.  Persist only the new snapshot hash and blocker; if
+            # the operator corrects the input, the next pass can compare it
+            # against the immutable Confirmed meaning instead of comparing
+            # against the unsafe proposal that caused the block.
+            refreshed = existing.model_copy(
+                update={
+                    "proposal_id": (
+                        "run-proposal:"
+                        f"{self._digest(f'{run_id}|{current_hash}|ambiguous')}"
+                    ),
+                    "proposal_token": (
+                        "proposal-token:"
+                        f"{self._digest(f'{run_id}|{current_hash}|ambiguous')}"
+                    ),
+                    "input_snapshot_hash": current_hash,
+                    "ambiguities": tuple(
+                        dict.fromkeys(
+                            existing.ambiguities + tuple(material_ambiguities)
+                        )
+                    )
+                }
+            )
+
+        # Existing confirmed scope remains authoritative.  New Trials and
+        # Result declarations are compatible additions; old rejected or
+        # removed items never re-enter active outputs accidentally.
+        active_trial_ids = (previous_active_trials - retired_trial_ids) | added_trial_ids
+        active_trial_ids &= new_trial_ids
+        refreshed_result_ids = {
+            spec.result.result_id for spec in initialization.result_specs
+        }
+        refreshed_result_ids.update(
+            candidate.result_id
+            for candidate in initialization.result_candidates
+            if candidate.result_id is not None and candidate.status == "resolved"
+        )
+        added_result_ids = refreshed_result_ids - set(existing.result_ids)
+        added_result_ids = {
+            result_id
+            for result_id in added_result_ids
+            if self._trial_for_result(initialization, result_id) in added_trial_ids
+            or result_id not in existing.result_ids
+        }
+        retired_result_ids = {
+            result_id
+            for result_id in previous_active_results
+            if result_id in existing.result_ids
+            and self._trial_for_result(existing.initialization, result_id) in retired_trial_ids
+        }
+        # Result IDs on removed Trial folders and declarations are no longer
+        # active, but their historical events remain in the ledger.
+        active_result_ids = (previous_active_results - retired_result_ids) | added_result_ids
+        active_result_ids = {
+            result_id
+            for result_id in active_result_ids
+            if (
+                self._trial_for_result(initialization, result_id) in active_trial_ids
+                or result_id in added_result_ids
+            )
+        }
+        added_diagnostic_result_ids: list[Identifier] = []
+        for trial_id in added_trial_ids:
+            for candidate in initialization.result_candidates:
+                if candidate.trial_id == trial_id and candidate.result_id is not None:
+                    active_result_ids.add(candidate.result_id)
+            if not any(
+                spec.result.trial_id == trial_id
+                for spec in initialization.result_specs
+            ):
+                trial = next(
+                    item for item in initialization.trials if item.trial_id == trial_id
+                )
+                if trial.status == "trial_failed":
+                    diagnostic_id = self._diagnostic_result_id(run_id, trial_id)
+                    active_result_ids.add(diagnostic_id)
+                    added_diagnostic_result_ids.append(diagnostic_id)
+                else:
+                    active_result_ids.add(self._issued_unresolved_result_id(run_id, trial_id))
+
+        projection = self._projection(ledger, run_id)
+        events = self._events_for_run(ledger, run_id)
+        invalidated_result_ids: list[Identifier] = []
+        diagnostic_result_ids: list[Identifier] = []
+        trial_status = {
+            trial.trial_id: trial.status for trial in initialization.trials
+        }
+        for item in projection.results:
+            if material_ambiguities:
+                # A blocked mapping must not mutate active scope or invalidate
+                # downstream work until the input is corrected.
+                continue
+            if item.result_id not in active_result_ids:
+                continue
+            trial_id = self._trial_for_result(existing.initialization, item.result_id)
+            if not self._result_depends_on_affected_sources(
+                item.result_id,
+                existing.initialization,
+                initialization,
+                affected_source_ids,
+                affected_trial_ids,
+                added_trial_ids,
+                retired_trial_ids,
+                ledger,
+                events,
+            ):
+                continue
+            if trial_status.get(trial_id) == "trial_failed":
+                diagnostic_result_ids.append(item.result_id)
+            # Invalidate every affected active Result, including PENDING
+            # Results that already have partial evidence/answer checkpoints.
+            # The lifecycle transition preserves the PENDING coarse state but
+            # establishes a durable boundary so those historical checkpoints
+            # can never satisfy future work after a Source change/removal.
+            invalidated_result_ids.append(item.result_id)
+
+        record = _RunReconciledRecord(
+            run_id=run_id,
+            proposal=refreshed,
+            input_snapshot_hash=current_hash,
+            active_trial_ids=tuple(
+                sorted(previous_active_trials if material_ambiguities else active_trial_ids)
+            ),
+            active_result_ids=tuple(
+                sorted(previous_active_results if material_ambiguities else active_result_ids)
+            ),
+            added_trial_ids=() if material_ambiguities else tuple(sorted(added_trial_ids)),
+            retired_trial_ids=() if material_ambiguities else tuple(sorted(retired_trial_ids)),
+            added_result_ids=() if material_ambiguities else tuple(sorted(added_result_ids)),
+            retired_result_ids=(
+                () if material_ambiguities else tuple(sorted(retired_result_ids))
+            ),
+            affected_trial_ids=tuple(sorted(affected_trial_ids)),
+            affected_source_ids=tuple(sorted(affected_source_ids)),
+            invalidated_result_ids=tuple(sorted(invalidated_result_ids)),
+            diagnostic_result_ids=(
+                ()
+                if material_ambiguities
+                else tuple(sorted(set(diagnostic_result_ids).union(added_diagnostic_result_ids)))
+            ),
+            material_ambiguities=tuple(material_ambiguities),
+        )
+        self._commit_reconciliation_batch(
+            ledger,
+            run_id,
+            record,
+            material_ambiguity=(material_ambiguities[0] if material_ambiguities else None),
+            projection=projection,
+            invalidated_result_ids=record.invalidated_result_ids,
+            diagnostic_result_ids=record.diagnostic_result_ids,
+        )
+        return True
+
+    @staticmethod
+    def _result_definition_ambiguities(
+        previous: ProjectInitialization,
+        current: ProjectInitialization,
+        previous_result_ids: set[Identifier],
+        retired_trial_ids: set[Identifier],
+        added_trial_ids: set[Identifier],
+        *,
+        historical_result_specs: dict[Identifier, ResultSpecRevision] | None = None,
+    ) -> tuple[str, ...]:
+        """Reject unsafe Result declaration edits after confirmation.
+
+        A Result declaration is part of the confirmed meaning, unlike a
+        document path or byte-preserving Source move.  Existing declarations
+        may be re-inventoried with fresh revision metadata, but changing their
+        semantic payload, removing one from an active Trial, or introducing a
+        declaration on an already-confirmed Trial cannot be reconciled by
+        invalidating evidence alone.  A declaration for a genuinely added
+        Trial remains a compatible new work item.
+        """
+
+        historical_result_specs = historical_result_specs or {}
+        previous_specs = {
+            spec.result.result_id: spec for spec in previous.result_specs
+        }
+        current_specs = {spec.result.result_id: spec for spec in current.result_specs}
+        previous_mappings = RunEngine._result_mappings(previous)
+        current_mappings = RunEngine._result_mappings(current)
+        previous_mappings.update(
+            {
+                result_id: spec.result.trial_id
+                for result_id, spec in historical_result_specs.items()
+                if result_id not in previous_mappings
+            }
+        )
+        details: list[str] = []
+
+        for result_id in sorted(previous_result_ids):
+            previous_trial = previous_mappings.get(result_id)
+            if previous_trial in retired_trial_ids:
+                # Retiring a Trial retires its dependent Result history; the
+                # declaration need not remain in the current inventory.
+                continue
+            current_trial = current_mappings.get(result_id)
+            if current_trial is None:
+                details.append(
+                    f"Confirmed Result {result_id} was removed or no longer maps to its Trial."
+                )
+                continue
+            if previous_trial is not None and current_trial != previous_trial:
+                details.append(
+                    f"Confirmed Result {result_id} was remapped to a different Trial."
+                )
+                continue
+            current_spec = current_specs.get(result_id)
+            previous_spec = previous_specs.get(result_id)
+            if (
+                current_spec is not None
+                and previous_spec is not None
+                and RunEngine._result_spec_semantics(previous_spec)
+                != RunEngine._result_spec_semantics(current_spec)
+            ):
+                details.append(
+                    f"Confirmed Result {result_id} meaning changed after Run confirmation."
+                )
+
+        for result_id, current_trial in sorted(current_mappings.items()):
+            if result_id in previous_result_ids:
+                continue
+            if current_trial not in added_trial_ids:
+                details.append(
+                    f"Result {result_id} was added to an existing confirmed Trial."
+                )
+        return tuple(details)
+
+    @staticmethod
+    def _result_spec_semantics(spec: ResultSpecRevision) -> tuple[Any, Any, str]:
+        """Return only stable Result meaning, excluding revision metadata."""
+
+        return (spec.result, spec.estimate, spec.provenance_note)
+
+    def _result_depends_on_affected_sources(
+        self,
+        result_id: Identifier,
+        previous: ProjectInitialization,
+        current: ProjectInitialization,
+        affected_source_ids: set[Identifier],
+        affected_trial_ids: set[Identifier],
+        added_trial_ids: set[Identifier],
+        retired_trial_ids: set[Identifier],
+        ledger: WorkflowLedger,
+        events: tuple[WorkflowEvent, ...],
+    ) -> bool:
+        """Selectively invalidate only Results transitively citing changed Sources."""
+
+        previous_trial_id = self._trial_for_result(previous, result_id)
+        current_trial_id = self._trial_for_result(current, result_id)
+        trial_id = previous_trial_id or current_trial_id
+        if trial_id is None:
+            return False
+        if trial_id in added_trial_ids or trial_id in retired_trial_ids:
+            return True
+        if trial_id not in affected_trial_ids:
+            return False
+
+        old_sources = self._sources_by_trial(previous).get(trial_id, {})
+        new_sources = self._sources_by_trial(current).get(trial_id, {})
+        sources = tuple(old_sources.values()) + tuple(
+            source
+            for source_id, source in new_sources.items()
+            if source_id not in old_sources
+        )
+        locators = {
+            spec.result.source_locator
+            for spec in (*previous.result_specs, *current.result_specs)
+            if spec.result.result_id == result_id
+        }
+        locators.update(
+            candidate.source_locator
+            for candidate in (*previous.result_candidates, *current.result_candidates)
+            if candidate.result_id == result_id and candidate.source_locator is not None
+        )
+        if not locators:
+            # Post-confirmation Result resolutions are stored as ledger
+            # events, not in either fresh ProjectInitialization.  Recover the
+            # latest submitted locator so a changed/deleted cited Source still
+            # invalidates this Result selectively.
+            for event in reversed(events):
+                if event.scope != result_id or event.operation not in {
+                    "operation:result-discovered",
+                    "operation:submit-result-resolution",
+                    "operation:run-register-result",
+                    "operation:result-spec-superseded",
+                }:
+                    continue
+                payload = self._event_payload(ledger, event)
+                raw_spec = payload.get("result_spec")
+                if not isinstance(raw_spec, dict):
+                    continue
+                raw_result = raw_spec.get("result")
+                if not isinstance(raw_result, dict):
+                    continue
+                locator = raw_result.get("source_locator")
+                if isinstance(locator, str) and locator:
+                    locators.add(locator)
+                break
+        explicitly_cited = {
+            source.source_id
+            for source in sources
+            if any(
+                source.source_id in locator
+                or source.relative_path in locator
+                or source.title in locator
+                for locator in locators
+            )
+        }
+        if explicitly_cited:
+            return bool(explicitly_cited.intersection(affected_source_ids))
+
+        # Evidence records retain parse revision IDs.  Those IDs encode the
+        # Source identity and let us recover citations even when the Result
+        # locator is a free-form page/table description.
+        parse_to_source = {
+            parse.parse_id: source.source_id
+            for source in sources
+            for parse in source.parse_records
+        }
+        evidence_citations: set[Identifier] = set()
+        for event in events:
+            if event.scope != result_id or event.operation != "operation:submit-domain-evidence":
+                continue
+            payload = self._event_payload(ledger, event)
+            raw_items = payload.get("items", ())
+            if not isinstance(raw_items, (list, tuple)):
+                continue
+            for item in raw_items:
+                if isinstance(item, str) and item in parse_to_source:
+                    evidence_citations.add(parse_to_source[item])
+        if evidence_citations:
+            return bool(evidence_citations.intersection(affected_source_ids))
+
+        # A changed/deleted required primary report is the implicit basis for
+        # every Result whose free-form locator cannot identify a narrower
+        # Source.  Supporting-document additions remain non-transitive unless
+        # they are explicitly cited by the Result or its evidence records.
+        return any(
+            source.source_id in affected_source_ids
+            and SourceRole.PRIMARY_REPORT in source.roles
+            for source in sources
+        )
+
+    @staticmethod
+    def _source_semantics_differ(previous: Any, current: Any) -> bool:
+        """Compare Source fields that affect downstream evidence meaning.
+
+        ``relative_path`` and generated receipt/parse identifiers are deliberately
+        excluded: a path move and a fresh immutable acquisition record do not
+        change the cited Source when its bytes and declared semantics remain the
+        same.
+        """
+
+        return any(
+            before != after
+            for before, after in (
+                (previous.roles, current.roles),
+                (previous.criticality, current.criticality),
+                (previous.classification, current.classification),
+                (previous.availability, current.availability),
+                (previous.processing, current.processing),
+                (previous.use, current.use),
+                (previous.artifact_hash, current.artifact_hash),
+                (previous.external_identifiers, current.external_identifiers),
+                (previous.coverage, current.coverage),
+                (previous.components, current.components),
+                (previous.failure_category, current.failure_category),
+            )
+        )
+
+    @staticmethod
+    def _identity_mapping_ambiguities(
+        previous: ProjectInitialization,
+        current: ProjectInitialization,
+    ) -> tuple[str, ...]:
+        """Describe Trial/Source replacements that cannot be mapped safely.
+
+        A unique content fingerprint is enough to preserve identity across a
+        path move.  Duplicate fingerprints or a simultaneous unmatched removal
+        and addition do not provide that guarantee, so reconciliation must stop
+        with a material run-wide ambiguity instead of guessing.
+        """
+
+        old_trials = {trial.trial_id: trial for trial in previous.trials}
+        used_old_trials: set[Identifier] = set()
+        old_trial_fingerprints: dict[tuple[str, ...], list[Identifier]] = {}
+        for trial in previous.trials:
+            fingerprint = tuple(
+                sorted(
+                    source.artifact_hash
+                    for source in trial.inventory.sources
+                    if source.artifact_hash is not None
+                )
+            )
+            if fingerprint:
+                old_trial_fingerprints.setdefault(fingerprint, []).append(trial.trial_id)
+        current_trial_fingerprints: dict[tuple[str, ...], list[Identifier]] = {}
+        for trial in current.trials:
+            fingerprint = tuple(
+                sorted(
+                    source.artifact_hash
+                    for source in trial.inventory.sources
+                    if source.artifact_hash is not None
+                )
+            )
+            if fingerprint:
+                current_trial_fingerprints.setdefault(fingerprint, []).append(trial.trial_id)
+
+        trial_pairs: dict[Identifier, Identifier] = {}
+        details: list[str] = []
+        for fingerprint, old_ids in old_trial_fingerprints.items():
+            current_ids = current_trial_fingerprints.get(fingerprint, [])
+            exact_ids = set(old_ids).intersection(current_ids)
+            unmatched_old = set(old_ids) - exact_ids
+            unmatched_current = set(current_ids) - exact_ids
+            if unmatched_old and unmatched_current and (
+                len(unmatched_old) > 1 or len(unmatched_current) > 1
+            ):
+                details.append(
+                    "Trial content fingerprints are shared by multiple unmatched "
+                    "folders; their identities cannot be mapped safely."
+                )
+        for trial in current.trials:
+            if trial.trial_id in old_trials:
+                previous_fingerprint = tuple(
+                    sorted(
+                        source.artifact_hash
+                        for source in old_trials[trial.trial_id].inventory.sources
+                        if source.artifact_hash is not None
+                    )
+                )
+                current_fingerprint = tuple(
+                    sorted(
+                        source.artifact_hash
+                        for source in trial.inventory.sources
+                        if source.artifact_hash is not None
+                    )
+                )
+                if previous_fingerprint != current_fingerprint and previous_fingerprint:
+                    moved_matches = [
+                        item
+                        for item in current_trial_fingerprints.get(previous_fingerprint, ())
+                        if item != trial.trial_id
+                    ]
+                    if moved_matches:
+                        details.append(
+                            f"Trial {trial.trial_id} changed while its prior content "
+                            "appears in another folder; the path/content identity "
+                            "conflict cannot be mapped safely."
+                        )
+                trial_pairs[trial.trial_id] = trial.trial_id
+                used_old_trials.add(trial.trial_id)
+                continue
+            fingerprint = tuple(
+                sorted(
+                    source.artifact_hash
+                    for source in trial.inventory.sources
+                    if source.artifact_hash is not None
+                )
+            )
+            candidates = [
+                item
+                for item in old_trial_fingerprints.get(fingerprint, ())
+                if item not in used_old_trials
+            ]
+            if len(candidates) > 1:
+                details.append(
+                    f"Trial {trial.trial_id} has a non-unique content fingerprint; "
+                    "its identity cannot be mapped safely."
+                )
+            elif len(candidates) == 1:
+                trial_pairs[trial.trial_id] = candidates[0]
+                used_old_trials.add(candidates[0])
+
+        old_sources_by_trial = RunEngine._sources_by_trial(previous)
+        current_sources_by_trial = RunEngine._sources_by_trial(current)
+        for current_trial_id, old_trial_id in trial_pairs.items():
+            before = old_sources_by_trial.get(old_trial_id, {})
+            after = current_sources_by_trial.get(current_trial_id, {})
+            by_path = {source.relative_path: source for source in before.values()}
+            by_hash: dict[str, list[Any]] = {}
+            for source in before.values():
+                if source.artifact_hash is not None:
+                    by_hash.setdefault(source.artifact_hash, []).append(source)
+            current_by_hash: dict[str, list[Any]] = {}
+            for source in after.values():
+                if source.artifact_hash is not None:
+                    current_by_hash.setdefault(source.artifact_hash, []).append(source)
+            for source in after.values():
+                historical = by_path.get(source.relative_path)
+                if (
+                    historical is None
+                    or historical.artifact_hash is None
+                    or source.artifact_hash is None
+                    or historical.artifact_hash == source.artifact_hash
+                ):
+                    continue
+                moved_matches = [
+                    item
+                    for item in current_by_hash.get(historical.artifact_hash, ())
+                    if item.relative_path != source.relative_path
+                ]
+                if moved_matches:
+                    details.append(
+                        f"Source {source.relative_path} in {current_trial_id} changed "
+                        "while its prior bytes appear at another path; the "
+                        "path/content identity conflict cannot be mapped safely."
+                    )
+            for artifact_hash, current_group in current_by_hash.items():
+                old_group = by_hash.get(artifact_hash, [])
+                exact_old_ids = {
+                    by_path[source.relative_path].source_id
+                    for source in current_group
+                    if source.relative_path in by_path
+                    and by_path[source.relative_path].artifact_hash == artifact_hash
+                }
+                unmatched_old_count = len(
+                    [source for source in old_group if source.source_id not in exact_old_ids]
+                )
+                unmatched_current_count = len(
+                    [source for source in current_group if source.relative_path not in by_path]
+                )
+                if unmatched_old_count and unmatched_current_count and (
+                    unmatched_old_count > 1 or unmatched_current_count > 1
+                ):
+                    details.append(
+                        f"Sources in {current_trial_id} share a duplicate content hash "
+                        "across unmatched paths; their identities cannot be mapped safely."
+                    )
+            used_sources: set[Identifier] = set()
+            unmatched_current: list[Any] = []
+            ordered_after = sorted(
+                after.values(),
+                key=lambda source: (source.relative_path not in by_path, source.relative_path),
+            )
+            for source in ordered_after:
+                # A required-source placeholder (for example the synthetic
+                # ``.`` descriptor emitted after a primary report is deleted)
+                # intentionally has no artifact to map.  It is a Trial failure,
+                # not an identity collision.
+                if source.artifact_hash is None:
+                    continue
+                match = by_path.get(source.relative_path)
+                if match is not None and match.source_id not in used_sources:
+                    used_sources.add(match.source_id)
+                    continue
+                candidates = [
+                    item
+                    for item in by_hash.get(source.artifact_hash or "", ())
+                    if item.source_id not in used_sources
+                ]
+                if len(candidates) > 1:
+                    details.append(
+                        f"Source {source.relative_path} in {current_trial_id} "
+                        "matches multiple prior Sources with the same content hash."
+                    )
+                elif len(candidates) == 1:
+                    used_sources.add(candidates[0].source_id)
+                else:
+                    unmatched_current.append(source)
+            unmatched_old = [
+                source
+                for source in before.values()
+                if source.source_id not in used_sources and source.artifact_hash is not None
+            ]
+            if unmatched_current and unmatched_old:
+                details.append(
+                    f"Sources in {current_trial_id} were removed and replaced without "
+                    "a unique path or content-hash mapping."
+                )
+
+        unmatched_old_trials = set(old_trials) - set(trial_pairs.values())
+        unmatched_current_trials = {
+            trial.trial_id for trial in current.trials
+        } - set(trial_pairs)
+        if unmatched_old_trials and unmatched_current_trials:
+            details.append(
+                "Trial folders were removed and added without a unique content-hash "
+                "mapping; their identities cannot be mapped safely."
+            )
+
+        return tuple(dict.fromkeys(details))
+
+    def _historical_result_specs(
+        self,
+        ledger: WorkflowLedger,
+        run_id: Identifier,
+    ) -> dict[Identifier, ResultSpecRevision]:
+        """Recover Result mappings submitted after the initial inventory.
+
+        A Result resolved through a post-confirmation work item is durable in
+        the ledger, not in ``ProjectInitialization.result_specs``.  Carry the
+        latest such mapping into reconciliation so an unrelated input change
+        cannot make an already accepted Result appear to have been removed.
+        """
+
+        resolved: dict[Identifier, ResultSpecRevision] = {}
+        for event in reversed(self._events_for_run(ledger, run_id)):
+            if event.operation not in {
+                "operation:result-discovered",
+                "operation:submit-result-resolution",
+                "operation:run-register-result",
+                "operation:result-spec-superseded",
+            }:
+                continue
+            try:
+                if event.operation in {
+                    "operation:run-register-result",
+                    "operation:result-spec-superseded",
+                }:
+                    record = _ResultDiscoveredRecord.model_validate_json(
+                        ledger.artifacts.read(event.output_revision_hashes[0])
+                    )
+                else:
+                    record = _ResultResolutionRecord.model_validate_json(
+                        ledger.artifacts.read(event.output_revision_hashes[0])
+                    )
+            except (IndexError, TypeError, ValueError):
+                continue
+            if record.result_id not in resolved:
+                resolved[record.result_id] = record.result_spec
+        return resolved
+
+    @staticmethod
+    def _result_mappings(
+        initialization: ProjectInitialization,
+    ) -> dict[Identifier, Identifier]:
+        """Return exact Result-to-Trial mappings in one initialization."""
+
+        mappings = {
+            spec.result.result_id: spec.result.trial_id
+            for spec in initialization.result_specs
+        }
+        mappings.update(
+            {
+                candidate.result_id: candidate.trial_id
+                for candidate in initialization.result_candidates
+                if candidate.status == "resolved" and candidate.result_id is not None
+            }
+        )
+        return mappings
+
+    def _preserve_reconciled_result_mappings(
+        self,
+        previous: ProjectInitialization,
+        current: ProjectInitialization,
+        *,
+        historical_result_specs: dict[Identifier, ResultSpecRevision],
+        previous_active_result_ids: set[Identifier],
+        existing_result_ids: set[Identifier],
+        run_id: Identifier,
+    ) -> ProjectInitialization:
+        """Carry accepted candidate and post-confirmation Result identities.
+
+        ``initialize_project`` intentionally regenerates candidate IDs from the
+        current Trial identity.  Reconciliation must instead match accepted
+        candidates by their remapped Trial and Outcome target, preserving the
+        confirmed Result ID and the candidate selection.  Historical Result
+        resolutions have no candidate in a fresh inventory, so they receive a
+        resolved synthetic candidate until the next declaration refresh.
+        """
+
+        current_candidates = list(current.result_candidates)
+        current_by_key = {
+            (candidate.trial_id, candidate.outcome_target_id): index
+            for index, candidate in enumerate(current_candidates)
+        }
+        current_candidate_ids = {candidate.candidate_id for candidate in current_candidates}
+        for previous_candidate in previous.result_candidates:
+            if previous_candidate.status != "resolved" or previous_candidate.result_id is None:
+                continue
+            index = current_by_key.get(
+                (previous_candidate.trial_id, previous_candidate.outcome_target_id)
+            )
+            if index is None:
+                continue
+            candidate_id = previous_candidate.candidate_id
+            if (
+                candidate_id in current_candidate_ids
+                and current_candidates[index].candidate_id != candidate_id
+            ):
+                # A collision means the current inventory has two candidates
+                # claiming one historical identity; leave it unresolved so
+                # the normal Result ambiguity blocks rather than guessing.
+                continue
+            current_candidates[index] = current_candidates[index].model_copy(
+                update={
+                    "candidate_id": candidate_id,
+                    "result_id": previous_candidate.result_id,
+                    "status": "resolved",
+                }
+            )
+            current_candidate_ids.add(candidate_id)
+
+        previous_explicit_ids = {
+            spec.result.result_id for spec in previous.result_specs
+        }
+        current_result_ids = self._result_mappings(
+            current.model_copy(update={"result_candidates": tuple(current_candidates)})
+        )
+        current_trial_ids = {trial.trial_id for trial in current.trials}
+        unresolved_result_ids = {
+            self._issued_unresolved_result_id(run_id, spec.result.trial_id)
+            for spec in historical_result_specs.values()
+        }
+        for result_id, spec in historical_result_specs.items():
+            if result_id in previous_explicit_ids or result_id in current_result_ids:
+                continue
+            if result_id not in existing_result_ids and result_id not in previous_active_result_ids:
+                if result_id not in unresolved_result_ids:
+                    continue
+            if spec.result.trial_id not in current_trial_ids:
+                continue
+            digest = self._digest(f"{run_id}|historical-result-candidate|{result_id}")
+            candidate_id = f"result-candidate:historical-{digest}"
+            if candidate_id in current_candidate_ids:
+                continue
+            current_candidates.append(
+                ResultCandidate(
+                    candidate_id=candidate_id,
+                    trial_id=spec.result.trial_id,
+                    label=(
+                        f"{spec.result.outcome_construct} at {spec.result.time_point} "
+                        f"({spec.result.effect_measure}, {spec.result.analysis_population})"
+                    ),
+                    result_id=result_id,
+                    source_locator=spec.result.source_locator,
+                    status="resolved",
+                )
+            )
+            current_candidate_ids.add(candidate_id)
+            current_result_ids[result_id] = spec.result.trial_id
+        return current.model_copy(update={"result_candidates": tuple(current_candidates)})
+
+    @staticmethod
+    def _sources_by_trial(
+        initialization: ProjectInitialization,
+    ) -> dict[Identifier, dict[Identifier, Any]]:
+        return {
+            trial.trial_id: {
+                source.source_id: source for source in trial.inventory.sources
+            }
+            for trial in initialization.trials
+        }
+
+    @staticmethod
+    def _input_trial_ids(root: Path) -> set[Identifier]:
+        input_root = root / "input"
+        if not input_root.is_dir():
+            return set()
+        return {
+            f"trial:{re.sub(r'[^a-z0-9._~-]+', '-', path.name.lower()).strip('-') or 'unnamed'}"
+            for path in input_root.iterdir()
+            if path.is_dir() and not path.is_symlink()
+        }
+
+    @staticmethod
+    def _trial_for_result(
+        initialization: ProjectInitialization, result_id: Identifier
+    ) -> Identifier | None:
+        for spec in initialization.result_specs:
+            if spec.result.result_id == result_id:
+                return spec.result.trial_id
+        for candidate in initialization.result_candidates:
+            if candidate.result_id == result_id:
+                return candidate.trial_id
+        return None
+
+    def _commit_reconciliation_batch(
+        self,
+        ledger: WorkflowLedger,
+        run_id: Identifier,
+        record: _RunReconciledRecord,
+        *,
+        projection: LifecycleProjection,
+        material_ambiguity: RunProposalAmbiguity | None = None,
+        invalidated_result_ids: tuple[Identifier, ...] = (),
+        diagnostic_result_ids: tuple[Identifier, ...] = (),
+    ) -> None:
+        now = datetime.now(UTC)
+        transitions: list[Transition] = [
+            self._transition(
+                scope=run_id,
+                operation="operation:run-reconciled",
+                operation_key=(
+                    "idempotency:run-reconciled-"
+                    f"{self._digest(f'{run_id}|{record.input_snapshot_hash}')}"
+                ),
+                entity_id=f"run-reconciliation:{self._digest(f'{run_id}|{record.input_snapshot_hash}')}",
+                revision_id=f"revision:run-reconciliation-{self._digest(f'{run_id}|{record.input_snapshot_hash}')}",
+                artifact=record,
+                checkpoint="checkpoint:run-reconciled",
+                outcome=(
+                    WorkflowEventOutcome.WORK_REQUIRED
+                    if material_ambiguity is not None
+                    else WorkflowEventOutcome.COMPLETED
+                ),
+                observed_at=now,
+            )
+        ]
+        recomputable_result_ids = tuple(
+            result_id
+            for result_id in invalidated_result_ids
+            if result_id not in diagnostic_result_ids
+        )
+        reopen_run = projection.run_state is RunState.COMPLETE and (
+            bool(recomputable_result_ids)
+            or bool(record.added_result_ids)
+            or bool(record.added_trial_ids)
+        )
+        if reopen_run and material_ambiguity is None:
+            suffix = self._digest(
+                f"{run_id}|{record.input_snapshot_hash}|reopened|"
+                f"{','.join(sorted(recomputable_result_ids))}|"
+                f"{','.join(sorted(record.added_result_ids))}"
+            )
+            transitions.append(
+                self._transition(
+                    scope=run_id,
+                    operation="operation:run-reopened",
+                    operation_key=f"idempotency:reconcile-reopened-{suffix}",
+                    entity_id=f"run-reconciliation-reopened:{suffix}",
+                    revision_id=f"revision:run-reconciliation-reopened-{suffix}",
+                    artifact=_RunReopenedRecord(
+                        run_id=run_id,
+                        input_snapshot_hash=record.input_snapshot_hash,
+                        invalidated_result_ids=tuple(sorted(recomputable_result_ids)),
+                        added_result_ids=tuple(sorted(record.added_result_ids)),
+                    ),
+                    checkpoint="checkpoint:run-reopened",
+                    outcome=WorkflowEventOutcome.WORK_REQUIRED,
+                    observed_at=now,
+                )
+            )
+        for result_id in invalidated_result_ids:
+            trial_id = self._trial_for_result(record.proposal.initialization, result_id)
+            if trial_id is None:
+                trial_id = self._trial_for_result(
+                    record.proposal.initialization, result_id
+                )
+            transitions.append(
+                self._transition(
+                    scope=result_id,
+                    operation="operation:result-invalidated",
+                    operation_key=(
+                        f"idempotency:result-invalidated-"
+                        f"{self._digest(f'{run_id}|{result_id}|{record.input_snapshot_hash}')}"
+                    ),
+                    entity_id=f"result-invalidation:{self._digest(f'{run_id}|{result_id}|{record.input_snapshot_hash}')}",
+                    revision_id=f"revision:result-invalidation-{self._digest(f'{run_id}|{result_id}|{record.input_snapshot_hash}')}",
+                    artifact=_ResultInvalidatedRecord(
+                        run_id=run_id,
+                        result_id=result_id,
+                        reason="A dependent Trial or Source input changed or was removed.",
+                        affected_trial_id=trial_id or "trial:unknown",
+                        affected_source_ids=record.affected_source_ids,
+                        input_snapshot_hash=record.input_snapshot_hash,
+                    ),
+                    checkpoint=f"checkpoint:result-invalidated-{result_id.removeprefix('result:')}",
+                    outcome=WorkflowEventOutcome.WORK_REQUIRED,
+                    observed_at=now,
+                )
+            )
+        # Register newly added explicit Results before their diagnostic
+        # terminal transition.  Added Trial failures without a declared
+        # Result receive a generated diagnostic Result identity here as well,
+        # avoiding an impossible Result-resolution work item.
+        existing_result_ids = {item.result_id for item in projection.results}
+        diagnostic_trials = {
+            self._diagnostic_result_id(run_id, trial.trial_id): trial
+            for trial in record.proposal.initialization.trials
+            if trial.status == "trial_failed"
+        }
+        for result_id in record.added_result_ids:
+            if result_id in existing_result_ids:
+                continue
+            result_spec = next(
+                (
+                    spec
+                    for spec in record.proposal.initialization.result_specs
+                    if spec.result.result_id == result_id
+                ),
+                None,
+            )
+            if result_spec is None:
+                continue
+            suffix = self._digest(f"{run_id}|{result_id}|reconciled")
+            transitions.append(
+                self._transition(
+                    scope=result_id,
+                    operation="operation:run-register-result",
+                    operation_key=f"idempotency:reconcile-register-result-{suffix}",
+                    entity_id=f"run-reconciled-result:{suffix}",
+                    revision_id=f"revision:run-reconciled-result-{suffix}",
+                    artifact=_ResultDiscoveredRecord(
+                        run_id=run_id,
+                        result_id=result_id,
+                        result_spec=result_spec,
+                    ),
+                    checkpoint=f"checkpoint:result-{result_id.removeprefix('result:')}",
+                    outcome=WorkflowEventOutcome.COMPLETED,
+                    observed_at=now,
+                )
+            )
+            existing_result_ids.add(result_id)
+        for result_id, trial in diagnostic_trials.items():
+            if result_id in existing_result_ids or result_id not in diagnostic_result_ids:
+                continue
+            suffix = self._digest(f"{run_id}|{result_id}|diagnostic")
+            reason = (
+                trial.failure.detail
+                if trial.failure is not None
+                else "Trial-specific initialization failed"
+            )
+            transitions.append(
+                self._transition(
+                    scope=result_id,
+                    operation="operation:run-register-diagnostic-result",
+                    operation_key=f"idempotency:reconcile-register-diagnostic-{suffix}",
+                    entity_id=f"diagnostic-result:{suffix}",
+                    revision_id=f"revision:diagnostic-result-{suffix}",
+                    artifact=_DiagnosticResultDiscoveredRecord(
+                        run_id=run_id,
+                        result_id=result_id,
+                        trial_id=trial.trial_id,
+                        reason=reason,
+                    ),
+                    checkpoint=f"checkpoint:diagnostic-result-{result_id.removeprefix('result:')}",
+                    outcome=WorkflowEventOutcome.TRIAL_PROBLEM,
+                    observed_at=now,
+                )
+            )
+            existing_result_ids.add(result_id)
+        for result_id in diagnostic_result_ids:
+            trial_id = self._trial_for_result(record.proposal.initialization, result_id)
+            if trial_id is None:
+                diagnostic_trial = diagnostic_trials.get(result_id)
+                trial_id = diagnostic_trial.trial_id if diagnostic_trial is not None else None
+            transitions.append(
+                self._transition(
+                    scope=result_id,
+                    operation="operation:result-diagnostic-ready",
+                    operation_key=(
+                        f"idempotency:reconcile-diagnostic-"
+                        f"{self._digest(f'{run_id}|{result_id}|{record.input_snapshot_hash}')}"
+                    ),
+                    entity_id=f"result-reconciliation-diagnostic:{self._digest(f'{run_id}|{result_id}|{record.input_snapshot_hash}')}",
+                    revision_id=f"revision:result-reconciliation-diagnostic-{self._digest(f'{run_id}|{result_id}|{record.input_snapshot_hash}')}",
+                    artifact=_ResultDiagnosticRecord(
+                        run_id=run_id,
+                        result_id=result_id,
+                        trial_id=trial_id or "trial:unknown",
+                        reason="A required Trial Source became unavailable or unreadable.",
+                    ),
+                    checkpoint=f"checkpoint:result-diagnostic-{result_id.removeprefix('result:')}",
+                    outcome=WorkflowEventOutcome.TRIAL_PROBLEM,
+                    observed_at=now,
+                )
+            )
+        if material_ambiguity is not None and projection.run_state is not RunState.BLOCKED:
+            suffix = self._digest(f"{run_id}|{record.input_snapshot_hash}|blocked")
+            transitions.append(
+                self._transition(
+                    scope=run_id,
+                    operation="operation:run-blocked",
+                    operation_key=f"idempotency:reconcile-blocked-{suffix}",
+                    entity_id=f"run-reconciliation-blocker:{suffix}",
+                    revision_id=f"revision:run-reconciliation-blocker-{suffix}",
+                    artifact=_RunBlockedRecord(
+                        run_id=run_id,
+                        reason=material_ambiguity.detail,
+                        recovery=(
+                            "Correct or remove the incompatible input and continue the Run.",
+                            "Start a new Run explicitly if the confirmed meaning must change.",
+                        ),
+                    ),
+                    checkpoint="checkpoint:run-blocked",
+                    outcome=WorkflowEventOutcome.WORK_REQUIRED,
+                    observed_at=now,
+                )
+            )
+        elif material_ambiguity is None and projection.run_state is RunState.BLOCKED:
+            suffix = self._digest(f"{run_id}|{record.input_snapshot_hash}|unblocked")
+            transitions.append(
+                self._transition(
+                    scope=run_id,
+                    operation="operation:run-unblocked",
+                    operation_key=f"idempotency:reconcile-unblocked-{suffix}",
+                    entity_id=f"run-reconciliation-unblocker:{suffix}",
+                    revision_id=f"revision:run-reconciliation-unblocker-{suffix}",
+                    artifact=_RunUnblockedRecord(
+                        run_id=run_id,
+                        input_snapshot_hash=record.input_snapshot_hash,
+                    ),
+                    checkpoint="checkpoint:run-unblocked",
+                    outcome=WorkflowEventOutcome.WORK_REQUIRED,
+                    observed_at=now,
+                )
+            )
+        lease = self._acquire_lease(ledger, now)
+        ledger.commit_batch(tuple(transitions), lease, now=now)
+
+    @staticmethod
+    def _remap_initialization_identities(
+        previous: ProjectInitialization,
+        current: ProjectInitialization,
+    ) -> ProjectInitialization:
+        """Preserve Trial/Source IDs across content-preserving path moves."""
+
+        old_trials = {trial.trial_id: trial for trial in previous.trials}
+        used_old: set[Identifier] = set()
+        trial_map: dict[Identifier, Identifier] = {}
+        old_fingerprints: dict[tuple[str, ...], list[Identifier]] = {}
+        for trial in previous.trials:
+            fingerprint = tuple(
+                sorted(
+                    source.artifact_hash
+                    for source in trial.inventory.sources
+                    if source.artifact_hash is not None
+                )
+            )
+            if fingerprint:
+                old_fingerprints.setdefault(fingerprint, []).append(trial.trial_id)
+        for trial in current.trials:
+            if trial.trial_id in old_trials:
+                trial_map[trial.trial_id] = trial.trial_id
+                used_old.add(trial.trial_id)
+                continue
+            fingerprint = tuple(
+                sorted(
+                    source.artifact_hash
+                    for source in trial.inventory.sources
+                    if source.artifact_hash is not None
+                )
+            )
+            candidates = [
+                item
+                for item in old_fingerprints.get(fingerprint, ())
+                if item not in used_old
+            ]
+            if len(candidates) == 1:
+                trial_map[trial.trial_id] = candidates[0]
+                used_old.add(candidates[0])
+
+        remapped_trials: list[TrialInitialization] = []
+        source_maps: dict[Identifier, dict[Identifier, Identifier]] = {}
+        for trial in current.trials:
+            trial_id = trial_map.get(trial.trial_id, trial.trial_id)
+            old = old_trials.get(trial_id)
+            old_sources = tuple(old.inventory.sources) if old is not None else ()
+            by_path = {source.relative_path: source for source in old_sources}
+            by_hash: dict[str, list[Any]] = {}
+            for source in old_sources:
+                if source.artifact_hash is not None:
+                    by_hash.setdefault(source.artifact_hash, []).append(source)
+            used_sources: set[Identifier] = set()
+            # Provisional IDs are ordinal (``source:<trial>-<index>``), so an
+            # added document can legitimately reuse an ID that belongs to a
+            # historical document whose path still exists.  Keep every
+            # historical ID reserved and allocate a deterministic replacement
+            # for such an unmatched document rather than emitting duplicate
+            # canonical unit IDs during evidence indexing.
+            allocated_source_ids: set[Identifier] = {
+                source.source_id for source in old_sources
+            }
+            remapped_by_current_id: dict[Identifier, Any] = {}
+            source_map: dict[Identifier, Identifier] = {}
+            ordered_sources = sorted(
+                trial.inventory.sources,
+                key=lambda source: (
+                    source.relative_path not in by_path,
+                    source.relative_path,
+                ),
+            )
+            for source in ordered_sources:
+                match = by_path.get(source.relative_path)
+                if match is None or match.source_id in used_sources:
+                    hashed = [
+                        item
+                        for item in by_hash.get(source.artifact_hash or "", ())
+                        if item.source_id not in used_sources
+                    ]
+                    match = hashed[0] if len(hashed) == 1 else None
+                if match is None:
+                    assigned = source
+                    if source.source_id in allocated_source_ids:
+                        digest = hashlib.sha256(
+                            (
+                                f"{trial_id}|{source.relative_path}|"
+                                f"{source.artifact_hash or ''}"
+                            ).encode()
+                        ).hexdigest()[:24]
+                        candidate: Identifier = f"source:reconciled-{digest}"
+                        counter = 1
+                        while candidate in allocated_source_ids:
+                            candidate = f"source:reconciled-{digest}-{counter}"
+                            counter += 1
+                        assigned = source.model_copy(
+                            update={
+                                "source_id": candidate,
+                                "parse_records": tuple(
+                                    item.model_copy(update={"source_id": candidate})
+                                    for item in source.parse_records
+                                ),
+                            }
+                        )
+                    allocated_source_ids.add(assigned.source_id)
+                    remapped_by_current_id[source.source_id] = assigned
+                    continue
+                used_sources.add(match.source_id)
+                allocated_source_ids.add(match.source_id)
+                source_map[source.source_id] = match.source_id
+                parse_records = source.parse_records
+                if source.artifact_hash == match.artifact_hash and match.parse_records:
+                    parse_records = match.parse_records
+                else:
+                    parse_records = tuple(
+                        item.model_copy(update={"source_id": match.source_id})
+                        for item in parse_records
+                    )
+                remapped_by_current_id[source.source_id] = source.model_copy(
+                    update={"source_id": match.source_id, "parse_records": parse_records}
+                )
+            source_maps[trial_id] = source_map
+            # Restore discovery order after matching exact paths first.  The
+            # ordering is part of the user-facing proposal even though it must
+            # not influence identity allocation.
+            remapped_sources = tuple(
+                remapped_by_current_id[source.source_id]
+                for source in trial.inventory.sources
+            )
+            inventory = trial.inventory.model_copy(
+                update={"trial_id": trial_id, "sources": remapped_sources}
+            )
+            remapped_trials.append(
+                trial.model_copy(
+                    update={
+                        "trial_id": trial_id,
+                        "inventory": inventory,
+                        "registry_candidates": tuple(
+                            item.model_copy(update={"trial_id": trial_id})
+                            for item in trial.registry_candidates
+                        ),
+                    }
+                )
+            )
+        remapped_specs = tuple(
+            spec.model_copy(
+                update={
+                    "result": spec.result.model_copy(
+                        update={
+                            "trial_id": trial_map.get(
+                                spec.result.trial_id, spec.result.trial_id
+                            )
+                        }
+                    )
+                }
+            )
+            for spec in current.result_specs
+        )
+        remapped_candidates = tuple(
+            item.model_copy(update={"trial_id": trial_map.get(item.trial_id, item.trial_id)})
+            for item in current.result_candidates
+        )
+        remapped_findings = tuple(
+            item.model_copy(update={"trial_id": trial_map.get(item.trial_id, item.trial_id)})
+            for item in current.review_findings
+        )
+        return current.model_copy(
+            update={
+                "trials": tuple(remapped_trials),
+                "result_specs": remapped_specs,
+                "result_candidates": remapped_candidates,
+                "review_findings": remapped_findings,
+                "registry_candidates": tuple(
+                    item.model_copy(
+                        update={
+                            "trial_id": trial_map.get(item.trial_id, item.trial_id)
+                        }
+                    )
+                    for item in current.registry_candidates
+                ),
+            }
+        )
+
     def _latest_proposal(self, ledger: WorkflowLedger, run_id: Identifier) -> RunProposal:
         for event in reversed(self._events_for_run(ledger, run_id)):
-            if event.operation == "operation:run-proposal-submitted":
+            if event.operation in {
+                "operation:run-proposal-submitted",
+                "operation:run-reconciled",
+            }:
+                if event.operation == "operation:run-reconciled":
+                    return _RunReconciledRecord.model_validate_json(
+                        ledger.artifacts.read(event.output_revision_hashes[0])
+                    ).proposal
                 return _ProposalSubmittedRecord.model_validate_json(
                     ledger.artifacts.read(event.output_revision_hashes[0])
                 ).proposal
@@ -3509,10 +5342,18 @@ class RunEngine:
         proposal_token: Identifier,
     ) -> RunProposal | None:
         for event in reversed(self._events_for_run(ledger, run_id)):
-            if event.operation == "operation:run-proposal-submitted":
-                proposal = _ProposalSubmittedRecord.model_validate_json(
-                    ledger.artifacts.read(event.output_revision_hashes[0])
-                ).proposal
+            if event.operation in {
+                "operation:run-proposal-submitted",
+                "operation:run-reconciled",
+            }:
+                if event.operation == "operation:run-reconciled":
+                    proposal = _RunReconciledRecord.model_validate_json(
+                        ledger.artifacts.read(event.output_revision_hashes[0])
+                    ).proposal
+                else:
+                    proposal = _ProposalSubmittedRecord.model_validate_json(
+                        ledger.artifacts.read(event.output_revision_hashes[0])
+                    ).proposal
             elif event.operation == "operation:run-prepared":
                 proposal = _PreparedRunRecord.model_validate_json(
                     ledger.artifacts.read(event.output_revision_hashes[0])
@@ -3626,12 +5467,19 @@ class RunEngine:
                 raise ValueError(
                     f"project input symlinks are not permitted: {path} -> {resolved}"
                 )
-            if not path.is_file():
-                continue
             if not path.resolve().is_relative_to(root):
                 raise ValueError(f"project input escapes project root: {path}")
             relative = path.relative_to(root)
             if relative.parts and relative.parts[0] in {".rob2", "output", "__pycache__"}:
+                continue
+            if path.is_dir():
+                # Directory identities matter even when a newly added Trial
+                # is still empty (or a Trial folder is renamed).  Include a
+                # stable marker so reconciliation cannot mistake that change
+                # for an identical byte-only scan.
+                entries.append((relative.as_posix() + "/", "directory"))
+                continue
+            if not path.is_file():
                 continue
             try:
                 digest = hashlib.sha256(path.read_bytes()).hexdigest()
@@ -3683,6 +5531,7 @@ class RunEngine:
         committed: bool,
         operation_id: Identifier | None = None,
         work_item: WorkItem | None = None,
+        error: OperationError | None = None,
     ) -> ContinueRunResponse:
         return ContinueRunResponse(
             operation_id=operation_id or self._read_operation_id(RunOperation.CONTINUE_RUN, run_id),
@@ -3701,6 +5550,7 @@ class RunEngine:
             run_state=projection.run_state,
             directive=directive,
             work_item=work_item,
+            error=error,
         )
 
     def _schema_refusal(
@@ -3823,6 +5673,8 @@ class RunEngine:
         ledger: WorkflowLedger,
         run_id: Identifier,
         proposal: RunProposal,
+        *,
+        run_state: RunState = RunState.AWAITING_CONFIRMATION,
     ) -> PrepareRunResponse:
         return PrepareRunResponse(
             operation_id=self._read_operation_id(RunOperation.PREPARE_RUN, run_id),
@@ -3832,7 +5684,7 @@ class RunEngine:
             committed=False,
             next_permitted_action=RunOperation.PREPARE_RUN,
             run_id=run_id,
-            run_state=RunState.AWAITING_CONFIRMATION,
+            run_state=run_state,
             proposal=proposal,
             error=OperationError(
                 code="authorization_required",
