@@ -102,6 +102,7 @@ id = "package-archives"
 description = "Installation, canonical outputs, exports, and archive verification"
 evidence = [
   "tests/test_release_build.py::test_wheel_ships_pack_sources_and_schemas",
+  "tests/test_release_build.py::test_clean_wheel_install_exposes_declared_entry_points",
   "tests/test_reports.py::test_all_formats_match_golden_hashes",
   "tests/test_verification_archives.py::test_complete_archive_verifies_without_live_project",
 ]

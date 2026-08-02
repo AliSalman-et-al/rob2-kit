@@ -1,5 +1,5 @@
-import hashlib
 import json
+import shutil
 import sys
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
@@ -776,13 +776,21 @@ def test_visual_step_is_deterministically_skipped_without_candidates(
 def test_generated_adapters_share_canonical_skill_and_exact_launcher(
     tmp_path: Path,
 ) -> None:
-    canonical = tmp_path / "skills" / "rob2-assess" / "SKILL.md"
-    canonical.parent.mkdir(parents=True)
-    canonical.write_text("---\nname: rob2-assess\n---\nUse bounded tools.\n", encoding="utf-8")
-    (canonical.parent / "activation-fixtures.json").write_text(
-        '{"activates":["Assess with RoB 2"],"does_not_activate":["Human sign-off"]}\n',
-        encoding="utf-8",
-    )
+    skills = {
+        "rob2-init": "Initialize the exact run.\n",
+        "rob2-assess": "Assess bounded evidence.\n",
+    }
+    for skill_name, body in skills.items():
+        canonical = tmp_path / "skills" / skill_name / "SKILL.md"
+        canonical.parent.mkdir(parents=True)
+        canonical.write_text(
+            f"---\nname: {skill_name}\n---\n{body}",
+            encoding="utf-8",
+        )
+        (canonical.parent / "activation-fixtures.json").write_text(
+            '{"activates":["Use this skill"],"does_not_activate":["Human sign-off"]}\n',
+            encoding="utf-8",
+        )
     logic = tmp_path / "packs" / "logic" / "rob2-parallel-assignment-2019.1.yaml"
     guidance = (
         tmp_path
@@ -794,26 +802,27 @@ def test_generated_adapters_share_canonical_skill_and_exact_launcher(
     guidance.parent.mkdir(parents=True)
     logic.write_text("pack: logic\n", encoding="utf-8")
     guidance.write_text("pack: guidance\n", encoding="utf-8")
+    shutil.copy(Path(__file__).resolve().parents[1] / "uv.lock", tmp_path / "uv.lock")
 
     manifest = build_host_adapters(tmp_path, package_version="0.1.0")
 
-    expected_hash = "sha256:" + hashlib.sha256(canonical.read_bytes()).hexdigest()
-    assert manifest.canonical_skill_hash == expected_hash
-    assert manifest.launcher == "uv run --locked --project . rob2-mcp"
+    assert set(manifest.skills) == set(skills)
+    assert manifest.launcher == "uvx --python 3.13 --from rob2-kit==0.1.0 rob2-mcp"
     assert manifest.release_status == "draft_only_preview"
     assert manifest.sign_off_authority == "human_only"
-    assert manifest.launcher_working_directory == "repository_root"
-    assert (tmp_path / "adapters" / "codex" / "SKILL.md").read_bytes() == canonical.read_bytes()
-    assert (tmp_path / "adapters" / "claude" / "SKILL.md").read_bytes() == canonical.read_bytes()
+    assert manifest.launcher_working_directory == "project_root"
+    for host in ("codex", "claude"):
+        for skill_name in skills:
+            generated = tmp_path / "adapters" / host / "skills" / skill_name
+            assert (generated / "SKILL.md").read_text() == (
+                tmp_path / "skills" / skill_name / "SKILL.md"
+            ).read_text()
     codex = json.loads((tmp_path / "adapters" / "codex" / "adapter.json").read_text())
     claude = json.loads((tmp_path / "adapters" / "claude" / "adapter.json").read_text())
-    assert codex["skill_hash"] == claude["skill_hash"] == expected_hash
+    assert codex["skill_hashes"] == claude["skill_hashes"]
     assert codex["trigger_description"] == claude["trigger_description"]
-    assert codex["launcher_working_directory"] == "repository_root"
-    assert claude["launcher_working_directory"] == "repository_root"
-    assert (tmp_path / "adapters" / "codex" / "activation-fixtures.json").read_bytes() == (
-        tmp_path / "adapters" / "claude" / "activation-fixtures.json"
-    ).read_bytes()
+    assert codex["launcher_working_directory"] == "project_root"
+    assert claude["launcher_working_directory"] == "project_root"
     verify_host_adapters(tmp_path)
     codex["host"] = "hand-edited"
     (tmp_path / "adapters" / "codex" / "adapter.json").write_text(

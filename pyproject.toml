@@ -41,7 +41,12 @@ build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/rob2_kit"]
-force-include = { "packs" = "rob2_kit/packs", "schemas" = "rob2_kit/schemas" }
+
+[tool.hatch.build.targets.wheel.force-include]
+"packs" = "rob2_kit/packs"
+"schemas" = "rob2_kit/schemas"
+"skills" = "rob2_kit/skills"
+"rob2.lock" = "rob2_kit/rob2.lock"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

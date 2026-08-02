@@ -163,6 +163,9 @@ def test_ci_runs_the_same_release_gate_on_all_supported_platforms() -> None:
     assert "ubuntu-latest" in workflow
     assert "windows-latest" in workflow
     assert "macos-latest" in workflow
+    assert 'python-version: ["3.13"]' in workflow
+    assert "matrix.os" in workflow
+    assert "uv sync --frozen --all-groups" in workflow
     assert "python -m rob2_kit.release_gate" in workflow
     assert "uv run --frozen pytest" in workflow
     assert "uv build --wheel" in workflow

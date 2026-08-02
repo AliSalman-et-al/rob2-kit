@@ -302,7 +302,9 @@ src/rob2_kit/
 packs/
   logic/
   guidance/
-skills/rob2-assess/
+skills/
+  rob2-init/
+  rob2-assess/
 adapters/
   codex/               # generated
   claude/              # generated
@@ -310,9 +312,10 @@ schemas/
 tests/
 ```
 
-One cross-host release manifest MUST pin the package, canonical skill hash,
-application contract, packs, and both adapter versions. Generated adapters
-MUST NOT be hand-edited; build tests reject divergence.
+One cross-host release lock MUST pin the package release, both canonical skill
+hashes, application contract, frozen dependency set, packs, and both adapter
+versions. Generated adapters MUST NOT be hand-edited; build tests reject
+divergence.
 
 ### 6.2 Runtime and dependencies
 
@@ -1024,20 +1027,26 @@ throwaway prototype directly.
 
 ### 13.1 Canonical skill
 
-One `rob2-assess` skill is shared verbatim between hosts. It:
+Exactly two canonical skills are shared between hosts. `rob2-init`:
 
-- establishes supported scope;
-- initializes or resumes;
+- establishes supported scope and the exact Run meaning;
+- inventories inputs and presents the Run proposal;
+- obtains one-time operator confirmation; and
+- hands the confirmed Run to `rob2-assess`.
+
+`rob2-assess`:
+
+- resumes the confirmed Run;
 - requests work items;
 - uses bounded evidence/visual tools;
 - submits typed work;
 - handles structured outcomes;
-- opens review and consumes Review receipts;
+- materializes terminal static reports;
 - never performs a human action.
 
-The skill obtains wording and behavior through pinned packs and tools. It MUST
-not duplicate normative RoB 2 logic. Both adapters expose the same trigger
-description, skill hash, and activation fixtures.
+The skills obtain wording and behavior through pinned packs and tools. They
+MUST not duplicate normative RoB 2 logic. Both adapters expose the same trigger
+description, skill hashes, and activation fixtures.
 
 ### 13.2 MCP tools
 
