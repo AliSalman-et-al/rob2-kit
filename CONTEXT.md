@@ -1,6 +1,6 @@
 # RoB 2 Assessment
 
-This context describes the evidence-grounded assessment of bias in a specific randomized-trial result and its accountable human review.
+This context describes the evidence-grounded assessment of bias in a specific randomized-trial Result and its transparent static report.
 
 ## Language
 
@@ -40,8 +40,12 @@ _Avoid_: Silent exclusion, answer-driven selection
 The smallest preserved source unit that may ground an Evidence claim, such as a paragraph, heading, list item, caption, footnote, or table row, with stable page and spatial provenance. Larger search projections and neighboring context may help locate it but are not independently citable.
 _Avoid_: Generated chunk, search aggregate
 
+**Visual citation**:
+A deterministic report view binding an Evidence claim's exact Canonical evidence unit span to the source page render and one or more highlight boxes. It exposes provenance for human audit without implying that an agent inspected the image or creating a separate evidence item.
+_Avoid_: Visual candidate, Visual transcription, screenshot evidence
+
 **Evidence claim**:
-An immutable, typed assertion linked to an exact span selected from a Canonical evidence unit and its source provenance; deterministic code materializes the quoted text rather than accepting agent-authored quotation text. It may be machine-verified or require human review, and its status must never imply stronger validation than it received.
+An immutable, typed assertion linked to an exact span selected from a Canonical evidence unit and its source provenance; deterministic code materializes the quoted text rather than accepting agent-authored quotation text. It records whether its basis is canonical text or a Visual transcription, and its status must never imply stronger validation than it received.
 _Avoid_: Retrieval hit, evidence snippet
 
 **Derived fact**:
@@ -72,12 +76,12 @@ _Avoid_: Rank cutoff, implicit omission
 A bounded summary that orients an assessor to one Trial preparation through its ResultSpec, Source inventory, coverage limitations, document outlines, registry projection, and applicable pack and policy identities. It points to complete searchable sources rather than attempting to reproduce the full dossier.
 _Avoid_: Full-text context, trial dossier
 
-**SQ context pack**:
-One bounded, reproducible working view of the guidance, applicable Project rules, accepted reusable Evidence claims, retrieved passages, contradictions, and gated visual material presented while answering one signaling question. Successive views may traverse a complete Evidence Bundle under a versioned policy; no individual view is itself the Evidence Bundle.
-_Avoid_: Evidence Bundle, entire source document
+**Domain context pack**:
+The bounded, reproducible starting view for one Domain assessment work item, containing its Result and domain identity, applicable signaling questions and guidance, Project rules, Source inventory and limitations, accepted reusable Evidence claims, and required search and visual protocol. It organizes evidence by signaling question but points to bounded retrieval capabilities rather than reproducing a complete Evidence Bundle or source dossier.
+_Avoid_: Evidence Bundle, entire source document, SQ context pack
 
 **Context view manifest**:
-The host-neutral, ordered account of the exact domain items, revisions, pagination state, selection reasons, and deterministic transformations used to render one Trial orientation pack or SQ context pack. Host-specific payloads bind back to this manifest without claiming access to hidden provider prompts or reasoning.
+The host-neutral, ordered account of the exact domain items, revisions, pagination state, selection reasons, and deterministic transformations used to render one Trial orientation pack or Domain context pack. Host-specific payloads bind back to this manifest without claiming access to hidden provider prompts or reasoning.
 _Avoid_: Full prompt log, model context
 
 **SQ Answer revision**:
@@ -97,7 +101,7 @@ The permanent semantic identity of a signaling question, branch, rule, judgment 
 _Avoid_: Official question number, wording-derived ID
 
 **Logic pack**:
-An immutable normative definition of one supported RoB 2 instrument edition, trial design, and effect of interest. It contains logic-element identities, allowed answers, applicability, branching, judgment rules, and required assessor inputs, but not official explanatory wording.
+An immutable normative definition of one supported RoB 2 instrument edition, trial design, and effect of interest. It contains logic-element identities, allowed answers, applicability, branching, and deterministic judgment rules, but not official explanatory wording.
 _Avoid_: Guidance pack, prompt instructions
 
 **Guidance pack**:
@@ -113,36 +117,20 @@ The immutable, independently derived set of exhaustive valid paths, invalid inpu
 _Avoid_: Unit-test examples, engine-generated oracle
 
 **Algorithmic judgment revision**:
-A reproducible domain or overall RoB 2 judgment derived from an exact answer set, assessor inputs, and logic-pack version. Its decision trace explains the branch taken.
+A reproducible domain or overall RoB 2 judgment derived from an exact answer set and Logic-pack version. Its Decision trace explains the branch taken.
 _Avoid_: Model judgment, final judgment
 
 **Decision trace**:
-The deterministic, structured explanation of a Logic-pack evaluation, identifying its exact inputs, active and inactive questions, evaluated and matched rules, required assessor inputs, and resulting judgments. It records reproducible rule execution rather than hidden model reasoning.
+The deterministic, structured explanation of a Logic-pack evaluation, identifying its exact inputs, active and inactive questions, evaluated and matched rules, and resulting judgments. It records reproducible rule execution rather than hidden model reasoning.
 _Avoid_: Chain of thought, narrative rationale
 
-**Judgment override**:
-A human decision to replace an Algorithmic judgment without changing its underlying signaling-question answers. It requires an attributable rationale and explicit policy authority.
-_Avoid_: Corrected answer, edited judgment
+**Overall judgment policy**:
+The fixed maximum-domain roll-up in which all Low domain judgments produce Low overall, any High domain judgment produces High overall, and every remaining combination produces Some concerns. It does not escalate multiple Some-concerns domains through an additional assessor input.
+_Avoid_: Combined-concerns judgment, model roll-up, human escalation
 
 **Final judgment**:
-The current Algorithmic judgment after applying any active human Judgment override. It is a derived view rather than an independently editable value.
-_Avoid_: Proposed judgment, manual label
-
-**Domain review disposition**:
-An attributable human decision to accept, correct, override, or defer one domain under a specific Review policy. A dependent change invalidates the affected disposition.
-_Avoid_: Domain sign-off, checkbox approval
-
-**Assessment sign-off**:
-The final attributable human approval of an exact Result assessment after every domain satisfies the Review policy. It binds to the complete assessment snapshot and becomes invalid when any dependent artifact changes.
-_Avoid_: Trial approval, agent sign-off
-
-**Sign-off assurance**:
-The explicit strength of the identity claim attached to an Assessment sign-off. V1 uses local human attribution bound to an integrity-verifiable Assessment revision and does not claim independently or cryptographically verified identity.
-_Avoid_: Cryptographic signature, verified identity
-
-**Sign-off withdrawal**:
-An attributable Review receipt that ends the current applicability of an Assessment sign-off without changing the signed Assessment revision or its Domain review dispositions. The withdrawn sign-off and its outputs remain immutable history, while the unchanged Assessment may be inspected and signed again.
-_Avoid_: Delete signature, Assessment correction, dependency invalidation
+The current deterministic domain or overall judgment derived from the applicable SQ Answer revisions and Logic-pack release. It is never independently editable or replaced by a human override.
+_Avoid_: Proposed judgment, model judgment, manual label
 
 **Source descriptor**:
 The identity and expected roles of an obtained, missing, or discovered information source, including relevant dates and external identifiers. Roles are attributable classifications rather than forced labels, and the descriptor can exist even when no content was acquired.
@@ -176,6 +164,10 @@ _Avoid_: Separate file, copied document
 An immutable account of one transformation of a Source artifact into canonical document content, bound to the artifact hash, parser and configuration versions, output hashes, and quality observations. Initial extraction and recovery attempts remain distinct records.
 _Avoid_: Current parse, Source artifact
 
+**Parser-quality policy**:
+The versioned mapping from parser observations and decision relevance to page Coverage-map states and bounded recovery actions. LiteParse reason codes remain observations rather than confidence scores or standalone OCR, failure, or visual-inspection gates.
+_Avoid_: Parser confidence, OCR-all fallback, document quality score
+
 **Coverage map**:
 The page- and component-level account of what was read reliably, requires visual inspection or recovery, remains limited, or is intentionally blank. Aggregate source quality is derived from this map rather than represented by one opaque confidence score.
 _Avoid_: Parser confidence, pass/fail document
@@ -185,28 +177,24 @@ An immutable snapshot of Source availability, processing coverage, and assessmen
 _Avoid_: Input folder, bibliography
 
 **Source conflict**:
-Two or more Evidence claims that cannot all describe the same relevant event, population, analysis, outcome, or time point after accounting for chronology and amendments. Each account remains preserved; resolution requires an explicit methodological or chronological basis, and unresolved material conflicts become Review findings.
+Two or more Evidence claims that cannot all describe the same relevant event, population, analysis, outcome, or time point after accounting for chronology and amendments. Each account remains preserved; resolution requires an explicit methodological or chronological basis, and an unresolved material conflict prevents a complete assessment and overall judgment for the affected Result.
 _Avoid_: Any wording difference, automatic source precedence
 
 **Assessment revision**:
-The immutable, schema-versioned source of truth for one Result assessment, binding all exact input, evidence, answer, judgment, review, policy, and provenance revisions. Reports and exports are derived views, while a portable archive materializes every referenced artifact needed for independent verification.
+The immutable, schema-versioned source of truth for one Result assessment, binding all exact input, evidence, answer, deterministic judgment, pack, policy, and provenance revisions. Reports and exports are derived views, while a portable archive materializes every referenced artifact needed for independent verification.
 _Avoid_: Current assessment, report
 
 **Dependency invalidation**:
-The derived loss of current usability when an exact dependency of a revision changes, propagated only through its explicit dependency relationships. Invalidated revisions remain immutable and auditable, while affected preparation and human review resume from the earliest stale checkpoint.
+The derived loss of current usability when an exact dependency of a revision changes, propagated only through its explicit dependency relationships. Invalidated revisions remain immutable and auditable, while affected preparation resumes from the earliest stale checkpoint.
 _Avoid_: Deletion, blanket rerun, mutable stale flag
 
 **Actor**:
 The attributable human, agent run, or deterministic system component responsible for an authored or derived revision. Actor provenance states only identity and version information the host can actually establish.
 _Avoid_: User, model
 
-**Reviewer profile revision**:
-An immutable, project-scoped statement of the human identity used to attribute review actions, containing a required display name and optional affiliation or external identifiers. It supports local attribution and explicit session confirmation but is not an independently authenticated user account.
-_Avoid_: Login, verified identity, mutable reviewer name
-
-**Review policy**:
-The versioned project convention that determines human sign-off granularity and when closer inspection is required. The v1 default is per-domain sign-off with signaling-question drill-down for triaged concerns, but projects may adopt a different policy.
-_Avoid_: Hard-coded review workflow
+**Harness**:
+A supported agent host, initially Codex or Claude Code, that invokes rob2-kit skills and MCP tools while presenting progress and required run-control choices in its own conversation. It is an orchestration client; authoritative assessment and resume state remains in rob2-kit.
+_Avoid_: Companion workspace, web client, workflow engine
 
 **Evidence search policy**:
 The versioned project convention governing minimum search completion, result traversal, context-view assembly, visual escalation, operational ceilings, and the consequences of incomplete evidence coverage. It changes how evidence is sought and presented without changing RoB 2 decision logic or the semantic retrieval aids carried by the Guidance pack.
@@ -219,6 +207,50 @@ _Avoid_: Custom logic pack, hidden prompt instruction
 **Project manifest revision**:
 An immutable, portable statement of project intent that selects Outcome targets, supported RoB 2 scope, source adapters, pack releases, and applicable project policies. It is independent of host configuration and personal interface preferences, and each Preparation attempt binds its exact revision.
 _Avoid_: Host settings, user preferences, mutable project config
+
+**Confirmed run definition**:
+The immutable, human-approved meaning of one run, including its supported RoB 2 method and canonical Result definitions, populations, estimands, measurements, and time-point rules. Later inputs must map safely to it; changing its meaning requires a new run rather than rewriting the confirmed definition.
+_Avoid_: Semantic contract, mutable run definition, input snapshot
+
+**Current run**:
+The sole unfinished run selected for automatic continuation within one project root. Starting another run explicitly retires the previous Current run without deleting its Workflow ledger, artifacts, or inspectable history; completed and retired runs are never competing resume candidates.
+_Avoid_: Latest folder, concurrent active runs, deleted prior run
+
+**Run proposal**:
+An immutable, content-digested candidate run definition and initial Trial, registry, and Source inventory presented for human confirmation. An agent may map requested clinical concepts to engine-discovered candidates and locators, while deterministic validation enforces supported-method and referential constraints. Its opaque proposal token becomes stale if any bound input changes; confirmation promotes its exact meaning into a Confirmed run definition rather than editing the proposal in place.
+_Avoid_: Draft manifest, mutable run definition, unbound confirmation prompt
+
+**Run definition confirmation**:
+The human operator's one-time approval of a Confirmed run definition and its initial Trial, registry, and Source inventory before evidence mining begins. It authorizes execution but does not endorse any evidence, answer, or judgment produced by the run.
+_Avoid_: Assessment sign-off, result review, report approval
+
+**Input snapshot revision**:
+An immutable inventory of active Trial folders and Source artifacts at one scan, including stable identities, relative paths, content hashes, registry provenance, and their compatibility with the Confirmed run definition. Successive revisions preserve additions, changes, removals, and no-op scans without changing the run's meaning.
+_Avoid_: Confirmed run definition, folder timestamp, mutable file list
+
+**Input reconciliation**:
+The content-hash comparison of current Trial folders and Source artifacts with the latest Input snapshot revision. Compatible changes create an attributable snapshot revision and invalidate only dependent preparation scopes without another confirmation or rewritten history.
+_Avoid_: Reinitialize project, folder rescan, silent input mutation
+
+**Material input ambiguity**:
+An unresolved mismatch that could change whether a Trial, Source, or observed result belongs under the Confirmed run definition. It blocks completion rather than silently broadening that definition; the input must be corrected or removed, or assessed in a new run.
+_Avoid_: Low-confidence match, automatic remapping, report correction
+
+**Report audit**:
+The human reader's inspection of a generated Assessment report and its evidence trail after the run completes. It occurs outside rob2-kit and creates no review state, correction request, override, or sign-off within the system.
+_Avoid_: Guided review, Assessment sign-off, correction flow
+
+**Report bundle**:
+The fully local, manifest-rooted set of static human-readable reports and ancillary machine-readable outputs materialized from one completed run. It contains one Run index, one Result report or diagnostic report per requested Result, and their required visual assets, while the Assessment revisions and Workflow ledger remain the source of truth.
+_Avoid_: Web application, review workspace, verification archive
+
+**Run index**:
+The static entry page of a Report bundle, organizing every requested Trial and Result, its terminal preparation outcome, available report, domain and overall judgments where valid, and run-level limitations. It links to Result reports but creates no live dashboard, workflow state, or report-comparison mode.
+_Avoid_: Dashboard, project workspace, run controller
+
+**Result report**:
+The static human-audit projection of one complete Assessment revision, organized by RoB 2 domain and signaling question and exposing answers, rationales, supporting and contradicting Evidence claims, exact source phrases, Visual citations, Decision traces, coverage, and limitations through progressive disclosure. It is read-only and carries no correction, override, review, or sign-off state.
+_Avoid_: Review case, editable assessment, paper-level report
 
 **Visual-inspection gate**:
 A condition indicating that a signaling question depends on a table, figure, spatial layout, or suspect text extraction and therefore requires inspection of a rendered page or crop. Visual inspection is selective because it consumes substantially more model context than verified text.
@@ -233,19 +265,23 @@ The attributable outcome for a Visual candidate: inspected, shown irrelevant to 
 _Avoid_: Unlogged omission, screenshot count
 
 **Visual transcription**:
-An attributable reading of decision-relevant content from a rendered source region when canonical text is absent or unreliable. A legible transcription may support a draft answer but remains review-required, while an ambiguous region cannot support an answer; human acceptance never reclassifies it as machine-verified quoted text.
+An attributable reading of decision-relevant content from a rendered source region when canonical text is absent or unreliable. A legible transcription may support an answer when it is bound to the exact crop and transparently labeled as visual evidence, while an ambiguous region cannot support an answer; it is never reclassified as machine-verified canonical text.
 _Avoid_: Verified quote, OCR correction
 
 **Autonomous preparation**:
-An uninterrupted run that produces the maximum defensible draft assessment and a consolidated sign-off queue without asking humans questions mid-run. It preserves unresolved result identity, limited coverage, unverified evidence, and source conflicts as explicit review findings rather than silently guessing or treating operational limitations as RoB 2 answers.
-_Avoid_: Autonomous final assessment, fail-open assessment
+An uninterrupted post-confirmation run that produces the maximum defensible Assessment revision and static report without asking humans questions mid-run. An unresolved material evidence or coverage condition stops only the affected Result and produces a diagnostic report without an overall judgment rather than silently guessing or treating an operational limitation as a RoB 2 answer.
+_Avoid_: Unconfirmed run, fail-open assessment
 
 **Preparation attempt**:
 An immutable execution episode of Autonomous preparation under one exact engine, schema, parser, pack, and policy contract. An interrupted attempt may resume from committed checkpoints, while an execution-contract change creates a superseding attempt and recomputes only affected dependencies.
 _Avoid_: Run, mutable preparation
 
+**Execution contract**:
+The exact release-locked set of rob2-kit engine, skill hashes, schemas, parser, Logic pack, Guidance pack, and policies under which a Preparation attempt executes. Mutation requires an exact installed match; an intentional contract change creates a superseding attempt and declared Dependency invalidation rather than runtime version negotiation.
+_Avoid_: Compatible-enough version range, host capability matrix, implicit latest
+
 **Preparation outcome**:
-The terminal state of an Autonomous preparation: trial failed when a required primary source or Result cannot be recovered, preparation incomplete when an operational gap prevents a valid signaling-question answer, or draft ready when a complete Assessment revision can be reviewed despite declared nonblocking findings.
+The terminal state of an Autonomous preparation: trial failed when a required source or Result cannot be recovered, preparation incomplete when an operational or evidence gap prevents a valid assessment, or report ready when a complete Assessment revision and its deterministic report bundle have been materialized.
 _Avoid_: Assessment judgment, run status
 
 **Preparation checkpoint**:
@@ -256,13 +292,37 @@ _Avoid_: Run status, resume flag
 The next policy-permitted, bounded unit of agent reasoning issued from authoritative Workflow-ledger state, bound to exact dependencies, an expected submission kind, and a Preparation checkpoint. It is derived when requested rather than maintained as a separate mutable queue.
 _Avoid_: Prompt, agent task, mutable preparation queue
 
+**Domain assessment unit**:
+The coherent assessor unit for one RoB 2 domain of one Result, covering every signaling question active within that domain while retaining separate Evidence Bundles, rationales, and answers for each question. It contains exactly two ordered Preparation work items: freeze the domain's question-specific evidence, then answer against that frozen evidence. This bounds repeated context without combining all five domains or fragmenting orchestration into one task per signaling question.
+_Avoid_: Domain assessment work item, signaling-question task, whole-Result assessment task, domain-level evidence citation
+
+**Work token**:
+An opaque, engine-issued reference that authorizes exactly one typed submission for one active Preparation work item. The engine binds its permitted submission kind, dependency fingerprint, contract version, and checkpoint internally; an identical retry returns the committed result, while changed content, stale dependencies, or a mismatched submission kind is rejected. A successful nonterminal submission may return a successor token for the next work item in the same Domain assessment unit.
+_Avoid_: User-authored idempotency key, client-assembled mutation context, reusable authorization
+
 **Workflow ledger**:
-The authoritative, append-only account of committed preparation and review transitions, their actors, dependencies, input and output revisions, and outcomes. Current progress and human-action queues are derived from it rather than maintained as competing mutable histories.
+The authoritative, append-only account of committed initialization, confirmation, preparation, invalidation, report-materialization, and failure transitions, their actors, dependencies, input and output revisions, and outcomes. Current progress and the next permitted work item are derived from it rather than maintained as competing mutable state.
 _Avoid_: Audit log, status table, JSONL source of truth
 
 **Workflow event**:
-An immutable, ordered record of one meaningful committed preparation, invalidation, review, sign-off, or failure transition in the Workflow ledger. Detailed evidence-search activity and tool diagnostics remain referenced receipts rather than separate top-level Workflow events.
+An immutable, ordered record of one meaningful committed initialization, confirmation, preparation, invalidation, report-materialization, or failure transition in the Workflow ledger. Detailed evidence-search activity and tool diagnostics remain referenced receipts rather than separate top-level Workflow events.
 _Avoid_: GUI interaction, telemetry event, mutable status change
+
+**Workflow condition**:
+An expected structured outcome that changes or constrains the next permitted workflow action, such as stale work, input invalidation, retryable interruption, scoped incompleteness, a correctable blocker, or a Run integrity failure. It is returned through the normal tool result contract with commit and resume information rather than represented as an MCP transport or internal error.
+_Avoid_: Exception, tool crash, free-text warning
+
+**Run directive**:
+The single authoritative instruction derived from current Workflow-ledger state when a Harness continues a run: obtain confirmation, perform one bounded agent work item, surface a correctable run-wide blocker, acknowledge run completion, or stop for a Run integrity failure. Trial- and Result-scoped problems become diagnostic Preparation outcomes while unaffected work continues. A Run directive is distinct from read-only status and is never inferred by a Harness from folders, reports, or conversation history.
+_Avoid_: Harness-inferred next step, mutable task queue, run status
+
+**Run state**:
+The coarse durable condition presented to a Harness: awaiting confirmation, assessing, blocked, complete, integrity failed, or retired. It summarizes run control and health without exposing internal engine phases or collapsing Result-scoped outcomes into run failure.
+_Avoid_: Run directive, ledger event, Result status
+
+**Result preparation state**:
+The independently derived progress of one Result within a run: pending, assessing, report ready, or diagnostic ready. Complete and diagnostic Results coexist in one completed run, while their detailed reason and provenance remain in the Assessment or diagnostic report.
+_Avoid_: Run state, overall RoB 2 judgment, generic failed status
 
 **Replay guarantee**:
 The promise that committed agent outputs can be reused and all deterministic state can be reconstructed from their exact recorded inputs and revisions. It does not promise that rerunning a commercial model will reproduce the same output or hidden reasoning.
@@ -272,42 +332,6 @@ _Avoid_: Bit-for-bit model replay, conversation replay
 A failure that makes shared assessment state or reproducibility untrustworthy and therefore stops the whole run. Source and assessment problems that remain safely isolated to one trial are not Run integrity failures.
 _Avoid_: Trial failure, transient interruption
 
-**Review finding**:
-A typed condition that requires attention during sign-off, such as limited source coverage, unverified evidence, unresolved result identity, or conflicting sources. Its consequences come from the Review policy, while its reviewer-facing presentation uses plain biomedical language and a clear next action; it is distinct from a substantive `No information` signaling-question answer.
-_Avoid_: Warning, No information
-
-**Review queue**:
-The policy-derived, ordered view of human actions available after every Trial in scope reaches a Preparation outcome. It may contain repair, verification, acknowledgment, domain-review, and Assessment sign-off actions, but the underlying findings, revisions, dispositions, and sign-offs remain the authoritative records.
-_Avoid_: Final queue, mutable task list, warning list
-
-**Guided review flow**:
-The reviewer-facing traversal of a Review queue that ranks Trial × Result cards by their highest Review attention tier, then keeps review within the selected Result while presenting Action required, Inspect carefully, and Routine review items in that order. It guides attention without hiding any domain, signaling-question answer, rationale, Evidence claim, Decision trace, or relevant Visual transcription, and without replacing the Review policy.
-_Avoid_: Mandatory wizard, exception-only review, opaque approval queue
-
-**Review attention tier**:
-A policy-derived prioritization of human review as Action required, Inspect carefully, or Routine review. Action required is reserved for a condition that prevents Assessment sign-off under the Review policy; the tier changes ordering and review depth without changing the RoB 2 judgment or removing the requirement for per-domain human review.
-_Avoid_: Agent confidence, review severity, optional review
-
-**Companion workspace**:
-The reopenable browser projection of durable project, preparation, evidence, Assessment, and review state that a supported agent host may display beside its conversation from project start through sign-off. Opening, refreshing, closing, or reconnecting it performs no model inference and does not affect authoritative progress.
-_Avoid_: Agent transcript, live model session, standalone project editor
-
-**Review handoff**:
-The durable transfer from Autonomous preparation to direct human review, independent of whether an agent connection or browser session remains active. It preserves the exact next human action and returns control through a Review receipt.
-_Avoid_: Live agent session, temporary review link
-
-**Agent connection state**:
-The transient indication that an agent host is waiting, performing targeted work, disconnected, or requires reinvocation during a Review handoff. It is informational only; Workflow-ledger state remains authoritative and review progress does not depend on the connection remaining active.
-_Avoid_: Agent live status, preparation state, review status
-
-**Review receipt**:
-An immutable, typed outcome of a Review handoff, such as completed action, correction request, deferment, or Assessment sign-off, bound to the exact review and assessment revisions involved. It allows any later agent session to continue without relying on conversation history.
-_Avoid_: Chat confirmation, mutable completion flag
-
-**Correction request**:
-An attributable Review receipt that challenges an exact Assessment revision and identifies the smallest evidence, Result, signaling-question, or Domain scope requiring targeted rework. It blocks affected human review and sign-off without mutating or invalidating the challenged revision; successful rework creates a superseding Assessment revision whose actual affected scope is derived from recorded dependencies.
-_Avoid_: Inline correction, invalidated draft, reviewer-authored answer
-
 **Verification archive**:
 A portable, manifest-rooted package for checking an Assessment revision outside its working project. A complete archive materializes all transitive source and decision dependencies; a reference archive may omit bytes but must declare that source integrity is not independently verifiable.
 _Avoid_: Report bundle, backup, equally verifiable thin export
@@ -316,9 +340,9 @@ _Avoid_: Report bundle, backup, equally verifiable thin export
 An executable criterion tied to a claimed v1 behavior. Failure of a core gate blocks release, while an optional or experimental capability may degrade only when it is excluded from the completed assessment and its limitation is explicit.
 _Avoid_: Aspirational requirement, documented known failure
 
-**Hands-on preview**:
-An explicitly pre-release, draft-only build made available once a safe end-to-end assessment and review path works, so its owner and invited lab users can refine the workflow before public-v1 assurance is complete. It must preserve work and prevent agent sign-off, but broader usability validation and hardening remain visible follow-up work.
-_Avoid_: Public v1, validated assessment system
+**Private release evaluation**:
+A blinded, manual review of frozen-candidate Assessments against the private real-RCT corpus and its Provisional reference labels. It records discrepancies and blocks release when a clinically material disagreement remains unexplained, but it is not product logic, an executable Release acceptance gate, or a coded accuracy threshold.
+_Avoid_: Automated benchmark, correctness oracle, CI gate
 
 **Provisional reference label**:
 A prior assessment judgment used for comparison or discrepancy review when its assessor provenance, evidence, rationale, or adjudication method is incomplete. It may guide preview evaluation but is not a correctness oracle.
