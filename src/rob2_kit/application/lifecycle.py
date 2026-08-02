@@ -284,6 +284,7 @@ def lifecycle_event_for(event: WorkflowEvent) -> RunLifecycleEvent | ResultLifec
         "operation:run-integrity-failed": RunLifecycleEvent.INTEGRITY_FAILED,
         "operation:run-retired": RunLifecycleEvent.RETIRED,
         "operation:run-register-result": ResultLifecycleEvent.DISCOVERED,
+        "operation:run-register-diagnostic-result": ResultLifecycleEvent.DISCOVERED,
         "operation:result-discovered": ResultLifecycleEvent.DISCOVERED,
         "operation:result-started": ResultLifecycleEvent.STARTED,
         "operation:result-report-ready": ResultLifecycleEvent.REPORT_READY,

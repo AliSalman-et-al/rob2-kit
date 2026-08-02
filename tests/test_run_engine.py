@@ -19,7 +19,7 @@ from rob2_kit.application.contracts import (
     WorkflowCondition,
     WorkToken,
 )
-from rob2_kit.application.lifecycle import ResultState, RunState
+from rob2_kit.application.lifecycle import RunState
 from rob2_kit.application.run_engine import RunEngine
 from rob2_kit.domain.results import Comparison, Estimate, Result
 from rob2_kit.domain.revisions import Actor, ActorKind
@@ -236,7 +236,7 @@ def test_run_proposal_rejects_identifiers_not_issued_by_the_engine(tmp_path) -> 
         )
 
 
-def test_result_resolution_is_idempotent_without_double_discovery(tmp_path) -> None:
+def test_result_resolution_rejects_unissued_preconfirmation_token(tmp_path) -> None:
     engine = RunEngine()
     prepared = engine.prepare_run(
         PrepareRunRequest(project_root=tmp_path, authorized=True)
@@ -262,19 +262,13 @@ def test_result_resolution_is_idempotent_without_double_discovery(tmp_path) -> N
     repeated = engine.submit_result_resolution(request)
     status = engine.run_status(RunStatusRequest(run_id=prepared.run_id))
 
-    assert first.committed is True
+    assert first.condition is WorkflowCondition.STALE
+    assert first.committed is False
+    assert first.error is not None
+    assert first.error.code == "stale_work"
     assert repeated.committed is False
-    assert repeated.result_spec == first.result_spec
-    assert len(status.result_states) == 1
-    assert status.result_states[0].result_id == request.result.result_id
-    assert status.result_states[0].state is ResultState.PENDING
-
-    with pytest.raises(ValueError, match="different payload"):
-        engine.submit_result_resolution(
-            request.model_copy(
-                update={"result": result("result:trial-a-morbidity")}
-            )
-        )
+    assert repeated.condition is WorkflowCondition.STALE
+    assert status.result_states == ()
 
 
 def test_one_run_engine_process_rejects_a_second_project_root(tmp_path) -> None:

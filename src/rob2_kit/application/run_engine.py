@@ -63,6 +63,7 @@ from rob2_kit.application.lifecycle import (
 from rob2_kit.domain.assessment import JudgmentLevel
 from rob2_kit.domain.results import ResultSpecRevision
 from rob2_kit.domain.revisions import Actor, ActorKind, FrozenModel, Identifier
+from rob2_kit.domain.sources import SourceRole
 from rob2_kit.evidence.search import (
     CanonicalBlock,
     CanonicalPage,
@@ -75,6 +76,8 @@ from rob2_kit.ingestion.project import (
     DocumentParser,
     LiteParseAdapter,
     ProjectInitialization,
+    _parse_source,
+    _registry_source_descriptor,
     initialize_project,
 )
 from rob2_kit.logic.evaluator import EvaluationRequest, LogicEvaluator
@@ -164,6 +167,16 @@ class _ResultDiscoveredRecord(FrozenModel):
     run_id: Identifier
     result_id: Identifier
     result_spec: ResultSpecRevision
+
+
+class _DiagnosticResultDiscoveredRecord(FrozenModel):
+    """Typed lifecycle registration for a Trial with no assessable Result."""
+
+    lifecycle_event: Literal["diagnostic_result_discovered"] = "diagnostic_result_discovered"
+    run_id: Identifier
+    result_id: Identifier
+    trial_id: Identifier
+    reason: str
 
 
 class _ResultDiagnosticRecord(FrozenModel):
@@ -263,11 +276,18 @@ class RunEngine:
         # known, so its cache is always project-local.
         self._registry_adapter = registry_adapter or registry
         self._registry_client: Any | None = None
+        self._authorized_root: Path | None = None
         self._owner_id = f"owner:run-engine:{os.getpid()}:{uuid.uuid4()}"
 
     def prepare_run(self, request: PrepareRunRequest) -> PrepareRunResponse:
         root = request.project_root.resolve()
         self._bind(root)
+        try:
+            self._validate_project_root_layout(root)
+        except ValueError as error:
+            return self._prepare_root_configuration_error(root, error)
+        if request.authorized:
+            self._authorized_root = root
         state_root = root / ".rob2"
         ledger_path = state_root / "ledger.sqlite3"
         if not request.authorized and not ledger_path.is_file():
@@ -293,6 +313,8 @@ class RunEngine:
             return self._prepare_integrity_failure(root, str(error))
         if current is not None and not request.start_new:
             projection = self._projection(ledger, current.run_id)
+            if len(unfinished) > 1:
+                self._retire_prior_unfinished(ledger, unfinished[:-1], current.run_id)
             # A confirmed/blocked/assessing Current run resumes from durable
             # state without reopening semantic initialization.  An awaiting
             # proposal, however, is still mutable input: re-inventory it on
@@ -340,9 +362,86 @@ class RunEngine:
                     registered_result_ids = {
                         spec.result.result_id for spec in existing.initialization.result_specs
                     }
+                    diagnostic_result_ids = {
+                        event.scope
+                        for event in self._events_for_run(ledger, current.run_id)
+                        if event.operation == "operation:result-diagnostic-ready"
+                    }
                     for result_spec in initialization.result_specs:
                         result_id = result_spec.result.result_id
+                        failed_trial = next(
+                            (
+                                trial
+                                for trial in initialization.trials
+                                if trial.trial_id == result_spec.result.trial_id
+                                and trial.status == "trial_failed"
+                            ),
+                            None,
+                        )
                         if result_id in registered_result_ids:
+                            prior_spec = self._result_spec_for(
+                                ledger, current.run_id, result_id
+                            )
+                            if prior_spec is not None and prior_spec != result_spec:
+                                supersede_suffix = self._digest(
+                                    f"{current.run_id}|{result_id}|"
+                                    f"{result_spec.model_dump_json()}"
+                                )
+                                transitions.append(
+                                    self._transition(
+                                        scope=result_id,
+                                        operation="operation:result-spec-superseded",
+                                        operation_key=(
+                                            f"idempotency:result-spec-superseded-"
+                                            f"{supersede_suffix}"
+                                        ),
+                                        entity_id=f"result-spec:{result_id.removeprefix('result:')}",
+                                        revision_id=(
+                                            f"revision:result-spec-superseded-{supersede_suffix}"
+                                        ),
+                                        artifact=_ResultDiscoveredRecord(
+                                            run_id=current.run_id,
+                                            result_id=result_id,
+                                            result_spec=result_spec,
+                                        ),
+                                        checkpoint=(
+                                            f"checkpoint:result-spec-superseded-{supersede_suffix}"
+                                        ),
+                                        outcome=WorkflowEventOutcome.COMPLETED,
+                                        observed_at=now,
+                                    )
+                                )
+                            if failed_trial is None or result_id in diagnostic_result_ids:
+                                continue
+                            diagnostic_suffix = self._digest(
+                                f"{current.run_id}|{result_id}|diagnostic"
+                            )
+                            transitions.append(
+                                self._transition(
+                                    scope=result_id,
+                                    operation="operation:result-diagnostic-ready",
+                                    operation_key=(
+                                        f"idempotency:result-diagnostic-{diagnostic_suffix}"
+                                    ),
+                                    entity_id=f"result-diagnostic:{diagnostic_suffix}",
+                                    revision_id=f"revision:result-diagnostic-{diagnostic_suffix}",
+                                    artifact=_ResultDiagnosticRecord(
+                                        run_id=current.run_id,
+                                        result_id=result_id,
+                                        trial_id=failed_trial.trial_id,
+                                        reason=(
+                                            failed_trial.failure.detail
+                                            if failed_trial.failure is not None
+                                            else "Trial-specific initialization failed"
+                                        ),
+                                    ),
+                                    checkpoint=(
+                                        f"checkpoint:result-diagnostic-{diagnostic_suffix}"
+                                    ),
+                                    outcome=WorkflowEventOutcome.TRIAL_PROBLEM,
+                                    observed_at=now,
+                                )
+                            )
                             continue
                         result_suffix = self._digest(f"{current.run_id}|{result_id}")
                         transitions.append(
@@ -361,15 +460,6 @@ class RunEngine:
                                 outcome=WorkflowEventOutcome.COMPLETED,
                                 observed_at=now,
                             )
-                        )
-                        failed_trial = next(
-                            (
-                                trial
-                                for trial in initialization.trials
-                                if trial.trial_id == result_spec.result.trial_id
-                                and trial.status == "trial_failed"
-                            ),
-                            None,
                         )
                         if failed_trial is not None:
                             diagnostic_suffix = self._digest(
@@ -401,6 +491,63 @@ class RunEngine:
                                     observed_at=now,
                                 )
                             )
+                    registered_trial_ids = {
+                        result_spec.result.trial_id for result_spec in initialization.result_specs
+                    }
+                    for trial in initialization.trials:
+                        if trial.status != "trial_failed" or trial.trial_id in registered_trial_ids:
+                            continue
+                        result_id = self._diagnostic_result_id(current.run_id, trial.trial_id)
+                        if result_id in diagnostic_result_ids:
+                            continue
+                        reason = (
+                            trial.failure.detail
+                            if trial.failure is not None
+                            else "Trial-specific initialization failed"
+                        )
+                        diagnostic_suffix = self._digest(
+                            f"{current.run_id}|{result_id}|diagnostic"
+                        )
+                        transitions.extend(
+                            (
+                                self._transition(
+                                    scope=result_id,
+                                    operation="operation:run-register-diagnostic-result",
+                                    operation_key=(
+                                        f"idempotency:register-diagnostic-{diagnostic_suffix}"
+                                    ),
+                                    entity_id=f"diagnostic-result:{diagnostic_suffix}",
+                                    revision_id=f"revision:diagnostic-result-{diagnostic_suffix}",
+                                    artifact=_DiagnosticResultDiscoveredRecord(
+                                        run_id=current.run_id,
+                                        result_id=result_id,
+                                        trial_id=trial.trial_id,
+                                        reason=reason,
+                                    ),
+                                    checkpoint=f"checkpoint:diagnostic-result-{diagnostic_suffix}",
+                                    outcome=WorkflowEventOutcome.TRIAL_PROBLEM,
+                                    observed_at=now,
+                                ),
+                                self._transition(
+                                    scope=result_id,
+                                    operation="operation:result-diagnostic-ready",
+                                    operation_key=(
+                                        f"idempotency:result-diagnostic-{diagnostic_suffix}"
+                                    ),
+                                    entity_id=f"result-diagnostic:{diagnostic_suffix}",
+                                    revision_id=f"revision:result-diagnostic-{diagnostic_suffix}",
+                                    artifact=_ResultDiagnosticRecord(
+                                        run_id=current.run_id,
+                                        result_id=result_id,
+                                        trial_id=trial.trial_id,
+                                        reason=reason,
+                                    ),
+                                    checkpoint=f"checkpoint:result-diagnostic-{diagnostic_suffix}",
+                                    outcome=WorkflowEventOutcome.TRIAL_PROBLEM,
+                                    observed_at=now,
+                                ),
+                            )
+                        )
                     lease = self._acquire_lease(ledger, now)
                     committed = ledger.commit_batch(tuple(transitions), lease, now=now)
                     result = committed[0]
@@ -568,6 +715,55 @@ class RunEngine:
                         observed_at=now,
                     )
                 )
+        registered_trial_ids = {
+            result_spec.result.trial_id for result_spec in initialization.result_specs
+        }
+        for trial in initialization.trials:
+            if trial.status != "trial_failed" or trial.trial_id in registered_trial_ids:
+                continue
+            result_id = self._diagnostic_result_id(run_id, trial.trial_id)
+            reason = (
+                trial.failure.detail
+                if trial.failure is not None
+                else "Trial-specific initialization failed"
+            )
+            diagnostic_suffix = self._digest(f"{run_id}|{result_id}|diagnostic")
+            transitions.extend(
+                (
+                    self._transition(
+                        scope=result_id,
+                        operation="operation:run-register-diagnostic-result",
+                        operation_key=f"idempotency:register-diagnostic-{diagnostic_suffix}",
+                        entity_id=f"diagnostic-result:{diagnostic_suffix}",
+                        revision_id=f"revision:diagnostic-result-{diagnostic_suffix}",
+                        artifact=_DiagnosticResultDiscoveredRecord(
+                            run_id=run_id,
+                            result_id=result_id,
+                            trial_id=trial.trial_id,
+                            reason=reason,
+                        ),
+                        checkpoint=f"checkpoint:diagnostic-result-{diagnostic_suffix}",
+                        outcome=WorkflowEventOutcome.TRIAL_PROBLEM,
+                        observed_at=now,
+                    ),
+                    self._transition(
+                        scope=result_id,
+                        operation="operation:result-diagnostic-ready",
+                        operation_key=f"idempotency:result-diagnostic-{diagnostic_suffix}",
+                        entity_id=f"result-diagnostic:{diagnostic_suffix}",
+                        revision_id=f"revision:result-diagnostic-{diagnostic_suffix}",
+                        artifact=_ResultDiagnosticRecord(
+                            run_id=run_id,
+                            result_id=result_id,
+                            trial_id=trial.trial_id,
+                            reason=reason,
+                        ),
+                        checkpoint=f"checkpoint:result-diagnostic-{diagnostic_suffix}",
+                        outcome=WorkflowEventOutcome.TRIAL_PROBLEM,
+                        observed_at=now,
+                    ),
+                )
+            )
         lease = self._acquire_lease(ledger, now)
         committed = ledger.commit_batch(tuple(transitions), lease, now=now)
         projection = self._projection(ledger, run_id)
@@ -750,6 +946,14 @@ class RunEngine:
                 run_state=projection.run_state,
                 work_item=expected,
                 context=None,
+                error=OperationError(
+                    code="stale_work",
+                    detail="The supplied WorkToken does not match the current WorkItem.",
+                    recovery=(
+                        "Discard the forged or stale token and use the token returned "
+                        "by continue_run.",
+                    ),
+                ),
             )
         work_item = expected or WorkItem(
             work_item_id=request.work_token.work_item_id,
@@ -769,6 +973,9 @@ class RunEngine:
             result_spec = self._result_spec_for(ledger, request.run_id, work_item.result_id)
         trial_id = work_item.trial_id
         if trial_id is None and work_item.result_id is not None:
+            if result_spec is not None:
+                trial_id = result_spec.result.trial_id
+        if trial_id is None and work_item.result_id is not None:
             trial_id = next(
                 (
                     spec.result.trial_id
@@ -784,22 +991,32 @@ class RunEngine:
                     None,
                 ),
             )
-        trial = next(
-            (item for item in proposal.initialization.trials if item.trial_id == trial_id),
-            proposal.initialization.trials[0]
-            if proposal.initialization.trials
-            else None,
+        is_global_source_work = (
+            work_item.operation is RunOperation.SUBMIT_SOURCE_CLASSIFICATION
+            and work_item.trial_id is None
         )
-        scoped_trial_id = trial.trial_id if trial is not None else trial_id
+        definition = self._confirmed_definition(ledger, request.run_id)
+        selected_trial_ids = set(definition.trial_ids) if definition is not None else set()
+        trial = (
+            None
+            if is_global_source_work
+            else next(
+                (item for item in proposal.initialization.trials if item.trial_id == trial_id),
+                None,
+            )
+        )
+        scoped_trial_id = None if is_global_source_work else (
+            trial.trial_id if trial is not None else trial_id
+        )
         sources = (
-            tuple(trial.inventory.sources)
-            if trial is not None
-            else tuple(
+            tuple(
                 source
                 for item in proposal.initialization.trials
-                if item.status == "inventory_ready"
+                if item.status == "inventory_ready" and item.trial_id in selected_trial_ids
                 for source in item.inventory.sources
             )
+            if is_global_source_work
+            else tuple(trial.inventory.sources) if trial is not None else ()
         )
         context = WorkContext(
             work_item=work_item,
@@ -838,7 +1055,10 @@ class RunEngine:
         projection = self._projection(ledger, request.run_id)
         if projection.run_state is not RunState.AWAITING_CONFIRMATION:
             raise ValueError("a Run proposal can only be submitted before confirmation")
-        existing_event = self._event_for_operation_key(ledger, request.idempotency_key)
+        proposal = self._latest_proposal(ledger, request.run_id)
+        existing_event = self._event_for_operation_key(
+            ledger, request.idempotency_key, run_id=request.run_id
+        )
         if (
             existing_event is not None
             and existing_event.operation == "operation:run-proposal-submitted"
@@ -869,7 +1089,6 @@ class RunEngine:
                 run_state=projection.run_state,
                 proposal=existing_record.proposal,
             )
-        proposal = self._latest_proposal(ledger, request.run_id)
         if request.proposal_token != proposal.proposal_token:
             historical = self._proposal_for_token(ledger, request.run_id, request.proposal_token)
             if historical is not None:
@@ -893,7 +1112,26 @@ class RunEngine:
                         ),
                     ),
                 )
-            raise ValueError("Run proposal token is stale or was not issued by this Run")
+            return SubmitRunProposalResponse(
+                operation_id=self._read_operation_id(
+                    RunOperation.SUBMIT_RUN_PROPOSAL, request.run_id
+                ),
+                ledger_cursor=f"ledger:{len(ledger.events())}",
+                affected_scope=(request.run_id,),
+                condition=WorkflowCondition.STALE,
+                committed=False,
+                next_permitted_action=RunOperation.PREPARE_RUN,
+                run_id=request.run_id,
+                run_state=projection.run_state,
+                proposal=proposal,
+                error=OperationError(
+                    code="stale_proposal",
+                    detail="The supplied Run proposal token was not issued by this Run.",
+                    recovery=(
+                        "Discard the unknown proposal token and call prepare_run again.",
+                    ),
+                ),
+            )
         if self._input_snapshot_hash(self._required_root()) != proposal.input_snapshot_hash:
             return SubmitRunProposalResponse(
                 operation_id=self._read_operation_id(
@@ -918,6 +1156,7 @@ class RunEngine:
             )
         self._validate_proposal_selections(proposal, request.selections)
         proposal = self._refresh_registry_candidates(proposal, request.selections)
+        self._index_initial_evidence(self._required_root(), proposal.initialization)
         requested_ambiguities = request.ambiguities + request.unresolved_ambiguities
         self._validate_proposal_ambiguities(proposal, requested_ambiguities)
         submitted = proposal.model_copy(
@@ -947,7 +1186,11 @@ class RunEngine:
             observed_at=now,
         )
         self._validate_idempotent_event(
-            ledger, request.idempotency_key, transition.operation, record
+            ledger,
+            request.idempotency_key,
+            transition.operation,
+            record,
+            run_id=request.run_id,
         )
         lease = self._acquire_lease(ledger, now)
         result = ledger.commit(transition, lease, now=now)
@@ -969,6 +1212,27 @@ class RunEngine:
         ledger = self._bound_ledger(request.run_id)
         projection = self._projection(ledger, request.run_id)
         proposal = self._latest_proposal(ledger, request.run_id)
+        if request.confirmed_by.kind is not ActorKind.HUMAN:
+            return ConfirmRunDefinitionResponse(
+                operation_id=self._read_operation_id(
+                    RunOperation.CONFIRM_RUN_DEFINITION, request.run_id
+                ),
+                ledger_cursor=f"ledger:{len(ledger.events())}",
+                affected_scope=(request.run_id,),
+                condition=WorkflowCondition.RUN_BLOCKED,
+                committed=False,
+                next_permitted_action=RunOperation.SUBMIT_RUN_PROPOSAL,
+                run_id=request.run_id,
+                run_state=projection.run_state,
+                run_definition=None,
+                error=OperationError(
+                    code="authorization_required",
+                    detail="Run confirmation requires an attributable human Actor.",
+                    recovery=(
+                        "Provide a confirmed_by Actor with kind='human' and retry confirmation.",
+                    ),
+                ),
+            )
         if request.proposal_token != proposal.proposal_token:
             historical = self._proposal_for_token(ledger, request.run_id, request.proposal_token)
             if historical is not None:
@@ -992,12 +1256,35 @@ class RunEngine:
                         ),
                     ),
                 )
-            raise ValueError("Run proposal token is stale or was not issued by this Run")
-        existing = self._confirmed_for_idempotency(ledger, request.idempotency_key)
+            return ConfirmRunDefinitionResponse(
+                operation_id=self._read_operation_id(
+                    RunOperation.CONFIRM_RUN_DEFINITION, request.run_id
+                ),
+                ledger_cursor=f"ledger:{len(ledger.events())}",
+                affected_scope=(request.run_id,),
+                condition=WorkflowCondition.STALE,
+                committed=False,
+                next_permitted_action=RunOperation.PREPARE_RUN,
+                run_id=request.run_id,
+                run_state=projection.run_state,
+                run_definition=None,
+                error=OperationError(
+                    code="stale_proposal",
+                    detail="The supplied Run proposal token was not issued by this Run.",
+                    recovery=(
+                        "Discard the unknown proposal token and call prepare_run again.",
+                    ),
+                ),
+            )
+        existing = self._confirmed_for_idempotency(
+            ledger, request.idempotency_key, run_id=request.run_id
+        )
         if existing is not None:
             if existing.confirmed_by != request.confirmed_by:
                 raise ValueError("idempotency key was already used with a different payload")
-            existing_event = self._event_for_operation_key(ledger, request.idempotency_key)
+            existing_event = self._event_for_operation_key(
+                ledger, request.idempotency_key, run_id=request.run_id
+            )
             if existing_event is None:
                 raise RuntimeError("confirmed idempotency record disappeared during replay")
             return ConfirmRunDefinitionResponse(
@@ -1058,62 +1345,6 @@ class RunEngine:
                 ),
             )
         accepted = tuple(item for item in proposal.selections if item.accepted)
-        addressed_registry_ids = {
-            item.registry_candidate_id
-            for item in proposal.selections
-            if item.registry_candidate_id is not None
-        }
-        unconfirmed_registry = tuple(
-            item
-            for item in proposal.registry_candidates
-            if item.status in {"discovered", "fuzzy"}
-            and item.candidate_id not in addressed_registry_ids
-        )
-        selected_registry = {
-            item.registry_candidate_id: item
-            for item in accepted
-            if item.registry_candidate_id is not None
-        }
-        unfetched_selected_registry = tuple(
-            candidate
-            for candidate_id, candidate in {
-                item.candidate_id: item for item in proposal.registry_candidates
-            }.items()
-            if candidate_id in selected_registry
-            and selected_registry[candidate_id].accepted
-            and candidate.status in {"discovered", "fuzzy"}
-            and (
-                candidate.acquisition_status is not RegistryAcquisitionStatus.ACQUIRED
-                or candidate.raw_record_hash is None
-                or candidate.projection is None
-            )
-        )
-        if unconfirmed_registry or unfetched_selected_registry:
-            return ConfirmRunDefinitionResponse(
-                operation_id=self._read_operation_id(
-                    RunOperation.CONFIRM_RUN_DEFINITION, request.run_id
-                ),
-                ledger_cursor=f"ledger:{len(ledger.events())}",
-                affected_scope=(request.run_id,),
-                condition=WorkflowCondition.RUN_BLOCKED,
-                committed=False,
-                next_permitted_action=RunOperation.SUBMIT_RUN_PROPOSAL,
-                run_id=request.run_id,
-                run_state=projection.run_state,
-                run_definition=None,
-                error=OperationError(
-                    code="material_ambiguity",
-                    detail=(
-                        "Registry candidates require explicit confirmation and a fetched "
-                        "record before the Run definition can be confirmed."
-                    ),
-                    recovery=(
-                        "Select or explicitly reject each discovered registry candidate.",
-                        "Only confirm a discovered candidate after its immutable registry "
-                        "record is fetched and hashed.",
-                    ),
-                ),
-            )
         trial_ids = (
             tuple(item.trial_id for item in accepted)
             if proposal.selections
@@ -1157,14 +1388,37 @@ class RunEngine:
             for item in selected_candidate_items
             if item.result_id is not None and item.result_id not in selected_result_ids
         )
-        result_ids = selected_result_ids if proposal.selections else proposal.result_ids
+        result_ids = list(selected_result_ids if proposal.selections else proposal.result_ids)
+        # A selected failed Trial without a declared Result is represented by
+        # an engine-issued diagnostic identity.  Keep that terminal diagnostic
+        # inside the immutable confirmed scope so mixed batches can complete.
+        failed_trial_ids = {
+            trial.trial_id
+            for trial in proposal.initialization.trials
+            if trial.status == "trial_failed" and trial.trial_id in trial_ids
+        }
+        for trial_id in failed_trial_ids:
+            declared = tuple(
+                spec.result.result_id
+                for spec in proposal.initialization.result_specs
+                if spec.result.trial_id == trial_id
+            )
+            for result_id in declared or (self._diagnostic_result_id(request.run_id, trial_id),):
+                if result_id not in result_ids:
+                    result_ids.append(result_id)
+        result_ids = tuple(result_ids)
         selected_registry_candidate_ids = tuple(
             item.registry_candidate_id
             for item in accepted
             if item.registry_candidate_id is not None
         )
+        explicit_registry_candidate_ids = tuple(
+            item.candidate_id
+            for item in proposal.registry_candidates
+            if item.explicit and item.candidate_id not in selected_registry_candidate_ids
+        )
         registry_candidate_ids = (
-            selected_registry_candidate_ids
+            selected_registry_candidate_ids + explicit_registry_candidate_ids
             if proposal.selections
             else tuple(item.candidate_id for item in proposal.registry_candidates if item.explicit)
         )
@@ -1217,7 +1471,11 @@ class RunEngine:
             observed_at=now,
         )
         self._validate_idempotent_event(
-            ledger, request.idempotency_key, transition.operation, record
+            ledger,
+            request.idempotency_key,
+            transition.operation,
+            record,
+            run_id=request.run_id,
         )
         lease = self._acquire_lease(ledger, now)
         result = ledger.commit(transition, lease, now=now)
@@ -1309,15 +1567,22 @@ class RunEngine:
                 )
             )
         proposal = self._latest_proposal(ledger, request.run_id)
+        definition = self._confirmed_definition(ledger, request.run_id)
+        selected_trial_ids = set(definition.trial_ids) if definition is not None else set()
         issued_sources = {
             source.source_id
             for trial in proposal.initialization.trials
-            if trial.status == "inventory_ready"
+            if trial.status == "inventory_ready" and trial.trial_id in selected_trial_ids
             for source in trial.inventory.sources
+            if SourceRole.REGISTRY_CURRENT not in source.roles
         }
         submitted_sources = {item.source_id for item in request.classifications}
         if not submitted_sources <= issued_sources:
             raise ValueError("Source classification includes an unissued source identifier")
+        if submitted_sources != issued_sources:
+            raise ValueError(
+                "Source classification must include every inventory-ready source"
+            )
         result = self._commit_submission(
             ledger,
             run_id=request.run_id,
@@ -1358,31 +1623,31 @@ class RunEngine:
                     result_id=request.result.result_id,
                 )
             )
+        proposal = self._latest_proposal(ledger, request.run_id)
+        trial = next(
+            (
+                item
+                for item in proposal.initialization.trials
+                if item.trial_id == request.result.trial_id
+            ),
+            None,
+        )
+        if trial is None and proposal.initialization.trials:
+            raise ValueError("Result resolution references a Trial not issued by this Run")
+        if trial is not None and trial.status == "trial_failed":
+            raise ValueError("Result resolution is not permitted for a failed Trial")
+        if request.result.effect_of_interest != "assignment":
+            raise ValueError(
+                "unsupported RoB 2 Result effect of interest "
+                f"{request.result.effect_of_interest!r}; supported effect is 'assignment'"
+            )
         expected = self._next_work_item(ledger, request.run_id)
         if (
-            expected is not None
-            and expected.operation is RunOperation.SUBMIT_RESULT_RESOLUTION
-            and expected.result_id is not None
-            and (
-                request.result.result_id != expected.result_id
-                or request.result.trial_id != expected.trial_id
-            )
-        ):
-            stale = StaleWorkTokenError(request.run_id, expected)
-            return SubmitResultResolutionResponse(
-                **self._stale_submission_kwargs(
-                    stale,
-                    RunOperation.SUBMIT_RESULT_RESOLUTION,
-                    ledger,
-                    result_id=request.result.result_id,
-                )
-            )
-        if (
-            expected is not None
-            and expected.operation is RunOperation.SUBMIT_RESULT_RESOLUTION
-            and expected.result_id is None
-            and expected.trial_id is not None
-            and request.result.trial_id != expected.trial_id
+            expected is None
+            or expected.operation is not RunOperation.SUBMIT_RESULT_RESOLUTION
+            or expected.result_id is None
+            or request.result.result_id != expected.result_id
+            or request.result.trial_id != expected.trial_id
         ):
             stale = StaleWorkTokenError(request.run_id, expected)
             return SubmitResultResolutionResponse(
@@ -1404,7 +1669,14 @@ class RunEngine:
                     result_id=request.result.result_id,
                 )
             )
-        existing = self._event_for_operation_key(ledger, request.idempotency_key)
+        existing = self._event_for_operation_key(
+            ledger, request.idempotency_key, run_id=request.run_id
+        )
+        if (
+            existing is None
+            and self._event_for_operation_key(ledger, request.idempotency_key) is not None
+        ):
+            raise ValueError("idempotency key was already used by another Run")
         suffix = self._digest(request.idempotency_key)
         if existing is not None:
             if existing.operation not in {
@@ -1666,7 +1938,13 @@ class RunEngine:
         proposal: RunProposal,
         selections: tuple[RunProposalSelection, ...],
     ) -> RunProposal:
-        """Fetch provenance for accepted discovered candidates before confirmation."""
+        """Fetch and durably project provenance for accepted registry candidates.
+
+        Registry acquisition is an external capability, so it is only invoked
+        during an explicitly authorized prepare/submit call.  The immutable
+        proposal carries the complete acquisition, source, and receipt
+        projection; later assessment calls only read that projection.
+        """
 
         accepted_ids = {
             selection.registry_candidate_id
@@ -1675,10 +1953,16 @@ class RunEngine:
         }
         if not accepted_ids:
             return proposal
+        if self._authorized_root is None or self._authorized_root != self._root:
+            return proposal
         adapter = self._registry_adapter or self._registry_client
         if adapter is None:
             return proposal
         candidates = {item.candidate_id: item for item in proposal.registry_candidates}
+        trials = {item.trial_id: item for item in proposal.initialization.trials}
+        receipts = {
+            item.receipt_id: item for item in proposal.initialization.acquisition_receipts
+        }
         changed = False
         for candidate_id in accepted_ids:
             candidate = candidates.get(candidate_id)
@@ -1696,7 +1980,7 @@ class RunEngine:
                 )
             except Exception:
                 continue
-            candidates[candidate_id] = candidate.model_copy(
+            refreshed = candidate.model_copy(
                 update={
                     "nct_id": acquisition.resolution.nct_id or candidate.nct_id,
                     "acquisition_status": acquisition.status,
@@ -1704,10 +1988,70 @@ class RunEngine:
                     "projection": acquisition.projection,
                 }
             )
+            candidates[candidate_id] = refreshed
+            trial = trials.get(candidate.trial_id)
+            if trial is not None:
+                registry_source, receipt = _registry_source_descriptor(
+                    trial.trial_id,
+                    acquisition,
+                    ENGINE_ACTOR,
+                )
+                if registry_source is not None and registry_source.artifact_hash is not None:
+                    try:
+                        parser = self._parser or LiteParseAdapter()
+                        artifacts = ArtifactStore(self._required_root() / ".rob2" / "artifacts")
+                        parse_records, coverage = _parse_source(
+                            parser,
+                            artifacts.read(registry_source.artifact_hash),
+                            registry_source.source_id,
+                            registry_source.artifact_hash,
+                            allow_recovery=False,
+                        )
+                        registry_source = registry_source.model_copy(
+                            update={"parse_records": parse_records, "coverage": coverage}
+                        )
+                    except Exception:
+                        pass
+                sources = tuple(
+                    source
+                    for source in trial.inventory.sources
+                    if SourceRole.REGISTRY_CURRENT not in source.roles
+                )
+                if registry_source is not None:
+                    sources += (registry_source,)
+                updated_candidates = tuple(
+                    refreshed
+                    if item.candidate_id == candidate_id
+                    else item
+                    for item in trial.registry_candidates
+                )
+                trials[candidate.trial_id] = trial.model_copy(
+                    update={
+                        "inventory": trial.inventory.model_copy(
+                            update={"sources": sources}
+                        ),
+                        "registry_acquisition": acquisition,
+                        "registry_candidates": updated_candidates,
+                    }
+                )
+                if receipt is not None:
+                    receipts[receipt.receipt_id] = receipt
             changed = True
         if not changed:
             return proposal
-        return proposal.model_copy(update={"registry_candidates": tuple(candidates.values())})
+        initialization = proposal.initialization.model_copy(
+            update={
+                "trials": tuple(trials.values()),
+                "acquisition_receipts": tuple(receipts.values()),
+                "registry_candidates": tuple(candidates.values()),
+            }
+        )
+        return proposal.model_copy(
+            update={
+                "initialization": initialization,
+                "registry_candidates": tuple(candidates.values()),
+            }
+        )
 
     @staticmethod
     def _validate_method_request(request: PrepareRunRequest) -> None:
@@ -2171,10 +2515,14 @@ class RunEngine:
                 "operation:result-discovered",
                 "operation:submit-result-resolution",
                 "operation:run-register-result",
+                "operation:result-spec-superseded",
             }:
                 continue
             try:
-                if event.operation == "operation:run-register-result":
+                if event.operation in {
+                    "operation:run-register-result",
+                    "operation:result-spec-superseded",
+                }:
                     record = _ResultDiscoveredRecord.model_validate_json(
                         ledger.artifacts.read(event.output_revision_hashes[0])
                     )
@@ -2197,10 +2545,9 @@ class RunEngine:
         expected_operation: RunOperation,
     ) -> WorkflowLedger:
         ledger = self._bound_ledger(run_id)
-        # Before confirmation, the historical unit tests exercise the typed
-        # idempotency record directly.  Once a Run is assessing, every write
-        # must use the exact currently issued opaque token and dependency
-        # fingerprint; this is the stale-work guard exposed to MCP callers.
+        # Every write requires the exact currently issued opaque token and
+        # dependency fingerprint; this is the stale-work guard exposed to MCP
+        # callers in every Run state.
         projection = self._projection(ledger, run_id)
         if work_token.run_id != run_id or work_token.operation is not expected_operation:
             expected = (
@@ -2209,6 +2556,8 @@ class RunEngine:
                 else None
             )
             raise StaleWorkTokenError(run_id, expected)
+        if projection.run_state is not RunState.ASSESSING:
+            raise StaleWorkTokenError(run_id, None)
         if projection.run_state is RunState.ASSESSING:
             expected = self._next_work_item(ledger, run_id)
             if expected is None or expected.work_token != work_token:
@@ -2284,23 +2633,46 @@ class RunEngine:
             observed_at=now,
         )
         if not idempotency_validated:
-            self._validate_idempotent_event(ledger, operation_key, operation, artifact)
+            self._validate_idempotent_event(
+                ledger,
+                operation_key,
+                operation,
+                artifact,
+                run_id=run_id,
+            )
         lease = self._acquire_lease(ledger, now)
         return ledger.commit(transition, lease, now=now)
 
     @staticmethod
     def _event_for_operation_key(
-        ledger: WorkflowLedger, operation_key: Identifier
+        ledger: WorkflowLedger,
+        operation_key: Identifier,
+        *,
+        run_id: Identifier | None = None,
     ) -> WorkflowEvent | None:
-        return next(
-            (event for event in ledger.events() if event.operation_key == operation_key),
-            None,
-        )
+        for event in ledger.events():
+            if event.operation_key != operation_key:
+                continue
+            if run_id is None:
+                return event
+            if event.scope == run_id:
+                return event
+            try:
+                payload = json.loads(ledger.artifacts.read(event.output_revision_hashes[0]))
+            except (IndexError, UnicodeDecodeError, json.JSONDecodeError):
+                continue
+            if isinstance(payload, dict) and payload.get("run_id") == run_id:
+                return event
+        return None
 
     def _confirmed_for_idempotency(
-        self, ledger: WorkflowLedger, operation_key: Identifier
+        self,
+        ledger: WorkflowLedger,
+        operation_key: Identifier,
+        *,
+        run_id: Identifier | None = None,
     ) -> ConfirmedRunDefinition | None:
-        event = self._event_for_operation_key(ledger, operation_key)
+        event = self._event_for_operation_key(ledger, operation_key, run_id=run_id)
         if event is None or event.operation != "operation:run-confirmed":
             return None
         try:
@@ -2316,8 +2688,13 @@ class RunEngine:
         operation_key: Identifier,
         operation: Identifier,
         artifact: FrozenModel,
+        *,
+        run_id: Identifier | None = None,
     ) -> None:
-        existing = self._event_for_operation_key(ledger, operation_key)
+        existing = self._event_for_operation_key(ledger, operation_key, run_id=run_id)
+        global_existing = self._event_for_operation_key(ledger, operation_key)
+        if existing is None and global_existing is not None:
+            raise ValueError("idempotency key was already used by another Run")
         if existing is None:
             return
         if existing.operation != operation:
@@ -2463,9 +2840,12 @@ class RunEngine:
             if (
                 selection.result_candidate_id is not None
                 and issued_result_candidates[selection.result_candidate_id].status == "needs_input"
-                and not selection.result_id.startswith("result:")
+                and selection.result_id
+                != issued_result_candidates[selection.result_candidate_id].result_id
             ):
-                raise ValueError("resolved Result candidate requires a result: identifier")
+                raise ValueError(
+                    "resolved Result candidate must use its engine-issued Result identifier"
+                )
             if selection.result_id in issued_results and selection.outcome_target_id is not None:
                 existing_target_ids = {
                     candidate.outcome_target_id
@@ -2499,17 +2879,14 @@ class RunEngine:
         ambiguities: tuple[RunProposalAmbiguity, ...],
     ) -> None:
         issued = {item.ambiguity_id: item for item in proposal.ambiguities}
-        allowed_scopes = set(proposal.trial_ids) | set(proposal.result_ids)
-        allowed_scopes.update(item.candidate_id for item in proposal.result_candidates)
-        allowed_scopes.update(item.candidate_id for item in proposal.registry_candidates)
         seen: set[Identifier] = set()
         for item in ambiguities:
             if item.ambiguity_id in seen:
                 raise ValueError("Run proposal contains a duplicate ambiguity")
             seen.add(item.ambiguity_id)
-            if item.ambiguity_id not in issued and item.scope not in allowed_scopes:
+            if item.ambiguity_id not in issued:
                 raise ValueError(
-                    "Run proposal ambiguity must reference an issued Trial, Result, or candidate"
+                    "Run proposal ambiguity identifier was not issued by this Run"
                 )
             if item.ambiguity_id in issued:
                 original = issued[item.ambiguity_id]
@@ -2522,6 +2899,14 @@ class RunEngine:
                 if item.resolved and item.material and not (item.resolution or "").strip():
                     raise ValueError(
                         "a resolved material Run proposal ambiguity requires a resolution"
+                    )
+                if (
+                    item.resolved
+                    and original.detail.startswith("Multiple top-level PDFs found;")
+                ):
+                    raise ValueError(
+                        "primary-report ambiguity must be resolved by an explicit "
+                        "trial.yaml primary_report declaration"
                     )
             elif item.resolved and item.material and not (item.resolution or "").strip():
                 raise ValueError(
@@ -2595,8 +2980,12 @@ class RunEngine:
         for candidate in candidates.values():
             if candidate.result_id is not None and candidate.result_id not in result_ids:
                 result_ids.append(candidate.result_id)
+        initialization = proposal.initialization.model_copy(
+            update={"result_candidates": tuple(candidates.values())}
+        )
         return proposal.model_copy(
             update={
+                "initialization": initialization,
                 "result_candidates": tuple(candidates.values()),
                 "ambiguities": tuple(ambiguities.values()),
                 "result_ids": tuple(result_ids),
@@ -2613,6 +3002,28 @@ class RunEngine:
             ResultState.PENDING,
         )
 
+    def _diagnostic_result_id(self, run_id: Identifier, trial_id: Identifier) -> Identifier:
+        """Issue a Run-scoped identity for a terminal Trial diagnostic."""
+
+        digest = self._digest(f"{run_id}|diagnostic-result|{trial_id}")
+        return f"result:diagnostic-{digest}"
+
+    def _confirmed_definition(
+        self, ledger: WorkflowLedger, run_id: Identifier
+    ) -> ConfirmedRunDefinition | None:
+        """Read the immutable definition that bounds post-confirmation work."""
+
+        for event in reversed(self._events_for_run(ledger, run_id)):
+            if event.operation != "operation:run-confirmed":
+                continue
+            try:
+                return _ConfirmedRunRecord.model_validate_json(
+                    ledger.artifacts.read(event.output_revision_hashes[0])
+                ).run_definition
+            except (IndexError, ValueError):
+                return None
+        return None
+
     def _next_work_item(self, ledger: WorkflowLedger, run_id: Identifier) -> WorkItem | None:
         """Derive the next bounded submission from committed checkpoints."""
 
@@ -2621,27 +3032,53 @@ class RunEngine:
             return None
         proposal = self._latest_proposal(ledger, run_id)
         events = self._events_for_run(ledger, run_id)
-        if not any(event.operation == "operation:run-confirmed" for event in events):
+        definition = self._confirmed_definition(ledger, run_id)
+        if definition is None:
             return None
+        selected_trial_ids = set(definition.trial_ids)
         if (
-            any(trial.status == "inventory_ready" for trial in proposal.initialization.trials)
-            and not any(
-                event.operation == "operation:submit-source-classification"
-                for event in events
+            any(
+                trial.status == "inventory_ready" and trial.trial_id in selected_trial_ids
+                for trial in proposal.initialization.trials
+            )
+            and not self._source_classification_complete(
+                proposal,
+                ledger,
+                events,
+                selected_trial_ids=selected_trial_ids,
             )
         ):
             return self._work_item(run_id, "sources", RunOperation.SUBMIT_SOURCE_CLASSIFICATION)
-        if not proposal.initialization.trials:
+        if not selected_trial_ids:
             return None
 
-        all_result_ids = self._result_ids(ledger, run_id, proposal)
-        failed_result_ids = self._failed_result_ids(proposal)
-        unresolved_trial = self._unresolved_trial_id(proposal, ledger, events)
+        all_result_ids = self._result_ids(ledger, run_id, proposal, definition=definition)
+        failed_result_ids = self._failed_result_ids(proposal, result_ids=set(all_result_ids))
+        failed_result_ids |= frozenset(
+            self._diagnostic_result_id(run_id, trial.trial_id)
+            for trial in proposal.initialization.trials
+            if trial.status == "trial_failed"
+            and trial.trial_id in selected_trial_ids
+            and not any(
+                spec.result.trial_id == trial.trial_id
+                for spec in proposal.initialization.result_specs
+            )
+        )
+        unresolved_trial = self._unresolved_trial_id(
+            proposal,
+            ledger,
+            events,
+            definition=definition,
+        )
         if unresolved_trial is not None:
+            unresolved_result_id = self._issued_unresolved_result_id(
+                run_id, unresolved_trial
+            )
             return self._work_item(
                 run_id,
                 f"result:unresolved:{unresolved_trial.removeprefix('trial:')}",
                 RunOperation.SUBMIT_RESULT_RESOLUTION,
+                result_id=unresolved_result_id,
                 trial_id=unresolved_trial,
             )
         result_ids = tuple(
@@ -2737,15 +3174,26 @@ class RunEngine:
         proposal: RunProposal,
         ledger: WorkflowLedger,
         events: tuple[WorkflowEvent, ...],
+        *,
+        definition: ConfirmedRunDefinition,
     ) -> Identifier | None:
+        selected_trial_ids = set(definition.trial_ids)
+        selected_result_ids = set(definition.result_ids)
         failed_trials = {
             trial.trial_id
             for trial in proposal.initialization.trials
-            if trial.status == "trial_failed"
+            if trial.status == "trial_failed" and trial.trial_id in selected_trial_ids
         }
         resolved_trials = {
-            spec.result.trial_id for spec in proposal.initialization.result_specs
+            spec.result.trial_id
+            for spec in proposal.initialization.result_specs
+            if spec.result.result_id in selected_result_ids
         }
+        resolved_trials.update(
+            candidate.trial_id
+            for candidate in proposal.result_candidates
+            if candidate.result_id in selected_result_ids
+        )
         for event in events:
             if event.operation not in {
                 "operation:result-discovered",
@@ -2759,13 +3207,23 @@ class RunEngine:
             raw_result = raw_spec.get("result")
             if isinstance(raw_result, dict):
                 trial_id = raw_result.get("trial_id")
-                if isinstance(trial_id, str):
+                result_id = raw_result.get("result_id")
+                if (
+                    isinstance(trial_id, str)
+                    and isinstance(result_id, str)
+                    and result_id
+                    in selected_result_ids.union(
+                        self._issued_unresolved_result_id(definition.run_id, trial_id)
+                        for trial_id in selected_trial_ids
+                    )
+                ):
                     resolved_trials.add(trial_id)
         return next(
             (
                 trial.trial_id
                 for trial in proposal.initialization.trials
                 if trial.status == "inventory_ready"
+                and trial.trial_id in selected_trial_ids
                 and trial.trial_id not in failed_trials
                 and trial.trial_id not in resolved_trials
             ),
@@ -2800,8 +3258,18 @@ class RunEngine:
         ledger: WorkflowLedger,
         run_id: Identifier,
         proposal: RunProposal,
+        *,
+        definition: ConfirmedRunDefinition | None = None,
     ) -> tuple[Identifier, ...]:
-        ids = list(proposal.result_ids)
+        definition = definition or self._confirmed_definition(ledger, run_id)
+        if definition is None:
+            return ()
+        ids = list(definition.result_ids)
+        allowed_event_ids = set(definition.result_ids)
+        allowed_event_ids.update(
+            self._issued_unresolved_result_id(run_id, trial_id)
+            for trial_id in definition.trial_ids
+        )
         for event in self._events_for_run(ledger, run_id):
             if event.operation not in {
                 "operation:result-discovered",
@@ -2810,9 +3278,19 @@ class RunEngine:
                 continue
             payload = self._event_payload(ledger, event)
             result_id = payload.get("result_id")
-            if isinstance(result_id, str) and result_id not in ids:
+            if (
+                isinstance(result_id, str)
+                and result_id in allowed_event_ids
+                and result_id not in ids
+            ):
                 ids.append(result_id)
         return tuple(ids)
+
+    def _issued_unresolved_result_id(
+        self, run_id: Identifier, trial_id: Identifier
+    ) -> Identifier:
+        digest = self._digest(f"{run_id}|unresolved-result|{trial_id}")
+        return f"result:unresolved-{digest}"
 
     def _trial_id_for_result(self, result_id: Identifier | None) -> Identifier | None:
         if result_id is None or self._root is None:
@@ -2836,7 +3314,7 @@ class RunEngine:
             )
             if result_trial is not None:
                 return result_trial
-            return next(
+            candidate_trial = next(
                 (
                     candidate.trial_id
                     for candidate in proposal.result_candidates
@@ -2844,6 +3322,27 @@ class RunEngine:
                 ),
                 None,
             )
+            if candidate_trial is not None:
+                return candidate_trial
+            for event in self._events_for_run(ledger, current.run_id):
+                if event.operation not in {
+                    "operation:result-discovered",
+                    "operation:submit-result-resolution",
+                }:
+                    continue
+                payload = self._event_payload(ledger, event)
+                if payload.get("result_id") != result_id:
+                    continue
+                raw_spec = payload.get("result_spec")
+                if isinstance(raw_spec, dict):
+                    raw_result = raw_spec.get("result")
+                    if isinstance(raw_result, dict) and isinstance(
+                        raw_result.get("trial_id"), str
+                    ):
+                        raw_trial_id = raw_result.get("trial_id")
+                        if isinstance(raw_trial_id, str):
+                            return raw_trial_id
+            return None
         except (StopIteration, AttributeError, ValueError):
             return None
 
@@ -2905,6 +3404,36 @@ class RunEngine:
         records = self._unfinished_prepared_records(ledger)
         return records[-1] if records else None
 
+    def _retire_prior_unfinished(
+        self,
+        ledger: WorkflowLedger,
+        records: tuple[_PreparedRunRecord, ...],
+        replacement_run_id: Identifier,
+    ) -> None:
+        now = datetime.now(UTC)
+        transitions: list[Transition] = []
+        for prior in records:
+            suffix = self._digest(f"{prior.run_id}|{replacement_run_id}|retired")
+            transitions.append(
+                self._transition(
+                    scope=prior.run_id,
+                    operation="operation:run-retired",
+                    operation_key=f"idempotency:retire-run-{suffix}",
+                    entity_id=f"run-retirement:{suffix}",
+                    revision_id=f"revision:run-retirement-{suffix}",
+                    artifact=_RunRetiredRecord(
+                        run_id=prior.run_id,
+                        replacement_run_id=replacement_run_id,
+                    ),
+                    checkpoint="checkpoint:run-retired",
+                    outcome=WorkflowEventOutcome.COMPLETED,
+                    observed_at=now,
+                )
+            )
+        if transitions:
+            lease = self._acquire_lease(ledger, now)
+            ledger.commit_batch(tuple(transitions), lease, now=now)
+
     def _unfinished_prepared_records(
         self, ledger: WorkflowLedger
     ) -> tuple[_PreparedRunRecord, ...]:
@@ -2914,6 +3443,39 @@ class RunEngine:
             if self._projection(ledger, record.run_id).run_state
             not in {RunState.COMPLETE, RunState.RETIRED}
         )
+
+    @staticmethod
+    def _source_classification_complete(
+        proposal: RunProposal,
+        ledger: WorkflowLedger,
+        events: tuple[WorkflowEvent, ...],
+        *,
+        selected_trial_ids: set[Identifier],
+    ) -> bool:
+        """Return whether every inventory-ready source has a durable role set."""
+
+        issued_sources = {
+            source.source_id
+            for trial in proposal.initialization.trials
+            if trial.status == "inventory_ready" and trial.trial_id in selected_trial_ids
+            for source in trial.inventory.sources
+            if SourceRole.REGISTRY_CURRENT not in source.roles
+        }
+        if not issued_sources:
+            return True
+        classified: set[Identifier] = set()
+        for event in events:
+            if event.operation != "operation:submit-source-classification":
+                continue
+            payload = RunEngine._event_payload(ledger, event)
+            raw = payload.get("classifications")
+            if not isinstance(raw, (list, tuple)):
+                continue
+            for item in raw:
+                source_id = item.get("source_id") if isinstance(item, dict) else None
+                if isinstance(source_id, str):
+                    classified.add(source_id)
+        return issued_sources <= classified
 
     def _latest_prepared_record(self, ledger: WorkflowLedger) -> _PreparedRunRecord | None:
         records = self._prepared_records(ledger)
@@ -2962,7 +3524,11 @@ class RunEngine:
         return None
 
     @staticmethod
-    def _failed_result_ids(proposal: RunProposal) -> frozenset[Identifier]:
+    def _failed_result_ids(
+        proposal: RunProposal,
+        *,
+        result_ids: set[Identifier] | None = None,
+    ) -> frozenset[Identifier]:
         failed_trials = {
             trial.trial_id
             for trial in proposal.initialization.trials
@@ -2972,6 +3538,7 @@ class RunEngine:
             spec.result.result_id
             for spec in proposal.initialization.result_specs
             if spec.result.trial_id in failed_trials
+            and (result_ids is None or spec.result.result_id in result_ids)
         )
 
     def _proposal(
@@ -2990,6 +3557,7 @@ class RunEngine:
             "registry_acquisition_failed",
             "registry_candidates",
             "trial_failed",
+            "conflicting_registry_identifiers",
         }
         finding_ambiguities = tuple(
             RunProposalAmbiguity(
@@ -3012,7 +3580,7 @@ class RunEngine:
                     f"Registry candidate {candidate.nct_id or 'unavailable'} "
                     f"for {candidate.trial_id} requires explicit confirmation."
                 ),
-                material=True,
+                material=False,
             )
             for candidate in initialization.registry_candidates
             if candidate.status in {"discovered", "fuzzy"}
@@ -3195,6 +3763,59 @@ class RunEngine:
             run_id=rejected_run_id,
             run_state=RunState.BLOCKED,
             error=OperationError(code=code, detail=detail, recovery=recovery),
+        )
+
+    @staticmethod
+    def _validate_project_root_layout(root: Path) -> None:
+        for path in (
+            root / "rob2.yaml",
+            root / "input",
+            root / "output",
+            root / ".rob2",
+        ):
+            if path.is_symlink():
+                raise ValueError(f"project path symlinks are not permitted: {path}")
+            if not path.resolve().is_relative_to(root):
+                raise ValueError(f"project path escapes project root: {path}")
+            if path.name == "rob2.yaml":
+                if path.exists() and not path.is_file():
+                    raise ValueError(f"project configuration must be a file: {path}")
+            elif path.exists() and not path.is_dir():
+                raise ValueError(f"project layout path must be a directory: {path}")
+            if not path.is_dir():
+                continue
+            for nested in path.rglob("*"):
+                if nested.is_symlink():
+                    raise ValueError(
+                        f"project path symlinks are not permitted: {nested}"
+                    )
+                if not nested.resolve().is_relative_to(root):
+                    raise ValueError(f"project path escapes project root: {nested}")
+
+    def _prepare_root_configuration_error(
+        self,
+        root: Path,
+        error: ValueError,
+    ) -> PrepareRunResponse:
+        run_id = f"run:rejected-{self._digest(str(root))}"
+        return PrepareRunResponse(
+            operation_id=self._read_operation_id(RunOperation.PREPARE_RUN, run_id),
+            ledger_cursor="ledger:refused",
+            affected_scope=(run_id,),
+            condition=WorkflowCondition.RUN_BLOCKED,
+            committed=False,
+            next_permitted_action=RunOperation.PREPARE_RUN,
+            run_id=run_id,
+            run_state=RunState.BLOCKED,
+            error=OperationError(
+                code="invalid_configuration",
+                detail=str(error),
+                recovery=(
+                    "Remove symlinks from the project root and keep input, output, "
+                    ".rob2, and rob2.yaml confined.",
+                    "Retry prepare_run after correcting the project layout.",
+                ),
+            ),
         )
 
     def _prepare_authorization_error(

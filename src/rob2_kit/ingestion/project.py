@@ -289,6 +289,7 @@ def initialize_project(
     input_root = root / "input"
     output_root = root / "output"
     state_root = root / ".rob2"
+    _validate_project_tree(root, (input_root, output_root, state_root))
     configuration = _read_project_configuration(root)
     _validate_method_configuration(configuration)
     for path in (input_root, output_root, state_root):
@@ -336,7 +337,11 @@ def initialize_project(
         trial_paths.append(resolved)
     for trial_path in sorted(trial_paths):
         trial, trial_receipts, trial_findings = _initialize_trial(trial_path, store, actor, parser)
-        if registry_adapter is not None and registry_enabled:
+        if (
+            registry_adapter is not None
+            and registry_enabled
+            and trial.status != "trial_failed"
+        ):
             trial, registry_receipt, registry_finding = _initialize_registry(
                 trial_path,
                 trial,
@@ -383,6 +388,25 @@ def _read_project_configuration(root: Path) -> dict[str, Any]:
     if payload.get("schema_version") != 1:
         raise ValueError("rob2.yaml schema_version must be 1")
     return payload
+
+
+def _validate_project_tree(root: Path, paths: tuple[Path, ...]) -> None:
+    """Reject all confined-tree symlinks before any derived-state mutation."""
+
+    for path in paths:
+        if path.is_symlink():
+            raise ValueError(f"project path symlinks are not permitted: {path}")
+        if not path.exists():
+            continue
+        if not path.resolve().is_relative_to(root):
+            raise ValueError(f"project path escapes project root: {path}")
+        if not path.is_dir():
+            raise ValueError(f"project path must be a directory: {path}")
+        for nested in path.rglob("*"):
+            if nested.is_symlink():
+                raise ValueError(f"project path symlinks are not permitted: {nested}")
+            if not nested.resolve().is_relative_to(root):
+                raise ValueError(f"project path escapes project root: {nested}")
 
 
 SUPPORTED_METHOD_VERSION = "2019-08-22"
@@ -471,6 +495,12 @@ def _outcome_target_specs(configuration: Mapping[str, Any]) -> tuple[OutcomeTarg
         if target_id in seen:
             raise ValueError(f"outcome target IDs must be unique: {target_id}")
         seen.add(target_id)
+        target_effect = item.get("effect_of_interest")
+        if target_effect is not None and str(target_effect) != SUPPORTED_EFFECT:
+            raise ValueError(
+                "unsupported RoB 2 Outcome target effect of interest "
+                f"{target_effect!r}; supported effect is {SUPPORTED_EFFECT!r}"
+            )
         targets.append(
             OutcomeTarget(
                 target_id=f"outcome-target:{target_id}",
@@ -518,11 +548,21 @@ def _result_candidates(
                 value.casefold() in result.effect_measure.casefold()
                 for value in target.accepted_effect_measures
             )
+            effect_of_interest_match = (
+                result.effect_of_interest == SUPPORTED_EFFECT
+                and target.effect_of_interest in {None, SUPPORTED_EFFECT}
+            )
             instrument_match = not target.accepted_instruments or any(
                 value.casefold() in result.measurement_instrument.casefold()
                 for value in target.accepted_instruments
             )
-            if construct_match and time_match and effect_match and instrument_match:
+            if (
+                construct_match
+                and time_match
+                and effect_match
+                and effect_of_interest_match
+                and instrument_match
+            ):
                 matching_targets.append(target)
                 by_trial_target.add((result.trial_id, target.target_id))
         targets = matching_targets or [None]
@@ -565,6 +605,7 @@ def _result_candidates(
                     candidate_id=f"result-candidate:{digest}",
                     trial_id=trial.trial_id,
                     outcome_target_id=target.target_id,
+                    result_id=f"result:{digest}",
                     label=target.label,
                     status="needs_input",
                 )
@@ -893,6 +934,24 @@ def _initialize_registry(
         acquisition,
         actor,
     )
+    if registry_source is not None and registry_source.artifact_hash is not None:
+        try:
+            parse_records, coverage = _parse_source(
+                parser,
+                store.read(registry_source.artifact_hash),
+                registry_source.source_id,
+                registry_source.artifact_hash,
+                allow_recovery=False,
+            )
+        except Exception:
+            # A registry acquisition can retain a raw response even when the
+            # configured parser cannot produce canonical text.  Preserve the
+            # custody record and let the normal Review finding carry the
+            # processing limitation.
+            parse_records, coverage = (), ()
+        registry_source = registry_source.model_copy(
+            update={"parse_records": parse_records, "coverage": coverage}
+        )
     inventory = trial.inventory.model_copy(
         update={
             "sources": trial.inventory.sources
@@ -1046,6 +1105,14 @@ def _registry_source_descriptor(
     acquisition: RegistryAcquisition,
     actor: Actor,
 ) -> tuple[SourceDescriptor | None, AcquisitionReceipt | None]:
+    # A fuzzy or conflicting candidate is not an evidence link.  Keep its
+    # engine-issued RegistryCandidate and Review finding in the proposal, but
+    # do not project an unconfirmed identifier as the current registry source.
+    if (
+        acquisition.status is not RegistryAcquisitionStatus.ACQUIRED
+        and not acquisition.resolution.explicit
+    ):
+        return None, None
     candidate = acquisition.resolution.nct_id or (
         acquisition.resolution.candidate_nct_ids[0]
         if acquisition.resolution.candidate_nct_ids
@@ -1054,6 +1121,21 @@ def _registry_source_descriptor(
     suffix = re.sub(r"[^A-Za-z0-9_-]+", "-", candidate.lower()).strip("-")
     source_id = f"source:{trial_id.removeprefix('trial:')}-registry-{suffix or 'current'}"
     acquired = acquisition.status is RegistryAcquisitionStatus.ACQUIRED
+    availability = {
+        RegistryAcquisitionStatus.ACQUIRED: SourceAvailability.ACQUIRED,
+        RegistryAcquisitionStatus.REVIEW_REQUIRED: SourceAvailability.DECLARED_OR_DISCOVERED,
+        RegistryAcquisitionStatus.UNAVAILABLE: SourceAvailability.UNAVAILABLE,
+        RegistryAcquisitionStatus.ACQUISITION_FAILED: SourceAvailability.ACQUISITION_FAILED,
+        RegistryAcquisitionStatus.TRIAL_FAILED: SourceAvailability.UNAVAILABLE,
+    }[acquisition.status]
+    processing = (
+        SourceProcessing.USABLE if acquired else SourceProcessing.NOT_ATTEMPTED
+    )
+    receipt_failure = (
+        SourceFailureCategory.CORRUPT_OR_UNREADABLE
+        if acquisition.status is RegistryAcquisitionStatus.ACQUISITION_FAILED
+        else None
+    )
     receipt = AcquisitionReceipt(
         receipt_id=f"receipt:{trial_id.removeprefix('trial:')}-registry-{suffix or 'current'}",
         source_id=source_id,
@@ -1076,7 +1158,7 @@ def _registry_source_descriptor(
         ),
         artifact_hash=acquisition.raw_record_hash,
         outcome=(AcquisitionOutcome.ACQUIRED if acquired else AcquisitionOutcome.FAILED),
-        failure_category=(None if acquired else SourceFailureCategory.CORRUPT_OR_UNREADABLE),
+        failure_category=receipt_failure,
     )
     source = SourceDescriptor(
         source_id=source_id,
@@ -1093,12 +1175,8 @@ def _registry_source_descriptor(
             cues=(acquisition.resolution.locator or "registry candidate",),
             classifier_version="clinicaltrials.gov-adapter:1.0.0",
         ),
-        availability=(
-            SourceAvailability.ACQUIRED
-            if acquired
-            else SourceAvailability.DECLARED_OR_DISCOVERED
-        ),
-        processing=(SourceProcessing.USABLE if acquired else SourceProcessing.NOT_ATTEMPTED),
+        availability=availability,
+        processing=processing,
         artifact_hash=acquisition.raw_record_hash,
         external_identifiers=(
             (acquisition.resolution.nct_id,)
