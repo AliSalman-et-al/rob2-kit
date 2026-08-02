@@ -55,6 +55,32 @@ class IntegrityError(RunIntegrityFailure):
     """Raised when deterministic preflight cannot trust the ledger."""
 
 
+class LedgerSchemaRefusal(IntegrityError):
+    """Raised when a ledger belongs to an incompatible pre-release schema.
+
+    The state is deliberately not migrated, rewritten, or dual-written.  The
+    recovery text is part of the exception so an application boundary can
+    return it as a normal, actionable integrity condition.
+    """
+
+    def __init__(
+        self,
+        *,
+        expected_version: int,
+        found_version: str,
+        ledger_path: Path,
+    ) -> None:
+        self.expected_version = expected_version
+        self.found_version = found_version
+        self.ledger_path = Path(ledger_path)
+        super().__init__(
+            f"unsupported ledger schema version {found_version!r}; "
+            f"this release requires schema version {expected_version}. "
+            "Preserve the existing .rob2 state, run doctor for diagnostics, "
+            "and start a new Run after archiving or removing the incompatible state."
+        )
+
+
 class LedgerModel(BaseModel):
     model_config = ConfigDict(frozen=True, extra="forbid")
 
@@ -356,9 +382,7 @@ class WorkflowLedger:
                         event_hash,
                     ),
                 )
-                earliest = self._apply_supersession(
-                    connection, transition.supersedes_revision_id
-                )
+                earliest = self._apply_supersession(connection, transition.supersedes_revision_id)
                 connection.execute(
                     """
                     INSERT INTO revisions(
@@ -526,6 +550,7 @@ class WorkflowLedger:
         path.write_text("".join(f"{line}\n" for line in lines), encoding="utf-8")
 
     def _initialize(self) -> None:
+        self._refuse_incompatible_existing_schema()
         with self._connection() as connection:
             connection.executescript(
                 f"""
@@ -611,6 +636,52 @@ class WorkflowLedger:
                 );
                 """
             )
+
+    def _refuse_incompatible_existing_schema(self) -> None:
+        """Refuse known old state before ``CREATE TABLE IF NOT EXISTS`` runs."""
+
+        if not self.path.is_file() or self.path.stat().st_size == 0:
+            return
+        try:
+            with sqlite3.connect(self.path) as connection:
+                tables = {
+                    row[0]
+                    for row in connection.execute(
+                        "SELECT name FROM sqlite_master WHERE type = 'table'"
+                    )
+                }
+                if not tables:
+                    return
+                if "metadata" not in tables:
+                    raise LedgerSchemaRefusal(
+                        expected_version=SCHEMA_VERSION,
+                        found_version="missing",
+                        ledger_path=self.path,
+                    )
+                row = connection.execute(
+                    "SELECT value FROM metadata WHERE key = 'schema_version'"
+                ).fetchone()
+                if row is None:
+                    raise LedgerSchemaRefusal(
+                        expected_version=SCHEMA_VERSION,
+                        found_version="missing",
+                        ledger_path=self.path,
+                    )
+                found = str(row[0])
+                if found != str(SCHEMA_VERSION):
+                    raise LedgerSchemaRefusal(
+                        expected_version=SCHEMA_VERSION,
+                        found_version=found,
+                        ledger_path=self.path,
+                    )
+        except LedgerSchemaRefusal:
+            raise
+        except sqlite3.DatabaseError as error:
+            raise LedgerSchemaRefusal(
+                expected_version=SCHEMA_VERSION,
+                found_version="unreadable",
+                ledger_path=self.path,
+            ) from error
 
     def _apply_supersession(
         self, connection: sqlite3.Connection, superseded: str | None
@@ -712,13 +783,30 @@ class WorkflowLedger:
         quick_check = connection.execute("PRAGMA quick_check").fetchone()[0]
         if quick_check != "ok":
             raise IntegrityError(f"SQLite integrity check failed: {quick_check}")
-        version = int(
-            connection.execute(
-                "SELECT value FROM metadata WHERE key = 'schema_version'"
-            ).fetchone()[0]
-        )
+        schema_row = connection.execute(
+            "SELECT value FROM metadata WHERE key = 'schema_version'"
+        ).fetchone()
+        if schema_row is None:
+            raise LedgerSchemaRefusal(
+                expected_version=SCHEMA_VERSION,
+                found_version="missing",
+                ledger_path=self.path,
+            )
+        found_version = str(schema_row[0])
+        try:
+            version = int(found_version)
+        except ValueError as error:
+            raise LedgerSchemaRefusal(
+                expected_version=SCHEMA_VERSION,
+                found_version=found_version,
+                ledger_path=self.path,
+            ) from error
         if version != SCHEMA_VERSION:
-            raise IntegrityError(f"unsupported schema version {version}")
+            raise LedgerSchemaRefusal(
+                expected_version=SCHEMA_VERSION,
+                found_version=found_version,
+                ledger_path=self.path,
+            )
         previous_hash = GENESIS_HASH
         expected_sequence = 1
         event_count = 0
@@ -1031,9 +1119,7 @@ def workflow_event_hash_payload(event: WorkflowEvent) -> dict[str, Any]:
         "entity_id": event.entity_id,
         "revision_id": event.revision_id,
         "record_schema_version": event.record_schema_version,
-        "dependencies": [
-            dependency.model_dump(mode="json") for dependency in event.dependencies
-        ],
+        "dependencies": [dependency.model_dump(mode="json") for dependency in event.dependencies],
         "checkpoint": event.checkpoint,
         "supersedes_revision_id": event.supersedes_revision_id,
         "input_revision_hashes": list(event.input_revision_hashes),
