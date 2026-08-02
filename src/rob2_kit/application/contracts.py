@@ -39,10 +39,8 @@ from rob2_kit.evidence.visual import (
     VisualCandidate,
     VisualRenderRequest,
 )
-from rob2_kit.ingestion.project import (
-    ProjectInitialization,
-    TrialInitialization,
-)
+from rob2_kit.ingestion.project import ProjectInitialization, ResultCandidate, TrialInitialization
+from rob2_kit.registry import RegistryCandidate
 
 
 class RunOperation(StrEnum):
@@ -108,6 +106,22 @@ class IntegrityFailure(FrozenModel):
     recovery: tuple[str, ...] = Field(min_length=1)
 
 
+class OperationError(FrozenModel):
+    """Expected validation failure returned as a normal operation result."""
+
+    code: Literal[
+        "unsupported_method",
+        "invalid_configuration",
+        "second_project_root",
+        "stale_proposal",
+        "stale_work",
+        "authorization_required",
+        "material_ambiguity",
+    ]
+    detail: str = Field(min_length=1)
+    recovery: tuple[str, ...] = Field(min_length=1)
+
+
 class WorkToken(FrozenModel):
     """Opaque authorization for exactly one typed submission kind."""
 
@@ -116,6 +130,9 @@ class WorkToken(FrozenModel):
     work_item_id: Identifier
     operation: RunOperation
     dependency_fingerprint: ContentHash
+    trial_id: Identifier | None = None
+    result_id: Identifier | None = None
+    domain_id: Identifier | None = None
 
 
 class WorkItem(FrozenModel):
@@ -134,12 +151,28 @@ class WorkContext(FrozenModel):
     result_spec: ResultSpecRevision | None = None
     sources: tuple[SourceDescriptor, ...] = ()
     domain_id: Identifier | None = None
+    registry_candidates: tuple[RegistryCandidate, ...] = ()
+    result_candidates: tuple[ResultCandidate, ...] = ()
 
 
 class RunProposalSelection(FrozenModel):
     trial_id: Identifier
     result_id: Identifier | None = None
+    result_candidate_id: Identifier | None = None
+    registry_candidate_id: Identifier | None = None
+    outcome_target_id: Identifier | None = None
     accepted: bool = True
+
+
+class RunProposalAmbiguity(FrozenModel):
+    """A material initialization ambiguity retained in the proposal."""
+
+    ambiguity_id: Identifier
+    scope: Identifier
+    detail: str = Field(min_length=1)
+    material: bool = True
+    resolved: bool = False
+    resolution: str | None = None
 
 
 class RunProposal(FrozenModel):
@@ -152,6 +185,13 @@ class RunProposal(FrozenModel):
     input_snapshot_hash: ContentHash
     initialization: ProjectInitialization
     selections: tuple[RunProposalSelection, ...] = ()
+    registry_candidates: tuple[RegistryCandidate, ...] = ()
+    result_candidates: tuple[ResultCandidate, ...] = ()
+    ambiguities: tuple[RunProposalAmbiguity, ...] = ()
+
+    @property
+    def unresolved_ambiguities(self) -> tuple[RunProposalAmbiguity, ...]:
+        return tuple(item for item in self.ambiguities if item.material and not item.resolved)
 
 
 class ConfirmedRunDefinition(FrozenModel):
@@ -163,12 +203,16 @@ class ConfirmedRunDefinition(FrozenModel):
     result_ids: tuple[Identifier, ...]
     confirmed_by: Actor
     confirmed_at: datetime
+    registry_candidate_ids: tuple[Identifier, ...] = ()
+    outcome_target_ids: tuple[Identifier, ...] = ()
 
 
 class PrepareRunRequest(FrozenModel):
     project_root: Path
     authorized: bool = False
     start_new: bool = False
+    method: str | None = None
+    supported_scope: str | None = None
 
 
 class RunStatusRequest(FrozenModel):
@@ -190,6 +234,8 @@ class SubmitRunProposalRequest(FrozenModel):
     proposal_token: Identifier
     idempotency_key: Identifier
     selections: tuple[RunProposalSelection, ...] = ()
+    ambiguities: tuple[RunProposalAmbiguity, ...] = ()
+    unresolved_ambiguities: tuple[RunProposalAmbiguity, ...] = ()
 
 
 class ConfirmRunDefinitionRequest(FrozenModel):
@@ -281,6 +327,7 @@ class OperationResponse(FrozenModel):
     condition: WorkflowCondition
     committed: bool
     next_permitted_action: RunOperation | None = None
+    error: OperationError | None = None
 
 
 class PrepareRunResponse(OperationResponse):
@@ -315,13 +362,13 @@ class GetWorkContextResponse(OperationResponse):
 class SubmitRunProposalResponse(OperationResponse):
     run_id: Identifier
     run_state: RunState
-    proposal: RunProposal
+    proposal: RunProposal | None = None
 
 
 class ConfirmRunDefinitionResponse(OperationResponse):
     run_id: Identifier
     run_state: RunState
-    run_definition: ConfirmedRunDefinition
+    run_definition: ConfirmedRunDefinition | None = None
 
 
 class SearchEvidenceResponse(OperationResponse):
@@ -424,6 +471,7 @@ RUN_OPERATION_CONTRACTS: tuple[OperationContract, ...] = (
             WorkflowCondition.ACCEPTED,
             WorkflowCondition.AGENT_WORK_REQUIRED,
             WorkflowCondition.STALE,
+            WorkflowCondition.RUN_BLOCKED,
         ),
     ),
     OperationContract(

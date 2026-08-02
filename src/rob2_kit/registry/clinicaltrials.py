@@ -7,7 +7,7 @@ import re
 from collections.abc import Callable
 from datetime import UTC, date, datetime
 from enum import StrEnum
-from typing import Any
+from typing import Any, Literal
 from urllib.parse import urlsplit
 
 import httpx
@@ -54,6 +54,29 @@ class RegistryResolution(FrozenModel):
     locator: str | None = None
     explicit: bool = False
     candidate_nct_ids: tuple[str, ...] = ()
+
+
+class RegistryCandidate(FrozenModel):
+    """A bounded registry identity proposed during Run initialization.
+
+    A candidate is deliberately separate from :class:`RegistryAcquisition`:
+    fuzzy matches and unavailable records still need an engine-issued identity
+    that can be shown to the operator without pretending that they are linked
+    evidence.  ``acquisition`` is optional because a candidate may not have a
+    fetched record yet.
+    """
+
+    candidate_id: Identifier
+    trial_id: Identifier
+    nct_id: str | None = Field(default=None, pattern=r"^NCT\d{8}$")
+    declared_nct_id: str | None = None
+    source: str = Field(min_length=1)
+    locator: str | None = None
+    explicit: bool = False
+    status: Literal["declared", "discovered", "fuzzy", "unavailable"]
+    acquisition_status: RegistryAcquisitionStatus | None = None
+    raw_record_hash: ContentHash | None = None
+    projection: RegistryProjection | None = None
 
 
 class RegistrySourceText(FrozenModel):

@@ -8,6 +8,7 @@ workflow decisions, work-item sequencing, and report publication remain in
 
 from __future__ import annotations
 
+import hashlib
 from typing import Any, Literal
 
 from rob2_kit.application.contracts import (
@@ -16,8 +17,11 @@ from rob2_kit.application.contracts import (
     ContinueRunRequest,
     GetWorkContextRequest,
     InspectVisualCandidateRequest,
+    OperationError,
     PrepareRunRequest,
+    PrepareRunResponse,
     ReadEvidenceRequest,
+    RunOperation,
     RunStatusRequest,
     SearchEvidenceRequest,
     SubmitDomainAnswersRequest,
@@ -25,8 +29,10 @@ from rob2_kit.application.contracts import (
     SubmitResultResolutionRequest,
     SubmitRunProposalRequest,
     SubmitSourceClassificationRequest,
+    WorkflowCondition,
 )
-from rob2_kit.application.run_engine import RunEngine
+from rob2_kit.application.lifecycle import RunState
+from rob2_kit.application.run_engine import RunEngine, SecondProjectRootError
 
 
 def registered_tool_names() -> tuple[str, ...]:
@@ -52,18 +58,39 @@ def create_server() -> Any:
         project_root: str,
         authorized: bool = False,
         start_new: bool = False,
+        method: str | None = None,
+        supported_scope: str | None = None,
     ) -> dict[str, Any]:
-        return _dump(
-            engine.prepare_run(
-                PrepareRunRequest.model_validate(
-                    {
-                        "project_root": project_root,
-                        "authorized": authorized,
-                        "start_new": start_new,
-                    }
-                )
-            )
+        request = PrepareRunRequest.model_validate(
+            {
+                "project_root": project_root,
+                "authorized": authorized,
+                "start_new": start_new,
+                "method": method,
+                "supported_scope": supported_scope,
+            }
         )
+        try:
+            response = engine.prepare_run(request)
+        except SecondProjectRootError as error:
+            digest = hashlib.sha256(str(request.project_root.resolve()).encode()).hexdigest()[:24]
+            rejected_run_id = f"run:rejected-{digest}"
+            response = PrepareRunResponse(
+                operation_id=f"operation:prepare-run-second-root-{digest}",
+                ledger_cursor="ledger:unbound",
+                affected_scope=(rejected_run_id,),
+                condition=WorkflowCondition.RUN_BLOCKED,
+                committed=False,
+                next_permitted_action=RunOperation.PREPARE_RUN,
+                run_id=rejected_run_id,
+                run_state=RunState.BLOCKED,
+                error=OperationError(
+                    code="second_project_root",
+                    detail=error.error.detail,
+                    recovery=error.error.recovery,
+                ),
+            )
+        return _dump(response)
 
     @server.tool(name="run_status")
     def run_status(
@@ -105,6 +132,7 @@ def create_server() -> Any:
         idempotency_key: str,
         contract_version: Literal["1.0.0"],
         selections: list[dict[str, Any]] | None = None,
+        ambiguities: list[dict[str, Any]] | None = None,
     ) -> dict[str, Any]:
         return _dump(
             engine.submit_run_proposal(
@@ -114,6 +142,7 @@ def create_server() -> Any:
                         "proposal_token": proposal_token,
                         "idempotency_key": idempotency_key,
                         "selections": selections or (),
+                        "ambiguities": ambiguities or (),
                         "contract_version": contract_version,
                     }
                 )
