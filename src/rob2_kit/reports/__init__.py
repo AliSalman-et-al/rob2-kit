@@ -113,11 +113,53 @@ class VisualCitationView(ReportModel):
     source_id: Identifier
     page: int = Field(ge=1)
     region: tuple[float, float, float, float]
+    boxes: tuple[tuple[float, float, float, float], ...] | None = None
     label: str = Field(min_length=1)
     exact_phrase: str | None = None
     render_provenance: str | None = None
     crop_path: str | None = None
     context_path: str | None = None
+    # Structured provenance.  These fields intentionally remain separate from
+    # ``render_provenance`` so an archive verifier can check identity without
+    # parsing display text.
+    canonical_unit_id: Identifier | None = None
+    source_artifact_hash: ContentHash | None = None
+    parse_id: Identifier | None = None
+    span_start: int | None = Field(default=None, ge=0)
+    span_end: int | None = Field(default=None, gt=0)
+    quoted_text_hash: ContentHash | None = None
+    geometry_scope: Literal["phrase_exact", "block", "visual_region"] | None = None
+    geometry_hash: ContentHash | None = None
+    render_hash: ContentHash | None = None
+    render_mode: Literal["crop", "full_page"] | None = None
+    dpi: Literal[144, 180, 216] | None = None
+    base_render_hash: ContentHash | None = None
+    derived_render_hash: ContentHash | None = None
+    overlay_hash: ContentHash | None = None
+    crop_hash: ContentHash | None = None
+    context_hash: ContentHash | None = None
+    agent_inspected: bool | None = None
+    inspection_status: Literal["automatic_spatial_claim", "visual_only_transcription"] | None = None
+
+    @model_validator(mode="after")
+    def validate_structured_identity(self) -> VisualCitationView:
+        if (self.span_start is None) != (self.span_end is None):
+            raise ValueError("visual citation span_start and span_end must be supplied together")
+        if self.span_start is not None and self.span_end is not None and self.span_end <= self.span_start:
+            raise ValueError("visual citation span_end must be greater than span_start")
+        if (
+            self.quoted_text_hash is not None
+            and self.span_start is None
+            and self.geometry_scope != "visual_region"
+        ):
+            raise ValueError("quoted_text_hash requires canonical span coordinates")
+        if self.geometry_scope == "phrase_exact" and self.geometry_hash is None:
+            raise ValueError("phrase-exact geometry requires a geometry hash")
+        if self.inspection_status == "visual_only_transcription" and self.agent_inspected is not True:
+            raise ValueError("visual transcriptions must be marked agent_inspected")
+        if self.inspection_status == "automatic_spatial_claim" and self.agent_inspected is True:
+            raise ValueError("automatic spatial claims cannot be marked agent_inspected")
+        return self
 
 
 class EvidenceView(ReportModel):
@@ -838,16 +880,25 @@ def _render_visual_citation(citation: VisualCitationView) -> str:
     phrase = citation.exact_phrase or "Exact phrase is retained with the source claim."
     provenance = citation.render_provenance or "render provenance not recorded"
     region = ", ".join(f"{value:g}" for value in citation.region)
+    inspected = citation.agent_inspected is True
+    if citation.inspection_status == "visual_only_transcription" or inspected:
+        state = "agent inspected; visual-only transcription"
+        asset_caption = "Agent inspected this rendered region; transcription remains visual-only."
+    else:
+        # Keep the stable phrase used by existing audit snapshots while
+        # making the automatic-vs-visual distinction explicit.
+        state = "agent inspection not performed (automatic spatial claim)"
+        asset_caption = "Agent inspection not performed; geometry is a deterministic spatial binding."
     assets = (
         f'<figure><img src="{_local_href(citation.crop_path)}" '
         f'alt="Highlighted local crop for {html.escape(citation.label)}">'
         f'<figcaption><a href="{_local_href(citation.context_path)}">Open local full-page context</a>. '
-        "Agent inspection not performed.</figcaption></figure>"
+        f"{html.escape(asset_caption)}</figcaption></figure>"
         if citation.crop_path and citation.context_path
         else "<p>Local render assets were unavailable; this citation is retained as provenance only.</p>"
     )
     return (
-        '<details class="visual-citation"><summary>Visual citation — agent inspection not performed</summary>'
+        f'<details class="visual-citation"><summary>Visual citation — {html.escape(state)}</summary>'
         f"<p><strong>{html.escape(citation.label)}</strong></p>"
         f"<blockquote>{html.escape(phrase)}</blockquote>"
         f"{assets}"

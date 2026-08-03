@@ -77,7 +77,7 @@ from rob2_kit.domain.assessment import (
     JudgmentLevel,
     SQAnswerRevision,
 )
-from rob2_kit.domain.canonical import canonical_hash
+from rob2_kit.domain.canonical import canonical_hash, sha256_digest
 from rob2_kit.domain.evidence import (
     ConsiderationDisposition,
     EvidenceBundle,
@@ -102,12 +102,13 @@ from rob2_kit.domain.revisions import (
     Revision,
     Supersession,
 )
-from rob2_kit.domain.sources import SourceInventoryRevision, SourceRole
+from rob2_kit.domain.sources import SourceDescriptor, SourceInventoryRevision, SourceRole
 from rob2_kit.evidence.search import (
     CanonicalBlock,
     CanonicalEvidenceUnit,
     CanonicalPage,
     CanonicalUnitKind,
+    CanonicalWordBox,
     EvidenceSearchIndex,
     canonicalize_evidence_units,
 )
@@ -169,6 +170,45 @@ ENGINE_ACTOR = Actor(
     software_name="rob2-kit",
     software_version="0.1.0",
 )
+
+
+class VisualAssetMaterializationError(RuntimeError):
+    """A visual citation could not be materialized atomically."""
+
+
+def _canonical_word_boxes(text: str, words: tuple[object, ...]) -> tuple[CanonicalWordBox, ...]:
+    """Retain parser word geometry only when it binds unambiguously to text."""
+
+    if not words:
+        return ()
+    cursor = 0
+    boxes: list[CanonicalWordBox] = []
+    for word in words:
+        token = str(getattr(word, "text", ""))
+        if not token:
+            return ()
+        start = text.find(token, cursor)
+        if start < 0:
+            # Never guess character offsets from a parser's word stream.
+            return ()
+        end = start + len(token)
+        try:
+            x = float(getattr(word, "x"))
+            y = float(getattr(word, "y"))
+            width = float(getattr(word, "width"))
+            height = float(getattr(word, "height"))
+            boxes.append(
+                CanonicalWordBox(
+                    text=token,
+                    span_start=start,
+                    span_end=end,
+                    spatial=(x, y, x + width, y + height),
+                )
+            )
+        except (TypeError, ValueError):
+            return ()
+        cursor = end
+    return tuple(boxes)
 
 # The host can provide a richer Actor on answer/evidence submissions.  When a
 # thin MCP client omits it, this stable agent identity still records that the
@@ -3265,6 +3305,9 @@ class RunEngine:
                                         text_item.x + text_item.width,
                                         text_item.y + text_item.height,
                                     ),
+                                    word_boxes=_canonical_word_boxes(
+                                        text_item.text, text_item.words
+                                    ),
                                 )
                                 for text_item in item.text_items
                                 if text_item.text.strip()
@@ -3505,6 +3548,13 @@ class RunEngine:
             for event in events
         ):
             self._repair_report_publication(ledger, run_id)
+            return ()
+        if any(
+            event.operation == "operation:result-diagnostic-ready"
+            and event.scope == result_id
+            and event.sequence > invalidated_at
+            for event in events
+        ):
             return ()
         logic = self._logic_pack()
         required_domains = {domain.id for domain in logic.domains}
@@ -3766,6 +3816,36 @@ class RunEngine:
             answers=answer_refs,
             judgments=judgment_references,
         )
+        try:
+            visual_citations, visual_assets = self._materialize_visual_assets(
+                ledger, run_id, result_id, assessment.visual_citations
+            )
+        except VisualAssetMaterializationError as error:
+            reason = f"Visual citation assets could not be materialized: {error}"
+            diagnostic = self._materialize_diagnostic_bundle(
+                _ResultDiagnosticRecord(
+                    run_id=run_id,
+                    result_id=result_id,
+                    trial_id=result_spec.result.trial_id,
+                    reason=reason,
+                )
+            )
+            suffix = self._digest(f"{run_id}|{result_id}|visual-assets|{reason}")
+            transition = self._transition(
+                scope=result_id,
+                operation="operation:result-diagnostic-ready",
+                operation_key=f"idempotency:visual-assets-diagnostic-{suffix}",
+                entity_id=f"result-diagnostic:{suffix}",
+                revision_id=f"revision:result-diagnostic-{suffix}",
+                artifact=diagnostic,
+                checkpoint=f"checkpoint:visual-assets-diagnostic-{suffix}",
+                outcome=WorkflowEventOutcome.TRIAL_PROBLEM,
+                observed_at=self._now(),
+            )
+            lease = self._acquire_lease(ledger, self._now())
+            ledger.commit(transition, lease, now=self._now())
+            self._regenerate_run_index(ledger, run_id)
+            return ()
         assessment_ref = self._commit_frozen_artifact(
             ledger,
             scope=result_id,
@@ -3779,9 +3859,6 @@ class RunEngine:
         )
         if assessment_ref.revision_id != assessment_revision_id:
             raise ValueError("frozen Assessment revision identity does not match report")
-        visual_citations, visual_assets = self._materialize_visual_assets(
-            ledger, run_id, result_id, assessment.visual_citations
-        )
         citations_by_id = {citation.citation_id: citation for citation in visual_citations}
         assessment = assessment.model_copy(
             update={
@@ -4351,6 +4428,7 @@ class RunEngine:
                     disposition = dispositions.get(item.entity_id, "contextual")
                     if disposition not in {"supporting", "contradicting", "contextual"}:
                         disposition = "residual"
+                    visual = citations_by_id.get(transcription.revision_id)
                     items.append(
                         EvidenceView(
                             evidence_id=transcription.revision_id,
@@ -4362,17 +4440,39 @@ class RunEngine:
                                 f"visual-only transcription; {transcription.render_mode} at "
                                 f"{transcription.dpi} dpi; not machine-verified"
                             ),
-                            visual_citation=VisualCitationView(
+                            visual_citation=visual
+                            or VisualCitationView(
                                 citation_id=transcription.revision_id,
                                 source_id=transcription.source.entity_id,
                                 page=transcription.page,
                                 region=transcription.region,
+                                boxes=(transcription.region,),
                                 label="Visual transcription",
                                 exact_phrase=transcription.transcription,
                                 render_provenance=(
                                     f"{transcription.render_mode} at {transcription.dpi} dpi; "
                                     "visual-only; not machine-verified"
                                 ),
+                                quoted_text_hash=sha256_digest(
+                                    transcription.transcription.encode("utf-8")
+                                ),
+                                geometry_scope="visual_region",
+                                geometry_hash=canonical_hash(
+                                    {"region": transcription.region, "page": transcription.page}
+                                ),
+                                render_hash=canonical_hash(
+                                    {
+                                        "source_id": transcription.source.entity_id,
+                                        "page": transcription.page,
+                                        "mode": transcription.render_mode,
+                                        "dpi": transcription.dpi,
+                                        "region": transcription.region,
+                                    }
+                                ),
+                                render_mode=transcription.render_mode,
+                                dpi=transcription.dpi,
+                                agent_inspected=True,
+                                inspection_status="visual_only_transcription",
                             ),
                         )
                     )
@@ -4425,6 +4525,14 @@ class RunEngine:
                 limitations=bundle.coverage_limitations,
                 no_information_basis=bundle.no_information_basis,
                 decision_trace=decision_trace,
+                conflicts=bundle.conflicts,
+                uncertainty=(
+                    (f"coverage state: {bundle.coverage_state.value}",)
+                    if bundle.coverage_state.value != "complete"
+                    else ()
+                )
+                + bundle.coverage_limitations
+                + (("material source conflict retained",) if bundle.conflicts else ()),
             )
         return result
 
@@ -4439,8 +4547,12 @@ class RunEngine:
 
         result_spec = self._result_spec_for(ledger, run_id, result_id)
         prepared = self._latest_prepared_record(ledger)
-        if result_spec is None or prepared is None:
+        if not citations:
             return citations, {}
+        if result_spec is None or prepared is None:
+            raise VisualAssetMaterializationError(
+                "visual citation assets require a resolved Result and prepared source inventory"
+            )
         trial = next(
             (
                 item
@@ -4450,19 +4562,34 @@ class RunEngine:
             None,
         )
         sources = {item.source_id: item for item in trial.inventory.sources} if trial else {}
-        parser = self._parser or LiteParseAdapter()
+        try:
+            parser = self._parser or LiteParseAdapter()
+        except Exception as error:
+            raise VisualAssetMaterializationError(
+                f"visual citation renderer is unavailable: {error}"
+            ) from error
         files: dict[str, bytes] = {}
         rendered: list[VisualCitationView] = []
         for citation in citations:
             source = sources.get(citation.source_id)
             if source is None or source.artifact_hash is None:
-                rendered.append(citation)
-                continue
+                raise VisualAssetMaterializationError(
+                    f"source artifact for visual citation {citation.citation_id!r} is unavailable"
+                )
             try:
+                if (
+                    citation.source_artifact_hash is not None
+                    and source.artifact_hash != citation.source_artifact_hash
+                ):
+                    raise VisualAssetMaterializationError(
+                        f"source artifact hash for visual citation {citation.citation_id!r} "
+                        "does not match the bound citation"
+                    )
+                dpi = citation.dpi or 144
                 page = parser.screenshot(
                     ledger.artifacts.read(source.artifact_hash),
                     page_numbers=(citation.page,),
-                    dpi=144,
+                    dpi=dpi,
                 )[0]
                 context = Image.open(io.BytesIO(page.image_bytes)).convert("RGB")
                 scale = page.dpi / 72
@@ -4470,27 +4597,69 @@ class RunEngine:
                 left, right = max(0, left), min(context.width, right)
                 top, bottom = max(0, top), min(context.height, bottom)
                 if right <= left or bottom <= top:
-                    rendered.append(citation)
-                    continue
+                    raise VisualAssetMaterializationError(
+                        f"visual citation {citation.citation_id!r} has an empty render region"
+                    )
                 crop = context.crop((left, top, right, bottom))
                 overlay = context.copy()
-                ImageDraw.Draw(overlay).rectangle(
-                    (left, top, right, bottom), outline="#9a5a12", width=4
-                )
+                overlay_draw = ImageDraw.Draw(overlay)
+                raw_boxes = citation.boxes or (citation.region,)
+                pixel_boxes: list[tuple[int, int, int, int]] = []
+                for box in raw_boxes:
+                    box_left, box_top, box_right, box_bottom = (
+                        round(value * scale) for value in box
+                    )
+                    box_left, box_right = max(0, box_left), min(context.width, box_right)
+                    box_top, box_bottom = max(0, box_top), min(context.height, box_bottom)
+                    if box_right <= box_left or box_bottom <= box_top:
+                        raise VisualAssetMaterializationError(
+                            f"visual citation {citation.citation_id!r} has invalid overlay geometry"
+                        )
+                    pixel_box = (box_left, box_top, box_right, box_bottom)
+                    pixel_boxes.append(pixel_box)
+                    overlay_draw.rectangle(pixel_box, outline="#9a5a12", width=4)
+                crop_draw = ImageDraw.Draw(crop)
+                for box_left, box_top, box_right, box_bottom in pixel_boxes:
+                    crop_draw.rectangle(
+                        (
+                            box_left - left,
+                            box_top - top,
+                            box_right - left,
+                            box_bottom - top,
+                        ),
+                        outline="#9a5a12",
+                        width=4,
+                    )
                 slug = hashlib.sha256(citation.citation_id.encode()).hexdigest()[:16]
                 crop_path = f"visual-assets/{slug}-crop.png"
                 context_path = f"visual-assets/{slug}-page.png"
-                for path, image in ((crop_path, crop), (context_path, overlay)):
-                    output = io.BytesIO()
-                    image.save(output, format="PNG", optimize=False)
-                    files[path] = output.getvalue()
+                crop_output = io.BytesIO()
+                crop.save(crop_output, format="PNG", optimize=False)
+                crop_bytes = crop_output.getvalue()
+                context_output = io.BytesIO()
+                overlay.save(context_output, format="PNG", optimize=False)
+                context_bytes = context_output.getvalue()
+                files[crop_path] = crop_bytes
+                files[context_path] = context_bytes
                 rendered.append(
                     citation.model_copy(
-                        update={"crop_path": crop_path, "context_path": context_path}
+                        update={
+                            "crop_path": crop_path,
+                            "context_path": context_path,
+                            "base_render_hash": page.image_hash,
+                            "derived_render_hash": sha256_digest(context_bytes),
+                            "overlay_hash": sha256_digest(context_bytes),
+                            "crop_hash": sha256_digest(crop_bytes),
+                            "context_hash": sha256_digest(context_bytes),
+                        }
                     )
                 )
-            except (OSError, ValueError, IndexError):
-                rendered.append(citation)
+            except VisualAssetMaterializationError:
+                raise
+            except (OSError, TypeError, ValueError, IndexError) as error:
+                raise VisualAssetMaterializationError(
+                    f"visual citation {citation.citation_id!r} render failed: {error}"
+                ) from error
         return tuple(rendered), files
 
     @staticmethod
@@ -4546,21 +4715,47 @@ class RunEngine:
                     phrase = unit.text[claim.span_start : claim.span_end]
                     if not phrase:
                         continue
-                    box = citation.boxes[0]
-                    region = (box.left, box.top, box.right, box.bottom)
+                    region = (
+                        min(box.left for box in citation.boxes),
+                        min(box.top for box in citation.boxes),
+                        max(box.right for box in citation.boxes),
+                        max(box.bottom for box in citation.boxes),
+                    )
+                    geometry_note = (
+                        "phrase-exact retained word geometry"
+                        if citation.geometry_scope == "phrase_exact"
+                        else "block-level geometry; phrase-exact overlay unavailable"
+                    )
                     citations[citation.citation_id] = VisualCitationView(
                         citation_id=citation.citation_id,
                         source_id=citation.source_id,
                         page=citation.page,
                         region=cast(tuple[float, float, float, float], region),
+                        boxes=tuple(
+                            (box.left, box.top, box.right, box.bottom)
+                            for box in citation.boxes
+                        ),
                         label="Canonical evidence span",
                         exact_phrase=phrase,
                         render_provenance=(
                             f"canonical unit {unit.unit_id}; Parse record {citation.parse_id}; "
                             f"source artifact {citation.source_artifact_hash}; "
                             f"{citation.render.mode} at {citation.render.dpi} dpi; "
-                            "agent inspection not performed"
+                            f"{geometry_note}; agent inspection not performed"
                         ),
+                        canonical_unit_id=citation.canonical_unit_id,
+                        source_artifact_hash=citation.source_artifact_hash,
+                        parse_id=citation.parse_id,
+                        span_start=citation.span_start,
+                        span_end=citation.span_end,
+                        quoted_text_hash=citation.quoted_text_hash,
+                        geometry_scope=citation.geometry_scope,
+                        geometry_hash=citation.geometry_hash,
+                        render_hash=citation.render_hash,
+                        render_mode=citation.render.mode,
+                        dpi=citation.render.dpi,
+                        agent_inspected=False,
+                        inspection_status="automatic_spatial_claim",
                     )
                     continue
 
@@ -4570,17 +4765,54 @@ class RunEngine:
                     )
                 except (TypeError, ValueError):
                     continue
+                source_artifact_hash = None
+                parse_id = None
+                try:
+                    source_descriptor = SourceDescriptor.model_validate_json(
+                        ledger.artifacts.read(transcription.source.content_hash)
+                    )
+                    source_artifact_hash = source_descriptor.artifact_hash
+                    parse_id = (
+                        source_descriptor.parse_records[0].parse_id
+                        if source_descriptor.parse_records
+                        else None
+                    )
+                except (TypeError, ValueError):
+                    pass
+                render_payload = {
+                    "source_id": transcription.source.entity_id,
+                    "source_artifact_hash": source_artifact_hash,
+                    "page": transcription.page,
+                    "mode": transcription.render_mode,
+                    "dpi": transcription.dpi,
+                    "region": transcription.region,
+                }
                 citations[transcription.revision_id] = VisualCitationView(
                     citation_id=transcription.revision_id,
                     source_id=transcription.source.entity_id,
                     page=transcription.page,
                     region=transcription.region,
+                    boxes=(transcription.region,),
                     label="Visual transcription",
                     exact_phrase=transcription.transcription,
                     render_provenance=(
                         f"{transcription.render_mode} at {transcription.dpi} dpi; "
                         f"visual-only; not machine-verified"
                     ),
+                    source_artifact_hash=source_artifact_hash,
+                    parse_id=parse_id,
+                    quoted_text_hash=sha256_digest(
+                        transcription.transcription.encode("utf-8")
+                    ),
+                    geometry_scope="visual_region",
+                    geometry_hash=canonical_hash(
+                        {"region": transcription.region, "page": transcription.page}
+                    ),
+                    render_hash=canonical_hash(render_payload),
+                    render_mode=transcription.render_mode,
+                    dpi=transcription.dpi,
+                    agent_inspected=True,
+                    inspection_status="visual_only_transcription",
                 )
         return tuple(citations[key] for key in sorted(citations))
 
