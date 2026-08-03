@@ -60,6 +60,7 @@ from rob2_kit.application.contracts import (
     WorkItem,
     WorkToken,
 )
+from rob2_kit.application.determinism import QualificationDeterminism
 from rob2_kit.application.lifecycle import (
     LifecycleIntegrityError,
     LifecycleProjection,
@@ -423,6 +424,7 @@ class RunEngine:
         parser: DocumentParser | None = None,
         registry_adapter: Any | None = None,
         registry: Any | None = None,
+        determinism: QualificationDeterminism | None = None,
     ) -> None:
         self._root: Path | None = None
         self._parser = parser
@@ -433,6 +435,20 @@ class RunEngine:
         self._registry_client: Any | None = None
         self._authorized_root: Path | None = None
         self._owner_id = f"owner:run-engine:{os.getpid()}:{uuid.uuid4()}"
+        self._determinism = determinism
+
+    def _now(self) -> datetime:
+        return self._determinism.now() if self._determinism is not None else datetime.now(UTC)
+
+    def _ledger(self, path: Path, artifacts: ArtifactStore) -> WorkflowLedger:
+        return WorkflowLedger(
+            path,
+            artifacts,
+            now=self._now,
+            event_identifiers=(
+                self._determinism.event_identifiers if self._determinism is not None else None
+            ),
+        )
 
     def prepare_run(self, request: PrepareRunRequest) -> PrepareRunResponse:
         root = request.project_root.resolve()
@@ -449,7 +465,7 @@ class RunEngine:
             raise PermissionError("Run preparation requires explicit project-root authorization")
         try:
             artifacts = ArtifactStore(state_root / "artifacts")
-            ledger = WorkflowLedger(ledger_path, artifacts)
+            ledger = self._ledger(ledger_path, artifacts)
             ledger.preflight()
         except LedgerSchemaRefusal as error:
             return self._schema_refusal(root, error)
@@ -483,6 +499,7 @@ class RunEngine:
                         actor=ENGINE_ACTOR,
                         parser=self._parser,
                         registry_adapter=self._registry_for_prepare(root, request.authorized),
+                        now=self._now,
                     )
                 except ValueError as error:
                     return self._prepare_configuration_error(root, ledger, error)
@@ -494,7 +511,7 @@ class RunEngine:
                 if inputs_changed:
                     self._index_initial_evidence(root, initialization)
                     refreshed = self._proposal(current.run_id, initialization)
-                    now = datetime.now(UTC)
+                    now = self._now()
                     suffix = self._digest(
                         f"{current.run_id}|reconcile|{refreshed.input_snapshot_hash}"
                     )
@@ -785,6 +802,7 @@ class RunEngine:
                 actor=ENGINE_ACTOR,
                 parser=self._parser,
                 registry_adapter=self._registry_for_prepare(root, request.authorized),
+                now=self._now,
             )
         except ValueError as error:
             return self._prepare_configuration_error(root, ledger, error)
@@ -797,7 +815,7 @@ class RunEngine:
             proposal = self._proposal(run_id, initialization)
         except ValueError as error:
             return self._prepare_configuration_error(root, ledger, error)
-        now = datetime.now(UTC)
+        now = self._now()
         prepared = _PreparedRunRecord(
             run_id=run_id,
             proposal=proposal,
@@ -1046,7 +1064,7 @@ class RunEngine:
             )
             and self._next_work_item(ledger, request.run_id) is None
         ):
-            now = datetime.now(UTC)
+            now = self._now()
             blocked = _RunBlockedRecord(
                 run_id=request.run_id,
                 reason="No exact Trial-specific Result is available for assessment.",
@@ -1378,7 +1396,7 @@ class RunEngine:
         submitted = self._resolve_result_candidates(submitted, request.selections)
         submitted = self._freeze_submitted_proposal(submitted)
         record = _ProposalSubmittedRecord(run_id=request.run_id, proposal=submitted)
-        now = datetime.now(UTC)
+        now = self._now()
         suffix = self._digest(request.idempotency_key)
         transition = self._transition(
             scope=request.run_id,
@@ -1635,7 +1653,7 @@ class RunEngine:
                 item.target_id for item in proposal.initialization.manifest.outcome_target_specs
             )
         )
-        now = datetime.now(UTC)
+        now = self._now()
         definition = ConfirmedRunDefinition(
             run_id=request.run_id,
             proposal_id=proposal.proposal_id,
@@ -2003,7 +2021,7 @@ class RunEngine:
             now = result_spec.observed_at
             operation = existing.operation
         else:
-            now = datetime.now(UTC)
+            now = self._now()
             result_spec = ResultSpecRevision(
                 entity_id=f"result-spec:{suffix}",
                 revision_id=f"revision:result-spec-{suffix}",
@@ -2440,7 +2458,7 @@ class RunEngine:
             entity_id=f"evidence-disposition:{suffix}",
             revision_id=f"revision:evidence-disposition-{suffix}",
             actor=actor,
-            observed_at=datetime.now(UTC),
+            observed_at=self._now(),
             dependencies=tuple(
                 Dependency(**item.model_dump(), role="dependency:evidence-item")
                 for item in request.items
@@ -2471,7 +2489,7 @@ class RunEngine:
                 entity_id=f"search-coverage:{coverage_suffix}",
                 revision_id=f"revision:search-coverage-{coverage_suffix}",
                 actor=actor,
-                observed_at=datetime.now(UTC),
+                observed_at=self._now(),
                 result_id=request.result_id,
                 domain_id=request.domain_id,
                 receipts=tuple(
@@ -2517,7 +2535,7 @@ class RunEngine:
                     for item in manifest_items
                 ),
                 actor=actor,
-                observed_at=datetime.now(UTC),
+                observed_at=self._now(),
                 sq_id=question_id,
                 considered_items=manifest_items,
                 dispositions=tuple(
@@ -2572,7 +2590,7 @@ class RunEngine:
                 revision_id=f"revision:evidence-bundle-{bundle_suffix}",
                 dependencies=tuple(dependencies),
                 actor=actor,
-                observed_at=datetime.now(UTC),
+                observed_at=self._now(),
                 result_spec=result_spec,
                 disposition=disposition_ref,
                 items=tuple(question_items),
@@ -2703,7 +2721,7 @@ class RunEngine:
                     ),
                 ),
                 actor=actor,
-                observed_at=datetime.now(UTC),
+                observed_at=self._now(),
                 sq_id=item.question_id,
                 answer=item.answer,
                 rationale=item.rationale,
@@ -2760,7 +2778,7 @@ class RunEngine:
                 revision_id=existing.revision_id,
                 content_hash=existing.output_revision_hashes[0],
             )
-        now = getattr(artifact, "observed_at", None) or datetime.now(UTC)
+        now = getattr(artifact, "observed_at", None) or self._now()
         current = next(
             (
                 revision
@@ -2825,7 +2843,7 @@ class RunEngine:
                 client=httpx.Client(timeout=10.0, follow_redirects=False),
                 artifacts=ArtifactStore(root / ".rob2" / "artifacts"),
                 policy=RegistryPolicy(),
-                clock=lambda: datetime.now(UTC),
+                clock=lambda: self._now(),
             )
         return self._registry_client
 
@@ -3109,7 +3127,7 @@ class RunEngine:
 
     def _bound_ledger(self, run_id: Identifier) -> WorkflowLedger:
         root = self._required_root()
-        ledger = WorkflowLedger(
+        ledger = self._ledger(
             root / ".rob2" / "ledger.sqlite3",
             ArtifactStore(root / ".rob2" / "artifacts"),
         )
@@ -3178,7 +3196,7 @@ class RunEngine:
                 missing.append((staging, report_root))
         lease = None
         if missing:
-            lease = self._acquire_lease(ledger, datetime.now(UTC))
+            lease = self._acquire_lease(ledger, self._now())
             for staging, report_root in missing:
                 if report_root.exists():
                     continue
@@ -3284,10 +3302,10 @@ class RunEngine:
             ),
             checkpoint="checkpoint:run-completed",
             outcome=WorkflowEventOutcome.PREPARATION_OUTCOME_REACHED,
-            observed_at=datetime.now(UTC),
+            observed_at=self._now(),
         )
-        active_lease = lease or self._acquire_lease(ledger, datetime.now(UTC))
-        ledger.commit(transition, active_lease, now=datetime.now(UTC))
+        active_lease = lease or self._acquire_lease(ledger, self._now())
+        ledger.commit(transition, active_lease, now=self._now())
 
     def _materialize_terminal(
         self,
@@ -3376,10 +3394,10 @@ class RunEngine:
                 artifact=diagnostic,
                 checkpoint=f"checkpoint:coverage-diagnostic-{diagnostic_suffix}",
                 outcome=WorkflowEventOutcome.TRIAL_PROBLEM,
-                observed_at=datetime.now(UTC),
+                observed_at=self._now(),
             )
-            lease = self._acquire_lease(ledger, datetime.now(UTC))
-            ledger.commit(transition, lease, now=datetime.now(UTC))
+            lease = self._acquire_lease(ledger, self._now())
+            ledger.commit(transition, lease, now=self._now())
             self._regenerate_run_index(ledger, run_id)
             return ()
         # A Result may only have one immutable answer checkpoint per domain.
@@ -3474,7 +3492,7 @@ class RunEngine:
                 Dependency(**policy_ref.model_dump(), role="dependency:policy-release"),
             ),
             actor=ENGINE_ACTOR,
-            observed_at=datetime.now(UTC),
+            observed_at=self._now(),
             result_spec=result_spec_ref,
             source_inventory=source_inventory_ref,
             evidence_bundles=evidence_refs,
@@ -3531,7 +3549,7 @@ class RunEngine:
             }
         )
         projector = ReportProjector(assessment)
-        lease = self._acquire_lease(ledger, datetime.now(UTC))
+        lease = self._acquire_lease(ledger, self._now())
         report_base = self._required_root() / "output" / "report-bundle"
         report_root = report_base
         if report_root.exists():
@@ -3594,7 +3612,7 @@ class RunEngine:
             target.parent.mkdir(parents=True, exist_ok=True)
             target.write_bytes(content)
         self._verify_staged_report_files(staging, report_files)
-        now = datetime.now(UTC)
+        now = self._now()
         report_record = _ReportMaterializedRecord(
             run_id=run_id,
             result_id=result_id,
@@ -4162,7 +4180,7 @@ class RunEngine:
             revision_id=f"revision:source-inventory-{suffix}",
             dependencies=(Dependency(**result_spec.model_dump(), role="dependency:result-spec"),),
             actor=ENGINE_ACTOR,
-            observed_at=datetime.now(UTC),
+            observed_at=self._now(),
             result_spec=result_spec,
             sources=trial.inventory.sources,
             coverage_limitations=trial.inventory.coverage_limitations,
@@ -4190,7 +4208,7 @@ class RunEngine:
             entity_id=policy_id,
             revision_id=f"revision:evidence-policy-{self._digest(policy_hash)}",
             actor=ENGINE_ACTOR,
-            observed_at=datetime.now(UTC),
+            observed_at=self._now(),
             kind=PolicyKind.EVIDENCE_SEARCH_POLICY,
             family_id="policy-family:evidence-search",
             release_id="1.0.0",
@@ -4260,7 +4278,7 @@ class RunEngine:
                 except (ValueError, TypeError, KeyError, json.JSONDecodeError):
                     continue
         judgment_refs: list[RecordReference] = []
-        now = datetime.now(UTC)
+        now = self._now()
         for domain in logic.domains:
             question_ids = set(domain.question_ids)
             active = tuple(
@@ -4499,7 +4517,7 @@ class RunEngine:
         observed_at: datetime | None = None,
         idempotency_validated: bool = False,
     ) -> CommitResult:
-        now = observed_at or datetime.now(UTC)
+        now = observed_at or self._now()
         suffix = self._digest(f"{run_id}|{operation_key}")
         transition = self._transition(
             scope=scope,
@@ -5224,7 +5242,7 @@ class RunEngine:
         if result_id is None or self._root is None:
             return None
         try:
-            ledger = WorkflowLedger(
+            ledger = self._ledger(
                 self._root / ".rob2" / "ledger.sqlite3",
                 ArtifactStore(self._root / ".rob2" / "artifacts"),
             )
@@ -5550,7 +5568,7 @@ class RunEngine:
             changed_components=changed,
             invalidated_result_ids=invalidated_result_ids,
         )
-        now = datetime.now(UTC)
+        now = self._now()
         suffix = self._digest(f"{prepared.run_id}|{previous.identity}|{current.identity}")
         prior_attempt = next(
             (
@@ -5642,7 +5660,7 @@ class RunEngine:
         records: tuple[_PreparedRunRecord, ...],
         replacement_run_id: Identifier,
     ) -> None:
-        now = datetime.now(UTC)
+        now = self._now()
         transitions: list[Transition] = []
         for prior in records:
             suffix = self._digest(f"{prior.run_id}|{replacement_run_id}|retired")
@@ -5866,6 +5884,7 @@ class RunEngine:
                         self._required_root(), self._authorized_root == self._required_root()
                     )
                 ),
+                now=self._now,
             )
         except ValueError as error:
             # A declaration that points at a Trial folder removed after
@@ -5892,6 +5911,7 @@ class RunEngine:
                             )
                         ),
                         allow_unknown_result_trials=True,
+                        now=self._now,
                     )
                 except ValueError:
                     initialization = None
@@ -6919,7 +6939,7 @@ class RunEngine:
         invalidated_result_ids: tuple[Identifier, ...] = (),
         diagnostic_result_ids: tuple[Identifier, ...] = (),
     ) -> None:
-        now = datetime.now(UTC)
+        now = self._now()
         transitions: list[Transition] = [
             self._transition(
                 scope=run_id,
@@ -7489,6 +7509,8 @@ class RunEngine:
         )
 
     def _new_run_id(self, root: Path, event_count: int) -> Identifier:
+        if self._determinism is not None:
+            return self._determinism.run_id(self._digest("qualification"), root, event_count)
         return f"run:{self._digest(f'{root}|{event_count}')}"
 
     def _transition(

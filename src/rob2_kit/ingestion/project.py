@@ -7,7 +7,7 @@ import inspect
 import json
 import re
 import tempfile
-from collections.abc import Mapping
+from collections.abc import Callable, Mapping
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from enum import StrEnum
@@ -180,6 +180,7 @@ class DocumentParser(Protocol):
         target_pages: tuple[int, ...] | None = None,
     ) -> ParserResult: ...
 
+
 def _content_bounds(page: Any) -> tuple[float, float, float, float] | None:
     bounds = getattr(page, "content_bounds", None)
     if bounds is None:
@@ -231,11 +232,7 @@ class LiteParseAdapter:
         except (TypeError, ValueError):
             supported = {}
         options.update(
-            {
-                key: value
-                for key, value in LITEPARSE_CONFIGURATION.items()
-                if key in supported
-            }
+            {key: value for key, value in LITEPARSE_CONFIGURATION.items() if key in supported}
         )
         try:
             parsed = LiteParse(**options).parse(data)
@@ -464,8 +461,10 @@ def initialize_project(
     registry_adapter: Any | None = None,
     registry: Any | None = None,
     allow_unknown_result_trials: bool = False,
+    now: Callable[[], datetime] | None = None,
 ) -> ProjectInitialization:
     """Initialize layout and build an immutable inventory for every Trial folder."""
+    clock = now or (lambda: datetime.now(UTC))
     root = project_root.resolve()
     input_root = root / "input"
     output_root = root / "output"
@@ -491,9 +490,7 @@ def initialize_project(
         input_root="input",
         output_root="output",
         state_root=".rob2",
-        outcome_targets=tuple(
-            str(item["id"]) for item in declared_outcomes
-        ),
+        outcome_targets=tuple(str(item["id"]) for item in declared_outcomes),
         supported_scope=_supported_scope(configuration),
         method_version=_method_version(configuration),
         effect_of_interest=_effect_of_interest(configuration),
@@ -517,19 +514,18 @@ def initialize_project(
             raise ValueError(f"Trial directory escapes input root: {path}")
         trial_paths.append(resolved)
     for trial_path in sorted(trial_paths):
-        trial, trial_receipts, trial_findings = _initialize_trial(trial_path, store, actor, parser)
-        if (
-            registry_adapter is not None
-            and registry_enabled
-            and trial.status != "trial_failed"
-        ):
+        trial, trial_receipts, trial_findings = _initialize_trial(
+            trial_path, store, actor, parser, now=clock
+        )
+        if registry_adapter is not None and registry_enabled and trial.status != "trial_failed":
             trial, registry_receipt, registry_finding = _initialize_registry(
                 trial_path,
                 trial,
                 store,
                 actor,
                 parser,
-                registry_adapter,
+                registry_adapter=registry_adapter,
+                now=clock,
             )
             if registry_receipt is not None:
                 trial_receipts = trial_receipts + (registry_receipt,)
@@ -543,10 +539,9 @@ def initialize_project(
         actor,
         {trial.trial_id for trial in trials},
         allow_unknown_trial_refs=allow_unknown_result_trials,
+        now=clock,
     )
-    result_candidates = _result_candidates(
-        tuple(trials), result_specs, outcome_target_specs
-    )
+    result_candidates = _result_candidates(tuple(trials), result_specs, outcome_target_specs)
     return ProjectInitialization(
         manifest=manifest,
         trials=tuple(trials),
@@ -638,8 +633,7 @@ def _validate_method_configuration(configuration: Mapping[str, Any]) -> None:
         )
     if scope != f"rob2:{SUPPORTED_VARIANT}" or variant != SUPPORTED_VARIANT:
         raise ValueError(
-            "unsupported RoB 2 trial design "
-            f"{variant!r}; supported design is {SUPPORTED_VARIANT!r}"
+            f"unsupported RoB 2 trial design {variant!r}; supported design is {SUPPORTED_VARIANT!r}"
         )
     if effect != SUPPORTED_EFFECT:
         raise ValueError(
@@ -779,9 +773,9 @@ def _result_candidates(
         for target in outcome_targets:
             if (trial.trial_id, target.target_id) in by_trial_target:
                 continue
-            digest = hashlib.sha256(
-                f"{trial.trial_id}|{target.target_id}".encode()
-            ).hexdigest()[:24]
+            digest = hashlib.sha256(f"{trial.trial_id}|{target.target_id}".encode()).hexdigest()[
+                :24
+            ]
             candidates.append(
                 ResultCandidate(
                     candidate_id=f"result-candidate:{digest}",
@@ -801,11 +795,12 @@ def _declared_result_specs(
     trial_ids: set[str],
     *,
     allow_unknown_trial_refs: bool = False,
+    now: Callable[[], datetime] | None = None,
 ) -> tuple[ResultSpecRevision, ...]:
     declared = configuration.get("results", [])
     if not isinstance(declared, list):
         raise ValueError("rob2.yaml results must be a list")
-    observed_at = datetime.now(UTC)
+    observed_at = (now or (lambda: datetime.now(UTC)))()
     specs = []
     for item in declared:
         if not isinstance(item, dict):
@@ -853,6 +848,8 @@ def _initialize_trial(
     store: ArtifactStore,
     actor: Actor,
     parser: DocumentParser,
+    *,
+    now: Callable[[], datetime] | None = None,
 ) -> tuple[
     TrialInitialization,
     tuple[AcquisitionReceipt, ...],
@@ -912,7 +909,7 @@ def _initialize_trial(
         roles, classification = _classify(path, trial_path, declaration, path == primary)
         criticality = _criticality(roles, path == primary)
         source_id = f"source:{trial_slug}-{index}"
-        attempted_at = datetime.now(UTC)
+        attempted_at = (now or (lambda: datetime.now(UTC)))()
         try:
             data = path.read_bytes()
         except OSError as error:
@@ -984,9 +981,7 @@ def _initialize_trial(
                         criticality is SourceCriticality.REQUIRED
                         or bool(declaration and declaration.decision_relevant_pages)
                     ),
-                    relevant_pages=(
-                        declaration.decision_relevant_pages if declaration else ()
-                    ),
+                    relevant_pages=(declaration.decision_relevant_pages if declaration else ()),
                 )
                 processing = (
                     SourceProcessing.COVERAGE_LIMITED
@@ -1087,6 +1082,8 @@ def _initialize_registry(
     store: ArtifactStore,
     actor: Actor,
     parser: DocumentParser,
+    *,
+    now: Callable[[], datetime] | None = None,
     registry_adapter: Any,
 ) -> tuple[TrialInitialization, AcquisitionReceipt | None, tuple[InitializationDiagnostic, ...]]:
     """Resolve one Trial's declared/discovered NCT through the bounded adapter.
@@ -1158,8 +1155,7 @@ def _initialize_registry(
         )
     inventory = trial.inventory.model_copy(
         update={
-            "sources": trial.inventory.sources
-            + ((registry_source,) if registry_source else ())
+            "sources": trial.inventory.sources + ((registry_source,) if registry_source else ())
         }
     )
     updated = trial.model_copy(
@@ -1334,9 +1330,7 @@ def _registry_source_descriptor(
         RegistryAcquisitionStatus.ACQUISITION_FAILED: SourceAvailability.ACQUISITION_FAILED,
         RegistryAcquisitionStatus.TRIAL_FAILED: SourceAvailability.UNAVAILABLE,
     }[acquisition.status]
-    processing = (
-        SourceProcessing.USABLE if acquired else SourceProcessing.NOT_ATTEMPTED
-    )
+    processing = SourceProcessing.USABLE if acquired else SourceProcessing.NOT_ATTEMPTED
     receipt_failure = (
         SourceFailureCategory.CORRUPT_OR_UNREADABLE
         if acquisition.status is RegistryAcquisitionStatus.ACQUISITION_FAILED
@@ -1357,9 +1351,7 @@ def _registry_source_descriptor(
             ("policy_release", acquisition.policy_release),
             (
                 "dataset_timestamp",
-                acquisition.dataset_timestamp.isoformat()
-                if acquisition.dataset_timestamp
-                else "",
+                acquisition.dataset_timestamp.isoformat() if acquisition.dataset_timestamp else "",
             ),
         ),
         artifact_hash=acquisition.raw_record_hash,
@@ -1443,11 +1435,7 @@ def _parse_source(
         )
         and (not relevant or page.page_number in relevant)
     )
-    if (
-        allow_recovery
-        and not relevant
-        and _genuinely_scanned(parser, data, initial.pages)
-    ):
+    if allow_recovery and not relevant and _genuinely_scanned(parser, data, initial.pages):
         recovery_pages = tuple(page.page_number for page in initial.pages)
     recovered: Mapping[int, PageExtraction] = {}
     recovery_record: ParseRecord | None = None
@@ -1535,9 +1523,7 @@ def _parse_index_pages(
         None,
     )
     if artifact_store is not None and initial_record and initial_record.page_artifact_hash:
-        initial_pages = _pages_from_artifact(
-            artifact_store.read(initial_record.page_artifact_hash)
-        )
+        initial_pages = _pages_from_artifact(artifact_store.read(initial_record.page_artifact_hash))
     else:
         initial_pages = parser.parse(data, ocr_enabled=False).pages
     _validate_parse_pages(initial_pages, target_pages=None)
@@ -1546,9 +1532,7 @@ def _parse_index_pages(
         if not record.ocr_enabled or not record.target_pages:
             continue
         if artifact_store is not None and record.page_artifact_hash:
-            recovered_pages = _pages_from_artifact(
-                artifact_store.read(record.page_artifact_hash)
-            )
+            recovered_pages = _pages_from_artifact(artifact_store.read(record.page_artifact_hash))
         else:
             recovered_pages = parser.parse(
                 data,
@@ -1628,8 +1612,7 @@ def _genuinely_scanned(
         return False
     representative_indexes = {0, len(pages) // 2, len(pages) - 1}
     if not all(
-        not pages[index].text.strip()
-        and bool(RECOVERY_REASONS.intersection(pages[index].reasons))
+        not pages[index].text.strip() and bool(RECOVERY_REASONS.intersection(pages[index].reasons))
         for index in representative_indexes
     ):
         return False
@@ -1644,9 +1627,8 @@ def _genuinely_scanned(
         renders = screenshot(data, page_numbers=requested, dpi=144)
     except (SourceParseError, OSError, ValueError):
         return False
-    return (
-        tuple(render.page_number for render in renders) == requested
-        and all(render.image_bytes for render in renders)
+    return tuple(render.page_number for render in renders) == requested and all(
+        render.image_bytes for render in renders
     )
 
 
@@ -1806,9 +1788,7 @@ def _read_trial_manifest(trial_path: Path) -> dict[str, _DeclaredDocument]:
                 "trial.yaml decision_relevant_pages must be a list of one-based page numbers"
             )
         if any(type(page) is not int for page in raw_relevant_pages):
-            raise ValueError(
-                "trial.yaml decision_relevant_pages must contain integer page numbers"
-            )
+            raise ValueError("trial.yaml decision_relevant_pages must contain integer page numbers")
         relevant_pages = tuple(sorted(set(raw_relevant_pages)))
         if any(page < 1 for page in relevant_pages):
             raise ValueError("trial.yaml decision_relevant_pages must be positive")
@@ -1829,9 +1809,7 @@ def _source_paths(
     for path in trial_path.rglob("*"):
         if path.is_symlink():
             resolved = path.resolve()
-            raise ValueError(
-                f"Trial source symlinks are not permitted: {path} -> {resolved}"
-            )
+            raise ValueError(f"Trial source symlinks are not permitted: {path} -> {resolved}")
         if not path.is_file() or path.name.lower() == "trial.yaml":
             continue
         resolved = path.resolve()

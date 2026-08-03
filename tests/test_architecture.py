@@ -62,3 +62,24 @@ def test_lean_v1_keeps_interfaces_at_the_run_engine_boundary() -> None:
             if imports_interface:
                 violations.append(str(path))
     assert not violations
+
+
+def test_lean_v1_has_no_telemetry_dependencies() -> None:
+    """Qualification must not silently add outbound product telemetry."""
+
+    package = Path(__file__).parents[1] / "src" / "rob2_kit"
+    forbidden = {"analytics", "opentelemetry", "segment", "sentry_sdk"}
+    imported: set[str] = set()
+    for path in package.rglob("*.py"):
+        for node in ast.walk(ast.parse(path.read_text(encoding="utf-8"))):
+            if isinstance(node, ast.Import):
+                imported.update(alias.name.split(".", 1)[0] for alias in node.names)
+            elif isinstance(node, ast.ImportFrom) and node.module:
+                imported.add(node.module.split(".", 1)[0])
+    assert not imported & forbidden
+    prohibited_markers = ("telemetry", "analytics", "sentry", "segment")
+    assert not any(
+        marker in path.read_text(encoding="utf-8").casefold()
+        for path in package.rglob("*.py")
+        for marker in prohibited_markers
+    )

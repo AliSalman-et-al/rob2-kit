@@ -215,10 +215,19 @@ def dependency_fingerprint(dependencies: tuple[DependencyInput, ...]) -> str:
 class WorkflowLedger:
     """Command/query boundary over one SQLite workflow ledger."""
 
-    def __init__(self, path: Path, artifacts: ArtifactStore) -> None:
+    def __init__(
+        self,
+        path: Path,
+        artifacts: ArtifactStore,
+        *,
+        now: Callable[[], datetime] | None = None,
+        event_identifiers: Callable[[str, str, int], tuple[str, str]] | None = None,
+    ) -> None:
         self.path = Path(path)
         self.path.parent.mkdir(parents=True, exist_ok=True)
         self.artifacts = artifacts
+        self._now = now or (lambda: datetime.now(UTC))
+        self._event_identifiers = event_identifiers
         self._initialize()
 
     def acquire_lease(
@@ -297,7 +306,7 @@ class WorkflowLedger:
         operation_keys = [transition.operation_key for transition in transitions]
         if len(operation_keys) != len(set(operation_keys)):
             raise ValueError("operation keys must be unique within a commit batch")
-        commit_time = now or datetime.now(UTC)
+        commit_time = now or self._now()
         artifacts = tuple(
             self.artifacts.put(transition.artifact, transition.artifact_media_type)
             for transition in transitions
@@ -336,8 +345,12 @@ class WorkflowLedger:
                 ).fetchone()
                 sequence = 1 if previous is None else previous["sequence"] + 1
                 previous_hash = GENESIS_HASH if previous is None else previous["event_hash"]
-                operation_id = f"operation:{uuid.uuid4()}"
-                event_id = f"event:{uuid.uuid4()}"
+                if self._event_identifiers is None:
+                    operation_id, event_id = _event_identifiers(transition, sequence)
+                else:
+                    operation_id, event_id = self._event_identifiers(
+                        transition.operation_key, transition.revision_id, sequence
+                    )
                 event_data = self._event_data(
                     transition,
                     sequence=sequence,
@@ -1095,6 +1108,10 @@ class WorkflowLedger:
                 raise
             else:
                 connection.commit()
+
+
+def _event_identifiers(_transition: Transition, _sequence: int) -> tuple[str, str]:
+    return f"operation:{uuid.uuid4()}", f"event:{uuid.uuid4()}"
 
 
 def _hash_json(value: object) -> str:

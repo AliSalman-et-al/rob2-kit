@@ -20,6 +20,8 @@ def test_every_public_v1_blocker_has_owned_evidence() -> None:
         "failure-isolation",
         "typed-mcp",
         "package-archives",
+        "frozen-wheel-qualification",
+        "security",
     }
     assert all(blocker.evidence for blocker in gate.blockers.values())
     assert all(
@@ -41,17 +43,13 @@ def test_release_gate_uses_only_distributable_fixtures() -> None:
     } <= fixture_kinds
     assert all(fixture.path.is_file() for fixture in gate.fixtures.values())
     assert all(
-        "eval/reference" not in fixture.path.as_posix()
-        for fixture in gate.fixtures.values()
+        "eval/reference" not in fixture.path.as_posix() for fixture in gate.fixtures.values()
     )
 
 
 def test_distributable_fixture_contracts_are_executable() -> None:
     gate = load_release_gate(ROOT)
-    loaded = {
-        fixture.kind: fixture.path.read_bytes()
-        for fixture in gate.fixtures.values()
-    }
+    loaded = {fixture.kind: fixture.path.read_bytes() for fixture in gate.fixtures.values()}
 
     assert all(content for content in loaded.values())
     assert loaded["compound-protocol-sap"].startswith(b"%PDF-")
@@ -105,3 +103,6 @@ def test_ci_runs_the_same_release_gate_on_all_supported_platforms() -> None:
     assert "python -m rob2_kit.release_gate" in workflow
     assert "uv run --frozen pytest" in workflow
     assert "uv build --wheel" in workflow
+    assert "scripts/release_qualification.py" in workflow
+    assert "upload-artifact" in workflow
+    assert "compare-qualification-receipts" in workflow

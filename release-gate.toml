@@ -61,6 +61,33 @@ evidence = [
   "tests/test_verification_archives.py::test_complete_archive_verifies_without_live_project",
 ]
 
+[[blockers]]
+id = "frozen-wheel-qualification"
+description = "Frozen-wheel installation, Harness bootstrap, doctor, and external stdio journey"
+evidence = [
+  "tests/test_release_build.py::test_clean_wheel_install_exposes_declared_entry_points",
+  "tests/test_mcp_tracer.py::test_five_domain_journey_survives_stdio_restart_and_publishes_report",
+  "tests/test_public_v1_release_gate.py::test_ci_runs_the_same_release_gate_on_all_supported_platforms",
+]
+
+[[blockers.manual_checks]]
+id = "private-release-evaluation"
+owner = "release-owner"
+evidence_slot = "release/private-release-evaluation.md"
+
+[[blockers]]
+id = "security"
+description = "Confinement, hostile input, token, ledger, registry, and inert-report protections"
+evidence = [
+  "tests/test_ingestion.py::test_bounded_zip_accepts_safe_pdf_members_and_rejects_container_attacks",
+  "tests/test_run_engine.py::test_result_resolution_rejects_unissued_preconfirmation_token",
+  "tests/test_storage.py::test_integrity_preflight_detects_corrupted_event_hash_and_order",
+  "tests/test_registry.py::test_provider_protocol_is_downloaded_only_from_allow_list",
+  "tests/test_reports.py::test_distributable_prompt_injection_and_markup_are_inert",
+  "tests/test_reports.py::test_nested_visual_assets_are_confined_and_verified",
+  "tests/test_architecture.py::test_lean_v1_has_no_telemetry_dependencies",
+]
+
 [[fixtures]]
 id = "born-digital"
 kind = "born-digital"

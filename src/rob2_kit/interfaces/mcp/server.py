@@ -9,6 +9,8 @@ workflow decisions, work-item sequencing, and report publication remain in
 from __future__ import annotations
 
 import hashlib
+import os
+from datetime import UTC, datetime
 from typing import Any, Literal
 
 from rob2_kit.application.contracts import (
@@ -31,6 +33,7 @@ from rob2_kit.application.contracts import (
     SubmitSourceClassificationRequest,
     WorkflowCondition,
 )
+from rob2_kit.application.determinism import QualificationDeterminism
 from rob2_kit.application.lifecycle import RunState
 from rob2_kit.application.run_engine import RunEngine, SecondProjectRootError
 
@@ -41,16 +44,31 @@ def registered_tool_names() -> tuple[str, ...]:
     return RUN_OPERATION_NAMES
 
 
+def _qualification_determinism_from_environment() -> QualificationDeterminism | None:
+    """Build an explicit optional qualification contract at the stdio composition root."""
+
+    value = os.environ.get("ROB2_QUALIFICATION_UTC_NOW")
+    if value is None:
+        return None
+    try:
+        parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+    except ValueError as error:
+        raise ValueError("ROB2_QUALIFICATION_UTC_NOW must be an ISO-8601 UTC instant") from error
+    if parsed.tzinfo is None or parsed.utcoffset() != UTC.utcoffset(parsed):
+        raise ValueError("ROB2_QUALIFICATION_UTC_NOW must include a UTC offset")
+    return QualificationDeterminism(observed_at=parsed.astimezone(UTC))
+
+
 def _dump(response: Any) -> dict[str, Any]:
     return response.model_dump(mode="json")
 
 
-def create_server() -> Any:
+def create_server(*, determinism: QualificationDeterminism | None = None) -> Any:
     """Build one stdio server with exactly the 13 typed tools."""
 
     from mcp.server import MCPServer
 
-    engine = RunEngine()
+    engine = RunEngine(determinism=determinism)
     server = MCPServer("rob2-kit", version="0.1.0")
 
     @server.tool(name="prepare_run")
@@ -96,21 +114,13 @@ def create_server() -> Any:
     def run_status(
         run_id: str,
     ) -> dict[str, Any]:
-        return _dump(
-            engine.run_status(
-                RunStatusRequest.model_validate({"run_id": run_id})
-            )
-        )
+        return _dump(engine.run_status(RunStatusRequest.model_validate({"run_id": run_id})))
 
     @server.tool(name="continue_run")
     def continue_run(
         run_id: str,
     ) -> dict[str, Any]:
-        return _dump(
-            engine.continue_run(
-                ContinueRunRequest.model_validate({"run_id": run_id})
-            )
-        )
+        return _dump(engine.continue_run(ContinueRunRequest.model_validate({"run_id": run_id})))
 
     @server.tool(name="get_work_context")
     def get_work_context(
@@ -119,9 +129,7 @@ def create_server() -> Any:
     ) -> dict[str, Any]:
         return _dump(
             engine.get_work_context(
-                GetWorkContextRequest.model_validate(
-                    {"run_id": run_id, "work_token": work_token}
-                )
+                GetWorkContextRequest.model_validate({"run_id": run_id, "work_token": work_token})
             )
         )
 
@@ -371,7 +379,7 @@ def create_server() -> Any:
 
 
 def main() -> None:
-    create_server().run(transport="stdio")
+    create_server(determinism=_qualification_determinism_from_environment()).run(transport="stdio")
 
 
 if __name__ == "__main__":

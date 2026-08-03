@@ -45,3 +45,30 @@ jobs:
 
       - name: Validate the release gate
         run: uv run --frozen python -m rob2_kit.release_gate
+
+      - name: Qualify the frozen wheel through installed entry points
+        run: uv run --frozen python scripts/release_qualification.py --wheel dist --receipt release-qualification.json
+
+      - name: Upload platform qualification receipt
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-qualification-${{ matrix.os }}
+          path: release-qualification.json
+
+  compare-qualification-receipts:
+    name: Compare frozen-wheel qualification receipts
+    needs: deterministic
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Download platform qualification receipts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: release-qualification-*
+          path: qualification-receipts
+          merge-multiple: false
+
+      - name: Require canonical qualification equivalence
+        run: python scripts/compare_qualification_receipts.py qualification-receipts
