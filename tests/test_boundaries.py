@@ -3,7 +3,6 @@ from decimal import Decimal
 import pytest
 from pydantic import TypeAdapter, ValidationError
 
-from rob2_kit.application.interfaces import MutationContext, WorkflowStatus
 from rob2_kit.application.preparation import (
     DraftReady,
     IncompleteReason,
@@ -122,28 +121,6 @@ def test_not_applicable_is_not_an_answer_category() -> None:
         SQAnswerCategory("not_applicable")
 
 
-def test_mutation_context_rejects_unlabelled_fingerprint() -> None:
-    with pytest.raises(ValidationError):
-        MutationContext(
-            idempotency_key="request-1",
-            work_item_id="work:item-1",
-            contract_version="1.0.0",
-            expected_dependency_fingerprint="abc",
-        )
-
-
-def test_interface_statuses_match_the_canonical_contract() -> None:
-    assert {status.value for status in WorkflowStatus} == {
-        "completed",
-        "work_required",
-        "review_pending",
-        "preparation_outcome_reached",
-        "retryable_interruption",
-        "trial_problem",
-        "run_integrity_failure",
-    }
-
-
 def test_evidence_claim_rejects_reversed_span() -> None:
     with pytest.raises(ValidationError):
         EvidenceClaim(
@@ -195,10 +172,10 @@ def test_pack_and_policy_release_kinds_are_disjoint() -> None:
     }
     assert PackRelease.model_validate({**common, "kind": PackKind.LOGIC}).kind is PackKind.LOGIC
     assert (
-        PolicyRelease.model_validate({**common, "kind": PolicyKind.REVIEW_POLICY}).kind
-        is PolicyKind.REVIEW_POLICY
+        PolicyRelease.model_validate({**common, "kind": PolicyKind.EVIDENCE_SEARCH_POLICY}).kind
+        is PolicyKind.EVIDENCE_SEARCH_POLICY
     )
     with pytest.raises(ValidationError):
-        PackRelease.model_validate({**common, "kind": "review_policy"})
+        PackRelease.model_validate({**common, "kind": "evidence_search_policy"})
     with pytest.raises(ValidationError):
         PolicyRelease.model_validate({**common, "kind": "logic"})

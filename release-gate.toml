@@ -2,112 +2,63 @@ version = 1
 
 [[blockers]]
 id = "logic"
-description = "Logic-pack conformance, invalid states, and mutation detection"
+description = "Logic-pack conformance and invalid states"
 evidence = [
   "tests/test_logic_evaluator.py::test_exact_release_passes_independent_conformance_suite",
-  "tests/test_logic_evaluator.py::test_conformance_rejects_a_meaningful_mutation",
   "tests/test_logic_exhaustive.py::test_every_valid_answer_combination_matches_independent_transcription",
 ]
 
 [[blockers]]
 id = "result-identity"
-description = "Unambiguous Result identity and correct Domain 1 reuse"
-evidence = [
-  "tests/test_boundaries.py::test_result_spec_round_trip_preserves_stable_identity_and_numbers",
-  "tests/test_host_interfaces.py::test_preparation_work_items_enforce_order_and_reach_review",
-]
+description = "Unambiguous Result identity"
+evidence = ["tests/test_boundaries.py::test_result_spec_round_trip_preserves_stable_identity_and_numbers"]
 
 [[blockers]]
 id = "evidence"
-description = "Evidence provenance, bundle completeness, visual typing, and No-information basis"
+description = "Evidence provenance, coverage, and visual typing"
 evidence = [
   "tests/test_evidence_workflow.py::test_coverage_receipt_requires_all_passes_results_and_safe_no_information_basis",
-  "tests/test_evidence_workflow.py::test_bundle_freeze_rejects_incomplete_work_and_has_stable_hash",
   "tests/test_visual_inspection.py::test_legible_visual_transcription_preserves_crop_provenance_and_review_requirement",
 ]
 
 [[blockers]]
-id = "adversarial-rendering"
-description = "Adversarial input and inert report and GUI rendering"
+id = "static-reports"
+description = "Read-only static report and diagnostic bundles"
 evidence = [
   "tests/test_reports.py::test_distributable_prompt_injection_and_markup_are_inert",
-  "tests/test_review_web.py::test_evidence_is_inert_and_answer_stays_hidden_until_confirmation",
-  "tests/test_ingestion.py::test_bounded_zip_accepts_safe_pdf_members_and_rejects_container_attacks",
+  "tests/test_reports.py::test_all_formats_match_golden_hashes",
 ]
 
 [[blockers]]
 id = "resume-invalidation"
-description = "Checkpoint transactions, interruption, safe resume, and targeted invalidation"
+description = "Checkpoint resume and scoped invalidation"
 evidence = [
   "tests/test_storage.py::test_interruption_after_commit_resumes_from_durable_checkpoint",
-  "tests/test_storage.py::test_supersession_invalidates_only_transitive_descendants_from_earliest_checkpoint",
   "tests/test_preparation_protocol.py::test_protocol_derives_exact_next_item_and_resumes_after_reopen",
 ]
 
 [[blockers]]
 id = "failure-isolation"
-description = "Required-primary, optional-source, and run-integrity failure isolation"
+description = "Scoped source failures and ledger integrity"
 evidence = [
-  "tests/test_ingestion.py::test_required_primary_failure_is_trial_failed_but_optional_failure_is_nonfatal",
   "tests/test_ingestion.py::test_missing_primary_fails_only_its_trial_and_batch_continues",
   "tests/test_storage.py::test_integrity_preflight_detects_corrupted_event_hash_and_order",
 ]
 
 [[blockers]]
-id = "cross-host-equivalence"
-description = "Cross-host contract, deterministic, and workflow equivalence"
+id = "typed-mcp"
+description = "One typed RunEngine and stdio MCP workflow"
 evidence = [
-  "tests/test_host_interfaces.py::test_real_stdio_mcp_exercises_the_typed_run_engine_surface",
-  "tests/test_reports.py::test_all_formats_match_golden_hashes",
-  "tests/test_public_v1_release_gate.py::test_ci_runs_the_same_release_gate_on_all_supported_platforms",
-]
-manual_checks = [
-  { id = "real-host-windows", owner = "release owner", evidence_slot = "Issue #27 real-host Windows Preparation-attempt receipts" },
-]
-
-[[blockers]]
-id = "human-sign-off"
-description = "Human-only exact-revision sign-off and stale-session handling"
-evidence = [
-  "tests/test_review_service.py::test_nonhuman_actor_cannot_commit_review_action",
-  "tests/test_review_service.py::test_authoritative_newer_assessment_makes_session_stale",
-  "tests/test_review_web.py::test_csrf_origin_and_stale_forms_are_rejected_without_a_commit",
-]
-
-[[blockers]]
-id = "gui-accessibility"
-description = "Critical GUI usability and accessibility"
-evidence = [
-  "tests/test_review_web.py::test_rendered_critical_flow_has_accessible_controls_and_status",
-]
-manual_checks = [
-  { id = "keyboard-critical-flow", owner = "release owner", evidence_slot = "Issue #27 keyboard-run notes and recording" },
-  { id = "screen-reader-critical-flow", owner = "accessibility reviewer", evidence_slot = "Issue #27 screen-reader notes and defects" },
-  { id = "zoom-and-contrast", owner = "accessibility reviewer", evidence_slot = "Issue #27 200% zoom and contrast evidence" },
-  { id = "uncoached-lab-flow", owner = "study owner", evidence_slot = "Issue #27 convenience-sample blocker log" },
-]
-
-[[blockers]]
-id = "security-boundaries"
-description = "Loopback, privacy, path, and network boundaries"
-evidence = [
-  "tests/test_review_web.py::test_one_time_token_exchanges_for_secured_session_and_cannot_be_reused",
-  "tests/test_review_handoff.py::test_browser_launch_failure_returns_loopback_fallback_url",
-  "tests/test_ingestion.py::test_bounded_zip_accepts_safe_pdf_members_and_rejects_container_attacks",
-  "tests/test_registry.py::test_provider_protocol_is_downloaded_only_from_allow_list",
+  "tests/test_architecture.py::test_lean_v1_keeps_interfaces_at_the_run_engine_boundary",
+  "tests/test_mcp_tracer.py::test_five_domain_journey_survives_stdio_restart_and_publishes_report",
 ]
 
 [[blockers]]
 id = "package-archives"
-description = "Installation, canonical outputs, exports, and archive verification"
+description = "Lean wheel contents and archive verification"
 evidence = [
   "tests/test_release_build.py::test_wheel_ships_pack_sources_and_schemas",
-  "tests/test_release_build.py::test_clean_wheel_install_exposes_declared_entry_points",
-  "tests/test_reports.py::test_all_formats_match_golden_hashes",
   "tests/test_verification_archives.py::test_complete_archive_verifies_without_live_project",
-]
-manual_checks = [
-  { id = "clean-install", owner = "release owner", evidence_slot = "Issue #27 clean-install logs for frozen candidate" },
 ]
 
 [[fixtures]]
@@ -118,55 +69,6 @@ description = "Synthetic selectable text with stable page markers"
 evidence = "tests/test_ingestion.py::test_initialization_discovers_classifies_and_deduplicates_supplied_sources"
 
 [[fixtures]]
-id = "scanned"
-kind = "scanned"
-path = "tests/public_fixtures/documents/scanned-page.svg"
-description = "Synthetic page containing text as vector shapes only"
-evidence = "tests/test_visual_inspection.py::test_small_type_escalates_144_to_180_to_216_then_becomes_limited"
-
-[[fixtures]]
-id = "sparse"
-kind = "sparse"
-path = "tests/public_fixtures/documents/sparse.txt"
-description = "Synthetic sparse page"
-evidence = "tests/test_ingestion.py::test_liteparse_coverage_uses_one_targeted_recovery_and_preserves_diagnostics"
-
-[[fixtures]]
-id = "blank"
-kind = "blank"
-path = "tests/public_fixtures/documents/blank-page.json"
-description = "Descriptor for an intentionally empty synthetic page"
-evidence = "tests/test_ingestion.py::test_required_primary_with_no_recoverable_page_is_trial_failed"
-
-[[fixtures]]
-id = "garbled"
-kind = "garbled"
-path = "tests/public_fixtures/documents/garbled.txt"
-description = "Synthetic broken extraction output"
-evidence = "tests/test_ingestion.py::test_liteparse_coverage_uses_one_targeted_recovery_and_preserves_diagnostics"
-
-[[fixtures]]
-id = "table"
-kind = "table"
-path = "tests/visual_fixtures/baseline-table.svg"
-description = "Synthetic baseline table"
-evidence = "tests/test_visual_inspection.py::test_distributable_visual_fixtures_cover_all_required_cases"
-
-[[fixtures]]
-id = "flowchart"
-kind = "flowchart"
-path = "tests/visual_fixtures/consort-flowchart.svg"
-description = "Synthetic participant flowchart"
-evidence = "tests/test_visual_inspection.py::test_distributable_visual_fixtures_cover_all_required_cases"
-
-[[fixtures]]
-id = "parse-render-discrepant"
-kind = "parse-render-discrepant"
-path = "tests/visual_fixtures/parse-render-discrepancy.svg"
-description = "Synthetic parse and render discrepancy"
-evidence = "tests/test_visual_inspection.py::test_distributable_visual_fixtures_cover_all_required_cases"
-
-[[fixtures]]
 id = "compound"
 kind = "compound-protocol-sap"
 path = "tests/public_fixtures/documents/compound-protocol-sap.pdf"
@@ -174,113 +76,15 @@ description = "Synthetic compound protocol and SAP"
 evidence = "tests/test_ingestion.py::test_initialization_discovers_classifies_and_deduplicates_supplied_sources"
 
 [[fixtures]]
-id = "missing-required"
-kind = "missing-required"
-path = "tests/public_fixtures/failures/missing-required.json"
-description = "Descriptor for an intentionally absent required source"
-evidence = "tests/test_ingestion.py::test_missing_primary_fails_only_its_trial_and_batch_continues"
-
-[[fixtures]]
-id = "corrupt-required"
-kind = "corrupt-required"
-path = "tests/public_fixtures/failures/corrupt-required.pdf"
-description = "Synthetic corrupt required PDF"
-evidence = "tests/test_ingestion.py::test_required_primary_with_no_recoverable_page_is_trial_failed"
-
-[[fixtures]]
-id = "failed-optional"
-kind = "failed-optional"
-path = "tests/public_fixtures/failures/failed-optional.json"
-description = "Descriptor for a failed optional source"
-evidence = "tests/test_ingestion.py::test_optional_acquisition_failure_has_receipt_and_is_nonfatal"
-
-[[fixtures]]
-id = "source-conflict"
-kind = "source-conflict"
-path = "tests/public_fixtures/evidence/source-conflict.json"
-description = "Synthetic conflicting source statements"
-evidence = "tests/test_evidence_workflow.py::test_exact_claim_is_materialized_from_canonical_text_and_conflicts_are_preserved"
-
-[[fixtures]]
-id = "ambiguous-denominator"
-kind = "ambiguous-denominator"
-path = "tests/public_fixtures/evidence/ambiguous-denominator.txt"
-description = "Synthetic ambiguous analysis denominator"
-evidence = "tests/test_evidence_workflow.py::test_derived_fact_registry_is_closed_and_records_calculation_provenance"
-
-[[fixtures]]
-id = "visible-injection"
-kind = "visible-prompt-injection"
-path = "tests/public_fixtures/adversarial/visible-prompt-injection.txt"
-description = "Visible instruction-like source content"
-evidence = "tests/test_reports.py::test_distributable_prompt_injection_and_markup_are_inert"
-
-[[fixtures]]
-id = "hidden-injection"
-kind = "hidden-prompt-injection"
-path = "tests/public_fixtures/adversarial/hidden-prompt-injection.html"
-description = "Hidden instruction-like source content"
-evidence = "tests/test_reports.py::test_distributable_prompt_injection_and_markup_are_inert"
-
-[[fixtures]]
-id = "hostile-markup"
-kind = "hostile-markup"
-path = "tests/public_fixtures/adversarial/hostile-markup.html"
-description = "Hostile HTML, SVG, Markdown, and URL schemes"
-evidence = "tests/test_reports.py::test_distributable_prompt_injection_and_markup_are_inert"
-
-[[fixtures]]
-id = "hostile-unicode"
-kind = "hostile-unicode-metadata"
-path = "tests/public_fixtures/adversarial/hostile-unicode.txt"
-description = "Bidirectional, invisible, and deceptive metadata"
-evidence = "tests/test_reports.py::test_distributable_prompt_injection_and_markup_are_inert"
-
-[[fixtures]]
-id = "malformed-pdf"
-kind = "malformed-pdf"
-path = "tests/public_fixtures/adversarial/malformed.pdf"
-description = "Truncated synthetic PDF"
-evidence = "tests/test_registry.py::test_malformed_success_response_degrades_to_typed_failure"
-
-[[fixtures]]
-id = "path-attack"
-kind = "path-attack"
-path = "tests/public_fixtures/adversarial/path-attack.json"
-description = "Traversal and absolute-path member names"
-evidence = "tests/test_ingestion.py::test_bounded_zip_accepts_safe_pdf_members_and_rejects_container_attacks"
-
-[[fixtures]]
-id = "container-attack"
-kind = "container-attack"
-path = "tests/public_fixtures/adversarial/container-attack.json"
-description = "Oversized and excessive container member descriptors"
-evidence = "tests/test_ingestion.py::test_bounded_zip_accepts_safe_pdf_members_and_rejects_container_attacks"
-
-[[fixtures]]
 id = "multiple-results"
 kind = "multiple-results"
 path = "tests/public_fixtures/workflow/multiple-results.json"
-description = "Synthetic Results spanning Randomizations, reports, measures, instruments, and time points"
+description = "Synthetic Results spanning reports, measures, and time points"
 evidence = "tests/test_boundaries.py::test_result_spec_round_trip_preserves_stable_identity_and_numbers"
-
-[[fixtures]]
-id = "reuse-cases"
-kind = "reuse-cases"
-path = "tests/public_fixtures/workflow/reuse-cases.json"
-description = "Synthetic correct and incorrect Domain 1 reuse cases"
-evidence = "tests/test_host_interfaces.py::test_preparation_work_items_enforce_order_and_reach_review"
-
-[[fixtures]]
-id = "workflow-edge-cases"
-kind = "workflow-edge-cases"
-path = "tests/public_fixtures/workflow/edge-cases.json"
-description = "Interruption, stale action, duplicate submission, and invalidation cases"
-evidence = "tests/test_storage.py::test_interruption_after_commit_resumes_from_durable_checkpoint"
 
 [[fixtures]]
 id = "normalized-host-submissions"
 kind = "normalized-host-submissions"
 path = "tests/public_fixtures/workflow/normalized-host-submissions.json"
-description = "Identical normalized submissions for both host adapters"
-evidence = "tests/test_host_interfaces.py::test_real_stdio_mcp_exercises_the_typed_run_engine_surface"
+description = "Identical normalized submissions for both supported Harnesses"
+evidence = "tests/test_mcp_tracer.py::test_five_domain_journey_survives_stdio_restart_and_publishes_report"

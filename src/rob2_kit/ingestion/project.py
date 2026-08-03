@@ -377,7 +377,6 @@ class ProjectManifest(FrozenModel):
     policy_releases: tuple[str, ...] = (
         "policy:source-recovery-1.0.0",
         "policy:parser-quality-1.0.0",
-        "policy:review-1.0.0",
     )
     export_preferences: tuple[str, ...] = ("json", "markdown", "html")
     archive_preference: str = "complete"
@@ -412,7 +411,7 @@ class ResultCandidate(FrozenModel):
     status: Literal["resolved", "needs_input"]
 
 
-class ReviewFindingKind(StrEnum):
+class InitializationDiagnosticKind(StrEnum):
     PRIMARY_REPORT_AMBIGUOUS = "primary_report_ambiguous"
     TRIAL_FAILED = "trial_failed"
     OPTIONAL_SOURCE_ACQUISITION_FAILED = "optional_source_acquisition_failed"
@@ -423,8 +422,8 @@ class ReviewFindingKind(StrEnum):
     CONFLICTING_REGISTRY_IDENTIFIERS = "conflicting_registry_identifiers"
 
 
-class ReviewFinding(FrozenModel):
-    kind: ReviewFindingKind
+class InitializationDiagnostic(FrozenModel):
+    kind: InitializationDiagnosticKind
     trial_id: Identifier
     source_id: Identifier | None = None
     detail: str = Field(min_length=1)
@@ -444,7 +443,7 @@ class ProjectInitialization(FrozenModel):
     trials: tuple[TrialInitialization, ...]
     result_specs: tuple[ResultSpecRevision, ...] = ()
     acquisition_receipts: tuple[AcquisitionReceipt, ...]
-    review_findings: tuple[ReviewFinding, ...]
+    diagnostics: tuple[InitializationDiagnostic, ...]
     registry_candidates: tuple[RegistryCandidate, ...] = ()
     result_candidates: tuple[ResultCandidate, ...] = ()
 
@@ -504,7 +503,7 @@ def initialize_project(
 
     trials: list[TrialInitialization] = []
     receipts: list[AcquisitionReceipt] = []
-    findings: list[ReviewFinding] = []
+    findings: list[InitializationDiagnostic] = []
     registry_candidates: list[RegistryCandidate] = []
     input_root_resolved = input_root.resolve()
     trial_paths: list[Path] = []
@@ -553,7 +552,7 @@ def initialize_project(
         trials=tuple(trials),
         result_specs=result_specs,
         acquisition_receipts=tuple(receipts),
-        review_findings=tuple(findings),
+        diagnostics=tuple(findings),
         registry_candidates=tuple(registry_candidates),
         result_candidates=result_candidates,
     )
@@ -854,17 +853,21 @@ def _initialize_trial(
     store: ArtifactStore,
     actor: Actor,
     parser: DocumentParser,
-) -> tuple[TrialInitialization, tuple[AcquisitionReceipt, ...], tuple[ReviewFinding, ...]]:
+) -> tuple[
+    TrialInitialization,
+    tuple[AcquisitionReceipt, ...],
+    tuple[InitializationDiagnostic, ...],
+]:
     trial_slug = _slug(trial_path.name)
     trial_id = f"trial:{trial_slug}"
     declarations = _read_trial_manifest(trial_path)
     paths = _source_paths(trial_path, declarations)
     primary, ambiguous = _choose_primary(trial_path, paths, declarations)
-    findings: list[ReviewFinding] = []
+    findings: list[InitializationDiagnostic] = []
     if ambiguous:
         findings.append(
-            ReviewFinding(
-                kind=ReviewFindingKind.PRIMARY_REPORT_AMBIGUOUS,
+            InitializationDiagnostic(
+                kind=InitializationDiagnosticKind.PRIMARY_REPORT_AMBIGUOUS,
                 trial_id=trial_id,
                 detail=f"Multiple top-level PDFs found; proposed {primary.name if primary else ''}",
             )
@@ -887,8 +890,8 @@ def _initialize_trial(
             detail="No top-level primary-report candidate was supplied",
         )
         findings.append(
-            ReviewFinding(
-                kind=ReviewFindingKind.TRIAL_FAILED,
+            InitializationDiagnostic(
+                kind=InitializationDiagnosticKind.TRIAL_FAILED,
                 trial_id=trial_id,
                 detail=failure.detail,
             )
@@ -942,8 +945,8 @@ def _initialize_trial(
                 required_failure = source
             else:
                 findings.append(
-                    ReviewFinding(
-                        kind=ReviewFindingKind.OPTIONAL_SOURCE_ACQUISITION_FAILED,
+                    InitializationDiagnostic(
+                        kind=InitializationDiagnosticKind.OPTIONAL_SOURCE_ACQUISITION_FAILED,
                         trial_id=trial_id,
                         source_id=source_id,
                         detail=f"{relative}: {error}",
@@ -1032,8 +1035,8 @@ def _initialize_trial(
                 required_failure = source
             else:
                 findings.append(
-                    ReviewFinding(
-                        kind=ReviewFindingKind.OPTIONAL_SOURCE_PROCESSING_FAILED,
+                    InitializationDiagnostic(
+                        kind=InitializationDiagnosticKind.OPTIONAL_SOURCE_PROCESSING_FAILED,
                         trial_id=trial_id,
                         source_id=source_id,
                         detail=f"{relative}: {failure_category}",
@@ -1060,8 +1063,8 @@ def _initialize_trial(
             detail=f"Required primary {required_failure.relative_path} could not be parsed",
         )
         findings.append(
-            ReviewFinding(
-                kind=ReviewFindingKind.TRIAL_FAILED,
+            InitializationDiagnostic(
+                kind=InitializationDiagnosticKind.TRIAL_FAILED,
                 trial_id=trial_id,
                 detail=failure.detail,
             )
@@ -1085,7 +1088,7 @@ def _initialize_registry(
     actor: Actor,
     parser: DocumentParser,
     registry_adapter: Any,
-) -> tuple[TrialInitialization, AcquisitionReceipt | None, tuple[ReviewFinding, ...]]:
+) -> tuple[TrialInitialization, AcquisitionReceipt | None, tuple[InitializationDiagnostic, ...]]:
     """Resolve one Trial's declared/discovered NCT through the bounded adapter.
 
     The adapter is injected at this seam so tests can replay recorded registry
@@ -1147,7 +1150,7 @@ def _initialize_registry(
         except Exception:
             # A registry acquisition can retain a raw response even when the
             # configured parser cannot produce canonical text.  Preserve the
-            # custody record and let the normal Review finding carry the
+            # custody record and let the normal initialization diagnostic carry the
             # processing limitation.
             parse_records, coverage = (), ()
         registry_source = registry_source.model_copy(
@@ -1167,13 +1170,15 @@ def _initialize_registry(
         }
     )
     finding_kinds = {
-        "fuzzy_registry_candidates": ReviewFindingKind.REGISTRY_CANDIDATES,
-        "conflicting_exact_identifiers": ReviewFindingKind.CONFLICTING_REGISTRY_IDENTIFIERS,
-        "registry_unavailable": ReviewFindingKind.REGISTRY_UNAVAILABLE,
-        "registry_acquisition_failed": ReviewFindingKind.REGISTRY_ACQUISITION_FAILED,
+        "fuzzy_registry_candidates": InitializationDiagnosticKind.REGISTRY_CANDIDATES,
+        "conflicting_exact_identifiers": (
+            InitializationDiagnosticKind.CONFLICTING_REGISTRY_IDENTIFIERS
+        ),
+        "registry_unavailable": InitializationDiagnosticKind.REGISTRY_UNAVAILABLE,
+        "registry_acquisition_failed": InitializationDiagnosticKind.REGISTRY_ACQUISITION_FAILED,
     }
     findings = tuple(
-        ReviewFinding(
+        InitializationDiagnostic(
             kind=finding_kinds[finding.kind.value],
             trial_id=trial.trial_id,
             source_id=(registry_source.source_id if registry_source else None),
@@ -1212,8 +1217,8 @@ def _initialize_registry(
             }
         )
         findings += (
-            ReviewFinding(
-                kind=ReviewFindingKind.CONFLICTING_REGISTRY_IDENTIFIERS,
+            InitializationDiagnostic(
+                kind=InitializationDiagnosticKind.CONFLICTING_REGISTRY_IDENTIFIERS,
                 trial_id=trial.trial_id,
                 source_id=(registry_source.source_id if registry_source else None),
                 detail=(
@@ -1307,7 +1312,7 @@ def _registry_source_descriptor(
     actor: Actor,
 ) -> tuple[SourceDescriptor | None, AcquisitionReceipt | None]:
     # A fuzzy or conflicting candidate is not an evidence link.  Keep its
-    # engine-issued RegistryCandidate and Review finding in the proposal, but
+    # engine-issued RegistryCandidate and initialization diagnostic in the proposal, but
     # do not project an unconfirmed identifier as the current registry source.
     if (
         acquisition.status is not RegistryAcquisitionStatus.ACQUIRED

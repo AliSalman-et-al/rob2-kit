@@ -39,13 +39,7 @@ _REVISION_MODELS: tuple[type[Revision], ...] = (
     assessment.SQAnswerRevision,
     assessment.DecisionTrace,
     assessment.AlgorithmicJudgmentRevision,
-    assessment.JudgmentOverride,
-    assessment.ReviewFinding,
-    assessment.DomainReviewDisposition,
-    assessment.ReviewerProfileRevision,
     assessment.AssessmentRevision,
-    assessment.AssessmentSignOff,
-    assessment.SignOffWithdrawal,
     evidence.EvidenceCandidate,
     evidence.EvidenceCandidateDispositionRecord,
     evidence.EvidenceClaim,
@@ -78,16 +72,13 @@ _EVIDENCE_ITEMS = (
     SearchCoverageReceipt,
 )
 _EXPECTED_DEPENDENCY_MODELS: dict[str, tuple[type[BaseModel], ...]] = {
-    "dependency:affected-record": _ANY_REVISION,
     "dependency:algorithmic-judgment": (assessment.AlgorithmicJudgmentRevision,),
     "dependency:assessment": (assessment.AssessmentRevision,),
-    "dependency:assessment-sign-off": (assessment.AssessmentSignOff,),
     "dependency:canonical-unit": (CanonicalEvidenceUnit,),
     "dependency:compatible-release": (releases.PackRelease,),
     "dependency:considered-item": _EVIDENCE_ITEMS,
     "dependency:context-item": _RECORD_MODELS,
     "dependency:decision-trace": (assessment.DecisionTrace,),
-    "dependency:domain-review-disposition": (assessment.DomainReviewDisposition,),
     "dependency:derived-fact-input": (
         evidence.EvidenceClaim,
         evidence.DerivedFact,
@@ -95,16 +86,12 @@ _EXPECTED_DEPENDENCY_MODELS: dict[str, tuple[type[BaseModel], ...]] = {
     "dependency:evidence-bundle": (evidence.EvidenceBundle,),
     "dependency:evidence-item": _EVIDENCE_ITEMS,
     "dependency:guidance-release": (releases.PackRelease,),
-    "dependency:judgment-override": (assessment.JudgmentOverride,),
     "dependency:logic-release": (releases.PackRelease,),
     "dependency:outcome-target": (projects.OutcomeTarget,),
     "dependency:policy-release": (releases.PolicyRelease,),
     "dependency:project-rule": (releases.ProjectRule,),
     "dependency:release-item": _RECORD_MODELS,
     "dependency:result-spec": (results.ResultSpecRevision,),
-    "dependency:review-finding": (assessment.ReviewFinding,),
-    "dependency:review-policy": (releases.PolicyRelease,),
-    "dependency:reviewer-profile": (assessment.ReviewerProfileRevision,),
     "dependency:source": (sources.SourceComponent, sources.SourceDescriptor),
     "dependency:source-inventory": (sources.SourceInventoryRevision,),
     "dependency:sq-answer": (assessment.SQAnswerRevision,),
@@ -158,7 +145,6 @@ class ArchiveManifest(BaseModel):
 
     archive_format: Literal["rob2-verification-archive"]
     archive_kind: ArchiveKind
-    active_sign_off_revision_ids: tuple[Identifier, ...] = ()
     assessment_revision_id: Identifier
     artifacts: tuple[ArchiveArtifact, ...]
     events: ArchiveEvents
@@ -182,26 +168,7 @@ class ArchiveBuilder:
     ) -> bytes:
         self.ledger.preflight()
         events = self.ledger.events()
-        current_revision_ids = {
-            revision.revision_id for revision in self.ledger.current_revisions()
-        }
-        sign_off_revision_ids = tuple(
-            sorted(
-                event.revision_id
-                for event in events
-                if event.revision_id in current_revision_ids
-                and any(
-                    dependency.role == "dependency:assessment"
-                    and dependency.revision_id == assessment_revision_id
-                    for dependency in event.dependencies
-                )
-            )
-        )
         closure, source_revisions = _dependency_closure(events, assessment_revision_id)
-        for sign_off_revision_id in sign_off_revision_ids:
-            sign_off_closure, sign_off_sources = _dependency_closure(events, sign_off_revision_id)
-            closure.update(sign_off_closure)
-            source_revisions.update(sign_off_sources)
         selected = tuple(event for event in events if event.revision_id in closure)
         by_revision = {event.revision_id: event for event in selected}
         if assessment_revision_id not in by_revision:
@@ -268,7 +235,6 @@ class ArchiveBuilder:
         manifest = ArchiveManifest(
             archive_format="rob2-verification-archive",
             archive_kind=kind,
-            active_sign_off_revision_ids=sign_off_revision_ids,
             assessment_revision_id=assessment_revision_id,
             artifacts=tuple(ArchiveArtifact.model_validate(item) for item in artifacts),
             events=ArchiveEvents(
@@ -435,12 +401,7 @@ def _verify_archive_completeness(
     ):
         raise ArchiveVerificationError("canonical Assessment revision is missing from the archive")
     reachable: set[str] = set()
-    for revision_id in manifest.active_sign_off_revision_ids:
-        if revision_id not in artifacts:
-            raise ArchiveVerificationError(
-                f"active sign-off {revision_id} is missing from the archive"
-            )
-    pending = [root.revision_id, *manifest.active_sign_off_revision_ids]
+    pending = [root.revision_id]
     while pending:
         revision_id = pending.pop()
         if revision_id in reachable:

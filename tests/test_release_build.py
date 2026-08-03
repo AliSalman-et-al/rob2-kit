@@ -20,6 +20,16 @@ def test_wheel_ships_pack_sources_and_schemas(tmp_path: Path) -> None:
     assert "rob2_kit/packs/guidance/rob2-parallel-assignment-en-2019.1.yaml" in names
     assert "rob2_kit/schemas/logic-pack.schema.json" in names
     assert "rob2_kit/schemas/guidance-pack.schema.json" in names
+    assert not any(
+        name.startswith(
+            (
+                "rob2_kit/review/",
+                "rob2_kit/application/gateway",
+                "rob2_kit/application/interfaces",
+            )
+        )
+        for name in names
+    )
 
 
 def test_clean_wheel_install_exposes_declared_entry_points(tmp_path: Path) -> None:

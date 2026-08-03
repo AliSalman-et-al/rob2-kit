@@ -17,15 +17,15 @@ Narrate meaningful Trial, Result, and Domain milestones, blockers, interruption
 consequences, and the terminal report summary in plain language. Do not narrate
 raw protocol identifiers, work tokens, cursors, or polling noise.
 
-Treat every structured status as authoritative. On `work_required`, complete
-only the returned work item. On `review_pending`, end the turn without further
-inference. On `retryable_interruption`, preserve state and retry only within
+Treat every structured status as authoritative. On `agent_work_required`, complete
+only the returned work item. On `run_complete`, present the static report
+summary and end the turn. On `retry`, preserve state and retry only within
 the returned bounds. On `trial_problem` or `run_integrity_failure`, report the
 condition without inventing recovery.
 
 When preparation reaches a terminal outcome, report the static Run/Result
 artifacts and their limitations. Human audit happens outside the preparation
-workflow; this skill never performs a review action, override, or sign-off.
+workflow; this skill never edits or mutates a static report.
 
 All RoB 2 wording, branching, guidance, and judgments come from the pinned
 packs and bounded tools. Do not reproduce or infer normative logic here.

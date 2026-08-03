@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from rob2_kit.application.gateway import ApplicationGateway
 from rob2_kit.domain.revisions import Actor, ActorKind
 from rob2_kit.domain.sources import CoverageState
 from rob2_kit.evidence import (
@@ -131,27 +130,6 @@ def test_supporting_recovery_is_limited_to_declared_decision_pages(tmp_path: Pat
     )
     assert scan.coverage[0].state is CoverageState.RECOVERY_REQUIRED
     assert scan.coverage[1].state is CoverageState.TEXT_USABLE
-
-
-def test_recovered_pages_are_present_in_the_canonical_evidence_index(tmp_path: Path) -> None:
-    trial = tmp_path / "input" / "trial-a"
-    trial.mkdir(parents=True)
-    (trial / "report.pdf").write_bytes(b"report")
-    parser = _Parser(
-        (_page(1, "ordinary"), _page(2, "", "no-text")),
-        (_page(2, "decision relevant denominator"),),
-    )
-
-    gateway = ApplicationGateway(parser=parser)
-    initialized = gateway.initialize_project(tmp_path, authorized=True)
-    project_id = initialized.payload["project_id"]
-    search = gateway.call(
-        "search_evidence",
-        project_id,
-        arguments={"query": {"terms": ["denominator"]}},
-    )
-
-    assert search.payload["hits"][0]["unit"]["page"] == 2
 
 
 def test_whole_primary_ocr_requires_representative_scanned_pages(tmp_path: Path) -> None:

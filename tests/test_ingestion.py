@@ -255,7 +255,7 @@ def test_multiple_primary_candidates_are_nonblocking_and_trial_yaml_disambiguate
         )
         == 1
     )
-    assert any(finding.kind == "primary_report_ambiguous" for finding in ambiguous.review_findings)
+    assert any(finding.kind == "primary_report_ambiguous" for finding in ambiguous.diagnostics)
 
     (trial / "trial.yaml").write_text(
         "schema_version: 1\ndocuments:\n  - path: b.pdf\n    role: primary_report\n",
@@ -270,7 +270,7 @@ def test_multiple_primary_candidates_are_nonblocking_and_trial_yaml_disambiguate
     )
     assert primary.title == "b.pdf"
     assert not any(
-        finding.kind == "primary_report_ambiguous" for finding in explicit.review_findings
+        finding.kind == "primary_report_ambiguous" for finding in explicit.diagnostics
     )
 
 
@@ -477,7 +477,7 @@ def test_required_primary_failure_is_trial_failed_but_optional_failure_is_nonfat
     )
     assert broken.processing is SourceProcessing.FAILED
     assert any(
-        finding.kind == "optional_source_processing_failed" for finding in optional.review_findings
+        finding.kind == "optional_source_processing_failed" for finding in optional.diagnostics
     )
 
 

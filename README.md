@@ -1,7 +1,7 @@
 # rob2-kit
 
-> **Draft-only hands-on preview.** This is not a public-v1 release. Only a
-> human reviewer can sign off an exact Assessment revision.
+> **Lean v1.** RoB 2 Kit runs one typed MCP workflow and materializes local,
+> read-only static evidence reports.
 
 Install the locked project-local Codex and Claude Code adapters, then verify the
 exact execution contract:
@@ -11,14 +11,11 @@ uv run --locked --project . rob2 bootstrap .
 uv run --locked --project . rob2 doctor .
 ```
 
-Start the locked Windows preview from the repository root:
+Start the stdio MCP entry point from the repository root:
 
 ```powershell
-uv run --locked --project . rob2 doctor
+uv run --locked --project . rob2-mcp
 ```
 
-See [the hands-on preview gate](docs/HANDS-ON-PREVIEW.md) for the dual-host
-verification and feedback checklist.
-
-To show exact Trial × Result identities in the Companion Ready view before
-Preparation begins, see [declaring exact Results](docs/RESULT-DECLARATIONS.md).
+To declare exact Trial × Result identities before preparation begins, see
+[declaring exact Results](docs/RESULT-DECLARATIONS.md).

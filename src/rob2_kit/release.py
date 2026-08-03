@@ -12,8 +12,7 @@ from typing import Literal, TextIO, cast
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from rob2_kit.application.contracts import RUN_OPERATION_NAMES
-from rob2_kit.application.gateway import CONTRACT_VERSION
+from rob2_kit.application.contracts import CONTRACT_VERSION, RUN_OPERATION_NAMES
 
 CANONICAL_SKILL_NAMES = ("rob2-init", "rob2-assess")
 SUPPORTED_HOSTS = ("codex", "claude")
@@ -54,7 +53,6 @@ class ReleaseLock(BaseModel):
     package_version: str = Field(min_length=1)
     python_version: Literal["3.13"]
     release_status: Literal["draft_only_preview"]
-    sign_off_authority: Literal["human_only"]
     application_contract: str = Field(min_length=1)
     launcher: str = Field(min_length=1)
     launcher_working_directory: Literal["project_root"]
@@ -114,7 +112,6 @@ def build_host_adapters(root: Path, *, package_version: str) -> ReleaseLock:
         package_version=package_version,
         python_version=PYTHON_VERSION,
         release_status="draft_only_preview",
-        sign_off_authority="human_only",
         application_contract=CONTRACT_VERSION,
         launcher=launcher,
         launcher_working_directory="project_root",

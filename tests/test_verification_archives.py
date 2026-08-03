@@ -178,8 +178,8 @@ def archive_ledger(tmp_path: Path) -> WorkflowLedger:
         revision_id="revision:policy-1",
         actor=actor(),
         observed_at=NOW,
-        kind="review_policy",
-        family_id="policy:review",
+        kind="evidence_search_policy",
+        family_id="policy:evidence-search",
         release_id="1.0.0",
         canonical_content_hash="sha256:" + ("b" * 64),
         required_schema_version="1.0.0",
@@ -210,9 +210,7 @@ def archive_ledger(tmp_path: Path) -> WorkflowLedger:
             **judgment_reference.model_dump(),
             role="dependency:algorithmic-judgment",
         ),
-        Dependency(
-            **policy_reference.model_dump(), role="dependency:review-policy"
-        ),
+        Dependency(**policy_reference.model_dump(), role="dependency:policy-release"),
     )
     assessment = AssessmentRevision(
         entity_id="assessment:one",
@@ -225,7 +223,6 @@ def archive_ledger(tmp_path: Path) -> WorkflowLedger:
         evidence_bundles=(),
         answers=(),
         judgments=(judgment_reference,),
-        review_findings=(),
     )
     commit(
         assessment,

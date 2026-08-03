@@ -50,7 +50,6 @@ def assessment_view() -> AssessmentView:
                 rationale="No information about deviations.",
             ),
         ),
-        signed_off=True,
     )
 
 
@@ -135,7 +134,6 @@ def test_summary_is_a_small_projection_of_the_same_revision() -> None:
         "domain_counts": {"high": 0, "low": 1, "some_concerns": 1},
         "overall_judgment": "some_concerns",
         "result_id": "result:mortality-30d",
-        "signed_off": True,
     }
 
 
@@ -444,10 +442,10 @@ def test_all_formats_match_golden_hashes() -> None:
     }
 
     assert {name: hashlib.sha256(content).hexdigest() for name, content in outputs.items()} == {
-        "json": "b994ddccd62c8d3f6899debf97917d107635d596cb513e99743b32cdc0969a21",
-        "summary": "248b0cd8e9afc6e89cf5126536c4f8576896ff0cc4eb7b9f0b4dd686a0be1e78",
-        "html": "1f8ab19e4e90fe8fae624b4891330aebec7435c292a7ae3e43c509b3a88a5a00",
-        "markdown": "dff2d0e6eec22bac1434817e43a35858018fcbe2ec84721addf4e255d40e22ca",
+        "json": "fe7b3207a23fde1e25f43fb3ee65eb0a2f7350e876c8b27f6e65f987a9f47d72",
+        "summary": "619849d91e243fceb6fdb396480611c4b73fe13502a2bb1037b877766e7bc39e",
+        "html": "26aeeef8fd25db33ba577bda4925c9a76a067f0ff15795e05fb94c89500d69b1",
+        "markdown": "1788fc4cd40f65cbd6a406d8a22afccfc07f29cb87f476284e176bb9c9253ac0",
         "csv": "c61ac51a9d471a6354be5a37af0e809f05c778f7990d5334c21d5c2a90285285",
         "xlsx": "b449a650c57a69d6f430c77e761cc6aa504dfc2b6e10c3fe564383c29da5f7b8",
     }

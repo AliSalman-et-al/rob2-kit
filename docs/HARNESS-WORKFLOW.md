@@ -25,5 +25,5 @@ identifiers, or polling updates as narration.
 
 On interruption, say what committed and what the next `prepare_run` or
 `continue_run` response will resume. On a terminal Result, link or name the
-static report and plainly state any limitations. A Harness does not review,
-override, or sign off an Assessment.
+static report and plainly state any limitations. A Harness does not modify a
+completed Assessment or its reports.

@@ -51,7 +51,6 @@ class TrialFailureReason(StrEnum):
 class DraftReady(FrozenModel):
     outcome: Literal["draft_ready"] = "draft_ready"
     assessment: RecordReference
-    review_findings: tuple[RecordReference, ...] = ()
 
 
 class PreparationIncomplete(FrozenModel):
@@ -79,24 +78,6 @@ class PreparationAttempt(Revision):
     project_manifest: RecordReference
     result_spec: RecordReference
     outcome: PreparationOutcome | None = None
-
-
-class ReviewReceiptOutcome(StrEnum):
-    ACTION_COMPLETED = "action_completed"
-    CORRECTION_REQUESTED = "correction_requested"
-    DEFERRED = "deferred"
-    ASSESSMENT_SIGNED_OFF = "assessment_signed_off"
-
-
-class ReviewReceipt(Revision):
-    dependency_roles = {
-        "assessment": "dependency:assessment",
-        "ledger_event": "dependency:ledger-event",
-    }
-    outcome: ReviewReceiptOutcome
-    review_action_id: Identifier
-    assessment: RecordReference
-    ledger_event: RecordReference
 
 
 class SubmissionKind(StrEnum):

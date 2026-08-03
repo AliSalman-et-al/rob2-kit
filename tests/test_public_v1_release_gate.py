@@ -1,11 +1,8 @@
 import json
-from io import BytesIO
 from pathlib import Path
-from zipfile import ZIP_DEFLATED, ZipFile
 
 import pytest
 
-from rob2_kit.ingestion.project import BoundedZipError, read_bounded_zip
 from rob2_kit.release_gate import ReleaseGateError, load_release_gate
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -18,13 +15,10 @@ def test_every_public_v1_blocker_has_owned_evidence() -> None:
         "logic",
         "result-identity",
         "evidence",
-        "adversarial-rendering",
+        "static-reports",
         "resume-invalidation",
         "failure-isolation",
-        "cross-host-equivalence",
-        "human-sign-off",
-        "gui-accessibility",
-        "security-boundaries",
+        "typed-mcp",
         "package-archives",
     }
     assert all(blocker.evidence for blocker in gate.blockers.values())
@@ -41,29 +35,8 @@ def test_release_gate_uses_only_distributable_fixtures() -> None:
     fixture_kinds = {fixture.kind for fixture in gate.fixtures.values()}
     assert {
         "born-digital",
-        "scanned",
-        "sparse",
-        "blank",
-        "garbled",
-        "table",
-        "flowchart",
-        "parse-render-discrepant",
         "compound-protocol-sap",
-        "missing-required",
-        "corrupt-required",
-        "failed-optional",
-        "source-conflict",
-        "ambiguous-denominator",
-        "visible-prompt-injection",
-        "hidden-prompt-injection",
-        "hostile-markup",
-        "hostile-unicode-metadata",
-        "malformed-pdf",
-        "path-attack",
-        "container-attack",
         "multiple-results",
-        "reuse-cases",
-        "workflow-edge-cases",
         "normalized-host-submissions",
     } <= fixture_kinds
     assert all(fixture.path.is_file() for fixture in gate.fixtures.values())
@@ -85,43 +58,6 @@ def test_distributable_fixture_contracts_are_executable() -> None:
     assert loaded["compound-protocol-sap"].count(b"/Type /Page") >= 2
     assert b"PROTOCOL" in loaded["compound-protocol-sap"]
     assert b"STATISTICAL ANALYSIS PLAN" in loaded["compound-protocol-sap"]
-    assert loaded["malformed-pdf"].startswith(b"%PDF-")
-    assert b"%%EOF" not in loaded["malformed-pdf"]
-    assert not loaded["corrupt-required"].startswith(b"%PDF-")
-
-    path_attack = json.loads(loaded["path-attack"])
-    for member in path_attack["members"]:
-        container = BytesIO()
-        with ZipFile(container, "w") as archive:
-            archive.writestr(member, b"unsafe")
-        with pytest.raises(BoundedZipError, match="unsafe"):
-            read_bounded_zip(container.getvalue())
-
-    container_attack = json.loads(loaded["container-attack"])
-    container = BytesIO()
-    with ZipFile(container, "w", ZIP_DEFLATED) as archive:
-        archive.writestr("one.pdf", b"expanded")
-    with pytest.raises(BoundedZipError, match="member-count"):
-        read_bounded_zip(
-            container.getvalue(),
-            max_members=min(0, container_attack["member_count"] - 1),
-        )
-    with pytest.raises(BoundedZipError, match="expanded-size"):
-        read_bounded_zip(
-            container.getvalue(),
-            max_expanded_bytes=min(1, container_attack["expanded_bytes"] - 1),
-        )
-
-    edge_cases = json.loads(loaded["workflow-edge-cases"])["cases"]
-    assert {
-        "interruption-before-commit",
-        "interruption-after-commit",
-        "host-disconnection",
-        "stale-gui-action",
-        "duplicate-submission",
-        "targeted-invalidation",
-        "archive-verification",
-    } == set(edge_cases)
     host_submissions = json.loads(loaded["normalized-host-submissions"])
     assert host_submissions["codex"] == host_submissions["claude"]
 

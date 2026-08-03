@@ -4,7 +4,6 @@
     "Confirm the exact Trial and Result scope"
   ],
   "does_not_activate": [
-    "Answer signaling questions",
-    "Perform a human review or sign-off"
+    "Answer signaling questions"
   ]
 }

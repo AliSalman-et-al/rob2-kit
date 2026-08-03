@@ -95,7 +95,6 @@ class DependencyInput(LedgerModel):
 class WorkflowEventOutcome(StrEnum):
     COMPLETED = "completed"
     WORK_REQUIRED = "work_required"
-    REVIEW_PENDING = "review_pending"
     PREPARATION_OUTCOME_REACHED = "preparation_outcome_reached"
     RETRYABLE_INTERRUPTION = "retryable_interruption"
     TRIAL_PROBLEM = "trial_problem"

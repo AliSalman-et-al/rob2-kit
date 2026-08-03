@@ -1,9 +1,4 @@
-"""Typed public contracts for the lean RunEngine boundary.
-
-The legacy gateway keeps its original envelopes for the expand step.  These
-contracts are the new, one-operation-per-method seam and intentionally carry
-no MCP, CLI, or host-framework types.
-"""
+"""Typed public contracts for the lean RunEngine boundary."""
 
 from __future__ import annotations
 
@@ -47,6 +42,8 @@ from rob2_kit.evidence.workflow import ExecutedSearchQuery, SearchCoverageReceip
 from rob2_kit.ingestion.project import ProjectInitialization, ResultCandidate, TrialInitialization
 from rob2_kit.logic.packs import GuidanceItem
 from rob2_kit.registry import RegistryCandidate
+
+CONTRACT_VERSION = "1.0.0"
 
 
 class RunOperation(StrEnum):

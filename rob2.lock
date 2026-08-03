@@ -1,24 +1,24 @@
 {
   "adapters": {
     "claude": {
-      "content_hash": "sha256:21a08c28ab146516cb79891a0b9a09c5a54ab5bff33e3e59569ef614be82524b",
+      "content_hash": "sha256:93722b968fe0da368f465a5da18bc2f8a40026cbe93e2b9c7e857d5763114fc3",
       "skill_hashes": {
-        "rob2-assess": "sha256:eb86e8839cc90891bb6afdfeee4e63b00b318df6d17c8777857cbf2520bc4ebf",
+        "rob2-assess": "sha256:ebe0b9811d5120f9c0052f1c97b8da00e7ad4c461c0291d6e88aae5a048b6dc0",
         "rob2-init": "sha256:7be26dd1b21502f97a4b3cc6b4c7067a69dec2b735c7696a9fff9c08dc04056a"
       },
       "version": "1"
     },
     "codex": {
-      "content_hash": "sha256:5cf12f43a77e843fbf9620d0cdd3e0a0e19786b7c30e563d18022a4b80f1c5c6",
+      "content_hash": "sha256:5bdbe50b26ec612af8dcc3d4a8ee37a8f6fabfef072e2e0520bacb58719880c9",
       "skill_hashes": {
-        "rob2-assess": "sha256:eb86e8839cc90891bb6afdfeee4e63b00b318df6d17c8777857cbf2520bc4ebf",
+        "rob2-assess": "sha256:ebe0b9811d5120f9c0052f1c97b8da00e7ad4c461c0291d6e88aae5a048b6dc0",
         "rob2-init": "sha256:7be26dd1b21502f97a4b3cc6b4c7067a69dec2b735c7696a9fff9c08dc04056a"
       },
       "version": "1"
     }
   },
   "application_contract": "1.0.0",
-  "dependency_lock_hash": "sha256:abe1e7933e9038e65418eb14a13abc5c30c0ef3733fd93cc9342846a6e31cf4e",
+  "dependency_lock_hash": "sha256:75c7a1ada0ab14f05e524c8c506d722e96d160926b9c001051acb79c289bd348",
   "guidance_pack": "rob2-parallel-assignment-en-2019.1",
   "guidance_pack_hash": "sha256:b8acb34212215ec92f474527d0a80b7e881a5fadb26783f91c32f7ec531efd1d",
   "launcher": "uvx --python 3.13 --from rob2-kit==0.1.0 rob2-mcp",
@@ -29,14 +29,13 @@
   "package_version": "0.1.0",
   "python_version": "3.13",
   "release_status": "draft_only_preview",
-  "sign_off_authority": "human_only",
   "skills": {
     "rob2-assess": {
-      "activation_fixtures_hash": "sha256:993c49993ed10486db05d6c6a84b0254cb46ed17dfa6dc8a3ce6d663234ae57b",
-      "content_hash": "sha256:eb86e8839cc90891bb6afdfeee4e63b00b318df6d17c8777857cbf2520bc4ebf"
+      "activation_fixtures_hash": "sha256:a4e6046d6312b8383d31cff5b2256c4c300b33dce761dc74351867e3f5f00d08",
+      "content_hash": "sha256:ebe0b9811d5120f9c0052f1c97b8da00e7ad4c461c0291d6e88aae5a048b6dc0"
     },
     "rob2-init": {
-      "activation_fixtures_hash": "sha256:083efd88aa57430354c215a2a55a744a480e5a2355b754c4994f1c852c54762f",
+      "activation_fixtures_hash": "sha256:32c8ade3d9ff1828a4d49f8362aa40844c5fe67141c28564f5c772986d825667",
       "content_hash": "sha256:7be26dd1b21502f97a4b3cc6b4c7067a69dec2b735c7696a9fff9c08dc04056a"
     }
   },

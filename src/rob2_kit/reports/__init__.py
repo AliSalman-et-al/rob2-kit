@@ -18,9 +18,6 @@ from pydantic import BaseModel, ConfigDict, Field, ValidationError
 from rob2_kit.domain.assessment import (
     AlgorithmicJudgmentRevision,
     AssessmentRevision,
-    AssessmentSignOff,
-    JudgmentOverride,
-    SignOffWithdrawal,
 )
 from rob2_kit.domain.canonical import canonical_json_bytes
 from rob2_kit.domain.results import ResultSpecRevision
@@ -96,7 +93,6 @@ class AssessmentView(ReportModel):
     overall_judgment: str = Field(pattern=r"^(low|some_concerns|high)$")
     domains: tuple[DomainView, ...] = Field(min_length=1)
     visual_citations: tuple[VisualCitationView, ...] = ()
-    signed_off: bool
     execution_contract: str = "not recorded"
 
 
@@ -143,7 +139,6 @@ class ReportProjector:
             },
             "overall_judgment": self.assessment.overall_judgment,
             "result_id": self.assessment.result_id,
-            "signed_off": self.assessment.signed_off,
         }
         return canonical_json_bytes(value) + b"\n"
 
@@ -162,8 +157,7 @@ class ReportProjector:
             "<main>"
             '<header class="report-header"><p class="eyebrow">Static audit ledger</p>'
             "<h1>RoB 2 Result report</h1>"
-            f"<p><strong>{_PREVIEW_LABEL}</strong>: not a public-v1 release. "
-            "Only a human reviewer can sign off an exact Assessment revision.</p></header>"
+            f"<p><strong>{_PREVIEW_LABEL}</strong>: read-only static evidence report.</p></header>"
             '<section aria-labelledby="identity-heading"><h2 id="identity-heading">'
             'Result identity</h2><dl class="identity-grid">'
             f"<div><dt>Assessment revision</dt><dd>{html.escape(assessment.assessment_revision_id)}</dd></div>"
@@ -177,7 +171,6 @@ class ReportProjector:
             '<section class="audit-summary" aria-labelledby="summary-heading">'
             '<h2 id="summary-heading">Audit summary</h2>'
             f"{_judgment_badge(assessment.overall_judgment, label='Overall judgment')}"
-            f"<p><strong>Status:</strong> {'Signed off' if assessment.signed_off else 'Unsigned draft'}</p>"
             "</section>"
             '<nav aria-label="RoB 2 domains"><h2>Domain navigation</h2>'
             f"<ol>{domain_navigation}</ol></nav>"
@@ -192,8 +185,7 @@ class ReportProjector:
         lines = [
             "# RoB 2 assessment report",
             "",
-            f"**{_PREVIEW_LABEL}** — not a public-v1 release. "
-            "Only a human reviewer can sign off an exact Assessment revision.",
+            f"**{_PREVIEW_LABEL}** — read-only static evidence report.",
             "",
             f"- Assessment revision: {_escape_markdown(assessment.assessment_revision_id)}",
             f"- Trial: {_escape_markdown(assessment.trial)}",
@@ -246,8 +238,6 @@ class ReportProjector:
             [
                 "",
                 f"Overall: **{_display_judgment(assessment.overall_judgment)}**",
-                "",
-                f"Status: **{'Signed off' if assessment.signed_off else 'Unsigned draft'}**",
                 "",
             ]
         )
@@ -592,23 +582,9 @@ def latest_assessment_view(ledger: WorkflowLedger) -> AssessmentView:
         _load_reference(ledger, current, reference, AlgorithmicJudgmentRevision)
         for reference in assessment.judgments
     )
-    assessment_projection = current[assessment.revision_id]
-    signed_off = any(
-        _is_sign_off_for(
-            ledger,
-            current,
-            revision_id,
-            assessment,
-            assessment_projection.artifact_hash,
-        )
-        for revision_id in current
-    )
     result = result_spec.result
-    overrides = _active_overrides(ledger, current, judgments, assessment.judgment_overrides)
     ordered = sorted(judgments, key=lambda judgment: judgment.domain_id)
-    effective = tuple(
-        overrides.get(judgment.revision_id, judgment.judgment.value) for judgment in ordered
-    )
+    effective = tuple(judgment.judgment.value for judgment in ordered)
     return AssessmentView(
         assessment_revision_id=assessment.revision_id,
         result_id=result.result_id,
@@ -624,12 +600,11 @@ def latest_assessment_view(ledger: WorkflowLedger) -> AssessmentView:
             DomainView(
                 domain_id=judgment.domain_id,
                 label=judgment.domain_id,
-                judgment=overrides.get(judgment.revision_id, judgment.judgment.value),
+                judgment=judgment.judgment.value,
                 rationale=(f"Algorithmic judgment from {judgment.decision_trace.revision_id}."),
             )
             for judgment in ordered
         ),
-        signed_off=signed_off,
     )
 
 
@@ -646,59 +621,6 @@ def _load_reference[ReportRevision: BaseModel](
     if artifact_hash != reference.content_hash:
         raise ValueError(f"dependency hash mismatch for {reference.revision_id}")
     return model.model_validate_json(ledger.artifacts.read(artifact_hash))
-
-
-def _is_sign_off_for(
-    ledger: WorkflowLedger,
-    current: dict[str, RevisionProjection],
-    revision_id: str,
-    assessment: AssessmentRevision,
-    assessment_hash: str,
-) -> bool:
-    projection = current[revision_id]
-    try:
-        sign_off = AssessmentSignOff.model_validate_json(
-            ledger.artifacts.read(projection.artifact_hash)
-        )
-    except ValidationError:
-        return False
-    for candidate in current.values():
-        try:
-            withdrawal = SignOffWithdrawal.model_validate_json(
-                ledger.artifacts.read(candidate.artifact_hash)
-            )
-        except ValidationError:
-            continue
-        if (
-            withdrawal.sign_off.entity_id == sign_off.entity_id
-            and withdrawal.sign_off.revision_id == sign_off.revision_id
-            and withdrawal.sign_off.content_hash == projection.artifact_hash
-        ):
-            return False
-    return (
-        sign_off.assessment.entity_id == assessment.entity_id
-        and sign_off.assessment.revision_id == assessment.revision_id
-        and sign_off.assessment.content_hash == assessment_hash
-    )
-
-
-def _active_overrides(
-    ledger: WorkflowLedger,
-    current: dict[str, RevisionProjection],
-    judgments: tuple[AlgorithmicJudgmentRevision, ...],
-    references: tuple[RecordReference, ...],
-) -> dict[str, str]:
-    judgment_hashes = {
-        judgment.revision_id: current[judgment.revision_id].artifact_hash for judgment in judgments
-    }
-    overrides: dict[str, str] = {}
-    for override_reference in references:
-        override = _load_reference(ledger, current, override_reference, JudgmentOverride)
-        judgment_reference = override.judgment_revision
-        if judgment_hashes.get(judgment_reference.revision_id) != judgment_reference.content_hash:
-            continue
-        overrides[judgment_reference.revision_id] = override.replacement.value
-    return overrides
 
 
 def _overall_judgment(judgments: tuple[str, ...]) -> str:

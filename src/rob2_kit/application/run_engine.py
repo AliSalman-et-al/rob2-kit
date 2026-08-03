@@ -2982,8 +2982,7 @@ class RunEngine:
 
         RunEngine owners are process-scoped opaque IDs.  A new MCP process can
         therefore safely take over a prior RunEngine lease; unrelated writer
-        owners (for example the review UI) remain protected by the ledger's
-        normal lease conflict checks.
+        owners remain protected by the ledger's normal lease conflict checks.
         """
 
         return ledger.acquire_lease(
@@ -3447,7 +3446,6 @@ class RunEngine:
                 for domain in logic.domains
             ),
             visual_citations=self._visual_citations(ledger, evidence_refs),
-            signed_off=False,
             execution_contract=execution_contract,
         )
         result_spec_ref = self._result_spec_reference(ledger, result_id)
@@ -3985,7 +3983,7 @@ class RunEngine:
                             page=transcription.page,
                             provenance=(
                                 f"visual-only transcription; {transcription.render_mode} at "
-                                f"{transcription.dpi} dpi; review required"
+                                f"{transcription.dpi} dpi; not machine-verified"
                             ),
                             visual_citation=VisualCitationView(
                                 citation_id=transcription.revision_id,
@@ -3996,7 +3994,7 @@ class RunEngine:
                                 exact_phrase=transcription.transcription,
                                 render_provenance=(
                                     f"{transcription.render_mode} at {transcription.dpi} dpi; "
-                                    "visual-only; review required"
+                                    "visual-only; not machine-verified"
                                 ),
                             ),
                         )
@@ -4130,7 +4128,7 @@ class RunEngine:
                     exact_phrase=transcription.transcription,
                     render_provenance=(
                         f"{transcription.render_mode} at {transcription.dpi} dpi; "
-                        f"visual-only; review required"
+                        f"visual-only; not machine-verified"
                     ),
                 )
         return tuple(citations[key] for key in sorted(citations))
@@ -7298,14 +7296,14 @@ class RunEngine:
         )
         remapped_findings = tuple(
             item.model_copy(update={"trial_id": trial_map.get(item.trial_id, item.trial_id)})
-            for item in current.review_findings
+            for item in current.diagnostics
         )
         return current.model_copy(
             update={
                 "trials": tuple(remapped_trials),
                 "result_specs": remapped_specs,
                 "result_candidates": remapped_candidates,
-                "review_findings": remapped_findings,
+                "diagnostics": remapped_findings,
                 "registry_candidates": tuple(
                     item.model_copy(
                         update={"trial_id": trial_map.get(item.trial_id, item.trial_id)}
@@ -7408,7 +7406,7 @@ class RunEngine:
                 detail=finding.detail,
                 material=finding.kind.value not in non_material_findings,
             )
-            for index, finding in enumerate(initialization.review_findings)
+            for index, finding in enumerate(initialization.diagnostics)
         )
         registry_ambiguities = tuple(
             RunProposalAmbiguity(
