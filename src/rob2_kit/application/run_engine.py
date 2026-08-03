@@ -111,7 +111,11 @@ from rob2_kit.evidence.search import (
     EvidenceSearchIndex,
     canonicalize_evidence_units,
 )
-from rob2_kit.evidence.visual import VisualCandidate, VisualInspectionPolicy
+from rob2_kit.evidence.visual import (
+    VisualCandidate,
+    VisualInspectionPolicy,
+    build_visual_citation,
+)
 from rob2_kit.evidence.workflow import ExecutedSearchQuery, SearchCoverageReceipt
 from rob2_kit.ingestion.project import (
     DocumentParser,
@@ -3601,8 +3605,14 @@ class RunEngine:
             assessment_digest=assessment_digest,
         )
         assessment_revision_id = f"assessment:{assessment_digest}"
+        visual_citations = self._visual_citations(ledger, evidence_refs)
         questions_by_id = self._report_questions(
-            ledger, evidence_refs, answers, rationales, evaluation.matched_rule_ids
+            ledger,
+            evidence_refs,
+            answers,
+            rationales,
+            evaluation.matched_rule_ids,
+            visual_citations,
         )
         execution_contract = self._execution_contract_identity(ledger)
         assessment = AssessmentView(
@@ -3637,7 +3647,7 @@ class RunEngine:
                 )
                 for domain in logic.domains
             ),
-            visual_citations=self._visual_citations(ledger, evidence_refs),
+            visual_citations=visual_citations,
             execution_contract=execution_contract,
         )
         result_spec_ref = self._result_spec_reference(ledger, result_id)
@@ -4123,10 +4133,12 @@ class RunEngine:
         answers: dict[str, str],
         rationales: dict[str, str],
         decision_trace: tuple[Identifier, ...],
+        visual_citations: tuple[VisualCitationView, ...] = (),
     ) -> dict[str, SignalingQuestionView]:
         """Materialize report phrases from canonical spans, never agent text."""
 
         result: dict[str, SignalingQuestionView] = {}
+        citations_by_id = {citation.citation_id: citation for citation in visual_citations}
         for bundle_ref in evidence_bundles:
             try:
                 bundle = EvidenceBundle.model_validate_json(
@@ -4198,6 +4210,26 @@ class RunEngine:
                 disposition = dispositions.get(item.entity_id, "contextual")
                 if disposition not in {"supporting", "contradicting", "contextual"}:
                     disposition = "residual"
+                visual_citation = None
+                visual_failure = None
+                try:
+                    built_citation = build_visual_citation(
+                        unit,
+                        span_start=claim.span_start,
+                        span_end=claim.span_end,
+                    )
+                    visual_citation = citations_by_id.get(built_citation.citation_id)
+                except (TypeError, ValueError) as error:
+                    # Spatial provenance is optional for canonical text.  Do
+                    # not fabricate a visual region when it is absent or
+                    # malformed; retain the reason in the report provenance.
+                    visual_failure = str(error)
+                provenance = (
+                    f"canonical unit {unit.unit_id}; Parse record {unit.parse_id}; "
+                    f"verification {claim.verification_status.value}"
+                )
+                if visual_failure:
+                    provenance += f"; visual citation unavailable: {visual_failure}"
                 items.append(
                     EvidenceView(
                         evidence_id=claim.revision_id,
@@ -4205,10 +4237,8 @@ class RunEngine:
                         exact_phrase=phrase,
                         source_id=claim.source.entity_id,
                         page=unit.page,
-                        provenance=(
-                            f"canonical unit {unit.unit_id}; Parse record {unit.parse_id}; "
-                            f"verification {claim.verification_status.value}"
-                        ),
+                        provenance=provenance,
+                        visual_citation=visual_citation,
                     )
                 )
             result[bundle.sq_id] = SignalingQuestionView(
@@ -4294,7 +4324,15 @@ class RunEngine:
     def _visual_citations(
         ledger: WorkflowLedger, evidence_bundles: tuple[RecordReference, ...]
     ) -> tuple[VisualCitationView, ...]:
-        """Project frozen visual transcriptions into report-visible citations."""
+        """Project every accepted spatial evidence span into a visual citation.
+
+        Canonical text claims are accepted evidence even when no targeted
+        visual candidate was inspected.  Their page and spatial provenance is
+        sufficient to create a deterministic, agent-uninspected citation, so
+        report materialization can render local crop and page assets without
+        asking the model to inspect every page.  Visual transcriptions remain
+        first-class citations and retain their explicit visual-only label.
+        """
 
         citations: dict[str, VisualCitationView] = {}
         for bundle_ref in evidence_bundles:
@@ -4305,6 +4343,54 @@ class RunEngine:
             except (TypeError, ValueError):
                 continue
             for item in bundle.items:
+                # Canonical EvidenceClaims are the normal accepted evidence
+                # path.  Resolve the exact canonical unit bound by the claim;
+                # never use agent-authored quotation text or a search
+                # projection as visual provenance.
+                try:
+                    claim = EvidenceClaim.model_validate_json(
+                        ledger.artifacts.read(item.content_hash)
+                    )
+                    unit = CanonicalEvidenceUnit.model_validate_json(
+                        ledger.artifacts.read(claim.canonical_unit.content_hash)
+                    )
+                except (TypeError, ValueError):
+                    claim = None
+                    unit = None
+                if claim is not None and unit is not None:
+                    try:
+                        citation = build_visual_citation(
+                            unit,
+                            span_start=claim.span_start,
+                            span_end=claim.span_end,
+                        )
+                    except (TypeError, ValueError):
+                        # A canonical unit may be text-citable without spatial
+                        # bounds (for example, a recovered text fragment).
+                        # Keep the evidence claim, but do not fabricate a
+                        # geometry or a screenshot for it.
+                        continue
+                    phrase = unit.text[claim.span_start : claim.span_end]
+                    if not phrase:
+                        continue
+                    box = citation.boxes[0]
+                    region = (box.left, box.top, box.right, box.bottom)
+                    citations[citation.citation_id] = VisualCitationView(
+                        citation_id=citation.citation_id,
+                        source_id=citation.source_id,
+                        page=citation.page,
+                        region=cast(tuple[float, float, float, float], region),
+                        label="Canonical evidence span",
+                        exact_phrase=phrase,
+                        render_provenance=(
+                            f"canonical unit {unit.unit_id}; Parse record {citation.parse_id}; "
+                            f"source artifact {citation.source_artifact_hash}; "
+                            f"{citation.render.mode} at {citation.render.dpi} dpi; "
+                            "agent inspection not performed"
+                        ),
+                    )
+                    continue
+
                 try:
                     transcription = VisualTranscription.model_validate_json(
                         ledger.artifacts.read(item.content_hash)
