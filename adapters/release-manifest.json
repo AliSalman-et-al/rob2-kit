@@ -1,18 +1,18 @@
 {
   "adapters": {
     "claude": {
-      "content_hash": "sha256:93722b968fe0da368f465a5da18bc2f8a40026cbe93e2b9c7e857d5763114fc3",
+      "content_hash": "sha256:c5c05f98121a55aad5f2b0fc85f7670d75595877afcb57efd4a2ff30687ffa3d",
       "skill_hashes": {
-        "rob2-assess": "sha256:ebe0b9811d5120f9c0052f1c97b8da00e7ad4c461c0291d6e88aae5a048b6dc0",
-        "rob2-init": "sha256:7be26dd1b21502f97a4b3cc6b4c7067a69dec2b735c7696a9fff9c08dc04056a"
+        "rob2-assess": "sha256:04b3c7edb02ced7d2567663b930df5fd5466a524e3cae8bfe03af7030f9c9ad2",
+        "rob2-init": "sha256:dabe1522924d0b9164c48051f438b59f9f2d5f538c52d8af6c52b0b3cccd51c4"
       },
       "version": "1"
     },
     "codex": {
-      "content_hash": "sha256:5bdbe50b26ec612af8dcc3d4a8ee37a8f6fabfef072e2e0520bacb58719880c9",
+      "content_hash": "sha256:eec1938173ef6666051478dadde5cba5dc0ba199d747a8cd151270b88da8b7bf",
       "skill_hashes": {
-        "rob2-assess": "sha256:ebe0b9811d5120f9c0052f1c97b8da00e7ad4c461c0291d6e88aae5a048b6dc0",
-        "rob2-init": "sha256:7be26dd1b21502f97a4b3cc6b4c7067a69dec2b735c7696a9fff9c08dc04056a"
+        "rob2-assess": "sha256:04b3c7edb02ced7d2567663b930df5fd5466a524e3cae8bfe03af7030f9c9ad2",
+        "rob2-init": "sha256:dabe1522924d0b9164c48051f438b59f9f2d5f538c52d8af6c52b0b3cccd51c4"
       },
       "version": "1"
     }
@@ -31,12 +31,12 @@
   "release_status": "draft_only_preview",
   "skills": {
     "rob2-assess": {
-      "activation_fixtures_hash": "sha256:a4e6046d6312b8383d31cff5b2256c4c300b33dce761dc74351867e3f5f00d08",
-      "content_hash": "sha256:ebe0b9811d5120f9c0052f1c97b8da00e7ad4c461c0291d6e88aae5a048b6dc0"
+      "activation_fixtures_hash": "sha256:f6eb2fc1cb42be4a4a0b93410277f01e556c8eef6c323b6c40663c9ea79d3737",
+      "content_hash": "sha256:04b3c7edb02ced7d2567663b930df5fd5466a524e3cae8bfe03af7030f9c9ad2"
     },
     "rob2-init": {
       "activation_fixtures_hash": "sha256:32c8ade3d9ff1828a4d49f8362aa40844c5fe67141c28564f5c772986d825667",
-      "content_hash": "sha256:7be26dd1b21502f97a4b3cc6b4c7067a69dec2b735c7696a9fff9c08dc04056a"
+      "content_hash": "sha256:dabe1522924d0b9164c48051f438b59f9f2d5f538c52d8af6c52b0b3cccd51c4"
     }
   },
   "version": 1

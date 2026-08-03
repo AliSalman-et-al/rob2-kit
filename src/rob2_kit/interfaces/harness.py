@@ -162,9 +162,7 @@ def _validate_adapter_targets(root: Path, release_root: Path) -> None:
         source = release_root / "adapters" / host
         destination = root / ".rob2" / "adapters" / host
         if destination.exists() and not _same_tree(source, destination):
-            raise HarnessBootstrapError(
-                f"{destination} differs from the locked {host} adapter."
-            )
+            raise HarnessBootstrapError(f"{destination} differs from the locked {host} adapter.")
     for host, skill_root in _HOST_SKILL_ROOTS:
         for skill_name in CANONICAL_SKILL_NAMES:
             source = release_root / "skills" / skill_name
@@ -298,7 +296,16 @@ def _check_execution_contract(root: Path, release_root: Path) -> dict[str, Any]:
             str(error),
             "Run rob2 bootstrap to install the exact locked execution contract.",
         )
-    return {"ok": True, "lock": lock.model_dump(mode="json"), "recovery": ()}
+    return {
+        "ok": True,
+        "lock": lock.model_dump(mode="json"),
+        "effective_launcher": _server_config(lock, release_root),
+        "launcher_note": (
+            "lock.launcher declares the published registry release; "
+            "effective_launcher is the installed adapter that doctor probes"
+        ),
+        "recovery": (),
+    }
 
 
 def _check_canonical_skills(root: Path, release_root: Path) -> dict[str, Any]:
@@ -331,9 +338,7 @@ def _check_host_adapters(root: Path, release_root: Path) -> dict[str, Any]:
         codex_servers = codex_config.get("mcp_servers")
         if not isinstance(codex_servers, dict):
             raise ValueError("Codex config does not define an MCP server table")
-        _require_server_entry(
-            codex_servers.get(_MCP_SERVER_NAME), expected_server, "Codex config"
-        )
+        _require_server_entry(codex_servers.get(_MCP_SERVER_NAME), expected_server, "Codex config")
         claude_config = _read_json_object(root / ".mcp.json")
         claude_servers = claude_config.get("mcpServers")
         if not isinstance(claude_servers, dict):

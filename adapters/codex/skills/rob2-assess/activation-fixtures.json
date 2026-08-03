@@ -1,7 +1,8 @@
 {
   "activates": [
     "Assess risk of bias with RoB 2",
-    "Resume this RoB 2 assessment"
+    "Resume this RoB 2 assessment",
+    "Judge the RoB 2 domains for this randomized trial result"
   ],
   "does_not_activate": [
     "Edit a static report"

@@ -8,8 +8,8 @@ from rob2_kit.domain.revisions import FrozenModel, Identifier, Revision
 
 
 class Comparison(FrozenModel):
-    experimental_arm_id: Identifier
-    comparator_arm_id: Identifier
+    experimental_arm_id: Identifier = Field(description="Stable ID such as arm:docetaxel.")
+    comparator_arm_id: Identifier = Field(description="Stable ID such as arm:control.")
 
 
 class Result(FrozenModel):
@@ -28,9 +28,13 @@ class Result(FrozenModel):
 
 
 class Estimate(FrozenModel):
-    value: Decimal
-    interval_lower: Decimal | None = None
-    interval_upper: Decimal | None = None
+    value: Decimal = Field(description="Reported point estimate.")
+    interval_lower: Decimal | None = Field(
+        default=None, description="Reported lower interval bound."
+    )
+    interval_upper: Decimal | None = Field(
+        default=None, description="Reported upper interval bound."
+    )
     denominator_experimental: int | None = Field(default=None, ge=0)
     denominator_comparator: int | None = Field(default=None, ge=0)
 

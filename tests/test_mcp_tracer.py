@@ -127,7 +127,6 @@ async def _prepare_and_confirm(session: ClientSession, root: Path) -> str:
             {
                 "run_id": prepared["run_id"],
                 "proposal_token": proposal["proposal_token"],
-                "idempotency_key": "idempotency:tracer-proposal",
                 "contract_version": "1.0.0",
             },
         )
@@ -138,7 +137,6 @@ async def _prepare_and_confirm(session: ClientSession, root: Path) -> str:
         {
             "run_id": prepared["run_id"],
             "proposal_token": submitted["proposal"]["proposal_token"],
-            "idempotency_key": "idempotency:tracer-confirm",
             "confirmed_by": {
                 "kind": "human",
                 "actor_id": "actor:tracer",
@@ -181,7 +179,6 @@ async def _finish_domains(session: ClientSession, run_id: str) -> None:
             {
                 "run_id": run_id,
                 "work_token": work["work_item"]["work_token"],
-                "idempotency_key": f"idempotency:tracer-evidence-{index}",
                 "contract_version": "1.0.0",
                 "result_id": "result:trial-a-mortality",
                 "domain_id": domain_id,
@@ -206,7 +203,6 @@ async def _finish_domains(session: ClientSession, run_id: str) -> None:
             {
                 "run_id": run_id,
                 "work_token": work["work_item"]["work_token"],
-                "idempotency_key": f"idempotency:tracer-answers-{index}",
                 "contract_version": "1.0.0",
                 "result_id": "result:trial-a-mortality",
                 "domain_id": domain_id,
@@ -262,7 +258,6 @@ def test_five_domain_journey_survives_stdio_restart_and_publishes_report(
                     {
                         "run_id": run_id,
                         "work_token": work["work_item"]["work_token"],
-                        "idempotency_key": "idempotency:tracer-source",
                         "contract_version": "1.0.0",
                         "classifications": [
                             {"source_id": "source:trial-a-1", "roles": ["primary_report"]}

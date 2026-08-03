@@ -114,6 +114,8 @@ def _classify_current_sources(engine: RunEngine, run_id: str) -> None:
         GetWorkContextRequest(run_id=run_id, work_token=work.work_token)
     ).context
     assert context is not None
+    assert context.detailed_sources == ()
+    assert all(source.page_count >= 0 for source in context.sources)
     response = engine.submit_source_classification(
         SubmitSourceClassificationRequest(
             contract_version="1.0.0",
@@ -224,6 +226,18 @@ def test_domain_evidence_freezes_engine_issued_passages_without_host_hashes(
     _classify_current_sources(engine, run_id)
     work = engine.continue_run(ContinueRunRequest(run_id=run_id)).work_item
     assert work is not None
+    detailed = engine.get_work_context(
+        GetWorkContextRequest(
+            run_id=run_id,
+            work_token=work.work_token,
+            include_source_details=True,
+        )
+    ).context
+    assert detailed is not None
+    assert detailed.detailed_sources
+    assert {source.source_id for source in detailed.detailed_sources} == {
+        source.source_id for source in detailed.sources
+    }
     index = EvidenceSearchIndex(tmp_path / ".rob2" / "evidence.sqlite3")
     unit_id = next(iter(index.unit_ids()))
     unit = index.read_unit(unit_id)

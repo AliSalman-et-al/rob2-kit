@@ -14,6 +14,13 @@ Present the Run proposal in plain language, identify material ambiguity, and
 obtain the one-time confirmation before preparation. Do not represent proposal
 acceptance as assessment approval.
 
+For source classification, classify exactly the sources returned by
+`get_work_context`; proposal registry candidates are orientation data unless
+that work context also issues them. For Result resolution, copy the issued
+Result identity and its identifier-shaped fields, then add only the observed
+estimate and attributable locator. Completion means every object submitted was
+issued for the current work token.
+
 ## Progress narration
 
 Surface only meaningful milestones: proposal ready, confirmation recorded,

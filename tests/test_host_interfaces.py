@@ -62,3 +62,38 @@ def test_mcp_tool_schemas_explain_nested_inputs_and_expose_passage_freezing() ->
     evidence_schema = tools["submit_domain_evidence"].input_schema
     assert "passages" in evidence_schema["properties"]
     assert "EvidencePassageInput" in str(evidence_schema)
+    assert "include_source_details" in tools["get_work_context"].input_schema["properties"]
+    for tool_name in (
+        "submit_run_proposal",
+        "confirm_run_definition",
+        "submit_source_classification",
+        "submit_result_resolution",
+        "submit_domain_evidence",
+        "submit_domain_answers",
+    ):
+        assert "idempotency_key" not in tools[tool_name].input_schema["properties"]
+
+
+def test_mcp_tool_descriptions_prevent_cleanroom_schema_guessing() -> None:
+    tools = {tool.name: tool for tool in anyio.run(create_server().list_tools)}
+
+    assert "authorized=true" in (tools["prepare_run"].description or "")
+    assert 'confirmed_by={"kind":"human"' in (tools["confirm_run_definition"].description or "")
+
+    search = tools["search_evidence"].description or ""
+    assert 'query={"terms":["allocation"]}' in search
+    assert "seed_family only with pass_kind=guidance_seed" in search
+    assert "omit seed_family" in search
+
+    resolution = tools["submit_result_resolution"].description or ""
+    assert "copy the issued Result identity" in resolution
+    assert "experimental_arm_id" in resolution
+    assert 'estimate={"value":' in resolution
+
+    classification = tools["submit_source_classification"].description or ""
+    assert "exactly the sources in get_work_context" in classification
+    assert '"roles"' in classification
+
+    answers = tools["submit_domain_answers"].description or ""
+    assert "every active question in get_work_context" in answers
+    assert "no_information" in answers

@@ -109,13 +109,30 @@ class SearchProjection(FrozenModel):
 
 
 class SearchQuery(FrozenModel):
-    terms: tuple[str, ...] = ()
-    phrases: tuple[str, ...] = ()
-    prefixes: tuple[str, ...] = ()
-    any_of: tuple[tuple[str, ...], ...] = ()
-    source_ids: tuple[Identifier, ...] = ()
-    kinds: tuple[CanonicalUnitKind, ...] = ()
-    pages: tuple[int, ...] = ()
+    terms: tuple[str, ...] = Field(
+        default=(), description="Individual lexical tokens, for example ['allocation']."
+    )
+    phrases: tuple[str, ...] = Field(
+        default=(), description="Exact multi-word phrases, for example ['allocation concealment']."
+    )
+    prefixes: tuple[str, ...] = Field(
+        default=(), description="Token prefixes without wildcard syntax, for example ['random']."
+    )
+    any_of: tuple[tuple[str, ...], ...] = Field(
+        default=(),
+        description=(
+            "Boolean alternatives as groups of tokens, for example [['sealed'], ['central']]."
+        ),
+    )
+    source_ids: tuple[Identifier, ...] = Field(
+        default=(), description="Optional source IDs issued for the current Result."
+    )
+    kinds: tuple[CanonicalUnitKind, ...] = Field(
+        default=(), description="Optional canonical-unit kind filters."
+    )
+    pages: tuple[int, ...] = Field(
+        default=(), description="Optional one-based source page numbers."
+    )
 
     @model_validator(mode="after")
     def validate_structure(self) -> SearchQuery:
@@ -617,9 +634,7 @@ def _compile_match(query: SearchQuery) -> str:
     clauses = [f'"{term}"' for term in query.terms]
     clauses.extend(f'"{phrase.strip()}"' for phrase in query.phrases)
     clauses.extend(f'"{prefix}"*' for prefix in query.prefixes)
-    clauses.extend(
-        "(" + " OR ".join(f'"{term}"' for term in group) + ")" for group in query.any_of
-    )
+    clauses.extend("(" + " OR ".join(f'"{term}"' for term in group) + ")" for group in query.any_of)
     return " AND ".join(clauses)
 
 

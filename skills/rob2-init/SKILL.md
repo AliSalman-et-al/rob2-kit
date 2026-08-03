@@ -9,6 +9,12 @@ Use the static `rob2` tools to establish or resume one project, inspect the
 exact Trial × Result proposal, and obtain the operator's one-time confirmation
 before evidence preparation begins.
 
+Follow the engine state machine: call `prepare_run` with `authorized=true` only
+when the operator has explicitly requested work in that project; submit the
+returned selection and ambiguity objects by copying their complete issued
+fields; then confirm with an `Actor` containing `kind`, `actor_id`, and
+`display_name`. Completion means `continue_run` issues post-confirmation work.
+
 For run-control and progress language, progressively disclose
 `../references/HARNESS-WORKFLOW.md`. Begin or reconnect with `prepare_run`:
 when it returns a Current run, narrate a resume; use start-new only when the

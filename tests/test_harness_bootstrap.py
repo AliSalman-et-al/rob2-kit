@@ -36,9 +36,7 @@ def test_bootstrap_from_an_installed_wheel_uses_that_exact_install(
     result = CliRunner().invoke(app, ["bootstrap", str(project_root)])
 
     assert result.exit_code == 0, result.output
-    codex = tomllib.loads(
-        (project_root / ".codex" / "config.toml").read_text(encoding="utf-8")
-    )
+    codex = tomllib.loads((project_root / ".codex" / "config.toml").read_text(encoding="utf-8"))
     server = codex["mcp_servers"]["rob2-kit"]
     assert server == {
         "command": sys.executable,
@@ -89,19 +87,16 @@ def test_bootstrap_installs_both_hosts_idempotently_without_overwriting_user_con
     for host, skill_root in (("codex", ".codex/skills"), ("claude", ".claude/skills")):
         for skill_name in ("rob2-init", "rob2-assess"):
             installed_skill = tmp_path / skill_root / skill_name / "SKILL.md"
-            assert installed_skill.read_bytes() == (
-                ROOT / "skills" / skill_name / "SKILL.md"
-            ).read_bytes(), host
-        assert {
-            path.name for path in (tmp_path / skill_root / "references").iterdir()
-        } == {
+            assert (
+                installed_skill.read_bytes()
+                == (ROOT / "skills" / skill_name / "SKILL.md").read_bytes()
+            ), host
+        assert {path.name for path in (tmp_path / skill_root / "references").iterdir()} == {
             "HARNESS-WORKFLOW.md",
             "EVIDENCE-SEARCH.md",
             "SIGNALING-QUESTIONS.md",
         }
-    assert {
-        path.name for path in (tmp_path / ".rob2" / "references").iterdir()
-    } == {
+    assert {path.name for path in (tmp_path / ".rob2" / "references").iterdir()} == {
         "HARNESS-WORKFLOW.md",
         "EVIDENCE-SEARCH.md",
         "SIGNALING-QUESTIONS.md",
@@ -200,6 +195,10 @@ def test_doctor_verifies_the_execution_contract_and_reports_uninitialized_state(
     assert receipt["checks"]["execution_contract"]["lock"] == (
         load_release_lock(ROOT).model_dump(mode="json")
     )
+    assert receipt["checks"]["execution_contract"]["effective_launcher"] == {
+        "command": "uvx",
+        "args": ["--python", "3.13", "--from", "rob2-kit==0.1.0", "rob2-mcp"],
+    }
     assert launched == {
         "project_root": tmp_path.resolve(),
         "command": "uvx",
@@ -284,3 +283,17 @@ def test_canonical_skills_share_progressively_disclosed_harness_references() -> 
     assert "interruption" in assess
     assert "terminal report" in assess
     assert "raw protocol identifier" in assess
+    assert "assess or judge RoB 2" in assess
+
+    workflow = " ".join((ROOT / "docs" / "HARNESS-WORKFLOW.md").read_text(encoding="utf-8").split())
+    evidence = " ".join((ROOT / "docs" / "EVIDENCE-SEARCH.md").read_text(encoding="utf-8").split())
+    questions = " ".join(
+        (ROOT / "docs" / "SIGNALING-QUESTIONS.md").read_text(encoding="utf-8").split()
+    )
+    assert "exactly the sources returned by `get_work_context`" in workflow
+    assert "copy the issued Result identity" in workflow
+    assert "omit `seed_family`" in evidence
+    assert "every active question returned by `get_work_context`" in questions
+    assert "no_information" in questions
+    assert "cited or related trial is out of scope" in questions
+    assert "one active question solely from evidence addressing another" in questions

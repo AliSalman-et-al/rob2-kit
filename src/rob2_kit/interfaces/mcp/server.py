@@ -80,6 +80,11 @@ def _dump(response: Any) -> dict[str, Any]:
     return response.model_dump(mode="json")
 
 
+def _submission_key(operation: str, issued_token: str) -> str:
+    digest = hashlib.sha256(f"{operation}|{issued_token}".encode()).hexdigest()[:24]
+    return f"mcp:{operation}-{digest}"
+
+
 def create_server(*, determinism: QualificationDeterminism | None = None) -> Any:
     """Build one stdio server with exactly the 13 typed tools."""
 
@@ -96,7 +101,10 @@ def create_server(*, determinism: QualificationDeterminism | None = None) -> Any
         method: str | None = None,
         supported_scope: str | None = None,
     ) -> dict[str, Any]:
-        """Prepare or resume one project and return its authoritative proposal state."""
+        """Prepare or resume a project.
+
+        Pass authorized=true only after explicit operator authorization.
+        """
         request = PrepareRunRequest.model_validate(
             {
                 "project_root": project_root,
@@ -146,11 +154,21 @@ def create_server(*, determinism: QualificationDeterminism | None = None) -> Any
     def get_work_context(
         run_id: str,
         work_token: WorkToken,
+        include_source_details: bool = False,
     ) -> dict[str, Any]:
-        """Return bounded context for the exact engine-issued work token."""
+        """Return bounded context for the issued work token.
+
+        Include source details only to inspect page coverage or parsing.
+        """
         return _dump(
             engine.get_work_context(
-                GetWorkContextRequest.model_validate({"run_id": run_id, "work_token": work_token})
+                GetWorkContextRequest.model_validate(
+                    {
+                        "run_id": run_id,
+                        "work_token": work_token,
+                        "include_source_details": include_source_details,
+                    }
+                )
             )
         )
 
@@ -158,19 +176,18 @@ def create_server(*, determinism: QualificationDeterminism | None = None) -> Any
     def submit_run_proposal(
         run_id: str,
         proposal_token: str,
-        idempotency_key: str,
         contract_version: Literal["1.0.0"],
         selections: list[RunProposalSelection] | None = None,
         ambiguities: list[RunProposalAmbiguity] | None = None,
     ) -> dict[str, Any]:
-        """Submit selections using only candidate IDs issued by prepare_run."""
+        """Submit proposal objects by copying their complete fields exactly as issued."""
         return _dump(
             engine.submit_run_proposal(
                 SubmitRunProposalRequest.model_validate(
                     {
                         "run_id": run_id,
                         "proposal_token": proposal_token,
-                        "idempotency_key": idempotency_key,
+                        "idempotency_key": _submission_key("proposal", proposal_token),
                         "selections": selections or (),
                         "ambiguities": ambiguities or (),
                         "contract_version": contract_version,
@@ -183,18 +200,20 @@ def create_server(*, determinism: QualificationDeterminism | None = None) -> Any
     def confirm_run_definition(
         run_id: str,
         proposal_token: str,
-        idempotency_key: str,
         confirmed_by: Actor,
         contract_version: Literal["1.0.0"],
     ) -> dict[str, Any]:
-        """Record the operator's one-time confirmation of the submitted proposal."""
+        """Confirm once with an attributable Actor.
+
+        Example: confirmed_by={"kind":"human","actor_id":"actor:operator"}.
+        """
         return _dump(
             engine.confirm_run_definition(
                 ConfirmRunDefinitionRequest.model_validate(
                     {
                         "run_id": run_id,
                         "proposal_token": proposal_token,
-                        "idempotency_key": idempotency_key,
+                        "idempotency_key": _submission_key("confirmation", proposal_token),
                         "confirmed_by": confirmed_by,
                         "contract_version": contract_version,
                     }
@@ -214,7 +233,11 @@ def create_server(*, determinism: QualificationDeterminism | None = None) -> Any
         pass_kind: SearchPassKind | None = None,
         seed_family: str | None = None,
     ) -> dict[str, Any]:
-        """Search canonical evidence with a typed lexical query and bounded pagination."""
+        """Search evidence, e.g. query={"terms":["allocation"]}.
+
+        Use seed_family only with pass_kind=guidance_seed. For trial_follow_up
+        or contradiction, omit seed_family.
+        """
         return _dump(
             engine.search_evidence(
                 SearchEvidenceRequest.model_validate(
@@ -283,18 +306,22 @@ def create_server(*, determinism: QualificationDeterminism | None = None) -> Any
     def submit_source_classification(
         run_id: str,
         work_token: WorkToken,
-        idempotency_key: str,
         classifications: list[SourceClassificationInput],
         contract_version: Literal["1.0.0"],
     ) -> dict[str, Any]:
-        """Classify every issued source using the roles enumerated by the schema."""
+        """Classify exactly the sources in get_work_context.
+
+        Use {"source_id":...,"roles":[...]}; proposal registry candidates are not issued.
+        """
         return _dump(
             engine.submit_source_classification(
                 SubmitSourceClassificationRequest.model_validate(
                     {
                         "run_id": run_id,
                         "work_token": work_token,
-                        "idempotency_key": idempotency_key,
+                        "idempotency_key": _submission_key(
+                            "source-classification", work_token.token
+                        ),
                         "classifications": classifications,
                         "contract_version": contract_version,
                     }
@@ -306,20 +333,23 @@ def create_server(*, determinism: QualificationDeterminism | None = None) -> Any
     def submit_result_resolution(
         run_id: str,
         work_token: WorkToken,
-        idempotency_key: str,
         result: Result,
         estimate: Estimate,
         provenance_note: str,
         contract_version: Literal["1.0.0"],
     ) -> dict[str, Any]:
-        """Resolve the exact trial-specific Result and its reported estimate."""
+        """Resolve: copy the issued Result identity.
+
+        Include comparison experimental_arm_id and comparator_arm_id. Use
+        estimate={"value":0.61,"interval_lower":0.50,"interval_upper":0.75}.
+        """
         return _dump(
             engine.submit_result_resolution(
                 SubmitResultResolutionRequest.model_validate(
                     {
                         "run_id": run_id,
                         "work_token": work_token,
-                        "idempotency_key": idempotency_key,
+                        "idempotency_key": _submission_key("result-resolution", work_token.token),
                         "result": result,
                         "estimate": estimate,
                         "provenance_note": provenance_note,
@@ -333,7 +363,6 @@ def create_server(*, determinism: QualificationDeterminism | None = None) -> Any
     def submit_domain_evidence(
         run_id: str,
         work_token: WorkToken,
-        idempotency_key: str,
         result_id: str,
         domain_id: str,
         contract_version: Literal["1.0.0"],
@@ -349,14 +378,17 @@ def create_server(*, determinism: QualificationDeterminism | None = None) -> Any
         project_rules: list[RecordReference] | None = None,
         actor: Actor | None = None,
     ) -> dict[str, Any]:
-        """Freeze exact canonical passages and coverage for one complete RoB 2 domain."""
+        """Freeze passages using issued unit_id, exact spans, and active question_ids.
+
+        Use claim-type IDs and report incomplete coverage rather than guessing.
+        """
         return _dump(
             engine.submit_domain_evidence(
                 SubmitDomainEvidenceRequest.model_validate(
                     {
                         "run_id": run_id,
                         "work_token": work_token,
-                        "idempotency_key": idempotency_key,
+                        "idempotency_key": _submission_key("domain-evidence", work_token.token),
                         "result_id": result_id,
                         "domain_id": domain_id,
                         "items": items or (),
@@ -380,7 +412,6 @@ def create_server(*, determinism: QualificationDeterminism | None = None) -> Any
     def submit_domain_answers(
         run_id: str,
         work_token: WorkToken,
-        idempotency_key: str,
         result_id: str,
         domain_id: str,
         answers: list[SQAnswerInput],
@@ -388,14 +419,17 @@ def create_server(*, determinism: QualificationDeterminism | None = None) -> Any
         project_rules: list[RecordReference] | None = None,
         actor: Actor | None = None,
     ) -> dict[str, Any]:
-        """Submit typed answers for every active signaling question in one domain."""
+        """Answer every active question in get_work_context.
+
+        Use yes, probably_yes, probably_no, no, or no_information. Omit inactive questions.
+        """
         return _dump(
             engine.submit_domain_answers(
                 SubmitDomainAnswersRequest.model_validate(
                     {
                         "run_id": run_id,
                         "work_token": work_token,
-                        "idempotency_key": idempotency_key,
+                        "idempotency_key": _submission_key("domain-answers", work_token.token),
                         "result_id": result_id,
                         "domain_id": domain_id,
                         "answers": answers,

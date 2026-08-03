@@ -1,6 +1,6 @@
 ---
 name: rob2-assess
-description: Prepare an evidence-grounded RoB 2 assessment and materialize a static report.
+description: Run or resume an evidence-grounded RoB 2 assessment for one randomized-trial Result, including signaling-question answers and deterministic judgment/report preparation. Use when asked to assess or judge RoB 2, continue an assessment, or explain its terminal report.
 ---
 
 # RoB 2 assessment
@@ -9,6 +9,11 @@ If the project is not initialized or needs a new run, hand initialization to
 `rob2-init`. Otherwise use the static `rob2` tools to resume the confirmed run,
 request the next engine-issued work item, inspect only bounded evidence and
 visual candidates, and submit typed work with the supplied mutation context.
+
+Drive one engine-issued item at a time: `continue_run`, `get_work_context`, then
+the named submission tool with the returned work token and identifiers copied
+verbatim. After a successful submission, return to `continue_run`. Completion
+means the directive is terminal, not merely that all five Domains were visited.
 
 For progressively disclosed operating detail, consult
 `../references/HARNESS-WORKFLOW.md`, `../references/EVIDENCE-SEARCH.md`, and

@@ -45,6 +45,7 @@ from rob2_kit.application.contracts import (
     RunStatusResponse,
     SearchEvidenceRequest,
     SearchEvidenceResponse,
+    SourceContextSummary,
     SubmitDomainAnswersRequest,
     SubmitDomainAnswersResponse,
     SubmitDomainEvidenceRequest,
@@ -55,6 +56,7 @@ from rob2_kit.application.contracts import (
     SubmitRunProposalResponse,
     SubmitSourceClassificationRequest,
     SubmitSourceClassificationResponse,
+    TrialContextSummary,
     WorkContext,
     WorkflowCondition,
     WorkItem,
@@ -1241,9 +1243,19 @@ class RunEngine:
         )
         context = WorkContext(
             work_item=work_item,
-            trial=trial,
+            trial=(
+                TrialContextSummary(
+                    trial_id=trial.trial_id,
+                    status=trial.status,
+                    inventory_id=trial.inventory.inventory_id,
+                    coverage_limitations=trial.inventory.coverage_limitations,
+                )
+                if trial is not None
+                else None
+            ),
             result_spec=result_spec,
-            sources=sources,
+            sources=tuple(SourceContextSummary.from_descriptor(source) for source in sources),
+            detailed_sources=sources if request.include_source_details else (),
             registry_candidates=tuple(
                 candidate
                 for candidate in proposal.registry_candidates
@@ -5535,7 +5547,9 @@ class RunEngine:
                 if question_id in guidance_by_id
             ),
             "project_rules": tuple(dict.fromkeys(project_rules)),
-            "sources": selected_sources,
+            "sources": tuple(
+                SourceContextSummary.from_descriptor(source) for source in selected_sources
+            ),
             "source_limitations": limitations,
             "reusable_evidence": tuple(reusable),
             "required_protocol": (

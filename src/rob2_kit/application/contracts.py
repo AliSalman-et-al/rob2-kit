@@ -23,8 +23,13 @@ from rob2_kit.domain.revisions import (
     RecordReference,
 )
 from rob2_kit.domain.sources import (
+    SourceAvailability,
+    SourceCriticality,
     SourceDescriptor,
+    SourceFailureCategory,
+    SourceProcessing,
     SourceRole,
+    SourceUse,
 )
 from rob2_kit.evidence.search import (
     CONTEXT_CHARACTER_TARGET,
@@ -39,7 +44,7 @@ from rob2_kit.evidence.visual import (
     VisualRenderRequest,
 )
 from rob2_kit.evidence.workflow import ExecutedSearchQuery, SearchCoverageReceipt, SearchPassKind
-from rob2_kit.ingestion.project import ProjectInitialization, ResultCandidate, TrialInitialization
+from rob2_kit.ingestion.project import ProjectInitialization, ResultCandidate
 from rob2_kit.logic.packs import GuidanceItem
 from rob2_kit.registry import RegistryCandidate
 
@@ -208,6 +213,54 @@ class EvidencePassageInput(FrozenModel):
         return self
 
 
+class SourceContextSummary(FrozenModel):
+    """Bounded source projection for routine agent work context."""
+
+    source_id: Identifier
+    title: str
+    relative_path: str
+    roles: tuple[SourceRole, ...]
+    criticality: SourceCriticality
+    availability: SourceAvailability
+    processing: SourceProcessing
+    use: SourceUse
+    artifact_hash: ContentHash | None = None
+    external_identifiers: tuple[str, ...] = ()
+    failure_category: SourceFailureCategory | None = None
+    page_count: int = Field(ge=0)
+    coverage_states: dict[str, int] = Field(default_factory=dict)
+
+    @classmethod
+    def from_descriptor(cls, source: SourceDescriptor) -> SourceContextSummary:
+        states: dict[str, int] = {}
+        for page in source.coverage:
+            states[page.state.value] = states.get(page.state.value, 0) + 1
+        return cls(
+            source_id=source.source_id,
+            title=source.title,
+            relative_path=source.relative_path,
+            roles=source.roles,
+            criticality=source.criticality,
+            availability=source.availability,
+            processing=source.processing,
+            use=source.use,
+            artifact_hash=source.artifact_hash,
+            external_identifiers=source.external_identifiers,
+            failure_category=source.failure_category,
+            page_count=len(source.coverage),
+            coverage_states=states,
+        )
+
+
+class TrialContextSummary(FrozenModel):
+    """Trial identity and inventory limitations without repeated source detail."""
+
+    trial_id: Identifier
+    status: Literal["inventory_ready", "trial_failed"]
+    inventory_id: Identifier
+    coverage_limitations: tuple[str, ...] = ()
+
+
 class DomainContextPack(FrozenModel):
     """Bounded, reproducible context for one Result × RoB 2 domain."""
 
@@ -223,7 +276,7 @@ class DomainContextPack(FrozenModel):
     inactive_question_ids: tuple[Identifier, ...] = ()
     guidance_items: tuple[GuidanceItem, ...] = ()
     project_rules: tuple[RecordReference, ...] = ()
-    sources: tuple[SourceDescriptor, ...] = ()
+    sources: tuple[SourceContextSummary, ...] = ()
     source_limitations: tuple[str, ...] = ()
     reusable_evidence: tuple[RecordReference, ...] = ()
     required_protocol: tuple[str, ...] = (
@@ -256,9 +309,10 @@ class DomainContextPack(FrozenModel):
 
 class WorkContext(FrozenModel):
     work_item: WorkItem
-    trial: TrialInitialization | None = None
+    trial: TrialContextSummary | None = None
     result_spec: ResultSpecRevision | None = None
-    sources: tuple[SourceDescriptor, ...] = ()
+    sources: tuple[SourceContextSummary, ...] = ()
+    detailed_sources: tuple[SourceDescriptor, ...] = ()
     domain_id: Identifier | None = None
     registry_candidates: tuple[RegistryCandidate, ...] = ()
     result_candidates: tuple[ResultCandidate, ...] = ()
@@ -340,6 +394,7 @@ class ContinueRunRequest(FrozenModel):
 class GetWorkContextRequest(FrozenModel):
     run_id: Identifier
     work_token: WorkToken
+    include_source_details: bool = False
 
 
 class SubmitRunProposalRequest(FrozenModel):
@@ -393,8 +448,10 @@ class InspectVisualCandidateRequest(FrozenModel):
 
 
 class SourceClassificationInput(FrozenModel):
-    source_id: Identifier
-    roles: tuple[SourceRole, ...] = Field(min_length=1)
+    source_id: Identifier = Field(description="Source ID issued in get_work_context.sources.")
+    roles: tuple[SourceRole, ...] = Field(
+        min_length=1, description="One or more schema-enumerated roles; the key is plural roles."
+    )
 
 
 class SubmitSourceClassificationRequest(FrozenModel):
@@ -450,8 +507,10 @@ class SubmitDomainEvidenceRequest(FrozenModel):
 
 
 class SQAnswerInput(FrozenModel):
-    question_id: Identifier
-    answer: SQAnswerCategory
+    question_id: Identifier = Field(
+        description="Active question ID from domain_context.active_question_ids."
+    )
+    answer: SQAnswerCategory = Field(description="One canonical lowercase answer category.")
     rationale: str = Field(min_length=1)
 
 
