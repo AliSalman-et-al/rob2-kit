@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import Any
 
 import yaml
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import BaseModel, ConfigDict, model_validator
 
 from rob2_kit.domain.assessment import JudgmentLevel, SQAnswerCategory
 from rob2_kit.logic.evaluator import EvaluationRequest, LogicEvaluator
@@ -34,7 +34,6 @@ class GoldenCase(BaseModel):
 
     id: str
     answers: dict[str, SQAnswerCategory]
-    assessor_inputs: dict[str, bool] = Field(default_factory=dict)
     expected_domains: dict[str, JudgmentLevel]
     expected_overall: JudgmentLevel
     expected_active: tuple[str, ...] = ()
@@ -98,7 +97,6 @@ def assert_conformance(pack: LogicPack, suite: ConformanceSuite) -> None:
             result = evaluator.evaluate(
                 EvaluationRequest(
                     answers=case.answers,
-                    assessor_inputs=case.assessor_inputs,
                 )
             )
         except (ValueError, TypeError) as error:

@@ -87,7 +87,6 @@ class SQAnswerDraft(FrozenModel):
 
 class SQAnswersSubmission(FrozenModel):
     answers: tuple[SQAnswerDraft, ...] = Field(min_length=1)
-    assessor_inputs: dict[Identifier, bool] = Field(default_factory=dict)
 
 
 SUBMISSION_ARGUMENTS = {

@@ -1373,8 +1373,7 @@ def _normalize_submission(
                 answers={
                     answer["question_id"]: answer["answer"]
                     for answer in submitted["answers"]
-                },
-                assessor_inputs=submitted.get("assessor_inputs", {}),
+                }
             )
         )
     return submitted
@@ -1567,8 +1566,7 @@ def _derive_assessment(
             answers={
                 item["question_id"]: item["answer"]
                 for item in sq_payload["answers"]
-            },
-            assessor_inputs=sq_payload.get("assessor_inputs", {}),
+            }
         )
     )
     observed_at = datetime.now(UTC)

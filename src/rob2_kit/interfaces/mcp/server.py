@@ -306,6 +306,11 @@ def create_server() -> Any:
         coverage_limitations: list[str] | None = None,
         no_information_basis: bool = False,
         conflicts: list[list[str]] | None = None,
+        evidence_by_question: dict[str, list[dict[str, Any]]] | None = None,
+        candidate_dispositions: list[dict[str, Any]] | None = None,
+        coverage_receipts: list[dict[str, Any]] | None = None,
+        project_rules: list[dict[str, Any]] | None = None,
+        actor: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
         return _dump(
             engine.submit_domain_evidence(
@@ -321,6 +326,11 @@ def create_server() -> Any:
                         "coverage_limitations": coverage_limitations or (),
                         "no_information_basis": no_information_basis,
                         "conflicts": conflicts or (),
+                        "evidence_by_question": evidence_by_question or {},
+                        "candidate_dispositions": candidate_dispositions or (),
+                        "coverage_receipts": coverage_receipts or (),
+                        "project_rules": project_rules or (),
+                        "actor": actor,
                         "contract_version": contract_version,
                     }
                 )
@@ -336,7 +346,8 @@ def create_server() -> Any:
         domain_id: str,
         answers: list[dict[str, Any]],
         contract_version: Literal["1.0.0"],
-        assessor_inputs: dict[str, bool] | None = None,
+        project_rules: list[dict[str, Any]] | None = None,
+        actor: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
         return _dump(
             engine.submit_domain_answers(
@@ -348,7 +359,8 @@ def create_server() -> Any:
                         "result_id": result_id,
                         "domain_id": domain_id,
                         "answers": answers,
-                        "assessor_inputs": assessor_inputs or {},
+                        "project_rules": project_rules or (),
+                        "actor": actor,
                         "contract_version": contract_version,
                     }
                 )

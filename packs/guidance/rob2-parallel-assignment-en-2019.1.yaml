@@ -3,11 +3,11 @@ required_schema_version: 1.0.0
 family_id: guidance:rob2-parallel-assignment-en
 release_id: "2019.1"
 authors: [RoB 2 Kit maintainers]
-content_hash: sha256:c7e816cf1fbd49827506bef6b55673caabb019e2155a1fffcdd6f725438159e1
+content_hash: sha256:2f3aa23896fc12780516cb11e27953ac101eb7ea58e433fe593a2d1f5ec85bf4
 language: en
 # Replaced by the release build with the exact validated Logic-pack content hash.
 compatible_logic_hashes:
-  - sha256:7649a3c7ac87b452d9af7a2143fdee49add1e4ab3bf4331ad549511368472dbf
+  - sha256:222b3d2e1ef923a0fde8b64e3de5a5aa845ecf7e36c58c6936d01ae143eb09c7
 items:
   - logic_element_id: sq:randomization:sequence
     content_origin: official
@@ -97,10 +97,6 @@ items:
     content_origin: official
     text: "Is the numerical result likely to have been selected, on the basis of the results, from multiple eligible analyses of the data?"
     affected_change: decision_relevant
-  - logic_element_id: input:combined-concerns
-    content_origin: rob2_kit
-    text: "Do concerns in multiple domains together substantially lower confidence in this result?"
-    affected_change: presentation_only
 inventory:
   - sq:randomization:sequence
   - sq:randomization:concealment
@@ -124,7 +120,6 @@ inventory:
   - sq:selection:prespecified-analysis
   - sq:selection:multiple-measurements
   - sq:selection:multiple-analyses
-  - input:combined-concerns
 provenance:
   - title: "RoB 2: a revised tool for assessing risk of bias in randomised trials"
     version: "22 August 2019"

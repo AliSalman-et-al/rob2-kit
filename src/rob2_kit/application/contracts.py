@@ -13,11 +13,12 @@ from enum import StrEnum
 from pathlib import Path
 from typing import Literal
 
-from pydantic import Field
+from pydantic import Field, model_validator
 
 from rob2_kit.application.lifecycle import ResultState, RunState
 from rob2_kit.domain.assessment import SQAnswerCategory
-from rob2_kit.domain.evidence import EvidenceCoverageState
+from rob2_kit.domain.canonical import canonical_hash
+from rob2_kit.domain.evidence import ConsiderationDisposition, EvidenceCoverageState
 from rob2_kit.domain.results import Estimate, Result, ResultSpecRevision
 from rob2_kit.domain.revisions import (
     Actor,
@@ -42,8 +43,9 @@ from rob2_kit.evidence.visual import (
     VisualCandidate,
     VisualRenderRequest,
 )
-from rob2_kit.evidence.workflow import ExecutedSearchQuery, SearchPassKind
+from rob2_kit.evidence.workflow import ExecutedSearchQuery, SearchCoverageReceipt, SearchPassKind
 from rob2_kit.ingestion.project import ProjectInitialization, ResultCandidate, TrialInitialization
+from rob2_kit.logic.packs import GuidanceItem
 from rob2_kit.registry import RegistryCandidate
 
 
@@ -149,6 +151,60 @@ class WorkItem(FrozenModel):
     dependency_fingerprint: ContentHash
 
 
+class EvidenceConsiderationInput(FrozenModel):
+    """Agent disposition for one candidate before an Evidence Bundle freezes."""
+
+    item_id: Identifier
+    disposition: ConsiderationDisposition
+    basis: str | None = None
+
+
+class DomainContextPack(FrozenModel):
+    """Bounded, reproducible context for one Result × RoB 2 domain."""
+
+    result_id: Identifier
+    domain_id: Identifier
+    # Pack release identifiers are the pack's canonical version (for example
+    # ``2019.1``), not an entity identifier with a ``name:`` prefix.
+    logic_pack_release_id: str = Field(min_length=1)
+    logic_pack_hash: ContentHash
+    guidance_pack_release_id: str = Field(min_length=1)
+    guidance_pack_hash: ContentHash
+    active_question_ids: tuple[Identifier, ...]
+    inactive_question_ids: tuple[Identifier, ...] = ()
+    guidance_items: tuple[GuidanceItem, ...] = ()
+    project_rules: tuple[RecordReference, ...] = ()
+    sources: tuple[SourceDescriptor, ...] = ()
+    source_limitations: tuple[str, ...] = ()
+    reusable_evidence: tuple[RecordReference, ...] = ()
+    required_protocol: tuple[str, ...] = (
+        "mandatory_search_coverage",
+        "candidate_disposition",
+        "contradiction_pass",
+        "visual_gate",
+    )
+    content_hash: ContentHash
+
+    @property
+    def active_questions(self) -> tuple[Identifier, ...]:
+        return self.active_question_ids
+
+    @property
+    def guidance(self) -> tuple[GuidanceItem, ...]:
+        return self.guidance_items
+
+    @property
+    def limitations(self) -> tuple[str, ...]:
+        return self.source_limitations
+
+    @model_validator(mode="after")
+    def validate_content_hash(self) -> DomainContextPack:
+        expected = canonical_hash(self.model_dump(mode="json", exclude={"content_hash"}))
+        if self.content_hash != expected:
+            raise ValueError("Domain context pack content hash does not match its contents")
+        return self
+
+
 class WorkContext(FrozenModel):
     work_item: WorkItem
     trial: TrialInitialization | None = None
@@ -157,6 +213,11 @@ class WorkContext(FrozenModel):
     domain_id: Identifier | None = None
     registry_candidates: tuple[RegistryCandidate, ...] = ()
     result_candidates: tuple[ResultCandidate, ...] = ()
+    domain_context: DomainContextPack | None = None
+
+    @property
+    def context_pack(self) -> DomainContextPack | None:
+        return self.domain_context
 
 
 class RunProposalSelection(FrozenModel):
@@ -317,6 +378,15 @@ class SubmitDomainEvidenceRequest(FrozenModel):
     coverage_limitations: tuple[str, ...] = ()
     no_information_basis: bool = False
     conflicts: tuple[tuple[Identifier, ...], ...] = ()
+    # New evidence-first fields.  They are optional for compatibility with
+    # synthetic tracer submissions that intentionally carry an empty bundle.
+    evidence_by_question: dict[Identifier, tuple[RecordReference, ...]] = Field(
+        default_factory=dict
+    )
+    candidate_dispositions: tuple[EvidenceConsiderationInput, ...] = ()
+    coverage_receipts: tuple[SearchCoverageReceipt, ...] = ()
+    project_rules: tuple[RecordReference, ...] = ()
+    actor: Actor | None = None
 
 
 class SQAnswerInput(FrozenModel):
@@ -333,7 +403,8 @@ class SubmitDomainAnswersRequest(FrozenModel):
     result_id: Identifier
     domain_id: Identifier
     answers: tuple[SQAnswerInput, ...] = Field(min_length=1)
-    assessor_inputs: dict[Identifier, bool] = Field(default_factory=dict)
+    project_rules: tuple[RecordReference, ...] = ()
+    actor: Actor | None = None
 
 
 class OperationResponse(FrozenModel):
@@ -423,10 +494,15 @@ class SubmitResultResolutionResponse(SubmissionResponse):
 
 class SubmitDomainEvidenceResponse(SubmissionResponse):
     domain_id: Identifier
+    evidence_bundles: tuple[RecordReference, ...] = ()
+    consideration_manifests: tuple[RecordReference, ...] = ()
+    coverage_receipts: tuple[RecordReference, ...] = ()
 
 
 class SubmitDomainAnswersResponse(SubmissionResponse):
     domain_id: Identifier
+    answer_revisions: tuple[RecordReference, ...] = ()
+    judgments: tuple[RecordReference, ...] = ()
 
 
 RUN_OPERATION_CONTRACTS: tuple[OperationContract, ...] = (

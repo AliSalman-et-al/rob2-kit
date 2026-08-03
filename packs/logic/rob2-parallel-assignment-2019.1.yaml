@@ -3,7 +3,7 @@ required_schema_version: 1.0.0
 family_id: logic:rob2-parallel-assignment
 release_id: "2019.1"
 authors: [RoB 2 Kit maintainers]
-content_hash: sha256:7649a3c7ac87b452d9af7a2143fdee49add1e4ab3bf4331ad549511368472dbf
+content_hash: sha256:222b3d2e1ef923a0fde8b64e3de5a5aa845ecf7e36c58c6936d01ae143eb09c7
 instrument: rob2
 trial_design: individually_randomized_parallel_group
 effect_of_interest: assignment
@@ -211,17 +211,11 @@ domains:
             - {op: answer_in, question_id: sq:selection:multiple-analyses, answers: [probably_no, no]}
         judgment: low
 
-assessor_inputs:
-  - id: input:combined-concerns
-    value_type: boolean
-    required_if: {op: domain_count, judgment: some_concerns, minimum: 2}
+assessor_inputs: []
 
 overall_rules:
   - id: rule:overall:any-high
     when: {op: domain_any, judgments: [high]}
-    judgment: high
-  - id: rule:overall:combined-concerns
-    when: {op: input_equals, input_id: input:combined-concerns, value: true}
     judgment: high
   - id: rule:overall:any-concerns
     when: {op: domain_any, judgments: [some_concerns]}
@@ -258,7 +252,6 @@ inventory:
   - domain:missing
   - domain:measurement
   - domain:selection
-  - input:combined-concerns
   - rule:randomization:concealment-failed
   - rule:randomization:unknown-concealment-and-imbalance
   - rule:randomization:some-concerns
@@ -280,7 +273,6 @@ inventory:
   - rule:selection:some-concerns
   - rule:selection:low
   - rule:overall:any-high
-  - rule:overall:combined-concerns
   - rule:overall:any-concerns
   - rule:overall:all-low
 

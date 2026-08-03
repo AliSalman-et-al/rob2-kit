@@ -118,34 +118,21 @@ def test_high_domain_controls_overall_judgment(evaluator: LogicEvaluator) -> Non
     assert result.overall_judgment is JudgmentLevel.HIGH
 
 
-def test_combined_concerns_is_a_required_assessor_input(evaluator: LogicEvaluator) -> None:
+def test_multiple_concerns_use_the_fixed_maximum_domain_policy(
+    evaluator: LogicEvaluator,
+) -> None:
     answers = low_answers()
     answers["sq:randomization:baseline-imbalance"] = "yes"
     answers["sq:selection:prespecified-analysis"] = "no"
 
-    with pytest.raises(ValueError, match="input:combined-concerns"):
-        evaluator.evaluate(EvaluationRequest(answers=answers))
+    result = evaluator.evaluate(EvaluationRequest(answers=answers))
+    assert result.overall_judgment is JudgmentLevel.SOME_CONCERNS
+    assert result.assessor_inputs == {}
 
-    some = evaluator.evaluate(
-        EvaluationRequest(
-            answers=answers,
-            assessor_inputs={"input:combined-concerns": False},
-        )
-    )
-    high = evaluator.evaluate(
-        EvaluationRequest(
-            answers=answers,
-            assessor_inputs={"input:combined-concerns": True},
-        )
-    )
-    assert some.overall_judgment is JudgmentLevel.SOME_CONCERNS
-    assert high.overall_judgment is JudgmentLevel.HIGH
-    assert high.assessor_inputs == {"input:combined-concerns": True}
-
-    with pytest.raises(ValueError, match="outside their applicability"):
+    with pytest.raises(ValueError, match="unknown assessor inputs"):
         evaluator.evaluate(
             EvaluationRequest(
-                answers=low_answers(),
+                answers=answers,
                 assessor_inputs={"input:combined-concerns": True},
             )
         )

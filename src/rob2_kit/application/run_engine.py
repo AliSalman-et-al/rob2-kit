@@ -19,6 +19,8 @@ from rob2_kit.application.contracts import (
     ConfirmRunDefinitionResponse,
     ContinueRunRequest,
     ContinueRunResponse,
+    DomainContextPack,
+    EvidenceConsiderationInput,
     GetWorkContextRequest,
     GetWorkContextResponse,
     InspectVisualCandidateRequest,
@@ -61,9 +63,31 @@ from rob2_kit.application.lifecycle import (
     RunState,
     derive_lifecycle,
 )
-from rob2_kit.domain.assessment import JudgmentLevel
+from rob2_kit.domain.assessment import (
+    AlgorithmicJudgmentRevision,
+    DecisionTrace,
+    JudgmentLevel,
+    SQAnswerRevision,
+)
+from rob2_kit.domain.canonical import canonical_hash
+from rob2_kit.domain.evidence import (
+    ConsiderationDisposition,
+    EvidenceBundle,
+    EvidenceConsideration,
+    EvidenceConsiderationManifest,
+)
 from rob2_kit.domain.results import ResultSpecRevision
-from rob2_kit.domain.revisions import Actor, ActorKind, ContentHash, FrozenModel, Identifier
+from rob2_kit.domain.revisions import (
+    Actor,
+    ActorKind,
+    ContentHash,
+    Dependency,
+    FrozenModel,
+    Identifier,
+    RecordReference,
+    Revision,
+    Supersession,
+)
 from rob2_kit.domain.sources import SourceRole
 from rob2_kit.evidence.search import (
     CanonicalBlock,
@@ -73,7 +97,7 @@ from rob2_kit.evidence.search import (
     canonicalize_evidence_units,
 )
 from rob2_kit.evidence.visual import VisualCandidate, VisualInspectionPolicy
-from rob2_kit.evidence.workflow import ExecutedSearchQuery
+from rob2_kit.evidence.workflow import ExecutedSearchQuery, SearchCoverageReceipt
 from rob2_kit.ingestion.project import (
     DocumentParser,
     LiteParseAdapter,
@@ -86,12 +110,13 @@ from rob2_kit.ingestion.project import (
     initialize_project,
 )
 from rob2_kit.logic.evaluator import EvaluationRequest, LogicEvaluator
-from rob2_kit.logic.packs import load_logic_pack
+from rob2_kit.logic.packs import load_guidance_pack, load_logic_pack
 from rob2_kit.registry import ClinicalTrialsGovAdapter, RegistryAcquisitionStatus, RegistryPolicy
 from rob2_kit.reports import AssessmentView, DomainView, ReportProjector
 from rob2_kit.storage import (
     ArtifactStore,
     CommitResult,
+    DependencyInput,
     LeaseToken,
     LedgerSchemaRefusal,
     RunIntegrityFailure,
@@ -106,6 +131,18 @@ ENGINE_ACTOR = Actor(
     kind=ActorKind.SYSTEM,
     actor_id="actor:run-engine",
     display_name="rob2-kit RunEngine",
+    software_name="rob2-kit",
+    software_version="0.1.0",
+)
+
+# The host can provide a richer Actor on answer/evidence submissions.  When a
+# thin MCP client omits it, this stable agent identity still records that the
+# submission was authored by an assessment agent rather than silently by a
+# human or by an un-attributed process.
+ASSESSMENT_AGENT_ACTOR = Actor(
+    kind=ActorKind.AGENT,
+    actor_id="actor:assessment-agent",
+    display_name="rob2-kit assessment agent",
     software_name="rob2-kit",
     software_version="0.1.0",
 )
@@ -266,6 +303,30 @@ class _DomainEvidenceRecord(FrozenModel):
     coverage_limitations: tuple[str, ...] = ()
     no_information_basis: bool = False
     conflicts: tuple[tuple[Identifier, ...], ...] = ()
+    evidence_bundles: tuple[RecordReference, ...] = ()
+    consideration_manifests: tuple[RecordReference, ...] = ()
+    coverage_receipts: tuple[RecordReference, ...] = ()
+    candidate_dispositions: tuple[EvidenceConsiderationInput, ...] = ()
+    project_rules: tuple[RecordReference, ...] = ()
+
+
+class _DomainEvidenceDispositionRecord(FrozenModel):
+    """Immutable pre-freeze account of all candidate dispositions."""
+
+    run_id: Identifier
+    result_id: Identifier
+    domain_id: Identifier
+    items: tuple[RecordReference, ...] = ()
+    dispositions: tuple[EvidenceConsiderationInput, ...] = ()
+
+
+class _DomainCoverageReceiptRecord(FrozenModel):
+    """Immutable wrapper that lets bundles bind otherwise frozen receipts."""
+
+    run_id: Identifier
+    result_id: Identifier
+    domain_id: Identifier
+    receipts: tuple[SearchCoverageReceipt, ...] = ()
 
 
 class _DomainAnswersRecord(FrozenModel):
@@ -276,7 +337,8 @@ class _DomainAnswersRecord(FrozenModel):
     domain_id: Identifier
     answers: dict[Identifier, str]
     rationales: dict[Identifier, str]
-    assessor_inputs: dict[Identifier, bool] = {}
+    project_rules: tuple[RecordReference, ...] = ()
+    answer_revisions: tuple[RecordReference, ...] = ()
 
 
 class _ResultStartedRecord(FrozenModel):
@@ -1133,6 +1195,16 @@ class RunEngine:
                 for candidate in proposal.result_candidates
                 if scoped_trial_id is None or candidate.trial_id == scoped_trial_id
             ),
+            domain_context=(
+                self._domain_context_pack(
+                    ledger,
+                    request.run_id,
+                    work_item,
+                    trial=trial,
+                )
+                if work_item.domain_id is not None and work_item.result_id is not None
+                else None
+            ),
         )
         return GetWorkContextResponse(
             operation_id=self._read_operation_id(RunOperation.GET_WORK_CONTEXT, request.run_id),
@@ -1921,6 +1993,10 @@ class RunEngine:
                 domain_id=request.domain_id,
             )
         self._validate_result_domain(ledger, request.run_id, request.result_id, request.domain_id)
+        self._validate_domain_evidence_submission(ledger, request)
+        evidence_bundles, manifests, receipts = self._freeze_domain_evidence(
+            ledger, request
+        )
         normalized = _DomainEvidenceRecord(
             run_id=request.run_id,
             result_id=request.result_id,
@@ -1930,6 +2006,11 @@ class RunEngine:
             coverage_limitations=request.coverage_limitations,
             no_information_basis=request.no_information_basis,
             conflicts=request.conflicts,
+            evidence_bundles=evidence_bundles,
+            consideration_manifests=manifests,
+            coverage_receipts=receipts,
+            candidate_dispositions=request.candidate_dispositions,
+            project_rules=request.project_rules,
         )
         result = self._commit_submission(
             ledger,
@@ -1953,6 +2034,9 @@ class RunEngine:
             result_id=request.result_id,
             result_state=self._result_state(projection, request.result_id),
             domain_id=request.domain_id,
+            evidence_bundles=evidence_bundles,
+            consideration_manifests=manifests,
+            coverage_receipts=receipts,
         )
 
     def submit_domain_answers(
@@ -1998,9 +2082,35 @@ class RunEngine:
         domain = next(item for item in logic.domains if item.id == request.domain_id)
         question_ids = set(domain.question_ids)
         supplied = {item.question_id for item in request.answers}
+        if len(supplied) != len(request.answers):
+            raise ValueError("each signaling question may be answered only once")
         unknown = supplied - question_ids
         if unknown:
             raise ValueError(f"answers supplied for another domain: {sorted(unknown)}")
+        answer_values = {item.question_id: item.answer for item in request.answers}
+        evaluator = LogicEvaluator(logic)
+        question_by_id = {question.id: question for question in logic.questions}
+        active = {
+            question_id
+            for question_id in domain.question_ids
+            if (
+                question_by_id[question_id].active_if is None
+                or evaluator._matches(
+                    question_by_id[question_id].active_if,
+                    answer_values,
+                    {},
+                    {},
+                )
+            )
+        }
+        missing = active - supplied
+        inactive = supplied - active
+        if missing:
+            raise ValueError(f"answers required for active questions: {sorted(missing)}")
+        if inactive:
+            raise ValueError(
+                f"answers supplied for not_applicable questions: {sorted(inactive)}"
+            )
         if not self._has_domain_checkpoint(
             self._events_for_run(ledger, request.run_id),
             request.result_id,
@@ -2008,13 +2118,23 @@ class RunEngine:
             "evidence",
         ):
             raise ValueError("domain evidence must be frozen before answers")
+        if any(item.answer.value == "no_information" for item in request.answers):
+            for item in request.answers:
+                if item.answer.value == "no_information" and not self._has_no_information_basis(
+                    ledger, request, item.question_id
+                ):
+                    raise ValueError(
+                        "no-information SQ answers require their own complete Search coverage basis"
+                    )
+        answer_revisions = self._commit_domain_answers(ledger, request, domain)
         normalized = _DomainAnswersRecord(
             run_id=request.run_id,
             result_id=request.result_id,
             domain_id=request.domain_id,
             answers={item.question_id: item.answer.value for item in request.answers},
             rationales={item.question_id: item.rationale for item in request.answers},
-            assessor_inputs=request.assessor_inputs,
+            project_rules=request.project_rules,
+            answer_revisions=answer_revisions,
         )
         result = self._commit_submission(
             ledger,
@@ -2025,7 +2145,7 @@ class RunEngine:
             artifact=normalized,
             checkpoint=f"checkpoint:answers-{request.domain_id.removeprefix('domain:')}",
         )
-        self._materialize_terminal(ledger, request.run_id, request.result_id)
+        judgments = self._materialize_terminal(ledger, request.run_id, request.result_id)
         projection = self._projection(ledger, request.run_id)
         return SubmitDomainAnswersResponse(
             operation_id=result.operation_id,
@@ -2039,6 +2159,482 @@ class RunEngine:
             result_id=request.result_id,
             result_state=self._result_state(projection, request.result_id),
             domain_id=request.domain_id,
+            answer_revisions=answer_revisions,
+            judgments=judgments,
+        )
+
+    def _validate_domain_evidence_submission(
+        self,
+        ledger: WorkflowLedger,
+        request: SubmitDomainEvidenceRequest,
+    ) -> None:
+        """Validate the evidence-first freeze boundary before writing anything."""
+        domain = next(
+            (item for item in self._logic_pack().domains if item.id == request.domain_id),
+            None,
+        )
+        if domain is None:
+            raise ValueError(f"unknown Logic domain {request.domain_id!r}")
+        domain_questions = set(domain.question_ids)
+        supplied_question_ids = set(request.evidence_by_question)
+        unknown_question_ids = supplied_question_ids - domain_questions
+        if unknown_question_ids:
+            raise ValueError(
+                f"Evidence mapping includes another domain's signaling questions: "
+                f"{sorted(unknown_question_ids)}"
+            )
+        if request.items and supplied_question_ids != domain_questions:
+            raise ValueError(
+                "each domain signaling question requires an explicit evidence mapping"
+            )
+        mapped_item_ids = {
+            item.entity_id
+            for items in request.evidence_by_question.values()
+            for item in items
+        }
+        if any(receipt.sq_id not in domain_questions for receipt in request.coverage_receipts):
+            raise ValueError("Search coverage receipts must bind this domain's signaling questions")
+        if request.coverage_state.value == "incomplete" and not request.coverage_limitations:
+            raise ValueError("incomplete evidence coverage requires an explicit limitation")
+        if request.no_information_basis:
+            if request.coverage_state.value != "complete" or request.coverage_limitations:
+                raise ValueError("no-information answers require complete, unlimited coverage")
+            if not request.coverage_receipts:
+                raise ValueError(
+                    "no-information basis requires complete Search coverage receipts"
+                )
+            if any(
+                not receipt.establishes_no_information_basis()
+                for receipt in request.coverage_receipts
+            ):
+                raise ValueError(
+                    "no-information basis requires adequate readable-source Search coverage"
+                )
+        item_ids = tuple(item.entity_id for item in request.items)
+        if len(item_ids) != len(set(item_ids)):
+            raise ValueError("Evidence Bundle items must be unique")
+        for reference in request.items:
+            try:
+                ledger.artifacts.read(reference.content_hash)
+            except Exception as error:  # ArtifactStore exposes several typed read failures.
+                raise ValueError(
+                    f"Evidence item {reference.entity_id!r} is not an immutable artifact"
+                ) from error
+        dispositions = request.candidate_dispositions
+        disposition_ids = tuple(item.item_id for item in dispositions)
+        if len(disposition_ids) != len(set(disposition_ids)):
+            raise ValueError("every Evidence candidate requires exactly one disposition")
+        if dispositions:
+            if not set(disposition_ids).issubset(set(item_ids)):
+                raise ValueError(
+                    "candidate dispositions must be attributable to submitted Evidence items"
+                )
+            if not set(item_ids).issubset(set(disposition_ids)):
+                raise ValueError(
+                    "every accepted Evidence item must appear in the consideration manifest"
+                )
+            if any(
+                item.disposition is ConsiderationDisposition.UNRESOLVED
+                for item in dispositions
+            ):
+                raise ValueError("material Evidence candidates cannot remain unresolved")
+        if request.items and mapped_item_ids != set(item_ids):
+            raise ValueError(
+                "every submitted Evidence item must be attributed to at least one "
+                "signaling question"
+            )
+        for conflict in request.conflicts:
+            if len(conflict) < 2 or not set(conflict).issubset(set(item_ids)):
+                raise ValueError(
+                    "source conflicts must bind at least two frozen Evidence items"
+                )
+
+    def _freeze_domain_evidence(
+        self,
+        ledger: WorkflowLedger,
+        request: SubmitDomainEvidenceRequest,
+    ) -> tuple[
+        tuple[RecordReference, ...],
+        tuple[RecordReference, ...],
+        tuple[RecordReference, ...],
+    ]:
+        """Materialize one immutable Evidence Bundle and manifest per domain SQ."""
+        logic = self._logic_pack()
+        domain = next(item for item in logic.domains if item.id == request.domain_id)
+        result_spec = self._result_spec_reference(ledger, request.result_id)
+        actor = request.actor or ASSESSMENT_AGENT_ACTOR
+        disposition_record = _DomainEvidenceDispositionRecord(
+            run_id=request.run_id,
+            result_id=request.result_id,
+            domain_id=request.domain_id,
+            items=request.items,
+            dispositions=request.candidate_dispositions,
+        )
+        suffix = self._digest(f"{request.run_id}|{request.idempotency_key}|dispositions")
+        disposition_ref = self._commit_frozen_artifact(
+            ledger,
+            scope=request.result_id,
+            operation="operation:evidence-candidate-dispositions",
+            operation_key=f"{request.idempotency_key}:dispositions",
+            entity_id=f"evidence-disposition:{suffix}",
+            revision_id=f"revision:evidence-disposition-{suffix}",
+            artifact=disposition_record,
+            actor=actor,
+        )
+        coverage_refs: tuple[RecordReference, ...] = ()
+        if request.coverage_receipts:
+            coverage_record = _DomainCoverageReceiptRecord(
+                run_id=request.run_id,
+                result_id=request.result_id,
+                domain_id=request.domain_id,
+                receipts=request.coverage_receipts,
+            )
+            coverage_suffix = self._digest(
+                f"{request.run_id}|{request.idempotency_key}|coverage"
+            )
+            coverage_refs = (
+                self._commit_frozen_artifact(
+                    ledger,
+                    scope=request.result_id,
+                    operation="operation:search-coverage-receipt",
+                    operation_key=f"{request.idempotency_key}:coverage",
+                    entity_id=f"search-coverage:{coverage_suffix}",
+                    revision_id=f"revision:search-coverage-{coverage_suffix}",
+                    artifact=coverage_record,
+                    actor=actor,
+                ),
+            )
+        bundles: list[RecordReference] = []
+        manifests: list[RecordReference] = []
+        for question_id in domain.question_ids:
+            slug = question_id.removeprefix("sq:").replace(":", "-")
+            bundle_suffix = self._digest(
+                f"{request.run_id}|{request.idempotency_key}|bundle|{question_id}"
+            )
+            question_items = request.evidence_by_question.get(question_id, request.items)
+            question_item_ids = {item.entity_id for item in question_items}
+            if not question_item_ids.issubset({item.entity_id for item in request.items}):
+                raise ValueError(
+                    f"Evidence for {question_id} must reference the domain submission items"
+                )
+            manifest_items = tuple(question_items)
+            manifest_dispositions = tuple(
+                item
+                for item in request.candidate_dispositions
+                if item.item_id in question_item_ids
+            )
+            if manifest_items and not manifest_dispositions:
+                raise ValueError(
+                    f"Evidence consideration manifest is incomplete for {question_id}"
+                )
+            manifest = EvidenceConsiderationManifest(
+                entity_id=f"evidence-manifest:{request.result_id.removeprefix('result:')}-{slug}",
+                revision_id=f"revision:evidence-manifest-{bundle_suffix}",
+                dependencies=tuple(
+                    Dependency(**item.model_dump(), role="dependency:considered-item")
+                    for item in manifest_items
+                ),
+                actor=actor,
+                observed_at=datetime.now(UTC),
+                sq_id=question_id,
+                considered_items=manifest_items,
+                dispositions=tuple(
+                    EvidenceConsideration(
+                        item_id=item.item_id,
+                        disposition=item.disposition,
+                        basis=item.basis,
+                    )
+                    for item in manifest_dispositions
+                ),
+            )
+            manifest_ref = self._commit_frozen_artifact(
+                ledger,
+                scope=request.result_id,
+                operation="operation:evidence-consideration-manifest",
+                operation_key=f"{request.idempotency_key}:manifest:{slug}",
+                entity_id=manifest.entity_id,
+                revision_id=manifest.revision_id,
+                artifact=manifest,
+                actor=actor,
+                dependencies=manifest.dependencies,
+            )
+            dependencies = [
+                Dependency(**result_spec.model_dump(), role="dependency:result-spec"),
+                Dependency(**disposition_ref.model_dump(), role="dependency:evidence-disposition"),
+                Dependency(
+                    **manifest_ref.model_dump(), role="dependency:evidence-consideration"
+                ),
+                *(
+                    Dependency(**item.model_dump(), role="dependency:evidence-item")
+                    for item in question_items
+                ),
+                *(
+                    Dependency(**receipt.model_dump(), role="dependency:search-coverage")
+                    for receipt in coverage_refs
+                ),
+            ]
+            bundle_payload = {
+                "result_spec": result_spec.model_dump(mode="json"),
+                "disposition": disposition_ref.model_dump(mode="json"),
+                "items": [item.model_dump(mode="json") for item in question_items],
+                "sq_id": question_id,
+                "domain_id": request.domain_id,
+                "coverage_state": request.coverage_state.value,
+                "coverage_limitations": request.coverage_limitations,
+                "no_information_basis": request.no_information_basis,
+                "conflicts": request.conflicts,
+                "coverage_receipts": [
+                    receipt.model_dump(mode="json") for receipt in coverage_refs
+                ],
+                "consideration_manifest": manifest_ref.model_dump(mode="json"),
+            }
+            bundle_hash = canonical_hash(bundle_payload)
+            bundle = EvidenceBundle(
+                entity_id=f"bundle:{request.result_id.removeprefix('result:')}-{slug}",
+                revision_id=f"revision:evidence-bundle-{bundle_suffix}",
+                dependencies=tuple(dependencies),
+                actor=actor,
+                observed_at=datetime.now(UTC),
+                result_spec=result_spec,
+                disposition=disposition_ref,
+                items=tuple(question_items),
+                frozen_content_hash=bundle_hash,
+                sq_id=question_id,
+                domain_id=request.domain_id,
+                coverage_receipts=coverage_refs,
+                consideration_manifest=manifest_ref,
+                coverage_limitations=request.coverage_limitations,
+                coverage_state=request.coverage_state,
+                no_information_basis=request.no_information_basis,
+                conflicts=request.conflicts,
+            )
+            bundle_ref = self._commit_frozen_artifact(
+                ledger,
+                scope=request.result_id,
+                operation="operation:evidence-bundle-frozen",
+                operation_key=f"{request.idempotency_key}:bundle:{slug}",
+                entity_id=bundle.entity_id,
+                revision_id=bundle.revision_id,
+                artifact=bundle,
+                actor=actor,
+                dependencies=tuple(dependencies),
+            )
+            bundles.append(bundle_ref)
+            manifests.append(manifest_ref)
+        return tuple(bundles), tuple(manifests), coverage_refs
+
+    def _has_no_information_basis(
+        self,
+        ledger: WorkflowLedger,
+        request: SubmitDomainAnswersRequest,
+        question_id: Identifier,
+    ) -> bool:
+        """Verify one SQ's frozen receipt rather than trusting another SQ's search."""
+        evidence_payload = next(
+            (
+                self._event_payload(ledger, event)
+                for event in reversed(self._events_for_run(ledger, request.run_id))
+                if event.operation == "operation:submit-domain-evidence"
+                and event.scope == request.result_id
+                and self._event_payload(ledger, event).get("domain_id") == request.domain_id
+            ),
+            {},
+        )
+        raw_bundles = evidence_payload.get("evidence_bundles", ())
+        if not isinstance(raw_bundles, (list, tuple)):
+            return False
+        for raw_bundle in raw_bundles:
+            try:
+                bundle_ref = RecordReference.model_validate(raw_bundle)
+                bundle = EvidenceBundle.model_validate_json(
+                    ledger.artifacts.read(bundle_ref.content_hash)
+                )
+            except (ValueError, TypeError, json.JSONDecodeError):
+                continue
+            if bundle.sq_id != question_id or not bundle.no_information_basis:
+                continue
+            for coverage_ref in bundle.coverage_receipts:
+                try:
+                    receipt_record = _DomainCoverageReceiptRecord.model_validate_json(
+                        ledger.artifacts.read(coverage_ref.content_hash)
+                    )
+                except (ValueError, TypeError, json.JSONDecodeError):
+                    continue
+                if any(
+                    receipt.sq_id == question_id and receipt.establishes_no_information_basis()
+                    for receipt in receipt_record.receipts
+                ):
+                    return True
+        return False
+
+    def _commit_domain_answers(
+        self,
+        ledger: WorkflowLedger,
+        request: SubmitDomainAnswersRequest,
+        domain: Any,
+    ) -> tuple[RecordReference, ...]:
+        logic = self._logic_pack()
+        guidance = load_guidance_pack(self._guidance_pack_path())
+        evidence_events = [
+            self._event_payload(ledger, event)
+            for event in self._events_for_run(ledger, request.run_id)
+            if event.operation == "operation:submit-domain-evidence"
+            and event.scope == request.result_id
+            and self._event_payload(ledger, event).get("domain_id") == request.domain_id
+        ]
+        if not evidence_events:
+            raise ValueError("domain evidence must be frozen before answers")
+        bundle_by_sq = {}
+        raw_bundle_refs = evidence_events[-1].get("evidence_bundles", ())
+        if not isinstance(raw_bundle_refs, (list, tuple)):
+            raw_bundle_refs = ()
+        for reference in raw_bundle_refs:
+            try:
+                ref = RecordReference.model_validate(reference)
+                payload = json.loads(ledger.artifacts.read(ref.content_hash))
+                bundle_by_sq[payload.get("sq_id")] = ref
+            except (ValueError, TypeError, KeyError, json.JSONDecodeError):
+                continue
+        actor = request.actor or ASSESSMENT_AGENT_ACTOR
+        answer_refs: list[RecordReference] = []
+        for item in request.answers:
+            bundle_ref = bundle_by_sq.get(item.question_id)
+            if bundle_ref is None:
+                raise ValueError(
+                    f"no frozen Evidence Bundle exists for {item.question_id}"
+                )
+            rules = tuple(
+                rule.id
+                for rule in domain.judgment_rules
+                if item.question_id in {
+                    condition.question_id
+                    for condition in self._walk_pack_conditions(rule.when)
+                }
+            )
+            suffix = self._digest(
+                f"{request.run_id}|{request.idempotency_key}|answer|{item.question_id}"
+            )
+            answer = SQAnswerRevision(
+                entity_id=(
+                    f"sq-answer:{request.result_id.removeprefix('result:')}-"
+                    f"{item.question_id.removeprefix('sq:').replace(':', '-')}"
+                ),
+                revision_id=f"revision:sq-answer-{suffix}",
+                dependencies=(
+                    Dependency(**bundle_ref.model_dump(), role="dependency:evidence-bundle"),
+                    *(
+                        Dependency(**rule.model_dump(), role="dependency:project-rule")
+                        for rule in request.project_rules
+                    ),
+                ),
+                actor=actor,
+                observed_at=datetime.now(UTC),
+                sq_id=item.question_id,
+                answer=item.answer,
+                rationale=item.rationale,
+                evidence_bundle=bundle_ref,
+                project_rules=request.project_rules,
+                logic_pack_release_id=logic.release_id,
+                logic_pack_hash=logic.content_hash,
+                guidance_pack_release_id=guidance.release_id,
+                guidance_pack_hash=guidance.content_hash,
+                evidence_policy_id="policy:evidence-search-1.0.0",
+                evidence_policy_hash=canonical_hash(
+                    {"policy_id": "policy:evidence-search-1.0.0"}
+                ),
+                decision_rule_ids=rules,
+            )
+            answer_refs.append(
+                self._commit_frozen_artifact(
+                    ledger,
+                    scope=request.result_id,
+                    operation="operation:sq-answer-revision",
+                    operation_key=f"{request.idempotency_key}:answer:{item.question_id}",
+                    entity_id=answer.entity_id,
+                    revision_id=answer.revision_id,
+                    artifact=answer,
+                    actor=actor,
+                    dependencies=answer.dependencies,
+                )
+            )
+        return tuple(answer_refs)
+
+    @staticmethod
+    def _walk_pack_conditions(condition: Any) -> tuple[Any, ...]:
+        return (condition,) + tuple(
+            nested
+            for child in getattr(condition, "conditions", ())
+            for nested in RunEngine._walk_pack_conditions(child)
+        )
+
+    def _commit_frozen_artifact(
+        self,
+        ledger: WorkflowLedger,
+        *,
+        scope: Identifier,
+        operation: Identifier,
+        operation_key: Identifier,
+        entity_id: Identifier,
+        revision_id: Identifier,
+        artifact: FrozenModel,
+        actor: Actor,
+        dependencies: tuple[Dependency, ...] = (),
+    ) -> RecordReference:
+        existing = self._event_for_operation_key(ledger, operation_key, run_id=None)
+        if existing is not None:
+            return RecordReference(
+                entity_id=existing.entity_id,
+                revision_id=existing.revision_id,
+                content_hash=existing.output_revision_hashes[0],
+            )
+        now = getattr(artifact, "observed_at", None) or datetime.now(UTC)
+        current = next(
+            (
+                revision
+                for revision in ledger.current_revisions()
+                if revision.entity_id == entity_id
+            ),
+            None,
+        )
+        supersedes_revision_id = current.revision_id if current is not None else None
+        if supersedes_revision_id is not None and isinstance(artifact, Revision):
+            assert current is not None
+            artifact = artifact.model_copy(
+                update={
+                    "supersedes": Supersession(
+                        entity_id=entity_id,
+                        revision_id=supersedes_revision_id,
+                        content_hash=current.artifact_hash,
+                        reason="new immutable assessment checkpoint supersedes prior revision",
+                    )
+                }
+            )
+        dependency_inputs = tuple(
+            DependencyInput.model_validate(item.model_dump()) for item in dependencies
+        )
+        transition = self._transition(
+            scope=scope,
+            operation=operation,
+            operation_key=operation_key,
+            entity_id=entity_id,
+            revision_id=revision_id,
+            artifact=artifact,
+            checkpoint=None,
+            outcome=WorkflowEventOutcome.COMPLETED,
+            observed_at=now,
+            actor=actor,
+            dependencies=dependency_inputs,
+            supersedes_revision_id=supersedes_revision_id,
+        )
+        result = ledger.commit(
+            transition,
+            self._acquire_lease(ledger, now),
+            now=now,
+        )
+        return RecordReference(
+            entity_id=entity_id,
+            revision_id=revision_id,
+            content_hash=result.artifact_hash,
         )
 
     def _bind(self, root: Path) -> None:
@@ -2543,7 +3139,7 @@ class RunEngine:
         ledger: WorkflowLedger,
         run_id: Identifier,
         result_id: Identifier,
-    ) -> None:
+    ) -> tuple[RecordReference, ...]:
         """Evaluate all five domains and publish a minimal static bundle once."""
 
         events = self._events_for_run(ledger, run_id)
@@ -2562,7 +3158,7 @@ class RunEngine:
             for event in events
         ):
             self._repair_report_publication(ledger, run_id)
-            return
+            return ()
         logic = self._logic_pack()
         required_domains = {domain.id for domain in logic.domains}
         evidence_domains = {
@@ -2579,7 +3175,7 @@ class RunEngine:
         ]
         answer_domains = {payload.get("domain_id") for payload in answer_payloads}
         if not required_domains <= evidence_domains or not required_domains <= answer_domains:
-            return
+            return ()
         coverage_limitations_set: set[str] = set()
         for event in events:
             if (
@@ -2627,11 +3223,10 @@ class RunEngine:
             )
             lease = self._acquire_lease(ledger, datetime.now(UTC))
             ledger.commit(transition, lease, now=datetime.now(UTC))
-            return
+            return ()
         # A Result may only have one immutable answer checkpoint per domain.
         answers: dict[str, str] = {}
         rationales: dict[str, str] = {}
-        assessor_inputs: dict[str, bool] = {}
         for payload in answer_payloads:
             raw_answers = payload.get("answers", {})
             if isinstance(raw_answers, dict):
@@ -2639,15 +3234,21 @@ class RunEngine:
             raw_rationales = payload.get("rationales", {})
             if isinstance(raw_rationales, dict):
                 rationales.update(cast(dict[str, str], raw_rationales))
-            raw_inputs = payload.get("assessor_inputs", {})
-            if isinstance(raw_inputs, dict):
-                assessor_inputs.update(cast(dict[str, bool], raw_inputs))
         evaluation = LogicEvaluator(logic).evaluate(
-            EvaluationRequest(answers=answers, assessor_inputs=assessor_inputs)
+            EvaluationRequest(answers=answers)
         )
         assessment_digest = self._digest(
             f"{run_id}|{result_id}|{json.dumps(answers, sort_keys=True)}|"
-            f"{json.dumps(assessor_inputs, sort_keys=True)}|invalidated:{invalidated_at}"
+            f"invalidated:{invalidated_at}"
+        )
+        judgment_references = self._materialize_judgment_revisions(
+            ledger,
+            run_id,
+            result_id,
+            logic=logic,
+            evaluation=evaluation,
+            answer_payloads=answer_payloads,
+            assessment_digest=assessment_digest,
         )
         assessment_revision_id = f"assessment:{assessment_digest}"
         assessment = AssessmentView(
@@ -2699,10 +3300,13 @@ class RunEngine:
                     {
                         "answers": answers,
                         "rationales": rationales,
-                        "assessor_inputs": assessor_inputs,
                         "active_question_ids": evaluation.active_question_ids,
                         "inactive_question_ids": evaluation.inactive_question_ids,
                         "matched_rule_ids": evaluation.matched_rule_ids,
+                        "judgment_references": [
+                            reference.model_dump(mode="json")
+                            for reference in judgment_references
+                        ],
                     },
                     sort_keys=True,
                     separators=(",", ":"),
@@ -2767,6 +3371,136 @@ class RunEngine:
         # repaired by a later status/resume/continue call.
         os.replace(staging, report_root)
         self._commit_run_completed_if_ready(ledger, run_id, lease=lease)
+        return judgment_references
+
+    def _materialize_judgment_revisions(
+        self,
+        ledger: WorkflowLedger,
+        run_id: Identifier,
+        result_id: Identifier,
+        *,
+        logic: Any,
+        evaluation: Any,
+        answer_payloads: list[dict[str, Any]],
+        assessment_digest: str,
+    ) -> tuple[RecordReference, ...]:
+        """Persist deterministic Decision traces and domain judgments exactly once."""
+        answer_refs_by_question: dict[str, RecordReference] = {}
+        for payload in answer_payloads:
+            raw_refs = payload.get("answer_revisions", ())
+            if not isinstance(raw_refs, (list, tuple)):
+                continue
+            for raw_ref in raw_refs:
+                try:
+                    reference = RecordReference.model_validate(raw_ref)
+                    answer_payload = json.loads(ledger.artifacts.read(reference.content_hash))
+                    question_id = answer_payload.get("sq_id")
+                    if isinstance(question_id, str):
+                        answer_refs_by_question[question_id] = reference
+                except (ValueError, TypeError, KeyError, json.JSONDecodeError):
+                    continue
+        judgment_refs: list[RecordReference] = []
+        now = datetime.now(UTC)
+        for domain in logic.domains:
+            question_ids = set(domain.question_ids)
+            active = tuple(
+                question_id
+                for question_id in evaluation.active_question_ids
+                if question_id in question_ids
+            )
+            inactive = tuple(
+                question_id
+                for question_id in evaluation.inactive_question_ids
+                if question_id in question_ids
+            )
+            domain_rule_ids = tuple(rule.id for rule in domain.judgment_rules)
+            matched = tuple(
+                rule_id
+                for rule_id in evaluation.matched_rule_ids
+                if rule_id in domain_rule_ids
+            )
+            evaluated = tuple(
+                rule_id
+                for rule_id in evaluation.evaluated_rule_ids
+                if rule_id in domain_rule_ids
+            )
+            trace_suffix = self._digest(f"{assessment_digest}|trace|{domain.id}")
+            trace = DecisionTrace(
+                entity_id=f"decision-trace:{result_id.removeprefix('result:')}-{domain.id.removeprefix('domain:')}",
+                revision_id=f"revision:decision-trace-{trace_suffix}",
+                actor=ENGINE_ACTOR,
+                observed_at=now,
+                active_question_ids=active,
+                inactive_question_ids=inactive,
+                matched_rule_ids=matched,
+                resulting_judgment=evaluation.domain_judgments[domain.id],
+                domain_id=domain.id,
+                evaluated_rule_ids=evaluated,
+                logic_pack_release_id=logic.release_id,
+                logic_pack_hash=logic.content_hash,
+            )
+            trace_ref = self._commit_frozen_artifact(
+                ledger,
+                scope=result_id,
+                operation="operation:decision-trace-derived",
+                operation_key=f"idempotency:decision-trace-{trace_suffix}",
+                entity_id=trace.entity_id,
+                revision_id=trace.revision_id,
+                artifact=trace,
+                actor=ENGINE_ACTOR,
+            )
+            answer_refs = tuple(
+                answer_refs_by_question[question_id]
+                for question_id in active
+                if question_id in answer_refs_by_question
+            )
+            dependencies = (
+                *(
+                    Dependency(**reference.model_dump(), role="dependency:sq-answer")
+                    for reference in answer_refs
+                ),
+                Dependency(**trace_ref.model_dump(), role="dependency:decision-trace"),
+            )
+            judgment_suffix = self._digest(f"{assessment_digest}|judgment|{domain.id}")
+            judgment = AlgorithmicJudgmentRevision(
+                entity_id=f"judgment:{result_id.removeprefix('result:')}-{domain.id.removeprefix('domain:')}",
+                revision_id=f"revision:judgment-{judgment_suffix}",
+                dependencies=dependencies,
+                actor=ENGINE_ACTOR,
+                observed_at=now,
+                domain_id=domain.id,
+                judgment=evaluation.domain_judgments[domain.id],
+                answer_revisions=answer_refs,
+                decision_trace=trace_ref,
+                logic_pack_release_id=logic.release_id,
+                logic_pack_hash=logic.content_hash,
+                overall_policy_id="policy:overall-maximum-domain-1.0.0",
+                overall_policy_hash=canonical_hash(
+                    {
+                        "policy_id": "policy:overall-maximum-domain-1.0.0",
+                        "order": ["low", "some_concerns", "high"],
+                        "rules": (
+                            "all_low",
+                            "any_high",
+                            "otherwise_some_concerns",
+                        ),
+                    }
+                ),
+            )
+            judgment_refs.append(
+                self._commit_frozen_artifact(
+                    ledger,
+                    scope=result_id,
+                    operation="operation:algorithmic-judgment-derived",
+                    operation_key=f"idempotency:algorithmic-judgment-{judgment_suffix}",
+                    entity_id=judgment.entity_id,
+                    revision_id=judgment.revision_id,
+                    artifact=judgment,
+                    actor=ENGINE_ACTOR,
+                    dependencies=dependencies,
+                )
+            )
+        return tuple(judgment_refs)
 
     def _result_spec_for(
         self,
@@ -2928,6 +3662,55 @@ class RunEngine:
             if isinstance(payload, dict) and payload.get("run_id") == run_id:
                 return event
         return None
+
+    def _result_spec_reference(
+        self,
+        ledger: WorkflowLedger,
+        result_id: Identifier,
+    ) -> RecordReference:
+        """Return the exact ledger reference for one resolved ResultSpec."""
+        for event in reversed(self._events_for_run(ledger, self._run_id_for_ledger(ledger))):
+            if event.operation not in {
+                "operation:result-discovered",
+                "operation:submit-result-resolution",
+                "operation:run-register-result",
+                "operation:result-spec-superseded",
+            }:
+                continue
+            payload = self._event_payload(ledger, event)
+            if payload.get("result_id") != result_id:
+                continue
+            raw_spec = payload.get("result_spec")
+            if not isinstance(raw_spec, dict):
+                continue
+            try:
+                spec = ResultSpecRevision.model_validate(raw_spec)
+            except (ValueError, TypeError):
+                continue
+            # Result resolution stores a typed submission envelope.  Project
+            # the nested ResultSpec as its own immutable artifact so bundles
+            # can bind the exact semantic Result revision rather than the
+            # mutable envelope around it.
+            suffix = self._digest(f"{result_id}|{spec.revision_id}")
+            return self._commit_frozen_artifact(
+                ledger,
+                scope=result_id,
+                operation="operation:result-spec-frozen",
+                operation_key=f"idempotency:result-spec-frozen-{suffix}",
+                entity_id=spec.entity_id,
+                revision_id=spec.revision_id,
+                artifact=spec,
+                actor=ENGINE_ACTOR,
+            )
+        raise ValueError("a ResultSpec is required before freezing domain evidence")
+
+    @staticmethod
+    def _run_id_for_ledger(ledger: WorkflowLedger) -> Identifier:
+        for event in ledger.events():
+            payload = json.loads(ledger.artifacts.read(event.output_revision_hashes[0]))
+            if isinstance(payload, dict) and isinstance(payload.get("run_id"), str):
+                return payload["run_id"]
+        raise ValueError("ledger does not contain a Run identifier")
 
     def _confirmed_for_idempotency(
         self,
@@ -3647,6 +4430,130 @@ class RunEngine:
 
     def _logic_pack(self):
         return load_logic_pack(self._logic_pack_path())
+
+    @staticmethod
+    def _guidance_pack_path() -> Path:
+        candidates = (
+            Path(__file__).resolve().parents[1]
+            / "packs"
+            / "guidance"
+            / "rob2-parallel-assignment-en-2019.1.yaml",
+            Path(__file__).resolve().parents[3]
+            / "packs"
+            / "guidance"
+            / "rob2-parallel-assignment-en-2019.1.yaml",
+        )
+        for candidate in candidates:
+            if candidate.is_file():
+                return candidate
+        raise FileNotFoundError("the pinned RoB 2 Guidance pack is not installed")
+
+    def _domain_context_pack(
+        self,
+        ledger: WorkflowLedger,
+        run_id: Identifier,
+        work_item: WorkItem,
+        *,
+        trial: TrialInitialization | None,
+    ) -> DomainContextPack:
+        """Build a deterministic bounded Domain context without mutating state."""
+        if work_item.domain_id is None or work_item.result_id is None:
+            raise ValueError("a Domain context requires Result and domain scope")
+        logic = self._logic_pack()
+        guidance = load_guidance_pack(self._guidance_pack_path())
+        domain = next((item for item in logic.domains if item.id == work_item.domain_id), None)
+        if domain is None:
+            raise ValueError(f"unknown Logic domain {work_item.domain_id!r}")
+        guidance_by_id = {item.logic_element_id: item for item in guidance.items}
+        evaluator = LogicEvaluator(logic)
+        active_questions = tuple(
+            question.id
+            for question in logic.questions
+            if question.id in domain.question_ids
+            and (
+                question.active_if is None
+                or evaluator._matches(question.active_if, {}, {}, {})
+            )
+        )
+        inactive_questions = tuple(
+            question_id
+            for question_id in domain.question_ids
+            if question_id not in active_questions
+        )
+        source_limit = 20
+        available_sources = tuple(trial.inventory.sources) if trial is not None else ()
+        selected_sources = available_sources[:source_limit]
+        limitations = tuple(trial.inventory.coverage_limitations) if trial is not None else ()
+        if len(available_sources) > source_limit:
+            limitations += (
+                f"Domain context lists the first {source_limit} sources; "
+                "use the pinned source inventory for the remainder.",
+            )
+        # Reusable accepted Evidence is deliberately reference-only.  Reading
+        # the full bundle here would turn a bounded context pack into a dossier.
+        reusable: list[RecordReference] = []
+        project_rules: list[RecordReference] = []
+        for event in self._events_for_run(ledger, run_id):
+            if event.scope != work_item.result_id:
+                continue
+            payload = self._event_payload(ledger, event)
+            if (
+                event.operation == "operation:evidence-bundle-frozen"
+                and payload.get("domain_id") == work_item.domain_id
+            ):
+                reusable.append(
+                    RecordReference(
+                        entity_id=event.entity_id,
+                        revision_id=event.revision_id,
+                        content_hash=event.output_revision_hashes[0],
+                    )
+                )
+            if (
+                event.operation == "operation:submit-domain-evidence"
+                and payload.get("domain_id") == work_item.domain_id
+            ):
+                raw_project_rules = payload.get("project_rules", ())
+                if not isinstance(raw_project_rules, (list, tuple)):
+                    raw_project_rules = ()
+                project_rules.extend(
+                    RecordReference.model_validate(item)
+                    for item in raw_project_rules
+                    if isinstance(item, dict)
+                )
+        raw = {
+            "result_id": work_item.result_id,
+            "domain_id": work_item.domain_id,
+            "logic_pack_release_id": logic.release_id,
+            "logic_pack_hash": logic.content_hash,
+            "guidance_pack_release_id": guidance.release_id,
+            "guidance_pack_hash": guidance.content_hash,
+            "active_question_ids": active_questions,
+            "inactive_question_ids": inactive_questions,
+            "guidance_items": tuple(
+                guidance_by_id[question_id]
+                for question_id in domain.question_ids
+                if question_id in guidance_by_id
+            ),
+            "project_rules": tuple(dict.fromkeys(project_rules)),
+            "sources": selected_sources,
+            "source_limitations": limitations,
+            "reusable_evidence": tuple(reusable),
+            "required_protocol": (
+                "mandatory_search_coverage",
+                "candidate_disposition",
+                "contradiction_pass",
+                "visual_gate",
+            ),
+        }
+        typed_raw = cast(dict[str, Any], raw)
+        hash_payload = DomainContextPack.model_construct(
+            **typed_raw,
+            content_hash="sha256:" + ("0" * 64),
+        ).model_dump(mode="json", exclude={"content_hash"})
+        return DomainContextPack(
+            **typed_raw,
+            content_hash=canonical_hash(hash_payload),
+        )
 
     @staticmethod
     def _logic_pack_path() -> Path:
@@ -5618,23 +6525,28 @@ class RunEngine:
         entity_id: Identifier,
         revision_id: Identifier,
         artifact: FrozenModel,
-        checkpoint: Identifier,
+        checkpoint: Identifier | None,
         outcome: WorkflowEventOutcome,
         observed_at: datetime,
+        actor: Actor = ENGINE_ACTOR,
+        dependencies: tuple[DependencyInput, ...] = (),
+        supersedes_revision_id: Identifier | None = None,
     ) -> Transition:
         return Transition(
             scope=scope,
             operation=operation,
             operation_key=operation_key,
-            actor=ENGINE_ACTOR,
+            actor=actor,
             observed_at=observed_at,
             entity_id=entity_id,
             revision_id=revision_id,
             artifact=artifact.model_dump_json().encode(),
             artifact_media_type="application/json",
-            expected_dependency_fingerprint=dependency_fingerprint(()),
+            dependencies=dependencies,
+            expected_dependency_fingerprint=dependency_fingerprint(dependencies),
             checkpoint=checkpoint,
             outcome=outcome,
+            supersedes_revision_id=supersedes_revision_id,
         )
 
     def _continue_response(

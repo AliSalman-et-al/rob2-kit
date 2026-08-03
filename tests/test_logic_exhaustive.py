@@ -320,28 +320,16 @@ def test_every_domain_judgment_combination_yields_expected_overall_trace() -> No
         answers = low_answers()
         for domain_id, level in zip(domain_ids, combination, strict=True):
             answers.update(DOMAIN_REPRESENTATIVES[domain_id][level])
-        concerns = combination.count(JudgmentLevel.SOME_CONCERNS)
-        input_values = (False, True) if concerns >= 2 else (None,)
-        for combined in input_values:
-            assessor_inputs = {"input:combined-concerns": combined} if combined is not None else {}
-            result = evaluator.evaluate(
-                EvaluationRequest(
-                    answers=answers,
-                    assessor_inputs=assessor_inputs,
-                )
-            )
-            if JudgmentLevel.HIGH in combination:
-                expected = JudgmentLevel.HIGH
-                expected_rule = "rule:overall:any-high"
-            elif combined:
-                expected = JudgmentLevel.HIGH
-                expected_rule = "rule:overall:combined-concerns"
-            elif JudgmentLevel.SOME_CONCERNS in combination:
-                expected = JudgmentLevel.SOME_CONCERNS
-                expected_rule = "rule:overall:any-concerns"
-            else:
-                expected = JudgmentLevel.LOW
-                expected_rule = "rule:overall:all-low"
-            assert tuple(result.domain_judgments.values()) == combination
-            assert result.overall_judgment is expected
-            assert result.matched_rule_ids[-1] == expected_rule
+        result = evaluator.evaluate(EvaluationRequest(answers=answers))
+        if JudgmentLevel.HIGH in combination:
+            expected = JudgmentLevel.HIGH
+            expected_rule = "rule:overall:any-high"
+        elif JudgmentLevel.SOME_CONCERNS in combination:
+            expected = JudgmentLevel.SOME_CONCERNS
+            expected_rule = "rule:overall:any-concerns"
+        else:
+            expected = JudgmentLevel.LOW
+            expected_rule = "rule:overall:all-low"
+        assert tuple(result.domain_judgments.values()) == combination
+        assert result.overall_judgment is expected
+        assert result.matched_rule_ids[-1] == expected_rule

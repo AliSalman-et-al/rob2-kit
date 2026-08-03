@@ -80,6 +80,22 @@ def test_evidence_bundle_round_trips() -> None:
     assert EvidenceBundle.model_validate(bundle.model_dump(mode="json")) == bundle
 
 
+def test_question_specific_evidence_bundle_requires_pre_freeze_manifest() -> None:
+    with pytest.raises(ValidationError, match="consideration manifest"):
+        EvidenceBundle(
+            **revision_fields("question-bundle"),
+            dependencies=(
+                dependency("result-spec", "dependency:result-spec"),
+                dependency("disposition", "dependency:evidence-disposition"),
+            ),
+            result_spec=reference("result-spec"),
+            disposition=reference("disposition"),
+            items=(),
+            frozen_content_hash=HASH,
+            sq_id="sq:randomization:sequence",
+        )
+
+
 @pytest.mark.parametrize(
     "outcome",
     [
