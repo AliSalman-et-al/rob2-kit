@@ -288,6 +288,17 @@ def test_five_domain_journey_survives_stdio_restart_and_publishes_report(
         "verification-archive.rob2.zip",
         "visual-citations.json",
     }
+    assessment_html = (report_root / "assessment.html").read_text(encoding="utf-8")
+    run_index_html = (report_root / "run-index.html").read_text(encoding="utf-8")
+    assert '<nav aria-label="RoB 2 domains">' in assessment_html
+    assert "Signaling question" in assessment_html
+    assert "AI rationale" in assessment_html
+    assert "@media print" in assessment_html
+    assert ":focus-visible" in assessment_html
+    assert "Execution contract" in assessment_html
+    assert "Execution contract" in run_index_html
+    assert "Terminal outcomes" in run_index_html
+    assert "Text-labelled traffic-light judgment" in run_index_html
     manifest = json.loads((report_root / "manifest.json").read_text(encoding="utf-8"))
     assert manifest["overall_judgment"] == "low"
     assert manifest["assessment_revision_id"].startswith("assessment:")

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import errno
 import hashlib
-import html
+import io
 import json
 import os
 import re
@@ -13,6 +13,8 @@ import uuid
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any, Literal, cast
+
+from PIL import Image, ImageDraw
 
 from rob2_kit.application.contracts import (
     ConfirmedRunDefinition,
@@ -77,6 +79,7 @@ from rob2_kit.domain.evidence import (
     ConsiderationDisposition,
     EvidenceBundle,
     EvidenceCandidateDispositionRecord,
+    EvidenceClaim,
     EvidenceConsideration,
     EvidenceConsiderationManifest,
     EvidenceCoverageReceiptRecord,
@@ -99,6 +102,7 @@ from rob2_kit.domain.revisions import (
 from rob2_kit.domain.sources import SourceInventoryRevision, SourceRole
 from rob2_kit.evidence.search import (
     CanonicalBlock,
+    CanonicalEvidenceUnit,
     CanonicalPage,
     CanonicalUnitKind,
     EvidenceSearchIndex,
@@ -120,7 +124,19 @@ from rob2_kit.ingestion.project import (
 from rob2_kit.logic.evaluator import EvaluationRequest, LogicEvaluator
 from rob2_kit.logic.packs import load_guidance_pack, load_logic_pack
 from rob2_kit.registry import ClinicalTrialsGovAdapter, RegistryAcquisitionStatus, RegistryPolicy
-from rob2_kit.reports import AssessmentView, DomainView, ReportProjector, VisualCitationView
+from rob2_kit.reports import (
+    AssessmentView,
+    DiagnosticReportProjector,
+    DiagnosticView,
+    DomainView,
+    EvidenceView,
+    ReportProjector,
+    RunIndexProjector,
+    RunIndexResultView,
+    RunIndexView,
+    SignalingQuestionView,
+    VisualCitationView,
+)
 from rob2_kit.reports.archives import ArchiveBuilder, verify_archive
 from rob2_kit.storage import (
     ArtifactStore,
@@ -3395,6 +3411,10 @@ class RunEngine:
             assessment_digest=assessment_digest,
         )
         assessment_revision_id = f"assessment:{assessment_digest}"
+        questions_by_id = self._report_questions(
+            ledger, evidence_refs, answers, rationales, evaluation.matched_rule_ids
+        )
+        execution_contract = self._execution_contract_identity(ledger)
         assessment = AssessmentView(
             assessment_revision_id=assessment_revision_id,
             result_id=result_id,
@@ -3416,11 +3436,19 @@ class RunEngine:
                         "Deterministic Logic-pack evaluation; matched rules: "
                         + ", ".join(evaluation.matched_rule_ids)
                     ),
+                    questions=tuple(
+                        questions_by_id[question_id]
+                        for question_id in domain.question_ids
+                        if question_id in questions_by_id
+                    ),
+                    coverage="complete",
+                    decision_trace=evaluation.matched_rule_ids,
                 )
                 for domain in logic.domains
             ),
             visual_citations=self._visual_citations(ledger, evidence_refs),
             signed_off=False,
+            execution_contract=execution_contract,
         )
         result_spec_ref = self._result_spec_reference(ledger, result_id)
         source_inventory_ref = self._freeze_source_inventory(
@@ -3468,6 +3496,42 @@ class RunEngine:
         )
         if assessment_ref.revision_id != assessment_revision_id:
             raise ValueError("frozen Assessment revision identity does not match report")
+        visual_citations, visual_assets = self._materialize_visual_assets(
+            ledger, run_id, result_id, assessment.visual_citations
+        )
+        citations_by_id = {citation.citation_id: citation for citation in visual_citations}
+        assessment = assessment.model_copy(
+            update={
+                "visual_citations": visual_citations,
+                "domains": tuple(
+                    domain.model_copy(
+                        update={
+                            "questions": tuple(
+                                question.model_copy(
+                                    update={
+                                        "evidence": tuple(
+                                            evidence.model_copy(
+                                                update={
+                                                    "visual_citation": citations_by_id.get(
+                                                        evidence.visual_citation.citation_id,
+                                                        evidence.visual_citation,
+                                                    )
+                                                }
+                                            )
+                                            if evidence.visual_citation is not None
+                                            else evidence
+                                            for evidence in question.evidence
+                                        )
+                                    }
+                                )
+                                for question in domain.questions
+                            )
+                        }
+                    )
+                    for domain in assessment.domains
+                ),
+            }
+        )
         projector = ReportProjector(assessment)
         lease = self._acquire_lease(ledger, datetime.now(UTC))
         report_base = self._required_root() / "output" / "report-bundle"
@@ -3483,6 +3547,7 @@ class RunEngine:
             shutil.rmtree(staging)
         staging.mkdir(parents=True, exist_ok=True)
         report_files = projector.bundle_files()
+        report_files.update(visual_assets)
         report_files.update(
             {
                 "answers.json": (
@@ -3527,7 +3592,9 @@ class RunEngine:
             json.dumps(manifest, sort_keys=True, separators=(",", ":")).encode() + b"\n"
         )
         for name, content in report_files.items():
-            (staging / name).write_bytes(content)
+            target = staging / name
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_bytes(content)
         self._verify_staged_report_files(staging, report_files)
         now = datetime.now(UTC)
         report_record = _ReportMaterializedRecord(
@@ -3578,9 +3645,11 @@ class RunEngine:
     def _verify_staged_report_files(staging: Path, files: dict[str, bytes]) -> None:
         """Reject an incomplete, unsafe, or hash-inconsistent staged bundle."""
 
-        if any(Path(name).name != name for name in files):
+        if any(Path(name).is_absolute() or ".." in Path(name).parts for name in files):
             raise ValueError("report artifact name is not confined to its bundle")
-        if {path.name for path in staging.iterdir()} != set(files):
+        if {
+            path.relative_to(staging).as_posix() for path in staging.rglob("*") if path.is_file()
+        } != set(files):
             raise ValueError("staged report artifacts do not match the manifest input")
         for name, content in files.items():
             if (staging / name).read_bytes() != content:
@@ -3615,29 +3684,23 @@ class RunEngine:
         if staging.exists():
             shutil.rmtree(staging)
         staging.mkdir(parents=True)
-        payload = {
-            "result_id": diagnostic.result_id,
-            "trial_id": diagnostic.trial_id,
-            "reason": diagnostic.reason,
-            "limitations": [diagnostic.reason],
-        }
+        projector = DiagnosticReportProjector(
+            DiagnosticView(
+                result_id=diagnostic.result_id,
+                trial_id=diagnostic.trial_id,
+                reason=diagnostic.reason,
+                limitations=(diagnostic.reason,),
+            )
+        )
         files = {
-            "diagnostic.json": json.dumps(payload, sort_keys=True, separators=(",", ":")).encode()
-            + b"\n",
+            "diagnostic.json": projector.json(),
             "diagnostic.md": (
                 "# RoB 2 diagnostic report\n\n"
                 f"- Result: {self._escape_markdown(diagnostic.result_id)}\n"
                 f"- Trial: {self._escape_markdown(diagnostic.trial_id)}\n"
                 f"- Limitation: {self._escape_markdown(diagnostic.reason)}\n"
             ).encode(),
-            "diagnostic.html": (
-                '<!doctype html><html lang="en"><meta charset="utf-8">'
-                "<title>RoB 2 diagnostic report</title><main><h1>RoB 2 diagnostic report</h1>"
-                f"<p><strong>Result:</strong> {html.escape(diagnostic.result_id)}</p>"
-                f"<p><strong>Trial:</strong> {html.escape(diagnostic.trial_id)}</p>"
-                f"<p><strong>Limitation:</strong> {html.escape(diagnostic.reason)}</p>"
-                "</main></html>\n"
-            ).encode(),
+            "diagnostic.html": projector.html(),
         }
         files["manifest.json"] = (
             json.dumps(
@@ -3673,6 +3736,7 @@ class RunEngine:
         if not bundle_root.exists():
             return
         entries: list[dict[str, Any]] = []
+        ancillary_outputs: set[str] = set()
         for event in self._events_for_run(ledger, run_id):
             if event.operation not in {
                 "operation:result-report-ready",
@@ -3692,6 +3756,7 @@ class RunEngine:
             except (IndexError, ValueError):
                 continue
             report_root = getattr(record, "report_root", None)
+            ancillary_outputs.update(getattr(record, "artifact_names", ()))
             report_path = ""
             if report_root:
                 report_directory = root / report_root
@@ -3709,11 +3774,31 @@ class RunEngine:
                 overall_judgment = ""
                 domain_judgments: dict[str, JudgmentLevel] = {}
                 limitations = [record.reason]
+                coverage = "incomplete"
             else:
                 assert isinstance(record, _ReportMaterializedRecord)
                 overall_judgment = record.overall_judgment.value
                 domain_judgments = record.domain_judgments
                 limitations = []
+                coverage = "complete"
+                if report_root:
+                    try:
+                        assessment_payload = json.loads(
+                            (root / report_root / "assessment.json").read_text(encoding="utf-8")
+                        )
+                        domains = assessment_payload.get("domains", ())
+                        coverage_states = [item.get("coverage") for item in domains]
+                        if "incomplete" in coverage_states:
+                            coverage = "incomplete"
+                        elif "complete_with_limitations" in coverage_states:
+                            coverage = "complete_with_limitations"
+                        limitations = [
+                            limitation
+                            for domain in domains
+                            for limitation in domain.get("limitations", ())
+                        ]
+                    except (OSError, ValueError, TypeError):
+                        coverage = "not recorded"
             entries.append(
                 {
                     "result_id": record.result_id,
@@ -3732,31 +3817,59 @@ class RunEngine:
                     "overall_judgment": overall_judgment,
                     "domain_judgments": domain_judgments,
                     "limitations": limitations,
+                    "coverage": coverage,
                 }
             )
         entries.sort(key=lambda entry: (entry["result_id"], entry["state"]))
-        payload = {"run_id": run_id, "results": entries}
-        index_json = json.dumps(payload, sort_keys=True, separators=(",", ":")).encode() + b"\n"
-        rows = "".join(
-            "<tr>"
-            f"<td>{html.escape(entry['trial_id'])}</td>"
-            f"<td>{html.escape(entry['result_id'])}</td>"
-            f"<td>{html.escape(entry['state'])}</td>"
-            f"<td>{html.escape(entry['overall_judgment'])}</td>"
-            "<td>"
-            + (f'<a href="{html.escape(entry["report"])}">Report</a>' if entry["report"] else "")
-            + "</td>"
-            "</tr>"
-            for entry in entries
+        known_result_ids = {entry["result_id"] for entry in entries}
+        states = {
+            item.result_id: item.state.value for item in self._projection(ledger, run_id).results
+        }
+        for pending_result_id in self._active_result_ids(ledger, run_id):
+            if pending_result_id in known_result_ids:
+                continue
+            result_spec = self._result_spec_for(ledger, run_id, pending_result_id)
+            entries.append(
+                {
+                    "result_id": pending_result_id,
+                    "trial_id": result_spec.result.trial_id if result_spec else "trial:unresolved",
+                    "state": states.get(pending_result_id, "pending"),
+                    "report": "",
+                    "overall_judgment": "",
+                    "domain_judgments": {},
+                    "limitations": ["Result has no terminal report yet."],
+                    "coverage": "not recorded",
+                }
+            )
+        entries.sort(key=lambda entry: (entry["result_id"], entry["state"]))
+        execution_contract = self._execution_contract_identity(ledger)
+        index = RunIndexProjector(
+            RunIndexView(
+                run_id=run_id,
+                execution_contract=execution_contract,
+                ancillary_outputs=tuple(sorted(ancillary_outputs)),
+                results=tuple(
+                    RunIndexResultView(
+                        trial_id=entry["trial_id"] or "trial:unresolved",
+                        result_id=entry["result_id"],
+                        state=entry["state"],
+                        report=entry["report"],
+                        overall_judgment=entry["overall_judgment"] or None,
+                        domain_judgments={
+                            domain_id: judgment.value
+                            for domain_id, judgment in entry["domain_judgments"].items()
+                        },
+                        coverage=entry["coverage"],
+                        limitations=tuple(entry["limitations"]),
+                    )
+                    for entry in entries
+                ),
+            )
         )
-        index_html = (
-            '<!doctype html><html lang="en"><meta charset="utf-8">'
-            "<title>RoB 2 Run index</title><main><h1>RoB 2 Run index</h1>"
-            "<table><thead><tr><th>Trial</th><th>Result</th><th>State</th>"
-            "<th>Overall judgment</th><th>Report</th>"
-            f"</tr></thead><tbody>{rows}</tbody></table></main></html>\n"
-        ).encode()
-        for name, content in {"run-index.json": index_json, "run-index.html": index_html}.items():
+        for name, content in {
+            "run-index.json": index.json(),
+            "run-index.html": index.html(),
+        }.items():
             staging = bundle_root / f".{name}.staging"
             staging.write_bytes(content)
             os.replace(staging, bundle_root / name)
@@ -3809,6 +3922,184 @@ class RunEngine:
             .replace("\n", " ")
         )
 
+    def _execution_contract_identity(self, ledger: WorkflowLedger) -> str:
+        prepared = self._latest_prepared_record(ledger)
+        return self._attempt_contract(ledger, prepared).identity if prepared else "not recorded"
+
+    @staticmethod
+    def _report_questions(
+        ledger: WorkflowLedger,
+        evidence_bundles: tuple[RecordReference, ...],
+        answers: dict[str, str],
+        rationales: dict[str, str],
+        decision_trace: tuple[Identifier, ...],
+    ) -> dict[str, SignalingQuestionView]:
+        """Materialize report phrases from canonical spans, never agent text."""
+
+        result: dict[str, SignalingQuestionView] = {}
+        for bundle_ref in evidence_bundles:
+            try:
+                bundle = EvidenceBundle.model_validate_json(
+                    ledger.artifacts.read(bundle_ref.content_hash)
+                )
+            except (TypeError, ValueError):
+                continue
+            if bundle.sq_id is None or bundle.sq_id not in answers:
+                continue
+            dispositions: dict[str, str] = {}
+            if bundle.consideration_manifest is not None:
+                try:
+                    manifest = EvidenceConsiderationManifest.model_validate_json(
+                        ledger.artifacts.read(bundle.consideration_manifest.content_hash)
+                    )
+                    dispositions = {
+                        item.item_id: item.disposition.value for item in manifest.dispositions
+                    }
+                except (TypeError, ValueError):
+                    pass
+            items: list[EvidenceView] = []
+            for item in bundle.items:
+                try:
+                    claim = EvidenceClaim.model_validate_json(
+                        ledger.artifacts.read(item.content_hash)
+                    )
+                    unit = CanonicalEvidenceUnit.model_validate_json(
+                        ledger.artifacts.read(claim.canonical_unit.content_hash)
+                    )
+                except (TypeError, ValueError):
+                    try:
+                        transcription = VisualTranscription.model_validate_json(
+                            ledger.artifacts.read(item.content_hash)
+                        )
+                    except (TypeError, ValueError):
+                        continue
+                    disposition = dispositions.get(item.entity_id, "contextual")
+                    if disposition not in {"supporting", "contradicting", "contextual"}:
+                        disposition = "residual"
+                    items.append(
+                        EvidenceView(
+                            evidence_id=transcription.revision_id,
+                            disposition=disposition,
+                            exact_phrase=transcription.transcription,
+                            source_id=transcription.source.entity_id,
+                            page=transcription.page,
+                            provenance=(
+                                f"visual-only transcription; {transcription.render_mode} at "
+                                f"{transcription.dpi} dpi; review required"
+                            ),
+                            visual_citation=VisualCitationView(
+                                citation_id=transcription.revision_id,
+                                source_id=transcription.source.entity_id,
+                                page=transcription.page,
+                                region=transcription.region,
+                                label="Visual transcription",
+                                exact_phrase=transcription.transcription,
+                                render_provenance=(
+                                    f"{transcription.render_mode} at {transcription.dpi} dpi; "
+                                    "visual-only; review required"
+                                ),
+                            ),
+                        )
+                    )
+                    continue
+                phrase = unit.text[claim.span_start : claim.span_end]
+                if not phrase:
+                    continue
+                disposition = dispositions.get(item.entity_id, "contextual")
+                if disposition not in {"supporting", "contradicting", "contextual"}:
+                    disposition = "residual"
+                items.append(
+                    EvidenceView(
+                        evidence_id=claim.revision_id,
+                        disposition=disposition,
+                        exact_phrase=phrase,
+                        source_id=claim.source.entity_id,
+                        page=unit.page,
+                        provenance=(
+                            f"canonical unit {unit.unit_id}; Parse record {unit.parse_id}; "
+                            f"verification {claim.verification_status.value}"
+                        ),
+                    )
+                )
+            result[bundle.sq_id] = SignalingQuestionView(
+                question_id=bundle.sq_id,
+                answer=answers[bundle.sq_id],
+                rationale=rationales.get(
+                    bundle.sq_id, "No rationale was recorded for this signaling question."
+                ),
+                evidence=tuple(items),
+                coverage=bundle.coverage_state.value,
+                limitations=bundle.coverage_limitations,
+                no_information_basis=bundle.no_information_basis,
+                decision_trace=decision_trace,
+            )
+        return result
+
+    def _materialize_visual_assets(
+        self,
+        ledger: WorkflowLedger,
+        run_id: Identifier,
+        result_id: Identifier,
+        citations: tuple[VisualCitationView, ...],
+    ) -> tuple[tuple[VisualCitationView, ...], dict[str, bytes]]:
+        """Render confined local crop and context assets for visual citations."""
+
+        result_spec = self._result_spec_for(ledger, run_id, result_id)
+        prepared = self._latest_prepared_record(ledger)
+        if result_spec is None or prepared is None:
+            return citations, {}
+        trial = next(
+            (
+                item
+                for item in prepared.proposal.initialization.trials
+                if item.trial_id == result_spec.result.trial_id
+            ),
+            None,
+        )
+        sources = {item.source_id: item for item in trial.inventory.sources} if trial else {}
+        parser = self._parser or LiteParseAdapter()
+        files: dict[str, bytes] = {}
+        rendered: list[VisualCitationView] = []
+        for citation in citations:
+            source = sources.get(citation.source_id)
+            if source is None or source.artifact_hash is None:
+                rendered.append(citation)
+                continue
+            try:
+                page = parser.screenshot(
+                    ledger.artifacts.read(source.artifact_hash),
+                    page_numbers=(citation.page,),
+                    dpi=144,
+                )[0]
+                context = Image.open(io.BytesIO(page.image_bytes)).convert("RGB")
+                scale = page.dpi / 72
+                left, top, right, bottom = (round(value * scale) for value in citation.region)
+                left, right = max(0, left), min(context.width, right)
+                top, bottom = max(0, top), min(context.height, bottom)
+                if right <= left or bottom <= top:
+                    rendered.append(citation)
+                    continue
+                crop = context.crop((left, top, right, bottom))
+                overlay = context.copy()
+                ImageDraw.Draw(overlay).rectangle(
+                    (left, top, right, bottom), outline="#9a5a12", width=4
+                )
+                slug = hashlib.sha256(citation.citation_id.encode()).hexdigest()[:16]
+                crop_path = f"visual-assets/{slug}-crop.png"
+                context_path = f"visual-assets/{slug}-page.png"
+                for path, image in ((crop_path, crop), (context_path, overlay)):
+                    output = io.BytesIO()
+                    image.save(output, format="PNG", optimize=False)
+                    files[path] = output.getvalue()
+                rendered.append(
+                    citation.model_copy(
+                        update={"crop_path": crop_path, "context_path": context_path}
+                    )
+                )
+            except (OSError, ValueError, IndexError):
+                rendered.append(citation)
+        return tuple(rendered), files
+
     @staticmethod
     def _visual_citations(
         ledger: WorkflowLedger, evidence_bundles: tuple[RecordReference, ...]
@@ -3836,6 +4127,11 @@ class RunEngine:
                     page=transcription.page,
                     region=transcription.region,
                     label="Visual transcription",
+                    exact_phrase=transcription.transcription,
+                    render_provenance=(
+                        f"{transcription.render_mode} at {transcription.dpi} dpi; "
+                        f"visual-only; review required"
+                    ),
                 )
         return tuple(citations[key] for key in sorted(citations))
 
