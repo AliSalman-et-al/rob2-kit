@@ -1235,6 +1235,7 @@ class RunEngine:
                 for item in proposal.initialization.trials
                 if item.status == "inventory_ready" and item.trial_id in selected_trial_ids
                 for source in item.inventory.sources
+                if SourceRole.REGISTRY_CURRENT not in source.roles
             )
             if is_global_source_work
             else tuple(trial.inventory.sources)
@@ -2248,8 +2249,11 @@ class RunEngine:
                     f"passage maps to another domain's questions: {sorted(unknown_questions)}"
                 )
             unit = index.read_unit(passage.unit_id)
-            if passage.span_end > len(unit.text):
-                raise ValueError(f"passage span exceeds canonical unit {passage.unit_id!r} text")
+            span_end = passage.span_end if passage.span_end is not None else len(unit.text)
+            if span_end <= passage.span_start or span_end > len(unit.text):
+                raise ValueError(
+                    f"passage span is empty or exceeds canonical unit {passage.unit_id!r} text"
+                )
             suffix = self._digest(
                 "|".join(
                     (
@@ -2258,7 +2262,7 @@ class RunEngine:
                         request.domain_id,
                         passage.unit_id,
                         str(passage.span_start),
-                        str(passage.span_end),
+                        str(span_end),
                         passage.claim_type,
                     )
                 )
@@ -2269,9 +2273,9 @@ class RunEngine:
             if suffix in claim_suffixes:
                 raise ValueError("duplicate canonical passage selection")
             claim_suffixes.add(suffix)
-            prepared_passages.append((passage, unit, source, suffix))
+            prepared_passages.append((passage, unit, source, suffix, span_end))
 
-        for passage, unit, source, suffix in prepared_passages:
+        for passage, unit, source, suffix, span_end in prepared_passages:
             source_suffix = self._digest(
                 f"{request.run_id}|{unit.source_id}|{unit.source_artifact_hash}"
             )
@@ -2298,7 +2302,7 @@ class RunEngine:
                 artifact=unit,
                 actor=actor,
             )
-            quote = unit.text[passage.span_start : passage.span_end]
+            quote = unit.text[passage.span_start : span_end]
             claim = EvidenceClaim(
                 entity_id=f"evidence-claim:{suffix}",
                 revision_id=f"revision:evidence-claim-{suffix}",
@@ -2311,7 +2315,7 @@ class RunEngine:
                 canonical_unit=canonical_ref,
                 source=source_ref,
                 span_start=passage.span_start,
-                span_end=passage.span_end,
+                span_end=span_end,
                 quoted_text_hash=("sha256:" + hashlib.sha256(quote.encode()).hexdigest()),
                 claim_type=passage.claim_type,
                 verification_status="machine_verified",

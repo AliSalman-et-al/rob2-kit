@@ -284,6 +284,53 @@ def test_domain_evidence_freezes_engine_issued_passages_without_host_hashes(
     assert len(ledger.events()) == event_count
 
 
+def test_domain_evidence_passage_can_select_to_unit_end_without_counting_characters(
+    tmp_path: Path,
+) -> None:
+    trial = tmp_path / "input" / "passage-end"
+    trial.mkdir(parents=True)
+    (trial / "report.pdf").write_bytes(b"primary")
+    engine, run_id = _prepare_confirm(
+        tmp_path,
+        config=_config(_result("result:passage-end", "trial:passage-end")),
+    )
+    _classify_current_sources(engine, run_id)
+    work = engine.continue_run(ContinueRunRequest(run_id=run_id)).work_item
+    assert work is not None
+    index = EvidenceSearchIndex(tmp_path / ".rob2" / "evidence.sqlite3")
+    unit = index.read_unit(next(iter(index.unit_ids())))
+
+    response = engine.submit_domain_evidence(
+        SubmitDomainEvidenceRequest(
+            contract_version="1.0.0",
+            run_id=run_id,
+            work_token=work.work_token,
+            idempotency_key="idempotency:passage-to-end",
+            result_id="result:passage-end",
+            domain_id="domain:randomization",
+            passages=(
+                EvidencePassageInput(
+                    unit_id=unit.unit_id,
+                    span_start=0,
+                    claim_type="claim-type:randomization-method",
+                    question_ids=(DOMAINS["domain:randomization"][0],),
+                ),
+            ),
+        )
+    )
+
+    ledger = engine._bound_ledger(run_id)
+    bundles = [
+        json.loads(ledger.artifacts.read(reference.content_hash))
+        for reference in response.evidence_bundles
+    ]
+    bundle = next(item for item in bundles if item["sq_id"] == DOMAINS["domain:randomization"][0])
+    claim = EvidenceClaim.model_validate_json(
+        ledger.artifacts.read(bundle["items"][0]["content_hash"])
+    )
+    assert claim.span_end == len(unit.text)
+
+
 def test_invalid_late_passage_writes_no_artifacts_or_ledger_events(tmp_path: Path) -> None:
     trial = tmp_path / "input" / "invalid-passage"
     trial.mkdir(parents=True)
@@ -334,6 +381,30 @@ def test_invalid_late_passage_writes_no_artifacts_or_ledger_events(tmp_path: Pat
     assert ledger.events() == events_before
     assert ledger.current_revisions() == revisions_before
     assert tuple(sorted((tmp_path / ".rob2" / "artifacts").rglob("*"))) == artifacts_before
+
+    for span_start in (len(unit.text), len(unit.text) + 1):
+        with pytest.raises(ValueError, match="passage span is empty or exceeds"):
+            engine.submit_domain_evidence(
+                SubmitDomainEvidenceRequest(
+                    contract_version="1.0.0",
+                    run_id=run_id,
+                    work_token=work.work_token,
+                    idempotency_key=f"idempotency:invalid-open-span-{span_start}",
+                    result_id="result:invalid-passage",
+                    domain_id="domain:randomization",
+                    passages=(
+                        EvidencePassageInput(
+                            unit_id=unit_id,
+                            span_start=span_start,
+                            claim_type="claim-type:randomization-method",
+                            question_ids=(DOMAINS["domain:randomization"][0],),
+                        ),
+                    ),
+                )
+            )
+        assert ledger.events() == events_before
+        assert ledger.current_revisions() == revisions_before
+        assert tuple(sorted((tmp_path / ".rob2" / "artifacts").rglob("*"))) == artifacts_before
 
     with pytest.raises(ValueError, match="question_ids must be unique"):
         engine.submit_domain_evidence(

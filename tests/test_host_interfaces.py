@@ -82,13 +82,16 @@ def test_mcp_tool_descriptions_prevent_cleanroom_schema_guessing() -> None:
 
     search = tools["search_evidence"].description or ""
     assert 'query={"terms":["allocation"]}' in search
-    assert "seed_family only with pass_kind=guidance_seed" in search
+    assert 'seed_family="seed:allocation"' in search
+    assert "reuse that exact label in" in search
+    assert 'pass_kind="guidance_seed"' in search
     assert "omit seed_family" in search
 
     resolution = tools["submit_result_resolution"].description or ""
-    assert "copy the issued Result identity" in resolution
+    assert "not a ResultCandidate" in resolution
     assert "experimental_arm_id" in resolution
     assert 'estimate={"value":' in resolution
+    assert "work_token.result_id" in resolution
 
     classification = tools["submit_source_classification"].description or ""
     assert "exactly the sources in get_work_context" in classification
@@ -97,3 +100,5 @@ def test_mcp_tool_descriptions_prevent_cleanroom_schema_guessing() -> None:
     answers = tools["submit_domain_answers"].description or ""
     assert "every active question in get_work_context" in answers
     assert "no_information" in answers
+    assert "actor" not in tools["submit_domain_evidence"].input_schema["properties"]
+    assert "actor" not in tools["submit_domain_answers"].input_schema["properties"]

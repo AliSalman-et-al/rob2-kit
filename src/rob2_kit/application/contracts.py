@@ -180,8 +180,11 @@ class EvidencePassageInput(FrozenModel):
     span_start: int = Field(
         ge=0, description="Zero-based inclusive character offset in the canonical unit text."
     )
-    span_end: int = Field(
-        gt=0, description="Zero-based exclusive character offset in the canonical unit text."
+    span_end: int | None = Field(
+        default=None,
+        description=(
+            "Optional zero-based exclusive offset; omit to select through the end of the unit."
+        ),
     )
     claim_type: Identifier = Field(
         description="Attributable claim category, for example claim-type:randomization-method."
@@ -200,7 +203,7 @@ class EvidencePassageInput(FrozenModel):
 
     @model_validator(mode="after")
     def validate_passage(self) -> EvidencePassageInput:
-        if self.span_end <= self.span_start:
+        if self.span_end is not None and self.span_end <= self.span_start:
             raise ValueError("span_end must be greater than span_start")
         if len(set(self.question_ids)) != len(self.question_ids):
             raise ValueError("question_ids must be unique")

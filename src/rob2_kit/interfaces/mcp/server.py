@@ -235,8 +235,10 @@ def create_server(*, determinism: QualificationDeterminism | None = None) -> Any
     ) -> dict[str, Any]:
         """Search evidence, e.g. query={"terms":["allocation"]}.
 
-        Use seed_family only with pass_kind=guidance_seed. For trial_follow_up
-        or contradiction, omit seed_family.
+        With pass_kind="guidance_seed", choose a stable identifier-shaped family
+        label such as seed_family="seed:allocation" and reuse that exact label in
+        the coverage receipt. For pass_kind="trial_follow_up" or "contradiction",
+        omit seed_family.
         """
         return _dump(
             engine.search_evidence(
@@ -338,9 +340,11 @@ def create_server(*, determinism: QualificationDeterminism | None = None) -> Any
         provenance_note: str,
         contract_version: Literal["1.0.0"],
     ) -> dict[str, Any]:
-        """Resolve: copy the issued Result identity.
+        """Resolve a Result, not a ResultCandidate.
 
-        Include comparison experimental_arm_id and comparator_arm_id. Use
+        Set result_id from work_token.result_id and include randomization_id,
+        effect/outcome/analysis fields, source_locator, and comparison with
+        experimental_arm_id and comparator_arm_id. Use
         estimate={"value":0.61,"interval_lower":0.50,"interval_upper":0.75}.
         """
         return _dump(
@@ -376,7 +380,6 @@ def create_server(*, determinism: QualificationDeterminism | None = None) -> Any
         candidate_dispositions: list[EvidenceConsiderationInput] | None = None,
         coverage_receipts: list[SearchCoverageReceipt] | None = None,
         project_rules: list[RecordReference] | None = None,
-        actor: Actor | None = None,
     ) -> dict[str, Any]:
         """Freeze passages using issued unit_id, exact spans, and active question_ids.
 
@@ -401,7 +404,6 @@ def create_server(*, determinism: QualificationDeterminism | None = None) -> Any
                         "candidate_dispositions": candidate_dispositions or (),
                         "coverage_receipts": coverage_receipts or (),
                         "project_rules": project_rules or (),
-                        "actor": actor,
                         "contract_version": contract_version,
                     }
                 )
@@ -417,7 +419,6 @@ def create_server(*, determinism: QualificationDeterminism | None = None) -> Any
         answers: list[SQAnswerInput],
         contract_version: Literal["1.0.0"],
         project_rules: list[RecordReference] | None = None,
-        actor: Actor | None = None,
     ) -> dict[str, Any]:
         """Answer every active question in get_work_context.
 
@@ -434,7 +435,6 @@ def create_server(*, determinism: QualificationDeterminism | None = None) -> Any
                         "domain_id": domain_id,
                         "answers": answers,
                         "project_rules": project_rules or (),
-                        "actor": actor,
                         "contract_version": contract_version,
                     }
                 )
