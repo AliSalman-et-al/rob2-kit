@@ -53,12 +53,9 @@ def _load_trials(eval_root: Path) -> tuple[TrialEntry, ...]:
     for row in rows:
         primary = (repo_root / row["primary_source"].strip()).resolve()
         supplements = (repo_root / row["supplements"].strip()).resolve()
-        if not primary.is_relative_to(private_root) or not supplements.is_relative_to(
-            private_root
-        ):
+        if not primary.is_relative_to(private_root) or not supplements.is_relative_to(private_root):
             raise ValueError(
-                f"{catalog}: source path for {row['trial_label']!r} "
-                "escapes eval/reference"
+                f"{catalog}: source path for {row['trial_label']!r} escapes eval/reference"
             )
         entries.append(
             TrialEntry(
@@ -68,9 +65,7 @@ def _load_trials(eval_root: Path) -> tuple[TrialEntry, ...]:
                 supplements=supplements,
                 nct_number=row["nct_number"].strip(),
                 outcomes=tuple(
-                    outcome.strip()
-                    for outcome in row["outcomes"].split(";")
-                    if outcome.strip()
+                    outcome.strip() for outcome in row["outcomes"].split(";") if outcome.strip()
                 ),
             )
         )
@@ -80,9 +75,7 @@ def _load_trials(eval_root: Path) -> tuple[TrialEntry, ...]:
 def _resolve_trial(entries: tuple[TrialEntry, ...], value: str) -> TrialEntry:
     normalized = _slug(value)
     matches = tuple(
-        entry
-        for entry in entries
-        if normalized in {_slug(entry.label), _slug(entry.slug)}
+        entry for entry in entries if normalized in {_slug(entry.label), _slug(entry.slug)}
     )
     if len(matches) != 1:
         available = ", ".join(entry.label for entry in entries)
@@ -96,8 +89,7 @@ def _resolve_outcome(entry: TrialEntry, value: str) -> str:
     if len(matches) != 1:
         available = ", ".join(entry.outcomes)
         raise ValueError(
-            f"outcome {value!r} is not declared for {entry.label}; "
-            f"choose one of: {available}"
+            f"outcome {value!r} is not declared for {entry.label}; choose one of: {available}"
         )
     return matches[0]
 
@@ -122,11 +114,7 @@ def validate(eval_root: Path) -> None:
     entries = _load_trials(eval_root)
     errors: list[str] = []
     labels_root = eval_root / "reference" / "catalog" / "provisional-labels"
-    declared = {
-        (entry.label, outcome)
-        for entry in entries
-        for outcome in entry.outcomes
-    }
+    declared = {(entry.label, outcome) for entry in entries for outcome in entry.outcomes}
     for entry in entries:
         if not entry.primary.is_file():
             errors.append(f"{entry.label}: missing primary source {entry.primary}")
@@ -142,9 +130,7 @@ def validate(eval_root: Path) -> None:
         for row in rows:
             key = (row["Trial"].strip(), outcome)
             if key not in declared:
-                errors.append(
-                    f"{label_path.name}: label for undeclared Trial/outcome {key!r}"
-                )
+                errors.append(f"{label_path.name}: label for undeclared Trial/outcome {key!r}")
     if errors:
         raise ValueError("evaluation workspace is invalid:\n- " + "\n- ".join(errors))
     pdf_count = sum(
@@ -178,9 +164,7 @@ def create_run(
     if not run_root.is_relative_to(expected_runs_root):
         raise ValueError("run path escapes eval/runs")
     if run_root.exists():
-        raise FileExistsError(
-            f"evaluation run already exists: {run_root}. Use a new --run-id."
-        )
+        raise FileExistsError(f"evaluation run already exists: {run_root}. Use a new --run-id.")
 
     trial_root = run_root / "input" / entry.slug
     supplements_root = trial_root / "supplements"
@@ -229,6 +213,23 @@ def create_run(
         yaml.safe_dump(run_manifest, sort_keys=False),
         encoding="utf-8",
     )
+    project_manifest = {
+        "schema_version": 1,
+        "supported_scope": "rob2:individually-randomized-parallel",
+        "effect_of_interest": "assignment",
+        "outcome_targets": [
+            {
+                "id": _slug(outcome),
+                "label": outcome,
+                "construct": outcome,
+                "effect_of_interest": "assignment",
+            }
+        ],
+    }
+    (run_root / "rob2.yaml").write_text(
+        yaml.safe_dump(project_manifest, sort_keys=False),
+        encoding="utf-8",
+    )
     relative = _relative_to_repo(run_root, eval_root)
     print(f"Created private evaluation run: {relative}")
     print(f'Bootstrap: uv run --frozen rob2 bootstrap "{relative}"')
@@ -250,16 +251,10 @@ def show_reference(eval_root: Path, *, trial_value: str, outcome_value: str) -> 
     filename = OUTCOME_LABEL_FILES.get(outcome)
     if filename is None:
         raise ValueError(f"no provisional-label file is configured for {outcome}")
-    label_path = (
-        eval_root / "reference" / "catalog" / "provisional-labels" / filename
-    )
+    label_path = eval_root / "reference" / "catalog" / "provisional-labels" / filename
     with label_path.open(newline="", encoding="utf-8-sig") as handle:
         match = next(
-            (
-                row
-                for row in csv.DictReader(handle)
-                if _slug(row["Trial"]) == _slug(entry.label)
-            ),
+            (row for row in csv.DictReader(handle) if _slug(row["Trial"]) == _slug(entry.label)),
             None,
         )
     if match is None:
@@ -269,8 +264,7 @@ def show_reference(eval_root: Path, *, trial_value: str, outcome_value: str) -> 
     print(f"Outcome: {outcome}")
     print(
         " | ".join(
-            f"{field}: {match[field]}"
-            for field in ("D1", "D2", "D3", "D4", "D5", "Overall Risk")
+            f"{field}: {match[field]}" for field in ("D1", "D2", "D3", "D4", "D5", "Overall Risk")
         )
     )
 

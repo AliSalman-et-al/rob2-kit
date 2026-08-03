@@ -166,6 +166,48 @@ class EvidenceConsiderationInput(FrozenModel):
     basis: str | None = None
 
 
+class EvidencePassageInput(FrozenModel):
+    """Exact canonical passage selected for a Domain Evidence Bundle."""
+
+    unit_id: Identifier = Field(
+        description="Canonical unit_id returned by search_evidence or read_evidence."
+    )
+    span_start: int = Field(
+        ge=0, description="Zero-based inclusive character offset in the canonical unit text."
+    )
+    span_end: int = Field(
+        gt=0, description="Zero-based exclusive character offset in the canonical unit text."
+    )
+    claim_type: Identifier = Field(
+        description="Attributable claim category, for example claim-type:randomization-method."
+    )
+    question_ids: tuple[Identifier, ...] = Field(
+        min_length=1,
+        description="Active signaling-question IDs supported by this exact passage.",
+    )
+    disposition: ConsiderationDisposition = Field(
+        default=ConsiderationDisposition.SUPPORTING,
+        description="How the selected passage bears on the mapped questions.",
+    )
+    basis: str | None = Field(
+        default=None, description="Optional concise basis for the disposition."
+    )
+
+    @model_validator(mode="after")
+    def validate_passage(self) -> EvidencePassageInput:
+        if self.span_end <= self.span_start:
+            raise ValueError("span_end must be greater than span_start")
+        if len(set(self.question_ids)) != len(self.question_ids):
+            raise ValueError("question_ids must be unique")
+        if self.disposition not in {
+            ConsiderationDisposition.SUPPORTING,
+            ConsiderationDisposition.CONTRADICTING,
+            ConsiderationDisposition.CONTEXTUAL,
+        }:
+            raise ValueError("passage disposition must accept the selected passage")
+        return self
+
+
 class DomainContextPack(FrozenModel):
     """Bounded, reproducible context for one Result × RoB 2 domain."""
 
@@ -381,6 +423,7 @@ class SubmitDomainEvidenceRequest(FrozenModel):
     result_id: Identifier
     domain_id: Identifier
     items: tuple[RecordReference, ...] = ()
+    passages: tuple[EvidencePassageInput, ...] = ()
     coverage_state: EvidenceCoverageState = EvidenceCoverageState.COMPLETE
     coverage_limitations: tuple[str, ...] = ()
     no_information_basis: bool = False
@@ -394,6 +437,16 @@ class SubmitDomainEvidenceRequest(FrozenModel):
     coverage_receipts: tuple[SearchCoverageReceipt, ...] = ()
     project_rules: tuple[RecordReference, ...] = ()
     actor: Actor | None = None
+
+    @model_validator(mode="after")
+    def validate_evidence_inputs(self) -> SubmitDomainEvidenceRequest:
+        if self.passages and (
+            self.items or self.evidence_by_question or self.candidate_dispositions or self.conflicts
+        ):
+            raise ValueError(
+                "passages cannot be combined with legacy evidence references or conflicts"
+            )
+        return self
 
 
 class SQAnswerInput(FrozenModel):

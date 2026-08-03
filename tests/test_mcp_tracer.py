@@ -155,6 +155,27 @@ async def _finish_domains(session: ClientSession, run_id: str) -> None:
     for index, (domain_id, question_ids) in enumerate(DOMAINS.items()):
         work = (await session.call_tool("continue_run", {"run_id": run_id})).structured_content
         assert work is not None
+        passages = []
+        if index == 0:
+            search = await session.call_tool(
+                "search_evidence",
+                {
+                    "run_id": run_id,
+                    "result_id": "result:trial-a-mortality",
+                    "query": {"terms": ["Trial"]},
+                },
+            )
+            assert search.structured_content is not None
+            unit = search.structured_content["page"]["hits"][0]["unit"]
+            passages = [
+                {
+                    "unit_id": unit["unit_id"],
+                    "span_start": 0,
+                    "span_end": len(unit["text"]),
+                    "claim_type": "claim-type:trial-report",
+                    "question_ids": list(question_ids),
+                }
+            ]
         evidence = await session.call_tool(
             "submit_domain_evidence",
             {
@@ -164,6 +185,7 @@ async def _finish_domains(session: ClientSession, run_id: str) -> None:
                 "contract_version": "1.0.0",
                 "result_id": "result:trial-a-mortality",
                 "domain_id": domain_id,
+                "passages": passages,
             },
         )
         assert evidence.structured_content is not None

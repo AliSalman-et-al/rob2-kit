@@ -2073,6 +2073,7 @@ class RunEngine:
     def submit_domain_evidence(
         self, request: SubmitDomainEvidenceRequest
     ) -> SubmitDomainEvidenceResponse:
+        original_request = request
         bound_ledger = self._bound_ledger(request.run_id)
         existing = self._submission_retry_event(
             bound_ledger,
@@ -2084,7 +2085,7 @@ class RunEngine:
             record = _DomainEvidenceRecord.model_validate_json(
                 bound_ledger.artifacts.read(existing.output_revision_hashes[0])
             )
-            if record.submission != request:
+            if record.submission != original_request:
                 return SubmitDomainEvidenceResponse(
                     **self._stale_submission_kwargs(
                         StaleWorkTokenError(
@@ -2151,6 +2152,11 @@ class RunEngine:
                 domain_id=request.domain_id,
             )
         self._validate_result_domain(ledger, request.run_id, request.result_id, request.domain_id)
+        if request.passages:
+            self._validate_domain_evidence_submission(
+                ledger, request.model_copy(update={"passages": ()})
+            )
+            request = self._resolve_evidence_passages(ledger, request)
         self._validate_domain_evidence_submission(ledger, request)
         evidence_bundles, manifests, receipts = self._freeze_domain_evidence(ledger, request)
         normalized = _DomainEvidenceRecord(
@@ -2167,7 +2173,7 @@ class RunEngine:
             coverage_receipts=receipts,
             candidate_dispositions=request.candidate_dispositions,
             project_rules=request.project_rules,
-            submission=request,
+            submission=original_request,
         )
         result = self._commit_submission(
             ledger,
@@ -2194,6 +2200,141 @@ class RunEngine:
             evidence_bundles=evidence_bundles,
             consideration_manifests=manifests,
             coverage_receipts=receipts,
+        )
+
+    def _resolve_evidence_passages(
+        self,
+        ledger: WorkflowLedger,
+        request: SubmitDomainEvidenceRequest,
+    ) -> SubmitDomainEvidenceRequest:
+        """Freeze engine-issued canonical spans into immutable Evidence claims."""
+
+        index = EvidenceSearchIndex(self._required_root() / ".rob2" / "evidence.sqlite3")
+        actor = request.actor or ASSESSMENT_AGENT_ACTOR
+        proposal = self._latest_proposal(ledger, request.run_id)
+        result_spec = self._result_spec_for(ledger, request.run_id, request.result_id)
+        if result_spec is None:
+            raise ValueError("passage submission requires a resolved Result")
+        sources = {
+            source.source_id: source
+            for trial in proposal.initialization.trials
+            if trial.trial_id == result_spec.result.trial_id and trial.inventory is not None
+            for source in trial.inventory.sources
+        }
+        item_refs: list[RecordReference] = []
+        domain = next(item for item in self._logic_pack().domains if item.id == request.domain_id)
+        evidence_by_question: dict[Identifier, list[RecordReference]] = {
+            question_id: [] for question_id in domain.question_ids
+        }
+        dispositions: list[EvidenceConsiderationInput] = []
+        prepared_passages = []
+        claim_suffixes: set[str] = set()
+        for passage in request.passages:
+            unknown_questions = set(passage.question_ids) - set(domain.question_ids)
+            if unknown_questions:
+                raise ValueError(
+                    f"passage maps to another domain's questions: {sorted(unknown_questions)}"
+                )
+            unit = index.read_unit(passage.unit_id)
+            if passage.span_end > len(unit.text):
+                raise ValueError(f"passage span exceeds canonical unit {passage.unit_id!r} text")
+            suffix = self._digest(
+                "|".join(
+                    (
+                        request.run_id,
+                        request.result_id,
+                        request.domain_id,
+                        passage.unit_id,
+                        str(passage.span_start),
+                        str(passage.span_end),
+                        passage.claim_type,
+                    )
+                )
+            )
+            source = sources.get(unit.source_id)
+            if source is None or source.artifact_hash != unit.source_artifact_hash:
+                raise ValueError("canonical passage source is not current for this Run")
+            if suffix in claim_suffixes:
+                raise ValueError("duplicate canonical passage selection")
+            claim_suffixes.add(suffix)
+            prepared_passages.append((passage, unit, source, suffix))
+
+        for passage, unit, source, suffix in prepared_passages:
+            source_suffix = self._digest(
+                f"{request.run_id}|{unit.source_id}|{unit.source_artifact_hash}"
+            )
+            source_ref = self._commit_frozen_artifact(
+                ledger,
+                scope=request.result_id,
+                operation="operation:evidence-source-frozen",
+                operation_key=f"materialize:evidence-source:{source_suffix}",
+                entity_id=f"evidence-source:{source_suffix}",
+                revision_id=f"revision:evidence-source-{source_suffix}",
+                artifact=source,
+                actor=actor,
+            )
+            unit_suffix = self._digest(
+                f"{request.run_id}|{unit.unit_id}|{unit.parse_id}|{unit.source_artifact_hash}"
+            )
+            canonical_ref = self._commit_frozen_artifact(
+                ledger,
+                scope=request.result_id,
+                operation="operation:canonical-evidence-unit-frozen",
+                operation_key=f"materialize:canonical-unit:{unit_suffix}",
+                entity_id=f"canonical-unit:{unit_suffix}",
+                revision_id=f"revision:canonical-unit-{unit_suffix}",
+                artifact=unit,
+                actor=actor,
+            )
+            quote = unit.text[passage.span_start : passage.span_end]
+            claim = EvidenceClaim(
+                entity_id=f"evidence-claim:{suffix}",
+                revision_id=f"revision:evidence-claim-{suffix}",
+                dependencies=(
+                    Dependency(**canonical_ref.model_dump(), role="dependency:canonical-unit"),
+                    Dependency(**source_ref.model_dump(), role="dependency:source"),
+                ),
+                actor=actor,
+                observed_at=self._now(),
+                canonical_unit=canonical_ref,
+                source=source_ref,
+                span_start=passage.span_start,
+                span_end=passage.span_end,
+                quoted_text_hash=("sha256:" + hashlib.sha256(quote.encode()).hexdigest()),
+                claim_type=passage.claim_type,
+                verification_status="machine_verified",
+            )
+            claim_ref = self._commit_frozen_artifact(
+                ledger,
+                scope=request.result_id,
+                operation="operation:evidence-claim-materialized",
+                operation_key=f"{request.idempotency_key}:claim:{suffix}",
+                entity_id=claim.entity_id,
+                revision_id=claim.revision_id,
+                artifact=claim,
+                actor=actor,
+                dependencies=claim.dependencies,
+            )
+            item_refs.append(claim_ref)
+            for question_id in passage.question_ids:
+                evidence_by_question[question_id].append(claim_ref)
+            dispositions.append(
+                EvidenceConsiderationInput(
+                    item_id=claim.entity_id,
+                    disposition=passage.disposition,
+                    basis=passage.basis,
+                )
+            )
+        return request.model_copy(
+            update={
+                "items": tuple(item_refs),
+                "passages": (),
+                "evidence_by_question": {
+                    question_id: tuple(references)
+                    for question_id, references in evidence_by_question.items()
+                },
+                "candidate_dispositions": tuple(dispositions),
+            }
         )
 
     def submit_domain_answers(

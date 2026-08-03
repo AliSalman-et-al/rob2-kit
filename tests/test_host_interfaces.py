@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
+import anyio
+
 from rob2_kit.application.contracts import RUN_OPERATION_NAMES
-from rob2_kit.interfaces.mcp.server import registered_tool_names
+from rob2_kit.interfaces.mcp.server import create_server, registered_tool_names
 
 
 def blank_pdf() -> bytes:
@@ -39,3 +41,24 @@ def blank_pdf() -> bytes:
 def test_stdio_mcp_surface_is_the_fixed_run_engine_inventory() -> None:
     assert registered_tool_names() == RUN_OPERATION_NAMES
     assert "open_review" not in registered_tool_names()
+
+
+def test_mcp_tool_schemas_explain_nested_inputs_and_expose_passage_freezing() -> None:
+    tools = {tool.name: tool for tool in anyio.run(create_server().list_tools)}
+
+    assert all(tool.description for tool in tools.values())
+    for tool_name, property_name in {
+        "get_work_context": "work_token",
+        "submit_run_proposal": "selections",
+        "confirm_run_definition": "confirmed_by",
+        "search_evidence": "query",
+        "submit_source_classification": "classifications",
+        "submit_result_resolution": "result",
+        "submit_domain_answers": "answers",
+    }.items():
+        schema_text = str(tools[tool_name].input_schema["properties"][property_name])
+        assert "additionalProperties': True" not in schema_text, tool_name
+
+    evidence_schema = tools["submit_domain_evidence"].input_schema
+    assert "passages" in evidence_schema["properties"]
+    assert "EvidencePassageInput" in str(evidence_schema)

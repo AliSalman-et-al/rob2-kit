@@ -1,14 +1,18 @@
 from __future__ import annotations
 
+import hashlib
+import json
 import shutil
 from decimal import Decimal
 from pathlib import Path
 
+import pytest
 import yaml
 
 from rob2_kit.application.contracts import (
     ConfirmRunDefinitionRequest,
     ContinueRunRequest,
+    EvidencePassageInput,
     GetWorkContextRequest,
     PrepareRunRequest,
     RunProposalSelection,
@@ -22,8 +26,10 @@ from rob2_kit.application.contracts import (
 )
 from rob2_kit.application.lifecycle import RunState
 from rob2_kit.application.run_engine import RunEngine
+from rob2_kit.domain.evidence import EvidenceClaim
 from rob2_kit.domain.results import Estimate, Result
 from rob2_kit.domain.revisions import Actor, ActorKind
+from rob2_kit.evidence.search import EvidenceSearchIndex
 from tests.test_mcp_tracer import DOMAINS, _low_answers
 from tests.test_run_proposal import StubParser
 
@@ -205,6 +211,144 @@ def test_identical_domain_evidence_retry_returns_the_committed_result(
     assert changed.error.code == "stale_work"
 
 
+def test_domain_evidence_freezes_engine_issued_passages_without_host_hashes(
+    tmp_path: Path,
+) -> None:
+    trial = tmp_path / "input" / "passages"
+    trial.mkdir(parents=True)
+    (trial / "report.pdf").write_bytes(b"primary")
+    engine, run_id = _prepare_confirm(
+        tmp_path,
+        config=_config(_result("result:passages", "trial:passages")),
+    )
+    _classify_current_sources(engine, run_id)
+    work = engine.continue_run(ContinueRunRequest(run_id=run_id)).work_item
+    assert work is not None
+    index = EvidenceSearchIndex(tmp_path / ".rob2" / "evidence.sqlite3")
+    unit_id = next(iter(index.unit_ids()))
+    unit = index.read_unit(unit_id)
+
+    request = SubmitDomainEvidenceRequest(
+        contract_version="1.0.0",
+        run_id=run_id,
+        work_token=work.work_token,
+        idempotency_key="idempotency:passage-domain-evidence",
+        result_id="result:passages",
+        domain_id="domain:randomization",
+        passages=(
+            EvidencePassageInput(
+                unit_id=unit_id,
+                span_start=0,
+                span_end=len(unit.text),
+                claim_type="claim-type:randomization-method",
+                question_ids=(DOMAINS["domain:randomization"][0],),
+            ),
+        ),
+    )
+    response = engine.submit_domain_evidence(request)
+
+    assert response.condition.value == "accepted"
+    assert len(response.evidence_bundles) == len(DOMAINS["domain:randomization"])
+    ledger = engine._bound_ledger(run_id)
+    bundles = [
+        json.loads(ledger.artifacts.read(reference.content_hash))
+        for reference in response.evidence_bundles
+    ]
+    bundle = next(item for item in bundles if item["sq_id"] == DOMAINS["domain:randomization"][0])
+    claim_ref = bundle["items"][0]
+    claim = EvidenceClaim.model_validate_json(ledger.artifacts.read(claim_ref["content_hash"]))
+    assert claim.span_start == 0
+    assert claim.span_end == len(unit.text)
+    assert claim.quoted_text_hash == "sha256:" + hashlib.sha256(unit.text.encode()).hexdigest()
+    assert all(
+        not item["items"] for item in bundles if item["sq_id"] != DOMAINS["domain:randomization"][0]
+    )
+    event_count = len(ledger.events())
+    repeated = engine.submit_domain_evidence(request)
+    assert repeated.committed is False
+    assert repeated.operation_id == response.operation_id
+    assert len(ledger.events()) == event_count
+
+
+def test_invalid_late_passage_writes_no_artifacts_or_ledger_events(tmp_path: Path) -> None:
+    trial = tmp_path / "input" / "invalid-passage"
+    trial.mkdir(parents=True)
+    (trial / "report.pdf").write_bytes(b"primary")
+    engine, run_id = _prepare_confirm(
+        tmp_path,
+        config=_config(_result("result:invalid-passage", "trial:invalid-passage")),
+    )
+    _classify_current_sources(engine, run_id)
+    work = engine.continue_run(ContinueRunRequest(run_id=run_id)).work_item
+    assert work is not None
+    index = EvidenceSearchIndex(tmp_path / ".rob2" / "evidence.sqlite3")
+    unit_id = next(iter(index.unit_ids()))
+    unit = index.read_unit(unit_id)
+    ledger = engine._bound_ledger(run_id)
+    events_before = ledger.events()
+    revisions_before = ledger.current_revisions()
+    artifacts_before = tuple(sorted((tmp_path / ".rob2" / "artifacts").rglob("*")))
+
+    with pytest.raises(ValueError, match="another domain's questions"):
+        engine.submit_domain_evidence(
+            SubmitDomainEvidenceRequest(
+                contract_version="1.0.0",
+                run_id=run_id,
+                work_token=work.work_token,
+                idempotency_key="idempotency:invalid-late-passage",
+                result_id="result:invalid-passage",
+                domain_id="domain:randomization",
+                passages=(
+                    EvidencePassageInput(
+                        unit_id=unit_id,
+                        span_start=0,
+                        span_end=len(unit.text),
+                        claim_type="claim-type:randomization-method",
+                        question_ids=(DOMAINS["domain:randomization"][0],),
+                    ),
+                    EvidencePassageInput(
+                        unit_id=unit_id,
+                        span_start=0,
+                        span_end=len(unit.text),
+                        claim_type="claim-type:wrong-domain",
+                        question_ids=(DOMAINS["domain:deviations"][0],),
+                    ),
+                ),
+            )
+        )
+
+    assert ledger.events() == events_before
+    assert ledger.current_revisions() == revisions_before
+    assert tuple(sorted((tmp_path / ".rob2" / "artifacts").rglob("*"))) == artifacts_before
+
+    with pytest.raises(ValueError, match="question_ids must be unique"):
+        engine.submit_domain_evidence(
+            SubmitDomainEvidenceRequest(
+                contract_version="1.0.0",
+                run_id=run_id,
+                work_token=work.work_token,
+                idempotency_key="idempotency:duplicate-question-passage",
+                result_id="result:invalid-passage",
+                domain_id="domain:randomization",
+                passages=(
+                    EvidencePassageInput(
+                        unit_id=unit_id,
+                        span_start=0,
+                        span_end=len(unit.text),
+                        claim_type="claim-type:randomization-method",
+                        question_ids=(
+                            DOMAINS["domain:randomization"][0],
+                            DOMAINS["domain:randomization"][0],
+                        ),
+                    ),
+                ),
+            )
+        )
+    assert ledger.events() == events_before
+    assert ledger.current_revisions() == revisions_before
+    assert tuple(sorted((tmp_path / ".rob2" / "artifacts").rglob("*"))) == artifacts_before
+
+
 def test_execution_contract_change_records_attempt_and_invalidates_declared_results(
     tmp_path: Path, monkeypatch
 ) -> None:
@@ -260,9 +404,7 @@ def test_execution_contract_change_records_attempt_and_invalidates_declared_resu
     assert attempts[1].supersedes_revision_id == attempts[0].revision_id
     assert [
         event.scope for event in events if event.operation == "operation:result-invalidated"
-    ] == [
-        "result:contract"
-    ]
+    ] == ["result:contract"]
 
 
 def test_resolved_outcome_candidate_survives_unrelated_source_change(
@@ -274,17 +416,13 @@ def test_resolved_outcome_candidate_survives_unrelated_source_change(
     support = trial / "supplements" / "support.pdf"
     support.parent.mkdir()
     support.write_bytes(b"support")
-    (tmp_path / "rob2.yaml").write_text(
-        yaml.safe_dump(_config(with_target=True)), encoding="utf-8"
-    )
+    (tmp_path / "rob2.yaml").write_text(yaml.safe_dump(_config(with_target=True)), encoding="utf-8")
     engine = RunEngine(parser=StubParser())
     prepared = engine.prepare_run(PrepareRunRequest(project_root=tmp_path, authorized=True))
     assert prepared.proposal is not None
     candidate = prepared.proposal.result_candidates[0]
     ambiguity = next(
-        item
-        for item in prepared.proposal.ambiguities
-        if item.scope == candidate.candidate_id
+        item for item in prepared.proposal.ambiguities if item.scope == candidate.candidate_id
     )
     selection = RunProposalSelection(
         trial_id=candidate.trial_id,
@@ -300,9 +438,7 @@ def test_resolved_outcome_candidate_survives_unrelated_source_change(
             idempotency_key="idempotency:reconciliation-candidate-proposal",
             selections=(selection,),
             ambiguities=(
-                ambiguity.model_copy(
-                    update={"resolved": True, "resolution": "mapped by operator"}
-                ),
+                ambiguity.model_copy(update={"resolved": True, "resolution": "mapped by operator"}),
             ),
         )
     )
@@ -613,7 +749,8 @@ def test_material_reconciliation_blocks_diagnostic_only_run_without_integrity_fa
     assert blocked.error.code == "material_ambiguity"
     assert not any(
         event.operation == "operation:run-completed"
-        and event.sequence > max(
+        and event.sequence
+        > max(
             item.sequence
             for item in engine._bound_ledger(run_id).events()
             if item.operation == "operation:run-blocked"
@@ -719,8 +856,7 @@ def test_deleted_trial_is_retired_from_active_status_but_history_remains(
     status = engine.run_status(RunStatusRequest(run_id=run_id))
     assert status.result_states == ()
     assert any(
-        event.operation == "operation:run-register-result"
-        and event.scope == "result:a"
+        event.operation == "operation:run-register-result" and event.scope == "result:a"
         for event in engine._bound_ledger(run_id).events()
     )
 
@@ -850,8 +986,7 @@ def test_added_same_content_source_does_not_steal_existing_path_identity(
     assert continued.work_item is not None
     refreshed = engine._latest_proposal(engine._bound_ledger(run_id), run_id)
     current_sources = {
-        item.relative_path: item
-        for item in refreshed.initialization.trials[0].inventory.sources
+        item.relative_path: item for item in refreshed.initialization.trials[0].inventory.sources
     }
     assert current_sources["supplements/z.pdf"].source_id == before_source.source_id
     assert current_sources["aaa/copy.pdf"].source_id != before_source.source_id
@@ -881,8 +1016,7 @@ def test_completed_changed_source_reopens_only_affected_result_work(
     assert continued.work_item is not None
     assert continued.work_item.result_id == "result:a"
     assert (
-        engine.run_status(RunStatusRequest(run_id=run_id)).result_states[0].state.value
-        == "pending"
+        engine.run_status(RunStatusRequest(run_id=run_id)).result_states[0].state.value == "pending"
     )
     events = engine._bound_ledger(run_id).events()
     assert any(event.operation == "operation:run-reopened" for event in events)
@@ -892,10 +1026,16 @@ def test_completed_changed_source_reopens_only_affected_result_work(
     ) == len(report_events_before)
     _finish_current_result(engine, run_id, prefix="reconciliation-rerun")
     assert engine.continue_run(ContinueRunRequest(run_id=run_id)).run_state is RunState.COMPLETE
-    assert len(
-        [event for event in engine._bound_ledger(run_id).events()
-         if event.operation == "operation:run-completed"]
-    ) == 2
+    assert (
+        len(
+            [
+                event
+                for event in engine._bound_ledger(run_id).events()
+                if event.operation == "operation:run-completed"
+            ]
+        )
+        == 2
+    )
 
 
 def test_changed_source_invalidates_partial_pending_checkpoints(tmp_path: Path) -> None:

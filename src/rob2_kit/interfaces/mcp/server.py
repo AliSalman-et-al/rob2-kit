@@ -15,23 +15,40 @@ from typing import Any, Literal
 
 from rob2_kit.application.contracts import (
     RUN_OPERATION_NAMES,
+    Actor,
     ConfirmRunDefinitionRequest,
     ContinueRunRequest,
+    Estimate,
+    EvidenceConsiderationInput,
+    EvidenceCoverageState,
+    EvidencePassageInput,
     GetWorkContextRequest,
     InspectVisualCandidateRequest,
     OperationError,
     PrepareRunRequest,
     PrepareRunResponse,
     ReadEvidenceRequest,
+    RecordReference,
+    Result,
     RunOperation,
+    RunProposalAmbiguity,
+    RunProposalSelection,
     RunStatusRequest,
+    SearchCoverageReceipt,
     SearchEvidenceRequest,
+    SearchPassKind,
+    SearchPolicy,
+    SearchQuery,
+    SourceClassificationInput,
+    SQAnswerInput,
     SubmitDomainAnswersRequest,
     SubmitDomainEvidenceRequest,
     SubmitResultResolutionRequest,
     SubmitRunProposalRequest,
     SubmitSourceClassificationRequest,
+    VisualRenderRequest,
     WorkflowCondition,
+    WorkToken,
 )
 from rob2_kit.application.determinism import QualificationDeterminism
 from rob2_kit.application.lifecycle import RunState
@@ -79,6 +96,7 @@ def create_server(*, determinism: QualificationDeterminism | None = None) -> Any
         method: str | None = None,
         supported_scope: str | None = None,
     ) -> dict[str, Any]:
+        """Prepare or resume one project and return its authoritative proposal state."""
         request = PrepareRunRequest.model_validate(
             {
                 "project_root": project_root,
@@ -114,19 +132,22 @@ def create_server(*, determinism: QualificationDeterminism | None = None) -> Any
     def run_status(
         run_id: str,
     ) -> dict[str, Any]:
+        """Read the durable state and progress of a prepared run."""
         return _dump(engine.run_status(RunStatusRequest.model_validate({"run_id": run_id})))
 
     @server.tool(name="continue_run")
     def continue_run(
         run_id: str,
     ) -> dict[str, Any]:
+        """Return the next authoritative run directive and bounded work item."""
         return _dump(engine.continue_run(ContinueRunRequest.model_validate({"run_id": run_id})))
 
     @server.tool(name="get_work_context")
     def get_work_context(
         run_id: str,
-        work_token: dict[str, Any],
+        work_token: WorkToken,
     ) -> dict[str, Any]:
+        """Return bounded context for the exact engine-issued work token."""
         return _dump(
             engine.get_work_context(
                 GetWorkContextRequest.model_validate({"run_id": run_id, "work_token": work_token})
@@ -139,9 +160,10 @@ def create_server(*, determinism: QualificationDeterminism | None = None) -> Any
         proposal_token: str,
         idempotency_key: str,
         contract_version: Literal["1.0.0"],
-        selections: list[dict[str, Any]] | None = None,
-        ambiguities: list[dict[str, Any]] | None = None,
+        selections: list[RunProposalSelection] | None = None,
+        ambiguities: list[RunProposalAmbiguity] | None = None,
     ) -> dict[str, Any]:
+        """Submit selections using only candidate IDs issued by prepare_run."""
         return _dump(
             engine.submit_run_proposal(
                 SubmitRunProposalRequest.model_validate(
@@ -162,9 +184,10 @@ def create_server(*, determinism: QualificationDeterminism | None = None) -> Any
         run_id: str,
         proposal_token: str,
         idempotency_key: str,
-        confirmed_by: dict[str, Any],
+        confirmed_by: Actor,
         contract_version: Literal["1.0.0"],
     ) -> dict[str, Any]:
+        """Record the operator's one-time confirmation of the submitted proposal."""
         return _dump(
             engine.confirm_run_definition(
                 ConfirmRunDefinitionRequest.model_validate(
@@ -182,15 +205,16 @@ def create_server(*, determinism: QualificationDeterminism | None = None) -> Any
     @server.tool(name="search_evidence")
     def search_evidence(
         run_id: str,
-        query: dict[str, Any],
+        query: SearchQuery,
         result_id: str | None = None,
         cursor: str | None = None,
         broad_query_justification: str | None = None,
-        policy: dict[str, Any] | None = None,
+        policy: SearchPolicy | None = None,
         sq_id: str | None = None,
-        pass_kind: str | None = None,
+        pass_kind: SearchPassKind | None = None,
         seed_family: str | None = None,
     ) -> dict[str, Any]:
+        """Search canonical evidence with a typed lexical query and bounded pagination."""
         return _dump(
             engine.search_evidence(
                 SearchEvidenceRequest.model_validate(
@@ -217,6 +241,7 @@ def create_server(*, determinism: QualificationDeterminism | None = None) -> Any
         neighbor_limit: int = 6,
         context_character_target: int = 16_000,
     ) -> dict[str, Any]:
+        """Read one engine-issued canonical evidence unit and its bounded neighbors."""
         return _dump(
             engine.read_evidence(
                 ReadEvidenceRequest.model_validate(
@@ -236,9 +261,10 @@ def create_server(*, determinism: QualificationDeterminism | None = None) -> Any
         run_id: str,
         candidate_id: str,
         result_id: str | None = None,
-        current_render: dict[str, Any] | None = None,
+        current_render: VisualRenderRequest | None = None,
         still_ambiguous: bool = True,
     ) -> dict[str, Any]:
+        """Request or escalate a bounded render for an issued visual candidate."""
         return _dump(
             engine.inspect_visual_candidate(
                 InspectVisualCandidateRequest.model_validate(
@@ -256,11 +282,12 @@ def create_server(*, determinism: QualificationDeterminism | None = None) -> Any
     @server.tool(name="submit_source_classification")
     def submit_source_classification(
         run_id: str,
-        work_token: dict[str, Any],
+        work_token: WorkToken,
         idempotency_key: str,
-        classifications: list[dict[str, Any]],
+        classifications: list[SourceClassificationInput],
         contract_version: Literal["1.0.0"],
     ) -> dict[str, Any]:
+        """Classify every issued source using the roles enumerated by the schema."""
         return _dump(
             engine.submit_source_classification(
                 SubmitSourceClassificationRequest.model_validate(
@@ -278,13 +305,14 @@ def create_server(*, determinism: QualificationDeterminism | None = None) -> Any
     @server.tool(name="submit_result_resolution")
     def submit_result_resolution(
         run_id: str,
-        work_token: dict[str, Any],
+        work_token: WorkToken,
         idempotency_key: str,
-        result: dict[str, Any],
-        estimate: dict[str, Any],
+        result: Result,
+        estimate: Estimate,
         provenance_note: str,
         contract_version: Literal["1.0.0"],
     ) -> dict[str, Any]:
+        """Resolve the exact trial-specific Result and its reported estimate."""
         return _dump(
             engine.submit_result_resolution(
                 SubmitResultResolutionRequest.model_validate(
@@ -304,22 +332,24 @@ def create_server(*, determinism: QualificationDeterminism | None = None) -> Any
     @server.tool(name="submit_domain_evidence")
     def submit_domain_evidence(
         run_id: str,
-        work_token: dict[str, Any],
+        work_token: WorkToken,
         idempotency_key: str,
         result_id: str,
         domain_id: str,
         contract_version: Literal["1.0.0"],
-        items: list[dict[str, Any]] | None = None,
-        coverage_state: str | None = None,
+        passages: list[EvidencePassageInput] | None = None,
+        items: list[RecordReference] | None = None,
+        coverage_state: EvidenceCoverageState | None = None,
         coverage_limitations: list[str] | None = None,
         no_information_basis: bool = False,
         conflicts: list[list[str]] | None = None,
-        evidence_by_question: dict[str, list[dict[str, Any]]] | None = None,
-        candidate_dispositions: list[dict[str, Any]] | None = None,
-        coverage_receipts: list[dict[str, Any]] | None = None,
-        project_rules: list[dict[str, Any]] | None = None,
-        actor: dict[str, Any] | None = None,
+        evidence_by_question: dict[str, list[RecordReference]] | None = None,
+        candidate_dispositions: list[EvidenceConsiderationInput] | None = None,
+        coverage_receipts: list[SearchCoverageReceipt] | None = None,
+        project_rules: list[RecordReference] | None = None,
+        actor: Actor | None = None,
     ) -> dict[str, Any]:
+        """Freeze exact canonical passages and coverage for one complete RoB 2 domain."""
         return _dump(
             engine.submit_domain_evidence(
                 SubmitDomainEvidenceRequest.model_validate(
@@ -330,7 +360,8 @@ def create_server(*, determinism: QualificationDeterminism | None = None) -> Any
                         "result_id": result_id,
                         "domain_id": domain_id,
                         "items": items or (),
-                        "coverage_state": coverage_state or "complete",
+                        "passages": passages or (),
+                        "coverage_state": coverage_state or EvidenceCoverageState.COMPLETE,
                         "coverage_limitations": coverage_limitations or (),
                         "no_information_basis": no_information_basis,
                         "conflicts": conflicts or (),
@@ -348,15 +379,16 @@ def create_server(*, determinism: QualificationDeterminism | None = None) -> Any
     @server.tool(name="submit_domain_answers")
     def submit_domain_answers(
         run_id: str,
-        work_token: dict[str, Any],
+        work_token: WorkToken,
         idempotency_key: str,
         result_id: str,
         domain_id: str,
-        answers: list[dict[str, Any]],
+        answers: list[SQAnswerInput],
         contract_version: Literal["1.0.0"],
-        project_rules: list[dict[str, Any]] | None = None,
-        actor: dict[str, Any] | None = None,
+        project_rules: list[RecordReference] | None = None,
+        actor: Actor | None = None,
     ) -> dict[str, Any]:
+        """Submit typed answers for every active signaling question in one domain."""
         return _dump(
             engine.submit_domain_answers(
                 SubmitDomainAnswersRequest.model_validate(
