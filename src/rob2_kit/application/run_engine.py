@@ -136,8 +136,10 @@ from rob2_kit.reports import (
     DiagnosticReportProjector,
     DiagnosticView,
     DomainView,
+    EstimateView,
     EvidenceView,
     ReportProjector,
+    ResultIdentityView,
     RunIndexProjector,
     RunIndexResultView,
     RunIndexView,
@@ -3614,6 +3616,56 @@ class RunEngine:
             evaluation.matched_rule_ids,
             visual_citations,
         )
+        guidance = load_guidance_pack(self._guidance_pack_path())
+        guidance_by_id = {item.logic_element_id: item for item in guidance.items}
+        questions_by_id = {
+            question_id: question.model_copy(
+                update={"wording": guidance_by_id[question_id].text}
+            )
+            if question_id in guidance_by_id
+            else question
+            for question_id, question in questions_by_id.items()
+        }
+        result = result_spec.result
+        estimate = EstimateView(
+            value=str(result_spec.estimate.value),
+            interval_lower=(
+                str(result_spec.estimate.interval_lower)
+                if result_spec.estimate.interval_lower is not None
+                else None
+            ),
+            interval_upper=(
+                str(result_spec.estimate.interval_upper)
+                if result_spec.estimate.interval_upper is not None
+                else None
+            ),
+            denominator_experimental=result_spec.estimate.denominator_experimental,
+            denominator_comparator=result_spec.estimate.denominator_comparator,
+        )
+        result_identity = ResultIdentityView(
+            result_id=result.result_id,
+            trial_id=result.trial_id,
+            comparison=(
+                f"{result.comparison.experimental_arm_id} vs "
+                f"{result.comparison.comparator_arm_id}"
+            ),
+            effect_of_interest=result.effect_of_interest,
+            outcome=result.outcome_construct,
+            measurement_instrument=result.measurement_instrument,
+            time_point=result.time_point,
+            analysis_population=result.analysis_population,
+            analysis_model=result.analysis_model,
+            effect_measure=result.effect_measure,
+            source_locator=result.source_locator,
+            estimate=estimate,
+        )
+        domain_labels = {
+            "domain:randomization": "Bias arising from the randomization process",
+            "domain:deviations": "Bias due to deviations from intended interventions",
+            "domain:missing": "Bias due to missing outcome data",
+            "domain:measurement": "Bias in measurement of the outcome",
+            "domain:selection": "Bias in selection of the reported result",
+        }
         execution_contract = self._execution_contract_identity(ledger)
         assessment = AssessmentView(
             assessment_revision_id=assessment_revision_id,
@@ -3626,11 +3678,18 @@ class RunEngine:
             outcome=result_spec.result.outcome_construct,
             time_point=result_spec.result.time_point,
             effect_of_interest=result_spec.result.effect_of_interest,
+            measurement_instrument=result_spec.result.measurement_instrument,
+            analysis_population=result_spec.result.analysis_population,
+            analysis_model=result_spec.result.analysis_model,
+            effect_measure=result_spec.result.effect_measure,
+            source_locator=result_spec.result.source_locator,
+            estimate=estimate,
+            result_identity=result_identity,
             overall_judgment=evaluation.overall_judgment.value,
             domains=tuple(
                 DomainView(
                     domain_id=domain.id,
-                    label=domain.id,
+                    label=domain_labels.get(domain.id, domain.id),
                     judgment=evaluation.domain_judgments[domain.id].value,
                     rationale=(
                         "Deterministic Logic-pack evaluation; matched rules: "
@@ -3969,6 +4028,12 @@ class RunEngine:
             result_spec = self._result_spec_for(ledger, run_id, record.result_id)
             trial_id = result_spec.result.trial_id if result_spec is not None else ""
             diagnostic = event.operation == "operation:result-diagnostic-ready"
+            outcome = ""
+            time_point = ""
+            comparison = ""
+            effect_measure = ""
+            estimate_view: EstimateView | None = None
+            evidence_count = 0
             if diagnostic:
                 assert isinstance(record, _ResultDiagnosticRecord)
                 overall_judgment = ""
@@ -3986,7 +4051,23 @@ class RunEngine:
                         assessment_payload = json.loads(
                             (root / report_root / "assessment.json").read_text(encoding="utf-8")
                         )
+                        outcome = str(assessment_payload.get("outcome", ""))
+                        time_point = str(assessment_payload.get("time_point", ""))
+                        comparison = str(assessment_payload.get("comparison", ""))
+                        effect_measure = str(assessment_payload.get("effect_measure", ""))
+                        raw_estimate = assessment_payload.get("estimate")
+                        if isinstance(raw_estimate, dict) and isinstance(
+                            raw_estimate.get("value"), str
+                        ):
+                            estimate_view = EstimateView.model_validate(raw_estimate)
                         domains = assessment_payload.get("domains", ())
+                        evidence_count = sum(
+                            len(question.get("evidence", ()))
+                            for domain in domains
+                            if isinstance(domain, dict)
+                            for question in domain.get("questions", ())
+                            if isinstance(question, dict)
+                        )
                         coverage_states = [item.get("coverage") for item in domains]
                         if "incomplete" in coverage_states:
                             coverage = "incomplete"
@@ -4016,6 +4097,12 @@ class RunEngine:
                     ),
                     "overall_judgment": overall_judgment,
                     "domain_judgments": domain_judgments,
+                    "outcome": outcome,
+                    "time_point": time_point,
+                    "comparison": comparison,
+                    "effect_measure": effect_measure,
+                    "estimate": estimate_view,
+                    "evidence_count": evidence_count,
                     "limitations": limitations,
                     "coverage": coverage,
                 }
@@ -4037,6 +4124,17 @@ class RunEngine:
                     "report": "",
                     "overall_judgment": "",
                     "domain_judgments": {},
+                    "outcome": result_spec.result.outcome_construct if result_spec else "",
+                    "time_point": result_spec.result.time_point if result_spec else "",
+                    "comparison": (
+                        f"{result_spec.result.comparison.experimental_arm_id} vs "
+                        f"{result_spec.result.comparison.comparator_arm_id}"
+                        if result_spec
+                        else ""
+                    ),
+                    "effect_measure": result_spec.result.effect_measure if result_spec else "",
+                    "estimate": None,
+                    "evidence_count": 0,
                     "limitations": ["Result has no terminal report yet."],
                     "coverage": "not recorded",
                 }
@@ -4054,6 +4152,12 @@ class RunEngine:
                         result_id=entry["result_id"],
                         state=entry["state"],
                         report=entry["report"],
+                        outcome=entry.get("outcome", ""),
+                        time_point=entry.get("time_point", ""),
+                        comparison=entry.get("comparison", ""),
+                        effect_measure=entry.get("effect_measure", ""),
+                        estimate=entry.get("estimate"),
+                        evidence_count=int(entry.get("evidence_count", 0)),
                         overall_judgment=entry["overall_judgment"] or None,
                         domain_judgments={
                             domain_id: judgment.value
