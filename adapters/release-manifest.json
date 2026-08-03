@@ -1,18 +1,18 @@
 {
   "adapters": {
     "claude": {
-      "content_hash": "sha256:c5c05f98121a55aad5f2b0fc85f7670d75595877afcb57efd4a2ff30687ffa3d",
+      "content_hash": "sha256:713e5022b9d1a9ba8caf2689ec946cf3729a2b81a090828578cf4b4f10137434",
       "skill_hashes": {
-        "rob2-assess": "sha256:04b3c7edb02ced7d2567663b930df5fd5466a524e3cae8bfe03af7030f9c9ad2",
-        "rob2-init": "sha256:dabe1522924d0b9164c48051f438b59f9f2d5f538c52d8af6c52b0b3cccd51c4"
+        "rob2-assess": "sha256:6ce55af3c2d2b19adbd1db8d037e73efb163ca0391d8147ab327360b3cf9f29c",
+        "rob2-init": "sha256:3a78515a3bd76497d1462506fdaaa40056d7b30fb05a16702903570ee5ac5387"
       },
       "version": "1"
     },
     "codex": {
-      "content_hash": "sha256:eec1938173ef6666051478dadde5cba5dc0ba199d747a8cd151270b88da8b7bf",
+      "content_hash": "sha256:1025e1d8975bc7da49f02eca4671825e20e347e9031cbb6b7261c0a24bd17d6c",
       "skill_hashes": {
-        "rob2-assess": "sha256:04b3c7edb02ced7d2567663b930df5fd5466a524e3cae8bfe03af7030f9c9ad2",
-        "rob2-init": "sha256:dabe1522924d0b9164c48051f438b59f9f2d5f538c52d8af6c52b0b3cccd51c4"
+        "rob2-assess": "sha256:6ce55af3c2d2b19adbd1db8d037e73efb163ca0391d8147ab327360b3cf9f29c",
+        "rob2-init": "sha256:3a78515a3bd76497d1462506fdaaa40056d7b30fb05a16702903570ee5ac5387"
       },
       "version": "1"
     }
@@ -20,23 +20,23 @@
   "application_contract": "1.0.0",
   "dependency_lock_hash": "sha256:75c7a1ada0ab14f05e524c8c506d722e96d160926b9c001051acb79c289bd348",
   "guidance_pack": "rob2-parallel-assignment-en-2019.1",
-  "guidance_pack_hash": "sha256:b8acb34212215ec92f474527d0a80b7e881a5fadb26783f91c32f7ec531efd1d",
+  "guidance_pack_hash": "sha256:66f84d75c6764d23c9bbc025c1b794b89d306f41d2cfa5a6e58f16e65efff1c2",
   "launcher": "uvx --python 3.13 --from rob2-kit==0.1.0 rob2-mcp",
   "launcher_working_directory": "project_root",
   "logic_pack": "rob2-parallel-assignment-2019.1",
-  "logic_pack_hash": "sha256:2536bf773a3e3e6abca73cca33f2faefe02222d15f1247e37e81482c1d1d67f2",
+  "logic_pack_hash": "sha256:7897b710dd0c9f115b10d15308068e563ecb36b8f02366d2173d01376bffb317",
   "package": "rob2-kit",
   "package_version": "0.1.0",
   "python_version": "3.13",
   "release_status": "draft_only_preview",
   "skills": {
     "rob2-assess": {
-      "activation_fixtures_hash": "sha256:f6eb2fc1cb42be4a4a0b93410277f01e556c8eef6c323b6c40663c9ea79d3737",
-      "content_hash": "sha256:04b3c7edb02ced7d2567663b930df5fd5466a524e3cae8bfe03af7030f9c9ad2"
+      "activation_fixtures_hash": "sha256:f0f67312e0cd5ede2126c071729af55b468ad403d1dd01981c46ee0b54dc49d1",
+      "content_hash": "sha256:6ce55af3c2d2b19adbd1db8d037e73efb163ca0391d8147ab327360b3cf9f29c"
     },
     "rob2-init": {
-      "activation_fixtures_hash": "sha256:32c8ade3d9ff1828a4d49f8362aa40844c5fe67141c28564f5c772986d825667",
-      "content_hash": "sha256:dabe1522924d0b9164c48051f438b59f9f2d5f538c52d8af6c52b0b3cccd51c4"
+      "activation_fixtures_hash": "sha256:e1942c9a8e59e2785b98c7a69612326330e4b5f99a0a523d1188bd739f2654fb",
+      "content_hash": "sha256:3a78515a3bd76497d1462506fdaaa40056d7b30fb05a16702903570ee5ac5387"
     }
   },
   "version": 1

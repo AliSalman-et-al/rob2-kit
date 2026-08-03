@@ -101,9 +101,7 @@ def build_host_adapters(root: Path, *, package_version: str) -> ReleaseLock:
         adapters[host] = AdapterPin(
             version=ADAPTER_VERSION,
             content_hash=_tree_hash(destination),
-            skill_hashes={
-                skill_name: pin.content_hash for skill_name, pin in skill_pins.items()
-            },
+            skill_hashes={skill_name: pin.content_hash for skill_name, pin in skill_pins.items()},
         )
 
     manifest = ReleaseLock(
@@ -119,15 +117,10 @@ def build_host_adapters(root: Path, *, package_version: str) -> ReleaseLock:
         skills=skill_pins,
         adapters=adapters,
         logic_pack="rob2-parallel-assignment-2019.1",
-        logic_pack_hash=_hash(
-            root / "packs" / "logic" / "rob2-parallel-assignment-2019.1.yaml"
-        ),
+        logic_pack_hash=_hash(root / "packs" / "logic" / "rob2-parallel-assignment-2019.1.yaml"),
         guidance_pack="rob2-parallel-assignment-en-2019.1",
         guidance_pack_hash=_hash(
-            root
-            / "packs"
-            / "guidance"
-            / "rob2-parallel-assignment-en-2019.1.yaml"
+            root / "packs" / "guidance" / "rob2-parallel-assignment-en-2019.1.yaml"
         ),
     )
     _write_json(root / LOCK_FILENAME, manifest.model_dump(mode="json", exclude_none=True))
@@ -182,8 +175,7 @@ def verify_host_adapters(root: Path) -> None:
             raise ValueError(f"{host} adapter version diverges from release contract")
         destination = root / "adapters" / host
         if any(
-            (destination / legacy).exists()
-            for legacy in ("SKILL.md", "activation-fixtures.json")
+            (destination / legacy).exists() for legacy in ("SKILL.md", "activation-fixtures.json")
         ):
             raise ValueError(f"{host} adapter retains a legacy single-skill layout")
         adapter_assets = {path.name for path in destination.iterdir()}
@@ -199,15 +191,14 @@ def verify_host_adapters(root: Path) -> None:
             actual_files = {path.name for path in generated_skill.iterdir()}
             if actual_files != {"SKILL.md", "activation-fixtures.json"}:
                 raise ValueError(f"{host} adapter skill {skill_name} has unexpected assets")
-            if (generated_skill / "SKILL.md").read_bytes() != paths.skill.read_bytes():
-                raise ValueError(f"{host} adapter skill {skill_name} diverges from canonical")
-            if (
-                (generated_skill / "activation-fixtures.json").read_bytes()
-                != paths.fixtures.read_bytes()
+            if _canonical_text_bytes(generated_skill / "SKILL.md") != _canonical_text_bytes(
+                paths.skill
             ):
-                raise ValueError(
-                    f"{host} adapter fixtures for {skill_name} diverge from canonical"
-                )
+                raise ValueError(f"{host} adapter skill {skill_name} diverges from canonical")
+            if _canonical_text_bytes(
+                generated_skill / "activation-fixtures.json"
+            ) != _canonical_text_bytes(paths.fixtures):
+                raise ValueError(f"{host} adapter fixtures for {skill_name} diverge from canonical")
 
         expected_descriptor = _descriptor(
             host,
@@ -216,9 +207,7 @@ def verify_host_adapters(root: Path) -> None:
             skill_pins=manifest.skills,
         )
         try:
-            descriptor = json.loads(
-                (destination / "adapter.json").read_text(encoding="utf-8")
-            )
+            descriptor = json.loads((destination / "adapter.json").read_text(encoding="utf-8"))
         except (OSError, json.JSONDecodeError) as error:
             raise ValueError(f"cannot read {host} adapter descriptor: {error}") from error
         if descriptor != expected_descriptor:
@@ -280,9 +269,7 @@ def _canonical_skill_assets(root: Path) -> dict[str, CanonicalSkillAssets]:
     actual_skill_names = {path.name for path in skills_root.iterdir()}
     expected_skill_names = set(CANONICAL_SKILL_NAMES)
     if actual_skill_names != expected_skill_names:
-        raise ValueError(
-            "canonical skills must contain exactly rob2-init and rob2-assess"
-        )
+        raise ValueError("canonical skills must contain exactly rob2-init and rob2-assess")
 
     assets: dict[str, CanonicalSkillAssets] = {}
     for skill_name in CANONICAL_SKILL_NAMES:
@@ -340,9 +327,7 @@ def _prepare_adapter_destination(destination: Path) -> None:
         raise ValueError(f"{destination.name} adapter has unexpected assets: {sorted(unexpected)}")
     for legacy in (destination / "SKILL.md", destination / "activation-fixtures.json"):
         if legacy.exists():
-            raise ValueError(
-                f"{destination.name} adapter retains a legacy single-skill layout"
-            )
+            raise ValueError(f"{destination.name} adapter retains a legacy single-skill layout")
     generated_skills = destination / "skills"
     if generated_skills.exists():
         shutil.rmtree(generated_skills)
@@ -360,7 +345,13 @@ def _dependency_lock_hash(root: Path) -> str:
 
 
 def _hash(path: Path) -> str:
-    return "sha256:" + hashlib.sha256(path.read_bytes()).hexdigest()
+    return "sha256:" + hashlib.sha256(_canonical_text_bytes(path)).hexdigest()
+
+
+def _canonical_text_bytes(path: Path) -> bytes:
+    """Hash release text identically across LF and CRLF checkouts."""
+
+    return path.read_text(encoding="utf-8").replace("\r\n", "\n").encode("utf-8")
 
 
 def _tree_hash(root: Path) -> str:
@@ -369,7 +360,7 @@ def _tree_hash(root: Path) -> str:
         relative = path.relative_to(root).as_posix().encode("utf-8")
         digest.update(relative)
         digest.update(b"\0")
-        digest.update(path.read_bytes())
+        digest.update(_canonical_text_bytes(path))
         digest.update(b"\0")
     return "sha256:" + digest.hexdigest()
 
@@ -389,15 +380,13 @@ def _descriptor(
             "package_version": package_version,
             "skills": list(CANONICAL_SKILL_NAMES),
             "trigger_description": (
-                "Prepare an evidence-grounded RoB 2 assessment and materialize "
-                "a static report."
+                "Prepare an evidence-grounded RoB 2 assessment and materialize a static report."
             ),
             "skill_hashes": {
                 skill_name: pin.content_hash for skill_name, pin in skill_pins.items()
             },
             "activation_fixtures_hashes": {
-                skill_name: pin.activation_fixtures_hash
-                for skill_name, pin in skill_pins.items()
+                skill_name: pin.activation_fixtures_hash for skill_name, pin in skill_pins.items()
             },
             "launcher": launcher,
             "launcher_working_directory": "project_root",

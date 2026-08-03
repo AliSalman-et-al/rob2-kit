@@ -1,7 +1,7 @@
 {
   "activation_fixtures_hashes": {
-    "rob2-assess": "sha256:f6eb2fc1cb42be4a4a0b93410277f01e556c8eef6c323b6c40663c9ea79d3737",
-    "rob2-init": "sha256:32c8ade3d9ff1828a4d49f8362aa40844c5fe67141c28564f5c772986d825667"
+    "rob2-assess": "sha256:f0f67312e0cd5ede2126c071729af55b468ad403d1dd01981c46ee0b54dc49d1",
+    "rob2-init": "sha256:e1942c9a8e59e2785b98c7a69612326330e4b5f99a0a523d1188bd739f2654fb"
   },
   "adapter_version": "1",
   "host": "claude",
@@ -11,8 +11,8 @@
   "package": "rob2-kit",
   "package_version": "0.1.0",
   "skill_hashes": {
-    "rob2-assess": "sha256:04b3c7edb02ced7d2567663b930df5fd5466a524e3cae8bfe03af7030f9c9ad2",
-    "rob2-init": "sha256:dabe1522924d0b9164c48051f438b59f9f2d5f538c52d8af6c52b0b3cccd51c4"
+    "rob2-assess": "sha256:6ce55af3c2d2b19adbd1db8d037e73efb163ca0391d8147ab327360b3cf9f29c",
+    "rob2-init": "sha256:3a78515a3bd76497d1462506fdaaa40056d7b30fb05a16702903570ee5ac5387"
   },
   "skills": [
     "rob2-init",

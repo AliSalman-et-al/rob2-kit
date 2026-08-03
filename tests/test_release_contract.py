@@ -13,7 +13,8 @@ EXPECTED_HOSTS = {"codex", "claude"}
 
 
 def sha256_file(path: Path) -> str:
-    return "sha256:" + hashlib.sha256(path.read_bytes()).hexdigest()
+    canonical = path.read_text(encoding="utf-8").replace("\r\n", "\n").encode()
+    return "sha256:" + hashlib.sha256(canonical).hexdigest()
 
 
 def test_checked_in_release_lock_pins_the_two_skills_and_both_harnesses() -> None:
@@ -60,9 +61,29 @@ def test_generated_adapters_materialize_both_skill_trees_and_detect_drift(
     verify_host_adapters(tmp_path)
 
     generated_skill = tmp_path / "adapters" / "codex" / "skills" / "rob2-init" / "SKILL.md"
-    generated_skill.write_text(generated_skill.read_text(encoding="utf-8") + "drift\n")
+    generated_skill.write_text(
+        generated_skill.read_text(encoding="utf-8") + "drift\n", encoding="utf-8"
+    )
     with pytest.raises(ValueError, match="codex.*rob2-init|skill"):
         verify_host_adapters(tmp_path)
+
+
+def test_release_verification_is_stable_across_text_line_endings(tmp_path: Path) -> None:
+    shutil.copytree(ROOT / "skills", tmp_path / "skills")
+    shutil.copytree(ROOT / "packs", tmp_path / "packs")
+    shutil.copy(ROOT / "uv.lock", tmp_path / "uv.lock")
+    build_host_adapters(tmp_path, package_version="0.1.0")
+
+    text_assets = [
+        tmp_path / "skills" / "rob2-init" / "SKILL.md",
+        tmp_path / "adapters" / "codex" / "skills" / "rob2-init" / "SKILL.md",
+        tmp_path / "uv.lock",
+    ]
+    for path in text_assets:
+        text = path.read_text(encoding="utf-8").replace("\r\n", "\n")
+        path.write_bytes(text.replace("\n", "\r\n").encode())
+
+    verify_host_adapters(tmp_path)
 
 
 def test_release_lock_rejects_an_extra_canonical_skill(tmp_path: Path) -> None:
