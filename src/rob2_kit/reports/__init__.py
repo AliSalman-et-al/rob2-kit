@@ -1326,8 +1326,10 @@ def latest_assessment_view(ledger: WorkflowLedger) -> AssessmentView:
                     sorted(
                         question_domains.get(judgment.domain_id, ()),
                         key=lambda question: (
-                            question_order.get(question.question_id, 10_000),
-                            question.question_id,
+                            question_order.get(
+                                str(getattr(question, "question_id", "")), 10_000
+                            ),
+                            str(getattr(question, "question_id", "")),
                         ),
                     )
                 ),
