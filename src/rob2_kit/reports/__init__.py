@@ -34,7 +34,8 @@ from rob2_kit.domain.results import ResultSpecRevision
 from rob2_kit.domain.revisions import ContentHash, Identifier, RecordReference
 from rob2_kit.evidence.search import CanonicalEvidenceUnit
 from rob2_kit.evidence.visual import build_visual_citation
-from rob2_kit.logic.packs import load_guidance_pack
+from rob2_kit.logic.evaluator import EvaluationRequest, LogicEvaluator
+from rob2_kit.logic.packs import LogicPack, load_guidance_pack, load_logic_pack
 from rob2_kit.reports._deterministic_zip import write_deterministic_zip
 from rob2_kit.storage.ledger import RevisionProjection, WorkflowLedger
 
@@ -1178,7 +1179,7 @@ a { color: #064c87; } a:focus-visible, summary:focus-visible { outline: .2rem so
 .run-dashboard caption { text-align: left; padding: .6rem 0; font-weight: 700; } .traffic-cell { display: inline-grid; place-items: center; width: 1.7rem; height: 1.7rem; border-radius: 50%; color: #fff; font-size: .7rem; font-weight: 800; } .traffic-low { background: #26734d; } .traffic-some_concerns { background: #a56b0b; } .traffic-high { background: #9c3226; } .traffic-none { color: #53635e; background: #e4e7e5; }
 @media (max-width: 58rem) { .report-layout { grid-template-columns: 1fr; } .domain-rail { position: static; } .domain-rail ol { display: flex; overflow-x: auto; gap: .35rem; } .domain-rail li { min-width: 13rem; } .result-hero { flex-direction: column; } }
 @media (max-width: 20rem) { main { padding: .5rem; } nav ol { display: block; } nav li { margin: .5rem 0; } .identity-grid { grid-template-columns: 1fr; } }
-@media print { body { background: #fff; color: #000; } main { max-width: none; } details { display: block; } details > * { display: block !important; } .report-header, .audit-summary, .domain, .question, .diagnostic { break-inside: avoid; box-shadow: none; } a { color: inherit; text-decoration: none; } }
+@media print { body { background: #fff; color: #000; } main { max-width: none; } nav, .domain-rail, .prototype-controls, [data-prototype-control] { display: none !important; } details, details[open] { display: block; } details > *, details:not([open]) > * { display: block !important; } details > summary { display: none; } .report-header, .audit-summary, .domain, .question, .diagnostic { break-inside: avoid; box-shadow: none; } a { color: inherit; text-decoration: none; } }
 """
 
 
@@ -1203,6 +1204,10 @@ def latest_assessment_view(ledger: WorkflowLedger) -> AssessmentView:
         _load_reference(ledger, current, reference, AlgorithmicJudgmentRevision)
         for reference in assessment.judgments
     )
+    traces = tuple(
+        _load_reference(ledger, current, judgment.decision_trace, DecisionTrace)
+        for judgment in judgments
+    )
     answers_by_sq: dict[str, SQAnswerRevision] = {}
     for reference in assessment.answers:
         try:
@@ -1210,15 +1215,51 @@ def latest_assessment_view(ledger: WorkflowLedger) -> AssessmentView:
         except (TypeError, ValueError):
             continue
         answers_by_sq[answer.sq_id] = answer
+    logic = _load_pinned_logic_pack(judgments, tuple(answers_by_sq.values()))
+    active_question_ids = {
+        question_id for trace in traces for question_id in trace.active_question_ids
+    }
+    overall_decision_trace: tuple[Identifier, ...] = ()
+    if logic is not None:
+        evaluation_answers = {
+            question_id: answer.answer
+            for question_id, answer in answers_by_sq.items()
+            if not active_question_ids or question_id in active_question_ids
+        }
+        evaluation = LogicEvaluator(logic).evaluate(EvaluationRequest(answers=evaluation_answers))
+        expected = {judgment.domain_id: judgment.judgment for judgment in judgments}
+        if evaluation.domain_judgments != expected:
+            raise ValueError("stored domain judgments do not match the pinned Logic evaluation")
+        active_question_ids = set(evaluation.active_question_ids)
+        overall_judgment = evaluation.overall_judgment.value
+        # Preserve the complete evaluator trace (domain matches followed by
+        # the matched overall rule); consumers can identify the overall rule
+        # by its ``rule:overall:`` prefix without losing domain provenance.
+        overall_decision_trace = evaluation.matched_rule_ids
+    else:
+        overall_judgment = _overall_judgment(
+            tuple(judgment.judgment.value for judgment in judgments)
+        )
+    question_order = (
+        {question.id: index for index, question in enumerate(logic.questions)}
+        if logic is not None
+        else {}
+    )
     _question_views, question_domains, visual_citations = _latest_question_views(
-        ledger, current, assessment, answers_by_sq
+        ledger,
+        current,
+        assessment,
+        answers_by_sq,
+        active_question_ids=frozenset(active_question_ids),
+        question_order=question_order,
     )
     result = result_spec.result
-    domain_order = {
-        domain_id: index for index, domain_id in enumerate(_DOMAIN_LABELS, start=1)
-    }
+    domain_order = (
+        {domain.id: index for index, domain in enumerate(logic.domains, start=1)}
+        if logic is not None
+        else {domain_id: index for index, domain_id in enumerate(_DOMAIN_LABELS, start=1)}
+    )
     ordered = sorted(judgments, key=lambda judgment: domain_order.get(judgment.domain_id, 99))
-    effective = tuple(judgment.judgment.value for judgment in ordered)
     estimate = EstimateView(
         value=str(result_spec.estimate.value),
         interval_lower=(
@@ -1274,7 +1315,7 @@ def latest_assessment_view(ledger: WorkflowLedger) -> AssessmentView:
             source_locator=result.source_locator,
             estimate=estimate,
         ),
-        overall_judgment=_overall_judgment(effective),
+        overall_judgment=overall_judgment,
         domains=_ordered_domains(tuple(
             DomainView(
                 domain_id=judgment.domain_id,
@@ -1284,7 +1325,10 @@ def latest_assessment_view(ledger: WorkflowLedger) -> AssessmentView:
                 questions=tuple(
                     sorted(
                         question_domains.get(judgment.domain_id, ()),
-                        key=lambda question: str(getattr(question, "question_id", "")),
+                        key=lambda question: (
+                            question_order.get(question.question_id, 10_000),
+                            question.question_id,
+                        ),
                     )
                 ),
                 decision_trace=(judgment.decision_trace.revision_id,),
@@ -1309,13 +1353,7 @@ def latest_assessment_view(ledger: WorkflowLedger) -> AssessmentView:
             if ordered and ordered[0].overall_policy_id
             else ""
         ),
-        overall_decision_trace=tuple(
-            rule_id
-            for judgment in ordered
-            for rule_id in (
-                _load_reference(ledger, current, judgment.decision_trace, DecisionTrace).matched_rule_ids
-            )
-        ),
+        overall_decision_trace=overall_decision_trace,
     )
 
 
@@ -1324,6 +1362,9 @@ def _latest_question_views(
     current: dict[str, RevisionProjection],
     assessment: AssessmentRevision,
     answers: dict[str, SQAnswerRevision],
+    *,
+    active_question_ids: frozenset[str] = frozenset(),
+    question_order: dict[str, int] | None = None,
 ) -> tuple[
     dict[str, SignalingQuestionView],
     dict[str, tuple[SignalingQuestionView, ...]],
@@ -1340,6 +1381,7 @@ def _latest_question_views(
     result: dict[str, SignalingQuestionView] = {}
     domains: dict[str, list[SignalingQuestionView]] = {}
     visual_citations: dict[str, VisualCitationView] = {}
+    question_order = question_order or {}
     guidance = _guidance_wording()
     for reference in assessment.evidence_bundles:
         try:
@@ -1349,6 +1391,13 @@ def _latest_question_views(
                 f"Assessment evidence bundle {reference.revision_id!r} cannot be reconstructed"
             ) from error
         if bundle.sq_id is None:
+            continue
+        answer = answers.get(bundle.sq_id)
+        if answer is None or (
+            active_question_ids and bundle.sq_id not in active_question_ids
+        ):
+            # Inactive Logic branches and bundles without a durable answer
+            # revision are not questions in the current Assessment view.
             continue
         dispositions: dict[str, str] = {}
         if bundle.consideration_manifest is not None:
@@ -1492,7 +1541,6 @@ def _latest_question_views(
                 )
             )
             visual_citations[visual.citation_id] = visual
-        answer = answers.get(bundle.sq_id)
         uncertainty = (
             (f"coverage state: {bundle.coverage_state.value}",)
             if bundle.coverage_state.value != "complete"
@@ -1503,15 +1551,15 @@ def _latest_question_views(
         question = SignalingQuestionView(
             question_id=bundle.sq_id,
             wording=guidance.get(bundle.sq_id, ""),
-            answer=answer.answer.value if answer else "no_information",
-            rationale=answer.rationale if answer else "No answer revision was recorded.",
+            answer=answer.answer.value,
+            rationale=answer.rationale,
             evidence=tuple(evidence),
             coverage=bundle.coverage_state.value,
             limitations=bundle.coverage_limitations,
             no_information_basis=bundle.no_information_basis,
             conflicts=bundle.conflicts,
             uncertainty=uncertainty,
-            decision_trace=answer.decision_rule_ids if answer else (),
+            decision_trace=answer.decision_rule_ids,
         )
         result[bundle.sq_id] = question
         if bundle.domain_id is not None:
@@ -1549,6 +1597,56 @@ def _guidance_wording() -> dict[str, str]:
                 continue
             return {item.logic_element_id: item.text for item in pack.items}
     return {}
+
+
+def _load_pinned_logic_pack(
+    judgments: tuple[AlgorithmicJudgmentRevision, ...],
+    answers: tuple[SQAnswerRevision, ...],
+) -> LogicPack | None:
+    """Load the installed Logic release only when its immutable pin matches."""
+
+    expected_hash = next(
+        (
+            value
+            for value in (
+                *(judgment.logic_pack_hash for judgment in judgments),
+                *(answer.logic_pack_hash for answer in answers),
+            )
+            if value
+        ),
+        None,
+    )
+    expected_release = next(
+        (
+            value
+            for value in (
+                *(judgment.logic_pack_release_id for judgment in judgments),
+                *(answer.logic_pack_release_id for answer in answers),
+            )
+            if value
+        ),
+        None,
+    )
+    if expected_hash is None and expected_release is None:
+        return None
+    roots = (
+        Path(__file__).resolve().parents[1] / "packs" / "logic",
+        Path(__file__).resolve().parents[3] / "packs" / "logic",
+    )
+    for root in roots:
+        if not root.is_dir():
+            continue
+        for path in sorted(root.glob("*.yaml")):
+            try:
+                pack = load_logic_pack(path)
+            except (OSError, ValueError):
+                continue
+            if expected_hash is not None and pack.content_hash != expected_hash:
+                continue
+            if expected_release is not None and pack.release_id != expected_release:
+                continue
+            return pack
+    raise ValueError("the pinned Logic pack release is unavailable")
 
 
 def _load_reference[ReportRevision: BaseModel](

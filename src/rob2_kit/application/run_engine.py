@@ -764,7 +764,9 @@ class RunEngine:
                             )
                         )
                     lease = self._acquire_lease(ledger, now)
-                    committed = ledger.commit_batch(tuple(transitions), lease, now=now)
+                    committed = self._commit_transitions(
+                        ledger, tuple(transitions), lease, now=now
+                    )
                     result = committed[0]
                     return PrepareRunResponse(
                         operation_id=result.operation_id,
@@ -1008,7 +1010,7 @@ class RunEngine:
                 )
             )
         lease = self._acquire_lease(ledger, now)
-        committed = ledger.commit_batch(tuple(transitions), lease, now=now)
+        committed = self._commit_transitions(ledger, tuple(transitions), lease, now=now)
         projection = self._projection(ledger, run_id)
         return PrepareRunResponse(
             operation_id=committed[prepared_transition_index].operation_id,
@@ -3439,6 +3441,69 @@ class RunEngine:
         self._regenerate_run_index(ledger, run_id)
         self._commit_run_completed_if_ready(ledger, run_id, lease=lease)
 
+    def _commit_transitions(
+        self,
+        ledger: WorkflowLedger,
+        transitions: tuple[Transition, ...],
+        lease: LeaseToken,
+        *,
+        now: datetime,
+    ) -> tuple[CommitResult, ...]:
+        """Publish terminal bundles before recording their readiness events.
+
+        A report transition carries a verified hidden stage in its immutable
+        artifact.  The stage is atomically renamed into its final location
+        before the ledger commit.  If the commit fails, each visible directory
+        is atomically moved back to its hidden stage, leaving a stable retry
+        point and, importantly, no orphan visible bundle without a readiness
+        event.
+        """
+
+        published: list[tuple[Path, Path]] = []
+        try:
+            for transition in transitions:
+                if transition.operation not in {
+                    "operation:result-report-ready",
+                    "operation:result-diagnostic-ready",
+                }:
+                    continue
+                try:
+                    payload = json.loads(transition.artifact)
+                    report_root = payload.get("report_root")
+                    staging_root = payload.get("staging_root")
+                except (TypeError, UnicodeDecodeError, json.JSONDecodeError):
+                    continue
+                if not isinstance(report_root, str) or not isinstance(staging_root, str):
+                    continue
+                root = self._required_root()
+                visible = root / report_root
+                staging = root / staging_root
+                if visible.exists():
+                    continue
+                if not staging.is_dir():
+                    raise OSError(f"staged report bundle is missing: {staging}")
+                visible.parent.mkdir(parents=True, exist_ok=True)
+                os.replace(staging, visible)
+                published.append((visible, staging))
+            committed = ledger.commit_batch(transitions, lease, now=now)
+        except Exception:
+            for visible, staging in reversed(published):
+                try:
+                    if visible.exists() and not staging.exists():
+                        os.replace(visible, staging)
+                    elif visible.exists():
+                        shutil.rmtree(visible)
+                except OSError:
+                    # The original visible path is never retained merely
+                    # because rollback encountered a second filesystem error.
+                    try:
+                        if visible.is_dir():
+                            shutil.rmtree(visible)
+                    except OSError:
+                        pass
+            raise
+        return committed
+
     def _commit_run_completed_if_ready(
         self,
         ledger: WorkflowLedger,
@@ -3645,7 +3710,7 @@ class RunEngine:
                 observed_at=self._now(),
             )
             lease = self._acquire_lease(ledger, self._now())
-            ledger.commit(transition, lease, now=self._now())
+            self._commit_transitions(ledger, (transition,), lease, now=self._now())
             self._repair_report_publication(ledger, run_id)
             return ()
         # A Result may only have one immutable answer checkpoint per domain.
@@ -3861,7 +3926,7 @@ class RunEngine:
                 observed_at=self._now(),
             )
             lease = self._acquire_lease(ledger, self._now())
-            ledger.commit(transition, lease, now=self._now())
+            self._commit_transitions(ledger, (transition,), lease, now=self._now())
             self._repair_report_publication(ledger, run_id)
             return ()
         assessment_ref = self._commit_frozen_artifact(
@@ -4021,10 +4086,10 @@ class RunEngine:
                 observed_at=now,
             ),
         ]
-        ledger.commit_batch(tuple(transitions), lease, now=now)
-        # Keep the bundle hidden until the immutable readiness transition has
-        # committed.  A failed commit therefore leaves only a repairable
-        # staging directory and never an orphan visible report.
+        self._commit_transitions(ledger, tuple(transitions), lease, now=now)
+        # The readiness transition is committed only after publication.  A
+        # failed commit is rolled back by ``_commit_transitions`` to the
+        # hidden stage, ready for a deterministic retry.
         self._repair_report_publication(ledger, run_id)
         return judgment_references
 
@@ -4181,6 +4246,29 @@ class RunEngine:
             effect_measure = ""
             estimate_view: EstimateView | None = None
             evidence_count = 0
+            if result_spec is not None:
+                outcome = result_spec.result.outcome_construct
+                time_point = result_spec.result.time_point
+                comparison = (
+                    f"{result_spec.result.comparison.experimental_arm_id} vs "
+                    f"{result_spec.result.comparison.comparator_arm_id}"
+                )
+                effect_measure = result_spec.result.effect_measure
+                estimate_view = EstimateView(
+                    value=str(result_spec.estimate.value),
+                    interval_lower=(
+                        str(result_spec.estimate.interval_lower)
+                        if result_spec.estimate.interval_lower is not None
+                        else None
+                    ),
+                    interval_upper=(
+                        str(result_spec.estimate.interval_upper)
+                        if result_spec.estimate.interval_upper is not None
+                        else None
+                    ),
+                    denominator_experimental=result_spec.estimate.denominator_experimental,
+                    denominator_comparator=result_spec.estimate.denominator_comparator,
+                )
             if diagnostic:
                 assert isinstance(record, _ResultDiagnosticRecord)
                 overall_judgment = ""
@@ -4198,10 +4286,12 @@ class RunEngine:
                         assessment_payload = json.loads(
                             (root / report_root / "assessment.json").read_text(encoding="utf-8")
                         )
-                        outcome = str(assessment_payload.get("outcome", ""))
-                        time_point = str(assessment_payload.get("time_point", ""))
-                        comparison = str(assessment_payload.get("comparison", ""))
-                        effect_measure = str(assessment_payload.get("effect_measure", ""))
+                        outcome = str(assessment_payload.get("outcome", outcome))
+                        time_point = str(assessment_payload.get("time_point", time_point))
+                        comparison = str(assessment_payload.get("comparison", comparison))
+                        effect_measure = str(
+                            assessment_payload.get("effect_measure", effect_measure)
+                        )
                         raw_estimate = assessment_payload.get("estimate")
                         if isinstance(raw_estimate, dict) and isinstance(
                             raw_estimate.get("value"), str
@@ -6330,7 +6420,7 @@ class RunEngine:
                 )
             )
         lease = self._acquire_lease(ledger, now)
-        ledger.commit_batch(tuple(transitions), lease, now=now)
+        self._commit_transitions(ledger, tuple(transitions), lease, now=now)
 
     def _events_for_run(
         self, ledger: WorkflowLedger, run_id: Identifier
@@ -6377,7 +6467,7 @@ class RunEngine:
             )
         if transitions:
             lease = self._acquire_lease(ledger, now)
-            ledger.commit_batch(tuple(transitions), lease, now=now)
+            self._commit_transitions(ledger, tuple(transitions), lease, now=now)
 
     def _unfinished_prepared_records(
         self, ledger: WorkflowLedger
@@ -7853,7 +7943,7 @@ class RunEngine:
                 )
             )
         lease = self._acquire_lease(ledger, now)
-        ledger.commit_batch(tuple(transitions), lease, now=now)
+        self._commit_transitions(ledger, tuple(transitions), lease, now=now)
 
     @staticmethod
     def _remap_initialization_identities(
