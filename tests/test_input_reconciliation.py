@@ -162,6 +162,109 @@ def _finish_current_result(
         )
 
 
+def test_identical_domain_evidence_retry_returns_the_committed_result(
+    tmp_path: Path,
+) -> None:
+    trial = tmp_path / "input" / "retry"
+    trial.mkdir(parents=True)
+    (trial / "report.pdf").write_bytes(b"primary")
+    engine, run_id = _prepare_confirm(
+        tmp_path,
+        config=_config(_result("result:retry", "trial:retry")),
+    )
+    _classify_current_sources(engine, run_id)
+    work = engine.continue_run(ContinueRunRequest(run_id=run_id)).work_item
+    assert work is not None
+    event_count = len(engine._bound_ledger(run_id).events())
+    request = SubmitDomainEvidenceRequest(
+        contract_version="1.0.0",
+        run_id=run_id,
+        work_token=work.work_token,
+        idempotency_key="idempotency:retry-domain-evidence",
+        result_id=work.result_id,
+        domain_id=work.domain_id,
+    )
+
+    first = engine.submit_domain_evidence(request)
+    event_count_after_first = len(engine._bound_ledger(run_id).events())
+    repeated = engine.submit_domain_evidence(request)
+    changed = engine.submit_domain_evidence(
+        request.model_copy(update={"coverage_limitations": ("changed",)})
+    )
+
+    assert first.condition.value == "accepted"
+    assert first.committed is True
+    assert repeated.condition.value == "accepted"
+    assert repeated.committed is False
+    assert repeated.operation_id == first.operation_id
+    assert event_count_after_first > event_count
+    assert len(engine._bound_ledger(run_id).events()) == event_count_after_first
+    assert changed.condition.value == "stale"
+    assert changed.committed is False
+    assert changed.error is not None
+    assert changed.error.code == "stale_work"
+
+
+def test_execution_contract_change_records_attempt_and_invalidates_declared_results(
+    tmp_path: Path, monkeypatch
+) -> None:
+    trial = tmp_path / "input" / "contract"
+    trial.mkdir(parents=True)
+    (trial / "report.pdf").write_bytes(b"primary")
+    engine, run_id = _prepare_confirm(
+        tmp_path,
+        config=_config(_result("result:contract", "trial:contract")),
+    )
+    _classify_current_sources(engine, run_id)
+    baseline = engine._installed_execution_contract()
+    initialization_only = baseline.model_copy(
+        update={
+            "identity": "sha256:" + ("b" * 64),
+            "components": {
+                **baseline.components,
+                "initialization-skill": "sha256:" + ("c" * 64),
+            },
+        }
+    )
+    monkeypatch.setattr(engine, "_installed_execution_contract", lambda: initialization_only)
+
+    preserved = engine.continue_run(ContinueRunRequest(run_id=run_id))
+
+    assert preserved.work_item is not None
+    assert not any(
+        event.operation == "operation:result-invalidated"
+        for event in engine._bound_ledger(run_id).events()
+    )
+    logic_changed = initialization_only.model_copy(
+        update={
+            "identity": "sha256:" + ("d" * 64),
+            "components": {
+                **initialization_only.components,
+                "logic-pack": "sha256:" + ("e" * 64),
+            },
+        }
+    )
+    monkeypatch.setattr(engine, "_installed_execution_contract", lambda: logic_changed)
+
+    resumed = engine.continue_run(ContinueRunRequest(run_id=run_id))
+    events = engine._bound_ledger(run_id).events()
+
+    assert resumed.work_item is not None
+    assert resumed.work_item.result_id == "result:contract"
+    attempts = tuple(
+        event for event in events if event.operation == "operation:preparation-attempt-superseded"
+    )
+    prepared_event = next(event for event in events if event.operation == "operation:run-prepared")
+    assert len(attempts) == 2
+    assert attempts[0].supersedes_revision_id == prepared_event.revision_id
+    assert attempts[1].supersedes_revision_id == attempts[0].revision_id
+    assert [
+        event.scope for event in events if event.operation == "operation:result-invalidated"
+    ] == [
+        "result:contract"
+    ]
+
+
 def test_resolved_outcome_candidate_survives_unrelated_source_change(
     tmp_path: Path,
 ) -> None:

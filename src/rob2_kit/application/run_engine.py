@@ -34,6 +34,7 @@ from rob2_kit.application.contracts import (
     ResultStatus,
     RunDirective,
     RunOperation,
+    RunProgress,
     RunProposal,
     RunProposalAmbiguity,
     RunProposalSelection,
@@ -78,6 +79,7 @@ from rob2_kit.domain.evidence import (
 )
 from rob2_kit.domain.results import ResultSpecRevision
 from rob2_kit.domain.revisions import (
+    SCHEMA_VERSION,
     Actor,
     ActorKind,
     ContentHash,
@@ -190,6 +192,22 @@ class _PreparedRunRecord(FrozenModel):
     run_id: Identifier
     proposal: RunProposal
     prepared_at: datetime
+    execution_contract: _ExecutionContract
+
+
+class _ExecutionContract(FrozenModel):
+    """Installed engine, schema, pack, policy, and skill identities for one attempt."""
+
+    identity: ContentHash
+    components: dict[str, ContentHash]
+
+
+class _PreparationAttemptSupersededRecord(FrozenModel):
+    run_id: Identifier
+    previous_contract: _ExecutionContract
+    execution_contract: _ExecutionContract
+    changed_components: tuple[str, ...]
+    invalidated_result_ids: tuple[Identifier, ...] = ()
 
 
 class _ProposalSubmittedRecord(FrozenModel):
@@ -289,6 +307,7 @@ class _RunRetiredRecord(FrozenModel):
 class _ResultResolutionRecord(FrozenModel):
     run_id: Identifier
     result_id: Identifier
+    work_token: WorkToken
     result_spec: ResultSpecRevision
 
 
@@ -308,6 +327,7 @@ class _DomainEvidenceRecord(FrozenModel):
     coverage_receipts: tuple[RecordReference, ...] = ()
     candidate_dispositions: tuple[EvidenceConsiderationInput, ...] = ()
     project_rules: tuple[RecordReference, ...] = ()
+    submission: SubmitDomainEvidenceRequest
 
 
 class _DomainEvidenceDispositionRecord(FrozenModel):
@@ -339,6 +359,7 @@ class _DomainAnswersRecord(FrozenModel):
     rationales: dict[Identifier, str]
     project_rules: tuple[RecordReference, ...] = ()
     answer_revisions: tuple[RecordReference, ...] = ()
+    submission: SubmitDomainAnswersRequest
 
 
 class _ResultStartedRecord(FrozenModel):
@@ -421,6 +442,7 @@ class RunEngine:
         except LifecycleIntegrityError as error:
             return self._prepare_integrity_failure(root, str(error))
         if current is not None and not request.start_new:
+            self._reconcile_execution_contract(ledger, current)
             projection = self._projection(ledger, current.run_id)
             if len(unfinished) > 1:
                 self._retire_prior_unfinished(ledger, unfinished[:-1], current.run_id)
@@ -764,6 +786,7 @@ class RunEngine:
             run_id=run_id,
             proposal=proposal,
             prepared_at=now,
+            execution_contract=self._installed_execution_contract(),
         )
         transitions: list[Transition] = []
         for prior in unfinished:
@@ -949,11 +972,15 @@ class RunEngine:
                     self._latest_proposal(ledger, request.run_id),
                 )
             ),
+            progress=self._run_progress(ledger, request.run_id, projection),
         )
 
     def continue_run(self, request: ContinueRunRequest) -> ContinueRunResponse:
         try:
             ledger = self._bound_ledger(request.run_id)
+            current = self._current_prepared_record(ledger)
+            if current is not None and current.run_id == request.run_id:
+                self._reconcile_execution_contract(ledger, current)
             # Reconciliation is part of every continuation.  It compares the
             # current confined input snapshot with the last committed
             # checkpoint and commits one idempotent batch when bytes changed.
@@ -1763,11 +1790,46 @@ class RunEngine:
     def submit_source_classification(
         self, request: SubmitSourceClassificationRequest
     ) -> SubmitSourceClassificationResponse:
+        bound_ledger = self._bound_ledger(request.run_id)
+        existing = self._submission_retry_event(
+            bound_ledger,
+            request.run_id,
+            request.idempotency_key,
+            {"operation:submit-source-classification"},
+        )
+        if existing is not None:
+            if (
+                SubmitSourceClassificationRequest.model_validate_json(
+                    bound_ledger.artifacts.read(existing.output_revision_hashes[0])
+                )
+                != request
+            ):
+                return SubmitSourceClassificationResponse(
+                    **self._stale_submission_kwargs(
+                        StaleWorkTokenError(
+                            request.run_id, self._next_work_item(bound_ledger, request.run_id)
+                        ),
+                        RunOperation.SUBMIT_SOURCE_CLASSIFICATION,
+                        bound_ledger,
+                    )
+                )
+            projection = self._projection(bound_ledger, request.run_id)
+            return SubmitSourceClassificationResponse(
+                operation_id=existing.operation_id,
+                ledger_cursor=f"ledger:{len(bound_ledger.events())}",
+                affected_scope=(request.run_id,),
+                condition=WorkflowCondition.ACCEPTED,
+                committed=False,
+                next_permitted_action=RunOperation.CONTINUE_RUN,
+                run_id=request.run_id,
+                run_state=projection.run_state,
+            )
         try:
             ledger = self._submission_ledger(
                 request.run_id,
                 request.work_token,
                 RunOperation.SUBMIT_SOURCE_CLASSIFICATION,
+                request.idempotency_key,
             )
         except StaleWorkTokenError as error:
             ledger = self._bound_ledger(request.run_id)
@@ -1816,11 +1878,53 @@ class RunEngine:
     def submit_result_resolution(
         self, request: SubmitResultResolutionRequest
     ) -> SubmitResultResolutionResponse:
+        bound_ledger = self._bound_ledger(request.run_id)
+        existing = self._submission_retry_event(
+            bound_ledger,
+            request.run_id,
+            request.idempotency_key,
+            {"operation:submit-result-resolution", "operation:result-discovered"},
+        )
+        if existing is not None:
+            record = _ResultResolutionRecord.model_validate_json(
+                bound_ledger.artifacts.read(existing.output_revision_hashes[0])
+            )
+            if (
+                record.work_token != request.work_token
+                or record.result_spec.result != request.result
+                or record.result_spec.estimate != request.estimate
+                or record.result_spec.provenance_note != request.provenance_note
+            ):
+                return SubmitResultResolutionResponse(
+                    **self._stale_submission_kwargs(
+                        StaleWorkTokenError(
+                            request.run_id, self._next_work_item(bound_ledger, request.run_id)
+                        ),
+                        RunOperation.SUBMIT_RESULT_RESOLUTION,
+                        bound_ledger,
+                        result_id=request.result.result_id,
+                    )
+                )
+            projection = self._projection(bound_ledger, request.run_id)
+            return SubmitResultResolutionResponse(
+                operation_id=existing.operation_id,
+                ledger_cursor=f"ledger:{len(bound_ledger.events())}",
+                affected_scope=(request.result.result_id,),
+                condition=WorkflowCondition.ACCEPTED,
+                committed=False,
+                next_permitted_action=RunOperation.CONTINUE_RUN,
+                run_id=request.run_id,
+                run_state=projection.run_state,
+                result_id=request.result.result_id,
+                result_state=self._result_state(projection, request.result.result_id),
+                result_spec=record.result_spec,
+            )
         try:
             ledger = self._submission_ledger(
                 request.run_id,
                 request.work_token,
                 RunOperation.SUBMIT_RESULT_RESOLUTION,
+                request.idempotency_key,
             )
         except StaleWorkTokenError as error:
             ledger = self._bound_ledger(request.run_id)
@@ -1933,6 +2037,7 @@ class RunEngine:
             artifact=_ResultResolutionRecord(
                 run_id=request.run_id,
                 result_id=request.result.result_id,
+                work_token=request.work_token,
                 result_spec=result_spec,
             ),
             checkpoint="checkpoint:result-resolution",
@@ -1957,11 +2062,53 @@ class RunEngine:
     def submit_domain_evidence(
         self, request: SubmitDomainEvidenceRequest
     ) -> SubmitDomainEvidenceResponse:
+        bound_ledger = self._bound_ledger(request.run_id)
+        existing = self._submission_retry_event(
+            bound_ledger,
+            request.run_id,
+            request.idempotency_key,
+            {"operation:submit-domain-evidence"},
+        )
+        if existing is not None:
+            record = _DomainEvidenceRecord.model_validate_json(
+                bound_ledger.artifacts.read(existing.output_revision_hashes[0])
+            )
+            if record.submission != request:
+                return SubmitDomainEvidenceResponse(
+                    **self._stale_submission_kwargs(
+                        StaleWorkTokenError(
+                            request.run_id, self._next_work_item(bound_ledger, request.run_id)
+                        ),
+                        RunOperation.SUBMIT_DOMAIN_EVIDENCE,
+                        bound_ledger,
+                        result_id=request.result_id,
+                        domain_id=request.domain_id,
+                    ),
+                    domain_id=request.domain_id,
+                )
+            projection = self._projection(bound_ledger, request.run_id)
+            return SubmitDomainEvidenceResponse(
+                operation_id=existing.operation_id,
+                ledger_cursor=f"ledger:{len(bound_ledger.events())}",
+                affected_scope=(request.result_id,),
+                condition=WorkflowCondition.ACCEPTED,
+                committed=False,
+                next_permitted_action=RunOperation.CONTINUE_RUN,
+                run_id=request.run_id,
+                run_state=projection.run_state,
+                result_id=request.result_id,
+                result_state=self._result_state(projection, request.result_id),
+                domain_id=request.domain_id,
+                evidence_bundles=record.evidence_bundles,
+                consideration_manifests=record.consideration_manifests,
+                coverage_receipts=record.coverage_receipts,
+            )
         try:
             ledger = self._submission_ledger(
                 request.run_id,
                 request.work_token,
                 RunOperation.SUBMIT_DOMAIN_EVIDENCE,
+                request.idempotency_key,
             )
         except StaleWorkTokenError as error:
             ledger = self._bound_ledger(request.run_id)
@@ -2011,6 +2158,7 @@ class RunEngine:
             coverage_receipts=receipts,
             candidate_dispositions=request.candidate_dispositions,
             project_rules=request.project_rules,
+            submission=request,
         )
         result = self._commit_submission(
             ledger,
@@ -2042,11 +2190,54 @@ class RunEngine:
     def submit_domain_answers(
         self, request: SubmitDomainAnswersRequest
     ) -> SubmitDomainAnswersResponse:
+        bound_ledger = self._bound_ledger(request.run_id)
+        existing = self._submission_retry_event(
+            bound_ledger,
+            request.run_id,
+            request.idempotency_key,
+            {"operation:submit-domain-answers"},
+        )
+        if existing is not None:
+            record = _DomainAnswersRecord.model_validate_json(
+                bound_ledger.artifacts.read(existing.output_revision_hashes[0])
+            )
+            if record.submission != request:
+                return SubmitDomainAnswersResponse(
+                    **self._stale_submission_kwargs(
+                        StaleWorkTokenError(
+                            request.run_id, self._next_work_item(bound_ledger, request.run_id)
+                        ),
+                        RunOperation.SUBMIT_DOMAIN_ANSWERS,
+                        bound_ledger,
+                        result_id=request.result_id,
+                        domain_id=request.domain_id,
+                    ),
+                    domain_id=request.domain_id,
+                )
+            projection = self._projection(bound_ledger, request.run_id)
+            return SubmitDomainAnswersResponse(
+                operation_id=existing.operation_id,
+                ledger_cursor=f"ledger:{len(bound_ledger.events())}",
+                affected_scope=(request.result_id,),
+                condition=WorkflowCondition.ACCEPTED,
+                committed=False,
+                next_permitted_action=RunOperation.CONTINUE_RUN,
+                run_id=request.run_id,
+                run_state=projection.run_state,
+                result_id=request.result_id,
+                result_state=self._result_state(projection, request.result_id),
+                domain_id=request.domain_id,
+                answer_revisions=record.answer_revisions,
+                judgments=self._materialize_terminal(
+                    bound_ledger, request.run_id, request.result_id
+                ),
+            )
         try:
             ledger = self._submission_ledger(
                 request.run_id,
                 request.work_token,
                 RunOperation.SUBMIT_DOMAIN_ANSWERS,
+                request.idempotency_key,
             )
         except StaleWorkTokenError as error:
             ledger = self._bound_ledger(request.run_id)
@@ -2135,6 +2326,7 @@ class RunEngine:
             rationales={item.question_id: item.rationale for item in request.answers},
             project_rules=request.project_rules,
             answer_revisions=answer_revisions,
+            submission=request,
         )
         result = self._commit_submission(
             ledger,
@@ -3541,11 +3733,21 @@ class RunEngine:
         run_id: Identifier,
         work_token: WorkToken,
         expected_operation: RunOperation,
+        operation_key: Identifier,
     ) -> WorkflowLedger:
         ledger = self._bound_ledger(run_id)
         # Every write requires the exact currently issued opaque token and
         # dependency fingerprint; this is the stale-work guard exposed to MCP
         # callers in every Run state.
+        existing = self._event_for_operation_key(ledger, operation_key, run_id=run_id)
+        global_existing = self._event_for_operation_key(ledger, operation_key)
+        allowed_operations = {f"operation:{expected_operation.value.replace('_', '-')}"}
+        if expected_operation is RunOperation.SUBMIT_RESULT_RESOLUTION:
+            allowed_operations.add("operation:result-discovered")
+        if (existing is None and global_existing is not None) or (
+            existing is not None and existing.operation not in allowed_operations
+        ):
+            raise StaleWorkTokenError(run_id, self._next_work_item(ledger, run_id))
         projection = self._projection(ledger, run_id)
         if work_token.run_id != run_id or work_token.operation is not expected_operation:
             expected = (
@@ -3561,6 +3763,22 @@ class RunEngine:
             if expected is None or expected.work_token != work_token:
                 raise StaleWorkTokenError(run_id, expected)
         return ledger
+
+    def _submission_retry_event(
+        self,
+        ledger: WorkflowLedger,
+        run_id: Identifier,
+        operation_key: Identifier,
+        allowed_operations: set[Identifier],
+    ) -> WorkflowEvent | None:
+        """Find a committed typed submission before rejecting its consumed token."""
+
+        existing = self._event_for_operation_key(ledger, operation_key, run_id=run_id)
+        if existing is None:
+            return None
+        if existing.operation not in allowed_operations:
+            return None
+        return existing
 
     def _stale_submission_kwargs(
         self,
@@ -4599,6 +4817,185 @@ class RunEngine:
 
     def _projection(self, ledger: WorkflowLedger, run_id: Identifier) -> LifecycleProjection:
         return derive_lifecycle(self._events_for_run(ledger, run_id))
+
+    def _installed_execution_contract(self) -> _ExecutionContract:
+        """Digest the installed execution dependencies pinned by ``rob2.lock``."""
+
+        lock_path = next(
+            (
+                candidate
+                for candidate in (
+                    Path(__file__).resolve().parents[1] / "rob2.lock",
+                    Path(__file__).resolve().parents[3] / "rob2.lock",
+                )
+                if candidate.is_file()
+            ),
+            None,
+        )
+        if lock_path is None:
+            raise FileNotFoundError("the installed rob2.lock release contract is missing")
+        raw = json.loads(lock_path.read_text(encoding="utf-8"))
+        def content_hash(value: str) -> ContentHash:
+            return "sha256:" + hashlib.sha256(value.encode()).hexdigest()
+
+        parser = self._parser or LiteParseAdapter()
+        parser_configuration = getattr(
+            parser, "configuration", getattr(parser, "config", None)
+        )
+        parser_identity = (
+            f"{type(parser).__module__}.{type(parser).__qualname__}|"
+            f"{getattr(parser, 'name', '')}|{getattr(parser, 'version', '')}|"
+            f"{json.dumps(parser_configuration, default=str, sort_keys=True)}"
+        )
+        project_policy = self._required_root() / "rob2.yaml"
+        components = {
+            "engine-schema": content_hash(
+                f"{raw['package']}|{raw['package_version']}|"
+                f"{raw['application_contract']}|{SCHEMA_VERSION}"
+            ),
+            "dependency-lock": raw["dependency_lock_hash"],
+            "logic-pack": raw["logic_pack_hash"],
+            "guidance-pack": raw["guidance_pack_hash"],
+            "assessment-skill": raw["skills"]["rob2-assess"]["content_hash"],
+            "initialization-skill": raw["skills"]["rob2-init"]["content_hash"],
+            "parser": content_hash(parser_identity),
+            "project-policies": (
+                "sha256:" + hashlib.sha256(project_policy.read_bytes()).hexdigest()
+                if project_policy.is_file()
+                else content_hash("no-project-policy")
+            ),
+        }
+        return _ExecutionContract(
+            identity=content_hash(json.dumps(components, sort_keys=True)),
+            components=components,
+        )
+
+    def _attempt_contract(
+        self, ledger: WorkflowLedger, prepared: _PreparedRunRecord
+    ) -> _ExecutionContract:
+        for event in reversed(self._events_for_run(ledger, prepared.run_id)):
+            if event.operation != "operation:preparation-attempt-superseded":
+                continue
+            return _PreparationAttemptSupersededRecord.model_validate_json(
+                ledger.artifacts.read(event.output_revision_hashes[0])
+            ).execution_contract
+        return prepared.execution_contract
+
+    def _reconcile_execution_contract(
+        self, ledger: WorkflowLedger, prepared: _PreparedRunRecord
+    ) -> None:
+        """Supersede only Result work declared dependent on changed installed inputs."""
+
+        projection = self._projection(ledger, prepared.run_id)
+        if projection.run_state in {RunState.RETIRED, RunState.INTEGRITY_FAILED}:
+            return
+        previous = self._attempt_contract(ledger, prepared)
+        current = self._installed_execution_contract()
+        if current.identity == previous.identity:
+            return
+        changed = tuple(
+            sorted(
+                key
+                for key in set(previous.components).union(current.components)
+                if previous.components.get(key) != current.components.get(key)
+            )
+        )
+        result_dependency_components = {
+            "engine-schema",
+            "dependency-lock",
+            "logic-pack",
+            "guidance-pack",
+            "assessment-skill",
+            "parser",
+            "project-policies",
+        }
+        result_states = {item.result_id: item.state for item in projection.results}
+        invalidated_result_ids = (
+            tuple(
+                sorted(
+                    result_id
+                    for result_id in self._active_result_ids(ledger, prepared.run_id)
+                    if result_states.get(result_id) is not ResultState.DIAGNOSTIC_READY
+                )
+            )
+            if set(changed).intersection(result_dependency_components)
+            else ()
+        )
+        record = _PreparationAttemptSupersededRecord(
+            run_id=prepared.run_id,
+            previous_contract=previous,
+            execution_contract=current,
+            changed_components=changed,
+            invalidated_result_ids=invalidated_result_ids,
+        )
+        now = datetime.now(UTC)
+        suffix = self._digest(f"{prepared.run_id}|{previous.identity}|{current.identity}")
+        prior_attempt = next(
+            (
+                event
+                for event in reversed(self._events_for_run(ledger, prepared.run_id))
+                if event.operation == "operation:preparation-attempt-superseded"
+            ),
+            next(
+                event
+                for event in reversed(self._events_for_run(ledger, prepared.run_id))
+                if event.operation == "operation:run-prepared"
+            ),
+        )
+        transitions = [
+            self._transition(
+                scope=prepared.run_id,
+                operation="operation:preparation-attempt-superseded",
+                operation_key=f"idempotency:preparation-attempt-superseded-{suffix}",
+                entity_id=prior_attempt.entity_id,
+                revision_id=f"revision:preparation-attempt-{suffix}",
+                artifact=record,
+                checkpoint=f"checkpoint:preparation-attempt-{suffix}",
+                outcome=WorkflowEventOutcome.WORK_REQUIRED,
+                observed_at=now,
+                supersedes_revision_id=prior_attempt.revision_id,
+            )
+        ]
+        if projection.run_state is RunState.COMPLETE and invalidated_result_ids:
+            transitions.append(
+                self._transition(
+                    scope=prepared.run_id,
+                    operation="operation:run-reopened",
+                    operation_key=f"idempotency:contract-reopened-{suffix}",
+                    entity_id=f"run-contract-reopened:{suffix}",
+                    revision_id=f"revision:run-contract-reopened-{suffix}",
+                    artifact=_RunReopenedRecord(
+                        run_id=prepared.run_id,
+                        input_snapshot_hash=prepared.proposal.input_snapshot_hash,
+                        invalidated_result_ids=invalidated_result_ids,
+                    ),
+                    checkpoint=f"checkpoint:contract-reopened-{suffix}",
+                    outcome=WorkflowEventOutcome.WORK_REQUIRED,
+                    observed_at=now,
+                )
+            )
+        for result_id in invalidated_result_ids:
+            transitions.append(
+                self._transition(
+                    scope=result_id,
+                    operation="operation:result-invalidated",
+                    operation_key=f"idempotency:contract-invalidated-{suffix}-{result_id.removeprefix('result:')}",
+                    entity_id=f"result-contract-invalidation:{suffix}-{result_id.removeprefix('result:')}",
+                    revision_id=f"revision:result-contract-invalidation:{suffix}-{result_id.removeprefix('result:')}",
+                    artifact=_ResultInvalidatedRecord(
+                        run_id=prepared.run_id,
+                        result_id=result_id,
+                        reason="A declared installed Execution-contract dependency changed.",
+                        affected_trial_id=self._trial_id_for_result(result_id) or "trial:unknown",
+                        input_snapshot_hash=current.identity,
+                    ),
+                    checkpoint=f"checkpoint:contract-invalidated-{result_id.removeprefix('result:')}",
+                    outcome=WorkflowEventOutcome.WORK_REQUIRED,
+                    observed_at=now,
+                )
+            )
+        lease = self._acquire_lease(ledger, now)
+        ledger.commit_batch(tuple(transitions), lease, now=now)
 
     def _events_for_run(
         self, ledger: WorkflowLedger, run_id: Identifier
@@ -6578,7 +6975,67 @@ class RunEngine:
             run_state=projection.run_state,
             directive=directive,
             work_item=work_item,
+            progress=self._run_progress(ledger, run_id, projection, work_item=work_item),
             error=error,
+        )
+
+    def _run_progress(
+        self,
+        ledger: WorkflowLedger,
+        run_id: Identifier,
+        projection: LifecycleProjection,
+        *,
+        work_item: WorkItem | None = None,
+    ) -> RunProgress:
+        """Project resume-critical state solely from committed ledger records."""
+
+        events = self._events_for_run(ledger, run_id)
+        checkpoint = next(
+            (event.checkpoint for event in reversed(events) if event.checkpoint), None
+        )
+        if work_item is None and projection.run_state is RunState.ASSESSING:
+            work_item = self._next_work_item(ledger, run_id)
+        blockers = ()
+        if projection.run_state is RunState.BLOCKED:
+            latest_blocker = next(
+                (
+                    self._event_payload(ledger, event).get("reason")
+                    for event in reversed(events)
+                    if event.operation == "operation:run-blocked"
+                ),
+                None,
+            )
+            if isinstance(latest_blocker, str):
+                blockers = (latest_blocker,)
+        terminal_counts = {
+            state.value: sum(1 for item in projection.results if item.state is state)
+            for state in (ResultState.REPORT_READY, ResultState.DIAGNOSTIC_READY)
+        }
+        report_locations = tuple(
+            sorted(
+                {
+                    str(payload["report_root"])
+                    for event in events
+                    if event.operation == "operation:report-materialized"
+                    for payload in (self._event_payload(ledger, event),)
+                    if isinstance(payload.get("report_root"), str)
+                }
+            )
+        )
+        return RunProgress(
+            committed_checkpoint=checkpoint,
+            current_scope=tuple(
+                item
+                for item in (
+                    work_item.trial_id if work_item is not None else None,
+                    work_item.result_id if work_item is not None else None,
+                    work_item.domain_id if work_item is not None else None,
+                )
+                if item is not None
+            ),
+            blockers=blockers,
+            terminal_result_counts=terminal_counts,
+            report_locations=report_locations,
         )
 
     def _schema_refusal(

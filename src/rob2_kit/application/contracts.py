@@ -104,6 +104,16 @@ class ResultStatus(FrozenModel):
     state: ResultState
 
 
+class RunProgress(FrozenModel):
+    """Ledger-derived details a Harness needs to resume without inference."""
+
+    committed_checkpoint: Identifier | None = None
+    current_scope: tuple[Identifier, ...] = ()
+    blockers: tuple[str, ...] = ()
+    terminal_result_counts: dict[str, int] = Field(default_factory=dict)
+    report_locations: tuple[str, ...] = ()
+
+
 class IntegrityFailure(FrozenModel):
     code: Literal["incompatible_ledger_schema", "ledger_integrity_failure"]
     detail: str = Field(min_length=1)
@@ -428,6 +438,7 @@ class RunStatusResponse(OperationResponse):
     run_id: Identifier
     run_state: RunState
     result_states: tuple[ResultStatus, ...] = ()
+    progress: RunProgress | None = None
     integrity: IntegrityFailure | None = None
 
 
@@ -436,6 +447,7 @@ class ContinueRunResponse(OperationResponse):
     run_state: RunState
     directive: RunDirective
     work_item: WorkItem | None = None
+    progress: RunProgress | None = None
     integrity: IntegrityFailure | None = None
 
 

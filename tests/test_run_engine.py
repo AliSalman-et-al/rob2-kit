@@ -71,6 +71,13 @@ def test_run_engine_resumes_current_run_from_concrete_durable_state(tmp_path) ->
     assert prepared.proposal is not None
     assert status.run_state is RunState.AWAITING_CONFIRMATION
     assert status.committed is False
+    assert status.progress is not None
+    assert status.progress.committed_checkpoint == "checkpoint:run-prepared"
+    assert status.progress.current_scope == ()
+    assert status.progress.terminal_result_counts == {
+        "diagnostic_ready": 0,
+        "report_ready": 0,
+    }
     assert resumed.run_id == prepared.run_id
     assert resumed.proposal == prepared.proposal
     assert resumed.committed is False
