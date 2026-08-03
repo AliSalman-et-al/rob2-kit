@@ -212,11 +212,19 @@ def create_server() -> Any:
         run_id: str,
         candidate_id: str,
         result_id: str | None = None,
+        current_render: dict[str, Any] | None = None,
+        still_ambiguous: bool = True,
     ) -> dict[str, Any]:
         return _dump(
             engine.inspect_visual_candidate(
                 InspectVisualCandidateRequest.model_validate(
-                    {"run_id": run_id, "candidate_id": candidate_id, "result_id": result_id}
+                    {
+                        "run_id": run_id,
+                        "candidate_id": candidate_id,
+                        "result_id": result_id,
+                        "current_render": current_render,
+                        "still_ambiguous": still_ambiguous,
+                    }
                 )
             )
         )

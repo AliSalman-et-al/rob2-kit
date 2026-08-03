@@ -45,11 +45,13 @@ from rob2_kit.evidence.visual import (
     VisualCandidate,
     VisualInspectionPolicy,
     VisualInspectionQueue,
+    VisualRenderRequest,
 )
 from rob2_kit.ingestion.project import (
     DocumentParser,
     LiteParseAdapter,
     ProjectInitialization,
+    _parse_index_pages,
 )
 from rob2_kit.ingestion.project import initialize_project as ingest_project
 from rob2_kit.logic.evaluator import EvaluationRequest, LogicEvaluator
@@ -453,21 +455,47 @@ class ApplicationGateway:
             )
         if tool_name == "inspect_visual_candidate":
             trial_id = (arguments or {}).get("trial_id")
-            if trial_id is not None and not any(
-                plan.trial_id == trial_id for plan in _stored_plans(ledger)
-            ):
-                raise ValueError("trial identifier was not issued by this project")
-            scope = (
-                f"preparation:{trial_id.removeprefix('trial:')}"
-                if isinstance(trial_id, str)
-                else None
-            )
+            result_id = (arguments or {}).get("result_id")
+            plans = _stored_plans(ledger)
+            selected_plans = plans
+            if trial_id is not None:
+                selected_plans = tuple(plan for plan in plans if plan.trial_id == trial_id)
+                if not selected_plans:
+                    raise ValueError("trial identifier was not issued by this project")
+            if result_id is not None:
+                selected_plans = tuple(
+                    plan for plan in selected_plans if plan.result_id == result_id
+                )
+                if not selected_plans:
+                    raise ValueError("result identifier was not issued by this project")
+            if trial_id is not None and result_id is None and len(selected_plans) > 1:
+                raise ValueError("result identifier is required for multi-result visual scope")
+            scope = selected_plans[0].scope if len(selected_plans) == 1 else None
             candidates = _visual_candidates(ledger, scope)
+            requested_limit = int((arguments or {}).get("limit", 1))
+            if requested_limit != 1:
+                raise ValueError("inspect_visual_candidate permits one candidate per call")
             page = VisualInspectionQueue(candidates).page(
-                limit=int((arguments or {}).get("limit", 1)),
+                limit=1,
                 cursor=(arguments or {}).get("cursor"),
             )
             policy = VisualInspectionPolicy()
+            current_render = (arguments or {}).get("current_render")
+            still_ambiguous = bool((arguments or {}).get("still_ambiguous", True))
+            render_requests = []
+            for candidate in page.candidates:
+                if current_render is None:
+                    render_requests.append(policy.initial_request(candidate))
+                    continue
+                request = VisualRenderRequest.model_validate(current_render)
+                render_requests.append(
+                    policy.escalate(
+                        candidate,
+                        request,
+                        still_ambiguous=still_ambiguous,
+                    )
+                    or request
+                )
             return OperationEnvelope(
                 operation_id=_identifier("operation", f"{project_id}|inspect-visual"),
                 ledger_cursor=f"ledger:{len(ledger.events())}",
@@ -477,8 +505,7 @@ class ApplicationGateway:
                 payload={
                     **page.model_dump(mode="json"),
                     "render_requests": [
-                        policy.initial_request(candidate).model_dump(mode="json")
-                        for candidate in page.candidates
+                        request.model_dump(mode="json") for request in render_requests
                     ],
                 },
             )
@@ -1108,24 +1135,44 @@ def _index_initial_evidence(
         for source in trial.inventory.sources:
             if source.artifact_hash is None or not source.parse_records:
                 continue
-            parsed = parser.parse(
+            indexed_pages = _parse_index_pages(
+                parser,
                 artifacts.read(source.artifact_hash),
-                ocr_enabled=False,
+                source.parse_records,
+                artifacts,
             )
             pages = tuple(
                 CanonicalPage(
                     page=item.page_number,
                     blocks=(
-                        CanonicalBlock(
-                            kind=CanonicalUnitKind.PARAGRAPH,
-                            text=item.text,
-                            spatial=(0.0, 0.0, item.width, item.height),
-                        ),
-                    )
-                    if item.text.strip()
-                    else (),
+                        tuple(
+                            CanonicalBlock(
+                                kind=CanonicalUnitKind.PARAGRAPH,
+                                text=text_item.text,
+                                spatial=(
+                                    text_item.x,
+                                    text_item.y,
+                                    text_item.x + text_item.width,
+                                    text_item.y + text_item.height,
+                                ),
+                            )
+                            for text_item in item.text_items
+                            if text_item.text.strip()
+                        )
+                        or (
+                            (
+                                CanonicalBlock(
+                                    kind=CanonicalUnitKind.PARAGRAPH,
+                                    text=item.text,
+                                    spatial=(0.0, 0.0, item.width, item.height),
+                                ),
+                            )
+                            if item.text.strip()
+                            else ()
+                        )
+                    ),
                 )
-                for item in parsed.pages
+                for item in indexed_pages
             )
             units.extend(
                 canonicalize_evidence_units(

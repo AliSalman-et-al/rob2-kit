@@ -79,6 +79,7 @@ from rob2_kit.ingestion.project import (
     ProjectInitialization,
     ResultCandidate,
     TrialInitialization,
+    _parse_index_pages,
     _parse_source,
     _registry_source_descriptor,
     initialize_project,
@@ -1628,13 +1629,28 @@ class RunEngine:
         candidate = next(
             (
                 candidate
-                for candidate in self._visual_candidates(ledger, request.run_id)
+                for candidate in self._visual_candidates(
+                    ledger,
+                    request.run_id,
+                    result_id=request.result_id,
+                )
                 if candidate.candidate_id == request.candidate_id
             ),
             None,
         )
         if candidate is None:
             raise ValueError("Visual candidate identifier was not issued by this Run")
+        policy = VisualInspectionPolicy()
+        render = (
+            policy.initial_request(candidate)
+            if request.current_render is None
+            else policy.escalate(
+                candidate,
+                request.current_render,
+                still_ambiguous=request.still_ambiguous,
+            )
+            or request.current_render
+        )
         return InspectVisualCandidateResponse(
             operation_id=self._read_operation_id(
                 RunOperation.INSPECT_VISUAL_CANDIDATE, request.run_id
@@ -1645,7 +1661,7 @@ class RunEngine:
             committed=False,
             run_id=request.run_id,
             candidate=candidate,
-            render=VisualInspectionPolicy().initial_request(candidate),
+            render=render,
         )
 
     def submit_source_classification(
@@ -2102,6 +2118,7 @@ class RunEngine:
                             artifacts.read(registry_source.artifact_hash),
                             registry_source.source_id,
                             registry_source.artifact_hash,
+                            artifact_store=artifacts,
                             allow_recovery=False,
                         )
                         registry_source = registry_source.model_copy(
@@ -2250,21 +2267,44 @@ class RunEngine:
             for source in trial.inventory.sources:
                 if source.artifact_hash is None or not source.parse_records:
                     continue
-                parsed = parser.parse(artifacts.read(source.artifact_hash), ocr_enabled=False)
+                indexed_pages = _parse_index_pages(
+                    parser,
+                    artifacts.read(source.artifact_hash),
+                    source.parse_records,
+                    artifacts,
+                )
                 pages = tuple(
                     CanonicalPage(
                         page=item.page_number,
                         blocks=(
-                            CanonicalBlock(
-                                kind=CanonicalUnitKind.PARAGRAPH,
-                                text=item.text,
-                                spatial=(0.0, 0.0, item.width, item.height),
-                            ),
-                        )
-                        if item.text.strip()
-                        else (),
+                            tuple(
+                                CanonicalBlock(
+                                    kind=CanonicalUnitKind.PARAGRAPH,
+                                    text=text_item.text,
+                                    spatial=(
+                                        text_item.x,
+                                        text_item.y,
+                                        text_item.x + text_item.width,
+                                        text_item.y + text_item.height,
+                                    ),
+                                )
+                                for text_item in item.text_items
+                                if text_item.text.strip()
+                            )
+                            or (
+                                (
+                                    CanonicalBlock(
+                                        kind=CanonicalUnitKind.PARAGRAPH,
+                                        text=item.text,
+                                        spatial=(0.0, 0.0, item.width, item.height),
+                                    ),
+                                )
+                                if item.text.strip()
+                                else ()
+                            )
+                        ),
                     )
-                    for item in parsed.pages
+                    for item in indexed_pages
                 )
                 units.extend(
                     canonicalize_evidence_units(
@@ -2516,6 +2556,54 @@ class RunEngine:
         answer_domains = {payload.get("domain_id") for payload in answer_payloads}
         if not required_domains <= evidence_domains or not required_domains <= answer_domains:
             return
+        coverage_limitations_set: set[str] = set()
+        for event in events:
+            if (
+                event.operation != "operation:submit-domain-evidence"
+                or event.scope != result_id
+                or event.sequence <= invalidated_at
+            ):
+                continue
+            payload = self._event_payload(ledger, event)
+            raw_limitations = payload.get("coverage_limitations")
+            limitations = (
+                tuple(str(item) for item in raw_limitations)
+                if isinstance(raw_limitations, (list, tuple))
+                else ()
+            )
+            if payload.get("coverage_state") == "incomplete" and not limitations:
+                limitations = ("incomplete evidence coverage",)
+            coverage_limitations_set.update(limitations)
+        coverage_limitations = tuple(sorted(coverage_limitations_set))
+        result_spec = self._result_spec_for(ledger, run_id, result_id)
+        if result_spec is None:
+            raise ValueError("a ResultSpec is required before terminal assessment")
+        if coverage_limitations:
+            diagnostic_suffix = self._digest(
+                f"{run_id}|{result_id}|coverage-diagnostic|{coverage_limitations}"
+            )
+            reason = "Result evidence coverage is unresolved: " + "; ".join(
+                coverage_limitations
+            )
+            transition = self._transition(
+                scope=result_id,
+                operation="operation:result-diagnostic-ready",
+                operation_key=f"idempotency:coverage-diagnostic-{diagnostic_suffix}",
+                entity_id=f"result-diagnostic:{diagnostic_suffix}",
+                revision_id=f"revision:result-diagnostic-{diagnostic_suffix}",
+                artifact=_ResultDiagnosticRecord(
+                    run_id=run_id,
+                    result_id=result_id,
+                    trial_id=result_spec.result.trial_id,
+                    reason=reason,
+                ),
+                checkpoint=f"checkpoint:coverage-diagnostic-{diagnostic_suffix}",
+                outcome=WorkflowEventOutcome.TRIAL_PROBLEM,
+                observed_at=datetime.now(UTC),
+            )
+            lease = self._acquire_lease(ledger, datetime.now(UTC))
+            ledger.commit(transition, lease, now=datetime.now(UTC))
+            return
         # A Result may only have one immutable answer checkpoint per domain.
         answers: dict[str, str] = {}
         rationales: dict[str, str] = {}
@@ -2533,9 +2621,6 @@ class RunEngine:
         evaluation = LogicEvaluator(logic).evaluate(
             EvaluationRequest(answers=answers, assessor_inputs=assessor_inputs)
         )
-        result_spec = self._result_spec_for(ledger, run_id, result_id)
-        if result_spec is None:
-            raise ValueError("a ResultSpec is required before terminal assessment")
         assessment_digest = self._digest(
             f"{run_id}|{result_id}|{json.dumps(answers, sort_keys=True)}|"
             f"{json.dumps(assessor_inputs, sort_keys=True)}|invalidated:{invalidated_at}"
@@ -3560,11 +3645,18 @@ class RunEngine:
         self,
         ledger: WorkflowLedger,
         run_id: Identifier,
+        *,
+        result_id: Identifier | None = None,
     ) -> tuple[VisualCandidate, ...]:
         candidates: dict[str, VisualCandidate] = {}
         for event in ledger.events():
             payload = self._event_payload(ledger, event)
             if payload.get("run_id") not in {None, run_id}:
+                continue
+            if result_id is not None and event.scope not in {
+                result_id,
+                f"preparation:{result_id.removeprefix('result:')}",
+            }:
                 continue
             raw_candidates = payload.get("visual_candidates", ())
             if not isinstance(raw_candidates, (list, tuple)):

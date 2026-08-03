@@ -3,8 +3,10 @@
 from __future__ import annotations
 
 import hashlib
+import inspect
 import json
 import re
+import tempfile
 from collections.abc import Mapping
 from dataclasses import dataclass
 from datetime import UTC, datetime
@@ -29,6 +31,7 @@ from rob2_kit.domain.sources import (
     CoverageState,
     PageCoverage,
     ParseRecord,
+    ParserQualityPolicy,
     SourceAvailability,
     SourceComponentAnnotation,
     SourceCriticality,
@@ -47,13 +50,23 @@ from rob2_kit.registry import (
 from rob2_kit.storage import ArtifactStore, WorkflowLedger
 
 CLASSIFIER_VERSION = "source-classifier:1.0.0"
-CANONICALIZATION_VERSION = "liteparse-adapter:1.0.0"
-RECOVERY_REASONS = frozenset({"no-text", "scanned"})
-LIMITED_REASONS = frozenset({"garbled"})
-BLANK_REASONS = frozenset({"intentionally-blank", "intentionally_blank", "blank"})
-VISUAL_REASONS = frozenset({"parse-render-discrepancy"})
+CANONICALIZATION_VERSION = "liteparse-adapter:2.0.0"
+PARSER_QUALITY_POLICY = ParserQualityPolicy()
+RECOVERY_POLICY_RELEASE = "policy:source-recovery-1.0.0"
+RECOVERY_REASONS = frozenset(PARSER_QUALITY_POLICY.recovery_reasons)
+LIMITED_REASONS = frozenset(PARSER_QUALITY_POLICY.limited_reasons)
+BLANK_REASONS = frozenset(PARSER_QUALITY_POLICY.blank_reasons)
+VISUAL_REASONS = frozenset(PARSER_QUALITY_POLICY.visual_reasons)
 DEFAULT_ZIP_MAX_MEMBERS = 100
 DEFAULT_ZIP_MAX_EXPANDED_BYTES = 100 * 1024 * 1024
+LITEPARSE_CONFIGURATION: dict[str, object] = {
+    "include_complexity": True,
+    "emit_word_boxes": True,
+    "extract_content_bounds": True,
+    "extract_form_fields": True,
+    "render_form_fields": False,
+    "quiet": True,
+}
 
 
 class BoundedZipError(ValueError):
@@ -103,17 +116,56 @@ def read_bounded_zip(
         raise BoundedZipError("malformed ZIP container") from error
 
 
+class PageWord(FrozenModel):
+    """One LiteParse word box in its 72-DPI, top-left coordinate space."""
+
+    text: str
+    x: float
+    y: float
+    width: float
+    height: float
+    confidence: float | None = None
+
+
+class PageTextItem(FrozenModel):
+    """Spatial text retained from LiteParse without exposing parser objects."""
+
+    text: str
+    x: float
+    y: float
+    width: float
+    height: float
+    words: tuple[PageWord, ...] = ()
+    rotation: float = 0.0
+    confidence: float | None = None
+
+
 class PageExtraction(FrozenModel):
     page_number: int = Field(ge=1)
     width: float = Field(gt=0)
     height: float = Field(gt=0)
     text: str
     reasons: tuple[str, ...] = ()
+    text_items: tuple[PageTextItem, ...] = ()
+    content_bounds: tuple[float, float, float, float] | None = None
+    has_form_fields: bool = False
 
 
 class ParserResult(FrozenModel):
     pages: tuple[PageExtraction, ...]
     raw_output: bytes
+
+
+class PageRender(FrozenModel):
+    """Immutable LiteParse base render retained for visual citation routing."""
+
+    page_number: int = Field(ge=1)
+    dpi: float = Field(gt=0)
+    pixel_width: int = Field(gt=0)
+    pixel_height: int = Field(gt=0)
+    image_hash: ContentHash
+    image_bytes: bytes
+    media_type: str = "image/png"
 
 
 class DocumentParser(Protocol):
@@ -128,11 +180,30 @@ class DocumentParser(Protocol):
         target_pages: tuple[int, ...] | None = None,
     ) -> ParserResult: ...
 
+def _content_bounds(page: Any) -> tuple[float, float, float, float] | None:
+    bounds = getattr(page, "content_bounds", None)
+    if bounds is None:
+        return None
+    if len(bounds) != 4:
+        raise SourceParseError("LiteParse returned invalid content bounds")
+    return (
+        float(bounds[0]),
+        float(bounds[1]),
+        float(bounds[2]),
+        float(bounds[3]),
+    )
+
 
 class LiteParseAdapter:
     """Convert LiteParse's version-specific objects to stable ingestion records."""
 
     name = "liteparse"
+
+    @property
+    def configuration(self) -> dict[str, object]:
+        """Return the resolved non-volatile LiteParse configuration."""
+
+        return dict(LITEPARSE_CONFIGURATION)
 
     def __init__(self) -> None:
         self.version = version("liteparse")
@@ -144,17 +215,31 @@ class LiteParseAdapter:
         ocr_enabled: bool,
         target_pages: tuple[int, ...] | None = None,
     ) -> ParserResult:
-        from liteparse import LiteParse
+        from liteparse import LiteParse, ParseError
 
         target = None if target_pages is None else ",".join(str(page) for page in target_pages)
+        options: dict[str, Any] = {
+            "ocr_enabled": ocr_enabled,
+            "include_complexity": True,
+            "target_pages": target,
+            "quiet": True,
+        }
+        # Keep compatibility with small test doubles and older adapters while
+        # enabling every spatial/form-safety option exposed by LiteParse 2.10.
         try:
-            parsed = LiteParse(
-                ocr_enabled=ocr_enabled,
-                include_complexity=True,
-                target_pages=target,
-                quiet=True,
-            ).parse(data)
-        except ValueError as error:
+            supported = inspect.signature(LiteParse).parameters
+        except (TypeError, ValueError):
+            supported = {}
+        options.update(
+            {
+                key: value
+                for key, value in LITEPARSE_CONFIGURATION.items()
+                if key in supported
+            }
+        )
+        try:
+            parsed = LiteParse(**options).parse(data)
+        except (ParseError, ValueError) as error:
             raise SourceParseError(str(error)) from error
         pages = tuple(
             PageExtraction(
@@ -163,6 +248,31 @@ class LiteParseAdapter:
                 height=page.height,
                 text=page.text,
                 reasons=tuple(page.complexity.reasons if page.complexity else ()),
+                text_items=tuple(
+                    PageTextItem(
+                        text=item.text,
+                        x=item.x,
+                        y=item.y,
+                        width=item.width,
+                        height=item.height,
+                        words=tuple(
+                            PageWord(
+                                text=word.text,
+                                x=word.x,
+                                y=word.y,
+                                width=word.width,
+                                height=word.height,
+                                confidence=getattr(word, "confidence", None),
+                            )
+                            for word in getattr(item, "words", ())
+                        ),
+                        rotation=float(getattr(item, "rotation", 0.0) or 0.0),
+                        confidence=getattr(item, "confidence", None),
+                    )
+                    for item in getattr(page, "text_items", ())
+                ),
+                content_bounds=_content_bounds(page),
+                has_form_fields=bool(getattr(page, "form_fields", None)),
             )
             for page in parsed.pages
         )
@@ -175,6 +285,21 @@ class LiteParseAdapter:
                         "height": page.height,
                         "text": page.text,
                         "reasons": page.reasons,
+                        "text_items": [
+                            {
+                                "text": item.text,
+                                "x": item.x,
+                                "y": item.y,
+                                "width": item.width,
+                                "height": item.height,
+                                "words": [word.model_dump(mode="json") for word in item.words],
+                                "rotation": item.rotation,
+                                "confidence": item.confidence,
+                            }
+                            for item in page.text_items
+                        ],
+                        "content_bounds": page.content_bounds,
+                        "has_form_fields": page.has_form_fields,
                     }
                     for page in pages
                 ]
@@ -183,6 +308,60 @@ class LiteParseAdapter:
             separators=(",", ":"),
         ).encode()
         return ParserResult(pages=pages, raw_output=raw)
+
+    def screenshot(
+        self,
+        data: bytes,
+        *,
+        page_numbers: tuple[int, ...],
+        dpi: int,
+    ) -> tuple[PageRender, ...]:
+        """Render selected pages through LiteParse's pinned PNG surface.
+
+        LiteParse's screenshot API is path-based even though ``parse`` accepts
+        bytes.  The temporary path is confined to the process and removed
+        immediately; callers receive immutable bytes plus a content hash.
+        """
+
+        if dpi not in {144, 180, 216}:
+            raise ValueError("screenshot DPI must be one of 144, 180, or 216")
+        if not page_numbers or any(page < 1 for page in page_numbers):
+            raise ValueError("screenshot page numbers must be one-based")
+        from liteparse import LiteParse, ParseError
+
+        temporary_path: Path | None = None
+        try:
+            with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as temporary:
+                temporary.write(data)
+                temporary.flush()
+                temporary_path = Path(temporary.name)
+            screenshots = LiteParse(
+                dpi=float(dpi),
+                quiet=True,
+                render_form_fields=False,
+            ).screenshot(temporary_path, page_numbers=list(page_numbers))
+        except (OSError, ParseError, ValueError) as error:
+            raise SourceParseError(str(error)) from error
+        finally:
+            if temporary_path is not None:
+                temporary_path.unlink(missing_ok=True)
+        result: list[PageRender] = []
+        for screenshot in screenshots:
+            image = bytes(screenshot.image_bytes)
+            result.append(
+                PageRender(
+                    page_number=screenshot.page_num,
+                    dpi=float(dpi),
+                    pixel_width=screenshot.width,
+                    pixel_height=screenshot.height,
+                    image_hash=_hash_bytes(image),
+                    image_bytes=image,
+                )
+            )
+        returned_pages = tuple(item.page_number for item in result)
+        if returned_pages != tuple(page_numbers):
+            raise SourceParseError("LiteParse screenshot output did not preserve requested pages")
+        return tuple(result)
 
 
 class ProjectManifest(FrozenModel):
@@ -197,6 +376,7 @@ class ProjectManifest(FrozenModel):
     guidance_releases: tuple[str, ...] = ("guidance:rob2-parallel-assignment-en-2019.1",)
     policy_releases: tuple[str, ...] = (
         "policy:source-recovery-1.0.0",
+        "policy:parser-quality-1.0.0",
         "policy:review-1.0.0",
     )
     export_preferences: tuple[str, ...] = ("json", "markdown", "html")
@@ -274,6 +454,7 @@ class _DeclaredDocument:
     path: str
     roles: tuple[SourceRole, ...]
     components: tuple[SourceComponentAnnotation, ...]
+    decision_relevant_pages: tuple[int, ...] = ()
 
 
 def initialize_project(
@@ -795,11 +976,26 @@ def _initialize_trial(
                     data,
                     source_id,
                     artifact.content_hash,
-                    allow_recovery=criticality is SourceCriticality.REQUIRED,
+                    artifact_store=store,
+                    allow_recovery=(
+                        criticality is SourceCriticality.REQUIRED
+                        or bool(declaration and declaration.decision_relevant_pages)
+                    ),
+                    relevant_pages=(
+                        declaration.decision_relevant_pages if declaration else ()
+                    ),
                 )
                 processing = (
                     SourceProcessing.COVERAGE_LIMITED
-                    if any(item.state is CoverageState.COVERAGE_LIMITED for item in coverage)
+                    if any(
+                        item.state
+                        in {
+                            CoverageState.COVERAGE_LIMITED,
+                            CoverageState.RECOVERY_REQUIRED,
+                            CoverageState.VISUAL_REQUIRED,
+                        }
+                        for item in coverage
+                    )
                     else SourceProcessing.USABLE
                 )
             except SourceParseError as error:
@@ -945,6 +1141,7 @@ def _initialize_registry(
                 store.read(registry_source.artifact_hash),
                 registry_source.source_id,
                 registry_source.artifact_hash,
+                artifact_store=store,
                 allow_recovery=False,
             )
         except Exception:
@@ -1198,21 +1395,64 @@ def _parse_source(
     source_id: Identifier,
     artifact_hash: ContentHash,
     *,
+    artifact_store: ArtifactStore | None = None,
     allow_recovery: bool,
+    relevant_pages: tuple[int, ...] = (),
 ) -> tuple[tuple[ParseRecord, ...], tuple[PageCoverage, ...]]:
     initial = parser.parse(data, ocr_enabled=False)
+    _validate_parse_pages(initial.pages, target_pages=None)
+    relevant = frozenset(relevant_pages)
+    initial_page_numbers = frozenset(page.page_number for page in initial.pages)
+    missing_relevant = sorted(relevant - initial_page_numbers)
+    if missing_relevant:
+        raise SourceParseError(
+            "decision-relevant pages are absent from the OCR-off parse: "
+            + ", ".join(str(page) for page in missing_relevant)
+        )
+    initial_record = _parse_record(
+        parser, initial, source_id, artifact_hash, False, None, "initial"
+    )
+    if artifact_store is not None:
+        initial_artifact = artifact_store.put(
+            initial.raw_output,
+            "application/octet-stream",
+        )
+        initial_pages_artifact = artifact_store.put(
+            _page_artifact_bytes(initial.pages),
+            "application/json",
+        )
+        initial_record = initial_record.model_copy(
+            update={
+                "output_artifact_hash": initial_artifact.content_hash,
+                "page_artifact_hash": initial_pages_artifact.content_hash,
+            }
+        )
+    records = [initial_record]
     recovery_pages = tuple(
         page.page_number
         for page in initial.pages
-        if not page.text.strip() and RECOVERY_REASONS.intersection(page.reasons)
+        if _needs_recovery(
+            page,
+            relevant_pages=relevant,
+            allow_suspect=bool(relevant),
+        )
+        and (not relevant or page.page_number in relevant)
     )
-    records = [_parse_record(parser, initial, source_id, artifact_hash, False, None, "initial")]
+    if (
+        allow_recovery
+        and not relevant
+        and _genuinely_scanned(parser, data, initial.pages)
+    ):
+        recovery_pages = tuple(page.page_number for page in initial.pages)
     recovered: Mapping[int, PageExtraction] = {}
+    recovery_record: ParseRecord | None = None
+    recovery_error: str | None = None
     if recovery_pages and allow_recovery:
-        recovery = parser.parse(data, ocr_enabled=True, target_pages=recovery_pages)
-        recovered = {page.page_number: page for page in recovery.pages}
-        records.append(
-            _parse_record(
+        try:
+            recovery = parser.parse(data, ocr_enabled=True, target_pages=recovery_pages)
+            _validate_parse_pages(recovery.pages, target_pages=recovery_pages)
+            recovered = {page.page_number: page for page in recovery.pages}
+            recovery_record = _parse_record(
                 parser,
                 recovery,
                 source_id,
@@ -1221,16 +1461,188 @@ def _parse_source(
                 recovery_pages,
                 "recovery",
             )
-        )
+            if artifact_store is not None:
+                recovery_artifact = artifact_store.put(
+                    recovery.raw_output,
+                    "application/octet-stream",
+                )
+                recovery_pages_artifact = artifact_store.put(
+                    _page_artifact_bytes(recovery.pages),
+                    "application/json",
+                )
+                recovery_record = recovery_record.model_copy(
+                    update={
+                        "output_artifact_hash": recovery_artifact.content_hash,
+                        "page_artifact_hash": recovery_pages_artifact.content_hash,
+                    }
+                )
+            records.append(recovery_record)
+        except SourceParseError as error:
+            recovery_error = str(error)
     coverage = tuple(
         _coverage_for(
             page,
             recovered.get(page.page_number),
             page.page_number in recovery_pages and allow_recovery,
+            parse_record=initial_record,
+            recovery_record=recovery_record,
+            artifact_hash=artifact_hash,
+            recovery_error=recovery_error,
         )
         for page in initial.pages
     )
     return tuple(records), coverage
+
+
+def _page_artifact_bytes(pages: tuple[PageExtraction, ...]) -> bytes:
+    return json.dumps(
+        [page.model_dump(mode="json") for page in pages],
+        sort_keys=True,
+        separators=(",", ":"),
+    ).encode()
+
+
+def _pages_from_artifact(data: bytes) -> tuple[PageExtraction, ...]:
+    try:
+        payload = json.loads(data)
+        return tuple(PageExtraction.model_validate(item) for item in payload)
+    except (TypeError, ValueError, json.JSONDecodeError) as error:
+        raise SourceParseError("stored parser page artifact is invalid") from error
+
+
+def _parse_index_pages(
+    parser: DocumentParser,
+    data: bytes,
+    parse_records: tuple[ParseRecord, ...],
+    artifact_store: ArtifactStore | None = None,
+) -> tuple[PageExtraction, ...]:
+    """Rehydrate OCR-off pages plus any recorded targeted recovery pages.
+
+    Parse records intentionally retain the requested recovery page set but not
+    parser-specific objects.  Evidence indexing therefore replays exactly the
+    bounded OCR calls recorded during initialization and merges those pages
+    into the canonical page stream; it must never silently drop recovered text
+    by indexing only the OCR-off pass.
+    """
+
+    initial_record = next(
+        (record for record in parse_records if not record.ocr_enabled),
+        None,
+    )
+    if artifact_store is not None and initial_record and initial_record.page_artifact_hash:
+        initial_pages = _pages_from_artifact(
+            artifact_store.read(initial_record.page_artifact_hash)
+        )
+    else:
+        initial_pages = parser.parse(data, ocr_enabled=False).pages
+    _validate_parse_pages(initial_pages, target_pages=None)
+    pages = {page.page_number: page for page in initial_pages}
+    for record in parse_records:
+        if not record.ocr_enabled or not record.target_pages:
+            continue
+        if artifact_store is not None and record.page_artifact_hash:
+            recovered_pages = _pages_from_artifact(
+                artifact_store.read(record.page_artifact_hash)
+            )
+        else:
+            recovered_pages = parser.parse(
+                data,
+                ocr_enabled=True,
+                target_pages=record.target_pages,
+            ).pages
+        recovered = ParserResult(pages=recovered_pages, raw_output=b"")
+        _validate_parse_pages(recovered.pages, target_pages=record.target_pages)
+        pages.update({page.page_number: page for page in recovered.pages})
+    return tuple(pages[number] for number in sorted(pages))
+
+
+def _validate_parse_pages(
+    pages: tuple[PageExtraction, ...],
+    *,
+    target_pages: tuple[int, ...] | None,
+) -> None:
+    """Reject incomplete or duplicate parser output before deriving coverage."""
+
+    numbers = tuple(page.page_number for page in pages)
+    if not numbers:
+        raise SourceParseError("LiteParse returned no pages")
+    if len(numbers) != len(set(numbers)):
+        raise SourceParseError("LiteParse returned duplicate page numbers")
+    if target_pages is None:
+        expected = tuple(range(1, len(numbers) + 1))
+        if numbers != expected:
+            raise SourceParseError(
+                "LiteParse OCR-off output must contain every page in one-based order"
+            )
+    else:
+        expected = tuple(sorted(set(target_pages)))
+        if tuple(sorted(numbers)) != expected:
+            raise SourceParseError(
+                "LiteParse targeted recovery output did not cover every requested page"
+            )
+
+
+def _needs_recovery(
+    page: PageExtraction,
+    *,
+    relevant_pages: frozenset[int],
+    allow_suspect: bool,
+) -> bool:
+    if RECOVERY_REASONS.intersection(page.reasons):
+        return not _trustworthy_page_text(page)
+    if not allow_suspect:
+        return False
+    return bool(
+        LIMITED_REASONS.intersection(page.reasons)
+        or VISUAL_REASONS.intersection(page.reasons)
+        or "\ufffd" in page.text
+    )
+
+
+def _trustworthy_page_text(page: PageExtraction) -> bool:
+    text = page.text.strip()
+    if not text or "\ufffd" in text:
+        return False
+    if LIMITED_REASONS.intersection(page.reasons):
+        return False
+    # LiteParse can label a sparse one- or two-word header ``no-text`` even
+    # though a tiny canonical fragment is available.  Treat that fragment as
+    # suspect; a substantive three-word passage is retained without needless
+    # OCR unless another suspect signal is present.
+    return len(text.split()) >= 3
+
+
+def _genuinely_scanned(
+    parser: DocumentParser,
+    data: bytes,
+    pages: tuple[PageExtraction, ...],
+) -> bool:
+    """Require representative missing-text and visual observations before whole OCR."""
+
+    if not pages:
+        return False
+    representative_indexes = {0, len(pages) // 2, len(pages) - 1}
+    if not all(
+        not pages[index].text.strip()
+        and bool(RECOVERY_REASONS.intersection(pages[index].reasons))
+        for index in representative_indexes
+    ):
+        return False
+    screenshot = getattr(parser, "screenshot", None)
+    if screenshot is None:
+        # Lightweight parser doubles may not expose LiteParse's screenshot
+        # surface; their representative page observations remain the bounded
+        # fallback used by the ingestion tests.
+        return True
+    requested = tuple(sorted(pages[index].page_number for index in representative_indexes))
+    try:
+        renders = screenshot(data, page_numbers=requested, dpi=144)
+    except (SourceParseError, OSError, ValueError):
+        return False
+    return (
+        tuple(render.page_number for render in renders) == requested
+        and all(render.image_bytes for render in renders)
+    )
 
 
 def _parse_record(
@@ -1242,11 +1654,19 @@ def _parse_record(
     target_pages: tuple[int, ...] | None,
     suffix: str,
 ) -> ParseRecord:
+    configured = getattr(parser, "configuration", {})
     config = {
+        **(dict(configured) if isinstance(configured, Mapping) else {}),
         "ocr_enabled": ocr_enabled,
         "include_complexity": True,
         "target_pages": target_pages,
+        "quality_policy_release": PARSER_QUALITY_POLICY.policy_release,
+        "quality_policy": PARSER_QUALITY_POLICY.model_dump(mode="json"),
+        "recovery_policy_release": RECOVERY_POLICY_RELEASE,
     }
+    config.setdefault("render_form_fields", False)
+    config.setdefault("emit_word_boxes", False)
+    config.setdefault("extract_content_bounds", False)
     return ParseRecord(
         parse_id=f"parse:{source_id.removeprefix('source:')}-{suffix}",
         source_id=source_id,
@@ -1261,6 +1681,12 @@ def _parse_record(
         quality_observations=tuple(
             sorted({reason for page in result.pages for reason in page.reasons})
         ),
+        configuration=tuple(
+            (key, json.dumps(value, sort_keys=True, separators=(",", ":")))
+            for key, value in sorted(config.items())
+        ),
+        page_count=len(result.pages),
+        page_numbers=tuple(page.page_number for page in result.pages),
     )
 
 
@@ -1268,30 +1694,72 @@ def _coverage_for(
     initial: PageExtraction,
     recovered: PageExtraction | None,
     recovery_attempted: bool,
+    *,
+    parse_record: ParseRecord | None = None,
+    recovery_record: ParseRecord | None = None,
+    artifact_hash: ContentHash | None = None,
+    recovery_error: str | None = None,
 ) -> PageCoverage:
-    reasons = set(initial.reasons)
-    if reasons & BLANK_REASONS:
-        state = CoverageState.INTENTIONALLY_BLANK
-    elif recovered and recovered.text.strip():
-        state = CoverageState.TEXT_USABLE
-    elif recovery_attempted:
-        state = CoverageState.COVERAGE_LIMITED
-    elif reasons & RECOVERY_REASONS:
-        state = CoverageState.RECOVERY_REQUIRED
-    elif reasons & LIMITED_REASONS or "\ufffd" in initial.text:
-        state = CoverageState.COVERAGE_LIMITED
-    elif reasons & VISUAL_REASONS:
-        state = CoverageState.VISUAL_REQUIRED
-    elif initial.text.strip():
-        state = CoverageState.TEXT_USABLE
-    else:
-        state = CoverageState.COVERAGE_LIMITED
+    before_state = _coverage_state(initial, recovered=None, recovery_attempted=False)
+    state = _coverage_state(
+        initial,
+        recovered=recovered,
+        recovery_attempted=recovery_attempted,
+    )
+    diagnostics = tuple(
+        initial.reasons
+        + tuple(
+            f"unknown-reason:{reason}"
+            for reason in initial.reasons
+            if reason not in PARSER_QUALITY_POLICY.known_reasons
+        )
+        + ((f"recovery-error:{recovery_error}",) if recovery_error else ())
+    )
     return PageCoverage(
         page_index=initial.page_number - 1,
         state=state,
-        diagnostics=initial.reasons,
+        diagnostics=diagnostics,
         recovery_attempted=recovery_attempted,
+        parse_id=parse_record.parse_id if parse_record else None,
+        recovery_parse_id=(
+            recovery_record.parse_id
+            if recovered is not None and recovery_record is not None
+            else None
+        ),
+        artifact_hash=artifact_hash,
+        configuration_hash=(
+            recovery_record.configuration_hash
+            if recovered is not None and recovery_record is not None
+            else (parse_record.configuration_hash if parse_record else None)
+        ),
+        before_state=before_state,
     )
+
+
+def _coverage_state(
+    initial: PageExtraction,
+    *,
+    recovered: PageExtraction | None,
+    recovery_attempted: bool,
+) -> CoverageState:
+    reasons = set(initial.reasons)
+    if reasons & BLANK_REASONS:
+        return CoverageState.INTENTIONALLY_BLANK
+    if recovered and recovered.text.strip():
+        return CoverageState.TEXT_USABLE
+    if recovery_attempted:
+        return CoverageState.COVERAGE_LIMITED
+    if reasons & RECOVERY_REASONS:
+        return CoverageState.RECOVERY_REQUIRED
+    if reasons & LIMITED_REASONS or "\ufffd" in initial.text:
+        return CoverageState.COVERAGE_LIMITED
+    if reasons & VISUAL_REASONS:
+        return CoverageState.VISUAL_REQUIRED
+    if initial.has_form_fields:
+        return CoverageState.COVERAGE_LIMITED
+    if initial.text.strip():
+        return CoverageState.TEXT_USABLE
+    return CoverageState.COVERAGE_LIMITED
 
 
 def _read_trial_manifest(trial_path: Path) -> dict[str, _DeclaredDocument]:
@@ -1325,7 +1793,26 @@ def _read_trial_manifest(trial_path: Path) -> dict[str, _DeclaredDocument]:
             )
             for component in item.get("components", ())
         )
-        declarations[relative] = _DeclaredDocument(relative, roles, components)
+        raw_relevant_pages = item.get("decision_relevant_pages", item.get("relevant_pages", ()))
+        if raw_relevant_pages is None:
+            raw_relevant_pages = ()
+        if not isinstance(raw_relevant_pages, (list, tuple)):
+            raise ValueError(
+                "trial.yaml decision_relevant_pages must be a list of one-based page numbers"
+            )
+        if any(type(page) is not int for page in raw_relevant_pages):
+            raise ValueError(
+                "trial.yaml decision_relevant_pages must contain integer page numbers"
+            )
+        relevant_pages = tuple(sorted(set(raw_relevant_pages)))
+        if any(page < 1 for page in relevant_pages):
+            raise ValueError("trial.yaml decision_relevant_pages must be positive")
+        declarations[relative] = _DeclaredDocument(
+            relative,
+            roles,
+            components,
+            relevant_pages,
+        )
     return declarations
 
 

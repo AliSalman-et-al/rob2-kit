@@ -22,6 +22,7 @@ from rob2_kit.evidence.visual import (
     VisualCandidateDispositionKind,
     VisualCandidateKind,
     VisualCandidatePage,
+    VisualCitation,
     VisualInspectionManifest,
     VisualInspectionPolicy,
     VisualInspectionQueue,
@@ -30,6 +31,8 @@ from rob2_kit.evidence.visual import (
     VisualRenderMode,
     VisualRenderRequest,
     VisualTranscriptionSubmission,
+    build_visual_citation,
+    materialize_visual_citation,
     submit_visual_inspection,
 )
 from rob2_kit.evidence.workflow import (
@@ -94,6 +97,7 @@ __all__ = [
     "VisualCandidateDispositionKind",
     "VisualCandidateKind",
     "VisualCandidatePage",
+    "VisualCitation",
     "VisualInspectionPolicy",
     "VisualInspectionManifest",
     "VisualInspectionQueue",
@@ -102,6 +106,8 @@ __all__ = [
     "VisualRenderMode",
     "VisualRenderRequest",
     "VisualTranscriptionSubmission",
+    "build_visual_citation",
+    "materialize_visual_citation",
     "derive_fact",
     "build_consideration_manifest",
     "canonicalize_evidence_units",

@@ -264,6 +264,8 @@ class InspectVisualCandidateRequest(FrozenModel):
     run_id: Identifier
     candidate_id: Identifier
     result_id: Identifier | None = None
+    current_render: VisualRenderRequest | None = None
+    still_ambiguous: bool = True
 
 
 class SourceClassificationInput(FrozenModel):

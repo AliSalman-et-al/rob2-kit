@@ -3,13 +3,14 @@
 from __future__ import annotations
 
 import base64
+import binascii
 import json
 from enum import StrEnum
 from typing import Literal
 
 from pydantic import Field, model_validator
 
-from rob2_kit.domain.canonical import canonical_hash
+from rob2_kit.domain.canonical import canonical_hash, sha256_digest
 from rob2_kit.domain.revisions import ContentHash, FrozenModel, Identifier
 
 
@@ -110,7 +111,7 @@ class VisualRenderRequest(FrozenModel):
     candidate_id: Identifier
     source_id: Identifier
     source_artifact_hash: ContentHash
-    page: int
+    page: int = Field(ge=1)
     mode: VisualRenderMode
     dpi: Literal[144, 180, 216]
     crop: CropBox | None
@@ -120,6 +121,156 @@ class VisualRenderRequest(FrozenModel):
         if (self.mode is VisualRenderMode.CROP) != (self.crop is not None):
             raise ValueError("crop provenance is required exactly for crop renders")
         return self
+
+
+class VisualCitation(FrozenModel):
+    """Deterministic visual binding for a canonical text span.
+
+    A citation is generated from canonical text and spatial provenance.  It
+    does not claim that an agent inspected the image; only a
+    :class:`VisualTranscriptionSubmission` carries that stronger, explicitly
+    visual-only status.
+    """
+
+    citation_id: Identifier
+    source_id: Identifier
+    source_artifact_hash: ContentHash
+    parse_id: Identifier
+    page: int = Field(ge=1)
+    span_start: int = Field(ge=0)
+    span_end: int = Field(gt=0)
+    quoted_text_hash: ContentHash
+    boxes: tuple[CropBox, ...] = Field(min_length=1)
+    render: VisualRenderRequest
+    base_render_hash: ContentHash | None = None
+    derived_render_hash: ContentHash | None = None
+    agent_inspected: Literal[False] = False
+    citation_hash: ContentHash
+
+    @model_validator(mode="after")
+    def validate_span(self) -> VisualCitation:
+        if self.span_end <= self.span_start:
+            raise ValueError("visual citation span_end must be greater than span_start")
+        if self.render.source_id != self.source_id:
+            raise ValueError("visual citation render source does not match canonical source")
+        if self.render.source_artifact_hash != self.source_artifact_hash:
+            raise ValueError("visual citation render artifact does not match canonical source")
+        if self.render.page != self.page:
+            raise ValueError("visual citation render page does not match canonical span")
+        return self
+
+
+def materialize_visual_citation(
+    canonical_unit: object,
+    *,
+    span_start: int,
+    span_end: int,
+    render: VisualRenderRequest | None = None,
+    base_render_hash: ContentHash | None = None,
+    derived_render_hash: ContentHash | None = None,
+) -> VisualCitation:
+    """Create a hash-stable citation from a canonical unit's exact span.
+
+    The function intentionally accepts the canonical unit structurally to
+    avoid coupling the visual module to the search index implementation.  A
+    unit must provide ``unit_id``, ``source_id``, ``source_artifact_hash``,
+    ``parse_id``, ``page``, ``text``, and optional ``spatial`` attributes.
+    """
+
+    text_value = getattr(canonical_unit, "text", None)
+    claim_quote = False
+    if text_value is None:
+        text_value = getattr(canonical_unit, "quoted_text", "")
+        claim_quote = True
+        claim_start = getattr(canonical_unit, "span_start", None)
+        claim_end = getattr(canonical_unit, "span_end", None)
+        if (claim_start, claim_end) != (span_start, span_end):
+            raise ValueError("visual citation span must match the accepted canonical quote")
+    text = str(text_value)
+    if (
+        not claim_quote
+        and (span_start < 0 or span_end <= span_start or span_end > len(text))
+    ):
+        raise ValueError("visual citation span must be an exact canonical text range")
+    if claim_quote and not text:
+        raise ValueError("accepted canonical quotes must contain text")
+    spatial = getattr(canonical_unit, "spatial", None)
+    if spatial is None:
+        raise ValueError("spatially anchored canonical units are required for visual citations")
+    if len(spatial) != 4:
+        raise ValueError("canonical spatial bounds must contain four coordinates")
+    source_id = str(getattr(canonical_unit, "source_id"))
+    source_artifact_hash = str(getattr(canonical_unit, "source_artifact_hash"))
+    parse_id = str(getattr(canonical_unit, "parse_id"))
+    page = int(getattr(canonical_unit, "page"))
+    unit_id = str(
+        getattr(
+            canonical_unit,
+            "unit_id",
+            getattr(canonical_unit, "canonical_unit_id", ""),
+        )
+    )
+    if not unit_id:
+        raise ValueError("canonical visual citations require a canonical unit identity")
+    crop = CropBox(
+        left=float(spatial[0]),
+        top=float(spatial[1]),
+        right=float(spatial[2]),
+        bottom=float(spatial[3]),
+    )
+    if render is None:
+        render = VisualRenderRequest(
+            candidate_id=unit_id,
+            source_id=source_id,
+            source_artifact_hash=source_artifact_hash,
+            page=page,
+            mode=VisualRenderMode.CROP,
+            dpi=144,
+            crop=crop,
+        )
+    if render.source_id != source_id or render.source_artifact_hash != source_artifact_hash:
+        raise ValueError("visual citation render provenance does not match canonical unit")
+    if render.page != page:
+        raise ValueError("visual citation render page does not match canonical unit")
+    quoted_text = text if claim_quote else text[span_start:span_end]
+    quoted_text_hash = sha256_digest(quoted_text.encode("utf-8"))
+    payload = {
+        "unit_id": unit_id,
+        "source_id": source_id,
+        "source_artifact_hash": source_artifact_hash,
+        "parse_id": parse_id,
+        "page": page,
+        "span_start": span_start,
+        "span_end": span_end,
+        "quoted_text_hash": quoted_text_hash,
+        "boxes": [crop.model_dump(mode="json")],
+        "render": render.model_dump(mode="json"),
+        "base_render_hash": base_render_hash,
+        "derived_render_hash": derived_render_hash,
+        "agent_inspected": False,
+    }
+    citation_hash = canonical_hash(payload)
+    citation_id = f"visual-citation:{citation_hash.removeprefix('sha256:')[:24]}"
+    return VisualCitation(
+        citation_id=citation_id,
+        source_id=source_id,
+        source_artifact_hash=source_artifact_hash,
+        parse_id=parse_id,
+        page=page,
+        span_start=span_start,
+        span_end=span_end,
+        quoted_text_hash=quoted_text_hash,
+        boxes=(crop,),
+        render=render,
+        base_render_hash=base_render_hash,
+        derived_render_hash=derived_render_hash,
+        citation_hash=citation_hash,
+    )
+
+
+# ``build_visual_citation`` is a concise alias for host adapters and callers
+# that use the terminology from the v1 specification.
+build_visual_citation = materialize_visual_citation
 
 
 class VisualInspectionPolicy(FrozenModel):
@@ -146,6 +297,12 @@ class VisualInspectionPolicy(FrozenModel):
     ) -> VisualRenderRequest | None:
         if current.candidate_id != candidate.candidate_id:
             raise ValueError("render request must belong to the candidate")
+        if (
+            current.source_id != candidate.source_id
+            or current.source_artifact_hash != candidate.source_artifact_hash
+            or current.page != candidate.page
+        ):
+            raise ValueError("render request provenance must match the candidate")
         if not still_ambiguous:
             return current
         if current.mode is VisualRenderMode.CROP and not candidate.context_inside_crop:
@@ -229,7 +386,13 @@ def _encode_cursor(snapshot_hash: str, offset: int) -> str:
 def _decode_cursor(cursor: str) -> dict[str, object]:
     try:
         return json.loads(base64.urlsafe_b64decode(cursor.encode()).decode())
-    except (ValueError, UnicodeDecodeError, json.JSONDecodeError) as error:
+    except (
+        binascii.Error,
+        TypeError,
+        ValueError,
+        UnicodeDecodeError,
+        json.JSONDecodeError,
+    ) as error:
         raise ValueError("invalid visual candidate cursor") from error
 
 
@@ -243,11 +406,16 @@ class VisualCandidateDispositionKind(StrEnum):
 class VisualCandidateDisposition(FrozenModel):
     candidate_id: Identifier
     kind: VisualCandidateDispositionKind
-    limitation: str | None = None
+    limitation: str | None = Field(default=None, min_length=1)
     duplicate_of: Identifier | None = None
 
     @model_validator(mode="after")
     def validate_kind_details(self) -> VisualCandidateDisposition:
+        if (
+            self.kind is not VisualCandidateDispositionKind.AMBIGUOUS
+            and self.limitation is not None
+        ):
+            raise ValueError("only ambiguous visual candidates may carry a limitation")
         if (self.kind is VisualCandidateDispositionKind.AMBIGUOUS) != (
             self.limitation is not None
         ):
@@ -256,6 +424,13 @@ class VisualCandidateDisposition(FrozenModel):
             self.duplicate_of is not None
         ):
             raise ValueError("duplicate visual candidates require exactly one covered candidate")
+        if (
+            self.kind is not VisualCandidateDispositionKind.DUPLICATE
+            and self.duplicate_of is not None
+        ):
+            raise ValueError("only duplicate visual candidates may reference another candidate")
+        if self.duplicate_of == self.candidate_id:
+            raise ValueError("a visual candidate cannot be a duplicate of itself")
         return self
 
 
@@ -309,6 +484,24 @@ class VisualInspectionManifest(FrozenModel):
             raise ValueError("every nominated visual candidate requires one disposition")
         if set(result_ids) != candidate_ids:
             raise ValueError("every nominated visual candidate requires one disposition")
+        for result in results:
+            duplicate_of = result.disposition.duplicate_of
+            if duplicate_of is not None and duplicate_of not in candidate_ids:
+                raise ValueError("duplicate visual candidates must reference a nominated candidate")
+        dispositions = {
+            result.disposition.candidate_id: result.disposition for result in results
+        }
+        for result in results:
+            current = result.disposition.candidate_id
+            seen: set[str] = set()
+            while True:
+                duplicate = dispositions[current].duplicate_of
+                if duplicate is None:
+                    break
+                if current in seen:
+                    raise ValueError("duplicate visual candidate references must be acyclic")
+                seen.add(current)
+                current = duplicate
         ordered_results: tuple[VisualInspectionResult, ...] = tuple(
             sorted(results, key=_result_candidate_id)
         )
