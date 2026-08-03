@@ -5,12 +5,14 @@ from __future__ import annotations
 import hashlib
 import json
 import shutil
+import sys
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Literal
+from typing import Literal, TextIO, cast
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from rob2_kit.application.contracts import RUN_OPERATION_NAMES
 from rob2_kit.application.gateway import CONTRACT_VERSION
 
 CANONICAL_SKILL_NAMES = ("rob2-init", "rob2-assess")
@@ -241,6 +243,37 @@ def verify_host_adapters(root: Path) -> None:
         raise ValueError(f"cannot read mirrored release manifest: {error}") from error
     if mirrored_manifest != manifest.model_dump(mode="json", exclude_none=True):
         raise ValueError("mirrored release manifest diverges from rob2.lock")
+
+
+def verify_mcp_launchability(
+    project_root: Path,
+    command: str,
+    args: tuple[str, ...],
+) -> tuple[str, ...]:
+    """Start the locked external stdio launcher and return its tool inventory."""
+
+    import anyio
+    from mcp import ClientSession, StdioServerParameters
+    from mcp.client.stdio import stdio_client
+
+    async def inspect() -> tuple[str, ...]:
+        parameters = StdioServerParameters(
+            command=command,
+            args=list(args),
+            cwd=project_root,
+        )
+        errlog = cast(TextIO, sys.__stderr__ or sys.stderr)
+        async with stdio_client(parameters, errlog=errlog) as (read, write):
+            async with ClientSession(read, write) as session:
+                with anyio.fail_after(20):
+                    await session.initialize()
+                    inventory = await session.list_tools()
+                return tuple(tool.name for tool in inventory.tools)
+
+    tools = anyio.run(inspect)
+    if tools != RUN_OPERATION_NAMES:
+        raise ValueError("the launched MCP server does not expose the locked tool surface")
+    return tools
 
 
 def _canonical_skill_assets(root: Path) -> dict[str, CanonicalSkillAssets]:

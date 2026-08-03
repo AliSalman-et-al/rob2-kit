@@ -1,18 +1,18 @@
 {
   "adapters": {
     "claude": {
-      "content_hash": "sha256:4a2dd22f38aacdc6cdb97a27d84a6cf463f67c26be6aaae16e1d6c11cc312a80",
+      "content_hash": "sha256:21a08c28ab146516cb79891a0b9a09c5a54ab5bff33e3e59569ef614be82524b",
       "skill_hashes": {
-        "rob2-assess": "sha256:de3dc55b0fa5dfcd184ec109f1656730ec12e4c53a4765a65987e4ef68acd848",
-        "rob2-init": "sha256:4c70613f6bf4527f62aae5ab19443f912837d75adc97abd2049763302927428d"
+        "rob2-assess": "sha256:eb86e8839cc90891bb6afdfeee4e63b00b318df6d17c8777857cbf2520bc4ebf",
+        "rob2-init": "sha256:7be26dd1b21502f97a4b3cc6b4c7067a69dec2b735c7696a9fff9c08dc04056a"
       },
       "version": "1"
     },
     "codex": {
-      "content_hash": "sha256:6378219815b6b5eb87ac38850877ae5a2287cc715f859dadc796ec14822650d9",
+      "content_hash": "sha256:5cf12f43a77e843fbf9620d0cdd3e0a0e19786b7c30e563d18022a4b80f1c5c6",
       "skill_hashes": {
-        "rob2-assess": "sha256:de3dc55b0fa5dfcd184ec109f1656730ec12e4c53a4765a65987e4ef68acd848",
-        "rob2-init": "sha256:4c70613f6bf4527f62aae5ab19443f912837d75adc97abd2049763302927428d"
+        "rob2-assess": "sha256:eb86e8839cc90891bb6afdfeee4e63b00b318df6d17c8777857cbf2520bc4ebf",
+        "rob2-init": "sha256:7be26dd1b21502f97a4b3cc6b4c7067a69dec2b735c7696a9fff9c08dc04056a"
       },
       "version": "1"
     }
@@ -33,11 +33,11 @@
   "skills": {
     "rob2-assess": {
       "activation_fixtures_hash": "sha256:993c49993ed10486db05d6c6a84b0254cb46ed17dfa6dc8a3ce6d663234ae57b",
-      "content_hash": "sha256:de3dc55b0fa5dfcd184ec109f1656730ec12e4c53a4765a65987e4ef68acd848"
+      "content_hash": "sha256:eb86e8839cc90891bb6afdfeee4e63b00b318df6d17c8777857cbf2520bc4ebf"
     },
     "rob2-init": {
       "activation_fixtures_hash": "sha256:083efd88aa57430354c215a2a55a744a480e5a2355b754c4994f1c852c54762f",
-      "content_hash": "sha256:4c70613f6bf4527f62aae5ab19443f912837d75adc97abd2049763302927428d"
+      "content_hash": "sha256:7be26dd1b21502f97a4b3cc6b4c7067a69dec2b735c7696a9fff9c08dc04056a"
     }
   },
   "version": 1

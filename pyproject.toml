@@ -46,7 +46,10 @@ packages = ["src/rob2_kit"]
 "packs" = "rob2_kit/packs"
 "schemas" = "rob2_kit/schemas"
 "skills" = "rob2_kit/skills"
+"adapters" = "rob2_kit/adapters"
+"docs" = "rob2_kit/docs"
 "rob2.lock" = "rob2_kit/rob2.lock"
+"uv.lock" = "rob2_kit/uv.lock"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

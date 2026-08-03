@@ -9,6 +9,13 @@ Use the static `rob2` tools to establish or resume one project, inspect the
 exact Trial × Result proposal, and obtain the operator's one-time confirmation
 before evidence preparation begins.
 
+For run-control and progress language, progressively disclose
+`../references/HARNESS-WORKFLOW.md`. Begin or reconnect with `prepare_run`:
+when it returns a Current run, narrate a resume; use start-new only when the
+operator explicitly asks to replace that run. Present the proposal and
+confirmation in plain language, including any material ambiguity, without
+exposing opaque protocol identifiers or polling details.
+
 Treat the engine's structured run state as authoritative. When initialization
 is complete, hand the confirmed run to `rob2-assess`; do not duplicate its
 evidence workflow or create assessment judgments in this skill.

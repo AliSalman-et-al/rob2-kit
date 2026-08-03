@@ -3,6 +3,14 @@
 > **Draft-only hands-on preview.** This is not a public-v1 release. Only a
 > human reviewer can sign off an exact Assessment revision.
 
+Install the locked project-local Codex and Claude Code adapters, then verify the
+exact execution contract:
+
+```powershell
+uv run --locked --project . rob2 bootstrap .
+uv run --locked --project . rob2 doctor .
+```
+
 Start the locked Windows preview from the repository root:
 
 ```powershell

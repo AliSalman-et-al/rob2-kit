@@ -9,6 +9,7 @@ Assessment revision. Agents cannot sign.
 From the repository root on Windows:
 
 ```powershell
+uv run --locked --project . rob2 bootstrap .
 uv run --locked --project . rob2 doctor
 uv run --locked --project . rob2-mcp
 ```

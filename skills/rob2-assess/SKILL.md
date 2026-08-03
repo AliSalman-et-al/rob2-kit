@@ -10,6 +10,13 @@ If the project is not initialized or needs a new run, hand initialization to
 request the next engine-issued work item, inspect only bounded evidence and
 visual candidates, and submit typed work with the supplied mutation context.
 
+For progressively disclosed operating detail, consult
+`../references/HARNESS-WORKFLOW.md`, `../references/EVIDENCE-SEARCH.md`, and
+`../references/SIGNALING-QUESTIONS.md` only when their topic is active.
+Narrate meaningful Trial, Result, and Domain milestones, blockers, interruption
+consequences, and the terminal report summary in plain language. Do not narrate
+raw protocol identifiers, work tokens, cursors, or polling noise.
+
 Treat every structured status as authoritative. On `work_required`, complete
 only the returned work item. On `review_pending`, end the turn without further
 inference. On `retryable_interruption`, preserve state and retry only within
