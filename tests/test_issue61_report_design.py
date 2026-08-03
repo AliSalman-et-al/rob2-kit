@@ -6,6 +6,7 @@ import json
 from decimal import Decimal
 from zipfile import ZipFile
 
+from rob2_kit.application.run_engine import RunEngine
 from rob2_kit.reports import (
     AssessmentView,
     DomainView,
@@ -17,7 +18,6 @@ from rob2_kit.reports import (
     RunIndexView,
     SignalingQuestionView,
 )
-from rob2_kit.application.run_engine import RunEngine
 
 
 def _assessment() -> AssessmentView:
