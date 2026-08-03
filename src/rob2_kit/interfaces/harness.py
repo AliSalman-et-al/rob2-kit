@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import re
 import shutil
+import sys
 import tomllib
 from pathlib import Path
 from typing import Any
@@ -53,7 +54,7 @@ def bootstrap_project(project_root: Path) -> dict[str, Any]:
     claude_path = root / ".mcp.json"
     codex_config = _read_toml(codex_path)
     claude_config = _read_json_object(claude_path)
-    expected_server = _server_config(lock)
+    expected_server = _server_config(lock, release_root)
     codex_servers = codex_config.get("mcp_servers", {})
     if not isinstance(codex_servers, dict):
         raise HarnessBootstrapError(f"{codex_path} has a non-table mcp_servers value.")
@@ -76,7 +77,7 @@ def bootstrap_project(project_root: Path) -> dict[str, Any]:
         "status": "installed" if changed else "already_installed",
         "hosts": list(sorted(SUPPORTED_HOSTS)),
         "project_root": str(root),
-        "launcher": lock.launcher,
+        "launcher": _launcher_text(expected_server),
         "recovery": "Run rob2 doctor to verify this locked project-local Harness install.",
     }
 
@@ -103,11 +104,24 @@ def _release_root() -> Path:
     return package_root.parents[1]
 
 
-def _server_config(lock: ReleaseLock) -> dict[str, Any]:
+def _server_config(lock: ReleaseLock, release_root: Path) -> dict[str, Any]:
+    if _is_bundled_install(release_root):
+        return {
+            "command": sys.executable,
+            "args": ["-m", "rob2_kit.interfaces.mcp.server"],
+        }
     parts = lock.launcher.split()
     if not parts or parts[0] != "uvx":
         raise HarnessBootstrapError("The locked MCP launcher is not an isolated uvx command.")
     return {"command": parts[0], "args": parts[1:]}
+
+
+def _is_bundled_install(release_root: Path) -> bool:
+    return (release_root / "__init__.py").is_file()
+
+
+def _launcher_text(server: dict[str, Any]) -> str:
+    return " ".join((str(server["command"]), *(str(arg) for arg in server["args"])))
 
 
 def _read_toml(path: Path) -> dict[str, Any]:
@@ -312,7 +326,7 @@ def _check_host_adapters(root: Path, release_root: Path) -> dict[str, Any]:
                 root / ".rob2" / "adapters" / host,
             ):
                 raise ValueError(f"project-local {host} adapter differs from the locked adapter")
-        expected_server = _server_config(load_release_lock(release_root))
+        expected_server = _server_config(load_release_lock(release_root), release_root)
         codex_config = _read_toml(root / ".codex" / "config.toml")
         codex_servers = codex_config.get("mcp_servers")
         if not isinstance(codex_servers, dict):
@@ -338,20 +352,29 @@ def _require_server_entry(entry: object, expected: dict[str, Any], description: 
 
 
 def _check_mcp_launchability(project_root: Path) -> dict[str, Any]:
+    launcher: dict[str, Any] | None = None
     try:
-        if shutil.which("uvx") is None and shutil.which("uv") is None:
-            raise ValueError("neither uvx nor uv is available on PATH")
-        lock = load_release_lock(_release_root())
-        launcher = _server_config(lock)
+        release_root = _release_root()
+        lock = load_release_lock(release_root)
+        launcher = _server_config(lock, release_root)
+        if launcher["command"] == "uvx" and shutil.which("uvx") is None:
+            raise ValueError("uvx is not available on PATH")
         tools = verify_mcp_launchability(
             project_root,
             launcher["command"],
             tuple(launcher["args"]),
         )
     except (ImportError, OSError, TimeoutError, ValueError) as error:
+        if launcher is not None and launcher["command"] != "uvx":
+            recovery = (
+                "Reinstall rob2-kit in the Python environment used for bootstrap, "
+                "then rerun rob2 doctor."
+            )
+        else:
+            recovery = "Install the exact locked release with uvx, then rerun rob2 doctor."
         return _failed(
             str(error),
-            "Install the exact locked release with uvx, then rerun rob2 doctor.",
+            recovery,
         )
     return {"ok": True, "tools": list(tools), "recovery": ()}
 

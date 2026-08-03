@@ -231,7 +231,11 @@ def create_run(
     )
     relative = _relative_to_repo(run_root, eval_root)
     print(f"Created private evaluation run: {relative}")
-    print(f'Initialize: uv run --frozen rob2 init "{relative}" --authorize --json')
+    print(f'Bootstrap: uv run --frozen rob2 bootstrap "{relative}"')
+    print(
+        f'Initialize: open "{relative}" in the selected Harness and invoke the '
+        "installed rob2-init skill."
+    )
     print(
         "Agent boundary: do not inspect "
         "eval/reference/catalog/provisional-labels until the Assessment is complete."

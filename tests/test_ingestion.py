@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import subprocess
+import sys
 from dataclasses import dataclass, field
 from io import BytesIO
 from pathlib import Path
@@ -27,6 +29,7 @@ from rob2_kit.ingestion import (
     initialize_project,
     read_bounded_zip,
 )
+from rob2_kit.ingestion.project import OutcomeTarget
 
 ACTOR = Actor(kind=ActorKind.SYSTEM, actor_id="actor:test", display_name="Test system")
 
@@ -543,3 +546,38 @@ def test_liteparse_adapter_pins_ocr_complexity_and_target_page_options(
     ]
     assert parsed.pages[0].page_number == 3
     assert parsed.pages[0].reasons == ("no-text", "unknown-signal")
+
+
+def test_ingestion_models_import_without_pydantic_shadow_warnings() -> None:
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-W",
+            "error",
+            "-c",
+            "import rob2_kit.ingestion.project",
+        ],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert result.returncode == 0, result.stderr
+
+
+def test_outcome_target_preserves_construct_input_and_wire_aliases() -> None:
+    common = {"target_id": "outcome-target:mortality", "label": "Mortality"}
+
+    legacy = OutcomeTarget(construct="mortality", **common)
+    named = OutcomeTarget(outcome_construct="mortality", **common)
+
+    assert legacy == named
+    assert legacy.model_dump() == {
+        "target_id": "outcome-target:mortality",
+        "label": "Mortality",
+        "construct": "mortality",
+        "time_point": None,
+        "accepted_effect_measures": (),
+        "accepted_instruments": (),
+        "effect_of_interest": None,
+    }

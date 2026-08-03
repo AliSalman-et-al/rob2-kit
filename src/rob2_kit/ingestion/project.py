@@ -18,7 +18,7 @@ from typing import Any, Literal, Protocol
 from zipfile import BadZipFile, ZipFile
 
 import yaml
-from pydantic import Field
+from pydantic import ConfigDict, Field
 
 from rob2_kit.application.preparation import TrialFailed, TrialFailureReason
 from rob2_kit.domain.results import ResultSpecRevision
@@ -387,9 +387,16 @@ class ProjectManifest(FrozenModel):
 class OutcomeTarget(FrozenModel):
     """Project-level outcome intent used to propose Trial-specific Results."""
 
+    model_config = ConfigDict(
+        frozen=True,
+        extra="forbid",
+        validate_by_name=True,
+        serialize_by_alias=True,
+    )
+
     target_id: Identifier
     label: str = Field(min_length=1)
-    construct: str | None = None
+    outcome_construct: str | None = Field(default=None, alias="construct")
     time_point: str | None = None
     accepted_effect_measures: tuple[str, ...] = ()
     accepted_instruments: tuple[str, ...] = ()
@@ -714,8 +721,10 @@ def _result_candidates(
         result = spec.result
         matching_targets: list[OutcomeTarget] = []
         for target in outcome_targets:
-            construct_match = target.construct is None or target.construct.casefold() in (
-                result.outcome_construct.casefold()
+            construct_match = (
+                target.outcome_construct is None
+                or target.outcome_construct.casefold()
+                in result.outcome_construct.casefold()
             )
             time_match = target.time_point is None or target.time_point.casefold() in (
                 result.time_point.casefold()

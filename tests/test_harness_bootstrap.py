@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import json
+import shutil
+import sys
 import tomllib
 from pathlib import Path
 
@@ -14,6 +16,34 @@ from rob2_kit.release import load_release_lock
 from rob2_kit.storage import ArtifactStore, WorkflowLedger
 
 ROOT = Path(__file__).resolve().parents[1]
+
+
+def test_bootstrap_from_an_installed_wheel_uses_that_exact_install(
+    tmp_path: Path, monkeypatch
+) -> None:
+    """A locally installed wheel must not be replaced by a registry lookup."""
+
+    bundled_root = tmp_path / "site-packages" / "rob2_kit"
+    bundled_root.mkdir(parents=True)
+    (bundled_root / "__init__.py").write_text("", encoding="utf-8")
+    for name in ("adapters", "skills", "docs", "packs", "schemas"):
+        shutil.copytree(ROOT / name, bundled_root / name)
+    shutil.copyfile(ROOT / "rob2.lock", bundled_root / "rob2.lock")
+    shutil.copyfile(ROOT / "uv.lock", bundled_root / "uv.lock")
+    monkeypatch.setattr("rob2_kit.interfaces.harness._release_root", lambda: bundled_root)
+
+    project_root = tmp_path / "consumer"
+    result = CliRunner().invoke(app, ["bootstrap", str(project_root)])
+
+    assert result.exit_code == 0, result.output
+    codex = tomllib.loads(
+        (project_root / ".codex" / "config.toml").read_text(encoding="utf-8")
+    )
+    server = codex["mcp_servers"]["rob2-kit"]
+    assert server == {
+        "command": sys.executable,
+        "args": ["-m", "rob2_kit.interfaces.mcp.server"],
+    }
 
 
 def test_bootstrap_installs_both_hosts_idempotently_without_overwriting_user_config(
