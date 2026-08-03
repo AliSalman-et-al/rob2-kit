@@ -313,7 +313,8 @@ class EvidenceSearchIndex:
                     page INTEGER NOT NULL,
                     kind TEXT NOT NULL,
                     text TEXT NOT NULL,
-                    spatial TEXT
+                    spatial TEXT,
+                    word_boxes TEXT
                 );
                 CREATE TABLE IF NOT EXISTS evidence_snapshot (
                     singleton INTEGER PRIMARY KEY CHECK (singleton = 1),
@@ -331,6 +332,12 @@ class EvidenceSearchIndex:
                 );
                 """
             )
+            columns = {
+                row["name"]
+                for row in connection.execute("PRAGMA table_info(evidence_units)").fetchall()
+            }
+            if "word_boxes" not in columns:
+                connection.execute("ALTER TABLE evidence_units ADD COLUMN word_boxes TEXT")
             connection.execute(
                 "INSERT OR IGNORE INTO evidence_cursor_secret(singleton, secret) VALUES (1, ?)",
                 (secrets.token_bytes(32),),
@@ -347,7 +354,9 @@ class EvidenceSearchIndex:
             connection.execute("DELETE FROM evidence_units")
             for item in ordered:
                 connection.execute(
-                    "INSERT INTO evidence_units VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+                    "INSERT INTO evidence_units "
+                    "(unit_id, source_id, source_artifact_hash, parse_id, page, kind, text, spatial, word_boxes) "
+                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
                     (
                         item.unit_id,
                         item.source_id,
@@ -357,6 +366,7 @@ class EvidenceSearchIndex:
                         item.kind.value,
                         item.text,
                         json.dumps(item.spatial),
+                        json.dumps([box.model_dump(mode="json") for box in item.word_boxes]),
                     ),
                 )
                 for projection in _project(item):
@@ -411,6 +421,10 @@ class EvidenceSearchIndex:
             kind=row["kind"],
             text=row["text"],
             spatial=None if row["spatial"] == "null" else tuple(json.loads(row["spatial"])),
+            word_boxes=tuple(
+                CanonicalWordBox.model_validate(item)
+                for item in json.loads(row["word_boxes"] or "[]")
+            ),
         )
 
     def read_context(
@@ -643,6 +657,10 @@ class EvidenceSearchIndex:
             kind=row["kind"],
             text=row["text"],
             spatial=tuple(spatial) if spatial else None,
+            word_boxes=tuple(
+                CanonicalWordBox.model_validate(item)
+                for item in json.loads(row["word_boxes"] or "[]")
+            ),
         )
         projection_number = int(row["projection_id"].rsplit("-", 1)[1])
         projections = _project(unit)
