@@ -352,6 +352,7 @@ class _ResultDiagnosticRecord(FrozenModel):
     reason: str
     report_root: str | None = None
     artifact_names: tuple[str, ...] = ()
+    staging_root: str | None = None
 
 
 class _RunBlockedRecord(FrozenModel):
@@ -3378,9 +3379,12 @@ class RunEngine:
         """
 
         events = self._events_for_run(ledger, run_id)
-        reports: list[tuple[_ReportMaterializedRecord, Path]] = []
+        reports: list[tuple[_ReportMaterializedRecord | _ResultDiagnosticRecord, Path]] = []
         for event in events:
-            if event.operation != "operation:result-report-ready":
+            if event.operation not in {
+                "operation:result-report-ready",
+                "operation:result-diagnostic-ready",
+            }:
                 continue
             invalidated_at = max(
                 (
@@ -3394,12 +3398,19 @@ class RunEngine:
             if event.sequence <= invalidated_at:
                 continue
             try:
-                record = _ReportMaterializedRecord.model_validate_json(
-                    ledger.artifacts.read(event.output_revision_hashes[0])
+                record = (
+                    _ReportMaterializedRecord.model_validate_json(
+                        ledger.artifacts.read(event.output_revision_hashes[0])
+                    )
+                    if event.operation == "operation:result-report-ready"
+                    else _ResultDiagnosticRecord.model_validate_json(
+                        ledger.artifacts.read(event.output_revision_hashes[0])
+                    )
                 )
             except (IndexError, ValueError):
                 continue
-            reports.append((record, self._required_root() / record.report_root))
+            if record.report_root is not None:
+                reports.append((record, self._required_root() / record.report_root))
         if not reports:
             self._commit_run_completed_if_ready(ledger, run_id)
             return
@@ -3418,7 +3429,13 @@ class RunEngine:
                 if report_root.exists():
                     continue
                 report_root.parent.mkdir(parents=True, exist_ok=True)
-                os.replace(staging, report_root)
+                try:
+                    os.replace(staging, report_root)
+                except OSError:
+                    # Keep the committed write-ahead record and hidden stage
+                    # for a later status/resume repair; never expose a partial
+                    # terminal bundle when publication itself is interrupted.
+                    continue
         self._regenerate_run_index(ledger, run_id)
         self._commit_run_completed_if_ready(ledger, run_id, lease=lease)
 
@@ -3555,6 +3572,7 @@ class RunEngine:
             and event.sequence > invalidated_at
             for event in events
         ):
+            self._repair_report_publication(ledger, run_id)
             return ()
         logic = self._logic_pack()
         required_domains = {domain.id for domain in logic.domains}
@@ -3628,7 +3646,7 @@ class RunEngine:
             )
             lease = self._acquire_lease(ledger, self._now())
             ledger.commit(transition, lease, now=self._now())
-            self._regenerate_run_index(ledger, run_id)
+            self._repair_report_publication(ledger, run_id)
             return ()
         # A Result may only have one immutable answer checkpoint per domain.
         answers: dict[str, str] = {}
@@ -3844,7 +3862,7 @@ class RunEngine:
             )
             lease = self._acquire_lease(ledger, self._now())
             ledger.commit(transition, lease, now=self._now())
-            self._regenerate_run_index(ledger, run_id)
+            self._repair_report_publication(ledger, run_id)
             return ()
         assessment_ref = self._commit_frozen_artifact(
             ledger,
@@ -4003,13 +4021,11 @@ class RunEngine:
                 observed_at=now,
             ),
         ]
-        # A terminal readiness event must never lead the visible immutable
-        # bundle.  Staging is verified above and this rename is atomic on the
-        # containing filesystem.
-        os.replace(staging, report_root)
         ledger.commit_batch(tuple(transitions), lease, now=now)
-        self._regenerate_run_index(ledger, run_id)
-        self._commit_run_completed_if_ready(ledger, run_id, lease=lease)
+        # Keep the bundle hidden until the immutable readiness transition has
+        # committed.  A failed commit therefore leaves only a repairable
+        # staging directory and never an orphan visible report.
+        self._repair_report_publication(ledger, run_id)
         return judgment_references
 
     @staticmethod
@@ -4102,11 +4118,12 @@ class RunEngine:
         )
         for name, content in files.items():
             (staging / name).write_bytes(content)
-        os.replace(staging, report_root)
+        self._verify_staged_report_files(staging, files)
         return diagnostic.model_copy(
             update={
                 "report_root": report_root.relative_to(root).as_posix(),
                 "artifact_names": tuple(sorted(files)),
+                "staging_root": staging.relative_to(root).as_posix(),
             }
         )
 
@@ -4144,6 +4161,11 @@ class RunEngine:
             report_path = ""
             if report_root:
                 report_directory = root / report_root
+                if not report_directory.is_dir():
+                    # A committed readiness record may still point at a
+                    # hidden staging directory after an interrupted publish;
+                    # do not expose an index link until repair completes.
+                    continue
                 try:
                     report_path = report_directory.relative_to(run_root).as_posix()
                 except ValueError:
@@ -4186,13 +4208,19 @@ class RunEngine:
                         ):
                             estimate_view = EstimateView.model_validate(raw_estimate)
                         domains = assessment_payload.get("domains", ())
-                        evidence_count = sum(
-                            len(question.get("evidence", ()))
-                            for domain in domains
-                            if isinstance(domain, dict)
-                            for question in domain.get("questions", ())
-                            if isinstance(question, dict)
-                        )
+                        evidence_ids: set[str] = set()
+                        for domain in domains:
+                            if not isinstance(domain, dict):
+                                continue
+                            for question in domain.get("questions", ()):
+                                if not isinstance(question, dict):
+                                    continue
+                                for evidence in question.get("evidence", ()):
+                                    if isinstance(evidence, dict) and isinstance(
+                                        evidence.get("evidence_id"), str
+                                    ):
+                                        evidence_ids.add(evidence["evidence_id"])
+                        evidence_count = len(evidence_ids)
                         coverage_states = [item.get("coverage") for item in domains]
                         if "incomplete" in coverage_states:
                             coverage = "incomplete"
@@ -4730,7 +4758,7 @@ class RunEngine:
                         citation_id=citation.citation_id,
                         source_id=citation.source_id,
                         page=citation.page,
-                        region=cast(tuple[float, float, float, float], region),
+                        region=region,
                         boxes=tuple(
                             (box.left, box.top, box.right, box.bottom)
                             for box in citation.boxes
@@ -4752,7 +4780,7 @@ class RunEngine:
                         geometry_scope=citation.geometry_scope,
                         geometry_hash=citation.geometry_hash,
                         render_hash=citation.render_hash,
-                        render_mode=citation.render.mode,
+                        render_mode=citation.render.mode.value,
                         dpi=citation.render.dpi,
                         agent_inspected=False,
                         inspection_status="automatic_spatial_claim",
@@ -8546,5 +8574,12 @@ class RunEngine:
     def _report_path_component(value: str) -> str:
         """Return a stable, confined path component for a manifest identity."""
 
-        component = re.sub(r"[^A-Za-z0-9._-]+", "-", str(value)).strip(".-")
-        return component or f"id-{hashlib.sha256(str(value).encode()).hexdigest()[:16]}"
+        raw = str(value)
+        readable = re.sub(r"[^A-Za-z0-9._-]+", "-", raw).strip(".-")
+        # Sanitization alone is not injective (``a/b`` and ``a-b`` collide),
+        # so retain a bounded readable prefix alongside a digest of the exact
+        # identity.  The digest is always present, including for already-safe
+        # identifiers, making collision resistance independent of the prefix.
+        prefix = readable[:48] or "id"
+        digest = hashlib.sha256(raw.encode("utf-8")).hexdigest()[:16]
+        return f"{prefix}-{digest}"

@@ -295,12 +295,21 @@ def test_five_domain_journey_survives_stdio_restart_and_publishes_report(
                 assert status["result_states"] == [
                     {"result_id": "result:trial-a-mortality", "state": "report_ready"}
                 ]
-                assert status["progress"]["report_locations"] == ["output/report-bundle"]
+                locations = status["progress"]["report_locations"]
+                assert len(locations) == 1
+                assert locations[0].startswith("output/report-bundle/runs/")
+                assert "/trials/" in locations[0] and "/results/" in locations[0]
 
     anyio.run(journey)
 
-    report_root = tmp_path / "output" / "report-bundle"
-    assert {path.name for path in report_root.iterdir()} == {
+    report_base = tmp_path / "output" / "report-bundle"
+    report_root = next(
+        path.parent
+        for path in report_base.rglob("manifest.json")
+        if "files" in json.loads(path.read_text(encoding="utf-8"))
+    )
+    run_root = report_root.parents[3]
+    required_files = {
         "answers.json",
         "assessment.html",
         "assessment.json",
@@ -309,13 +318,13 @@ def test_five_domain_journey_survives_stdio_restart_and_publishes_report(
         "manifest.json",
         "robvis.csv",
         "robvis.xlsx",
-        "run-index.html",
-        "run-index.json",
         "verification-archive.rob2.zip",
         "visual-citations.json",
     }
+    assert required_files <= {path.name for path in report_root.iterdir()}
+    assert (report_root / "visual-assets").is_dir()
     assessment_html = (report_root / "assessment.html").read_text(encoding="utf-8")
-    run_index_html = (report_root / "run-index.html").read_text(encoding="utf-8")
+    run_index_html = (run_root / "run-index.html").read_text(encoding="utf-8")
     assert '<nav aria-label="RoB 2 domains">' in assessment_html
     assert "Signaling question" in assessment_html
     assert "AI rationale" in assessment_html
@@ -344,7 +353,7 @@ def test_five_domain_journey_survives_stdio_restart_and_publishes_report(
         assert digest == "sha256:" + hashlib.sha256(content).hexdigest()
     receipt = verify_archive((report_root / "verification-archive.rob2.zip").read_bytes())
     assert receipt.assessment_revision_id == manifest["assessment_revision_id"]
-    index = json.loads((report_root / "run-index.json").read_text(encoding="utf-8"))
+    index = json.loads((run_root / "run-index.json").read_text(encoding="utf-8"))
     assert index["results"][0]["result_id"] == "result:trial-a-mortality"
     assert index["results"][0]["trial_id"] == "trial:trial-a"
     assert index["results"][0]["state"] == "report_ready"
@@ -484,11 +493,12 @@ def test_report_history_preserves_an_earlier_immutable_bundle(tmp_path: Path) ->
 
     finish_result("result:trial-a-mortality", "history-first")
     report_base = tmp_path / "output" / "report-bundle"
-    first_files = {
-        path.name: path.read_bytes()
-        for path in report_base.iterdir()
-        if path.is_file() and not path.name.startswith("run-index.")
-    }
+    report_root = next(
+        path.parent
+        for path in report_base.rglob("manifest.json")
+        if "files" in json.loads(path.read_text(encoding="utf-8"))
+    )
+    first_files = {path.name: path.read_bytes() for path in report_root.iterdir() if path.is_file()}
     assert set(first_files) == {
         "answers.json",
         "assessment.html",
@@ -505,11 +515,15 @@ def test_report_history_preserves_an_earlier_immutable_bundle(tmp_path: Path) ->
     assert all(
         path.read_bytes() == content
         for path, content in (
-            (report_base / name, content) for name, content in first_files.items()
+            (report_root / name, content) for name, content in first_files.items()
         )
     )
-    history_dirs = [path for path in report_base.iterdir() if path.is_dir()]
-    assert len(history_dirs) == 1
-    assert {path.name for path in history_dirs[0].iterdir()} == set(first_files)
+    result_dirs = [
+        path.parent
+        for path in report_base.rglob("manifest.json")
+        if "files" in json.loads(path.read_text(encoding="utf-8"))
+    ]
+    assert len(result_dirs) == 2
+    assert {path.name for path in result_dirs[0].iterdir()} >= set(first_files)
     status = engine.run_status(RunStatusRequest(run_id=prepared.run_id))
     assert {item.state.value for item in status.result_states} == {"report_ready"}

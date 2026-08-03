@@ -10,12 +10,14 @@ from rob2_kit.reports import (
     AssessmentView,
     DomainView,
     EstimateView,
+    EvidenceView,
     ReportProjector,
     RunIndexProjector,
     RunIndexResultView,
     RunIndexView,
     SignalingQuestionView,
 )
+from rob2_kit.application.run_engine import RunEngine
 
 
 def _assessment() -> AssessmentView:
@@ -153,3 +155,40 @@ def test_report_retains_material_conflicts_uncertainty_and_overall_policy() -> N
     assert "registry source unavailable" in html
     assert "Conflicts: claim:one, claim:two" in markdown
     assert r"Policy hash: sha256:overall\-policy" in markdown
+
+
+def test_evidence_count_is_unique_by_evidence_id_across_questions_and_formats() -> None:
+    evidence = EvidenceView(
+        evidence_id="claim:shared",
+        disposition="supporting",
+        exact_phrase="shared phrase",
+        source_id="source:one",
+        page=1,
+        provenance="canonical unit unit:one",
+    )
+    question = _assessment().domains[0].questions[0].model_copy(
+        update={"evidence": (evidence,)}
+    )
+    duplicate_question = _assessment().domains[1].questions[0].model_copy(
+        update={"evidence": (evidence,)}
+    )
+    assessment = _assessment().model_copy(
+        update={
+            "domains": (
+                _assessment().domains[0].model_copy(update={"questions": (question,)}),
+                _assessment().domains[1].model_copy(update={"questions": (duplicate_question,)}),
+                *_assessment().domains[2:],
+            )
+        }
+    )
+    projector = ReportProjector(assessment)
+    assert json.loads(projector.summary())["evidence_count"] == 1
+    assert "1 accepted evidence claims" in projector.html().decode()
+
+
+def test_report_path_component_is_collision_resistant_and_readable() -> None:
+    first = RunEngine._report_path_component("run:a/b")
+    second = RunEngine._report_path_component("run:a-b")
+    assert first != second
+    assert first.startswith("run-a-b-")
+    assert len(first.rsplit("-", 1)[-1]) == 16

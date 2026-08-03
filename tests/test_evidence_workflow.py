@@ -13,6 +13,7 @@ from rob2_kit.evidence import (
     CanonicalBlock,
     CanonicalEvidenceUnit,
     CanonicalPage,
+    CanonicalWordBox,
     CanonicalUnitKind,
     ConsiderationDisposition,
     ConsideredEvidenceItem,
@@ -263,6 +264,25 @@ def complete_receipt(*, retain_second: bool = False) -> SearchCoverageReceipt:
     )
 
 
+def test_canonical_word_box_text_must_match_exact_unit_span() -> None:
+    with pytest.raises(ValueError, match="word box text"):
+        CanonicalEvidenceUnit(
+            unit_id="unit:word-box",
+            source_id="source:report",
+            source_artifact_hash=HASH,
+            parse_id="parse:report-initial",
+            page=1,
+            kind=CanonicalUnitKind.PARAGRAPH,
+            text="Allocation concealed",
+            word_boxes=(
+                CanonicalWordBox(
+                    text="wrong",
+                    span_start=0,
+                    span_end=10,
+                    spatial=(1.0, 1.0, 50.0, 20.0),
+                ),
+            ),
+        )
 def test_coverage_receipt_requires_all_passes_results_and_safe_no_information_basis() -> None:
     receipt = complete_receipt()
     assert receipt.establishes_no_information_basis() is True

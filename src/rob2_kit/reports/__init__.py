@@ -10,6 +10,7 @@ import io
 import re
 from collections import Counter
 from datetime import UTC, datetime
+from pathlib import Path
 from typing import Literal
 from zipfile import ZipFile
 
@@ -22,7 +23,7 @@ from rob2_kit.domain.assessment import (
     DecisionTrace,
     SQAnswerRevision,
 )
-from rob2_kit.domain.canonical import canonical_json_bytes
+from rob2_kit.domain.canonical import canonical_hash, canonical_json_bytes, sha256_digest
 from rob2_kit.domain.evidence import (
     EvidenceBundle,
     EvidenceClaim,
@@ -32,6 +33,8 @@ from rob2_kit.domain.evidence import (
 from rob2_kit.domain.results import ResultSpecRevision
 from rob2_kit.domain.revisions import ContentHash, Identifier, RecordReference
 from rob2_kit.evidence.search import CanonicalEvidenceUnit
+from rob2_kit.evidence.visual import build_visual_citation
+from rob2_kit.logic.packs import load_guidance_pack
 from rob2_kit.reports._deterministic_zip import write_deterministic_zip
 from rob2_kit.storage.ledger import RevisionProjection, WorkflowLedger
 
@@ -723,9 +726,10 @@ class RunIndexProjector:
         run = self.run
         counts = Counter(item.state for item in run.results)
         observed_domain_ids = {domain_id for item in run.results for domain_id in item.domain_judgments}
-        domain_ids = tuple(
-            domain_id for domain_id in _DOMAIN_ORDER if domain_id in observed_domain_ids
-        ) + tuple(sorted(observed_domain_ids - set(_DOMAIN_ORDER)))
+        # Keep the official D1–D5 cells in every Run index, including scoped
+        # diagnostic rows where no domain judgment exists.  Unknown extension
+        # domains remain visible after the official columns.
+        domain_ids = _DOMAIN_ORDER + tuple(sorted(observed_domain_ids - set(_DOMAIN_ORDER)))
         traffic_headers = "".join(
             f'<th scope="col">{html.escape(_domain_code(domain_id) + ": " if _domain_code(domain_id) else "")}'
             f"{html.escape(_domain_label(domain_id))}</th>"
@@ -1047,7 +1051,14 @@ def _estimate_card(assessment: AssessmentView) -> str:
 
 
 def _evidence_count(assessment: AssessmentView) -> int:
-    return sum(len(question.evidence) for domain in assessment.domains for question in domain.questions)
+    return len(
+        {
+            evidence.evidence_id
+            for domain in assessment.domains
+            for question in domain.questions
+            for evidence in question.evidence
+        }
+    )
 
 
 def _has_extended_identity(assessment: AssessmentView) -> bool:
@@ -1199,7 +1210,9 @@ def latest_assessment_view(ledger: WorkflowLedger) -> AssessmentView:
         except (TypeError, ValueError):
             continue
         answers_by_sq[answer.sq_id] = answer
-    _question_views, question_domains = _latest_question_views(ledger, current, assessment, answers_by_sq)
+    _question_views, question_domains, visual_citations = _latest_question_views(
+        ledger, current, assessment, answers_by_sq
+    )
     result = result_spec.result
     domain_order = {
         domain_id: index for index, domain_id in enumerate(_DOMAIN_LABELS, start=1)
@@ -1262,13 +1275,18 @@ def latest_assessment_view(ledger: WorkflowLedger) -> AssessmentView:
             estimate=estimate,
         ),
         overall_judgment=_overall_judgment(effective),
-        domains=tuple(
+        domains=_ordered_domains(tuple(
             DomainView(
                 domain_id=judgment.domain_id,
                 label=_domain_label(judgment.domain_id),
                 judgment=judgment.judgment.value,
                 rationale=(f"Algorithmic judgment from {judgment.decision_trace.revision_id}."),
-                questions=question_domains.get(judgment.domain_id, ()),
+                questions=tuple(
+                    sorted(
+                        question_domains.get(judgment.domain_id, ()),
+                        key=lambda question: question.question_id,
+                    )
+                ),
                 decision_trace=(judgment.decision_trace.revision_id,),
                 coverage=(
                     "incomplete"
@@ -1282,7 +1300,8 @@ def latest_assessment_view(ledger: WorkflowLedger) -> AssessmentView:
                 ),
             )
             for judgment in ordered
-        ),
+        )),
+        visual_citations=visual_citations,
         overall_policy_id=(ordered[0].overall_policy_id if ordered else None),
         overall_policy_hash=(ordered[0].overall_policy_hash if ordered else None),
         overall_policy_text=(
@@ -1305,7 +1324,11 @@ def _latest_question_views(
     current: dict[str, RevisionProjection],
     assessment: AssessmentRevision,
     answers: dict[str, SQAnswerRevision],
-) -> tuple[dict[str, SignalingQuestionView], dict[str, tuple[SignalingQuestionView, ...]]]:
+) -> tuple[
+    dict[str, SignalingQuestionView],
+    dict[str, tuple[SignalingQuestionView, ...]],
+    tuple[VisualCitationView, ...],
+]:
     """Rehydrate evidence-first questions from the Assessment dependencies.
 
     ``latest_assessment_view`` is a read-only compatibility projection, but it
@@ -1316,11 +1339,15 @@ def _latest_question_views(
 
     result: dict[str, SignalingQuestionView] = {}
     domains: dict[str, list[SignalingQuestionView]] = {}
+    visual_citations: dict[str, VisualCitationView] = {}
+    guidance = _guidance_wording()
     for reference in assessment.evidence_bundles:
         try:
             bundle = _load_reference(ledger, current, reference, EvidenceBundle)
-        except (TypeError, ValueError):
-            continue
+        except (TypeError, ValueError) as error:
+            raise ValueError(
+                f"Assessment evidence bundle {reference.revision_id!r} cannot be reconstructed"
+            ) from error
         if bundle.sq_id is None:
             continue
         dispositions: dict[str, str] = {}
@@ -1332,8 +1359,10 @@ def _latest_question_views(
                 dispositions = {
                     item.item_id: item.disposition.value for item in manifest.dispositions
                 }
-            except (TypeError, ValueError):
-                pass
+            except (TypeError, ValueError) as error:
+                raise ValueError(
+                    f"Evidence consideration manifest for {bundle.sq_id!r} cannot be reconstructed"
+                ) from error
         evidence: list[EvidenceView] = []
         for item in bundle.items:
             disposition = dispositions.get(item.entity_id, "contextual")
@@ -1345,6 +1374,57 @@ def _latest_question_views(
                 phrase = unit.text[claim.span_start : claim.span_end]
                 if not phrase:
                     continue
+                if sha256_digest(phrase.encode("utf-8")) != claim.quoted_text_hash:
+                    raise ValueError(
+                        f"canonical EvidenceClaim {claim.revision_id} quoted-text hash mismatch"
+                    )
+                visual = None
+                try:
+                    citation = build_visual_citation(
+                        unit, span_start=claim.span_start, span_end=claim.span_end
+                    )
+                    region = (
+                        min(box.left for box in citation.boxes),
+                        min(box.top for box in citation.boxes),
+                        max(box.right for box in citation.boxes),
+                        max(box.bottom for box in citation.boxes),
+                    )
+                    visual = VisualCitationView(
+                        citation_id=citation.citation_id,
+                        source_id=citation.source_id,
+                        page=citation.page,
+                        region=region,
+                        boxes=tuple(
+                            (box.left, box.top, box.right, box.bottom)
+                            for box in citation.boxes
+                        ),
+                        label="Canonical evidence span",
+                        exact_phrase=phrase,
+                        render_provenance=(
+                            f"canonical unit {unit.unit_id}; Parse record {citation.parse_id}; "
+                            f"source artifact {citation.source_artifact_hash}; "
+                            f"{citation.render.mode.value} at {citation.render.dpi} dpi; "
+                            "agent inspection not performed"
+                        ),
+                        canonical_unit_id=citation.canonical_unit_id,
+                        source_artifact_hash=citation.source_artifact_hash,
+                        parse_id=citation.parse_id,
+                        span_start=citation.span_start,
+                        span_end=citation.span_end,
+                        quoted_text_hash=citation.quoted_text_hash,
+                        geometry_scope=citation.geometry_scope,
+                        geometry_hash=citation.geometry_hash,
+                        render_hash=citation.render_hash,
+                        render_mode=citation.render.mode.value,
+                        dpi=citation.render.dpi,
+                        agent_inspected=False,
+                        inspection_status="automatic_spatial_claim",
+                    )
+                    visual_citations[visual.citation_id] = visual
+                except (TypeError, ValueError):
+                    # Text-only canonical units remain valid evidence; their
+                    # absence of geometry is retained in provenance below.
+                    pass
                 evidence.append(
                     EvidenceView(
                         evidence_id=claim.revision_id,
@@ -1356,15 +1436,47 @@ def _latest_question_views(
                             f"canonical unit {unit.unit_id}; Parse record {unit.parse_id}; "
                             f"verification {claim.verification_status.value}"
                         ),
+                        visual_citation=visual,
                     )
                 )
                 continue
-            except (TypeError, ValueError, IndexError):
+            except (TypeError, IndexError, ValidationError):
                 pass
             try:
                 transcription = _load_reference(ledger, current, item, VisualTranscription)
             except (TypeError, ValueError):
                 continue
+            visual = VisualCitationView(
+                citation_id=transcription.revision_id,
+                source_id=transcription.source.entity_id,
+                page=transcription.page,
+                region=transcription.region,
+                boxes=(transcription.region,),
+                label="Visual transcription",
+                exact_phrase=transcription.transcription,
+                render_provenance=(
+                    f"{transcription.render_mode} at {transcription.dpi} dpi; "
+                    "visual-only; not machine-verified"
+                ),
+                quoted_text_hash=sha256_digest(transcription.transcription.encode("utf-8")),
+                geometry_scope="visual_region",
+                geometry_hash=canonical_hash(
+                    {"region": transcription.region, "page": transcription.page}
+                ),
+                render_hash=canonical_hash(
+                    {
+                        "source_id": transcription.source.entity_id,
+                        "page": transcription.page,
+                        "mode": transcription.render_mode,
+                        "dpi": transcription.dpi,
+                        "region": transcription.region,
+                    }
+                ),
+                render_mode=transcription.render_mode,
+                dpi=transcription.dpi,
+                agent_inspected=True,
+                inspection_status="visual_only_transcription",
+            )
             evidence.append(
                 EvidenceView(
                     evidence_id=transcription.revision_id,
@@ -1376,8 +1488,10 @@ def _latest_question_views(
                         f"visual-only transcription; {transcription.render_mode} at "
                         f"{transcription.dpi} dpi; not machine-verified"
                     ),
+                    visual_citation=visual,
                 )
             )
+            visual_citations[visual.citation_id] = visual
         answer = answers.get(bundle.sq_id)
         uncertainty = (
             (f"coverage state: {bundle.coverage_state.value}",)
@@ -1388,6 +1502,7 @@ def _latest_question_views(
         )
         question = SignalingQuestionView(
             question_id=bundle.sq_id,
+            wording=guidance.get(bundle.sq_id, ""),
             answer=answer.answer.value if answer else "no_information",
             rationale=answer.rationale if answer else "No answer revision was recorded.",
             evidence=tuple(evidence),
@@ -1396,11 +1511,44 @@ def _latest_question_views(
             no_information_basis=bundle.no_information_basis,
             conflicts=bundle.conflicts,
             uncertainty=uncertainty,
+            decision_trace=answer.decision_rule_ids if answer else (),
         )
         result[bundle.sq_id] = question
         if bundle.domain_id is not None:
             domains.setdefault(bundle.domain_id, []).append(question)
-    return result, {domain_id: tuple(items) for domain_id, items in domains.items()}
+    return (
+        result,
+        {domain_id: tuple(items) for domain_id, items in domains.items()},
+        tuple(visual_citations[key] for key in sorted(visual_citations)),
+    )
+
+
+def _guidance_wording() -> dict[str, str]:
+    """Load official Guidance wording when the pinned pack is available.
+
+    The compatibility projection is ledger-only, so a missing pack is
+    surfaced as empty wording rather than inventing paraphrases.  Terminal
+    reports still carry the authoritative wording materialized by RunEngine.
+    """
+
+    candidates = (
+        Path(__file__).resolve().parents[1]
+        / "packs"
+        / "guidance"
+        / "rob2-parallel-assignment-en-2019.1.yaml",
+        Path(__file__).resolve().parents[3]
+        / "packs"
+        / "guidance"
+        / "rob2-parallel-assignment-en-2019.1.yaml",
+    )
+    for candidate in candidates:
+        if candidate.is_file():
+            try:
+                pack = load_guidance_pack(candidate)
+            except (OSError, ValueError):
+                continue
+            return {item.logic_element_id: item.text for item in pack.items}
+    return {}
 
 
 def _load_reference[ReportRevision: BaseModel](

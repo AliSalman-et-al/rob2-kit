@@ -317,8 +317,20 @@ def _journey_receipt(project: Path) -> dict[str, object]:
     """Collect the complete deterministic artifacts after a terminal journey."""
     from rob2_kit.storage import ArtifactStore, WorkflowLedger
 
-    report = project / "output" / "report-bundle"
-    manifest = json.loads((report / "manifest.json").read_text(encoding="utf-8"))
+    report_base = project / "output" / "report-bundle"
+    # Result bundles are rooted at runs/<run>/trials/<trial>/results/<result>.
+    # Discover the manifest rather than assuming the historical flat root.
+    manifests = []
+    for candidate in report_base.rglob("manifest.json"):
+        try:
+            payload = json.loads(candidate.read_text(encoding="utf-8"))
+        except (OSError, ValueError, TypeError):
+            continue
+        if isinstance(payload, dict) and isinstance(payload.get("files"), dict):
+            manifests.append((candidate.parent, payload))
+    if len(manifests) != 1:
+        raise AssertionError(f"expected one result manifest, found {len(manifests)}")
+    report, manifest = manifests[0]
     report_hashes = {
         name: _sha256((report / name).read_bytes()) for name in sorted(manifest["files"])
     }

@@ -82,6 +82,8 @@ class CanonicalEvidenceUnit(FrozenModel):
                 raise ValueError("word box span exceeds canonical unit text")
             if box.span_start < previous_end:
                 raise ValueError("word boxes must be ordered and non-overlapping")
+            if box.text != self.text[box.span_start : box.span_end]:
+                raise ValueError("word box text must equal its canonical unit span")
             previous_end = box.span_end
         return self
 

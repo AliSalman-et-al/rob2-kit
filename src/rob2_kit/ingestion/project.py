@@ -180,6 +180,14 @@ class DocumentParser(Protocol):
         target_pages: tuple[int, ...] | None = None,
     ) -> ParserResult: ...
 
+    def screenshot(
+        self,
+        data: bytes,
+        *,
+        page_numbers: tuple[int, ...],
+        dpi: int,
+    ) -> tuple[PageRender, ...]: ...
+
 
 def _content_bounds(page: Any) -> tuple[float, float, float, float] | None:
     bounds = getattr(page, "content_bounds", None)
