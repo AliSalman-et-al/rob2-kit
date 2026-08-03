@@ -31,14 +31,18 @@ from rob2_kit.domain.sources import (
     SourceRole,
 )
 from rob2_kit.evidence.search import (
+    CONTEXT_CHARACTER_TARGET,
     CanonicalEvidenceUnit,
+    EvidenceContext,
     SearchPage,
+    SearchPolicy,
     SearchQuery,
 )
 from rob2_kit.evidence.visual import (
     VisualCandidate,
     VisualRenderRequest,
 )
+from rob2_kit.evidence.workflow import ExecutedSearchQuery, SearchPassKind
 from rob2_kit.ingestion.project import ProjectInitialization, ResultCandidate, TrialInitialization
 from rob2_kit.registry import RegistryCandidate
 
@@ -252,12 +256,22 @@ class SearchEvidenceRequest(FrozenModel):
     result_id: Identifier | None = None
     cursor: str | None = None
     broad_query_justification: str | None = None
+    policy: SearchPolicy | None = None
+    sq_id: Identifier | None = None
+    pass_kind: SearchPassKind | None = None
+    seed_family: Identifier | None = None
 
 
 class ReadEvidenceRequest(FrozenModel):
     run_id: Identifier
     unit_id: Identifier
     result_id: Identifier | None = None
+    neighbor_limit: int = Field(default=6, ge=0, le=50)
+    context_character_target: int = Field(
+        default=CONTEXT_CHARACTER_TARGET,
+        ge=1,
+        le=CONTEXT_CHARACTER_TARGET,
+    )
 
 
 class InspectVisualCandidateRequest(FrozenModel):
@@ -376,11 +390,13 @@ class ConfirmRunDefinitionResponse(OperationResponse):
 class SearchEvidenceResponse(OperationResponse):
     run_id: Identifier
     page: SearchPage
+    executed_query: ExecutedSearchQuery | None = None
 
 
 class ReadEvidenceResponse(OperationResponse):
     run_id: Identifier
     unit: CanonicalEvidenceUnit
+    context: EvidenceContext | None = None
 
 
 class InspectVisualCandidateResponse(OperationResponse):

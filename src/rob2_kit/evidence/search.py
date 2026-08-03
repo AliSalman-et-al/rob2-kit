@@ -3,8 +3,12 @@
 from __future__ import annotations
 
 import base64
+import binascii
+import hashlib
+import hmac
 import json
 import re
+import secrets
 import sqlite3
 from enum import StrEnum
 from pathlib import Path
@@ -15,6 +19,13 @@ from rob2_kit.domain.canonical import canonical_hash
 from rob2_kit.domain.revisions import ContentHash, FrozenModel, Identifier
 
 PROJECTION_TARGET = 2_400
+CONTEXT_CHARACTER_TARGET = 16_000
+CONTEXT_NEIGHBOR_LIMIT = 6
+CONTEXT_UNIT_LIMIT = 6
+PAGE_HIT_TARGET_MAX = 20
+PAGE_CHARACTER_TARGET_MAX = 8_000
+BROAD_UNIQUE_HIT_THRESHOLD_MAX = 100
+BROAD_INDEX_FRACTION_MAX = 0.05
 _TOKEN = re.compile(r"^[^\s\"'()*:^{}[\]\\]+$")
 
 
@@ -86,6 +97,16 @@ class SearchProjection(FrozenModel):
     end: int = Field(gt=0)
     citable: bool = False
 
+    @model_validator(mode="after")
+    def validate_non_citable(self) -> SearchProjection:
+        if self.citable:
+            raise ValueError("search projections are non-citable")
+        if self.end <= self.start:
+            raise ValueError("search projection span must have positive extent")
+        if len(self.text) != self.end - self.start:
+            raise ValueError("search projection text must bind its exact canonical span")
+        return self
+
 
 class SearchQuery(FrozenModel):
     terms: tuple[str, ...] = ()
@@ -117,16 +138,29 @@ class SearchQuery(FrozenModel):
 
 class SearchPolicy(FrozenModel):
     policy_id: Identifier = "policy:evidence-search-1.0.0"
-    page_hit_target: int = Field(default=20, ge=1)
-    page_character_target: int = Field(default=8_000, ge=1)
-    broad_unique_hit_threshold: int = Field(default=100, ge=1)
-    broad_index_fraction: float = Field(default=0.05, gt=0, le=1)
+    page_hit_target: int = Field(default=20, ge=1, le=PAGE_HIT_TARGET_MAX)
+    page_character_target: int = Field(
+        default=8_000,
+        ge=1,
+        le=PAGE_CHARACTER_TARGET_MAX,
+    )
+    broad_unique_hit_threshold: int = Field(
+        default=100,
+        ge=1,
+        le=BROAD_UNIQUE_HIT_THRESHOLD_MAX,
+    )
+    broad_index_fraction: float = Field(
+        default=0.05,
+        gt=0,
+        le=BROAD_INDEX_FRACTION_MAX,
+    )
 
 
 class SearchHit(FrozenModel):
     unit: CanonicalEvidenceUnit
     projection: SearchProjection
     rank: float
+    oversized: bool = False
 
 
 class QueryPreview(FrozenModel):
@@ -140,9 +174,70 @@ class SearchPage(FrozenModel):
     snapshot_hash: ContentHash
     query_hash: ContentHash
     policy_id: Identifier
+    policy_hash: ContentHash
     hits: tuple[SearchHit, ...]
-    next_cursor: str | None
+    next_cursor: str | None = Field(default=None, min_length=1)
     preview: QueryPreview
+    character_count: int = Field(default=0, ge=0)
+    oversized_unit_ids: tuple[Identifier, ...] = ()
+
+    @property
+    def has_more(self) -> bool:
+        return self.next_cursor is not None
+
+
+class EvidenceContext(FrozenModel):
+    """A bounded, snapshot-bound view around one intact canonical unit."""
+
+    snapshot_hash: ContentHash
+    unit: CanonicalEvidenceUnit
+    neighbors: tuple[CanonicalEvidenceUnit, ...] = ()
+    character_count: int = Field(ge=0)
+    character_target: int = Field(ge=1)
+    neighbor_limit: int = Field(ge=0)
+    oversized: bool = False
+    omitted_neighbor_count: int = Field(ge=0)
+
+    @model_validator(mode="after")
+    def validate_bounds_and_provenance(self) -> EvidenceContext:
+        if self.character_target > CONTEXT_CHARACTER_TARGET:
+            raise ValueError(
+                f"character_target cannot exceed {CONTEXT_CHARACTER_TARGET} characters"
+            )
+        if self.neighbor_limit > CONTEXT_UNIT_LIMIT - 1:
+            raise ValueError(f"neighbor_limit cannot exceed {CONTEXT_UNIT_LIMIT - 1}")
+        if len(self.neighbors) > self.neighbor_limit:
+            raise ValueError("context returned more neighbors than its bound")
+        if len({item.unit_id for item in self.neighbors}) != len(self.neighbors):
+            raise ValueError("context neighbors must be unique")
+        if self.unit.unit_id in {item.unit_id for item in self.neighbors}:
+            raise ValueError("context neighbors cannot include the target unit")
+        provenance = (
+            self.unit.source_id,
+            self.unit.source_artifact_hash,
+            self.unit.parse_id,
+        )
+        if any(
+            (item.source_id, item.source_artifact_hash, item.parse_id) != provenance
+            for item in self.neighbors
+        ):
+            raise ValueError("context neighbors must preserve source and Parse provenance")
+        expected_count = sum(len(item.text) for item in self.all_units)
+        if self.character_count != expected_count:
+            raise ValueError("context character_count must bind the returned canonical units")
+        expected_oversized = len(self.unit.text) > self.character_target
+        if self.oversized != expected_oversized:
+            raise ValueError("context oversized metadata must bind the target character bound")
+        if self.oversized and self.neighbors:
+            raise ValueError("oversized context views cannot include neighboring units")
+        if not self.oversized and self.character_count > self.character_target:
+            raise ValueError("bounded context exceeds its character target")
+        return self
+
+    @property
+    def all_units(self) -> tuple[CanonicalEvidenceUnit, ...]:
+        """Return the target followed by context in deterministic source order."""
+        return (self.unit, *self.neighbors)
 
 
 class EvidenceSearchIndex:
@@ -168,6 +263,10 @@ class EvidenceSearchIndex:
                     singleton INTEGER PRIMARY KEY CHECK (singleton = 1),
                     content_hash TEXT NOT NULL
                 );
+                CREATE TABLE IF NOT EXISTS evidence_cursor_secret (
+                    singleton INTEGER PRIMARY KEY CHECK (singleton = 1),
+                    secret BLOB NOT NULL
+                );
                 CREATE VIRTUAL TABLE IF NOT EXISTS evidence_fts USING fts5(
                     projection_id UNINDEXED,
                     unit_id UNINDEXED,
@@ -175,6 +274,10 @@ class EvidenceSearchIndex:
                     tokenize='porter unicode61'
                 );
                 """
+            )
+            connection.execute(
+                "INSERT OR IGNORE INTO evidence_cursor_secret(singleton, secret) VALUES (1, ?)",
+                (secrets.token_bytes(32),),
             )
 
     def replace_units(self, units: tuple[CanonicalEvidenceUnit, ...]) -> ContentHash:
@@ -254,6 +357,91 @@ class EvidenceSearchIndex:
             spatial=None if row["spatial"] == "null" else tuple(json.loads(row["spatial"])),
         )
 
+    def read_context(
+        self,
+        unit_id: Identifier,
+        *,
+        neighbor_limit: int = CONTEXT_NEIGHBOR_LIMIT,
+        character_target: int = CONTEXT_CHARACTER_TARGET,
+    ) -> EvidenceContext:
+        """Read an intact unit with deterministic, bounded same-source neighbors.
+
+        The target is never split or replaced by a projection.  If it is larger
+        than the context target, it is returned as a dedicated oversized view
+        with explicit metadata and no neighbors.  Every returned unit retains
+        its source artifact hash and Parse record ID.
+        """
+        if neighbor_limit < 0:
+            raise ValueError("neighbor_limit must be non-negative")
+        if character_target < 1:
+            raise ValueError("character_target must be positive")
+        if character_target > CONTEXT_CHARACTER_TARGET:
+            raise ValueError(
+                f"character_target cannot exceed {CONTEXT_CHARACTER_TARGET} characters"
+            )
+        effective_neighbor_limit = min(neighbor_limit, max(0, CONTEXT_UNIT_LIMIT - 1))
+        snapshot = self._snapshot()
+        target = self.read_unit(unit_id)
+        with self._connect() as connection:
+            rows = connection.execute(
+                "SELECT unit_id, page FROM evidence_units "
+                "WHERE source_id = ? AND source_artifact_hash = ? AND parse_id = ? "
+                "ORDER BY page ASC, unit_id ASC",
+                (target.source_id, target.source_artifact_hash, target.parse_id),
+            ).fetchall()
+        source_ids = sorted(
+            (row["unit_id"] for row in rows),
+            key=_canonical_unit_order,
+        )
+        try:
+            position = source_ids.index(unit_id)
+        except ValueError as error:  # pragma: no cover - read_unit already guards this
+            raise ValueError("canonical evidence unit is not in the current snapshot") from error
+        candidate_ids = [
+            source_ids[index]
+            for distance in range(1, len(source_ids) + 1)
+            for index in (position - distance, position + distance)
+            if 0 <= index < len(source_ids)
+        ]
+        oversized = len(target.text) > character_target
+        if oversized:
+            if self._snapshot() != snapshot:
+                raise ValueError("evidence snapshot changed while reading context")
+            return EvidenceContext(
+                snapshot_hash=snapshot,
+                unit=target,
+                character_count=len(target.text),
+                character_target=character_target,
+                neighbor_limit=effective_neighbor_limit,
+                oversized=True,
+                omitted_neighbor_count=max(0, len(source_ids) - 1),
+            )
+
+        selected: list[CanonicalEvidenceUnit] = []
+        characters = len(target.text)
+        for candidate_id in candidate_ids:
+            if len(selected) >= effective_neighbor_limit:
+                break
+            candidate = self.read_unit(candidate_id)
+            if characters + len(candidate.text) > character_target:
+                continue
+            selected.append(candidate)
+            characters += len(candidate.text)
+        # Context is presented in source order, not alternating distance order.
+        selected.sort(key=_canonical_unit_order)
+        if self._snapshot() != snapshot:
+            raise ValueError("evidence snapshot changed while reading context")
+        return EvidenceContext(
+            snapshot_hash=snapshot,
+            unit=target,
+            neighbors=tuple(selected),
+            character_count=characters,
+            character_target=character_target,
+            neighbor_limit=effective_neighbor_limit,
+            oversized=False,
+            omitted_neighbor_count=max(0, len(source_ids) - 1 - len(selected)),
+        )
+
     def unit_ids(self) -> frozenset[Identifier]:
         """Return the stable engine-issued unit identities in the current snapshot."""
         with self._connect() as connection:
@@ -273,20 +461,30 @@ class EvidenceSearchIndex:
         policy = policy or SearchPolicy()
         snapshot = self._snapshot()
         query_hash = canonical_hash(query)
-        offset = _decode_cursor(cursor, snapshot, query_hash) if cursor else 0
+        offset = (
+            _decode_cursor(cursor, snapshot, query_hash, policy, self._cursor_secret())
+            if cursor
+            else 0
+        )
         rows, scoped_count = self._matches(query)
+        if self._snapshot() != snapshot:
+            raise ValueError("evidence snapshot changed while searching")
         rows = _best_projection_per_unit(rows)
+        if offset > len(rows):
+            raise ValueError("search cursor offset is outside the current result set")
         is_broad = (
             len(rows) > policy.broad_unique_hit_threshold
             and scoped_count > 0
             and len(rows) / scoped_count > policy.broad_index_fraction
         )
-        if is_broad and not broad_query_justification:
+        if is_broad and (
+            broad_query_justification is None or not broad_query_justification.strip()
+        ):
             raise ValueError("broad query requires refinement or complete-traversal justification")
         selected: list[sqlite3.Row] = []
         characters = 0
         for row in rows[offset:]:
-            length = len(row["projection_text"])
+            length = len(row["text"])
             if selected and (
                 len(selected) >= policy.page_hit_target
                 or characters + length > policy.page_character_target
@@ -294,13 +492,27 @@ class EvidenceSearchIndex:
                 break
             selected.append(row)
             characters += length
+            # An indivisible canonical unit gets a dedicated page, even when
+            # it exceeds the ordinary character target.
+            if length > policy.page_character_target:
+                break
             if len(selected) >= policy.page_hit_target:
                 break
         consumed = offset + len(selected)
         next_cursor = (
-            _encode_cursor(snapshot, query_hash, consumed) if consumed < len(rows) else None
+            _encode_cursor(snapshot, query_hash, policy, consumed, self._cursor_secret())
+            if consumed < len(rows)
+            else None
         )
-        hits = tuple(self._hit(row) for row in selected)
+        hits = tuple(
+            self._hit(row, oversized=len(row["text"]) > policy.page_character_target)
+            for row in selected
+        )
+        if self._snapshot() != snapshot:
+            raise ValueError("evidence snapshot changed while searching")
+        oversized_unit_ids = tuple(
+            hit.unit.unit_id for hit in hits if len(hit.unit.text) > policy.page_character_target
+        )
         source_counts: dict[str, int] = {}
         for row in rows:
             source_counts[row["source_id"]] = source_counts.get(row["source_id"], 0) + 1
@@ -314,9 +526,12 @@ class EvidenceSearchIndex:
             snapshot_hash=snapshot,
             query_hash=query_hash,
             policy_id=policy.policy_id,
+            policy_hash=canonical_hash(policy),
             hits=hits,
             next_cursor=next_cursor,
             preview=preview,
+            character_count=characters,
+            oversized_unit_ids=oversized_unit_ids,
         )
 
     def _matches(self, query: SearchQuery) -> tuple[list[sqlite3.Row], int]:
@@ -361,7 +576,7 @@ class EvidenceSearchIndex:
         return row[0]
 
     @staticmethod
-    def _hit(row: sqlite3.Row) -> SearchHit:
+    def _hit(row: sqlite3.Row, *, oversized: bool = False) -> SearchHit:
         spatial = json.loads(row["spatial"]) if row["spatial"] else None
         unit = CanonicalEvidenceUnit(
             unit_id=row["unit_id"],
@@ -376,7 +591,21 @@ class EvidenceSearchIndex:
         projection_number = int(row["projection_id"].rsplit("-", 1)[1])
         projections = _project(unit)
         projection = projections[projection_number]
-        return SearchHit(unit=unit, projection=projection, rank=row["score"])
+        return SearchHit(
+            unit=unit,
+            projection=projection,
+            rank=row["score"],
+            oversized=oversized,
+        )
+
+    def _cursor_secret(self) -> bytes:
+        with self._connect() as connection:
+            row = connection.execute(
+                "SELECT secret FROM evidence_cursor_secret WHERE singleton = 1"
+            ).fetchone()
+        if row is None:
+            raise ValueError("evidence index has no cursor secret")
+        return bytes(row["secret"])
 
     def _connect(self) -> sqlite3.Connection:
         connection = sqlite3.connect(self.path)
@@ -392,6 +621,14 @@ def _compile_match(query: SearchQuery) -> str:
         "(" + " OR ".join(f'"{term}"' for term in group) + ")" for group in query.any_of
     )
     return " AND ".join(clauses)
+
+
+def _canonical_unit_order(unit: CanonicalEvidenceUnit | str) -> tuple[object, ...]:
+    unit_id = unit.unit_id if isinstance(unit, CanonicalEvidenceUnit) else unit
+    match = re.search(r"-p(\d+)-b(\d+)$", unit_id)
+    if match:
+        return (0, int(match.group(1)), int(match.group(2)), unit_id)
+    return (1, unit_id)
 
 
 def _project(unit: CanonicalEvidenceUnit) -> tuple[SearchProjection, ...]:
@@ -435,26 +672,72 @@ def _best_projection_per_unit(rows: list[sqlite3.Row]) -> list[sqlite3.Row]:
     return sorted(unique.values(), key=lambda row: (row["score"], row["unit_id"]))
 
 
-def _encode_cursor(snapshot: str, query_hash: str, offset: int) -> str:
+def _encode_cursor(
+    snapshot: str,
+    query_hash: str,
+    policy: SearchPolicy,
+    offset: int,
+    secret: bytes,
+) -> str:
     payload = json.dumps(
-        {"snapshot": snapshot, "query": query_hash, "offset": offset},
+        {
+            "snapshot": snapshot,
+            "query": query_hash,
+            "policy": canonical_hash(policy),
+            "offset": offset,
+        },
         sort_keys=True,
         separators=(",", ":"),
     ).encode()
-    return base64.urlsafe_b64encode(payload).decode().rstrip("=")
+    envelope = {
+        "payload": base64.urlsafe_b64encode(payload).decode().rstrip("="),
+        "mac": hmac.new(secret, payload, hashlib.sha256).hexdigest(),
+    }
+    encoded = json.dumps(envelope, sort_keys=True, separators=(",", ":")).encode()
+    return base64.urlsafe_b64encode(encoded).decode().rstrip("=")
 
 
-def _decode_cursor(cursor: str, snapshot: str, query_hash: str) -> int:
+def _decode_cursor(
+    cursor: str,
+    snapshot: str,
+    query_hash: str,
+    policy: SearchPolicy,
+    secret: bytes,
+) -> int:
     try:
         padding = "=" * (-len(cursor) % 4)
-        payload = json.loads(base64.urlsafe_b64decode(cursor + padding))
+        envelope = json.loads(base64.urlsafe_b64decode(cursor + padding))
+        encoded_payload = envelope["payload"]
+        mac = envelope["mac"]
+        payload_bytes = base64.urlsafe_b64decode(
+            encoded_payload + "=" * (-len(encoded_payload) % 4)
+        )
+        expected_mac = hmac.new(secret, payload_bytes, hashlib.sha256).hexdigest()
+        if not isinstance(mac, str) or not hmac.compare_digest(mac, expected_mac):
+            raise ValueError("invalid search cursor integrity tag")
+        payload = json.loads(payload_bytes)
         if payload["snapshot"] != snapshot:
             raise ValueError("cursor belongs to a different index snapshot")
         if payload["query"] != query_hash:
             raise ValueError("cursor belongs to a different structured query")
-        offset = int(payload["offset"])
+        if payload["policy"] != canonical_hash(policy):
+            raise ValueError("cursor belongs to a different search policy")
+        raw_offset = payload["offset"]
+        if isinstance(raw_offset, bool) or not isinstance(raw_offset, int):
+            raise ValueError("search cursor offset is not an integer")
+        offset = raw_offset
         if offset < 0:
             raise ValueError
         return offset
-    except (KeyError, TypeError, json.JSONDecodeError, UnicodeDecodeError) as error:
+    except ValueError:
+        raise
+    except (
+        KeyError,
+        TypeError,
+        ValueError,
+        OverflowError,
+        binascii.Error,
+        json.JSONDecodeError,
+        UnicodeDecodeError,
+    ) as error:
         raise ValueError("invalid search cursor") from error

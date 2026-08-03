@@ -2,8 +2,12 @@
 
 from __future__ import annotations
 
+import base64
+import binascii
+import json
 from decimal import ROUND_HALF_EVEN, Decimal, InvalidOperation
 from enum import StrEnum
+from typing import Any
 
 from pydantic import Field, model_validator
 
@@ -15,7 +19,45 @@ from rob2_kit.domain.revisions import (
     Identifier,
     RecordReference,
 )
-from rob2_kit.evidence.search import CanonicalEvidenceUnit, SearchQuery
+from rob2_kit.evidence.search import (
+    CanonicalEvidenceUnit,
+    EvidenceSearchIndex,
+    SearchPage,
+    SearchPolicy,
+    SearchQuery,
+)
+
+
+def _dependency_changed(
+    current: RecordReference | ContentHash,
+    bound: RecordReference,
+) -> bool:
+    if isinstance(current, RecordReference):
+        return current != bound
+    return current != bound.content_hash
+
+
+def _looks_like_search_cursor(cursor: str) -> bool:
+    """Check the structural envelope before an index verifies its MAC."""
+    try:
+        raw = base64.urlsafe_b64decode(cursor + "=" * (-len(cursor) % 4))
+        envelope = json.loads(raw)
+        encoded_payload = envelope["payload"]
+        mac = envelope["mac"]
+        if (
+            not isinstance(encoded_payload, str)
+            or not isinstance(mac, str)
+            or len(mac) != 64
+            or any(character not in "0123456789abcdef" for character in mac)
+        ):
+            return False
+        payload = base64.urlsafe_b64decode(
+            encoded_payload + "=" * (-len(encoded_payload) % 4)
+        )
+        values = json.loads(payload)
+        return {"snapshot", "query", "policy", "offset"} <= set(values)
+    except (KeyError, TypeError, ValueError, binascii.Error, json.JSONDecodeError):
+        return False
 
 
 class SearchPassKind(StrEnum):
@@ -40,6 +82,8 @@ class SearchResultDisposition(FrozenModel):
     def validate_duplicate(self) -> SearchResultDisposition:
         if self.kind is SearchResultDispositionKind.DUPLICATE and self.duplicate_of is None:
             raise ValueError("duplicate search results require the covered unit ID")
+        if self.kind is SearchResultDispositionKind.DUPLICATE and self.duplicate_of == self.unit_id:
+            raise ValueError("duplicate search results cannot cover themselves")
         if self.kind is not SearchResultDispositionKind.DUPLICATE and self.duplicate_of is not None:
             raise ValueError("duplicate_of is only valid for duplicate search results")
         retained = self.kind is SearchResultDispositionKind.RETAINED_CANDIDATE
@@ -60,6 +104,9 @@ class SourceSearchCoverage(FrozenModel):
     source_id: Identifier
     state: SourceSearchState
     sufficiently_readable: bool
+    artifact_hash: ContentHash | None = None
+    parse_record_hashes: tuple[ContentHash, ...] = ()
+    limitations: tuple[str, ...] = ()
 
 
 class VisualCandidateCoverage(FrozenModel):
@@ -69,6 +116,7 @@ class VisualCandidateCoverage(FrozenModel):
 
 
 class ExecutedSearchQuery(FrozenModel):
+    sq_id: Identifier | None = None
     query: SearchQuery
     query_hash: ContentHash
     pass_kind: SearchPassKind
@@ -77,6 +125,12 @@ class ExecutedSearchQuery(FrozenModel):
     traversal_complete: bool
     broad_query: bool = False
     broad_query_justification: str | None = None
+    first_cursor: str | None = None
+    last_cursor: str | None = None
+    pages_traversed: int = Field(default=1, ge=1)
+    snapshot_hash: ContentHash | None = None
+    policy_id: Identifier | None = None
+    policy_hash: ContentHash | None = None
 
     @model_validator(mode="after")
     def validate_query(self) -> ExecutedSearchQuery:
@@ -88,14 +142,27 @@ class ExecutedSearchQuery(FrozenModel):
             raise ValueError("seed families apply only to Guidance-seed queries")
         if self.broad_query and not self.broad_query_justification:
             raise ValueError("broad queries require a complete-traversal justification")
+        if (
+            self.broad_query_justification is not None
+            and not self.broad_query_justification.strip()
+        ):
+            raise ValueError("broad query justification cannot be blank")
         return self
 
 
 class SearchCoverageReceipt(FrozenModel):
+    """Immutable search-accounting data, not an authority by itself.
+
+    ``recorder_proof`` is a deterministic content binding emitted after the
+    runtime recorder verifies every page; hosts must retain that trust boundary
+    when deciding whether a No-information basis is usable.
+    """
+
     receipt_id: Identifier
     sq_id: Identifier
     snapshot_hash: ContentHash
     policy_id: Identifier
+    policy_hash: ContentHash
     result_spec: RecordReference
     source_inventory: RecordReference
     parse_record_hashes: tuple[ContentHash, ...]
@@ -111,27 +178,88 @@ class SearchCoverageReceipt(FrozenModel):
     sources: tuple[SourceSearchCoverage, ...]
     inventory_source_ids: tuple[Identifier, ...]
     visual_candidates: tuple[VisualCandidateCoverage, ...] = ()
-    latest_complete_round_new_material_candidates: int = Field(ge=0)
+    latest_complete_round_new_material_candidates: int = Field(default=0, ge=0)
     traversal_complete: bool
     interrupted: bool
     broad_query_justifications: tuple[str, ...] = ()
+    resume_cursor: str | None = Field(default=None, min_length=1)
+    resume_query_hash: ContentHash | None = None
+    resume_snapshot_hash: ContentHash | None = None
+    resume_policy_id: Identifier | None = None
     stopping_reason: str = (
         "mandatory protocol complete; latest complete round found no new material"
     )
+    recorder_proof: ContentHash | None = None
+
+    @model_validator(mode="before")
+    @classmethod
+    def bind_query_dependencies(cls, values: Any) -> Any:
+        if not isinstance(values, dict):
+            return values
+        raw_queries = values.get("executed_queries", ())
+        bound_queries = []
+        for raw_query in raw_queries:
+            payload = (
+                raw_query.model_dump(mode="python")
+                if isinstance(raw_query, ExecutedSearchQuery)
+                else dict(raw_query)
+            )
+            for field in ("sq_id", "snapshot_hash", "policy_id", "policy_hash"):
+                bound_value = values.get(field)
+                supplied_value = payload.get(field)
+                if supplied_value is not None and supplied_value != bound_value:
+                    raise ValueError(f"executed query {field} does not match the receipt")
+                payload[field] = bound_value
+            bound_queries.append(payload)
+        values = dict(values)
+        values["executed_queries"] = bound_queries
+        return values
 
     @model_validator(mode="after")
     def validate_protocol_accounting(self) -> SearchCoverageReceipt:
         passes = set(self.completed_passes)
         missing_passes = set(SearchPassKind) - passes
-        if missing_passes:
+        if missing_passes and not self.interrupted:
             names = ", ".join(sorted(item.value for item in missing_passes))
             raise ValueError(f"mandatory search pass missing: {names}")
         missing_seeds = set(self.required_seed_families) - set(self.completed_seed_families)
-        if missing_seeds:
+        if missing_seeds and not self.interrupted:
             raise ValueError(f"mandatory Guidance seed families missing: {sorted(missing_seeds)}")
         executed_passes = {item.pass_kind for item in self.executed_queries}
         if executed_passes != passes:
             raise ValueError("completed passes must match the attributable executed queries")
+        if any(
+            query.snapshot_hash is not None and query.snapshot_hash != self.snapshot_hash
+            for query in self.executed_queries
+        ):
+            raise ValueError("executed queries must bind the receipt index snapshot")
+        if any(
+            query.sq_id is not None and query.sq_id != self.sq_id
+            for query in self.executed_queries
+        ):
+            raise ValueError("executed queries must bind the receipt signaling question")
+        if any(
+            query.policy_id is not None and query.policy_id != self.policy_id
+            for query in self.executed_queries
+        ):
+            raise ValueError("executed queries must bind the receipt search policy")
+        if any(
+            query.policy_hash is not None and query.policy_hash != self.policy_hash
+            for query in self.executed_queries
+        ):
+            raise ValueError("executed queries must bind the exact search policy")
+        contradiction_hashes = {
+            item.query_hash
+            for item in self.executed_queries
+            if item.pass_kind is SearchPassKind.CONTRADICTION
+        }
+        ordinary_hashes = {
+            item.query_hash
+            for item in self.executed_queries
+            if item.pass_kind is not SearchPassKind.CONTRADICTION
+        }
+        if not self.interrupted and contradiction_hashes & ordinary_hashes:
+            raise ValueError("contradiction search must use a distinct query")
         executed_seeds = {
             item.seed_family for item in self.executed_queries if item.seed_family is not None
         }
@@ -141,10 +269,49 @@ class SearchCoverageReceipt(FrozenModel):
             not item.traversal_complete for item in self.executed_queries
         ):
             raise ValueError("coverage cannot be complete while a query traversal is incomplete")
+        if self.resume_cursor is not None and self.resume_query_hash is None:
+            raise ValueError("a resume cursor must bind the interrupted query hash")
+        resume_record = next(
+            (
+                item
+                for item in self.executed_queries
+                if item.query_hash == self.resume_query_hash
+            ),
+            None,
+        )
+        if self.resume_cursor is not None and (
+            resume_record is None or resume_record.last_cursor != self.resume_cursor
+        ):
+            raise ValueError("resume cursor must be the recorded query continuation")
+        if self.resume_cursor is not None and not _looks_like_search_cursor(self.resume_cursor):
+            raise ValueError("resume cursor is not an engine-issued opaque cursor")
+        if self.resume_cursor is not None and self.resume_snapshot_hash != self.snapshot_hash:
+            raise ValueError("resume cursor must bind the receipt snapshot")
+        if self.resume_cursor is not None and self.resume_policy_id != self.policy_id:
+            raise ValueError("resume cursor must bind the receipt search policy")
+        if self.resume_cursor is None and (
+            self.resume_snapshot_hash is not None or self.resume_policy_id is not None
+        ):
+            raise ValueError("resume dependency bindings require a resume cursor")
+        if self.resume_query_hash is not None and self.resume_query_hash not in {
+            query.query_hash for query in self.executed_queries
+        }:
+            raise ValueError("resume cursor must bind an executed search query")
+        if self.resume_cursor is not None and not self.interrupted:
+            raise ValueError("resume cursors are valid only for interrupted coverage")
+        if self.interrupted and not self.traversal_complete and self.resume_cursor is None:
+            raise ValueError("interrupted pagination must preserve an opaque resume cursor")
         returned = set(self.returned_unit_ids)
+        if len(self.returned_unit_ids) != len(returned):
+            raise ValueError("returned evidence unit IDs must be unique")
         query_returns = {
             unit_id for query in self.executed_queries for unit_id in query.returned_unit_ids
         }
+        if any(
+            len(query.returned_unit_ids) != len(set(query.returned_unit_ids))
+            for query in self.executed_queries
+        ):
+            raise ValueError("each executed query must return each unit at most once")
         if returned != query_returns:
             raise ValueError("receipt results must match the union of executed-query results")
         disposition_ids = [item.unit_id for item in self.result_dispositions]
@@ -152,27 +319,77 @@ class SearchCoverageReceipt(FrozenModel):
             raise ValueError("each unique returned unit must have one disposition")
         if returned != set(disposition_ids):
             raise ValueError("every unique returned unit must have one disposition")
+        for disposition in self.result_dispositions:
+            if (
+                disposition.kind is SearchResultDispositionKind.DUPLICATE
+                and disposition.duplicate_of not in returned
+            ):
+                raise ValueError("duplicate dispositions must point to a returned unit")
+        candidate_ids = [
+            disposition.candidate_id
+            for disposition in self.result_dispositions
+            if disposition.candidate_id is not None
+        ]
+        if len(candidate_ids) != len(set(candidate_ids)):
+            raise ValueError("each retained search result must have a unique candidate ID")
         if self.latest_complete_round_new_material_candidates != 0 and self.traversal_complete:
             raise ValueError(
                 "search cannot stop while the latest complete round found new material"
             )
+        if len(self.inventory_source_ids) != len(set(self.inventory_source_ids)):
+            raise ValueError("inventory source IDs must be unique")
+        if len({source.source_id for source in self.sources}) != len(self.sources):
+            raise ValueError("source coverage IDs must be unique")
         if set(self.inventory_source_ids) != {source.source_id for source in self.sources}:
             raise ValueError("source coverage must account for the bound source inventory")
+        if self.broad_query_justifications and any(
+            not item.strip() for item in self.broad_query_justifications
+        ):
+            raise ValueError("broad query justifications cannot be blank")
+        if not self.stopping_reason.strip():
+            raise ValueError("stopping reason cannot be blank")
+        if any(not item.strip() for item in self.coverage_limits):
+            raise ValueError("coverage limitations cannot be blank")
+        if self.recorder_proof is not None and not self._proof_is_valid():
+            raise ValueError("receipt recorder proof does not bind its immutable payload")
         return self
+
+    def _proof_is_valid(self) -> bool:
+        if self.recorder_proof is None:
+            return False
+        unsigned = self.model_dump(mode="json")
+        unsigned["recorder_proof"] = None
+        return self.recorder_proof == canonical_hash(unsigned)
 
     def is_complete(self) -> bool:
         return (
-            self.traversal_complete
+            self._proof_is_valid()
+            and self.traversal_complete
             and not self.interrupted
             and self.latest_complete_round_new_material_candidates == 0
+        )
+
+    @property
+    def resumable(self) -> bool:
+        return self.interrupted and (
+            self.resume_cursor is not None or not self.traversal_complete
+        )
+
+    @property
+    def has_contradiction_pass(self) -> bool:
+        return any(
+            query.pass_kind is SearchPassKind.CONTRADICTION for query in self.executed_queries
         )
 
     def establishes_no_information_basis(self) -> bool:
         return (
             self.is_complete()
+            and not self.coverage_limits
             and bool(self.sources)
             and all(
-                source.state is SourceSearchState.SEARCHED and source.sufficiently_readable
+                source.state is SourceSearchState.SEARCHED
+                and source.sufficiently_readable
+                and not source.limitations
                 for source in self.sources
             )
             and all(
@@ -187,6 +404,404 @@ class SearchCoverageReceipt(FrozenModel):
             for item in self.result_dispositions
             if item.candidate_id is not None
         }
+
+    @property
+    def dependency_fingerprint(self) -> ContentHash:
+        """Hash the exact dependencies that determine receipt usability."""
+        payload = {
+            "snapshot_hash": self.snapshot_hash,
+            "policy_id": self.policy_id,
+            "policy_hash": self.policy_hash,
+            "result_spec": self.result_spec.model_dump(mode="json"),
+            "source_inventory": self.source_inventory.model_dump(mode="json"),
+            "parse_record_hashes": self.parse_record_hashes,
+            "guidance_release_id": self.guidance_release_id,
+            "project_rule_ids": self.project_rule_ids,
+        }
+        return canonical_hash(payload)
+
+    @property
+    def content_hash(self) -> ContentHash:
+        """Stable receipt hash, derived from the complete immutable payload."""
+        return canonical_hash(self.model_dump(mode="json"))
+
+    def stale_reasons(
+        self,
+        *,
+        snapshot_hash: ContentHash | None = None,
+        policy_id: Identifier | None = None,
+        policy_hash: ContentHash | None = None,
+        result_spec: RecordReference | ContentHash | None = None,
+        source_inventory: RecordReference | ContentHash | None = None,
+        parse_record_hashes: tuple[ContentHash, ...] | None = None,
+        guidance_release_id: Identifier | None = None,
+        project_rule_ids: tuple[Identifier, ...] | None = None,
+        current_snapshot_hash: ContentHash | None = None,
+        current_policy_id: Identifier | None = None,
+        current_policy_hash: ContentHash | None = None,
+        current_result_spec: RecordReference | ContentHash | None = None,
+        current_source_inventory: RecordReference | ContentHash | None = None,
+        current_parse_record_hashes: tuple[ContentHash, ...] | None = None,
+        current_guidance_release_id: Identifier | None = None,
+        current_project_rule_ids: tuple[Identifier, ...] | None = None,
+    ) -> tuple[str, ...]:
+        """Return exact dependency differences; omitted values mean unchanged."""
+        if current_snapshot_hash is not None:
+            snapshot_hash = current_snapshot_hash
+        if current_policy_id is not None:
+            policy_id = current_policy_id
+        if current_policy_hash is not None:
+            policy_hash = current_policy_hash
+        if current_result_spec is not None:
+            result_spec = current_result_spec
+        if current_source_inventory is not None:
+            source_inventory = current_source_inventory
+        if current_parse_record_hashes is not None:
+            parse_record_hashes = current_parse_record_hashes
+        if current_guidance_release_id is not None:
+            guidance_release_id = current_guidance_release_id
+        if current_project_rule_ids is not None:
+            project_rule_ids = current_project_rule_ids
+        reasons: list[str] = []
+        if snapshot_hash is not None and snapshot_hash != self.snapshot_hash:
+            reasons.append("snapshot_hash")
+        if policy_id is not None and policy_id != self.policy_id:
+            reasons.append("policy_id")
+        if policy_hash is not None and policy_hash != self.policy_hash:
+            reasons.append("policy_hash")
+        if result_spec is not None and _dependency_changed(result_spec, self.result_spec):
+            reasons.append("result_spec")
+        if source_inventory is not None and _dependency_changed(
+            source_inventory, self.source_inventory
+        ):
+            reasons.append("source_inventory")
+        if (
+            parse_record_hashes is not None
+            and tuple(parse_record_hashes) != self.parse_record_hashes
+        ):
+            reasons.append("parse_record_hashes")
+        if guidance_release_id is not None and guidance_release_id != self.guidance_release_id:
+            reasons.append("guidance_release_id")
+        if project_rule_ids is not None and tuple(project_rule_ids) != self.project_rule_ids:
+            reasons.append("project_rule_ids")
+        return tuple(reasons)
+
+    def is_stale(self, **dependencies: Any) -> bool:
+        return bool(self.stale_reasons(**dependencies))
+
+    def validate_resume_cursor(
+        self,
+        index: EvidenceSearchIndex,
+        query: SearchQuery,
+        *,
+        policy: SearchPolicy | None = None,
+    ) -> bool:
+        """Verify the opaque cursor MAC and its exact snapshot/query/policy binding."""
+        if self.resume_cursor is None or self.resume_query_hash != canonical_hash(query):
+            return False
+        active_policy = policy or SearchPolicy(policy_id=self.policy_id)
+        if active_policy.policy_id != self.policy_id:
+            return False
+        resume_record = next(
+            (item for item in self.executed_queries if item.query_hash == self.resume_query_hash),
+            None,
+        )
+        if resume_record is None or resume_record.last_cursor != self.resume_cursor:
+            return False
+        try:
+            page = index.search(
+                query,
+                policy=active_policy,
+                cursor=self.resume_cursor,
+                broad_query_justification=(
+                    resume_record.broad_query_justification if resume_record else None
+                ),
+            )
+        except ValueError:
+            return False
+        return (
+            page.snapshot_hash == self.snapshot_hash
+            and page.policy_id == self.policy_id
+            and page.policy_hash == self.policy_hash
+        )
+
+
+class SearchCoverageRecorder:
+    """Accumulate bounded search rounds into one validated coverage receipt."""
+
+    def __init__(
+        self,
+        *,
+        receipt_id: Identifier,
+        sq_id: Identifier,
+        snapshot_hash: ContentHash,
+        policy_id: Identifier,
+        policy_hash: ContentHash | None = None,
+        result_spec: RecordReference,
+        source_inventory: RecordReference,
+        parse_record_hashes: tuple[ContentHash, ...],
+        guidance_release_id: Identifier,
+        required_seed_families: tuple[Identifier, ...],
+        sources: tuple[SourceSearchCoverage, ...],
+        inventory_source_ids: tuple[Identifier, ...],
+        project_rule_ids: tuple[Identifier, ...] = (),
+        coverage_limits: tuple[str, ...] = (),
+        visual_candidates: tuple[VisualCandidateCoverage, ...] = (),
+    ) -> None:
+        self._metadata: dict[str, Any] = {
+            "receipt_id": receipt_id,
+            "sq_id": sq_id,
+            "snapshot_hash": snapshot_hash,
+            "policy_id": policy_id,
+            "policy_hash": policy_hash or canonical_hash(SearchPolicy(policy_id=policy_id)),
+            "result_spec": result_spec,
+            "source_inventory": source_inventory,
+            "parse_record_hashes": parse_record_hashes,
+            "guidance_release_id": guidance_release_id,
+            "required_seed_families": required_seed_families,
+            "sources": sources,
+            "inventory_source_ids": inventory_source_ids,
+            "project_rule_ids": project_rule_ids,
+            "coverage_limits": coverage_limits,
+            "visual_candidates": visual_candidates,
+        }
+        self._queries: list[ExecutedSearchQuery] = []
+        self._dispositions: dict[Identifier, SearchResultDisposition] = {}
+        self._next_cursors: dict[tuple[SearchPassKind, ContentHash], str | None] = {}
+        self._partial_traversal = False
+
+    def record_query(self, query: ExecutedSearchQuery) -> None:
+        """Reject unverified query metadata; use :meth:`record_page` instead."""
+        raise ValueError("record_query requires an index-verified page; use record_page")
+
+    def _record_query(self, query: ExecutedSearchQuery) -> None:
+        """Record metadata after :meth:`record_page` has verified the page."""
+        if (
+            query.snapshot_hash is not None
+            and query.snapshot_hash != self._metadata["snapshot_hash"]
+        ):
+            raise ValueError("search query snapshot does not match the recorder")
+        if query.policy_id is not None and query.policy_id != self._metadata["policy_id"]:
+            raise ValueError("search query policy does not match the recorder")
+        if query.policy_hash is not None and query.policy_hash != self._metadata["policy_hash"]:
+            raise ValueError("search query policy content does not match the recorder")
+        if query.sq_id is not None and query.sq_id != self._metadata["sq_id"]:
+            raise ValueError("search query signaling question does not match the recorder")
+        if query.snapshot_hash is None or query.policy_id is None or query.policy_hash is None:
+            query = query.model_copy(
+                update={
+                    "sq_id": self._metadata["sq_id"],
+                    "snapshot_hash": self._metadata["snapshot_hash"],
+                    "policy_id": self._metadata["policy_id"],
+                    "policy_hash": self._metadata["policy_hash"],
+                }
+            )
+        if query.sq_id is None:
+            query = query.model_copy(update={"sq_id": self._metadata["sq_id"]})
+        if query.pass_kind is SearchPassKind.CONTRADICTION and any(
+            item.pass_kind is not SearchPassKind.CONTRADICTION
+            and item.query_hash == query.query_hash
+            for item in self._queries
+        ):
+            raise ValueError("contradiction search must use a distinct query")
+        if query.pass_kind is not SearchPassKind.CONTRADICTION and any(
+            item.pass_kind is SearchPassKind.CONTRADICTION
+            and item.query_hash == query.query_hash
+            for item in self._queries
+        ):
+            raise ValueError("contradiction search must use a distinct query")
+        self._queries.append(query)
+
+    def record_page(
+        self,
+        page: SearchPage,
+        *,
+        index: EvidenceSearchIndex,
+        policy: SearchPolicy | None = None,
+        query: SearchQuery,
+        pass_kind: SearchPassKind,
+        seed_family: Identifier | None = None,
+        cursor: str | None = None,
+        broad_query_justification: str | None = None,
+    ) -> ExecutedSearchQuery:
+        """Record one server-bounded page and its attributable traversal metadata."""
+        active_policy = policy or SearchPolicy(policy_id=self._metadata["policy_id"])
+        if active_policy.policy_id != self._metadata["policy_id"]:
+            raise ValueError("search policy does not match the recorder")
+        try:
+            verified_page = index.search(
+                query,
+                policy=active_policy,
+                cursor=cursor,
+                broad_query_justification=broad_query_justification,
+            )
+        except ValueError as error:
+            raise ValueError("recorded page failed index verification") from error
+        if verified_page != page:
+            raise ValueError("recorded page does not match the index result")
+        if page.snapshot_hash != self._metadata["snapshot_hash"]:
+            raise ValueError("search page snapshot does not match the recorder")
+        if page.policy_id != self._metadata["policy_id"]:
+            raise ValueError("search page policy does not match the recorder")
+        if page.policy_hash != self._metadata["policy_hash"]:
+            raise ValueError("search page policy content does not match the recorder")
+        cursor_key = (pass_kind, page.query_hash)
+        if cursor_key in self._next_cursors:
+            expected_cursor = self._next_cursors[cursor_key]
+            if expected_cursor is None or cursor != expected_cursor:
+                raise ValueError("search pages must follow the issued continuation cursor")
+        elif cursor is not None:
+            self._partial_traversal = True
+        page_record = ExecutedSearchQuery(
+            query=query,
+            query_hash=page.query_hash,
+            sq_id=self._metadata["sq_id"],
+            pass_kind=pass_kind,
+            seed_family=seed_family,
+            returned_unit_ids=tuple(hit.unit.unit_id for hit in page.hits),
+            traversal_complete=page.next_cursor is None,
+            broad_query=page.preview.requires_broad_query_justification,
+            broad_query_justification=broad_query_justification,
+            first_cursor=cursor,
+            last_cursor=page.next_cursor,
+            snapshot_hash=page.snapshot_hash,
+            policy_id=page.policy_id,
+            policy_hash=page.policy_hash,
+        )
+        if cursor_key in self._next_cursors:
+            existing_index = next(
+                index
+                for index, item in enumerate(self._queries)
+                if item.pass_kind is pass_kind and item.query_hash == page.query_hash
+            )
+            existing = self._queries[existing_index]
+            aggregate = existing.model_copy(
+                update={
+                    "returned_unit_ids": tuple(
+                        dict.fromkeys((*existing.returned_unit_ids, *page_record.returned_unit_ids))
+                    ),
+                    "traversal_complete": page_record.traversal_complete,
+                    "last_cursor": page_record.last_cursor,
+                    "pages_traversed": existing.pages_traversed + 1,
+                }
+            )
+            self._queries[existing_index] = aggregate
+        else:
+            self._record_query(page_record)
+        self._next_cursors[cursor_key] = page.next_cursor
+        return page_record
+
+    def record_disposition(self, disposition: SearchResultDisposition) -> None:
+        """Record exactly one disposition for each unique returned unit."""
+        if disposition.unit_id in self._dispositions:
+            raise ValueError("search result unit already has a disposition")
+        returned = {
+            unit_id for query in self._queries for unit_id in query.returned_unit_ids
+        }
+        if disposition.unit_id not in returned:
+            raise ValueError("disposition must cover a unit returned by a recorded query")
+        self._dispositions[disposition.unit_id] = disposition
+
+    def freeze(
+        self,
+        *,
+        completed_seed_families: tuple[Identifier, ...],
+        interrupted: bool = False,
+        traversal_complete: bool = True,
+        resume_cursor: str | None = None,
+        resume_query_hash: ContentHash | None = None,
+        resume_snapshot_hash: ContentHash | None = None,
+        resume_policy_id: Identifier | None = None,
+        resume_index: EvidenceSearchIndex | None = None,
+        resume_query: SearchQuery | None = None,
+        resume_policy: SearchPolicy | None = None,
+        latest_complete_round_new_material_candidates: int = 0,
+        stopping_reason: str = (
+            "mandatory protocol complete; latest complete round found no new material"
+        ),
+        broad_query_justifications: tuple[str, ...] = (),
+    ) -> SearchCoverageReceipt:
+        passes = tuple(dict.fromkeys(query.pass_kind for query in self._queries))
+        returned_unit_ids = tuple(
+            dict.fromkeys(
+                unit_id for query in self._queries for unit_id in query.returned_unit_ids
+            )
+        )
+        if self._partial_traversal and traversal_complete and not interrupted:
+            raise ValueError(
+                "a traversal resumed from a continuation cursor cannot establish complete coverage"
+            )
+        if resume_cursor is not None:
+            if resume_index is None or resume_query is None:
+                raise ValueError(
+                    "freeze requires an evidence index and query to verify a resume cursor"
+                )
+            active_policy = resume_policy or SearchPolicy(policy_id=self._metadata["policy_id"])
+            if active_policy.policy_id != self._metadata["policy_id"]:
+                raise ValueError("resume policy does not match the recorder")
+            if resume_query_hash != canonical_hash(resume_query):
+                raise ValueError("resume query hash does not match the supplied query")
+            resume_record = next(
+                (item for item in self._queries if item.query_hash == resume_query_hash),
+                None,
+            )
+            if resume_record is None or resume_record.last_cursor != resume_cursor:
+                raise ValueError("resume cursor must be the recorded query continuation")
+            try:
+                page = resume_index.search(
+                    resume_query,
+                    policy=active_policy,
+                    cursor=resume_cursor,
+                    broad_query_justification=next(
+                        (
+                            item.broad_query_justification
+                            for item in self._queries
+                            if item.query_hash == resume_query_hash
+                        ),
+                        None,
+                    ),
+                )
+            except ValueError as error:
+                raise ValueError("resume cursor failed cryptographic verification") from error
+            if (
+                page.snapshot_hash != self._metadata["snapshot_hash"]
+                or page.policy_id != self._metadata["policy_id"]
+                or page.policy_hash != self._metadata["policy_hash"]
+            ):
+                raise ValueError("resume cursor dependencies do not match the recorder")
+        receipt = SearchCoverageReceipt(
+            **self._metadata,
+            completed_seed_families=completed_seed_families,
+            completed_passes=passes,
+            executed_queries=tuple(self._queries),
+            returned_unit_ids=returned_unit_ids,
+            result_dispositions=tuple(self._dispositions.values()),
+            latest_complete_round_new_material_candidates=(
+                latest_complete_round_new_material_candidates
+            ),
+            traversal_complete=traversal_complete,
+            interrupted=interrupted,
+            resume_cursor=resume_cursor,
+            resume_query_hash=resume_query_hash,
+            resume_snapshot_hash=(
+                (resume_snapshot_hash or self._metadata["snapshot_hash"])
+                if resume_cursor is not None
+                else None
+            ),
+            resume_policy_id=(
+                (resume_policy_id or self._metadata["policy_id"])
+                if resume_cursor is not None
+                else None
+            ),
+            broad_query_justifications=broad_query_justifications,
+            stopping_reason=stopping_reason,
+        )
+        proof_payload = receipt.model_dump(mode="json")
+        proof_payload["recorder_proof"] = None
+        return SearchCoverageReceipt.model_validate(
+            receipt.model_dump(mode="json")
+            | {"recorder_proof": canonical_hash(proof_payload)}
+        )
 
 
 class CandidateDispositionKind(StrEnum):
@@ -226,6 +841,7 @@ class CandidateDisposition(FrozenModel):
 
 class MaterializedEvidenceClaim(FrozenModel):
     claim_id: Identifier
+    canonical_unit: CanonicalEvidenceUnit | None = None
     canonical_unit_id: Identifier
     source_id: Identifier
     source_artifact_hash: ContentHash
@@ -238,6 +854,32 @@ class MaterializedEvidenceClaim(FrozenModel):
     quoted_text_hash: ContentHash
     claim_type: Identifier
     verification_status: VerificationStatus
+
+    @model_validator(mode="after")
+    def validate_quote_hash(self) -> MaterializedEvidenceClaim:
+        if self.canonical_unit is None:
+            raise ValueError("canonical unit is required for exact span verification")
+        if self.canonical_unit.unit_id != self.canonical_unit_id:
+            raise ValueError("claim canonical unit ID does not match its bound unit")
+        if self.canonical_unit.source_id != self.source_id:
+            raise ValueError("claim source does not match its bound canonical unit")
+        if self.canonical_unit.source_artifact_hash != self.source_artifact_hash:
+            raise ValueError("claim source artifact does not match its bound unit")
+        if self.canonical_unit.parse_id != self.parse_id:
+            raise ValueError("claim Parse record does not match its bound unit")
+        if self.canonical_unit.page != self.page:
+            raise ValueError("claim page does not match its bound canonical unit")
+        if self.canonical_unit.spatial != self.spatial:
+            raise ValueError("claim spatial provenance does not match its bound unit")
+        if self.span_end > len(self.canonical_unit.text):
+            raise ValueError("claim span exceeds canonical unit text")
+        if self.quoted_text != self.canonical_unit.text[self.span_start : self.span_end]:
+            raise ValueError("quoted text must equal the selected canonical span")
+        if self.quoted_text_hash != sha256_digest(self.quoted_text.encode()):
+            raise ValueError("quoted text hash must bind the deterministic materialized quote")
+        if self.span_end <= self.span_start:
+            raise ValueError("claim span must have positive extent")
+        return self
 
 
 def materialize_evidence_claim(
@@ -255,6 +897,7 @@ def materialize_evidence_claim(
     quote = unit.text[span_start:span_end]
     return MaterializedEvidenceClaim(
         claim_id=claim_id,
+        canonical_unit=unit,
         canonical_unit_id=unit.unit_id,
         source_id=unit.source_id,
         source_artifact_hash=unit.source_artifact_hash,

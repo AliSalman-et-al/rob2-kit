@@ -73,6 +73,7 @@ from rob2_kit.evidence.search import (
     canonicalize_evidence_units,
 )
 from rob2_kit.evidence.visual import VisualCandidate, VisualInspectionPolicy
+from rob2_kit.evidence.workflow import ExecutedSearchQuery
 from rob2_kit.ingestion.project import (
     DocumentParser,
     LiteParseAdapter,
@@ -1595,9 +1596,26 @@ class RunEngine:
         index = EvidenceSearchIndex(self._required_root() / ".rob2" / "evidence.sqlite3")
         page = index.search(
             request.query,
+            policy=request.policy,
             cursor=request.cursor,
             broad_query_justification=request.broad_query_justification,
         )
+        executed_query = None
+        if request.pass_kind is not None:
+            executed_query = ExecutedSearchQuery(
+                sq_id=request.sq_id,
+                query=request.query,
+                query_hash=page.query_hash,
+                pass_kind=request.pass_kind,
+                seed_family=request.seed_family,
+                returned_unit_ids=tuple(hit.unit.unit_id for hit in page.hits),
+                traversal_complete=page.next_cursor is None,
+                broad_query=page.preview.requires_broad_query_justification,
+                broad_query_justification=request.broad_query_justification,
+                snapshot_hash=page.snapshot_hash,
+                policy_id=page.policy_id,
+                policy_hash=page.policy_hash,
+            )
         return SearchEvidenceResponse(
             operation_id=self._read_operation_id(RunOperation.SEARCH_EVIDENCE, request.run_id),
             ledger_cursor=f"ledger:{len(ledger.events())}",
@@ -1606,12 +1624,17 @@ class RunEngine:
             committed=False,
             run_id=request.run_id,
             page=page,
+            executed_query=executed_query,
         )
 
     def read_evidence(self, request: ReadEvidenceRequest) -> ReadEvidenceResponse:
         ledger = self._bound_ledger(request.run_id)
         index = EvidenceSearchIndex(self._required_root() / ".rob2" / "evidence.sqlite3")
-        unit = index.read_unit(request.unit_id)
+        context = index.read_context(
+            request.unit_id,
+            neighbor_limit=request.neighbor_limit,
+            character_target=request.context_character_target,
+        )
         return ReadEvidenceResponse(
             operation_id=self._read_operation_id(RunOperation.READ_EVIDENCE, request.run_id),
             ledger_cursor=f"ledger:{len(ledger.events())}",
@@ -1619,7 +1642,8 @@ class RunEngine:
             condition=WorkflowCondition.COMPLETED,
             committed=False,
             run_id=request.run_id,
-            unit=unit,
+            unit=context.unit,
+            context=context,
         )
 
     def inspect_visual_candidate(

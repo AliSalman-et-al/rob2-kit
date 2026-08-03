@@ -170,11 +170,12 @@ def complete_receipt(*, retain_second: bool = False) -> SearchCoverageReceipt:
     seed_query = SearchQuery(terms=("allocation",))
     follow_up_query = SearchQuery(terms=("envelope",))
     contradiction_query = SearchQuery(terms=("open",))
-    return SearchCoverageReceipt(
+    receipt = SearchCoverageReceipt(
         receipt_id="coverage:sq1-1",
         sq_id="sq:1.1",
         snapshot_hash=HASH,
         policy_id="policy:evidence-search-1.0.0",
+        policy_hash=canonical_hash(SearchPolicy()),
         result_spec=RecordReference(
             entity_id="result_spec:trial-1",
             revision_id="revision:result-spec-1",
@@ -254,6 +255,12 @@ def complete_receipt(*, retain_second: bool = False) -> SearchCoverageReceipt:
         traversal_complete=True,
         interrupted=False,
     )
+    proof_payload = receipt.model_dump(mode="json")
+    proof_payload["recorder_proof"] = None
+    return SearchCoverageReceipt.model_validate(
+        receipt.model_dump(mode="json")
+        | {"recorder_proof": canonical_hash(proof_payload)}
+    )
 
 
 def test_coverage_receipt_requires_all_passes_results_and_safe_no_information_basis() -> None:
@@ -288,6 +295,7 @@ def test_coverage_receipt_requires_all_passes_results_and_safe_no_information_ba
         }
     ]
     limited["interrupted"] = True
+    limited["recorder_proof"] = None
     receipt = SearchCoverageReceipt.model_validate(limited)
     assert receipt.establishes_no_information_basis() is False
 

@@ -178,6 +178,10 @@ def create_server() -> Any:
         result_id: str | None = None,
         cursor: str | None = None,
         broad_query_justification: str | None = None,
+        policy: dict[str, Any] | None = None,
+        sq_id: str | None = None,
+        pass_kind: str | None = None,
+        seed_family: str | None = None,
     ) -> dict[str, Any]:
         return _dump(
             engine.search_evidence(
@@ -188,6 +192,10 @@ def create_server() -> Any:
                         "result_id": result_id,
                         "cursor": cursor,
                         "broad_query_justification": broad_query_justification,
+                        "policy": policy,
+                        "sq_id": sq_id,
+                        "pass_kind": pass_kind,
+                        "seed_family": seed_family,
                     }
                 )
             )
@@ -198,11 +206,19 @@ def create_server() -> Any:
         run_id: str,
         unit_id: str,
         result_id: str | None = None,
+        neighbor_limit: int = 6,
+        context_character_target: int = 16_000,
     ) -> dict[str, Any]:
         return _dump(
             engine.read_evidence(
                 ReadEvidenceRequest.model_validate(
-                    {"run_id": run_id, "unit_id": unit_id, "result_id": result_id}
+                    {
+                        "run_id": run_id,
+                        "unit_id": unit_id,
+                        "result_id": result_id,
+                        "neighbor_limit": neighbor_limit,
+                        "context_character_target": context_character_target,
+                    }
                 )
             )
         )

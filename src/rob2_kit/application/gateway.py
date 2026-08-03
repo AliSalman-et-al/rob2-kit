@@ -38,6 +38,7 @@ from rob2_kit.evidence.search import (
     CanonicalPage,
     CanonicalUnitKind,
     EvidenceSearchIndex,
+    SearchPolicy,
     SearchQuery,
     canonicalize_evidence_units,
 )
@@ -47,6 +48,7 @@ from rob2_kit.evidence.visual import (
     VisualInspectionQueue,
     VisualRenderRequest,
 )
+from rob2_kit.evidence.workflow import ExecutedSearchQuery, SearchPassKind
 from rob2_kit.ingestion.project import (
     DocumentParser,
     LiteParseAdapter,
@@ -414,15 +416,35 @@ class ApplicationGateway:
         if tool_name in {"get_trial_orientation", "list_sources"}:
             return self._initialization_read(tool_name, project_id, ledger, arguments or {})
         if tool_name == "search_evidence":
-            query = SearchQuery.model_validate((arguments or {}).get("query", arguments or {}))
+            arguments = arguments or {}
+            query = SearchQuery.model_validate(arguments.get("query", arguments))
+            policy_payload = arguments.get("policy")
+            policy = SearchPolicy.model_validate(policy_payload) if policy_payload else None
             page = EvidenceSearchIndex(root / ".rob2" / "evidence.sqlite3").search(
                 query,
-                cursor=(arguments or {}).get("cursor"),
-                broad_query_justification=(arguments or {}).get(
-                    "broad_query_justification"
-                ),
+                policy=policy,
+                cursor=arguments.get("cursor"),
+                broad_query_justification=arguments.get("broad_query_justification"),
             )
             search_payload = page.model_dump(mode="json")
+            pass_kind = arguments.get("pass_kind")
+            if pass_kind is not None:
+                executed_query = ExecutedSearchQuery(
+                    sq_id=arguments.get("sq_id"),
+                    query=query,
+                    query_hash=page.query_hash,
+                    pass_kind=SearchPassKind(pass_kind),
+                    seed_family=arguments.get("seed_family"),
+                    returned_unit_ids=tuple(hit.unit.unit_id for hit in page.hits),
+                    traversal_complete=page.next_cursor is None,
+                    broad_query=page.preview.requires_broad_query_justification,
+                    broad_query_justification=arguments.get("broad_query_justification"),
+                    snapshot_hash=page.snapshot_hash,
+                    policy_id=page.policy_id,
+                    policy_hash=page.policy_hash,
+                )
+                search_payload["executed_query"] = executed_query.model_dump(mode="json")
+                search_payload["sq_id"] = arguments.get("sq_id")
             search_payload["hits"] = [
                 {
                     **hit,
@@ -442,16 +464,24 @@ class ApplicationGateway:
             unit_id = (arguments or {}).get("unit_id")
             if not isinstance(unit_id, str):
                 raise ValueError("unit_id is required")
-            unit = EvidenceSearchIndex(
-                root / ".rob2" / "evidence.sqlite3"
-            ).read_unit(unit_id)
+            index = EvidenceSearchIndex(root / ".rob2" / "evidence.sqlite3")
+            context = index.read_context(
+                unit_id,
+                neighbor_limit=int((arguments or {}).get("neighbor_limit", 6)),
+                character_target=int(
+                    (arguments or {}).get("context_character_target", 16_000)
+                ),
+            )
             return OperationEnvelope(
                 operation_id=_identifier("operation", f"{project_id}|read-evidence-context"),
                 ledger_cursor=f"ledger:{len(ledger.events())}",
                 affected_scope=(project_id,),
                 status=WorkflowStatus.COMPLETED,
                 committed=False,
-                payload={"unit": unit.model_dump(mode="json")},
+                payload={
+                    "unit": context.unit.model_dump(mode="json"),
+                    "context": context.model_dump(mode="json"),
+                },
             )
         if tool_name == "inspect_visual_candidate":
             trial_id = (arguments or {}).get("trial_id")
