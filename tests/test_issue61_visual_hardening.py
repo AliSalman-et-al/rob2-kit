@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import hashlib
 import io
+import json
 from types import SimpleNamespace
 
 import pytest
@@ -209,3 +211,29 @@ def test_visual_assets_record_hashes_and_fail_closed() -> None:
         broken_engine._materialize_visual_assets(
             broken_ledger, "run:1", "result:1", (broken_citation,)
         )
+
+
+def test_visual_asset_hashes_are_manifest_bound(tmp_path) -> None:
+    files = {
+        "visual-citations.json": b'{"visual_citations":[]}',
+        "visual-assets/crop.png": b"crop",
+        "visual-assets/page.png": b"page",
+    }
+    manifest = {
+        "files": {
+            name: "sha256:" + hashlib.sha256(content).hexdigest()
+            for name, content in files.items()
+        }
+    }
+    files["manifest.json"] = (
+        json.dumps(manifest, sort_keys=True, separators=(",", ":")).encode() + b"\n"
+    )
+    for name, content in files.items():
+        target = tmp_path / name
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes(content)
+
+    RunEngine._verify_staged_report_files(tmp_path, files)
+    (tmp_path / "visual-assets/page.png").write_bytes(b"tampered")
+    with pytest.raises(ValueError, match="failed verification"):
+        RunEngine._verify_staged_report_files(tmp_path, files)
