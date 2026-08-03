@@ -383,7 +383,12 @@ def create_server(*, determinism: QualificationDeterminism | None = None) -> Any
     ) -> dict[str, Any]:
         """Freeze passages using issued unit_id, exact spans, and active question_ids.
 
-        Use claim-type IDs and report incomplete coverage rather than guessing.
+        Use claim-type IDs. An adequate completed search with no evidence stays
+        coverage_state="complete" and may support no_information with complete
+        receipts. Use coverage_state="complete_with_limitations" only for a
+        material residual source/search uncertainty, and coverage_state="incomplete"
+        only when required searching or reading could not finish. Omit
+        coverage_receipts unless a tool supplied the complete typed receipt object.
         """
         return _dump(
             engine.submit_domain_evidence(

@@ -102,3 +102,8 @@ def test_mcp_tool_descriptions_prevent_cleanroom_schema_guessing() -> None:
     assert "no_information" in answers
     assert "actor" not in tools["submit_domain_evidence"].input_schema["properties"]
     assert "actor" not in tools["submit_domain_answers"].input_schema["properties"]
+    evidence = tools["submit_domain_evidence"].description or ""
+    assert 'coverage_state="complete_with_limitations"' in evidence
+    assert 'coverage_state="complete"' in evidence
+    assert "may support no_information" in evidence
+    assert 'coverage_state="incomplete"' in evidence

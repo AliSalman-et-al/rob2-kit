@@ -174,16 +174,24 @@ async def _finish_domains(session: ClientSession, run_id: str) -> None:
                     "question_ids": list(question_ids),
                 }
             ]
+        evidence_payload = {
+            "run_id": run_id,
+            "work_token": work["work_item"]["work_token"],
+            "contract_version": "1.0.0",
+            "result_id": "result:trial-a-mortality",
+            "domain_id": domain_id,
+            "passages": passages,
+        }
+        if index == 0:
+            evidence_payload.update(
+                {
+                    "coverage_state": "complete_with_limitations",
+                    "coverage_limitations": ["Synthetic uncertainty retained in report."],
+                }
+            )
         evidence = await session.call_tool(
             "submit_domain_evidence",
-            {
-                "run_id": run_id,
-                "work_token": work["work_item"]["work_token"],
-                "contract_version": "1.0.0",
-                "result_id": "result:trial-a-mortality",
-                "domain_id": domain_id,
-                "passages": passages,
-            },
+            evidence_payload,
         )
         assert evidence.structured_content is not None
         assert evidence.structured_content["condition"] == "accepted"
@@ -287,6 +295,7 @@ def test_five_domain_journey_survives_stdio_restart_and_publishes_report(
                 assert status["result_states"] == [
                     {"result_id": "result:trial-a-mortality", "state": "report_ready"}
                 ]
+                assert status["progress"]["report_locations"] == ["output/report-bundle"]
 
     anyio.run(journey)
 
@@ -341,7 +350,7 @@ def test_five_domain_journey_survives_stdio_restart_and_publishes_report(
     assert index["results"][0]["state"] == "report_ready"
     assert index["results"][0]["report"] == "assessment.html"
     assert index["results"][0]["overall_judgment"] == "low"
-    assert index["results"][0]["limitations"] == []
+    assert index["results"][0]["limitations"] == ["Synthetic uncertainty retained in report."]
     assert index["run_id"].startswith("run:")
     ledger = WorkflowLedger(
         tmp_path / ".rob2" / "ledger.sqlite3",

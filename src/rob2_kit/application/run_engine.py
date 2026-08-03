@@ -2548,6 +2548,16 @@ class RunEngine:
             raise ValueError("Search coverage receipts must bind this domain's signaling questions")
         if request.coverage_state.value == "incomplete" and not request.coverage_limitations:
             raise ValueError("incomplete evidence coverage requires an explicit limitation")
+        if (
+            request.coverage_state.value == "complete_with_limitations"
+            and not request.coverage_limitations
+        ):
+            raise ValueError("complete-with-limitations coverage requires an explicit limitation")
+        if request.coverage_state.value == "complete" and request.coverage_limitations:
+            raise ValueError(
+                "coverage limitations require coverage_state='complete_with_limitations' "
+                "or 'incomplete'"
+            )
         if request.no_information_basis:
             if request.coverage_state.value != "complete" or request.coverage_limitations:
                 raise ValueError("no-information answers require complete, unlimited coverage")
@@ -3508,7 +3518,8 @@ class RunEngine:
         answer_domains = {payload.get("domain_id") for payload in answer_payloads}
         if not required_domains <= evidence_domains or not required_domains <= answer_domains:
             return ()
-        coverage_limitations_set: set[str] = set()
+        coverage_by_domain: dict[str, tuple[str, tuple[str, ...]]] = {}
+        incomplete_limitations: set[str] = set()
         for event in events:
             if (
                 event.operation != "operation:submit-domain-evidence"
@@ -3523,10 +3534,15 @@ class RunEngine:
                 if isinstance(raw_limitations, (list, tuple))
                 else ()
             )
-            if payload.get("coverage_state") == "incomplete" and not limitations:
+            coverage_state = str(payload.get("coverage_state", "complete"))
+            if coverage_state == "incomplete" and not limitations:
                 limitations = ("incomplete evidence coverage",)
-            coverage_limitations_set.update(limitations)
-        coverage_limitations = tuple(sorted(coverage_limitations_set))
+            domain_id = payload.get("domain_id")
+            if isinstance(domain_id, str):
+                coverage_by_domain[domain_id] = (coverage_state, limitations)
+            if coverage_state == "incomplete":
+                incomplete_limitations.update(limitations)
+        coverage_limitations = tuple(sorted(incomplete_limitations))
         result_spec = self._result_spec_for(ledger, run_id, result_id)
         if result_spec is None:
             raise ValueError("a ResultSpec is required before terminal assessment")
@@ -3615,7 +3631,8 @@ class RunEngine:
                         for question_id in domain.question_ids
                         if question_id in questions_by_id
                     ),
-                    coverage="complete",
+                    coverage=coverage_by_domain.get(domain.id, ("complete", ()))[0],
+                    limitations=coverage_by_domain.get(domain.id, ("complete", ()))[1],
                     decision_trace=evaluation.matched_rule_ids,
                 )
                 for domain in logic.domains
@@ -7776,12 +7793,24 @@ class RunEngine:
             state.value: sum(1 for item in projection.results if item.state is state)
             for state in (ResultState.REPORT_READY, ResultState.DIAGNOSTIC_READY)
         }
+        terminal_sequences = {
+            item.last_sequence
+            for item in projection.results
+            if item.state in {ResultState.REPORT_READY, ResultState.DIAGNOSTIC_READY}
+            and item.last_sequence is not None
+        }
         report_locations = tuple(
             sorted(
                 {
                     str(payload["report_root"])
                     for event in events
-                    if event.operation == "operation:report-materialized"
+                    if event.sequence in terminal_sequences
+                    if event.operation
+                    in {
+                        "operation:report-materialized",
+                        "operation:result-report-ready",
+                        "operation:result-diagnostic-ready",
+                    }
                     for payload in (self._event_payload(ledger, event),)
                     if isinstance(payload.get("report_root"), str)
                 }

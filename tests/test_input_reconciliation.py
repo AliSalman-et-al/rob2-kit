@@ -1181,6 +1181,9 @@ def test_completed_deleted_required_source_becomes_terminal_diagnostic(
     assert continued.run_state is RunState.COMPLETE
     status = engine.run_status(RunStatusRequest(run_id=run_id))
     assert status.result_states[0].state.value == "diagnostic_ready"
+    assert len(status.progress.report_locations) == 1
+    diagnostic_root = tmp_path / status.progress.report_locations[0]
+    assert (diagnostic_root / "diagnostic.html").is_file()
     events = engine._bound_ledger(run_id).events()
     assert any(event.operation == "operation:result-invalidated" for event in events)
     assert any(event.operation == "operation:result-diagnostic-ready" for event in events)

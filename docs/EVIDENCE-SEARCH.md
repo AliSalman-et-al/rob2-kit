@@ -10,6 +10,14 @@ Record the required candidate dispositions and coverage through the supplied
 typed submission. Material ambiguity, incomplete coverage, unreadable sources,
 or a conflict remains a reported limitation or blocker. The pinned engine and
 packs decide the evidence protocol and all decision-relevant behavior.
+Do not construct abbreviated coverage receipts: submit a receipt only when a
+tool has supplied the complete typed receipt object; otherwise omit it.
+An adequate completed search with no relevant evidence remains `complete` and
+may support `no_information` when complete receipts establish that basis. Use
+`complete_with_limitations` only when completed work retains a material source
+or search uncertainty. Use `incomplete` only when required searching or source
+inspection could not be completed; only this state prevents an assessment
+report from being generated.
 
 Use structured lexical input such as `{"terms": ["allocation"]}`. A
 `guidance_seed` pass uses a stable identifier-shaped `seed_family` label chosen

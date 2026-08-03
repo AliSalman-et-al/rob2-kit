@@ -17,6 +17,8 @@ omit questions listed as inactive. Use the schema values `yes`,
 branch applicability, use the active-question set returned for this work item;
 completion means the submitted set equals that active set. A `no_information`
 answer also requires the question's complete Search coverage basis.
+Answers contain only the typed question, answer, rationale, and optional
+inference metadata fields; do not attach `evidence_refs` to individual answers.
 
 Keep each answer scoped to the exact issued Result, source, and signaling
 question. Use exact frozen passages for factual claims and label any permitted

@@ -293,8 +293,12 @@ def test_canonical_skills_share_progressively_disclosed_harness_references() -> 
     assert "exactly the sources returned by `get_work_context`" in workflow
     assert "copy the issued Result identity" in workflow
     assert "label chosen by the caller and reused exactly" in evidence
+    assert "Do not construct abbreviated coverage receipts" in evidence
+    assert "no relevant evidence remains `complete`" in evidence
+    assert "only this state prevents an assessment report" in evidence
     assert "omit `seed_family`" in evidence
     assert "every active question returned by `get_work_context`" in questions
+    assert "do not attach `evidence_refs`" in questions
     assert "no_information" in questions
     assert "cited or related trial is out of scope" in questions
     assert "one active question solely from evidence addressing another" in questions
