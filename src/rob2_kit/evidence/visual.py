@@ -133,6 +133,7 @@ class VisualCitation(FrozenModel):
     """
 
     citation_id: Identifier
+    canonical_unit_id: Identifier
     source_id: Identifier
     source_artifact_hash: ContentHash
     parse_id: Identifier
@@ -141,9 +142,15 @@ class VisualCitation(FrozenModel):
     span_end: int = Field(gt=0)
     quoted_text_hash: ContentHash
     boxes: tuple[CropBox, ...] = Field(min_length=1)
+    geometry_scope: Literal["phrase_exact", "block"]
+    geometry_hash: ContentHash
     render: VisualRenderRequest
+    render_hash: ContentHash
     base_render_hash: ContentHash | None = None
     derived_render_hash: ContentHash | None = None
+    overlay_hash: ContentHash | None = None
+    crop_hash: ContentHash | None = None
+    context_hash: ContentHash | None = None
     agent_inspected: Literal[False] = False
     citation_hash: ContentHash
 
@@ -212,11 +219,54 @@ def materialize_visual_citation(
     )
     if not unit_id:
         raise ValueError("canonical visual citations require a canonical unit identity")
-    crop = CropBox(
+    block_crop = CropBox(
         left=float(spatial[0]),
         top=float(spatial[1]),
         right=float(spatial[2]),
         bottom=float(spatial[3]),
+    )
+    word_boxes = tuple(getattr(canonical_unit, "word_boxes", ()) or ())
+    # Exact phrase geometry is safe only when the selected range starts and
+    # ends on retained word boundaries and every intervening word is retained.
+    covered = tuple(
+        item
+        for item in word_boxes
+        if item.span_end > span_start and item.span_start < span_end
+    )
+    phrase_exact = bool(covered) and (
+        covered[0].span_start == span_start and covered[-1].span_end == span_end
+    )
+    if phrase_exact:
+        cursor = span_start
+        for item in covered:
+            if text[cursor : item.span_start].strip():
+                phrase_exact = False
+                break
+            cursor = item.span_end
+        if text[cursor:span_end].strip():
+            phrase_exact = False
+    if phrase_exact:
+        boxes = tuple(
+            CropBox(
+                left=float(item.spatial[0]),
+                top=float(item.spatial[1]),
+                right=float(item.spatial[2]),
+                bottom=float(item.spatial[3]),
+            )
+            for item in covered
+        )
+    else:
+        boxes = (block_crop,)
+    geometry_scope: Literal["phrase_exact", "block"] = (
+        "phrase_exact" if phrase_exact else "block"
+    )
+    # The render crop is the bounding rectangle of all retained word boxes;
+    # block-level fallback remains explicit rather than implying exactness.
+    crop = CropBox(
+        left=min(item.left for item in boxes),
+        top=min(item.top for item in boxes),
+        right=max(item.right for item in boxes),
+        bottom=max(item.bottom for item in boxes),
     )
     if render is None:
         render = VisualRenderRequest(
@@ -243,8 +293,19 @@ def materialize_visual_citation(
         "span_start": span_start,
         "span_end": span_end,
         "quoted_text_hash": quoted_text_hash,
-        "boxes": [crop.model_dump(mode="json")],
+        "boxes": [item.model_dump(mode="json") for item in boxes],
+        "geometry_scope": geometry_scope,
+        "geometry_hash": canonical_hash(
+            {
+                "unit_id": unit_id,
+                "span_start": span_start,
+                "span_end": span_end,
+                "boxes": [item.model_dump(mode="json") for item in boxes],
+                "scope": geometry_scope,
+            }
+        ),
         "render": render.model_dump(mode="json"),
+        "render_hash": canonical_hash(render),
         "base_render_hash": base_render_hash,
         "derived_render_hash": derived_render_hash,
         "agent_inspected": False,
@@ -253,6 +314,7 @@ def materialize_visual_citation(
     citation_id = f"visual-citation:{citation_hash.removeprefix('sha256:')[:24]}"
     return VisualCitation(
         citation_id=citation_id,
+        canonical_unit_id=unit_id,
         source_id=source_id,
         source_artifact_hash=source_artifact_hash,
         parse_id=parse_id,
@@ -260,8 +322,19 @@ def materialize_visual_citation(
         span_start=span_start,
         span_end=span_end,
         quoted_text_hash=quoted_text_hash,
-        boxes=(crop,),
+        boxes=boxes,
+        geometry_scope=geometry_scope,
+        geometry_hash=canonical_hash(
+            {
+                "unit_id": unit_id,
+                "span_start": span_start,
+                "span_end": span_end,
+                "boxes": [item.model_dump(mode="json") for item in boxes],
+                "scope": geometry_scope,
+            }
+        ),
         render=render,
+        render_hash=canonical_hash(render),
         base_render_hash=base_render_hash,
         derived_render_hash=derived_render_hash,
         citation_hash=citation_hash,

@@ -38,6 +38,31 @@ class CanonicalUnitKind(StrEnum):
     TABLE_ROW = "table_row"
 
 
+class CanonicalWordBox(FrozenModel):
+    """A parser-retained word and its exact character span in a canonical unit.
+
+    Word boxes are optional because some parsers expose only block geometry.  A
+    visual citation may claim phrase-level geometry only when every selected
+    character range is covered by these retained spans.
+    """
+
+    text: str = Field(min_length=1)
+    span_start: int = Field(ge=0)
+    span_end: int = Field(gt=0)
+    spatial: tuple[float, float, float, float]
+
+    @model_validator(mode="after")
+    def validate_span(self) -> CanonicalWordBox:
+        if self.span_end <= self.span_start:
+            raise ValueError("word box span_end must be greater than span_start")
+        if len(self.spatial) != 4:
+            raise ValueError("word box spatial bounds must contain four coordinates")
+        left, top, right, bottom = self.spatial
+        if right <= left or bottom <= top:
+            raise ValueError("word box spatial bounds must have positive extent")
+        return self
+
+
 class CanonicalEvidenceUnit(FrozenModel):
     unit_id: Identifier
     source_id: Identifier
@@ -47,12 +72,25 @@ class CanonicalEvidenceUnit(FrozenModel):
     kind: CanonicalUnitKind
     text: str = Field(min_length=1)
     spatial: tuple[float, float, float, float] | None = None
+    word_boxes: tuple[CanonicalWordBox, ...] = ()
+
+    @model_validator(mode="after")
+    def validate_word_boxes(self) -> CanonicalEvidenceUnit:
+        previous_end = -1
+        for box in self.word_boxes:
+            if box.span_end > len(self.text):
+                raise ValueError("word box span exceeds canonical unit text")
+            if box.span_start < previous_end:
+                raise ValueError("word boxes must be ordered and non-overlapping")
+            previous_end = box.span_end
+        return self
 
 
 class CanonicalBlock(FrozenModel):
     kind: CanonicalUnitKind
     text: str = Field(min_length=1)
     spatial: tuple[float, float, float, float]
+    word_boxes: tuple[CanonicalWordBox, ...] = ()
 
 
 class CanonicalPage(FrozenModel):
@@ -84,6 +122,7 @@ def canonicalize_evidence_units(
                     kind=block.kind,
                     text=block.text,
                     spatial=block.spatial,
+                    word_boxes=block.word_boxes,
                 )
             )
     return tuple(units)
