@@ -1284,7 +1284,7 @@ def latest_assessment_view(ledger: WorkflowLedger) -> AssessmentView:
                 questions=tuple(
                     sorted(
                         question_domains.get(judgment.domain_id, ()),
-                        key=lambda question: question.question_id,
+                        key=lambda question: str(getattr(question, "question_id", "")),
                     )
                 ),
                 decision_trace=(judgment.decision_trace.revision_id,),
