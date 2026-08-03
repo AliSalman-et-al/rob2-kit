@@ -3414,6 +3414,11 @@ class RunEngine:
             if record.report_root is not None:
                 reports.append((record, self._required_root() / record.report_root))
         if not reports:
+            # A reconciliation may invalidate the only terminal Result and
+            # leave it pending/assessing.  Refresh the index even when there
+            # is no visible bundle to repair so stale report links disappear
+            # while immutable historical files remain untouched.
+            self._regenerate_run_index(ledger, run_id)
             self._commit_run_completed_if_ready(ledger, run_id)
             return
 
@@ -4201,51 +4206,108 @@ class RunEngine:
             return
         run_root = bundle_root / "runs" / self._report_path_component(run_id)
         run_root.mkdir(parents=True, exist_ok=True)
-        entries: list[dict[str, Any]] = []
-        ancillary_outputs: set[str] = set()
-        for event in self._events_for_run(ledger, run_id):
+        events = self._events_for_run(ledger, run_id)
+        projection = self._projection(ledger, run_id)
+        # The index is a projection of the *current* active Result set.  Old
+        # report/diagnostic records remain immutable in the ledger and on disk,
+        # but must not produce duplicate or stale rows after an invalidation.
+        active_result_ids = self._active_result_ids(ledger, run_id)
+        result_states = {item.result_id: item.state.value for item in projection.results}
+        latest_invalidated: dict[str, int] = {}
+        for event in events:
+            if event.operation != "operation:result-invalidated" or not event.scope.startswith(
+                "result:"
+            ):
+                continue
+            latest_invalidated[event.scope] = max(
+                latest_invalidated.get(event.scope, 0), event.sequence
+            )
+
+        terminal_events: dict[str, WorkflowEvent] = {}
+        for event in events:
             if event.operation not in {
                 "operation:result-report-ready",
                 "operation:result-diagnostic-ready",
             }:
                 continue
-            try:
-                record = (
-                    _ReportMaterializedRecord.model_validate_json(
-                        ledger.artifacts.read(event.output_revision_hashes[0])
-                    )
-                    if event.operation == "operation:result-report-ready"
-                    else _ResultDiagnosticRecord.model_validate_json(
-                        ledger.artifacts.read(event.output_revision_hashes[0])
-                    )
-                )
-            except (IndexError, ValueError):
+            result_id = event.scope
+            if result_id not in active_result_ids:
                 continue
-            report_root = getattr(record, "report_root", None)
-            ancillary_outputs.update(getattr(record, "artifact_names", ()))
+            if event.sequence <= latest_invalidated.get(result_id, 0):
+                continue
+            prior = terminal_events.get(result_id)
+            if prior is None or event.sequence > prior.sequence:
+                terminal_events[result_id] = event
+
+        entries: list[dict[str, Any]] = []
+        ancillary_outputs: set[str] = set()
+        # Exactly one row is emitted for each active Result.  A current
+        # terminal event wins; otherwise retain the lifecycle's pending or
+        # assessing projection with no report link.
+        for result_id in sorted(active_result_ids):
+            event = terminal_events.get(result_id)
+            record: _ReportMaterializedRecord | _ResultDiagnosticRecord | None = None
+            diagnostic = False
+            if event is not None:
+                diagnostic = event.operation == "operation:result-diagnostic-ready"
+                try:
+                    record = (
+                        _ReportMaterializedRecord.model_validate_json(
+                            ledger.artifacts.read(event.output_revision_hashes[0])
+                        )
+                        if not diagnostic
+                        else _ResultDiagnosticRecord.model_validate_json(
+                            ledger.artifacts.read(event.output_revision_hashes[0])
+                        )
+                    )
+                except (IndexError, ValueError):
+                    record = None
+
+            # Invalid or unreadable terminal payloads are treated as a
+            # non-linking lifecycle row rather than exposing a stale path.
+            if record is None:
+                diagnostic = False
+
+            result_spec = self._result_spec_for(ledger, run_id, result_id)
+            trial_id = result_spec.result.trial_id if result_spec is not None else ""
+            if not trial_id and isinstance(record, _ResultDiagnosticRecord):
+                # Generated diagnostics (for example a failed Trial with no
+                # declared ResultSpec) still carry an authoritative Trial ID.
+                trial_id = record.trial_id
+            if not trial_id:
+                trial_id = self._trial_id_for_result(result_id) or ""
+
+            report_root = getattr(record, "report_root", None) if record is not None else None
+            ancillary_outputs.update(getattr(record, "artifact_names", ()) if record else ())
             report_path = ""
             if report_root:
                 report_directory = root / report_root
-                if not report_directory.is_dir():
-                    # A committed readiness record may still point at a
-                    # hidden staging directory after an interrupted publish;
-                    # do not expose an index link until repair completes.
-                    continue
-                try:
-                    report_path = report_directory.relative_to(run_root).as_posix()
-                except ValueError:
-                    continue
-                if report_path == ".":
-                    report_path = ""
-            result_spec = self._result_spec_for(ledger, run_id, record.result_id)
-            trial_id = result_spec.result.trial_id if result_spec is not None else ""
-            diagnostic = event.operation == "operation:result-diagnostic-ready"
+                if report_directory.is_dir():
+                    try:
+                        report_path = report_directory.relative_to(run_root).as_posix()
+                    except ValueError:
+                        report_path = ""
+                    if report_path == ".":
+                        report_path = ""
+
+            state = (
+                "diagnostic_ready"
+                if diagnostic and record is not None
+                else "report_ready"
+                if not diagnostic and record is not None
+                else result_states.get(result_id, "pending")
+            )
             outcome = ""
             time_point = ""
             comparison = ""
             effect_measure = ""
             estimate_view: EstimateView | None = None
             evidence_count = 0
+            overall_judgment = ""
+            domain_judgments: dict[str, JudgmentLevel] = {}
+            limitations: list[str] = []
+            coverage = "not recorded"
+
             if result_spec is not None:
                 outcome = result_spec.result.outcome_construct
                 time_point = result_spec.result.time_point
@@ -4269,19 +4331,18 @@ class RunEngine:
                     denominator_experimental=result_spec.estimate.denominator_experimental,
                     denominator_comparator=result_spec.estimate.denominator_comparator,
                 )
-            if diagnostic:
-                assert isinstance(record, _ResultDiagnosticRecord)
-                overall_judgment = ""
-                domain_judgments: dict[str, JudgmentLevel] = {}
+
+            if diagnostic and isinstance(record, _ResultDiagnosticRecord):
                 limitations = [record.reason]
                 coverage = "incomplete"
-            else:
-                assert isinstance(record, _ReportMaterializedRecord)
+                # Diagnostic reports never inherit metadata from a prior
+                # assessment report.  Only the current ResultSpec, when
+                # present, contributes identity metadata above.
+            elif isinstance(record, _ReportMaterializedRecord):
                 overall_judgment = record.overall_judgment.value
                 domain_judgments = record.domain_judgments
-                limitations = []
                 coverage = "complete"
-                if report_root:
+                if report_root and (root / report_root).is_dir():
                     try:
                         assessment_payload = json.loads(
                             (root / report_root / "assessment.json").read_text(encoding="utf-8")
@@ -4319,25 +4380,26 @@ class RunEngine:
                         limitations = [
                             limitation
                             for domain in domains
+                            if isinstance(domain, dict)
                             for limitation in domain.get("limitations", ())
                         ]
                     except (OSError, ValueError, TypeError):
                         coverage = "not recorded"
+            elif state in {"pending", "assessing"}:
+                limitations = ["Result has no terminal report yet."]
+
+            report = ""
+            if report_path and state == "diagnostic_ready":
+                report = f"{report_path}/diagnostic.html"
+            elif report_path and state == "report_ready":
+                report = f"{report_path}/assessment.html"
             entries.append(
                 {
-                    "result_id": record.result_id,
+                    "result_id": result_id,
                     "trial_id": trial_id,
-                    "state": "diagnostic_ready" if diagnostic else "report_ready",
+                    "state": state,
                     "report_root": report_path,
-                    "report": (
-                        f"{report_path}/diagnostic.html"
-                        if diagnostic and report_path
-                        else "diagnostic.html"
-                        if diagnostic
-                        else f"{report_path}/assessment.html"
-                        if report_path
-                        else "assessment.html"
-                    ),
+                    "report": report,
                     "overall_judgment": overall_judgment,
                     "domain_judgments": domain_judgments,
                     "outcome": outcome,
@@ -4348,38 +4410,6 @@ class RunEngine:
                     "evidence_count": evidence_count,
                     "limitations": limitations,
                     "coverage": coverage,
-                }
-            )
-        entries.sort(key=lambda entry: (entry["result_id"], entry["state"]))
-        known_result_ids = {entry["result_id"] for entry in entries}
-        states = {
-            item.result_id: item.state.value for item in self._projection(ledger, run_id).results
-        }
-        for pending_result_id in self._active_result_ids(ledger, run_id):
-            if pending_result_id in known_result_ids:
-                continue
-            result_spec = self._result_spec_for(ledger, run_id, pending_result_id)
-            entries.append(
-                {
-                    "result_id": pending_result_id,
-                    "trial_id": result_spec.result.trial_id if result_spec else "trial:unresolved",
-                    "state": states.get(pending_result_id, "pending"),
-                    "report": "",
-                    "overall_judgment": "",
-                    "domain_judgments": {},
-                    "outcome": result_spec.result.outcome_construct if result_spec else "",
-                    "time_point": result_spec.result.time_point if result_spec else "",
-                    "comparison": (
-                        f"{result_spec.result.comparison.experimental_arm_id} vs "
-                        f"{result_spec.result.comparison.comparator_arm_id}"
-                        if result_spec
-                        else ""
-                    ),
-                    "effect_measure": result_spec.result.effect_measure if result_spec else "",
-                    "estimate": None,
-                    "evidence_count": 0,
-                    "limitations": ["Result has no terminal report yet."],
-                    "coverage": "not recorded",
                 }
             )
         entries.sort(key=lambda entry: (entry["result_id"], entry["state"]))

@@ -787,6 +787,16 @@ def test_added_failed_trial_gets_terminal_diagnostic_without_resolution_work(
     events = engine._bound_ledger(run_id).events()
     assert any(event.operation == "operation:run-register-diagnostic-result" for event in events)
     assert any(event.operation == "operation:result-diagnostic-ready" for event in events)
+    run_index = json.loads(
+        next((tmp_path / "output" / "report-bundle").rglob("run-index.json")).read_text(
+            encoding="utf-8"
+        )
+    )
+    diagnostic_row = next(
+        item for item in run_index["results"] if item["result_id"].startswith("result:diagnostic-")
+    )
+    assert diagnostic_row["trial_id"] == "trial:trial-b"
+    assert diagnostic_row["outcome"] == ""
     _classify_current_sources(engine, run_id)
     next_work = engine.continue_run(ContinueRunRequest(run_id=run_id)).work_item
     assert next_work is not None
@@ -1095,6 +1105,11 @@ def test_completed_changed_source_reopens_only_affected_result_work(
     report_events_before = tuple(
         event for event in ledger.events() if event.operation == "operation:result-report-ready"
     )
+    report_record = json.loads(
+        ledger.artifacts.read(report_events_before[-1].output_revision_hashes[0])
+    )
+    prior_report_root = tmp_path / report_record["report_root"]
+    assert prior_report_root.is_dir()
     report.write_bytes(b"changed primary")
     continued = engine.continue_run(ContinueRunRequest(run_id=run_id))
     assert continued.run_state is RunState.ASSESSING
@@ -1109,6 +1124,15 @@ def test_completed_changed_source_reopens_only_affected_result_work(
     assert len(
         [event for event in events if event.operation == "operation:result-report-ready"]
     ) == len(report_events_before)
+    run_index = json.loads(
+        next((tmp_path / "output" / "report-bundle").rglob("run-index.json")).read_text(
+            encoding="utf-8"
+        )
+    )
+    assert len(run_index["results"]) == 1
+    assert run_index["results"][0]["state"] == "pending"
+    assert run_index["results"][0]["report"] == ""
+    assert prior_report_root.is_dir()
     _finish_current_result(engine, run_id, prefix="reconciliation-rerun")
     assert engine.continue_run(ContinueRunRequest(run_id=run_id)).run_state is RunState.COMPLETE
     assert (
@@ -1176,6 +1200,11 @@ def test_completed_deleted_required_source_becomes_terminal_diagnostic(
         for event in engine._bound_ledger(run_id).events()
         if event.operation == "operation:result-report-ready"
     )
+    report_record = json.loads(
+        engine._bound_ledger(run_id).artifacts.read(report_events_before[-1].output_revision_hashes[0])
+    )
+    prior_report_root = tmp_path / report_record["report_root"]
+    assert prior_report_root.is_dir()
     report.unlink()
     continued = engine.continue_run(ContinueRunRequest(run_id=run_id))
     assert continued.run_state is RunState.COMPLETE
@@ -1190,3 +1219,15 @@ def test_completed_deleted_required_source_becomes_terminal_diagnostic(
     assert len(
         [event for event in events if event.operation == "operation:result-report-ready"]
     ) == len(report_events_before)
+    run_index = json.loads(
+        next((tmp_path / "output" / "report-bundle").rglob("run-index.json")).read_text(
+            encoding="utf-8"
+        )
+    )
+    assert len(run_index["results"]) == 1
+    current = run_index["results"][0]
+    assert current["state"] == "diagnostic_ready"
+    assert current["report"].endswith("/diagnostic.html")
+    assert "assessment.html" not in current["report"]
+    assert current["overall_judgment"] is None
+    assert prior_report_root.is_dir()
