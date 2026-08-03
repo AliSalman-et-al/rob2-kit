@@ -14,6 +14,7 @@ from rob2_kit.evidence import (
     CanonicalWordBox,
     build_visual_citation,
 )
+from rob2_kit.evidence.search import EvidenceSearchIndex
 from rob2_kit.ingestion.project import PageRender
 from rob2_kit.reports import VisualCitationView
 
@@ -58,6 +59,27 @@ def test_visual_citation_uses_word_geometry_and_marks_block_fallback() -> None:
         type(block.boxes[0])(left=10, top=20, right=200, bottom=60),
     )
     assert exact.geometry_hash != block.geometry_hash
+
+
+def test_search_index_round_trip_retains_word_geometry(tmp_path) -> None:
+    unit = CanonicalEvidenceUnit(
+        unit_id="unit:report-p1-b1",
+        source_id="source:report",
+        source_artifact_hash=HASH,
+        parse_id="parse:report-1",
+        page=1,
+        kind=CanonicalUnitKind.PARAGRAPH,
+        text="Allocation",
+        spatial=(10.0, 20.0, 200.0, 60.0),
+        word_boxes=(
+            CanonicalWordBox(
+                text="Allocation", span_start=0, span_end=10, spatial=(10, 20, 80, 30)
+            ),
+        ),
+    )
+    index = EvidenceSearchIndex(tmp_path / "evidence.sqlite3")
+    index.replace_units((unit,))
+    assert index.read_unit(unit.unit_id).word_boxes == unit.word_boxes
 
 
 def test_visual_citation_view_serializes_machine_verifiable_identity() -> None:
