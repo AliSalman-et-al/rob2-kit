@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import errno
 import hashlib
+import html
 import json
 import os
 import re
@@ -66,6 +67,7 @@ from rob2_kit.application.lifecycle import (
 )
 from rob2_kit.domain.assessment import (
     AlgorithmicJudgmentRevision,
+    AssessmentRevision,
     DecisionTrace,
     JudgmentLevel,
     SQAnswerRevision,
@@ -74,9 +76,13 @@ from rob2_kit.domain.canonical import canonical_hash
 from rob2_kit.domain.evidence import (
     ConsiderationDisposition,
     EvidenceBundle,
+    EvidenceCandidateDispositionRecord,
     EvidenceConsideration,
     EvidenceConsiderationManifest,
+    EvidenceCoverageReceiptRecord,
+    VisualTranscription,
 )
+from rob2_kit.domain.releases import PolicyKind, PolicyRelease
 from rob2_kit.domain.results import ResultSpecRevision
 from rob2_kit.domain.revisions import (
     SCHEMA_VERSION,
@@ -90,7 +96,7 @@ from rob2_kit.domain.revisions import (
     Revision,
     Supersession,
 )
-from rob2_kit.domain.sources import SourceRole
+from rob2_kit.domain.sources import SourceInventoryRevision, SourceRole
 from rob2_kit.evidence.search import (
     CanonicalBlock,
     CanonicalPage,
@@ -114,7 +120,8 @@ from rob2_kit.ingestion.project import (
 from rob2_kit.logic.evaluator import EvaluationRequest, LogicEvaluator
 from rob2_kit.logic.packs import load_guidance_pack, load_logic_pack
 from rob2_kit.registry import ClinicalTrialsGovAdapter, RegistryAcquisitionStatus, RegistryPolicy
-from rob2_kit.reports import AssessmentView, DomainView, ReportProjector
+from rob2_kit.reports import AssessmentView, DomainView, ReportProjector, VisualCitationView
+from rob2_kit.reports.archives import ArchiveBuilder, verify_archive
 from rob2_kit.storage import (
     ArtifactStore,
     CommitResult,
@@ -277,6 +284,8 @@ class _ResultDiagnosticRecord(FrozenModel):
     result_id: Identifier
     trial_id: Identifier
     reason: str
+    report_root: str | None = None
+    artifact_names: tuple[str, ...] = ()
 
 
 class _RunBlockedRecord(FrozenModel):
@@ -463,9 +472,7 @@ class RunEngine:
                     return self._prepare_configuration_error(root, ledger, error)
                 existing = self._latest_proposal(ledger, current.run_id)
                 try:
-                    inputs_changed = (
-                        self._input_snapshot_hash(root) != existing.input_snapshot_hash
-                    )
+                    inputs_changed = self._input_snapshot_hash(root) != existing.input_snapshot_hash
                 except ValueError as error:
                     return self._prepare_configuration_error(root, ledger, error)
                 if inputs_changed:
@@ -510,21 +517,17 @@ class RunEngine:
                             None,
                         )
                         if result_id in registered_result_ids:
-                            prior_spec = self._result_spec_for(
-                                ledger, current.run_id, result_id
-                            )
+                            prior_spec = self._result_spec_for(ledger, current.run_id, result_id)
                             if prior_spec is not None and prior_spec != result_spec:
                                 supersede_suffix = self._digest(
-                                    f"{current.run_id}|{result_id}|"
-                                    f"{result_spec.model_dump_json()}"
+                                    f"{current.run_id}|{result_id}|{result_spec.model_dump_json()}"
                                 )
                                 transitions.append(
                                     self._transition(
                                         scope=result_id,
                                         operation="operation:result-spec-superseded",
                                         operation_key=(
-                                            f"idempotency:result-spec-superseded-"
-                                            f"{supersede_suffix}"
+                                            f"idempotency:result-spec-superseded-{supersede_suffix}"
                                         ),
                                         entity_id=f"result-spec:{result_id.removeprefix('result:')}",
                                         revision_id=(
@@ -636,9 +639,7 @@ class RunEngine:
                             if trial.failure is not None
                             else "Trial-specific initialization failed"
                         )
-                        diagnostic_suffix = self._digest(
-                            f"{current.run_id}|{result_id}|diagnostic"
-                        )
+                        diagnostic_suffix = self._digest(f"{current.run_id}|{result_id}|diagnostic")
                         transitions.extend(
                             (
                                 self._transition(
@@ -705,9 +706,10 @@ class RunEngine:
                 RunState.COMPLETE,
             }:
                 try:
-                    changed = self._input_snapshot_hash(root) != self._latest_proposal(
-                        ledger, current.run_id
-                    ).input_snapshot_hash
+                    changed = (
+                        self._input_snapshot_hash(root)
+                        != self._latest_proposal(ledger, current.run_id).input_snapshot_hash
+                    )
                 except ValueError as error:
                     return self._prepare_configuration_error(root, ledger, error)
                 if changed and not request.authorized:
@@ -727,9 +729,7 @@ class RunEngine:
                 except ValueError as error:
                     return self._prepare_configuration_error(root, ledger, error)
                 if changed:
-                    return self._prepare_authorization_error(
-                        ledger, current.run_id, existing
-                    )
+                    return self._prepare_authorization_error(ledger, current.run_id, existing)
             self._repair_report_publication(ledger, current.run_id)
             return PrepareRunResponse(
                 operation_id=self._read_operation_id(RunOperation.PREPARE_RUN, current.run_id),
@@ -966,7 +966,8 @@ class RunEngine:
             result_states=tuple(
                 ResultStatus(result_id=item.result_id, state=item.state)
                 for item in projection.results
-                if item.result_id in self._result_ids(
+                if item.result_id
+                in self._result_ids(
                     ledger,
                     request.run_id,
                     self._latest_proposal(ledger, request.run_id),
@@ -1100,9 +1101,7 @@ class RunEngine:
         projection = self._projection(ledger, request.run_id)
         if request.work_token.run_id != request.run_id or expected is None:
             return GetWorkContextResponse(
-                operation_id=self._read_operation_id(
-                    RunOperation.GET_WORK_CONTEXT, request.run_id
-                ),
+                operation_id=self._read_operation_id(RunOperation.GET_WORK_CONTEXT, request.run_id),
                 ledger_cursor=f"ledger:{len(ledger.events())}",
                 affected_scope=(request.run_id,),
                 condition=WorkflowCondition.STALE,
@@ -1120,14 +1119,11 @@ class RunEngine:
                     ),
                 ),
             )
-        if (
-            projection.run_state is RunState.ASSESSING
-            and (expected is None or expected.work_token != request.work_token)
+        if projection.run_state is RunState.ASSESSING and (
+            expected is None or expected.work_token != request.work_token
         ):
             return GetWorkContextResponse(
-                operation_id=self._read_operation_id(
-                    RunOperation.GET_WORK_CONTEXT, request.run_id
-                ),
+                operation_id=self._read_operation_id(RunOperation.GET_WORK_CONTEXT, request.run_id),
                 ledger_cursor=f"ledger:{len(ledger.events())}",
                 affected_scope=(request.run_id,),
                 condition=WorkflowCondition.STALE,
@@ -1194,8 +1190,8 @@ class RunEngine:
                 None,
             )
         )
-        scoped_trial_id = None if is_global_source_work else (
-            trial.trial_id if trial is not None else trial_id
+        scoped_trial_id = (
+            None if is_global_source_work else (trial.trial_id if trial is not None else trial_id)
         )
         sources = (
             tuple(
@@ -1205,7 +1201,9 @@ class RunEngine:
                 for source in item.inventory.sources
             )
             if is_global_source_work
-            else tuple(trial.inventory.sources) if trial is not None else ()
+            else tuple(trial.inventory.sources)
+            if trial is not None
+            else ()
         )
         context = WorkContext(
             work_item=work_item,
@@ -1269,12 +1267,9 @@ class RunEngine:
             existing_ambiguities = {
                 item.ambiguity_id: item for item in existing_record.proposal.ambiguities
             }
-            if (
-                existing_record.proposal.selections != request.selections
-                or any(
-                    existing_ambiguities.get(item.ambiguity_id) != item
-                    for item in requested_ambiguities
-                )
+            if existing_record.proposal.selections != request.selections or any(
+                existing_ambiguities.get(item.ambiguity_id) != item
+                for item in requested_ambiguities
             ):
                 raise ValueError("idempotency key was already used with a different payload")
             return SubmitRunProposalResponse(
@@ -1306,9 +1301,7 @@ class RunEngine:
                     error=OperationError(
                         code="stale_proposal",
                         detail="A newer Run proposal has superseded this proposal token.",
-                        recovery=(
-                            "Discard the stale proposal and call prepare_run again.",
-                        ),
+                        recovery=("Discard the stale proposal and call prepare_run again.",),
                     ),
                 )
             return SubmitRunProposalResponse(
@@ -1326,9 +1319,7 @@ class RunEngine:
                 error=OperationError(
                     code="stale_proposal",
                     detail="The supplied Run proposal token was not issued by this Run.",
-                    recovery=(
-                        "Discard the unknown proposal token and call prepare_run again.",
-                    ),
+                    recovery=("Discard the unknown proposal token and call prepare_run again.",),
                 ),
             )
         if self._input_snapshot_hash(self._required_root()) != proposal.input_snapshot_hash:
@@ -1450,9 +1441,7 @@ class RunEngine:
                     error=OperationError(
                         code="stale_proposal",
                         detail="A newer Run proposal has superseded this proposal token.",
-                        recovery=(
-                            "Discard the stale proposal and call prepare_run again.",
-                        ),
+                        recovery=("Discard the stale proposal and call prepare_run again.",),
                     ),
                 )
             return ConfirmRunDefinitionResponse(
@@ -1470,9 +1459,7 @@ class RunEngine:
                 error=OperationError(
                     code="stale_proposal",
                     detail="The supplied Run proposal token was not issued by this Run.",
-                    recovery=(
-                        "Discard the unknown proposal token and call prepare_run again.",
-                    ),
+                    recovery=("Discard the unknown proposal token and call prepare_run again.",),
                 ),
             )
         existing = self._confirmed_for_idempotency(
@@ -1545,9 +1532,7 @@ class RunEngine:
             )
         accepted = tuple(item for item in proposal.selections if item.accepted)
         trial_ids = (
-            tuple(item.trial_id for item in accepted)
-            if proposal.selections
-            else proposal.trial_ids
+            tuple(item.trial_id for item in accepted) if proposal.selections else proposal.trial_ids
         )
         result_candidates = {item.candidate_id: item for item in proposal.result_candidates}
         selected_candidate_items = tuple(
@@ -1556,8 +1541,7 @@ class RunEngine:
             if item.result_candidate_id is not None
         )
         if any(
-            item.status != "resolved" or item.result_id is None
-            for item in selected_candidate_items
+            item.status != "resolved" or item.result_id is None for item in selected_candidate_items
         ):
             return ConfirmRunDefinitionResponse(
                 operation_id=self._read_operation_id(
@@ -1574,9 +1558,7 @@ class RunEngine:
                 error=OperationError(
                     code="material_ambiguity",
                     detail="The selected Result candidate does not identify an exact ResultSpec.",
-                    recovery=(
-                        "Submit an exact Trial-specific Result mapping for the candidate.",
-                    ),
+                    recovery=("Submit an exact Trial-specific Result mapping for the candidate.",),
                 ),
             )
         selected_result_ids = tuple(
@@ -1622,9 +1604,7 @@ class RunEngine:
             else tuple(item.candidate_id for item in proposal.registry_candidates if item.explicit)
         )
         selected_outcome_target_ids = tuple(
-            item.outcome_target_id
-            for item in accepted
-            if item.outcome_target_id is not None
+            item.outcome_target_id for item in accepted if item.outcome_target_id is not None
         )
         selected_outcome_target_ids += tuple(
             item.outcome_target_id
@@ -1636,8 +1616,7 @@ class RunEngine:
             selected_outcome_target_ids
             if proposal.selections
             else tuple(
-                item.target_id
-                for item in proposal.initialization.manifest.outcome_target_specs
+                item.target_id for item in proposal.initialization.manifest.outcome_target_specs
             )
         )
         now = datetime.now(UTC)
@@ -1851,9 +1830,7 @@ class RunEngine:
         if not submitted_sources <= issued_sources:
             raise ValueError("Source classification includes an unissued source identifier")
         if submitted_sources != issued_sources:
-            raise ValueError(
-                "Source classification must include every inventory-ready source"
-            )
+            raise ValueError("Source classification must include every inventory-ready source")
         result = self._commit_submission(
             ledger,
             run_id=request.run_id,
@@ -2141,9 +2118,7 @@ class RunEngine:
             )
         self._validate_result_domain(ledger, request.run_id, request.result_id, request.domain_id)
         self._validate_domain_evidence_submission(ledger, request)
-        evidence_bundles, manifests, receipts = self._freeze_domain_evidence(
-            ledger, request
-        )
+        evidence_bundles, manifests, receipts = self._freeze_domain_evidence(ledger, request)
         normalized = _DomainEvidenceRecord(
             run_id=request.run_id,
             result_id=request.result_id,
@@ -2299,9 +2274,7 @@ class RunEngine:
         if missing:
             raise ValueError(f"answers required for active questions: {sorted(missing)}")
         if inactive:
-            raise ValueError(
-                f"answers supplied for not_applicable questions: {sorted(inactive)}"
-            )
+            raise ValueError(f"answers supplied for not_applicable questions: {sorted(inactive)}")
         if not self._has_domain_checkpoint(
             self._events_for_run(ledger, request.run_id),
             request.result_id,
@@ -2376,13 +2349,9 @@ class RunEngine:
                 f"{sorted(unknown_question_ids)}"
             )
         if request.items and supplied_question_ids != domain_questions:
-            raise ValueError(
-                "each domain signaling question requires an explicit evidence mapping"
-            )
+            raise ValueError("each domain signaling question requires an explicit evidence mapping")
         mapped_item_ids = {
-            item.entity_id
-            for items in request.evidence_by_question.values()
-            for item in items
+            item.entity_id for items in request.evidence_by_question.values() for item in items
         }
         if any(receipt.sq_id not in domain_questions for receipt in request.coverage_receipts):
             raise ValueError("Search coverage receipts must bind this domain's signaling questions")
@@ -2392,9 +2361,7 @@ class RunEngine:
             if request.coverage_state.value != "complete" or request.coverage_limitations:
                 raise ValueError("no-information answers require complete, unlimited coverage")
             if not request.coverage_receipts:
-                raise ValueError(
-                    "no-information basis requires complete Search coverage receipts"
-                )
+                raise ValueError("no-information basis requires complete Search coverage receipts")
             if any(
                 not receipt.establishes_no_information_basis()
                 for receipt in request.coverage_receipts
@@ -2426,8 +2393,7 @@ class RunEngine:
                     "every accepted Evidence item must appear in the consideration manifest"
                 )
             if any(
-                item.disposition is ConsiderationDisposition.UNRESOLVED
-                for item in dispositions
+                item.disposition is ConsiderationDisposition.UNRESOLVED for item in dispositions
             ):
                 raise ValueError("material Evidence candidates cannot remain unresolved")
         if request.items and mapped_item_ids != set(item_ids):
@@ -2437,9 +2403,7 @@ class RunEngine:
             )
         for conflict in request.conflicts:
             if len(conflict) < 2 or not set(conflict).issubset(set(item_ids)):
-                raise ValueError(
-                    "source conflicts must bind at least two frozen Evidence items"
-                )
+                raise ValueError("source conflicts must bind at least two frozen Evidence items")
 
     def _freeze_domain_evidence(
         self,
@@ -2455,14 +2419,24 @@ class RunEngine:
         domain = next(item for item in logic.domains if item.id == request.domain_id)
         result_spec = self._result_spec_reference(ledger, request.result_id)
         actor = request.actor or ASSESSMENT_AGENT_ACTOR
-        disposition_record = _DomainEvidenceDispositionRecord(
-            run_id=request.run_id,
+        suffix = self._digest(f"{request.run_id}|{request.idempotency_key}|dispositions")
+        disposition_record = EvidenceCandidateDispositionRecord(
+            entity_id=f"evidence-disposition:{suffix}",
+            revision_id=f"revision:evidence-disposition-{suffix}",
+            actor=actor,
+            observed_at=datetime.now(UTC),
+            dependencies=tuple(
+                Dependency(**item.model_dump(), role="dependency:evidence-item")
+                for item in request.items
+            ),
             result_id=request.result_id,
             domain_id=request.domain_id,
             items=request.items,
-            dispositions=request.candidate_dispositions,
+            dispositions=tuple(
+                EvidenceConsideration.model_validate(item.model_dump())
+                for item in request.candidate_dispositions
+            ),
         )
-        suffix = self._digest(f"{request.run_id}|{request.idempotency_key}|dispositions")
         disposition_ref = self._commit_frozen_artifact(
             ledger,
             scope=request.result_id,
@@ -2472,17 +2446,21 @@ class RunEngine:
             revision_id=f"revision:evidence-disposition-{suffix}",
             artifact=disposition_record,
             actor=actor,
+            dependencies=disposition_record.dependencies,
         )
         coverage_refs: tuple[RecordReference, ...] = ()
         if request.coverage_receipts:
-            coverage_record = _DomainCoverageReceiptRecord(
-                run_id=request.run_id,
+            coverage_suffix = self._digest(f"{request.run_id}|{request.idempotency_key}|coverage")
+            coverage_record = EvidenceCoverageReceiptRecord(
+                entity_id=f"search-coverage:{coverage_suffix}",
+                revision_id=f"revision:search-coverage-{coverage_suffix}",
+                actor=actor,
+                observed_at=datetime.now(UTC),
                 result_id=request.result_id,
                 domain_id=request.domain_id,
-                receipts=request.coverage_receipts,
-            )
-            coverage_suffix = self._digest(
-                f"{request.run_id}|{request.idempotency_key}|coverage"
+                receipts=tuple(
+                    receipt.model_dump(mode="json") for receipt in request.coverage_receipts
+                ),
             )
             coverage_refs = (
                 self._commit_frozen_artifact(
@@ -2511,14 +2489,10 @@ class RunEngine:
                 )
             manifest_items = tuple(question_items)
             manifest_dispositions = tuple(
-                item
-                for item in request.candidate_dispositions
-                if item.item_id in question_item_ids
+                item for item in request.candidate_dispositions if item.item_id in question_item_ids
             )
             if manifest_items and not manifest_dispositions:
-                raise ValueError(
-                    f"Evidence consideration manifest is incomplete for {question_id}"
-                )
+                raise ValueError(f"Evidence consideration manifest is incomplete for {question_id}")
             manifest = EvidenceConsiderationManifest(
                 entity_id=f"evidence-manifest:{request.result_id.removeprefix('result:')}-{slug}",
                 revision_id=f"revision:evidence-manifest-{bundle_suffix}",
@@ -2553,9 +2527,7 @@ class RunEngine:
             dependencies = [
                 Dependency(**result_spec.model_dump(), role="dependency:result-spec"),
                 Dependency(**disposition_ref.model_dump(), role="dependency:evidence-disposition"),
-                Dependency(
-                    **manifest_ref.model_dump(), role="dependency:evidence-consideration"
-                ),
+                Dependency(**manifest_ref.model_dump(), role="dependency:evidence-consideration"),
                 *(
                     Dependency(**item.model_dump(), role="dependency:evidence-item")
                     for item in question_items
@@ -2575,9 +2547,7 @@ class RunEngine:
                 "coverage_limitations": request.coverage_limitations,
                 "no_information_basis": request.no_information_basis,
                 "conflicts": request.conflicts,
-                "coverage_receipts": [
-                    receipt.model_dump(mode="json") for receipt in coverage_refs
-                ],
+                "coverage_receipts": [receipt.model_dump(mode="json") for receipt in coverage_refs],
                 "consideration_manifest": manifest_ref.model_dump(mode="json"),
             }
             bundle_hash = canonical_hash(bundle_payload)
@@ -2647,14 +2617,15 @@ class RunEngine:
                 continue
             for coverage_ref in bundle.coverage_receipts:
                 try:
-                    receipt_record = _DomainCoverageReceiptRecord.model_validate_json(
+                    receipt_record = EvidenceCoverageReceiptRecord.model_validate_json(
                         ledger.artifacts.read(coverage_ref.content_hash)
                     )
                 except (ValueError, TypeError, json.JSONDecodeError):
                     continue
                 if any(
                     receipt.sq_id == question_id and receipt.establishes_no_information_basis()
-                    for receipt in receipt_record.receipts
+                    for raw_receipt in receipt_record.receipts
+                    for receipt in (SearchCoverageReceipt.model_validate(raw_receipt),)
                 ):
                     return True
         return False
@@ -2692,16 +2663,12 @@ class RunEngine:
         for item in request.answers:
             bundle_ref = bundle_by_sq.get(item.question_id)
             if bundle_ref is None:
-                raise ValueError(
-                    f"no frozen Evidence Bundle exists for {item.question_id}"
-                )
+                raise ValueError(f"no frozen Evidence Bundle exists for {item.question_id}")
             rules = tuple(
                 rule.id
                 for rule in domain.judgment_rules
-                if item.question_id in {
-                    condition.question_id
-                    for condition in self._walk_pack_conditions(rule.when)
-                }
+                if item.question_id
+                in {condition.question_id for condition in self._walk_pack_conditions(rule.when)}
             )
             suffix = self._digest(
                 f"{request.run_id}|{request.idempotency_key}|answer|{item.question_id}"
@@ -2731,9 +2698,7 @@ class RunEngine:
                 guidance_pack_release_id=guidance.release_id,
                 guidance_pack_hash=guidance.content_hash,
                 evidence_policy_id="policy:evidence-search-1.0.0",
-                evidence_policy_hash=canonical_hash(
-                    {"policy_id": "policy:evidence-search-1.0.0"}
-                ),
+                evidence_policy_hash=canonical_hash({"policy_id": "policy:evidence-search-1.0.0"}),
                 decision_rule_ids=rules,
             )
             answer_refs.append(
@@ -2885,9 +2850,7 @@ class RunEngine:
             return proposal
         candidates = {item.candidate_id: item for item in proposal.registry_candidates}
         trials = {item.trial_id: item for item in proposal.initialization.trials}
-        receipts = {
-            item.receipt_id: item for item in proposal.initialization.acquisition_receipts
-        }
+        receipts = {item.receipt_id: item for item in proposal.initialization.acquisition_receipts}
         changed = False
         for candidate_id in accepted_ids:
             candidate = candidates.get(candidate_id)
@@ -2946,16 +2909,12 @@ class RunEngine:
                 if registry_source is not None:
                     sources += (registry_source,)
                 updated_candidates = tuple(
-                    refreshed
-                    if item.candidate_id == candidate_id
-                    else item
+                    refreshed if item.candidate_id == candidate_id else item
                     for item in trial.registry_candidates
                 )
                 trials[candidate.trial_id] = trial.model_copy(
                     update={
-                        "inventory": trial.inventory.model_copy(
-                            update={"sources": sources}
-                        ),
+                        "inventory": trial.inventory.model_copy(update={"sources": sources}),
                         "registry_acquisition": acquisition,
                         "registry_candidates": updated_candidates,
                     }
@@ -3210,6 +3169,7 @@ class RunEngine:
                     continue
                 report_root.parent.mkdir(parents=True, exist_ok=True)
                 os.replace(staging, report_root)
+        self._regenerate_run_index(ledger, run_id)
         self._commit_run_completed_if_ready(ledger, run_id, lease=lease)
 
     def _commit_run_completed_if_ready(
@@ -3229,19 +3189,11 @@ class RunEngine:
             return
         events = self._events_for_run(ledger, run_id)
         latest_completed = max(
-            (
-                event.sequence
-                for event in events
-                if event.operation == "operation:run-completed"
-            ),
+            (event.sequence for event in events if event.operation == "operation:run-completed"),
             default=0,
         )
         latest_reopened = max(
-            (
-                event.sequence
-                for event in events
-                if event.operation == "operation:run-reopened"
-            ),
+            (event.sequence for event in events if event.operation == "operation:run-reopened"),
             default=0,
         )
         if latest_completed and latest_reopened <= latest_completed:
@@ -3295,14 +3247,10 @@ class RunEngine:
         ):
             return
         latest_result_id = (
-            report_records[-1].result_id
-            if report_records
-            else next(iter(result_ids))
+            report_records[-1].result_id if report_records else next(iter(result_ids))
         )
         latest_assessment = (
-            report_records[-1].assessment_revision_id
-            if report_records
-            else "assessment:none"
+            report_records[-1].assessment_revision_id if report_records else "assessment:none"
         )
         # A reopened completed Run may reach a fresh terminal checkpoint.  The
         # reconciliation sequence makes that completion idempotency key unique
@@ -3339,13 +3287,13 @@ class RunEngine:
             (
                 event.sequence
                 for event in events
-                if event.operation == "operation:result-invalidated"
-                and event.scope == result_id
+                if event.operation == "operation:result-invalidated" and event.scope == result_id
             ),
             default=0,
         )
         if any(
-            event.operation == "operation:result-report-ready" and event.scope == result_id
+            event.operation == "operation:result-report-ready"
+            and event.scope == result_id
             and event.sequence > invalidated_at
             for event in events
         ):
@@ -3356,13 +3304,15 @@ class RunEngine:
         evidence_domains = {
             self._event_payload(ledger, event).get("domain_id")
             for event in events
-            if event.operation == "operation:submit-domain-evidence" and event.scope == result_id
+            if event.operation == "operation:submit-domain-evidence"
+            and event.scope == result_id
             and event.sequence > invalidated_at
         }
         answer_payloads = [
             self._event_payload(ledger, event)
             for event in events
-            if event.operation == "operation:submit-domain-answers" and event.scope == result_id
+            if event.operation == "operation:submit-domain-answers"
+            and event.scope == result_id
             and event.sequence > invalidated_at
         ]
         answer_domains = {payload.get("domain_id") for payload in answer_payloads}
@@ -3394,27 +3344,28 @@ class RunEngine:
             diagnostic_suffix = self._digest(
                 f"{run_id}|{result_id}|coverage-diagnostic|{coverage_limitations}"
             )
-            reason = "Result evidence coverage is unresolved: " + "; ".join(
-                coverage_limitations
+            reason = "Result evidence coverage is unresolved: " + "; ".join(coverage_limitations)
+            diagnostic = _ResultDiagnosticRecord(
+                run_id=run_id,
+                result_id=result_id,
+                trial_id=result_spec.result.trial_id,
+                reason=reason,
             )
+            diagnostic = self._materialize_diagnostic_bundle(diagnostic)
             transition = self._transition(
                 scope=result_id,
                 operation="operation:result-diagnostic-ready",
                 operation_key=f"idempotency:coverage-diagnostic-{diagnostic_suffix}",
                 entity_id=f"result-diagnostic:{diagnostic_suffix}",
                 revision_id=f"revision:result-diagnostic-{diagnostic_suffix}",
-                artifact=_ResultDiagnosticRecord(
-                    run_id=run_id,
-                    result_id=result_id,
-                    trial_id=result_spec.result.trial_id,
-                    reason=reason,
-                ),
+                artifact=diagnostic,
                 checkpoint=f"checkpoint:coverage-diagnostic-{diagnostic_suffix}",
                 outcome=WorkflowEventOutcome.TRIAL_PROBLEM,
                 observed_at=datetime.now(UTC),
             )
             lease = self._acquire_lease(ledger, datetime.now(UTC))
             ledger.commit(transition, lease, now=datetime.now(UTC))
+            self._regenerate_run_index(ledger, run_id)
             return ()
         # A Result may only have one immutable answer checkpoint per domain.
         answers: dict[str, str] = {}
@@ -3426,12 +3377,13 @@ class RunEngine:
             raw_rationales = payload.get("rationales", {})
             if isinstance(raw_rationales, dict):
                 rationales.update(cast(dict[str, str], raw_rationales))
-        evaluation = LogicEvaluator(logic).evaluate(
-            EvaluationRequest(answers=answers)
-        )
+        evaluation = LogicEvaluator(logic).evaluate(EvaluationRequest(answers=answers))
         assessment_digest = self._digest(
             f"{run_id}|{result_id}|{json.dumps(answers, sort_keys=True)}|"
             f"invalidated:{invalidated_at}"
+        )
+        evidence_refs, answer_refs = self._assessment_inputs(
+            ledger, run_id, result_id, invalidated_at
         )
         judgment_references = self._materialize_judgment_revisions(
             ledger,
@@ -3467,8 +3419,55 @@ class RunEngine:
                 )
                 for domain in logic.domains
             ),
+            visual_citations=self._visual_citations(ledger, evidence_refs),
             signed_off=False,
         )
+        result_spec_ref = self._result_spec_reference(ledger, result_id)
+        source_inventory_ref = self._freeze_source_inventory(
+            ledger, run_id, result_id, result_spec_ref
+        )
+        policy_ref = self._freeze_evidence_policy(ledger, run_id, result_id)
+        assessment_record = AssessmentRevision(
+            entity_id=f"assessment-record:{assessment_digest}",
+            revision_id=assessment_revision_id,
+            dependencies=(
+                Dependency(**result_spec_ref.model_dump(), role="dependency:result-spec"),
+                Dependency(**source_inventory_ref.model_dump(), role="dependency:source-inventory"),
+                *(
+                    Dependency(**reference.model_dump(), role="dependency:evidence-bundle")
+                    for reference in evidence_refs
+                ),
+                *(
+                    Dependency(**reference.model_dump(), role="dependency:sq-answer")
+                    for reference in answer_refs
+                ),
+                *(
+                    Dependency(**reference.model_dump(), role="dependency:algorithmic-judgment")
+                    for reference in judgment_references
+                ),
+                Dependency(**policy_ref.model_dump(), role="dependency:policy-release"),
+            ),
+            actor=ENGINE_ACTOR,
+            observed_at=datetime.now(UTC),
+            result_spec=result_spec_ref,
+            source_inventory=source_inventory_ref,
+            evidence_bundles=evidence_refs,
+            answers=answer_refs,
+            judgments=judgment_references,
+        )
+        assessment_ref = self._commit_frozen_artifact(
+            ledger,
+            scope=result_id,
+            operation="operation:assessment-revision-frozen",
+            operation_key=f"idempotency:assessment-revision-{assessment_digest}",
+            entity_id=assessment_record.entity_id,
+            revision_id=assessment_record.revision_id,
+            artifact=assessment_record,
+            actor=ENGINE_ACTOR,
+            dependencies=assessment_record.dependencies,
+        )
+        if assessment_ref.revision_id != assessment_revision_id:
+            raise ValueError("frozen Assessment revision identity does not match report")
         projector = ReportProjector(assessment)
         lease = self._acquire_lease(ledger, datetime.now(UTC))
         report_base = self._required_root() / "output" / "report-bundle"
@@ -3483,29 +3482,37 @@ class RunEngine:
         if staging.exists():
             shutil.rmtree(staging)
         staging.mkdir(parents=True, exist_ok=True)
-        report_files: dict[str, bytes] = {
-            "assessment.json": projector.json(),
-            "assessment.html": projector.html(),
-            "assessment.md": projector.markdown(),
-            "answers.json": (
-                json.dumps(
-                    {
-                        "answers": answers,
-                        "rationales": rationales,
-                        "active_question_ids": evaluation.active_question_ids,
-                        "inactive_question_ids": evaluation.inactive_question_ids,
-                        "matched_rule_ids": evaluation.matched_rule_ids,
-                        "judgment_references": [
-                            reference.model_dump(mode="json")
-                            for reference in judgment_references
-                        ],
-                    },
-                    sort_keys=True,
-                    separators=(",", ":"),
-                ).encode()
-                + b"\n"
-            ),
-        }
+        report_files = projector.bundle_files()
+        report_files.update(
+            {
+                "answers.json": (
+                    json.dumps(
+                        {
+                            "answers": answers,
+                            "rationales": rationales,
+                            "active_question_ids": evaluation.active_question_ids,
+                            "inactive_question_ids": evaluation.inactive_question_ids,
+                            "matched_rule_ids": evaluation.matched_rule_ids,
+                            "judgment_references": [
+                                reference.model_dump(mode="json")
+                                for reference in judgment_references
+                            ],
+                        },
+                        sort_keys=True,
+                        separators=(",", ":"),
+                    ).encode()
+                    + b"\n"
+                ),
+            }
+        )
+        archive = ArchiveBuilder(ledger).build(
+            assessment_revision_id,
+            pinned_files=self._verification_pins(),
+        )
+        receipt = verify_archive(archive)
+        if receipt.assessment_revision_id != assessment_revision_id:
+            raise ValueError("Verification archive identity does not match report")
+        report_files["verification-archive.rob2.zip"] = archive
         manifest = {
             "assessment_revision_id": assessment_revision_id,
             "result_id": result_id,
@@ -3521,6 +3528,7 @@ class RunEngine:
         )
         for name, content in report_files.items():
             (staging / name).write_bytes(content)
+        self._verify_staged_report_files(staging, report_files)
         now = datetime.now(UTC)
         report_record = _ReportMaterializedRecord(
             run_id=run_id,
@@ -3557,13 +3565,379 @@ class RunEngine:
                 observed_at=now,
             ),
         ]
-        ledger.commit_batch(tuple(transitions), lease, now=now)
-        # The ledger is authoritative before the final directory is exposed.
-        # If publication is interrupted, the committed staging path is
-        # repaired by a later status/resume/continue call.
+        # A terminal readiness event must never lead the visible immutable
+        # bundle.  Staging is verified above and this rename is atomic on the
+        # containing filesystem.
         os.replace(staging, report_root)
+        ledger.commit_batch(tuple(transitions), lease, now=now)
+        self._regenerate_run_index(ledger, run_id)
         self._commit_run_completed_if_ready(ledger, run_id, lease=lease)
         return judgment_references
+
+    @staticmethod
+    def _verify_staged_report_files(staging: Path, files: dict[str, bytes]) -> None:
+        """Reject an incomplete, unsafe, or hash-inconsistent staged bundle."""
+
+        if any(Path(name).name != name for name in files):
+            raise ValueError("report artifact name is not confined to its bundle")
+        if {path.name for path in staging.iterdir()} != set(files):
+            raise ValueError("staged report artifacts do not match the manifest input")
+        for name, content in files.items():
+            if (staging / name).read_bytes() != content:
+                raise ValueError(f"staged report artifact {name!r} failed verification")
+        manifest = json.loads((staging / "manifest.json").read_text(encoding="utf-8"))
+        expected = {
+            name: "sha256:" + hashlib.sha256(content).hexdigest()
+            for name, content in files.items()
+            if name != "manifest.json"
+        }
+        if manifest.get("files") != expected:
+            raise ValueError("staged report manifest does not match artifact hashes")
+
+    def _materialize_diagnostic_bundle(
+        self, diagnostic: _ResultDiagnosticRecord
+    ) -> _ResultDiagnosticRecord:
+        """Atomically publish a judgment-free diagnostic report before its checkpoint."""
+
+        root = self._required_root()
+        digest = self._digest(f"{diagnostic.run_id}|{diagnostic.result_id}|{diagnostic.reason}")
+        report_root = root / "output" / "report-bundle" / "diagnostics" / digest
+        if report_root.exists():
+            return diagnostic.model_copy(
+                update={
+                    "report_root": report_root.relative_to(root).as_posix(),
+                    "artifact_names": tuple(
+                        sorted(path.name for path in report_root.iterdir() if path.is_file())
+                    ),
+                }
+            )
+        staging = report_root.parent / f".diagnostic-staging-{digest}"
+        if staging.exists():
+            shutil.rmtree(staging)
+        staging.mkdir(parents=True)
+        payload = {
+            "result_id": diagnostic.result_id,
+            "trial_id": diagnostic.trial_id,
+            "reason": diagnostic.reason,
+            "limitations": [diagnostic.reason],
+        }
+        files = {
+            "diagnostic.json": json.dumps(payload, sort_keys=True, separators=(",", ":")).encode()
+            + b"\n",
+            "diagnostic.md": (
+                "# RoB 2 diagnostic report\n\n"
+                f"- Result: {self._escape_markdown(diagnostic.result_id)}\n"
+                f"- Trial: {self._escape_markdown(diagnostic.trial_id)}\n"
+                f"- Limitation: {self._escape_markdown(diagnostic.reason)}\n"
+            ).encode(),
+            "diagnostic.html": (
+                '<!doctype html><html lang="en"><meta charset="utf-8">'
+                "<title>RoB 2 diagnostic report</title><main><h1>RoB 2 diagnostic report</h1>"
+                f"<p><strong>Result:</strong> {html.escape(diagnostic.result_id)}</p>"
+                f"<p><strong>Trial:</strong> {html.escape(diagnostic.trial_id)}</p>"
+                f"<p><strong>Limitation:</strong> {html.escape(diagnostic.reason)}</p>"
+                "</main></html>\n"
+            ).encode(),
+        }
+        files["manifest.json"] = (
+            json.dumps(
+                {
+                    "result_id": diagnostic.result_id,
+                    "trial_id": diagnostic.trial_id,
+                    "files": {
+                        name: "sha256:" + hashlib.sha256(content).hexdigest()
+                        for name, content in files.items()
+                    },
+                    "limitations": [diagnostic.reason],
+                },
+                sort_keys=True,
+                separators=(",", ":"),
+            ).encode()
+            + b"\n"
+        )
+        for name, content in files.items():
+            (staging / name).write_bytes(content)
+        os.replace(staging, report_root)
+        return diagnostic.model_copy(
+            update={
+                "report_root": report_root.relative_to(root).as_posix(),
+                "artifact_names": tuple(sorted(files)),
+            }
+        )
+
+    def _regenerate_run_index(self, ledger: WorkflowLedger, run_id: Identifier) -> None:
+        """Publish a compact, ledger-derived Run index after terminal bundles change."""
+
+        root = self._required_root()
+        bundle_root = root / "output" / "report-bundle"
+        if not bundle_root.exists():
+            return
+        entries: list[dict[str, Any]] = []
+        for event in self._events_for_run(ledger, run_id):
+            if event.operation not in {
+                "operation:result-report-ready",
+                "operation:result-diagnostic-ready",
+            }:
+                continue
+            try:
+                record = (
+                    _ReportMaterializedRecord.model_validate_json(
+                        ledger.artifacts.read(event.output_revision_hashes[0])
+                    )
+                    if event.operation == "operation:result-report-ready"
+                    else _ResultDiagnosticRecord.model_validate_json(
+                        ledger.artifacts.read(event.output_revision_hashes[0])
+                    )
+                )
+            except (IndexError, ValueError):
+                continue
+            report_root = getattr(record, "report_root", None)
+            report_path = ""
+            if report_root:
+                report_directory = root / report_root
+                try:
+                    report_path = report_directory.relative_to(bundle_root).as_posix()
+                except ValueError:
+                    continue
+                if report_path == ".":
+                    report_path = ""
+            result_spec = self._result_spec_for(ledger, run_id, record.result_id)
+            trial_id = result_spec.result.trial_id if result_spec is not None else ""
+            diagnostic = event.operation == "operation:result-diagnostic-ready"
+            if diagnostic:
+                assert isinstance(record, _ResultDiagnosticRecord)
+                overall_judgment = ""
+                domain_judgments: dict[str, JudgmentLevel] = {}
+                limitations = [record.reason]
+            else:
+                assert isinstance(record, _ReportMaterializedRecord)
+                overall_judgment = record.overall_judgment.value
+                domain_judgments = record.domain_judgments
+                limitations = []
+            entries.append(
+                {
+                    "result_id": record.result_id,
+                    "trial_id": trial_id,
+                    "state": "diagnostic_ready" if diagnostic else "report_ready",
+                    "report_root": report_path,
+                    "report": (
+                        f"{report_path}/diagnostic.html"
+                        if diagnostic and report_path
+                        else "diagnostic.html"
+                        if diagnostic
+                        else f"{report_path}/assessment.html"
+                        if report_path
+                        else "assessment.html"
+                    ),
+                    "overall_judgment": overall_judgment,
+                    "domain_judgments": domain_judgments,
+                    "limitations": limitations,
+                }
+            )
+        entries.sort(key=lambda entry: (entry["result_id"], entry["state"]))
+        payload = {"run_id": run_id, "results": entries}
+        index_json = json.dumps(payload, sort_keys=True, separators=(",", ":")).encode() + b"\n"
+        rows = "".join(
+            "<tr>"
+            f"<td>{html.escape(entry['trial_id'])}</td>"
+            f"<td>{html.escape(entry['result_id'])}</td>"
+            f"<td>{html.escape(entry['state'])}</td>"
+            f"<td>{html.escape(entry['overall_judgment'])}</td>"
+            "<td>"
+            + (f'<a href="{html.escape(entry["report"])}">Report</a>' if entry["report"] else "")
+            + "</td>"
+            "</tr>"
+            for entry in entries
+        )
+        index_html = (
+            '<!doctype html><html lang="en"><meta charset="utf-8">'
+            "<title>RoB 2 Run index</title><main><h1>RoB 2 Run index</h1>"
+            "<table><thead><tr><th>Trial</th><th>Result</th><th>State</th>"
+            "<th>Overall judgment</th><th>Report</th>"
+            f"</tr></thead><tbody>{rows}</tbody></table></main></html>\n"
+        ).encode()
+        for name, content in {"run-index.json": index_json, "run-index.html": index_html}.items():
+            staging = bundle_root / f".{name}.staging"
+            staging.write_bytes(content)
+            os.replace(staging, bundle_root / name)
+
+    def _assessment_inputs(
+        self,
+        ledger: WorkflowLedger,
+        run_id: Identifier,
+        result_id: Identifier,
+        invalidated_at: int,
+    ) -> tuple[tuple[RecordReference, ...], tuple[RecordReference, ...]]:
+        """Collect the frozen evidence and answers used by this terminal Result."""
+
+        bundles: dict[str, RecordReference] = {}
+        answers: dict[str, RecordReference] = {}
+        for event in self._events_for_run(ledger, run_id):
+            if event.scope != result_id or event.sequence <= invalidated_at:
+                continue
+            if event.operation not in {
+                "operation:submit-domain-evidence",
+                "operation:submit-domain-answers",
+            }:
+                continue
+            payload = self._event_payload(ledger, event)
+            field = (
+                "evidence_bundles"
+                if event.operation == "operation:submit-domain-evidence"
+                else "answer_revisions"
+            )
+            target = bundles if field == "evidence_bundles" else answers
+            raw = payload.get(field, ())
+            if not isinstance(raw, (list, tuple)):
+                continue
+            for item in raw:
+                try:
+                    reference = RecordReference.model_validate(item)
+                except (TypeError, ValueError):
+                    continue
+                target[reference.revision_id] = reference
+        return (
+            tuple(bundles[key] for key in sorted(bundles)),
+            tuple(answers[key] for key in sorted(answers)),
+        )
+
+    @staticmethod
+    def _escape_markdown(value: str) -> str:
+        return (
+            re.sub(r"([\\`*{}\[\]()#+.!_|<>~-])", r"\\\1", value)
+            .replace("\r", " ")
+            .replace("\n", " ")
+        )
+
+    @staticmethod
+    def _visual_citations(
+        ledger: WorkflowLedger, evidence_bundles: tuple[RecordReference, ...]
+    ) -> tuple[VisualCitationView, ...]:
+        """Project frozen visual transcriptions into report-visible citations."""
+
+        citations: dict[str, VisualCitationView] = {}
+        for bundle_ref in evidence_bundles:
+            try:
+                bundle = EvidenceBundle.model_validate_json(
+                    ledger.artifacts.read(bundle_ref.content_hash)
+                )
+            except (TypeError, ValueError):
+                continue
+            for item in bundle.items:
+                try:
+                    transcription = VisualTranscription.model_validate_json(
+                        ledger.artifacts.read(item.content_hash)
+                    )
+                except (TypeError, ValueError):
+                    continue
+                citations[transcription.revision_id] = VisualCitationView(
+                    citation_id=transcription.revision_id,
+                    source_id=transcription.source.entity_id,
+                    page=transcription.page,
+                    region=transcription.region,
+                    label="Visual transcription",
+                )
+        return tuple(citations[key] for key in sorted(citations))
+
+    def _freeze_source_inventory(
+        self,
+        ledger: WorkflowLedger,
+        run_id: Identifier,
+        result_id: Identifier,
+        result_spec: RecordReference,
+    ) -> RecordReference:
+        """Persist the exact source inventory that constrains this Assessment."""
+
+        resolved = self._result_spec_for(ledger, run_id, result_id)
+        if resolved is None:
+            raise ValueError("a ResultSpec is required before freezing source inventory")
+        proposal = self._latest_proposal(ledger, run_id)
+        trial = next(
+            (
+                item
+                for item in proposal.initialization.trials
+                if item.trial_id == resolved.result.trial_id
+            ),
+            None,
+        )
+        if trial is None:
+            raise ValueError("the Result Trial is absent from the frozen input inventory")
+        suffix = self._digest(f"{run_id}|{result_id}|{result_spec.content_hash}|source-inventory")
+        inventory = SourceInventoryRevision(
+            entity_id=f"source-inventory:{result_id.removeprefix('result:')}",
+            revision_id=f"revision:source-inventory-{suffix}",
+            dependencies=(Dependency(**result_spec.model_dump(), role="dependency:result-spec"),),
+            actor=ENGINE_ACTOR,
+            observed_at=datetime.now(UTC),
+            result_spec=result_spec,
+            sources=trial.inventory.sources,
+            coverage_limitations=trial.inventory.coverage_limitations,
+        )
+        return self._commit_frozen_artifact(
+            ledger,
+            scope=result_id,
+            operation="operation:source-inventory-frozen",
+            operation_key=f"idempotency:source-inventory-{suffix}",
+            entity_id=inventory.entity_id,
+            revision_id=inventory.revision_id,
+            artifact=inventory,
+            actor=ENGINE_ACTOR,
+            dependencies=inventory.dependencies,
+        )
+
+    def _freeze_evidence_policy(
+        self, ledger: WorkflowLedger, run_id: Identifier, result_id: Identifier
+    ) -> RecordReference:
+        """Freeze the policy identity required for a complete archive closure."""
+
+        policy_id = "policy:evidence-search-1.0.0"
+        policy_hash = canonical_hash({"policy_id": policy_id, "version": "1.0.0"})
+        policy = PolicyRelease(
+            entity_id=policy_id,
+            revision_id=f"revision:evidence-policy-{self._digest(policy_hash)}",
+            actor=ENGINE_ACTOR,
+            observed_at=datetime.now(UTC),
+            kind=PolicyKind.EVIDENCE_SEARCH_POLICY,
+            family_id="policy-family:evidence-search",
+            release_id="1.0.0",
+            canonical_content_hash=policy_hash,
+            required_schema_version=SCHEMA_VERSION,
+            inventory=(),
+        )
+        return self._commit_frozen_artifact(
+            ledger,
+            scope=result_id,
+            operation="operation:evidence-policy-frozen",
+            operation_key=f"idempotency:evidence-policy-{self._digest(policy_hash)}",
+            entity_id=policy.entity_id,
+            revision_id=policy.revision_id,
+            artifact=policy,
+            actor=ENGINE_ACTOR,
+        )
+
+    @staticmethod
+    def _verification_pins() -> dict[str, bytes]:
+        """Provide the installed schemas and packs needed for offline verification."""
+
+        package_root = Path(__file__).resolve().parents[1]
+        source_root = Path(__file__).resolve().parents[3]
+        pins: dict[str, bytes] = {}
+        pin_root = next(
+            (
+                candidate
+                for candidate in (package_root, source_root)
+                if (candidate / "schemas").is_dir() and (candidate / "packs").is_dir()
+            ),
+            None,
+        )
+        if pin_root is None:
+            raise FileNotFoundError("the installed verification schemas and packs are missing")
+        for path in sorted((pin_root / "schemas").glob("*.json")):
+            pins[f"schemas/{path.name}"] = path.read_bytes()
+        for kind in ("logic", "guidance"):
+            for path in sorted((pin_root / "packs" / kind).glob("*.yaml")):
+                pins[f"packs/{kind}/{path.name}"] = path.read_bytes()
+        return pins
 
     def _materialize_judgment_revisions(
         self,
@@ -3607,14 +3981,10 @@ class RunEngine:
             )
             domain_rule_ids = tuple(rule.id for rule in domain.judgment_rules)
             matched = tuple(
-                rule_id
-                for rule_id in evaluation.matched_rule_ids
-                if rule_id in domain_rule_ids
+                rule_id for rule_id in evaluation.matched_rule_ids if rule_id in domain_rule_ids
             )
             evaluated = tuple(
-                rule_id
-                for rule_id in evaluation.evaluated_rule_ids
-                if rule_id in domain_rule_ids
+                rule_id for rule_id in evaluation.evaluated_rule_ids if rule_id in domain_rule_ids
             )
             trace_suffix = self._digest(f"{assessment_digest}|trace|{domain.id}")
             trace = DecisionTrace(
@@ -3996,9 +4366,7 @@ class RunEngine:
             item.result.result_id: item.result.trial_id
             for item in proposal.initialization.result_specs
         }
-        issued_result_candidates = {
-            item.candidate_id: item for item in proposal.result_candidates
-        }
+        issued_result_candidates = {item.candidate_id: item for item in proposal.result_candidates}
         issued_outcome_targets = {
             item.target_id for item in proposal.initialization.manifest.outcome_target_specs
         }
@@ -4035,14 +4403,10 @@ class RunEngine:
                         "Run proposal contains a duplicate registry candidate selection"
                     )
                 seen_registry_candidates.add(selection.registry_candidate_id)
-                candidates = {
-                    item.candidate_id: item for item in proposal.registry_candidates
-                }
+                candidates = {item.candidate_id: item for item in proposal.registry_candidates}
                 candidate = candidates.get(selection.registry_candidate_id)
                 if candidate is None:
-                    raise ValueError(
-                        "Run proposal registry candidate was not issued by this Run"
-                    )
+                    raise ValueError("Run proposal registry candidate was not issued by this Run")
                 if candidate.trial_id != selection.trial_id:
                     raise ValueError(
                         "Run proposal registry candidate was not issued for the selected Trial"
@@ -4063,9 +4427,7 @@ class RunEngine:
                     and result_candidate.result_id is not None
                     and result_candidate.result_id != selection.result_id
                 ):
-                    raise ValueError(
-                        "Run proposal Result and candidate identify different Results"
-                    )
+                    raise ValueError("Run proposal Result and candidate identify different Results")
                 if (
                     selection.outcome_target_id is not None
                     and result_candidate.outcome_target_id != selection.outcome_target_id
@@ -4077,20 +4439,14 @@ class RunEngine:
             if selection.result_id is None:
                 if (
                     selection.result_candidate_id is not None
-                    and issued_result_candidates[
-                        selection.result_candidate_id
-                    ].result_id
+                    and issued_result_candidates[selection.result_candidate_id].result_id
                     is not None
                 ):
                     continue
                 continue
-            if (
-                issued_results.get(selection.result_id) != selection.trial_id
-                and not (
-                    selection.result_candidate_id is not None
-                    and issued_result_candidates[selection.result_candidate_id].status
-                    == "needs_input"
-                )
+            if issued_results.get(selection.result_id) != selection.trial_id and not (
+                selection.result_candidate_id is not None
+                and issued_result_candidates[selection.result_candidate_id].status == "needs_input"
             ):
                 raise ValueError("Run proposal Result was not issued for the selected Trial")
             if (
@@ -4150,9 +4506,7 @@ class RunEngine:
                 raise ValueError("Run proposal contains a duplicate ambiguity")
             seen.add(item.ambiguity_id)
             if item.ambiguity_id not in issued:
-                raise ValueError(
-                    "Run proposal ambiguity identifier was not issued by this Run"
-                )
+                raise ValueError("Run proposal ambiguity identifier was not issued by this Run")
             if item.ambiguity_id in issued:
                 original = issued[item.ambiguity_id]
                 if item.scope != original.scope:
@@ -4165,18 +4519,13 @@ class RunEngine:
                     raise ValueError(
                         "a resolved material Run proposal ambiguity requires a resolution"
                     )
-                if (
-                    item.resolved
-                    and original.detail.startswith("Multiple top-level PDFs found;")
-                ):
+                if item.resolved and original.detail.startswith("Multiple top-level PDFs found;"):
                     raise ValueError(
                         "primary-report ambiguity must be resolved by an explicit "
                         "trial.yaml primary_report declaration"
                     )
             elif item.resolved and item.material and not (item.resolution or "").strip():
-                raise ValueError(
-                    "a resolved material Run proposal ambiguity requires a resolution"
-                )
+                raise ValueError("a resolved material Run proposal ambiguity requires a resolution")
 
     @staticmethod
     def _merge_ambiguities(
@@ -4289,18 +4638,14 @@ class RunEngine:
                 return None
         return None
 
-    def _active_trial_ids(
-        self, ledger: WorkflowLedger, run_id: Identifier
-    ) -> set[Identifier]:
+    def _active_trial_ids(self, ledger: WorkflowLedger, run_id: Identifier) -> set[Identifier]:
         reconciliation = self._latest_reconciliation(ledger, run_id)
         if reconciliation is not None:
             return set(reconciliation.active_trial_ids)
         definition = self._confirmed_definition(ledger, run_id)
         return set(definition.trial_ids) if definition is not None else set()
 
-    def _active_result_ids(
-        self, ledger: WorkflowLedger, run_id: Identifier
-    ) -> set[Identifier]:
+    def _active_result_ids(self, ledger: WorkflowLedger, run_id: Identifier) -> set[Identifier]:
         reconciliation = self._latest_reconciliation(ledger, run_id)
         if reconciliation is not None:
             return set(reconciliation.active_result_ids)
@@ -4319,17 +4664,14 @@ class RunEngine:
         if definition is None:
             return None
         selected_trial_ids = self._active_trial_ids(ledger, run_id)
-        if (
-            any(
-                trial.status == "inventory_ready" and trial.trial_id in selected_trial_ids
-                for trial in proposal.initialization.trials
-            )
-            and not self._source_classification_complete(
-                proposal,
-                ledger,
-                events,
-                selected_trial_ids=selected_trial_ids,
-            )
+        if any(
+            trial.status == "inventory_ready" and trial.trial_id in selected_trial_ids
+            for trial in proposal.initialization.trials
+        ) and not self._source_classification_complete(
+            proposal,
+            ledger,
+            events,
+            selected_trial_ids=selected_trial_ids,
         ):
             return self._work_item(run_id, "sources", RunOperation.SUBMIT_SOURCE_CLASSIFICATION)
         if not selected_trial_ids:
@@ -4354,9 +4696,7 @@ class RunEngine:
             definition=definition,
         )
         if unresolved_trial is not None:
-            unresolved_result_id = self._issued_unresolved_result_id(
-                run_id, unresolved_trial
-            )
+            unresolved_result_id = self._issued_unresolved_result_id(run_id, unresolved_trial)
             return self._work_item(
                 run_id,
                 f"result:unresolved:{unresolved_trial.removeprefix('trial:')}",
@@ -4435,8 +4775,7 @@ class RunEngine:
             work_item_id=work_item_id,
             operation=operation,
             dependency_fingerprint=(
-                "sha256:"
-                + hashlib.sha256(f"{run_id}|{key}|{operation.value}".encode()).hexdigest()
+                "sha256:" + hashlib.sha256(f"{run_id}|{key}|{operation.value}".encode()).hexdigest()
             ),
             trial_id=scoped_trial_id,
             result_id=result_id,
@@ -4533,8 +4872,7 @@ class RunEngine:
             (
                 event.sequence
                 for event in events
-                if event.operation == "operation:result-invalidated"
-                and event.scope == result_id
+                if event.operation == "operation:result-invalidated" and event.scope == result_id
             ),
             default=0,
         )
@@ -4559,9 +4897,7 @@ class RunEngine:
             return ()
         active_ids = self._active_result_ids(ledger, run_id)
         ordered_ids = tuple(
-            result_id
-            for result_id in proposal.result_ids
-            if result_id in active_ids
+            result_id for result_id in proposal.result_ids if result_id in active_ids
         )
         ids = list(ordered_ids)
         ids.extend(sorted(active_ids - set(ordered_ids)))
@@ -4586,9 +4922,7 @@ class RunEngine:
                 ids.append(result_id)
         return tuple(ids)
 
-    def _issued_unresolved_result_id(
-        self, run_id: Identifier, trial_id: Identifier
-    ) -> Identifier:
+    def _issued_unresolved_result_id(self, run_id: Identifier, trial_id: Identifier) -> Identifier:
         digest = self._digest(f"{run_id}|unresolved-result|{trial_id}")
         return f"result:unresolved-{digest}"
 
@@ -4636,9 +4970,7 @@ class RunEngine:
                 raw_spec = payload.get("result_spec")
                 if isinstance(raw_spec, dict):
                     raw_result = raw_spec.get("result")
-                    if isinstance(raw_result, dict) and isinstance(
-                        raw_result.get("trial_id"), str
-                    ):
+                    if isinstance(raw_result, dict) and isinstance(raw_result.get("trial_id"), str):
                         raw_trial_id = raw_result.get("trial_id")
                         if isinstance(raw_trial_id, str):
                             return raw_trial_id
@@ -4688,10 +5020,7 @@ class RunEngine:
             question.id
             for question in logic.questions
             if question.id in domain.question_ids
-            and (
-                question.active_if is None
-                or evaluator._matches(question.active_if, {}, {}, {})
-            )
+            and (question.active_if is None or evaluator._matches(question.active_if, {}, {}, {}))
         )
         inactive_questions = tuple(
             question_id
@@ -4835,13 +5164,12 @@ class RunEngine:
         if lock_path is None:
             raise FileNotFoundError("the installed rob2.lock release contract is missing")
         raw = json.loads(lock_path.read_text(encoding="utf-8"))
+
         def content_hash(value: str) -> ContentHash:
             return "sha256:" + hashlib.sha256(value.encode()).hexdigest()
 
         parser = self._parser or LiteParseAdapter()
-        parser_configuration = getattr(
-            parser, "configuration", getattr(parser, "config", None)
-        )
+        parser_configuration = getattr(parser, "configuration", getattr(parser, "config", None))
         parser_identity = (
             f"{type(parser).__module__}.{type(parser).__qualname__}|"
             f"{getattr(parser, 'name', '')}|{getattr(parser, 'version', '')}|"
@@ -5134,9 +5462,10 @@ class RunEngine:
         """
 
         detail = f"Input reconciliation could not safely snapshot project inputs: {error}"
-        invalid_hash = "sha256:" + hashlib.sha256(
-            f"{run_id}|invalid-input-snapshot|{detail}".encode()
-        ).hexdigest()
+        invalid_hash = (
+            "sha256:"
+            + hashlib.sha256(f"{run_id}|invalid-input-snapshot|{detail}".encode()).hexdigest()
+        )
         ambiguity = RunProposalAmbiguity(
             ambiguity_id=f"ambiguity:{self._digest(f'{run_id}|{invalid_hash}|snapshot-error')}",
             scope=run_id,
@@ -5249,9 +5578,7 @@ class RunEngine:
             # confirmation is a supported retirement, not semantic drift.
             # Preserve the old proposal as history while removing that Trial
             # and its Results from the active scope.
-            missing_trials = set(existing.trial_ids) - self._input_trial_ids(
-                self._required_root()
-            )
+            missing_trials = set(existing.trial_ids) - self._input_trial_ids(self._required_root())
             if missing_trials and "declared Result references unknown Trial" in str(error):
                 # A Trial folder may have been renamed while its declared
                 # Result still carries the confirmed identity.  Re-inventory
@@ -5286,33 +5613,34 @@ class RunEngine:
                         if previous_reconciliation is not None
                         else definition.result_ids
                     )
-                    if self._trial_for_result(existing.initialization, result_id)
-                    in missing_trials
+                    if self._trial_for_result(existing.initialization, result_id) in missing_trials
                 }
-                active_trials = set(
-                    previous_reconciliation.active_trial_ids
-                    if previous_reconciliation is not None
-                    else definition.trial_ids
-                ) - missing_trials
-                active_results = set(
-                    previous_reconciliation.active_result_ids
-                    if previous_reconciliation is not None
-                    else definition.result_ids
-                ) - retired_results
+                active_trials = (
+                    set(
+                        previous_reconciliation.active_trial_ids
+                        if previous_reconciliation is not None
+                        else definition.trial_ids
+                    )
+                    - missing_trials
+                )
+                active_results = (
+                    set(
+                        previous_reconciliation.active_result_ids
+                        if previous_reconciliation is not None
+                        else definition.result_ids
+                    )
+                    - retired_results
+                )
                 proposal = existing.model_copy(
                     update={
                         "proposal_id": (
-                            "run-proposal:"
-                            f"{self._digest(f'{run_id}|{current_hash}|retired')}"
+                            f"run-proposal:{self._digest(f'{run_id}|{current_hash}|retired')}"
                         ),
                         "proposal_token": (
-                            "proposal-token:"
-                            f"{self._digest(f'{run_id}|{current_hash}|retired')}"
+                            f"proposal-token:{self._digest(f'{run_id}|{current_hash}|retired')}"
                         ),
                         "input_snapshot_hash": current_hash,
-                        "trial_ids": tuple(
-                            sorted(self._input_trial_ids(self._required_root()))
-                        ),
+                        "trial_ids": tuple(sorted(self._input_trial_ids(self._required_root()))),
                         "result_ids": tuple(sorted(active_results)),
                     }
                 )
@@ -5360,12 +5688,10 @@ class RunEngine:
                 proposal = existing.model_copy(
                     update={
                         "proposal_id": (
-                            "run-proposal:"
-                            f"{self._digest(f'{run_id}|{current_hash}|ambiguous')}"
+                            f"run-proposal:{self._digest(f'{run_id}|{current_hash}|ambiguous')}"
                         ),
                         "proposal_token": (
-                            "proposal-token:"
-                            f"{self._digest(f'{run_id}|{current_hash}|ambiguous')}"
+                            f"proposal-token:{self._digest(f'{run_id}|{current_hash}|ambiguous')}"
                         ),
                         "input_snapshot_hash": current_hash,
                         "ambiguities": existing.ambiguities + (ambiguity,),
@@ -5440,9 +5766,7 @@ class RunEngine:
         )
         refreshed = refreshed.model_copy(
             update={
-                "result_ids": tuple(
-                    dict.fromkeys(refreshed.result_ids + resolved_result_ids)
-                ),
+                "result_ids": tuple(dict.fromkeys(refreshed.result_ids + resolved_result_ids)),
                 # Confirmation is immutable, but accepted proposal selections
                 # remain useful orientation metadata after a reconciliation.
                 "selections": tuple(
@@ -5558,19 +5882,15 @@ class RunEngine:
             refreshed = existing.model_copy(
                 update={
                     "proposal_id": (
-                        "run-proposal:"
-                        f"{self._digest(f'{run_id}|{current_hash}|ambiguous')}"
+                        f"run-proposal:{self._digest(f'{run_id}|{current_hash}|ambiguous')}"
                     ),
                     "proposal_token": (
-                        "proposal-token:"
-                        f"{self._digest(f'{run_id}|{current_hash}|ambiguous')}"
+                        f"proposal-token:{self._digest(f'{run_id}|{current_hash}|ambiguous')}"
                     ),
                     "input_snapshot_hash": current_hash,
                     "ambiguities": tuple(
-                        dict.fromkeys(
-                            existing.ambiguities + tuple(material_ambiguities)
-                        )
-                    )
+                        dict.fromkeys(existing.ambiguities + tuple(material_ambiguities))
+                    ),
                 }
             )
 
@@ -5579,9 +5899,7 @@ class RunEngine:
         # removed items never re-enter active outputs accidentally.
         active_trial_ids = (previous_active_trials - retired_trial_ids) | added_trial_ids
         active_trial_ids &= new_trial_ids
-        refreshed_result_ids = {
-            spec.result.result_id for spec in initialization.result_specs
-        }
+        refreshed_result_ids = {spec.result.result_id for spec in initialization.result_specs}
         refreshed_result_ids.update(
             candidate.result_id
             for candidate in initialization.result_candidates
@@ -5616,13 +5934,8 @@ class RunEngine:
             for candidate in initialization.result_candidates:
                 if candidate.trial_id == trial_id and candidate.result_id is not None:
                     active_result_ids.add(candidate.result_id)
-            if not any(
-                spec.result.trial_id == trial_id
-                for spec in initialization.result_specs
-            ):
-                trial = next(
-                    item for item in initialization.trials if item.trial_id == trial_id
-                )
+            if not any(spec.result.trial_id == trial_id for spec in initialization.result_specs):
+                trial = next(item for item in initialization.trials if item.trial_id == trial_id)
                 if trial.status == "trial_failed":
                     diagnostic_id = self._diagnostic_result_id(run_id, trial_id)
                     active_result_ids.add(diagnostic_id)
@@ -5634,9 +5947,7 @@ class RunEngine:
         events = self._events_for_run(ledger, run_id)
         invalidated_result_ids: list[Identifier] = []
         diagnostic_result_ids: list[Identifier] = []
-        trial_status = {
-            trial.trial_id: trial.status for trial in initialization.trials
-        }
+        trial_status = {trial.trial_id: trial.status for trial in initialization.trials}
         for item in projection.results:
             if material_ambiguities:
                 # A blocked mapping must not mutate active scope or invalidate
@@ -5679,9 +5990,7 @@ class RunEngine:
             added_trial_ids=() if material_ambiguities else tuple(sorted(added_trial_ids)),
             retired_trial_ids=() if material_ambiguities else tuple(sorted(retired_trial_ids)),
             added_result_ids=() if material_ambiguities else tuple(sorted(added_result_ids)),
-            retired_result_ids=(
-                () if material_ambiguities else tuple(sorted(retired_result_ids))
-            ),
+            retired_result_ids=(() if material_ambiguities else tuple(sorted(retired_result_ids))),
             affected_trial_ids=tuple(sorted(affected_trial_ids)),
             affected_source_ids=tuple(sorted(affected_source_ids)),
             invalidated_result_ids=tuple(sorted(invalidated_result_ids)),
@@ -5725,9 +6034,7 @@ class RunEngine:
         """
 
         historical_result_specs = historical_result_specs or {}
-        previous_specs = {
-            spec.result.result_id: spec for spec in previous.result_specs
-        }
+        previous_specs = {spec.result.result_id: spec for spec in previous.result_specs}
         current_specs = {spec.result.result_id: spec for spec in current.result_specs}
         previous_mappings = RunEngine._result_mappings(previous)
         current_mappings = RunEngine._result_mappings(current)
@@ -5753,9 +6060,7 @@ class RunEngine:
                 )
                 continue
             if previous_trial is not None and current_trial != previous_trial:
-                details.append(
-                    f"Confirmed Result {result_id} was remapped to a different Trial."
-                )
+                details.append(f"Confirmed Result {result_id} was remapped to a different Trial.")
                 continue
             current_spec = current_specs.get(result_id)
             previous_spec = previous_specs.get(result_id)
@@ -5773,9 +6078,7 @@ class RunEngine:
             if result_id in previous_result_ids:
                 continue
             if current_trial not in added_trial_ids:
-                details.append(
-                    f"Result {result_id} was added to an existing confirmed Trial."
-                )
+                details.append(f"Result {result_id} was added to an existing confirmed Trial.")
         return tuple(details)
 
     @staticmethod
@@ -5811,9 +6114,7 @@ class RunEngine:
         old_sources = self._sources_by_trial(previous).get(trial_id, {})
         new_sources = self._sources_by_trial(current).get(trial_id, {})
         sources = tuple(old_sources.values()) + tuple(
-            source
-            for source_id, source in new_sources.items()
-            if source_id not in old_sources
+            source for source_id, source in new_sources.items() if source_id not in old_sources
         )
         locators = {
             spec.result.source_locator
@@ -5866,9 +6167,7 @@ class RunEngine:
         # Source identity and let us recover citations even when the Result
         # locator is a free-form page/table description.
         parse_to_source = {
-            parse.parse_id: source.source_id
-            for source in sources
-            for parse in source.parse_records
+            parse.parse_id: source.source_id for source in sources for parse in source.parse_records
         }
         evidence_citations: set[Identifier] = set()
         for event in events:
@@ -5889,8 +6188,7 @@ class RunEngine:
         # Source.  Supporting-document additions remain non-transitive unless
         # they are explicitly cited by the Result or its evidence records.
         return any(
-            source.source_id in affected_source_ids
-            and SourceRole.PRIMARY_REPORT in source.roles
+            source.source_id in affected_source_ids and SourceRole.PRIMARY_REPORT in source.roles
             for source in sources
         )
 
@@ -5966,8 +6264,10 @@ class RunEngine:
             exact_ids = set(old_ids).intersection(current_ids)
             unmatched_old = set(old_ids) - exact_ids
             unmatched_current = set(current_ids) - exact_ids
-            if unmatched_old and unmatched_current and (
-                len(unmatched_old) > 1 or len(unmatched_current) > 1
+            if (
+                unmatched_old
+                and unmatched_current
+                and (len(unmatched_old) > 1 or len(unmatched_current) > 1)
             ):
                 details.append(
                     "Trial content fingerprints are shared by multiple unmatched "
@@ -6073,8 +6373,10 @@ class RunEngine:
                 unmatched_current_count = len(
                     [source for source in current_group if source.relative_path not in by_path]
                 )
-                if unmatched_old_count and unmatched_current_count and (
-                    unmatched_old_count > 1 or unmatched_current_count > 1
+                if (
+                    unmatched_old_count
+                    and unmatched_current_count
+                    and (unmatched_old_count > 1 or unmatched_current_count > 1)
                 ):
                     details.append(
                         f"Sources in {current_trial_id} share a duplicate content hash "
@@ -6123,9 +6425,7 @@ class RunEngine:
                 )
 
         unmatched_old_trials = set(old_trials) - set(trial_pairs.values())
-        unmatched_current_trials = {
-            trial.trial_id for trial in current.trials
-        } - set(trial_pairs)
+        unmatched_current_trials = {trial.trial_id for trial in current.trials} - set(trial_pairs)
         if unmatched_old_trials and unmatched_current_trials:
             details.append(
                 "Trial folders were removed and added without a unique content-hash "
@@ -6181,8 +6481,7 @@ class RunEngine:
         """Return exact Result-to-Trial mappings in one initialization."""
 
         mappings = {
-            spec.result.result_id: spec.result.trial_id
-            for spec in initialization.result_specs
+            spec.result.result_id: spec.result.trial_id for spec in initialization.result_specs
         }
         mappings.update(
             {
@@ -6245,9 +6544,7 @@ class RunEngine:
             )
             current_candidate_ids.add(candidate_id)
 
-        previous_explicit_ids = {
-            spec.result.result_id for spec in previous.result_specs
-        }
+        previous_explicit_ids = {spec.result.result_id for spec in previous.result_specs}
         current_result_ids = self._result_mappings(
             current.model_copy(update={"result_candidates": tuple(current_candidates)})
         )
@@ -6290,9 +6587,7 @@ class RunEngine:
         initialization: ProjectInitialization,
     ) -> dict[Identifier, dict[Identifier, Any]]:
         return {
-            trial.trial_id: {
-                source.source_id: source for source in trial.inventory.sources
-            }
+            trial.trial_id: {source.source_id: source for source in trial.inventory.sources}
             for trial in initialization.trials
         }
 
@@ -6388,9 +6683,7 @@ class RunEngine:
         for result_id in invalidated_result_ids:
             trial_id = self._trial_for_result(record.proposal.initialization, result_id)
             if trial_id is None:
-                trial_id = self._trial_for_result(
-                    record.proposal.initialization, result_id
-                )
+                trial_id = self._trial_for_result(record.proposal.initialization, result_id)
             transitions.append(
                 self._transition(
                     scope=result_id,
@@ -6587,9 +6880,7 @@ class RunEngine:
                 )
             )
             candidates = [
-                item
-                for item in old_fingerprints.get(fingerprint, ())
-                if item not in used_old
+                item for item in old_fingerprints.get(fingerprint, ()) if item not in used_old
             ]
             if len(candidates) == 1:
                 trial_map[trial.trial_id] = candidates[0]
@@ -6613,9 +6904,7 @@ class RunEngine:
             # historical ID reserved and allocate a deterministic replacement
             # for such an unmatched document rather than emitting duplicate
             # canonical unit IDs during evidence indexing.
-            allocated_source_ids: set[Identifier] = {
-                source.source_id for source in old_sources
-            }
+            allocated_source_ids: set[Identifier] = {source.source_id for source in old_sources}
             remapped_by_current_id: dict[Identifier, Any] = {}
             source_map: dict[Identifier, Identifier] = {}
             ordered_sources = sorted(
@@ -6639,8 +6928,7 @@ class RunEngine:
                     if source.source_id in allocated_source_ids:
                         digest = hashlib.sha256(
                             (
-                                f"{trial_id}|{source.relative_path}|"
-                                f"{source.artifact_hash or ''}"
+                                f"{trial_id}|{source.relative_path}|{source.artifact_hash or ''}"
                             ).encode()
                         ).hexdigest()[:24]
                         candidate: Identifier = f"source:reconciled-{digest}"
@@ -6679,8 +6967,7 @@ class RunEngine:
             # ordering is part of the user-facing proposal even though it must
             # not influence identity allocation.
             remapped_sources = tuple(
-                remapped_by_current_id[source.source_id]
-                for source in trial.inventory.sources
+                remapped_by_current_id[source.source_id] for source in trial.inventory.sources
             )
             inventory = trial.inventory.model_copy(
                 update={"trial_id": trial_id, "sources": remapped_sources}
@@ -6702,9 +6989,7 @@ class RunEngine:
                 update={
                     "result": spec.result.model_copy(
                         update={
-                            "trial_id": trial_map.get(
-                                spec.result.trial_id, spec.result.trial_id
-                            )
+                            "trial_id": trial_map.get(spec.result.trial_id, spec.result.trial_id)
                         }
                     )
                 }
@@ -6727,9 +7012,7 @@ class RunEngine:
                 "review_findings": remapped_findings,
                 "registry_candidates": tuple(
                     item.model_copy(
-                        update={
-                            "trial_id": trial_map.get(item.trial_id, item.trial_id)
-                        }
+                        update={"trial_id": trial_map.get(item.trial_id, item.trial_id)}
                     )
                     for item in current.registry_candidates
                 ),
@@ -6884,9 +7167,7 @@ class RunEngine:
         for path in sorted(root.rglob("*")):
             if path.is_symlink():
                 resolved = path.resolve()
-                raise ValueError(
-                    f"project input symlinks are not permitted: {path} -> {resolved}"
-                )
+                raise ValueError(f"project input symlinks are not permitted: {path} -> {resolved}")
             if not path.resolve().is_relative_to(root):
                 raise ValueError(f"project input escapes project root: {path}")
             relative = path.relative_to(root)
@@ -6906,9 +7187,12 @@ class RunEngine:
             except OSError as error:
                 raise ValueError(f"unable to snapshot project input {relative}") from error
             entries.append((relative.as_posix(), digest))
-        return "sha256:" + hashlib.sha256(
-            json.dumps(entries, sort_keys=True, separators=(",", ":")).encode()
-        ).hexdigest()
+        return (
+            "sha256:"
+            + hashlib.sha256(
+                json.dumps(entries, sort_keys=True, separators=(",", ":")).encode()
+            ).hexdigest()
+        )
 
     def _new_run_id(self, root: Path, event_count: int) -> Identifier:
         return f"run:{self._digest(f'{root}|{event_count}')}"
@@ -6929,6 +7213,12 @@ class RunEngine:
         dependencies: tuple[DependencyInput, ...] = (),
         supersedes_revision_id: Identifier | None = None,
     ) -> Transition:
+        if (
+            operation == "operation:result-diagnostic-ready"
+            and isinstance(artifact, _ResultDiagnosticRecord)
+            and artifact.report_root is None
+        ):
+            artifact = self._materialize_diagnostic_bundle(artifact)
         return Transition(
             scope=scope,
             operation=operation,
@@ -7074,9 +7364,7 @@ class RunEngine:
     ) -> PrepareRunResponse:
         detail = str(error)
         if "unsupported RoB 2" in detail or "unsupported method" in detail:
-            code: Literal["unsupported_method", "invalid_configuration"] = (
-                "unsupported_method"
-            )
+            code: Literal["unsupported_method", "invalid_configuration"] = "unsupported_method"
             recovery = (
                 "Edit rob2.yaml to use RoB 2 2019 individually-randomized parallel assignment.",
                 "Start a new Run after correcting the project method configuration.",
@@ -7121,9 +7409,7 @@ class RunEngine:
                 continue
             for nested in path.rglob("*"):
                 if nested.is_symlink():
-                    raise ValueError(
-                        f"project path symlinks are not permitted: {nested}"
-                    )
+                    raise ValueError(f"project path symlinks are not permitted: {nested}")
                 if not nested.resolve().is_relative_to(root):
                     raise ValueError(f"project path escapes project root: {nested}")
 

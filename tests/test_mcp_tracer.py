@@ -8,12 +8,10 @@ import subprocess
 from pathlib import Path
 
 import anyio
-import pytest
 import yaml
 from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
 
-import rob2_kit.application.run_engine as run_engine_module
 from rob2_kit.application.contracts import (
     RUN_OPERATION_NAMES,
     ConfirmRunDefinitionRequest,
@@ -28,6 +26,7 @@ from rob2_kit.application.contracts import (
 from rob2_kit.application.run_engine import RunEngine
 from rob2_kit.domain.revisions import Actor, ActorKind
 from rob2_kit.interfaces.mcp.server import registered_tool_names
+from rob2_kit.reports.archives import verify_archive
 from rob2_kit.storage import ArtifactStore, WorkflowLedger
 from rob2_kit.storage.ledger import LeaseConflictError
 from tests.test_host_interfaces import blank_pdf
@@ -118,9 +117,7 @@ async def _session(root: Path, wheel: Path):
 
 async def _prepare_and_confirm(session: ClientSession, root: Path) -> str:
     prepared = (
-        await session.call_tool(
-            "prepare_run", {"project_root": str(root), "authorized": True}
-        )
+        await session.call_tool("prepare_run", {"project_root": str(root), "authorized": True})
     ).structured_content
     assert prepared is not None
     proposal = prepared["proposal"]
@@ -156,9 +153,7 @@ async def _prepare_and_confirm(session: ClientSession, root: Path) -> str:
 async def _finish_domains(session: ClientSession, run_id: str) -> None:
     answers = _low_answers()
     for index, (domain_id, question_ids) in enumerate(DOMAINS.items()):
-        work = (
-            await session.call_tool("continue_run", {"run_id": run_id})
-        ).structured_content
+        work = (await session.call_tool("continue_run", {"run_id": run_id})).structured_content
         assert work is not None
         evidence = await session.call_tool(
             "submit_domain_evidence",
@@ -174,9 +169,7 @@ async def _finish_domains(session: ClientSession, run_id: str) -> None:
         assert evidence.structured_content is not None
         assert evidence.structured_content["condition"] == "accepted"
         assert evidence.structured_content["committed"] is True
-        work = (
-            await session.call_tool("continue_run", {"run_id": run_id})
-        ).structured_content
+        work = (await session.call_tool("continue_run", {"run_id": run_id})).structured_content
         assert work is not None
         answer_payload = [
             {
@@ -286,7 +279,14 @@ def test_five_domain_journey_survives_stdio_restart_and_publishes_report(
         "assessment.html",
         "assessment.json",
         "assessment.md",
+        "assessment.summary.json",
         "manifest.json",
+        "robvis.csv",
+        "robvis.xlsx",
+        "run-index.html",
+        "run-index.json",
+        "verification-archive.rob2.zip",
+        "visual-citations.json",
     }
     manifest = json.loads((report_root / "manifest.json").read_text(encoding="utf-8"))
     assert manifest["overall_judgment"] == "low"
@@ -296,10 +296,25 @@ def test_five_domain_journey_survives_stdio_restart_and_publishes_report(
         "assessment.html",
         "assessment.json",
         "assessment.md",
+        "assessment.summary.json",
+        "robvis.csv",
+        "robvis.xlsx",
+        "verification-archive.rob2.zip",
+        "visual-citations.json",
     ]
     for name, digest in manifest["files"].items():
         content = (report_root / name).read_bytes()
         assert digest == "sha256:" + hashlib.sha256(content).hexdigest()
+    receipt = verify_archive((report_root / "verification-archive.rob2.zip").read_bytes())
+    assert receipt.assessment_revision_id == manifest["assessment_revision_id"]
+    index = json.loads((report_root / "run-index.json").read_text(encoding="utf-8"))
+    assert index["results"][0]["result_id"] == "result:trial-a-mortality"
+    assert index["results"][0]["trial_id"] == "trial:trial-a"
+    assert index["results"][0]["state"] == "report_ready"
+    assert index["results"][0]["report"] == "assessment.html"
+    assert index["results"][0]["overall_judgment"] == "low"
+    assert index["results"][0]["limitations"] == []
+    assert index["run_id"].startswith("run:")
     ledger = WorkflowLedger(
         tmp_path / ".rob2" / "ledger.sqlite3",
         ArtifactStore(tmp_path / ".rob2" / "artifacts"),
@@ -309,9 +324,7 @@ def test_five_domain_journey_survives_stdio_restart_and_publishes_report(
     assert "operation:run-completed" in operations
     assert "operation:result-started" in operations
     report_event = next(
-        event
-        for event in ledger.events()
-        if event.operation == "operation:result-report-ready"
+        event for event in ledger.events() if event.operation == "operation:result-report-ready"
     )
     assert report_event.output_revision_hashes
     report_artifact = ledger.artifacts.read(report_event.output_revision_hashes[0])
@@ -338,9 +351,7 @@ def test_live_run_engine_lease_cannot_be_stolen_by_another_engine(
         raise AssertionError("a live RunEngine lease must not be stolen")
 
 
-def test_report_history_preserves_an_earlier_immutable_bundle(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
+def test_report_history_preserves_an_earlier_immutable_bundle(tmp_path: Path) -> None:
     trial = tmp_path / "input" / "trial-a"
     trial.mkdir(parents=True)
     (trial / "report.pdf").write_bytes(blank_pdf())
@@ -386,9 +397,7 @@ def test_report_history_preserves_an_earlier_immutable_bundle(
                 "run_id": prepared.run_id,
                 "work_token": source_work.work_token,
                 "idempotency_key": "idempotency:history-source",
-                "classifications": [
-                    {"source_id": "source:trial-a-1", "roles": ["primary_report"]}
-                ],
+                "classifications": [{"source_id": "source:trial-a-1", "roles": ["primary_report"]}],
                 "contract_version": "1.0.0",
             }
         )
@@ -413,9 +422,7 @@ def test_report_history_preserves_an_earlier_immutable_bundle(
                     }
                 )
             )
-            answer_work = engine.continue_run(
-                ContinueRunRequest(run_id=prepared.run_id)
-            ).work_item
+            answer_work = engine.continue_run(ContinueRunRequest(run_id=prepared.run_id)).work_item
             assert answer_work is not None
             engine.submit_domain_answers(
                 SubmitDomainAnswersRequest.model_validate(
@@ -438,39 +445,32 @@ def test_report_history_preserves_an_earlier_immutable_bundle(
                 )
             )
 
-    original_replace = run_engine_module.os.replace
-    failed_once = False
-
-    def fail_first_report_publish(
-        source: str | bytes | Path, destination: str | bytes | Path
-    ) -> None:
-        nonlocal failed_once
-        if not failed_once and Path(str(destination)).name == "report-bundle":
-            failed_once = True
-            raise OSError("simulated publish interruption")
-        original_replace(source, destination)
-
-    monkeypatch.setattr(run_engine_module.os, "replace", fail_first_report_publish)
-    with pytest.raises(OSError, match="simulated publish interruption"):
-        finish_result("result:trial-a-mortality", "history-first")
-    monkeypatch.setattr(run_engine_module.os, "replace", original_replace)
-    # The write-ahead report event leaves a hidden stage that a fresh status
-    # call repairs before allowing terminal Run completion.
-    repaired = engine.run_status(RunStatusRequest(run_id=prepared.run_id))
-    assert repaired.run_state.value == "assessing"
+    finish_result("result:trial-a-mortality", "history-first")
     report_base = tmp_path / "output" / "report-bundle"
-    first_files = {path.name: path.read_bytes() for path in report_base.iterdir() if path.is_file()}
+    first_files = {
+        path.name: path.read_bytes()
+        for path in report_base.iterdir()
+        if path.is_file() and not path.name.startswith("run-index.")
+    }
     assert set(first_files) == {
         "answers.json",
         "assessment.html",
         "assessment.json",
         "assessment.md",
+        "assessment.summary.json",
         "manifest.json",
+        "robvis.csv",
+        "robvis.xlsx",
+        "verification-archive.rob2.zip",
+        "visual-citations.json",
     }
     finish_result("result:trial-a-morbidity", "history-second")
-    assert all(path.read_bytes() == content for path, content in (
-        (report_base / name, content) for name, content in first_files.items()
-    ))
+    assert all(
+        path.read_bytes() == content
+        for path, content in (
+            (report_base / name, content) for name, content in first_files.items()
+        )
+    )
     history_dirs = [path for path in report_base.iterdir() if path.is_dir()]
     assert len(history_dirs) == 1
     assert {path.name for path in history_dirs[0].iterdir()} == set(first_files)

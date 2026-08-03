@@ -6,7 +6,7 @@ import json
 from pathlib import Path
 from zipfile import ZipFile
 
-from rob2_kit.reports import AssessmentView, DomainView, ReportProjector
+from rob2_kit.reports import AssessmentView, DomainView, ReportProjector, VisualCitationView
 
 
 def assessment_view() -> AssessmentView:
@@ -75,9 +75,9 @@ def test_distributable_prompt_injection_and_markup_are_inert() -> None:
     )
 
     for payload in payloads:
-        rendered = ReportProjector(
-            assessment_view().model_copy(update={"trial": payload})
-        ).html().decode()
+        rendered = (
+            ReportProjector(assessment_view().model_copy(update={"trial": payload})).html().decode()
+        )
         assert html.escape(payload) in rendered
         assert "<script>" not in rendered
         assert 'href="javascript:' not in rendered
@@ -122,8 +122,63 @@ def test_summary_is_a_small_projection_of_the_same_revision() -> None:
     }
 
 
+def test_bundle_files_are_complete_and_derived_from_the_canonical_assessment() -> None:
+    projector = ReportProjector(assessment_view())
+
+    files = projector.bundle_files()
+
+    assert set(files) == {
+        "assessment.html",
+        "assessment.json",
+        "assessment.md",
+        "assessment.summary.json",
+        "robvis.csv",
+        "robvis.xlsx",
+        "visual-citations.json",
+    }
+    assert files["assessment.json"] == projector.json()
+    assert files["assessment.html"] == projector.html()
+    assert files["assessment.md"] == projector.markdown()
+    assert files["assessment.summary.json"] == projector.summary()
+    assert files["robvis.csv"] == projector.robvis_csv()
+    assert files["robvis.xlsx"] == projector.xlsx()
+    assert json.loads(files["visual-citations.json"]) == {
+        "assessment_revision_id": "revision:assessment-1",
+        "visual_citations": [],
+    }
+
+
+def test_visual_citations_are_preserved_in_every_human_audit_projection() -> None:
+    assessment = assessment_view().model_copy(
+        update={
+            "visual_citations": (
+                VisualCitationView(
+                    citation_id="revision:visual-1",
+                    source_id="source:report",
+                    page=2,
+                    region=(1.0, 2.0, 3.0, 4.0),
+                    label="Primary-outcome table",
+                ),
+            )
+        }
+    )
+    projector = ReportProjector(assessment)
+
+    assert json.loads(projector.bundle_files()["visual-citations.json"])["visual_citations"] == [
+        {
+            "citation_id": "revision:visual-1",
+            "label": "Primary-outcome table",
+            "page": 2,
+            "region": [1.0, 2.0, 3.0, 4.0],
+            "source_id": "source:report",
+        }
+    ]
+    assert "Primary-outcome table" in projector.html().decode()
+    assert "Primary\\-outcome table" in projector.markdown().decode()
+
+
 def test_spreadsheet_exports_neutralize_formula_cells() -> None:
-    hostile = assessment_view().model_copy(update={"trial": "=HYPERLINK(\"bad\")"})
+    hostile = assessment_view().model_copy(update={"trial": '=HYPERLINK("bad")'})
     projector = ReportProjector(hostile)
 
     csv_text = projector.robvis_csv().decode("utf-8-sig")
@@ -146,14 +201,11 @@ def test_all_formats_match_golden_hashes() -> None:
         "xlsx": projector.xlsx(),
     }
 
-    assert {
-        name: hashlib.sha256(content).hexdigest()
-        for name, content in outputs.items()
-    } == {
-        "json": "790ec38413f41d7740f81b2e3fed9c38db185180220e1fadcea08e120cbe3e5d",
+    assert {name: hashlib.sha256(content).hexdigest() for name, content in outputs.items()} == {
+        "json": "9973e8164062863d79298b59e9cfa14bcafb7f2ac8f5e6a14e23ccc56a72b87c",
         "summary": "248b0cd8e9afc6e89cf5126536c4f8576896ff0cc4eb7b9f0b4dd686a0be1e78",
-        "html": "671e41730490096def3a0d92e45e4866ea39589558664ea9a786ff5ad770b001",
-        "markdown": "41038b718e6526e25cf0b2682c2a3e176c133225de119189e22223e485297b53",
+        "html": "b27f2b7380a7a773cc0b0542ed9164a207bcd1d47530e8cd9bd7af1fb7436969",
+        "markdown": "e2c05ce86bc474ee54be713577640132b16bde5b8a533a0f108b574de509e28e",
         "csv": "c61ac51a9d471a6354be5a37af0e809f05c778f7990d5334c21d5c2a90285285",
         "xlsx": "b449a650c57a69d6f430c77e761cc6aa504dfc2b6e10c3fe564383c29da5f7b8",
     }

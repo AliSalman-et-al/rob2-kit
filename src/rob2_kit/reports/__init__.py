@@ -42,6 +42,14 @@ class DomainView(ReportModel):
     rationale: str = Field(min_length=1)
 
 
+class VisualCitationView(ReportModel):
+    citation_id: Identifier
+    source_id: Identifier
+    page: int = Field(ge=1)
+    region: tuple[float, float, float, float]
+    label: str = Field(min_length=1)
+
+
 class AssessmentView(ReportModel):
     """Resolved, presentation-safe view of one immutable Assessment revision."""
 
@@ -54,6 +62,7 @@ class AssessmentView(ReportModel):
     effect_of_interest: str = Field(min_length=1)
     overall_judgment: str = Field(pattern=r"^(low|some_concerns|high)$")
     domains: tuple[DomainView, ...] = Field(min_length=1)
+    visual_citations: tuple[VisualCitationView, ...] = ()
     signed_off: bool
 
 
@@ -71,8 +80,7 @@ class ReportProjector:
         value = {
             "assessment_revision_id": self.assessment.assessment_revision_id,
             "domain_counts": {
-                judgment: counts[judgment]
-                for judgment in ("high", "low", "some_concerns")
+                judgment: counts[judgment] for judgment in ("high", "low", "some_concerns")
             },
             "overall_judgment": self.assessment.overall_judgment,
             "result_id": self.assessment.result_id,
@@ -84,15 +92,22 @@ class ReportProjector:
         assessment = self.assessment
         domain_rows = "".join(
             "<tr>"
-            f"<th scope=\"row\">{html.escape(domain.label)}</th>"
+            f'<th scope="row">{html.escape(domain.label)}</th>'
             f"<td>{html.escape(_display_judgment(domain.judgment))}</td>"
             f"<td>{html.escape(domain.rationale)}</td>"
             "</tr>"
             for domain in assessment.domains
         )
+        visual_citations = "".join(
+            "<li>"
+            f"{html.escape(citation.label)} — {html.escape(citation.source_id)}, "
+            f"page {citation.page}, region {html.escape(str(citation.region))}"
+            "</li>"
+            for citation in assessment.visual_citations
+        )
         document = (
-            "<!doctype html><html lang=\"en\"><head><meta charset=\"utf-8\">"
-            "<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">"
+            '<!doctype html><html lang="en"><head><meta charset="utf-8">'
+            '<meta name="viewport" content="width=device-width,initial-scale=1">'
             "<title>RoB 2 assessment report</title></head><body>"
             "<main><h1>RoB 2 assessment report</h1>"
             f"<p><strong>{_PREVIEW_LABEL}</strong>: not a public-v1 release. "
@@ -109,6 +124,8 @@ class ReportProjector:
             f"{html.escape(_display_judgment(assessment.overall_judgment))}</p>"
             f"<p><strong>Status:</strong> "
             f"{'Signed off' if assessment.signed_off else 'Unsigned draft'}</p>"
+            "<h2>Visual citations</h2>"
+            f"<ul>{visual_citations}</ul>"
             "</main></body></html>\n"
         )
         return document.encode()
@@ -145,6 +162,15 @@ class ReportProjector:
                 "",
             ]
         )
+        lines.extend(["", "## Visual citations", ""])
+        lines.extend(
+            "- "
+            f"{_escape_markdown(citation.label)} — "
+            f"{_escape_markdown(citation.source_id)}, page {citation.page}, "
+            f"region {_escape_markdown(str(citation.region))}"
+            for citation in assessment.visual_citations
+        )
+        lines.append("")
         return "\n".join(lines).encode()
 
     def robvis_csv(self) -> bytes:
@@ -194,10 +220,7 @@ class ReportProjector:
                 self.assessment.assessment_revision_id,
                 _spreadsheet_cell(self.assessment.trial),
                 self.assessment.result_id,
-                *(
-                    _display_judgment(domain.judgment)
-                    for domain in self.assessment.domains
-                ),
+                *(_display_judgment(domain.judgment) for domain in self.assessment.domains),
                 _display_judgment(self.assessment.overall_judgment),
             ]
         )
@@ -205,18 +228,38 @@ class ReportProjector:
         workbook.save(raw)
         return _normalize_zip(raw.getvalue())
 
+    def bundle_files(self) -> dict[str, bytes]:
+        """Return every report-format projection from this exact Assessment view.
+
+        The mapping is intentionally the sole format boundary used by report
+        materializers.  This keeps HTML, machine-readable exports, and visual
+        citation metadata tied to one immutable assessment identity.
+        """
+
+        return {
+            "assessment.html": self.html(),
+            "assessment.json": self.json(),
+            "assessment.md": self.markdown(),
+            "assessment.summary.json": self.summary(),
+            "robvis.csv": self.robvis_csv(),
+            "robvis.xlsx": self.xlsx(),
+            "visual-citations.json": canonical_json_bytes(
+                {
+                    "assessment_revision_id": self.assessment.assessment_revision_id,
+                    "visual_citations": [
+                        citation.model_dump(mode="json")
+                        for citation in self.assessment.visual_citations
+                    ],
+                }
+            )
+            + b"\n",
+        }
+
 
 def latest_assessment_view(ledger: WorkflowLedger) -> AssessmentView:
     """Resolve the current canonical Assessment revision through its exact references."""
-    current = {
-        revision.revision_id: revision
-        for revision in ledger.current_revisions()
-    }
-    events = {
-        event.revision_id: event
-        for event in ledger.events()
-        if event.revision_id in current
-    }
+    current = {revision.revision_id: revision for revision in ledger.current_revisions()}
+    events = {event.revision_id: event for event in ledger.events() if event.revision_id in current}
     assessments: list[tuple[int, AssessmentRevision]] = []
     for revision_id, event in events.items():
         content = ledger.artifacts.read(current[revision_id].artifact_hash)
@@ -229,9 +272,7 @@ def latest_assessment_view(ledger: WorkflowLedger) -> AssessmentView:
     if not assessments:
         raise ValueError("project has no current canonical Assessment revision")
     _, assessment = max(assessments, key=lambda item: item[0])
-    result_spec = _load_reference(
-        ledger, current, assessment.result_spec, ResultSpecRevision
-    )
+    result_spec = _load_reference(ledger, current, assessment.result_spec, ResultSpecRevision)
     judgments = tuple(
         _load_reference(ledger, current, reference, AlgorithmicJudgmentRevision)
         for reference in assessment.judgments
@@ -248,38 +289,28 @@ def latest_assessment_view(ledger: WorkflowLedger) -> AssessmentView:
         for revision_id in current
     )
     result = result_spec.result
-    overrides = _active_overrides(
-        ledger, current, judgments, assessment.judgment_overrides
-    )
+    overrides = _active_overrides(ledger, current, judgments, assessment.judgment_overrides)
     ordered = sorted(judgments, key=lambda judgment: judgment.domain_id)
     effective = tuple(
-        overrides.get(judgment.revision_id, judgment.judgment.value)
-        for judgment in ordered
+        overrides.get(judgment.revision_id, judgment.judgment.value) for judgment in ordered
     )
     return AssessmentView(
         assessment_revision_id=assessment.revision_id,
         result_id=result.result_id,
         trial=result.trial_id,
         comparison=(
-            f"{result.comparison.experimental_arm_id} vs "
-            f"{result.comparison.comparator_arm_id}"
+            f"{result.comparison.experimental_arm_id} vs {result.comparison.comparator_arm_id}"
         ),
         outcome=result.outcome_construct,
         time_point=result.time_point,
         effect_of_interest=result.effect_of_interest,
-        overall_judgment=_overall_judgment(
-            effective
-        ),
+        overall_judgment=_overall_judgment(effective),
         domains=tuple(
             DomainView(
                 domain_id=judgment.domain_id,
                 label=judgment.domain_id,
-                judgment=overrides.get(
-                    judgment.revision_id, judgment.judgment.value
-                ),
-                rationale=(
-                    f"Algorithmic judgment from {judgment.decision_trace.revision_id}."
-                ),
+                judgment=overrides.get(judgment.revision_id, judgment.judgment.value),
+                rationale=(f"Algorithmic judgment from {judgment.decision_trace.revision_id}."),
             )
             for judgment in ordered
         ),
@@ -343,19 +374,13 @@ def _active_overrides(
     references: tuple[RecordReference, ...],
 ) -> dict[str, str]:
     judgment_hashes = {
-        judgment.revision_id: current[judgment.revision_id].artifact_hash
-        for judgment in judgments
+        judgment.revision_id: current[judgment.revision_id].artifact_hash for judgment in judgments
     }
     overrides: dict[str, str] = {}
     for override_reference in references:
-        override = _load_reference(
-            ledger, current, override_reference, JudgmentOverride
-        )
+        override = _load_reference(ledger, current, override_reference, JudgmentOverride)
         judgment_reference = override.judgment_revision
-        if (
-            judgment_hashes.get(judgment_reference.revision_id)
-            != judgment_reference.content_hash
-        ):
+        if judgment_hashes.get(judgment_reference.revision_id) != judgment_reference.content_hash:
             continue
         overrides[judgment_reference.revision_id] = override.replacement.value
     return overrides
@@ -393,9 +418,6 @@ def _normalize_xlsx_member(name: str, content: bytes) -> bytes:
         return content
     return re.sub(
         rb"<dcterms:modified[^>]*>.*?</dcterms:modified>",
-        (
-            b'<dcterms:modified xsi:type="dcterms:W3CDTF">'
-            b"2000-01-01T00:00:00Z</dcterms:modified>"
-        ),
+        (b'<dcterms:modified xsi:type="dcterms:W3CDTF">2000-01-01T00:00:00Z</dcterms:modified>'),
         content,
     )

@@ -1,7 +1,7 @@
 """Evidence boundary schemas; search and bundle workflows belong to issue #19."""
 
 from enum import StrEnum
-from typing import Literal
+from typing import Any, Literal
 
 from pydantic import Field, model_validator
 
@@ -53,6 +53,24 @@ class EvidenceConsideration(FrozenModel):
         if self.disposition is ConsiderationDisposition.UNRESOLVED and not self.basis:
             raise ValueError("unresolved evidence requires an explicit limitation")
         return self
+
+
+class EvidenceCandidateDispositionRecord(Revision):
+    """Frozen pre-answer disposition record retained in Verification archives."""
+
+    dependency_roles = {"items": "dependency:evidence-item"}
+    result_id: Identifier
+    domain_id: Identifier
+    items: tuple[RecordReference, ...] = ()
+    dispositions: tuple[EvidenceConsideration, ...] = ()
+
+
+class EvidenceCoverageReceiptRecord(Revision):
+    """Frozen search-receipt payloads retained without a host-side query."""
+
+    result_id: Identifier
+    domain_id: Identifier
+    receipts: tuple[dict[str, Any], ...] = ()
 
 
 class EvidenceCandidate(Revision):
@@ -142,8 +160,7 @@ class EvidenceBundle(Revision):
         if any(len(conflict) < 2 or not set(conflict) <= item_ids for conflict in self.conflicts):
             raise ValueError("source conflicts must bind at least two frozen Evidence items")
         if self.no_information_basis and (
-            self.coverage_state is not EvidenceCoverageState.COMPLETE
-            or self.coverage_limitations
+            self.coverage_state is not EvidenceCoverageState.COMPLETE or self.coverage_limitations
         ):
             raise ValueError("no-information basis requires complete, unlimited coverage")
         if self.no_information_basis and not self.coverage_receipts:
@@ -177,8 +194,7 @@ class EvidenceConsiderationManifest(Revision):
         if len(disposition_ids) != len(set(disposition_ids)):
             raise ValueError("consideration manifest dispositions must be unique")
         if any(
-            item.disposition is ConsiderationDisposition.UNRESOLVED
-            for item in self.dispositions
+            item.disposition is ConsiderationDisposition.UNRESOLVED for item in self.dispositions
         ):
             raise ValueError("an Evidence Bundle cannot freeze with unresolved material items")
         return self
