@@ -355,7 +355,8 @@ class EvidenceSearchIndex:
             for item in ordered:
                 connection.execute(
                     "INSERT INTO evidence_units "
-                    "(unit_id, source_id, source_artifact_hash, parse_id, page, kind, text, spatial, word_boxes) "
+                    "(unit_id, source_id, source_artifact_hash, parse_id, page, kind, text, "
+                    "spatial, word_boxes) "
                     "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
                     (
                         item.unit_id,
