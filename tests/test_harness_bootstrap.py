@@ -7,15 +7,38 @@ import shutil
 import sys
 import tomllib
 from pathlib import Path
+from typing import cast
 
 from typer.testing import CliRunner
 
 from rob2_kit.application.contracts import RUN_OPERATION_NAMES
 from rob2_kit.interfaces.cli.app import app
+from rob2_kit.interfaces.harness import _release_root
 from rob2_kit.release import load_release_lock
 from rob2_kit.storage import ArtifactStore, WorkflowLedger
 
 ROOT = Path(__file__).resolve().parents[1]
+
+
+def _expected_server() -> dict[str, object]:
+    """Return the launcher for the current source checkout or wheel install."""
+
+    release_root = _release_root()
+    if (release_root / "__init__.py").is_file():
+        return {
+            "command": sys.executable,
+            "args": ["-m", "rob2_kit.interfaces.mcp.server"],
+        }
+    return {
+        "command": "uvx",
+        "args": [
+            "--python",
+            "3.13",
+            "--from",
+            "rob2-kit==0.1.0",
+            "rob2-mcp",
+        ],
+    }
 
 
 def test_bootstrap_from_an_installed_wheel_uses_that_exact_install(
@@ -72,17 +95,11 @@ def test_bootstrap_installs_both_hosts_idempotently_without_overwriting_user_con
 
     codex = tomllib.loads(codex_config.read_text(encoding="utf-8"))
     assert codex["model"] == "user-selected-model"
-    assert codex["mcp_servers"]["rob2-kit"]["command"] == "uvx"
-    assert codex["mcp_servers"]["rob2-kit"]["args"] == [
-        "--python",
-        "3.13",
-        "--from",
-        "rob2-kit==0.1.0",
-        "rob2-mcp",
-    ]
+    expected_server = _expected_server()
+    assert codex["mcp_servers"]["rob2-kit"] == expected_server
     claude = json.loads(claude_config.read_text(encoding="utf-8"))
     assert claude["mcpServers"]["unrelated"] == unrelated_claude_server
-    assert claude["mcpServers"]["rob2-kit"]["command"] == "uvx"
+    assert claude["mcpServers"]["rob2-kit"] == expected_server
 
     for host, skill_root in (("codex", ".codex/skills"), ("claude", ".claude/skills")):
         for skill_name in ("rob2-init", "rob2-assess"):
@@ -195,14 +212,13 @@ def test_doctor_verifies_the_execution_contract_and_reports_uninitialized_state(
     assert receipt["checks"]["execution_contract"]["lock"] == (
         load_release_lock(ROOT).model_dump(mode="json")
     )
-    assert receipt["checks"]["execution_contract"]["effective_launcher"] == {
-        "command": "uvx",
-        "args": ["--python", "3.13", "--from", "rob2-kit==0.1.0", "rob2-mcp"],
-    }
+    expected_server = _expected_server()
+    expected_args = cast(list[str], expected_server["args"])
+    assert receipt["checks"]["execution_contract"]["effective_launcher"] == expected_server
     assert launched == {
         "project_root": tmp_path.resolve(),
-        "command": "uvx",
-        "args": ("--python", "3.13", "--from", "rob2-kit==0.1.0", "rob2-mcp"),
+        "command": expected_server["command"],
+        "args": tuple(expected_args),
     }
 
 
