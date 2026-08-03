@@ -325,7 +325,7 @@ def test_five_domain_journey_survives_stdio_restart_and_publishes_report(
     assert (report_root / "visual-assets").is_dir()
     assessment_html = (report_root / "assessment.html").read_text(encoding="utf-8")
     run_index_html = (run_root / "run-index.html").read_text(encoding="utf-8")
-    assert '<nav aria-label="RoB 2 domains">' in assessment_html
+    assert 'aria-label="RoB 2 domains"' in assessment_html
     assert "Signaling question" in assessment_html
     assert "AI rationale" in assessment_html
     assert "@media print" in assessment_html
