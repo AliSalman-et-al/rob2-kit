@@ -11,8 +11,8 @@
   "package": "rob2-kit",
   "package_version": "0.1.0",
   "skill_hashes": {
-    "rob2-assess": "sha256:6ce55af3c2d2b19adbd1db8d037e73efb163ca0391d8147ab327360b3cf9f29c",
-    "rob2-init": "sha256:3a78515a3bd76497d1462506fdaaa40056d7b30fb05a16702903570ee5ac5387"
+    "rob2-assess": "sha256:d14d28288000e21e4a13784bafd2e754045588c52e063aab5f29e79eae2be4f1",
+    "rob2-init": "sha256:9ce835b6fb4014a4e2fc8c0248ce2a38ba7b5f99e55458981599a70ffd49e718"
   },
   "skills": [
     "rob2-init",

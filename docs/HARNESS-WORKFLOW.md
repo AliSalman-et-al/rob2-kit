@@ -5,7 +5,7 @@ update is needed. The MCP response remains authoritative.
 
 ## Start, resume, or start new
 
-Call `prepare_run` at the project root. If it binds a Current run, describe it
+Call `prepare_run` with the required `project_root` on every new session. If it binds a Current run, describe it
 as a resume and continue from its returned state. Start a new run only after
 the operator explicitly asks to replace the Current run; pass the explicit
 start-new intent rather than inferring it from a new conversation.
@@ -20,6 +20,11 @@ that work context also issues them. For Result resolution, copy the issued
 Result identity and its identifier-shaped fields, then add only the observed
 estimate and attributable locator. Completion means every object submitted was
 issued for the current work token.
+
+If the engine returns `retry` or a dynamic branch, rebind the next operation to
+the newly returned work item: call `get_work_context` with its fresh token and
+copy the current `result_id` and `domain_id` verbatim. Do not reuse stale
+tokens, prior context, or a project root inferred from conversation history.
 
 ## Progress narration
 

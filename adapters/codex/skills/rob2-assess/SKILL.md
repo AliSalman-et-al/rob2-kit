@@ -15,6 +15,19 @@ the named submission tool with the returned work token and identifiers copied
 verbatim. After a successful submission, return to `continue_run`. Completion
 means the directive is terminal, not merely that all five Domains were visited.
 
+For `submit_domain_evidence`, prefer `passages`. The `passages` branch is
+mutually exclusive with legacy `items`, `evidence_by_question`,
+`candidate_dispositions`, and `conflicts`; choose one branch and do not send
+empty legacy fields alongside passages. Use the exact field name
+`coverage_limitations` (never `limitation`). Candidate dispositions accept only
+`supporting`, `contradicting`, `contextual`, `duplicate`, `out_of_scope`,
+`immaterial`, `superseded`, or `unresolved`; `irrelevant` is not an alias.
+
+When a retry or dynamic branch returns, discard the previous work token and
+context, call `get_work_context` for the new token, and copy its current
+`result_id` and `domain_id` verbatim. This preserves strict dependency and
+branch validation while allowing legitimate engine-directed retries.
+
 For progressively disclosed operating detail, consult
 `../references/HARNESS-WORKFLOW.md`, `../references/EVIDENCE-SEARCH.md`, and
 `../references/SIGNALING-QUESTIONS.md` only when their topic is active.

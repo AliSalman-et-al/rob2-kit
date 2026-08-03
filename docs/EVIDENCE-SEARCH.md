@@ -12,6 +12,15 @@ or a conflict remains a reported limitation or blocker. The pinned engine and
 packs decide the evidence protocol and all decision-relevant behavior.
 Do not construct abbreviated coverage receipts: submit a receipt only when a
 tool has supplied the complete typed receipt object; otherwise omit it.
+
+For the legacy candidate-disposition branch, use only the exact enum values
+`supporting`, `contradicting`, `contextual`, `duplicate`, `out_of_scope`,
+`immaterial`, `superseded`, or `unresolved`; `irrelevant` is not accepted.
+When using exact `passages`, do not also send legacy `items`,
+`evidence_by_question`, `candidate_dispositions`, or `conflicts`—these branches
+are mutually exclusive. Record residual source/search issues in the
+`coverage_limitations` list (the singular `limitation` field does not exist).
+
 An adequate completed search with no relevant evidence remains `complete` and
 may support `no_information` when complete receipts establish that basis. Use
 `complete_with_limitations` only when completed work retains a material source

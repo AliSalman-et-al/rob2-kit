@@ -166,9 +166,23 @@ class WorkItem(FrozenModel):
 class EvidenceConsiderationInput(FrozenModel):
     """Agent disposition for one candidate before an Evidence Bundle freezes."""
 
-    item_id: Identifier
-    disposition: ConsiderationDisposition
-    basis: str | None = None
+    item_id: Identifier = Field(
+        description="Evidence candidate/item ID issued by the current evidence work item."
+    )
+    disposition: ConsiderationDisposition = Field(
+        description=(
+            "One valid exact enum value: supporting, contradicting, contextual, duplicate, "
+            "out_of_scope, immaterial, superseded, or unresolved. Do not use aliases "
+            "such as irrelevant."
+        )
+    )
+    basis: str | None = Field(
+        default=None,
+        description=(
+            "Concise attributable basis; required for superseded chronology and unresolved "
+            "limitations."
+        ),
+    )
 
 
 class EvidencePassageInput(FrozenModel):
@@ -482,20 +496,70 @@ class SubmitDomainEvidenceRequest(FrozenModel):
     idempotency_key: Identifier
     result_id: Identifier
     domain_id: Identifier
-    items: tuple[RecordReference, ...] = ()
-    passages: tuple[EvidencePassageInput, ...] = ()
-    coverage_state: EvidenceCoverageState = EvidenceCoverageState.COMPLETE
-    coverage_limitations: tuple[str, ...] = ()
-    no_information_basis: bool = False
-    conflicts: tuple[tuple[Identifier, ...], ...] = ()
+    items: tuple[RecordReference, ...] = Field(
+        default=(),
+        description=(
+            "Legacy evidence references. Use this branch only when passages is empty; "
+            "do not combine with evidence_by_question, candidate_dispositions, or conflicts."
+        ),
+    )
+    passages: tuple[EvidencePassageInput, ...] = Field(
+        default=(),
+        description=(
+            "Preferred exact canonical passages. Mutually exclusive with legacy items, "
+            "evidence_by_question, candidate_dispositions, and conflicts."
+        ),
+    )
+    coverage_state: EvidenceCoverageState = Field(
+        default=EvidenceCoverageState.COMPLETE,
+        description=(
+            "Coverage enum: complete, complete_with_limitations, or incomplete."
+        ),
+    )
+    coverage_limitations: tuple[str, ...] = Field(
+        default=(),
+        description=(
+            "Material source/search limitations. The field is named coverage_limitations "
+            "(not limitation); required for incomplete and allowed for complete_with_limitations."
+        ),
+    )
+    no_information_basis: bool = Field(
+        default=False,
+        description=(
+            "Set true only when complete search receipts and readable coverage justify "
+            "no information."
+        ),
+    )
+    conflicts: tuple[tuple[Identifier, ...], ...] = Field(
+        default=(),
+        description=(
+            "Material candidate-ID conflicts for the legacy evidence branch; mutually exclusive "
+            "with passages."
+        ),
+    )
     # New evidence-first fields.  They are optional for compatibility with
     # synthetic tracer submissions that intentionally carry an empty bundle.
     evidence_by_question: dict[Identifier, tuple[RecordReference, ...]] = Field(
-        default_factory=dict
+        default_factory=dict,
+        description=(
+            "Legacy question-to-reference mapping; mutually exclusive with passages."
+        ),
     )
-    candidate_dispositions: tuple[EvidenceConsiderationInput, ...] = ()
-    coverage_receipts: tuple[SearchCoverageReceipt, ...] = ()
-    project_rules: tuple[RecordReference, ...] = ()
+    candidate_dispositions: tuple[EvidenceConsiderationInput, ...] = Field(
+        default=(),
+        description=(
+            "Legacy candidate disposition records; mutually exclusive with passages."
+        ),
+    )
+    coverage_receipts: tuple[SearchCoverageReceipt, ...] = Field(
+        default=(),
+        description=(
+            "Complete typed search receipts supplied by search_evidence; omit partial receipts."
+        ),
+    )
+    project_rules: tuple[RecordReference, ...] = Field(
+        default=(), description="Issued project-rule references that materially guide this bundle."
+    )
     actor: Actor | None = None
 
     @model_validator(mode="after")
@@ -504,7 +568,9 @@ class SubmitDomainEvidenceRequest(FrozenModel):
             self.items or self.evidence_by_question or self.candidate_dispositions or self.conflicts
         ):
             raise ValueError(
-                "passages cannot be combined with legacy evidence references or conflicts"
+                "passages are mutually exclusive with legacy evidence inputs: clear items, "
+                "evidence_by_question, candidate_dispositions, and conflicts, or submit the "
+                "legacy branch without passages"
             )
         return self
 

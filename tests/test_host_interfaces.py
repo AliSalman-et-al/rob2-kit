@@ -3,8 +3,18 @@
 from __future__ import annotations
 
 import anyio
+import pytest
+from pydantic import ValidationError
 
-from rob2_kit.application.contracts import RUN_OPERATION_NAMES
+from rob2_kit.application.contracts import (
+    RUN_OPERATION_NAMES,
+    EvidenceConsiderationInput,
+    EvidencePassageInput,
+    RunOperation,
+    SubmitDomainEvidenceRequest,
+    WorkToken,
+)
+from rob2_kit.domain.revisions import RecordReference
 from rob2_kit.interfaces.mcp.server import create_server, registered_tool_names
 
 
@@ -107,3 +117,75 @@ def test_mcp_tool_descriptions_prevent_cleanroom_schema_guessing() -> None:
     assert 'coverage_state="complete"' in evidence
     assert "may support no_information" in evidence
     assert 'coverage_state="incomplete"' in evidence
+
+
+def test_mcp_schema_names_the_friction_prone_evidence_contract() -> None:
+    tools = {tool.name: tool for tool in anyio.run(create_server().list_tools)}
+
+    prepare = tools["prepare_run"]
+    assert "required" in prepare.input_schema["properties"]["project_root"]["description"].lower()
+    assert "every new session" in (prepare.description or "").lower()
+
+    evidence = tools["submit_domain_evidence"]
+    properties = evidence.input_schema["properties"]
+    assert "coverage_limitations" in properties
+    assert "limitation" in properties["coverage_limitations"]["description"].lower()
+    assert "passages" in properties["passages"]["description"]
+    assert "mutually exclusive" in properties["passages"]["description"].lower()
+    assert "items" in properties["items"]["description"]
+    assert "evidence_by_question" in properties["evidence_by_question"]["description"]
+    assert "conflicts" in properties["conflicts"]["description"]
+
+    disposition = evidence.input_schema["$defs"]["ConsiderationDisposition"]
+    assert disposition["enum"] == [
+        "supporting",
+        "contradicting",
+        "contextual",
+        "duplicate",
+        "out_of_scope",
+        "immaterial",
+        "superseded",
+        "unresolved",
+    ]
+    assert "irrelevant" not in disposition["enum"]
+    disposition_field = evidence.input_schema["$defs"]["EvidenceConsiderationInput"]["properties"][
+        "disposition"
+    ]
+    assert "valid" in disposition_field["description"].lower()
+
+
+def test_domain_evidence_contract_rejects_aliases_and_mixed_branches() -> None:
+    with pytest.raises(ValidationError, match="Input should be"):
+        EvidenceConsiderationInput.model_validate(
+            {"item_id": "candidate:test", "disposition": "irrelevant"}
+        )
+
+    token = WorkToken(
+        token="token:test",
+        run_id="run:test",
+        work_item_id="work-item:test",
+        operation=RunOperation.SUBMIT_DOMAIN_EVIDENCE,
+        dependency_fingerprint="sha256:" + "0" * 64,
+    )
+    passage = EvidencePassageInput(
+        unit_id="unit:test",
+        span_start=0,
+        claim_type="claim:test",
+        question_ids=("sq:test",),
+    )
+    reference = RecordReference(
+        entity_id="evidence:test",
+        revision_id="revision:test",
+        content_hash="sha256:" + "1" * 64,
+    )
+    with pytest.raises(ValidationError, match="mutually exclusive"):
+        SubmitDomainEvidenceRequest(
+            contract_version="1.0.0",
+            run_id="run:test",
+            work_token=token,
+            idempotency_key="idempotency:test",
+            result_id="result:test",
+            domain_id="domain:test",
+            passages=(passage,),
+            items=(reference,),
+        )

@@ -11,7 +11,9 @@ from __future__ import annotations
 import hashlib
 import os
 from datetime import UTC, datetime
-from typing import Any, Literal
+from typing import Annotated, Any, Literal
+
+from pydantic import Field
 
 from rob2_kit.application.contracts import (
     RUN_OPERATION_NAMES,
@@ -95,15 +97,42 @@ def create_server(*, determinism: QualificationDeterminism | None = None) -> Any
 
     @server.tool(name="prepare_run")
     def prepare_run(
-        project_root: str,
-        authorized: bool = False,
-        start_new: bool = False,
-        method: str | None = None,
-        supported_scope: str | None = None,
+        project_root: Annotated[
+            str,
+            Field(
+                description=(
+                    "Required project root path for this session. Provide it on every new "
+                    "session; use the same root to resume a Current run."
+                )
+            ),
+        ],
+        authorized: Annotated[
+            bool,
+            Field(description="Set true only after explicit operator authorization."),
+        ] = False,
+        start_new: Annotated[
+            bool,
+            Field(
+                description="Set true only when the operator explicitly replaces the Current run."
+            ),
+        ] = False,
+        method: Annotated[
+            str | None,
+            Field(
+                description="Optional supported RoB 2 method; omit to use project configuration."
+            ),
+        ] = None,
+        supported_scope: Annotated[
+            str | None,
+            Field(description="Optional supported scope; omit to use project configuration."),
+        ] = None,
     ) -> dict[str, Any]:
         """Prepare or resume a project.
 
-        Pass authorized=true only after explicit operator authorization.
+        ``project_root`` is required on every new session, including a resumed
+        conversation. Pass ``authorized=true`` only after explicit operator
+        authorization. A changed project root is a distinct-root error; do not
+        weaken that invariant or infer a root from prior context.
         """
         request = PrepareRunRequest.model_validate(
             {
@@ -145,16 +174,28 @@ def create_server(*, determinism: QualificationDeterminism | None = None) -> Any
 
     @server.tool(name="continue_run")
     def continue_run(
-        run_id: str,
+        run_id: Annotated[str, Field(description="Run ID returned by prepare_run; copy verbatim.")],
     ) -> dict[str, Any]:
-        """Return the next authoritative run directive and bounded work item."""
+        """Return the next authoritative run directive and bounded work item.
+
+        After a retry or dynamic branch, discard prior work context and use only
+        the newly issued work token and identifiers from this response.
+        """
         return _dump(engine.continue_run(ContinueRunRequest.model_validate({"run_id": run_id})))
 
     @server.tool(name="get_work_context")
     def get_work_context(
-        run_id: str,
-        work_token: WorkToken,
-        include_source_details: bool = False,
+        run_id: Annotated[
+            str, Field(description="Run ID returned by continue_run; copy verbatim.")
+        ],
+        work_token: Annotated[
+            WorkToken,
+            Field(description="Opaque token returned by continue_run for this exact work item."),
+        ],
+        include_source_details: Annotated[
+            bool,
+            Field(description="Set true only when page coverage or parsing details are required."),
+        ] = False,
     ) -> dict[str, Any]:
         """Return bounded context for the issued work token.
 
@@ -365,23 +406,108 @@ def create_server(*, determinism: QualificationDeterminism | None = None) -> Any
 
     @server.tool(name="submit_domain_evidence")
     def submit_domain_evidence(
-        run_id: str,
-        work_token: WorkToken,
-        result_id: str,
-        domain_id: str,
-        contract_version: Literal["1.0.0"],
-        passages: list[EvidencePassageInput] | None = None,
-        items: list[RecordReference] | None = None,
-        coverage_state: EvidenceCoverageState | None = None,
-        coverage_limitations: list[str] | None = None,
-        no_information_basis: bool = False,
-        conflicts: list[list[str]] | None = None,
-        evidence_by_question: dict[str, list[RecordReference]] | None = None,
-        candidate_dispositions: list[EvidenceConsiderationInput] | None = None,
-        coverage_receipts: list[SearchCoverageReceipt] | None = None,
-        project_rules: list[RecordReference] | None = None,
+        run_id: Annotated[
+            str, Field(description="Run ID from the current work context; copy verbatim.")
+        ],
+        work_token: Annotated[
+            WorkToken,
+            Field(
+                description=(
+                    "Fresh token issued for this domain evidence work item; rebind after retry."
+                )
+            ),
+        ],
+        result_id: Annotated[
+            str, Field(description="Result ID issued by get_work_context; copy verbatim.")
+        ],
+        domain_id: Annotated[
+            str, Field(description="Domain ID issued by get_work_context; copy verbatim.")
+        ],
+        contract_version: Annotated[
+            Literal["1.0.0"],
+            Field(description="Exact contract version returned by the installed release."),
+        ],
+        passages: Annotated[
+            list[EvidencePassageInput] | None,
+            Field(
+                description=(
+                    "Preferred exact passages. Mutually exclusive with items, "
+                    "evidence_by_question, "
+                    "candidate_dispositions, and conflicts."
+                )
+            ),
+        ] = None,
+        items: Annotated[
+            list[RecordReference] | None,
+            Field(
+                description="Legacy items evidence references; use only when passages is omitted."
+            ),
+        ] = None,
+        coverage_state: Annotated[
+            EvidenceCoverageState | None,
+            Field(description="Use complete, complete_with_limitations, or incomplete."),
+        ] = None,
+        coverage_limitations: Annotated[
+            list[str] | None,
+            Field(
+                description=(
+                    "Material limitations; exact field name is coverage_limitations, "
+                    "not limitation."
+                )
+            ),
+        ] = None,
+        no_information_basis: Annotated[
+            bool,
+            Field(description="Set true only with complete search receipts and readable coverage."),
+        ] = False,
+        conflicts: Annotated[
+            list[list[str]] | None,
+            Field(
+                description=(
+                    "Legacy conflicts candidate-ID groups; mutually exclusive with passages."
+                )
+            ),
+        ] = None,
+        evidence_by_question: Annotated[
+            dict[str, list[RecordReference]] | None,
+            Field(
+                description=(
+                    "Legacy evidence_by_question mapping; mutually exclusive with passages."
+                )
+            ),
+        ] = None,
+        candidate_dispositions: Annotated[
+            list[EvidenceConsiderationInput] | None,
+            Field(
+                description=(
+                    "Legacy candidate dispositions; use exact enum values and mutually exclusive "
+                    "with passages."
+                )
+            ),
+        ] = None,
+        coverage_receipts: Annotated[
+            list[SearchCoverageReceipt] | None,
+            Field(
+                description=(
+                    "Complete typed receipts returned by search_evidence; omit partial receipts."
+                )
+            ),
+        ] = None,
+        project_rules: Annotated[
+            list[RecordReference] | None,
+            Field(description="Issued project-rule references that materially guide this bundle."),
+        ] = None,
     ) -> dict[str, Any]:
-        """Freeze passages using issued unit_id, exact spans, and active question_ids.
+        """Freeze one Domain Evidence Bundle using the current work context.
+
+        Use passages using issued ``unit_id``, exact spans, and active
+        ``question_ids``; this branch is mutually exclusive with legacy
+        ``items``, ``evidence_by_question``, ``candidate_dispositions``, and
+        ``conflicts``. Legacy candidate dispositions accept only the enum values
+        ``supporting``, ``contradicting``, ``contextual``, ``duplicate``,
+        ``out_of_scope``, ``immaterial``, ``superseded``, and ``unresolved``;
+        ``irrelevant`` is not valid. Rebind every identifier and token from the
+        latest ``get_work_context`` after a retry or dynamic branch.
 
         Use claim-type IDs. An adequate completed search with no evidence stays
         coverage_state="complete" and may support no_information with complete
