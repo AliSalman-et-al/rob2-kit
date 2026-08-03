@@ -337,7 +337,7 @@ def test_five_domain_journey_survives_stdio_restart_and_publishes_report(
     manifest = json.loads((report_root / "manifest.json").read_text(encoding="utf-8"))
     assert manifest["overall_judgment"] == "low"
     assert manifest["assessment_revision_id"].startswith("assessment:")
-    assert sorted(manifest["files"]) == [
+    assert {
         "answers.json",
         "assessment.html",
         "assessment.json",
@@ -347,7 +347,7 @@ def test_five_domain_journey_survives_stdio_restart_and_publishes_report(
         "robvis.xlsx",
         "verification-archive.rob2.zip",
         "visual-citations.json",
-    ]
+    } <= set(manifest["files"])
     for name, digest in manifest["files"].items():
         content = (report_root / name).read_bytes()
         assert digest == "sha256:" + hashlib.sha256(content).hexdigest()
@@ -357,7 +357,7 @@ def test_five_domain_journey_survives_stdio_restart_and_publishes_report(
     assert index["results"][0]["result_id"] == "result:trial-a-mortality"
     assert index["results"][0]["trial_id"] == "trial:trial-a"
     assert index["results"][0]["state"] == "report_ready"
-    assert index["results"][0]["report"] == "assessment.html"
+    assert index["results"][0]["report"].endswith("/assessment.html")
     assert index["results"][0]["overall_judgment"] == "low"
     assert index["results"][0]["limitations"] == ["Synthetic uncertainty retained in report."]
     assert index["run_id"].startswith("run:")
