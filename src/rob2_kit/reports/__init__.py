@@ -10,18 +10,28 @@ import io
 import re
 from collections import Counter
 from datetime import UTC, datetime
+from typing import Literal
 from zipfile import ZipFile
 
 from openpyxl import Workbook
-from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator
+from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator, model_validator
 
 from rob2_kit.domain.assessment import (
     AlgorithmicJudgmentRevision,
     AssessmentRevision,
+    DecisionTrace,
+    SQAnswerRevision,
 )
 from rob2_kit.domain.canonical import canonical_json_bytes
+from rob2_kit.domain.evidence import (
+    EvidenceBundle,
+    EvidenceClaim,
+    EvidenceConsiderationManifest,
+    VisualTranscription,
+)
 from rob2_kit.domain.results import ResultSpecRevision
-from rob2_kit.domain.revisions import Identifier, RecordReference
+from rob2_kit.domain.revisions import ContentHash, Identifier, RecordReference
+from rob2_kit.evidence.search import CanonicalEvidenceUnit
 from rob2_kit.reports._deterministic_zip import write_deterministic_zip
 from rob2_kit.storage.ledger import RevisionProjection, WorkflowLedger
 
@@ -65,6 +75,21 @@ class ResultIdentityView(ReportModel):
     outcome: str = Field(min_length=1)
     measurement_instrument: str = ""
     time_point: str = Field(min_length=1)
+    analysis_population: str = ""
+    analysis_model: str = ""
+    effect_measure: str = ""
+    source_locator: str = ""
+
+
+class ResultDetailsView(ReportModel):
+    """Revision-specific details kept outside the stable Result identity.
+
+    A Result's identity deliberately excludes the extracted numerical value.
+    The estimate and its denominators belong to the resolved ResultSpec
+    revision and are therefore carried by this separate details seam.
+    """
+
+    measurement_instrument: str = ""
     analysis_population: str = ""
     analysis_model: str = ""
     effect_measure: str = ""
@@ -119,6 +144,10 @@ class SignalingQuestionView(ReportModel):
     limitations: tuple[str, ...] = ()
     no_information_basis: bool = False
     decision_trace: tuple[Identifier, ...] = ()
+    # Material source conflicts and residual uncertainty are retained rather
+    # than collapsed into a generic rationale or silently discarded.
+    conflicts: tuple[tuple[Identifier, ...], ...] = ()
+    uncertainty: tuple[str, ...] = ()
 
 
 class AssessmentView(ReportModel):
@@ -138,10 +167,15 @@ class AssessmentView(ReportModel):
     source_locator: str = ""
     estimate: EstimateView | None = None
     result_identity: ResultIdentityView | None = None
+    result_details: ResultDetailsView | None = None
     overall_judgment: str = Field(pattern=r"^(low|some_concerns|high)$")
     domains: tuple[DomainView, ...] = Field(min_length=1)
     visual_citations: tuple[VisualCitationView, ...] = ()
     execution_contract: str = "not recorded"
+    overall_policy_id: Identifier | None = None
+    overall_policy_hash: str | None = None
+    overall_policy_text: str = ""
+    overall_decision_trace: tuple[Identifier, ...] = ()
 
 
 class RunIndexResultView(ReportModel):
@@ -199,6 +233,23 @@ class ReportProjector:
                 {
                     "effect_measure": self.assessment.effect_measure or "not recorded",
                     "estimate": _estimate_text(self.assessment.estimate),
+                    "effect_of_interest": self.assessment.effect_of_interest,
+                    "outcome": self.assessment.outcome,
+                    "measurement_instrument": self.assessment.measurement_instrument or "not recorded",
+                    "time_point": self.assessment.time_point,
+                    "analysis_population": self.assessment.analysis_population or "not recorded",
+                    "analysis_model": self.assessment.analysis_model or "not recorded",
+                    "source_locator": self.assessment.source_locator or "not recorded",
+                    "denominator_experimental": (
+                        self.assessment.estimate.denominator_experimental
+                        if self.assessment.estimate
+                        else None
+                    ),
+                    "denominator_comparator": (
+                        self.assessment.estimate.denominator_comparator
+                        if self.assessment.estimate
+                        else None
+                    ),
                     "evidence_count": _evidence_count(self.assessment),
                 }
             )
@@ -215,12 +266,13 @@ class ReportProjector:
             for question in domain.questions
         ):
             return self._legacy_html()
+        ordered_domains = _ordered_domains(assessment.domains)
         domain_navigation = "".join(
             f'<li><a href="#{_anchor(domain.domain_id)}"><span class="domain-number">{index}</span>'
             f'<span>{html.escape(domain.label)}</span>{_judgment_badge(domain.judgment, label="")}</a></li>'
-            for index, domain in enumerate(assessment.domains, start=1)
+            for index, domain in enumerate(ordered_domains, start=1)
         )
-        domains = "".join(_render_domain(domain) for domain in assessment.domains)
+        domains = "".join(_render_domain(domain) for domain in ordered_domains)
         visual_citations = (
             "".join(_render_visual_citation(citation) for citation in assessment.visual_citations)
             or "<p>No visual citations were required for this Assessment.</p>"
@@ -249,6 +301,7 @@ class ReportProjector:
             f"{_judgment_badge(assessment.overall_judgment, label='Overall judgment')}"
             f"<span class=\"summary-count\">{_evidence_count(assessment)} accepted evidence claims</span>"
             "</section>"
+            f"{_render_overall_policy(assessment)}"
             '<div class="report-layout"><nav class="domain-rail" aria-label="RoB 2 domains"><h2>Domain navigation</h2>'
             f"<ol>{domain_navigation}</ol></nav>"
             f'<section class="domain-stack" aria-label="Five ordered RoB 2 domains">{domains}</section></div>'
@@ -259,11 +312,12 @@ class ReportProjector:
 
     def _legacy_html(self) -> bytes:
         assessment = self.assessment
+        ordered_domains = _ordered_domains(assessment.domains)
         domain_navigation = "".join(
             f'<li><a href="#{_anchor(domain.domain_id)}">{html.escape(domain.label)}</a></li>'
-            for domain in assessment.domains
+            for domain in ordered_domains
         )
-        domains = "".join(_render_domain(domain) for domain in assessment.domains)
+        domains = "".join(_render_domain(domain) for domain in ordered_domains)
         visual_citations = (
             "".join(_render_visual_citation(citation) for citation in assessment.visual_citations)
             or "<p>No visual citations were required for this Assessment.</p>"
@@ -307,16 +361,44 @@ class ReportProjector:
             f"- Comparison: {_escape_markdown(assessment.comparison)}",
             f"- Outcome: {_escape_markdown(assessment.outcome)}",
             f"- Time point: {_escape_markdown(assessment.time_point)}",
+            *(
+                [
+                    f"- Effect of interest: {_escape_markdown(assessment.effect_of_interest)}",
+                    f"- Measurement instrument: {_escape_markdown(assessment.measurement_instrument or 'not recorded')}",
+                    f"- Analysis population: {_escape_markdown(assessment.analysis_population or 'not recorded')}",
+                    f"- Analysis model: {_escape_markdown(assessment.analysis_model or 'not recorded')}",
+                    f"- Effect measure: {_escape_markdown(assessment.effect_measure or 'not recorded')}",
+                    f"- Value: {_escape_markdown(assessment.estimate.value if assessment.estimate else 'not recorded')}",
+                    f"- 95% CI: {_escape_markdown(assessment.estimate.interval if assessment.estimate and assessment.estimate.interval else 'not recorded')}",
+                    f"- Denominator experimental: {_escape_markdown(str(assessment.estimate.denominator_experimental) if assessment.estimate and assessment.estimate.denominator_experimental is not None else 'not recorded')}",
+                    f"- Denominator comparator: {_escape_markdown(str(assessment.estimate.denominator_comparator) if assessment.estimate and assessment.estimate.denominator_comparator is not None else 'not recorded')}",
+                    f"- Source locator: {_escape_markdown(assessment.source_locator or 'not recorded')}",
+                ]
+                if _has_extended_identity(assessment)
+                else []
+            ),
             "",
             "| Domain | Judgment | Rationale |",
             "|---|---|---|",
         ]
         lines.extend(
-            f"| {_escape_markdown(domain.label)} | "
+            f"| {_escape_markdown(_domain_code(domain.domain_id) + ': ' if _domain_code(domain.domain_id) else '')}{_escape_markdown(domain.label)} | "
             f"{_display_judgment(domain.judgment)} | "
             f"{_escape_markdown(domain.rationale)} |"
-            for domain in assessment.domains
+            for domain in _ordered_domains(assessment.domains)
         )
+        if assessment.overall_policy_id or assessment.overall_policy_hash or assessment.overall_decision_trace:
+            lines.extend(
+                [
+                    "",
+                    "## Overall maximum-domain policy",
+                    "",
+                    f"Policy: {_escape_markdown(assessment.overall_policy_text or 'Low when all domains are Low; High when any domain is High; otherwise Some concerns.')}",
+                    f"Policy id: {_escape_markdown(assessment.overall_policy_id or 'not recorded')}",
+                    f"Policy hash: {_escape_markdown(assessment.overall_policy_hash or 'not recorded')}",
+                    f"Decision trace: {_escape_markdown(', '.join(assessment.overall_decision_trace) or 'not recorded')}",
+                ]
+            )
         lines.extend(
             [
                 "",
@@ -336,8 +418,9 @@ class ReportProjector:
                 f"- Estimate: {_escape_markdown(_estimate_text(assessment.estimate)).replace(r'\.', '.')}",
             ]
             lines[6:6] = insertion
-        for domain in assessment.domains:
-            lines.extend(["", f"## {_escape_markdown(domain.label)}", ""])
+        for domain in _ordered_domains(assessment.domains):
+            prefix = f"{_domain_code(domain.domain_id)}: " if _domain_code(domain.domain_id) else ""
+            lines.extend(["", f"## {_escape_markdown(prefix + domain.label)}", ""])
             lines.append(f"Coverage: {_escape_markdown(domain.coverage)}")
             lines.extend(f"- Limitation: {_escape_markdown(item)}" for item in domain.limitations)
             for question in domain.questions:
@@ -360,6 +443,12 @@ class ReportProjector:
                 )
                 if question.no_information_basis:
                     lines.append("No-information basis: completed searchable-source coverage.")
+                if question.conflicts:
+                    lines.append(
+                        "Conflicts: "
+                        + "; ".join(", ".join(group) for group in question.conflicts)
+                    )
+                lines.extend(f"- Uncertainty: {_escape_markdown(item)}" for item in question.uncertainty)
                 lines.extend(
                     f"- Limitation: {_escape_markdown(item)}" for item in question.limitations
                 )
@@ -398,8 +487,29 @@ class ReportProjector:
             "Assessment",
             "Study",
             "Result",
-            *(("Outcome", "Time point", "Effect measure", "Estimate", "95% CI") if extended else ()),
-            *(f"Domain {index}" for index in range(1, len(self.assessment.domains) + 1)),
+            *(
+                (
+                    "Effect of interest",
+                    "Outcome",
+                    "Measurement instrument",
+                    "Time point",
+                    "Analysis population",
+                    "Analysis model",
+                    "Effect measure",
+                    "Estimate",
+                    "95% CI",
+                    "Denominator experimental",
+                    "Denominator comparator",
+                    "Source locator",
+                    "Evidence claims",
+                )
+                if extended
+                else ()
+            ),
+            *(
+                (f"D{index}" if extended else f"Domain {index}")
+                for index in range(1, len(self.assessment.domains) + 1)
+            ),
             "Overall",
         ]
         writer = csv.DictWriter(stream, fieldnames=fieldnames, lineterminator="\n")
@@ -413,18 +523,34 @@ class ReportProjector:
         if extended:
             row.update(
                 {
+                    "Effect of interest": _spreadsheet_cell(self.assessment.effect_of_interest),
                     "Outcome": _spreadsheet_cell(self.assessment.outcome),
+                    "Measurement instrument": _spreadsheet_cell(self.assessment.measurement_instrument or "not recorded"),
                     "Time point": _spreadsheet_cell(self.assessment.time_point),
+                    "Analysis population": _spreadsheet_cell(self.assessment.analysis_population or "not recorded"),
+                    "Analysis model": _spreadsheet_cell(self.assessment.analysis_model or "not recorded"),
                     "Effect measure": _spreadsheet_cell(self.assessment.effect_measure or "not recorded"),
                     "Estimate": _spreadsheet_cell(self.assessment.estimate.value if self.assessment.estimate else "not recorded"),
                     "95% CI": _spreadsheet_cell(
                         self.assessment.estimate.interval if self.assessment.estimate and self.assessment.estimate.interval else "not recorded"
                     ),
+                    "Denominator experimental": _spreadsheet_cell(
+                        str(self.assessment.estimate.denominator_experimental)
+                        if self.assessment.estimate and self.assessment.estimate.denominator_experimental is not None
+                        else "not recorded"
+                    ),
+                    "Denominator comparator": _spreadsheet_cell(
+                        str(self.assessment.estimate.denominator_comparator)
+                        if self.assessment.estimate and self.assessment.estimate.denominator_comparator is not None
+                        else "not recorded"
+                    ),
+                    "Source locator": _spreadsheet_cell(self.assessment.source_locator or "not recorded"),
+                    "Evidence claims": str(_evidence_count(self.assessment)),
                 }
             )
         row.update(
             {
-                f"Domain {index}": _display_judgment(domain.judgment)
+                (f"D{index}" if extended else f"Domain {index}"): _display_judgment(domain.judgment)
                 for index, domain in enumerate(self.assessment.domains, start=1)
             }
         )
@@ -444,8 +570,29 @@ class ReportProjector:
             "Assessment",
             "Study",
             "Result",
-            *(("Outcome", "Time point", "Effect measure", "Estimate", "95% CI") if extended else ()),
-            *(f"Domain {index}" for index in range(1, len(self.assessment.domains) + 1)),
+            *(
+                (
+                    "Effect of interest",
+                    "Outcome",
+                    "Measurement instrument",
+                    "Time point",
+                    "Analysis population",
+                    "Analysis model",
+                    "Effect measure",
+                    "Estimate",
+                    "95% CI",
+                    "Denominator experimental",
+                    "Denominator comparator",
+                    "Source locator",
+                    "Evidence claims",
+                )
+                if extended
+                else ()
+            ),
+            *(
+                (f"D{index}" if extended else f"Domain {index}")
+                for index in range(1, len(self.assessment.domains) + 1)
+            ),
             "Overall",
         ]
         sheet.append(headings)
@@ -456,8 +603,12 @@ class ReportProjector:
                 self.assessment.result_id,
                 *(
                     (
+                        _spreadsheet_cell(self.assessment.effect_of_interest),
                         _spreadsheet_cell(self.assessment.outcome),
+                        _spreadsheet_cell(self.assessment.measurement_instrument or "not recorded"),
                         _spreadsheet_cell(self.assessment.time_point),
+                        _spreadsheet_cell(self.assessment.analysis_population or "not recorded"),
+                        _spreadsheet_cell(self.assessment.analysis_model or "not recorded"),
                         _spreadsheet_cell(self.assessment.effect_measure or "not recorded"),
                         _spreadsheet_cell(self.assessment.estimate.value if self.assessment.estimate else "not recorded"),
                         _spreadsheet_cell(
@@ -465,6 +616,18 @@ class ReportProjector:
                             if self.assessment.estimate and self.assessment.estimate.interval
                             else "not recorded"
                         ),
+                        _spreadsheet_cell(
+                            str(self.assessment.estimate.denominator_experimental)
+                            if self.assessment.estimate and self.assessment.estimate.denominator_experimental is not None
+                            else "not recorded"
+                        ),
+                        _spreadsheet_cell(
+                            str(self.assessment.estimate.denominator_comparator)
+                            if self.assessment.estimate and self.assessment.estimate.denominator_comparator is not None
+                            else "not recorded"
+                        ),
+                        _spreadsheet_cell(self.assessment.source_locator or "not recorded"),
+                        str(_evidence_count(self.assessment)),
                     )
                     if extended
                     else ()
@@ -517,13 +680,20 @@ class RunIndexProjector:
     def html(self) -> bytes:
         run = self.run
         counts = Counter(item.state for item in run.results)
-        domain_ids = sorted({domain_id for item in run.results for domain_id in item.domain_judgments})
-        traffic_headers = "".join(f"<th>{html.escape(_domain_label(domain_id))}</th>" for domain_id in domain_ids)
+        observed_domain_ids = {domain_id for item in run.results for domain_id in item.domain_judgments}
+        domain_ids = tuple(
+            domain_id for domain_id in _DOMAIN_ORDER if domain_id in observed_domain_ids
+        ) + tuple(sorted(observed_domain_ids - set(_DOMAIN_ORDER)))
+        traffic_headers = "".join(
+            f'<th scope="col">{html.escape(_domain_code(domain_id) + ": " if _domain_code(domain_id) else "")}'
+            f"{html.escape(_domain_label(domain_id))}</th>"
+            for domain_id in domain_ids
+        )
         rows = (
             "".join(
                 "<tr>"
-                f"<td><strong>{html.escape(item.trial_id)}</strong><br><small>{html.escape(item.result_id)}</small>"
-                f"{('<br><small>' + html.escape(item.outcome) + (' · ' + html.escape(item.time_point) if item.time_point else '') + '</small>') if item.outcome else ''}</td>"
+                f'<th scope="row"><strong>{html.escape(item.trial_id)}</strong><br><small>{html.escape(item.result_id)}</small>'
+                f"{('<br><small>' + html.escape(item.outcome) + (' · ' + html.escape(item.time_point) if item.time_point else '') + '</small>') if item.outcome else ''}</th>"
                 f"<td>{html.escape(item.state.replace('_', ' '))}</td>"
                 f"<td>{html.escape(item.comparison or 'not recorded')}<br><small>{html.escape(item.effect_measure or '')}</small></td>"
                 f"<td>{item.evidence_count}</td>"
@@ -536,7 +706,7 @@ class RunIndexProjector:
                 "</tr>"
                 for item in run.results
             )
-            or '<tr><td colspan="8">No terminal Result outcomes are available.</td></tr>'
+            or f'<tr><td colspan="{8 + len(domain_ids)}">No terminal Result outcomes are available.</td></tr>'
         )
         outputs = "".join(f"<li>{html.escape(item)}</li>" for item in run.ancillary_outputs)
         body = (
@@ -549,8 +719,8 @@ class RunIndexProjector:
             "</dl></section>"
             '<section class="run-dashboard" aria-labelledby="terminal-heading"><h2 id="terminal-heading">Terminal outcomes</h2>'
             f"<p>{counts['report_ready']} report ready; {counts['diagnostic_ready']} diagnostic ready.</p>"
-            '<div class="table-wrap"><table><caption>Trial × Result dashboard</caption><thead><tr><th>Trial × Result</th><th>State</th><th>Comparison</th><th>Evidence claims</th>'
-            f"{traffic_headers}<th>Overall judgment</th><th>Coverage</th><th>Limitations</th><th>Report</th>"
+            '<div class="table-wrap"><table><caption>Trial × Result dashboard</caption><thead><tr><th scope="col">Trial × Result</th><th scope="col">State</th><th scope="col">Comparison</th><th scope="col">Evidence claims</th>'
+            f"{traffic_headers}<th scope=\"col\">Overall judgment</th><th scope=\"col\">Coverage</th><th scope=\"col\">Limitations</th><th scope=\"col\">Report</th>"
             f"</tr></thead><tbody>{rows}</tbody></table></div></section>"
             '<section aria-labelledby="outputs-heading"><h2 id="outputs-heading">Ancillary outputs</h2>'
             f"<ul>{outputs or '<li>No ancillary outputs recorded.</li>'}</ul></section></main>"
@@ -590,9 +760,11 @@ def _render_domain(domain: DomainView) -> str:
     questions = "".join(_render_question(question) for question in domain.questions)
     if not questions:
         questions = "<p>No signaling-question projection was recorded for this domain.</p>"
+    code = _domain_code(domain.domain_id)
+    heading = f"{code}: " if code else ""
     return (
         f'<article class="domain" id="{_anchor(domain.domain_id)}">'
-        f"<h2>{html.escape(domain.label)}</h2>"
+        f"<h2>{html.escape(heading + domain.label)}</h2>"
         f"{_judgment_badge(domain.judgment, label='Domain judgment')}"
         f"<p><strong>Coverage:</strong> {html.escape(domain.coverage.replace('_', ' '))}</p>"
         f"{_limitations(domain.limitations)}"
@@ -610,6 +782,22 @@ def _render_question(question: SignalingQuestionView) -> str:
     no_information = (
         "<p><strong>No-information basis:</strong> completed searchable-source coverage.</p>"
         if question.no_information_basis
+        else ""
+    )
+    conflicts = (
+        "<section class=\"conflicts\"><h4>Material source conflicts</h4><ul>"
+        + "".join(
+            f"<li>{html.escape(', '.join(group))}</li>" for group in question.conflicts
+        )
+        + "</ul></section>"
+        if question.conflicts
+        else ""
+    )
+    uncertainty = (
+        '<section class="uncertainty"><h4>Uncertainty retained</h4><ul>'
+        + "".join(f"<li>{html.escape(item)}</li>" for item in question.uncertainty)
+        + "</ul></section>"
+        if question.uncertainty
         else ""
     )
     return (
@@ -678,6 +866,14 @@ def _judgment_badge(judgment: str | None, *, label: str) -> str:
             f'<span class="judgment judgment-{html.escape(judgment)}" '
             f'aria-label="{html.escape(text)}">{html.escape(text)}</span>'
         )
+    if "traffic-light" in label:
+        # Keep the visual traffic-light wording available to assistive
+        # technology while presenting one non-duplicated sighted label.
+        return (
+            f'<p class="judgment judgment-{html.escape(judgment)}"><span aria-hidden="true">o</span> '
+            f'<strong>Text-labelled judgment: {html.escape(text)}</strong>'
+            f'<span class="sr-only">{html.escape(label)}</span></p>'
+        )
     return (
         f'<p class="judgment judgment-{html.escape(judgment)}"><span aria-hidden="true">o</span> '
         f"<strong>{html.escape(label)}: Text-labelled judgment: {html.escape(text)}</strong></p>"
@@ -700,6 +896,50 @@ _DOMAIN_LABELS = {
     "domain:measurement": "Bias in measurement of the outcome",
     "domain:selection": "Bias in selection of the reported result",
 }
+
+_DOMAIN_ORDER = tuple(_DOMAIN_LABELS)
+_DOMAIN_CODES = {domain_id: f"D{index}" for index, domain_id in enumerate(_DOMAIN_ORDER, start=1)}
+
+
+def _ordered_domains(domains: tuple[DomainView, ...]) -> tuple[DomainView, ...]:
+    """Apply the official RoB 2 D1–D5 order to every human projection."""
+
+    return tuple(
+        sorted(
+            domains,
+            key=lambda domain: (
+                _DOMAIN_CODES.get(domain.domain_id, "D99"),
+                domain.domain_id,
+            ),
+        )
+    )
+
+
+def _domain_code(domain_id: str) -> str:
+    return _DOMAIN_CODES.get(domain_id, "")
+
+
+def _render_overall_policy(assessment: AssessmentView) -> str:
+    if not (
+        assessment.overall_policy_id
+        or assessment.overall_policy_hash
+        or assessment.overall_decision_trace
+    ):
+        return ""
+    policy_text = assessment.overall_policy_text or (
+        "Low when all five domain judgments are Low; High when any domain judgment is High; "
+        "otherwise Some concerns."
+    )
+    trace = assessment.overall_decision_trace or ("not recorded",)
+    trace_html = "".join(f"<li><code>{html.escape(item)}</code></li>" for item in trace)
+    return (
+        '<section class="overall-policy" aria-labelledby="overall-policy-heading">'
+        '<h2 id="overall-policy-heading">Overall maximum-domain policy</h2>'
+        f"<p>{html.escape(policy_text)}</p>"
+        f"<dl class=\"identity-grid\"><div><dt>Policy id</dt><dd><code>{html.escape(assessment.overall_policy_id or 'not recorded')}</code></dd></div>"
+        f"<div><dt>Policy hash</dt><dd><code>{html.escape(assessment.overall_policy_hash or 'not recorded')}</code></dd></div></dl>"
+        f"<h3>Decision trace</h3><ul>{trace_html}</ul></section>"
+    )
 
 
 def _domain_label(domain_id: str) -> str:
@@ -783,12 +1023,19 @@ def _assessment_payload(assessment: AssessmentView) -> dict[str, object]:
             "source_locator",
             "estimate",
             "result_identity",
+            "result_details",
+            "overall_policy_id",
+            "overall_policy_hash",
+            "overall_policy_text",
+            "overall_decision_trace",
         ):
             payload.pop(key, None)
     for domain_payload, domain in zip(payload.get("domains", ()), assessment.domains, strict=False):
         if not any(question.wording for question in domain.questions):
             for question_payload in domain_payload.get("questions", ()):
                 question_payload.pop("wording", None)
+                question_payload.pop("conflicts", None)
+                question_payload.pop("uncertainty", None)
     return payload
 
 
@@ -852,6 +1099,8 @@ a { color: #064c87; } a:focus-visible, summary:focus-visible { outline: .2rem so
 
 
 _AUDIT_CSS = """
+:root { --sr-only: 1px; }
+.sr-only { position: absolute; width: var(--sr-only); height: var(--sr-only); padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
 :root { color-scheme: light; font-family: system-ui, sans-serif; color: #17322d; background: #f7f4ed; }
 body { margin: 0; line-height: 1.5; } main { max-width: 90rem; margin: auto; padding: 1rem; }
 h1, h2 { font-family: Georgia, serif; } .report-header, .result-hero, .audit-summary, .domain, .question, .diagnostic { border: 1px solid #c9c5ba; border-radius: .5rem; background: #fffdf8; padding: 1rem; margin: 1rem 0; }
@@ -892,6 +1141,14 @@ def latest_assessment_view(ledger: WorkflowLedger) -> AssessmentView:
         _load_reference(ledger, current, reference, AlgorithmicJudgmentRevision)
         for reference in assessment.judgments
     )
+    answers_by_sq: dict[str, SQAnswerRevision] = {}
+    for reference in assessment.answers:
+        try:
+            answer = _load_reference(ledger, current, reference, SQAnswerRevision)
+        except (TypeError, ValueError):
+            continue
+        answers_by_sq[answer.sq_id] = answer
+    _question_views, question_domains = _latest_question_views(ledger, current, assessment, answers_by_sq)
     result = result_spec.result
     domain_order = {
         domain_id: index for index, domain_id in enumerate(_DOMAIN_LABELS, start=1)
@@ -927,7 +1184,6 @@ def latest_assessment_view(ledger: WorkflowLedger) -> AssessmentView:
         analysis_model=result.analysis_model,
         effect_measure=result.effect_measure,
         source_locator=result.source_locator,
-        estimate=estimate,
     )
     return AssessmentView(
         assessment_revision_id=assessment.revision_id,
@@ -946,6 +1202,14 @@ def latest_assessment_view(ledger: WorkflowLedger) -> AssessmentView:
         source_locator=result.source_locator,
         estimate=estimate,
         result_identity=identity,
+        result_details=ResultDetailsView(
+            measurement_instrument=result.measurement_instrument,
+            analysis_population=result.analysis_population,
+            analysis_model=result.analysis_model,
+            effect_measure=result.effect_measure,
+            source_locator=result.source_locator,
+            estimate=estimate,
+        ),
         overall_judgment=_overall_judgment(effective),
         domains=tuple(
             DomainView(

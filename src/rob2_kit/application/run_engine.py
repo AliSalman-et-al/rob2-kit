@@ -139,6 +139,7 @@ from rob2_kit.reports import (
     EstimateView,
     EvidenceView,
     ReportProjector,
+    ResultDetailsView,
     ResultIdentityView,
     RunIndexProjector,
     RunIndexResultView,
@@ -3657,7 +3658,14 @@ class RunEngine:
             analysis_model=result.analysis_model,
             effect_measure=result.effect_measure,
             source_locator=result.source_locator,
-            estimate=estimate,
+        )
+        overall_policy_id = "policy:overall-maximum-domain-1.0.0"
+        overall_policy_hash = canonical_hash(
+            {
+                "policy_id": overall_policy_id,
+                "order": ["low", "some_concerns", "high"],
+                "rules": ("all_low", "any_high", "otherwise_some_concerns"),
+            }
         )
         domain_labels = {
             "domain:randomization": "Bias arising from the randomization process",
@@ -3685,6 +3693,14 @@ class RunEngine:
             source_locator=result_spec.result.source_locator,
             estimate=estimate,
             result_identity=result_identity,
+            result_details=ResultDetailsView(
+                measurement_instrument=result_spec.result.measurement_instrument,
+                analysis_population=result_spec.result.analysis_population,
+                analysis_model=result_spec.result.analysis_model,
+                effect_measure=result_spec.result.effect_measure,
+                source_locator=result_spec.result.source_locator,
+                estimate=estimate,
+            ),
             overall_judgment=evaluation.overall_judgment.value,
             domains=tuple(
                 DomainView(
@@ -3708,6 +3724,14 @@ class RunEngine:
             ),
             visual_citations=visual_citations,
             execution_contract=execution_contract,
+            overall_policy_id=overall_policy_id,
+            overall_policy_hash=overall_policy_hash,
+            overall_policy_text=(
+                "Low when all five domain judgments are Low; High when any domain judgment "
+                "is High; "
+                "otherwise Some concerns."
+            ),
+            overall_decision_trace=tuple(evaluation.matched_rule_ids),
         )
         result_spec_ref = self._result_spec_reference(ledger, result_id)
         source_inventory_ref = self._freeze_source_inventory(
@@ -3794,11 +3818,22 @@ class RunEngine:
         projector = ReportProjector(assessment)
         lease = self._acquire_lease(ledger, self._now())
         report_base = self._required_root() / "output" / "report-bundle"
-        report_root = report_base
+        # Keep every report under a deterministic manifest-rooted
+        # run/trial/result hierarchy.  The identity path is stable across
+        # process restarts and gives the Run index a direct, local link even
+        # for the first terminal Result; assessment revisions remain immutable
+        # within that Result directory when a superseding revision is needed.
+        report_root = (
+            report_base
+            / "runs"
+            / self._report_path_component(run_id)
+            / "trials"
+            / self._report_path_component(result.trial_id)
+            / "results"
+            / self._report_path_component(result_id)
+        )
         if report_root.exists():
-            # Preserve an earlier immutable bundle when another Result reaches
-            # a terminal checkpoint in the same project.
-            report_root = report_base / assessment_revision_id.replace(":", "_")
+            report_root = report_root / self._report_path_component(assessment_revision_id)
         if report_root.exists():
             raise ValueError("the immutable report bundle already exists")
         staging = report_root.parent / f".report-bundle-staging-{assessment_digest}"
@@ -3929,7 +3964,18 @@ class RunEngine:
 
         root = self._required_root()
         digest = self._digest(f"{diagnostic.run_id}|{diagnostic.result_id}|{diagnostic.reason}")
-        report_root = root / "output" / "report-bundle" / "diagnostics" / digest
+        report_root = (
+            root
+            / "output"
+            / "report-bundle"
+            / "runs"
+            / self._report_path_component(diagnostic.run_id)
+            / "trials"
+            / self._report_path_component(diagnostic.trial_id)
+            / "results"
+            / self._report_path_component(diagnostic.result_id)
+            / "diagnostic"
+        )
         if report_root.exists():
             return diagnostic.model_copy(
                 update={
@@ -3994,6 +4040,8 @@ class RunEngine:
         bundle_root = root / "output" / "report-bundle"
         if not bundle_root.exists():
             return
+        run_root = bundle_root / "runs" / self._report_path_component(run_id)
+        run_root.mkdir(parents=True, exist_ok=True)
         entries: list[dict[str, Any]] = []
         ancillary_outputs: set[str] = set()
         for event in self._events_for_run(ledger, run_id):
@@ -4020,7 +4068,7 @@ class RunEngine:
             if report_root:
                 report_directory = root / report_root
                 try:
-                    report_path = report_directory.relative_to(bundle_root).as_posix()
+                    report_path = report_directory.relative_to(run_root).as_posix()
                 except ValueError:
                     continue
                 if report_path == ".":
@@ -4174,9 +4222,30 @@ class RunEngine:
             "run-index.json": index.json(),
             "run-index.html": index.html(),
         }.items():
-            staging = bundle_root / f".{name}.staging"
+            staging = run_root / f".{name}.staging"
             staging.write_bytes(content)
-            os.replace(staging, bundle_root / name)
+            os.replace(staging, run_root / name)
+        # A run-level manifest is the stable root used by consumers to resolve
+        # every direct report link.  Keep it separate from each Result's
+        # content manifest so a new Result cannot invalidate prior hashes.
+        run_manifest = {
+            "run_id": run_id,
+            "run_index": "run-index.html",
+            "results": [
+                {
+                    "result_id": item.result_id,
+                    "trial_id": item.trial_id,
+                    "state": item.state,
+                    "report": item.report,
+                }
+                for item in index.run.results
+            ],
+        }
+        manifest_staging = run_root / ".manifest.json.staging"
+        manifest_staging.write_bytes(
+            json.dumps(run_manifest, sort_keys=True, separators=(",", ":")).encode() + b"\n"
+        )
+        os.replace(manifest_staging, run_root / "manifest.json")
 
     def _assessment_inputs(
         self,
@@ -8240,3 +8309,10 @@ class RunEngine:
     @staticmethod
     def _digest(value: str) -> str:
         return hashlib.sha256(value.encode()).hexdigest()[:24]
+
+    @staticmethod
+    def _report_path_component(value: str) -> str:
+        """Return a stable, confined path component for a manifest identity."""
+
+        component = re.sub(r"[^A-Za-z0-9._-]+", "-", str(value)).strip(".-")
+        return component or f"id-{hashlib.sha256(str(value).encode()).hexdigest()[:16]}"
