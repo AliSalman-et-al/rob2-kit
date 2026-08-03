@@ -118,3 +118,38 @@ def test_run_index_has_trial_result_traffic_dashboard_and_zero_evidence() -> Non
     assert "Evidence claims" in rendered
     assert "0" in rendered
     assert "Some concerns" in rendered
+
+
+def test_report_retains_material_conflicts_uncertainty_and_overall_policy() -> None:
+    assessment = _assessment().model_copy(
+        update={
+            "overall_policy_id": "policy:overall-maximum-domain-1.0.0",
+            "overall_policy_hash": "sha256:overall-policy",
+            "overall_decision_trace": ("rule:overall:any-concerns",),
+            "domains": (
+                _assessment().domains[0].model_copy(
+                    update={
+                        "questions": (
+                            _assessment().domains[0].questions[0].model_copy(
+                                update={
+                                    "conflicts": (("claim:one", "claim:two"),),
+                                    "uncertainty": ("registry source unavailable",),
+                                }
+                            ),
+                        )
+                    }
+                ),
+                *_assessment().domains[1:],
+            ),
+        }
+    )
+    projector = ReportProjector(assessment)
+    html = projector.html().decode()
+    markdown = projector.markdown().decode()
+    assert "Overall maximum-domain policy" in html
+    assert "policy:overall-maximum-domain-1.0.0" in html
+    assert "sha256:overall-policy" in html
+    assert "claim:one, claim:two" in html
+    assert "registry source unavailable" in html
+    assert "Conflicts: claim:one, claim:two" in markdown
+    assert r"Policy hash: sha256:overall\-policy" in markdown

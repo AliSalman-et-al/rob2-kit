@@ -849,7 +849,7 @@ def _render_question(question: SignalingQuestionView) -> str:
         f'<p class="evidence-count" aria-label="Evidence count">{len(question.evidence)} evidence claims</p>'
         f"<p><strong>Answer:</strong> {html.escape(_display_answer(question.answer))}</p>"
         f"<p><strong>Coverage:</strong> {html.escape(question.coverage.replace('_', ' '))}</p>"
-        f"{no_information}{_limitations(question.limitations)}"
+        f"{no_information}{_limitations(question.limitations)}{conflicts}{uncertainty}"
         "<details><summary>AI rationale</summary>"
         f"<p>{html.escape(question.rationale)}</p></details>"
         "<details><summary>Evidence, provenance, and Decision trace</summary>"
@@ -1268,10 +1268,139 @@ def latest_assessment_view(ledger: WorkflowLedger) -> AssessmentView:
                 label=_domain_label(judgment.domain_id),
                 judgment=judgment.judgment.value,
                 rationale=(f"Algorithmic judgment from {judgment.decision_trace.revision_id}."),
+                questions=question_domains.get(judgment.domain_id, ()),
+                decision_trace=(judgment.decision_trace.revision_id,),
+                coverage=(
+                    "incomplete"
+                    if any(question.coverage == "incomplete" for question in question_domains.get(judgment.domain_id, ()))
+                    else "complete"
+                ),
+                limitations=tuple(
+                    limitation
+                    for question in question_domains.get(judgment.domain_id, ())
+                    for limitation in question.limitations
+                ),
             )
             for judgment in ordered
         ),
+        overall_policy_id=(ordered[0].overall_policy_id if ordered else None),
+        overall_policy_hash=(ordered[0].overall_policy_hash if ordered else None),
+        overall_policy_text=(
+            "Low when all five domain judgments are Low; High when any domain judgment is High; otherwise Some concerns."
+            if ordered and ordered[0].overall_policy_id
+            else ""
+        ),
+        overall_decision_trace=tuple(
+            rule_id
+            for judgment in ordered
+            for rule_id in (
+                _load_reference(ledger, current, judgment.decision_trace, DecisionTrace).matched_rule_ids
+            )
+        ),
     )
+
+
+def _latest_question_views(
+    ledger: WorkflowLedger,
+    current: dict[str, RevisionProjection],
+    assessment: AssessmentRevision,
+    answers: dict[str, SQAnswerRevision],
+) -> tuple[dict[str, SignalingQuestionView], dict[str, tuple[SignalingQuestionView, ...]]]:
+    """Rehydrate evidence-first questions from the Assessment dependencies.
+
+    ``latest_assessment_view`` is a read-only compatibility projection, but it
+    must not silently discard the evidence, coverage, conflict, and uncertainty
+    fields that terminal reports expose.  Every phrase below is reconstructed
+    from the frozen canonical span or visual transcription artifact.
+    """
+
+    result: dict[str, SignalingQuestionView] = {}
+    domains: dict[str, list[SignalingQuestionView]] = {}
+    for reference in assessment.evidence_bundles:
+        try:
+            bundle = _load_reference(ledger, current, reference, EvidenceBundle)
+        except (TypeError, ValueError):
+            continue
+        if bundle.sq_id is None:
+            continue
+        dispositions: dict[str, str] = {}
+        if bundle.consideration_manifest is not None:
+            try:
+                manifest = _load_reference(
+                    ledger, current, bundle.consideration_manifest, EvidenceConsiderationManifest
+                )
+                dispositions = {
+                    item.item_id: item.disposition.value for item in manifest.dispositions
+                }
+            except (TypeError, ValueError):
+                pass
+        evidence: list[EvidenceView] = []
+        for item in bundle.items:
+            disposition = dispositions.get(item.entity_id, "contextual")
+            if disposition not in {"supporting", "contradicting", "contextual"}:
+                disposition = "residual"
+            try:
+                claim = _load_reference(ledger, current, item, EvidenceClaim)
+                unit = _load_reference(ledger, current, claim.canonical_unit, CanonicalEvidenceUnit)
+                phrase = unit.text[claim.span_start : claim.span_end]
+                if not phrase:
+                    continue
+                evidence.append(
+                    EvidenceView(
+                        evidence_id=claim.revision_id,
+                        disposition=disposition,
+                        exact_phrase=phrase,
+                        source_id=claim.source.entity_id,
+                        page=unit.page,
+                        provenance=(
+                            f"canonical unit {unit.unit_id}; Parse record {unit.parse_id}; "
+                            f"verification {claim.verification_status.value}"
+                        ),
+                    )
+                )
+                continue
+            except (TypeError, ValueError, IndexError):
+                pass
+            try:
+                transcription = _load_reference(ledger, current, item, VisualTranscription)
+            except (TypeError, ValueError):
+                continue
+            evidence.append(
+                EvidenceView(
+                    evidence_id=transcription.revision_id,
+                    disposition=disposition,
+                    exact_phrase=transcription.transcription,
+                    source_id=transcription.source.entity_id,
+                    page=transcription.page,
+                    provenance=(
+                        f"visual-only transcription; {transcription.render_mode} at "
+                        f"{transcription.dpi} dpi; not machine-verified"
+                    ),
+                )
+            )
+        answer = answers.get(bundle.sq_id)
+        uncertainty = (
+            (f"coverage state: {bundle.coverage_state.value}",)
+            if bundle.coverage_state.value != "complete"
+            else ()
+        ) + bundle.coverage_limitations + (
+            ("material source conflict retained",) if bundle.conflicts else ()
+        )
+        question = SignalingQuestionView(
+            question_id=bundle.sq_id,
+            answer=answer.answer.value if answer else "no_information",
+            rationale=answer.rationale if answer else "No answer revision was recorded.",
+            evidence=tuple(evidence),
+            coverage=bundle.coverage_state.value,
+            limitations=bundle.coverage_limitations,
+            no_information_basis=bundle.no_information_basis,
+            conflicts=bundle.conflicts,
+            uncertainty=uncertainty,
+        )
+        result[bundle.sq_id] = question
+        if bundle.domain_id is not None:
+            domains.setdefault(bundle.domain_id, []).append(question)
+    return result, {domain_id: tuple(items) for domain_id, items in domains.items()}
 
 
 def _load_reference[ReportRevision: BaseModel](
