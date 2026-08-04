@@ -58,6 +58,7 @@ from rob2_kit.application.contracts import (
 from rob2_kit.application.determinism import QualificationDeterminism
 from rob2_kit.application.lifecycle import RunState
 from rob2_kit.application.run_engine import RunEngine, SecondProjectRootError
+from rob2_kit.evidence.search import ReadContextMode
 
 # The legacy inventory remains the default while the expand-phase routes are
 # migrated.  New composition code can use the canonical names without editing
@@ -364,6 +365,7 @@ def create_server(
     def search_evidence(
         run_id: str,
         query: SearchQuery,
+        work_token: WorkToken | None = None,
         result_id: str | None = None,
         cursor: str | None = None,
         broad_query_justification: str | None = None,
@@ -372,7 +374,12 @@ def create_server(
         pass_kind: SearchPassKind | None = None,
         seed_family: str | None = None,
     ) -> dict[str, Any]:
-        """Search evidence, e.g. query={"terms":["allocation"]}.
+        """Search scoped evidence, e.g. query={"terms":["allocation"]}.
+
+        During Domain evidence work, copy ``work_token`` from the active
+        ``continue_run`` item. It supplies Trial/Result/Domain scope; never
+        widen that scope with IDs from conversation history. The token remains
+        optional only for compatibility with read-only clean-room inspection.
 
         With pass_kind="guidance_seed", choose a stable identifier-shaped family
         label such as seed_family="seed:allocation" and reuse that exact label in
@@ -384,6 +391,7 @@ def create_server(
                 SearchEvidenceRequest.model_validate(
                     {
                         "run_id": run_id,
+                        "work_token": work_token,
                         "query": query,
                         "result_id": result_id,
                         "cursor": cursor,
@@ -401,20 +409,26 @@ def create_server(
     def read_evidence(
         run_id: str,
         unit_id: str,
+        work_token: WorkToken | None = None,
         result_id: str | None = None,
         neighbor_limit: int = 6,
         context_character_target: int = 16_000,
+        mode: ReadContextMode = ReadContextMode.UNIT,
+        cursor: str | None = None,
     ) -> dict[str, Any]:
-        """Read one engine-issued canonical evidence unit and its bounded neighbors."""
+        """Read one issued unit using bounded ``unit``, ``neighbors``, or ``section`` mode."""
         return _dump(
             engine.read_evidence(
                 ReadEvidenceRequest.model_validate(
                     {
                         "run_id": run_id,
                         "unit_id": unit_id,
+                        "work_token": work_token,
                         "result_id": result_id,
                         "neighbor_limit": neighbor_limit,
                         "context_character_target": context_character_target,
+                        "mode": mode,
+                        "cursor": cursor,
                     }
                 )
             )

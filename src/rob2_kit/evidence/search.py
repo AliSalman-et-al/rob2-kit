@@ -12,8 +12,9 @@ import secrets
 import sqlite3
 from enum import StrEnum
 from pathlib import Path
+from typing import Literal
 
-from pydantic import Field, model_validator
+from pydantic import AliasChoices, Field, model_validator
 
 from rob2_kit.domain.canonical import canonical_hash
 from rob2_kit.domain.revisions import ContentHash, FrozenModel, Identifier
@@ -36,6 +37,37 @@ class CanonicalUnitKind(StrEnum):
     CAPTION = "caption"
     FOOTNOTE = "footnote"
     TABLE_ROW = "table_row"
+
+
+class DocumentZone(StrEnum):
+    """Coarse source zones used for safe evidence retrieval defaults."""
+
+    MAIN = "main"
+    INTRODUCTION = "introduction"
+    METHODS = "methods"
+    RESULTS = "results"
+    DISCUSSION = "discussion"
+    BIBLIOGRAPHY = "bibliography"
+    CONTENTS = "contents"
+    PAGE_FURNITURE = "page_furniture"
+    EXTRACTION_ARTIFACT = "extraction_artifact"
+    OTHER = "other"
+
+
+class TrialDiscourseScope(StrEnum):
+    """Classification of the Trial discourse in a source-authored unit."""
+
+    ACTIVE = "active"
+    OTHER = "other"
+    MIXED = "mixed"
+    UNCERTAIN = "uncertain"
+    NONE = "none"
+
+
+class ReadContextMode(StrEnum):
+    UNIT = "unit"
+    NEIGHBORS = "neighbors"
+    SECTION = "section"
 
 
 class CanonicalWordBox(FrozenModel):
@@ -73,6 +105,25 @@ class CanonicalEvidenceUnit(FrozenModel):
     text: str = Field(min_length=1)
     spatial: tuple[float, float, float, float] | None = None
     word_boxes: tuple[CanonicalWordBox, ...] = ()
+    # Optional structure metadata is populated by parsers that can preserve
+    # hierarchy and Trial discourse.  Keeping it optional retains compatibility
+    # with older parse records while allowing retrieval to fail closed when a
+    # Work-token scope requires an explicit identity.
+    trial_id: Identifier | None = None
+    result_id: Identifier | None = None
+    domain_id: Identifier | None = None
+    question_ids: tuple[Identifier, ...] = ()
+    section_path: tuple[str, ...] = ()
+    hierarchy_path: tuple[str, ...] = ()
+    reading_order: int = Field(default=0, ge=0)
+    source_role: str | None = None
+    document_zone: DocumentZone | None = Field(
+        default=None,
+        validation_alias=AliasChoices("document_zone", "zone"),
+    )
+    discourse_scope: TrialDiscourseScope = TrialDiscourseScope.NONE
+    duplicate_group_id: Identifier | None = None
+    warnings: tuple[str, ...] = ()
 
     @model_validator(mode="after")
     def validate_word_boxes(self) -> CanonicalEvidenceUnit:
@@ -93,6 +144,17 @@ class CanonicalBlock(FrozenModel):
     text: str = Field(min_length=1)
     spatial: tuple[float, float, float, float]
     word_boxes: tuple[CanonicalWordBox, ...] = ()
+    section_path: tuple[str, ...] = ()
+    hierarchy_path: tuple[str, ...] = ()
+    reading_order: int = Field(default=0, ge=0)
+    source_role: str | None = None
+    document_zone: DocumentZone | None = Field(
+        default=None,
+        validation_alias=AliasChoices("document_zone", "zone"),
+    )
+    discourse_scope: TrialDiscourseScope = TrialDiscourseScope.NONE
+    duplicate_group_id: Identifier | None = None
+    warnings: tuple[str, ...] = ()
 
 
 class CanonicalPage(FrozenModel):
@@ -106,6 +168,9 @@ def canonicalize_evidence_units(
     source_artifact_hash: ContentHash,
     parse_id: Identifier,
     pages: tuple[CanonicalPage, ...],
+    trial_id: Identifier | None = None,
+    result_id: Identifier | None = None,
+    domain_id: Identifier | None = None,
 ) -> tuple[CanonicalEvidenceUnit, ...]:
     """Turn parser-preserved structural blocks into immutable citable units."""
     source_slug = source_id.removeprefix("source:")
@@ -125,6 +190,17 @@ def canonicalize_evidence_units(
                     text=block.text,
                     spatial=block.spatial,
                     word_boxes=block.word_boxes,
+                    trial_id=trial_id,
+                    result_id=result_id,
+                    domain_id=domain_id,
+                    section_path=block.section_path,
+                    hierarchy_path=block.hierarchy_path,
+                    reading_order=block.reading_order or len(units),
+                    source_role=block.source_role,
+                    document_zone=block.document_zone,
+                    discourse_scope=block.discourse_scope,
+                    duplicate_group_id=block.duplicate_group_id,
+                    warnings=block.warnings,
                 )
             )
     return tuple(units)
@@ -137,6 +213,7 @@ class SearchProjection(FrozenModel):
     start: int = Field(ge=0)
     end: int = Field(gt=0)
     citable: bool = False
+    projection_version: str = Field(default="1.0.0", min_length=1)
 
     @model_validator(mode="after")
     def validate_non_citable(self) -> SearchProjection:
@@ -174,6 +251,20 @@ class SearchQuery(FrozenModel):
     pages: tuple[int, ...] = Field(
         default=(), description="Optional one-based source page numbers."
     )
+    # Safe metadata refinements.  These are values, never executable FTS
+    # syntax; active Work-token scope is applied in addition to these filters.
+    trial_id: Identifier | None = None
+    result_id: Identifier | None = None
+    domain_id: Identifier | None = None
+    question_id: Identifier | None = None
+    trial_ids: tuple[Identifier, ...] = ()
+    result_ids: tuple[Identifier, ...] = ()
+    domain_ids: tuple[Identifier, ...] = ()
+    question_ids: tuple[Identifier, ...] = ()
+    source_roles: tuple[str, ...] = ()
+    document_zones: tuple[DocumentZone, ...] = ()
+    include_uncertain: bool = True
+    include_other_trial: bool = False
 
     @model_validator(mode="after")
     def validate_structure(self) -> SearchQuery:
@@ -191,7 +282,23 @@ class SearchQuery(FrozenModel):
             raise ValueError("raw FTS syntax is not accepted")
         if any(page < 1 for page in self.pages):
             raise ValueError("page filters use one-based positive page numbers")
+        if any(not role.strip() for role in self.source_roles):
+            raise ValueError("source roles cannot be blank")
         return self
+
+
+class EvidenceScope(FrozenModel):
+    """Engine-issued scope applied before lexical ranking."""
+
+    trial_id: Identifier | None = None
+    result_id: Identifier | None = None
+    domain_id: Identifier | None = None
+    question_id: Identifier | None = None
+    source_ids: tuple[Identifier, ...] = ()
+    source_roles: tuple[str, ...] = ()
+    document_zones: tuple[DocumentZone, ...] = ()
+    include_uncertain: bool = False
+    include_other_trial: bool = False
 
 
 class SearchPolicy(FrozenModel):
@@ -219,6 +326,10 @@ class SearchHit(FrozenModel):
     projection: SearchProjection
     rank: float
     oversized: bool = False
+    preview: str = ""
+    match_explanation: str = "lexical match"
+    warnings: tuple[str, ...] = ()
+    duplicate_group_id: Identifier | None = None
 
 
 class QueryPreview(FrozenModel):
@@ -238,6 +349,10 @@ class SearchPage(FrozenModel):
     preview: QueryPreview
     character_count: int = Field(default=0, ge=0)
     oversized_unit_ids: tuple[Identifier, ...] = ()
+    condition: Literal["results", "zero_hits", "excluded_only", "truncated"] = "results"
+    excluded_count: int = Field(default=0, ge=0)
+    estimated_omitted_characters: int = Field(default=0, ge=0)
+    next_actions: tuple[str, ...] = ()
 
     @property
     def has_more(self) -> bool:
@@ -255,6 +370,11 @@ class EvidenceContext(FrozenModel):
     neighbor_limit: int = Field(ge=0)
     oversized: bool = False
     omitted_neighbor_count: int = Field(ge=0)
+    mode: ReadContextMode = ReadContextMode.NEIGHBORS
+    section_path: tuple[str, ...] = ()
+    continuation_cursor: str | None = None
+    warnings: tuple[str, ...] = ()
+    visual_inspection_available: bool = False
 
     @model_validator(mode="after")
     def validate_bounds_and_provenance(self) -> EvidenceContext:
@@ -290,6 +410,9 @@ class EvidenceContext(FrozenModel):
             raise ValueError("oversized context views cannot include neighboring units")
         if not self.oversized and self.character_count > self.character_target:
             raise ValueError("bounded context exceeds its character target")
+        if self.mode is ReadContextMode.SECTION and self.section_path:
+            if any(item.section_path != self.section_path for item in self.neighbors):
+                raise ValueError("section context cannot cross hierarchy boundaries")
         return self
 
     @property
@@ -316,7 +439,19 @@ class EvidenceSearchIndex:
                     kind TEXT NOT NULL,
                     text TEXT NOT NULL,
                     spatial TEXT,
-                    word_boxes TEXT
+                    word_boxes TEXT,
+                    trial_id TEXT,
+                    result_id TEXT,
+                    domain_id TEXT,
+                    question_ids TEXT,
+                    section_path TEXT,
+                    hierarchy_path TEXT,
+                    reading_order INTEGER NOT NULL DEFAULT 0,
+                    source_role TEXT,
+                    document_zone TEXT,
+                    discourse_scope TEXT NOT NULL DEFAULT 'none',
+                    duplicate_group_id TEXT,
+                    warnings TEXT
                 );
                 CREATE TABLE IF NOT EXISTS evidence_snapshot (
                     singleton INTEGER PRIMARY KEY CHECK (singleton = 1),
@@ -340,6 +475,25 @@ class EvidenceSearchIndex:
             }
             if "word_boxes" not in columns:
                 connection.execute("ALTER TABLE evidence_units ADD COLUMN word_boxes TEXT")
+            migrations = {
+                "trial_id": "TEXT",
+                "result_id": "TEXT",
+                "domain_id": "TEXT",
+                "question_ids": "TEXT",
+                "section_path": "TEXT",
+                "hierarchy_path": "TEXT",
+                "reading_order": "INTEGER NOT NULL DEFAULT 0",
+                "source_role": "TEXT",
+                "document_zone": "TEXT",
+                "discourse_scope": "TEXT NOT NULL DEFAULT 'none'",
+                "duplicate_group_id": "TEXT",
+                "warnings": "TEXT",
+            }
+            for name, declaration in migrations.items():
+                if name not in columns:
+                    connection.execute(
+                        f"ALTER TABLE evidence_units ADD COLUMN {name} {declaration}"
+                    )
             connection.execute(
                 "INSERT OR IGNORE INTO evidence_cursor_secret(singleton, secret) VALUES (1, ?)",
                 (secrets.token_bytes(32),),
@@ -358,8 +512,10 @@ class EvidenceSearchIndex:
                 connection.execute(
                     "INSERT INTO evidence_units "
                     "(unit_id, source_id, source_artifact_hash, parse_id, page, kind, text, "
-                    "spatial, word_boxes) "
-                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                    "spatial, word_boxes, trial_id, result_id, domain_id, question_ids, "
+                    "section_path, hierarchy_path, reading_order, source_role, document_zone, "
+                    "discourse_scope, duplicate_group_id, warnings) "
+                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                     (
                         item.unit_id,
                         item.source_id,
@@ -370,6 +526,18 @@ class EvidenceSearchIndex:
                         item.text,
                         json.dumps(item.spatial),
                         json.dumps([box.model_dump(mode="json") for box in item.word_boxes]),
+                        item.trial_id,
+                        item.result_id,
+                        item.domain_id,
+                        json.dumps(item.question_ids),
+                        json.dumps(item.section_path),
+                        json.dumps(item.hierarchy_path),
+                        item.reading_order,
+                        item.source_role,
+                        item.document_zone.value if item.document_zone else None,
+                        item.discourse_scope.value,
+                        item.duplicate_group_id,
+                        json.dumps(item.warnings),
                     ),
                 )
                 for projection in _project(item):
@@ -388,7 +556,7 @@ class EvidenceSearchIndex:
 
     def preview(self, query: SearchQuery, *, policy: SearchPolicy | None = None) -> QueryPreview:
         policy = policy or SearchPolicy()
-        rows, scoped_count = self._matches(query)
+        rows, scoped_count, _ = self._matches(query)
         sources: dict[str, set[str]] = {}
         for row in rows:
             sources.setdefault(row["source_id"], set()).add(row["unit_id"])
@@ -406,7 +574,12 @@ class EvidenceSearchIndex:
             ),
         )
 
-    def read_unit(self, unit_id: Identifier) -> CanonicalEvidenceUnit:
+    def read_unit(
+        self,
+        unit_id: Identifier,
+        *,
+        scope: EvidenceScope | None = None,
+    ) -> CanonicalEvidenceUnit:
         """Read one engine-issued canonical unit without accepting raw source locators."""
         with self._connect() as connection:
             row = connection.execute(
@@ -415,7 +588,7 @@ class EvidenceSearchIndex:
             ).fetchone()
         if row is None:
             raise ValueError("canonical evidence unit identifier was not issued by this index")
-        return CanonicalEvidenceUnit(
+        unit = CanonicalEvidenceUnit(
             unit_id=row["unit_id"],
             source_id=row["source_id"],
             source_artifact_hash=row["source_artifact_hash"],
@@ -428,7 +601,22 @@ class EvidenceSearchIndex:
                 CanonicalWordBox.model_validate(item)
                 for item in json.loads(row["word_boxes"] or "[]")
             ),
+            trial_id=row["trial_id"],
+            result_id=row["result_id"],
+            domain_id=row["domain_id"],
+            question_ids=tuple(json.loads(row["question_ids"] or "[]")),
+            section_path=tuple(json.loads(row["section_path"] or "[]")),
+            hierarchy_path=tuple(json.loads(row["hierarchy_path"] or "[]")),
+            reading_order=row["reading_order"] or 0,
+            source_role=row["source_role"],
+            document_zone=row["document_zone"],
+            discourse_scope=row["discourse_scope"] or TrialDiscourseScope.NONE,
+            duplicate_group_id=row["duplicate_group_id"],
+            warnings=tuple(json.loads(row["warnings"] or "[]")),
         )
+        if scope is not None and not _unit_in_scope(unit, scope):
+            raise ValueError("canonical evidence unit is outside the active retrieval scope")
+        return unit
 
     def read_context(
         self,
@@ -436,6 +624,9 @@ class EvidenceSearchIndex:
         *,
         neighbor_limit: int = CONTEXT_NEIGHBOR_LIMIT,
         character_target: int = CONTEXT_CHARACTER_TARGET,
+        mode: ReadContextMode = ReadContextMode.NEIGHBORS,
+        scope: EvidenceScope | None = None,
+        cursor: str | None = None,
     ) -> EvidenceContext:
         """Read an intact unit with deterministic, bounded same-source neighbors.
 
@@ -452,9 +643,11 @@ class EvidenceSearchIndex:
             raise ValueError(
                 f"character_target cannot exceed {CONTEXT_CHARACTER_TARGET} characters"
             )
-        effective_neighbor_limit = min(neighbor_limit, max(0, CONTEXT_UNIT_LIMIT - 1))
         snapshot = self._snapshot()
-        target = self.read_unit(unit_id)
+        target = self.read_unit(unit_id, scope=scope)
+        if mode is ReadContextMode.UNIT:
+            neighbor_limit = 0
+        effective_neighbor_limit = min(neighbor_limit, max(0, CONTEXT_UNIT_LIMIT - 1))
         with self._connect() as connection:
             rows = connection.execute(
                 "SELECT unit_id, page FROM evidence_units "
@@ -466,16 +659,38 @@ class EvidenceSearchIndex:
             (row["unit_id"] for row in rows),
             key=_canonical_unit_order,
         )
+        if mode is ReadContextMode.SECTION and target.section_path:
+            section_rows = []
+            for candidate_id in source_ids:
+                try:
+                    candidate = self.read_unit(candidate_id, scope=scope)
+                except ValueError:
+                    continue
+                if candidate.section_path == target.section_path:
+                    section_rows.append(candidate_id)
+            source_ids = section_rows
         try:
             position = source_ids.index(unit_id)
         except ValueError as error:  # pragma: no cover - read_unit already guards this
             raise ValueError("canonical evidence unit is not in the current snapshot") from error
-        candidate_ids = [
-            source_ids[index]
-            for distance in range(1, len(source_ids) + 1)
-            for index in (position - distance, position + distance)
-            if 0 <= index < len(source_ids)
-        ]
+        if mode is ReadContextMode.SECTION:
+            candidate_ids = [candidate_id for candidate_id in source_ids if candidate_id != unit_id]
+            offset = (
+                _decode_read_cursor(cursor, snapshot, unit_id, self._cursor_secret())
+                if cursor
+                else 0
+            )
+            if offset > len(candidate_ids):
+                raise ValueError("read continuation cursor is outside the current section")
+            candidate_ids = candidate_ids[offset:]
+        else:
+            candidate_ids = [
+                source_ids[index]
+                for distance in range(1, len(source_ids) + 1)
+                for index in (position - distance, position + distance)
+                if 0 <= index < len(source_ids)
+            ]
+            offset = 0
         oversized = len(target.text) > character_target
         if oversized:
             if self._snapshot() != snapshot:
@@ -488,6 +703,10 @@ class EvidenceSearchIndex:
                 neighbor_limit=effective_neighbor_limit,
                 oversized=True,
                 omitted_neighbor_count=max(0, len(source_ids) - 1),
+                mode=mode,
+                section_path=target.section_path,
+                warnings=target.warnings,
+                visual_inspection_available=(target.spatial is not None),
             )
 
         selected: list[CanonicalEvidenceUnit] = []
@@ -495,7 +714,12 @@ class EvidenceSearchIndex:
         for candidate_id in candidate_ids:
             if len(selected) >= effective_neighbor_limit:
                 break
-            candidate = self.read_unit(candidate_id)
+            try:
+                candidate = self.read_unit(candidate_id, scope=scope)
+            except ValueError:
+                # Same-source units outside the active Work-token scope are
+                # boundaries, not implicit expansion candidates.
+                continue
             if characters + len(candidate.text) > character_target:
                 continue
             selected.append(candidate)
@@ -513,6 +737,21 @@ class EvidenceSearchIndex:
             neighbor_limit=effective_neighbor_limit,
             oversized=False,
             omitted_neighbor_count=max(0, len(source_ids) - 1 - len(selected)),
+            mode=mode,
+            section_path=target.section_path,
+            continuation_cursor=(
+                _encode_read_cursor(
+                    snapshot,
+                    target.unit_id,
+                    offset + len(selected),
+                    self._cursor_secret(),
+                )
+                if mode is ReadContextMode.SECTION
+                and offset + len(selected) < len(candidate_ids) + offset
+                else None
+            ),
+            warnings=target.warnings,
+            visual_inspection_available=(target.spatial is not None),
         )
 
     def unit_ids(self) -> frozenset[Identifier]:
@@ -530,6 +769,7 @@ class EvidenceSearchIndex:
         policy: SearchPolicy | None = None,
         cursor: str | None = None,
         broad_query_justification: str | None = None,
+        scope: EvidenceScope | None = None,
     ) -> SearchPage:
         policy = policy or SearchPolicy()
         snapshot = self._snapshot()
@@ -539,10 +779,12 @@ class EvidenceSearchIndex:
             if cursor
             else 0
         )
-        rows, scoped_count = self._matches(query)
+        rows, scoped_count, excluded_count = self._matches(query, scope=scope)
         if self._snapshot() != snapshot:
             raise ValueError("evidence snapshot changed while searching")
         rows = _best_projection_per_unit(rows)
+        rows = _collapse_duplicate_groups(rows)
+        rows = _diversify_rows(rows)
         if offset > len(rows):
             raise ValueError("search cursor offset is outside the current result set")
         is_broad = (
@@ -605,9 +847,33 @@ class EvidenceSearchIndex:
             preview=preview,
             character_count=characters,
             oversized_unit_ids=oversized_unit_ids,
+            condition=(
+                "zero_hits" if not hits and excluded_count == 0
+                else "excluded_only" if not hits and excluded_count > 0
+                else "truncated" if next_cursor is not None
+                else "results"
+            ),
+            excluded_count=excluded_count,
+            estimated_omitted_characters=sum(
+                len(row["text"]) for row in rows[consumed:]
+            ),
+            next_actions=(
+                ("refine the plain-language need or continue with the returned cursor",)
+                if next_cursor is not None
+                else (
+                    ("read an issued canonical unit",)
+                    if hits
+                    else ("refine the plain-language need",)
+                )
+            ),
         )
 
-    def _matches(self, query: SearchQuery) -> tuple[list[sqlite3.Row], int]:
+    def _matches(
+        self,
+        query: SearchQuery,
+        *,
+        scope: EvidenceScope | None = None,
+    ) -> tuple[list[sqlite3.Row], int, int]:
         match = _compile_match(query)
         filters: list[str] = []
         parameters: list[object] = [match]
@@ -620,6 +886,9 @@ class EvidenceSearchIndex:
         if query.pages:
             filters.append(f"u.page IN ({','.join('?' for _ in query.pages)})")
             parameters.extend(query.pages)
+        metadata_filters = _query_metadata_filters(query, scope)
+        filters.extend(metadata_filters[0])
+        parameters.extend(metadata_filters[1])
         where = " AND " + " AND ".join(filters) if filters else ""
         with self._connect() as connection:
             rows = connection.execute(
@@ -637,7 +906,10 @@ class EvidenceSearchIndex:
                 f"SELECT COUNT(*) FROM evidence_units AS u WHERE 1=1{where}",
                 parameters[1:],
             ).fetchone()[0]
-        return rows, scoped_count
+            all_count = connection.execute(
+                "SELECT COUNT(*) FROM evidence_units AS u"
+            ).fetchone()[0]
+        return rows, scoped_count, max(0, all_count - scoped_count)
 
     def _snapshot(self) -> ContentHash:
         with self._connect() as connection:
@@ -664,6 +936,18 @@ class EvidenceSearchIndex:
                 CanonicalWordBox.model_validate(item)
                 for item in json.loads(row["word_boxes"] or "[]")
             ),
+            trial_id=row["trial_id"],
+            result_id=row["result_id"],
+            domain_id=row["domain_id"],
+            question_ids=tuple(json.loads(row["question_ids"] or "[]")),
+            section_path=tuple(json.loads(row["section_path"] or "[]")),
+            hierarchy_path=tuple(json.loads(row["hierarchy_path"] or "[]")),
+            reading_order=row["reading_order"] or 0,
+            source_role=row["source_role"],
+            document_zone=row["document_zone"],
+            discourse_scope=row["discourse_scope"] or TrialDiscourseScope.NONE,
+            duplicate_group_id=row["duplicate_group_id"],
+            warnings=tuple(json.loads(row["warnings"] or "[]")),
         )
         projection_number = int(row["projection_id"].rsplit("-", 1)[1])
         projections = _project(unit)
@@ -673,6 +957,13 @@ class EvidenceSearchIndex:
             projection=projection,
             rank=row["score"],
             oversized=oversized,
+            preview=_coherent_preview(unit.text),
+            match_explanation="lexical match in canonical source text",
+            warnings=unit.warnings
+            + ((f"Trial discourse classified as {unit.discourse_scope.value}",)
+               if unit.discourse_scope in {TrialDiscourseScope.MIXED, TrialDiscourseScope.UNCERTAIN}
+               else ()),
+            duplicate_group_id=unit.duplicate_group_id,
         )
 
     def _cursor_secret(self) -> bytes:
@@ -718,6 +1009,7 @@ def _project(unit: CanonicalEvidenceUnit) -> tuple[SearchProjection, ...]:
             text=unit.text[start:end],
             start=start,
             end=end,
+            projection_version="1.0.0",
         )
         for number, (start, end) in enumerate(spans)
     )
@@ -747,6 +1039,141 @@ def _best_projection_per_unit(rows: list[sqlite3.Row]) -> list[sqlite3.Row]:
     return sorted(unique.values(), key=lambda row: (row["score"], row["unit_id"]))
 
 
+def _collapse_duplicate_groups(rows: list[sqlite3.Row]) -> list[sqlite3.Row]:
+    """Collapse exact duplicate source copies to one inspection candidate."""
+
+    unique: dict[str, sqlite3.Row] = {}
+    for row in rows:
+        key = row["duplicate_group_id"] or row["unit_id"]
+        current = unique.get(key)
+        if current is None or (row["score"], row["unit_id"]) < (
+            current["score"], current["unit_id"]
+        ):
+            unique[key] = row
+    return sorted(unique.values(), key=lambda row: (row["score"], row["unit_id"]))
+
+
+def _diversify_rows(rows: list[sqlite3.Row]) -> list[sqlite3.Row]:
+    """Round-robin Sources while preserving lexical order inside each Source."""
+
+    groups: dict[str, list[sqlite3.Row]] = {}
+    for row in rows:
+        groups.setdefault(row["source_id"], []).append(row)
+    for values in groups.values():
+        values.sort(key=lambda row: (row["score"], row["unit_id"]))
+    ordered: list[sqlite3.Row] = []
+    for index in range(max((len(values) for values in groups.values()), default=0)):
+        for source_id in sorted(groups):
+            values = groups[source_id]
+            if index < len(values):
+                ordered.append(values[index])
+    return ordered
+
+
+def _coherent_preview(text: str, limit: int = 480) -> str:
+    """Return a bounded source-authored preview without clipping mid-word."""
+
+    if len(text) <= limit:
+        return text
+    candidate = text[:limit].rsplit(" ", 1)[0]
+    return (candidate or text[:limit]).rstrip() + "…"
+
+
+def _query_metadata_filters(
+    query: SearchQuery,
+    scope: EvidenceScope | None,
+) -> tuple[list[str], list[object]]:
+    filters: list[str] = []
+    params: list[object] = []
+
+    def add_in(column: str, values: tuple[str, ...]) -> None:
+        if values:
+            filters.append(f"u.{column} IN ({','.join('?' for _ in values)})")
+            params.extend(values)
+
+    trial_ids = query.trial_ids or ((query.trial_id,) if query.trial_id else ())
+    result_ids = query.result_ids or ((query.result_id,) if query.result_id else ())
+    domain_ids = query.domain_ids or ((query.domain_id,) if query.domain_id else ())
+    question_ids = query.question_ids or ((query.question_id,) if query.question_id else ())
+    if scope is not None:
+        if scope.trial_id is not None:
+            trial_ids = (scope.trial_id,)
+        if scope.result_id is not None:
+            result_ids = (scope.result_id,)
+        if scope.domain_id is not None:
+            domain_ids = (scope.domain_id,)
+        if scope.question_id is not None:
+            question_ids = (scope.question_id,)
+        if scope.source_ids:
+            add_in("source_id", scope.source_ids)
+    add_in("trial_id", trial_ids)
+    add_in("result_id", result_ids)
+    add_in("domain_id", domain_ids)
+    if question_ids:
+        filters.append(
+            "EXISTS (SELECT 1 FROM json_each(COALESCE(u.question_ids, '[]')) "
+            "WHERE json_each.value IN ("
+            + ",".join("?" for _ in question_ids)
+            + "))"
+        )
+        params.extend(question_ids)
+    source_roles = scope.source_roles if scope and scope.source_roles else query.source_roles
+    add_in("source_role", source_roles)
+    zones = scope.document_zones if scope and scope.document_zones else query.document_zones
+    add_in("document_zone", tuple(zone.value for zone in zones))
+
+    include_other = scope.include_other_trial if scope else query.include_other_trial
+    if not include_other:
+        filters.append(
+            "COALESCE(u.discourse_scope, 'none') NOT IN ('other')"
+        )
+    include_uncertain = scope.include_uncertain if scope else query.include_uncertain
+    if not include_uncertain:
+        filters.append(
+            "COALESCE(u.discourse_scope, 'none') NOT IN ('uncertain', 'mixed')"
+        )
+    # Ordinary retrieval excludes known non-evidence zones.  Callers can opt
+    # into those zones explicitly through an EvidenceScope refinement.
+    if not zones:
+        filters.append(
+            "COALESCE(u.document_zone, 'main') NOT IN "
+            "('bibliography', 'contents', 'page_furniture', 'extraction_artifact')"
+        )
+    return filters, params
+
+
+def _unit_in_scope(unit: CanonicalEvidenceUnit, scope: EvidenceScope) -> bool:
+    if scope.trial_id is not None and unit.trial_id != scope.trial_id:
+        return False
+    if scope.result_id is not None and unit.result_id != scope.result_id:
+        return False
+    if scope.domain_id is not None and unit.domain_id != scope.domain_id:
+        return False
+    if scope.question_id is not None and scope.question_id not in unit.question_ids:
+        return False
+    if scope.source_ids and unit.source_id not in scope.source_ids:
+        return False
+    if scope.source_roles and unit.source_role not in scope.source_roles:
+        return False
+    if scope.document_zones and unit.document_zone not in scope.document_zones:
+        return False
+    if not scope.document_zones and unit.document_zone in {
+        DocumentZone.BIBLIOGRAPHY,
+        DocumentZone.CONTENTS,
+        DocumentZone.PAGE_FURNITURE,
+        DocumentZone.EXTRACTION_ARTIFACT,
+    }:
+        return False
+    if not scope.include_other_trial and unit.discourse_scope is TrialDiscourseScope.OTHER:
+        return False
+    if not scope.include_uncertain and unit.discourse_scope in {
+        TrialDiscourseScope.MIXED,
+        TrialDiscourseScope.UNCERTAIN,
+    }:
+        return False
+    return True
+
+
 def _encode_cursor(
     snapshot: str,
     query_hash: str,
@@ -770,6 +1197,50 @@ def _encode_cursor(
     }
     encoded = json.dumps(envelope, sort_keys=True, separators=(",", ":")).encode()
     return base64.urlsafe_b64encode(encoded).decode().rstrip("=")
+
+
+def _encode_read_cursor(snapshot: str, unit_id: str, offset: int, secret: bytes) -> str:
+    payload = json.dumps(
+        {"snapshot": snapshot, "unit": unit_id, "offset": offset},
+        sort_keys=True,
+        separators=(",", ":"),
+    ).encode()
+    envelope = {
+        "payload": base64.urlsafe_b64encode(payload).decode().rstrip("="),
+        "mac": hmac.new(secret, payload, hashlib.sha256).hexdigest(),
+    }
+    return base64.urlsafe_b64encode(
+        json.dumps(envelope, sort_keys=True, separators=(",", ":")).encode()
+    ).decode().rstrip("=")
+
+
+def _decode_read_cursor(cursor: str, snapshot: str, unit_id: str, secret: bytes) -> int:
+    try:
+        envelope = json.loads(
+            base64.urlsafe_b64decode(cursor + "=" * (-len(cursor) % 4))
+        )
+        encoded_payload = envelope["payload"]
+        payload_bytes = base64.urlsafe_b64decode(
+            encoded_payload + "=" * (-len(encoded_payload) % 4)
+        )
+        expected = hmac.new(secret, payload_bytes, hashlib.sha256).hexdigest()
+        if not isinstance(envelope.get("mac"), str) or not hmac.compare_digest(
+            envelope["mac"], expected
+        ):
+            raise ValueError("invalid read continuation cursor integrity tag")
+        payload = json.loads(payload_bytes)
+        if payload.get("snapshot") != snapshot:
+            raise ValueError("read continuation cursor belongs to a different snapshot")
+        if payload.get("unit") != unit_id:
+            raise ValueError("read continuation cursor belongs to a different unit")
+        offset = payload.get("offset")
+        if isinstance(offset, bool) or not isinstance(offset, int) or offset < 0:
+            raise ValueError("read continuation cursor offset is invalid")
+        return offset
+    except ValueError:
+        raise
+    except (KeyError, TypeError, OverflowError, binascii.Error, json.JSONDecodeError) as error:
+        raise ValueError("invalid read continuation cursor") from error
 
 
 def _decode_cursor(

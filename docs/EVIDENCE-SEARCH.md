@@ -6,6 +6,15 @@ issued evidence units or visual candidates only. Follow returned pagination and
 coverage constraints; do not treat a context limit or a lack of a convenient
 hit as absence of evidence.
 
+Copy the active Domain-evidence `work_token` from `continue_run` into both
+`search_evidence` and `read_evidence`. The token supplies the Trial, Result,
+Domain, and eligible Source scope; do not reconstruct those IDs from chat
+history or broaden a failed search. Search returns non-citable projections;
+only exact spans from the returned canonical unit can be submitted as evidence.
+Use `read_evidence` with `mode="unit"` by default, `mode="neighbors"` for a
+small same-section expansion, or `mode="section"` for bounded paginated
+section context. Continue a section only with its returned opaque cursor.
+
 Record the required candidate dispositions and coverage through the supplied
 typed submission. Material ambiguity, incomplete coverage, unreadable sources,
 or a conflict remains a reported limitation or blocker. The pinned engine and

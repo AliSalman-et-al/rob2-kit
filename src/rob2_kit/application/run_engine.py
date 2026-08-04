@@ -110,6 +110,7 @@ from rob2_kit.evidence.search import (
     CanonicalPage,
     CanonicalUnitKind,
     CanonicalWordBox,
+    EvidenceScope,
     EvidenceSearchIndex,
     canonicalize_evidence_units,
 )
@@ -1783,11 +1784,13 @@ class RunEngine:
     def search_evidence(self, request: SearchEvidenceRequest) -> SearchEvidenceResponse:
         ledger = self._bound_ledger(request.run_id)
         index = EvidenceSearchIndex(self._required_root() / ".rob2" / "evidence.sqlite3")
+        scope = self._retrieval_scope(ledger, request.run_id, request.work_token, request.result_id)
         page = index.search(
             request.query,
             policy=request.policy,
             cursor=request.cursor,
             broad_query_justification=request.broad_query_justification,
+            scope=scope,
         )
         executed_query = None
         if request.pass_kind is not None:
@@ -1819,10 +1822,14 @@ class RunEngine:
     def read_evidence(self, request: ReadEvidenceRequest) -> ReadEvidenceResponse:
         ledger = self._bound_ledger(request.run_id)
         index = EvidenceSearchIndex(self._required_root() / ".rob2" / "evidence.sqlite3")
+        scope = self._retrieval_scope(ledger, request.run_id, request.work_token, request.result_id)
         context = index.read_context(
             request.unit_id,
             neighbor_limit=request.neighbor_limit,
             character_target=request.context_character_target,
+            mode=request.mode,
+            scope=scope,
+            cursor=request.cursor,
         )
         return ReadEvidenceResponse(
             operation_id=self._read_operation_id(RunOperation.READ_EVIDENCE, request.run_id),
@@ -1833,6 +1840,53 @@ class RunEngine:
             run_id=request.run_id,
             unit=context.unit,
             context=context,
+        )
+
+    def _retrieval_scope(
+        self,
+        ledger: WorkflowLedger,
+        run_id: Identifier,
+        work_token: WorkToken | None,
+        result_id: Identifier | None,
+    ) -> EvidenceScope | None:
+        """Resolve retrieval scope from the active Work token before FTS ranking."""
+
+        if work_token is None:
+            return None
+        expected = self._next_work_item(ledger, run_id)
+        if expected is None or expected.work_token != work_token:
+            raise ValueError(
+                "stale WorkToken: call continue_run and use the current evidence work item"
+            )
+        if work_token.operation is not RunOperation.SUBMIT_DOMAIN_EVIDENCE:
+            raise ValueError(
+                "retrieval is available only during an active submit_domain_evidence work item"
+            )
+        if result_id is not None and result_id != work_token.result_id:
+            raise ValueError("result_id must match the active WorkToken scope")
+        source_ids: tuple[Identifier, ...] = ()
+        if work_token.trial_id is not None:
+            proposal = self._latest_proposal(ledger, run_id)
+            trial = next(
+                (
+                    item
+                    for item in proposal.initialization.trials
+                    if item.trial_id == work_token.trial_id
+                ),
+                None,
+            )
+            if trial is not None:
+                source_ids = tuple(
+                    source.source_id
+                    for source in trial.inventory.sources
+                    if source.artifact_hash is not None
+                )
+        return EvidenceScope(
+            trial_id=work_token.trial_id,
+            result_id=work_token.result_id,
+            domain_id=work_token.domain_id,
+            source_ids=source_ids,
+            include_uncertain=True,
         )
 
     def inspect_visual_candidate(
@@ -3299,6 +3353,14 @@ class RunEngine:
         artifacts = ArtifactStore(root / ".rob2" / "artifacts")
         units = []
         for trial in initialization.trials:
+            trial_result_id = next(
+                (
+                    spec.result.result_id
+                    for spec in initialization.result_specs
+                    if spec.result.trial_id == trial.trial_id
+                ),
+                None,
+            )
             for source in trial.inventory.sources:
                 if source.artifact_hash is None or not source.parse_records:
                     continue
@@ -3344,13 +3406,23 @@ class RunEngine:
                     )
                     for item in indexed_pages
                 )
-                units.extend(
-                    canonicalize_evidence_units(
+                canonical_units = canonicalize_evidence_units(
                         source_id=source.source_id,
                         source_artifact_hash=source.artifact_hash,
                         parse_id=source.parse_records[0].parse_id,
                         pages=pages,
+                        trial_id=trial.trial_id,
+                        result_id=trial_result_id,
                     )
+                units.extend(
+                    item.model_copy(
+                        update={
+                            "source_role": (
+                                source.roles[0].value if source.roles else None
+                            ),
+                        }
+                    )
+                    for item in canonical_units
                 )
         EvidenceSearchIndex(root / ".rob2" / "evidence.sqlite3").replace_units(tuple(units))
 

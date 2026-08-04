@@ -35,6 +35,7 @@ from rob2_kit.evidence.search import (
     CONTEXT_CHARACTER_TARGET,
     CanonicalEvidenceUnit,
     EvidenceContext,
+    ReadContextMode,
     SearchPage,
     SearchPolicy,
     SearchQuery,
@@ -476,6 +477,9 @@ class ConfirmRunDefinitionRequest(FrozenModel):
 class SearchEvidenceRequest(FrozenModel):
     run_id: Identifier
     query: SearchQuery
+    # Optional during the compatibility window; when supplied it must be the
+    # exact active Domain-evidence WorkToken and supplies the retrieval scope.
+    work_token: WorkToken | None = None
     result_id: Identifier | None = None
     cursor: str | None = None
     broad_query_justification: str | None = None
@@ -488,6 +492,7 @@ class SearchEvidenceRequest(FrozenModel):
 class ReadEvidenceRequest(FrozenModel):
     run_id: Identifier
     unit_id: Identifier
+    work_token: WorkToken | None = None
     result_id: Identifier | None = None
     neighbor_limit: int = Field(default=6, ge=0, le=50)
     context_character_target: int = Field(
@@ -495,6 +500,8 @@ class ReadEvidenceRequest(FrozenModel):
         ge=1,
         le=CONTEXT_CHARACTER_TARGET,
     )
+    mode: ReadContextMode = ReadContextMode.UNIT
+    cursor: str | None = None
 
 
 class InspectVisualCandidateRequest(FrozenModel):
