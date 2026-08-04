@@ -588,6 +588,51 @@ def test_post_confirmation_result_resolution_keeps_source_dependency_on_change(
     )
 
 
+def test_first_terminal_unresolved_result_refreshes_run_index_on_continue(
+    tmp_path: Path,
+) -> None:
+    """A post-confirmation Result must be included in the first terminal index."""
+
+    trial = tmp_path / "input" / "trial-a"
+    trial.mkdir(parents=True)
+    (trial / "report.pdf").write_bytes(b"primary")
+    engine, run_id = _prepare_confirm(tmp_path, config=_config())
+    _classify_current_sources(engine, run_id)
+    resolution_work = engine.continue_run(ContinueRunRequest(run_id=run_id)).work_item
+    assert resolution_work is not None and resolution_work.result_id is not None
+    result = Result.model_validate(_result(resolution_work.result_id, "trial:trial-a")["result"])
+    engine.submit_result_resolution(
+        SubmitResultResolutionRequest(
+            contract_version="1.0.0",
+            run_id=run_id,
+            work_token=resolution_work.work_token,
+            idempotency_key="idempotency:first-terminal-index-resolution",
+            result=result,
+            estimate=Estimate(value=Decimal("0.8")),
+            provenance_note="first terminal index fixture",
+        )
+    )
+    _finish_current_result(engine, run_id, prefix="first-terminal-index")
+
+    terminal = engine.continue_run(ContinueRunRequest(run_id=run_id))
+    assert terminal.run_state is RunState.COMPLETE
+    indexes = tuple((tmp_path / "output" / "report-bundle").rglob("run-index.json"))
+    assert len(indexes) == 1
+    index = json.loads(indexes[0].read_text(encoding="utf-8"))
+    assert len(index["results"]) == 1
+    row = index["results"][0]
+    assert row["result_id"] == resolution_work.result_id
+    assert row["state"] == "report_ready"
+    assert row["report"].endswith("/assessment.html")
+    assert index["ancillary_outputs"]
+
+    events_before_retry = len(engine._bound_ledger(run_id).events())
+    repeated = engine.continue_run(ContinueRunRequest(run_id=run_id))
+    assert repeated.run_state is RunState.COMPLETE
+    assert len(engine._bound_ledger(run_id).events()) == events_before_retry
+    assert json.loads(indexes[0].read_text(encoding="utf-8")) == index
+
+
 def test_identical_scan_is_noop_and_content_preserving_move_keeps_source_id(
     tmp_path: Path,
 ) -> None:

@@ -4211,7 +4211,15 @@ class RunEngine:
         # The index is a projection of the *current* active Result set.  Old
         # report/diagnostic records remain immutable in the ledger and on disk,
         # but must not produce duplicate or stale rows after an invalidation.
-        active_result_ids = self._active_result_ids(ledger, run_id)
+        # Use the same Result projection as work-item derivation.  A Result
+        # discovered after confirmation (the normal unresolved-candidate
+        # path) is not part of the immutable ConfirmedRunDefinition.result_ids
+        # tuple, but its committed ``result-discovered`` event makes it active
+        # for this run.  Reading only ``_active_result_ids`` would therefore
+        # publish an empty index even while the terminal bundle is visible.
+        active_result_ids = set(
+            self._result_ids(ledger, run_id, self._latest_proposal(ledger, run_id))
+        )
         result_states = {item.result_id: item.state.value for item in projection.results}
         latest_invalidated: dict[str, int] = {}
         for event in events:

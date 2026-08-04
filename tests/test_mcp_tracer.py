@@ -287,6 +287,32 @@ def test_five_domain_journey_survives_stdio_restart_and_publishes_report(
                 assert rebound is not None
                 assert rebound["run_id"] == run_id
                 await _finish_domains(session, run_id)
+                # The first terminal continuation must leave the run index
+                # synchronized with the committed readiness event and the
+                # already-visible report bundle.  A status call must not be
+                # required to repair a stale empty index.
+                continued = (
+                    await session.call_tool("continue_run", {"run_id": run_id})
+                ).structured_content
+                assert continued is not None
+                assert continued["run_state"] == "complete"
+                run_indexes = tuple(
+                    (tmp_path / "output" / "report-bundle").rglob("run-index.json")
+                )
+                assert len(run_indexes) == 1
+                first_index = json.loads(run_indexes[0].read_text(encoding="utf-8"))
+                assert len(first_index["results"]) == 1
+                assert first_index["results"][0]["state"] == "report_ready"
+                assert first_index["results"][0]["report"].endswith("/assessment.html")
+                assert first_index["results"][0]["result_id"] == "result:trial-a-mortality"
+                assert first_index["results"][0]["trial_id"] == "trial:trial-a"
+                assert first_index["ancillary_outputs"]
+                repeated = (
+                    await session.call_tool("continue_run", {"run_id": run_id})
+                ).structured_content
+                assert repeated is not None
+                assert repeated["run_state"] == "complete"
+                assert json.loads(run_indexes[0].read_text(encoding="utf-8")) == first_index
                 status = (
                     await session.call_tool("run_status", {"run_id": run_id})
                 ).structured_content
