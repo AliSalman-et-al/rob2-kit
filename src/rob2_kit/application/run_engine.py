@@ -23,6 +23,7 @@ from rob2_kit.application.contracts import (
     ContinueRunRequest,
     ContinueRunResponse,
     DomainContextPack,
+    ErrorClass,
     EvidenceConsiderationInput,
     GetWorkContextRequest,
     GetWorkContextResponse,
@@ -486,6 +487,19 @@ class RunEngine:
         self._authorized_root: Path | None = None
         self._owner_id = f"owner:run-engine:{os.getpid()}:{uuid.uuid4()}"
         self._determinism = determinism
+
+    def __getattr__(self, name: str) -> Any:
+        """Expose the canonical status spelling without expanding the legacy API.
+
+        ``run_status`` is retained as the compatibility operation during the
+        expand phase.  Resolving ``get_run_status`` dynamically keeps the
+        fixed RunEngine method inventory stable for existing callers while
+        allowing the canonical MCP route to use the agreed name.
+        """
+
+        if name == "get_run_status":
+            return self.run_status
+        raise AttributeError(name)
 
     def _now(self) -> datetime:
         return self._determinism.now() if self._determinism is not None else datetime.now(UTC)
@@ -8609,6 +8623,7 @@ class RunEngine:
             run_state=run_state,
             proposal=proposal,
             error=OperationError(
+                error_class=ErrorClass.AUTHORITY,
                 code="authorization_required",
                 detail=(
                     "Project inputs changed and registry re-inventory requires fresh "

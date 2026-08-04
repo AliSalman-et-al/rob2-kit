@@ -8,7 +8,7 @@ from enum import StrEnum
 from pathlib import Path
 from typing import Literal
 
-from pydantic import Field, model_validator
+from pydantic import AliasChoices, ConfigDict, Field, model_validator
 
 from rob2_kit.application.lifecycle import ResultState, RunState
 from rob2_kit.domain.assessment import SQAnswerCategory
@@ -83,6 +83,14 @@ class WorkflowCondition(StrEnum):
     RETRY = "retry"
 
 
+class ErrorClass(StrEnum):
+    """Stable MCP outcome classes for model-visible failures."""
+
+    CORRECTABLE = "correctable"
+    AUTHORITY = "authority"
+    OPERATIONAL = "operational"
+
+
 class RunDirective(StrEnum):
     CONFIRMATION_REQUIRED = "confirmation_required"
     AGENT_WORK_REQUIRED = "agent_work_required"
@@ -127,6 +135,8 @@ class IntegrityFailure(FrozenModel):
 class OperationError(FrozenModel):
     """Expected validation failure returned as a normal operation result."""
 
+    error_class: ErrorClass = ErrorClass.CORRECTABLE
+
     code: Literal[
         "unsupported_method",
         "invalid_configuration",
@@ -138,6 +148,7 @@ class OperationError(FrozenModel):
     ]
     detail: str = Field(min_length=1)
     recovery: tuple[str, ...] = Field(min_length=1)
+    correlation_id: Identifier | None = None
 
 
 class WorkToken(FrozenModel):
@@ -161,6 +172,31 @@ class WorkItem(FrozenModel):
     result_id: Identifier | None = None
     domain_id: Identifier | None = None
     dependency_fingerprint: ContentHash
+
+
+class NextActionArguments(FrozenModel):
+    """Engine-known arguments for one follow-up action.
+
+    The Harness must copy these values verbatim instead of reconstructing
+    scope from conversation history.  Optional fields keep the envelope
+    compact while the closed model prevents arbitrary host-controlled
+    dispatch arguments from entering the public contract.
+    """
+
+    run_id: Identifier | None = None
+    work_token: WorkToken | None = None
+    proposal_token: Identifier | None = None
+    result_id: Identifier | None = None
+    domain_id: Identifier | None = None
+    cursor: str | None = None
+
+
+class NextAction(FrozenModel):
+    """One legal, engine-authored continuation instruction."""
+
+    operation: RunOperation
+    reason: str = Field(min_length=1)
+    arguments: NextActionArguments = Field(default_factory=NextActionArguments)
 
 
 class EvidenceConsiderationInput(FrozenModel):
@@ -404,6 +440,11 @@ class RunStatusRequest(FrozenModel):
     run_id: Identifier
 
 
+# Canonical expand-phase spelling.  The aliases intentionally share the same
+# closed schema and durable operation as the legacy ``run_status`` contract.
+GetRunStatusRequest = RunStatusRequest
+
+
 class ContinueRunRequest(FrozenModel):
     run_id: Identifier
 
@@ -596,13 +637,130 @@ class SubmitDomainAnswersRequest(FrozenModel):
 
 
 class OperationResponse(FrozenModel):
+    # ``next_permitted_action`` was the pre-expand field name.  Accept it on
+    # input for old Harnesses, while emitting the canonical ``next_action``
+    # envelope field for every new response.
+    model_config = ConfigDict(frozen=True, extra="forbid", populate_by_name=True)
+
     operation_id: Identifier
     ledger_cursor: str = Field(min_length=1)
     affected_scope: tuple[Identifier, ...]
     condition: WorkflowCondition
     committed: bool
-    next_permitted_action: RunOperation | None = None
+    summary: str = Field(default="", min_length=0)
+    warnings: tuple[str, ...] = ()
+    next_action: NextAction | RunOperation | None = Field(
+        default=None,
+        validation_alias=AliasChoices("next_action", "next_permitted_action"),
+    )
     error: OperationError | None = None
+
+    @model_validator(mode="after")
+    def normalize_next_action(self) -> OperationResponse:
+        if not self.summary:
+            object.__setattr__(
+                self,
+                "summary",
+                {
+                    WorkflowCondition.CONFIRMATION_REQUIRED:
+                        "Run definition confirmation is required.",
+                    WorkflowCondition.AGENT_WORK_REQUIRED:
+                        "The next bounded Run work item is ready.",
+                    WorkflowCondition.RUN_BLOCKED:
+                        "The Run is blocked pending a correctable action.",
+                    WorkflowCondition.RUN_COMPLETE: "The Run is complete.",
+                    WorkflowCondition.RUN_INTEGRITY_FAILURE: "Run integrity could not be verified.",
+                }.get(self.condition, "Run operation completed."),
+            )
+        action = self.next_action
+        if isinstance(action, RunOperation):
+            run_id = getattr(self, "run_id", None)
+            work_item = getattr(self, "work_item", None)
+            proposal = getattr(self, "proposal", None)
+            arguments = NextActionArguments(
+                run_id=run_id,
+                work_token=(work_item.work_token if work_item is not None else None),
+                proposal_token=(proposal.proposal_token if proposal is not None else None),
+                result_id=(work_item.result_id if work_item is not None else None),
+                domain_id=(work_item.domain_id if work_item is not None else None),
+            )
+            action = NextAction(
+                operation=action,
+                reason="Continue with the operation selected by the Run ledger.",
+                arguments=arguments,
+            )
+            object.__setattr__(self, "next_action", action)
+        elif action is not None and action.arguments.run_id is None:
+            run_id = getattr(self, "run_id", None)
+            if run_id is not None:
+                object.__setattr__(
+                    self,
+                    "next_action",
+                    action.model_copy(
+                        update={"arguments": action.arguments.model_copy(update={"run_id": run_id})}
+                    ),
+                )
+        terminal_run_state = getattr(self, "run_state", None) in {
+            RunState.COMPLETE,
+            RunState.INTEGRITY_FAILED,
+            RunState.RETIRED,
+        }
+        terminal = self.condition in {
+            WorkflowCondition.RUN_COMPLETE,
+            WorkflowCondition.RUN_INTEGRITY_FAILURE,
+        } or terminal_run_state
+        if terminal and self.next_action is not None:
+            # A submission may commit the final checkpoint while retaining
+            # the historical ``accepted`` condition.  The Run state is the
+            # terminal authority, so suppress the stale successor rather
+            # than rejecting an otherwise valid committed response.
+            object.__setattr__(self, "next_action", None)
+        if not terminal:
+            if self.next_action is None:
+                # Read-only operations have no explicit successor in their
+                # legacy constructors.  A status-preserving continuation is
+                # the only safe default and remains engine-authored.
+                run_id = getattr(self, "run_id", None)
+                operation = (
+                    RunOperation.SUBMIT_RUN_PROPOSAL
+                    if self.condition is WorkflowCondition.CONFIRMATION_REQUIRED
+                    else getattr(getattr(self, "work_item", None), "operation", None)
+                    or RunOperation.CONTINUE_RUN
+                )
+                work_item = getattr(self, "work_item", None)
+                proposal = getattr(self, "proposal", None)
+                object.__setattr__(
+                    self,
+                    "next_action",
+                    NextAction(
+                        operation=operation,
+                        reason=(
+                            "Submit the Run proposal for confirmation."
+                            if operation is RunOperation.SUBMIT_RUN_PROPOSAL
+                            else "Continue the current Run from its durable checkpoint."
+                        ),
+                        arguments=NextActionArguments(
+                            run_id=run_id,
+                            work_token=(work_item.work_token if work_item is not None else None),
+                            proposal_token=(
+                                proposal.proposal_token if proposal is not None else None
+                            ),
+                            result_id=(work_item.result_id if work_item is not None else None),
+                            domain_id=(work_item.domain_id if work_item is not None else None),
+                        ),
+                    ),
+                )
+        return self
+
+    @property
+    def next_permitted_action(self) -> RunOperation | None:
+        """Compatibility view for pre-expand callers."""
+
+        return (
+            self.next_action.operation
+            if isinstance(self.next_action, NextAction)
+            else self.next_action
+        )
 
 
 class PrepareRunResponse(OperationResponse):
@@ -618,6 +776,9 @@ class RunStatusResponse(OperationResponse):
     result_states: tuple[ResultStatus, ...] = ()
     progress: RunProgress | None = None
     integrity: IntegrityFailure | None = None
+
+
+GetRunStatusResponse = RunStatusResponse
 
 
 class ContinueRunResponse(OperationResponse):

@@ -10,8 +10,10 @@ from __future__ import annotations
 
 import hashlib
 import os
+from collections.abc import Callable, Sequence
+from dataclasses import dataclass
 from datetime import UTC, datetime
-from typing import Annotated, Any, Literal
+from typing import Annotated, Any, Literal, Protocol
 
 from pydantic import Field
 
@@ -20,6 +22,7 @@ from rob2_kit.application.contracts import (
     Actor,
     ConfirmRunDefinitionRequest,
     ContinueRunRequest,
+    ErrorClass,
     Estimate,
     EvidenceConsiderationInput,
     EvidenceCoverageState,
@@ -56,11 +59,73 @@ from rob2_kit.application.determinism import QualificationDeterminism
 from rob2_kit.application.lifecycle import RunState
 from rob2_kit.application.run_engine import RunEngine, SecondProjectRootError
 
+# The legacy inventory remains the default while the expand-phase routes are
+# migrated.  New composition code can use the canonical names without editing
+# this module's large compatibility registration block.
+CANONICAL_TOOL_NAMES: tuple[str, ...] = (
+    "prepare_run",
+    "get_run_status",
+    "continue_run",
+    "get_work_context",
+    "search_evidence",
+    "read_evidence",
+    "submit_run_proposal",
+    "confirm_run_definition",
+    "classify_sources",
+    "resolve_result",
+    "submit_domain_evidence",
+    "submit_domain_answers",
+)
+
+
+class MCPRouteGroup(Protocol):
+    """Composable registration seam for one coherent MCP route family."""
+
+    name: str
+
+    def register(self, server: Any, engine: RunEngine) -> None:
+        """Register typed tools against a server and shared RunEngine."""
+
+
+@dataclass(frozen=True)
+class RouteGroup:
+    """Small adapter used by later slices to extend the MCP catalog."""
+
+    name: str
+    register: Callable[[Any, RunEngine], None]
+
+
+def register_route_groups(
+    server: Any,
+    engine: RunEngine,
+    route_groups: Sequence[MCPRouteGroup],
+) -> None:
+    """Register route families in deterministic order with unique names."""
+
+    seen: set[str] = set()
+    for group in route_groups:
+        if not group.name or group.name in seen:
+            raise ValueError(f"MCP route group names must be non-empty and unique: {group.name!r}")
+        seen.add(group.name)
+        group.register(server, engine)
+
 
 def registered_tool_names() -> tuple[str, ...]:
     """Return the fixed public RunEngine inventory in wire order."""
 
     return RUN_OPERATION_NAMES
+
+
+def canonical_tool_names() -> tuple[str, ...]:
+    """Return the twelve-tool catalog used by the versioned cutover.
+
+    During expand, :func:`registered_tool_names` intentionally reports the
+    compatibility inventory.  Keeping this projection beside the route seam
+    gives adapters and release checks a single canonical source without
+    changing the currently installed legacy catalog.
+    """
+
+    return CANONICAL_TOOL_NAMES
 
 
 def _qualification_determinism_from_environment() -> QualificationDeterminism | None:
@@ -79,7 +144,10 @@ def _qualification_determinism_from_environment() -> QualificationDeterminism | 
 
 
 def _dump(response: Any) -> dict[str, Any]:
-    return response.model_dump(mode="json")
+    # Keep the wire envelope compact: absent optional payloads (especially a
+    # terminal response's ``next_action``) are omitted rather than repeated as
+    # JSON nulls.  The typed response model remains available to Python hosts.
+    return response.model_dump(mode="json", exclude_none=True)
 
 
 def _submission_key(operation: str, issued_token: str) -> str:
@@ -87,8 +155,37 @@ def _submission_key(operation: str, issued_token: str) -> str:
     return f"mcp:{operation}-{digest}"
 
 
-def create_server(*, determinism: QualificationDeterminism | None = None) -> Any:
-    """Build one stdio server with exactly the 13 typed tools."""
+def canonical_status_route_group() -> RouteGroup:
+    """Return the canonical ``get_run_status`` route for expand-phase hosts.
+
+    The default server keeps the legacy ``run_status`` route advertised so
+    existing adapters remain green.  A host preparing for the twelve-tool
+    cutover composes this group explicitly; both routes call the same
+    ledger-derived engine operation and therefore cannot diverge in state.
+    """
+
+    def register(server: Any, engine: RunEngine) -> None:
+        @server.tool(name="get_run_status")
+        def get_run_status(run_id: str) -> dict[str, Any]:
+            """Read durable Run state and progress without mutating it."""
+
+            return _dump(engine.run_status(RunStatusRequest.model_validate({"run_id": run_id})))
+
+    return RouteGroup(name="run-control-canonical", register=register)
+
+
+def create_server(
+    *,
+    determinism: QualificationDeterminism | None = None,
+    route_groups: Sequence[MCPRouteGroup] = (),
+) -> Any:
+    """Build one stdio server with the expand-phase tools and route extensions.
+
+    ``route_groups`` is deliberately additive: callers can compose a later
+    proposal, retrieval, evidence, or answer family without reopening this
+    compatibility handler.  Built-in tools retain their historical names
+    until the versioned cutover ticket removes them.
+    """
 
     from mcp.server import MCPServer
 
@@ -158,6 +255,7 @@ def create_server(*, determinism: QualificationDeterminism | None = None) -> Any
                 run_id=rejected_run_id,
                 run_state=RunState.BLOCKED,
                 error=OperationError(
+                    error_class=ErrorClass.AUTHORITY,
                     code="second_project_root",
                     detail=error.error.detail,
                     recovery=error.error.recovery,
@@ -572,6 +670,7 @@ def create_server(*, determinism: QualificationDeterminism | None = None) -> Any
             )
         )
 
+    register_route_groups(server, engine, route_groups)
     return server
 
 
