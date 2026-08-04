@@ -3844,6 +3844,13 @@ class RunEngine:
             effect_measure=result_spec.result.effect_measure,
             source_locator=result_spec.result.source_locator,
             estimate=estimate,
+            limitations=tuple(
+                dict.fromkeys(
+                    limitation
+                    for _coverage, limitations in coverage_by_domain.values()
+                    for limitation in limitations
+                )
+            ),
             result_identity=result_identity,
             result_details=ResultDetailsView(
                 measurement_instrument=result_spec.result.measurement_instrument,
@@ -4610,6 +4617,7 @@ class RunEngine:
                                 f"visual-only transcription; {transcription.render_mode} at "
                                 f"{transcription.dpi} dpi; not machine-verified"
                             ),
+                            unit_kind="paragraph",
                             visual_citation=visual
                             or VisualCitationView(
                                 citation_id=transcription.revision_id,
@@ -4681,6 +4689,7 @@ class RunEngine:
                         source_id=claim.source.entity_id,
                         page=unit.page,
                         provenance=provenance,
+                        unit_kind=unit.kind.value,
                         visual_citation=visual_citation,
                     )
                 )
@@ -4771,8 +4780,13 @@ class RunEngine:
                         f"visual citation {citation.citation_id!r} has an empty render region"
                     )
                 crop = context.crop((left, top, right, bottom))
-                overlay = context.copy()
-                overlay_draw = ImageDraw.Draw(overlay)
+                # A translucent yellow fill keeps the authored source pixels
+                # readable while making the accepted span continuously
+                # visible.  The deterministic dark border is drawn on top
+                # for contrast and print stability.
+                highlight_color = (255, 235, 59, 96)
+                overlay_layer = Image.new("RGBA", context.size, (0, 0, 0, 0))
+                overlay_draw = ImageDraw.Draw(overlay_layer)
                 raw_boxes = citation.boxes or (citation.region,)
                 pixel_boxes: list[tuple[int, int, int, int]] = []
                 for box in raw_boxes:
@@ -4787,7 +4801,26 @@ class RunEngine:
                         )
                     pixel_box = (box_left, box_top, box_right, box_bottom)
                     pixel_boxes.append(pixel_box)
+                    overlay_draw.rectangle(pixel_box, fill=highlight_color)
+                overlay = Image.alpha_composite(
+                    context.convert("RGBA"), overlay_layer
+                ).convert("RGB")
+                overlay_draw = ImageDraw.Draw(overlay)
+                for pixel_box in pixel_boxes:
                     overlay_draw.rectangle(pixel_box, outline="#9a5a12", width=4)
+                crop_layer = Image.new("RGBA", crop.size, (0, 0, 0, 0))
+                crop_draw = ImageDraw.Draw(crop_layer)
+                for box_left, box_top, box_right, box_bottom in pixel_boxes:
+                    crop_draw.rectangle(
+                        (
+                            box_left - left,
+                            box_top - top,
+                            box_right - left,
+                            box_bottom - top,
+                        ),
+                        fill=highlight_color,
+                    )
+                crop = Image.alpha_composite(crop.convert("RGBA"), crop_layer).convert("RGB")
                 crop_draw = ImageDraw.Draw(crop)
                 for box_left, box_top, box_right, box_bottom in pixel_boxes:
                     crop_draw.rectangle(

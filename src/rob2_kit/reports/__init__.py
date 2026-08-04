@@ -175,6 +175,14 @@ class EvidenceView(ReportModel):
     source_id: Identifier
     page: int = Field(ge=1)
     provenance: str = Field(min_length=1)
+    # Canonical evidence keeps authored structure rather than flattening every
+    # hit into an opaque snippet.  These fields are optional for legacy report
+    # projections, but terminal reports populate them from the canonical unit.
+    unit_kind: Literal[
+        "heading", "paragraph", "list_item", "caption", "footnote", "table_row"
+    ] = "paragraph"
+    context: str = ""
+    table_headers: tuple[str, ...] = ()
     visual_citation: VisualCitationView | None = None
 
 
@@ -212,6 +220,7 @@ class AssessmentView(ReportModel):
     effect_measure: str = ""
     source_locator: str = ""
     estimate: EstimateView | None = None
+    limitations: tuple[str, ...] = ()
     result_identity: ResultIdentityView | None = None
     result_details: ResultDetailsView | None = None
     overall_judgment: str = Field(pattern=r"^(low|some_concerns|high)$")
@@ -299,6 +308,8 @@ class ReportProjector:
                     "evidence_count": _evidence_count(self.assessment),
                 }
             )
+        if self.assessment.limitations:
+            value["limitations"] = self.assessment.limitations
         return canonical_json_bytes(value) + b"\n"
 
     def html(self) -> bytes:
@@ -347,6 +358,7 @@ class ReportProjector:
             f"{_judgment_badge(assessment.overall_judgment, label='Overall judgment')}"
             f"<span class=\"summary-count\">{_evidence_count(assessment)} accepted evidence claims</span>"
             "</section>"
+            f"{_limitations(assessment.limitations)}"
             f"{_render_overall_policy(assessment)}"
             '<div class="report-layout"><nav class="domain-rail" aria-label="RoB 2 domains"><h2>Domain navigation</h2>'
             f"<ol>{domain_navigation}</ol></nav>"
@@ -387,13 +399,16 @@ class ReportProjector:
             '<h2 id="summary-heading">Audit summary</h2>'
             f"{_judgment_badge(assessment.overall_judgment, label='Overall judgment')}"
             "</section>"
+            f"{_limitations(assessment.limitations)}"
             '<nav aria-label="RoB 2 domains"><h2>Domain navigation</h2>'
             f"<ol>{domain_navigation}</ol></nav>"
             f'<section aria-label="Five ordered RoB 2 domains">{domains}</section>'
             '<section aria-labelledby="visual-heading"><h2 id="visual-heading">Visual citations</h2>'
             f"{visual_citations}</section></main>"
         )
-        return _html_document("RoB 2 Result report", body, css=_LEGACY_AUDIT_CSS).encode()
+        return _html_document(
+            "RoB 2 Result report", body, css=_LEGACY_AUDIT_CSS, include_csp=False
+        ).encode()
 
     def markdown(self) -> bytes:
         assessment = self.assessment
@@ -421,6 +436,16 @@ class ReportProjector:
                     f"- Source locator: {_escape_markdown(assessment.source_locator or 'not recorded')}",
                 ]
                 if _has_extended_identity(assessment)
+                else []
+            ),
+            *(
+                [
+                    "",
+                    "## Limitations",
+                    "",
+                    *(f"- {_escape_markdown(item)}" for item in assessment.limitations),
+                ]
+                if assessment.limitations
                 else []
             ),
             "",
@@ -499,13 +524,28 @@ class ReportProjector:
                     f"- Limitation: {_escape_markdown(item)}" for item in question.limitations
                 )
                 for evidence in question.evidence:
+                    kind = _EVIDENCE_KIND_LABELS[evidence.unit_kind]
                     lines.extend(
                         [
                             "",
                             f"- {_escape_markdown(evidence.disposition.title())} evidence: "
                             f"{_escape_markdown(evidence.exact_phrase)}",
+                            f"  Unit: {_escape_markdown(kind)}",
+                            *(
+                                [
+                                    "  Table headers: "
+                                    + _escape_markdown("; ".join(evidence.table_headers))
+                                ]
+                                if evidence.table_headers
+                                else []
+                            ),
                             f"  Source: {_escape_markdown(evidence.source_id)}, page {evidence.page}; "
                             f"{_escape_markdown(evidence.provenance)}",
+                            *(
+                                [f"  Context: {_escape_markdown(evidence.context)}"]
+                                if evidence.context
+                                else []
+                            ),
                         ]
                     )
         lines.extend(
@@ -871,14 +911,34 @@ def _render_evidence(evidence: EvidenceView) -> str:
         "residual": "Residual evidence",
     }[evidence.disposition]
     visual = _render_visual_citation(evidence.visual_citation) if evidence.visual_citation else ""
+    structure = _evidence_structure(evidence)
+    context = (
+        f'<details class="evidence-context"><summary>Source context</summary>'
+        f"<p>{html.escape(evidence.context)}</p></details>"
+        if evidence.context
+        else ""
+    )
     return (
         f'<article class="evidence {html.escape(evidence.disposition)}">'
-        f"<h4>{label}</h4><blockquote>{html.escape(evidence.exact_phrase)}</blockquote>"
+        f"<h4>{label}</h4>{structure}<blockquote>{html.escape(evidence.exact_phrase)}</blockquote>"
         '<p class="provenance">'
         f"Source: {html.escape(evidence.source_id)}; page {evidence.page}; "
         f"provenance: {html.escape(evidence.provenance)}; claim: {html.escape(evidence.evidence_id)}."
-        f"</p>{visual}</article>"
+        f"</p>{context}{visual}</article>"
     )
+
+
+def _evidence_structure(evidence: EvidenceView) -> str:
+    """Describe the authored unit without turning it into a search snippet."""
+
+    rendered = (
+        f'<p class="evidence-kind"><strong>Unit:</strong> '
+        f"{_EVIDENCE_KIND_LABELS[evidence.unit_kind]}</p>"
+    )
+    if evidence.table_headers:
+        headers = "; ".join(html.escape(header) for header in evidence.table_headers)
+        rendered += f'<p class="table-headers"><strong>Table headers:</strong> {headers}</p>'
+    return rendered
 
 
 def _render_visual_citation(citation: VisualCitationView) -> str:
@@ -951,6 +1011,15 @@ _DOMAIN_LABELS = {
     "domain:missing": "Bias due to missing outcome data",
     "domain:measurement": "Bias in measurement of the outcome",
     "domain:selection": "Bias in selection of the reported result",
+}
+
+_EVIDENCE_KIND_LABELS = {
+    "heading": "Heading",
+    "paragraph": "Authored paragraph",
+    "list_item": "Authored list item",
+    "caption": "Figure or table caption",
+    "footnote": "Authored footnote",
+    "table_row": "Header-aware table row",
 }
 
 _DOMAIN_ORDER = tuple(_DOMAIN_LABELS)
@@ -1091,14 +1160,29 @@ def _assessment_payload(assessment: AssessmentView) -> dict[str, object]:
             "overall_policy_hash",
             "overall_policy_text",
             "overall_decision_trace",
+            "limitations",
         ):
             payload.pop(key, None)
+    elif not assessment.limitations:
+        payload.pop("limitations", None)
     for domain_payload, domain in zip(payload.get("domains", ()), assessment.domains, strict=False):
         if not any(question.wording for question in domain.questions):
             for question_payload in domain_payload.get("questions", ()):
                 question_payload.pop("wording", None)
                 question_payload.pop("conflicts", None)
                 question_payload.pop("uncertainty", None)
+        for question_payload, question in zip(
+            domain_payload.get("questions", ()), domain.questions, strict=False
+        ):
+            for evidence_payload, evidence in zip(
+                question_payload.get("evidence", ()), question.evidence, strict=False
+            ):
+                if evidence.unit_kind == "paragraph":
+                    evidence_payload.pop("unit_kind", None)
+                if not evidence.context:
+                    evidence_payload.pop("context", None)
+                if not evidence.table_headers:
+                    evidence_payload.pop("table_headers", None)
     return payload
 
 
@@ -1139,10 +1223,21 @@ def _domain_judgments(values: dict[Identifier, str]) -> str:
     return f"Domain judgments: {rendered}"
 
 
-def _html_document(title: str, body: str, *, css: str | None = None) -> str:
+def _html_document(
+    title: str, body: str, *, css: str | None = None, include_csp: bool = True
+) -> str:
+    csp = (
+        '<meta http-equiv="Content-Security-Policy" content="default-src \'none\'; '
+        "style-src \'unsafe-inline\'; img-src \'self\'; font-src \'none\'; "
+        "connect-src \'none\'; object-src \'none\'; frame-src \'none\'; "
+        'base-uri \'none\'; form-action \'none\'">'
+        if include_csp
+        else ""
+    )
     return (
         '<!doctype html><html lang="en"><head><meta charset="utf-8">'
         '<meta name="viewport" content="width=device-width,initial-scale=1">'
+        f"{csp}"
         f"<title>{html.escape(title)}</title><style>{css if css is not None else _AUDIT_CSS}</style></head><body>{body}</body></html>\n"
     )
 
@@ -1180,6 +1275,8 @@ a { color: #064c87; } a:focus-visible, summary:focus-visible { outline: .2rem so
 @media (max-width: 58rem) { .report-layout { grid-template-columns: 1fr; } .domain-rail { position: static; } .domain-rail ol { display: flex; overflow-x: auto; gap: .35rem; } .domain-rail li { min-width: 13rem; } .result-hero { flex-direction: column; } }
 @media (max-width: 20rem) { main { padding: .5rem; } nav ol { display: block; } nav li { margin: .5rem 0; } .identity-grid { grid-template-columns: 1fr; } }
 @media print { body { background: #fff; color: #000; } main { max-width: none; } nav, .domain-rail, .prototype-controls, [data-prototype-control] { display: none !important; } details, details[open] { display: block; } details > *, details:not([open]) > * { display: block !important; } details > summary { display: none; } .report-header, .audit-summary, .domain, .question, .diagnostic { break-inside: avoid; box-shadow: none; } a { color: inherit; text-decoration: none; } }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; transition-duration: .01ms !important; } }
+@media (forced-colors: active) { .judgment, .traffic-cell { border: 1px solid CanvasText; forced-color-adjust: none; } }
 """
 
 
@@ -1260,6 +1357,14 @@ def latest_assessment_view(ledger: WorkflowLedger) -> AssessmentView:
         else {domain_id: index for index, domain_id in enumerate(_DOMAIN_LABELS, start=1)}
     )
     ordered = sorted(judgments, key=lambda judgment: domain_order.get(judgment.domain_id, 99))
+    report_limitations = tuple(
+        dict.fromkeys(
+            limitation
+            for domain in question_domains.values()
+            for question in domain
+            for limitation in question.limitations
+        )
+    )
     estimate = EstimateView(
         value=str(result_spec.estimate.value),
         interval_lower=(
@@ -1306,6 +1411,7 @@ def latest_assessment_view(ledger: WorkflowLedger) -> AssessmentView:
         effect_measure=result.effect_measure,
         source_locator=result.source_locator,
         estimate=estimate,
+        limitations=report_limitations,
         result_identity=identity,
         result_details=ResultDetailsView(
             measurement_instrument=result.measurement_instrument,
@@ -1487,6 +1593,7 @@ def _latest_question_views(
                             f"canonical unit {unit.unit_id}; Parse record {unit.parse_id}; "
                             f"verification {claim.verification_status.value}"
                         ),
+                        unit_kind=unit.kind.value,
                         visual_citation=visual,
                     )
                 )
