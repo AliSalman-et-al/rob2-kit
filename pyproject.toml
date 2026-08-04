@@ -46,7 +46,9 @@ packages = ["src/rob2_kit"]
 "adapters" = "rob2_kit/adapters"
 "docs" = "rob2_kit/docs"
 "rob2.lock" = "rob2_kit/rob2.lock"
+"release/runtime/pyproject.toml" = "rob2_kit/release/runtime/pyproject.toml"
 "uv.lock" = "rob2_kit/uv.lock"
+"release/runtime/uv.lock" = "rob2_kit/release/runtime/uv.lock"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
