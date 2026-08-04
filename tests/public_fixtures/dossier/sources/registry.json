@@ -1,0 +1,7 @@
+{
+  "registry_id": "AURORA-SYN-001",
+  "design": "randomized parallel assignment",
+  "primary_outcome": {"construct": "all-cause mortality", "time_point": "30 days"},
+  "registration_date": "2024-01-10",
+  "status": "completed"
+}

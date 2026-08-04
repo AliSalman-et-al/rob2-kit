@@ -1,0 +1,3 @@
+AURORA statistical analysis plan, version 1.0, 15 February 2024.
+
+The primary time point is 30 days. A 12-month estimate is exploratory. The analysis will use the intention-to-treat population and report a risk ratio with a confidence interval. No outcome or analysis may be selected solely because it gives a favourable result.
