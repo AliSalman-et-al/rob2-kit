@@ -3,7 +3,7 @@ required_schema_version: 1.0.0
 family_id: logic:rob2-parallel-assignment
 release_id: "2019.1"
 authors: [RoB 2 Kit maintainers]
-content_hash: sha256:222b3d2e1ef923a0fde8b64e3de5a5aa845ecf7e36c58c6936d01ae143eb09c7
+content_hash: sha256:a729f2654bac2be10315463a450866d274ead7220d7524cf17838a175f96e3a0
 instrument: rob2
 trial_design: individually_randomized_parallel_group
 effect_of_interest: assignment
@@ -32,6 +32,9 @@ questions:
   - id: sq:missing:data-available
   - id: sq:missing:evidence-unbiased
     active_if: {op: answer_in, question_id: sq:missing:data-available, answers: [probably_no, no, no_information]}
+    # The official algorithm's Q3.2 response set excludes `No information`;
+    # the other questions retain the release-wide five-value vocabulary.
+    allowed_answers: [yes, probably_yes, probably_no, no]
   - id: sq:missing:true-value-dependent
     active_if: {op: answer_in, question_id: sq:missing:evidence-unbiased, answers: [probably_no, no]}
   - id: sq:missing:likely-dependent
@@ -142,7 +145,6 @@ domains:
         when:
           op: any
           conditions:
-            - {op: answer_in, question_id: sq:missing:evidence-unbiased, answers: [no_information]}
             - {op: answer_in, question_id: sq:missing:likely-dependent, answers: [probably_no, no]}
         judgment: some_concerns
 
@@ -211,12 +213,35 @@ domains:
             - {op: answer_in, question_id: sq:selection:multiple-analyses, answers: [probably_no, no]}
         judgment: low
 
-assessor_inputs: []
+assessor_inputs:
+  - id: input:combined-concerns
+    value_type: boolean
+    required_if:
+      op: all
+      conditions:
+        - {op: domain_all, judgments: [low, some_concerns]}
+        - {op: domain_count, judgment: some_concerns, minimum: 2}
 
 overall_rules:
   - id: rule:overall:any-high
     when: {op: domain_any, judgments: [high]}
     judgment: high
+  - id: rule:overall:combined-concerns-yes
+    when:
+      op: all
+      conditions:
+        - {op: domain_all, judgments: [low, some_concerns]}
+        - {op: domain_count, judgment: some_concerns, minimum: 2}
+        - {op: input_equals, input_id: input:combined-concerns, value: true}
+    judgment: high
+  - id: rule:overall:combined-concerns-no
+    when:
+      op: all
+      conditions:
+        - {op: domain_all, judgments: [low, some_concerns]}
+        - {op: domain_count, judgment: some_concerns, minimum: 2}
+        - {op: input_equals, input_id: input:combined-concerns, value: false}
+    judgment: some_concerns
   - id: rule:overall:any-concerns
     when: {op: domain_any, judgments: [some_concerns]}
     judgment: some_concerns
@@ -247,6 +272,7 @@ inventory:
   - sq:selection:prespecified-analysis
   - sq:selection:multiple-measurements
   - sq:selection:multiple-analyses
+  - input:combined-concerns
   - domain:randomization
   - domain:deviations
   - domain:missing
@@ -273,11 +299,16 @@ inventory:
   - rule:selection:some-concerns
   - rule:selection:low
   - rule:overall:any-high
+  - rule:overall:combined-concerns-yes
+  - rule:overall:combined-concerns-no
   - rule:overall:any-concerns
   - rule:overall:all-low
 
 provenance:
-  - title: "RoB 2: a revised tool for assessing risk of bias in randomised trials"
+  - id: provenance:rob2-official
+    kind: official
+    title: "RoB 2: a revised tool for assessing risk of bias in randomised trials"
     version: "22 August 2019"
     url: "https://www.riskofbias.info/welcome/rob-2-0-tool/current-version-of-rob-2"
     license: "CC BY-NC-ND 4.0; redistribution permission recorded by the project owner"
+    attribution: "Sterne et al.; official 22 August 2019 parallel-trial Logic"

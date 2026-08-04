@@ -14,14 +14,62 @@
         "content_origin": {
           "enum": [
             "official",
+            "copied",
+            "adapted",
+            "maintainer_authored",
             "rob2_kit"
           ],
           "title": "Content Origin",
           "type": "string"
         },
+        "counter_evidence": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Counter Evidence",
+          "type": "array"
+        },
+        "evidence_targets": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Evidence Targets",
+          "type": "array"
+        },
+        "inference_boundaries": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Inference Boundaries",
+          "type": "array"
+        },
         "logic_element_id": {
           "title": "Logic Element Id",
           "type": "string"
+        },
+        "no_information_rule": {
+          "default": "",
+          "title": "No Information Rule",
+          "type": "string"
+        },
+        "provenance_refs": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Provenance Refs",
+          "type": "array"
+        },
+        "recurring_traps": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Recurring Traps",
+          "type": "array"
         },
         "text": {
           "minLength": 1,
@@ -40,7 +88,29 @@
     },
     "Provenance": {
       "additionalProperties": false,
+      "description": "A durable citation for material included in a pack release.\n\n``kind`` distinguishes the legal/scientific origin of a citation.  A\nrelease can therefore contain official wording alongside copied or\nadapted material without collapsing the provenance into one free-text\nnote.  Existing pack sources may omit ``id`` and ``kind`` while migrating\nto the richer release format; loaded objects still receive deterministic\ndefaults.",
       "properties": {
+        "attribution": {
+          "default": "",
+          "title": "Attribution",
+          "type": "string"
+        },
+        "id": {
+          "default": "",
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "default": "official",
+          "enum": [
+            "official",
+            "copied",
+            "adapted",
+            "maintainer_authored"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
         "license": {
           "minLength": 1,
           "title": "License",
@@ -94,9 +164,33 @@
       "title": "Content Hash",
       "type": "string"
     },
+    "counter_evidence": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "title": "Counter Evidence",
+      "type": "array"
+    },
+    "evidence_targets": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "title": "Evidence Targets",
+      "type": "array"
+    },
     "family_id": {
       "title": "Family Id",
       "type": "string"
+    },
+    "inference_boundaries": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "title": "Inference Boundaries",
+      "type": "array"
     },
     "inventory": {
       "items": {
@@ -116,11 +210,24 @@
       "title": "Language",
       "type": "string"
     },
+    "no_information_rule": {
+      "default": "",
+      "title": "No Information Rule",
+      "type": "string"
+    },
     "provenance": {
       "items": {
         "$ref": "#/$defs/Provenance"
       },
       "title": "Provenance",
+      "type": "array"
+    },
+    "recurring_traps": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "title": "Recurring Traps",
       "type": "array"
     },
     "release_id": {

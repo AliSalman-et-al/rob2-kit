@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import Any
 
 import yaml
-from pydantic import BaseModel, ConfigDict, model_validator
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from rob2_kit.domain.assessment import JudgmentLevel, SQAnswerCategory
 from rob2_kit.logic.evaluator import EvaluationRequest, LogicEvaluator
@@ -39,6 +39,8 @@ class GoldenCase(BaseModel):
     expected_active: tuple[str, ...] = ()
     expected_inactive: tuple[str, ...] = ()
     expected_matched_rules: tuple[str, ...]
+    assessor_inputs: dict[str, bool] = Field(default_factory=dict)
+    expected_required_assessor_inputs: tuple[str, ...] = ()
 
 
 class ConformanceSuite(BaseModel):
@@ -52,6 +54,8 @@ class ConformanceSuite(BaseModel):
     reviewer_slots: tuple[ReviewerSlot, ReviewerSlot]
     covered_branch_question_ids: tuple[str, ...]
     covered_rule_ids: tuple[str, ...]
+    covered_question_ids: tuple[str, ...] = ()
+    covered_answer_values: dict[str, tuple[SQAnswerCategory, ...]] = Field(default_factory=dict)
     invalid_cases: tuple[dict[str, Any], ...]
     golden_cases: tuple[GoldenCase, ...]
 
@@ -83,6 +87,15 @@ def assert_conformance(pack: LogicPack, suite: ConformanceSuite) -> None:
     }
     if rule_ids != golden_rule_ids:
         raise ConformanceFailure("golden cases do not exercise every judgment rule")
+    question_ids = {question.id for question in pack.questions}
+    if suite.covered_question_ids and set(suite.covered_question_ids) != question_ids:
+        raise ConformanceFailure("conformance question inventory is incomplete")
+    if suite.covered_answer_values:
+        expected_vocabularies = {
+            question.id: tuple(question.allowed_answers) for question in pack.questions
+        }
+        if suite.covered_answer_values != expected_vocabularies:
+            raise ConformanceFailure("conformance answer-vocabulary inventory drifted")
 
     evaluator = LogicEvaluator(pack)
     for invalid in suite.invalid_cases:
@@ -97,6 +110,7 @@ def assert_conformance(pack: LogicPack, suite: ConformanceSuite) -> None:
             result = evaluator.evaluate(
                 EvaluationRequest(
                     answers=case.answers,
+                    assessor_inputs=case.assessor_inputs,
                 )
             )
         except (ValueError, TypeError) as error:
@@ -112,11 +126,16 @@ def assert_conformance(pack: LogicPack, suite: ConformanceSuite) -> None:
             not case.expected_inactive or result.inactive_question_ids == case.expected_inactive
         )
         rules_match = set(case.expected_matched_rules) <= set(result.matched_rule_ids)
+        required_inputs_match = (
+            not case.expected_required_assessor_inputs
+            or result.required_assessor_input_ids == case.expected_required_assessor_inputs
+        )
         if not (
             domains_match
             and result.overall_judgment == case.expected_overall
             and active_match
             and inactive_match
             and rules_match
+            and required_inputs_match
         ):
             raise ConformanceFailure(f"golden case failed: {case.id}")

@@ -41,10 +41,25 @@ class LogicEvaluator:
 
     def evaluate(self, request: EvaluationRequest) -> EvaluationResult:
         answers = self._validate_answer_values(request.answers)
-        known_questions = {question.id for question in self._pack.questions}
+        questions_by_id = {question.id: question for question in self._pack.questions}
+        known_questions = set(questions_by_id)
         unknown = set(answers) - known_questions
         if unknown:
             raise ValueError(f"unknown Logic element IDs: {sorted(unknown)}")
+
+        disallowed = {
+            question_id: answer
+            for question_id, answer in answers.items()
+            if answer not in questions_by_id[question_id].allowed_answers
+        }
+        if disallowed:
+            raise ValueError(
+                "answers outside the question vocabulary: "
+                + ", ".join(
+                    f"{question_id}={answer.value!r}"
+                    for question_id, answer in sorted(disallowed.items())
+                )
+            )
 
         active: list[str] = []
         inactive: list[str] = []
@@ -79,14 +94,14 @@ class LogicEvaluator:
             for item in self._pack.assessor_inputs
             if self._matches(item.required_if, answers, domain_judgments, request.assessor_inputs)
         )
-        missing_inputs = set(required_inputs) - set(request.assessor_inputs)
-        if missing_inputs:
-            raise ValueError(f"required assessor inputs missing: {sorted(missing_inputs)}")
         unknown_inputs = set(request.assessor_inputs) - {
             item.id for item in self._pack.assessor_inputs
         }
         if unknown_inputs:
             raise ValueError(f"unknown assessor inputs: {sorted(unknown_inputs)}")
+        missing_inputs = set(required_inputs) - set(request.assessor_inputs)
+        if missing_inputs:
+            raise ValueError(f"required assessor inputs missing: {sorted(missing_inputs)}")
         inapplicable_inputs = set(request.assessor_inputs) - set(required_inputs)
         if inapplicable_inputs:
             raise ValueError(

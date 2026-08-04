@@ -100,14 +100,14 @@ def test_branch_state_is_derived_and_active_answers_are_required(
     assert result.question_states["sq:missing:true-value-dependent"] == "not_applicable"
 
 
-def test_no_information_at_missing_data_exoneration_yields_some_concerns(
+def test_missing_data_exoneration_rejects_no_information_for_q3_2(
     evaluator: LogicEvaluator,
 ) -> None:
     answers = low_answers()
     answers["sq:missing:data-available"] = "no"
     answers["sq:missing:evidence-unbiased"] = "no_information"
-    result = evaluator.evaluate(EvaluationRequest(answers=answers))
-    assert result.domain_judgments["domain:missing"] is JudgmentLevel.SOME_CONCERNS
+    with pytest.raises(ValueError, match="outside the question vocabulary"):
+        evaluator.evaluate(EvaluationRequest(answers=answers))
 
 
 def test_high_domain_controls_overall_judgment(evaluator: LogicEvaluator) -> None:
@@ -118,22 +118,36 @@ def test_high_domain_controls_overall_judgment(evaluator: LogicEvaluator) -> Non
     assert result.overall_judgment is JudgmentLevel.HIGH
 
 
-def test_multiple_concerns_use_the_fixed_maximum_domain_policy(
+def test_multiple_concerns_use_the_structured_assessor_input(
     evaluator: LogicEvaluator,
 ) -> None:
     answers = low_answers()
     answers["sq:randomization:baseline-imbalance"] = "yes"
     answers["sq:selection:prespecified-analysis"] = "no"
 
-    result = evaluator.evaluate(EvaluationRequest(answers=answers))
+    result = evaluator.evaluate(
+        EvaluationRequest(
+            answers=answers,
+            assessor_inputs={"input:combined-concerns": False},
+        )
+    )
     assert result.overall_judgment is JudgmentLevel.SOME_CONCERNS
-    assert result.assessor_inputs == {}
+    assert result.assessor_inputs == {"input:combined-concerns": False}
+    assert result.required_assessor_input_ids == ("input:combined-concerns",)
+
+    high = evaluator.evaluate(
+        EvaluationRequest(
+            answers=answers,
+            assessor_inputs={"input:combined-concerns": True},
+        )
+    )
+    assert high.overall_judgment is JudgmentLevel.HIGH
 
     with pytest.raises(ValueError, match="unknown assessor inputs"):
         evaluator.evaluate(
             EvaluationRequest(
                 answers=answers,
-                assessor_inputs={"input:combined-concerns": True},
+                assessor_inputs={"input:unknown": True},
             )
         )
 

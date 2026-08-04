@@ -1,7 +1,7 @@
 schema_version: 1.0.0
 logic_family_id: logic:rob2-parallel-assignment
 logic_release_id: "2019.1"
-logic_content_hash: sha256:222b3d2e1ef923a0fde8b64e3de5a5aa845ecf7e36c58c6936d01ae143eb09c7
+logic_content_hash: sha256:a729f2654bac2be10315463a450866d274ead7220d7524cf17838a175f96e3a0
 transcription_source: "RoB 2, 22 August 2019, independently transcribed from the official algorithms"
 reviewer_slots:
   - role: reference_transcription_review
@@ -21,6 +21,52 @@ covered_branch_question_ids:
   - sq:measurement:assessor-aware
   - sq:measurement:influence-possible
   - sq:measurement:influence-likely
+covered_question_ids:
+  - sq:randomization:sequence
+  - sq:randomization:concealment
+  - sq:randomization:baseline-imbalance
+  - sq:deviations:participants-aware
+  - sq:deviations:personnel-aware
+  - sq:deviations:context-deviations
+  - sq:deviations:affected-outcome
+  - sq:deviations:balanced
+  - sq:deviations:appropriate-analysis
+  - sq:deviations:substantial-impact
+  - sq:missing:data-available
+  - sq:missing:evidence-unbiased
+  - sq:missing:true-value-dependent
+  - sq:missing:likely-dependent
+  - sq:measurement:method-inappropriate
+  - sq:measurement:differential
+  - sq:measurement:assessor-aware
+  - sq:measurement:influence-possible
+  - sq:measurement:influence-likely
+  - sq:selection:prespecified-analysis
+  - sq:selection:multiple-measurements
+  - sq:selection:multiple-analyses
+covered_answer_values:
+  sq:randomization:sequence: [yes, probably_yes, probably_no, no, no_information]
+  sq:randomization:concealment: [yes, probably_yes, probably_no, no, no_information]
+  sq:randomization:baseline-imbalance: [yes, probably_yes, probably_no, no, no_information]
+  sq:deviations:participants-aware: [yes, probably_yes, probably_no, no, no_information]
+  sq:deviations:personnel-aware: [yes, probably_yes, probably_no, no, no_information]
+  sq:deviations:context-deviations: [yes, probably_yes, probably_no, no, no_information]
+  sq:deviations:affected-outcome: [yes, probably_yes, probably_no, no, no_information]
+  sq:deviations:balanced: [yes, probably_yes, probably_no, no, no_information]
+  sq:deviations:appropriate-analysis: [yes, probably_yes, probably_no, no, no_information]
+  sq:deviations:substantial-impact: [yes, probably_yes, probably_no, no, no_information]
+  sq:missing:data-available: [yes, probably_yes, probably_no, no, no_information]
+  sq:missing:evidence-unbiased: [yes, probably_yes, probably_no, no]
+  sq:missing:true-value-dependent: [yes, probably_yes, probably_no, no, no_information]
+  sq:missing:likely-dependent: [yes, probably_yes, probably_no, no, no_information]
+  sq:measurement:method-inappropriate: [yes, probably_yes, probably_no, no, no_information]
+  sq:measurement:differential: [yes, probably_yes, probably_no, no, no_information]
+  sq:measurement:assessor-aware: [yes, probably_yes, probably_no, no, no_information]
+  sq:measurement:influence-possible: [yes, probably_yes, probably_no, no, no_information]
+  sq:measurement:influence-likely: [yes, probably_yes, probably_no, no, no_information]
+  sq:selection:prespecified-analysis: [yes, probably_yes, probably_no, no, no_information]
+  sq:selection:multiple-measurements: [yes, probably_yes, probably_no, no, no_information]
+  sq:selection:multiple-analyses: [yes, probably_yes, probably_no, no, no_information]
 covered_rule_ids:
   - rule:randomization:concealment-failed
   - rule:randomization:unknown-concealment-and-imbalance
@@ -43,6 +89,8 @@ covered_rule_ids:
   - rule:selection:some-concerns
   - rule:selection:low
   - rule:overall:any-high
+  - rule:overall:combined-concerns-yes
+  - rule:overall:combined-concerns-no
   - rule:overall:any-concerns
   - rule:overall:all-low
 invalid_cases:
@@ -245,7 +293,7 @@ golden_cases:
     expected_overall: some_concerns
     expected_matched_rules: [rule:selection:some-concerns]
 
-  - id: multiple-domains-some-concerns-max-policy
+  - id: multiple-domains-some-concerns-no
     answers:
       <<: *low
       sq:randomization:baseline-imbalance: yes
@@ -254,4 +302,19 @@ golden_cases:
       domain:randomization: some_concerns
       domain:selection: some_concerns
     expected_overall: some_concerns
-    expected_matched_rules: [rule:overall:any-concerns]
+    expected_matched_rules: [rule:overall:combined-concerns-no]
+    assessor_inputs: {input:combined-concerns: false}
+    expected_required_assessor_inputs: [input:combined-concerns]
+
+  - id: multiple-domains-some-concerns-yes
+    answers:
+      <<: *low
+      sq:randomization:baseline-imbalance: yes
+      sq:selection:prespecified-analysis: no
+    expected_domains:
+      domain:randomization: some_concerns
+      domain:selection: some_concerns
+    expected_overall: high
+    expected_matched_rules: [rule:overall:combined-concerns-yes]
+    assessor_inputs: {input:combined-concerns: true}
+    expected_required_assessor_inputs: [input:combined-concerns]

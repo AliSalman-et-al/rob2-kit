@@ -3,11 +3,24 @@ required_schema_version: 1.0.0
 family_id: guidance:rob2-parallel-assignment-en
 release_id: "2019.1"
 authors: [RoB 2 Kit maintainers]
-content_hash: sha256:2f3aa23896fc12780516cb11e27953ac101eb7ea58e433fe593a2d1f5ec85bf4
+content_hash: sha256:f59986e1c410ff00c603c9b4036b13023c313f4f1aee53dd3fd042d81657c735
 language: en
 # Replaced by the release build with the exact validated Logic-pack content hash.
 compatible_logic_hashes:
-  - sha256:222b3d2e1ef923a0fde8b64e3de5a5aa845ecf7e36c58c6936d01ae143eb09c7
+  - sha256:a729f2654bac2be10315463a450866d274ead7220d7524cf17838a175f96e3a0
+evidence_targets:
+  - "Use the randomized allocation, concealment, deviations, missingness, measurement, and selective-reporting evidence that bears on this exact Trial, Result, population, comparison, analysis, and time point."
+  - "Prefer direct trial conduct and result-reporting statements; retain the relevant Source role, chronology, section, and locator."
+counter_evidence:
+  - "Actively seek a distinct contradiction pass for each signaling question, including later or companion Sources and result-bearing analyses."
+  - "Record credible evidence against the leading interpretation rather than resolving disagreement by Source prestige or majority vote."
+inference_boundaries:
+  - "Inference must be grounded in the disclosed Trial and Result context; absence of a keyword, abstract-only mention, or generic methodological expectation is not evidence."
+  - "Do not transfer conduct, populations, or analyses between Trials, Randomizations, Results, or time points merely because Sources cite one another."
+no_information_rule: "Use No information only when the applicable question permits it, readable Sources and required search coverage are adequate, and neither direct evidence nor a reasonable probable inference supports an adjacent answer; operational search failure is a limitation, not No information."
+recurring_traps:
+  - "Do not treat a protocol promise, background statement, bibliography entry, or another-Trial Discussion passage as proof that the reported Result was obtained or analysed as described."
+  - "Do not use journal prestige, named methods, arbitrary thresholds, or numeric Domain counts as a substitute for the Logic pack and question-specific evidence."
 items:
   - logic_element_id: sq:randomization:sequence
     content_origin: official
@@ -97,6 +110,20 @@ items:
     content_origin: official
     text: "Is the numerical result likely to have been selected, on the basis of the results, from multiple eligible analyses of the data?"
     affected_change: decision_relevant
+  - logic_element_id: input:combined-concerns
+    content_origin: maintainer_authored
+    text: "When no Domain is High and multiple Domains have Some concerns, state whether those concerns together substantially lower confidence in the Result."
+    affected_change: decision_relevant
+    provenance_refs: [provenance:rob2-kit-guidance]
+    evidence_targets:
+      - "Use the frozen Domain judgments and their question-specific Evidence Bundles; do not count Domains as a proxy for combined impact."
+    counter_evidence:
+      - "Consider whether the concerns are overlapping, minor, or otherwise unlikely to substantially lower confidence together."
+    inference_boundaries:
+      - "This is an attributable assessor input, not a model confidence score or an automatic numeric threshold."
+    no_information_rule: "Do not substitute No information for this boolean input; surface unresolved evidence as a diagnostic condition before answering."
+    recurring_traps:
+      - "A second Some-concerns Domain does not itself imply High; the assessor must provide the structured combined-concerns answer."
 inventory:
   - sq:randomization:sequence
   - sq:randomization:concealment
@@ -120,8 +147,33 @@ inventory:
   - sq:selection:prespecified-analysis
   - sq:selection:multiple-measurements
   - sq:selection:multiple-analyses
+  - input:combined-concerns
 provenance:
-  - title: "RoB 2: a revised tool for assessing risk of bias in randomised trials"
+  - id: provenance:rob2-official
+    kind: official
+    title: "RoB 2: a revised tool for assessing risk of bias in randomised trials"
     version: "22 August 2019"
     url: "https://www.riskofbias.info/welcome/rob-2-0-tool/current-version-of-rob-2"
     license: "CC BY-NC-ND 4.0; redistribution permission recorded by the project owner"
+    attribution: "Sterne et al.; official 22 August 2019 parallel-trial guidance"
+  - id: provenance:rob2-kit-guidance
+    kind: maintainer_authored
+    title: "rob2-kit evidence and inference boundary guidance"
+    version: "2019.1"
+    url: "https://github.com/AliSalman-et-al/rob2-kit"
+    license: "Project-maintainer authored; see repository license"
+    attribution: "rob2-kit maintainers; adaptation clearly separated from official wording"
+  - id: provenance:rob2-copied-cribsheet
+    kind: copied
+    title: "RoB 2 parallel-trial cribsheet"
+    version: "22 August 2019"
+    url: "https://www.riskofbias.info/welcome/rob-2-0-tool/current-version-of-rob-2"
+    license: "CC BY-NC-ND 4.0; copied wording remains attributable to the authors"
+    attribution: "RoB 2 authors; copied only where explicitly marked official"
+  - id: provenance:rob2-adapted-boundaries
+    kind: adapted
+    title: "rob2-kit adaptation notes for bounded evidence review"
+    version: "2019.1"
+    url: "https://github.com/AliSalman-et-al/rob2-kit"
+    license: "Project-maintainer authored adaptation; see repository license"
+    attribution: "rob2-kit maintainers; does not alter normative Logic"
