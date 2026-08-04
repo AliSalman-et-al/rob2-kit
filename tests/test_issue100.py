@@ -90,6 +90,18 @@ def test_scope_excludes_reference_zones_and_other_trial_discourse(tmp_path: Path
     assert page.excluded_count == 3
     assert page.condition == "results"
 
+    unclassified = _unit("unit:unclassified", "source:report", "allocation")
+    index.replace_units((unclassified,))
+    assert index.search(
+        SearchQuery(terms=("allocation",)),
+        scope=EvidenceScope(
+            trial_id="trial:active",
+            result_id="result:active",
+            domain_id="domain:randomization",
+            allow_unclassified=True,
+        ),
+    ).hits
+
 
 def test_duplicate_groups_collapse_and_sources_are_diversified(tmp_path: Path) -> None:
     index = EvidenceSearchIndex(tmp_path / "evidence.sqlite3")

@@ -1887,6 +1887,7 @@ class RunEngine:
             domain_id=work_token.domain_id,
             source_ids=source_ids,
             include_uncertain=True,
+            allow_unclassified=True,
         )
 
     def inspect_visual_candidate(

@@ -299,6 +299,10 @@ class EvidenceScope(FrozenModel):
     document_zones: tuple[DocumentZone, ...] = ()
     include_uncertain: bool = False
     include_other_trial: bool = False
+    # Structure-aware parsers may not map every authored unit to a signaling
+    # Domain.  The engine can explicitly permit those same-Result units while
+    # retaining Trial/Result scope; ad-hoc callers remain fail-closed.
+    allow_unclassified: bool = False
 
 
 class SearchPolicy(FrozenModel):
@@ -1108,7 +1112,15 @@ def _query_metadata_filters(
             add_in("source_id", scope.source_ids)
     add_in("trial_id", trial_ids)
     add_in("result_id", result_ids)
-    add_in("domain_id", domain_ids)
+    if domain_ids and scope is not None and scope.allow_unclassified:
+        filters.append(
+            "(u.domain_id IN ("
+            + ",".join("?" for _ in domain_ids)
+            + ") OR u.domain_id IS NULL)"
+        )
+        params.extend(domain_ids)
+    else:
+        add_in("domain_id", domain_ids)
     if question_ids:
         filters.append(
             "EXISTS (SELECT 1 FROM json_each(COALESCE(u.question_ids, '[]')) "
@@ -1147,7 +1159,11 @@ def _unit_in_scope(unit: CanonicalEvidenceUnit, scope: EvidenceScope) -> bool:
         return False
     if scope.result_id is not None and unit.result_id != scope.result_id:
         return False
-    if scope.domain_id is not None and unit.domain_id != scope.domain_id:
+    if (
+        scope.domain_id is not None
+        and unit.domain_id != scope.domain_id
+        and not (scope.allow_unclassified and unit.domain_id is None)
+    ):
         return False
     if scope.question_id is not None and scope.question_id not in unit.question_ids:
         return False
