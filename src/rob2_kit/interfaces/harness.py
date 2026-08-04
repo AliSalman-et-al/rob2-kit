@@ -280,6 +280,7 @@ def _install_runtime(root: Path, release_root: Path) -> bool:
         return False
     destination.parent.mkdir(parents=True, exist_ok=True)
     shutil.copytree(source, destination)
+    _copy_installed_package(release_root, destination / "src" / "rob2_kit")
     uv = shutil.which("uv")
     if uv is None:
         raise HarnessBootstrapError(
@@ -300,6 +301,20 @@ def _install_runtime(root: Path, release_root: Path) -> bool:
             "Verify network access and the exact wheel release, then rerun rob2 bootstrap."
         ) from error
     return True
+
+
+def _copy_installed_package(release_root: Path, destination: Path) -> None:
+    """Copy the wheel's package into the runtime so sync works offline."""
+
+    destination.mkdir(parents=True, exist_ok=True)
+    for source in release_root.iterdir():
+        if source.name in {"release", "__pycache__"}:
+            continue
+        target = destination / source.name
+        if source.is_dir():
+            shutil.copytree(source, target, dirs_exist_ok=True)
+        elif source.is_file() and source.name.endswith((".py", ".json", ".lock")):
+            shutil.copyfile(source, target)
 
 
 def _runtime_matches(source: Path, destination: Path) -> bool:
@@ -339,6 +354,7 @@ def _managed_roots(root: Path) -> tuple[Path, ...]:
     return (
         root / ".rob2" / "adapters",
         root / ".rob2" / "references",
+        root / ".rob2" / "runtime" / "src" / "rob2_kit",
         root / ".rob2" / "runtime",
         root / ".rob2" / "rob2.lock",
         root / "rob2.lock",
@@ -384,12 +400,18 @@ def _restore_managed_state(root: Path, snapshot: dict[Path, bytes]) -> None:
         path.write_bytes(content)
     # Remove empty directories created by a failed transaction, without ever
     # deleting a project or host directory that contains user data.
-    for target in sorted(_managed_roots(root), key=lambda item: len(item.parts), reverse=True):
-        if target.is_dir():
-            try:
-                target.rmdir()
-            except OSError:
-                pass
+    directories = {
+        directory
+        for target in _managed_roots(root)
+        if target.is_dir()
+        for directory in (target, *target.rglob("*"))
+        if directory.is_dir()
+    }
+    for directory in sorted(directories, key=lambda item: len(item.parts), reverse=True):
+        try:
+            directory.rmdir()
+        except OSError:
+            pass
 
 
 def _validate_ownership_target(root: Path, release_root: Path, lock: ReleaseLock) -> None:
@@ -445,6 +467,7 @@ def _ownership_manifest(root: Path, release_root: Path, lock: ReleaseLock) -> di
         root / ".rob2" / "references",
         root / ".rob2" / "runtime" / "pyproject.toml",
         root / ".rob2" / "runtime" / "uv.lock",
+        root / ".rob2" / "runtime" / "src" / "rob2_kit",
         *(
             root / skill_root / skill_name
             for _host, skill_root in _HOST_SKILL_ROOTS

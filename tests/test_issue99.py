@@ -9,8 +9,8 @@ from pathlib import Path
 from typer.testing import CliRunner
 
 from rob2_kit.application.contracts import RUN_OPERATION_NAMES
-from rob2_kit.interfaces.cli.app import app
 from rob2_kit.interfaces import harness
+from rob2_kit.interfaces.cli.app import app
 
 ROOT = Path(__file__).resolve().parents[1]
 
