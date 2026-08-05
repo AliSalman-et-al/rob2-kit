@@ -656,9 +656,10 @@ def _qualify(
             ).stdout
         )
         assert upgrade["status"] == "upgraded"
-        assert json.loads(
+        upgraded_doctor = json.loads(
             _run([str(rob2), "doctor", str(project)], cwd=workspace, env=checked_env).stdout
-        )["ok"] is True
+        )
+        assert upgraded_doctor["ok"] is True, upgraded_doctor
         rollback_preview = json.loads(
             _run([str(rob2), "rollback", str(project)], cwd=workspace, env=checked_env).stdout
         )

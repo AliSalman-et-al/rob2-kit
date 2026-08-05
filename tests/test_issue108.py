@@ -141,6 +141,18 @@ def test_upgrade_does_not_touch_live_assets_until_the_staged_candidate_passes(
     assert not (tmp_path / ".rob2" / "rollback.json").exists()
 
 
+def test_rollback_refuses_incompatible_durable_state(tmp_path: Path) -> None:
+    bootstrap_project(tmp_path)
+    upgrade_project(tmp_path, apply=True)
+    ledger = tmp_path / ".rob2" / "ledger.sqlite3"
+    with sqlite3.connect(ledger) as connection:
+        connection.execute("CREATE TABLE metadata (key TEXT PRIMARY KEY, value TEXT NOT NULL)")
+        connection.execute("INSERT INTO metadata VALUES ('schema_version', '99')")
+
+    with pytest.raises(HarnessBootstrapError, match="incompatible with the rollback release"):
+        rollback_project(tmp_path, apply=True)
+
+
 def test_pending_upgrade_recovers_before_the_next_lifecycle_action(tmp_path: Path) -> None:
     bootstrap_project(tmp_path)
     manifest = harness._load_ownership_manifest(tmp_path)

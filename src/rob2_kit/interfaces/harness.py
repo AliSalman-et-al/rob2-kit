@@ -41,7 +41,13 @@ _REFERENCE_FILENAMES = SKILL_REFERENCE_FILENAMES
 _HOST_SKILL_ROOTS = (("codex", ".codex/skills"), ("claude", ".claude/skills"))
 _ROLLBACK_ROOT = ".rob2/release-rollbacks"
 _PENDING_TRANSACTION = ".rob2/pending-release-transaction.json"
-_OWNED_METADATA_PATHS = ("rob2.lock", ".rob2/rob2.lock", ".rob2/rollback.json")
+_OWNED_METADATA_PATHS = (
+    "rob2.lock",
+    ".rob2/rob2.lock",
+    ".rob2/rollback.json",
+    ".rob2/install-journal.json",
+    ".rob2/runtime",
+)
 
 
 def preview_upgrade_project(project_root: Path) -> dict[str, Any]:
@@ -154,18 +160,26 @@ def rollback_project(project_root: Path, *, apply: bool = False) -> dict[str, An
     _recover_interrupted_upgrade(root)
     record = _load_rollback_record(root)
     current = _load_ownership_manifest(root)
+    current_paths = set(current["owned_paths"]) | set(_owned_metadata_paths(current))
+    restore_paths = set(record["paths"])
     preview = {
         "operation": "rollback",
         "preview": True,
         "user_action": "Review this receipt, then run rob2 rollback --apply PROJECT_ROOT.",
         "from": current["release"],
         "to": record["release"],
-        "owned_replacements": record["paths"],
-        "owned_removals": sorted(set(current["owned_paths"]) - set(record["paths"])),
+        "owned_additions": sorted(restore_paths - current_paths),
+        "owned_replacements": sorted(restore_paths & current_paths),
+        "owned_removals": sorted(current_paths - restore_paths),
         "state_compatibility": _check_project_state(root),
     }
     if not apply:
         return preview
+    if not preview["state_compatibility"]["ok"]:
+        raise HarnessBootstrapError(
+            "durable project state is incompatible with the rollback release. "
+            "Follow state_compatibility.recovery before rolling back."
+        )
     mutex = _acquire_install_mutex(root)
     recovery_backup = _begin_recoverable_lifecycle(root, current)
     try:
@@ -226,7 +240,7 @@ def uninstall_project(project_root: Path, *, apply: bool = False) -> dict[str, A
     try:
         _remove_owned_host_configuration(root, manifest)
         _remove_owned_files(root, [*manifest["owned_paths"], *_owned_metadata_paths(manifest)])
-        _write_journal(root / ".rob2" / "install-journal.json", "uninstall_complete", (), ())
+        _remove_owned_runtime(root)
         _clear_pending_upgrade(root, backup)
     except Exception:
         _recover_interrupted_upgrade(root)
@@ -929,9 +943,9 @@ def _owned_metadata_paths(manifest: dict[str, Any]) -> tuple[str, ...]:
     paths = manifest.get("owned_metadata_paths", _OWNED_METADATA_PATHS)
     if not isinstance(paths, list) or not all(isinstance(path, str) for path in paths):
         raise HarnessBootstrapError("ownership manifest has invalid metadata paths")
-    if set(paths) != set(_OWNED_METADATA_PATHS):
+    if not set(paths) <= set(_OWNED_METADATA_PATHS):
         raise HarnessBootstrapError("ownership manifest has unexpected metadata paths")
-    return tuple(paths)
+    return tuple(dict.fromkeys((*paths, *_OWNED_METADATA_PATHS)))
 
 
 def _validate_manifest_owned_files(root: Path, manifest: dict[str, Any]) -> None:
@@ -1044,7 +1058,7 @@ def _stage_candidate_runtime(root: Path, release_root: Path) -> Path | None:
             timeout=120,
         )
         tools = verify_mcp_launchability(
-            root,
+            stage,
             uv,
             ("run", "--locked", "--project", str(stage), "rob2-mcp"),
         )
@@ -1074,6 +1088,8 @@ def _commit_staged_runtime(root: Path, stage: Path, backup: Path) -> None:
 
     target = root / _RUNTIME_RELATIVE
     prior = backup / "runtime-tree"
+    if prior.exists():
+        shutil.rmtree(prior)
     if target.exists():
         shutil.move(str(target), str(prior))
     shutil.move(str(stage), str(target))
@@ -1090,6 +1106,9 @@ def _write_rollback_backup(root: Path, manifest: dict[str, Any]) -> Path:
         destination = backup / relative
         destination.parent.mkdir(parents=True, exist_ok=True)
         shutil.copyfile(source, destination)
+    runtime = root / _RUNTIME_RELATIVE
+    if runtime.is_dir():
+        shutil.copytree(runtime, backup / "runtime-tree")
     return backup
 
 
@@ -1292,6 +1311,14 @@ def _remove_owned_files(root: Path, owned: dict[str, Any] | list[str]) -> None:
             directory.rmdir()
         except OSError:
             pass
+
+
+def _remove_owned_runtime(root: Path) -> None:
+    """Remove the explicitly owned runtime tree, including its mutable virtualenv."""
+
+    runtime = root / _RUNTIME_RELATIVE
+    if runtime.is_dir():
+        shutil.rmtree(runtime)
 
 
 def _remove_owned_host_configuration(root: Path, manifest: dict[str, Any]) -> None:

@@ -69,7 +69,7 @@ def main() -> None:
         encoding="utf-8",
     )
     subprocess.run(
-        ["uv", "lock", "--locked", "--project", str(ROOT / "release" / "runtime")],
+        ["uv", "lock", "--refresh", "--project", str(ROOT / "release" / "runtime")],
         cwd=ROOT,
         check=True,
     )

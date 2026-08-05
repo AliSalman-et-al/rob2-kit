@@ -15,6 +15,7 @@ import sqlite3
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass
 from datetime import UTC, datetime
+from pathlib import Path
 from typing import Annotated, Any, Literal, Protocol
 
 from mcp.types import CallToolResult, TextContent
@@ -848,6 +849,12 @@ def create_server(
 
 
 def main() -> None:
+    pending = Path.cwd() / ".rob2" / "pending-release-transaction.json"
+    if pending.exists():
+        raise RuntimeError(
+            "a release transaction is pending recovery; run a rob2 lifecycle command before "
+            "starting the MCP server"
+        )
     create_server(determinism=_qualification_determinism_from_environment()).run(transport="stdio")
 
 
