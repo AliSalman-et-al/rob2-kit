@@ -54,6 +54,7 @@ class ResultLifecycleEvent(StrEnum):
     REPORT_READY = "result_report_ready"
     DIAGNOSTIC_READY = "result_diagnostic_ready"
     INVALIDATED = "result_invalidated"
+    ASSESSMENT_CORRECTED = "result_assessment_corrected"
 
 
 class LifecycleEvent(FrozenModel):
@@ -155,6 +156,10 @@ RESULT_TRANSITIONS: Final[dict[ResultState | None, dict[ResultLifecycleEvent, Re
     },
     ResultState.REPORT_READY: {
         ResultLifecycleEvent.INVALIDATED: ResultState.PENDING,
+        # An answer correction supersedes only the assessment products.  Its
+        # frozen Evidence remains current, so returning to ASSESSING avoids
+        # falsely demanding that every Evidence Bundle be frozen again.
+        ResultLifecycleEvent.ASSESSMENT_CORRECTED: ResultState.ASSESSING,
     },
     ResultState.DIAGNOSTIC_READY: {
         ResultLifecycleEvent.INVALIDATED: ResultState.PENDING,
@@ -297,6 +302,7 @@ def lifecycle_event_for(event: WorkflowEvent) -> RunLifecycleEvent | ResultLifec
         "operation:result-report-ready": ResultLifecycleEvent.REPORT_READY,
         "operation:result-diagnostic-ready": ResultLifecycleEvent.DIAGNOSTIC_READY,
         "operation:result-invalidated": ResultLifecycleEvent.INVALIDATED,
+        "operation:result-assessment-corrected": ResultLifecycleEvent.ASSESSMENT_CORRECTED,
     }
     return aliases.get(operation)
 

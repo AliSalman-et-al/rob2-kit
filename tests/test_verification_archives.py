@@ -252,7 +252,7 @@ def test_complete_archive_verifies_without_live_project(tmp_path: Path) -> None:
     assert receipt.ok is True
     assert receipt.archive_kind == "complete"
     assert receipt.source_integrity_independently_verifiable is True
-    assert receipt.checked_artifacts == 11
+    assert receipt.checked_artifacts == 12
     assert archive == repeated
 
 

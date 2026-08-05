@@ -353,6 +353,14 @@ class _ResultInvalidatedRecord(FrozenModel):
     input_snapshot_hash: ContentHash
 
 
+class _ResultAssessmentCorrectedRecord(FrozenModel):
+    """Lifecycle marker reopening a completed assessment without refreezing Evidence."""
+
+    run_id: Identifier
+    result_id: Identifier
+    correction_key: Identifier
+
+
 class _RunReconciledRecord(FrozenModel):
     """The immutable input reconciliation checkpoint for one Current Run."""
 
@@ -477,6 +485,7 @@ class _DomainAnswersRecord(FrozenModel):
     final_judgment_departures: tuple[FinalJudgmentInput, ...] = ()
     project_rules: tuple[RecordReference, ...] = ()
     answer_revisions: tuple[RecordReference, ...] = ()
+    correction_token: WorkToken | None = None
     submission: SubmitDomainAnswersRequest
 
 
@@ -2684,6 +2693,7 @@ class RunEngine:
                 result_state=self._result_state(projection, request.result_id),
                 domain_id=request.domain_id,
                 answer_revisions=record.answer_revisions,
+                correction_token=record.correction_token,
                 judgments=self._materialize_terminal(
                     bound_ledger, request.run_id, request.result_id
                 ),
@@ -2779,6 +2789,7 @@ class RunEngine:
                         "no-information SQ answers require their own complete Search coverage basis"
                     )
         answer_revisions = self._commit_domain_answers(ledger, request, domain)
+        correction_token = self._successor_correction_token(request, answer_revisions)
         normalized = _DomainAnswersRecord(
             run_id=request.run_id,
             result_id=request.result_id,
@@ -2789,6 +2800,7 @@ class RunEngine:
             final_judgment_departures=request.final_judgment_departures,
             project_rules=request.project_rules,
             answer_revisions=answer_revisions,
+            correction_token=correction_token,
             submission=request,
         )
         result = self._commit_submission(
@@ -2815,6 +2827,7 @@ class RunEngine:
             result_state=self._result_state(projection, request.result_id),
             domain_id=request.domain_id,
             answer_revisions=answer_revisions,
+            correction_token=correction_token,
             judgments=judgments,
         )
 
@@ -2849,10 +2862,11 @@ class RunEngine:
                 result_state=self._result_state(projection, request.result_id),
                 domain_id=request.domain_id,
                 answer_revisions=record.answer_revisions,
-                judgments=(),
+                correction_token=record.correction_token,
+                judgments=self._materialize_terminal(ledger, request.run_id, request.result_id),
             )
         self._validate_result_domain(ledger, request.run_id, request.result_id, request.domain_id)
-        prior = False
+        current_correction_token: WorkToken | None = None
         for event in self._events_for_run(ledger, request.run_id):
             if event.scope != request.result_id or event.operation not in {
                 "operation:submit-domain-answers",
@@ -2862,14 +2876,10 @@ class RunEngine:
             record = _DomainAnswersRecord.model_validate_json(
                 ledger.artifacts.read(event.output_revision_hashes[0])
             )
-            if (
-                record.domain_id == request.domain_id
-                and record.submission.work_token == request.work_token
-            ):
-                prior = True
-                break
-        if not prior:
-            raise ValueError("correction requires the original issued Domain answer WorkToken")
+            if record.domain_id == request.domain_id:
+                current_correction_token = record.correction_token
+        if current_correction_token != request.work_token:
+            raise ValueError("correction requires the current engine-issued correction WorkToken")
         logic = self._logic_pack()
         domain = next(item for item in logic.domains if item.id == request.domain_id)
         supplied = {item.question_id for item in request.answers}
@@ -2886,7 +2896,23 @@ class RunEngine:
         }
         if supplied != active:
             raise ValueError("correction must answer every and only active signaling questions")
+        departure_domains = {departure.domain_id for departure in request.final_judgment_departures}
+        if departure_domains and departure_domains != {request.domain_id}:
+            raise ValueError(
+                "Final judgment departures must bind the Domain authorized by this WorkToken"
+            )
+        if len(departure_domains) != len(request.final_judgment_departures):
+            raise ValueError("each Domain may declare at most one Final judgment departure")
+        if any(item.answer.value == "no_information" for item in request.answers):
+            for item in request.answers:
+                if item.answer.value == "no_information" and not self._has_no_information_basis(
+                    ledger, request, item.question_id
+                ):
+                    raise ValueError(
+                        "no-information SQ answers require their own complete Search coverage basis"
+                    )
         answer_revisions = self._commit_domain_answers(ledger, request, domain)
+        correction_token = self._successor_correction_token(request, answer_revisions)
         normalized = _DomainAnswersRecord(
             run_id=request.run_id,
             result_id=request.result_id,
@@ -2897,17 +2923,10 @@ class RunEngine:
             final_judgment_departures=request.final_judgment_departures,
             project_rules=request.project_rules,
             answer_revisions=answer_revisions,
+            correction_token=correction_token,
             submission=request,
         )
-        result = self._commit_submission(
-            ledger,
-            run_id=request.run_id,
-            scope=request.result_id,
-            operation="operation:correct-domain-answers",
-            operation_key=request.idempotency_key,
-            artifact=normalized,
-            checkpoint=f"checkpoint:answers-corrected-{request.domain_id.removeprefix('domain:')}",
-        )
+        result = self._commit_answer_correction(ledger, request, normalized)
         judgments = self._materialize_terminal(ledger, request.run_id, request.result_id)
         projection = self._projection(ledger, request.run_id)
         return SubmitDomainAnswersResponse(
@@ -2923,6 +2942,7 @@ class RunEngine:
             result_state=self._result_state(projection, request.result_id),
             domain_id=request.domain_id,
             answer_revisions=answer_revisions,
+            correction_token=correction_token,
             judgments=judgments,
         )
 
@@ -4687,14 +4707,9 @@ class RunEngine:
             and event.scope == result_id
             and event.sequence > invalidated_at
         }
-        answer_payloads = [
-            self._event_payload(ledger, event)
-            for event in events
-            if event.operation
-            in {"operation:submit-domain-answers", "operation:correct-domain-answers"}
-            and event.scope == result_id
-            and event.sequence > invalidated_at
-        ]
+        answer_payloads = self._current_domain_answer_payloads(
+            ledger, run_id, result_id, invalidated_at
+        )
         answer_domains = {payload.get("domain_id") for payload in answer_payloads}
         if not required_domains <= evidence_domains or not required_domains <= answer_domains:
             return ()
@@ -4753,7 +4768,9 @@ class RunEngine:
             self._commit_transitions(ledger, (transition,), lease, now=self._now())
             self._repair_report_publication(ledger, run_id)
             return ()
-        # A Result may only have one immutable answer checkpoint per domain.
+        # Each Domain contributes only its current immutable answer checkpoint.
+        # A correction supersedes that Domain's earlier answers, assessor input,
+        # and Final-judgment departure without discarding other Domains' work.
         answers: dict[str, str] = {}
         rationales: dict[str, str] = {}
         assessor_inputs: dict[str, bool] = {}
@@ -5169,22 +5186,8 @@ class RunEngine:
             artifact_names=tuple(sorted(report_files)),
             staging_root=staging.relative_to(self._required_root()).as_posix(),
         )
-        if latest_correction:
-            os.replace(staging, report_root)
-            return judgment_references
         result_started = _ResultStartedRecord(run_id=run_id, result_id=result_id)
         transitions = [
-            self._transition(
-                scope=result_id,
-                operation="operation:result-started",
-                operation_key=f"idempotency:result-started-{assessment_digest}",
-                entity_id=f"result-started:{assessment_digest}",
-                revision_id=f"revision:result-started-{assessment_digest}",
-                artifact=result_started,
-                checkpoint="checkpoint:result-started",
-                outcome=WorkflowEventOutcome.COMPLETED,
-                observed_at=now,
-            ),
             self._transition(
                 scope=result_id,
                 operation="operation:result-report-ready",
@@ -5197,6 +5200,21 @@ class RunEngine:
                 observed_at=now,
             ),
         ]
+        if self._result_state(self._projection(ledger, run_id), result_id) is ResultState.PENDING:
+            transitions.insert(
+                0,
+                self._transition(
+                    scope=result_id,
+                    operation="operation:result-started",
+                    operation_key=f"idempotency:result-started-{assessment_digest}",
+                    entity_id=f"result-started:{assessment_digest}",
+                    revision_id=f"revision:result-started-{assessment_digest}",
+                    artifact=result_started,
+                    checkpoint="checkpoint:result-started",
+                    outcome=WorkflowEventOutcome.COMPLETED,
+                    observed_at=now,
+                ),
+            )
         self._commit_transitions(ledger, tuple(transitions), lease, now=now)
         # The readiness transition is committed only after publication.  A
         # failed commit is rolled back by ``_commit_transitions`` to the
@@ -5626,6 +5644,115 @@ class RunEngine:
             tuple(bundles[key] for key in sorted(bundles)),
             tuple(answers[key] for key in sorted(answers)),
         )
+
+    def _commit_answer_correction(
+        self,
+        ledger: WorkflowLedger,
+        request: CorrectDomainAnswersRequest,
+        artifact: _DomainAnswersRecord,
+    ) -> CommitResult:
+        """Commit a correction and reopen its published assessment as one checkpoint.
+
+        The correction itself is the authoritative successor boundary.  If it
+        replaces a published assessment, the same ledger batch reopens the
+        Result's assessment lifecycle so the successor report can be published
+        through the normal verified report/index path.  Frozen Evidence is
+        deliberately not invalidated; this is not a Run reopening because no
+        project input or Preparation attempt changed.
+        """
+
+        self._validate_idempotent_event(
+            ledger,
+            request.idempotency_key,
+            "operation:correct-domain-answers",
+            artifact,
+            run_id=request.run_id,
+        )
+        now = self._now()
+        suffix = self._digest(f"{request.run_id}|{request.idempotency_key}")
+        projection = self._projection(ledger, request.run_id)
+        transitions: list[Transition] = [
+            self._transition(
+                scope=request.result_id,
+                operation="operation:correct-domain-answers",
+                operation_key=request.idempotency_key,
+                entity_id=f"run-submission:{suffix}",
+                revision_id=f"revision:run-submission-{suffix}",
+                artifact=artifact,
+                checkpoint=f"checkpoint:answers-corrected-{request.domain_id.removeprefix('domain:')}",
+                outcome=WorkflowEventOutcome.COMPLETED,
+                observed_at=now,
+            )
+        ]
+        if self._result_state(projection, request.result_id) is ResultState.REPORT_READY:
+            transitions.append(
+                self._transition(
+                    scope=request.result_id,
+                    operation="operation:result-assessment-corrected",
+                    operation_key=f"idempotency:result-assessment-corrected-{suffix}",
+                    entity_id=f"result-assessment-corrected:{suffix}",
+                    revision_id=f"revision:result-assessment-corrected-{suffix}",
+                    artifact=_ResultAssessmentCorrectedRecord(
+                        run_id=request.run_id,
+                        result_id=request.result_id,
+                        correction_key=request.idempotency_key,
+                    ),
+                    checkpoint="checkpoint:assessment-corrected",
+                    outcome=WorkflowEventOutcome.WORK_REQUIRED,
+                    observed_at=now,
+                )
+            )
+        committed = ledger.commit_batch(
+            tuple(transitions), self._acquire_lease(ledger, now), now=now
+        )
+        return committed[0]
+
+    def _current_domain_answer_payloads(
+        self,
+        ledger: WorkflowLedger,
+        run_id: Identifier,
+        result_id: Identifier,
+        invalidated_at: int,
+    ) -> list[dict[str, Any]]:
+        """Return the latest answer checkpoint for each Domain in event order.
+
+        Corrections are successor checkpoints, not additional answers.  Keeping
+        just the latest payload per Domain makes corrections replace associated
+        rationale, Overall-policy inputs, and Final-judgment metadata together.
+        """
+
+        latest: dict[str, tuple[int, dict[str, Any]]] = {}
+        for event in self._events_for_run(ledger, run_id):
+            if (
+                event.scope != result_id
+                or event.sequence <= invalidated_at
+                or event.operation
+                not in {"operation:submit-domain-answers", "operation:correct-domain-answers"}
+            ):
+                continue
+            payload = self._event_payload(ledger, event)
+            domain_id = payload.get("domain_id")
+            if isinstance(domain_id, str):
+                latest[domain_id] = (event.sequence, payload)
+        return [payload for _sequence, payload in sorted(latest.values())]
+
+    def _successor_correction_token(
+        self,
+        request: SubmitDomainAnswersRequest,
+        answer_revisions: tuple[RecordReference, ...],
+    ) -> WorkToken:
+        """Issue the one correction authority for this immutable answer checkpoint."""
+
+        revision_identity = canonical_hash(
+            [reference.model_dump(mode="json") for reference in answer_revisions]
+        )
+        return self._work_item(
+            request.run_id,
+            f"{request.result_id}|{request.domain_id}|answer-correction|{revision_identity}",
+            RunOperation.CORRECT_DOMAIN_ANSWERS,
+            result_id=request.result_id,
+            domain_id=request.domain_id,
+        ).work_token
 
     @staticmethod
     def _escape_markdown(value: str) -> str:

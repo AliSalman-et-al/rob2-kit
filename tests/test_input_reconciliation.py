@@ -6,6 +6,7 @@ import shutil
 from decimal import Decimal
 from pathlib import Path
 
+import anyio
 import pytest
 import yaml
 
@@ -25,6 +26,7 @@ from rob2_kit.application.contracts import (
     SubmitResultResolutionRequest,
     SubmitRunProposalRequest,
     SubmitSourceClassificationRequest,
+    WorkToken,
 )
 from rob2_kit.application.lifecycle import RunState
 from rob2_kit.application.run_engine import RunEngine
@@ -42,6 +44,7 @@ from rob2_kit.evidence.workflow import (
     SourceSearchState,
 )
 from rob2_kit.ingestion.project import PageExtraction, PageTextItem, ParserResult
+from rob2_kit.interfaces.mcp import server as mcp_server
 from tests.test_mcp_tracer import DOMAINS, _low_answers
 from tests.test_run_proposal import StubParser
 
@@ -325,6 +328,7 @@ def _finish_current_result(
     prefix: str = "reconciliation",
     answers: dict[str, str] | None = None,
     assessor_inputs: dict[str, bool] | None = None,
+    assessor_inputs_by_domain: dict[str, dict[str, bool]] | None = None,
 ) -> dict[str, SubmitDomainAnswersRequest]:
     answer_values = answers or _low_answers()
     submissions: dict[str, SubmitDomainAnswersRequest] = {}
@@ -358,11 +362,31 @@ def _finish_current_result(
                 }
                 for question_id in question_ids
             ),
-            assessor_inputs=(assessor_inputs or {}),
+            assessor_inputs=(assessor_inputs_by_domain or {}).get(
+                answer.domain_id, assessor_inputs or {}
+            ),
         )
         engine.submit_domain_answers(submission)
         submissions[answer.domain_id] = submission
     return submissions
+
+
+def _current_correction_token(
+    engine: RunEngine, run_id: str, result_id: str, domain_id: str
+) -> WorkToken:
+    ledger = engine._bound_ledger(run_id)
+    event = next(
+        event
+        for event in reversed(engine._events_for_run(ledger, run_id))
+        if event.operation
+        in {"operation:submit-domain-answers", "operation:correct-domain-answers"}
+        and event.scope == result_id
+        and json.loads(ledger.artifacts.read(event.output_revision_hashes[0]))["domain_id"]
+        == domain_id
+    )
+    return WorkToken.model_validate(
+        json.loads(ledger.artifacts.read(event.output_revision_hashes[0]))["correction_token"]
+    )
 
 
 def test_terminal_assessment_uses_structured_combined_concerns_input(tmp_path: Path) -> None:
@@ -394,7 +418,7 @@ def test_terminal_assessment_uses_structured_combined_concerns_input(tmp_path: P
 
 
 def test_correct_domain_answers_creates_successors_without_refreezing_evidence(
-    tmp_path: Path,
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     trial = tmp_path / "input" / "answer-correction"
     trial.mkdir(parents=True)
@@ -406,24 +430,144 @@ def test_correct_domain_answers_creates_successors_without_refreezing_evidence(
     _classify_current_sources(engine, run_id)
     original = _finish_current_result(engine, run_id, prefix="answer-correction")
     request = original["domain:randomization"]
+    original_correction_token = _current_correction_token(
+        engine, run_id, request.result_id, request.domain_id
+    )
+    unsupported_no_information = CorrectDomainAnswersRequest.model_validate(
+        request.model_dump(mode="json")
+        | {
+            "idempotency_key": "idempotency:answer-correction-no-information",
+            "work_token": original_correction_token.model_dump(mode="json"),
+            "answers": [
+                item.model_dump(mode="json")
+                | (
+                    {"answer": "no_information", "rationale": "No information correction."}
+                    if item.question_id == request.answers[0].question_id
+                    else {}
+                )
+                for item in request.answers
+            ],
+        }
+    )
+    with pytest.raises(ValueError, match="complete Search coverage basis"):
+        engine.correct_domain_answers(unsupported_no_information)
     correction = CorrectDomainAnswersRequest.model_validate(
         request.model_dump(mode="json")
         | {
             "idempotency_key": "idempotency:answer-correction-successor",
+            "work_token": original_correction_token.model_dump(mode="json"),
             "answers": [
                 item.model_dump(mode="json") | {"rationale": "Corrected rationale."}
                 for item in request.answers
             ],
         }
     )
+    monkeypatch.setattr(mcp_server, "RunEngine", lambda **_kwargs: engine)
+    server = mcp_server.create_server()
 
-    response = engine.correct_domain_answers(correction)
-    repeated = engine.correct_domain_answers(correction)
+    async def submit_correction(request: CorrectDomainAnswersRequest) -> dict[str, object]:
+        result = await server.call_tool(
+            "correct_domain_answers", request.model_dump(mode="json")
+        )
+        assert result.structured_content is not None
+        return result.structured_content
 
-    assert response.committed is True
-    assert repeated.committed is False
-    assert response.answer_revisions[0].revision_id != request.work_token.work_item_id
-    assert len(list((tmp_path / "output" / "report-bundle").rglob("assessment.json"))) == 2
+    response = anyio.run(submit_correction, correction)
+    repeated = anyio.run(submit_correction, correction)
+    successor = CorrectDomainAnswersRequest.model_validate(
+        correction.model_dump(mode="json")
+        | {
+            "idempotency_key": "idempotency:answer-correction-successor-two",
+            "work_token": response["correction_token"],
+            "answers": [
+                item.model_dump(mode="json") | {"rationale": "Second corrected rationale."}
+                for item in correction.answers
+            ],
+        }
+    )
+    second = anyio.run(submit_correction, successor)
+    stale_correction = CorrectDomainAnswersRequest.model_validate(
+        correction.model_dump(mode="json")
+        | {
+            "idempotency_key": "idempotency:answer-correction-stale-token",
+            "answers": [
+                item.model_dump(mode="json") | {"rationale": "Stale token correction."}
+                for item in correction.answers
+            ],
+        }
+    )
+
+    assert response["committed"] is True
+    assert repeated["committed"] is False
+    assert second["committed"] is True
+    assert response["answer_revisions"] != second["answer_revisions"]
+    with pytest.raises(ValueError, match="current engine-issued correction WorkToken"):
+        engine.correct_domain_answers(stale_correction)
+    assert len(list((tmp_path / "output" / "report-bundle").rglob("assessment.json"))) == 3
+    status = engine.get_run_status(RunStatusRequest(run_id=run_id))
+    assert status.run_state is RunState.COMPLETE
+    index = json.loads(
+        next((tmp_path / "output" / "report-bundle").rglob("run-index.json")).read_text(
+            encoding="utf-8"
+        )
+    )
+    assert len(index["results"]) == 1
+    current = index["results"][0]
+    assert current["result_id"] == request.result_id
+    assert current["trial_id"] == "trial:answer-correction"
+    assert current["state"] == "report_ready"
+    assert "assessment-" in current["report"]
+
+
+def test_correction_replaces_prior_assessor_inputs_in_terminal_assessment(tmp_path: Path) -> None:
+    trial = tmp_path / "input" / "corrected-overall-input"
+    trial.mkdir(parents=True)
+    (trial / "report.pdf").write_bytes(b"primary")
+    engine, run_id = _prepare_confirm(
+        tmp_path,
+        config=_config(_result("result:corrected-overall-input", "trial:corrected-overall-input")),
+    )
+    _classify_current_sources(engine, run_id)
+    answers = _low_answers() | {
+        "sq:randomization:baseline-imbalance": "yes",
+        "sq:selection:prespecified-analysis": "no",
+    }
+    original = _finish_current_result(
+        engine,
+        run_id,
+        prefix="corrected-overall-input",
+        answers=answers,
+        assessor_inputs_by_domain={
+            "domain:randomization": {"input:combined-concerns": False}
+        },
+    )
+    before = next((tmp_path / "output" / "report-bundle").rglob("assessment.json"))
+    assert json.loads(before.read_text(encoding="utf-8"))["overall_judgment"] == "some_concerns"
+
+    request = original["domain:randomization"]
+    correction = CorrectDomainAnswersRequest.model_validate(
+        request.model_dump(mode="json")
+        | {
+            "idempotency_key": "idempotency:corrected-overall-input",
+            "work_token": _current_correction_token(
+                engine, run_id, request.result_id, request.domain_id
+            ).model_dump(mode="json"),
+            "assessor_inputs": {"input:combined-concerns": True},
+            "answers": [
+                item.model_dump(mode="json") | {"rationale": "Corrected Overall-policy input."}
+                for item in request.answers
+            ],
+        }
+    )
+
+    engine.correct_domain_answers(correction)
+
+    reports = tuple((tmp_path / "output" / "report-bundle").rglob("assessment.json"))
+    assert len(reports) == 2
+    assert {
+        json.loads(report.read_text(encoding="utf-8"))["overall_judgment"]
+        for report in reports
+    } == {"some_concerns", "high"}
 
 
 def test_final_judgment_departure_must_bind_the_authorized_domain(tmp_path: Path) -> None:

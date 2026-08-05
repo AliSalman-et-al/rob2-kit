@@ -858,7 +858,7 @@ class SubmitDomainAnswersRequest(FrozenModel):
 
 
 class CorrectDomainAnswersRequest(SubmitDomainAnswersRequest):
-    """A successor answer submission bound to the original issued Domain work token."""
+    """A successor answer submission bound to an engine-issued correction token."""
 
 
 class OperationResponse(FrozenModel):
@@ -1104,6 +1104,7 @@ class SubmitDomainAnswersResponse(SubmissionResponse):
     domain_id: Identifier
     answer_revisions: tuple[RecordReference, ...] = ()
     judgments: tuple[RecordReference, ...] = ()
+    correction_token: WorkToken | None = None
 
 
 RUN_OPERATION_CONTRACTS: tuple[OperationContract, ...] = (

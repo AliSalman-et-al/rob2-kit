@@ -82,6 +82,7 @@ def test_mcp_tool_schemas_explain_nested_inputs_and_expose_passage_freezing() ->
         "submit_domain_answers",
     ):
         assert "idempotency_key" not in tools[tool_name].input_schema["properties"]
+    assert "idempotency_key" in tools["correct_domain_answers"].input_schema["properties"]
 
 
 def test_mcp_tool_descriptions_prevent_cleanroom_schema_guessing() -> None:
@@ -110,6 +111,8 @@ def test_mcp_tool_descriptions_prevent_cleanroom_schema_guessing() -> None:
     answers = tools["submit_domain_answers"].description or ""
     assert "every active question in get_work_context" in answers
     assert "no_information" in answers
+    correction = tools["correct_domain_answers"].description or ""
+    assert "new idempotency_key" in correction
     assert "actor" not in tools["submit_domain_evidence"].input_schema["properties"]
     assert "actor" not in tools["submit_domain_answers"].input_schema["properties"]
     evidence = tools["submit_domain_evidence"].description or ""

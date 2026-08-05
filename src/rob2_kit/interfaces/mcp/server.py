@@ -925,6 +925,7 @@ def create_server(
         domain_id: str,
         answers: list[SQAnswerInput],
         contract_version: Literal["1.0.0"],
+        idempotency_key: str,
         assessor_inputs: dict[str, bool] | None = None,
         final_judgment_departures: list[FinalJudgmentInput] | None = None,
         project_rules: list[RecordReference] | None = None,
@@ -932,7 +933,8 @@ def create_server(
         """Correct one previously submitted Domain answer set using its original WorkToken.
 
         This creates immutable successor SQ Answer revisions and refreshes only downstream
-        judgments, the Assessment, and its report; frozen evidence is reused unchanged.
+        judgments, the Assessment, and its report; frozen evidence is reused unchanged. Supply
+        one new idempotency_key for each distinct correction, then reuse that same key to retry.
         """
         return _dump(
             engine.correct_domain_answers(
@@ -940,9 +942,7 @@ def create_server(
                     {
                         "run_id": run_id,
                         "work_token": work_token,
-                        "idempotency_key": _submission_key(
-                            "correct-domain-answers", work_token.token
-                        ),
+                        "idempotency_key": idempotency_key,
                         "result_id": result_id,
                         "domain_id": domain_id,
                         "answers": answers,
