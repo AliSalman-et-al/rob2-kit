@@ -18,6 +18,7 @@ from rob2_kit.evidence import (
     ConsiderationDisposition,
     ConsideredEvidenceItem,
     DerivedFactInput,
+    DocumentZone,
     EvidenceSearchIndex,
     ExecutedSearchQuery,
     SearchCoverageReceipt,
@@ -52,6 +53,9 @@ def unit(number: int, text: str, *, page: int = 1) -> CanonicalEvidenceUnit:
         kind=CanonicalUnitKind.PARAGRAPH,
         text=text,
         spatial=(10.0, 20.0, 500.0, 80.0),
+        document_zone=DocumentZone.MAIN,
+        section_path=("Methods",),
+        hierarchy_path=("1",),
     )
 
 

@@ -179,7 +179,13 @@ class EvidenceView(ReportModel):
     # hit into an opaque snippet.  These fields are optional for legacy report
     # projections, but terminal reports populate them from the canonical unit.
     unit_kind: Literal[
-        "heading", "paragraph", "list_item", "caption", "footnote", "table_row"
+        "unclassified",
+        "heading",
+        "paragraph",
+        "list_item",
+        "caption",
+        "footnote",
+        "table_row",
     ] = "paragraph"
     context: str = ""
     table_headers: tuple[str, ...] = ()
@@ -1014,6 +1020,7 @@ _DOMAIN_LABELS = {
 }
 
 _EVIDENCE_KIND_LABELS = {
+    "unclassified": "Unclassified source unit",
     "heading": "Heading",
     "paragraph": "Authored paragraph",
     "list_item": "Authored list item",

@@ -23,12 +23,6 @@ from rob2_kit.application.lifecycle import RunState
 from rob2_kit.application.run_engine import RunEngine
 from rob2_kit.domain.results import Comparison, Estimate, Result
 from rob2_kit.domain.revisions import Actor, ActorKind
-from rob2_kit.evidence.search import (
-    CanonicalEvidenceUnit,
-    CanonicalUnitKind,
-    EvidenceSearchIndex,
-    SearchQuery,
-)
 from rob2_kit.storage import ArtifactStore, Transition, WorkflowLedger, dependency_fingerprint
 
 OPERATOR = Actor(
@@ -290,41 +284,18 @@ def test_one_run_engine_process_rejects_a_second_project_root(tmp_path) -> None:
         raise AssertionError("a process must not bind a second project root")
 
 
-def test_run_engine_coordinates_existing_evidence_search_and_read_capabilities(
-    tmp_path,
-) -> None:
-    engine = RunEngine()
-    prepared = engine.prepare_run(
-        PrepareRunRequest(project_root=tmp_path, authorized=True)
-    )
-    unit = CanonicalEvidenceUnit(
-        unit_id="unit:report-p1-b1",
-        source_id="source:report",
-        source_artifact_hash="sha256:" + ("a" * 64),
-        parse_id="parse:report",
-        page=1,
-        kind=CanonicalUnitKind.PARAGRAPH,
-        text="Allocation was concealed using a central randomization service.",
-        spatial=(0.0, 0.0, 100.0, 20.0),
-    )
-    EvidenceSearchIndex(tmp_path / ".rob2" / "evidence.sqlite3").replace_units(
-        (unit,)
-    )
-
-    searched = engine.search_evidence(
-        SearchEvidenceRequest(
-            run_id=prepared.run_id,
-            query=SearchQuery(terms=("allocation",)),
+def test_run_engine_retrieval_contract_rejects_missing_work_token(tmp_path) -> None:
+    with pytest.raises(Exception, match="work_token"):
+        SearchEvidenceRequest.model_validate(
+            {
+                "run_id": "run:test",
+                "query": {"terms": ["allocation"]},
+            }
         )
-    )
-    read = engine.read_evidence(
-        ReadEvidenceRequest(
-            run_id=prepared.run_id,
-            unit_id=searched.page.hits[0].unit.unit_id,
+    with pytest.raises(Exception, match="work_token"):
+        ReadEvidenceRequest.model_validate(
+            {
+                "run_id": "run:test",
+                "unit_id": "unit:test",
+            }
         )
-    )
-
-    assert searched.condition is WorkflowCondition.COMPLETED
-    assert searched.page.hits[0].unit == unit
-    assert read.unit == unit
-    assert searched.committed is read.committed is False

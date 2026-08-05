@@ -10,6 +10,7 @@ from rob2_kit.domain.canonical import canonical_hash, sha256_digest
 from rob2_kit.evidence import (
     EvidenceSearchIndex,
     MaterializedEvidenceClaim,
+    ReadContextMode,
     SearchCoverageReceipt,
     SearchCoverageRecorder,
     SearchPassKind,
@@ -32,6 +33,7 @@ def test_read_context_is_bounded_and_preserves_source_parse_provenance(tmp_path:
 
     context = index.read_context(
         units[3].unit_id,
+        mode=ReadContextMode.NEIGHBORS,
         neighbor_limit=2,
         character_target=len(units[3].text) * 3,
     )
@@ -60,7 +62,11 @@ def test_read_context_orders_canonical_blocks_numerically(tmp_path: Path) -> Non
         for item, number in zip(units, (1, 2, 10, 11))
     )
     index.replace_units(units)
-    context = index.read_context(units[1].unit_id, neighbor_limit=3)
+    context = index.read_context(
+        units[1].unit_id,
+        neighbor_limit=3,
+        mode=ReadContextMode.NEIGHBORS,
+    )
     assert [item.unit_id for item in context.neighbors] == [
         "unit:report-p1-b1",
         "unit:report-p1-b10",
@@ -77,7 +83,11 @@ def test_oversized_unit_gets_explicit_dedicated_metadata(tmp_path: Path) -> None
         SearchQuery(terms=("allocation",)),
         policy=SearchPolicy(page_character_target=32),
     )
-    context = index.read_context(oversized.unit_id, character_target=32)
+    context = index.read_context(
+        oversized.unit_id,
+        character_target=32,
+        mode=ReadContextMode.NEIGHBORS,
+    )
 
     assert page.next_cursor is None
     assert page.oversized_unit_ids == (oversized.unit_id,)

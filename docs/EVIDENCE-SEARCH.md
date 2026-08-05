@@ -11,6 +11,10 @@ Copy the active Domain-evidence `work_token` from `continue_run` into both
 Domain, and eligible Source scope; do not reconstruct those IDs from chat
 history or broaden a failed search. Search returns non-citable projections;
 only exact spans from the returned canonical unit can be submitted as evidence.
+Search and read are engine-bounded (hit, character, and neighbor limits are not
+caller-controlled). Use the returned `unit_id` with `read_evidence` next and
+copy any `next_cursor` verbatim; after review, call `submit_domain_evidence` to
+record coverage and dispositions.
 Use `read_evidence` with `mode="unit"` by default, `mode="neighbors"` for a
 small same-section expansion, or `mode="section"` for bounded paginated
 section context. Continue a section only with its returned opaque cursor.
@@ -52,4 +56,7 @@ the exact `span_start`, `claim_type`, and applicable `question_ids`. Supply
 `span_end` for a partial unit or omit it to select through the unit's end.
 rob2-kit materializes the quote and all immutable hashes and
 references. Never calculate a quote hash or invent an entity, revision, or
-artifact reference in the Harness.
+artifact reference in the Harness. Passage submission is checked against the
+active Domain WorkToken; each passage's `question_ids` supplies its own
+question attribution, so one submission may contain passages for multiple
+questions in that Domain.

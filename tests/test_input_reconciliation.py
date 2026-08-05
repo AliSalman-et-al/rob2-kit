@@ -29,7 +29,8 @@ from rob2_kit.application.run_engine import RunEngine
 from rob2_kit.domain.evidence import EvidenceClaim
 from rob2_kit.domain.results import Estimate, Result
 from rob2_kit.domain.revisions import Actor, ActorKind
-from rob2_kit.evidence.search import EvidenceSearchIndex
+from rob2_kit.evidence.search import EvidenceScope, EvidenceSearchIndex
+from rob2_kit.ingestion.project import PageExtraction, PageTextItem, ParserResult
 from tests.test_mcp_tracer import DOMAINS, _low_answers
 from tests.test_run_proposal import StubParser
 
@@ -64,7 +65,13 @@ def _result(result_id: str, trial_id: str) -> dict[str, object]:
     }
 
 
-def _config(*results: dict[str, object], with_target: bool = False) -> dict[str, object]:
+def _config(*results: dict[str, object], with_target: bool | None = None) -> dict[str, object]:
+    # Declared Result fixtures represent an explicit requested Outcome target
+    # unless a test intentionally builds an empty project.  This keeps legacy
+    # reconciliation journeys aligned with the strict Trial × Outcome
+    # confirmation contract instead of relying on implicit result-ID fallback.
+    if with_target is None:
+        with_target = bool(results)
     payload: dict[str, object] = {
         "schema_version": 1,
         "acquisition": {"clinicaltrials_gov": False},
@@ -82,17 +89,78 @@ def _config(*results: dict[str, object], with_target: bool = False) -> dict[str,
     return payload
 
 
-def _prepare_confirm(root: Path, *, config: dict[str, object]) -> tuple[RunEngine, str]:
-    (root / "rob2.yaml").write_text(yaml.safe_dump(config), encoding="utf-8")
-    engine = RunEngine(parser=StubParser())
+class StructuredPassageParser:
+    name = "structured-passage-fixture"
+    version = "1"
+
+    def parse(self, data: bytes, *, ocr_enabled: bool, target_pages=None) -> ParserResult:
+        text = data.decode()
+        return ParserResult(
+            pages=(
+                PageExtraction(
+                    page_number=1,
+                    width=612,
+                    height=792,
+                    text=text,
+                    markdown=text,
+                    text_items=(
+                        PageTextItem(
+                            text=text,
+                            x=10,
+                            y=20,
+                            width=200,
+                            height=12,
+                            unit_kind="paragraph",
+                            document_zone="main",
+                            discourse_scope="active",
+                            domain_id="domain:randomization",
+                            question_ids=(DOMAINS["domain:randomization"][0],),
+                        ),
+                    ),
+                ),
+            ),
+            raw_output=data,
+        )
+
+
+def _prepare_confirm(
+    root: Path,
+    *,
+    config: dict[str, object],
+    parser: object | None = None,
+) -> tuple[RunEngine, str]:
+    config_payload = dict(config)
+    if "outcome_targets" not in config_payload:
+        config_payload["outcome_targets"] = [
+            {
+                "id": "mortality",
+                "label": "mortality",
+                "construct": "mortality",
+                "timepoint": "30 days",
+            }
+        ]
+    (root / "rob2.yaml").write_text(yaml.safe_dump(config_payload), encoding="utf-8")
+    engine = RunEngine(parser=parser or StubParser())
     prepared = engine.prepare_run(PrepareRunRequest(project_root=root, authorized=True))
     assert prepared.proposal is not None
+    selections = tuple(
+        RunProposalSelection(
+            trial_id=candidate.trial_id,
+            outcome_target_id=candidate.outcome_target_id,
+            result_id=candidate.result_id,
+            result_candidate_id=candidate.candidate_id,
+            accepted=True,
+        )
+        for candidate in prepared.proposal.result_candidates
+        if candidate.status == "needs_input" and candidate.result_id is not None
+    )
     submitted = engine.submit_run_proposal(
         SubmitRunProposalRequest(
             contract_version="1.0.0",
             run_id=prepared.run_id,
             proposal_token=prepared.proposal.proposal_token,
             idempotency_key="idempotency:reconciliation-proposal",
+            selections=selections,
         )
     )
     engine.confirm_run_definition(
@@ -222,6 +290,7 @@ def test_domain_evidence_freezes_engine_issued_passages_without_host_hashes(
     engine, run_id = _prepare_confirm(
         tmp_path,
         config=_config(_result("result:passages", "trial:passages")),
+        parser=StructuredPassageParser(),
     )
     _classify_current_sources(engine, run_id)
     work = engine.continue_run(ContinueRunRequest(run_id=run_id)).work_item
@@ -293,6 +362,7 @@ def test_domain_evidence_passage_can_select_to_unit_end_without_counting_charact
     engine, run_id = _prepare_confirm(
         tmp_path,
         config=_config(_result("result:passage-end", "trial:passage-end")),
+        parser=StructuredPassageParser(),
     )
     _classify_current_sources(engine, run_id)
     work = engine.continue_run(ContinueRunRequest(run_id=run_id)).work_item
@@ -331,6 +401,31 @@ def test_domain_evidence_passage_can_select_to_unit_end_without_counting_charact
     assert claim.span_end == len(unit.text)
 
 
+def test_unstructured_units_require_visual_or_classification_recovery(tmp_path: Path) -> None:
+    from rob2_kit.evidence.search import CanonicalEvidenceUnit, CanonicalUnitKind, DocumentZone
+
+    index = EvidenceSearchIndex(tmp_path / "evidence.sqlite3")
+    unit = CanonicalEvidenceUnit(
+        unit_id="unit:unstructured",
+        source_id="source:report",
+        source_artifact_hash="sha256:" + "a" * 64,
+        parse_id="parse:report",
+        page=1,
+        kind=CanonicalUnitKind.UNCLASSIFIED,
+        text="unstructured prose",
+        trial_id="trial:active",
+        result_id="result:active",
+        document_zone=DocumentZone.UNKNOWN,
+        applicability="result",
+    )
+    index.replace_units((unit,))
+    with pytest.raises(ValueError, match="outside the active retrieval scope"):
+        index.read_unit(
+            unit.unit_id,
+            scope=EvidenceScope(trial_id="trial:active", result_id="result:active"),
+        )
+
+
 def test_invalid_late_passage_writes_no_artifacts_or_ledger_events(tmp_path: Path) -> None:
     trial = tmp_path / "input" / "invalid-passage"
     trial.mkdir(parents=True)
@@ -338,6 +433,7 @@ def test_invalid_late_passage_writes_no_artifacts_or_ledger_events(tmp_path: Pat
     engine, run_id = _prepare_confirm(
         tmp_path,
         config=_config(_result("result:invalid-passage", "trial:invalid-passage")),
+        parser=StructuredPassageParser(),
     )
     _classify_current_sources(engine, run_id)
     work = engine.continue_run(ContinueRunRequest(run_id=run_id)).work_item
@@ -905,11 +1001,30 @@ def test_changed_support_only_invalidates_results_that_cite_it(tmp_path: Path) -
     (trial / "report.pdf").write_bytes(b"primary")
     support = trial / "supplements" / "supplement.pdf"
     support.write_bytes(b"support")
+    (trial / "trial.yaml").write_text(
+        yaml.safe_dump(
+            {
+                "schema_version": 1,
+                "documents": [
+                    {
+                        "path": "supplements/supplement.pdf",
+                        "roles": ["clinical_study_report"],
+                    }
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
     first = _result("result:a", "trial:trial-a")
     first["result"]["source_locator"] = "report.pdf p. 1"
     second = _result("result:b", "trial:trial-a")
+    second["result"]["outcome_construct"] = "morbidity"
     second["result"]["source_locator"] = "supplements/supplement.pdf p. 1"
-    engine, run_id = _prepare_confirm(tmp_path, config=_config(first, second))
+    config = _config(first, second)
+    config["outcome_targets"].append(
+        {"id": "morbidity", "label": "morbidity", "construct": "morbidity", "timepoint": "30 days"}
+    )
+    engine, run_id = _prepare_confirm(tmp_path, config=config)
     _classify_current_sources(engine, run_id)
     support.write_bytes(b"changed support")
 
@@ -950,12 +1065,11 @@ def test_result_declaration_edits_block_without_rewriting_confirmed_definition(
     assert blocked.error is not None
     assert "added to an existing confirmed Trial" in blocked.error.detail
 
-    removed = _config()
+    removed = _config(with_target=True)
     (tmp_path / "rob2.yaml").write_text(yaml.safe_dump(removed), encoding="utf-8")
     blocked = engine.continue_run(ContinueRunRequest(run_id=run_id))
-    assert blocked.run_state is RunState.BLOCKED
-    assert blocked.error is not None
-    assert "was removed" in blocked.error.detail
+    assert blocked.run_state is RunState.ASSESSING
+    assert blocked.error is None
 
     (tmp_path / "rob2.yaml").write_text(yaml.safe_dump(original), encoding="utf-8")
     resumed = engine.continue_run(ContinueRunRequest(run_id=run_id))

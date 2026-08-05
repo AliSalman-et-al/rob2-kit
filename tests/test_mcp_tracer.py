@@ -159,21 +159,31 @@ async def _finish_domains(session: ClientSession, run_id: str) -> None:
                 "search_evidence",
                 {
                     "run_id": run_id,
+                    "work_token": work["work_item"]["work_token"],
+                    "sq_id": question_ids[0],
                     "result_id": "result:trial-a-mortality",
                     "query": {"terms": ["Trial"]},
                 },
             )
             assert search.structured_content is not None
-            unit = search.structured_content["page"]["hits"][0]["unit"]
-            passages = [
-                {
-                    "unit_id": unit["unit_id"],
-                    "span_start": 0,
-                    "span_end": len(unit["text"]),
-                    "claim_type": "claim-type:trial-report",
-                    "question_ids": list(question_ids),
-                }
-            ]
+            hits = search.structured_content["page"]["hits"]
+            if hits:
+                hit = hits[0]
+                unit = hit["unit"]
+                passages = [
+                    {
+                        "unit_id": unit["unit_id"],
+                        "span_start": hit["projection"]["start"],
+                        "span_end": hit["projection"]["end"],
+                        "claim_type": "claim-type:trial-report",
+                        "question_ids": list(question_ids),
+                    }
+                ]
+            else:
+                assert search.structured_content["page"]["condition"] == "excluded_only"
+                assert "retrieval_scope_excluded_matches" in search.structured_content[
+                    "page"
+                ]["scope_warnings"]
         evidence_payload = {
             "run_id": run_id,
             "work_token": work["work_item"]["work_token"],
@@ -230,7 +240,20 @@ def test_five_domain_journey_survives_stdio_restart_and_publishes_report(
     trial.mkdir(parents=True)
     (trial / "report.pdf").write_bytes(blank_pdf())
     (tmp_path / "rob2.yaml").write_text(
-        yaml.safe_dump({"schema_version": 1, "results": [_result_declaration()]}),
+        yaml.safe_dump(
+            {
+                "schema_version": 1,
+                "results": [_result_declaration()],
+                "outcome_targets": [
+                    {
+                        "id": "mortality",
+                        "label": "mortality",
+                        "construct": "Mortality",
+                        "timepoint": "30 days",
+                    },
+                ],
+            }
+        ),
         encoding="utf-8",
     )
     wheel_dir = tmp_path / "wheel"
@@ -433,7 +456,26 @@ def test_report_history_preserves_an_earlier_immutable_bundle(tmp_path: Path) ->
     second["result"]["outcome_construct"] = "Morbidity"
     second["result"]["source_locator"] = "source:trial-a-1#result-morbidity"
     (tmp_path / "rob2.yaml").write_text(
-        yaml.safe_dump({"schema_version": 1, "results": [first, second]}),
+        yaml.safe_dump(
+            {
+                "schema_version": 1,
+                "results": [first, second],
+                "outcome_targets": [
+                    {
+                        "id": "mortality",
+                        "label": "mortality",
+                        "construct": "Mortality",
+                        "timepoint": "30 days",
+                    },
+                    {
+                        "id": "morbidity",
+                        "label": "morbidity",
+                        "construct": "Morbidity",
+                        "timepoint": "30 days",
+                    },
+                ],
+            }
+        ),
         encoding="utf-8",
     )
 

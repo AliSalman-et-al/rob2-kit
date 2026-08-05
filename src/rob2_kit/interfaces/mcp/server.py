@@ -9,13 +9,16 @@ workflow decisions, work-item sequencing, and report publication remain in
 from __future__ import annotations
 
 import hashlib
+import json
 import os
+import sqlite3
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from typing import Annotated, Any, Literal, Protocol
 
-from pydantic import Field
+from mcp.types import CallToolResult, TextContent
+from pydantic import Field, ValidationError
 
 from rob2_kit.application.contracts import (
     RUN_OPERATION_NAMES,
@@ -29,12 +32,15 @@ from rob2_kit.application.contracts import (
     EvidencePassageInput,
     GetWorkContextRequest,
     InspectVisualCandidateRequest,
+    NextAction,
+    NextActionArguments,
     OperationError,
     PrepareRunRequest,
     PrepareRunResponse,
     ReadEvidenceRequest,
     RecordReference,
     Result,
+    RetrievalErrorResponse,
     RunOperation,
     RunProposal,
     RunProposalAmbiguity,
@@ -43,8 +49,8 @@ from rob2_kit.application.contracts import (
     SearchCoverageReceipt,
     SearchEvidenceRequest,
     SearchPassKind,
-    SearchPolicy,
     SearchQuery,
+    SearchQueryEnvelope,
     SourceClassificationInput,
     SQAnswerInput,
     SubmitDomainAnswersRequest,
@@ -59,6 +65,11 @@ from rob2_kit.application.contracts import (
 from rob2_kit.application.determinism import QualificationDeterminism
 from rob2_kit.application.lifecycle import RunState
 from rob2_kit.application.run_engine import RunEngine, SecondProjectRootError
+from rob2_kit.evidence.errors import (
+    OperationalRetrievalFailure,
+    RetrievalFailure,
+    invalid_request_from_validation,
+)
 from rob2_kit.evidence.search import ReadContextMode
 
 # The legacy inventory remains the default while the expand-phase routes are
@@ -153,17 +164,110 @@ def _dump(response: Any) -> dict[str, Any]:
     # Full discovery records remain durable and available to typed Python
     # hosts, but MCP responses use the compact human proposal projection so
     # parser output and raw source inventories do not consume the conversation
-    # context. Tokens and candidate identifiers are preserved verbatim for
+    # context.  Tokens and candidate identifiers are preserved verbatim for
     # the next typed action.
     proposal = getattr(response, "proposal", None)
     if isinstance(proposal, RunProposal):
         payload["proposal"] = proposal.compact_payload()
+    page = getattr(response, "page", None)
+    if page is not None and hasattr(page, "hits") and "page" in payload:
+        # Search is a discovery projection. Keep stable IDs and a bounded
+        # exact projection snippet on the wire; read_evidence fetches the full
+        # canonical unit and immutable provenance when needed for citation.
+        compact_hits = []
+        for hit in page.hits:
+            compact_projection = hit.projection.model_dump(mode="json")
+            compact_projection.pop("text", None)
+            compact_hits.append(
+                {
+                    "unit": {
+                        "unit_id": hit.unit.unit_id,
+                        "source_id": hit.unit.source_id,
+                        "page": hit.unit.page,
+                        "kind": hit.unit.kind.value,
+                        "document_zone": (
+                            hit.unit.document_zone.value if hit.unit.document_zone else None
+                        ),
+                        "source_role": hit.unit.source_role,
+                        "section_path": hit.unit.section_path,
+                        "applicability": hit.unit.applicability.value,
+                        "warnings": hit.unit.warnings,
+                        "table_headers": hit.unit.table_headers,
+                        "caption": hit.unit.caption,
+                        "estimated_size": len(hit.unit.text),
+                    },
+                    "projection": compact_projection,
+                    "projection_preview": _coherent_wire_snippet(hit.projection.text),
+                    "rank": hit.rank,
+                    "oversized": hit.oversized,
+                    "match_explanation": hit.match_explanation,
+                    "warnings": hit.warnings,
+                    "duplicate_group_id": hit.duplicate_group_id,
+                    "next_actions": ("read_evidence",),
+                }
+            )
+        payload["page"]["hits"] = compact_hits
+    context = getattr(response, "context", None)
+    if context is not None and "context" in payload and "unit" in payload:
+        # The response anchor is already present once at the top level.
+        # Replace the context's duplicate canonical payload with its stable ID.
+        payload["context"].pop("unit", None)
+        payload["context"]["unit_id"] = payload["unit"]["unit_id"]
     return payload
+
+
+def _wire_result(response: Any) -> CallToolResult:
+    """Preserve the compact, unwrapped MCP envelope while retaining output validation."""
+
+    payload = (
+        response.model_dump(mode="json", exclude_none=True)
+        if isinstance(response, RetrievalErrorResponse)
+        else _dump(response)
+    )
+    fallback = {
+        "condition": payload.get("condition"),
+        "run_id": payload.get("run_id"),
+        "unit_id": payload.get("unit", {}).get("unit_id")
+        if isinstance(payload.get("unit"), dict)
+        else None,
+        "error": payload.get("error"),
+    }
+    return CallToolResult(
+        content=[TextContent(text=json.dumps(fallback, separators=(",", ":")))],
+        structured_content=payload,
+    )
+
+
+def _coherent_wire_snippet(text: str, limit: int = 480) -> str:
+    """Bound discovery text while preserving a source-authored word boundary."""
+
+    if len(text) <= limit:
+        return text
+    prefix = text[:limit].rsplit(" ", 1)[0].rstrip()
+    return (prefix or text[:limit].rstrip()) + "…"
 
 
 def _submission_key(operation: str, issued_token: str) -> str:
     digest = hashlib.sha256(f"{operation}|{issued_token}".encode()).hexdigest()[:24]
     return f"mcp:{operation}-{digest}"
+
+
+def _retrieval_error(error: RetrievalFailure) -> RetrievalErrorResponse:
+    """Serialize one typed retrieval failure without inspecting exception text."""
+
+    if not isinstance(error, RetrievalFailure):
+        # Programming errors are intentionally not converted into a normal
+        # retrieval outcome.  This keeps defects visible to the host/tests.
+        raise error
+    return RetrievalErrorResponse(
+        error={
+            "code": error.code,
+            "field": error.field,
+            "message": error.message,
+            "recovery": error.recovery,
+        },
+        next_actions=error.next_actions,
+    )
 
 
 def canonical_status_route_group() -> RouteGroup:
@@ -262,7 +366,11 @@ def create_server(
                 affected_scope=(rejected_run_id,),
                 condition=WorkflowCondition.RUN_BLOCKED,
                 committed=False,
-                next_permitted_action=RunOperation.PREPARE_RUN,
+                next_action=NextAction(
+                    operation=RunOperation.PREPARE_RUN,
+                    reason="Prepare the explicitly selected project root.",
+                    arguments=NextActionArguments(run_id=rejected_run_id),
+                ),
                 run_id=rejected_run_id,
                 run_state=RunState.BLOCKED,
                 error=OperationError(
@@ -378,78 +486,143 @@ def create_server(
             )
         )
 
-    @server.tool(name="search_evidence")
+    @server.tool(name="search_evidence", structured_output=False)
     def search_evidence(
-        run_id: str,
-        query: SearchQuery,
-        work_token: WorkToken | None = None,
-        result_id: str | None = None,
-        cursor: str | None = None,
-        broad_query_justification: str | None = None,
-        policy: SearchPolicy | None = None,
-        sq_id: str | None = None,
+        run_id: Annotated[
+            str, Field(min_length=1, description="Run identifier returned by prepare_run.")
+        ],
+        query: Annotated[
+            SearchQueryEnvelope,
+            Field(
+                description=(
+                    "Bounded structured query object; semantic SearchQuery validation "
+                    "returns typed invalid_request recovery."
+                )
+            ),
+        ],
+        work_token: Annotated[
+            WorkToken,
+            Field(
+                description="Opaque token copied from the active submit_domain_evidence WorkItem."
+            ),
+        ],
+        sq_id: Annotated[str, Field(min_length=1, description="Active signaling-question scope.")],
+        result_id: Annotated[
+            str | None, Field(min_length=1, description="Optional active Result identifier.")
+        ] = None,
+        cursor: Annotated[
+            str | None,
+            Field(min_length=1, description="Opaque next_cursor returned by a prior page."),
+        ] = None,
         pass_kind: SearchPassKind | None = None,
-        seed_family: str | None = None,
-    ) -> dict[str, Any]:
+        seed_family: Annotated[
+            str | None,
+            Field(
+                description="Stable identifier-shaped guidance seed family, e.g. seed:allocation."
+            ),
+        ] = None,
+    ) -> CallToolResult:
         """Search scoped evidence, e.g. query={"terms":["allocation"]}.
+
+        Prerequisite: call ``continue_run`` first and copy the current
+        ``submit_domain_evidence`` WorkToken. Results are engine-bounded pages;
+        use a returned ``unit_id`` with ``read_evidence`` next, and copy
+        ``next_cursor`` verbatim for the next page. No caller-supplied budget
+        or raw FTS syntax is accepted.
 
         During Domain evidence work, copy ``work_token`` from the active
         ``continue_run`` item. It supplies Trial/Result/Domain scope; never
-        widen that scope with IDs from conversation history. The token remains
-        optional only for compatibility with read-only clean-room inspection.
+        widen that scope with IDs from conversation history.
 
         With pass_kind="guidance_seed", choose a stable identifier-shaped family
         label such as seed_family="seed:allocation" and reuse that exact label in
         the coverage receipt. For pass_kind="trial_follow_up" or "contradiction",
         omit seed_family.
         """
-        return _dump(
-            engine.search_evidence(
-                SearchEvidenceRequest.model_validate(
-                    {
-                        "run_id": run_id,
-                        "work_token": work_token,
-                        "query": query,
-                        "result_id": result_id,
-                        "cursor": cursor,
-                        "broad_query_justification": broad_query_justification,
-                        "policy": policy,
-                        "sq_id": sq_id,
-                        "pass_kind": pass_kind,
-                        "seed_family": seed_family,
-                    }
+        try:
+            request = SearchEvidenceRequest.model_validate(
+                {
+                    "run_id": run_id,
+                    "work_token": work_token,
+                    "query": SearchQuery.model_validate(query.model_dump()),
+                    "result_id": result_id,
+                    "cursor": cursor,
+                    "sq_id": sq_id,
+                    "pass_kind": pass_kind,
+                    "seed_family": seed_family,
+                }
+            )
+            return _wire_result(engine.search_evidence(request))
+        except RetrievalFailure as error:
+            return _wire_result(_retrieval_error(error))
+        except ValidationError as error:
+            return _wire_result(_retrieval_error(invalid_request_from_validation(error)))
+        except (sqlite3.OperationalError, OSError):
+            return _wire_result(
+                _retrieval_error(
+                    OperationalRetrievalFailure("unable to search the evidence retrieval index")
                 )
             )
-        )
 
-    @server.tool(name="read_evidence")
+    @server.tool(name="read_evidence", structured_output=False)
     def read_evidence(
-        run_id: str,
-        unit_id: str,
-        work_token: WorkToken | None = None,
-        result_id: str | None = None,
-        neighbor_limit: int = 6,
-        context_character_target: int = 16_000,
+        run_id: Annotated[
+            str, Field(min_length=1, description="Run identifier returned by prepare_run.")
+        ],
+        unit_id: Annotated[
+            str, Field(min_length=1, description="Canonical unit_id issued by search_evidence.")
+        ],
+        work_token: Annotated[
+            WorkToken,
+            Field(
+                description="Opaque token copied from the active submit_domain_evidence WorkItem."
+            ),
+        ],
+        sq_id: Annotated[str, Field(min_length=1, description="Active signaling-question scope.")],
+        result_id: Annotated[
+            str | None, Field(min_length=1, description="Optional active Result identifier.")
+        ] = None,
         mode: ReadContextMode = ReadContextMode.UNIT,
-        cursor: str | None = None,
-    ) -> dict[str, Any]:
-        """Read one issued unit using bounded ``unit``, ``neighbors``, or ``section`` mode."""
-        return _dump(
-            engine.read_evidence(
-                ReadEvidenceRequest.model_validate(
-                    {
-                        "run_id": run_id,
-                        "unit_id": unit_id,
-                        "work_token": work_token,
-                        "result_id": result_id,
-                        "neighbor_limit": neighbor_limit,
-                        "context_character_target": context_character_target,
-                        "mode": mode,
-                        "cursor": cursor,
-                    }
+        cursor: Annotated[
+            str | None,
+            Field(min_length=1, description="Opaque section cursor returned by a prior read."),
+        ] = None,
+    ) -> CallToolResult:
+        """Read one issued unit using bounded ``unit``, ``neighbors``, or ``section`` mode.
+
+        Prerequisite: call ``continue_run`` and copy the active
+        ``submit_domain_evidence`` WorkToken. Use ``unit`` for the hit,
+        ``neighbors`` for same-zone nearby context, or ``section`` for bounded
+        same-zone continuation. Pass the opaque cursor only for a section
+        continuation; character and neighbor limits are engine-owned. Use
+        ``submit_domain_evidence`` next to record the resulting coverage.
+        """
+        try:
+            return _wire_result(
+                engine.read_evidence(
+                    ReadEvidenceRequest.model_validate(
+                        {
+                            "run_id": run_id,
+                            "unit_id": unit_id,
+                            "work_token": work_token,
+                            "result_id": result_id,
+                            "sq_id": sq_id,
+                            "mode": mode,
+                            "cursor": cursor,
+                        }
+                    )
                 )
             )
-        )
+        except RetrievalFailure as error:
+            return _wire_result(_retrieval_error(error))
+        except ValidationError as error:
+            return _wire_result(_retrieval_error(invalid_request_from_validation(error)))
+        except (sqlite3.OperationalError, OSError):
+            return _wire_result(
+                _retrieval_error(
+                    OperationalRetrievalFailure("unable to read the evidence retrieval index")
+                )
+            )
 
     @server.tool(name="inspect_visual_candidate")
     def inspect_visual_candidate(

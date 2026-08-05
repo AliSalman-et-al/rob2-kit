@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import base64
 import hashlib
 import inspect
 import json
@@ -18,7 +19,7 @@ from typing import Any, Literal, Protocol
 from zipfile import BadZipFile, ZipFile
 
 import yaml
-from pydantic import ConfigDict, Field
+from pydantic import AliasChoices, ConfigDict, Field
 
 from rob2_kit.application.preparation import TrialFailed, TrialFailureReason
 from rob2_kit.domain.results import ResultSpecRevision
@@ -50,7 +51,7 @@ from rob2_kit.registry import (
 from rob2_kit.storage import ArtifactStore, WorkflowLedger
 
 CLASSIFIER_VERSION = "source-classifier:1.0.0"
-CANONICALIZATION_VERSION = "liteparse-adapter:2.0.0"
+CANONICALIZATION_VERSION = "liteparse-adapter:2.1.0"
 PARSER_QUALITY_POLICY = ParserQualityPolicy()
 RECOVERY_POLICY_RELEASE = "policy:source-recovery-1.0.0"
 RECOVERY_REASONS = frozenset(PARSER_QUALITY_POLICY.recovery_reasons)
@@ -64,6 +65,9 @@ LITEPARSE_CONFIGURATION: dict[str, object] = {
     "emit_word_boxes": True,
     "extract_content_bounds": True,
     "extract_form_fields": True,
+    "extract_structure_tree": True,
+    "extract_text_metadata": True,
+    "keep_headers_footers": False,
     "render_form_fields": False,
     "quiet": True,
 }
@@ -138,10 +142,42 @@ class PageTextItem(FrozenModel):
     words: tuple[PageWord, ...] = ()
     rotation: float = 0.0
     confidence: float | None = None
+    # Structure metadata is optional because LiteParse versions and custom
+    # parser adapters may expose different levels of reconstruction.  Unknown
+    # values remain explicit diagnostics rather than being guessed as prose.
+    unit_kind: str | None = Field(
+        default=None,
+        validation_alias=AliasChoices("unit_kind", "kind"),
+    )
+    trial_id: Identifier | None = None
+    result_id: Identifier | None = None
+    domain_id: Identifier | None = None
+    question_ids: tuple[Identifier, ...] = ()
+    table_headers: tuple[str, ...] = ()
+    caption: str | None = None
+    applicability: str | None = None
+    applicable_result_ids: tuple[Identifier, ...] = ()
+    section_path: tuple[str, ...] = ()
+    hierarchy_path: tuple[str, ...] = ()
+    reading_order: int = Field(default=0, ge=0)
+    document_zone: str | None = Field(
+        default=None,
+        validation_alias=AliasChoices("document_zone", "zone"),
+    )
+    discourse_scope: str | None = Field(
+        default=None,
+        validation_alias=AliasChoices("discourse_scope", "trial_scope"),
+    )
 
 
 class PageExtraction(FrozenModel):
     page_number: int = Field(ge=1)
+    parse_id: Identifier | None = None
+    markdown: str = ""
+    # Optional parser-native structure tree. LiteParse versions differ in
+    # whether this is exposed; retain only JSON-shaped data and fail closed
+    # when unavailable rather than fabricating semantic labels.
+    structure_tree: dict[str, Any] | None = None
     width: float = Field(gt=0)
     height: float = Field(gt=0)
     text: str
@@ -149,6 +185,16 @@ class PageExtraction(FrozenModel):
     text_items: tuple[PageTextItem, ...] = ()
     content_bounds: tuple[float, float, float, float] | None = None
     has_form_fields: bool = False
+    section_path: tuple[str, ...] = ()
+    hierarchy_path: tuple[str, ...] = ()
+    document_zone: str | None = Field(
+        default=None,
+        validation_alias=AliasChoices("document_zone", "zone"),
+    )
+    discourse_scope: str | None = Field(
+        default=None,
+        validation_alias=AliasChoices("discourse_scope", "trial_scope"),
+    )
 
 
 class ParserResult(FrozenModel):
@@ -203,6 +249,15 @@ def _content_bounds(page: Any) -> tuple[float, float, float, float] | None:
     )
 
 
+def _optional_metadata(value: object) -> str | None:
+    """Normalize optional parser labels without turning None into ``"None"``."""
+
+    if value is None:
+        return None
+    normalized = str(value).strip()
+    return normalized or None
+
+
 class LiteParseAdapter:
     """Convert LiteParse's version-specific objects to stable ingestion records."""
 
@@ -251,7 +306,13 @@ class LiteParseAdapter:
                 page_number=page.page_num,
                 width=page.width,
                 height=page.height,
-                text=page.text,
+                        text=page.text,
+                        markdown=str(getattr(page, "markdown", "") or ""),
+                structure_tree=(
+                    getattr(page, "structure_tree", None)
+                    if isinstance(getattr(page, "structure_tree", None), dict)
+                    else None
+                ),
                 reasons=tuple(page.complexity.reasons if page.complexity else ()),
                 text_items=tuple(
                     PageTextItem(
@@ -273,11 +334,41 @@ class LiteParseAdapter:
                         ),
                         rotation=float(getattr(item, "rotation", 0.0) or 0.0),
                         confidence=getattr(item, "confidence", None),
+                        unit_kind=_optional_metadata(
+                            getattr(item, "unit_kind", getattr(item, "kind", None))
+                        ),
+                        trial_id=_optional_metadata(getattr(item, "trial_id", None)),
+                        result_id=_optional_metadata(getattr(item, "result_id", None)),
+                        domain_id=_optional_metadata(getattr(item, "domain_id", None)),
+                        question_ids=tuple(getattr(item, "question_ids", ()) or ()),
+                        table_headers=tuple(getattr(item, "table_headers", ()) or ()),
+                        caption=_optional_metadata(getattr(item, "caption", None)),
+                        applicability=_optional_metadata(getattr(item, "applicability", None)),
+                        applicable_result_ids=tuple(
+                            getattr(item, "applicable_result_ids", ()) or ()
+                        ),
+                        section_path=tuple(getattr(item, "section_path", ()) or ()),
+                        hierarchy_path=tuple(getattr(item, "hierarchy_path", ()) or ()),
+                        reading_order=int(getattr(item, "reading_order", 0) or 0),
+                        document_zone=_optional_metadata(
+                            getattr(item, "document_zone", getattr(item, "zone", None))
+                        ),
+                        discourse_scope=_optional_metadata(
+                            getattr(item, "discourse_scope", getattr(item, "trial_scope", None))
+                        ),
                     )
                     for item in getattr(page, "text_items", ())
                 ),
                 content_bounds=_content_bounds(page),
                 has_form_fields=bool(getattr(page, "form_fields", None)),
+                section_path=tuple(getattr(page, "section_path", ()) or ()),
+                hierarchy_path=tuple(getattr(page, "hierarchy_path", ()) or ()),
+                document_zone=_optional_metadata(
+                    getattr(page, "document_zone", getattr(page, "zone", None))
+                ),
+                discourse_scope=_optional_metadata(
+                    getattr(page, "discourse_scope", getattr(page, "trial_scope", None))
+                ),
             )
             for page in parsed.pages
         )
@@ -289,6 +380,8 @@ class LiteParseAdapter:
                         "width": page.width,
                         "height": page.height,
                         "text": page.text,
+                        "markdown": page.markdown,
+                        "structure_tree": page.structure_tree,
                         "reasons": page.reasons,
                         "text_items": [
                             {
@@ -300,11 +393,29 @@ class LiteParseAdapter:
                                 "words": [word.model_dump(mode="json") for word in item.words],
                                 "rotation": item.rotation,
                                 "confidence": item.confidence,
+                                "unit_kind": item.unit_kind,
+                                "section_path": item.section_path,
+                                "hierarchy_path": item.hierarchy_path,
+                                "reading_order": item.reading_order,
+                                "trial_id": item.trial_id,
+                                "result_id": item.result_id,
+                                "domain_id": item.domain_id,
+                                "question_ids": item.question_ids,
+                                "table_headers": item.table_headers,
+                                "caption": item.caption,
+                                "applicability": item.applicability,
+                                "applicable_result_ids": item.applicable_result_ids,
+                                "document_zone": item.document_zone,
+                                "discourse_scope": item.discourse_scope,
                             }
                             for item in page.text_items
                         ],
                         "content_bounds": page.content_bounds,
                         "has_form_fields": page.has_form_fields,
+                        "section_path": page.section_path,
+                        "hierarchy_path": page.hierarchy_path,
+                        "document_zone": page.document_zone,
+                        "discourse_scope": page.discourse_scope,
                     }
                     for page in pages
                 ]
@@ -1514,6 +1625,21 @@ def _page_artifact_bytes(pages: tuple[PageExtraction, ...]) -> bytes:
     ).encode()
 
 
+def _normalized_parse_output(
+    result: ParserResult,
+    *,
+    source_id: Identifier,
+) -> bytes:
+    """Bind parser bytes and every canonical metadata field deterministically."""
+
+    payload = {
+        "source_id": source_id,
+        "raw_output": base64.b64encode(result.raw_output).decode("ascii"),
+        "pages": [page.model_dump(mode="json") for page in result.pages],
+    }
+    return json.dumps(payload, sort_keys=True, separators=(",", ":")).encode()
+
+
 def _pages_from_artifact(data: bytes) -> tuple[PageExtraction, ...]:
     try:
         payload = json.loads(data)
@@ -1546,7 +1672,12 @@ def _parse_index_pages(
     else:
         initial_pages = parser.parse(data, ocr_enabled=False).pages
     _validate_parse_pages(initial_pages, target_pages=None)
-    pages = {page.page_number: page for page in initial_pages}
+    pages = {
+        page.page_number: page.model_copy(update={"parse_id": initial_record.parse_id})
+        if initial_record is not None
+        else page
+        for page in initial_pages
+    }
     for record in parse_records:
         if not record.ocr_enabled or not record.target_pages:
             continue
@@ -1560,7 +1691,12 @@ def _parse_index_pages(
             ).pages
         recovered = ParserResult(pages=recovered_pages, raw_output=b"")
         _validate_parse_pages(recovered.pages, target_pages=record.target_pages)
-        pages.update({page.page_number: page for page in recovered.pages})
+        pages.update(
+            {
+                page.page_number: page.model_copy(update={"parse_id": record.parse_id})
+                for page in recovered.pages
+            }
+        )
     return tuple(pages[number] for number in sorted(pages))
 
 
@@ -1681,7 +1817,9 @@ def _parse_record(
         parser_version=parser.version,
         configuration_hash=_hash_json(config),
         canonicalization_version=CANONICALIZATION_VERSION,
-        output_hash=_hash_bytes(result.raw_output),
+        output_hash=_hash_bytes(
+            _normalized_parse_output(result, source_id=source_id)
+        ),
         ocr_enabled=ocr_enabled,
         target_pages=target_pages,
         quality_observations=tuple(

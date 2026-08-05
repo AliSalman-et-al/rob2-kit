@@ -9,6 +9,7 @@ import json
 import os
 import re
 import shutil
+import sqlite3
 import uuid
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
@@ -58,6 +59,8 @@ from rob2_kit.application.contracts import (
     SubmitSourceClassificationRequest,
     SubmitSourceClassificationResponse,
     TrialContextSummary,
+    VisualInspectionArguments,
+    VisualInspectionPath,
     WorkContext,
     WorkflowCondition,
     WorkItem,
@@ -113,14 +116,26 @@ from rob2_kit.domain.revisions import (
     Supersession,
 )
 from rob2_kit.domain.sources import SourceDescriptor, SourceInventoryRevision, SourceRole
+from rob2_kit.evidence.errors import (
+    InvalidRetrievalRequest,
+    OperationalRetrievalFailure,
+    ScopeMismatch,
+    StaleWorkToken,
+)
 from rob2_kit.evidence.search import (
+    CONTEXT_CHARACTER_TARGET,
+    CONTEXT_NEIGHBOR_LIMIT,
     CanonicalBlock,
     CanonicalEvidenceUnit,
     CanonicalPage,
     CanonicalUnitKind,
     CanonicalWordBox,
+    DocumentZone,
+    EvidenceApplicability,
     EvidenceScope,
     EvidenceSearchIndex,
+    SearchPolicy,
+    TrialDiscourseScope,
     canonicalize_evidence_units,
 )
 from rob2_kit.evidence.visual import (
@@ -220,6 +235,7 @@ def _canonical_word_boxes(text: str, words: tuple[object, ...]) -> tuple[Canonic
             return ()
         cursor = end
     return tuple(boxes)
+
 
 # The host can provide a richer Actor on answer/evidence submissions.  When a
 # thin MCP client omits it, this stable agent identity still records that the
@@ -788,9 +804,7 @@ class RunEngine:
                             )
                         )
                     lease = self._acquire_lease(ledger, now)
-                    committed = self._commit_transitions(
-                        ledger, tuple(transitions), lease, now=now
-                    )
+                    committed = self._commit_transitions(ledger, tuple(transitions), lease, now=now)
                     result = committed[0]
                     return PrepareRunResponse(
                         operation_id=result.operation_id,
@@ -1806,14 +1820,28 @@ class RunEngine:
     def search_evidence(self, request: SearchEvidenceRequest) -> SearchEvidenceResponse:
         ledger = self._bound_ledger(request.run_id)
         index = EvidenceSearchIndex(self._required_root() / ".rob2" / "evidence.sqlite3")
-        scope = self._retrieval_scope(ledger, request.run_id, request.work_token, request.result_id)
-        page = index.search(
-            request.query,
-            policy=request.policy,
-            cursor=request.cursor,
-            broad_query_justification=request.broad_query_justification,
-            scope=scope,
+        if request.query.question_id is not None and request.query.question_id != request.sq_id:
+            raise ValueError("query question_id must match the active sq_id")
+        scope = self._retrieval_scope(
+            ledger, request.run_id, request.work_token, request.result_id, request.sq_id
         )
+        # Retrieval budgets and ranking policy are engine-owned.  Public MCP
+        # callers may provide only semantic query refinements and a signed
+        # continuation cursor.
+        policy = SearchPolicy()
+        broad_justification = "Engine-managed bounded traversal of the active Work-token scope."
+        try:
+            page = index.search(
+                request.query,
+                policy=policy,
+                cursor=request.cursor,
+                broad_query_justification=broad_justification,
+                scope=scope,
+            )
+        except (sqlite3.Error, OSError) as error:
+            raise OperationalRetrievalFailure(
+                "unable to search the evidence retrieval index"
+            ) from error
         executed_query = None
         if request.pass_kind is not None:
             executed_query = ExecutedSearchQuery(
@@ -1825,7 +1853,7 @@ class RunEngine:
                 returned_unit_ids=tuple(hit.unit.unit_id for hit in page.hits),
                 traversal_complete=page.next_cursor is None,
                 broad_query=page.preview.requires_broad_query_justification,
-                broad_query_justification=request.broad_query_justification,
+                broad_query_justification=broad_justification,
                 snapshot_hash=page.snapshot_hash,
                 policy_id=page.policy_id,
                 policy_hash=page.policy_hash,
@@ -1844,14 +1872,45 @@ class RunEngine:
     def read_evidence(self, request: ReadEvidenceRequest) -> ReadEvidenceResponse:
         ledger = self._bound_ledger(request.run_id)
         index = EvidenceSearchIndex(self._required_root() / ".rob2" / "evidence.sqlite3")
-        scope = self._retrieval_scope(ledger, request.run_id, request.work_token, request.result_id)
-        context = index.read_context(
-            request.unit_id,
-            neighbor_limit=request.neighbor_limit,
-            character_target=request.context_character_target,
-            mode=request.mode,
-            scope=scope,
-            cursor=request.cursor,
+        scope = self._retrieval_scope(
+            ledger, request.run_id, request.work_token, request.result_id, request.sq_id
+        )
+        try:
+            context = index.read_context(
+                request.unit_id,
+                neighbor_limit=CONTEXT_NEIGHBOR_LIMIT,
+                character_target=CONTEXT_CHARACTER_TARGET,
+                mode=request.mode,
+                scope=scope,
+                cursor=request.cursor,
+            )
+        except (sqlite3.Error, OSError) as error:
+            raise OperationalRetrievalFailure(
+                "unable to read the evidence retrieval index"
+            ) from error
+        visual_path = next(
+            (
+                VisualInspectionPath(
+                    unit_id=context.unit.unit_id,
+                    source_id=context.unit.source_id,
+                    page=context.unit.page,
+                    candidate_id=candidate.candidate_id,
+                    next_arguments=VisualInspectionArguments(
+                        run_id=request.run_id,
+                        candidate_id=candidate.candidate_id,
+                        result_id=request.result_id,
+                    ),
+                )
+                for candidate in self._visual_candidates(
+                    ledger, request.run_id, result_id=scope.result_id
+                )
+                if candidate.source_id == context.unit.source_id
+                and candidate.page == context.unit.page
+                and candidate.sq_id == request.sq_id
+                and candidate.domain_id == scope.domain_id
+                and request.sq_id in candidate.question_ids
+            ),
+            None,
         )
         return ReadEvidenceResponse(
             operation_id=self._read_operation_id(RunOperation.READ_EVIDENCE, request.run_id),
@@ -1862,30 +1921,55 @@ class RunEngine:
             run_id=request.run_id,
             unit=context.unit,
             context=context,
+            visual_inspection=visual_path,
         )
 
     def _retrieval_scope(
         self,
         ledger: WorkflowLedger,
         run_id: Identifier,
-        work_token: WorkToken | None,
+        work_token: WorkToken,
         result_id: Identifier | None,
-    ) -> EvidenceScope | None:
-        """Resolve retrieval scope from the active Work token before FTS ranking."""
+        sq_id: Identifier | None = None,
+        *,
+        require_question: bool = True,
+    ) -> EvidenceScope:
+        """Resolve retrieval scope from the active Work token before retrieval.
 
-        if work_token is None:
-            return None
+        Search and read routes require a signaling-question scope so every
+        retrieval page is attributable to one active question. Evidence
+        passage materialization runs at Domain scope, then validates each
+        passage's question IDs against its canonical unit; callers use
+        ``require_question=False`` for that domain-wide validation step.
+        """
+
         expected = self._next_work_item(ledger, run_id)
         if expected is None or expected.work_token != work_token:
-            raise ValueError(
+            raise StaleWorkToken(
                 "stale WorkToken: call continue_run and use the current evidence work item"
             )
         if work_token.operation is not RunOperation.SUBMIT_DOMAIN_EVIDENCE:
-            raise ValueError(
-                "retrieval is available only during an active submit_domain_evidence work item"
+            raise ScopeMismatch(
+                "retrieval is available only during an active submit_domain_evidence work item",
+                field="work_token.operation",
             )
         if result_id is not None and result_id != work_token.result_id:
-            raise ValueError("result_id must match the active WorkToken scope")
+            raise ScopeMismatch(
+                "result_id must match the active WorkToken scope", field="result_id"
+            )
+        if require_question and sq_id is None:
+            raise InvalidRetrievalRequest(
+                "sq_id is required for scoped evidence retrieval", field="sq_id"
+            )
+        if work_token.domain_id is not None:
+            domain = next(
+                (item for item in self._logic_pack().domains if item.id == work_token.domain_id),
+                None,
+            )
+            if domain is None or (sq_id is not None and sq_id not in domain.question_ids):
+                raise ScopeMismatch(
+                    "sq_id is not an active question in the WorkToken Domain", field="sq_id"
+                )
         source_ids: tuple[Identifier, ...] = ()
         if work_token.trial_id is not None:
             proposal = self._latest_proposal(ledger, run_id)
@@ -1907,10 +1991,35 @@ class RunEngine:
             trial_id=work_token.trial_id,
             result_id=work_token.result_id,
             domain_id=work_token.domain_id,
+            question_id=sq_id,
             source_ids=source_ids,
+            # Surface uncertain/mixed discourse as explicitly warned
+            # candidates; citation resolution below still requires ACTIVE.
             include_uncertain=True,
             allow_unclassified=True,
+            work_token_id=work_token.token,
         )
+
+    @staticmethod
+    def _validate_citable_unit(
+        unit: CanonicalEvidenceUnit,
+        scope: EvidenceScope,
+        *,
+        result_id: Identifier,
+        domain_id: Identifier,
+        question_ids: set[Identifier],
+    ) -> None:
+        """Shared citation gate for passage and legacy EvidenceClaim paths."""
+        if (
+            unit.result_id != result_id
+            or unit.applicability is not EvidenceApplicability.RESULT
+            or unit.kind is CanonicalUnitKind.UNCLASSIFIED
+            or unit.discourse_scope is not TrialDiscourseScope.ACTIVE
+            or unit.trial_id != scope.trial_id
+            or unit.domain_id != domain_id
+            or not question_ids.issubset(set(unit.question_ids))
+        ):
+            raise ValueError("canonical unit is outside active scope or is not citable")
 
     def inspect_visual_candidate(
         self, request: InspectVisualCandidateRequest
@@ -2306,6 +2415,8 @@ class RunEngine:
                 domain_id=request.domain_id,
             )
         self._validate_result_domain(ledger, request.run_id, request.result_id, request.domain_id)
+        if request.items:
+            self._validate_legacy_evidence_items(ledger, request)
         if request.passages:
             self._validate_domain_evidence_submission(
                 ledger, request.model_copy(update={"passages": ()})
@@ -2364,6 +2475,13 @@ class RunEngine:
         """Freeze engine-issued canonical spans into immutable Evidence claims."""
 
         index = EvidenceSearchIndex(self._required_root() / ".rob2" / "evidence.sqlite3")
+        retrieval_scope = self._retrieval_scope(
+            ledger,
+            request.run_id,
+            request.work_token,
+            request.result_id,
+            require_question=False,
+        )
         actor = request.actor or ASSESSMENT_AGENT_ACTOR
         proposal = self._latest_proposal(ledger, request.run_id)
         result_spec = self._result_spec_for(ledger, request.run_id, request.result_id)
@@ -2389,7 +2507,20 @@ class RunEngine:
                 raise ValueError(
                     f"passage maps to another domain's questions: {sorted(unknown_questions)}"
                 )
-            unit = index.read_unit(passage.unit_id)
+            unit = index.read_unit(passage.unit_id, scope=retrieval_scope)
+            try:
+                self._validate_citable_unit(
+                    unit,
+                    retrieval_scope,
+                    result_id=request.result_id,
+                    domain_id=request.domain_id,
+                    question_ids=set(passage.question_ids),
+                )
+            except ValueError as error:
+                raise ValueError(
+                    "canonical passage is outside the active WorkToken scope or is not a "
+                    "citable, domain-mapped unit"
+                ) from error
             span_end = passage.span_end if passage.span_end is not None else len(unit.text)
             if span_end <= passage.span_start or span_end > len(unit.text):
                 raise ValueError(
@@ -2659,6 +2790,60 @@ class RunEngine:
             answer_revisions=answer_revisions,
             judgments=judgments,
         )
+
+    def _validate_legacy_evidence_items(
+        self,
+        ledger: WorkflowLedger,
+        request: SubmitDomainEvidenceRequest,
+    ) -> None:
+        """Revalidate legacy EvidenceClaim references against the active scope."""
+
+        scope = self._retrieval_scope(
+            ledger,
+            request.run_id,
+            request.work_token,
+            request.result_id,
+            require_question=False,
+        )
+        index = EvidenceSearchIndex(self._required_root() / ".rob2" / "evidence.sqlite3")
+        question_by_item: dict[Identifier, set[Identifier]] = {}
+        for question_id, references in request.evidence_by_question.items():
+            for reference in references:
+                question_by_item.setdefault(reference.entity_id, set()).add(question_id)
+        for reference in request.items:
+            try:
+                raw = ledger.artifacts.read(reference.content_hash)
+                claim = EvidenceClaim.model_validate_json(raw)
+                if (
+                    claim.entity_id != reference.entity_id
+                    or claim.revision_id != reference.revision_id
+                ):
+                    raise ValueError("EvidenceClaim reference identity does not match its artifact")
+                canonical_raw = ledger.artifacts.read(claim.canonical_unit.content_hash)
+                canonical = CanonicalEvidenceUnit.model_validate_json(canonical_raw)
+                unit = index.read_unit(canonical.unit_id, scope=scope)
+            except (KeyError, TypeError, ValueError, OSError) as error:
+                raise ValueError(
+                    "legacy EvidenceClaim is unverifiable; resubmit using issued canonical "
+                    "passages with active WorkToken scope"
+                ) from error
+            referenced_questions = question_by_item.get(reference.entity_id, set())
+            if (
+                unit.unit_id != canonical.unit_id
+                or unit.source_id != canonical.source_id
+                or unit.source_artifact_hash != canonical.source_artifact_hash
+            ):
+                raise ValueError(
+                    "legacy EvidenceClaim is outside the active WorkToken scope or is not "
+                    "citable; resubmit with issued canonical passages"
+                )
+            self._validate_citable_unit(
+                unit,
+                scope,
+                result_id=request.result_id,
+                domain_id=request.domain_id,
+                question_ids=referenced_questions,
+            )
 
     def _validate_domain_evidence_submission(
         self,
@@ -3369,6 +3554,111 @@ class RunEngine:
             return error.errno == errno.ESRCH
         return False
 
+    @staticmethod
+    def _normalize_parser_label(value: str | None) -> str | None:
+        if value is None:
+            return None
+        normalized = value.strip().casefold().replace("-", "_").replace(" ", "_")
+        return normalized or None
+
+    @classmethod
+    def _canonical_kind(
+        cls, value: str | None, *, text: str = "", markdown: str = ""
+    ) -> CanonicalUnitKind | None:
+        normalized = cls._normalize_parser_label(value)
+        aliases = {
+            "text": CanonicalUnitKind.PARAGRAPH,
+            "body": CanonicalUnitKind.PARAGRAPH,
+            "list": CanonicalUnitKind.LIST_ITEM,
+            "table": CanonicalUnitKind.TABLE_ROW,
+            "table_cell": CanonicalUnitKind.TABLE_ROW,
+            "table_row": CanonicalUnitKind.TABLE_ROW,
+        }
+        if normalized is not None:
+            if normalized in aliases:
+                return aliases[normalized]
+            try:
+                return CanonicalUnitKind(normalized)
+            except ValueError:
+                # An explicit parser label that is not in the closed enum is
+                # unclassified; heuristics are reserved for absent labels.
+                return None
+        stripped = text.strip()
+        if re.match(r"^(?:[-*•]|\d+[.)])\s+", stripped):
+            return CanonicalUnitKind.LIST_ITEM
+        if re.match(r"^(?:figure|fig\.?|table)\s+\d+", stripped, re.IGNORECASE):
+            return CanonicalUnitKind.CAPTION
+        if "|" in stripped and len(stripped.split("|")) >= 2:
+            return CanonicalUnitKind.TABLE_ROW
+        if re.match(r"^\s*\d+\s+", stripped) and len(stripped.split()) > 3:
+            return CanonicalUnitKind.FOOTNOTE
+        markdown_heading = any(
+            line.lstrip().startswith("#") and line.lstrip("# ").strip() == stripped
+            for line in markdown.splitlines()
+        )
+        if markdown_heading or (len(stripped.split()) <= 12 and stripped.endswith(":")):
+            return CanonicalUnitKind.HEADING
+        return None
+
+    @classmethod
+    def _canonical_zone(
+        cls,
+        value: str | None,
+        *,
+        page_text: str,
+        structured: bool = False,
+    ) -> DocumentZone:
+        normalized = cls._normalize_parser_label(value)
+        if normalized is not None:
+            try:
+                return DocumentZone(normalized)
+            except ValueError:
+                pass
+        # Only an explicit heading is safe to infer from source text.  A
+        # substring in ordinary prose (for example, "references previous
+        # work") must remain UNKNOWN rather than hiding authored evidence.
+        heading = next((line.strip() for line in page_text.splitlines() if line.strip()), "")
+        heading = re.sub(r"^#{1,6}\s*", "", heading).rstrip(":").strip()
+        if re.match(r"^(references|bibliography)\s*[:\-]?\s*$", heading, re.IGNORECASE):
+            return DocumentZone.BIBLIOGRAPHY
+        if re.match(r"^(contents|table\s+of\s+contents)\s*[:\-]?\s*$", heading, re.IGNORECASE):
+            return DocumentZone.CONTENTS
+        safe_heading_zones = {
+            "introduction": DocumentZone.INTRODUCTION,
+            "background": DocumentZone.INTRODUCTION,
+            "methods": DocumentZone.METHODS,
+            "materials and methods": DocumentZone.METHODS,
+            "results": DocumentZone.RESULTS,
+            "discussion": DocumentZone.DISCUSSION,
+        }
+        if (safe_zone := safe_heading_zones.get(heading.casefold())) is not None:
+            return safe_zone
+        if structured:
+            # A parser-provided spatial block stream with no special heading
+            # is a safe layout signal for ordinary body text.
+            return DocumentZone.MAIN
+        return DocumentZone.UNKNOWN
+
+    @classmethod
+    def _canonical_discourse(cls, value: str | None, *, text: str) -> TrialDiscourseScope:
+        normalized = cls._normalize_parser_label(value)
+        if normalized is not None:
+            normalized = {
+                "other_trial": TrialDiscourseScope.OTHER.value,
+                "external_trial": TrialDiscourseScope.OTHER.value,
+                "another_trial": TrialDiscourseScope.OTHER.value,
+                "same_trial": TrialDiscourseScope.ACTIVE.value,
+                "current_trial": TrialDiscourseScope.ACTIVE.value,
+            }.get(normalized, normalized)
+            try:
+                return TrialDiscourseScope(normalized)
+            except ValueError:
+                pass
+        lowered = text.casefold()
+        if any(marker in lowered for marker in ("another trial", "other trial", "external trial")):
+            return TrialDiscourseScope.OTHER
+        return TrialDiscourseScope.UNCERTAIN
+
     def _index_initial_evidence(self, root: Path, initialization: ProjectInitialization) -> None:
         """Materialize canonical text units for a prepared Run."""
 
@@ -3376,13 +3666,10 @@ class RunEngine:
         artifacts = ArtifactStore(root / ".rob2" / "artifacts")
         units = []
         for trial in initialization.trials:
-            trial_result_id = next(
-                (
-                    spec.result.result_id
-                    for spec in initialization.result_specs
-                    if spec.result.trial_id == trial.trial_id
-                ),
-                None,
+            trial_result_ids = tuple(
+                spec.result.result_id
+                for spec in initialization.result_specs
+                if spec.result.trial_id == trial.trial_id
             )
             for source in trial.inventory.sources:
                 if source.artifact_hash is None or not source.parse_records:
@@ -3393,60 +3680,345 @@ class RunEngine:
                     source.parse_records,
                     artifacts,
                 )
-                pages = tuple(
-                    CanonicalPage(
-                        page=item.page_number,
-                        blocks=(
-                            tuple(
-                                CanonicalBlock(
-                                    kind=CanonicalUnitKind.PARAGRAPH,
-                                    text=text_item.text,
-                                    spatial=(
-                                        text_item.x,
-                                        text_item.y,
-                                        text_item.x + text_item.width,
-                                        text_item.y + text_item.height,
-                                    ),
-                                    word_boxes=_canonical_word_boxes(
-                                        text_item.text, text_item.words
-                                    ),
-                                )
-                                for text_item in item.text_items
-                                if text_item.text.strip()
-                            )
-                            or (
-                                (
-                                    CanonicalBlock(
-                                        kind=CanonicalUnitKind.PARAGRAPH,
-                                        text=item.text,
-                                        spatial=(0.0, 0.0, item.width, item.height),
-                                    ),
-                                )
-                                if item.text.strip()
-                                else ()
-                            )
-                        ),
+                pages_list: list[CanonicalPage] = []
+                page_parse_ids: dict[int, Identifier | None] = {}
+                reading_order_cursor = 0
+                inherited_zone: DocumentZone | None = None
+                for page in indexed_pages:
+                    structure_metadata = page.structure_tree or {}
+                    structure_zone = structure_metadata.get("document_zone")
+                    structure_discourse = structure_metadata.get("discourse_scope")
+                    if not isinstance(structure_zone, str):
+                        structure_zone = None
+                    if not isinstance(structure_discourse, str):
+                        structure_discourse = None
+                    parser_has_semantics = any(
+                        item.unit_kind
+                        or item.document_zone
+                        or item.section_path
+                        or item.hierarchy_path
+                        for item in page.text_items
                     )
-                    for item in indexed_pages
-                )
-                canonical_units = canonicalize_evidence_units(
+                    page_zone = self._canonical_zone(
+                        page.document_zone or structure_zone,
+                        page_text=page.text,
+                        structured=bool(page.text_items)
+                        and (getattr(parser, "name", "") != "liteparse" or parser_has_semantics),
+                    )
+                    if page_zone is DocumentZone.UNKNOWN and inherited_zone is not None:
+                        page_zone = inherited_zone
+                    elif page_zone is not DocumentZone.UNKNOWN:
+                        # Carry explicit forbidden zones (bibliography/contents)
+                        # across continuation pages too. A new explicit zone or
+                        # safe heading replaces the inherited boundary.
+                        inherited_zone = page_zone
+                    page_zone_unknown = page_zone is DocumentZone.UNKNOWN
+                    page_discourse = self._canonical_discourse(
+                        page.discourse_scope or structure_discourse,
+                        text=page.text,
+                    )
+                    markdown_lines = [
+                        line.strip() for line in page.markdown.splitlines() if line.strip()
+                    ]
+                    markdown_tables: list[tuple[tuple[str, ...], str | None, tuple[str, ...]]] = []
+                    for line_number, line in enumerate(markdown_lines):
+                        if (
+                            "|" in line
+                            and line_number + 1 < len(markdown_lines)
+                            and re.match(r"^\s*\|?\s*:?-{3,}", markdown_lines[line_number + 1])
+                        ):
+                            table_headers = tuple(
+                                cell.strip() for cell in line.strip("|").split("|") if cell.strip()
+                            )
+                            table_caption: str | None = None
+                            if line_number:
+                                candidate_caption = markdown_lines[line_number - 1]
+                                if re.match(r"^(?:table|tbl\.)\s+\d+", candidate_caption, re.I):
+                                    table_caption = candidate_caption
+                            table_rows: list[str] = []
+                            row_number = line_number
+                            while (
+                                row_number < len(markdown_lines)
+                                and "|" in markdown_lines[row_number]
+                            ):
+                                table_rows.append(
+                                    " ".join(markdown_lines[row_number].strip("|").split())
+                                )
+                                row_number += 1
+                            markdown_tables.append(
+                                (table_headers, table_caption, tuple(table_rows))
+                            )
+                    section_labels: list[tuple[int, str, int]] = []
+                    heading_counts: dict[int, int] = {}
+                    blocks: list[CanonicalBlock] = []
+                    for number, text_item in enumerate(page.text_items, start=1):
+                        if not text_item.text.strip():
+                            continue
+                        kind = self._canonical_kind(
+                            text_item.unit_kind,
+                            text=text_item.text,
+                            markdown=page.markdown,
+                        )
+                        if (
+                            kind is None
+                            and getattr(parser, "name", "") == "liteparse"
+                            and (
+                                len(page.text_items) > 1
+                                or any(
+                                    text_item.text.strip() == line.lstrip("# ").strip()
+                                    for line in markdown_lines
+                                )
+                            )
+                        ):
+                            # LiteParse text items carry geometry but may omit
+                            # semantic kinds.  A markdown/text-item boundary
+                            # is sufficient to call this authored prose; when
+                            # absent we retain UNCLASSIFIED + visual limitation.
+                            kind = CanonicalUnitKind.PARAGRAPH
+                        heading_match = re.match(r"^\s*(#{1,6})\s+(.+?)\s*$", text_item.text)
+                        if kind is CanonicalUnitKind.HEADING:
+                            heading_level = len(heading_match.group(1)) if heading_match else 1
+                            while section_labels and section_labels[-1][0] >= heading_level:
+                                section_labels.pop()
+                            heading_counts[heading_level] = heading_counts.get(heading_level, 0) + 1
+                            for level in tuple(heading_counts):
+                                if level > heading_level:
+                                    heading_counts.pop(level, None)
+                            section_labels.append(
+                                (
+                                    heading_level,
+                                    (
+                                        heading_match.group(2) if heading_match else text_item.text
+                                    ).strip(),
+                                    heading_counts[heading_level],
+                                )
+                            )
+                        inferred_section_path = tuple(label for _, label, _ in section_labels)
+                        inferred_hierarchy_path = tuple(
+                            str(index) for _, _, index in section_labels
+                        )
+                        table_headers = text_item.table_headers
+                        caption = text_item.caption
+                        if kind is CanonicalUnitKind.TABLE_ROW or "|" in text_item.text:
+                            if not table_headers and not caption:
+                                row_match = next(
+                                    (
+                                        (headers, table_caption)
+                                        for headers, table_caption, table_rows in markdown_tables
+                                        if " ".join(text_item.text.strip("|").split()) in table_rows
+                                    ),
+                                    None,
+                                )
+                                if row_match is not None:
+                                    table_headers, caption = row_match
+                        block_zone = (
+                            page_zone
+                            if text_item.document_zone is None
+                            else self._canonical_zone(
+                                text_item.document_zone,
+                                page_text=text_item.text,
+                            )
+                        )
+                        block_discourse = (
+                            page_discourse
+                            if text_item.discourse_scope is None
+                            else self._canonical_discourse(
+                                text_item.discourse_scope,
+                                text=text_item.text,
+                            )
+                        )
+                        parser_applicability = None
+                        if text_item.applicability is not None:
+                            try:
+                                parser_applicability = EvidenceApplicability(
+                                    self._normalize_parser_label(text_item.applicability)
+                                )
+                            except (TypeError, ValueError):
+                                parser_applicability = EvidenceApplicability.UNRESOLVED
+                        applicability = parser_applicability or (
+                            EvidenceApplicability.RESULT
+                            if text_item.result_id is not None
+                            else (
+                                EvidenceApplicability.RESULT
+                                if len(trial_result_ids) == 1
+                                else EvidenceApplicability.UNRESOLVED
+                            )
+                        )
+                        applicable_result_ids = text_item.applicable_result_ids or trial_result_ids
+                        warnings = tuple(
+                            warning
+                            for warning, condition in (
+                                ("canonical_kind_unclassified", kind is None),
+                                (
+                                    "document_zone_unclassified",
+                                    page_zone_unknown or block_zone is DocumentZone.UNKNOWN,
+                                ),
+                                (
+                                    "trial_discourse_uncertain",
+                                    block_discourse
+                                    in {
+                                        TrialDiscourseScope.UNCERTAIN,
+                                        TrialDiscourseScope.MIXED,
+                                    },
+                                ),
+                                (
+                                    "result_scope_unresolved",
+                                    applicability is not EvidenceApplicability.RESULT,
+                                ),
+                            )
+                            if condition
+                        )
+                        reading_order = text_item.reading_order or reading_order_cursor + 1
+                        reading_order = max(reading_order, reading_order_cursor + 1)
+                        reading_order_cursor = reading_order
+                        blocks.append(
+                            CanonicalBlock(
+                                kind=kind or CanonicalUnitKind.UNCLASSIFIED,
+                                text=text_item.text,
+                                spatial=(
+                                    text_item.x,
+                                    text_item.y,
+                                    text_item.x + text_item.width,
+                                    text_item.y + text_item.height,
+                                ),
+                                word_boxes=_canonical_word_boxes(
+                                    text_item.text,
+                                    text_item.words,
+                                ),
+                                trial_id=text_item.trial_id,
+                                result_id=text_item.result_id,
+                                domain_id=text_item.domain_id,
+                                question_ids=text_item.question_ids,
+                                table_headers=table_headers,
+                                caption=caption,
+                                applicability=applicability,
+                                applicable_result_ids=applicable_result_ids,
+                                section_path=(
+                                    text_item.section_path
+                                    or page.section_path
+                                    or inferred_section_path
+                                ),
+                                hierarchy_path=(
+                                    text_item.hierarchy_path
+                                    or page.hierarchy_path
+                                    or inferred_hierarchy_path
+                                ),
+                                reading_order=reading_order,
+                                source_role=(source.roles[0].value if source.roles else None),
+                                document_zone=block_zone,
+                                discourse_scope=block_discourse,
+                                warnings=warnings,
+                            )
+                        )
+                    if not blocks and page.text.strip():
+                        reading_order_cursor += 1
+                        fallback_warnings = (
+                            (
+                                "canonical_structure_unavailable",
+                                "document_zone_unclassified",
+                            )
+                            if page_zone_unknown or page_zone is DocumentZone.UNKNOWN
+                            else ("canonical_structure_unavailable",)
+                        )
+                        if len(trial_result_ids) != 1:
+                            fallback_warnings += ("result_scope_unresolved",)
+                        if page_discourse in {
+                            TrialDiscourseScope.UNCERTAIN,
+                            TrialDiscourseScope.MIXED,
+                        }:
+                            fallback_warnings += ("trial_discourse_uncertain",)
+                        blocks.append(
+                            CanonicalBlock(
+                                # The parser supplied page text but no unit
+                                # boundaries or kind label; retain it as an
+                                # explicit unclassified unit rather than
+                                # inventing a paragraph classification.
+                                kind=CanonicalUnitKind.UNCLASSIFIED,
+                                text=page.text,
+                                spatial=(0.0, 0.0, page.width, page.height),
+                                section_path=page.section_path,
+                                hierarchy_path=page.hierarchy_path,
+                                reading_order=reading_order_cursor,
+                                applicability=(
+                                    EvidenceApplicability.RESULT
+                                    if len(trial_result_ids) == 1
+                                    else EvidenceApplicability.UNRESOLVED
+                                ),
+                                applicable_result_ids=trial_result_ids,
+                                source_role=(source.roles[0].value if source.roles else None),
+                                document_zone=page_zone,
+                                discourse_scope=page_discourse,
+                                warnings=fallback_warnings,
+                            )
+                        )
+                    if blocks:
+                        page_parse_ids[page.page_number] = page.parse_id
+                        pages_list.append(
+                            CanonicalPage(
+                                page=page.page_number,
+                                blocks=tuple(blocks),
+                            )
+                        )
+                pages = tuple(pages_list)
+                default_result_id = trial_result_ids[0] if len(trial_result_ids) == 1 else None
+                canonical_units = tuple(
+                    unit
+                    for page in pages
+                    for unit in canonicalize_evidence_units(
                         source_id=source.source_id,
                         source_artifact_hash=source.artifact_hash,
-                        parse_id=source.parse_records[0].parse_id,
-                        pages=pages,
+                        parse_id=(
+                            page_parse_ids.get(page.page) or source.parse_records[0].parse_id
+                        ),
+                        pages=(page,),
                         trial_id=trial.trial_id,
-                        result_id=trial_result_id,
+                        result_id=default_result_id,
+                        applicability=(
+                            EvidenceApplicability.RESULT
+                            if default_result_id is not None
+                            else EvidenceApplicability.UNRESOLVED
+                        ),
+                        applicable_result_ids=trial_result_ids,
                     )
+                )
                 units.extend(
                     item.model_copy(
                         update={
-                            "source_role": (
-                                source.roles[0].value if source.roles else None
-                            ),
+                            "source_role": (source.roles[0] if source.roles else None),
                         }
                     )
                     for item in canonical_units
                 )
+        duplicate_keys: dict[str, list[int]] = {}
+        for index, item in enumerate(units):
+            key = canonical_hash(
+                {
+                    "source_artifact_hash": item.source_artifact_hash,
+                    "kind": item.kind.value,
+                    "text": " ".join(item.text.split()),
+                    "result_id": item.result_id,
+                    "applicability": item.applicability.value,
+                    "applicable_result_ids": item.applicable_result_ids,
+                    "domain_id": item.domain_id,
+                    "question_ids": item.question_ids,
+                    "document_zone": item.document_zone.value if item.document_zone else None,
+                    "discourse_scope": item.discourse_scope.value,
+                    "table_headers": item.table_headers,
+                    "caption": item.caption,
+                    "section_path": item.section_path,
+                    "hierarchy_path": item.hierarchy_path,
+                }
+            )
+            duplicate_keys.setdefault(key, []).append(index)
+        for key, indexes in duplicate_keys.items():
+            if len(indexes) < 2:
+                continue
+            duplicate_group_id = f"duplicate:{key.removeprefix('sha256:')}"
+            for index in indexes:
+                if units[index].duplicate_group_id is None:
+                    units[index] = units[index].model_copy(
+                        update={"duplicate_group_id": duplicate_group_id}
+                    )
         EvidenceSearchIndex(root / ".rob2" / "evidence.sqlite3").replace_units(tuple(units))
 
     def _required_root(self) -> Path:
@@ -3867,9 +4439,7 @@ class RunEngine:
         guidance = load_guidance_pack(self._guidance_pack_path())
         guidance_by_id = {item.logic_element_id: item for item in guidance.items}
         questions_by_id = {
-            question_id: question.model_copy(
-                update={"wording": guidance_by_id[question_id].text}
-            )
+            question_id: question.model_copy(update={"wording": guidance_by_id[question_id].text})
             if question_id in guidance_by_id
             else question
             for question_id, question in questions_by_id.items()
@@ -3894,8 +4464,7 @@ class RunEngine:
             result_id=result.result_id,
             trial_id=result.trial_id,
             comparison=(
-                f"{result.comparison.experimental_arm_id} vs "
-                f"{result.comparison.comparator_arm_id}"
+                f"{result.comparison.experimental_arm_id} vs {result.comparison.comparator_arm_id}"
             ),
             effect_of_interest=result.effect_of_interest,
             outcome=result.outcome_construct,
@@ -4897,9 +5466,9 @@ class RunEngine:
                     pixel_box = (box_left, box_top, box_right, box_bottom)
                     pixel_boxes.append(pixel_box)
                     overlay_draw.rectangle(pixel_box, fill=highlight_color)
-                overlay = Image.alpha_composite(
-                    context.convert("RGBA"), overlay_layer
-                ).convert("RGB")
+                overlay = Image.alpha_composite(context.convert("RGBA"), overlay_layer).convert(
+                    "RGB"
+                )
                 overlay_draw = ImageDraw.Draw(overlay)
                 for pixel_box in pixel_boxes:
                     overlay_draw.rectangle(pixel_box, outline="#9a5a12", width=4)
@@ -5030,8 +5599,7 @@ class RunEngine:
                         page=citation.page,
                         region=region,
                         boxes=tuple(
-                            (box.left, box.top, box.right, box.bottom)
-                            for box in citation.boxes
+                            (box.left, box.top, box.right, box.bottom) for box in citation.boxes
                         ),
                         label="Canonical evidence span",
                         exact_phrase=phrase,
@@ -5099,9 +5667,7 @@ class RunEngine:
                     ),
                     source_artifact_hash=source_artifact_hash,
                     parse_id=parse_id,
-                    quoted_text_hash=sha256_digest(
-                        transcription.transcription.encode("utf-8")
-                    ),
+                    quoted_text_hash=sha256_digest(transcription.transcription.encode("utf-8")),
                     geometry_scope="visual_region",
                     geometry_hash=canonical_hash(
                         {"region": transcription.region, "page": transcription.page}

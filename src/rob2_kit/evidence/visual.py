@@ -56,6 +56,8 @@ class VisualCandidate(FrozenModel):
     source_id: Identifier
     source_artifact_hash: ContentHash
     sq_id: Identifier
+    domain_id: Identifier | None = None
+    question_ids: tuple[Identifier, ...] = ()
     page: int = Field(ge=1)
     kind: VisualCandidateKind
     nomination_basis: VisualNominationBasis

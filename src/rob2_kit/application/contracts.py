@@ -31,14 +31,14 @@ from rob2_kit.domain.sources import (
     SourceRole,
     SourceUse,
 )
+from rob2_kit.evidence.errors import RetrievalErrorCode
 from rob2_kit.evidence.search import (
-    CONTEXT_CHARACTER_TARGET,
     CanonicalEvidenceUnit,
     EvidenceContext,
     ReadContextMode,
     SearchPage,
-    SearchPolicy,
     SearchQuery,
+    SearchQueryFields,
 )
 from rob2_kit.evidence.visual import (
     VisualCandidate,
@@ -150,6 +150,26 @@ class OperationError(FrozenModel):
     detail: str = Field(min_length=1)
     recovery: tuple[str, ...] = Field(min_length=1)
     correlation_id: Identifier | None = None
+
+
+class RetrievalError(FrozenModel):
+    code: RetrievalErrorCode
+    field: str | None = None
+    message: str = Field(min_length=1)
+    recovery: tuple[str, ...] = Field(min_length=1)
+
+    @property
+    def detail(self) -> str:
+        """Backward-compatible name for hosts that used the old envelope."""
+
+        return self.message
+
+
+class RetrievalErrorResponse(FrozenModel):
+    condition: Literal["retrieval_error"] = "retrieval_error"
+    error: RetrievalError
+    omitted: Literal[True] = True
+    next_actions: tuple[str, ...] = Field(min_length=1)
 
 
 class WorkToken(FrozenModel):
@@ -571,34 +591,92 @@ class ConfirmRunDefinitionRequest(FrozenModel):
     confirmed_by: Actor
 
 
+class SearchQueryEnvelope(SearchQueryFields):
+    """Transport-safe query shape; semantic FTS validation runs inside the handler."""
+
+
 class SearchEvidenceRequest(FrozenModel):
-    run_id: Identifier
-    query: SearchQuery
-    # Optional during the compatibility window; when supplied it must be the
-    # exact active Domain-evidence WorkToken and supplies the retrieval scope.
-    work_token: WorkToken | None = None
-    result_id: Identifier | None = None
-    cursor: str | None = None
-    broad_query_justification: str | None = None
-    policy: SearchPolicy | None = None
-    sq_id: Identifier | None = None
-    pass_kind: SearchPassKind | None = None
-    seed_family: Identifier | None = None
+    run_id: Identifier = Field(description="Run identifier returned by prepare_run.")
+    query: SearchQuery = Field(
+        description=(
+            "Structured lexical terms and safe metadata refinements; raw FTS syntax is rejected."
+        )
+    )
+    work_token: WorkToken = Field(
+        description=(
+            "Copy the opaque token from the current submit_domain_evidence WorkItem; "
+            "example token:domain-evidence."
+        )
+    )
+    result_id: Identifier | None = Field(
+        default=None,
+        description="Optional Result identifier; it must match the active WorkToken scope.",
+        examples=["result:primary"],
+    )
+    cursor: str | None = Field(
+        default=None,
+        min_length=1,
+        max_length=4096,
+        description="Opaque cursor returned by the preceding page; omit on the first bounded page.",
+        examples=["eyJwYXlsb2FkIjoi..."],
+    )
+    sq_id: Identifier = Field(
+        description="Signaling-question identifier for the current evidence pass.",
+        examples=["sq:randomization"],
+    )
+    pass_kind: SearchPassKind | None = Field(
+        default=None,
+        description="Search pass classification; guidance_seed requires seed_family.",
+    )
+    seed_family: Identifier | None = Field(
+        default=None,
+        description="Stable family identifier required only for guidance_seed passes.",
+    )
+
+    @model_validator(mode="after")
+    def validate_seed_relation(self) -> SearchEvidenceRequest:
+        guidance = self.pass_kind is SearchPassKind.GUIDANCE_SEED
+        if guidance and self.seed_family is None:
+            raise ValueError("guidance_seed pass_kind requires seed_family")
+        if not guidance and self.seed_family is not None:
+            raise ValueError("seed_family is only valid with guidance_seed pass_kind")
+        return self
 
 
 class ReadEvidenceRequest(FrozenModel):
-    run_id: Identifier
-    unit_id: Identifier
-    work_token: WorkToken | None = None
-    result_id: Identifier | None = None
-    neighbor_limit: int = Field(default=6, ge=0, le=50)
-    context_character_target: int = Field(
-        default=CONTEXT_CHARACTER_TARGET,
-        ge=1,
-        le=CONTEXT_CHARACTER_TARGET,
+    run_id: Identifier = Field(description="Run identifier returned by prepare_run.")
+    unit_id: Identifier = Field(
+        description="Canonical unit identifier issued by search_evidence.",
+        examples=["unit:report-p1-b2"],
     )
-    mode: ReadContextMode = ReadContextMode.UNIT
-    cursor: str | None = None
+    work_token: WorkToken = Field(
+        description=(
+            "Copy the opaque token from the current submit_domain_evidence WorkItem; "
+            "the token binds Trial/Result/Domain scope."
+        )
+    )
+    result_id: Identifier | None = Field(
+        default=None,
+        description="Optional Result identifier; it must match the active WorkToken scope.",
+        examples=["result:primary"],
+    )
+    sq_id: Identifier = Field(
+        description="Signaling-question scope; it must match any active question filter.",
+        examples=["sq:randomization"],
+    )
+    mode: ReadContextMode = Field(
+        default=ReadContextMode.UNIT,
+        description="Read mode: unit, same-zone neighbors, or same-zone section continuation.",
+    )
+    cursor: str | None = Field(
+        default=None,
+        min_length=1,
+        max_length=4096,
+        description=(
+            "Opaque section cursor returned by a prior bounded section read; omit initially."
+        ),
+        examples=["eyJwYXlsb2FkIjoi..."],
+    )
 
 
 class InspectVisualCandidateRequest(FrozenModel):
@@ -657,9 +735,7 @@ class SubmitDomainEvidenceRequest(FrozenModel):
     )
     coverage_state: EvidenceCoverageState = Field(
         default=EvidenceCoverageState.COMPLETE,
-        description=(
-            "Coverage enum: complete, complete_with_limitations, or incomplete."
-        ),
+        description=("Coverage enum: complete, complete_with_limitations, or incomplete."),
     )
     coverage_limitations: tuple[str, ...] = Field(
         default=(),
@@ -686,15 +762,11 @@ class SubmitDomainEvidenceRequest(FrozenModel):
     # synthetic tracer submissions that intentionally carry an empty bundle.
     evidence_by_question: dict[Identifier, tuple[RecordReference, ...]] = Field(
         default_factory=dict,
-        description=(
-            "Legacy question-to-reference mapping; mutually exclusive with passages."
-        ),
+        description=("Legacy question-to-reference mapping; mutually exclusive with passages."),
     )
     candidate_dispositions: tuple[EvidenceConsiderationInput, ...] = Field(
         default=(),
-        description=(
-            "Legacy candidate disposition records; mutually exclusive with passages."
-        ),
+        description=("Legacy candidate disposition records; mutually exclusive with passages."),
     )
     coverage_receipts: tuple[SearchCoverageReceipt, ...] = Field(
         default=(),
@@ -766,12 +838,15 @@ class OperationResponse(FrozenModel):
                 self,
                 "summary",
                 {
-                    WorkflowCondition.CONFIRMATION_REQUIRED:
-                        "Run definition confirmation is required.",
-                    WorkflowCondition.AGENT_WORK_REQUIRED:
-                        "The next bounded Run work item is ready.",
-                    WorkflowCondition.RUN_BLOCKED:
-                        "The Run is blocked pending a correctable action.",
+                    WorkflowCondition.CONFIRMATION_REQUIRED: (
+                        "Run definition confirmation is required."
+                    ),
+                    WorkflowCondition.AGENT_WORK_REQUIRED: (
+                        "The next bounded Run work item is ready."
+                    ),
+                    WorkflowCondition.RUN_BLOCKED: (
+                        "The Run is blocked pending a correctable action."
+                    ),
                     WorkflowCondition.RUN_COMPLETE: "The Run is complete.",
                     WorkflowCondition.RUN_INTEGRITY_FAILURE: "Run integrity could not be verified.",
                 }.get(self.condition, "Run operation completed."),
@@ -809,10 +884,14 @@ class OperationResponse(FrozenModel):
             RunState.INTEGRITY_FAILED,
             RunState.RETIRED,
         }
-        terminal = self.condition in {
-            WorkflowCondition.RUN_COMPLETE,
-            WorkflowCondition.RUN_INTEGRITY_FAILURE,
-        } or terminal_run_state
+        terminal = (
+            self.condition
+            in {
+                WorkflowCondition.RUN_COMPLETE,
+                WorkflowCondition.RUN_INTEGRITY_FAILURE,
+            }
+            or terminal_run_state
+        )
         if terminal and self.next_action is not None:
             # A submission may commit the final checkpoint while retaining
             # the historical ``accepted`` condition.  The Run state is the
@@ -923,6 +1002,24 @@ class ReadEvidenceResponse(OperationResponse):
     run_id: Identifier
     unit: CanonicalEvidenceUnit
     context: EvidenceContext | None = None
+    visual_inspection: VisualInspectionPath | None = None
+
+
+class VisualInspectionArguments(FrozenModel):
+    run_id: Identifier
+    candidate_id: Identifier
+    result_id: Identifier | None = None
+
+
+class VisualInspectionPath(FrozenModel):
+    """Bounded, provenance-tied handoff to the visual inspection tool."""
+
+    unit_id: Identifier
+    source_id: Identifier
+    page: int = Field(ge=1)
+    candidate_id: Identifier
+    next_tool: Literal["inspect_visual_candidate"] = "inspect_visual_candidate"
+    next_arguments: VisualInspectionArguments
 
 
 class InspectVisualCandidateResponse(OperationResponse):
