@@ -20,6 +20,20 @@ from typing import cast
 
 EXPECTED_UVX_ARGS = ("--python", "3.13", "--from", "rob2-kit==0.1.0", "rob2-mcp")
 QUALIFICATION_TIME = "2026-08-03T00:00:00Z"
+CANONICAL_TOOL_NAMES = (
+    "prepare_run",
+    "continue_run",
+    "get_work_context",
+    "submit_run_proposal",
+    "confirm_run_definition",
+    "search_evidence",
+    "read_evidence",
+    "inspect_visual_candidate",
+    "submit_source_classification",
+    "submit_result_resolution",
+    "submit_domain_evidence",
+    "submit_domain_answers",
+)
 
 
 def _command_path(environment: Path, name: str) -> Path:
@@ -455,21 +469,7 @@ def _journey(server: Path, project: Path, receipt_path: Path) -> None:
             async with ClientSession(read, write) as client:
                 await client.initialize()
                 inventory = await client.list_tools()
-                assert {tool.name for tool in inventory.tools} == {
-                    "prepare_run",
-                    "run_status",
-                    "continue_run",
-                    "get_work_context",
-                    "submit_run_proposal",
-                    "confirm_run_definition",
-                    "search_evidence",
-                    "read_evidence",
-                    "inspect_visual_candidate",
-                    "submit_source_classification",
-                    "submit_result_resolution",
-                    "submit_domain_evidence",
-                    "submit_domain_answers",
-                }
+                assert tuple(tool.name for tool in inventory.tools) == CANONICAL_TOOL_NAMES
                 prepared = (
                     await client.call_tool(
                         "prepare_run", {"project_root": str(project), "authorized": True}
@@ -572,10 +572,10 @@ def _journey(server: Path, project: Path, receipt_path: Path) -> None:
                     assert (
                         committed.structured_content and committed.structured_content["committed"]
                     )
-                status = (
-                    await client.call_tool("run_status", {"run_id": run_id})
+                complete = (
+                    await client.call_tool("continue_run", {"run_id": run_id})
                 ).structured_content
-                assert status and status["run_state"] == "complete"
+                assert complete and complete["run_state"] == "complete"
 
     anyio.run(run)
 

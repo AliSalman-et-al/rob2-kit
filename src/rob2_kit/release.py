@@ -294,7 +294,7 @@ def verify_mcp_launchability(
                 return tuple(tool.name for tool in inventory.tools)
 
     tools = anyio.run(inspect)
-    if tools != RUN_OPERATION_NAMES:
+    if tools != SKILL_ALLOWED_TOOL_NAMES:
         raise ValueError("the launched MCP server does not expose the locked tool surface")
     return tools
 

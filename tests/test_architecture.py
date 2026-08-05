@@ -27,7 +27,7 @@ def test_lean_v1_keeps_interfaces_at_the_run_engine_boundary() -> None:
     """Only the Harness bootstrap and diagnostics remain as CLI capabilities."""
 
     command_names = {command.name for command in app.registered_commands}
-    assert command_names == {"bootstrap", "doctor"}
+    assert command_names == {"bootstrap", "doctor", "upgrade", "rollback", "uninstall"}
 
     package = Path(__file__).parents[1] / "src" / "rob2_kit"
     assert not (package / "application" / "gateway.py").exists()

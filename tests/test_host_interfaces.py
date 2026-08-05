@@ -7,7 +7,6 @@ import pytest
 from pydantic import ValidationError
 
 from rob2_kit.application.contracts import (
-    RUN_OPERATION_NAMES,
     EvidenceConsiderationInput,
     EvidencePassageInput,
     RunOperation,
@@ -15,7 +14,11 @@ from rob2_kit.application.contracts import (
     WorkToken,
 )
 from rob2_kit.domain.revisions import RecordReference
-from rob2_kit.interfaces.mcp.server import create_server, registered_tool_names
+from rob2_kit.interfaces.mcp.server import (
+    CANONICAL_TOOL_NAMES,
+    create_server,
+    registered_tool_names,
+)
 
 
 def blank_pdf() -> bytes:
@@ -49,7 +52,8 @@ def blank_pdf() -> bytes:
 
 
 def test_stdio_mcp_surface_is_the_fixed_run_engine_inventory() -> None:
-    assert registered_tool_names() == RUN_OPERATION_NAMES
+    assert registered_tool_names() == CANONICAL_TOOL_NAMES
+    assert len(registered_tool_names()) == 12
     assert "open_review" not in registered_tool_names()
 
 
@@ -82,7 +86,7 @@ def test_mcp_tool_schemas_explain_nested_inputs_and_expose_passage_freezing() ->
         "submit_domain_answers",
     ):
         assert "idempotency_key" not in tools[tool_name].input_schema["properties"]
-    assert "idempotency_key" in tools["correct_domain_answers"].input_schema["properties"]
+    assert "correct_domain_answers" not in tools
 
 
 def test_mcp_tool_descriptions_prevent_cleanroom_schema_guessing() -> None:
@@ -111,8 +115,6 @@ def test_mcp_tool_descriptions_prevent_cleanroom_schema_guessing() -> None:
     answers = tools["submit_domain_answers"].description or ""
     assert "every active question in get_work_context" in answers
     assert "no_information" in answers
-    correction = tools["correct_domain_answers"].description or ""
-    assert "new idempotency_key" in correction
     assert "actor" not in tools["submit_domain_evidence"].input_schema["properties"]
     assert "actor" not in tools["submit_domain_answers"].input_schema["properties"]
     evidence = tools["submit_domain_evidence"].description or ""

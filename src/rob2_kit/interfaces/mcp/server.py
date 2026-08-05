@@ -21,11 +21,9 @@ from mcp.types import CallToolResult, TextContent
 from pydantic import Field, ValidationError
 
 from rob2_kit.application.contracts import (
-    RUN_OPERATION_NAMES,
     Actor,
     ConfirmRunDefinitionRequest,
     ContinueRunRequest,
-    CorrectDomainAnswersRequest,
     ErrorClass,
     Estimate,
     EvidenceConsiderationInput,
@@ -41,15 +39,12 @@ from rob2_kit.application.contracts import (
     PrepareRunResponse,
     ReadEvidenceRequest,
     RecordReference,
-    ReopenResultRequest,
-    ReprioritizeResultsRequest,
     Result,
     RetrievalErrorResponse,
     RunOperation,
     RunProposal,
     RunProposalAmbiguity,
     RunProposalSelection,
-    RunStatusRequest,
     SearchCoverageReceipt,
     SearchEvidenceRequest,
     SearchPassKind,
@@ -63,7 +58,6 @@ from rob2_kit.application.contracts import (
     SubmitRunProposalRequest,
     SubmitSourceClassificationRequest,
     VisualRenderRequest,
-    WithdrawResultRequest,
     WorkflowCondition,
     WorkToken,
 )
@@ -77,26 +71,22 @@ from rob2_kit.evidence.errors import (
 )
 from rob2_kit.evidence.search import ReadContextMode
 
-# The legacy inventory remains the default while the expand-phase routes are
-# migrated.  New composition code can use the canonical names without editing
-# this module's large compatibility registration block.
+# This is the release-owned, model-visible contract.  Engine maintenance
+# operations deliberately remain Python APIs; exposing them as MCP aliases
+# would make a running Harness depend on a different public contract.
 CANONICAL_TOOL_NAMES: tuple[str, ...] = (
     "prepare_run",
-    "get_run_status",
     "continue_run",
-    "reprioritize_results",
-    "withdraw_result",
-    "reopen_result",
     "get_work_context",
-    "search_evidence",
-    "read_evidence",
     "submit_run_proposal",
     "confirm_run_definition",
-    "classify_sources",
-    "resolve_result",
+    "search_evidence",
+    "read_evidence",
+    "inspect_visual_candidate",
+    "submit_source_classification",
+    "submit_result_resolution",
     "submit_domain_evidence",
     "submit_domain_answers",
-    "correct_domain_answers",
 )
 
 
@@ -133,19 +123,13 @@ def register_route_groups(
 
 
 def registered_tool_names() -> tuple[str, ...]:
-    """Return the fixed public RunEngine inventory in wire order."""
+    """Return the fixed twelve-tool model-visible inventory in wire order."""
 
-    return RUN_OPERATION_NAMES
+    return CANONICAL_TOOL_NAMES
 
 
 def canonical_tool_names() -> tuple[str, ...]:
-    """Return the twelve-tool catalog used by the versioned cutover.
-
-    During expand, :func:`registered_tool_names` intentionally reports the
-    compatibility inventory.  Keeping this projection beside the route seam
-    gives adapters and release checks a single canonical source without
-    changing the currently installed legacy catalog.
-    """
+    """Return the one release-owned model-visible MCP catalog."""
 
     return CANONICAL_TOOL_NAMES
 
@@ -279,36 +263,15 @@ def _retrieval_error(error: RetrievalFailure) -> RetrievalErrorResponse:
     )
 
 
-def canonical_status_route_group() -> RouteGroup:
-    """Return the canonical ``get_run_status`` route for expand-phase hosts.
-
-    The default server keeps the legacy ``run_status`` route advertised so
-    existing adapters remain green.  A host preparing for the twelve-tool
-    cutover composes this group explicitly; both routes call the same
-    ledger-derived engine operation and therefore cannot diverge in state.
-    """
-
-    def register(server: Any, engine: RunEngine) -> None:
-        @server.tool(name="get_run_status")
-        def get_run_status(run_id: str) -> dict[str, Any]:
-            """Read durable Run state and progress without mutating it."""
-
-            return _dump(engine.run_status(RunStatusRequest.model_validate({"run_id": run_id})))
-
-    return RouteGroup(name="run-control-canonical", register=register)
-
-
 def create_server(
     *,
     determinism: QualificationDeterminism | None = None,
     route_groups: Sequence[MCPRouteGroup] = (),
 ) -> Any:
-    """Build one stdio server with the expand-phase tools and route extensions.
+    """Build one stdio server with the release-owned canonical tools.
 
-    ``route_groups`` is deliberately additive: callers can compose a later
-    proposal, retrieval, evidence, or answer family without reopening this
-    compatibility handler.  Built-in tools retain their historical names
-    until the versioned cutover ticket removes them.
+    ``route_groups`` is deliberately additive for test and host composition,
+    but the standard server registers no compatibility aliases.
     """
 
     from mcp.server import MCPServer
@@ -391,13 +354,6 @@ def create_server(
             )
         return _dump(response)
 
-    @server.tool(name="run_status")
-    def run_status(
-        run_id: str,
-    ) -> dict[str, Any]:
-        """Read the durable state and progress of a prepared run."""
-        return _dump(engine.run_status(RunStatusRequest.model_validate({"run_id": run_id})))
-
     @server.tool(name="continue_run")
     def continue_run(
         run_id: Annotated[str, Field(description="Run ID returned by prepare_run; copy verbatim.")],
@@ -408,77 +364,6 @@ def create_server(
         the newly issued work token and identifiers from this response.
         """
         return _dump(engine.continue_run(ContinueRunRequest.model_validate({"run_id": run_id})))
-
-    @server.tool(name="reprioritize_results")
-    def reprioritize_results(
-        run_id: str,
-        result_ids: list[str],
-        contract_version: Literal["1.0.0"],
-        idempotency_key: str,
-        requested_by: Actor,
-    ) -> dict[str, Any]:
-        """Durably reorder every still-pending Result without changing confirmed scope."""
-        return _dump(
-            engine.reprioritize_results(
-                ReprioritizeResultsRequest.model_validate(
-                    {
-                        "run_id": run_id,
-                        "result_ids": result_ids,
-                        "contract_version": contract_version,
-                        "idempotency_key": idempotency_key,
-                        "requested_by": requested_by,
-                    }
-                )
-            )
-        )
-
-    @server.tool(name="withdraw_result")
-    def withdraw_result(
-        run_id: str,
-        result_id: str,
-        reason: str,
-        contract_version: Literal["1.0.0"],
-        idempotency_key: str,
-        requested_by: Actor,
-    ) -> dict[str, Any]:
-        """Withdraw one pending Result at its safe boundary; other Results continue."""
-        return _dump(
-            engine.withdraw_result(
-                WithdrawResultRequest.model_validate(
-                    {
-                        "run_id": run_id,
-                        "result_id": result_id,
-                        "reason": reason,
-                        "contract_version": contract_version,
-                        "idempotency_key": idempotency_key,
-                        "requested_by": requested_by,
-                    }
-                )
-            )
-        )
-
-    @server.tool(name="reopen_result")
-    def reopen_result(
-        run_id: str,
-        result_id: str,
-        contract_version: Literal["1.0.0"],
-        idempotency_key: str,
-        requested_by: Actor,
-    ) -> dict[str, Any]:
-        """Reopen an explicitly withdrawn Result under the unchanged confirmed definition."""
-        return _dump(
-            engine.reopen_result(
-                ReopenResultRequest.model_validate(
-                    {
-                        "run_id": run_id,
-                        "result_id": result_id,
-                        "contract_version": contract_version,
-                        "idempotency_key": idempotency_key,
-                        "requested_by": requested_by,
-                    }
-                )
-            )
-        )
 
     @server.tool(name="get_work_context")
     def get_work_context(
@@ -754,22 +639,6 @@ def create_server(
             )
         )
 
-    @server.tool(name="classify_sources")
-    def classify_sources(
-        run_id: str,
-        work_token: WorkToken,
-        classifications: list[SourceClassificationInput],
-        contract_version: Literal["1.0.0"],
-    ) -> dict[str, Any]:
-        """Canonical pre-confirmation route for classifying issued Sources."""
-
-        return submit_source_classification(
-            run_id=run_id,
-            work_token=work_token,
-            classifications=classifications,
-            contract_version=contract_version,
-        )
-
     @server.tool(name="submit_result_resolution")
     def submit_result_resolution(
         run_id: str,
@@ -800,26 +669,6 @@ def create_server(
                     }
                 )
             )
-        )
-
-    @server.tool(name="resolve_result")
-    def resolve_result(
-        run_id: str,
-        work_token: WorkToken,
-        result: Result,
-        estimate: Estimate,
-        provenance_note: str,
-        contract_version: Literal["1.0.0"],
-    ) -> dict[str, Any]:
-        """Canonical pre-confirmation route for resolving one issued Result."""
-
-        return submit_result_resolution(
-            run_id=run_id,
-            work_token=work_token,
-            result=result,
-            estimate=estimate,
-            provenance_note=provenance_note,
-            contract_version=contract_version,
         )
 
     @server.tool(name="submit_domain_evidence")
@@ -982,44 +831,6 @@ def create_server(
                         "run_id": run_id,
                         "work_token": work_token,
                         "idempotency_key": _submission_key("domain-answers", work_token.token),
-                        "result_id": result_id,
-                        "domain_id": domain_id,
-                        "answers": answers,
-                        "assessor_inputs": assessor_inputs or {},
-                        "final_judgment_departures": final_judgment_departures or (),
-                        "project_rules": project_rules or (),
-                        "contract_version": contract_version,
-                    }
-                )
-            )
-        )
-
-    @server.tool(name="correct_domain_answers")
-    def correct_domain_answers(
-        run_id: str,
-        work_token: WorkToken,
-        result_id: str,
-        domain_id: str,
-        answers: list[SQAnswerInput],
-        contract_version: Literal["1.0.0"],
-        idempotency_key: str,
-        assessor_inputs: dict[str, bool] | None = None,
-        final_judgment_departures: list[FinalJudgmentInput] | None = None,
-        project_rules: list[RecordReference] | None = None,
-    ) -> dict[str, Any]:
-        """Correct one previously submitted Domain answer set using its original WorkToken.
-
-        This creates immutable successor SQ Answer revisions and refreshes only downstream
-        judgments, the Assessment, and its report; frozen evidence is reused unchanged. Supply
-        one new idempotency_key for each distinct correction, then reuse that same key to retry.
-        """
-        return _dump(
-            engine.correct_domain_answers(
-                CorrectDomainAnswersRequest.model_validate(
-                    {
-                        "run_id": run_id,
-                        "work_token": work_token,
-                        "idempotency_key": idempotency_key,
                         "result_id": result_id,
                         "domain_id": domain_id,
                         "answers": answers,
