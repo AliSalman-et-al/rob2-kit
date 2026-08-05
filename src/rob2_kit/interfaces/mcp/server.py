@@ -255,6 +255,7 @@ def _retrieval_error(error: RetrievalFailure) -> RetrievalErrorResponse:
 def create_server(
     *,
     determinism: QualificationDeterminism | None = None,
+    engine: RunEngine | None = None,
     route_groups: Sequence[MCPRouteGroup] = (),
 ) -> Any:
     """Build one stdio server with the release-owned canonical tools.
@@ -265,7 +266,7 @@ def create_server(
 
     from mcp.server import MCPServer
 
-    engine = RunEngine(determinism=determinism)
+    engine = engine or RunEngine(determinism=determinism)
     server = MCPServer("rob2-kit", version="0.1.0")
 
     @server.tool(name="prepare_run")
@@ -864,7 +865,19 @@ def main() -> None:
             "a release transaction is pending recovery; run a rob2 lifecycle command before "
             "starting the MCP server"
         )
-    create_server(determinism=_qualification_determinism_from_environment()).run(transport="stdio")
+    determinism = _qualification_determinism_from_environment()
+    qualification_flags = (
+        "ROB2_QUALIFICATION_ABSENT_FIXTURES",
+        "ROB2_QUALIFICATION_INJECTED_FAULT",
+        "ROB2_QUALIFICATION_RELEASE_FIXTURE",
+    )
+    if any(os.environ.get(flag) for flag in qualification_flags):
+        from rob2_kit.evaluation.qualification import qualification_engine_from_environment
+
+        engine = qualification_engine_from_environment(determinism, dict(os.environ))
+        create_server(engine=engine).run(transport="stdio")
+        return
+    create_server(determinism=determinism).run(transport="stdio")
 
 
 if __name__ == "__main__":

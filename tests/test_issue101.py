@@ -519,8 +519,8 @@ def test_real_mcp_registers_all_preconfirmation_route_names() -> None:
 
     assert {
         "prepare_run",
-        "classify_sources",
-        "resolve_result",
+        "submit_source_classification",
+        "submit_result_resolution",
         "submit_run_proposal",
         "confirm_run_definition",
     } <= names

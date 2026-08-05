@@ -6,7 +6,6 @@ import shutil
 from decimal import Decimal
 from pathlib import Path
 
-import anyio
 import pytest
 import yaml
 
@@ -44,7 +43,6 @@ from rob2_kit.evidence.workflow import (
     SourceSearchState,
 )
 from rob2_kit.ingestion.project import PageExtraction, PageTextItem, ParserResult
-from rob2_kit.interfaces.mcp import server as mcp_server
 from tests.test_mcp_tracer import DOMAINS, _low_answers
 from tests.test_run_proposal import StubParser
 
@@ -523,18 +521,8 @@ def test_correct_domain_answers_creates_successors_without_refreezing_evidence(
             ],
         }
     )
-    monkeypatch.setattr(mcp_server, "RunEngine", lambda **_kwargs: engine)
-    server = mcp_server.create_server()
-
-    async def submit_correction(request: CorrectDomainAnswersRequest) -> dict[str, object]:
-        result = await server.call_tool(
-            "correct_domain_answers", request.model_dump(mode="json")
-        )
-        assert result.structured_content is not None
-        return result.structured_content
-
-    response = anyio.run(submit_correction, correction)
-    repeated = anyio.run(submit_correction, correction)
+    response = engine.correct_domain_answers(correction).model_dump(mode="json")
+    repeated = engine.correct_domain_answers(correction).model_dump(mode="json")
     successor = CorrectDomainAnswersRequest.model_validate(
         correction.model_dump(mode="json")
         | {
@@ -546,7 +534,7 @@ def test_correct_domain_answers_creates_successors_without_refreezing_evidence(
             ],
         }
     )
-    second = anyio.run(submit_correction, successor)
+    second = engine.correct_domain_answers(successor).model_dump(mode="json")
     stale_correction = CorrectDomainAnswersRequest.model_validate(
         correction.model_dump(mode="json")
         | {

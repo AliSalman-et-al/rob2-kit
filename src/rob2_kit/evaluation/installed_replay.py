@@ -5,6 +5,12 @@ from __future__ import annotations
 from collections.abc import Mapping, Sequence
 from typing import Any
 
+# These names are intentionally owned by the installed package rather than by
+# the release script.  The script runs from a checkout, while the behaviour it
+# qualifies must be supplied by the wheel under test.
+RELEASE_LOCKED_OPTIONAL_FIXTURES = (
+    "registry_history",
+)
 
 def normalize_replay_trace(
     calls: Sequence[Mapping[str, Any]], *, final: Mapping[str, Any]
@@ -54,6 +60,17 @@ def semantic_projection(receipt: Mapping[str, Any]) -> dict[str, Any]:
 
 
 class _ReplayNormalizer:
+    _PRESERVED_IDENTITIES = {
+        "trial_id",
+        "result_id",
+        "randomization_id",
+        "domain_id",
+        "question_id",
+        "sq_id",
+        "source_id",
+        "unit_id",
+    }
+
     def __init__(self) -> None:
         self._handles: dict[tuple[str, str], str] = {}
         self._counts: dict[str, int] = {}
@@ -78,6 +95,10 @@ class _ReplayNormalizer:
     @staticmethod
     def _category(key: str, value: str) -> str | None:
         normalized = key.casefold().replace("-", "_")
+        if normalized in _ReplayNormalizer._PRESERVED_IDENTITIES:
+            return None
+        if normalized == "ledger_cursor":
+            return "ledger-cursor"
         if normalized in {"project_root", "path", "file_path", "artifact_path"}:
             return "path"
         if normalized.endswith("_token") or normalized in {"token", "work_token"}:

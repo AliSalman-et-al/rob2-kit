@@ -1,6 +1,9 @@
 """Installed-wheel replay qualification contract (#110)."""
 
 from pathlib import Path
+from types import SimpleNamespace
+
+import pytest
 
 from rob2_kit.evaluation.installed_replay import (
     normalize_replay_trace,
@@ -32,6 +35,18 @@ def test_installed_replay_normalizes_live_call_ids_and_projects_to_durable_seman
     assert trace["calls"][1]["arguments"]["run_id"] == "<run-1>"
     assert trace["calls"][1]["arguments"]["work_token"] == "<work-token-1>"
     assert trace["final"]["run_id"] == "<run-1>"
+    durable = normalize_semantic_value(
+        {
+            "ledger_cursor": "ledger:42",
+            "trial_id": "trial:alpha",
+            "result_id": "result:alpha-mortality",
+        }
+    )
+    assert durable == {
+        "ledger_cursor": "<ledger-cursor-1>",
+        "trial_id": "trial:alpha",
+        "result_id": "result:alpha-mortality",
+    }
     assert semantic_projection(
         {"run_state": "complete", "events": ["one"], "volatile": "ignore"}
     ) == {"run_state": "complete", "events": ["one"]}
@@ -59,16 +74,119 @@ def test_installed_replay_qualification_has_the_required_contract_matrix() -> No
         assert scenario in qualification
     assert "installed-replay.golden.json" in qualification
     assert "accept_golden" in qualification
+    assert "qualification_capabilities" not in qualification
+    assert 'issued_token = evidence["work_item"]["work_token"]' in qualification
+    assert '"sq_id": "sq:qualification-invalid"' in qualification
+    assert '"result_id": "result:other"' in qualification
+    assert '"unit_id": "unit:qualification-unknown"' in qualification
+    assert "protocol validation recovery" not in qualification
 
 
 def test_ci_qualifies_an_installed_replay_without_a_model_or_private_corpus() -> None:
     workflow = (ROOT / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8").casefold()
-    qualification = (ROOT / "scripts" / "release_qualification.py").read_text(
-        encoding="utf-8"
-    ).casefold()
+    qualification = (
+        (ROOT / "scripts" / "release_qualification.py").read_text(encoding="utf-8").casefold()
+    )
 
     assert "release_qualification.py" in workflow
     assert "model" not in workflow
     assert "private-release-evaluation.md" not in workflow
     assert "accept_golden(" in qualification
     assert "--accept-replay-golden" in qualification
+
+
+def test_qualification_composition_uses_real_engine_dependencies() -> None:
+    """The installed stdio composition root injects dependencies, not responses."""
+
+    from rob2_kit.evaluation.qualification import qualification_engine_from_environment
+    from rob2_kit.storage import LeaseConflictError
+
+    absent_registry = qualification_engine_from_environment(
+        None, {"ROB2_QUALIFICATION_ABSENT_FIXTURES": "registry_history"}
+    )
+    assert absent_registry._registry_adapter is not None
+    acquisition = absent_registry._registry_adapter.acquire(declared_nct_id="NCT00000001")
+    assert acquisition.resolution.explicit is True
+    assert acquisition.history is not None and acquisition.history.available is False
+    assert absent_registry._registry_client is None
+    with pytest.raises(ValueError, match="unknown qualification fixture"):
+        qualification_engine_from_environment(
+            None, {"ROB2_QUALIFICATION_ABSENT_FIXTURES": "visual_rendering"}
+        )
+
+    writer_conflict = qualification_engine_from_environment(
+        None, {"ROB2_QUALIFICATION_INJECTED_FAULT": "writer"}
+    )
+    with pytest.raises(LeaseConflictError, match="writer lease"):
+        writer_conflict._lease_acquirer(  # type: ignore[misc]
+            SimpleNamespace(events=lambda: (SimpleNamespace(operation="operation:run-confirmed"),)),
+            None,
+        )
+
+
+def test_qualification_receipt_records_stable_stage_timing_metadata() -> None:
+    qualification = (ROOT / "scripts" / "release_qualification.py").read_text(encoding="utf-8")
+
+    assert '"schema_version": 1' in qualification
+    assert '"stages": STAGE_TIMINGS' in qualification
+    assert '"total_duration_seconds"' in qualification
+    assert "timeout_seconds: int = 600" in qualification
+    assert "_terminate_process_tree(process)" in qualification
+    assert '"taskkill", "/PID"' in qualification
+
+
+def test_ci_runs_replay_without_repeating_the_release_lifecycle_gate() -> None:
+    workflow = (ROOT / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8")
+
+    assert "--replay-only" in workflow
+    assert "--skip-full-suite" in workflow
+    script = (ROOT / "scripts" / "release_qualification.py").read_text(encoding="utf-8")
+    assert '"qualification_mode": "replay_only" if replay_only else "full"' in script
+    assert '"skipped_stages": ["lifecycle"] if replay_only else []' in script
+    assert '"lifecycle": None if lifecycle is None else lifecycle.receipt' in script
+    assert (
+        "lifecycle = (\n            None\n            if replay_only\n"
+        "            else _qualify_lifecycle" in script
+    )
+
+
+def test_timeout_cleanup_remains_bounded_when_tree_termination_fails(monkeypatch) -> None:
+    """A broken taskkill path cannot cause an unbounded final communicate."""
+
+    import importlib.util
+    import subprocess
+    import sys
+
+    path = ROOT / "scripts" / "release_qualification.py"
+    spec = importlib.util.spec_from_file_location("release_qualification", path)
+    assert spec and spec.loader
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+
+    class Process:
+        returncode = None
+        pid = 123
+
+        def __init__(self) -> None:
+            self.timeouts: list[int] = []
+            self.killed = False
+
+        def communicate(self, *, timeout: int):
+            self.timeouts.append(timeout)
+            raise subprocess.TimeoutExpired(["qualification-child"], timeout)
+
+        def poll(self):
+            return None
+
+        def kill(self):
+            self.killed = True
+
+    process = Process()
+    monkeypatch.setattr(module.subprocess, "Popen", lambda *args, **kwargs: process)
+    monkeypatch.setattr(module, "_terminate_process_tree", lambda ignored: None)
+
+    with pytest.raises(RuntimeError, match="could not be reaped"):
+        module._run(["qualification-child"], cwd=ROOT, timeout_seconds=1)
+    assert process.timeouts == [1, 5, 5]
+    assert process.killed is True

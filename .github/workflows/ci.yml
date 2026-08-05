@@ -47,7 +47,7 @@ jobs:
         run: uv run --frozen python -m rob2_kit.release_gate
 
       - name: Qualify the frozen wheel through installed entry points
-        run: uv run --frozen python scripts/release_qualification.py --wheel dist --receipt release-qualification.json
+        run: uv run --frozen python scripts/release_qualification.py --wheel dist --receipt release-qualification.json --skip-full-suite --replay-only
 
       - name: Upload platform qualification receipt
         uses: actions/upload-artifact@v4

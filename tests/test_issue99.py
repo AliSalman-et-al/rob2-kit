@@ -109,7 +109,7 @@ def test_doctor_reports_runtime_and_ownership_without_mutating(tmp_path: Path, m
     monkeypatch.setattr(harness.subprocess, "run", lambda *_args, **_kwargs: object())
     project = tmp_path / "project"
     assert CliRunner().invoke(app, ["bootstrap", str(project)]).exit_code == 0
-    (project / ".rob2" / "runtime" / ".venv").mkdir()
+    (project / ".rob2" / "runtime" / ".venv").mkdir(exist_ok=True)
     monkeypatch.setattr(harness, "verify_mcp_launchability", lambda *_args: RUN_OPERATION_NAMES)
 
     before = (project / "rob2.lock").read_bytes()

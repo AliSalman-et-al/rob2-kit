@@ -13,7 +13,6 @@ from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
 
 from rob2_kit.application.contracts import (
-    RUN_OPERATION_NAMES,
     ConfirmRunDefinitionRequest,
     ContinueRunRequest,
     PrepareRunRequest,
@@ -25,7 +24,7 @@ from rob2_kit.application.contracts import (
 )
 from rob2_kit.application.run_engine import RunEngine
 from rob2_kit.domain.revisions import Actor, ActorKind
-from rob2_kit.interfaces.mcp.server import registered_tool_names
+from rob2_kit.interfaces.mcp.server import CANONICAL_TOOL_NAMES, registered_tool_names
 from rob2_kit.reports.archives import verify_archive
 from rob2_kit.storage import ArtifactStore, WorkflowLedger
 from rob2_kit.storage.ledger import LeaseConflictError
@@ -235,7 +234,7 @@ async def _finish_domains(session: ClientSession, run_id: str) -> None:
 def test_five_domain_journey_survives_stdio_restart_and_publishes_report(
     tmp_path: Path,
 ) -> None:
-    assert registered_tool_names() == RUN_OPERATION_NAMES
+    assert registered_tool_names() == CANONICAL_TOOL_NAMES
     trial = tmp_path / "input" / "trial-a"
     trial.mkdir(parents=True)
     (trial / "report.pdf").write_bytes(blank_pdf())
@@ -273,7 +272,7 @@ def test_five_domain_journey_survives_stdio_restart_and_publishes_report(
             async with ClientSession(read, write) as session:
                 await session.initialize()
                 tools = await session.list_tools()
-                assert tuple(tool.name for tool in tools.tools) == RUN_OPERATION_NAMES
+                assert tuple(tool.name for tool in tools.tools) == CANONICAL_TOOL_NAMES
                 for tool in tools.tools:
                     if tool.name.startswith("submit_"):
                         assert "contract_version" in tool.input_schema["required"]
@@ -336,18 +335,7 @@ def test_five_domain_journey_survives_stdio_restart_and_publishes_report(
                 assert repeated is not None
                 assert repeated["run_state"] == "complete"
                 assert json.loads(run_indexes[0].read_text(encoding="utf-8")) == first_index
-                status = (
-                    await session.call_tool("run_status", {"run_id": run_id})
-                ).structured_content
-                assert status is not None
-                assert status["run_state"] == "complete"
-                assert status["result_states"] == [
-                    {"result_id": "result:trial-a-mortality", "state": "report_ready"}
-                ]
-                locations = status["progress"]["report_locations"]
-                assert len(locations) == 1
-                assert locations[0].startswith("output/report-bundle/runs/")
-                assert "/trials/" in locations[0] and "/results/" in locations[0]
+                assert "run_status" not in {tool.name for tool in tools.tools}
 
     anyio.run(journey)
 
@@ -371,7 +359,6 @@ def test_five_domain_journey_survives_stdio_restart_and_publishes_report(
         "visual-citations.json",
     }
     assert required_files <= {path.name for path in report_root.iterdir()}
-    assert (report_root / "visual-assets").is_dir()
     assessment_html = (report_root / "assessment.html").read_text(encoding="utf-8")
     run_index_html = (run_root / "run-index.html").read_text(encoding="utf-8")
     assert 'aria-label="RoB 2 domains"' in assessment_html

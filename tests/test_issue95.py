@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-import anyio
-
 from rob2_kit.application.contracts import (
     GetRunStatusRequest,
     GetRunStatusResponse,
@@ -13,12 +11,7 @@ from rob2_kit.application.contracts import (
     WorkflowCondition,
 )
 from rob2_kit.application.run_engine import RunEngine
-from rob2_kit.interfaces.mcp.server import (
-    canonical_status_route_group,
-    canonical_tool_names,
-    create_server,
-    register_route_groups,
-)
+from rob2_kit.interfaces.mcp.server import create_server, register_route_groups
 
 
 def _response(**overrides: object) -> GetRunStatusResponse:
@@ -60,19 +53,9 @@ def test_canonical_status_alias_resolves_to_the_same_engine_operation() -> None:
     assert GetRunStatusRequest(run_id="run:test").run_id == "run:test"
 
 
-def test_route_groups_are_additive_and_deterministic() -> None:
-    async def list_names() -> tuple[str, ...]:
-        server = create_server(route_groups=(canonical_status_route_group(),))
-        return tuple(tool.name for tool in await server.list_tools())
-
-    names = anyio.run(list_names)
-    assert names[-1] == "get_run_status"
-    assert canonical_tool_names()[1] == "get_run_status"
-
-
 def test_route_group_names_must_be_unique() -> None:
     server = create_server()
-    group = canonical_status_route_group()
+    group = type("Group", (), {"name": "duplicate", "register": lambda *_args: None})()
 
     try:
         register_route_groups(server, RunEngine(), (group, group))

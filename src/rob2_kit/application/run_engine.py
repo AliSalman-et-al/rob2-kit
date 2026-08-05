@@ -11,6 +11,7 @@ import re
 import shutil
 import sqlite3
 import uuid
+from collections.abc import Callable
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any, Literal, cast
@@ -197,6 +198,7 @@ from rob2_kit.storage import (
     ArtifactStore,
     CommitResult,
     DependencyInput,
+    LeaseConflictError,
     LeaseToken,
     LedgerSchemaRefusal,
     RunIntegrityFailure,
@@ -587,6 +589,8 @@ class RunEngine:
         registry_adapter: Any | None = None,
         registry: Any | None = None,
         determinism: QualificationDeterminism | None = None,
+        report_projector_factory: Callable[[Any], Any] | None = None,
+        lease_acquirer: Callable[[WorkflowLedger, datetime], LeaseToken] | None = None,
     ) -> None:
         self._root: Path | None = None
         self._parser = parser
@@ -598,6 +602,8 @@ class RunEngine:
         self._authorized_root: Path | None = None
         self._owner_id = f"owner:run-engine:{os.getpid()}:{uuid.uuid4()}"
         self._determinism = determinism
+        self._report_projector_factory = report_projector_factory or ReportProjector
+        self._lease_acquirer = lease_acquirer
 
     def __getattr__(self, name: str) -> Any:
         """Expose the canonical status spelling without expanding the legacy API.
@@ -2703,15 +2709,36 @@ class RunEngine:
             raise ValueError("Source classification includes an unissued source identifier")
         if submitted_sources != issued_sources:
             raise ValueError("Source classification must include every inventory-ready source")
-        result = self._commit_submission(
-            ledger,
-            run_id=request.run_id,
-            scope=request.run_id,
-            operation="operation:submit-source-classification",
-            operation_key=request.idempotency_key,
-            artifact=request,
-            checkpoint="checkpoint:source-classification",
-        )
+        try:
+            result = self._commit_submission(
+                ledger,
+                run_id=request.run_id,
+                scope=request.run_id,
+                operation="operation:submit-source-classification",
+                operation_key=request.idempotency_key,
+                artifact=request,
+                checkpoint="checkpoint:source-classification",
+            )
+        except LeaseConflictError:
+            projection = self._projection(ledger, request.run_id)
+            return SubmitSourceClassificationResponse(
+                operation_id=self._read_operation_id(
+                    RunOperation.SUBMIT_SOURCE_CLASSIFICATION, request.run_id
+                ),
+                ledger_cursor=f"ledger:{len(ledger.events())}",
+                affected_scope=(request.run_id,),
+                condition=WorkflowCondition.RETRY,
+                committed=False,
+                next_permitted_action=RunOperation.CONTINUE_RUN,
+                run_id=request.run_id,
+                run_state=projection.run_state,
+                error=OperationError(
+                    error_class=ErrorClass.AUTHORITY,
+                    code="authorization_required",
+                    detail="Another live Run writer holds the project lease.",
+                    recovery=("Wait for the active writer, then continue the Run.",),
+                ),
+            )
         projection = self._projection(ledger, request.run_id)
         return SubmitSourceClassificationResponse(
             operation_id=result.operation_id,
@@ -4410,6 +4437,8 @@ class RunEngine:
         owners remain protected by the ledger's normal lease conflict checks.
         """
 
+        if self._lease_acquirer is not None:
+            return self._lease_acquirer(ledger, now)
         return ledger.acquire_lease(
             self._owner_id,
             now,
@@ -5162,7 +5191,12 @@ class RunEngine:
         if staging.exists():
             shutil.rmtree(staging)
         staging.mkdir(parents=True, exist_ok=True)
-        report_files = ReportProjector(assessment).bundle_files()
+        try:
+            report_files = self._report_projector_factory(assessment).bundle_files()
+        except (OSError, ValueError):
+            # The assessment checkpoint is durable.  Leave it assessment-ready
+            # so a later engine continuation can retry report publication.
+            return
         report_files.update(visual_assets)
         report_files["answers.json"] = (
             json.dumps(
@@ -5906,7 +5940,7 @@ class RunEngine:
                 ),
             }
         )
-        projector = ReportProjector(assessment)
+        projector = self._report_projector_factory(assessment)
         lease = self._acquire_lease(ledger, self._now())
         report_base = self._required_root() / "output" / "report-bundle"
         # Keep every report under a deterministic manifest-rooted
