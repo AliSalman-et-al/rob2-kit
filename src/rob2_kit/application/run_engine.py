@@ -38,6 +38,9 @@ from rob2_kit.application.contracts import (
     PrepareRunResponse,
     ReadEvidenceRequest,
     ReadEvidenceResponse,
+    ReopenResultRequest,
+    ReprioritizeResultsRequest,
+    ResultControlResponse,
     ResultStatus,
     RunDirective,
     RunOperation,
@@ -63,6 +66,7 @@ from rob2_kit.application.contracts import (
     TrialContextSummary,
     VisualInspectionArguments,
     VisualInspectionPath,
+    WithdrawResultRequest,
     WorkContext,
     WorkflowCondition,
     WorkItem,
@@ -359,6 +363,32 @@ class _ResultAssessmentCorrectedRecord(FrozenModel):
     run_id: Identifier
     result_id: Identifier
     correction_key: Identifier
+
+
+class _ResultWorkOrderRecord(FrozenModel):
+    """Attributable, confirmed-scope-preserving order for still-pending Results."""
+
+    run_id: Identifier
+    result_ids: tuple[Identifier, ...]
+    requested_by: Actor
+
+
+class _ResultWithdrawalRecord(FrozenModel):
+    """A human Result withdrawal that intentionally yields a diagnostic terminal state."""
+
+    run_id: Identifier
+    result_id: Identifier
+    trial_id: Identifier
+    reason: str
+    requested_by: Actor
+
+
+class _ResultReopenedRecord(FrozenModel):
+    """An explicit reopening of a previously withdrawn Result."""
+
+    run_id: Identifier
+    result_id: Identifier
+    requested_by: Actor
 
 
 class _RunReconciledRecord(FrozenModel):
@@ -1101,6 +1131,466 @@ class RunEngine:
             run_id=run_id,
             run_state=projection.run_state,
             proposal=proposal,
+        )
+
+    def reprioritize_results(self, request: ReprioritizeResultsRequest) -> ResultControlResponse:
+        """Persist a complete replacement order for pending Results only."""
+
+        ledger = self._bound_ledger(request.run_id)
+        projection = self._projection(ledger, request.run_id)
+        if request.requested_by.kind is not ActorKind.HUMAN:
+            return self._result_control_refusal(
+                ledger,
+                request.run_id,
+                RunOperation.REPRIORITIZE_RESULTS,
+                projection,
+                detail="Only a human may reprioritize pending Results.",
+                recovery=("Resubmit this request with an attributable human actor.",),
+                code="human_actor_required",
+            )
+        existing = self._event_for_operation_key(ledger, request.idempotency_key)
+        if existing is not None:
+            if existing.operation == "operation:result-work-order" and (
+                _ResultWorkOrderRecord.model_validate(self._event_payload(ledger, existing))
+                == _ResultWorkOrderRecord(
+                    run_id=request.run_id,
+                    result_ids=request.result_ids,
+                    requested_by=request.requested_by,
+                )
+            ):
+                return self._result_control_duplicate(
+                    ledger, request.run_id, projection, existing, RunOperation.REPRIORITIZE_RESULTS
+                )
+            return self._result_control_key_conflict(
+                ledger, request.run_id, RunOperation.REPRIORITIZE_RESULTS, projection
+            )
+        if projection.run_state is not RunState.ASSESSING:
+            return self._result_control_refusal(
+                ledger,
+                request.run_id,
+                RunOperation.REPRIORITIZE_RESULTS,
+                projection,
+                detail="Results can be reprioritized only while the Run is assessing.",
+                recovery=("Continue the assessing Run from its durable checkpoint.",),
+            )
+        proposal = self._latest_proposal(ledger, request.run_id)
+        ordered = self._result_ids(ledger, request.run_id, proposal)
+        states = {item.result_id: item.state for item in projection.results}
+        pending = tuple(
+            result_id
+            for result_id in ordered
+            if states.get(result_id, ResultState.PENDING) is ResultState.PENDING
+        )
+        if set(request.result_ids) != set(pending) or len(request.result_ids) != len(pending):
+            return self._result_control_refusal(
+                ledger,
+                request.run_id,
+                RunOperation.REPRIORITIZE_RESULTS,
+                projection,
+                detail="Reprioritization must name each and only pending Results exactly once.",
+                recovery=("Read run_status and resubmit the current pending Result order.",),
+            )
+        now = self._now()
+        record = _ResultWorkOrderRecord(
+            run_id=request.run_id,
+            result_ids=request.result_ids,
+            requested_by=request.requested_by,
+        )
+        transition = self._transition(
+            scope=request.run_id,
+            operation="operation:result-work-order",
+            operation_key=request.idempotency_key,
+            entity_id=f"result-work-order:{self._digest(f'{request.run_id}|{request.idempotency_key}')}",
+            revision_id=f"revision:result-work-order-{self._digest(f'{request.run_id}|{request.idempotency_key}')}",
+            artifact=record,
+            checkpoint="checkpoint:result-work-order",
+            outcome=WorkflowEventOutcome.COMPLETED,
+            observed_at=now,
+            actor=request.requested_by,
+        )
+        committed = ledger.commit(transition, self._acquire_lease(ledger, now), now=now)
+        result_order = self._result_ids(ledger, request.run_id, proposal)
+        return ResultControlResponse(
+            operation_id=committed.operation_id,
+            ledger_cursor=f"ledger:{committed.sequence}",
+            affected_scope=(request.run_id,) + result_order,
+            condition=WorkflowCondition.ACCEPTED,
+            committed=not committed.duplicate,
+            next_permitted_action=RunOperation.CONTINUE_RUN,
+            run_id=request.run_id,
+            run_state=self._projection(ledger, request.run_id).run_state,
+            result_order=result_order,
+        )
+
+    def withdraw_result(self, request: WithdrawResultRequest) -> ResultControlResponse:
+        """Commit a Result-scoped diagnostic without blocking unaffected Results."""
+
+        ledger = self._bound_ledger(request.run_id)
+        projection = self._projection(ledger, request.run_id)
+        proposal = self._latest_proposal(ledger, request.run_id)
+        if request.requested_by.kind is not ActorKind.HUMAN:
+            return self._result_control_refusal(
+                ledger,
+                request.run_id,
+                RunOperation.WITHDRAW_RESULT,
+                projection,
+                detail="Only a human may withdraw a Result.",
+                recovery=("Resubmit this request with an attributable human actor.",),
+                code="human_actor_required",
+                result_id=request.result_id,
+            )
+        existing = self._event_for_operation_key(ledger, request.idempotency_key)
+        if existing is not None:
+            withdrawal = self._event_for_operation_key(
+                ledger, f"{request.idempotency_key}:withdrawal"
+            )
+            if (
+                existing.operation == "operation:result-diagnostic-ready"
+                and withdrawal is not None
+                and withdrawal.operation == "operation:result-withdrawn"
+                and _ResultWithdrawalRecord.model_validate(self._event_payload(ledger, withdrawal))
+                == _ResultWithdrawalRecord(
+                    run_id=request.run_id,
+                    result_id=request.result_id,
+                    trial_id=self._trial_id_for_result(request.result_id) or "trial:unknown",
+                    reason=request.reason,
+                    requested_by=request.requested_by,
+                )
+            ):
+                return self._result_control_duplicate(
+                    ledger,
+                    request.run_id,
+                    projection,
+                    existing,
+                    RunOperation.WITHDRAW_RESULT,
+                    result_id=request.result_id,
+                    result_state=ResultState.DIAGNOSTIC_READY,
+                )
+            return self._result_control_key_conflict(
+                ledger,
+                request.run_id,
+                RunOperation.WITHDRAW_RESULT,
+                projection,
+                result_id=request.result_id,
+            )
+        allowed = self._result_ids(ledger, request.run_id, proposal)
+        if projection.run_state is not RunState.ASSESSING or request.result_id not in allowed:
+            return self._result_control_refusal(
+                ledger,
+                request.run_id,
+                RunOperation.WITHDRAW_RESULT,
+                projection,
+                detail="The requested Result is not active in this assessing Run.",
+                recovery=("Read run_status and choose an active pending Result.",),
+                result_id=request.result_id,
+            )
+        states = {item.result_id: item.state for item in projection.results}
+        if states.get(request.result_id, ResultState.PENDING) is not ResultState.PENDING:
+            return self._result_control_refusal(
+                ledger,
+                request.run_id,
+                RunOperation.WITHDRAW_RESULT,
+                projection,
+                detail="A Result can be withdrawn only at a pending safe boundary.",
+                recovery=("Continue the Result to its next durable safe boundary.",),
+                result_id=request.result_id,
+            )
+        trial_id = self._trial_id_for_result(request.result_id)
+        if trial_id is None:
+            return self._result_control_refusal(
+                ledger,
+                request.run_id,
+                RunOperation.WITHDRAW_RESULT,
+                projection,
+                detail="The requested Result has no exact Trial dependency.",
+                recovery=("Resolve the Result against its Trial before withdrawing it.",),
+                result_id=request.result_id,
+            )
+        now = self._now()
+        record = _ResultWithdrawalRecord(
+            run_id=request.run_id,
+            result_id=request.result_id,
+            trial_id=trial_id,
+            reason=request.reason,
+            requested_by=request.requested_by,
+        )
+        suffix = self._digest(f"{request.run_id}|{request.result_id}|{request.idempotency_key}")
+        withdrawal_transition = self._transition(
+            scope=request.result_id,
+            operation="operation:result-withdrawn",
+            operation_key=f"{request.idempotency_key}:withdrawal",
+            entity_id=f"result-withdrawal:{suffix}",
+            revision_id=f"revision:result-withdrawal-{suffix}",
+            artifact=record,
+            checkpoint=f"checkpoint:result-withdrawal-{suffix}",
+            outcome=WorkflowEventOutcome.TRIAL_PROBLEM,
+            observed_at=now,
+            actor=request.requested_by,
+        )
+        diagnostic_transition = self._transition(
+            scope=request.result_id,
+            operation="operation:result-diagnostic-ready",
+            operation_key=request.idempotency_key,
+            entity_id=f"result-withdrawal-diagnostic:{suffix}",
+            revision_id=f"revision:result-withdrawal-diagnostic-{suffix}",
+            artifact=_ResultDiagnosticRecord(
+                run_id=request.run_id,
+                result_id=request.result_id,
+                trial_id=trial_id,
+                reason=f"Result withdrawn by {request.requested_by.display_name}: {request.reason}",
+            ),
+            checkpoint=f"checkpoint:result-diagnostic-{suffix}",
+            outcome=WorkflowEventOutcome.TRIAL_PROBLEM,
+            observed_at=now,
+            actor=request.requested_by,
+        )
+        committed = self._commit_transitions(
+            ledger,
+            (withdrawal_transition, diagnostic_transition),
+            self._acquire_lease(ledger, now),
+            now=now,
+        )
+        self._commit_run_completed_if_ready(ledger, request.run_id)
+        next_projection = self._projection(ledger, request.run_id)
+        return ResultControlResponse(
+            operation_id=committed[-1].operation_id,
+            ledger_cursor=f"ledger:{committed[-1].sequence}",
+            affected_scope=(request.run_id, request.result_id),
+            condition=WorkflowCondition.ACCEPTED,
+            committed=any(not item.duplicate for item in committed),
+            next_permitted_action=RunOperation.CONTINUE_RUN,
+            run_id=request.run_id,
+            run_state=next_projection.run_state,
+            result_id=request.result_id,
+            result_state=ResultState.DIAGNOSTIC_READY,
+            result_order=self._result_ids(ledger, request.run_id, proposal),
+        )
+
+    def reopen_result(self, request: ReopenResultRequest) -> ResultControlResponse:
+        """Reopen only a human-withdrawn diagnostic under unchanged confirmed scope."""
+
+        ledger = self._bound_ledger(request.run_id)
+        projection = self._projection(ledger, request.run_id)
+        if request.requested_by.kind is not ActorKind.HUMAN:
+            return self._result_control_refusal(
+                ledger,
+                request.run_id,
+                RunOperation.REOPEN_RESULT,
+                projection,
+                detail="Only a human may reopen a withdrawn Result.",
+                recovery=("Resubmit this request with an attributable human actor.",),
+                code="human_actor_required",
+                result_id=request.result_id,
+            )
+        existing = self._event_for_operation_key(ledger, request.idempotency_key)
+        if existing is not None:
+            if existing.operation == "operation:result-reopened" and (
+                _ResultReopenedRecord.model_validate(self._event_payload(ledger, existing))
+                == _ResultReopenedRecord(
+                    run_id=request.run_id,
+                    result_id=request.result_id,
+                    requested_by=request.requested_by,
+                )
+            ):
+                return self._result_control_duplicate(
+                    ledger,
+                    request.run_id,
+                    projection,
+                    existing,
+                    RunOperation.REOPEN_RESULT,
+                    result_id=request.result_id,
+                    result_state=ResultState.PENDING,
+                )
+            return self._result_control_key_conflict(
+                ledger,
+                request.run_id,
+                RunOperation.REOPEN_RESULT,
+                projection,
+                result_id=request.result_id,
+            )
+        if projection.run_state not in {RunState.ASSESSING, RunState.COMPLETE}:
+            return self._result_control_refusal(
+                ledger,
+                request.run_id,
+                RunOperation.REOPEN_RESULT,
+                projection,
+                detail="A Result can be reopened only while the Run is assessing or complete.",
+                recovery=("Resolve the Run blocker before reopening this Result.",),
+                result_id=request.result_id,
+            )
+        if not any(
+            event.operation == "operation:result-withdrawn" and event.scope == request.result_id
+            for event in self._events_for_run(ledger, request.run_id)
+        ):
+            return self._result_control_refusal(
+                ledger,
+                request.run_id,
+                RunOperation.REOPEN_RESULT,
+                projection,
+                detail="Only an explicitly withdrawn Result can be reopened.",
+                recovery=("Choose a Result with a durable human withdrawal record.",),
+                result_id=request.result_id,
+            )
+        state = next(
+            (item.state for item in projection.results if item.result_id == request.result_id), None
+        )
+        if state is not ResultState.DIAGNOSTIC_READY:
+            return self._result_control_refusal(
+                ledger,
+                request.run_id,
+                RunOperation.REOPEN_RESULT,
+                projection,
+                detail="A Result can be reopened only from its diagnostic-ready safe boundary.",
+                recovery=("Wait for the Result diagnostic checkpoint, then retry.",),
+                result_id=request.result_id,
+            )
+        now = self._now()
+        suffix = self._digest(f"{request.run_id}|{request.result_id}|{request.idempotency_key}")
+        transition = self._transition(
+            scope=request.result_id,
+            operation="operation:result-reopened",
+            operation_key=request.idempotency_key,
+            entity_id=f"result-reopened:{suffix}",
+            revision_id=f"revision:result-reopened-{suffix}",
+            artifact=_ResultReopenedRecord(
+                run_id=request.run_id,
+                result_id=request.result_id,
+                requested_by=request.requested_by,
+            ),
+            checkpoint=f"checkpoint:result-reopened-{suffix}",
+            outcome=WorkflowEventOutcome.COMPLETED,
+            observed_at=now,
+            actor=request.requested_by,
+        )
+        transitions = (transition,)
+        if projection.run_state is RunState.COMPLETE:
+            proposal = self._latest_proposal(ledger, request.run_id)
+            reopen_run = self._transition(
+                scope=request.run_id,
+                operation="operation:run-reopened",
+                operation_key=f"{request.idempotency_key}:run",
+                entity_id=f"run-reopened:{suffix}",
+                revision_id=f"revision:run-reopened-{suffix}",
+                artifact=_RunReopenedRecord(
+                    run_id=request.run_id,
+                    input_snapshot_hash=proposal.input_snapshot_hash,
+                    invalidated_result_ids=(request.result_id,),
+                ),
+                checkpoint=f"checkpoint:run-reopened-{suffix}",
+                outcome=WorkflowEventOutcome.WORK_REQUIRED,
+                observed_at=now,
+                actor=request.requested_by,
+            )
+            transitions = (reopen_run, transition)
+        committed = self._commit_transitions(
+            ledger,
+            transitions,
+            self._acquire_lease(ledger, now),
+            now=now,
+        )
+        proposal = self._latest_proposal(ledger, request.run_id)
+        return ResultControlResponse(
+            operation_id=committed[-1].operation_id,
+            ledger_cursor=f"ledger:{committed[-1].sequence}",
+            affected_scope=(request.run_id, request.result_id),
+            condition=WorkflowCondition.ACCEPTED,
+            committed=any(not item.duplicate for item in committed),
+            next_permitted_action=RunOperation.CONTINUE_RUN,
+            run_id=request.run_id,
+            run_state=self._projection(ledger, request.run_id).run_state,
+            result_id=request.result_id,
+            result_state=ResultState.PENDING,
+            result_order=self._result_ids(ledger, request.run_id, proposal),
+        )
+
+    def _result_control_refusal(
+        self,
+        ledger: WorkflowLedger,
+        run_id: Identifier,
+        operation: RunOperation,
+        projection: LifecycleProjection,
+        *,
+        detail: str,
+        recovery: tuple[str, ...],
+        code: Literal["invalid_result_control", "human_actor_required"] = "invalid_result_control",
+        result_id: Identifier | None = None,
+    ) -> ResultControlResponse:
+        """Return an expected Result-control refusal through the public envelope."""
+
+        proposal = self._latest_proposal(ledger, run_id)
+        return ResultControlResponse(
+            operation_id=self._read_operation_id(operation, run_id),
+            ledger_cursor=f"ledger:{len(ledger.events())}",
+            affected_scope=tuple(item for item in (run_id, result_id) if item is not None),
+            condition=WorkflowCondition.STALE,
+            committed=False,
+            next_permitted_action=RunOperation.CONTINUE_RUN,
+            run_id=run_id,
+            run_state=projection.run_state,
+            result_id=result_id,
+            result_state=self._result_state(projection, result_id)
+            if result_id is not None
+            else None,
+            result_order=self._result_ids(ledger, run_id, proposal),
+            error=OperationError(
+                error_class=(
+                    ErrorClass.AUTHORITY
+                    if code == "human_actor_required"
+                    else ErrorClass.CORRECTABLE
+                ),
+                code=code,
+                detail=detail,
+                recovery=recovery,
+            ),
+        )
+
+    def _result_control_duplicate(
+        self,
+        ledger: WorkflowLedger,
+        run_id: Identifier,
+        projection: LifecycleProjection,
+        event: WorkflowEvent,
+        operation: RunOperation,
+        *,
+        result_id: Identifier | None = None,
+        result_state: ResultState | None = None,
+    ) -> ResultControlResponse:
+        """Return the original durable control outcome for an identical retry."""
+
+        proposal = self._latest_proposal(ledger, run_id)
+        return ResultControlResponse(
+            operation_id=event.operation_id,
+            ledger_cursor=f"ledger:{event.sequence}",
+            affected_scope=tuple(item for item in (run_id, result_id) if item is not None),
+            condition=WorkflowCondition.ACCEPTED,
+            committed=False,
+            next_permitted_action=RunOperation.CONTINUE_RUN,
+            run_id=run_id,
+            run_state=projection.run_state,
+            result_id=result_id,
+            result_state=result_state,
+            result_order=self._result_ids(ledger, run_id, proposal),
+        )
+
+    def _result_control_key_conflict(
+        self,
+        ledger: WorkflowLedger,
+        run_id: Identifier,
+        operation: RunOperation,
+        projection: LifecycleProjection,
+        *,
+        result_id: Identifier | None = None,
+    ) -> ResultControlResponse:
+        return self._result_control_refusal(
+            ledger,
+            run_id,
+            operation,
+            projection,
+            detail=(
+                "The idempotency key was already committed for different Result-control content."
+            ),
+            recovery=("Use a new idempotency key for this changed Result-control request.",),
+            result_id=result_id,
         )
 
     def run_status(self, request: RunStatusRequest) -> RunStatusResponse:
@@ -4641,8 +5131,7 @@ class RunEngine:
                     "matched_rule_ids": ready.matched_rule_ids,
                     "assessor_inputs": ready.assessor_inputs,
                     "judgment_references": [
-                        reference.model_dump(mode="json")
-                        for reference in ready.judgment_references
+                        reference.model_dump(mode="json") for reference in ready.judgment_references
                     ],
                     "final_judgment_references": [
                         reference.model_dump(mode="json")
@@ -7538,8 +8027,13 @@ class RunEngine:
                 result_id=unresolved_result_id,
                 trial_id=unresolved_trial,
             )
+        result_states = {item.result_id: item.state for item in projection.results}
         result_ids = tuple(
-            result_id for result_id in all_result_ids if result_id not in failed_result_ids
+            result_id
+            for result_id in all_result_ids
+            if result_id not in failed_result_ids
+            and result_states.get(result_id)
+            not in {ResultState.DIAGNOSTIC_READY, ResultState.REPORT_READY}
         )
         if not result_ids and all_result_ids:
             return None
@@ -7730,9 +8224,27 @@ class RunEngine:
         if definition is None:
             return ()
         active_ids = self._active_result_ids(ledger, run_id)
-        ordered_ids = tuple(
+        confirmed_order = tuple(
             result_id for result_id in proposal.result_ids if result_id in active_ids
         )
+        confirmed_order += tuple(sorted(active_ids - set(confirmed_order)))
+        ordered_ids = confirmed_order
+        for event in reversed(self._events_for_run(ledger, run_id)):
+            if event.operation != "operation:result-work-order":
+                continue
+            try:
+                work_order = _ResultWorkOrderRecord.model_validate(
+                    self._event_payload(ledger, event)
+                )
+            except ValueError:
+                continue
+            if set(work_order.result_ids).issubset(active_ids):
+                ordered_ids = work_order.result_ids + tuple(
+                    result_id
+                    for result_id in confirmed_order
+                    if result_id not in work_order.result_ids
+                )
+            break
         ids = list(ordered_ids)
         ids.extend(sorted(active_ids - set(ordered_ids)))
         allowed_event_ids = set(ids)
@@ -10188,6 +10700,22 @@ class RunEngine:
             state.value: sum(1 for item in projection.results if item.state is state)
             for state in (ResultState.REPORT_READY, ResultState.DIAGNOSTIC_READY)
         }
+        proposal = self._latest_proposal(ledger, run_id)
+        result_order = self._result_ids(ledger, run_id, proposal)
+        state_by_result = {item.result_id: item.state for item in projection.results}
+        result_state_counts = {
+            state.value: sum(
+                1
+                for result_id in result_order
+                if state_by_result.get(result_id, ResultState.PENDING) is state
+            )
+            for state in ResultState
+        }
+        warning_items = list(proposal.source_limitations)
+        reconciliation = self._latest_reconciliation(ledger, run_id)
+        if reconciliation is not None:
+            warning_items.extend(item.detail for item in reconciliation.material_ambiguities)
+        warnings = tuple(dict.fromkeys(warning_items))
         terminal_sequences = {
             item.last_sequence
             for item in projection.results
@@ -10223,8 +10751,16 @@ class RunEngine:
                 if item is not None
             ),
             blockers=blockers,
+            warnings=warnings,
+            result_state_counts=result_state_counts,
             terminal_result_counts=terminal_counts,
             report_locations=report_locations,
+            result_order=result_order,
+            next_action=(
+                work_item.operation
+                if work_item is not None
+                else self._next_action_for_state(projection.run_state)
+            ),
         )
 
     def _schema_refusal(

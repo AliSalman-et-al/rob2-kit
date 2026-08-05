@@ -14,6 +14,9 @@ EXPECTED_OPERATIONS = (
     "prepare_run",
     "run_status",
     "continue_run",
+    "reprioritize_results",
+    "withdraw_result",
+    "reopen_result",
     "get_work_context",
     "submit_run_proposal",
     "confirm_run_definition",
@@ -28,12 +31,12 @@ EXPECTED_OPERATIONS = (
 )
 
 
-def test_fixed_run_engine_surface_has_fourteen_one_to_one_typed_operations() -> None:
+def test_fixed_run_engine_surface_has_seventeen_one_to_one_typed_operations() -> None:
     assert RUN_OPERATION_NAMES == EXPECTED_OPERATIONS
     assert tuple(contract.operation.value for contract in RUN_OPERATION_CONTRACTS) == (
         EXPECTED_OPERATIONS
     )
-    assert len(set(RUN_OPERATION_NAMES)) == 14
+    assert len(set(RUN_OPERATION_NAMES)) == 17
 
     for contract in RUN_OPERATION_CONTRACTS:
         method = getattr(RunEngine, contract.operation.value)

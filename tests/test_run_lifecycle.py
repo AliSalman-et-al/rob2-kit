@@ -76,6 +76,7 @@ EXPECTED_RESULT_TRANSITIONS = {
     },
     ResultState.DIAGNOSTIC_READY: {
         ResultLifecycleEvent.INVALIDATED: ResultState.PENDING,
+        ResultLifecycleEvent.REOPENED: ResultState.PENDING,
     },
 }
 

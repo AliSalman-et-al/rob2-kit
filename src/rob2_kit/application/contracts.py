@@ -56,6 +56,9 @@ class RunOperation(StrEnum):
     PREPARE_RUN = "prepare_run"
     RUN_STATUS = "run_status"
     CONTINUE_RUN = "continue_run"
+    REPRIORITIZE_RESULTS = "reprioritize_results"
+    WITHDRAW_RESULT = "withdraw_result"
+    REOPEN_RESULT = "reopen_result"
     GET_WORK_CONTEXT = "get_work_context"
     SUBMIT_RUN_PROPOSAL = "submit_run_proposal"
     CONFIRM_RUN_DEFINITION = "confirm_run_definition"
@@ -122,8 +125,12 @@ class RunProgress(FrozenModel):
     committed_checkpoint: Identifier | None = None
     current_scope: tuple[Identifier, ...] = ()
     blockers: tuple[str, ...] = ()
+    warnings: tuple[str, ...] = ()
+    result_state_counts: dict[str, int] = Field(default_factory=dict)
     terminal_result_counts: dict[str, int] = Field(default_factory=dict)
     report_locations: tuple[str, ...] = ()
+    result_order: tuple[Identifier, ...] = ()
+    next_action: RunOperation | None = None
 
 
 class IntegrityFailure(FrozenModel):
@@ -145,6 +152,8 @@ class OperationError(FrozenModel):
         "second_project_root",
         "stale_proposal",
         "stale_work",
+        "invalid_result_control",
+        "human_actor_required",
         "authorization_required",
         "material_ambiguity",
     ]
@@ -578,6 +587,37 @@ GetRunStatusRequest = RunStatusRequest
 
 class ContinueRunRequest(FrozenModel):
     run_id: Identifier
+
+
+class ReprioritizeResultsRequest(FrozenModel):
+    """Durably reorder only Results that have not started preparation."""
+
+    contract_version: Literal["1.0.0"]
+    run_id: Identifier
+    result_ids: tuple[Identifier, ...] = Field(min_length=1)
+    idempotency_key: Identifier
+    requested_by: Actor
+
+
+class WithdrawResultRequest(FrozenModel):
+    """Stop one Result at a checkpoint while retaining its diagnostic record."""
+
+    contract_version: Literal["1.0.0"]
+    run_id: Identifier
+    result_id: Identifier
+    reason: str = Field(min_length=1)
+    idempotency_key: Identifier
+    requested_by: Actor
+
+
+class ReopenResultRequest(FrozenModel):
+    """Return an explicitly withdrawn Result to the pending work order."""
+
+    contract_version: Literal["1.0.0"]
+    run_id: Identifier
+    result_id: Identifier
+    idempotency_key: Identifier
+    requested_by: Actor
 
 
 class GetWorkContextRequest(FrozenModel):
@@ -1022,6 +1062,14 @@ class ContinueRunResponse(OperationResponse):
     integrity: IntegrityFailure | None = None
 
 
+class ResultControlResponse(OperationResponse):
+    run_id: Identifier
+    run_state: RunState
+    result_id: Identifier | None = None
+    result_state: ResultState | None = None
+    result_order: tuple[Identifier, ...] = ()
+
+
 class GetWorkContextResponse(OperationResponse):
     run_id: Identifier
     run_state: RunState
@@ -1138,6 +1186,24 @@ RUN_OPERATION_CONTRACTS: tuple[OperationContract, ...] = (
             WorkflowCondition.RUN_COMPLETE,
             WorkflowCondition.RUN_INTEGRITY_FAILURE,
         ),
+    ),
+    OperationContract(
+        operation=RunOperation.REPRIORITIZE_RESULTS,
+        request_type=ReprioritizeResultsRequest,
+        response_type=ResultControlResponse,
+        expected_conditions=(WorkflowCondition.ACCEPTED, WorkflowCondition.STALE),
+    ),
+    OperationContract(
+        operation=RunOperation.WITHDRAW_RESULT,
+        request_type=WithdrawResultRequest,
+        response_type=ResultControlResponse,
+        expected_conditions=(WorkflowCondition.ACCEPTED, WorkflowCondition.STALE),
+    ),
+    OperationContract(
+        operation=RunOperation.REOPEN_RESULT,
+        request_type=ReopenResultRequest,
+        response_type=ResultControlResponse,
+        expected_conditions=(WorkflowCondition.ACCEPTED, WorkflowCondition.STALE),
     ),
     OperationContract(
         operation=RunOperation.GET_WORK_CONTEXT,

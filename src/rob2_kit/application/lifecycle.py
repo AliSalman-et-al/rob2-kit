@@ -57,6 +57,7 @@ class ResultLifecycleEvent(StrEnum):
     DIAGNOSTIC_READY = "result_diagnostic_ready"
     INVALIDATED = "result_invalidated"
     ASSESSMENT_CORRECTED = "result_assessment_corrected"
+    REOPENED = "result_reopened"
 
 
 class LifecycleEvent(FrozenModel):
@@ -171,6 +172,7 @@ RESULT_TRANSITIONS: Final[dict[ResultState | None, dict[ResultLifecycleEvent, Re
     },
     ResultState.DIAGNOSTIC_READY: {
         ResultLifecycleEvent.INVALIDATED: ResultState.PENDING,
+        ResultLifecycleEvent.REOPENED: ResultState.PENDING,
     },
 }
 
@@ -312,6 +314,7 @@ def lifecycle_event_for(event: WorkflowEvent) -> RunLifecycleEvent | ResultLifec
         "operation:result-diagnostic-ready": ResultLifecycleEvent.DIAGNOSTIC_READY,
         "operation:result-invalidated": ResultLifecycleEvent.INVALIDATED,
         "operation:result-assessment-corrected": ResultLifecycleEvent.ASSESSMENT_CORRECTED,
+        "operation:result-reopened": ResultLifecycleEvent.REOPENED,
     }
     return aliases.get(operation)
 

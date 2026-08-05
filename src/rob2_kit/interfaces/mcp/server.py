@@ -41,6 +41,8 @@ from rob2_kit.application.contracts import (
     PrepareRunResponse,
     ReadEvidenceRequest,
     RecordReference,
+    ReopenResultRequest,
+    ReprioritizeResultsRequest,
     Result,
     RetrievalErrorResponse,
     RunOperation,
@@ -61,6 +63,7 @@ from rob2_kit.application.contracts import (
     SubmitRunProposalRequest,
     SubmitSourceClassificationRequest,
     VisualRenderRequest,
+    WithdrawResultRequest,
     WorkflowCondition,
     WorkToken,
 )
@@ -81,6 +84,9 @@ CANONICAL_TOOL_NAMES: tuple[str, ...] = (
     "prepare_run",
     "get_run_status",
     "continue_run",
+    "reprioritize_results",
+    "withdraw_result",
+    "reopen_result",
     "get_work_context",
     "search_evidence",
     "read_evidence",
@@ -402,6 +408,77 @@ def create_server(
         the newly issued work token and identifiers from this response.
         """
         return _dump(engine.continue_run(ContinueRunRequest.model_validate({"run_id": run_id})))
+
+    @server.tool(name="reprioritize_results")
+    def reprioritize_results(
+        run_id: str,
+        result_ids: list[str],
+        contract_version: Literal["1.0.0"],
+        idempotency_key: str,
+        requested_by: Actor,
+    ) -> dict[str, Any]:
+        """Durably reorder every still-pending Result without changing confirmed scope."""
+        return _dump(
+            engine.reprioritize_results(
+                ReprioritizeResultsRequest.model_validate(
+                    {
+                        "run_id": run_id,
+                        "result_ids": result_ids,
+                        "contract_version": contract_version,
+                        "idempotency_key": idempotency_key,
+                        "requested_by": requested_by,
+                    }
+                )
+            )
+        )
+
+    @server.tool(name="withdraw_result")
+    def withdraw_result(
+        run_id: str,
+        result_id: str,
+        reason: str,
+        contract_version: Literal["1.0.0"],
+        idempotency_key: str,
+        requested_by: Actor,
+    ) -> dict[str, Any]:
+        """Withdraw one pending Result at its safe boundary; other Results continue."""
+        return _dump(
+            engine.withdraw_result(
+                WithdrawResultRequest.model_validate(
+                    {
+                        "run_id": run_id,
+                        "result_id": result_id,
+                        "reason": reason,
+                        "contract_version": contract_version,
+                        "idempotency_key": idempotency_key,
+                        "requested_by": requested_by,
+                    }
+                )
+            )
+        )
+
+    @server.tool(name="reopen_result")
+    def reopen_result(
+        run_id: str,
+        result_id: str,
+        contract_version: Literal["1.0.0"],
+        idempotency_key: str,
+        requested_by: Actor,
+    ) -> dict[str, Any]:
+        """Reopen an explicitly withdrawn Result under the unchanged confirmed definition."""
+        return _dump(
+            engine.reopen_result(
+                ReopenResultRequest.model_validate(
+                    {
+                        "run_id": run_id,
+                        "result_id": result_id,
+                        "contract_version": contract_version,
+                        "idempotency_key": idempotency_key,
+                        "requested_by": requested_by,
+                    }
+                )
+            )
+        )
 
     @server.tool(name="get_work_context")
     def get_work_context(
