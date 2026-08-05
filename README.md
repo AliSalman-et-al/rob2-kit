@@ -40,3 +40,6 @@ uv run --locked --project . rob2-mcp
 
 To declare exact Trial × Result identities before preparation begins, see
 [declaring exact Results](docs/RESULT-DECLARATIONS.md).
+
+For the install-to-report path, examples, safe recovery, and local evaluation,
+see the [natural-language user journey](docs/USER-JOURNEY.md).

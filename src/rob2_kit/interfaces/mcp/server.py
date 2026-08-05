@@ -300,12 +300,14 @@ def create_server(
             Field(description="Optional supported scope; omit to use project configuration."),
         ] = None,
     ) -> dict[str, Any]:
-        """Prepare or resume a project.
+        """When to use: begin or reconnect to one assessment project.
 
-        ``project_root`` is required on every new session, including a resumed
-        conversation. Pass ``authorized=true`` only after explicit operator
-        authorization. A changed project root is a distinct-root error; do not
-        weaken that invariant or infer a root from prior context.
+        Prerequisite: provide the explicit project root and operator authorization.
+        Safe default: resume the Current run at the same root. Not for: silently
+        replacing it; use ``start_new`` only after an explicit replacement request.
+
+        Provide ``project_root`` on every new session and set ``authorized=true``
+        only after explicit operator authorization.
         """
         request = PrepareRunRequest.model_validate(
             {
@@ -347,10 +349,10 @@ def create_server(
     def continue_run(
         run_id: Annotated[str, Field(description="Run ID returned by prepare_run; copy verbatim.")],
     ) -> dict[str, Any]:
-        """Return the next authoritative run directive and bounded work item.
+        """When to use: ask the ledger for the next step in an active run.
 
-        After a retry or dynamic branch, discard prior work context and use only
-        the newly issued work token and identifiers from this response.
+        Prerequisite: copy the run ID from ``prepare_run``. Safe default: follow
+        only this returned directive. Not for: reusing a prior work item after a retry.
         """
         return _dump(engine.continue_run(ContinueRunRequest.model_validate({"run_id": run_id})))
 
@@ -368,9 +370,10 @@ def create_server(
             Field(description="Set true only when page coverage or parsing details are required."),
         ] = False,
     ) -> dict[str, Any]:
-        """Return bounded context for the issued work token.
+        """When to use: inspect the bounded context for the current work item.
 
-        Include source details only to inspect page coverage or parsing.
+        Prerequisite: use the fresh ``continue_run`` token. Safe default: leave
+        source details off. Not for: reconstructing scope from chat history.
         """
         return _dump(
             engine.get_work_context(
@@ -393,11 +396,10 @@ def create_server(
         ambiguities: list[RunProposalAmbiguity] | None = None,
         correction: str | None = None,
     ) -> dict[str, Any]:
-        """Submit a complete proposal revision or one explicit ID-bound correction.
+        """When to use: revise an unconfirmed Run proposal or submit its selection.
 
-        Natural-language correction text is intentionally narrow: name the
-        issued ``trial:``, ``outcome-target:``, and (for selection) ``result:``
-        or ``result-candidate:`` identities. Unsupported prose is rejected.
+        Prerequisite: copy the issued proposal token. Safe default: submit the
+        complete issued selection. Not for: free-form scope changes without issued IDs.
         """
         return _dump(
             engine.submit_run_proposal(
@@ -422,7 +424,11 @@ def create_server(
         confirmed_by: Actor,
         contract_version: Literal["1.0.0"],
     ) -> dict[str, Any]:
-        """Confirm once with an attributable Actor.
+        """When to use: record the human's approval of the latest Run definition.
+
+        Prerequisite: a current proposal token and attributable human Actor.
+        Safe default: confirm only after the proposal is understood. Not for:
+        approving evidence findings or an already superseded proposal.
 
         Example: confirmed_by={"kind":"human","actor_id":"actor:operator"}.
         """
@@ -476,22 +482,20 @@ def create_server(
             ),
         ] = None,
     ) -> CallToolResult:
-        """Search scoped evidence, e.g. query={"terms":["allocation"]}.
+        """When to use: search evidence for the active Domain question.
 
-        Prerequisite: call ``continue_run`` first and copy the current
-        ``submit_domain_evidence`` WorkToken. Results are engine-bounded pages;
-        use a returned ``unit_id`` with ``read_evidence`` next, and copy
-        ``next_cursor`` verbatim for the next page. No caller-supplied budget
-        or raw FTS syntax is accepted.
+        Prerequisite: a current ``submit_domain_evidence`` WorkToken. Safe default:
+        use structured terms and traverse returned pages. Not for: raw FTS, caller
+        budgets, or widening scope beyond the issued Result.
+
+        For example, use query={"terms":["allocation"]}. With
+        pass_kind="guidance_seed", reuse that exact label in the coverage receipt,
+        e.g. seed_family="seed:allocation"; for trial_follow_up or contradiction,
+        omit seed_family.
 
         During Domain evidence work, copy ``work_token`` from the active
         ``continue_run`` item. It supplies Trial/Result/Domain scope; never
         widen that scope with IDs from conversation history.
-
-        With pass_kind="guidance_seed", choose a stable identifier-shaped family
-        label such as seed_family="seed:allocation" and reuse that exact label in
-        the coverage receipt. For pass_kind="trial_follow_up" or "contradiction",
-        omit seed_family.
         """
         try:
             request = SearchEvidenceRequest.model_validate(
@@ -542,14 +546,11 @@ def create_server(
             Field(min_length=1, description="Opaque section cursor returned by a prior read."),
         ] = None,
     ) -> CallToolResult:
-        """Read one issued unit using bounded ``unit``, ``neighbors``, or ``section`` mode.
+        """When to use: read one canonical unit returned by scoped search.
 
-        Prerequisite: call ``continue_run`` and copy the active
-        ``submit_domain_evidence`` WorkToken. Use ``unit`` for the hit,
-        ``neighbors`` for same-zone nearby context, or ``section`` for bounded
-        same-zone continuation. Pass the opaque cursor only for a section
-        continuation; character and neighbor limits are engine-owned. Use
-        ``submit_domain_evidence`` next to record the resulting coverage.
+        Prerequisite: the issued unit ID and current evidence WorkToken. Safe default:
+        use ``unit`` mode. Not for: unbounded document reading; use ``neighbors`` or
+        paginated ``section`` only when the returned context calls for it.
         """
         try:
             return _wire_result(
@@ -586,7 +587,11 @@ def create_server(
         current_render: VisualRenderRequest | None = None,
         still_ambiguous: bool = True,
     ) -> dict[str, Any]:
-        """Request or escalate a bounded render for an issued visual candidate."""
+        """When to use: inspect an issued table, figure, or suspect text region.
+
+        Prerequisite: a visual candidate from current work. Safe default: request its
+        bounded render. Not for: rendering whole documents without a visual-inspection gate.
+        """
         return _dump(
             engine.inspect_visual_candidate(
                 InspectVisualCandidateRequest.model_validate(
@@ -608,9 +613,13 @@ def create_server(
         classifications: list[SourceClassificationInput],
         contract_version: Literal["1.0.0"],
     ) -> dict[str, Any]:
-        """Classify exactly the sources in get_work_context.
+        """When to use: classify Sources for the current proposal work item.
 
-        Use {"source_id":...,"roles":[...]}; proposal registry candidates are not issued.
+        Prerequisite: classifications issued by ``get_work_context``. Safe default:
+        classify only those Sources. Not for: treating registry orientation data as issued evidence.
+
+        Classify exactly the sources in get_work_context with
+        {"source_id":...,"roles":[...]}.
         """
         return _dump(
             engine.submit_source_classification(
@@ -637,11 +646,14 @@ def create_server(
         provenance_note: str,
         contract_version: Literal["1.0.0"],
     ) -> dict[str, Any]:
-        """Resolve a Result, not a ResultCandidate.
+        """When to use: resolve the one issued Trial-specific Result.
 
-        Set result_id from work_token.result_id and include randomization_id,
-        effect/outcome/analysis fields, source_locator, and comparison with
-        experimental_arm_id and comparator_arm_id. Use
+        Prerequisite: a current resolution token and attributable result locator.
+        Safe default: copy the issued Result ID and observed fields. Not for:
+        resolving a ResultCandidate or transferring evidence between Trials.
+
+        This is not a ResultCandidate: set ``result_id`` from ``work_token.result_id``
+        and include comparison arms such as ``experimental_arm_id``. For example,
         estimate={"value":0.61,"interval_lower":0.50,"interval_upper":0.75}.
         """
         return _dump(
@@ -754,7 +766,11 @@ def create_server(
             Field(description="Issued project-rule references that materially guide this bundle."),
         ] = None,
     ) -> dict[str, Any]:
-        """Freeze one Domain Evidence Bundle using the current work context.
+        """When to use: freeze the reviewed evidence for one active Domain.
+
+        Prerequisite: current Domain context and completed required search coverage.
+        Safe default: use exact issued ``passages``. Not for: mixing it with legacy
+        evidence inputs or treating an incomplete search as no information.
 
         Use passages using issued ``unit_id``, exact spans, and active
         ``question_ids``; this branch is mutually exclusive with legacy
@@ -809,9 +825,14 @@ def create_server(
         final_judgment_departures: list[FinalJudgmentInput] | None = None,
         project_rules: list[RecordReference] | None = None,
     ) -> dict[str, Any]:
-        """Answer every active question in get_work_context.
+        """When to use: answer every active question after its evidence is frozen.
 
-        Use yes, probably_yes, probably_no, no, or no_information. Omit inactive questions.
+        Prerequisite: current Domain answer token and bounded evidence context.
+        Safe default: answer active questions only. Not for: answering inactive questions
+        or editing a published report; corrections require an issued correction path.
+
+        Answer every active question in get_work_context with yes, probably_yes,
+        probably_no, no, or no_information.
         """
         return _dump(
             engine.submit_domain_answers(

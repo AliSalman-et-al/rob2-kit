@@ -24,6 +24,14 @@ SKILL_REFERENCE_FILENAMES = (
     "EVIDENCE-SEARCH.md",
     "SIGNALING-QUESTIONS.md",
 )
+JOURNEY_DOCUMENTATION_FILENAMES = ("USER-JOURNEY.md", "LOCAL-RUNBOOK.md")
+_OBSOLETE_DOCUMENTATION_TERMS = (
+    "run_status",
+    "classify_sources",
+    "resolve_result",
+    "correct_domain_answers",
+    "limitation field",
+)
 # This is an adapter permission boundary, not an assertion that the server has
 # no compatibility routes.  Skills may use only these stable workflow tools.
 SKILL_ALLOWED_TOOL_NAMES = (
@@ -96,6 +104,7 @@ def build_host_adapters(root: Path, *, package_version: str) -> ReleaseLock:
 
     root = root.resolve()
     validate_skill_contract(root)
+    validate_documentation_contract(root)
     canonical_skills = _canonical_skill_assets(root)
     launcher = _launcher(package_version)
     skill_pins = _skill_pins(canonical_skills)
@@ -180,6 +189,7 @@ def verify_host_adapters(root: Path) -> None:
 
     root = root.resolve()
     validate_skill_contract(root)
+    validate_documentation_contract(root)
     manifest = load_release_lock(root)
     canonical_skills = _canonical_skill_assets(root)
     skill_pins = _skill_pins(canonical_skills)
@@ -467,8 +477,7 @@ def validate_skill_contract(root: Path) -> None:
             raise ValueError(f"skill reference must not chain to another reference: {name}")
     assets = _canonical_skill_assets(root)
     skill_bodies = {
-        skill_name: paths.skill.read_text(encoding="utf-8")
-        for skill_name, paths in assets.items()
+        skill_name: paths.skill.read_text(encoding="utf-8") for skill_name, paths in assets.items()
     }
     pointers_by_skill = {
         skill_name: set(re.findall(r"\.\./references/([^/\s`]+\.md)", body))
@@ -478,7 +487,7 @@ def validate_skill_contract(root: Path) -> None:
     if pointers != set(SKILL_REFERENCE_FILENAMES):
         raise ValueError(
             "canonical skills must point directly to exactly the four shared references"
-    )
+        )
     for skill_name, paths in assets.items():
         body = skill_bodies[skill_name]
         front_matter, delimiter, content = body.removeprefix("---\n").partition("\n---\n")
@@ -507,6 +516,37 @@ def validate_skill_contract(root: Path) -> None:
         )
         if not set(required_references) <= pointers_by_skill[skill_name]:
             raise ValueError(f"canonical skill {skill_name} is missing a direct context pointer")
+
+
+def validate_documentation_contract(root: Path) -> None:
+    """Reject stale workflow vocabulary in the canonical and bundled journey docs."""
+
+    root = root.resolve()
+    documentation = tuple(root / "docs" / name for name in JOURNEY_DOCUMENTATION_FILENAMES) + tuple(
+        root / "docs" / name for name in SKILL_REFERENCE_FILENAMES
+    )
+    for path in documentation:
+        if not path.is_file():
+            raise ValueError(f"journey documentation is missing: {path.name}")
+        content = path.read_text(encoding="utf-8")
+        lowered = content.casefold()
+        for obsolete in _OBSOLETE_DOCUMENTATION_TERMS:
+            if obsolete in lowered:
+                raise ValueError(f"obsolete workflow term in documentation: {obsolete}")
+
+    journey = (root / "docs" / "USER-JOURNEY.md").read_text(encoding="utf-8").casefold()
+    version_marker = f"<!-- rob2-kit-contract-version: {CONTRACT_VERSION} -->".casefold()
+    if version_marker not in journey:
+        raise ValueError("journey documentation contract version diverges from the release")
+    required_topics = (
+        "install once",
+        "arrange inputs",
+        "ask naturally",
+        "troubleshoot safely",
+        "maintain the installation",
+    )
+    if any(topic not in journey for topic in required_topics):
+        raise ValueError("journey documentation is missing a required user path")
 
 
 def _validate_forward_fixtures(skill_name: str, path: Path) -> None:
