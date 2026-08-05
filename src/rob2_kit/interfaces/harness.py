@@ -60,8 +60,9 @@ def preview_upgrade_project(project_root: Path) -> dict[str, Any]:
     candidate_paths = _candidate_owned_source_paths(release_root)
     owned = current["owned_paths"]
     current_paths = set(owned) | set(_owned_metadata_paths(current))
-    additions = sorted(path for path in candidate_paths if path not in current_paths)
-    removals = sorted(path for path in current_paths if path not in candidate_paths)
+    target_paths = set(candidate_paths) | set(_owned_metadata_paths(current))
+    additions = sorted(path for path in target_paths if path not in current_paths)
+    removals = sorted(path for path in current_paths if path not in target_paths)
     replacements = sorted(
         path
         for path, source in candidate_paths.items()
@@ -1357,13 +1358,10 @@ def _remove_owned_host_configuration(root: Path, manifest: dict[str, Any]) -> No
     if _value_hash(claude_value) != expected_claude_hash:
         raise HarnessBootstrapError("Claude MCP entry differs from its ownership receipt")
     if claude_value is not None:
-        servers = claude.get("mcpServers")
-        if not isinstance(servers, dict):
+        if not isinstance(claude.get("mcpServers"), dict):
             raise HarnessBootstrapError("Claude MCP configuration is malformed")
-        del servers[_MCP_SERVER_NAME]
-        claude_path.write_text(
-            json.dumps(claude, indent=2, sort_keys=True) + "\n", encoding="utf-8"
-        )
+        rendered = _remove_json_object_member(_read_utf8_bytes(claude_path), _MCP_SERVER_NAME)
+        claude_path.write_bytes(rendered.encode())
 
 
 def _project_relative_path(root: Path, relative: str) -> Path:
@@ -1401,6 +1399,43 @@ def _read_utf8_bytes(path: Path) -> str:
     """Decode configuration text without normalizing user-owned line endings."""
 
     return path.read_bytes().decode("utf-8")
+
+
+def _remove_json_object_member(text: str, key: str) -> str:
+    """Delete one top-level JSON member without reformatting neighbouring user bytes."""
+
+    matches = list(re.finditer(rf'"{re.escape(key)}"\s*:\s*', text))
+    if len(matches) != 1:
+        raise HarnessBootstrapError(
+            "Claude MCP entry cannot be removed without touching user content"
+        )
+    member = matches[0]
+    try:
+        _value, value_end = json.JSONDecoder().raw_decode(text[member.end() :])
+    except json.JSONDecodeError as error:
+        raise HarnessBootstrapError("Claude MCP entry cannot be removed safely") from error
+    value_end += member.end()
+    after = value_end
+    while after < len(text) and text[after].isspace():
+        after += 1
+    if after < len(text) and text[after] == ",":
+        start = text.rfind("\n", 0, member.start()) + 1
+        if not text[start : member.start()].isspace():
+            start = member.start()
+        end = after + 1
+        if text.startswith("\r\n", end):
+            end += 2
+        elif text.startswith("\n", end):
+            end += 1
+        return text[:start] + text[end:]
+    before = text.rfind("\n", 0, member.start()) + 1
+    if not text[before : member.start()].isspace():
+        before = member.start()
+    while before > 0 and text[before - 1].isspace():
+        before -= 1
+    if before > 0 and text[before - 1] == ",":
+        return text[: before - 1] + text[value_end:]
+    return text[: member.start()] + text[value_end:]
 
 
 def _content_hash(path: Path) -> str:

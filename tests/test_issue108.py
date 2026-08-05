@@ -39,6 +39,12 @@ def test_upgrade_requires_a_preview_then_records_a_rollback_transaction(tmp_path
     preview = upgrade_project(tmp_path)
     assert preview["preview"] is True
     assert preview["user_action"].endswith("--apply PROJECT_ROOT.")
+    assert not set(preview["owned_removals"]) & {
+        "rob2.lock",
+        ".rob2/rob2.lock",
+        ".rob2/install-journal.json",
+        ".rob2/runtime",
+    }
     assert (tmp_path / "rob2.lock").read_bytes() == before
 
     upgraded = upgrade_project(tmp_path, apply=True)
@@ -86,6 +92,21 @@ def test_uninstall_removes_only_its_host_entries(tmp_path: Path) -> None:
     assert result["status"] == "uninstalled"
     assert "rob2-kit" not in (tmp_path / ".codex" / "config.toml").read_text(encoding="utf-8")
     assert '"unrelated"' in (tmp_path / ".mcp.json").read_text(encoding="utf-8")
+
+
+def test_uninstall_preserves_unrelated_claude_entry_bytes(tmp_path: Path) -> None:
+    (tmp_path / ".mcp.json").write_text(
+        '{"mcpServers":{"unrelated":{"command":"keep","args":["--exact"]}}}\n',
+        encoding="utf-8",
+    )
+    bootstrap_project(tmp_path)
+    claude_path = tmp_path / ".mcp.json"
+    before = claude_path.read_bytes()
+    unrelated_tail = before[before.index(b'    "unrelated"') :]
+
+    uninstall_project(tmp_path, apply=True)
+
+    assert claude_path.read_bytes().endswith(unrelated_tail)
 
 
 def test_uninstall_preserves_unmanaged_codex_bytes_and_refuses_managed_comments(

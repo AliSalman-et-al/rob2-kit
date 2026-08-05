@@ -71,24 +71,12 @@ from rob2_kit.evidence.errors import (
     invalid_request_from_validation,
 )
 from rob2_kit.evidence.search import ReadContextMode
+from rob2_kit.release import SKILL_ALLOWED_TOOL_NAMES
 
 # This is the release-owned, model-visible contract.  Engine maintenance
 # operations deliberately remain Python APIs; exposing them as MCP aliases
 # would make a running Harness depend on a different public contract.
-CANONICAL_TOOL_NAMES: tuple[str, ...] = (
-    "prepare_run",
-    "continue_run",
-    "get_work_context",
-    "submit_run_proposal",
-    "confirm_run_definition",
-    "search_evidence",
-    "read_evidence",
-    "inspect_visual_candidate",
-    "submit_source_classification",
-    "submit_result_resolution",
-    "submit_domain_evidence",
-    "submit_domain_answers",
-)
+CANONICAL_TOOL_NAMES = SKILL_ALLOWED_TOOL_NAMES
 
 
 class MCPRouteGroup(Protocol):
