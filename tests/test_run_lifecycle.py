@@ -60,6 +60,12 @@ EXPECTED_RESULT_TRANSITIONS = {
         ResultLifecycleEvent.INVALIDATED: ResultState.PENDING,
     },
     ResultState.ASSESSING: {
+        ResultLifecycleEvent.ASSESSMENT_READY: ResultState.ASSESSMENT_READY,
+        ResultLifecycleEvent.REPORT_READY: ResultState.REPORT_READY,
+        ResultLifecycleEvent.DIAGNOSTIC_READY: ResultState.DIAGNOSTIC_READY,
+        ResultLifecycleEvent.INVALIDATED: ResultState.PENDING,
+    },
+    ResultState.ASSESSMENT_READY: {
         ResultLifecycleEvent.REPORT_READY: ResultState.REPORT_READY,
         ResultLifecycleEvent.DIAGNOSTIC_READY: ResultState.DIAGNOSTIC_READY,
         ResultLifecycleEvent.INVALIDATED: ResultState.PENDING,

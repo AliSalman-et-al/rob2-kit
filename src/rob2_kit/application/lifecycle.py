@@ -32,6 +32,7 @@ class ResultState(StrEnum):
 
     PENDING = "pending"
     ASSESSING = "assessing"
+    ASSESSMENT_READY = "assessment_ready"
     REPORT_READY = "report_ready"
     DIAGNOSTIC_READY = "diagnostic_ready"
 
@@ -51,6 +52,7 @@ class RunLifecycleEvent(StrEnum):
 class ResultLifecycleEvent(StrEnum):
     DISCOVERED = "result_discovered"
     STARTED = "result_started"
+    ASSESSMENT_READY = "result_assessment_ready"
     REPORT_READY = "result_report_ready"
     DIAGNOSTIC_READY = "result_diagnostic_ready"
     INVALIDATED = "result_invalidated"
@@ -150,6 +152,12 @@ RESULT_TRANSITIONS: Final[dict[ResultState | None, dict[ResultLifecycleEvent, Re
         ResultLifecycleEvent.INVALIDATED: ResultState.PENDING,
     },
     ResultState.ASSESSING: {
+        ResultLifecycleEvent.ASSESSMENT_READY: ResultState.ASSESSMENT_READY,
+        ResultLifecycleEvent.REPORT_READY: ResultState.REPORT_READY,
+        ResultLifecycleEvent.DIAGNOSTIC_READY: ResultState.DIAGNOSTIC_READY,
+        ResultLifecycleEvent.INVALIDATED: ResultState.PENDING,
+    },
+    ResultState.ASSESSMENT_READY: {
         ResultLifecycleEvent.REPORT_READY: ResultState.REPORT_READY,
         ResultLifecycleEvent.DIAGNOSTIC_READY: ResultState.DIAGNOSTIC_READY,
         ResultLifecycleEvent.INVALIDATED: ResultState.PENDING,
@@ -299,6 +307,7 @@ def lifecycle_event_for(event: WorkflowEvent) -> RunLifecycleEvent | ResultLifec
         "operation:run-register-diagnostic-result": ResultLifecycleEvent.DISCOVERED,
         "operation:result-discovered": ResultLifecycleEvent.DISCOVERED,
         "operation:result-started": ResultLifecycleEvent.STARTED,
+        "operation:result-assessment-ready": ResultLifecycleEvent.ASSESSMENT_READY,
         "operation:result-report-ready": ResultLifecycleEvent.REPORT_READY,
         "operation:result-diagnostic-ready": ResultLifecycleEvent.DIAGNOSTIC_READY,
         "operation:result-invalidated": ResultLifecycleEvent.INVALIDATED,

@@ -246,7 +246,9 @@ class AssessmentView(ReportModel):
 class RunIndexResultView(ReportModel):
     trial_id: Identifier
     result_id: Identifier
-    state: str = Field(pattern=r"^(pending|assessing|report_ready|diagnostic_ready)$")
+    state: str = Field(
+        pattern=r"^(pending|assessing|assessment_ready|report_ready|diagnostic_ready)$"
+    )
     report: str = ""
     outcome: str = ""
     time_point: str = ""

@@ -28,7 +28,7 @@ from rob2_kit.application.contracts import (
     SubmitSourceClassificationRequest,
     WorkToken,
 )
-from rob2_kit.application.lifecycle import RunState
+from rob2_kit.application.lifecycle import ResultState, RunState
 from rob2_kit.application.run_engine import RunEngine
 from rob2_kit.domain.canonical import canonical_hash
 from rob2_kit.domain.evidence import EvidenceClaim
@@ -386,6 +386,67 @@ def _current_correction_token(
     )
     return WorkToken.model_validate(
         json.loads(ledger.artifacts.read(event.output_revision_hashes[0]))["correction_token"]
+    )
+
+
+def test_report_render_failure_preserves_assessment_ready_and_retries_only_materialization(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """The public continuation seam retries report publication without redoing science."""
+
+    trial = tmp_path / "input" / "report-retry"
+    trial.mkdir(parents=True)
+    (trial / "report.pdf").write_bytes(b"primary")
+    engine, run_id = _prepare_confirm(
+        tmp_path,
+        config=_config(_result("result:report-retry", "trial:report-retry")),
+    )
+    _classify_current_sources(engine, run_id)
+    from rob2_kit.application.run_engine import ReportProjector
+
+    original = ReportProjector.bundle_files
+    calls = 0
+
+    def fail_once(projector: ReportProjector) -> dict[str, bytes]:
+        nonlocal calls
+        calls += 1
+        if calls == 1:
+            raise OSError("render backend interrupted")
+        return original(projector)
+
+    monkeypatch.setattr(ReportProjector, "bundle_files", fail_once)
+    with pytest.raises(OSError, match="render backend interrupted"):
+        _finish_current_result(engine, run_id, prefix="report-retry")
+
+    ledger = engine._bound_ledger(run_id)
+    assessment_events = [
+        event
+        for event in ledger.events()
+        if event.operation == "operation:assessment-revision-frozen"
+    ]
+    assert len(assessment_events) == 1
+    assert engine.run_status(RunStatusRequest(run_id=run_id)).result_states[0].state is (
+        ResultState.ASSESSMENT_READY
+    )
+
+    monkeypatch.setattr(ReportProjector, "bundle_files", original)
+    monkeypatch.setattr(
+        engine,
+        "_materialize_terminal",
+        lambda *_args: pytest.fail("resume must not re-evaluate a frozen Assessment"),
+    )
+    continued = engine.continue_run(ContinueRunRequest(run_id=run_id))
+
+    assert continued.run_state is RunState.COMPLETE
+    assert len(
+        [
+            event
+            for event in ledger.events()
+            if event.operation == "operation:assessment-revision-frozen"
+        ]
+    ) == 1
+    assert engine.run_status(RunStatusRequest(run_id=run_id)).result_states[0].state is (
+        ResultState.REPORT_READY
     )
 
 

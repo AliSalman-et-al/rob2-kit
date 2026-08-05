@@ -494,6 +494,23 @@ class _ResultStartedRecord(FrozenModel):
     result_id: Identifier
 
 
+class _ResultAssessmentReadyRecord(FrozenModel):
+    """Scientific assessment checkpoint retained when report rendering fails."""
+
+    run_id: Identifier
+    result_id: Identifier
+    assessment_revision_id: Identifier
+    assessment: AssessmentView
+    answers: dict[Identifier, str]
+    rationales: dict[Identifier, str]
+    active_question_ids: tuple[Identifier, ...]
+    inactive_question_ids: tuple[Identifier, ...]
+    matched_rule_ids: tuple[Identifier, ...]
+    assessor_inputs: dict[Identifier, bool]
+    judgment_references: tuple[RecordReference, ...]
+    final_judgment_references: tuple[RecordReference, ...]
+
+
 class _ReportMaterializedRecord(FrozenModel):
     run_id: Identifier
     result_id: Identifier
@@ -1135,6 +1152,7 @@ class RunEngine:
             # checkpoint and commits one idempotent batch when bytes changed.
             self._reconcile_current_run(ledger, request.run_id)
             self._repair_report_publication(ledger, request.run_id)
+            self._resume_assessment_ready_reports(ledger, request.run_id)
             projection = self._projection(ledger, request.run_id)
         except (LifecycleIntegrityError, RunIntegrityFailure) as error:
             return ContinueRunResponse(
@@ -4490,6 +4508,216 @@ class RunEngine:
         self._regenerate_run_index(ledger, run_id)
         self._commit_run_completed_if_ready(ledger, run_id, lease=lease)
 
+    def _resume_assessment_ready_reports(self, ledger: WorkflowLedger, run_id: Identifier) -> None:
+        """Retry only deterministic report materialization after a rendering interruption."""
+
+        projection = self._projection(ledger, run_id)
+        if projection.run_state is not RunState.ASSESSING:
+            return
+        for result in projection.results:
+            if result.state is ResultState.ASSESSMENT_READY:
+                record = self._assessment_ready_record(ledger, run_id, result.result_id)
+                if record is None:
+                    raise RunIntegrityFailure(
+                        "assessment-ready Result is missing its materialization checkpoint"
+                    )
+                self._materialize_assessment_report(ledger, record)
+        self._repair_report_publication(ledger, run_id)
+
+    def _assessment_ready_record(
+        self, ledger: WorkflowLedger, run_id: Identifier, result_id: Identifier
+    ) -> _ResultAssessmentReadyRecord | None:
+        for event in reversed(self._events_for_run(ledger, run_id)):
+            if event.scope != result_id or event.operation != "operation:result-assessment-ready":
+                continue
+            return _ResultAssessmentReadyRecord.model_validate_json(
+                ledger.artifacts.read(event.output_revision_hashes[0])
+            )
+        return None
+
+    def _materialize_assessment_report(
+        self, ledger: WorkflowLedger, ready: _ResultAssessmentReadyRecord
+    ) -> None:
+        """Render one frozen Assessment checkpoint without re-evaluating scientific work."""
+
+        try:
+            citations, visual_assets = self._materialize_visual_assets(
+                ledger, ready.run_id, ready.result_id, ready.assessment.visual_citations
+            )
+        except VisualAssetMaterializationError as error:
+            reason = f"Visual citation assets could not be materialized: {error}"
+            diagnostic = self._materialize_diagnostic_bundle(
+                _ResultDiagnosticRecord(
+                    run_id=ready.run_id,
+                    result_id=ready.result_id,
+                    trial_id=ready.assessment.trial,
+                    reason=reason,
+                )
+            )
+            suffix = self._digest(f"{ready.run_id}|{ready.result_id}|visual-assets|{reason}")
+            now = self._now()
+            self._commit_transitions(
+                ledger,
+                (
+                    self._transition(
+                        scope=ready.result_id,
+                        operation="operation:result-diagnostic-ready",
+                        operation_key=f"idempotency:visual-assets-diagnostic-{suffix}",
+                        entity_id=f"result-diagnostic:{suffix}",
+                        revision_id=f"revision:result-diagnostic-{suffix}",
+                        artifact=diagnostic,
+                        checkpoint=f"checkpoint:visual-assets-diagnostic-{suffix}",
+                        outcome=WorkflowEventOutcome.TRIAL_PROBLEM,
+                        observed_at=now,
+                    ),
+                ),
+                self._acquire_lease(ledger, now),
+                now=now,
+            )
+            self._repair_report_publication(ledger, ready.run_id)
+            return
+        citations_by_id = {citation.citation_id: citation for citation in citations}
+        assessment = ready.assessment.model_copy(
+            update={
+                "visual_citations": citations,
+                "domains": tuple(
+                    domain.model_copy(
+                        update={
+                            "questions": tuple(
+                                question.model_copy(
+                                    update={
+                                        "evidence": tuple(
+                                            evidence.model_copy(
+                                                update={
+                                                    "visual_citation": citations_by_id.get(
+                                                        evidence.visual_citation.citation_id,
+                                                        evidence.visual_citation,
+                                                    )
+                                                }
+                                            )
+                                            if evidence.visual_citation is not None
+                                            else evidence
+                                            for evidence in question.evidence
+                                        )
+                                    }
+                                )
+                                for question in domain.questions
+                            )
+                        }
+                    )
+                    for domain in ready.assessment.domains
+                ),
+            }
+        )
+        digest = ready.assessment_revision_id.removeprefix("assessment:")
+        report_root = (
+            self._required_root()
+            / "output"
+            / "report-bundle"
+            / "runs"
+            / self._report_path_component(ready.run_id)
+            / "trials"
+            / self._report_path_component(assessment.trial)
+            / "results"
+            / self._report_path_component(ready.result_id)
+        )
+        if report_root.exists():
+            report_root = report_root / self._report_path_component(ready.assessment_revision_id)
+        if report_root.exists():
+            raise ValueError("the immutable report bundle already exists")
+        staging = report_root.parent / f".report-bundle-staging-{digest}"
+        if staging.exists():
+            shutil.rmtree(staging)
+        staging.mkdir(parents=True, exist_ok=True)
+        report_files = ReportProjector(assessment).bundle_files()
+        report_files.update(visual_assets)
+        report_files["answers.json"] = (
+            json.dumps(
+                {
+                    "answers": ready.answers,
+                    "rationales": ready.rationales,
+                    "active_question_ids": ready.active_question_ids,
+                    "inactive_question_ids": ready.inactive_question_ids,
+                    "matched_rule_ids": ready.matched_rule_ids,
+                    "assessor_inputs": ready.assessor_inputs,
+                    "judgment_references": [
+                        reference.model_dump(mode="json")
+                        for reference in ready.judgment_references
+                    ],
+                    "final_judgment_references": [
+                        reference.model_dump(mode="json")
+                        for reference in ready.final_judgment_references
+                    ],
+                },
+                sort_keys=True,
+                separators=(",", ":"),
+            ).encode()
+            + b"\n"
+        )
+        archive = ArchiveBuilder(ledger).build(
+            ready.assessment_revision_id,
+            pinned_files=self._verification_pins(),
+        )
+        receipt = verify_archive(archive)
+        if receipt.assessment_revision_id != ready.assessment_revision_id:
+            raise ValueError("Verification archive identity does not match report")
+        report_files["verification-archive.rob2.zip"] = archive
+        domain_judgments = {
+            domain.domain_id: JudgmentLevel(domain.judgment) for domain in assessment.domains
+        }
+        report_files["manifest.json"] = (
+            json.dumps(
+                {
+                    "assessment_revision_id": ready.assessment_revision_id,
+                    "result_id": ready.result_id,
+                    "overall_judgment": assessment.overall_judgment,
+                    "domains": domain_judgments,
+                    "files": {
+                        name: "sha256:" + hashlib.sha256(content).hexdigest()
+                        for name, content in report_files.items()
+                    },
+                },
+                sort_keys=True,
+                separators=(",", ":"),
+            ).encode()
+            + b"\n"
+        )
+        for name, content in report_files.items():
+            target = staging / name
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_bytes(content)
+        self._verify_staged_report_files(staging, report_files)
+        now = self._now()
+        report = _ReportMaterializedRecord(
+            run_id=ready.run_id,
+            result_id=ready.result_id,
+            assessment_revision_id=ready.assessment_revision_id,
+            overall_judgment=JudgmentLevel(assessment.overall_judgment),
+            domain_judgments=domain_judgments,
+            report_root=report_root.relative_to(self._required_root()).as_posix(),
+            artifact_names=tuple(sorted(report_files)),
+            staging_root=staging.relative_to(self._required_root()).as_posix(),
+        )
+        self._commit_transitions(
+            ledger,
+            (
+                self._transition(
+                    scope=ready.result_id,
+                    operation="operation:result-report-ready",
+                    operation_key=f"idempotency:result-report-ready-{digest}",
+                    entity_id=f"report:{digest}",
+                    revision_id=f"revision:report-{digest}",
+                    artifact=report,
+                    checkpoint="checkpoint:report-ready",
+                    outcome=WorkflowEventOutcome.PREPARATION_OUTCOME_REACHED,
+                    observed_at=now,
+                ),
+            ),
+            self._acquire_lease(ledger, now),
+            now=now,
+        )
+        self._repair_report_publication(ledger, ready.run_id)
+
     def _commit_transitions(
         self,
         ledger: WorkflowLedger,
@@ -5062,6 +5290,57 @@ class RunEngine:
         )
         if assessment_ref.revision_id != assessment_revision_id:
             raise ValueError("frozen Assessment revision identity does not match report")
+        assessment_state = self._result_state(self._projection(ledger, run_id), result_id)
+        readiness_transitions = []
+        if assessment_state is ResultState.PENDING:
+            readiness_transitions.append(
+                self._transition(
+                    scope=result_id,
+                    operation="operation:result-started",
+                    operation_key=f"idempotency:result-started-{assessment_digest}",
+                    entity_id=f"result-started:{assessment_digest}",
+                    revision_id=f"revision:result-started-{assessment_digest}",
+                    artifact=_ResultStartedRecord(run_id=run_id, result_id=result_id),
+                    checkpoint="checkpoint:result-started",
+                    outcome=WorkflowEventOutcome.COMPLETED,
+                    observed_at=self._now(),
+                )
+            )
+        if assessment_state in {ResultState.PENDING, ResultState.ASSESSING}:
+            readiness_transitions.append(
+                self._transition(
+                    scope=result_id,
+                    operation="operation:result-assessment-ready",
+                    operation_key=f"idempotency:result-assessment-ready-{assessment_digest}",
+                    entity_id=f"result-assessment:{assessment_digest}",
+                    revision_id=f"revision:result-assessment-{assessment_digest}",
+                    artifact=_ResultAssessmentReadyRecord(
+                        run_id=run_id,
+                        result_id=result_id,
+                        assessment_revision_id=assessment_revision_id,
+                        assessment=assessment,
+                        answers=answers,
+                        rationales=rationales,
+                        active_question_ids=evaluation.active_question_ids,
+                        inactive_question_ids=evaluation.inactive_question_ids,
+                        matched_rule_ids=evaluation.matched_rule_ids,
+                        assessor_inputs=evaluation.assessor_inputs,
+                        judgment_references=judgment_references,
+                        final_judgment_references=final_judgment_references,
+                    ),
+                    checkpoint="checkpoint:assessment-ready",
+                    outcome=WorkflowEventOutcome.COMPLETED,
+                    observed_at=self._now(),
+                )
+            )
+        if readiness_transitions:
+            now = self._now()
+            self._commit_transitions(
+                ledger,
+                tuple(readiness_transitions),
+                self._acquire_lease(ledger, now),
+                now=now,
+            )
         citations_by_id = {citation.citation_id: citation for citation in visual_citations}
         assessment = assessment.model_copy(
             update={
@@ -5186,7 +5465,6 @@ class RunEngine:
             artifact_names=tuple(sorted(report_files)),
             staging_root=staging.relative_to(self._required_root()).as_posix(),
         )
-        result_started = _ResultStartedRecord(run_id=run_id, result_id=result_id)
         transitions = [
             self._transition(
                 scope=result_id,
@@ -5200,21 +5478,6 @@ class RunEngine:
                 observed_at=now,
             ),
         ]
-        if self._result_state(self._projection(ledger, run_id), result_id) is ResultState.PENDING:
-            transitions.insert(
-                0,
-                self._transition(
-                    scope=result_id,
-                    operation="operation:result-started",
-                    operation_key=f"idempotency:result-started-{assessment_digest}",
-                    entity_id=f"result-started:{assessment_digest}",
-                    revision_id=f"revision:result-started-{assessment_digest}",
-                    artifact=result_started,
-                    checkpoint="checkpoint:result-started",
-                    outcome=WorkflowEventOutcome.COMPLETED,
-                    observed_at=now,
-                ),
-            )
         self._commit_transitions(ledger, tuple(transitions), lease, now=now)
         # The readiness transition is committed only after publication.  A
         # failed commit is rolled back by ``_commit_transitions`` to the
