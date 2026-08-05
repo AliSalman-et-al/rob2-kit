@@ -140,6 +140,7 @@ def upgrade_project(project_root: Path, *, apply: bool = False) -> dict[str, Any
             _commit_staged_runtime(root, staged_runtime, backup)
             staged_runtime = None
         _install_ownership_manifest(root, release_root, lock)
+        _update_pending_candidate_hashes(root)
         _verify_candidate_install(root, release_root)
         _write_journal(journal, "upgrade_complete", _changed_paths(root, snapshot), ())
         _update_pending_candidate_hashes(root)
@@ -947,36 +948,35 @@ def _load_ownership_manifest(root: Path) -> dict[str, Any]:
         or not isinstance(manifest.get("release"), dict)
     ):
         raise HarnessBootstrapError("ownership manifest is malformed or not owned by rob2-kit")
-    if any(
-        not isinstance(relative, str) or not _is_owned_generated_path(relative)
-        for relative in manifest["owned_paths"]
-    ):
+    canonical_paths = _canonical_owned_paths(_release_root())
+    if set(manifest["owned_paths"]) - canonical_paths:
         raise HarnessBootstrapError("ownership manifest contains an unexpected owned path")
     return manifest
 
 
-def _is_owned_generated_path(relative: str) -> bool:
-    """Keep a mutable manifest from claiming arbitrary project files."""
+def _canonical_owned_paths(release_root: Path) -> set[str]:
+    """Derive exact allowed paths from the installed release assets, never a receipt."""
 
-    candidate = Path(relative)
-    if candidate.is_absolute() or ".." in candidate.parts:
-        return False
-    path = candidate.as_posix()
-    if path.startswith((".rob2/adapters/", ".rob2/references/")):
-        return True
-    if path.startswith((".codex/skills/rob2-", ".claude/skills/rob2-")):
-        return True
-    if path.startswith((".codex/references/", ".claude/references/")):
-        return True
-    if path.startswith(".rob2/runtime/src/rob2_kit/"):
-        return True
-    if path in {
-        ".rob2/runtime/pyproject.toml",
-        ".rob2/runtime/uv.lock",
-        ".rob2/runtime/runtime-install.json",
-    }:
-        return True
-    return path.startswith(".rob2/runtime/") and path.endswith(".whl")
+    paths = set(_candidate_owned_source_paths(release_root))
+    runtime = _runtime_assets(release_root)
+    if runtime is not None:
+        paths.update(
+            {
+                ".rob2/runtime/pyproject.toml",
+                ".rob2/runtime/uv.lock",
+                ".rob2/runtime/runtime-install.json",
+                f".rob2/runtime/{_wheel_pin(release_root)['filename']}",
+            }
+        )
+    else:
+        source = release_root / "src" / "rob2_kit"
+        if source.is_dir():
+            paths.update(
+                (Path(".rob2/runtime/src/rob2_kit") / path.relative_to(source)).as_posix()
+                for path in source.rglob("*")
+                if path.is_file()
+            )
+    return paths
 
 
 def _owned_metadata_paths(manifest: dict[str, Any]) -> tuple[str, ...]:
@@ -1026,12 +1026,15 @@ def _validate_metadata_owned_files(root: Path, manifest: dict[str, Any]) -> None
                 "owned install journal differs; refusing to remove it"
             ) from error
         expected_keys = {"schema_version", "status", "changed_paths", "restored_paths"}
+        expected_status = (
+            "upgrade_complete" if (root / ".rob2" / "rollback.json").is_file() else "complete"
+        )
         if (
             not isinstance(payload, dict)
             or set(payload) != expected_keys
             or payload.get("schema_version") != 1
             or not isinstance(payload.get("status"), str)
-            or payload["status"] not in {"complete", "upgrade_complete"}
+            or payload["status"] != expected_status
             or not all(isinstance(path, str) for path in payload.get("changed_paths", ()))
             or not all(isinstance(path, str) for path in payload.get("restored_paths", ()))
         ):
