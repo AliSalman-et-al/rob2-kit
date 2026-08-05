@@ -128,6 +128,7 @@ def upgrade_project(project_root: Path, *, apply: bool = False) -> dict[str, Any
         # The rollback receipt is durable before any live release bytes move.
         # A hard interruption can therefore always recover the prior generation.
         _write_rollback_record(root, current, backup)
+        _update_pending_candidate_hashes(root)
         target_paths = set(candidate_paths) | set(_owned_metadata_paths(current))
         current_paths = set(current["owned_paths"]) | set(_owned_metadata_paths(current))
         _remove_owned_files(
@@ -141,6 +142,7 @@ def upgrade_project(project_root: Path, *, apply: bool = False) -> dict[str, Any
         _install_ownership_manifest(root, release_root, lock)
         _verify_candidate_install(root, release_root)
         _write_journal(journal, "upgrade_complete", _changed_paths(root, snapshot), ())
+        _update_pending_candidate_hashes(root)
         _pending_transaction_path(root).unlink()
     except Exception as error:
         _restore_managed_state(root, snapshot)
@@ -945,7 +947,33 @@ def _load_ownership_manifest(root: Path) -> dict[str, Any]:
         or not isinstance(manifest.get("release"), dict)
     ):
         raise HarnessBootstrapError("ownership manifest is malformed or not owned by rob2-kit")
+    if any(
+        not isinstance(relative, str) or not _is_owned_generated_path(relative)
+        for relative in manifest["owned_paths"]
+    ):
+        raise HarnessBootstrapError("ownership manifest contains an unexpected owned path")
     return manifest
+
+
+def _is_owned_generated_path(relative: str) -> bool:
+    """Keep a mutable manifest from claiming arbitrary project files."""
+
+    path = Path(relative).as_posix()
+    if path.startswith((".rob2/adapters/", ".rob2/references/")):
+        return True
+    if path.startswith((".codex/skills/rob2-", ".claude/skills/rob2-")):
+        return True
+    if path.startswith((".codex/references/", ".claude/references/")):
+        return True
+    if path.startswith(".rob2/runtime/src/rob2_kit/"):
+        return True
+    if path in {
+        ".rob2/runtime/pyproject.toml",
+        ".rob2/runtime/uv.lock",
+        ".rob2/runtime/runtime-install.json",
+    }:
+        return True
+    return path.startswith(".rob2/runtime/") and path.endswith(".whl")
 
 
 def _owned_metadata_paths(manifest: dict[str, Any]) -> tuple[str, ...]:
@@ -1000,6 +1028,16 @@ def _validate_metadata_owned_files(root: Path, manifest: dict[str, Any]) -> None
             or set(payload) != expected_keys
             or payload.get("schema_version") != 1
             or not isinstance(payload.get("status"), str)
+            or payload["status"]
+            not in {
+                "complete",
+                "rollback_succeeded",
+                "upgrade_complete",
+                "upgrade_rollback_succeeded",
+                "rollback_complete",
+                "started",
+                "upgrade_started",
+            }
             or not all(isinstance(path, str) for path in payload.get("changed_paths", ()))
             or not all(isinstance(path, str) for path in payload.get("restored_paths", ()))
         ):
@@ -1180,15 +1218,43 @@ def _write_pending_upgrade(
 ) -> None:
     """Durably describe how to restore before changing release-owned bytes."""
 
+    full_candidate_paths = sorted((*candidate_paths, *_owned_metadata_paths(manifest)))
+    hashes = dict(candidate_hashes or {})
+    for relative in full_candidate_paths:
+        current = _project_relative_path(root, relative)
+        if current.is_file() and relative not in hashes:
+            hashes[relative] = _content_hash(current)
     pending = {
         "schema_version": 1,
         "backup": backup.relative_to(root).as_posix(),
         "previous_paths": _lifecycle_snapshot_paths(root, manifest),
-        "candidate_paths": sorted((*candidate_paths, *_owned_metadata_paths(manifest))),
-        "candidate_hashes": candidate_hashes or {},
+        "candidate_paths": full_candidate_paths,
+        "candidate_hashes": hashes,
     }
     path = _pending_transaction_path(root)
     path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(pending, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
+
+def _update_pending_candidate_hashes(root: Path) -> None:
+    """Record generated metadata bytes before they can become recovery targets."""
+
+    path = _pending_transaction_path(root)
+    try:
+        pending = json.loads(path.read_text(encoding="utf-8"))
+        hashes = pending["candidate_hashes"]
+        paths = pending["candidate_paths"]
+    except (KeyError, OSError, TypeError, json.JSONDecodeError) as error:
+        raise HarnessBootstrapError(
+            "pending release transaction cannot record generated metadata"
+        ) from error
+    if not isinstance(hashes, dict) or not isinstance(paths, list):
+        raise HarnessBootstrapError("pending release transaction cannot record generated metadata")
+    for relative in paths:
+        if isinstance(relative, str):
+            candidate = _project_relative_path(root, relative)
+            if candidate.is_file():
+                hashes[relative] = _content_hash(candidate)
     path.write_text(json.dumps(pending, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
 
@@ -1254,7 +1320,7 @@ def _recover_interrupted_upgrade(root: Path) -> None:
         previous = backup / relative
         if previous.is_file():
             expected_hashes.add(_content_hash(previous))
-        if expected_hashes - {None} and _content_hash(current) not in expected_hashes:
+        if not expected_hashes - {None} or _content_hash(current) not in expected_hashes:
             raise HarnessBootstrapError(
                 f"interrupted release candidate differs: {relative}; refusing to discard it"
             )

@@ -200,6 +200,27 @@ def test_lifecycle_refuses_edited_release_lock_metadata(tmp_path: Path) -> None:
     assert lock.read_text(encoding="utf-8") == "USER EDIT\n"
 
 
+def test_uninstall_refuses_edited_journal_and_manifest_path_injection(tmp_path: Path) -> None:
+    bootstrap_project(tmp_path)
+    journal = tmp_path / ".rob2" / "install-journal.json"
+    payload = json.loads(journal.read_text(encoding="utf-8"))
+    payload["status"] = "user-edit"
+    journal.write_text(json.dumps(payload), encoding="utf-8")
+    with pytest.raises(HarnessBootstrapError, match="owned install journal differs"):
+        uninstall_project(tmp_path, apply=True)
+
+    bootstrap_project(tmp_path)
+    note = tmp_path / "notes.txt"
+    note.write_text("user note\n", encoding="utf-8")
+    manifest_path = tmp_path / "rob2.lock"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    manifest["owned_paths"]["notes.txt"] = harness._content_hash(note)
+    manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+    with pytest.raises(HarnessBootstrapError, match="unexpected owned path"):
+        uninstall_project(tmp_path, apply=True)
+    assert note.read_text(encoding="utf-8") == "user note\n"
+
+
 def test_pending_upgrade_recovers_before_the_next_lifecycle_action(tmp_path: Path) -> None:
     bootstrap_project(tmp_path)
     manifest = harness._load_ownership_manifest(tmp_path)
@@ -229,10 +250,8 @@ def test_pending_recovery_restores_host_files_and_cleans_staged_runtime(tmp_path
     harness._write_pending_upgrade(
         tmp_path, manifest, backup, tuple(harness._candidate_owned_source_paths(Path.cwd()))
     )
-    codex_before = (backup / ".codex" / "config.toml").read_bytes()
-    claude_before = (backup / ".mcp.json").read_bytes()
-    codex_path.write_text("corrupted\n", encoding="utf-8")
-    claude_path.write_text("{}\n", encoding="utf-8")
+    codex_before = codex_path.read_bytes()
+    claude_before = claude_path.read_bytes()
     stage = tmp_path / ".rob2" / "runtime-stage-interrupted"
     stage.mkdir()
     (stage / "partial").write_text("stale\n", encoding="utf-8")
