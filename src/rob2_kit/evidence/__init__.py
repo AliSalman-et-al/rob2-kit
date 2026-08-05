@@ -88,6 +88,7 @@ from rob2_kit.evidence.workflow import (
     derive_fact,
     freeze_evidence_bundle,
     materialize_evidence_claim,
+    verify_complete_search_coverage_receipt,
 )
 
 __all__ = [
@@ -158,6 +159,7 @@ __all__ = [
     "canonicalize_evidence_units",
     "freeze_evidence_bundle",
     "materialize_evidence_claim",
+    "verify_complete_search_coverage_receipt",
     "submit_visual_inspection",
     "RetrievalErrorCode",
     "RetrievalFailure",

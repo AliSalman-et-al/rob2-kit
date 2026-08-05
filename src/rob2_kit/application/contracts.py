@@ -240,6 +240,24 @@ class EvidenceConsiderationInput(FrozenModel):
             "limitations."
         ),
     )
+    superseded_by: Identifier | None = Field(
+        default=None,
+        description=(
+            "Evidence item that supersedes this one. Required only for superseded; it must be "
+            "recorded in the same conflict group."
+        ),
+    )
+
+    @model_validator(mode="after")
+    def validate_supersession(self) -> EvidenceConsiderationInput:
+        superseded = self.disposition is ConsiderationDisposition.SUPERSEDED
+        if superseded and (self.superseded_by is None or not self.basis):
+            raise ValueError("superseded evidence requires replacing item and chronology basis")
+        if not superseded and self.superseded_by is not None:
+            raise ValueError("superseded_by is valid only for superseded evidence")
+        if superseded and self.superseded_by == self.item_id:
+            raise ValueError("evidence cannot supersede itself")
+        return self
 
 
 class EvidencePassageInput(FrozenModel):
@@ -259,6 +277,13 @@ class EvidencePassageInput(FrozenModel):
     )
     claim_type: Identifier = Field(
         description="Attributable claim category, for example claim-type:randomization-method."
+    )
+    candidate_id: Identifier | None = Field(
+        default=None,
+        description=(
+            "Retained Evidence-candidate ID for this exact span. Required when the "
+            "submission includes Search coverage receipts."
+        ),
     )
     question_ids: tuple[Identifier, ...] = Field(
         min_length=1,

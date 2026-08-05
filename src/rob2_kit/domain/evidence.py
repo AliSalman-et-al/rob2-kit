@@ -45,11 +45,21 @@ class EvidenceConsideration(FrozenModel):
     item_id: Identifier
     disposition: ConsiderationDisposition
     basis: str | None = None
+    superseded_by: Identifier | None = None
 
     @model_validator(mode="after")
     def validate_basis(self) -> "EvidenceConsideration":
-        if self.disposition is ConsiderationDisposition.SUPERSEDED and not self.basis:
-            raise ValueError("superseded evidence requires an explicit chronology basis")
+        if self.disposition is ConsiderationDisposition.SUPERSEDED and (
+            not self.basis or self.superseded_by is None
+        ):
+            raise ValueError("superseded evidence requires replacement and chronology basis")
+        if (
+            self.disposition is not ConsiderationDisposition.SUPERSEDED
+            and self.superseded_by is not None
+        ):
+            raise ValueError("superseded_by is valid only for superseded evidence")
+        if self.superseded_by == self.item_id:
+            raise ValueError("evidence cannot supersede itself")
         if self.disposition is ConsiderationDisposition.UNRESOLVED and not self.basis:
             raise ValueError("unresolved evidence requires an explicit limitation")
         return self

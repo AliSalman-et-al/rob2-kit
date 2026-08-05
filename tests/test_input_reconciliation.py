@@ -17,6 +17,7 @@ from rob2_kit.application.contracts import (
     PrepareRunRequest,
     RunProposalSelection,
     RunStatusRequest,
+    SearchEvidenceRequest,
     SourceClassificationInput,
     SubmitDomainAnswersRequest,
     SubmitDomainEvidenceRequest,
@@ -26,10 +27,19 @@ from rob2_kit.application.contracts import (
 )
 from rob2_kit.application.lifecycle import RunState
 from rob2_kit.application.run_engine import RunEngine
+from rob2_kit.domain.canonical import canonical_hash
 from rob2_kit.domain.evidence import EvidenceClaim
 from rob2_kit.domain.results import Estimate, Result
-from rob2_kit.domain.revisions import Actor, ActorKind
-from rob2_kit.evidence.search import EvidenceScope, EvidenceSearchIndex
+from rob2_kit.domain.revisions import Actor, ActorKind, RecordReference
+from rob2_kit.evidence.search import EvidenceScope, EvidenceSearchIndex, SearchQuery
+from rob2_kit.evidence.workflow import (
+    SearchCoverageReceipt,
+    SearchPassKind,
+    SearchResultDisposition,
+    SearchResultDispositionKind,
+    SourceSearchCoverage,
+    SourceSearchState,
+)
 from rob2_kit.ingestion.project import PageExtraction, PageTextItem, ParserResult
 from tests.test_mcp_tracer import DOMAINS, _low_answers
 from tests.test_run_proposal import StubParser
@@ -199,6 +209,114 @@ def _classify_current_sources(engine: RunEngine, run_id: str) -> None:
     assert response.committed is True
 
 
+def _complete_passage_receipts(
+    engine: RunEngine,
+    run_id: str,
+    work: object,
+    *,
+    unit_id: str,
+) -> tuple[SearchCoverageReceipt, ...]:
+    """Build a real three-pass receipt for the structured passage fixture."""
+    token = getattr(work, "work_token")
+    result_id = getattr(work, "result_id")
+    result_spec = engine._result_spec_for(engine._bound_ledger(run_id), run_id, result_id)
+    assert result_spec is not None
+    proposal = engine._latest_proposal(engine._bound_ledger(run_id), run_id)
+    trial = next(item for item in proposal.initialization.trials if item.trial_id == token.trial_id)
+    inventory = trial.inventory
+    assert inventory is not None
+    result_ref = RecordReference(
+        entity_id=result_spec.entity_id,
+        revision_id=result_spec.revision_id,
+        content_hash=canonical_hash(result_spec),
+    )
+    inventory_suffix = engine._digest(
+        f"{run_id}|{result_id}|{result_ref.content_hash}|source-inventory"
+    )
+    receipts: list[SearchCoverageReceipt] = []
+    primary_question = DOMAINS["domain:randomization"][0]
+    for question_id in DOMAINS["domain:randomization"]:
+        seed_family = "seed:" + question_id.removeprefix("sq:").replace(":", "-")
+        queries = (
+            (SearchQuery(terms=("primary",)), SearchPassKind.GUIDANCE_SEED, seed_family),
+            (SearchQuery(terms=("followup",)), SearchPassKind.TRIAL_FOLLOW_UP, None),
+            (SearchQuery(terms=("contradiction",)), SearchPassKind.CONTRADICTION, None),
+        )
+        responses = tuple(
+            engine.search_evidence(
+                SearchEvidenceRequest(
+                    run_id=run_id,
+                    work_token=token,
+                    result_id=result_id,
+                    sq_id=question_id,
+                    query=query,
+                    pass_kind=pass_kind,
+                    seed_family=seed_family,
+                )
+            )
+            for query, pass_kind, seed_family in queries
+        )
+        assert all(response.executed_query is not None for response in responses)
+        retained = question_id == primary_question
+        receipt = SearchCoverageReceipt(
+            receipt_id=f"coverage:passage-{question_id.removeprefix('sq:').replace(':', '-')}",
+            sq_id=question_id,
+            snapshot_hash=responses[0].page.snapshot_hash,
+            policy_id=responses[0].page.policy_id,
+            policy_hash=responses[0].page.policy_hash,
+            result_spec=result_ref,
+            source_inventory=RecordReference(
+                entity_id=f"source-inventory:{result_id.removeprefix('result:')}",
+                revision_id=f"revision:source-inventory-{inventory_suffix}",
+                content_hash=canonical_hash(inventory),
+            ),
+            parse_record_hashes=tuple(
+                sorted(
+                    parse.output_hash
+                    for source in inventory.sources
+                    for parse in source.parse_records
+                )
+            ),
+            guidance_release_id="guidance:rob2-2019.1",
+            required_seed_families=(seed_family,),
+            completed_seed_families=(seed_family,),
+            completed_passes=tuple(pass_kind for _query, pass_kind, _seed in queries),
+            executed_queries=tuple(response.executed_query for response in responses),
+            returned_unit_ids=(unit_id,) if retained else (),
+            result_dispositions=(
+                (
+                    SearchResultDisposition(
+                        unit_id=unit_id,
+                        kind=SearchResultDispositionKind.RETAINED_CANDIDATE,
+                        candidate_id=unit_id,
+                    ),
+                )
+                if retained
+                else ()
+            ),
+            sources=tuple(
+                SourceSearchCoverage(
+                    source_id=source.source_id,
+                    state=SourceSearchState.SEARCHED,
+                    sufficiently_readable=True,
+                    artifact_hash=source.artifact_hash,
+                )
+                for source in inventory.sources
+            ),
+            inventory_source_ids=tuple(source.source_id for source in inventory.sources),
+            traversal_complete=True,
+            interrupted=False,
+        )
+        proof = receipt.model_dump(mode="json")
+        proof["recorder_proof"] = None
+        receipts.append(
+            SearchCoverageReceipt.model_validate(
+                receipt.model_dump(mode="json") | {"recorder_proof": canonical_hash(proof)}
+            )
+        )
+    return tuple(receipts)
+
+
 def _finish_current_result(
     engine: RunEngine, run_id: str, *, prefix: str = "reconciliation"
 ) -> None:
@@ -324,9 +442,11 @@ def test_domain_evidence_freezes_engine_issued_passages_without_host_hashes(
                 span_start=0,
                 span_end=len(unit.text),
                 claim_type="claim-type:randomization-method",
+                candidate_id=unit_id,
                 question_ids=(DOMAINS["domain:randomization"][0],),
             ),
         ),
+        coverage_receipts=_complete_passage_receipts(engine, run_id, work, unit_id=unit_id),
     )
     response = engine.submit_domain_evidence(request)
 
@@ -383,8 +503,12 @@ def test_domain_evidence_passage_can_select_to_unit_end_without_counting_charact
                     unit_id=unit.unit_id,
                     span_start=0,
                     claim_type="claim-type:randomization-method",
+                    candidate_id=unit.unit_id,
                     question_ids=(DOMAINS["domain:randomization"][0],),
                 ),
+            ),
+            coverage_receipts=_complete_passage_receipts(
+                engine, run_id, work, unit_id=unit.unit_id
             ),
         )
     )

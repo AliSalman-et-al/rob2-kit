@@ -22,6 +22,7 @@ from rob2_kit.evidence import (
     EvidenceSearchIndex,
     ExecutedSearchQuery,
     SearchCoverageReceipt,
+    SearchCoverageRecorder,
     SearchPassKind,
     SearchPolicy,
     SearchQuery,
@@ -36,6 +37,7 @@ from rob2_kit.evidence import (
     derive_fact,
     freeze_evidence_bundle,
     materialize_evidence_claim,
+    verify_complete_search_coverage_receipt,
 )
 
 NOW = datetime(2026, 7, 29, 12, tzinfo=UTC)
@@ -327,6 +329,121 @@ def test_coverage_receipt_requires_all_passes_results_and_safe_no_information_ba
     omitted["sources"] = []
     with pytest.raises(ValueError, match="source inventory"):
         SearchCoverageReceipt.model_validate(omitted)
+
+
+def test_complete_coverage_receipt_replays_every_scoped_page(tmp_path: Path) -> None:
+    index = EvidenceSearchIndex(tmp_path / "evidence.sqlite3")
+    index.replace_units((unit(1, "allocation envelope open"),))
+    recorder = SearchCoverageRecorder(
+        receipt_id="coverage:replay",
+        sq_id="sq:1.1",
+        snapshot_hash=index.search(SearchQuery(terms=("allocation",))).snapshot_hash,
+        policy_id="policy:evidence-search-1.0.0",
+        result_spec=RecordReference(
+            entity_id="result_spec:trial-1",
+            revision_id="revision:result-spec-1",
+            content_hash=HASH,
+        ),
+        source_inventory=RecordReference(
+            entity_id="inventory:trial-1",
+            revision_id="revision:inventory-1",
+            content_hash=HASH,
+        ),
+        parse_record_hashes=(HASH,),
+        guidance_release_id="guidance:rob2-2019.1",
+        required_seed_families=("seed:allocation",),
+        sources=(
+            SourceSearchCoverage(
+                source_id="source:report",
+                state=SourceSearchState.SEARCHED,
+                sufficiently_readable=True,
+            ),
+        ),
+        inventory_source_ids=("source:report",),
+    )
+    queries = (
+        (SearchQuery(terms=("allocation",)), SearchPassKind.GUIDANCE_SEED, "seed:allocation"),
+        (SearchQuery(terms=("envelope",)), SearchPassKind.TRIAL_FOLLOW_UP, None),
+        (SearchQuery(terms=("open",)), SearchPassKind.CONTRADICTION, None),
+    )
+    for query, pass_kind, seed_family in queries:
+        page = index.search(query)
+        recorder.record_page(
+            page,
+            index=index,
+            query=query,
+            pass_kind=pass_kind,
+            seed_family=seed_family,
+        )
+
+    duplicated_pass = complete_receipt().model_dump(mode="json")
+    duplicated_pass["executed_queries"][1]["query"] = duplicated_pass["executed_queries"][0][
+        "query"
+    ]
+    duplicated_pass["executed_queries"][1]["query_hash"] = duplicated_pass[
+        "executed_queries"
+    ][0]["query_hash"]
+    duplicated_pass["recorder_proof"] = None
+    duplicated_pass["recorder_proof"] = canonical_hash(duplicated_pass)
+    with pytest.raises(ValueError, match="every mandatory"):
+        SearchCoverageReceipt.model_validate(duplicated_pass)
+    duplicated_interrupted = dict(duplicated_pass)
+    duplicated_interrupted["interrupted"] = True
+    duplicated_interrupted["recorder_proof"] = None
+    duplicated_interrupted["recorder_proof"] = canonical_hash(duplicated_interrupted)
+    with pytest.raises(ValueError, match="every mandatory"):
+        SearchCoverageReceipt.model_validate(duplicated_interrupted)
+    recorder.record_disposition(
+        SearchResultDisposition(
+            unit_id="unit:report-001",
+            kind=SearchResultDispositionKind.IRRELEVANT,
+        )
+    )
+    receipt = recorder.freeze(completed_seed_families=("seed:allocation",))
+
+    verify_complete_search_coverage_receipt(receipt, index=index)
+
+    changed = receipt.model_dump(mode="json")
+    for query in changed["executed_queries"]:
+        query["returned_unit_ids"] = []
+    changed["returned_unit_ids"] = []
+    changed["result_dispositions"] = []
+    changed["recorder_proof"] = None
+    changed["recorder_proof"] = canonical_hash(changed)
+    tampered = SearchCoverageReceipt.model_validate(changed)
+    with pytest.raises(ValueError, match="omits or changes"):
+        verify_complete_search_coverage_receipt(tampered, index=index)
+
+    forged_policy = receipt.model_dump(mode="json")
+    forged_policy["policy_id"] = "policy:caller-selected"
+    forged_policy["policy_hash"] = canonical_hash(SearchPolicy(policy_id="policy:caller-selected"))
+    for query in forged_policy["executed_queries"]:
+        query["policy_id"] = "policy:caller-selected"
+        query["policy_hash"] = forged_policy["policy_hash"]
+    forged_policy["recorder_proof"] = None
+    forged_policy["recorder_proof"] = canonical_hash(forged_policy)
+    with pytest.raises(ValueError, match="engine-owned"):
+        verify_complete_search_coverage_receipt(
+            SearchCoverageReceipt.model_validate(forged_policy), index=index
+        )
+
+    incomplete_visual = receipt.model_dump(mode="json")
+    incomplete_visual["visual_candidates"] = [
+        {"candidate_id": "visual:required", "required": True, "dispositioned": False}
+    ]
+    incomplete_visual["recorder_proof"] = None
+    incomplete_visual["recorder_proof"] = canonical_hash(incomplete_visual)
+    with pytest.raises(ValueError, match="Visual candidates"):
+        verify_complete_search_coverage_receipt(
+            SearchCoverageReceipt.model_validate(incomplete_visual), index=index
+        )
+
+    inconsistent_stop = receipt.model_dump(mode="json")
+    inconsistent_stop["stopping_reason"] = "agent decided the search was enough"
+    inconsistent_stop["recorder_proof"] = None
+    inconsistent_stop["recorder_proof"] = canonical_hash(inconsistent_stop)
+    with pytest.raises(ValueError, match="canonical stopping reason"):
+        SearchCoverageReceipt.model_validate(inconsistent_stop)
 
 
 def test_exact_claim_is_materialized_from_canonical_text_and_conflicts_are_preserved() -> None:

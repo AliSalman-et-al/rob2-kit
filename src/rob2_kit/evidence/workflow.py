@@ -21,6 +21,7 @@ from rob2_kit.domain.revisions import (
 )
 from rob2_kit.evidence.search import (
     CanonicalEvidenceUnit,
+    EvidenceScope,
     EvidenceSearchIndex,
     SearchPage,
     SearchPolicy,
@@ -248,18 +249,9 @@ class SearchCoverageReceipt(FrozenModel):
             for query in self.executed_queries
         ):
             raise ValueError("executed queries must bind the exact search policy")
-        contradiction_hashes = {
-            item.query_hash
-            for item in self.executed_queries
-            if item.pass_kind is SearchPassKind.CONTRADICTION
-        }
-        ordinary_hashes = {
-            item.query_hash
-            for item in self.executed_queries
-            if item.pass_kind is not SearchPassKind.CONTRADICTION
-        }
-        if not self.interrupted and contradiction_hashes & ordinary_hashes:
-            raise ValueError("contradiction search must use a distinct query")
+        query_hashes = tuple(item.query_hash for item in self.executed_queries)
+        if len(query_hashes) != len(set(query_hashes)):
+            raise ValueError("every mandatory search pass must use a distinct query")
         executed_seeds = {
             item.seed_family for item in self.executed_queries if item.seed_family is not None
         }
@@ -348,6 +340,10 @@ class SearchCoverageReceipt(FrozenModel):
             raise ValueError("broad query justifications cannot be blank")
         if not self.stopping_reason.strip():
             raise ValueError("stopping reason cannot be blank")
+        if not self.interrupted and self.stopping_reason != (
+            "mandatory protocol complete; latest complete round found no new material"
+        ):
+            raise ValueError("complete search coverage requires the canonical stopping reason")
         if any(not item.strip() for item in self.coverage_limits):
             raise ValueError("coverage limitations cannot be blank")
         if self.recorder_proof is not None and not self._proof_is_valid():
@@ -598,18 +594,8 @@ class SearchCoverageRecorder:
             )
         if query.sq_id is None:
             query = query.model_copy(update={"sq_id": self._metadata["sq_id"]})
-        if query.pass_kind is SearchPassKind.CONTRADICTION and any(
-            item.pass_kind is not SearchPassKind.CONTRADICTION
-            and item.query_hash == query.query_hash
-            for item in self._queries
-        ):
-            raise ValueError("contradiction search must use a distinct query")
-        if query.pass_kind is not SearchPassKind.CONTRADICTION and any(
-            item.pass_kind is SearchPassKind.CONTRADICTION
-            and item.query_hash == query.query_hash
-            for item in self._queries
-        ):
-            raise ValueError("contradiction search must use a distinct query")
+        if any(item.query_hash == query.query_hash for item in self._queries):
+            raise ValueError("every mandatory search pass must use a distinct query")
         self._queries.append(query)
 
     def record_page(
@@ -802,6 +788,73 @@ class SearchCoverageRecorder:
             receipt.model_dump(mode="json")
             | {"recorder_proof": canonical_hash(proof_payload)}
         )
+
+
+def verify_complete_search_coverage_receipt(
+    receipt: SearchCoverageReceipt,
+    *,
+    index: EvidenceSearchIndex,
+    scope: EvidenceScope | None = None,
+) -> None:
+    """Replay a complete receipt against the current scoped index.
+
+    A receipt's content hash proves that its payload was not accidentally
+    altered after recording; it is not an authority for host-supplied search
+    results.  The freeze boundary therefore replays every declared query with
+    the engine-owned policy and scope before accepting a complete receipt.
+    """
+    if not receipt.is_complete():
+        raise ValueError("Search coverage receipt must be complete before it can freeze")
+    if any(
+        candidate.required and not candidate.dispositioned
+        for candidate in receipt.visual_candidates
+    ):
+        raise ValueError("required Visual candidates must be dispositioned before freezing")
+
+    policy = SearchPolicy()
+    if receipt.policy_id != policy.policy_id or canonical_hash(policy) != receipt.policy_hash:
+        raise ValueError("Search coverage receipt does not use the engine-owned search policy")
+
+    seen_queries: set[tuple[SearchPassKind, ContentHash]] = set()
+    for recorded in receipt.executed_queries:
+        query_key = (recorded.pass_kind, recorded.query_hash)
+        if query_key in seen_queries:
+            raise ValueError("Search coverage receipt repeats a recorded search query")
+        seen_queries.add(query_key)
+        if recorded.first_cursor is not None:
+            raise ValueError("complete search coverage must start from the first result page")
+
+        cursor: str | None = None
+        returned_unit_ids: list[Identifier] = []
+        pages_traversed = 0
+        while True:
+            page = index.search(
+                recorded.query,
+                policy=policy,
+                cursor=cursor,
+                broad_query_justification=recorded.broad_query_justification,
+                scope=scope,
+            )
+            pages_traversed += 1
+            returned_unit_ids.extend(hit.unit.unit_id for hit in page.hits)
+            cursor = page.next_cursor
+            if cursor is None:
+                break
+
+        if (
+            page.snapshot_hash != receipt.snapshot_hash
+            or page.policy_id != receipt.policy_id
+            or page.policy_hash != receipt.policy_hash
+            or page.query_hash != recorded.query_hash
+        ):
+            raise ValueError("Search coverage receipt does not match the active evidence index")
+        if (
+            tuple(returned_unit_ids) != recorded.returned_unit_ids
+            or pages_traversed != recorded.pages_traversed
+            or not recorded.traversal_complete
+            or recorded.last_cursor is not None
+        ):
+            raise ValueError("Search coverage receipt omits or changes scoped search results")
 
 
 class CandidateDispositionKind(StrEnum):

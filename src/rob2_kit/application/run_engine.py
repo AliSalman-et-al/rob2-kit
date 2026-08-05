@@ -115,7 +115,13 @@ from rob2_kit.domain.revisions import (
     Revision,
     Supersession,
 )
-from rob2_kit.domain.sources import SourceDescriptor, SourceInventoryRevision, SourceRole
+from rob2_kit.domain.sources import (
+    SourceAvailability,
+    SourceDescriptor,
+    SourceInventoryRevision,
+    SourceProcessing,
+    SourceRole,
+)
 from rob2_kit.evidence.errors import (
     InvalidRetrievalRequest,
     OperationalRetrievalFailure,
@@ -143,7 +149,11 @@ from rob2_kit.evidence.visual import (
     VisualInspectionPolicy,
     build_visual_citation,
 )
-from rob2_kit.evidence.workflow import ExecutedSearchQuery, SearchCoverageReceipt
+from rob2_kit.evidence.workflow import (
+    ExecutedSearchQuery,
+    SearchCoverageReceipt,
+    verify_complete_search_coverage_receipt,
+)
 from rob2_kit.ingestion.project import (
     DocumentParser,
     LiteParseAdapter,
@@ -2421,8 +2431,11 @@ class RunEngine:
             self._validate_domain_evidence_submission(
                 ledger, request.model_copy(update={"passages": ()})
             )
+            self._validate_retained_passage_links(request)
             request = self._resolve_evidence_passages(ledger, request)
-        self._validate_domain_evidence_submission(ledger, request)
+        self._validate_domain_evidence_submission(
+            ledger, request, passages_materialized=bool(original_request.passages)
+        )
         evidence_bundles, manifests, receipts = self._freeze_domain_evidence(ledger, request)
         normalized = _DomainEvidenceRecord(
             run_id=request.run_id,
@@ -2849,6 +2862,8 @@ class RunEngine:
         self,
         ledger: WorkflowLedger,
         request: SubmitDomainEvidenceRequest,
+        *,
+        passages_materialized: bool = False,
     ) -> None:
         """Validate the evidence-first freeze boundary before writing anything."""
         domain = next(
@@ -2870,8 +2885,40 @@ class RunEngine:
         mapped_item_ids = {
             item.entity_id for items in request.evidence_by_question.values() for item in items
         }
-        if any(receipt.sq_id not in domain_questions for receipt in request.coverage_receipts):
+        receipt_question_ids = tuple(receipt.sq_id for receipt in request.coverage_receipts)
+        if any(receipt_id not in domain_questions for receipt_id in receipt_question_ids):
             raise ValueError("Search coverage receipts must bind this domain's signaling questions")
+        if len(receipt_question_ids) != len(set(receipt_question_ids)):
+            raise ValueError("each signaling question may have only one Search coverage receipt")
+        if request.items and not request.coverage_receipts:
+            raise ValueError("freezing Evidence items requires complete Search coverage receipts")
+        if request.items and request.coverage_receipts and not passages_materialized:
+            raise ValueError(
+                "receipt-backed Evidence freezing requires exact canonical passages, "
+                "not legacy items"
+            )
+        if request.items and set(receipt_question_ids) != domain_questions:
+            raise ValueError(
+                "freezing Evidence items requires one complete Search coverage receipt for "
+                "every active signaling question"
+            )
+        if request.coverage_receipts:
+            index = EvidenceSearchIndex(self._required_root() / ".rob2" / "evidence.sqlite3")
+            for receipt in request.coverage_receipts:
+                self._validate_coverage_receipt_dependencies(ledger, request, receipt)
+                self._validate_visual_coverage(ledger, request, receipt)
+                receipt_scope = self._retrieval_scope(
+                    ledger,
+                    request.run_id,
+                    request.work_token,
+                    request.result_id,
+                    receipt.sq_id,
+                )
+                verify_complete_search_coverage_receipt(
+                    receipt,
+                    index=index,
+                    scope=receipt_scope,
+                )
         if request.coverage_state.value == "incomplete" and not request.coverage_limitations:
             raise ValueError("incomplete evidence coverage requires an explicit limitation")
         if (
@@ -2895,6 +2942,17 @@ class RunEngine:
             ):
                 raise ValueError(
                     "no-information basis requires adequate readable-source Search coverage"
+                )
+            if any(receipt.retained_candidate_ids() for receipt in request.coverage_receipts):
+                raise ValueError(
+                    "no-information basis is unavailable while retained Evidence candidates remain"
+                )
+            if set(receipt_question_ids) != domain_questions or len(receipt_question_ids) != len(
+                domain_questions
+            ):
+                raise ValueError(
+                    "no-information basis requires one complete Search coverage receipt for "
+                    "every active signaling question"
                 )
         item_ids = tuple(item.entity_id for item in request.items)
         if len(item_ids) != len(set(item_ids)):
@@ -2931,6 +2989,165 @@ class RunEngine:
         for conflict in request.conflicts:
             if len(conflict) < 2 or not set(conflict).issubset(set(item_ids)):
                 raise ValueError("source conflicts must bind at least two frozen Evidence items")
+        conflict_groups = tuple(frozenset(conflict) for conflict in request.conflicts)
+        for disposition in dispositions:
+            if disposition.disposition is ConsiderationDisposition.SUPERSEDED:
+                assert disposition.superseded_by is not None
+                supersession_pair = frozenset(
+                    (disposition.item_id, disposition.superseded_by)
+                )
+                if not any(supersession_pair <= group for group in conflict_groups):
+                    raise ValueError(
+                        "superseded evidence must link its replacement in a recorded conflict"
+                    )
+
+    @staticmethod
+    def _validate_retained_passage_links(request: SubmitDomainEvidenceRequest) -> None:
+        """Require each retained search candidate to bind one exact selected span."""
+        if not request.coverage_receipts:
+            return
+        retained_candidates: dict[Identifier, tuple[Identifier, Identifier]] = {}
+        for receipt in request.coverage_receipts:
+            for disposition in receipt.result_dispositions:
+                if disposition.candidate_id is None:
+                    continue
+                if disposition.candidate_id in retained_candidates:
+                    raise ValueError("a retained Evidence candidate cannot span multiple questions")
+                retained_candidates[disposition.candidate_id] = (disposition.unit_id, receipt.sq_id)
+        passage_candidate_ids = [passage.candidate_id for passage in request.passages]
+        if any(candidate_id is None for candidate_id in passage_candidate_ids):
+            raise ValueError("passages with Search coverage receipts require candidate_id")
+        if len(passage_candidate_ids) != len(set(passage_candidate_ids)):
+            raise ValueError("each retained Evidence candidate must select one exact passage")
+        if set(passage_candidate_ids) != set(retained_candidates):
+            raise ValueError("every retained Evidence candidate must select one exact passage")
+        for passage in request.passages:
+            assert passage.candidate_id is not None
+            unit_id, sq_id = retained_candidates[passage.candidate_id]
+            if passage.unit_id != unit_id or passage.question_ids != (sq_id,):
+                raise ValueError(
+                    "retained Evidence candidates must keep their issued unit and "
+                    "signaling-question scope"
+                )
+
+    def _validate_coverage_receipt_dependencies(
+        self,
+        ledger: WorkflowLedger,
+        request: SubmitDomainEvidenceRequest,
+        receipt: SearchCoverageReceipt,
+    ) -> None:
+        """Bind a supplied receipt to the active Result and Source inventory."""
+        result_spec = self._result_spec_for(ledger, request.run_id, request.result_id)
+        if result_spec is None:
+            raise ValueError("Search coverage receipt requires the active ResultSpec")
+        expected_result = RecordReference(
+            entity_id=result_spec.entity_id,
+            revision_id=result_spec.revision_id,
+            content_hash=canonical_hash(result_spec),
+        )
+        if receipt.result_spec != expected_result:
+            raise ValueError("Search coverage receipt does not bind the active ResultSpec")
+        guidance = load_guidance_pack(self._guidance_pack_path())
+        if receipt.guidance_release_id != f"guidance:rob2-{guidance.release_id}":
+            raise ValueError("Search coverage receipt does not bind the active Guidance release")
+        expected_seed_family = "seed:" + receipt.sq_id.removeprefix("sq:").replace(":", "-")
+        if (
+            receipt.required_seed_families != (expected_seed_family,)
+            or receipt.completed_seed_families != (expected_seed_family,)
+        ):
+            raise ValueError("Search coverage receipt does not use the engine-issued expected pass")
+        expected_rule_ids = tuple(sorted(rule.entity_id for rule in request.project_rules))
+        if receipt.project_rule_ids != expected_rule_ids:
+            raise ValueError("Search coverage receipt does not bind the active project rules")
+
+        proposal = self._latest_proposal(ledger, request.run_id)
+        trial = next(
+            (
+                item
+                for item in proposal.initialization.trials
+                if item.trial_id == result_spec.result.trial_id
+            ),
+            None,
+        )
+        if trial is None or trial.inventory is None:
+            raise ValueError("Search coverage receipt requires the active Trial source inventory")
+        inventory = trial.inventory
+        inventory_suffix = self._digest(
+            f"{request.run_id}|{request.result_id}|{expected_result.content_hash}|source-inventory"
+        )
+        expected_inventory = RecordReference(
+            entity_id=f"source-inventory:{request.result_id.removeprefix('result:')}",
+            revision_id=f"revision:source-inventory-{inventory_suffix}",
+            content_hash=canonical_hash(inventory),
+        )
+        if receipt.source_inventory != expected_inventory:
+            raise ValueError("Search coverage receipt does not bind the active Source inventory")
+        expected_parse_hashes = tuple(
+            sorted(
+                {
+                    parse.output_hash
+                    for source in inventory.sources
+                    for parse in source.parse_records
+                }
+            )
+        )
+        if receipt.parse_record_hashes != expected_parse_hashes:
+            raise ValueError("Search coverage receipt does not bind active Parse records")
+        if receipt.coverage_limits != inventory.coverage_limitations:
+            raise ValueError(
+                "Search coverage receipt does not preserve Source coverage limitations"
+            )
+
+        receipt_sources = {source.source_id: source for source in receipt.sources}
+        expected_source_ids = {source.source_id for source in inventory.sources}
+        if (
+            set(receipt.inventory_source_ids) != expected_source_ids
+            or set(receipt_sources) != expected_source_ids
+        ):
+            raise ValueError("Search coverage receipt does not cover every active Source role")
+        for source in inventory.sources:
+            recorded = receipt_sources[source.source_id]
+            if recorded.artifact_hash != source.artifact_hash:
+                raise ValueError("Search coverage receipt Source artifact does not match inventory")
+            if source.availability is not SourceAvailability.ACQUIRED:
+                state = "unobtained"
+                readable = False
+            elif source.processing is SourceProcessing.USABLE:
+                state = "searched"
+                readable = True
+            elif source.processing is SourceProcessing.COVERAGE_LIMITED:
+                state = "search_limited"
+                readable = False
+            else:
+                state = "unreadable"
+                readable = False
+            if recorded.state.value != state or recorded.sufficiently_readable != readable:
+                raise ValueError(
+                    "Search coverage receipt Source readability is not engine-verified"
+                )
+
+    def _validate_visual_coverage(
+        self,
+        ledger: WorkflowLedger,
+        request: SubmitDomainEvidenceRequest,
+        receipt: SearchCoverageReceipt,
+    ) -> None:
+        """Require receipt coverage for exactly the visual candidates issued by the Run."""
+        issued_ids = {
+            candidate.candidate_id
+            for candidate in self._visual_candidates(
+                ledger, request.run_id, result_id=request.result_id
+            )
+            if candidate.domain_id == request.domain_id and candidate.sq_id == receipt.sq_id
+        }
+        recorded = {candidate.candidate_id: candidate for candidate in receipt.visual_candidates}
+        if set(recorded) != issued_ids:
+            raise ValueError("Search coverage receipt does not cover issued Visual candidates")
+        if issued_ids:
+            raise ValueError(
+                "issued Visual candidates require an engine-recorded completed inspection "
+                "before Evidence can freeze"
+            )
 
     def _freeze_domain_evidence(
         self,
@@ -2975,32 +3192,31 @@ class RunEngine:
             actor=actor,
             dependencies=disposition_record.dependencies,
         )
-        coverage_refs: tuple[RecordReference, ...] = ()
+        coverage_refs_by_question: dict[Identifier, RecordReference] = {}
         if request.coverage_receipts:
-            coverage_suffix = self._digest(f"{request.run_id}|{request.idempotency_key}|coverage")
-            coverage_record = EvidenceCoverageReceiptRecord(
-                entity_id=f"search-coverage:{coverage_suffix}",
-                revision_id=f"revision:search-coverage-{coverage_suffix}",
-                actor=actor,
-                observed_at=self._now(),
-                result_id=request.result_id,
-                domain_id=request.domain_id,
-                receipts=tuple(
-                    receipt.model_dump(mode="json") for receipt in request.coverage_receipts
-                ),
-            )
-            coverage_refs = (
-                self._commit_frozen_artifact(
+            for receipt in request.coverage_receipts:
+                coverage_suffix = self._digest(
+                    f"{request.run_id}|{request.idempotency_key}|coverage|{receipt.sq_id}"
+                )
+                coverage_record = EvidenceCoverageReceiptRecord(
+                    entity_id=f"search-coverage:{coverage_suffix}",
+                    revision_id=f"revision:search-coverage-{coverage_suffix}",
+                    actor=actor,
+                    observed_at=self._now(),
+                    result_id=request.result_id,
+                    domain_id=request.domain_id,
+                    receipts=(receipt.model_dump(mode="json"),),
+                )
+                coverage_refs_by_question[receipt.sq_id] = self._commit_frozen_artifact(
                     ledger,
                     scope=request.result_id,
                     operation="operation:search-coverage-receipt",
-                    operation_key=f"{request.idempotency_key}:coverage",
+                    operation_key=f"{request.idempotency_key}:coverage:{receipt.sq_id}",
                     entity_id=f"search-coverage:{coverage_suffix}",
                     revision_id=f"revision:search-coverage-{coverage_suffix}",
                     artifact=coverage_record,
                     actor=actor,
-                ),
-            )
+                )
         bundles: list[RecordReference] = []
         manifests: list[RecordReference] = []
         for question_id in domain.question_ids:
@@ -3036,6 +3252,7 @@ class RunEngine:
                         item_id=item.item_id,
                         disposition=item.disposition,
                         basis=item.basis,
+                        superseded_by=item.superseded_by,
                     )
                     for item in manifest_dispositions
                 ),
@@ -3051,6 +3268,11 @@ class RunEngine:
                 actor=actor,
                 dependencies=manifest.dependencies,
             )
+            question_coverage_refs = (
+                (coverage_refs_by_question[question_id],)
+                if question_id in coverage_refs_by_question
+                else ()
+            )
             dependencies = [
                 Dependency(**result_spec.model_dump(), role="dependency:result-spec"),
                 Dependency(**disposition_ref.model_dump(), role="dependency:evidence-disposition"),
@@ -3061,7 +3283,7 @@ class RunEngine:
                 ),
                 *(
                     Dependency(**receipt.model_dump(), role="dependency:search-coverage")
-                    for receipt in coverage_refs
+                    for receipt in question_coverage_refs
                 ),
             ]
             bundle_payload = {
@@ -3074,7 +3296,10 @@ class RunEngine:
                 "coverage_limitations": request.coverage_limitations,
                 "no_information_basis": request.no_information_basis,
                 "conflicts": request.conflicts,
-                "coverage_receipts": [receipt.model_dump(mode="json") for receipt in coverage_refs],
+                "coverage_receipts": [
+                    receipt.model_dump(mode="json")
+                    for receipt in question_coverage_refs
+                ],
                 "consideration_manifest": manifest_ref.model_dump(mode="json"),
             }
             bundle_hash = canonical_hash(bundle_payload)
@@ -3090,7 +3315,7 @@ class RunEngine:
                 frozen_content_hash=bundle_hash,
                 sq_id=question_id,
                 domain_id=request.domain_id,
-                coverage_receipts=coverage_refs,
+                coverage_receipts=question_coverage_refs,
                 consideration_manifest=manifest_ref,
                 coverage_limitations=request.coverage_limitations,
                 coverage_state=request.coverage_state,
@@ -3110,7 +3335,7 @@ class RunEngine:
             )
             bundles.append(bundle_ref)
             manifests.append(manifest_ref)
-        return tuple(bundles), tuple(manifests), coverage_refs
+        return tuple(bundles), tuple(manifests), tuple(coverage_refs_by_question.values())
 
     def _has_no_information_basis(
         self,

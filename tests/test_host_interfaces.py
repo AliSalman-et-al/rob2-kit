@@ -160,6 +160,11 @@ def test_domain_evidence_contract_rejects_aliases_and_mixed_branches() -> None:
             {"item_id": "candidate:test", "disposition": "irrelevant"}
         )
 
+    with pytest.raises(ValidationError, match="replacing item"):
+        EvidenceConsiderationInput.model_validate(
+            {"item_id": "candidate:older", "disposition": "superseded", "basis": "later report"}
+        )
+
     token = WorkToken(
         token="token:test",
         run_id="run:test",
