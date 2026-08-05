@@ -1387,20 +1387,49 @@ def test_added_failed_trial_gets_terminal_diagnostic_without_resolution_work(
     events = engine._bound_ledger(run_id).events()
     assert any(event.operation == "operation:run-register-diagnostic-result" for event in events)
     assert any(event.operation == "operation:result-diagnostic-ready" for event in events)
-    run_index = json.loads(
-        next((tmp_path / "output" / "report-bundle").rglob("run-index.json")).read_text(
-            encoding="utf-8"
-        )
-    )
+    run_index_path = next((tmp_path / "output" / "report-bundle").rglob("run-index.json"))
+    run_index = json.loads(run_index_path.read_text(encoding="utf-8"))
     diagnostic_row = next(
         item for item in run_index["results"] if item["result_id"].startswith("result:diagnostic-")
     )
     assert diagnostic_row["trial_id"] == "trial:trial-b"
     assert diagnostic_row["outcome"] == ""
+    diagnostic_root = run_index_path.parent / diagnostic_row["report"].replace(
+        "diagnostic.html", ""
+    )
+    diagnostic = json.loads((diagnostic_root / "diagnostic.json").read_text(encoding="utf-8"))
+    assert diagnostic["preparation_outcome"] == "trial_failed"
+    assert diagnostic["recovery"] == [
+        "Restore the required readable Trial Source and continue the Run."
+    ]
     _classify_current_sources(engine, run_id)
     next_work = engine.continue_run(ContinueRunRequest(run_id=run_id)).work_item
     assert next_work is not None
     assert next_work.result_id == "result:a"
+
+
+def test_initial_failed_trial_publishes_a_recoverable_diagnostic(tmp_path: Path) -> None:
+    (tmp_path / "input" / "trial-failed").mkdir(parents=True)
+    (tmp_path / "rob2.yaml").write_text(
+        yaml.safe_dump(_config(with_target=False)), encoding="utf-8"
+    )
+
+    engine = RunEngine(parser=StubParser())
+    prepared = engine.prepare_run(PrepareRunRequest(project_root=tmp_path, authorized=True))
+
+    events = engine._bound_ledger(prepared.run_id).events()
+    diagnostic_event = next(
+        event for event in events if event.operation == "operation:result-diagnostic-ready"
+    )
+    diagnostic_record = json.loads(
+        engine._bound_ledger(prepared.run_id).artifacts.read(
+            diagnostic_event.output_revision_hashes[0]
+        )
+    )
+    assert diagnostic_record["preparation_outcome"] == "trial_failed"
+    assert diagnostic_record["recovery"] == [
+        "Provide the required readable Trial Source and continue the Run."
+    ]
 
 
 def test_recovering_failed_trial_with_primary_addition_reopens_assessment(
@@ -1833,6 +1862,16 @@ def test_completed_deleted_required_source_becomes_terminal_diagnostic(
     assert len(status.progress.report_locations) == 1
     diagnostic_root = tmp_path / status.progress.report_locations[0]
     assert (diagnostic_root / "diagnostic.html").is_file()
+    diagnostic = json.loads((diagnostic_root / "diagnostic.json").read_text(encoding="utf-8"))
+    manifest = json.loads((diagnostic_root / "manifest.json").read_text(encoding="utf-8"))
+    markdown = (diagnostic_root / "diagnostic.md").read_text(encoding="utf-8")
+    assert diagnostic["preparation_outcome"] == "trial_failed"
+    assert diagnostic["recovery"] == [
+        "Restore the required readable Trial Source and continue the Run."
+    ]
+    assert manifest["preparation_outcome"] == diagnostic["preparation_outcome"]
+    assert manifest["recovery"] == diagnostic["recovery"]
+    assert "## Recovery path" in markdown
     events = engine._bound_ledger(run_id).events()
     assert any(event.operation == "operation:result-invalidated" for event in events)
     assert any(event.operation == "operation:result-diagnostic-ready" for event in events)

@@ -270,10 +270,25 @@ class RunIndexView(ReportModel):
 
 
 class DiagnosticView(ReportModel):
+    """A terminal Result outcome that deliberately carries no assessment judgment."""
+
     result_id: Identifier
     trial_id: Identifier
     reason: str = Field(min_length=1)
+    preparation_outcome: Literal[
+        "trial_failed", "preparation_incomplete", "result_withdrawn"
+    ] = "preparation_incomplete"
+    recovery: tuple[str, ...] = (
+        "Correct the documented Result-scoped problem and continue the Run.",
+    )
     limitations: tuple[str, ...] = ()
+
+    @field_validator("recovery")
+    @classmethod
+    def validate_recovery(cls, value: tuple[str, ...]) -> tuple[str, ...]:
+        if not value or any(not item.strip() for item in value):
+            raise ValueError("diagnostic recovery requires at least one nonblank action")
+        return value
 
 
 class ReportProjector:
@@ -838,6 +853,8 @@ class DiagnosticReportProjector:
 
     def html(self) -> bytes:
         diagnostic = self.diagnostic
+        outcome = diagnostic.preparation_outcome.replace("_", " ")
+        recovery = "".join(f"<li>{html.escape(item)}</li>" for item in diagnostic.recovery)
         body = (
             '<main><header class="report-header"><p class="eyebrow">Scoped diagnostic</p>'
             "<h1>RoB 2 diagnostic report</h1></header>"
@@ -848,8 +865,10 @@ class DiagnosticReportProjector:
             '</dl></section><section class="diagnostic" aria-labelledby="blocker-heading">'
             '<h2 id="blocker-heading">Scoped blocker</h2>'
             f"<p>{html.escape(diagnostic.reason)}</p>"
+            f"<p><strong>Preparation outcome:</strong> {html.escape(outcome)}</p>"
             "<p><strong>No valid judgment is available</strong> while this blocker remains. "
             "The report intentionally omits judgments rather than using a placeholder or guess.</p>"
+            f"<h3>Recovery path</h3><ol>{recovery}</ol>"
             f"<h3>Limitations</h3>{_limitations(diagnostic.limitations)}</section></main>"
         )
         return _html_document("RoB 2 diagnostic report", body).encode()

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 import yaml
@@ -187,6 +188,8 @@ def test_withdrawn_pending_result_is_diagnostic_and_can_be_reopened(tmp_path: Pa
         )
     )
     status = engine.run_status(RunStatusRequest(run_id=run_id))
+    diagnostic_root = tmp_path / status.progress.report_locations[0]
+    diagnostic = json.loads((diagnostic_root / "diagnostic.json").read_text(encoding="utf-8"))
     reopened = engine.reopen_result(
         ReopenResultRequest(
             contract_version="1.0.0",
@@ -214,6 +217,10 @@ def test_withdrawn_pending_result_is_diagnostic_and_can_be_reopened(tmp_path: Pa
     assert next(item for item in status.result_states if item.result_id == result_ids[1]).state is (
         ResultState.DIAGNOSTIC_READY
     )
+    assert diagnostic["preparation_outcome"] == "result_withdrawn"
+    assert diagnostic["recovery"] == [
+        "Reopen this withdrawn Result explicitly under the unchanged confirmed Run definition."
+    ]
     assert reopened.committed is True
     assert reopened.result_state is ResultState.PENDING
     assert (

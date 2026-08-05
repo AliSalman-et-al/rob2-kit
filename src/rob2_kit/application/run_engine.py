@@ -16,6 +16,7 @@ from pathlib import Path
 from typing import Any, Literal, cast
 
 from PIL import Image, ImageDraw
+from pydantic import field_validator
 
 from rob2_kit.application.contracts import (
     ConfirmedRunDefinition,
@@ -428,9 +429,22 @@ class _ResultDiagnosticRecord(FrozenModel):
     result_id: Identifier
     trial_id: Identifier
     reason: str
+    preparation_outcome: Literal[
+        "trial_failed", "preparation_incomplete", "result_withdrawn"
+    ] = "preparation_incomplete"
+    recovery: tuple[str, ...] = (
+        "Correct the documented Result-scoped problem and continue the Run.",
+    )
     report_root: str | None = None
     artifact_names: tuple[str, ...] = ()
     staging_root: str | None = None
+
+    @field_validator("recovery")
+    @classmethod
+    def validate_recovery(cls, value: tuple[str, ...]) -> tuple[str, ...]:
+        if not value or any(not item.strip() for item in value):
+            raise ValueError("diagnostic recovery requires at least one nonblank action")
+        return value
 
 
 class _RunBlockedRecord(FrozenModel):
@@ -762,6 +776,11 @@ class RunEngine:
                                             if failed_trial.failure is not None
                                             else "Trial-specific initialization failed"
                                         ),
+                                        preparation_outcome="trial_failed",
+                                        recovery=(
+                                            "Provide the required readable Trial Source and "
+                                            "continue the Run.",
+                                        ),
                                     ),
                                     checkpoint=(
                                         f"checkpoint:result-diagnostic-{diagnostic_suffix}"
@@ -810,6 +829,11 @@ class RunEngine:
                                             failed_trial.failure.detail
                                             if failed_trial.failure is not None
                                             else "Trial-specific initialization failed"
+                                        ),
+                                        preparation_outcome="trial_failed",
+                                        recovery=(
+                                            "Provide the required readable Trial Source and "
+                                            "continue the Run.",
                                         ),
                                     ),
                                     checkpoint=(
@@ -867,6 +891,11 @@ class RunEngine:
                                         result_id=result_id,
                                         trial_id=trial.trial_id,
                                         reason=reason,
+                                        preparation_outcome="trial_failed",
+                                        recovery=(
+                                            "Provide the required readable Trial Source and "
+                                            "continue the Run.",
+                                        ),
                                     ),
                                     checkpoint=f"checkpoint:result-diagnostic-{diagnostic_suffix}",
                                     outcome=WorkflowEventOutcome.TRIAL_PROBLEM,
@@ -1063,6 +1092,10 @@ class RunEngine:
                                 if failed_trial.failure is not None
                                 else "Trial-specific initialization failed"
                             ),
+                            preparation_outcome="trial_failed",
+                            recovery=(
+                                "Provide the required readable Trial Source and continue the Run.",
+                            ),
                         ),
                         checkpoint=f"checkpoint:result-diagnostic-{diagnostic_suffix}",
                         outcome=WorkflowEventOutcome.TRIAL_PROBLEM,
@@ -1111,6 +1144,11 @@ class RunEngine:
                             result_id=result_id,
                             trial_id=trial.trial_id,
                             reason=reason,
+                            preparation_outcome="trial_failed",
+                            recovery=(
+                                "Provide the required readable Trial Source and "
+                                "continue the Run.",
+                            ),
                         ),
                         checkpoint=f"checkpoint:result-diagnostic-{diagnostic_suffix}",
                         outcome=WorkflowEventOutcome.TRIAL_PROBLEM,
@@ -1338,6 +1376,11 @@ class RunEngine:
                 result_id=request.result_id,
                 trial_id=trial_id,
                 reason=f"Result withdrawn by {request.requested_by.display_name}: {request.reason}",
+                preparation_outcome="result_withdrawn",
+                recovery=(
+                    "Reopen this withdrawn Result explicitly under the unchanged "
+                    "confirmed Run definition.",
+                ),
             ),
             checkpoint=f"checkpoint:result-diagnostic-{suffix}",
             outcome=WorkflowEventOutcome.TRIAL_PROBLEM,
@@ -6033,6 +6076,8 @@ class RunEngine:
                 result_id=diagnostic.result_id,
                 trial_id=diagnostic.trial_id,
                 reason=diagnostic.reason,
+                preparation_outcome=diagnostic.preparation_outcome,
+                recovery=diagnostic.recovery,
                 limitations=(diagnostic.reason,),
             )
         )
@@ -6042,7 +6087,13 @@ class RunEngine:
                 "# RoB 2 diagnostic report\n\n"
                 f"- Result: {self._escape_markdown(diagnostic.result_id)}\n"
                 f"- Trial: {self._escape_markdown(diagnostic.trial_id)}\n"
+                "- Preparation outcome: "
+                f"{self._escape_markdown(diagnostic.preparation_outcome.replace('_', ' '))}\n"
                 f"- Limitation: {self._escape_markdown(diagnostic.reason)}\n"
+                "\n## Recovery path\n\n"
+                + "".join(
+                    f"- {self._escape_markdown(item)}\n" for item in diagnostic.recovery
+                )
             ).encode(),
             "diagnostic.html": projector.html(),
         }
@@ -6051,6 +6102,8 @@ class RunEngine:
                 {
                     "result_id": diagnostic.result_id,
                     "trial_id": diagnostic.trial_id,
+                    "preparation_outcome": diagnostic.preparation_outcome,
+                    "recovery": list(diagnostic.recovery),
                     "files": {
                         name: "sha256:" + hashlib.sha256(content).hexdigest()
                         for name, content in files.items()
@@ -10154,6 +10207,10 @@ class RunEngine:
                         result_id=result_id,
                         trial_id=trial_id or "trial:unknown",
                         reason="A required Trial Source became unavailable or unreadable.",
+                        preparation_outcome="trial_failed",
+                        recovery=(
+                            "Restore the required readable Trial Source and continue the Run.",
+                        ),
                     ),
                     checkpoint=f"checkpoint:result-diagnostic-{result_id.removeprefix('result:')}",
                     outcome=WorkflowEventOutcome.TRIAL_PROBLEM,

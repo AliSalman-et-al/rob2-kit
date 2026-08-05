@@ -9,7 +9,9 @@ from pathlib import Path
 from types import SimpleNamespace
 from zipfile import ZipFile
 
+import pytest
 from PIL import Image
+from pydantic import ValidationError
 
 from rob2_kit.reports import (
     AssessmentView,
@@ -399,6 +401,8 @@ def test_run_index_and_diagnostic_reports_preserve_auditable_terminal_state() ->
                 result_id="result:2",
                 trial_id="trial:2",
                 reason="Required source is unreadable.",
+                preparation_outcome="trial_failed",
+                recovery=("Provide a readable required source and continue the Run.",),
                 limitations=("Required source is unreadable.",),
             )
         )
@@ -413,8 +417,29 @@ def test_run_index_and_diagnostic_reports_preserve_auditable_terminal_state() ->
     assert "No valid judgment" in index
     assert "project.xlsx" in index
     assert "Required source is unreadable." in diagnostic
+    assert "Preparation outcome:" in diagnostic
+    assert "trial failed" in diagnostic
+    assert "Recovery path" in diagnostic
+    assert "Provide a readable required source and continue the Run." in diagnostic
     assert "No valid judgment is available" in diagnostic
     assert "Overall judgment" not in diagnostic
+
+
+def test_diagnostic_reports_require_a_nonblank_recovery_path() -> None:
+    with pytest.raises(ValidationError, match="diagnostic recovery"):
+        DiagnosticView(
+            result_id="result:2",
+            trial_id="trial:2",
+            reason="Required source is unreadable.",
+            recovery=(),
+        )
+    with pytest.raises(ValidationError, match="diagnostic recovery"):
+        DiagnosticView(
+            result_id="result:2",
+            trial_id="trial:2",
+            reason="Required source is unreadable.",
+            recovery=("   ",),
+        )
 
 
 def test_spreadsheet_exports_neutralize_formula_cells() -> None:
