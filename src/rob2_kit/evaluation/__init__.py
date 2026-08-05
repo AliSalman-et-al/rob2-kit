@@ -20,6 +20,17 @@ from .traces import (
     TraceSignals,
     normalize_trace,
 )
+from .verifier import (
+    BlindedVerifierContext,
+    ReconsiderationRequest,
+    TriggerFacts,
+    VerifierEvaluation,
+    VerifierReply,
+    VerifierUnavailable,
+    compare_verifier_modes,
+    evaluate_blinded_verifier,
+    replay_verifier_fixture,
+)
 
 __all__ = [
     "DossierOverlay",
@@ -32,6 +43,15 @@ __all__ = [
     "TraceFinal",
     "TraceSignals",
     "accept_golden",
+    "BlindedVerifierContext",
+    "ReconsiderationRequest",
+    "TriggerFacts",
+    "VerifierEvaluation",
+    "VerifierReply",
+    "VerifierUnavailable",
+    "compare_verifier_modes",
+    "evaluate_blinded_verifier",
+    "replay_verifier_fixture",
     "load_public_dossier",
     "normalize_trace",
     "semantic_diff",
