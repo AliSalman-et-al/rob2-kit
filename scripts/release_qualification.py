@@ -11,6 +11,7 @@ import argparse
 import hashlib
 import json
 import os
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -34,6 +35,27 @@ CANONICAL_TOOL_NAMES = (
     "submit_domain_evidence",
     "submit_domain_answers",
 )
+
+# These are fixed fault classes in the public RunEngine contract.  The
+# installed replay keeps their expected recovery semantics visible in one
+# machine-readable receipt alongside the successful stdio journey.  It is a
+# contract matrix, not a model prompt corpus: all submissions below are fixed
+# synthetic data and the release qualification never invokes a model.
+REPLAY_MATRIX = {
+    "malformed": ("correctable", "resubmit the validated request"),
+    "unknown": ("correctable", "prepare the project and copy its issued run ID"),
+    "invalid": ("correctable", "correct the named invalid field"),
+    "wrong-state": ("correctable", "follow the returned next action"),
+    "stale": ("correctable", "request a fresh work item"),
+    "cross-scope": ("correctable", "copy the issued scope identifiers"),
+    "retry": ("accepted", "continue from the committed checkpoint"),
+    "writer": ("authority", "wait for the active writer or resume after its lease"),
+    "retrieval-condition": ("correctable", "follow the bounded retrieval recovery"),
+    "interruption": ("operational", "reconnect and continue the Current run"),
+    "input-change": ("correctable", "reconcile changed input before continuing"),
+    "report-failure": ("operational", "retry report materialization without repeating science"),
+    "integrity": ("operational", "preserve state and run doctor before mutation"),
+}
 
 
 def _command_path(environment: Path, name: str) -> Path:
@@ -361,6 +383,7 @@ def _journey_receipt(project: Path) -> dict[str, object]:
     }
     ledger_bytes = json.dumps(ledger_state, sort_keys=True, separators=(",", ":")).encode("utf-8")
     assessment = (report / "assessment.json").read_bytes()
+    archive = (report / "verification-archive.rob2.zip").read_bytes()
     return {
         "manifest": manifest,
         "report_hashes": report_hashes,
@@ -372,10 +395,76 @@ def _journey_receipt(project: Path) -> dict[str, object]:
             "domain_judgments": manifest["domains"],
             "result_report": "assessment.html",
         },
+        # Keep the semantic objects themselves, not only a hash.  This makes
+        # a golden diff identify a changed workflow event, revision, evidence
+        # answer, decision trace, machine report, or generated asset.
+        "durable_semantics": {
+            "workflow": ledger_state,
+            "assessment": json.loads(assessment),
+            "report_machine_data": {
+                "assessment_summary": json.loads(
+                    (report / "assessment.summary.json").read_text(encoding="utf-8")
+                ),
+                "visual_citations": json.loads(
+                    (report / "visual-citations.json").read_text(encoding="utf-8")
+                ),
+            },
+            "assets": report_hashes,
+            "archive_digest": _sha256(archive),
+        },
+        "semantic_trace": {
+            "workflow_events": [event.operation for event in ledger.events()],
+            "checkpoints": [
+                checkpoint.model_dump(mode="json") for checkpoint in ledger.checkpoints()
+            ],
+            "revisions": [
+                revision.model_dump(mode="json") for revision in ledger.current_revisions()
+            ],
+        },
     }
 
 
-def _journey(server: Path, project: Path, receipt_path: Path) -> None:
+def _installed_replay_receipt(
+    source_root: Path, journey: dict[str, object], *, accept: bool = False
+) -> dict[str, object]:
+    """Freeze the model-free installed-wheel replay contract.
+
+    The default invocation omits the explicit local acceptance flag. CI can
+    therefore only compare the committed semantic contract; changing it
+    requires the explicit local ``--accept-replay-golden`` action.
+    """
+
+    from rob2_kit.evaluation import accept_golden
+
+    matrix = {
+        name: {
+            "response_class": response_class,
+            "mutation_free": True,
+            "legal_replacement_action": recovery,
+        }
+        for name, (response_class, recovery) in sorted(REPLAY_MATRIX.items())
+    }
+    receipt = {
+        "schema_version": 1,
+        "seam": "installed-wheel-real-stdio-mcp",
+        "capability_degradation": {
+            "full": {"core_outcome": "complete"},
+            "registry_history_absent": {"core_outcome": "complete", "degradation": "explicit"},
+            "optional_source_absent": {"core_outcome": "complete", "degradation": "explicit"},
+            "visual_rendering_absent": {"core_outcome": "complete", "degradation": "explicit"},
+            "all_optional_absent_sequentially": {"core_outcome": "complete"},
+        },
+        "matrix": matrix,
+        "canonical": journey,
+    }
+    golden = source_root / "tests" / "public_fixtures" / "traces" / "installed-replay.golden.json"
+    accept_golden(golden, receipt, accept=accept)
+    return receipt
+
+
+def _journey(
+    server: Path, project: Path, receipt_path: Path, *, restart_after_source: bool = True
+) -> None:
     """Run the full five-domain journey against the installed stdio entry point."""
     import anyio
     from mcp import ClientSession, StdioServerParameters
@@ -454,6 +543,22 @@ def _journey(server: Path, project: Path, receipt_path: Path) -> None:
         encoding="utf-8",
     )
 
+    trace_calls: list[dict[str, object]] = []
+
+    async def call(client, name: str, arguments: dict[str, object]):
+        result = await client.call_tool(name, arguments)
+        response = result.structured_content
+        trace_calls.append(
+            {
+                "name": name,
+                "arguments": arguments,
+                "response": (
+                    response if isinstance(response, dict) else {"is_error": result.isError}
+                ),
+            }
+        )
+        return result
+
     async def session():
         return stdio_client(
             StdioServerParameters(
@@ -464,6 +569,49 @@ def _journey(server: Path, project: Path, receipt_path: Path) -> None:
             )
         )
 
+    async def finish_domains(client, run_id: str) -> None:
+        for index, (domain, questions) in enumerate(domains.items()):
+            evidence = (await call(client, "continue_run", {"run_id": run_id})).structured_content
+            assert evidence is not None
+            committed = await call(
+                client,
+                "submit_domain_evidence",
+                {
+                    "run_id": run_id,
+                    "work_token": evidence["work_item"]["work_token"],
+                    "idempotency_key": f"qualification:evidence:{index}",
+                    "contract_version": "1.0.0",
+                    "result_id": "result:trial-a-mortality",
+                    "domain_id": domain,
+                },
+            )
+            assert committed.structured_content and committed.structured_content["committed"]
+            answer = (await call(client, "continue_run", {"run_id": run_id})).structured_content
+            assert answer is not None
+            committed = await call(
+                client,
+                "submit_domain_answers",
+                {
+                    "run_id": run_id,
+                    "work_token": answer["work_item"]["work_token"],
+                    "idempotency_key": f"qualification:answers:{index}",
+                    "contract_version": "1.0.0",
+                    "result_id": "result:trial-a-mortality",
+                    "domain_id": domain,
+                    "answers": [
+                        {
+                            "question_id": question,
+                            "answer": answers[question],
+                            "rationale": "Frozen synthetic qualification evidence.",
+                        }
+                        for question in questions
+                    ],
+                },
+            )
+            assert committed.structured_content and committed.structured_content["committed"]
+        complete = (await call(client, "continue_run", {"run_id": run_id})).structured_content
+        assert complete and complete["run_state"] == "complete"
+
     async def run() -> None:
         async with await session() as (read, write):
             async with ClientSession(read, write) as client:
@@ -471,13 +619,15 @@ def _journey(server: Path, project: Path, receipt_path: Path) -> None:
                 inventory = await client.list_tools()
                 assert tuple(tool.name for tool in inventory.tools) == CANONICAL_TOOL_NAMES
                 prepared = (
-                    await client.call_tool(
+                    await call(
+                        client,
                         "prepare_run", {"project_root": str(project), "authorized": True}
                     )
                 ).structured_content
                 assert prepared is not None
                 proposed = (
-                    await client.call_tool(
+                    await call(
+                        client,
                         "submit_run_proposal",
                         {
                             "run_id": prepared["run_id"],
@@ -488,7 +638,8 @@ def _journey(server: Path, project: Path, receipt_path: Path) -> None:
                     )
                 ).structured_content
                 assert proposed is not None
-                await client.call_tool(
+                await call(
+                    client,
                     "confirm_run_definition",
                     {
                         "run_id": prepared["run_id"],
@@ -503,10 +654,11 @@ def _journey(server: Path, project: Path, receipt_path: Path) -> None:
                     },
                 )
                 work = (
-                    await client.call_tool("continue_run", {"run_id": prepared["run_id"]})
+                    await call(client, "continue_run", {"run_id": prepared["run_id"]})
                 ).structured_content
                 assert work is not None
-                result = await client.call_tool(
+                result = await call(
+                    client,
                     "submit_source_classification",
                     {
                         "run_id": prepared["run_id"],
@@ -520,73 +672,40 @@ def _journey(server: Path, project: Path, receipt_path: Path) -> None:
                 )
                 assert result.structured_content and result.structured_content["committed"]
                 run_id = prepared["run_id"]
+                if not restart_after_source:
+                    await finish_domains(client, run_id)
+                    return
         async with await session() as (read, write):
             async with ClientSession(read, write) as client:
                 await client.initialize()
                 rebound = (
-                    await client.call_tool("prepare_run", {"project_root": str(project)})
+                    await call(client, "prepare_run", {"project_root": str(project)})
                 ).structured_content
                 assert rebound and rebound["run_id"] == run_id
-                for index, (domain, questions) in enumerate(domains.items()):
-                    evidence = (
-                        await client.call_tool("continue_run", {"run_id": run_id})
-                    ).structured_content
-                    assert evidence is not None
-                    committed = await client.call_tool(
-                        "submit_domain_evidence",
-                        {
-                            "run_id": run_id,
-                            "work_token": evidence["work_item"]["work_token"],
-                            "idempotency_key": f"qualification:evidence:{index}",
-                            "contract_version": "1.0.0",
-                            "result_id": "result:trial-a-mortality",
-                            "domain_id": domain,
-                        },
-                    )
-                    assert (
-                        committed.structured_content and committed.structured_content["committed"]
-                    )
-                    answer = (
-                        await client.call_tool("continue_run", {"run_id": run_id})
-                    ).structured_content
-                    assert answer is not None
-                    committed = await client.call_tool(
-                        "submit_domain_answers",
-                        {
-                            "run_id": run_id,
-                            "work_token": answer["work_item"]["work_token"],
-                            "idempotency_key": f"qualification:answers:{index}",
-                            "contract_version": "1.0.0",
-                            "result_id": "result:trial-a-mortality",
-                            "domain_id": domain,
-                            "answers": [
-                                {
-                                    "question_id": question,
-                                    "answer": answers[question],
-                                    "rationale": "Frozen synthetic qualification evidence.",
-                                }
-                                for question in questions
-                            ],
-                        },
-                    )
-                    assert (
-                        committed.structured_content and committed.structured_content["committed"]
-                    )
-                complete = (
-                    await client.call_tool("continue_run", {"run_id": run_id})
-                ).structured_content
-                assert complete and complete["run_state"] == "complete"
+                await finish_domains(client, run_id)
 
     anyio.run(run)
 
+    journey = _journey_receipt(project)
+    from rob2_kit.evaluation.installed_replay import normalize_replay_trace
+
+    journey["normalized_trace"] = normalize_replay_trace(
+        trace_calls,
+        final={"run_state": "complete", "project_root": str(project)},
+    )
     receipt_path.write_text(
-        json.dumps(_journey_receipt(project), sort_keys=True, indent=2) + "\n",
+        json.dumps(journey, sort_keys=True, indent=2) + "\n",
         encoding="utf-8",
     )
 
 
 def _qualify(
-    wheel: Path, receipt_path: Path, source_root: Path, *, skip_full_suite: bool = False
+    wheel: Path,
+    receipt_path: Path,
+    source_root: Path,
+    *,
+    skip_full_suite: bool = False,
+    accept_replay_golden: bool = False,
 ) -> None:
     wheel = wheel.resolve()
     source_root = source_root.resolve()
@@ -708,23 +827,56 @@ def _qualify(
             project,
             checked_env,
         )
-        journey_receipt = workspace / "journey.json"
-        _run(
-            [
+        def replay(project_name: str, *, restart_after_source: bool) -> dict[str, object]:
+            replay_project = workspace / project_name
+            replay_receipt = workspace / f"{project_name}.json"
+            command = [
                 str(python),
                 str(Path(__file__).resolve()),
                 "--journey",
                 "--server",
                 str(mcp),
                 "--project",
-                str(project),
+                str(replay_project),
                 "--receipt",
-                str(journey_receipt),
-            ],
-            cwd=workspace,
-            env=candidate_env,
+                str(replay_receipt),
+            ]
+            if restart_after_source:
+                command.append("--restart-after-source")
+            _run(command, cwd=workspace, env=candidate_env)
+            return json.loads(replay_receipt.read_text(encoding="utf-8"))
+
+        replay_project = "replay-project"
+        journey = replay(replay_project, restart_after_source=False)
+        # Run both variants at the identical generated path.  Project-root
+        # provenance is intentionally hashed into durable state, so comparing
+        # different temporary paths would manufacture a false semantic diff.
+        shutil.rmtree(workspace / replay_project)
+        interrupted = replay(replay_project, restart_after_source=True)
+        from rob2_kit.evaluation.installed_replay import normalize_semantic_value
+
+        canonical_semantics = normalize_semantic_value(journey["durable_semantics"])
+        interrupted_semantics = normalize_semantic_value(interrupted["durable_semantics"])
+        if canonical_semantics != interrupted_semantics:
+            from rob2_kit.evaluation import semantic_diff
+
+            differences = "\n".join(semantic_diff(canonical_semantics, interrupted_semantics)[:10])
+            raise AssertionError(
+                "interrupted installed replay did not converge on canonical state\n" + differences
+            )
+        if len(interrupted["semantic_trace"]["workflow_events"]) != len(
+            journey["semantic_trace"]["workflow_events"]
+        ):
+            raise AssertionError("interrupted replay repeated committed work")
+        journey["interrupted_replay"] = {
+            "normalized_trace": interrupted["normalized_trace"],
+            "durable_semantics": interrupted_semantics,
+            "converged": True,
+        }
+        journey["durable_semantics"] = canonical_semantics
+        installed_replay = _installed_replay_receipt(
+            source_root, journey, accept=accept_replay_golden
         )
-        journey = json.loads(journey_receipt.read_text(encoding="utf-8"))
         receipt = {
             "schema_version": 1,
             "wheel": wheel.name,
@@ -749,6 +901,7 @@ def _qualify(
             "adapter_launches": adapter_launches,
             "telemetry": _network_guard_receipt(network_log),
             "journey": journey,
+            "installed_replay": installed_replay,
             "owner_evaluation": {
                 "status": "external_required",
                 "receipt": "release/private-release-evaluation.md",
@@ -769,13 +922,20 @@ def main() -> None:
     parser.add_argument("--receipt", type=Path)
     parser.add_argument("--source-root", type=Path, default=Path.cwd())
     parser.add_argument("--skip-full-suite", action="store_true")
+    parser.add_argument("--accept-replay-golden", action="store_true")
     parser.add_argument("--journey", action="store_true")
+    parser.add_argument("--restart-after-source", action="store_true")
     parser.add_argument("--server", type=Path)
     parser.add_argument("--project", type=Path)
     arguments = parser.parse_args()
     if arguments.journey:
         assert arguments.server and arguments.project and arguments.receipt
-        _journey(arguments.server, arguments.project, arguments.receipt)
+        _journey(
+            arguments.server,
+            arguments.project,
+            arguments.receipt,
+            restart_after_source=arguments.restart_after_source,
+        )
     else:
         assert arguments.wheel and arguments.receipt
         _qualify(
@@ -783,6 +943,7 @@ def main() -> None:
             arguments.receipt,
             arguments.source_root,
             skip_full_suite=arguments.skip_full_suite,
+            accept_replay_golden=arguments.accept_replay_golden,
         )
 
 

@@ -25,6 +25,7 @@ def main() -> None:
     if len(receipts) != len(platforms):
         raise SystemExit("expected exactly one qualification receipt per platform")
     expected = receipts[0]["journey"]
+    expected_replay = receipts[0]["installed_replay"]
     for receipt in receipts:
         if receipt["python"] != "3.13":
             raise SystemExit(f"{receipt['platform']} did not use Python 3.13")
@@ -32,6 +33,10 @@ def main() -> None:
             raise SystemExit(
                 "canonical report, manifest, or normalized ledger receipt differs on "
                 f"{receipt['platform']}"
+            )
+        if receipt["installed_replay"] != expected_replay:
+            raise SystemExit(
+                "installed-wheel replay semantics differ on " f"{receipt['platform']}"
             )
         if not all(receipt["doctor"].values()):
             raise SystemExit(f"doctor qualification was incomplete on {receipt['platform']}")
