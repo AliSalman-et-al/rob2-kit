@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 import shutil
 import sys
 from dataclasses import dataclass
@@ -16,6 +17,28 @@ from rob2_kit.application.contracts import CONTRACT_VERSION, RUN_OPERATION_NAMES
 
 CANONICAL_SKILL_NAMES = ("rob2-init", "rob2-assess")
 SUPPORTED_HOSTS = ("codex", "claude")
+SKILL_REFERENCE_FILENAMES = (
+    "HARNESS-WORKFLOW.md",
+    "RUN-DEFINITION.md",
+    "EVIDENCE-SEARCH.md",
+    "SIGNALING-QUESTIONS.md",
+)
+# This is an adapter permission boundary, not an assertion that the server has
+# no compatibility routes.  Skills may use only these stable workflow tools.
+SKILL_ALLOWED_TOOL_NAMES = (
+    "prepare_run",
+    "continue_run",
+    "get_work_context",
+    "submit_run_proposal",
+    "confirm_run_definition",
+    "search_evidence",
+    "read_evidence",
+    "inspect_visual_candidate",
+    "submit_source_classification",
+    "submit_result_resolution",
+    "submit_domain_evidence",
+    "submit_domain_answers",
+)
 LOCK_FILENAME = "rob2.lock"
 RELEASE_MANIFEST_FILENAME = "release-manifest.json"
 ADAPTER_VERSION = "1"
@@ -27,6 +50,7 @@ class SkillPin(BaseModel):
 
     content_hash: str = Field(pattern=r"^sha256:[0-9a-f]{64}$")
     activation_fixtures_hash: str = Field(pattern=r"^sha256:[0-9a-f]{64}$")
+    forward_fixtures_hash: str = Field(pattern=r"^sha256:[0-9a-f]{64}$")
 
 
 class AdapterPin(BaseModel):
@@ -41,6 +65,7 @@ class AdapterPin(BaseModel):
 class CanonicalSkillAssets:
     skill: Path
     fixtures: Path
+    forward_fixtures: Path
 
 
 class ReleaseLock(BaseModel):
@@ -69,6 +94,7 @@ def build_host_adapters(root: Path, *, package_version: str) -> ReleaseLock:
     """Generate both host adapter trees and write the authoritative release lock."""
 
     root = root.resolve()
+    validate_skill_contract(root)
     canonical_skills = _canonical_skill_assets(root)
     launcher = _launcher(package_version)
     skill_pins = _skill_pins(canonical_skills)
@@ -85,6 +111,10 @@ def build_host_adapters(root: Path, *, package_version: str) -> ReleaseLock:
             shutil.copyfile(
                 paths.fixtures,
                 generated_skill / "activation-fixtures.json",
+            )
+            shutil.copyfile(
+                paths.forward_fixtures,
+                generated_skill / "forward-fixtures.json",
             )
 
         descriptor = _descriptor(
@@ -148,6 +178,7 @@ def verify_host_adapters(root: Path) -> None:
     """Verify canonical skills, generated adapter trees, packs, and lock hashes."""
 
     root = root.resolve()
+    validate_skill_contract(root)
     manifest = load_release_lock(root)
     canonical_skills = _canonical_skill_assets(root)
     skill_pins = _skill_pins(canonical_skills)
@@ -189,7 +220,7 @@ def verify_host_adapters(root: Path) -> None:
         for skill_name, paths in canonical_skills.items():
             generated_skill = generated_skills / skill_name
             actual_files = {path.name for path in generated_skill.iterdir()}
-            if actual_files != {"SKILL.md", "activation-fixtures.json"}:
+            if actual_files != {"SKILL.md", "activation-fixtures.json", "forward-fixtures.json"}:
                 raise ValueError(f"{host} adapter skill {skill_name} has unexpected assets")
             if _canonical_text_bytes(generated_skill / "SKILL.md") != _canonical_text_bytes(
                 paths.skill
@@ -199,6 +230,12 @@ def verify_host_adapters(root: Path) -> None:
                 generated_skill / "activation-fixtures.json"
             ) != _canonical_text_bytes(paths.fixtures):
                 raise ValueError(f"{host} adapter fixtures for {skill_name} diverge from canonical")
+            if _canonical_text_bytes(
+                generated_skill / "forward-fixtures.json"
+            ) != _canonical_text_bytes(paths.forward_fixtures):
+                raise ValueError(
+                    f"{host} adapter forward fixtures for {skill_name} diverge from canonical"
+                )
 
         expected_descriptor = _descriptor(
             host,
@@ -274,12 +311,13 @@ def _canonical_skill_assets(root: Path) -> dict[str, CanonicalSkillAssets]:
     assets: dict[str, CanonicalSkillAssets] = {}
     for skill_name in CANONICAL_SKILL_NAMES:
         skill_root = skills_root / skill_name
-        expected_files = {"SKILL.md", "activation-fixtures.json"}
+        expected_files = {"SKILL.md", "activation-fixtures.json", "forward-fixtures.json"}
         actual_files = {path.name for path in skill_root.iterdir()}
         if actual_files != expected_files:
             raise ValueError(f"canonical skill {skill_name} has unexpected assets")
         skill_path = skill_root / "SKILL.md"
         fixture_path = skill_root / "activation-fixtures.json"
+        forward_fixture_path = skill_root / "forward-fixtures.json"
         if f"name: {skill_name}" not in skill_path.read_text(encoding="utf-8"):
             raise ValueError(f"canonical skill {skill_name} has the wrong front matter name")
         try:
@@ -292,7 +330,12 @@ def _canonical_skill_assets(root: Path) -> dict[str, CanonicalSkillAssets]:
             isinstance(fixtures.get(key), list) for key in ("activates", "does_not_activate")
         ):
             raise ValueError(f"canonical skill {skill_name} fixtures are invalid")
-        assets[skill_name] = CanonicalSkillAssets(skill=skill_path, fixtures=fixture_path)
+        _validate_forward_fixtures(skill_name, forward_fixture_path)
+        assets[skill_name] = CanonicalSkillAssets(
+            skill=skill_path,
+            fixtures=fixture_path,
+            forward_fixtures=forward_fixture_path,
+        )
     return assets
 
 
@@ -301,6 +344,7 @@ def _skill_pins(assets: dict[str, CanonicalSkillAssets]) -> dict[str, SkillPin]:
         skill_name: SkillPin(
             content_hash=_hash(paths.skill),
             activation_fixtures_hash=_hash(paths.fixtures),
+            forward_fixtures_hash=_hash(paths.forward_fixtures),
         )
         for skill_name, paths in assets.items()
     }
@@ -379,6 +423,7 @@ def _descriptor(
             "package": "rob2-kit",
             "package_version": package_version,
             "skills": list(CANONICAL_SKILL_NAMES),
+            "allowed_tools": list(SKILL_ALLOWED_TOOL_NAMES),
             "trigger_description": (
                 "Prepare an evidence-grounded RoB 2 assessment and materialize a static report."
             ),
@@ -388,11 +433,119 @@ def _descriptor(
             "activation_fixtures_hashes": {
                 skill_name: pin.activation_fixtures_hash for skill_name, pin in skill_pins.items()
             },
+            "forward_fixtures_hashes": {
+                skill_name: pin.forward_fixtures_hash for skill_name, pin in skill_pins.items()
+            },
             "launcher": launcher,
             "launcher_working_directory": "project_root",
         }
     )
     return descriptor
+
+
+def validate_skill_contract(root: Path) -> None:
+    """Validate the release-owned skill, reference, and forward-test contract."""
+
+    root = root.resolve()
+    if len(SKILL_ALLOWED_TOOL_NAMES) != 12 or len(set(SKILL_ALLOWED_TOOL_NAMES)) != 12:
+        raise ValueError("skill tool allowlist must contain exactly twelve unique tools")
+    if any(not isinstance(name, str) or not name for name in SKILL_ALLOWED_TOOL_NAMES):
+        raise ValueError("skill tool allowlist is malformed")
+    if not set(SKILL_ALLOWED_TOOL_NAMES) <= set(RUN_OPERATION_NAMES):
+        raise ValueError("skill tool allowlist includes a tool outside the public workflow")
+    if tuple(SKILL_REFERENCE_FILENAMES) != tuple(dict.fromkeys(SKILL_REFERENCE_FILENAMES)):
+        raise ValueError("skill references must be unique")
+    for name in SKILL_REFERENCE_FILENAMES:
+        reference = root / "docs" / name
+        if not reference.is_file():
+            raise ValueError(f"skill reference is missing: {name}")
+        if ".md" in reference.read_text(encoding="utf-8").casefold():
+            raise ValueError(f"skill reference must not chain to another reference: {name}")
+    assets = _canonical_skill_assets(root)
+    skill_bodies = {
+        skill_name: paths.skill.read_text(encoding="utf-8")
+        for skill_name, paths in assets.items()
+    }
+    pointers_by_skill = {
+        skill_name: set(re.findall(r"\.\./references/([^/\s`]+\.md)", body))
+        for skill_name, body in skill_bodies.items()
+    }
+    pointers = set().union(*pointers_by_skill.values())
+    if pointers != set(SKILL_REFERENCE_FILENAMES):
+        raise ValueError(
+            "canonical skills must point directly to exactly the four shared references"
+    )
+    for skill_name, paths in assets.items():
+        body = skill_bodies[skill_name]
+        front_matter, delimiter, content = body.removeprefix("---\n").partition("\n---\n")
+        front_matter_lines = front_matter.splitlines()
+        if (
+            not body.startswith("---\n")
+            or not delimiter
+            or not content.strip()
+            or f"name: {skill_name}" not in front_matter_lines
+        ):
+            raise ValueError(f"canonical skill {skill_name} has invalid front matter")
+        description = next(
+            (
+                line.removeprefix("description: ")
+                for line in front_matter_lines
+                if line.startswith("description: ")
+            ),
+            "",
+        )
+        if not description or len(description) > 240:
+            raise ValueError(f"canonical skill {skill_name} description is missing or too long")
+        required_references = (
+            SKILL_REFERENCE_FILENAMES
+            if skill_name == "rob2-assess"
+            else ("HARNESS-WORKFLOW.md", "RUN-DEFINITION.md")
+        )
+        if not set(required_references) <= pointers_by_skill[skill_name]:
+            raise ValueError(f"canonical skill {skill_name} is missing a direct context pointer")
+
+
+def _validate_forward_fixtures(skill_name: str, path: Path) -> None:
+    try:
+        fixtures = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as error:
+        raise ValueError(
+            f"canonical skill {skill_name} forward fixtures are invalid: {error}"
+        ) from error
+    if not isinstance(fixtures, list) or not fixtures:
+        raise ValueError(f"canonical skill {skill_name} forward fixtures are invalid")
+    required = {"scenario", "prompt", "activated_skill", "allowed_tools"}
+    for fixture in fixtures:
+        if not isinstance(fixture, dict) or set(fixture) != required:
+            raise ValueError(f"canonical skill {skill_name} forward fixture has an invalid shape")
+        if not isinstance(fixture["scenario"], str) or not fixture["scenario"]:
+            raise ValueError(f"canonical skill {skill_name} forward fixture has no scenario")
+        if not isinstance(fixture["prompt"], str) or not fixture["prompt"]:
+            raise ValueError(f"canonical skill {skill_name} forward fixture has no prompt")
+        if fixture["activated_skill"] not in CANONICAL_SKILL_NAMES:
+            raise ValueError(f"canonical skill {skill_name} forward fixture has an invalid skill")
+        tools = fixture["allowed_tools"]
+        if not isinstance(tools, list) or not all(isinstance(tool, str) for tool in tools):
+            raise ValueError(f"canonical skill {skill_name} forward fixture has invalid tools")
+        if not set(tools) <= set(SKILL_ALLOWED_TOOL_NAMES):
+            raise ValueError(
+                f"canonical skill {skill_name} forward fixture exceeds the tool allowlist"
+            )
+        if any(
+            term in fixture["prompt"].casefold()
+            for term in ("expected answer", "expected judgment")
+        ):
+            raise ValueError(
+                f"canonical skill {skill_name} forward fixture leaks an expected answer"
+            )
+    if skill_name == "rob2-assess" and {
+        "normal",
+        "resume",
+        "negative",
+        "correction",
+        "report_explanation",
+    } - {fixture["scenario"] for fixture in fixtures}:
+        raise ValueError("rob2-assess forward fixtures do not cover the required prompt families")
 
 
 def _write_json(path: Path, value: object) -> None:

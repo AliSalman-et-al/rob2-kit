@@ -1,12 +1,14 @@
 ---
 name: rob2-assess
-description: Run or resume an evidence-grounded RoB 2 assessment for one randomized-trial Result, including signaling-question answers and deterministic judgment/report preparation. Use when asked to assess or judge RoB 2, continue an assessment, or explain its terminal report.
+description: assess or judge RoB 2, continue a Run, or explain its terminal static report.
 ---
 
 # RoB 2 assessment
 
-If the project is not initialized or needs a new run, hand initialization to
-`rob2-init`. Otherwise use the static `rob2` tools to resume the confirmed run,
+If the project is uninitialized, has an unconfirmed Run definition, or needs a
+new run, hand initialization to `rob2-init` and use
+`../references/RUN-DEFINITION.md` only for that handoff.
+Otherwise use the static `rob2` tools to resume the confirmed run,
 request the next engine-issued work item, inspect only bounded evidence and
 visual candidates, and submit typed work with the supplied mutation context.
 

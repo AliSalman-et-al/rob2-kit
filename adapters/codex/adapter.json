@@ -4,6 +4,24 @@
     "rob2-init": "sha256:e1942c9a8e59e2785b98c7a69612326330e4b5f99a0a523d1188bd739f2654fb"
   },
   "adapter_version": "1",
+  "allowed_tools": [
+    "prepare_run",
+    "continue_run",
+    "get_work_context",
+    "submit_run_proposal",
+    "confirm_run_definition",
+    "search_evidence",
+    "read_evidence",
+    "inspect_visual_candidate",
+    "submit_source_classification",
+    "submit_result_resolution",
+    "submit_domain_evidence",
+    "submit_domain_answers"
+  ],
+  "forward_fixtures_hashes": {
+    "rob2-assess": "sha256:ba79e4400550b4fe5cfcfbb8b276beb9a40c14eed67acc9e9eff3f4151b06efe",
+    "rob2-init": "sha256:6634696004ec0ee5449e5c6d125f8199da86725dbaaa9ca2b56f9a64b256232a"
+  },
   "host": "codex",
   "integration": "mcp",
   "launcher": "uvx --python 3.13 --from rob2-kit==0.1.0 rob2-mcp",
@@ -11,8 +29,8 @@
   "package": "rob2-kit",
   "package_version": "0.1.0",
   "skill_hashes": {
-    "rob2-assess": "sha256:d14d28288000e21e4a13784bafd2e754045588c52e063aab5f29e79eae2be4f1",
-    "rob2-init": "sha256:9ce835b6fb4014a4e2fc8c0248ce2a38ba7b5f99e55458981599a70ffd49e718"
+    "rob2-assess": "sha256:aedc07fb56a77d591be5f27d6631c2329bc075e5e07726f075948163cd3d340e",
+    "rob2-init": "sha256:54f73d6bdb471e5d50318b7112be9085dd67b45b080b146a36bb1603853e700f"
   },
   "skills": [
     "rob2-init",

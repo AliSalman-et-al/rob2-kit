@@ -17,7 +17,8 @@ fields; then confirm with an `Actor` containing `kind`, `actor_id`, and
 `display_name`. Completion means `continue_run` issues post-confirmation work.
 
 For run-control and progress language, progressively disclose
-`../references/HARNESS-WORKFLOW.md`. Begin or reconnect with `prepare_run`:
+`../references/HARNESS-WORKFLOW.md`; for proposal selection, correction, and
+confirmation, progressively disclose `../references/RUN-DEFINITION.md`. Begin or reconnect with `prepare_run`:
 when it returns a Current run, narrate a resume; use start-new only when the
 operator explicitly asks to replace that run. Present the proposal and
 confirmation in plain language, including any material ambiguity, without

@@ -17,6 +17,7 @@ from typing import Any
 
 from rob2_kit.release import (
     CANONICAL_SKILL_NAMES,
+    SKILL_REFERENCE_FILENAMES,
     SUPPORTED_HOSTS,
     ReleaseLock,
     load_release_lock,
@@ -34,11 +35,7 @@ _INSTALL_MUTEX = "install.lock"
 _RUNTIME_RELATIVE = ".rob2/runtime"
 _WHEEL_PIN = "release/wheel-pin.json"
 _RUNTIME_WHEEL_PIN = "release/runtime-wheel-pin.json"
-_REFERENCE_FILENAMES = (
-    "HARNESS-WORKFLOW.md",
-    "EVIDENCE-SEARCH.md",
-    "SIGNALING-QUESTIONS.md",
-)
+_REFERENCE_FILENAMES = SKILL_REFERENCE_FILENAMES
 _HOST_SKILL_ROOTS = (("codex", ".codex/skills"), ("claude", ".claude/skills"))
 
 

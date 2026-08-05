@@ -47,6 +47,7 @@ def test_generated_adapters_materialize_both_skill_trees_and_detect_drift(
     tmp_path: Path,
 ) -> None:
     shutil.copytree(ROOT / "skills", tmp_path / "skills")
+    shutil.copytree(ROOT / "docs", tmp_path / "docs")
     shutil.copytree(ROOT / "packs", tmp_path / "packs")
     shutil.copy(ROOT / "uv.lock", tmp_path / "uv.lock")
 
@@ -70,6 +71,7 @@ def test_generated_adapters_materialize_both_skill_trees_and_detect_drift(
 
 def test_release_verification_is_stable_across_text_line_endings(tmp_path: Path) -> None:
     shutil.copytree(ROOT / "skills", tmp_path / "skills")
+    shutil.copytree(ROOT / "docs", tmp_path / "docs")
     shutil.copytree(ROOT / "packs", tmp_path / "packs")
     shutil.copy(ROOT / "uv.lock", tmp_path / "uv.lock")
     build_host_adapters(tmp_path, package_version="0.1.0")
@@ -88,6 +90,7 @@ def test_release_verification_is_stable_across_text_line_endings(tmp_path: Path)
 
 def test_release_lock_rejects_an_extra_canonical_skill(tmp_path: Path) -> None:
     shutil.copytree(ROOT / "skills", tmp_path / "skills")
+    shutil.copytree(ROOT / "docs", tmp_path / "docs")
     shutil.copytree(ROOT / "packs", tmp_path / "packs")
     shutil.copy(ROOT / "uv.lock", tmp_path / "uv.lock")
     build_host_adapters(tmp_path, package_version="0.1.0")
@@ -103,6 +106,7 @@ def test_release_lock_rejects_an_extra_canonical_skill(tmp_path: Path) -> None:
 
 def test_release_lock_rejects_an_adapter_version_claim(tmp_path: Path) -> None:
     shutil.copytree(ROOT / "skills", tmp_path / "skills")
+    shutil.copytree(ROOT / "docs", tmp_path / "docs")
     shutil.copytree(ROOT / "packs", tmp_path / "packs")
     shutil.copy(ROOT / "uv.lock", tmp_path / "uv.lock")
     build_host_adapters(tmp_path, package_version="0.1.0")

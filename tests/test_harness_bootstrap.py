@@ -110,11 +110,13 @@ def test_bootstrap_installs_both_hosts_idempotently_without_overwriting_user_con
             ), host
         assert {path.name for path in (tmp_path / skill_root / "references").iterdir()} == {
             "HARNESS-WORKFLOW.md",
+            "RUN-DEFINITION.md",
             "EVIDENCE-SEARCH.md",
             "SIGNALING-QUESTIONS.md",
         }
     assert {path.name for path in (tmp_path / ".rob2" / "references").iterdir()} == {
         "HARNESS-WORKFLOW.md",
+        "RUN-DEFINITION.md",
         "EVIDENCE-SEARCH.md",
         "SIGNALING-QUESTIONS.md",
     }
@@ -284,6 +286,7 @@ def test_canonical_skills_share_progressively_disclosed_harness_references() -> 
 
     references = {
         "HARNESS-WORKFLOW.md",
+        "RUN-DEFINITION.md",
         "EVIDENCE-SEARCH.md",
         "SIGNALING-QUESTIONS.md",
     }

@@ -3,7 +3,10 @@ import os
 import subprocess
 import sys
 import zipfile
+from hashlib import sha256
 from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
 
 
 def test_wheel_ships_pack_sources_and_schemas(tmp_path: Path) -> None:
@@ -116,3 +119,18 @@ def test_clean_wheel_install_exposes_declared_entry_points(tmp_path: Path) -> No
         if (scripts / suffix).is_file()
     )
     subprocess.run([str(rob2_script), "--help"], check=True, capture_output=True, text=True)
+
+
+def test_pinned_runtime_wheel_contains_the_canonical_skill_contract() -> None:
+    """The wheel consumed by bootstrap cannot lag the checked-in skill release."""
+
+    pin = json.loads((ROOT / "release" / "runtime-wheel-pin.json").read_text(encoding="utf-8"))
+    wheel = ROOT / "release" / "runtime" / pin["filename"]
+    assert sha256(wheel.read_bytes()).hexdigest() == pin["sha256"]
+    with zipfile.ZipFile(wheel) as archive:
+        names = set(archive.namelist())
+    assert "rob2_kit/docs/RUN-DEFINITION.md" in names
+    for skill in ("rob2-init", "rob2-assess"):
+        assert f"rob2_kit/skills/{skill}/forward-fixtures.json" in names
+        assert f"rob2_kit/adapters/codex/skills/{skill}/forward-fixtures.json" in names
+        assert f"rob2_kit/adapters/claude/skills/{skill}/forward-fixtures.json" in names

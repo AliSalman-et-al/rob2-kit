@@ -1,18 +1,18 @@
 {
   "adapters": {
     "claude": {
-      "content_hash": "sha256:8df627c2012ac7fd207cabf4c55554fe8b6eae18fb2320de562c7a0a9da6bdd9",
+      "content_hash": "sha256:37af5250f8d0d7a5c4c4ea7203b9bdf58be0449c9f5cbb5f13b9968f78def123",
       "skill_hashes": {
-        "rob2-assess": "sha256:d14d28288000e21e4a13784bafd2e754045588c52e063aab5f29e79eae2be4f1",
-        "rob2-init": "sha256:9ce835b6fb4014a4e2fc8c0248ce2a38ba7b5f99e55458981599a70ffd49e718"
+        "rob2-assess": "sha256:aedc07fb56a77d591be5f27d6631c2329bc075e5e07726f075948163cd3d340e",
+        "rob2-init": "sha256:54f73d6bdb471e5d50318b7112be9085dd67b45b080b146a36bb1603853e700f"
       },
       "version": "1"
     },
     "codex": {
-      "content_hash": "sha256:357b4d15db5479217cd4b4dc9efbdb158f4896ed538cfe44963231711fa95c34",
+      "content_hash": "sha256:ba5a536a6c9da9a26def1e8f130d455f2f8675d61f7a7f6ba03c7055912ee02c",
       "skill_hashes": {
-        "rob2-assess": "sha256:d14d28288000e21e4a13784bafd2e754045588c52e063aab5f29e79eae2be4f1",
-        "rob2-init": "sha256:9ce835b6fb4014a4e2fc8c0248ce2a38ba7b5f99e55458981599a70ffd49e718"
+        "rob2-assess": "sha256:aedc07fb56a77d591be5f27d6631c2329bc075e5e07726f075948163cd3d340e",
+        "rob2-init": "sha256:54f73d6bdb471e5d50318b7112be9085dd67b45b080b146a36bb1603853e700f"
       },
       "version": "1"
     }
@@ -32,11 +32,13 @@
   "skills": {
     "rob2-assess": {
       "activation_fixtures_hash": "sha256:f0f67312e0cd5ede2126c071729af55b468ad403d1dd01981c46ee0b54dc49d1",
-      "content_hash": "sha256:d14d28288000e21e4a13784bafd2e754045588c52e063aab5f29e79eae2be4f1"
+      "content_hash": "sha256:aedc07fb56a77d591be5f27d6631c2329bc075e5e07726f075948163cd3d340e",
+      "forward_fixtures_hash": "sha256:ba79e4400550b4fe5cfcfbb8b276beb9a40c14eed67acc9e9eff3f4151b06efe"
     },
     "rob2-init": {
       "activation_fixtures_hash": "sha256:e1942c9a8e59e2785b98c7a69612326330e4b5f99a0a523d1188bd739f2654fb",
-      "content_hash": "sha256:9ce835b6fb4014a4e2fc8c0248ce2a38ba7b5f99e55458981599a70ffd49e718"
+      "content_hash": "sha256:54f73d6bdb471e5d50318b7112be9085dd67b45b080b146a36bb1603853e700f",
+      "forward_fixtures_hash": "sha256:6634696004ec0ee5449e5c6d125f8199da86725dbaaa9ca2b56f9a64b256232a"
     }
   },
   "version": 1
