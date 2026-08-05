@@ -39,6 +39,7 @@ _REVISION_MODELS: tuple[type[Revision], ...] = (
     assessment.SQAnswerRevision,
     assessment.DecisionTrace,
     assessment.AlgorithmicJudgmentRevision,
+    assessment.FinalJudgmentRevision,
     assessment.AssessmentRevision,
     evidence.EvidenceCandidate,
     evidence.EvidenceCandidateDispositionRecord,
@@ -73,6 +74,7 @@ _EVIDENCE_ITEMS = (
 )
 _EXPECTED_DEPENDENCY_MODELS: dict[str, tuple[type[BaseModel], ...]] = {
     "dependency:algorithmic-judgment": (assessment.AlgorithmicJudgmentRevision,),
+    "dependency:final-judgment": (assessment.FinalJudgmentRevision,),
     "dependency:assessment": (assessment.AssessmentRevision,),
     "dependency:canonical-unit": (CanonicalEvidenceUnit,),
     "dependency:compatible-release": (releases.PackRelease,),

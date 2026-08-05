@@ -11,7 +11,7 @@ from rob2_kit.application.preparation import (
     TrialFailed,
     TrialFailureReason,
 )
-from rob2_kit.domain.assessment import SQAnswerCategory
+from rob2_kit.domain.assessment import FinalJudgmentRevision, JudgmentLevel, SQAnswerCategory
 from rob2_kit.domain.evidence import (
     EvidenceBundle,
     EvidenceClaim,
@@ -119,6 +119,35 @@ def test_all_preparation_outcomes_round_trip(outcome: PreparationOutcome) -> Non
 def test_not_applicable_is_not_an_answer_category() -> None:
     with pytest.raises(ValueError):
         SQAnswerCategory("not_applicable")
+
+
+def test_final_judgment_preserves_algorithmic_alternative_and_evidence() -> None:
+    final = FinalJudgmentRevision(
+        **revision_fields("final-judgment"),
+        dependencies=(
+            dependency("judgment", "dependency:algorithmic-judgment"),
+            dependency("claim", "dependency:evidence-item"),
+        ),
+        domain_id="domain:randomization",
+        judgment=JudgmentLevel.HIGH,
+        algorithmic_judgment=reference("judgment"),
+        departure=True,
+        alternative=JudgmentLevel.SOME_CONCERNS,
+        material_bias_rationale="The accepted allocation evidence shows material bias.",
+        cited_evidence=(reference("claim"),),
+    )
+
+    assert FinalJudgmentRevision.model_validate_json(final.model_dump_json()) == final
+
+    with pytest.raises(ValidationError, match="requires an alternative"):
+        FinalJudgmentRevision(
+            **revision_fields("invalid-final-judgment"),
+            dependencies=(dependency("judgment", "dependency:algorithmic-judgment"),),
+            domain_id="domain:randomization",
+            judgment=JudgmentLevel.HIGH,
+            algorithmic_judgment=reference("judgment"),
+            departure=True,
+        )
 
 
 def test_evidence_claim_rejects_reversed_span() -> None:

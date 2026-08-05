@@ -11,7 +11,7 @@ from typing import Literal
 from pydantic import AliasChoices, ConfigDict, Field, model_validator
 
 from rob2_kit.application.lifecycle import ResultState, RunState
-from rob2_kit.domain.assessment import SQAnswerCategory
+from rob2_kit.domain.assessment import JudgmentLevel, SQAnswerCategory
 from rob2_kit.domain.canonical import canonical_hash
 from rob2_kit.domain.evidence import ConsiderationDisposition, EvidenceCoverageState
 from rob2_kit.domain.results import Estimate, Result, ResultSpecRevision
@@ -66,6 +66,7 @@ class RunOperation(StrEnum):
     SUBMIT_RESULT_RESOLUTION = "submit_result_resolution"
     SUBMIT_DOMAIN_EVIDENCE = "submit_domain_evidence"
     SUBMIT_DOMAIN_ANSWERS = "submit_domain_answers"
+    CORRECT_DOMAIN_ANSWERS = "correct_domain_answers"
 
 
 RUN_OPERATION_NAMES: tuple[str, ...] = tuple(operation.value for operation in RunOperation)
@@ -825,6 +826,16 @@ class SQAnswerInput(FrozenModel):
     rationale: str = Field(min_length=1)
 
 
+class FinalJudgmentInput(FrozenModel):
+    """A justified departure from an engine-derived Domain judgment."""
+
+    domain_id: Identifier
+    judgment: JudgmentLevel
+    alternative: JudgmentLevel
+    material_bias_rationale: str = Field(min_length=1)
+    cited_evidence: tuple[RecordReference, ...] = Field(min_length=1)
+
+
 class SubmitDomainAnswersRequest(FrozenModel):
     contract_version: Literal["1.0.0"]
     run_id: Identifier
@@ -833,8 +844,21 @@ class SubmitDomainAnswersRequest(FrozenModel):
     result_id: Identifier
     domain_id: Identifier
     answers: tuple[SQAnswerInput, ...] = Field(min_length=1)
+    assessor_inputs: dict[Identifier, bool] = Field(
+        default_factory=dict,
+        description=(
+            "Structured Logic-pack inputs required for the Overall judgment. "
+            "For example, submit input:combined-concerns only when the "
+            "completed Domain judgments make it applicable."
+        ),
+    )
+    final_judgment_departures: tuple[FinalJudgmentInput, ...] = ()
     project_rules: tuple[RecordReference, ...] = ()
     actor: Actor | None = None
+
+
+class CorrectDomainAnswersRequest(SubmitDomainAnswersRequest):
+    """A successor answer submission bound to the original issued Domain work token."""
 
 
 class OperationResponse(FrozenModel):
@@ -1202,5 +1226,11 @@ RUN_OPERATION_CONTRACTS: tuple[OperationContract, ...] = (
             WorkflowCondition.RUN_COMPLETE,
             WorkflowCondition.STALE,
         ),
+    ),
+    OperationContract(
+        operation=RunOperation.CORRECT_DOMAIN_ANSWERS,
+        request_type=CorrectDomainAnswersRequest,
+        response_type=SubmitDomainAnswersResponse,
+        expected_conditions=(WorkflowCondition.ACCEPTED, WorkflowCondition.STALE),
     ),
 )

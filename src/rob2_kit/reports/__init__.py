@@ -21,6 +21,7 @@ from rob2_kit.domain.assessment import (
     AlgorithmicJudgmentRevision,
     AssessmentRevision,
     DecisionTrace,
+    FinalJudgmentRevision,
     SQAnswerRevision,
 )
 from rob2_kit.domain.canonical import canonical_hash, canonical_json_bytes, sha256_digest
@@ -105,6 +106,9 @@ class DomainView(ReportModel):
     domain_id: Identifier
     label: str = Field(min_length=1)
     judgment: str = Field(pattern=r"^(low|some_concerns|high)$")
+    algorithmic_judgment: str | None = Field(
+        default=None, pattern=r"^(low|some_concerns|high)$"
+    )
     rationale: str = Field(min_length=1)
     questions: tuple[SignalingQuestionView, ...] = ()
     coverage: str = "not recorded"
@@ -855,10 +859,18 @@ def _render_domain(domain: DomainView) -> str:
         questions = "<p>No signaling-question projection was recorded for this domain.</p>"
     code = _domain_code(domain.domain_id)
     heading = f"{code}: " if code else ""
+    algorithmic = (
+        f"<p><strong>Algorithmic judgment:</strong> "
+        f"{html.escape(_display_judgment(domain.algorithmic_judgment))}</p>"
+        if domain.algorithmic_judgment is not None
+        and domain.algorithmic_judgment != domain.judgment
+        else ""
+    )
     return (
         f'<article class="domain" id="{_anchor(domain.domain_id)}">'
         f"<h2>{html.escape(heading + domain.label)}</h2>"
         f"{_judgment_badge(domain.judgment, label='Domain judgment')}"
+        f"{algorithmic}"
         f"<p><strong>Coverage:</strong> {html.escape(domain.coverage.replace('_', ' '))}</p>"
         f"{_limitations(domain.limitations)}"
         "<details><summary>Deterministic domain basis and Decision trace</summary>"
@@ -1173,6 +1185,8 @@ def _assessment_payload(assessment: AssessmentView) -> dict[str, object]:
     elif not assessment.limitations:
         payload.pop("limitations", None)
     for domain_payload, domain in zip(payload.get("domains", ()), assessment.domains, strict=False):
+        if domain.algorithmic_judgment is None:
+            domain_payload.pop("algorithmic_judgment", None)
         if not any(question.wording for question in domain.questions):
             for question_payload in domain_payload.get("questions", ()):
                 question_payload.pop("wording", None)
@@ -1308,6 +1322,11 @@ def latest_assessment_view(ledger: WorkflowLedger) -> AssessmentView:
         _load_reference(ledger, current, reference, AlgorithmicJudgmentRevision)
         for reference in assessment.judgments
     )
+    final_judgments = tuple(
+        _load_reference(ledger, current, reference, FinalJudgmentRevision)
+        for reference in assessment.final_judgments
+    )
+    final_by_domain = {judgment.domain_id: judgment for judgment in final_judgments}
     traces = tuple(
         _load_reference(ledger, current, judgment.decision_trace, DecisionTrace)
         for judgment in judgments
@@ -1330,16 +1349,34 @@ def latest_assessment_view(ledger: WorkflowLedger) -> AssessmentView:
             for question_id, answer in answers_by_sq.items()
             if not active_question_ids or question_id in active_question_ids
         }
-        evaluation = LogicEvaluator(logic).evaluate(EvaluationRequest(answers=evaluation_answers))
+        evaluation = LogicEvaluator(logic).evaluate(
+            EvaluationRequest(answers=evaluation_answers, assessor_inputs=assessment.assessor_inputs)
+        )
         expected = {judgment.domain_id: judgment.judgment for judgment in judgments}
         if evaluation.domain_judgments != expected:
             raise ValueError("stored domain judgments do not match the pinned Logic evaluation")
         active_question_ids = set(evaluation.active_question_ids)
-        overall_judgment = evaluation.overall_judgment.value
+        final_domain_judgments = {
+            judgment.domain_id: final_by_domain.get(judgment.domain_id, judgment).judgment
+            for judgment in judgments
+        }
+        final_rule = next(
+            (
+                rule
+                for rule in logic.overall_rules
+                if LogicEvaluator(logic)._matches(
+                    rule.when, {}, final_domain_judgments, assessment.assessor_inputs
+                )
+            ),
+            None,
+        )
+        if final_rule is None:
+            raise ValueError("stored Final domain judgments do not match the pinned Overall policy")
+        overall_judgment = final_rule.judgment.value
         # Preserve the complete evaluator trace (domain matches followed by
         # the matched overall rule); consumers can identify the overall rule
         # by its ``rule:overall:`` prefix without losing domain provenance.
-        overall_decision_trace = evaluation.matched_rule_ids
+        overall_decision_trace = (final_rule.id,)
     else:
         overall_judgment = _overall_judgment(
             tuple(judgment.judgment.value for judgment in judgments)
@@ -1433,8 +1470,18 @@ def latest_assessment_view(ledger: WorkflowLedger) -> AssessmentView:
             DomainView(
                 domain_id=judgment.domain_id,
                 label=_domain_label(judgment.domain_id),
-                judgment=judgment.judgment.value,
-                rationale=(f"Algorithmic judgment from {judgment.decision_trace.revision_id}."),
+                judgment=final_by_domain.get(judgment.domain_id, judgment).judgment.value,
+                algorithmic_judgment=(
+                    judgment.judgment.value
+                    if getattr(final_by_domain.get(judgment.domain_id), "departure", False)
+                    else None
+                ),
+                rationale=(
+                    final_by_domain[judgment.domain_id].material_bias_rationale
+                    if judgment.domain_id in final_by_domain
+                    and final_by_domain[judgment.domain_id].departure
+                    else f"Algorithmic judgment from {judgment.decision_trace.revision_id}."
+                ),
                 questions=tuple(
                     sorted(
                         question_domains.get(judgment.domain_id, ()),
@@ -1461,10 +1508,19 @@ def latest_assessment_view(ledger: WorkflowLedger) -> AssessmentView:
             for judgment in ordered
         )),
         visual_citations=visual_citations,
-        overall_policy_id=(ordered[0].overall_policy_id if ordered else None),
-        overall_policy_hash=(ordered[0].overall_policy_hash if ordered else None),
+        overall_policy_id=(
+            f"{logic.family_id}:overall:{logic.release_id}"
+            if logic is not None
+            else ordered[0].overall_policy_id
+            if ordered
+            else None
+        ),
+        overall_policy_hash=(
+            logic.content_hash if logic is not None else ordered[0].overall_policy_hash if ordered else None
+        ),
         overall_policy_text=(
-            "Low when all five domain judgments are Low; High when any domain judgment is High; otherwise Some concerns."
+            "The versioned Logic pack evaluates Final Domain judgments, including its "
+            "structured combined-concerns input when applicable."
             if ordered and ordered[0].overall_policy_id
             else ""
         ),

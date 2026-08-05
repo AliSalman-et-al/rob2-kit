@@ -12,6 +12,7 @@ import yaml
 from rob2_kit.application.contracts import (
     ConfirmRunDefinitionRequest,
     ContinueRunRequest,
+    CorrectDomainAnswersRequest,
     EvidencePassageInput,
     GetWorkContextRequest,
     PrepareRunRequest,
@@ -318,9 +319,15 @@ def _complete_passage_receipts(
 
 
 def _finish_current_result(
-    engine: RunEngine, run_id: str, *, prefix: str = "reconciliation"
-) -> None:
-    answers = _low_answers()
+    engine: RunEngine,
+    run_id: str,
+    *,
+    prefix: str = "reconciliation",
+    answers: dict[str, str] | None = None,
+    assessor_inputs: dict[str, bool] | None = None,
+) -> dict[str, SubmitDomainAnswersRequest]:
+    answer_values = answers or _low_answers()
+    submissions: dict[str, SubmitDomainAnswersRequest] = {}
     for index, (domain_id, question_ids) in enumerate(DOMAINS.items()):
         evidence = engine.continue_run(ContinueRunRequest(run_id=run_id)).work_item
         assert evidence is not None
@@ -336,21 +343,144 @@ def _finish_current_result(
         )
         answer = engine.continue_run(ContinueRunRequest(run_id=run_id)).work_item
         assert answer is not None
+        submission = SubmitDomainAnswersRequest(
+            contract_version="1.0.0",
+            run_id=run_id,
+            work_token=answer.work_token,
+            idempotency_key=f"idempotency:{prefix}-answers-{index}",
+            result_id=answer.result_id,
+            domain_id=answer.domain_id,
+            answers=tuple(
+                {
+                    "question_id": question_id,
+                    "answer": answer_values[question_id],
+                    "rationale": "Reconciliation fixture.",
+                }
+                for question_id in question_ids
+            ),
+            assessor_inputs=(assessor_inputs or {}),
+        )
+        engine.submit_domain_answers(submission)
+        submissions[answer.domain_id] = submission
+    return submissions
+
+
+def test_terminal_assessment_uses_structured_combined_concerns_input(tmp_path: Path) -> None:
+    """The public answer submission seam carries the required Overall-policy input."""
+
+    trial = tmp_path / "input" / "combined-concerns"
+    trial.mkdir(parents=True)
+    (trial / "report.pdf").write_bytes(b"primary")
+    engine, run_id = _prepare_confirm(
+        tmp_path,
+        config=_config(_result("result:combined-concerns", "trial:combined-concerns")),
+    )
+    _classify_current_sources(engine, run_id)
+    answers = _low_answers() | {
+        "sq:randomization:baseline-imbalance": "yes",
+        "sq:selection:prespecified-analysis": "no",
+    }
+
+    _finish_current_result(
+        engine,
+        run_id,
+        prefix="combined-concerns",
+        answers=answers,
+        assessor_inputs={"input:combined-concerns": True},
+    )
+
+    report = next((tmp_path / "output" / "report-bundle").rglob("assessment.json"))
+    assert json.loads(report.read_text(encoding="utf-8"))["overall_judgment"] == "high"
+
+
+def test_correct_domain_answers_creates_successors_without_refreezing_evidence(
+    tmp_path: Path,
+) -> None:
+    trial = tmp_path / "input" / "answer-correction"
+    trial.mkdir(parents=True)
+    (trial / "report.pdf").write_bytes(b"primary")
+    engine, run_id = _prepare_confirm(
+        tmp_path,
+        config=_config(_result("result:answer-correction", "trial:answer-correction")),
+    )
+    _classify_current_sources(engine, run_id)
+    original = _finish_current_result(engine, run_id, prefix="answer-correction")
+    request = original["domain:randomization"]
+    correction = CorrectDomainAnswersRequest.model_validate(
+        request.model_dump(mode="json")
+        | {
+            "idempotency_key": "idempotency:answer-correction-successor",
+            "answers": [
+                item.model_dump(mode="json") | {"rationale": "Corrected rationale."}
+                for item in request.answers
+            ],
+        }
+    )
+
+    response = engine.correct_domain_answers(correction)
+    repeated = engine.correct_domain_answers(correction)
+
+    assert response.committed is True
+    assert repeated.committed is False
+    assert response.answer_revisions[0].revision_id != request.work_token.work_item_id
+    assert len(list((tmp_path / "output" / "report-bundle").rglob("assessment.json"))) == 2
+
+
+def test_final_judgment_departure_must_bind_the_authorized_domain(tmp_path: Path) -> None:
+    trial = tmp_path / "input" / "departure-scope"
+    trial.mkdir(parents=True)
+    (trial / "report.pdf").write_bytes(b"primary")
+    engine, run_id = _prepare_confirm(
+        tmp_path,
+        config=_config(_result("result:departure-scope", "trial:departure-scope")),
+    )
+    _classify_current_sources(engine, run_id)
+    evidence = engine.continue_run(ContinueRunRequest(run_id=run_id)).work_item
+    assert evidence is not None
+    engine.submit_domain_evidence(
+        SubmitDomainEvidenceRequest(
+            contract_version="1.0.0",
+            run_id=run_id,
+            work_token=evidence.work_token,
+            idempotency_key="idempotency:departure-scope-evidence",
+            result_id=evidence.result_id,
+            domain_id=evidence.domain_id,
+        )
+    )
+    answer = engine.continue_run(ContinueRunRequest(run_id=run_id)).work_item
+    assert answer is not None
+
+    with pytest.raises(ValueError, match="authorized by this WorkToken"):
         engine.submit_domain_answers(
             SubmitDomainAnswersRequest(
                 contract_version="1.0.0",
                 run_id=run_id,
                 work_token=answer.work_token,
-                idempotency_key=f"idempotency:{prefix}-answers-{index}",
+                idempotency_key="idempotency:departure-scope-answers",
                 result_id=answer.result_id,
                 domain_id=answer.domain_id,
                 answers=tuple(
                     {
                         "question_id": question_id,
-                        "answer": answers[question_id],
-                        "rationale": "Reconciliation fixture.",
+                        "answer": _low_answers()[question_id],
+                        "rationale": "Fixture rationale.",
                     }
-                    for question_id in question_ids
+                    for question_id in DOMAINS[answer.domain_id]
+                ),
+                final_judgment_departures=(
+                    {
+                        "domain_id": "domain:selection",
+                        "judgment": "high",
+                        "alternative": "some_concerns",
+                        "material_bias_rationale": "Fixture departure.",
+                        "cited_evidence": [
+                            {
+                                "entity_id": "evidence:fixture",
+                                "revision_id": "revision:evidence-fixture",
+                                "content_hash": "sha256:" + ("a" * 64),
+                            }
+                        ],
+                    },
                 ),
             )
         )
@@ -1484,7 +1614,9 @@ def test_completed_deleted_required_source_becomes_terminal_diagnostic(
         if event.operation == "operation:result-report-ready"
     )
     report_record = json.loads(
-        engine._bound_ledger(run_id).artifacts.read(report_events_before[-1].output_revision_hashes[0])
+        engine._bound_ledger(run_id).artifacts.read(
+            report_events_before[-1].output_revision_hashes[0]
+        )
     )
     prior_report_root = tmp_path / report_record["report_root"]
     assert prior_report_root.is_dir()

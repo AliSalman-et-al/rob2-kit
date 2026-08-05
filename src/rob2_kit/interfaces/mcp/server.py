@@ -25,11 +25,13 @@ from rob2_kit.application.contracts import (
     Actor,
     ConfirmRunDefinitionRequest,
     ContinueRunRequest,
+    CorrectDomainAnswersRequest,
     ErrorClass,
     Estimate,
     EvidenceConsiderationInput,
     EvidenceCoverageState,
     EvidencePassageInput,
+    FinalJudgmentInput,
     GetWorkContextRequest,
     InspectVisualCandidateRequest,
     NextAction,
@@ -88,6 +90,7 @@ CANONICAL_TOOL_NAMES: tuple[str, ...] = (
     "resolve_result",
     "submit_domain_evidence",
     "submit_domain_answers",
+    "correct_domain_answers",
 )
 
 
@@ -887,6 +890,8 @@ def create_server(
         domain_id: str,
         answers: list[SQAnswerInput],
         contract_version: Literal["1.0.0"],
+        assessor_inputs: dict[str, bool] | None = None,
+        final_judgment_departures: list[FinalJudgmentInput] | None = None,
         project_rules: list[RecordReference] | None = None,
     ) -> dict[str, Any]:
         """Answer every active question in get_work_context.
@@ -903,6 +908,46 @@ def create_server(
                         "result_id": result_id,
                         "domain_id": domain_id,
                         "answers": answers,
+                        "assessor_inputs": assessor_inputs or {},
+                        "final_judgment_departures": final_judgment_departures or (),
+                        "project_rules": project_rules or (),
+                        "contract_version": contract_version,
+                    }
+                )
+            )
+        )
+
+    @server.tool(name="correct_domain_answers")
+    def correct_domain_answers(
+        run_id: str,
+        work_token: WorkToken,
+        result_id: str,
+        domain_id: str,
+        answers: list[SQAnswerInput],
+        contract_version: Literal["1.0.0"],
+        assessor_inputs: dict[str, bool] | None = None,
+        final_judgment_departures: list[FinalJudgmentInput] | None = None,
+        project_rules: list[RecordReference] | None = None,
+    ) -> dict[str, Any]:
+        """Correct one previously submitted Domain answer set using its original WorkToken.
+
+        This creates immutable successor SQ Answer revisions and refreshes only downstream
+        judgments, the Assessment, and its report; frozen evidence is reused unchanged.
+        """
+        return _dump(
+            engine.correct_domain_answers(
+                CorrectDomainAnswersRequest.model_validate(
+                    {
+                        "run_id": run_id,
+                        "work_token": work_token,
+                        "idempotency_key": _submission_key(
+                            "correct-domain-answers", work_token.token
+                        ),
+                        "result_id": result_id,
+                        "domain_id": domain_id,
+                        "answers": answers,
+                        "assessor_inputs": assessor_inputs or {},
+                        "final_judgment_departures": final_judgment_departures or (),
                         "project_rules": project_rules or (),
                         "contract_version": contract_version,
                     }

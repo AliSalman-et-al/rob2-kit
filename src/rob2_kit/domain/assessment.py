@@ -2,7 +2,7 @@
 
 from enum import StrEnum
 
-from pydantic import Field
+from pydantic import Field, model_validator
 
 from rob2_kit.domain.revisions import ContentHash, Identifier, RecordReference, Revision
 
@@ -68,6 +68,46 @@ class AlgorithmicJudgmentRevision(Revision):
     overall_policy_hash: ContentHash | None = None
 
 
+class FinalJudgmentRevision(Revision):
+    """An assessor-attributed Domain judgment preserving the proposed result."""
+
+    dependency_roles = {
+        "algorithmic_judgment": "dependency:algorithmic-judgment",
+        "cited_evidence": "dependency:evidence-item",
+    }
+    domain_id: Identifier
+    judgment: JudgmentLevel
+    algorithmic_judgment: RecordReference
+    departure: bool = False
+    alternative: JudgmentLevel | None = None
+    material_bias_rationale: str | None = Field(default=None, min_length=1)
+    cited_evidence: tuple[RecordReference, ...] = ()
+
+    @model_validator(mode="after")
+    def validate_departure(self) -> "FinalJudgmentRevision":
+        departure_fields = (
+            self.alternative,
+            self.material_bias_rationale,
+            self.cited_evidence,
+        )
+        if self.departure and (
+            self.alternative is None
+            or self.material_bias_rationale is None
+            or not self.cited_evidence
+        ):
+            raise ValueError(
+                "a Final judgment departure requires an alternative, material-bias rationale, "
+                "and cited Evidence"
+            )
+        if self.departure and self.judgment == self.alternative:
+            raise ValueError("a Final judgment departure must differ from its alternative")
+        if not self.departure and any(departure_fields):
+            raise ValueError("an accepted Algorithmic judgment cannot carry departure fields")
+        if self.departure and not self.material_bias_rationale.strip():
+            raise ValueError("a Final judgment departure requires a material-bias rationale")
+        return self
+
+
 class AssessmentRevision(Revision):
     dependency_roles = {
         "result_spec": "dependency:result-spec",
@@ -75,9 +115,12 @@ class AssessmentRevision(Revision):
         "evidence_bundles": "dependency:evidence-bundle",
         "answers": "dependency:sq-answer",
         "judgments": "dependency:algorithmic-judgment",
+        "final_judgments": "dependency:final-judgment",
     }
     result_spec: RecordReference
     source_inventory: RecordReference
     evidence_bundles: tuple[RecordReference, ...]
     answers: tuple[RecordReference, ...]
     judgments: tuple[RecordReference, ...]
+    final_judgments: tuple[RecordReference, ...] = ()
+    assessor_inputs: dict[Identifier, bool] = {}

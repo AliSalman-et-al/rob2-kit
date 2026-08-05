@@ -23,9 +23,11 @@ from rob2_kit.application.contracts import (
     ConfirmRunDefinitionResponse,
     ContinueRunRequest,
     ContinueRunResponse,
+    CorrectDomainAnswersRequest,
     DomainContextPack,
     ErrorClass,
     EvidenceConsiderationInput,
+    FinalJudgmentInput,
     GetWorkContextRequest,
     GetWorkContextResponse,
     InspectVisualCandidateRequest,
@@ -87,10 +89,11 @@ from rob2_kit.domain.assessment import (
     AlgorithmicJudgmentRevision,
     AssessmentRevision,
     DecisionTrace,
+    FinalJudgmentRevision,
     JudgmentLevel,
     SQAnswerRevision,
 )
-from rob2_kit.domain.canonical import canonical_hash, sha256_digest
+from rob2_kit.domain.canonical import canonical_hash, canonical_json_bytes, sha256_digest
 from rob2_kit.domain.evidence import (
     ConsiderationDisposition,
     EvidenceBundle,
@@ -470,6 +473,8 @@ class _DomainAnswersRecord(FrozenModel):
     domain_id: Identifier
     answers: dict[Identifier, str]
     rationales: dict[Identifier, str]
+    assessor_inputs: dict[Identifier, bool] = {}
+    final_judgment_departures: tuple[FinalJudgmentInput, ...] = ()
     project_rules: tuple[RecordReference, ...] = ()
     answer_revisions: tuple[RecordReference, ...] = ()
     submission: SubmitDomainAnswersRequest
@@ -2751,6 +2756,13 @@ class RunEngine:
             raise ValueError(f"answers required for active questions: {sorted(missing)}")
         if inactive:
             raise ValueError(f"answers supplied for not_applicable questions: {sorted(inactive)}")
+        departure_domains = {departure.domain_id for departure in request.final_judgment_departures}
+        if departure_domains and departure_domains != {request.domain_id}:
+            raise ValueError(
+                "Final judgment departures must bind the Domain authorized by this WorkToken"
+            )
+        if len(departure_domains) != len(request.final_judgment_departures):
+            raise ValueError("each Domain may declare at most one Final judgment departure")
         if not self._has_domain_checkpoint(
             self._events_for_run(ledger, request.run_id),
             request.result_id,
@@ -2773,6 +2785,8 @@ class RunEngine:
             domain_id=request.domain_id,
             answers={item.question_id: item.answer.value for item in request.answers},
             rationales={item.question_id: item.rationale for item in request.answers},
+            assessor_inputs=request.assessor_inputs,
+            final_judgment_departures=request.final_judgment_departures,
             project_rules=request.project_rules,
             answer_revisions=answer_revisions,
             submission=request,
@@ -2785,6 +2799,114 @@ class RunEngine:
             operation_key=request.idempotency_key,
             artifact=normalized,
             checkpoint=f"checkpoint:answers-{request.domain_id.removeprefix('domain:')}",
+        )
+        judgments = self._materialize_terminal(ledger, request.run_id, request.result_id)
+        projection = self._projection(ledger, request.run_id)
+        return SubmitDomainAnswersResponse(
+            operation_id=result.operation_id,
+            ledger_cursor=f"ledger:{result.sequence}",
+            affected_scope=(request.result_id,),
+            condition=WorkflowCondition.ACCEPTED,
+            committed=not result.duplicate,
+            next_permitted_action=RunOperation.CONTINUE_RUN,
+            run_id=request.run_id,
+            run_state=projection.run_state,
+            result_id=request.result_id,
+            result_state=self._result_state(projection, request.result_id),
+            domain_id=request.domain_id,
+            answer_revisions=answer_revisions,
+            judgments=judgments,
+        )
+
+    def correct_domain_answers(
+        self, request: CorrectDomainAnswersRequest
+    ) -> SubmitDomainAnswersResponse:
+        """Create immutable answer successors from the original Domain authority."""
+
+        ledger = self._bound_ledger(request.run_id)
+        existing = self._submission_retry_event(
+            ledger, request.run_id, request.idempotency_key, {"operation:correct-domain-answers"}
+        )
+        if existing is not None:
+            record = _DomainAnswersRecord.model_validate_json(
+                ledger.artifacts.read(existing.output_revision_hashes[0])
+            )
+            if record.submission.model_dump(mode="json") != request.model_dump(mode="json"):
+                raise ValueError(
+                    "correction idempotency key was already used with different content"
+                )
+            projection = self._projection(ledger, request.run_id)
+            return SubmitDomainAnswersResponse(
+                operation_id=existing.operation_id,
+                ledger_cursor=f"ledger:{len(ledger.events())}",
+                affected_scope=(request.result_id,),
+                condition=WorkflowCondition.ACCEPTED,
+                committed=False,
+                next_permitted_action=RunOperation.CONTINUE_RUN,
+                run_id=request.run_id,
+                run_state=projection.run_state,
+                result_id=request.result_id,
+                result_state=self._result_state(projection, request.result_id),
+                domain_id=request.domain_id,
+                answer_revisions=record.answer_revisions,
+                judgments=(),
+            )
+        self._validate_result_domain(ledger, request.run_id, request.result_id, request.domain_id)
+        prior = False
+        for event in self._events_for_run(ledger, request.run_id):
+            if event.scope != request.result_id or event.operation not in {
+                "operation:submit-domain-answers",
+                "operation:correct-domain-answers",
+            }:
+                continue
+            record = _DomainAnswersRecord.model_validate_json(
+                ledger.artifacts.read(event.output_revision_hashes[0])
+            )
+            if (
+                record.domain_id == request.domain_id
+                and record.submission.work_token == request.work_token
+            ):
+                prior = True
+                break
+        if not prior:
+            raise ValueError("correction requires the original issued Domain answer WorkToken")
+        logic = self._logic_pack()
+        domain = next(item for item in logic.domains if item.id == request.domain_id)
+        supplied = {item.question_id for item in request.answers}
+        if len(supplied) != len(request.answers):
+            raise ValueError("each signaling question may be answered only once")
+        evaluator = LogicEvaluator(logic)
+        questions = {question.id: question for question in logic.questions}
+        answer_values = {item.question_id: item.answer for item in request.answers}
+        active = {
+            question_id
+            for question_id in domain.question_ids
+            if questions[question_id].active_if is None
+            or evaluator._matches(questions[question_id].active_if, answer_values, {}, {})
+        }
+        if supplied != active:
+            raise ValueError("correction must answer every and only active signaling questions")
+        answer_revisions = self._commit_domain_answers(ledger, request, domain)
+        normalized = _DomainAnswersRecord(
+            run_id=request.run_id,
+            result_id=request.result_id,
+            domain_id=request.domain_id,
+            answers={item.question_id: item.answer.value for item in request.answers},
+            rationales={item.question_id: item.rationale for item in request.answers},
+            assessor_inputs=request.assessor_inputs,
+            final_judgment_departures=request.final_judgment_departures,
+            project_rules=request.project_rules,
+            answer_revisions=answer_revisions,
+            submission=request,
+        )
+        result = self._commit_submission(
+            ledger,
+            run_id=request.run_id,
+            scope=request.result_id,
+            operation="operation:correct-domain-answers",
+            operation_key=request.idempotency_key,
+            artifact=normalized,
+            checkpoint=f"checkpoint:answers-corrected-{request.domain_id.removeprefix('domain:')}",
         )
         judgments = self._materialize_terminal(ledger, request.run_id, request.result_id)
         projection = self._projection(ledger, request.run_id)
@@ -2993,9 +3115,7 @@ class RunEngine:
         for disposition in dispositions:
             if disposition.disposition is ConsiderationDisposition.SUPERSEDED:
                 assert disposition.superseded_by is not None
-                supersession_pair = frozenset(
-                    (disposition.item_id, disposition.superseded_by)
-                )
+                supersession_pair = frozenset((disposition.item_id, disposition.superseded_by))
                 if not any(supersession_pair <= group for group in conflict_groups):
                     raise ValueError(
                         "superseded evidence must link its replacement in a recorded conflict"
@@ -3051,10 +3171,9 @@ class RunEngine:
         if receipt.guidance_release_id != f"guidance:rob2-{guidance.release_id}":
             raise ValueError("Search coverage receipt does not bind the active Guidance release")
         expected_seed_family = "seed:" + receipt.sq_id.removeprefix("sq:").replace(":", "-")
-        if (
-            receipt.required_seed_families != (expected_seed_family,)
-            or receipt.completed_seed_families != (expected_seed_family,)
-        ):
+        if receipt.required_seed_families != (
+            expected_seed_family,
+        ) or receipt.completed_seed_families != (expected_seed_family,):
             raise ValueError("Search coverage receipt does not use the engine-issued expected pass")
         expected_rule_ids = tuple(sorted(rule.entity_id for rule in request.project_rules))
         if receipt.project_rule_ids != expected_rule_ids:
@@ -3297,8 +3416,7 @@ class RunEngine:
                 "no_information_basis": request.no_information_basis,
                 "conflicts": request.conflicts,
                 "coverage_receipts": [
-                    receipt.model_dump(mode="json")
-                    for receipt in question_coverage_refs
+                    receipt.model_dump(mode="json") for receipt in question_coverage_refs
                 ],
                 "consideration_manifest": manifest_ref.model_dump(mode="json"),
             }
@@ -4534,10 +4652,20 @@ class RunEngine:
             ),
             default=0,
         )
+        latest_correction = max(
+            (
+                event.sequence
+                for event in events
+                if event.operation == "operation:correct-domain-answers"
+                and event.scope == result_id
+            ),
+            default=0,
+        )
         if any(
             event.operation == "operation:result-report-ready"
             and event.scope == result_id
             and event.sequence > invalidated_at
+            and event.sequence > latest_correction
             for event in events
         ):
             self._repair_report_publication(ledger, run_id)
@@ -4562,7 +4690,8 @@ class RunEngine:
         answer_payloads = [
             self._event_payload(ledger, event)
             for event in events
-            if event.operation == "operation:submit-domain-answers"
+            if event.operation
+            in {"operation:submit-domain-answers", "operation:correct-domain-answers"}
             and event.scope == result_id
             and event.sequence > invalidated_at
         ]
@@ -4627,6 +4756,7 @@ class RunEngine:
         # A Result may only have one immutable answer checkpoint per domain.
         answers: dict[str, str] = {}
         rationales: dict[str, str] = {}
+        assessor_inputs: dict[str, bool] = {}
         for payload in answer_payloads:
             raw_answers = payload.get("answers", {})
             if isinstance(raw_answers, dict):
@@ -4634,10 +4764,36 @@ class RunEngine:
             raw_rationales = payload.get("rationales", {})
             if isinstance(raw_rationales, dict):
                 rationales.update(cast(dict[str, str], raw_rationales))
-        evaluation = LogicEvaluator(logic).evaluate(EvaluationRequest(answers=answers))
+            raw_assessor_inputs = payload.get("assessor_inputs", {})
+            if not isinstance(raw_assessor_inputs, dict):
+                raise ValueError("assessor inputs must be a structured mapping")
+            for input_id, value in raw_assessor_inputs.items():
+                if not isinstance(input_id, str):
+                    raise ValueError("assessor input IDs must be strings")
+                if not isinstance(value, bool):
+                    raise ValueError("assessor inputs must be boolean")
+                if input_id in assessor_inputs and assessor_inputs[input_id] != value:
+                    raise ValueError(f"conflicting assessor input supplied for {input_id}")
+                assessor_inputs[input_id] = value
+        evaluation = LogicEvaluator(logic).evaluate(
+            EvaluationRequest(answers=answers, assessor_inputs=assessor_inputs)
+        )
         assessment_digest = self._digest(
-            f"{run_id}|{result_id}|{json.dumps(answers, sort_keys=True)}|"
-            f"invalidated:{invalidated_at}"
+            canonical_json_bytes(
+                {
+                    "run_id": run_id,
+                    "result_id": result_id,
+                    "answers": answers,
+                    "rationales": rationales,
+                    "assessor_inputs": assessor_inputs,
+                    "final_judgment_departures": [
+                        departure
+                        for payload in answer_payloads
+                        for departure in payload.get("final_judgment_departures", ())
+                    ],
+                    "invalidated_at": invalidated_at,
+                }
+            ).decode()
         )
         evidence_refs, answer_refs = self._assessment_inputs(
             ledger, run_id, result_id, invalidated_at
@@ -4651,6 +4807,37 @@ class RunEngine:
             answer_payloads=answer_payloads,
             assessment_digest=assessment_digest,
         )
+        final_judgment_references = self._materialize_final_judgment_revisions(
+            ledger,
+            result_id,
+            logic=logic,
+            evaluation=evaluation,
+            judgment_references=judgment_references,
+            evidence_references=evidence_refs,
+            answer_payloads=answer_payloads,
+            assessment_digest=assessment_digest,
+        )
+        final_judgments = tuple(
+            FinalJudgmentRevision.model_validate_json(ledger.artifacts.read(reference.content_hash))
+            for reference in final_judgment_references
+        )
+        final_by_domain = {judgment.domain_id: judgment for judgment in final_judgments}
+        final_domain_judgments = {
+            domain_id: judgment.judgment for domain_id, judgment in final_by_domain.items()
+        }
+        final_overall_rule = next(
+            (
+                rule
+                for rule in logic.overall_rules
+                if LogicEvaluator(logic)._matches(
+                    rule.when, {}, final_domain_judgments, assessor_inputs
+                )
+            ),
+            None,
+        )
+        if final_overall_rule is None:
+            raise ValueError("no Overall policy rule matched Final Domain judgments")
+        final_overall = final_overall_rule.judgment
         assessment_revision_id = f"assessment:{assessment_digest}"
         visual_citations = self._visual_citations(ledger, evidence_refs)
         questions_by_id = self._report_questions(
@@ -4700,14 +4887,8 @@ class RunEngine:
             effect_measure=result.effect_measure,
             source_locator=result.source_locator,
         )
-        overall_policy_id = "policy:overall-maximum-domain-1.0.0"
-        overall_policy_hash = canonical_hash(
-            {
-                "policy_id": overall_policy_id,
-                "order": ["low", "some_concerns", "high"],
-                "rules": ("all_low", "any_high", "otherwise_some_concerns"),
-            }
-        )
+        overall_policy_id = f"{logic.family_id}:overall:{logic.release_id}"
+        overall_policy_hash = logic.content_hash
         domain_labels = {
             "domain:randomization": "Bias arising from the randomization process",
             "domain:deviations": "Bias due to deviations from intended interventions",
@@ -4749,14 +4930,16 @@ class RunEngine:
                 source_locator=result_spec.result.source_locator,
                 estimate=estimate,
             ),
-            overall_judgment=evaluation.overall_judgment.value,
+            overall_judgment=final_overall.value,
             domains=tuple(
                 DomainView(
                     domain_id=domain.id,
                     label=domain_labels.get(domain.id, domain.id),
-                    judgment=evaluation.domain_judgments[domain.id].value,
+                    judgment=final_by_domain[domain.id].judgment.value,
+                    algorithmic_judgment=evaluation.domain_judgments[domain.id].value,
                     rationale=(
-                        "Deterministic Logic-pack evaluation; matched rules: "
+                        final_by_domain[domain.id].material_bias_rationale
+                        or "Deterministic Logic-pack evaluation; matched rules: "
                         + ", ".join(evaluation.matched_rule_ids)
                     ),
                     questions=tuple(
@@ -4775,11 +4958,10 @@ class RunEngine:
             overall_policy_id=overall_policy_id,
             overall_policy_hash=overall_policy_hash,
             overall_policy_text=(
-                "Low when all five domain judgments are Low; High when any domain judgment "
-                "is High; "
-                "otherwise Some concerns."
+                "The versioned Logic pack evaluates Final Domain judgments, including its "
+                "structured combined-concerns input when applicable."
             ),
-            overall_decision_trace=tuple(evaluation.matched_rule_ids),
+            overall_decision_trace=(final_overall_rule.id,),
         )
         result_spec_ref = self._result_spec_reference(ledger, result_id)
         source_inventory_ref = self._freeze_source_inventory(
@@ -4804,6 +4986,10 @@ class RunEngine:
                     Dependency(**reference.model_dump(), role="dependency:algorithmic-judgment")
                     for reference in judgment_references
                 ),
+                *(
+                    Dependency(**reference.model_dump(), role="dependency:final-judgment")
+                    for reference in final_judgment_references
+                ),
                 Dependency(**policy_ref.model_dump(), role="dependency:policy-release"),
             ),
             actor=ENGINE_ACTOR,
@@ -4813,6 +4999,8 @@ class RunEngine:
             evidence_bundles=evidence_refs,
             answers=answer_refs,
             judgments=judgment_references,
+            final_judgments=final_judgment_references,
+            assessor_inputs=assessor_inputs,
         )
         try:
             visual_citations, visual_assets = self._materialize_visual_assets(
@@ -4927,9 +5115,14 @@ class RunEngine:
                             "active_question_ids": evaluation.active_question_ids,
                             "inactive_question_ids": evaluation.inactive_question_ids,
                             "matched_rule_ids": evaluation.matched_rule_ids,
+                            "assessor_inputs": evaluation.assessor_inputs,
                             "judgment_references": [
                                 reference.model_dump(mode="json")
                                 for reference in judgment_references
+                            ],
+                            "final_judgment_references": [
+                                reference.model_dump(mode="json")
+                                for reference in final_judgment_references
                             ],
                         },
                         sort_keys=True,
@@ -4950,8 +5143,8 @@ class RunEngine:
         manifest = {
             "assessment_revision_id": assessment_revision_id,
             "result_id": result_id,
-            "overall_judgment": evaluation.overall_judgment.value,
-            "domains": evaluation.domain_judgments,
+            "overall_judgment": final_overall.value,
+            "domains": final_domain_judgments,
             "files": {
                 name: "sha256:" + hashlib.sha256(content).hexdigest()
                 for name, content in report_files.items()
@@ -4970,12 +5163,15 @@ class RunEngine:
             run_id=run_id,
             result_id=result_id,
             assessment_revision_id=assessment_revision_id,
-            overall_judgment=evaluation.overall_judgment,
-            domain_judgments=evaluation.domain_judgments,
+            overall_judgment=final_overall,
+            domain_judgments=final_domain_judgments,
             report_root=report_root.relative_to(self._required_root()).as_posix(),
             artifact_names=tuple(sorted(report_files)),
             staging_root=staging.relative_to(self._required_root()).as_posix(),
         )
+        if latest_correction:
+            os.replace(staging, report_root)
+            return judgment_references
         result_started = _ResultStartedRecord(run_id=run_id, result_id=result_id)
         transitions = [
             self._transition(
@@ -5407,6 +5603,7 @@ class RunEngine:
             if event.operation not in {
                 "operation:submit-domain-evidence",
                 "operation:submit-domain-answers",
+                "operation:correct-domain-answers",
             }:
                 continue
             payload = self._event_payload(ledger, event)
@@ -5424,7 +5621,7 @@ class RunEngine:
                     reference = RecordReference.model_validate(item)
                 except (TypeError, ValueError):
                     continue
-                target[reference.revision_id] = reference
+                target[reference.entity_id] = reference
         return (
             tuple(bundles[key] for key in sorted(bundles)),
             tuple(answers[key] for key in sorted(answers)),
@@ -6102,18 +6299,8 @@ class RunEngine:
                 decision_trace=trace_ref,
                 logic_pack_release_id=logic.release_id,
                 logic_pack_hash=logic.content_hash,
-                overall_policy_id="policy:overall-maximum-domain-1.0.0",
-                overall_policy_hash=canonical_hash(
-                    {
-                        "policy_id": "policy:overall-maximum-domain-1.0.0",
-                        "order": ["low", "some_concerns", "high"],
-                        "rules": (
-                            "all_low",
-                            "any_high",
-                            "otherwise_some_concerns",
-                        ),
-                    }
-                ),
+                overall_policy_id=f"{logic.family_id}:overall:{logic.release_id}",
+                overall_policy_hash=logic.content_hash,
             )
             judgment_refs.append(
                 self._commit_frozen_artifact(
@@ -6129,6 +6316,127 @@ class RunEngine:
                 )
             )
         return tuple(judgment_refs)
+
+    def _materialize_final_judgment_revisions(
+        self,
+        ledger: WorkflowLedger,
+        result_id: Identifier,
+        *,
+        logic: Any,
+        evaluation: Any,
+        judgment_references: tuple[RecordReference, ...],
+        evidence_references: tuple[RecordReference, ...],
+        answer_payloads: list[dict[str, Any]],
+        assessment_digest: str,
+    ) -> tuple[RecordReference, ...]:
+        """Freeze one Final judgment per Domain without losing the algorithmic result."""
+
+        departures: dict[str, FinalJudgmentInput] = {}
+        answer_actors: dict[str, Actor] = {}
+        for payload in answer_payloads:
+            submission = SubmitDomainAnswersRequest.model_validate(payload["submission"])
+            answer_actors[submission.domain_id] = submission.actor or ASSESSMENT_AGENT_ACTOR
+            raw_departures = payload.get("final_judgment_departures", ())
+            if not isinstance(raw_departures, (list, tuple)):
+                raise ValueError("final judgment departures must be a structured list")
+            for raw_departure in raw_departures:
+                departure = FinalJudgmentInput.model_validate(raw_departure)
+                if departure.domain_id in departures:
+                    raise ValueError(
+                        f"each Domain may declare at most one Final judgment departure: "
+                        f"{departure.domain_id}"
+                    )
+                departures[departure.domain_id] = departure
+
+        known_domains = {domain.id for domain in logic.domains}
+        unknown_domains = set(departures) - known_domains
+        if unknown_domains:
+            raise ValueError(
+                f"Final judgment departures name unknown Domains: {sorted(unknown_domains)}"
+            )
+
+        accepted_evidence: set[tuple[str, str, str]] = set()
+        for bundle_reference in evidence_references:
+            bundle = EvidenceBundle.model_validate_json(
+                ledger.artifacts.read(bundle_reference.content_hash)
+            )
+            accepted_evidence.update(
+                (item.entity_id, item.revision_id, item.content_hash) for item in bundle.items
+            )
+
+        references: list[RecordReference] = []
+        now = self._now()
+        for domain, algorithmic_reference in zip(logic.domains, judgment_references, strict=True):
+            algorithmic = evaluation.domain_judgments[domain.id]
+            departure = departures.get(domain.id)
+            if departure is not None:
+                if departure.alternative != algorithmic:
+                    raise ValueError(
+                        f"Final judgment alternative for {domain.id} must equal its "
+                        "Algorithmic judgment"
+                    )
+                if departure.judgment == algorithmic:
+                    raise ValueError(
+                        f"Final judgment departure for {domain.id} must differ from "
+                        "Algorithmic judgment"
+                    )
+                cited = tuple(departure.cited_evidence)
+                if any(
+                    (reference.entity_id, reference.revision_id, reference.content_hash)
+                    not in accepted_evidence
+                    for reference in cited
+                ):
+                    raise ValueError(
+                        "Final judgment departures must cite accepted immutable Evidence claims"
+                    )
+                final_judgment = departure.judgment
+                alternative = departure.alternative
+                rationale = departure.material_bias_rationale
+            else:
+                cited = ()
+                final_judgment = algorithmic
+                alternative = None
+                rationale = None
+            suffix = self._digest(f"{assessment_digest}|final-judgment|{domain.id}")
+            final = FinalJudgmentRevision(
+                entity_id=(
+                    f"final-judgment:{result_id.removeprefix('result:')}-"
+                    f"{domain.id.removeprefix('domain:')}"
+                ),
+                revision_id=f"revision:final-judgment-{suffix}",
+                dependencies=(
+                    Dependency(
+                        **algorithmic_reference.model_dump(), role="dependency:algorithmic-judgment"
+                    ),
+                    *(
+                        Dependency(**reference.model_dump(), role="dependency:evidence-item")
+                        for reference in cited
+                    ),
+                ),
+                actor=answer_actors[domain.id],
+                observed_at=now,
+                domain_id=domain.id,
+                judgment=final_judgment,
+                algorithmic_judgment=algorithmic_reference,
+                departure=departure is not None,
+                alternative=alternative,
+                material_bias_rationale=rationale,
+                cited_evidence=cited,
+            )
+            references.append(
+                self._commit_frozen_artifact(
+                    ledger,
+                    scope=result_id,
+                    operation="operation:final-judgment-revision",
+                    operation_key=f"idempotency:final-judgment-{suffix}",
+                    entity_id=final.entity_id,
+                    revision_id=final.revision_id,
+                    artifact=final,
+                    actor=answer_actors[domain.id],
+                    dependencies=final.dependencies,
+                )
+            )
+        return tuple(references)
 
     def _result_spec_for(
         self,
