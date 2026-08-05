@@ -284,6 +284,25 @@ def test_pending_recovery_refuses_edited_candidate_content(tmp_path: Path) -> No
     assert skill.read_text(encoding="utf-8") == "USER EDIT\n"
 
 
+def test_pending_recovery_refuses_unrelated_host_configuration_edits(tmp_path: Path) -> None:
+    (tmp_path / ".mcp.json").write_text(
+        '{"mcpServers":{"unrelated":{"command":"keep"}}}\n', encoding="utf-8"
+    )
+    bootstrap_project(tmp_path)
+    manifest = harness._load_ownership_manifest(tmp_path)
+    backup = harness._write_rollback_backup(tmp_path, manifest)
+    harness._write_pending_upgrade(
+        tmp_path, manifest, backup, tuple(harness._candidate_owned_source_paths(Path.cwd()))
+    )
+    claude = tmp_path / ".mcp.json"
+    claude.write_text('{"mcpServers":{"unrelated":{"command":"user-edit"}}}\n', encoding="utf-8")
+
+    with pytest.raises(HarnessBootstrapError, match="interrupted release candidate differs"):
+        upgrade_project(tmp_path)
+
+    assert "user-edit" in claude.read_text(encoding="utf-8")
+
+
 def test_incompatible_durable_state_has_exact_schema_diagnosis(tmp_path: Path) -> None:
     ledger = tmp_path / ".rob2" / "ledger.sqlite3"
     ledger.parent.mkdir()

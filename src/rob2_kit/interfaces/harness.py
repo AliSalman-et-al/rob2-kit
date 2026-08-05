@@ -48,6 +48,7 @@ _OWNED_METADATA_PATHS = (
     ".rob2/install-journal.json",
     ".rob2/runtime",
 )
+_HOST_CONFIGURATION_PATHS = (".codex/config.toml", ".mcp.json")
 
 
 def preview_upgrade_project(project_root: Path) -> dict[str, Any]:
@@ -253,6 +254,7 @@ def uninstall_project(project_root: Path, *, apply: bool = False) -> dict[str, A
     backup = _begin_recoverable_lifecycle(root, manifest)
     try:
         _remove_owned_host_configuration(root, manifest)
+        _update_pending_candidate_hashes(root)
         _remove_owned_files(root, [*manifest["owned_paths"], *_owned_metadata_paths(manifest)])
         _remove_owned_runtime(root)
         _clear_pending_upgrade(root, backup)
@@ -1215,7 +1217,9 @@ def _write_pending_upgrade(
 ) -> None:
     """Durably describe how to restore before changing release-owned bytes."""
 
-    full_candidate_paths = sorted((*candidate_paths, *_owned_metadata_paths(manifest)))
+    full_candidate_paths = sorted(
+        (*candidate_paths, *_owned_metadata_paths(manifest), *_HOST_CONFIGURATION_PATHS)
+    )
     hashes = dict(candidate_hashes or {})
     for relative in full_candidate_paths:
         current = _project_relative_path(root, relative)
@@ -1247,8 +1251,9 @@ def _update_pending_candidate_hashes(root: Path) -> None:
         ) from error
     if not isinstance(hashes, dict) or not isinstance(paths, list):
         raise HarnessBootstrapError("pending release transaction cannot record generated metadata")
+    tracked_paths = (*_OWNED_METADATA_PATHS, *_HOST_CONFIGURATION_PATHS)
     for relative in paths:
-        if isinstance(relative, str) and relative in _OWNED_METADATA_PATHS:
+        if isinstance(relative, str) and relative in tracked_paths:
             candidate = _project_relative_path(root, relative)
             if candidate.is_file():
                 hashes[relative] = _content_hash(candidate)
