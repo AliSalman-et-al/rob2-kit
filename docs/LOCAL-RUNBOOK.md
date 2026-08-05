@@ -6,6 +6,34 @@ then perform the required private full-corpus evaluation.
 
 ## Smoke one installed host
 
+The automated local orchestrator is deliberately unreachable from CI. It needs
+two independent opt-ins in an owner's interactive shell and installs a named
+wheel into two new projects before running either commercial host:
+
+```powershell
+$env:ROB2_LOCAL_COMMERCIAL_HOST_SMOKE = "1"
+uv run --frozen python scripts/local_host_smoke.py --execute `
+  --wheel C:\releases\rob2_kit-0.1.0-py3-none-any.whl `
+  --workspace C:\rob2-local-smoke\candidate-0.1.0 `
+  --codex-model MODEL --claude-model MODEL
+```
+
+The script never reads, copies, or serializes credentials. Codex and Claude
+inherit their existing secure local login/configuration in the normal way.
+Never place keys in the project, command line, or prompt. Each direction uses
+one project and one Run: Codex stops at a Preparation checkpoint for Claude to
+resume, then Claude stops in a fresh project for Codex to resume. The receipt
+records the wheel hash, adapter/skill capabilities, host/model, latency, usage
+when exposed, outcome, and bounded redacted diagnostics. Compare the two runs
+only by normalized Run state, Durable run state, next actions, report inventory,
+and repair count—not prose or scientific-judgment equality.
+
+Failed projects and their partial `.rob2` state are retained by default. After
+inspection, delete only a scenario directory whose `.rob2-local-host-smoke`
+marker contains its exact resolved path; never recursively clean the workspace
+root or an unmarked path. Pass `--cleanup-successful-projects` to remove the two
+marked scenario projects after a passing comparison; the receipt is retained.
+
 1. Create a disposable project with `input/<trial>/` and a readable
    result-bearing full text.
 2. From the exact frozen release, run `uv run --frozen rob2 bootstrap
