@@ -209,7 +209,7 @@ def rollback_project(project_root: Path, *, apply: bool = False) -> dict[str, An
                 destination = root / relative
                 destination.parent.mkdir(parents=True, exist_ok=True)
                 shutil.copyfile(source, destination)
-        _write_journal(root / ".rob2" / "install-journal.json", "rollback_complete", (), ())
+        _write_journal(root / ".rob2" / "install-journal.json", "complete", (), ())
         _clear_pending_upgrade(root, recovery_backup)
         _clear_rollback_record(root, rollback_backup)
     except Exception:
@@ -958,7 +958,10 @@ def _load_ownership_manifest(root: Path) -> dict[str, Any]:
 def _is_owned_generated_path(relative: str) -> bool:
     """Keep a mutable manifest from claiming arbitrary project files."""
 
-    path = Path(relative).as_posix()
+    candidate = Path(relative)
+    if candidate.is_absolute() or ".." in candidate.parts:
+        return False
+    path = candidate.as_posix()
     if path.startswith((".rob2/adapters/", ".rob2/references/")):
         return True
     if path.startswith((".codex/skills/rob2-", ".claude/skills/rob2-")):
@@ -1028,16 +1031,7 @@ def _validate_metadata_owned_files(root: Path, manifest: dict[str, Any]) -> None
             or set(payload) != expected_keys
             or payload.get("schema_version") != 1
             or not isinstance(payload.get("status"), str)
-            or payload["status"]
-            not in {
-                "complete",
-                "rollback_succeeded",
-                "upgrade_complete",
-                "upgrade_rollback_succeeded",
-                "rollback_complete",
-                "started",
-                "upgrade_started",
-            }
+            or payload["status"] not in {"complete", "upgrade_complete"}
             or not all(isinstance(path, str) for path in payload.get("changed_paths", ()))
             or not all(isinstance(path, str) for path in payload.get("restored_paths", ()))
         ):
@@ -1251,7 +1245,7 @@ def _update_pending_candidate_hashes(root: Path) -> None:
     if not isinstance(hashes, dict) or not isinstance(paths, list):
         raise HarnessBootstrapError("pending release transaction cannot record generated metadata")
     for relative in paths:
-        if isinstance(relative, str):
+        if isinstance(relative, str) and relative in _OWNED_METADATA_PATHS:
             candidate = _project_relative_path(root, relative)
             if candidate.is_file():
                 hashes[relative] = _content_hash(candidate)
