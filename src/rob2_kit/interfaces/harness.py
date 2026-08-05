@@ -181,6 +181,7 @@ def rollback_project(project_root: Path, *, apply: bool = False) -> dict[str, An
             "durable project state is incompatible with the rollback release. "
             "Follow state_compatibility.recovery before rolling back."
         )
+    _validate_manifest_owned_files(root, current)
     mutex = _acquire_install_mutex(root)
     recovery_backup = _begin_recoverable_lifecycle(root, current)
     try:

@@ -174,6 +174,18 @@ def test_rollback_refuses_incompatible_durable_state(tmp_path: Path) -> None:
         rollback_project(tmp_path, apply=True)
 
 
+def test_rollback_refuses_ambiguous_owned_content(tmp_path: Path) -> None:
+    bootstrap_project(tmp_path)
+    upgrade_project(tmp_path, apply=True)
+    skill = tmp_path / ".codex" / "skills" / "rob2-init" / "SKILL.md"
+    skill.write_text("USER EDIT\n", encoding="utf-8")
+
+    with pytest.raises(HarnessBootstrapError, match="owned generated file differs"):
+        rollback_project(tmp_path, apply=True)
+
+    assert skill.read_text(encoding="utf-8") == "USER EDIT\n"
+
+
 def test_pending_upgrade_recovers_before_the_next_lifecycle_action(tmp_path: Path) -> None:
     bootstrap_project(tmp_path)
     manifest = harness._load_ownership_manifest(tmp_path)
