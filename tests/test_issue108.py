@@ -186,6 +186,20 @@ def test_rollback_refuses_ambiguous_owned_content(tmp_path: Path) -> None:
     assert skill.read_text(encoding="utf-8") == "USER EDIT\n"
 
 
+def test_lifecycle_refuses_edited_release_lock_metadata(tmp_path: Path) -> None:
+    bootstrap_project(tmp_path)
+    upgrade_project(tmp_path, apply=True)
+    lock = tmp_path / ".rob2" / "rob2.lock"
+    lock.write_text("USER EDIT\n", encoding="utf-8")
+
+    with pytest.raises(HarnessBootstrapError, match="owned release lock differs"):
+        rollback_project(tmp_path, apply=True)
+    with pytest.raises(HarnessBootstrapError, match="owned release lock differs"):
+        uninstall_project(tmp_path, apply=True)
+
+    assert lock.read_text(encoding="utf-8") == "USER EDIT\n"
+
+
 def test_pending_upgrade_recovers_before_the_next_lifecycle_action(tmp_path: Path) -> None:
     bootstrap_project(tmp_path)
     manifest = harness._load_ownership_manifest(tmp_path)
@@ -228,6 +242,27 @@ def test_pending_recovery_restores_host_files_and_cleans_staged_runtime(tmp_path
     assert codex_path.read_bytes() == codex_before
     assert claude_path.read_bytes() == claude_before
     assert not stage.exists()
+
+
+def test_pending_recovery_refuses_edited_candidate_content(tmp_path: Path) -> None:
+    bootstrap_project(tmp_path)
+    manifest = harness._load_ownership_manifest(tmp_path)
+    backup = harness._write_rollback_backup(tmp_path, manifest)
+    candidate_paths = harness._candidate_owned_source_paths(Path.cwd())
+    harness._write_pending_upgrade(
+        tmp_path,
+        manifest,
+        backup,
+        tuple(candidate_paths),
+        {relative: harness._content_hash(source) for relative, source in candidate_paths.items()},
+    )
+    skill = tmp_path / ".codex" / "skills" / "rob2-init" / "SKILL.md"
+    skill.write_text("USER EDIT\n", encoding="utf-8")
+
+    with pytest.raises(HarnessBootstrapError, match="interrupted release candidate differs"):
+        upgrade_project(tmp_path)
+
+    assert skill.read_text(encoding="utf-8") == "USER EDIT\n"
 
 
 def test_incompatible_durable_state_has_exact_schema_diagnosis(tmp_path: Path) -> None:

@@ -106,6 +106,7 @@ def upgrade_project(project_root: Path, *, apply: bool = False) -> dict[str, Any
     lock = load_release_lock(release_root)
     current = _load_ownership_manifest(root)
     _validate_manifest_owned_files(root, current)
+    _validate_metadata_owned_files(root, current)
     mutex = _acquire_install_mutex(root)
     snapshot = _snapshot_managed_state(root)
     journal = root / ".rob2" / "install-journal.json"
@@ -115,7 +116,13 @@ def upgrade_project(project_root: Path, *, apply: bool = False) -> dict[str, Any
     try:
         backup = _write_rollback_backup(root, current)
         candidate_paths = _candidate_owned_source_paths(release_root)
-        _write_pending_upgrade(root, current, backup, tuple(candidate_paths))
+        _write_pending_upgrade(
+            root,
+            current,
+            backup,
+            tuple(candidate_paths),
+            {relative: _content_hash(source) for relative, source in candidate_paths.items()},
+        )
         staged_runtime = _stage_candidate_runtime(root, release_root)
         _verify_staged_candidate(root, release_root, staged_runtime)
         # The rollback receipt is durable before any live release bytes move.
@@ -182,6 +189,7 @@ def rollback_project(project_root: Path, *, apply: bool = False) -> dict[str, An
             "Follow state_compatibility.recovery before rolling back."
         )
     _validate_manifest_owned_files(root, current)
+    _validate_metadata_owned_files(root, current)
     mutex = _acquire_install_mutex(root)
     recovery_backup = _begin_recoverable_lifecycle(root, current)
     try:
@@ -237,6 +245,7 @@ def uninstall_project(project_root: Path, *, apply: bool = False) -> dict[str, A
     _recover_interrupted_upgrade(root)
     manifest = _load_ownership_manifest(root)
     _validate_manifest_owned_files(root, manifest)
+    _validate_metadata_owned_files(root, manifest)
     mutex = _acquire_install_mutex(root)
     backup = _begin_recoverable_lifecycle(root, manifest)
     try:
@@ -966,6 +975,37 @@ def _validate_manifest_owned_files(root: Path, manifest: dict[str, Any]) -> None
             )
 
 
+def _validate_metadata_owned_files(root: Path, manifest: dict[str, Any]) -> None:
+    """Refuse lifecycle deletion when an explicit metadata receipt has changed."""
+
+    lock = root / ".rob2" / _BOOTSTRAP_LOCK
+    expected_lock = manifest["release"].get("lock_hash")
+    if (
+        not isinstance(expected_lock, str)
+        or not lock.is_file()
+        or _content_hash(lock) != expected_lock
+    ):
+        raise HarnessBootstrapError("owned release lock differs; refusing to replace or remove it")
+    journal = root / ".rob2" / "install-journal.json"
+    if journal.is_file():
+        try:
+            payload = json.loads(journal.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError) as error:
+            raise HarnessBootstrapError(
+                "owned install journal differs; refusing to remove it"
+            ) from error
+        expected_keys = {"schema_version", "status", "changed_paths", "restored_paths"}
+        if (
+            not isinstance(payload, dict)
+            or set(payload) != expected_keys
+            or payload.get("schema_version") != 1
+            or not isinstance(payload.get("status"), str)
+            or not all(isinstance(path, str) for path in payload.get("changed_paths", ()))
+            or not all(isinstance(path, str) for path in payload.get("restored_paths", ()))
+        ):
+            raise HarnessBootstrapError("owned install journal differs; refusing to remove it")
+
+
 def _candidate_owned_source_paths(release_root: Path) -> dict[str, Path]:
     """Map each installed generated file to its candidate source bytes."""
 
@@ -1136,6 +1176,7 @@ def _write_pending_upgrade(
     manifest: dict[str, Any],
     backup: Path,
     candidate_paths: tuple[str, ...],
+    candidate_hashes: dict[str, str] | None = None,
 ) -> None:
     """Durably describe how to restore before changing release-owned bytes."""
 
@@ -1144,6 +1185,7 @@ def _write_pending_upgrade(
         "backup": backup.relative_to(root).as_posix(),
         "previous_paths": _lifecycle_snapshot_paths(root, manifest),
         "candidate_paths": sorted((*candidate_paths, *_owned_metadata_paths(manifest))),
+        "candidate_hashes": candidate_hashes or {},
     }
     path = _pending_transaction_path(root)
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -1154,7 +1196,17 @@ def _begin_recoverable_lifecycle(root: Path, manifest: dict[str, Any]) -> Path:
     """Create the same durable restore point used by every release mutation."""
 
     backup = _write_rollback_backup(root, manifest)
-    _write_pending_upgrade(root, manifest, backup, tuple(manifest["owned_paths"]))
+    candidate_paths = tuple(manifest["owned_paths"])
+    _write_pending_upgrade(
+        root,
+        manifest,
+        backup,
+        candidate_paths,
+        {
+            relative: _content_hash(_project_relative_path(root, relative))
+            for relative in candidate_paths
+        },
+    )
     return backup
 
 
@@ -1172,6 +1224,7 @@ def _recover_interrupted_upgrade(root: Path) -> None:
             or not isinstance(pending.get("backup"), str)
             or not isinstance(pending.get("previous_paths"), list)
             or not isinstance(pending.get("candidate_paths"), list)
+            or not isinstance(pending.get("candidate_hashes"), dict)
         ):
             raise ValueError("pending transaction shape is invalid")
         backup = _project_relative_path(root, pending["backup"])
@@ -1181,6 +1234,11 @@ def _recover_interrupted_upgrade(root: Path) -> None:
         paths = (*pending["previous_paths"], *pending["candidate_paths"])
         if not all(isinstance(relative, str) for relative in paths):
             raise ValueError("pending transaction paths are invalid")
+        if not all(
+            isinstance(relative, str) and isinstance(content_hash, str)
+            for relative, content_hash in pending["candidate_hashes"].items()
+        ):
+            raise ValueError("pending transaction candidate hashes are invalid")
         for relative in paths:
             _project_relative_path(root, relative)
     except (OSError, TypeError, ValueError, json.JSONDecodeError) as error:
@@ -1188,6 +1246,18 @@ def _recover_interrupted_upgrade(root: Path) -> None:
             "release transaction recovery data is corrupt; preserve .rob2 and restore "
             "from a verified backup before continuing"
         ) from error
+    for relative in pending["candidate_paths"]:
+        current = _project_relative_path(root, relative)
+        if not current.is_file():
+            continue
+        expected_hashes = {pending["candidate_hashes"].get(relative)}
+        previous = backup / relative
+        if previous.is_file():
+            expected_hashes.add(_content_hash(previous))
+        if expected_hashes - {None} and _content_hash(current) not in expected_hashes:
+            raise HarnessBootstrapError(
+                f"interrupted release candidate differs: {relative}; refusing to discard it"
+            )
     _remove_owned_files(root, list(pending["candidate_paths"]))
     prior_runtime = backup / "runtime-tree"
     if prior_runtime.is_dir():
