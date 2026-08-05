@@ -11,6 +11,7 @@ import shutil
 import subprocess
 import sys
 import tomllib
+import zipfile
 from pathlib import Path
 from typing import Any
 
@@ -31,6 +32,8 @@ _OWNERSHIP_SCHEMA = 1
 _OWNERSHIP_KIND = "rob2-kit-project"
 _INSTALL_MUTEX = "install.lock"
 _RUNTIME_RELATIVE = ".rob2/runtime"
+_WHEEL_PIN = "release/wheel-pin.json"
+_RUNTIME_WHEEL_PIN = "release/runtime-wheel-pin.json"
 _REFERENCE_FILENAMES = (
     "HARNESS-WORKFLOW.md",
     "EVIDENCE-SEARCH.md",
@@ -79,6 +82,8 @@ def bootstrap_project(project_root: Path) -> dict[str, Any]:
 
     mutex = _acquire_install_mutex(root)
     snapshot = _snapshot_managed_state(root)
+    journal = root / ".rob2" / "install-journal.json"
+    _write_journal(journal, "started", (), ())
     changed = False
     try:
         changed |= _install_runtime(root, release_root)
@@ -89,10 +94,21 @@ def bootstrap_project(project_root: Path) -> dict[str, Any]:
         changed |= _install_codex_server(codex_path, codex_config, expected_codex_server)
         changed |= _install_claude_server(claude_path, claude_config, expected_claude_server)
         changed |= _install_ownership_manifest(root, release_root, lock)
+        _write_journal(journal, "complete", _changed_paths(root, snapshot), ())
     except Exception as error:
+        changed_paths = _changed_paths(root, snapshot)
         _restore_managed_state(root, snapshot)
+        restored_paths = tuple(sorted(path.relative_to(root).as_posix() for path in snapshot))
+        _write_journal(journal, "rollback_succeeded", changed_paths, restored_paths)
+        if isinstance(error, HarnessBootstrapError):
+            raise HarnessBootstrapError(
+                f"{error} Prior project state was restored; no committed files changed."
+            ) from error
         if isinstance(error, ValueError):
-            raise
+            raise HarnessBootstrapError(
+                f"bootstrap failed: {error}. Prior project state was restored; "
+                "no committed files changed."
+            ) from error
         raise HarnessBootstrapError(
             f"bootstrap failed before commit: {error}. "
             "The prior project state was restored; rerun rob2 doctor before retrying."
@@ -126,6 +142,7 @@ def doctor_project(project_root: Path) -> dict[str, Any]:
     if _runtime_assets(release_root):
         checks["locked_runtime"] = _check_locked_runtime(root, release_root)
         checks["ownership"] = _check_ownership(root, release_root)
+        checks["install_journal"] = _check_install_journal(root)
     return {"ok": all(check["ok"] for check in checks.values()), "checks": checks}
 
 
@@ -144,7 +161,7 @@ def _server_config(lock: ReleaseLock, release_root: Path, host: str = "codex") -
             project = "${CLAUDE_PROJECT_DIR}/" + _RUNTIME_RELATIVE
         return {
             "command": "uv",
-            "args": ["run", "--locked", "--no-sources", "--project", project, "rob2-mcp"],
+            "args": ["run", "--locked", "--project", project, "rob2-mcp"],
         }
     if _is_bundled_install(release_root):
         return {
@@ -170,9 +187,11 @@ def _runtime_assets(release_root: Path) -> Path | None:
     if not (release_root / "__init__.py").is_file():
         return None
     runtime = release_root / "release" / "runtime"
-    if (runtime / "pyproject.toml").is_file() and (runtime / "uv.lock").is_file():
-        return runtime
-    return None
+    if not (release_root / "release").is_dir():
+        return None
+    if not (runtime / "pyproject.toml").is_file() or not (runtime / "uv.lock").is_file():
+        raise HarnessBootstrapError("installed release runtime files are missing or malformed")
+    return runtime
 
 
 def _launcher_text(server: dict[str, Any]) -> str:
@@ -280,7 +299,18 @@ def _install_runtime(root: Path, release_root: Path) -> bool:
         return False
     destination.parent.mkdir(parents=True, exist_ok=True)
     shutil.copytree(source, destination)
-    _copy_installed_package(release_root, destination / "src" / "rob2_kit")
+    wheel = _wheel_artifact(release_root)
+    if wheel is None:
+        raise HarnessBootstrapError(
+            "the exact rob2-kit wheel artifact is unavailable. "
+            "Install this release from a wheel (not an editable checkout), then rerun bootstrap."
+        )
+    pin = _wheel_pin(release_root)
+    release = load_release_lock(release_root)
+    if pin["version"] != release.package_version:
+        raise HarnessBootstrapError("wheel provenance version differs from rob2.lock")
+    _validate_wheel(wheel, pin)
+    shutil.copyfile(wheel, destination / wheel.name)
     uv = shutil.which("uv")
     if uv is None:
         raise HarnessBootstrapError(
@@ -289,7 +319,26 @@ def _install_runtime(root: Path, release_root: Path) -> bool:
         )
     try:
         subprocess.run(
-            [uv, "sync", "--locked", "--no-sources", "--project", str(destination)],
+            [uv, "venv", str(destination / ".venv")],
+            check=True,
+            capture_output=True,
+            text=True,
+            timeout=120,
+        )
+        (destination / "runtime-install.json").write_text(
+            json.dumps(
+                {
+                    "package": release.package,
+                    "version": release.package_version,
+                    "wheel_hash": _content_hash(wheel),
+                },
+                sort_keys=True,
+            )
+            + "\n",
+            encoding="utf-8",
+        )
+        subprocess.run(
+            [uv, "sync", "--locked", "--project", str(destination)],
             check=True,
             capture_output=True,
             text=True,
@@ -303,26 +352,111 @@ def _install_runtime(root: Path, release_root: Path) -> bool:
     return True
 
 
-def _copy_installed_package(release_root: Path, destination: Path) -> None:
-    """Copy the wheel's package into the runtime so sync works offline."""
+def _wheel_artifact(release_root: Path) -> Path | None:
+    """Resolve the exact wheel that supplied this installed distribution."""
 
-    destination.mkdir(parents=True, exist_ok=True)
-    for source in release_root.iterdir():
-        if source.name in {"release", "__pycache__"}:
-            continue
-        target = destination / source.name
-        if source.is_dir():
-            shutil.copytree(source, target, dirs_exist_ok=True)
-        elif source.is_file() and source.name.endswith((".py", ".json", ".lock")):
-            shutil.copyfile(source, target)
+    override = os.environ.get("ROB2_KIT_WHEEL")
+    if override:
+        candidate = Path(override).expanduser().resolve()
+        return candidate if candidate.is_file() else None
+    packaged = next(iter((release_root / "release" / "runtime").glob("*.whl")), None)
+    if packaged is not None:
+        return packaged
+    packaged = next(
+        iter((*release_root.glob("rob2-kit-*.whl"), *release_root.glob("rob2_kit-*.whl"))),
+        None,
+    )
+    if packaged is not None:
+        return packaged
+    try:
+        distribution = importlib.metadata.distribution("rob2-kit")
+        direct_url = distribution.read_text("direct_url.json")
+        if direct_url:
+            payload = json.loads(direct_url)
+            url = payload.get("url")
+            if isinstance(url, str) and url.lower().endswith(".whl"):
+                candidate = Path(url.removeprefix("file://")).resolve()
+                if candidate.is_file():
+                    return candidate
+    except (OSError, ValueError, json.JSONDecodeError):
+        pass
+    return None
+
+
+def _wheel_pin(release_root: Path) -> dict[str, str]:
+    candidates = (
+        release_root / _RUNTIME_WHEEL_PIN,
+        release_root / _WHEEL_PIN,
+        release_root.parent / "wheel-pin.json",
+    )
+    path = next((candidate for candidate in candidates if candidate.is_file()), candidates[0])
+    try:
+        raw = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError, json.JSONDecodeError) as error:
+        raise HarnessBootstrapError(
+            "authoritative wheel provenance is missing or malformed"
+        ) from error
+    if not all(
+        isinstance(raw.get(key), str) and raw[key]
+        for key in ("filename", "version", "sha256")
+    ):
+        raise HarnessBootstrapError("authoritative wheel provenance is incomplete")
+    return raw
+
+
+def _validate_wheel(wheel: Path, pin: dict[str, str]) -> None:
+    if wheel.name != pin["filename"]:
+        raise HarnessBootstrapError("installed wheel filename does not match the release pin")
+    digest = hashlib.sha256(wheel.read_bytes()).hexdigest()
+    if digest != pin["sha256"]:
+        raise HarnessBootstrapError("installed wheel hash does not match the release pin")
+    try:
+        with zipfile.ZipFile(wheel) as archive:
+            metadata = next(
+                archive.read(name).decode("utf-8")
+                for name in archive.namelist()
+                if name.endswith(".dist-info/METADATA")
+            )
+    except (OSError, KeyError, StopIteration, zipfile.BadZipFile) as error:
+        raise HarnessBootstrapError("supplied wheel is not a valid distribution archive") from error
+    fields = dict(
+        line.split(": ", 1) for line in metadata.splitlines() if ": " in line
+    )
+    if fields.get("Name", "").casefold() != "rob2-kit" or fields.get("Version") != pin["version"]:
+        raise HarnessBootstrapError(
+            "wheel metadata does not match authoritative release provenance"
+        )
+
+
+def _write_journal(
+    path: Path, status: str, changed: tuple[str, ...], restored: tuple[str, ...]
+) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    payload = {
+        "schema_version": 1,
+        "status": status,
+        "changed_paths": changed,
+        "restored_paths": restored,
+    }
+    path.write_text(json.dumps(payload, sort_keys=True) + "\n", encoding="utf-8")
+
+
+def _changed_paths(root: Path, snapshot: dict[Path, bytes]) -> tuple[str, ...]:
+    current = _snapshot_managed_state(root)
+    paths = set(current) | set(snapshot)
+    return tuple(
+        sorted(
+            path.relative_to(root).as_posix()
+            for path in paths
+            if current.get(path) != snapshot.get(path)
+        )
+    )
 
 
 def _runtime_matches(source: Path, destination: Path) -> bool:
     return destination.is_dir() and all(
-        (destination / name).is_file()
-        and (destination / name).read_bytes() == (source / name).read_bytes()
-        for name in ("pyproject.toml", "uv.lock")
-    )
+        (destination / name).is_file() for name in ("pyproject.toml", "uv.lock")
+    ) and any(destination.glob("*.whl")) and not (destination / "src").exists()
 
 
 def _acquire_install_mutex(root: Path) -> Path:
@@ -357,6 +491,7 @@ def _managed_roots(root: Path) -> tuple[Path, ...]:
         root / ".rob2" / "runtime" / "src" / "rob2_kit",
         root / ".rob2" / "runtime",
         root / ".rob2" / "rob2.lock",
+        root / ".rob2" / "install-journal.json",
         root / "rob2.lock",
         root / ".codex" / "config.toml",
         root / ".mcp.json",
@@ -437,6 +572,26 @@ def _validate_ownership_target(root: Path, release_root: Path, lock: ReleaseLock
         )
     if manifest.get("package") != lock.package:
         raise HarnessBootstrapError(f"{target} belongs to a different package release.")
+    release = manifest.get("release")
+    if not isinstance(release, dict) or release.get("lock_hash") != _content_hash(
+        release_root / _BOOTSTRAP_LOCK
+    ):
+        raise HarnessBootstrapError(
+            f"{target} belongs to a different locked release. "
+            "Preserve the project and use its matching rob2-kit release."
+        )
+    owned_paths = manifest.get("owned_paths")
+    if not isinstance(owned_paths, dict):
+        raise HarnessBootstrapError(f"{target} has no valid owned-path manifest.")
+    for relative, expected_hash in owned_paths.items():
+        if not isinstance(relative, str) or not isinstance(expected_hash, str):
+            raise HarnessBootstrapError(f"{target} has an invalid owned-path manifest.")
+        owned_path = root / relative
+        if not owned_path.is_file() or _content_hash(owned_path) != expected_hash:
+            raise HarnessBootstrapError(
+                f"owned generated file differs: {relative}. "
+                "Preserve the project state and reconcile it before rerunning bootstrap."
+            )
     # A project lock is portable; it must not smuggle host paths or secrets.
     serialized = target.read_text(encoding="utf-8")
     if str(root) in serialized:
@@ -467,6 +622,8 @@ def _ownership_manifest(root: Path, release_root: Path, lock: ReleaseLock) -> di
         root / ".rob2" / "references",
         root / ".rob2" / "runtime" / "pyproject.toml",
         root / ".rob2" / "runtime" / "uv.lock",
+        root / ".rob2" / "runtime" / "runtime-install.json",
+        *root.glob(".rob2/runtime/*.whl"),
         root / ".rob2" / "runtime" / "src" / "rob2_kit",
         *(
             root / skill_root / skill_name
@@ -535,6 +692,10 @@ def _ownership_manifest(root: Path, release_root: Path, lock: ReleaseLock) -> di
             "path": _RUNTIME_RELATIVE,
             "pyproject_hash": _content_hash(runtime / "pyproject.toml") if runtime else None,
             "lock_hash": _content_hash(runtime / "uv.lock") if runtime else None,
+            "wheel_hash": next(
+                (_content_hash(path) for path in (root / _RUNTIME_RELATIVE).glob("*.whl")),
+                None,
+            ),
         },
         "owned_paths": generated_paths,
         "config_ownership": config_ownership,
@@ -751,20 +912,36 @@ def _check_locked_runtime(root: Path, release_root: Path) -> dict[str, Any]:
             f"locked runtime is missing: {destination}",
             "Run rob2 bootstrap to recreate the project-local runtime.",
         )
-    for name in ("pyproject.toml", "uv.lock"):
-        expected = _content_hash(source / name)
-        actual = _content_hash(destination / name) if (destination / name).is_file() else None
-        if actual != expected:
-            return _failed(
-                f"runtime {name} differs from the release lock",
-                "Run rob2 bootstrap after preserving any intentional local edits.",
-            )
-    venv = destination / ".venv"
+    try:
+        for name in ("pyproject.toml", "uv.lock"):
+            if _content_hash(destination / name) != _content_hash(source / name):
+                raise ValueError(f"runtime {name} differs from the installed release")
+        venv = destination / ".venv"
+        if not venv.is_dir():
+            raise ValueError("locked runtime environment is unavailable")
+        wheels = tuple(destination.glob("*.whl"))
+        if len(wheels) != 1:
+            raise ValueError("exact released rob2-kit wheel is missing from the locked runtime")
+        pin = _wheel_pin(release_root)
+        _validate_wheel(wheels[0], pin)
+        marker = json.loads((destination / "runtime-install.json").read_text(encoding="utf-8"))
+        if marker != {
+            "package": load_release_lock(release_root).package,
+            "version": pin["version"],
+            "wheel_hash": _content_hash(wheels[0]),
+        }:
+            raise ValueError("runtime installation marker differs from the exact released wheel")
+    except (OSError, ValueError, json.JSONDecodeError) as error:
+        return _failed(
+            str(error),
+            "Run rob2 bootstrap from the exact wheel release, then rerun rob2 doctor.",
+        )
     return {
         "ok": True,
         "state": "locked",
         "path": _RUNTIME_RELATIVE,
-        "environment": "available" if venv.is_dir() else "not_created",
+        "environment": "available",
+        "wheel_hash": _content_hash(wheels[0]),
         "recoverability": "recreate from bundled runtime project and lock",
         "recovery": (),
     }
@@ -787,9 +964,69 @@ def _check_ownership(root: Path, release_root: Path) -> dict[str, Any]:
             path = root / relative
             if not path.is_file() or _content_hash(path) != expected:
                 raise ValueError(f"owned generated file differs: {relative}")
+        runtime_manifest = raw.get("runtime", {})
+        if not isinstance(runtime_manifest, dict):
+            raise ValueError("ownership runtime identity is malformed")
+        runtime = _runtime_assets(release_root)
+        if runtime is None or runtime_manifest.get("pyproject_hash") != _content_hash(
+            runtime / "pyproject.toml"
+        ) or runtime_manifest.get("lock_hash") != _content_hash(runtime / "uv.lock"):
+            raise ValueError("ownership runtime lock identity differs from the installed release")
+        wheel_paths = tuple((root / _RUNTIME_RELATIVE).glob("*.whl"))
+        if len(wheel_paths) != 1 or runtime_manifest.get("wheel_hash") != _content_hash(
+            wheel_paths[0]
+        ):
+            raise ValueError("runtime wheel hash is missing or differs from ownership manifest")
+        marker = json.loads(
+            (root / _RUNTIME_RELATIVE / "runtime-install.json").read_text(encoding="utf-8")
+        )
+        if marker.get("wheel_hash") != runtime_manifest.get("wheel_hash"):
+            raise ValueError("runtime installation marker differs from the pinned wheel")
         if raw.get("package") != lock.package:
             raise ValueError("ownership manifest package differs from the installed release")
-    except (OSError, TypeError, ValueError, json.JSONDecodeError) as error:
+        identities = raw.get("identities", {})
+        if not isinstance(identities, dict):
+            raise ValueError("ownership identities are malformed")
+        if identities.get("engine", {}).get("version") != lock.package_version:
+            raise ValueError("ownership engine identity differs from the installed release")
+        expected_schema_hashes = {
+            path.name: _content_hash(path)
+            for path in sorted((release_root / "schemas").glob("*.json"))
+            if path.is_file()
+        }
+        schema = identities.get("schema", {})
+        if schema.get("version") != "1" or schema.get("hashes") != expected_schema_hashes:
+            raise ValueError("ownership schema identity differs from the installed release")
+        parser = identities.get("parser", {})
+        if parser.get("name") != "liteparse" or parser.get("version") != _distribution_version(
+            "liteparse"
+        ):
+            raise ValueError("ownership parser identity differs from the installed release")
+        packs = identities.get("packs", {})
+        if packs.get("logic", {}).get("hash") != lock.logic_pack_hash or packs.get(
+            "guidance", {}
+        ).get("hash") != lock.guidance_pack_hash:
+            raise ValueError("ownership pack identity differs from the installed release")
+        for name, pin in lock.skills.items():
+            if identities.get("skills", {}).get(name, {}).get("hash") != pin.content_hash:
+                raise ValueError(f"ownership skill identity differs for {name}")
+        for host, pin in lock.adapters.items():
+            if identities.get("adapters", {}).get(host, {}).get("hash") != pin.content_hash:
+                raise ValueError(f"ownership adapter identity differs for {host}")
+        if identities.get("policies", {}).get("release_status") != lock.release_status:
+            raise ValueError("ownership policy identity differs from the installed release")
+        config_ownership = raw.get("config_ownership", {})
+        codex_value = _read_toml(root / ".codex" / "config.toml").get("mcp_servers", {}).get(
+            _MCP_SERVER_NAME
+        )
+        claude_value = _read_json_object(root / ".mcp.json").get("mcpServers", {}).get(
+            _MCP_SERVER_NAME
+        )
+        if config_ownership.get("codex", {}).get("value_hash") != _value_hash(codex_value):
+            raise ValueError("Codex configuration ownership hash differs")
+        if config_ownership.get("claude", {}).get("value_hash") != _value_hash(claude_value):
+            raise ValueError("Claude configuration ownership hash differs")
+    except (AttributeError, OSError, TypeError, ValueError, json.JSONDecodeError) as error:
         return _failed(
             str(error),
             "Preserve user files, then run rob2 bootstrap to regenerate owned assets.",
@@ -802,6 +1039,20 @@ def _check_ownership(root: Path, release_root: Path) -> dict[str, Any]:
         "hosts": raw.get("hosts", []),
         "recovery": (),
     }
+
+
+def _check_install_journal(root: Path) -> dict[str, Any]:
+    path = root / ".rob2" / "install-journal.json"
+    try:
+        raw = json.loads(path.read_text(encoding="utf-8"))
+        if raw.get("schema_version") != 1 or raw.get("status") not in {
+            "complete",
+            "rollback_succeeded",
+        }:
+            raise ValueError("install journal is incomplete")
+    except (AttributeError, OSError, TypeError, ValueError, json.JSONDecodeError) as error:
+        return _failed(str(error), "Run rob2 bootstrap to complete or recover the installation.")
+    return {"ok": True, "status": raw["status"], "recovery": ()}
 
 
 def _check_project_state(root: Path) -> dict[str, Any]:
