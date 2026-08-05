@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import re
 import shutil
 import sys
@@ -272,6 +273,8 @@ def verify_mcp_launchability(
     project_root: Path,
     command: str,
     args: tuple[str, ...],
+    *,
+    environment: dict[str, str] | None = None,
 ) -> tuple[str, ...]:
     """Start the locked external stdio launcher and return its tool inventory."""
 
@@ -284,6 +287,7 @@ def verify_mcp_launchability(
             command=command,
             args=list(args),
             cwd=project_root,
+            env={**os.environ, **(environment or {})},
         )
         errlog = cast(TextIO, sys.__stderr__ or sys.stderr)
         async with stdio_client(parameters, errlog=errlog) as (read, write):

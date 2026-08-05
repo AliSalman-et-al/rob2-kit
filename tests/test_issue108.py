@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import sqlite3
+import tomllib
 from pathlib import Path
 
 import anyio
@@ -20,6 +21,24 @@ from rob2_kit.interfaces.harness import (
     upgrade_project,
 )
 from rob2_kit.interfaces.mcp.server import CANONICAL_TOOL_NAMES, create_server
+from rob2_kit.release import ReleaseLock
+
+
+def _install_switchable_candidate_launcher(monkeypatch: pytest.MonkeyPatch) -> dict[str, bool]:
+    """Install a candidate-only launcher change for lifecycle cutover tests."""
+
+    original_server_config = harness._server_config
+    candidate = {"enabled": False}
+
+    def server_config(
+        lock: ReleaseLock, release_root: Path, host: str = "codex"
+    ) -> dict[str, object]:
+        if not candidate["enabled"]:
+            return original_server_config(lock, release_root, host)
+        return {"command": "candidate-launcher", "args": ["--host", host, "rob2-mcp"]}
+
+    monkeypatch.setattr(harness, "_server_config", server_config)
+    return candidate
 
 
 def test_cutover_exposes_exactly_the_twelve_canonical_tools() -> None:
@@ -72,6 +91,10 @@ def test_uninstall_is_previewed_and_refuses_ambiguous_owned_content(tmp_path: Pa
     assert {"rob2.lock", ".rob2/rob2.lock", ".rob2/rollback.json"} <= set(
         preview["owned_removals"]
     )
+    assert {
+        ".codex/config.toml:mcp_servers.rob2-kit",
+        ".mcp.json:mcpServers.rob2-kit",
+    } <= set(preview["owned_removals"])
     assert preview["state_compatibility"]["ok"] is True
 
     owned_skill = tmp_path / ".codex" / "skills" / "rob2-init" / "SKILL.md"
@@ -301,6 +324,111 @@ def test_pending_recovery_refuses_unrelated_host_configuration_edits(tmp_path: P
         upgrade_project(tmp_path)
 
     assert "user-edit" in claude.read_text(encoding="utf-8")
+
+
+def test_upgrade_and_rollback_replace_both_owned_launcher_entries(
+    tmp_path: Path, monkeypatch
+) -> None:
+    """A changed release launcher is staged, cut over, and restored as one transaction."""
+
+    candidate = _install_switchable_candidate_launcher(monkeypatch)
+    bootstrap_project(tmp_path)
+    old_codex = tomllib.loads((tmp_path / ".codex" / "config.toml").read_text(encoding="utf-8"))
+    old_claude = json.loads((tmp_path / ".mcp.json").read_text(encoding="utf-8"))
+    candidate["enabled"] = True
+
+    upgrade_preview = upgrade_project(tmp_path)
+    assert {
+        ".codex/config.toml:mcp_servers.rob2-kit",
+        ".mcp.json:mcpServers.rob2-kit",
+    } <= set(upgrade_preview["owned_replacements"])
+    assert upgrade_project(tmp_path, apply=True)["status"] == "upgraded"
+    record = json.loads((tmp_path / ".rob2" / "rollback.json").read_text(encoding="utf-8"))
+    assert not {".codex/config.toml", ".mcp.json"} & set(record["paths"])
+    upgraded_codex = tomllib.loads(
+        (tmp_path / ".codex" / "config.toml").read_text(encoding="utf-8")
+    )
+    assert upgraded_codex["mcp_servers"][
+        "rob2-kit"
+    ]["command"] == "candidate-launcher"
+    assert json.loads((tmp_path / ".mcp.json").read_text(encoding="utf-8"))["mcpServers"][
+        "rob2-kit"
+    ]["command"] == "candidate-launcher"
+
+    with (tmp_path / ".codex" / "config.toml").open("a", encoding="utf-8") as handle:
+        handle.write('[mcp_servers.unrelated]\ncommand = "keep"\n')
+    claude_path = tmp_path / ".mcp.json"
+    claude = json.loads(claude_path.read_text(encoding="utf-8"))
+    claude["mcpServers"]["unrelated"] = {"command": "keep"}
+    claude_path.write_text(json.dumps(claude, indent=2) + "\n", encoding="utf-8")
+
+    rollback_preview = rollback_project(tmp_path)
+    assert {
+        ".codex/config.toml:mcp_servers.rob2-kit",
+        ".mcp.json:mcpServers.rob2-kit",
+    } <= set(rollback_preview["owned_replacements"])
+    candidate["enabled"] = False
+    assert rollback_project(tmp_path, apply=True)["status"] == "rolled_back"
+    restored_codex = tomllib.loads(
+        (tmp_path / ".codex" / "config.toml").read_text(encoding="utf-8")
+    )
+    assert restored_codex["mcp_servers"]["rob2-kit"] == old_codex["mcp_servers"]["rob2-kit"]
+    restored_claude = json.loads(claude_path.read_text(encoding="utf-8"))
+    assert restored_claude["mcpServers"]["rob2-kit"] == old_claude["mcpServers"]["rob2-kit"]
+    assert restored_codex["mcp_servers"]["unrelated"] == {"command": "keep"}
+    assert restored_claude["mcpServers"]["unrelated"] == {"command": "keep"}
+
+
+def test_interrupted_changed_launcher_cutover_restores_both_host_configs(
+    tmp_path: Path, monkeypatch
+) -> None:
+    """Recovery restores the old host bytes after a launcher-only candidate interruption."""
+
+    candidate = _install_switchable_candidate_launcher(monkeypatch)
+    bootstrap_project(tmp_path)
+    old_codex = (tmp_path / ".codex" / "config.toml").read_bytes()
+    old_claude = (tmp_path / ".mcp.json").read_bytes()
+    manifest = harness._load_ownership_manifest(tmp_path)
+    backup = harness._write_rollback_backup(tmp_path, manifest)
+    paths = harness._candidate_owned_source_paths(Path.cwd())
+    harness._write_pending_upgrade(
+        tmp_path,
+        manifest,
+        backup,
+        tuple(paths),
+        {relative: harness._content_hash(source) for relative, source in paths.items()},
+    )
+    candidate["enabled"] = True
+    harness._apply_candidate_host_configuration(
+        tmp_path, manifest, harness.load_release_lock(Path.cwd()), Path.cwd()
+    )
+    harness._update_pending_candidate_hashes(tmp_path)
+    assert b"candidate-launcher" in (tmp_path / ".codex" / "config.toml").read_bytes()
+
+    candidate["enabled"] = False
+    assert upgrade_project(tmp_path)["preview"] is True
+    assert (tmp_path / ".codex" / "config.toml").read_bytes() == old_codex
+    assert (tmp_path / ".mcp.json").read_bytes() == old_claude
+
+
+def test_failed_rollback_recovers_the_current_release_after_restore(
+    tmp_path: Path, monkeypatch
+) -> None:
+    bootstrap_project(tmp_path)
+    upgrade_project(tmp_path, apply=True)
+    current_skill = (tmp_path / ".codex" / "skills" / "rob2-init" / "SKILL.md").read_bytes()
+
+    monkeypatch.setattr(
+        harness,
+        "_require_current_generation",
+        lambda *_args, **_kwargs: (_ for _ in ()).throw(HarnessBootstrapError("doctor failed")),
+    )
+
+    with pytest.raises(HarnessBootstrapError, match="doctor failed"):
+        rollback_project(tmp_path, apply=True)
+
+    assert (tmp_path / ".codex" / "skills" / "rob2-init" / "SKILL.md").read_bytes() == current_skill
+    assert not (tmp_path / ".rob2" / "pending-release-transaction.json").exists()
 
 
 def test_incompatible_durable_state_has_exact_schema_diagnosis(tmp_path: Path) -> None:

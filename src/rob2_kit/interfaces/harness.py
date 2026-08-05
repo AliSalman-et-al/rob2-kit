@@ -41,6 +41,7 @@ _REFERENCE_FILENAMES = SKILL_REFERENCE_FILENAMES
 _HOST_SKILL_ROOTS = (("codex", ".codex/skills"), ("claude", ".claude/skills"))
 _ROLLBACK_ROOT = ".rob2/release-rollbacks"
 _PENDING_TRANSACTION = ".rob2/pending-release-transaction.json"
+_CANDIDATE_STAGE_PREFIX = "release-candidate-"
 _OWNED_METADATA_PATHS = (
     "rob2.lock",
     ".rob2/rob2.lock",
@@ -49,6 +50,10 @@ _OWNED_METADATA_PATHS = (
     ".rob2/runtime",
 )
 _HOST_CONFIGURATION_PATHS = (".codex/config.toml", ".mcp.json")
+_HOST_CONFIGURATION_ENTRIES = (
+    ".codex/config.toml:mcp_servers.rob2-kit",
+    ".mcp.json:mcpServers.rob2-kit",
+)
 
 
 def preview_upgrade_project(project_root: Path) -> dict[str, Any]:
@@ -69,6 +74,13 @@ def preview_upgrade_project(project_root: Path) -> dict[str, Any]:
         for path, source in candidate_paths.items()
         if path in owned and _content_hash(source) != owned[path]
     )
+    replacements.extend(
+        label
+        for label, current_entry, candidate_entry in _host_configuration_entries(
+            root, candidate, release_root
+        )
+        if current_entry != candidate_entry
+    )
     state = _check_project_state(root)
     current_release = current["release"]
     return {
@@ -84,7 +96,7 @@ def preview_upgrade_project(project_root: Path) -> dict[str, Any]:
             "lock_hash": _content_hash(release_root / _BOOTSTRAP_LOCK),
         },
         "owned_additions": additions,
-        "owned_replacements": replacements,
+        "owned_replacements": sorted(replacements),
         "owned_removals": removals,
         "state_compatibility": state,
     }
@@ -108,13 +120,20 @@ def upgrade_project(project_root: Path, *, apply: bool = False) -> dict[str, Any
     current = _load_ownership_manifest(root)
     _validate_manifest_owned_files(root, current)
     _validate_metadata_owned_files(root, current)
+    _validate_owned_host_configuration(root, current)
     mutex = _acquire_install_mutex(root)
     snapshot = _snapshot_managed_state(root)
     journal = root / ".rob2" / "install-journal.json"
-    _write_journal(journal, "upgrade_started", (), ())
     backup: Path | None = None
-    staged_runtime: Path | None = None
+    candidate_stage: Path | None = None
     try:
+        _require_current_generation(root, current)
+        candidate_stage = _stage_candidate_generation(root, release_root, current, lock)
+        candidate_runtime = candidate_stage / _RUNTIME_RELATIVE
+        _verify_staged_candidate(
+            candidate_stage, release_root, candidate_runtime if candidate_runtime.is_dir() else None
+        )
+        _require_complete_doctor(candidate_stage, "candidate release")
         backup = _write_rollback_backup(root, current)
         candidate_paths = _candidate_owned_source_paths(release_root)
         _write_pending_upgrade(
@@ -124,8 +143,8 @@ def upgrade_project(project_root: Path, *, apply: bool = False) -> dict[str, Any
             tuple(candidate_paths),
             {relative: _content_hash(source) for relative, source in candidate_paths.items()},
         )
-        staged_runtime = _stage_candidate_runtime(root, release_root)
-        _verify_staged_candidate(root, release_root, staged_runtime)
+        _write_journal(journal, "upgrade_started", (), ())
+        _update_pending_candidate_hashes(root)
         # The rollback receipt is durable before any live release bytes move.
         # A hard interruption can therefore always recover the prior generation.
         _write_rollback_record(root, current, backup)
@@ -136,21 +155,29 @@ def upgrade_project(project_root: Path, *, apply: bool = False) -> dict[str, Any
             root,
             sorted(current_paths - target_paths),
         )
-        _refresh_release_assets(root, release_root)
-        if staged_runtime is not None:
+        _refresh_candidate_assets(root, candidate_stage, candidate_paths)
+        staged_runtime = candidate_stage / _RUNTIME_RELATIVE
+        if staged_runtime.is_dir():
             _commit_staged_runtime(root, staged_runtime, backup)
-            staged_runtime = None
+        _apply_candidate_host_configuration(root, current, lock, release_root)
         _install_ownership_manifest(root, release_root, lock)
-        _update_pending_candidate_hashes(root)
-        _verify_candidate_install(root, release_root)
         _write_journal(journal, "upgrade_complete", _changed_paths(root, snapshot), ())
         _update_pending_candidate_hashes(root)
+        _require_complete_doctor(
+            root, "candidate release after cutover", allow_pending_lifecycle_probe=True
+        )
+        _verify_candidate_install(root, release_root)
         _pending_transaction_path(root).unlink()
+        _cleanup_candidate_stage(candidate_stage)
+        candidate_stage = None
     except Exception as error:
-        _restore_managed_state(root, snapshot)
+        if backup is not None:
+            _recover_interrupted_upgrade(root)
+        else:
+            _restore_managed_state(root, snapshot)
+        _discard_rollback_record_for_backup(root, backup)
         _clear_pending_upgrade(root, backup)
-        if staged_runtime is not None and staged_runtime.exists():
-            shutil.rmtree(staged_runtime)
+        _cleanup_candidate_stage(candidate_stage)
         _write_journal(journal, "upgrade_rollback_succeeded", _changed_paths(root, snapshot), ())
         raise HarnessBootstrapError(
             f"upgrade failed before cutover: {error}. Prior project state was restored."
@@ -174,6 +201,15 @@ def rollback_project(project_root: Path, *, apply: bool = False) -> dict[str, An
     current = _load_ownership_manifest(root)
     current_paths = set(current["owned_paths"]) | set(_owned_metadata_paths(current))
     restore_paths = set(record["paths"])
+    rollback_backup = _project_relative_path(root, record["backup"])
+    replacements = sorted(restore_paths & current_paths)
+    replacements.extend(
+        label
+        for label, current_entry, prior_entry in _host_configuration_entries_from_backup(
+            root, rollback_backup
+        )
+        if current_entry != prior_entry
+    )
     preview = {
         "operation": "rollback",
         "preview": True,
@@ -181,7 +217,7 @@ def rollback_project(project_root: Path, *, apply: bool = False) -> dict[str, An
         "from": current["release"],
         "to": record["release"],
         "owned_additions": sorted(restore_paths - current_paths),
-        "owned_replacements": sorted(restore_paths & current_paths),
+        "owned_replacements": sorted(replacements),
         "owned_removals": sorted(current_paths - restore_paths),
         "state_compatibility": _check_project_state(root),
     }
@@ -194,6 +230,7 @@ def rollback_project(project_root: Path, *, apply: bool = False) -> dict[str, An
         )
     _validate_manifest_owned_files(root, current)
     _validate_metadata_owned_files(root, current)
+    _validate_owned_host_configuration(root, current)
     mutex = _acquire_install_mutex(root)
     recovery_backup = _begin_recoverable_lifecycle(root, current)
     try:
@@ -211,7 +248,12 @@ def rollback_project(project_root: Path, *, apply: bool = False) -> dict[str, An
                 destination = root / relative
                 destination.parent.mkdir(parents=True, exist_ok=True)
                 shutil.copyfile(source, destination)
-        _write_journal(root / ".rob2" / "install-journal.json", "complete", (), ())
+        _restore_rollback_host_configuration(root, rollback_backup)
+        _write_journal(root / ".rob2" / "install-journal.json", "rollback_complete", (), ())
+        _update_pending_candidate_hashes(root, include_owned=True)
+        _require_current_generation(
+            root, _load_ownership_manifest(root), allow_pending_lifecycle_probe=True
+        )
         _clear_pending_upgrade(root, recovery_backup)
         _clear_rollback_record(root, rollback_backup)
     except Exception:
@@ -233,7 +275,13 @@ def preview_uninstall_project(project_root: Path) -> dict[str, Any]:
         "preview": True,
         "user_action": "Review this receipt, then run rob2 uninstall --apply PROJECT_ROOT.",
         "release": manifest["release"],
-        "owned_removals": sorted((*manifest["owned_paths"], *_owned_metadata_paths(manifest))),
+        "owned_removals": sorted(
+            (
+                *manifest["owned_paths"],
+                *_owned_metadata_paths(manifest),
+                *_HOST_CONFIGURATION_ENTRIES,
+            )
+        ),
         "preserved": ["unlisted project files", "unrelated host configuration"],
         "state_compatibility": _check_project_state(root),
     }
@@ -356,13 +404,23 @@ def bootstrap_project(project_root: Path) -> dict[str, Any]:
 def doctor_project(project_root: Path) -> dict[str, Any]:
     """Return actionable, deterministic checks for the lean-v1 Harness journey."""
 
+    return _doctor_project(project_root)
+
+
+def _doctor_project(
+    project_root: Path, *, allow_pending_lifecycle_probe: bool = False
+) -> dict[str, Any]:
+    """Run the public doctor surface, with a private lifecycle-only probe option."""
+
     root = project_root.resolve()
     release_root = _release_root()
     checks = {
         "execution_contract": _check_execution_contract(root, release_root),
         "canonical_skills": _check_canonical_skills(root, release_root),
         "host_adapters": _check_host_adapters(root, release_root),
-        "mcp_launchability": _check_mcp_launchability(root),
+        "mcp_launchability": _check_mcp_launchability(
+            root, allow_pending_lifecycle_probe=allow_pending_lifecycle_probe
+        ),
         "project_state_schema": _check_project_state(root),
     }
     if _runtime_assets(release_root):
@@ -1028,19 +1086,65 @@ def _validate_metadata_owned_files(root: Path, manifest: dict[str, Any]) -> None
                 "owned install journal differs; refusing to remove it"
             ) from error
         expected_keys = {"schema_version", "status", "changed_paths", "restored_paths"}
-        expected_status = (
-            "upgrade_complete" if (root / ".rob2" / "rollback.json").is_file() else "complete"
+        expected_statuses = (
+            {"upgrade_complete", "rollback_complete"}
+            if (root / ".rob2" / "rollback.json").is_file()
+            else {"complete", "rollback_complete"}
         )
         if (
             not isinstance(payload, dict)
             or set(payload) != expected_keys
             or payload.get("schema_version") != 1
             or not isinstance(payload.get("status"), str)
-            or payload["status"] != expected_status
+            or payload["status"] not in expected_statuses
             or not all(isinstance(path, str) for path in payload.get("changed_paths", ()))
             or not all(isinstance(path, str) for path in payload.get("restored_paths", ()))
         ):
             raise HarnessBootstrapError("owned install journal differs; refusing to remove it")
+
+
+def _host_configuration_entries(
+    root: Path, lock: ReleaseLock, release_root: Path
+) -> tuple[tuple[str, object, object], ...]:
+    """Return the two launcher entries that lifecycle previews can replace."""
+
+    codex = _read_toml(root / ".codex" / "config.toml")
+    claude = _read_json_object(root / ".mcp.json")
+    return (
+        (
+            _HOST_CONFIGURATION_ENTRIES[0],
+            codex.get("mcp_servers", {}).get(_MCP_SERVER_NAME),
+            _server_config(lock, release_root, "codex"),
+        ),
+        (
+            _HOST_CONFIGURATION_ENTRIES[1],
+            claude.get("mcpServers", {}).get(_MCP_SERVER_NAME),
+            _server_config(lock, release_root, "claude"),
+        ),
+    )
+
+
+def _host_configuration_entries_from_backup(
+    root: Path, backup: Path
+) -> tuple[tuple[str, object, object], ...]:
+    """Compare live launcher entries with the prior transaction generation."""
+
+    current_codex = _read_toml(root / ".codex" / "config.toml")
+    current_claude = _read_json_object(root / ".mcp.json")
+    prior_codex = _read_toml(backup / ".codex" / "config.toml")
+    prior_claude = _read_json_object(backup / ".mcp.json")
+    return (
+        (
+            _HOST_CONFIGURATION_ENTRIES[0],
+            current_codex.get("mcp_servers", {}).get(_MCP_SERVER_NAME),
+            prior_codex.get("mcp_servers", {}).get(_MCP_SERVER_NAME),
+        ),
+        (
+            _HOST_CONFIGURATION_ENTRIES[1],
+            current_claude.get("mcpServers", {}).get(_MCP_SERVER_NAME),
+            prior_claude.get("mcpServers", {}).get(_MCP_SERVER_NAME),
+        ),
+    )
 
 
 def _candidate_owned_source_paths(release_root: Path) -> dict[str, Path]:
@@ -1077,6 +1181,116 @@ def _refresh_release_assets(root: Path, release_root: Path) -> None:
         shutil.copyfile(source, destination)
 
 
+def _stage_candidate_generation(
+    root: Path, release_root: Path, manifest: dict[str, Any], lock: ReleaseLock
+) -> Path:
+    """Materialize a complete candidate project without touching the live generation."""
+
+    stage = root / ".rob2" / f"{_CANDIDATE_STAGE_PREFIX}{uuid.uuid4()}"
+    try:
+        for relative in _HOST_CONFIGURATION_PATHS:
+            source = _project_relative_path(root, relative)
+            if source.is_file():
+                destination = _project_relative_path(stage, relative)
+                destination.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copyfile(source, destination)
+        ledger = root / ".rob2" / "ledger.sqlite3"
+        if ledger.is_file():
+            candidate_ledger = stage / ".rob2" / "ledger.sqlite3"
+            candidate_ledger.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(ledger, candidate_ledger)
+        _refresh_release_assets(stage, release_root)
+        _stage_candidate_runtime(
+            stage, release_root, destination=stage / _RUNTIME_RELATIVE
+        )
+        _apply_candidate_host_configuration(stage, manifest, lock, release_root)
+        _install_ownership_manifest(stage, release_root, lock)
+        _write_journal(stage / ".rob2" / "install-journal.json", "upgrade_complete", (), ())
+    except Exception:
+        _cleanup_candidate_stage(stage)
+        raise
+    return stage
+
+
+def _refresh_candidate_assets(root: Path, stage: Path, candidate_paths: dict[str, Path]) -> None:
+    """Copy the doctor-verified staged files into the live generation."""
+
+    for relative in candidate_paths:
+        source = _project_relative_path(stage, relative)
+        if not source.is_file():
+            raise HarnessBootstrapError(f"candidate stage is missing generated asset: {relative}")
+        destination = _project_relative_path(root, relative)
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(source, destination)
+
+
+def _require_current_generation(
+    root: Path, manifest: dict[str, Any], *, allow_pending_lifecycle_probe: bool = False
+) -> None:
+    """Validate the installed generation against its own immutable receipt."""
+
+    _validate_manifest_owned_files(root, manifest)
+    _validate_metadata_owned_files(root, manifest)
+    _validate_owned_host_configuration(root, manifest)
+    state = _check_project_state(root)
+    if not state["ok"]:
+        raise HarnessBootstrapError(
+            f"current release doctor failed: {state.get('detail', state['state'])}"
+        )
+    # A prior frozen runtime remains independently launchable through its
+    # installed Codex entry even when this process is running the next wheel.
+    if (root / _RUNTIME_RELATIVE).is_dir():
+        codex = _read_toml(root / ".codex" / "config.toml")
+        launcher = codex.get("mcp_servers", {}).get(_MCP_SERVER_NAME)
+        if not isinstance(launcher, dict):
+            raise HarnessBootstrapError("current release doctor found no Codex launcher")
+        try:
+            arguments = (root, str(launcher["command"]), tuple(launcher["args"]))
+            if allow_pending_lifecycle_probe:
+                tools = verify_mcp_launchability(
+                    *arguments, environment={"ROB2_LIFECYCLE_DOCTOR": "1"}
+                )
+            else:
+                tools = verify_mcp_launchability(*arguments)
+        except (KeyError, OSError, TimeoutError, ValueError) as error:
+            raise HarnessBootstrapError(f"current release MCP doctor failed: {error}") from error
+        if tools != SKILL_ALLOWED_TOOL_NAMES:
+            raise HarnessBootstrapError(
+                "current release MCP doctor found a non-canonical tool catalog"
+            )
+
+
+def _require_complete_doctor(
+    root: Path, generation: str, *, allow_pending_lifecycle_probe: bool = False
+) -> None:
+    """Require every public doctor check before or after a lifecycle cutover."""
+
+    receipt = _doctor_project(root, allow_pending_lifecycle_probe=allow_pending_lifecycle_probe)
+    checks = receipt["checks"]
+    # A source checkout deliberately has no frozen runtime and uses a registry
+    # compatibility launcher.  That launcher cannot prove an unpublished
+    # candidate exists; the built-wheel qualification exercises it in full.
+    required = {
+        name: check
+        for name, check in checks.items()
+        if _runtime_assets(_release_root()) is not None or name != "mcp_launchability"
+    }
+    if all(check["ok"] for check in required.values()):
+        return
+    failed = ", ".join(
+        name for name, check in required.items() if not check["ok"]
+    )
+    raise HarnessBootstrapError(f"{generation} doctor failed: {failed}")
+
+
+def _cleanup_candidate_stage(stage: Path | None) -> None:
+    """Remove an isolated candidate project, never a user-controlled project path."""
+
+    if stage is None or not stage.is_dir() or not stage.name.startswith(_CANDIDATE_STAGE_PREFIX):
+        return
+    shutil.rmtree(stage)
+
+
 def _verify_candidate_install(root: Path, release_root: Path) -> None:
     """Run deterministic candidate checks before a transaction is committed."""
 
@@ -1104,13 +1318,15 @@ def _verify_staged_candidate(root: Path, release_root: Path, staged_runtime: Pat
         raise HarnessBootstrapError(f"candidate durable-state check failed: {state['detail']}")
 
 
-def _stage_candidate_runtime(root: Path, release_root: Path) -> Path | None:
+def _stage_candidate_runtime(
+    root: Path, release_root: Path, *, destination: Path | None = None
+) -> Path | None:
     """Build and doctor a candidate runtime without touching the live runtime."""
 
     source = _runtime_assets(release_root)
     if source is None:
         return None
-    stage = root / ".rob2" / f"runtime-stage-{uuid.uuid4()}"
+    stage = destination or root / ".rob2" / f"runtime-stage-{uuid.uuid4()}"
     try:
         shutil.copytree(source, stage)
         wheel = _wheel_artifact(release_root)
@@ -1237,7 +1453,7 @@ def _write_pending_upgrade(
     path.write_text(json.dumps(pending, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
 
-def _update_pending_candidate_hashes(root: Path) -> None:
+def _update_pending_candidate_hashes(root: Path, *, include_owned: bool = False) -> None:
     """Record generated metadata bytes before they can become recovery targets."""
 
     path = _pending_transaction_path(root)
@@ -1251,7 +1467,9 @@ def _update_pending_candidate_hashes(root: Path) -> None:
         ) from error
     if not isinstance(hashes, dict) or not isinstance(paths, list):
         raise HarnessBootstrapError("pending release transaction cannot record generated metadata")
-    tracked_paths = (*_OWNED_METADATA_PATHS, *_HOST_CONFIGURATION_PATHS)
+    tracked_paths = set((*_OWNED_METADATA_PATHS, *_HOST_CONFIGURATION_PATHS))
+    if include_owned:
+        tracked_paths.update(relative for relative in paths if isinstance(relative, str))
     for relative in paths:
         if isinstance(relative, str) and relative in tracked_paths:
             candidate = _project_relative_path(root, relative)
@@ -1368,6 +1586,20 @@ def _clear_rollback_record(root: Path, backup: Path | None = None) -> None:
         shutil.rmtree(backup)
 
 
+def _discard_rollback_record_for_backup(root: Path, backup: Path | None) -> None:
+    """Remove only the rollback receipt created by the failed transaction."""
+
+    if backup is None:
+        return
+    record_path = root / ".rob2" / "rollback.json"
+    try:
+        record = json.loads(record_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return
+    if record.get("backup") == backup.relative_to(root).as_posix():
+        record_path.unlink()
+
+
 def _lifecycle_snapshot_paths(root: Path, manifest: dict[str, Any]) -> list[str]:
     """Return byte-for-byte restore inputs for an interrupted mutation."""
 
@@ -1381,7 +1613,7 @@ def _lifecycle_snapshot_paths(root: Path, manifest: dict[str, Any]) -> list[str]
 
 
 def _rollback_record_paths(root: Path, manifest: dict[str, Any]) -> list[str]:
-    """Record only the previous release artifacts, not mutable host settings."""
+    """Record generated artifacts; launcher entries restore independently."""
 
     candidates = [*manifest["owned_paths"], *_owned_metadata_paths(manifest)]
     return sorted(
@@ -1397,7 +1629,10 @@ def _cleanup_runtime_stages(root: Path) -> None:
     runtime_parent = root / ".rob2"
     if not runtime_parent.is_dir():
         return
-    for stage in runtime_parent.glob("runtime-stage-*"):
+    for stage in (
+        *runtime_parent.glob("runtime-stage-*"),
+        *runtime_parent.glob(f"{_CANDIDATE_STAGE_PREFIX}*"),
+    ):
         if stage.is_dir():
             shutil.rmtree(stage)
 
@@ -1461,24 +1696,36 @@ def _remove_owned_runtime(root: Path) -> None:
         shutil.rmtree(runtime)
 
 
-def _remove_owned_host_configuration(root: Path, manifest: dict[str, Any]) -> None:
-    """Remove only host entries whose exact values remain manifest-owned."""
+def _validate_owned_host_configuration(root: Path, manifest: dict[str, Any]) -> None:
+    """Prove both generated launcher entries remain safe to replace or restore."""
 
     ownership = manifest.get("config_ownership")
     if not isinstance(ownership, dict):
         raise HarnessBootstrapError("ownership manifest has no host configuration receipts")
     codex_path = root / ".codex" / "config.toml"
+    codex_value = _read_toml(codex_path).get("mcp_servers", {}).get(_MCP_SERVER_NAME)
+    if _value_hash(codex_value) != ownership.get("codex", {}).get("value_hash"):
+        raise HarnessBootstrapError("Codex MCP entry differs from its ownership receipt")
+    if codex_value is not None and ownership.get("codex", {}).get(
+        "section_hash"
+    ) != _codex_server_section_hash(codex_path):
+        raise HarnessBootstrapError("Codex MCP section differs from its ownership receipt")
+    claude_value = _read_json_object(root / ".mcp.json").get("mcpServers", {}).get(
+        _MCP_SERVER_NAME
+    )
+    if _value_hash(claude_value) != ownership.get("claude", {}).get("value_hash"):
+        raise HarnessBootstrapError("Claude MCP entry differs from its ownership receipt")
+
+
+def _remove_owned_host_configuration(root: Path, manifest: dict[str, Any]) -> None:
+    """Remove only host entries whose exact values remain manifest-owned."""
+
+    _validate_owned_host_configuration(root, manifest)
+    codex_path = root / ".codex" / "config.toml"
     codex = _read_toml(codex_path)
     codex_value = codex.get("mcp_servers", {}).get(_MCP_SERVER_NAME)
-    expected_codex_hash = ownership.get("codex", {}).get("value_hash")
-    if _value_hash(codex_value) != expected_codex_hash:
-        raise HarnessBootstrapError("Codex MCP entry differs from its ownership receipt")
     if codex_value is not None:
         text = _read_utf8_bytes(codex_path)
-        if ownership.get("codex", {}).get("section_hash") != _codex_server_section_hash(
-            codex_path
-        ):
-            raise HarnessBootstrapError("Codex MCP section differs from its ownership receipt")
         section = (
             rf"(?ms)^[ \t]*\[mcp_servers\.{re.escape(_MCP_SERVER_NAME)}\][ \t]*\r?$"
             rf".*?(?=^[ \t]*\[|\Z)"
@@ -1493,14 +1740,40 @@ def _remove_owned_host_configuration(root: Path, manifest: dict[str, Any]) -> No
     claude_path = root / ".mcp.json"
     claude = _read_json_object(claude_path)
     claude_value = claude.get("mcpServers", {}).get(_MCP_SERVER_NAME)
-    expected_claude_hash = ownership.get("claude", {}).get("value_hash")
-    if _value_hash(claude_value) != expected_claude_hash:
-        raise HarnessBootstrapError("Claude MCP entry differs from its ownership receipt")
     if claude_value is not None:
         if not isinstance(claude.get("mcpServers"), dict):
             raise HarnessBootstrapError("Claude MCP configuration is malformed")
         rendered = _remove_json_object_member(_read_utf8_bytes(claude_path), _MCP_SERVER_NAME)
         claude_path.write_bytes(rendered.encode())
+
+
+def _restore_rollback_host_configuration(root: Path, backup: Path) -> None:
+    """Restore only the prior release-owned launcher entries from a rollback backup."""
+
+    codex_path = root / ".codex" / "config.toml"
+    prior_section = _codex_server_section(backup / ".codex" / "config.toml")
+    if prior_section is None:
+        raise HarnessBootstrapError("rollback backup has no Codex MCP entry")
+    section = (
+        rf"(?ms)^[ \t]*\[mcp_servers\.{re.escape(_MCP_SERVER_NAME)}\][ \t]*\r?$"
+        rf".*?(?=^[ \t]*\[|\Z)"
+    )
+    rendered, count = re.subn(section, prior_section, _read_utf8_bytes(codex_path))
+    if count != 1:
+        raise HarnessBootstrapError(
+            "Codex MCP entry cannot be restored without touching user content"
+        )
+    codex_path.write_bytes(rendered.encode("utf-8"))
+
+    claude_path = root / ".mcp.json"
+    previous_entry = _json_object_member_value_text(
+        _read_utf8_bytes(backup / ".mcp.json"), _MCP_SERVER_NAME
+    )
+    claude_path.write_bytes(
+        _replace_json_object_member_text(
+            _read_utf8_bytes(claude_path), _MCP_SERVER_NAME, previous_entry
+        ).encode("utf-8")
+    )
 
 
 def _project_relative_path(root: Path, relative: str) -> Path:
@@ -1516,8 +1789,8 @@ def _project_relative_path(root: Path, relative: str) -> Path:
     return resolved
 
 
-def _codex_server_section_hash(path: Path) -> str | None:
-    """Hash the exact generated TOML section so comments remain user-owned."""
+def _codex_server_section(path: Path) -> str | None:
+    """Read the exact generated TOML section without normalizing user bytes."""
 
     if not path.exists():
         return None
@@ -1531,7 +1804,16 @@ def _codex_server_section_hash(path: Path) -> str | None:
     )
     if section is None:
         return None
-    return "sha256:" + hashlib.sha256(section.group(0).encode("utf-8")).hexdigest()
+    return section.group(0)
+
+
+def _codex_server_section_hash(path: Path) -> str | None:
+    """Hash the exact generated TOML section so comments remain user-owned."""
+
+    section = _codex_server_section(path)
+    if section is None:
+        return None
+    return "sha256:" + hashlib.sha256(section.encode("utf-8")).hexdigest()
 
 
 def _read_utf8_bytes(path: Path) -> str:
@@ -1635,12 +1917,36 @@ def _install_references(root: Path, release_root: Path) -> bool:
     return changed
 
 
-def _install_codex_server(path: Path, config: dict[str, Any], expected: dict[str, Any]) -> bool:
+def _render_codex_server(expected: dict[str, Any]) -> str:
+    args = ", ".join(json.dumps(value) for value in expected["args"])
+    return (
+        f"[mcp_servers.{_MCP_SERVER_NAME}]\n"
+        f"command = {json.dumps(expected['command'])}\nargs = [{args}]\n"
+    )
+
+
+def _install_codex_server(
+    path: Path, config: dict[str, Any], expected: dict[str, Any], *, replace: bool = False
+) -> bool:
     servers = config.get("mcp_servers")
     if servers is not None and not isinstance(servers, dict):
         raise HarnessBootstrapError(f"{path} has a non-table mcp_servers value.")
     if isinstance(servers, dict) and _MCP_SERVER_NAME in servers:
-        return False
+        if not replace:
+            return False
+        section = (
+            rf"(?ms)^[ \t]*\[mcp_servers\.{re.escape(_MCP_SERVER_NAME)}\][ \t]*\r?$"
+            rf".*?(?=^[ \t]*\[|\Z)"
+        )
+        rendered, changed = re.subn(
+            section, _render_codex_server(expected), _read_utf8_bytes(path)
+        )
+        if changed != 1:
+            raise HarnessBootstrapError(
+                "Codex MCP entry cannot be replaced without touching user content"
+            )
+        path.write_bytes(rendered.encode("utf-8"))
+        return True
     path.parent.mkdir(parents=True, exist_ok=True)
     prefix = _read_utf8_bytes(path) if path.exists() else ""
     if re.search(r"(?m)^\s*mcp_servers\s*=", prefix):
@@ -1648,17 +1954,51 @@ def _install_codex_server(path: Path, config: dict[str, Any], expected: dict[str
             f"{path} defines mcp_servers as an inline value that cannot be extended safely."
         )
     separator = "" if not prefix or prefix.endswith(("\n", "\r")) else "\n"
-    args = ", ".join(json.dumps(value) for value in expected["args"])
     path.write_bytes(
-        (
-            f"{prefix}{separator}[mcp_servers.{_MCP_SERVER_NAME}]\n"
-            f"command = {json.dumps(expected['command'])}\nargs = [{args}]\n"
-        ).encode()
+        (f"{prefix}{separator}{_render_codex_server(expected)}").encode()
     )
     return True
 
 
-def _install_claude_server(path: Path, config: dict[str, Any], expected: dict[str, Any]) -> bool:
+def _json_object_member_value_span(text: str, key: str) -> tuple[int, int]:
+    """Locate one JSON object value while retaining its original source bytes."""
+
+    matches = list(re.finditer(rf'"{re.escape(key)}"\s*:\s*', text))
+    if len(matches) != 1:
+        raise HarnessBootstrapError(
+            "Claude MCP entry cannot be replaced without touching user content"
+        )
+    member = matches[0]
+    try:
+        _existing, value_end = json.JSONDecoder().raw_decode(text[member.end() :])
+    except json.JSONDecodeError as error:
+        raise HarnessBootstrapError("Claude MCP entry cannot be replaced safely") from error
+    return member.end(), value_end + member.end()
+
+
+def _json_object_member_value_text(text: str, key: str) -> str:
+    """Read one JSON object value without normalizing its formatting."""
+
+    start, end = _json_object_member_value_span(text, key)
+    return text[start:end]
+
+
+def _replace_json_object_member_text(text: str, key: str, value: str) -> str:
+    """Replace one JSON object value while retaining neighbouring user bytes."""
+
+    start, end = _json_object_member_value_span(text, key)
+    return text[:start] + value + text[end:]
+
+
+def _replace_json_object_member(text: str, key: str, value: object) -> str:
+    """Replace one JSON object value without reformatting neighbouring user bytes."""
+
+    return _replace_json_object_member_text(text, key, json.dumps(value, indent=2))
+
+
+def _install_claude_server(
+    path: Path, config: dict[str, Any], expected: dict[str, Any], *, replace: bool = False
+) -> bool:
     servers = config.get("mcpServers")
     if servers is None:
         servers = {}
@@ -1666,10 +2006,39 @@ def _install_claude_server(path: Path, config: dict[str, Any], expected: dict[st
     if not isinstance(servers, dict):
         raise HarnessBootstrapError(f"{path} has a non-object mcpServers value.")
     if _MCP_SERVER_NAME in servers:
-        return False
+        if not replace:
+            return False
+        path.write_bytes(
+            _replace_json_object_member(_read_utf8_bytes(path), _MCP_SERVER_NAME, expected).encode(
+                "utf-8"
+            )
+        )
+        return True
     servers[_MCP_SERVER_NAME] = expected
     path.write_text(json.dumps(config, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     return True
+
+
+def _apply_candidate_host_configuration(
+    root: Path, manifest: dict[str, Any], lock: ReleaseLock, release_root: Path
+) -> None:
+    """Replace only the two launcher entries that are proven release-owned."""
+
+    _validate_owned_host_configuration(root, manifest)
+    codex_path = root / ".codex" / "config.toml"
+    claude_path = root / ".mcp.json"
+    _install_codex_server(
+        codex_path,
+        _read_toml(codex_path),
+        _server_config(lock, release_root, "codex"),
+        replace=True,
+    )
+    _install_claude_server(
+        claude_path,
+        _read_json_object(claude_path),
+        _server_config(lock, release_root, "claude"),
+        replace=True,
+    )
 
 
 def _check_execution_contract(root: Path, release_root: Path) -> dict[str, Any]:
@@ -1749,7 +2118,9 @@ def _require_server_entry(entry: object, expected: dict[str, Any], description: 
         raise ValueError(f"{description} does not match the locked {_MCP_SERVER_NAME} launcher")
 
 
-def _check_mcp_launchability(project_root: Path) -> dict[str, Any]:
+def _check_mcp_launchability(
+    project_root: Path, *, allow_pending_lifecycle_probe: bool = False
+) -> dict[str, Any]:
     launcher: dict[str, Any] | None = None
     try:
         release_root = _release_root()
@@ -1757,12 +2128,14 @@ def _check_mcp_launchability(project_root: Path) -> dict[str, Any]:
         launcher = _server_config(lock, release_root, "codex")
         if launcher["command"] == "uvx" and shutil.which("uvx") is None:
             raise ValueError("uvx is not available on PATH")
-        tools = verify_mcp_launchability(
-            project_root,
-            launcher["command"],
-            tuple(launcher["args"]),
-        )
-    except (ImportError, OSError, TimeoutError, ValueError) as error:
+        arguments = (project_root, launcher["command"], tuple(launcher["args"]))
+        if allow_pending_lifecycle_probe:
+            tools = verify_mcp_launchability(
+                *arguments, environment={"ROB2_LIFECYCLE_DOCTOR": "1"}
+            )
+        else:
+            tools = verify_mcp_launchability(*arguments)
+    except Exception as error:
         if launcher is not None and launcher["command"] != "uvx":
             recovery = (
                 "Reinstall rob2-kit in the Python environment used for bootstrap, "

@@ -629,6 +629,8 @@ def _qualify(
             _run([str(rob2), "doctor", str(project)], cwd=workspace, env=checked_env).stdout
         )
         assert initial_doctor["ok"] is True
+        original_codex_config = (project / ".codex" / "config.toml").read_bytes()
+        original_claude_config = (project / ".mcp.json").read_bytes()
         lock = project / ".rob2" / "rob2.lock"
         original = lock.read_bytes()
         lock.write_bytes(original + b"\ncorruption")
@@ -656,6 +658,10 @@ def _qualify(
             ).stdout
         )
         assert upgrade["status"] == "upgraded"
+        rollback_record = json.loads(
+            (project / ".rob2" / "rollback.json").read_text(encoding="utf-8")
+        )
+        assert not {".codex/config.toml", ".mcp.json"} & set(rollback_record["paths"])
         upgraded_doctor = json.loads(
             _run([str(rob2), "doctor", str(project)], cwd=workspace, env=checked_env).stdout
         )
@@ -673,6 +679,8 @@ def _qualify(
             ).stdout
         )
         assert rollback["status"] == "rolled_back"
+        assert (project / ".codex" / "config.toml").read_bytes() == original_codex_config
+        assert (project / ".mcp.json").read_bytes() == original_claude_config
         assert json.loads(
             _run([str(rob2), "doctor", str(project)], cwd=workspace, env=checked_env).stdout
         )["ok"] is True

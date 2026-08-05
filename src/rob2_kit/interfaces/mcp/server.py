@@ -838,7 +838,7 @@ def create_server(
 
 def main() -> None:
     pending = Path.cwd() / ".rob2" / "pending-release-transaction.json"
-    if pending.exists():
+    if pending.exists() and os.environ.get("ROB2_LIFECYCLE_DOCTOR") != "1":
         raise RuntimeError(
             "a release transaction is pending recovery; run a rob2 lifecycle command before "
             "starting the MCP server"
