@@ -852,6 +852,8 @@ def _declared_result_specs(
                 result=result,
                 estimate=item.get("estimate", {}),
                 provenance_note=str(item.get("provenance_note", "")),
+                analysis_priority=item.get("analysis_priority"),
+                preference_source_locator=item.get("preference_source_locator"),
             )
         )
     result_ids = [item.result.result_id for item in specs]

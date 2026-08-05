@@ -36,6 +36,7 @@ from rob2_kit.application.contracts import (
     RecordReference,
     Result,
     RunOperation,
+    RunProposal,
     RunProposalAmbiguity,
     RunProposalSelection,
     RunStatusRequest,
@@ -148,7 +149,16 @@ def _dump(response: Any) -> dict[str, Any]:
     # Keep the wire envelope compact: absent optional payloads (especially a
     # terminal response's ``next_action``) are omitted rather than repeated as
     # JSON nulls.  The typed response model remains available to Python hosts.
-    return response.model_dump(mode="json", exclude_none=True)
+    payload = response.model_dump(mode="json", exclude_none=True)
+    # Full discovery records remain durable and available to typed Python
+    # hosts, but MCP responses use the compact human proposal projection so
+    # parser output and raw source inventories do not consume the conversation
+    # context. Tokens and candidate identifiers are preserved verbatim for
+    # the next typed action.
+    proposal = getattr(response, "proposal", None)
+    if isinstance(proposal, RunProposal):
+        payload["proposal"] = proposal.compact_payload()
+    return payload
 
 
 def _submission_key(operation: str, issued_token: str) -> str:
@@ -319,8 +329,14 @@ def create_server(
         contract_version: Literal["1.0.0"],
         selections: list[RunProposalSelection] | None = None,
         ambiguities: list[RunProposalAmbiguity] | None = None,
+        correction: str | None = None,
     ) -> dict[str, Any]:
-        """Submit proposal objects by copying their complete fields exactly as issued."""
+        """Submit a complete proposal revision or one explicit ID-bound correction.
+
+        Natural-language correction text is intentionally narrow: name the
+        issued ``trial:``, ``outcome-target:``, and (for selection) ``result:``
+        or ``result-candidate:`` identities. Unsupported prose is rejected.
+        """
         return _dump(
             engine.submit_run_proposal(
                 SubmitRunProposalRequest.model_validate(
@@ -330,6 +346,7 @@ def create_server(
                         "idempotency_key": _submission_key("proposal", proposal_token),
                         "selections": selections or (),
                         "ambiguities": ambiguities or (),
+                        "correction": correction,
                         "contract_version": contract_version,
                     }
                 )
@@ -484,6 +501,22 @@ def create_server(
             )
         )
 
+    @server.tool(name="classify_sources")
+    def classify_sources(
+        run_id: str,
+        work_token: WorkToken,
+        classifications: list[SourceClassificationInput],
+        contract_version: Literal["1.0.0"],
+    ) -> dict[str, Any]:
+        """Canonical pre-confirmation route for classifying issued Sources."""
+
+        return submit_source_classification(
+            run_id=run_id,
+            work_token=work_token,
+            classifications=classifications,
+            contract_version=contract_version,
+        )
+
     @server.tool(name="submit_result_resolution")
     def submit_result_resolution(
         run_id: str,
@@ -514,6 +547,26 @@ def create_server(
                     }
                 )
             )
+        )
+
+    @server.tool(name="resolve_result")
+    def resolve_result(
+        run_id: str,
+        work_token: WorkToken,
+        result: Result,
+        estimate: Estimate,
+        provenance_note: str,
+        contract_version: Literal["1.0.0"],
+    ) -> dict[str, Any]:
+        """Canonical pre-confirmation route for resolving one issued Result."""
+
+        return submit_result_resolution(
+            run_id=run_id,
+            work_token=work_token,
+            result=result,
+            estimate=estimate,
+            provenance_note=provenance_note,
+            contract_version=contract_version,
         )
 
     @server.tool(name="submit_domain_evidence")

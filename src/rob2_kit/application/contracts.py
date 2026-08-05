@@ -45,7 +45,7 @@ from rob2_kit.evidence.visual import (
     VisualRenderRequest,
 )
 from rob2_kit.evidence.workflow import ExecutedSearchQuery, SearchCoverageReceipt, SearchPassKind
-from rob2_kit.ingestion.project import ProjectInitialization, ResultCandidate
+from rob2_kit.ingestion.project import OutcomeTarget, ProjectInitialization, ResultCandidate
 from rob2_kit.logic.packs import GuidanceItem
 from rob2_kit.registry import RegistryCandidate
 
@@ -384,6 +384,48 @@ class RunProposalSelection(FrozenModel):
     registry_candidate_id: Identifier | None = None
     outcome_target_id: Identifier | None = None
     accepted: bool = True
+    removed: bool = False
+    exclusion_reason: str | None = Field(
+        default=None,
+        validation_alias=AliasChoices("exclusion_reason", "reason"),
+        description=(
+            "Human-readable reason for explicitly excluding this Trial × Outcome target. "
+            "Required when accepted is false."
+        ),
+    )
+
+    @model_validator(mode="after")
+    def validate_disposition(self) -> RunProposalSelection:
+        if self.removed:
+            if self.accepted:
+                raise ValueError("a removed Run proposal pairing must set accepted=false")
+            if self.result_id is not None or self.result_candidate_id is not None:
+                raise ValueError("a removed Run proposal pairing cannot select a Result")
+            if self.exclusion_reason is not None and not self.exclusion_reason.strip():
+                raise ValueError("exclusion_reason cannot be blank")
+            return self
+        if not self.accepted:
+            if self.result_id is not None or self.result_candidate_id is not None:
+                raise ValueError("an excluded Run proposal pairing cannot select a Result")
+            if not self.exclusion_reason or not self.exclusion_reason.strip():
+                raise ValueError("an excluded Run proposal pairing requires exclusion_reason")
+        elif self.exclusion_reason is not None and not self.exclusion_reason.strip():
+            raise ValueError("exclusion_reason cannot be blank")
+        return self
+
+
+class RunProposalPair(FrozenModel):
+    """Compact human-facing disposition for one requested Trial × Outcome target."""
+
+    trial_id: Identifier
+    outcome_target_id: Identifier
+    candidate_ids: tuple[Identifier, ...] = ()
+    result_id: Identifier | None = None
+    preferred_result_id: Identifier | None = None
+    selection_policy: str | None = None
+    disposition: Literal["selected", "excluded", "removed", "unresolved"] = "unresolved"
+    exclusion_reason: str | None = None
+    differences: tuple[str, ...] = ()
 
 
 class RunProposalAmbiguity(FrozenModel):
@@ -395,6 +437,8 @@ class RunProposalAmbiguity(FrozenModel):
     material: bool = True
     resolved: bool = False
     resolution: str | None = None
+    trial_id: Identifier | None = None
+    outcome_target_id: Identifier | None = None
 
 
 class RunProposal(FrozenModel):
@@ -410,10 +454,50 @@ class RunProposal(FrozenModel):
     registry_candidates: tuple[RegistryCandidate, ...] = ()
     result_candidates: tuple[ResultCandidate, ...] = ()
     ambiguities: tuple[RunProposalAmbiguity, ...] = ()
+    supersedes_proposal_id: Identifier | None = None
+    semantic_diff: tuple[str, ...] = ()
 
     @property
     def unresolved_ambiguities(self) -> tuple[RunProposalAmbiguity, ...]:
         return tuple(item for item in self.ambiguities if item.material and not item.resolved)
+
+    @property
+    def outcome_targets(self) -> tuple[OutcomeTarget, ...]:
+        return self.initialization.manifest.outcome_target_specs
+
+    @property
+    def source_limitations(self) -> tuple[str, ...]:
+        limitations: list[str] = []
+        for trial in self.initialization.trials:
+            limitations.extend(
+                f"{trial.trial_id}: {item}" for item in trial.inventory.coverage_limitations
+            )
+        limitations.extend(
+            finding.detail
+            for finding in self.initialization.diagnostics
+            if finding.kind.value
+            in {
+                "optional_source_acquisition_failed",
+                "optional_source_processing_failed",
+                "registry_unavailable",
+                "registry_acquisition_failed",
+            }
+        )
+        return tuple(dict.fromkeys(limitations))
+
+    def pairings(self) -> tuple[RunProposalPair, ...]:
+        """Return the compact, progressive-disclosure mapping view."""
+
+        from rob2_kit.application.proposals import proposal_pairings
+
+        return proposal_pairings(self)
+
+    def compact_payload(self) -> dict[str, object]:
+        """Serialize only the human proposal projection, never parser output."""
+
+        from rob2_kit.application.proposals import compact_proposal_payload
+
+        return compact_proposal_payload(self)
 
 
 class ConfirmedRunDefinition(FrozenModel):
@@ -464,6 +548,19 @@ class SubmitRunProposalRequest(FrozenModel):
     selections: tuple[RunProposalSelection, ...] = ()
     ambiguities: tuple[RunProposalAmbiguity, ...] = ()
     unresolved_ambiguities: tuple[RunProposalAmbiguity, ...] = ()
+    correction: str | None = Field(
+        default=None,
+        description=(
+            "Optional bounded natural-language correction. It must name issued Trial, "
+            "Outcome-target, and Result identifiers; unsupported prose is refused."
+        ),
+    )
+
+    @model_validator(mode="after")
+    def validate_correction(self) -> SubmitRunProposalRequest:
+        if self.correction is not None and not self.correction.strip():
+            raise ValueError("correction cannot be blank")
+        return self
 
 
 class ConfirmRunDefinitionRequest(FrozenModel):

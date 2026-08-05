@@ -71,6 +71,15 @@ from rob2_kit.application.lifecycle import (
     RunState,
     derive_lifecycle,
 )
+from rob2_kit.application.proposals import (
+    apply_correction_selections,
+    correction_ambiguity_updates,
+    effective_result_ids,
+    proposal_pairings,
+    semantic_diff,
+    translate_correction,
+    validate_result_sources,
+)
 from rob2_kit.domain.assessment import (
     AlgorithmicJudgmentRevision,
     AssessmentRevision,
@@ -1365,6 +1374,19 @@ class RunEngine:
         if projection.run_state is not RunState.AWAITING_CONFIRMATION:
             raise ValueError("a Run proposal can only be submitted before confirmation")
         proposal = self._latest_proposal(ledger, request.run_id)
+        translated_selections = (
+            translate_correction(proposal, request.correction)
+            if request.correction is not None
+            else ()
+        )
+        selections = (
+            apply_correction_selections(
+                proposal,
+                request.selections + translated_selections,
+            )
+            if request.correction is not None
+            else request.selections
+        )
         existing_event = self._event_for_operation_key(
             ledger, request.idempotency_key, run_id=request.run_id
         )
@@ -1379,7 +1401,7 @@ class RunEngine:
             existing_ambiguities = {
                 item.ambiguity_id: item for item in existing_record.proposal.ambiguities
             }
-            if existing_record.proposal.selections != request.selections or any(
+            if existing_record.proposal.selections != selections or any(
                 existing_ambiguities.get(item.ambiguity_id) != item
                 for item in requested_ambiguities
             ):
@@ -1456,22 +1478,38 @@ class RunEngine:
                     ),
                 ),
             )
-        self._validate_proposal_selections(proposal, request.selections)
-        proposal = self._refresh_registry_candidates(proposal, request.selections)
+        self._validate_proposal_selections(proposal, selections)
+        proposal = self._refresh_registry_candidates(proposal, selections)
         self._index_initial_evidence(self._required_root(), proposal.initialization)
         requested_ambiguities = request.ambiguities + request.unresolved_ambiguities
+        if translated_selections:
+            requested_ambiguities += correction_ambiguity_updates(proposal, translated_selections)
         self._validate_proposal_ambiguities(proposal, requested_ambiguities)
         submitted = proposal.model_copy(
             update={
-                "selections": request.selections,
+                "selections": selections,
                 "ambiguities": self._merge_ambiguities(
                     proposal.ambiguities,
                     requested_ambiguities,
-                    selections=request.selections,
+                    selections=selections,
                 ),
             }
         )
-        submitted = self._resolve_result_candidates(submitted, request.selections)
+        submitted = self._resolve_result_candidates(submitted, selections)
+        included_result_ids = self._effective_proposal_result_ids(submitted)
+        source_errors = validate_result_sources(
+            submitted.initialization,
+            included_result_ids,
+            artifacts=ledger.artifacts,
+        )
+        if source_errors:
+            raise ValueError("; ".join(source_errors))
+        submitted = submitted.model_copy(
+            update={
+                "supersedes_proposal_id": proposal.proposal_id,
+                "semantic_diff": semantic_diff(proposal, submitted),
+            }
+        )
         submitted = self._freeze_submitted_proposal(submitted)
         record = _ProposalSubmittedRecord(run_id=request.run_id, proposal=submitted)
         now = self._now()
@@ -1643,8 +1681,13 @@ class RunEngine:
                 ),
             )
         accepted = tuple(item for item in proposal.selections if item.accepted)
+        pairings = proposal_pairings(proposal)
+        selected_pairings = tuple(item for item in pairings if item.disposition == "selected")
+        result_ids_for_scope = self._effective_proposal_result_ids(proposal)
         trial_ids = (
-            tuple(item.trial_id for item in accepted) if proposal.selections else proposal.trial_ids
+            tuple(dict.fromkeys(item.trial_id for item in selected_pairings))
+            if proposal.outcome_targets
+            else proposal.trial_ids
         )
         result_candidates = {item.candidate_id: item for item in proposal.result_candidates}
         selected_candidate_items = tuple(
@@ -1673,15 +1716,7 @@ class RunEngine:
                     recovery=("Submit an exact Trial-specific Result mapping for the candidate.",),
                 ),
             )
-        selected_result_ids = tuple(
-            dict.fromkeys(item.result_id for item in accepted if item.result_id is not None)
-        )
-        selected_result_ids += tuple(
-            item.result_id
-            for item in selected_candidate_items
-            if item.result_id is not None and item.result_id not in selected_result_ids
-        )
-        result_ids = list(selected_result_ids if proposal.selections else proposal.result_ids)
+        result_ids = list(result_ids_for_scope)
         # A selected failed Trial without a declared Result is represented by
         # an engine-issued diagnostic identity.  Keep that terminal diagnostic
         # inside the immutable confirmed scope so mixed batches can complete.
@@ -1715,21 +1750,8 @@ class RunEngine:
             if proposal.selections
             else tuple(item.candidate_id for item in proposal.registry_candidates if item.explicit)
         )
-        selected_outcome_target_ids = tuple(
-            item.outcome_target_id for item in accepted if item.outcome_target_id is not None
-        )
-        selected_outcome_target_ids += tuple(
-            item.outcome_target_id
-            for item in selected_candidate_items
-            if item.outcome_target_id is not None
-            and item.outcome_target_id not in selected_outcome_target_ids
-        )
-        outcome_target_ids = (
-            selected_outcome_target_ids
-            if proposal.selections
-            else tuple(
-                item.target_id for item in proposal.initialization.manifest.outcome_target_specs
-            )
+        outcome_target_ids = tuple(
+            dict.fromkeys(item.outcome_target_id for item in selected_pairings)
         )
         now = self._now()
         definition = ConfirmedRunDefinition(
@@ -5610,6 +5632,12 @@ class RunEngine:
         )
 
     @staticmethod
+    def _effective_proposal_result_ids(proposal: RunProposal) -> tuple[Identifier, ...]:
+        """Resolve explicit corrections plus unambiguous default pairings."""
+
+        return effective_result_ids(proposal)
+
+    @staticmethod
     def _validate_proposal_selections(
         proposal: RunProposal,
         selections: tuple[RunProposalSelection, ...],
@@ -5747,6 +5775,38 @@ class RunEngine:
                     "Run proposal Result was not issued for the selected Outcome target"
                 )
 
+        # Keep cardinality and disposition validation on the same projection
+        # used by MCP and confirmation; there must be no second default policy.
+        candidate_proposal = proposal.model_copy(update={"selections": selections})
+        pairings = proposal_pairings(candidate_proposal)
+        for pairing in pairings:
+            pair_selections = tuple(
+                item
+                for item in selections
+                if item.trial_id == pairing.trial_id
+                and item.outcome_target_id == pairing.outcome_target_id
+            )
+            accepted = tuple(item for item in pair_selections if item.accepted and not item.removed)
+            explicit_removed = tuple(item for item in pair_selections if item.removed)
+            excluded = tuple(
+                item for item in pair_selections if not item.accepted and not item.removed
+            )
+            if len(accepted) > 1:
+                raise ValueError(
+                    f"Run proposal selects more than one Result for {pairing.trial_id} × "
+                    f"{pairing.outcome_target_id}"
+                )
+            if sum(bool(items) for items in (accepted, explicit_removed, excluded)) > 1:
+                raise ValueError(
+                    f"Run proposal has conflicting dispositions for {pairing.trial_id} × "
+                    f"{pairing.outcome_target_id}"
+                )
+            if pairing.disposition == "unresolved":
+                raise ValueError(
+                    f"Run proposal must select, exclude, or remove {pairing.trial_id} × "
+                    f"{pairing.outcome_target_id}"
+                )
+
     @staticmethod
     def _validate_proposal_ambiguities(
         proposal: RunProposal,
@@ -5766,6 +5826,11 @@ class RunEngine:
                     raise ValueError("Run proposal ambiguity scope does not match the issued item")
                 if item.detail != original.detail:
                     raise ValueError("Run proposal ambiguity detail cannot be rewritten")
+                if (
+                    item.trial_id != original.trial_id
+                    or item.outcome_target_id != original.outcome_target_id
+                ):
+                    raise ValueError("Run proposal ambiguity pairing scope cannot be rewritten")
                 if original.material and not item.material:
                     raise ValueError("material Run proposal ambiguities cannot be downgraded")
                 if item.resolved and item.material and not (item.resolution or "").strip():
@@ -5858,6 +5923,33 @@ class RunEngine:
                 "result_ids": tuple(result_ids),
             }
         )
+
+    @staticmethod
+    def _rebind_candidate_ambiguities(proposal: RunProposal) -> RunProposal:
+        """Keep candidate-scoped ambiguities bound across deterministic ID remaps."""
+
+        candidates = {
+            (item.trial_id, item.outcome_target_id): item.candidate_id
+            for item in proposal.result_candidates
+        }
+        current_ids = {item.candidate_id for item in proposal.result_candidates}
+        ambiguities: list[RunProposalAmbiguity] = []
+        changed = False
+        for ambiguity in proposal.ambiguities:
+            if (
+                ambiguity.scope.startswith("result-candidate:")
+                and ambiguity.scope not in current_ids
+                and ambiguity.trial_id is not None
+                and ambiguity.outcome_target_id is not None
+            ):
+                candidate_id = candidates.get((ambiguity.trial_id, ambiguity.outcome_target_id))
+                if candidate_id is not None:
+                    ambiguity = ambiguity.model_copy(update={"scope": candidate_id})
+                    changed = True
+            ambiguities.append(ambiguity)
+        if changed:
+            return proposal.model_copy(update={"ambiguities": tuple(ambiguities)})
+        return proposal
 
     @staticmethod
     def _result_state(
@@ -7008,6 +7100,7 @@ class RunEngine:
                 error=error,
             )
             return True
+        refreshed = self._rebind_candidate_ambiguities(refreshed)
         # Index canonical units only after Trial/Source identity remapping.  A
         # path move can change discovery order and therefore the provisional
         # ordinal IDs emitted by the parser; indexing before remapping would
@@ -7125,10 +7218,16 @@ class RunEngine:
             for candidate in initialization.result_candidates
             if candidate.trial_id in added_trial_ids
         }
+        resolved_candidate_pairs = {
+            (candidate.trial_id, candidate.outcome_target_id)
+            for candidate in initialization.result_candidates
+            if candidate.status == "resolved" and candidate.result_id is not None
+        }
         material_ambiguities.extend(
             item
             for item in refreshed.unresolved_ambiguities
             if item.scope not in added_candidate_ids
+            and (item.trial_id, item.outcome_target_id) not in resolved_candidate_pairs
         )
         if material_ambiguities:
             # Keep the last safe inventory/proposal as the reconciliation
@@ -8397,11 +8496,51 @@ class RunEngine:
                     "requires an exact Trial-specific Result mapping."
                 ),
                 material=True,
+                trial_id=candidate.trial_id,
+                outcome_target_id=candidate.outcome_target_id,
             )
             for candidate in initialization.result_candidates
             if candidate.status == "needs_input"
         )
-        ambiguities = finding_ambiguities + registry_ambiguities + result_ambiguities
+        competing_ambiguities: list[RunProposalAmbiguity] = []
+        for trial_id in (
+            item.trial_id for item in initialization.trials if item.status == "inventory_ready"
+        ):
+            for target in initialization.manifest.outcome_target_specs:
+                candidates = tuple(
+                    item
+                    for item in initialization.result_candidates
+                    if item.trial_id == trial_id
+                    and item.outcome_target_id == target.target_id
+                    and item.status == "resolved"
+                    and item.result_id is not None
+                )
+                if len({item.result_id for item in candidates}) <= 1:
+                    continue
+                competing_ambiguities.append(
+                    RunProposalAmbiguity(
+                        ambiguity_id=(
+                            f"ambiguity:{self._digest(f'{run_id}|competing-result|{trial_id}|{target.target_id}')}"
+                        ),
+                        scope=(f"target:{self._digest(f'{trial_id}|{target.target_id}')}"),
+                        detail=(
+                            f"Multiple Trial-specific Result analyses match {target.label!r} "
+                            f"for {trial_id}; when time is omitted, a protocol-defined "
+                            "primary analysis or prespecified cutoff is preferred when "
+                            "source provenance identifies one. Alternatives remain visible; "
+                            "select one explicitly or exclude this pairing."
+                        ),
+                        material=True,
+                        trial_id=trial_id,
+                        outcome_target_id=target.target_id,
+                    )
+                )
+        ambiguities = (
+            finding_ambiguities
+            + registry_ambiguities
+            + result_ambiguities
+            + tuple(competing_ambiguities)
+        )
         return RunProposal(
             proposal_id=f"run-proposal:{suffix}",
             proposal_token=f"proposal-token:{suffix}",

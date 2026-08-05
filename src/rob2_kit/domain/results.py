@@ -1,6 +1,7 @@
 """Stable Result identity and immutable ResultSpec contracts."""
 
 from decimal import Decimal
+from typing import Literal
 
 from pydantic import Field
 
@@ -43,3 +44,8 @@ class ResultSpecRevision(Revision):
     result: Result
     estimate: Estimate
     provenance_note: str = Field(min_length=1)
+    # Optional typed basis for omitted-time proposal preference.  A lexical
+    # word in a Result label/provenance note is never enough to rank analyses;
+    # the basis must name an acquired protocol/SAP source explicitly.
+    analysis_priority: Literal["protocol_primary", "prespecified_cutoff"] | None = None
+    preference_source_locator: str | None = None
