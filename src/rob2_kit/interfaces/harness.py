@@ -41,6 +41,7 @@ _REFERENCE_FILENAMES = SKILL_REFERENCE_FILENAMES
 _HOST_SKILL_ROOTS = (("codex", ".codex/skills"), ("claude", ".claude/skills"))
 _ROLLBACK_ROOT = ".rob2/release-rollbacks"
 _PENDING_TRANSACTION = ".rob2/pending-release-transaction.json"
+_OWNED_METADATA_PATHS = ("rob2.lock", ".rob2/rob2.lock", ".rob2/rollback.json")
 
 
 def preview_upgrade_project(project_root: Path) -> dict[str, Any]:
@@ -52,8 +53,9 @@ def preview_upgrade_project(project_root: Path) -> dict[str, Any]:
     candidate = load_release_lock(release_root)
     candidate_paths = _candidate_owned_source_paths(release_root)
     owned = current["owned_paths"]
-    additions = sorted(path for path in candidate_paths if path not in owned)
-    removals = sorted(path for path in owned if path not in candidate_paths)
+    current_paths = set(owned) | set(_owned_metadata_paths(current))
+    additions = sorted(path for path in candidate_paths if path not in current_paths)
+    removals = sorted(path for path in current_paths if path not in candidate_paths)
     replacements = sorted(
         path
         for path, source in candidate_paths.items()
@@ -108,7 +110,16 @@ def upgrade_project(project_root: Path, *, apply: bool = False) -> dict[str, Any
         candidate_paths = _candidate_owned_source_paths(release_root)
         _write_pending_upgrade(root, current, backup, tuple(candidate_paths))
         staged_runtime = _stage_candidate_runtime(root, release_root)
-        _remove_owned_files(root, sorted(set(current["owned_paths"]) - set(candidate_paths)))
+        _verify_staged_candidate(root, release_root, staged_runtime)
+        # The rollback receipt is durable before any live release bytes move.
+        # A hard interruption can therefore always recover the prior generation.
+        _write_rollback_record(root, current, backup)
+        target_paths = set(candidate_paths) | set(_owned_metadata_paths(current))
+        current_paths = set(current["owned_paths"]) | set(_owned_metadata_paths(current))
+        _remove_owned_files(
+            root,
+            sorted(current_paths - target_paths),
+        )
         _refresh_release_assets(root, release_root)
         if staged_runtime is not None:
             _commit_staged_runtime(root, staged_runtime, backup)
@@ -117,7 +128,6 @@ def upgrade_project(project_root: Path, *, apply: bool = False) -> dict[str, Any
         _verify_candidate_install(root, release_root)
         _write_journal(journal, "upgrade_complete", _changed_paths(root, snapshot), ())
         _pending_transaction_path(root).unlink()
-        _write_rollback_record(root, current, backup)
     except Exception as error:
         _restore_managed_state(root, snapshot)
         _clear_pending_upgrade(root, backup)
@@ -143,17 +153,20 @@ def rollback_project(project_root: Path, *, apply: bool = False) -> dict[str, An
     root = project_root.resolve()
     _recover_interrupted_upgrade(root)
     record = _load_rollback_record(root)
+    current = _load_ownership_manifest(root)
     preview = {
         "operation": "rollback",
         "preview": True,
         "user_action": "Review this receipt, then run rob2 rollback --apply PROJECT_ROOT.",
-        "restore_release": record["release"],
-        "owned_paths": record["paths"],
+        "from": current["release"],
+        "to": record["release"],
+        "owned_replacements": record["paths"],
+        "owned_removals": sorted(set(current["owned_paths"]) - set(record["paths"])),
+        "state_compatibility": _check_project_state(root),
     }
     if not apply:
         return preview
     mutex = _acquire_install_mutex(root)
-    current = _load_ownership_manifest(root)
     recovery_backup = _begin_recoverable_lifecycle(root, current)
     try:
         _remove_owned_files(root, current["owned_paths"])
@@ -191,8 +204,10 @@ def preview_uninstall_project(project_root: Path) -> dict[str, Any]:
         "operation": "uninstall",
         "preview": True,
         "user_action": "Review this receipt, then run rob2 uninstall --apply PROJECT_ROOT.",
-        "owned_removals": sorted(manifest["owned_paths"]),
+        "release": manifest["release"],
+        "owned_removals": sorted((*manifest["owned_paths"], *_owned_metadata_paths(manifest))),
         "preserved": ["unlisted project files", "unrelated host configuration"],
+        "state_compatibility": _check_project_state(root),
     }
 
 
@@ -210,13 +225,7 @@ def uninstall_project(project_root: Path, *, apply: bool = False) -> dict[str, A
     backup = _begin_recoverable_lifecycle(root, manifest)
     try:
         _remove_owned_host_configuration(root, manifest)
-        _remove_owned_files(root, manifest["owned_paths"])
-        # The two lock files are fixed release artifacts, but are intentionally
-        # outside owned_paths to avoid a self-referential hash.
-        for path in (root / _BOOTSTRAP_LOCK, root / ".rob2" / _BOOTSTRAP_LOCK):
-            if path.is_file():
-                path.unlink()
-        _clear_rollback_record(root)
+        _remove_owned_files(root, [*manifest["owned_paths"], *_owned_metadata_paths(manifest)])
         _write_journal(root / ".rob2" / "install-journal.json", "uninstall_complete", (), ())
         _clear_pending_upgrade(root, backup)
     except Exception:
@@ -888,6 +897,7 @@ def _ownership_manifest(root: Path, release_root: Path, lock: ReleaseLock) -> di
             ),
         },
         "owned_paths": generated_paths,
+        "owned_metadata_paths": list(_OWNED_METADATA_PATHS),
         "config_ownership": config_ownership,
         "transaction": {"operation": "bootstrap", "status": "complete"},
     }
@@ -906,10 +916,22 @@ def _load_ownership_manifest(root: Path) -> dict[str, Any]:
         or manifest.get("kind") != _OWNERSHIP_KIND
         or manifest.get("schema_version") != _OWNERSHIP_SCHEMA
         or not isinstance(manifest.get("owned_paths"), dict)
+        or not isinstance(manifest.get("owned_metadata_paths", list), list)
         or not isinstance(manifest.get("release"), dict)
     ):
         raise HarnessBootstrapError("ownership manifest is malformed or not owned by rob2-kit")
     return manifest
+
+
+def _owned_metadata_paths(manifest: dict[str, Any]) -> tuple[str, ...]:
+    """Return fixed generated receipts that cannot hash themselves."""
+
+    paths = manifest.get("owned_metadata_paths", _OWNED_METADATA_PATHS)
+    if not isinstance(paths, list) or not all(isinstance(path, str) for path in paths):
+        raise HarnessBootstrapError("ownership manifest has invalid metadata paths")
+    if set(paths) != set(_OWNED_METADATA_PATHS):
+        raise HarnessBootstrapError("ownership manifest has unexpected metadata paths")
+    return tuple(paths)
 
 
 def _validate_manifest_owned_files(root: Path, manifest: dict[str, Any]) -> None:
@@ -970,6 +992,20 @@ def _verify_candidate_install(root: Path, release_root: Path) -> None:
         ownership = _check_ownership(root, release_root)
         if not ownership["ok"]:
             raise HarnessBootstrapError(f"candidate ownership check failed: {ownership['detail']}")
+    state = _check_project_state(root)
+    if not state["ok"]:
+        raise HarnessBootstrapError(f"candidate durable-state check failed: {state['detail']}")
+
+
+def _verify_staged_candidate(root: Path, release_root: Path, staged_runtime: Path | None) -> None:
+    """Doctor every candidate component before the live generation is touched."""
+
+    verify_host_adapters(release_root)
+    for relative, source in _candidate_owned_source_paths(release_root).items():
+        if not source.is_file() or not _content_hash(source):
+            raise HarnessBootstrapError(f"candidate release asset is unavailable: {relative}")
+    if staged_runtime is not None and not (staged_runtime / "runtime-install.json").is_file():
+        raise HarnessBootstrapError("candidate runtime stage did not complete its doctor receipt")
     state = _check_project_state(root)
     if not state["ok"]:
         raise HarnessBootstrapError(f"candidate durable-state check failed: {state['detail']}")
@@ -1086,7 +1122,7 @@ def _write_pending_upgrade(
         "schema_version": 1,
         "backup": backup.relative_to(root).as_posix(),
         "previous_paths": _lifecycle_snapshot_paths(root, manifest),
-        "candidate_paths": sorted(candidate_paths),
+        "candidate_paths": sorted((*candidate_paths, *_owned_metadata_paths(manifest))),
     }
     path = _pending_transaction_path(root)
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -1176,12 +1212,7 @@ def _clear_rollback_record(root: Path, backup: Path | None = None) -> None:
 def _lifecycle_snapshot_paths(root: Path, manifest: dict[str, Any]) -> list[str]:
     """Return byte-for-byte restore inputs for an interrupted mutation."""
 
-    candidates = [
-        *manifest["owned_paths"],
-        _BOOTSTRAP_LOCK,
-        ".rob2/rob2.lock",
-        ".rob2/rollback.json",
-    ]
+    candidates = [*manifest["owned_paths"], *_owned_metadata_paths(manifest)]
     candidates.extend((".codex/config.toml", ".mcp.json"))
     return sorted(
         relative
@@ -1193,7 +1224,7 @@ def _lifecycle_snapshot_paths(root: Path, manifest: dict[str, Any]) -> list[str]
 def _rollback_record_paths(root: Path, manifest: dict[str, Any]) -> list[str]:
     """Record only the previous release artifacts, not mutable host settings."""
 
-    candidates = [*manifest["owned_paths"], _BOOTSTRAP_LOCK, ".rob2/rob2.lock"]
+    candidates = [*manifest["owned_paths"], *_owned_metadata_paths(manifest)]
     return sorted(
         relative
         for relative in dict.fromkeys(candidates)

@@ -643,6 +643,58 @@ def _qualify(
             _run([str(rob2), "doctor", str(project)], cwd=workspace, env=checked_env).stdout
         )
         assert restored_doctor["ok"] is True
+        upgrade_preview = json.loads(
+            _run([str(rob2), "upgrade", str(project)], cwd=workspace, env=checked_env).stdout
+        )
+        assert upgrade_preview["preview"] is True
+        assert upgrade_preview["state_compatibility"]["ok"] is True
+        upgrade = json.loads(
+            _run(
+                [str(rob2), "upgrade", "--apply", str(project)],
+                cwd=workspace,
+                env=checked_env,
+            ).stdout
+        )
+        assert upgrade["status"] == "upgraded"
+        assert json.loads(
+            _run([str(rob2), "doctor", str(project)], cwd=workspace, env=checked_env).stdout
+        )["ok"] is True
+        rollback_preview = json.loads(
+            _run([str(rob2), "rollback", str(project)], cwd=workspace, env=checked_env).stdout
+        )
+        assert rollback_preview["preview"] is True
+        assert rollback_preview["state_compatibility"]["ok"] is True
+        rollback = json.loads(
+            _run(
+                [str(rob2), "rollback", "--apply", str(project)],
+                cwd=workspace,
+                env=checked_env,
+            ).stdout
+        )
+        assert rollback["status"] == "rolled_back"
+        assert json.loads(
+            _run([str(rob2), "doctor", str(project)], cwd=workspace, env=checked_env).stdout
+        )["ok"] is True
+        uninstall_preview = json.loads(
+            _run([str(rob2), "uninstall", str(project)], cwd=workspace, env=checked_env).stdout
+        )
+        assert uninstall_preview["preview"] is True
+        assert uninstall_preview["state_compatibility"]["ok"] is True
+        uninstall = json.loads(
+            _run(
+                [str(rob2), "uninstall", "--apply", str(project)],
+                cwd=workspace,
+                env=checked_env,
+            ).stdout
+        )
+        assert uninstall["status"] == "uninstalled"
+        reinstalled = json.loads(
+            _run([str(rob2), "bootstrap", str(project)], cwd=workspace, env=candidate_env).stdout
+        )
+        assert reinstalled["status"] == "installed"
+        assert json.loads(
+            _run([str(rob2), "doctor", str(project)], cwd=workspace, env=checked_env).stdout
+        )["ok"] is True
         adapter_launches = _adapter_launch_receipts(
             project,
             checked_env,
@@ -678,6 +730,12 @@ def _qualify(
                 "initial": initial_doctor["ok"],
                 "corruption_detected": not corrupt_doctor["ok"],
                 "restored": restored_doctor["ok"],
+            },
+            "lifecycle": {
+                "upgrade": upgrade["status"],
+                "rollback": rollback["status"],
+                "uninstall": uninstall["status"],
+                "reinstalled": reinstalled["status"],
             },
             "adapter_launches": adapter_launches,
             "telemetry": _network_guard_receipt(network_log),

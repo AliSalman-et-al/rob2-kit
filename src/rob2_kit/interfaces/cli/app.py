@@ -3,7 +3,9 @@
 from __future__ import annotations
 
 import json
+from collections.abc import Callable
 from pathlib import Path
+from typing import Any
 
 import typer
 
@@ -16,6 +18,16 @@ from rob2_kit.interfaces.harness import (
 )
 
 app = typer.Typer(no_args_is_help=True)
+
+_LifecycleOperation = Callable[..., dict[str, Any]]
+
+
+def _run_lifecycle(operation: _LifecycleOperation, project_root: Path, apply: bool) -> None:
+    try:
+        result = operation(project_root, apply=apply)
+    except ValueError as error:
+        raise typer.BadParameter(str(error)) from error
+    typer.echo(json.dumps(result, sort_keys=True))
 
 
 @app.command("bootstrap")
@@ -42,10 +54,7 @@ def upgrade(
 ) -> None:
     """Preview, then explicitly apply a transactional locked-release upgrade."""
 
-    try:
-        typer.echo(json.dumps(upgrade_project(project_root, apply=apply), sort_keys=True))
-    except ValueError as error:
-        raise typer.BadParameter(str(error)) from error
+    _run_lifecycle(upgrade_project, project_root, apply)
 
 
 @app.command("rollback")
@@ -55,10 +64,7 @@ def rollback(
 ) -> None:
     """Preview, then restore the last complete release transaction."""
 
-    try:
-        typer.echo(json.dumps(rollback_project(project_root, apply=apply), sort_keys=True))
-    except ValueError as error:
-        raise typer.BadParameter(str(error)) from error
+    _run_lifecycle(rollback_project, project_root, apply)
 
 
 @app.command("uninstall")
@@ -68,10 +74,7 @@ def uninstall(
 ) -> None:
     """Preview, then remove only manifest-owned generated files."""
 
-    try:
-        typer.echo(json.dumps(uninstall_project(project_root, apply=apply), sort_keys=True))
-    except ValueError as error:
-        raise typer.BadParameter(str(error)) from error
+    _run_lifecycle(uninstall_project, project_root, apply)
 
 
 def main() -> None:

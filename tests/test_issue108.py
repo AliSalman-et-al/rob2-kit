@@ -63,6 +63,10 @@ def test_uninstall_is_previewed_and_refuses_ambiguous_owned_content(tmp_path: Pa
     preview = preview_uninstall_project(tmp_path)
     assert preview["preview"] is True
     assert preview["owned_removals"]
+    assert {"rob2.lock", ".rob2/rob2.lock", ".rob2/rollback.json"} <= set(
+        preview["owned_removals"]
+    )
+    assert preview["state_compatibility"]["ok"] is True
 
     owned_skill = tmp_path / ".codex" / "skills" / "rob2-init" / "SKILL.md"
     owned_skill.write_text("user edit\n", encoding="utf-8")
@@ -115,6 +119,25 @@ def test_failed_upgrade_leaves_no_rollback_record(tmp_path: Path, monkeypatch) -
     with pytest.raises(HarnessBootstrapError, match="Prior project state was restored"):
         upgrade_project(tmp_path, apply=True)
 
+    assert not (tmp_path / ".rob2" / "rollback.json").exists()
+
+
+def test_upgrade_does_not_touch_live_assets_until_the_staged_candidate_passes(
+    tmp_path: Path, monkeypatch
+) -> None:
+    bootstrap_project(tmp_path)
+    skill = tmp_path / ".codex" / "skills" / "rob2-init" / "SKILL.md"
+    original = skill.read_bytes()
+    monkeypatch.setattr(
+        harness,
+        "_verify_staged_candidate",
+        lambda *_args: (_ for _ in ()).throw(RuntimeError("candidate doctor failed")),
+    )
+
+    with pytest.raises(HarnessBootstrapError, match="Prior project state was restored"):
+        upgrade_project(tmp_path, apply=True)
+
+    assert skill.read_bytes() == original
     assert not (tmp_path / ".rob2" / "rollback.json").exists()
 
 
