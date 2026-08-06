@@ -6,6 +6,12 @@ from pathlib import Path
 import pytest
 
 from rob2_kit.domain.canonical import canonical_hash
+from rob2_kit.domain.evidence import (
+    EvidenceReviewDisposition,
+    EvidenceReviewRevision,
+    EvidenceReviewSpan,
+    TrialAttribution,
+)
 from rob2_kit.domain.revisions import Actor, ActorKind, RecordReference
 from rob2_kit.evidence import (
     CandidateDisposition,
@@ -142,7 +148,8 @@ def test_canonicalization_preserves_block_page_and_spatial_provenance() -> None:
         ),
     )
 
-    assert [item.unit_id for item in units] == ["unit:report-p7-b1", "unit:report-p7-b2"]
+    assert all(item.unit_id.startswith("unit:report-") for item in units)
+    assert len({item.unit_id for item in units}) == 2
     assert units[1].page == 7
     assert units[1].spatial == (20.0, 70.0, 500.0, 120.0)
     assert units[1].parse_id == "parse:report-initial"
@@ -265,8 +272,7 @@ def complete_receipt(*, retain_second: bool = False) -> SearchCoverageReceipt:
     proof_payload = receipt.model_dump(mode="json")
     proof_payload["recorder_proof"] = None
     return SearchCoverageReceipt.model_validate(
-        receipt.model_dump(mode="json")
-        | {"recorder_proof": canonical_hash(proof_payload)}
+        receipt.model_dump(mode="json") | {"recorder_proof": canonical_hash(proof_payload)}
     )
 
 
@@ -289,6 +295,8 @@ def test_canonical_word_box_text_must_match_exact_unit_span() -> None:
                 ),
             ),
         )
+
+
 def test_coverage_receipt_requires_all_passes_results_and_safe_no_information_basis() -> None:
     receipt = complete_receipt()
     assert receipt.establishes_no_information_basis() is True
@@ -302,8 +310,7 @@ def test_coverage_receipt_requires_all_passes_results_and_safe_no_information_ba
                 )
             }
         ).model_validate(
-            complete_receipt()
-            .model_dump()
+            complete_receipt().model_dump()
             | {
                 "completed_passes": [
                     SearchPassKind.GUIDANCE_SEED,
@@ -380,9 +387,9 @@ def test_complete_coverage_receipt_replays_every_scoped_page(tmp_path: Path) -> 
     duplicated_pass["executed_queries"][1]["query"] = duplicated_pass["executed_queries"][0][
         "query"
     ]
-    duplicated_pass["executed_queries"][1]["query_hash"] = duplicated_pass[
-        "executed_queries"
-    ][0]["query_hash"]
+    duplicated_pass["executed_queries"][1]["query_hash"] = duplicated_pass["executed_queries"][0][
+        "query_hash"
+    ]
     duplicated_pass["recorder_proof"] = None
     duplicated_pass["recorder_proof"] = canonical_hash(duplicated_pass)
     with pytest.raises(ValueError, match="every mandatory"):
@@ -488,6 +495,46 @@ def test_exact_claim_is_materialized_from_canonical_text_and_conflicts_are_prese
         claims=(claim, contradiction),
         conflicts=(("claim:allocation-1", "claim:allocation-2"),),
         visual_gates=(VisualGate(gate_id="visual:table-1", required=True, complete=True),),
+        review_revisions=tuple(
+            EvidenceReviewRevision(
+                entity_id=f"evidence-review:{candidate_id}",
+                revision_id=f"revision:evidence-review-{candidate_id}-v1",
+                actor=ACTOR,
+                observed_at=NOW,
+                candidate_id=candidate_id,
+                result_id="result:one",
+                domain_id="domain:one",
+                question_ids=("sq:1.1",),
+                trial_attribution=TrialAttribution.ACTIVE,
+                reviewed_context_handles=(handle,),
+                spans=(
+                    EvidenceReviewSpan(
+                        location_handle=handle,
+                        span_start=span_start,
+                        span_end=span_end,
+                        disposition=disposition,
+                        rationale="Reviewed exact source span.",
+                        context_handles=(handle,),
+                    ),
+                ),
+            )
+            for candidate_id, handle, span_start, span_end, disposition in (
+                (
+                    "candidate:one",
+                    "handle:concealed",
+                    start,
+                    start + len("concealed"),
+                    EvidenceReviewDisposition.SUPPORTING,
+                ),
+                (
+                    "candidate:two",
+                    "handle:open",
+                    contradiction_start,
+                    contradiction_start + len("open"),
+                    EvidenceReviewDisposition.CONTRADICTING,
+                ),
+            )
+        ),
     )
     assert bundle.conflicts == (("claim:allocation-1", "claim:allocation-2"),)
 
@@ -582,6 +629,30 @@ def test_bundle_freeze_rejects_incomplete_work_and_has_stable_hash() -> None:
         "candidate_dispositions": (disposition,),
         "claims": (claim,),
         "visual_gates": (VisualGate(gate_id="visual:table-1", required=True, complete=True),),
+        "review_revisions": (
+            EvidenceReviewRevision(
+                entity_id="evidence-review:candidate-one",
+                revision_id="revision:evidence-review-candidate-one-v1",
+                actor=ACTOR,
+                observed_at=NOW,
+                candidate_id="candidate:one",
+                result_id="result:one",
+                domain_id="domain:one",
+                question_ids=("sq:1.1",),
+                trial_attribution=TrialAttribution.ACTIVE,
+                reviewed_context_handles=("handle:one",),
+                spans=(
+                    EvidenceReviewSpan(
+                        location_handle="handle:one",
+                        span_start=0,
+                        span_end=10,
+                        disposition=EvidenceReviewDisposition.SUPPORTING,
+                        rationale="Allocation concealment supports the assessment.",
+                        context_handles=("handle:one",),
+                    ),
+                ),
+            ),
+        ),
     }
 
     first = freeze_evidence_bundle(**arguments)

@@ -51,7 +51,7 @@ from rob2_kit.registry import (
 from rob2_kit.storage import ArtifactStore, WorkflowLedger
 
 CLASSIFIER_VERSION = "source-classifier:1.0.0"
-CANONICALIZATION_VERSION = "liteparse-adapter:2.1.0"
+CANONICALIZATION_VERSION = "liteparse-adapter:2.2.0"
 PARSER_QUALITY_POLICY = ParserQualityPolicy()
 RECOVERY_POLICY_RELEASE = "policy:source-recovery-1.0.0"
 RECOVERY_REASONS = frozenset(PARSER_QUALITY_POLICY.recovery_reasons)
@@ -142,6 +142,13 @@ class PageTextItem(FrozenModel):
     words: tuple[PageWord, ...] = ()
     rotation: float = 0.0
     confidence: float | None = None
+    # A parser-native fragment identity, when supplied.  It is deliberately
+    # opaque: ingestion preserves it for canonical lineage rather than using
+    # it to infer semantic role or reading order.
+    fragment_id: Identifier | None = Field(
+        default=None,
+        validation_alias=AliasChoices("fragment_id", "id", "fragment_identifier"),
+    )
     # Structure metadata is optional because LiteParse versions and custom
     # parser adapters may expose different levels of reconstruction.  Unknown
     # values remain explicit diagnostics rather than being guessed as prose.
@@ -306,8 +313,8 @@ class LiteParseAdapter:
                 page_number=page.page_num,
                 width=page.width,
                 height=page.height,
-                        text=page.text,
-                        markdown=str(getattr(page, "markdown", "") or ""),
+                text=page.text,
+                markdown=str(getattr(page, "markdown", "") or ""),
                 structure_tree=(
                     getattr(page, "structure_tree", None)
                     if isinstance(getattr(page, "structure_tree", None), dict)
@@ -334,6 +341,13 @@ class LiteParseAdapter:
                         ),
                         rotation=float(getattr(item, "rotation", 0.0) or 0.0),
                         confidence=getattr(item, "confidence", None),
+                        fragment_id=_optional_metadata(
+                            getattr(
+                                item,
+                                "fragment_id",
+                                getattr(item, "fragment_identifier", getattr(item, "id", None)),
+                            )
+                        ),
                         unit_kind=_optional_metadata(
                             getattr(item, "unit_kind", getattr(item, "kind", None))
                         ),
@@ -393,6 +407,7 @@ class LiteParseAdapter:
                                 "words": [word.model_dump(mode="json") for word in item.words],
                                 "rotation": item.rotation,
                                 "confidence": item.confidence,
+                                "fragment_id": item.fragment_id,
                                 "unit_kind": item.unit_kind,
                                 "section_path": item.section_path,
                                 "hierarchy_path": item.hierarchy_path,
@@ -842,8 +857,7 @@ def _result_candidates(
         for target in outcome_targets:
             construct_match = (
                 target.outcome_construct is None
-                or target.outcome_construct.casefold()
-                in result.outcome_construct.casefold()
+                or target.outcome_construct.casefold() in result.outcome_construct.casefold()
             )
             time_match = target.time_point is None or target.time_point.casefold() in (
                 result.time_point.casefold()
@@ -1817,9 +1831,7 @@ def _parse_record(
         parser_version=parser.version,
         configuration_hash=_hash_json(config),
         canonicalization_version=CANONICALIZATION_VERSION,
-        output_hash=_hash_bytes(
-            _normalized_parse_output(result, source_id=source_id)
-        ),
+        output_hash=_hash_bytes(_normalized_parse_output(result, source_id=source_id)),
         ocr_enabled=ocr_enabled,
         target_pages=target_pages,
         quality_observations=tuple(

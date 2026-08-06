@@ -110,6 +110,7 @@ from rob2_kit.domain.evidence import (
     EvidenceCoverageReceiptRecord,
     EvidenceInsufficiency,
     EvidenceInsufficiencyReason,
+    EvidenceReviewRevision,
     VisualTranscription,
 )
 from rob2_kit.domain.releases import PolicyKind, PolicyRelease
@@ -151,6 +152,7 @@ from rob2_kit.evidence.search import (
     EvidenceApplicability,
     EvidenceScope,
     EvidenceSearchIndex,
+    ReadContextMode,
     SearchPolicy,
     TrialDiscourseScope,
     canonicalize_evidence_units,
@@ -497,6 +499,7 @@ class _DomainEvidenceRecord(FrozenModel):
     evidence_bundles: tuple[RecordReference, ...] = ()
     consideration_manifests: tuple[RecordReference, ...] = ()
     coverage_receipts: tuple[RecordReference, ...] = ()
+    review_revisions: tuple[RecordReference, ...] = ()
     candidate_dispositions: tuple[EvidenceConsiderationInput, ...] = ()
     project_rules: tuple[RecordReference, ...] = ()
     submission: SubmitDomainEvidenceRequest
@@ -2459,13 +2462,23 @@ class RunEngine:
             ledger, request.run_id, request.work_token, request.result_id, request.sq_id
         )
         try:
-            context = index.read_context(
-                request.unit_id,
-                neighbor_limit=CONTEXT_NEIGHBOR_LIMIT,
+            read = index.read_location(
+                request.location_handle,
                 character_target=CONTEXT_CHARACTER_TARGET,
-                mode=request.mode,
+                cursor=request.cursor if request.mode is ReadContextMode.UNIT else None,
                 scope=scope,
-                cursor=request.cursor,
+            )
+            context = (
+                None
+                if request.mode is ReadContextMode.UNIT
+                else index.read_context(
+                    read.unit.unit_id,
+                    neighbor_limit=CONTEXT_NEIGHBOR_LIMIT,
+                    character_target=CONTEXT_CHARACTER_TARGET,
+                    mode=request.mode,
+                    scope=scope,
+                    cursor=request.cursor,
+                )
             )
         except (sqlite3.Error, OSError) as error:
             raise OperationalRetrievalFailure(
@@ -2474,9 +2487,9 @@ class RunEngine:
         visual_path = next(
             (
                 VisualInspectionPath(
-                    unit_id=context.unit.unit_id,
-                    source_id=context.unit.source_id,
-                    page=context.unit.page,
+                    unit_id=read.unit.unit_id,
+                    source_id=read.unit.source_id,
+                    page=read.unit.page,
                     candidate_id=candidate.candidate_id,
                     next_arguments=VisualInspectionArguments(
                         run_id=request.run_id,
@@ -2487,8 +2500,8 @@ class RunEngine:
                 for candidate in self._visual_candidates(
                     ledger, request.run_id, result_id=scope.result_id
                 )
-                if candidate.source_id == context.unit.source_id
-                and candidate.page == context.unit.page
+                if candidate.source_id == read.unit.source_id
+                and candidate.page == read.unit.page
                 and candidate.sq_id == request.sq_id
                 and candidate.domain_id == scope.domain_id
                 and request.sq_id in candidate.question_ids
@@ -2502,7 +2515,8 @@ class RunEngine:
             condition=WorkflowCondition.COMPLETED,
             committed=False,
             run_id=request.run_id,
-            unit=context.unit,
+            unit=read.unit,
+            read=read if request.mode is ReadContextMode.UNIT else None,
             context=context,
             visual_inspection=visual_path,
         )
@@ -2593,16 +2607,25 @@ class RunEngine:
         question_ids: set[Identifier],
     ) -> None:
         """Shared citation gate for passage and legacy EvidenceClaim paths."""
-        if (
-            unit.result_id != result_id
-            or unit.applicability is not EvidenceApplicability.RESULT
-            or unit.kind is CanonicalUnitKind.UNCLASSIFIED
-            or unit.discourse_scope is not TrialDiscourseScope.ACTIVE
-            or unit.trial_id != scope.trial_id
-            or unit.domain_id != domain_id
-            or not question_ids.issubset(set(unit.question_ids))
+        # Parser/search labels are visibility diagnostics, never semantic
+        # eligibility authorities, except where they say that the text is not
+        # a deterministic canonical unit at all.  Those fragments remain
+        # searchable/readable, but a text claim must await visual
+        # transcription or successful re-canonicalization.
+        if scope.source_ids and unit.source_id not in scope.source_ids:
+            raise ValueError("canonical unit source is outside active WorkToken custody")
+        fragment_warnings = {
+            "canonical_kind_unclassified",
+            "canonical_structure_unavailable",
+            "reading_order_uncertain",
+        }
+        if unit.kind is CanonicalUnitKind.UNCLASSIFIED or fragment_warnings.intersection(
+            unit.warnings
         ):
-            raise ValueError("canonical unit is outside active scope or is not citable")
+            raise ValueError(
+                "ambiguous or unclassified fragment cannot ground a canonical Evidence claim; "
+                "use a qualifying Visual transcription or re-canonicalize it"
+            )
 
     def inspect_visual_candidate(
         self, request: InspectVisualCandidateRequest
@@ -3025,7 +3048,7 @@ class RunEngine:
             self._validate_domain_evidence_submission(
                 ledger, request.model_copy(update={"passages": ()})
             )
-            self._validate_retained_passage_links(request)
+            self._validate_retained_passage_links(ledger, request)
             request = self._resolve_evidence_passages(ledger, request)
         self._validate_domain_evidence_submission(
             ledger, request, passages_materialized=bool(original_request.passages)
@@ -3043,6 +3066,14 @@ class RunEngine:
             evidence_bundles=evidence_bundles,
             consideration_manifests=manifests,
             coverage_receipts=receipts,
+            review_revisions=tuple(
+                RecordReference(
+                    entity_id=review.entity_id,
+                    revision_id=review.revision_id,
+                    content_hash=canonical_hash(review),
+                )
+                for review in request.review_revisions
+            ),
             candidate_dispositions=request.candidate_dispositions,
             project_rules=request.project_rules,
             submission=original_request,
@@ -3702,6 +3733,23 @@ class RunEngine:
                     index=index,
                     scope=receipt_scope,
                 )
+        retained_candidates = set().union(
+            *(receipt.retained_candidate_ids() for receipt in request.coverage_receipts)
+        ) if request.coverage_receipts else set()
+        if (
+            retained_candidates
+            and request.review_revisions
+            and not request.passages
+            and not passages_materialized
+        ):
+            raise ValueError(
+                "retained candidate reviews require exact passages bound to issued read views"
+            )
+        self._validate_review_revisions(
+            request.review_revisions,
+            retained_candidates=retained_candidates,
+            domain_questions=domain_questions,
+        )
         if request.coverage_state.value == "incomplete" and not request.coverage_limitations:
             raise ValueError("incomplete evidence coverage requires an explicit limitation")
         if (
@@ -3783,7 +3831,26 @@ class RunEngine:
                     )
 
     @staticmethod
-    def _validate_retained_passage_links(request: SubmitDomainEvidenceRequest) -> None:
+    def _validate_review_revisions(
+        reviews: tuple[EvidenceReviewRevision, ...],
+        *,
+        retained_candidates: set[Identifier],
+        domain_questions: set[Identifier],
+    ) -> None:
+        """Fail closed on incomplete semantic review without trusting parser labels."""
+        by_candidate = {review.candidate_id: review for review in reviews}
+        if len(by_candidate) != len(reviews):
+            raise ValueError("review batch must contain one latest revision per candidate")
+        if retained_candidates != set(by_candidate):
+            raise ValueError("every retained candidate requires a substantive review revision")
+        if any(not review.is_complete for review in reviews):
+            raise ValueError("unresolved or visual-review conditions block Evidence freeze")
+        if any(not set(review.question_ids).issubset(domain_questions) for review in reviews):
+            raise ValueError("review revision references a question outside the submitted Domain")
+
+    def _validate_retained_passage_links(
+        self, ledger: WorkflowLedger, request: SubmitDomainEvidenceRequest
+    ) -> None:
         """Require each retained search candidate to bind one exact selected span."""
         if not request.coverage_receipts:
             return
@@ -3810,6 +3877,57 @@ class RunEngine:
                     "retained Evidence candidates must keep their issued unit and "
                     "signaling-question scope"
                 )
+        self._validate_review_span_links(ledger, request, retained_candidates)
+
+    def _validate_review_span_links(
+        self,
+        ledger: WorkflowLedger,
+        request: SubmitDomainEvidenceRequest,
+        retained_candidates: dict[Identifier, tuple[Identifier, Identifier]],
+    ) -> None:
+        """Bind semantic review spans to an issued read window and selected passage."""
+        if not request.review_revisions:
+            return
+        passages = {passage.candidate_id: passage for passage in request.passages}
+        index = EvidenceSearchIndex(self._required_root() / ".rob2" / "evidence.sqlite3")
+        scope = self._retrieval_scope(
+            ledger,
+            request.run_id,
+            request.work_token,
+            request.result_id,
+            require_question=False,
+        )
+        for review in request.review_revisions:
+            expected = retained_candidates.get(review.candidate_id)
+            if expected is None:
+                raise ValueError("review revision does not bind a retained Evidence candidate")
+            passage = passages.get(review.candidate_id)
+            if passage is None:
+                raise ValueError("review revision requires a retained candidate passage")
+            unit_id, sq_id = expected
+            if passage.unit_id != unit_id or passage.question_ids != (sq_id,):
+                raise ValueError("review revision does not bind the retained candidate passage")
+            span_end = passage.span_end
+            if span_end is None:
+                raise ValueError("review revision requires exact retained passage bounds")
+            for span in review.spans:
+                try:
+                    read = index.read_location(span.location_handle, scope=scope)
+                except (sqlite3.Error, OSError, ValueError) as error:
+                    raise ValueError(
+                        "review span location_handle is not an issued active read view"
+                    ) from error
+                if (
+                    read.unit.unit_id != unit_id
+                    or span.span_start != passage.span_start
+                    or span.span_end != span_end
+                    or span.span_start < read.start
+                    or span.span_end > read.end
+                ):
+                    raise ValueError(
+                        "review span must bind its retained candidate, exact passage, "
+                        "and issued read bounds"
+                    )
 
     def _validate_coverage_receipt_dependencies(
         self,
@@ -3943,6 +4061,20 @@ class RunEngine:
         domain = next(item for item in logic.domains if item.id == request.domain_id)
         result_spec = self._result_spec_reference(ledger, request.result_id)
         actor = request.actor or ASSESSMENT_AGENT_ACTOR
+        review_refs: tuple[RecordReference, ...] = tuple(
+            self._commit_frozen_artifact(
+                ledger,
+                scope=request.result_id,
+                operation="operation:evidence-review-revision",
+                operation_key=f"{request.idempotency_key}:review:{review.candidate_id}",
+                entity_id=review.entity_id,
+                revision_id=review.revision_id,
+                artifact=review,
+                actor=review.actor,
+                dependencies=review.dependencies,
+            )
+            for review in request.review_revisions
+        )
         suffix = self._digest(f"{request.run_id}|{request.idempotency_key}|dispositions")
         disposition_record = EvidenceCandidateDispositionRecord(
             entity_id=f"evidence-disposition:{suffix}",
@@ -4058,6 +4190,10 @@ class RunEngine:
                 Dependency(**disposition_ref.model_dump(), role="dependency:evidence-disposition"),
                 Dependency(**manifest_ref.model_dump(), role="dependency:evidence-consideration"),
                 *(
+                    Dependency(**review.model_dump(), role="dependency:evidence-review")
+                    for review in review_refs
+                ),
+                *(
                     Dependency(**item.model_dump(), role="dependency:evidence-item")
                     for item in question_items
                 ),
@@ -4080,6 +4216,7 @@ class RunEngine:
                     receipt.model_dump(mode="json") for receipt in question_coverage_refs
                 ],
                 "consideration_manifest": manifest_ref.model_dump(mode="json"),
+                "review_revisions": [review.model_dump(mode="json") for review in review_refs],
             }
             bundle_hash = canonical_hash(bundle_payload)
             bundle = EvidenceBundle(
@@ -4096,6 +4233,7 @@ class RunEngine:
                 domain_id=request.domain_id,
                 coverage_receipts=question_coverage_refs,
                 consideration_manifest=manifest_ref,
+                review_revisions=review_refs,
                 coverage_limitations=request.coverage_limitations,
                 coverage_state=request.coverage_state,
                 no_information_basis=request.no_information_basis,
@@ -5276,6 +5414,9 @@ class RunEngine:
                                     or inferred_hierarchy_path
                                 ),
                                 reading_order=reading_order,
+                                fragment_ids=(text_item.fragment_id,)
+                                if getattr(text_item, "fragment_id", None)
+                                else (),
                                 source_role=(source.roles[0].value if source.roles else None),
                                 document_zone=block_zone,
                                 discourse_scope=block_discourse,

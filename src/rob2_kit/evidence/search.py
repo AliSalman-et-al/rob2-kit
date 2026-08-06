@@ -102,12 +102,15 @@ class ReadContextMode(StrEnum):
 def _same_context_structure(
     candidate: CanonicalEvidenceUnit, target: CanonicalEvidenceUnit
 ) -> bool:
-    """Require identical explicit structure, discourse, zone, and table identity."""
+    """Require identical parser structure and table identity.
+
+    Zone and Trial-discourse classifications are semantic diagnostics, not
+    parser-authored mechanical section boundaries.  Context may cross them,
+    with the crossing reported to the caller.
+    """
     return (
         candidate.section_path == target.section_path
         and candidate.hierarchy_path == target.hierarchy_path
-        and candidate.document_zone == target.document_zone
-        and candidate.discourse_scope == target.discourse_scope
         and (
             candidate.kind is not CanonicalUnitKind.TABLE_ROW
             and target.kind is not CanonicalUnitKind.TABLE_ROW
@@ -148,6 +151,26 @@ class CanonicalWordBox(FrozenModel):
         return self
 
 
+class CanonicalFragmentSpan(FrozenModel):
+    """An exact parser-fragment range retained in canonical-unit coordinates."""
+
+    fragment_id: Identifier
+    fragment_start: int = Field(ge=0)
+    fragment_end: int = Field(gt=0)
+    canonical_start: int = Field(ge=0)
+    canonical_end: int = Field(gt=0)
+
+    @model_validator(mode="after")
+    def validate_mapping(self) -> CanonicalFragmentSpan:
+        if self.fragment_end <= self.fragment_start:
+            raise ValueError("fragment span must have positive extent")
+        if self.canonical_end <= self.canonical_start:
+            raise ValueError("canonical fragment span must have positive extent")
+        if self.fragment_end - self.fragment_start != self.canonical_end - self.canonical_start:
+            raise ValueError("fragment and canonical spans must have equal extent")
+        return self
+
+
 class CanonicalEvidenceUnit(FrozenModel):
     unit_id: Identifier
     source_id: Identifier
@@ -180,6 +203,13 @@ class CanonicalEvidenceUnit(FrozenModel):
     )
     discourse_scope: TrialDiscourseScope = TrialDiscourseScope.NONE
     duplicate_group_id: Identifier | None = None
+    # Parser fragment identity is retained even when a later conservative
+    # canonicalization combines source-authored fragments.  It is lineage, not
+    # a semantic assertion, and therefore remains available for uncertain
+    # material as well as citable units.
+    fragment_ids: tuple[Identifier, ...] = ()
+    fragment_spans: tuple[CanonicalFragmentSpan, ...] = ()
+    canonicalization_version: str = "canonicalization:1.0.0"
     warnings: tuple[str, ...] = ()
 
     @model_validator(mode="after")
@@ -202,6 +232,12 @@ class CanonicalEvidenceUnit(FrozenModel):
             if box.text != self.text[box.span_start : box.span_end]:
                 raise ValueError("word box text must equal its canonical unit span")
             previous_end = box.span_end
+        if self.fragment_spans:
+            if tuple(span.fragment_id for span in self.fragment_spans) != self.fragment_ids:
+                raise ValueError("fragment spans must match canonical fragment identity order")
+            for span in self.fragment_spans:
+                if span.canonical_end > len(self.text):
+                    raise ValueError("fragment span exceeds canonical unit text")
         return self
 
 
@@ -228,12 +264,164 @@ class CanonicalBlock(FrozenModel):
     )
     discourse_scope: TrialDiscourseScope = TrialDiscourseScope.NONE
     duplicate_group_id: Identifier | None = None
+    fragment_ids: tuple[Identifier, ...] = ()
+    fragment_spans: tuple[CanonicalFragmentSpan, ...] = ()
     warnings: tuple[str, ...] = ()
 
 
 class CanonicalPage(FrozenModel):
     page: int = Field(ge=1)
     blocks: tuple[CanonicalBlock, ...]
+
+
+def _block_order(block: CanonicalBlock) -> tuple[object, ...]:
+    """Use parser reading order when present, with geometry as a stable fallback."""
+
+    left, top, _, _ = block.spatial
+    return (
+        0 if block.reading_order else 1,
+        block.reading_order,
+        top,
+        left,
+        block.fragment_ids,
+        block.text,
+    )
+
+
+def _mergeable_fragments(previous: CanonicalBlock, candidate: CanonicalBlock) -> bool:
+    """Recognize only consecutive, single-column parser fragments.
+
+    This intentionally modest rule avoids turning ordinary nearby paragraphs or
+    ambiguous multi-column extraction into invented prose.
+    """
+
+    if (
+        previous.kind is CanonicalUnitKind.UNCLASSIFIED
+        or candidate.kind is not previous.kind
+        or not previous.reading_order
+        or candidate.reading_order != previous.reading_order + 1
+        or "reading_order_uncertain" in previous.warnings
+        or "reading_order_uncertain" in candidate.warnings
+        or (not previous.text[-1].isspace() and not candidate.text[0].isspace())
+    ):
+        return False
+    if any(
+        getattr(previous, field) != getattr(candidate, field)
+        for field in (
+            "trial_id",
+            "result_id",
+            "domain_id",
+            "question_ids",
+            "table_headers",
+            "caption",
+            "applicability",
+            "applicable_result_ids",
+            "section_path",
+            "hierarchy_path",
+            "source_role",
+            "document_zone",
+            "discourse_scope",
+            "duplicate_group_id",
+        )
+    ):
+        return False
+    left, _, right, bottom = previous.spatial
+    candidate_left, candidate_top, candidate_right, _ = candidate.spatial
+    line_height = bottom - previous.spatial[1]
+    return (
+        abs(left - candidate_left) <= 5
+        and abs(right - candidate_right) <= 5
+        and 0 <= candidate_top - bottom <= max(24, line_height * 2)
+    )
+
+
+def _merged_block(previous: CanonicalBlock, candidate: CanonicalBlock) -> CanonicalBlock:
+    """Combine two already-proven adjacent fragments without changing their text."""
+
+    offset = len(previous.text)
+    return previous.model_copy(
+        update={
+            "text": previous.text + candidate.text,
+            "spatial": (
+                min(previous.spatial[0], candidate.spatial[0]),
+                min(previous.spatial[1], candidate.spatial[1]),
+                max(previous.spatial[2], candidate.spatial[2]),
+                max(previous.spatial[3], candidate.spatial[3]),
+            ),
+            "word_boxes": previous.word_boxes
+            + tuple(
+                box.model_copy(
+                    update={
+                        "span_start": box.span_start + offset,
+                        "span_end": box.span_end + offset,
+                    }
+                )
+                for box in candidate.word_boxes
+            ),
+            "fragment_ids": previous.fragment_ids + candidate.fragment_ids,
+            "fragment_spans": _block_fragment_spans(previous)
+            + tuple(
+                span.model_copy(
+                    update={
+                        "canonical_start": span.canonical_start + offset,
+                        "canonical_end": span.canonical_end + offset,
+                    }
+                )
+                for span in _block_fragment_spans(candidate)
+            ),
+            "warnings": tuple(dict.fromkeys(previous.warnings + candidate.warnings)),
+        }
+    )
+
+
+def _canonical_page_blocks(page: CanonicalPage) -> tuple[CanonicalBlock, ...]:
+    """Merge only unambiguous parser fragments in deterministic page order."""
+
+    blocks: list[CanonicalBlock] = []
+    for block in sorted(page.blocks, key=_block_order):
+        if blocks and _mergeable_fragments(blocks[-1], block):
+            blocks[-1] = _merged_block(blocks[-1], block)
+        else:
+            blocks.append(block)
+    return tuple(blocks)
+
+
+def _block_fragment_spans(block: CanonicalBlock) -> tuple[CanonicalFragmentSpan, ...]:
+    if block.fragment_spans:
+        return block.fragment_spans
+    return tuple(
+        CanonicalFragmentSpan(
+            fragment_id=fragment_id,
+            fragment_start=0,
+            fragment_end=len(block.text),
+            canonical_start=0,
+            canonical_end=len(block.text),
+        )
+        for fragment_id in block.fragment_ids
+    )
+
+
+def _with_fragment_identity(
+    block: CanonicalBlock,
+    *,
+    source_artifact_hash: ContentHash,
+    parse_id: Identifier,
+    page: int,
+) -> CanonicalBlock:
+    """Give parser-id-less blocks deterministic lineage before any merge."""
+
+    if block.fragment_ids:
+        return block
+    fragment_id = "fragment:" + canonical_hash(
+        {
+            "source_artifact_hash": source_artifact_hash,
+            "parse_id": parse_id,
+            "page": page,
+            "text": block.text,
+            "spatial": block.spatial,
+        }
+    ).removeprefix("sha256:")
+    return block.model_copy(update={"fragment_ids": (fragment_id,)})
 
 
 def canonicalize_evidence_units(
@@ -254,13 +442,37 @@ def canonicalize_evidence_units(
         raise ValueError("canonicalization pages must be unique")
     units: list[CanonicalEvidenceUnit] = []
     for page in sorted(pages, key=lambda item: item.page):
-        for number, block in enumerate(page.blocks, start=1):
+        identified_page = CanonicalPage(
+            page=page.page,
+            blocks=tuple(
+                _with_fragment_identity(
+                    block,
+                    source_artifact_hash=source_artifact_hash,
+                    parse_id=parse_id,
+                    page=page.page,
+                )
+                for block in page.blocks
+            ),
+        )
+        for block in _canonical_page_blocks(identified_page):
             block_applicability = block.applicability or (
                 EvidenceApplicability.RESULT if block.result_id is not None else applicability
             )
+            fragment_ids = block.fragment_ids
+            unit_identity = canonical_hash(
+                {
+                    "source_artifact_hash": source_artifact_hash,
+                    "parse_id": parse_id,
+                    "page": page.page,
+                    "fragment_ids": fragment_ids,
+                    "text": block.text,
+                    "spatial": block.spatial,
+                    "canonicalization_version": "canonicalization:1.1.0",
+                }
+            ).removeprefix("sha256:")
             units.append(
                 CanonicalEvidenceUnit(
-                    unit_id=f"unit:{source_slug}-p{page.page}-b{number}",
+                    unit_id=f"unit:{source_slug}-{unit_identity}",
                     source_id=source_id,
                     source_artifact_hash=source_artifact_hash,
                     parse_id=parse_id,
@@ -289,6 +501,11 @@ def canonicalize_evidence_units(
                     document_zone=block.document_zone,
                     discourse_scope=block.discourse_scope,
                     duplicate_group_id=block.duplicate_group_id,
+                    fragment_ids=fragment_ids,
+                    fragment_spans=_block_fragment_spans(
+                        block.model_copy(update={"fragment_ids": fragment_ids})
+                    ),
+                    canonicalization_version="canonicalization:1.1.0",
                     warnings=block.warnings,
                 )
             )
@@ -463,11 +680,6 @@ class SearchQuery(SearchQueryFields):
         ):
             if singular is not None and plural:
                 raise ValueError(f"{label}_id and {label}_ids are mutually exclusive")
-        if FORBIDDEN_RETRIEVAL_ZONES.intersection(self.document_zones):
-            raise ValueError(
-                "bibliography, contents, page_furniture, and extraction_artifact "
-                "zones are excluded from evidence retrieval; review Source classification"
-            )
         return self
 
 
@@ -519,6 +731,7 @@ class SearchHit(FrozenModel):
     match_explanation: str = "lexical match"
     warnings: tuple[str, ...] = ()
     duplicate_group_id: Identifier | None = None
+    location_handle: str = Field(min_length=1)
 
 
 class QueryPreview(FrozenModel):
@@ -584,12 +797,13 @@ class EvidenceContext(FrozenModel):
             self.unit.source_id,
             self.unit.source_artifact_hash,
             self.unit.parse_id,
+            self.unit.page,
         )
         if any(
-            (item.source_id, item.source_artifact_hash, item.parse_id) != provenance
+            (item.source_id, item.source_artifact_hash, item.parse_id, item.page) != provenance
             for item in self.neighbors
         ):
-            raise ValueError("context neighbors must preserve source and Parse provenance")
+            raise ValueError("context neighbors must preserve source, Parse, and page provenance")
         expected_count = sum(len(item.text) for item in self.all_units)
         if self.character_count != expected_count:
             raise ValueError("context character_count must bind the returned canonical units")
@@ -604,13 +818,10 @@ class EvidenceContext(FrozenModel):
             if any(
                 item.section_path != self.section_path
                 or item.hierarchy_path != self.unit.hierarchy_path
-                or item.discourse_scope != self.unit.discourse_scope
                 for item in self.neighbors
             ):
                 raise ValueError("section context cannot cross hierarchy boundaries")
         if self.mode in {ReadContextMode.NEIGHBORS, ReadContextMode.SECTION}:
-            if any(item.document_zone != self.unit.document_zone for item in self.neighbors):
-                raise ValueError("context cannot cross document-zone boundaries")
             if self.unit.kind is CanonicalUnitKind.TABLE_ROW:
                 if not (self.unit.table_headers or self.unit.caption):
                     raise ValueError("table context requires a stable header or caption identity")
@@ -628,6 +839,25 @@ class EvidenceContext(FrozenModel):
     def all_units(self) -> tuple[CanonicalEvidenceUnit, ...]:
         """Return the target followed by context in deterministic source order."""
         return (self.unit, *self.neighbors)
+
+
+class EvidenceRead(FrozenModel):
+    """One bounded, source-authored character window resolved from a handle."""
+
+    snapshot_hash: ContentHash
+    unit: CanonicalEvidenceUnit
+    text: str
+    start: int = Field(ge=0)
+    end: int = Field(ge=0)
+    character_target: int = Field(ge=1, le=CONTEXT_CHARACTER_TARGET)
+    continuation_cursor: str | None = None
+    warnings: tuple[str, ...] = ()
+
+    @model_validator(mode="after")
+    def validate_window(self) -> EvidenceRead:
+        if self.end < self.start or self.text != self.unit.text[self.start : self.end]:
+            raise ValueError("read text must be the exact source-authored unit window")
+        return self
 
 
 class EvidenceSearchIndex:
@@ -669,6 +899,9 @@ class EvidenceSearchIndex:
                     table_headers TEXT,
                     caption TEXT,
                     duplicate_group_id TEXT,
+                    fragment_ids TEXT,
+                    fragment_spans TEXT,
+                    canonicalization_version TEXT NOT NULL DEFAULT 'canonicalization:1.0.0',
                     warnings TEXT
                 );
                 CREATE TABLE IF NOT EXISTS evidence_snapshot (
@@ -709,6 +942,9 @@ class EvidenceSearchIndex:
                 "table_headers": "TEXT",
                 "caption": "TEXT",
                 "duplicate_group_id": "TEXT",
+                "fragment_ids": "TEXT",
+                "fragment_spans": "TEXT",
+                "canonicalization_version": "TEXT NOT NULL DEFAULT 'canonicalization:1.0.0'",
                 "warnings": "TEXT",
             }
             for name, declaration in migrations.items():
@@ -746,10 +982,10 @@ class EvidenceSearchIndex:
                     "spatial, word_boxes, trial_id, result_id, domain_id, question_ids, "
                     "section_path, hierarchy_path, reading_order, source_role, document_zone, "
                     "discourse_scope, applicability, applicable_result_ids, table_headers, "
-                    "caption, "
-                    "duplicate_group_id, warnings) "
+                    "caption, duplicate_group_id, fragment_ids, canonicalization_version, "
+                    "fragment_spans, warnings) "
                     "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, "
-                    "?, ?)",
+                    "?, ?, ?, ?, ?)",
                     (
                         item.unit_id,
                         item.source_id,
@@ -775,6 +1011,9 @@ class EvidenceSearchIndex:
                         json.dumps(item.table_headers),
                         item.caption,
                         item.duplicate_group_id,
+                        json.dumps(item.fragment_ids),
+                        item.canonicalization_version,
+                        json.dumps([span.model_dump(mode="json") for span in item.fragment_spans]),
                         json.dumps(item.warnings),
                     ),
                 )
@@ -851,6 +1090,71 @@ class EvidenceSearchIndex:
                 field="unit_id",
             ) from error
 
+    def read_location(
+        self,
+        location_handle: str,
+        *,
+        character_target: int = CONTEXT_CHARACTER_TARGET,
+        cursor: str | None = None,
+        scope: EvidenceScope | None = None,
+    ) -> EvidenceRead:
+        """Dereference an opaque, snapshot-bound location in a bounded window.
+
+        Handles deliberately contain no caller-controlled path or ordinal.  A
+        changed artifact, Parse, canonicalization, or index snapshot makes the
+        handle stale; index ranking alone does not alter the bound unit.
+        """
+        if not 1 <= character_target <= CONTEXT_CHARACTER_TARGET:
+            raise InvalidRetrievalRequest(
+                f"character_target must be between 1 and {CONTEXT_CHARACTER_TARGET}",
+                field="character_target",
+            )
+        snapshot = self._snapshot()
+        try:
+            payload = _SignedCursorCodec.decode(location_handle, self._cursor_secret())
+        except ValueError as error:
+            raise StaleCursor(
+                "invalid evidence location handle", field="location_handle"
+            ) from error
+        if payload.get("kind") != "location" or payload.get("snapshot") != snapshot:
+            raise StaleCursor("evidence location handle is stale", field="location_handle")
+        unit_id = payload.get("unit")
+        if not isinstance(unit_id, str):
+            raise StaleCursor("invalid evidence location handle", field="location_handle")
+        unit = self.read_unit(unit_id, scope=scope)
+        if any(
+            payload.get(key) != value
+            for key, value in (
+                ("source_artifact_hash", unit.source_artifact_hash),
+                ("parse_id", unit.parse_id),
+                ("canonicalization_version", unit.canonicalization_version),
+                ("fragment_ids", list(unit.fragment_ids)),
+            )
+        ):
+            raise StaleCursor("evidence location handle is stale", field="location_handle")
+        start = (
+            _decode_read_cursor(cursor, snapshot, unit.unit_id, self._cursor_secret(), scope=scope)
+            if cursor
+            else 0
+        )
+        if start >= len(unit.text):
+            raise StaleCursor("read continuation cursor is outside the unit", field="cursor")
+        end = min(start + character_target, len(unit.text))
+        return EvidenceRead(
+            snapshot_hash=snapshot,
+            unit=unit,
+            text=unit.text[start:end],
+            start=start,
+            end=end,
+            character_target=character_target,
+            continuation_cursor=(
+                _encode_read_cursor(snapshot, unit.unit_id, end, self._cursor_secret(), scope=scope)
+                if end < len(unit.text)
+                else None
+            ),
+            warnings=unit.warnings,
+        )
+
     def read_context(
         self,
         unit_id: Identifier,
@@ -893,9 +1197,9 @@ class EvidenceSearchIndex:
         with self._connect() as connection:
             rows = connection.execute(
                 "SELECT unit_id, page, reading_order FROM evidence_units "
-                "WHERE source_id = ? AND source_artifact_hash = ? AND parse_id = ? "
+                "WHERE source_id = ? AND source_artifact_hash = ? AND parse_id = ? AND page = ? "
                 "ORDER BY page ASC, unit_id ASC",
-                (target.source_id, target.source_artifact_hash, target.parse_id),
+                (target.source_id, target.source_artifact_hash, target.parse_id, target.page),
             ).fetchall()
         source_ids = [
             row["unit_id"]
@@ -1046,6 +1350,20 @@ class EvidenceSearchIndex:
             characters += len(candidate.text)
         # Context is presented in source order, not alternating distance order.
         selected.sort(key=_canonical_unit_order)
+        semantic_crossing_warnings = tuple(
+            warning
+            for warning, crossed in (
+                (
+                    "document_zone_boundary_crossed",
+                    any(item.document_zone != target.document_zone for item in selected),
+                ),
+                (
+                    "trial_discourse_boundary_crossed",
+                    any(item.discourse_scope != target.discourse_scope for item in selected),
+                ),
+            )
+            if crossed
+        )
         if self._snapshot() != snapshot:
             raise StaleCursor("evidence snapshot changed while reading context", field="cursor")
         next_offset = offset + scanned
@@ -1074,6 +1392,7 @@ class EvidenceSearchIndex:
             warnings=target.warnings
             + discourse_warnings((target, *selected))
             + boundary_warnings
+            + semantic_crossing_warnings
             + (("oversized_neighbor_skipped",) if oversized_neighbor_skipped else ()),
             visual_inspection_available=(target.spatial is not None),
         )
@@ -1256,9 +1575,6 @@ class EvidenceSearchIndex:
         if query.source_ids:
             filters.append(f"u.source_id IN ({','.join('?' for _ in query.source_ids)})")
             parameters.extend(query.source_ids)
-        if query.kinds:
-            filters.append(f"u.kind IN ({','.join('?' for _ in query.kinds)})")
-            parameters.extend(kind.value for kind in query.kinds)
         if query.pages:
             filters.append(f"u.page IN ({','.join('?' for _ in query.pages)})")
             parameters.extend(query.pages)
@@ -1311,8 +1627,7 @@ class EvidenceSearchIndex:
             raise OperationalRetrievalFailure("evidence index has no snapshot")
         return row[0]
 
-    @staticmethod
-    def _hit(row: sqlite3.Row, *, oversized: bool = False) -> SearchHit:
+    def _hit(self, row: sqlite3.Row, *, oversized: bool = False) -> SearchHit:
         unit = _unit_from_row(row)
         projection_number = int(row["projection_id"].rsplit("-", 1)[1])
         projections = _project(unit)
@@ -1326,12 +1641,18 @@ class EvidenceSearchIndex:
             match_explanation="lexical match in canonical source text",
             warnings=unit.warnings
             + (
+                (f"document_zone:{unit.document_zone.value}",)
+                if unit.document_zone is not None
+                else ("document_zone:unclassified",)
+            )
+            + (
                 (f"Trial discourse classified as {unit.discourse_scope.value}",)
                 if unit.discourse_scope
                 in {TrialDiscourseScope.MIXED, TrialDiscourseScope.UNCERTAIN}
                 else ()
             ),
             duplicate_group_id=unit.duplicate_group_id,
+            location_handle=_encode_location_handle(unit, self._snapshot(), self._cursor_secret()),
         )
 
     def _cursor_secret(self) -> bytes:
@@ -1393,6 +1714,12 @@ def _unit_from_row(row: sqlite3.Row) -> CanonicalEvidenceUnit:
         document_zone=row["document_zone"],
         discourse_scope=row["discourse_scope"] or TrialDiscourseScope.NONE,
         duplicate_group_id=row["duplicate_group_id"],
+        fragment_ids=tuple(json.loads(row["fragment_ids"] or "[]")),
+        fragment_spans=tuple(
+            CanonicalFragmentSpan.model_validate(item)
+            for item in json.loads(row["fragment_spans"] or "[]")
+        ),
+        canonicalization_version=row["canonicalization_version"] or "canonicalization:1.0.0",
         warnings=tuple(json.loads(row["warnings"] or "[]")),
     )
 
@@ -1454,12 +1781,22 @@ def _collapse_duplicate_groups(rows: list[sqlite3.Row]) -> list[sqlite3.Row]:
     for row in rows:
         key = row["duplicate_group_id"] or row["unit_id"]
         current = unique.get(key)
-        if current is None or (row["score"], row["unit_id"]) < (
+        if current is None or (
+            row["score"],
+            row["reading_order"] or 0,
+            row["page"],
+            row["unit_id"],
+        ) < (
             current["score"],
+            current["reading_order"] or 0,
+            current["page"],
             current["unit_id"],
         ):
             unique[key] = row
-    return sorted(unique.values(), key=lambda row: (row["score"], row["unit_id"]))
+    return sorted(
+        unique.values(),
+        key=lambda row: (row["score"], row["reading_order"] or 0, row["page"], row["unit_id"]),
+    )
 
 
 def _diversify_rows(rows: list[sqlite3.Row]) -> list[sqlite3.Row]:
@@ -1502,12 +1839,6 @@ def _query_metadata_filters(
             filters.append(f"u.{column} IN ({','.join('?' for _ in values)})")
             params.extend(values)
 
-    trial_ids = query.trial_ids or ((query.trial_id,) if query.trial_id else ())
-    result_ids = query.result_ids or ((query.result_id,) if query.result_id else ())
-    scoped_result_id: Identifier | None = None
-    domain_ids = query.domain_ids or ((query.domain_id,) if query.domain_id else ())
-    question_ids = query.question_ids or ((query.question_id,) if query.question_id else ())
-
     def intersect(
         requested: tuple[Identifier, ...], allowed: tuple[Identifier, ...]
     ) -> tuple[Identifier, ...]:
@@ -1519,17 +1850,6 @@ def _query_metadata_filters(
         return requested or allowed
 
     if scope is not None:
-        if scope.trial_id is not None:
-            trial_ids = intersect(trial_ids, (scope.trial_id,))
-        if scope.result_id is not None:
-            scoped_result_id = scope.result_id
-            if result_ids and scope.result_id not in result_ids:
-                filters.append("1 = 0")
-            result_ids = ()
-        if scope.domain_id is not None:
-            domain_ids = intersect(domain_ids, (scope.domain_id,))
-        if scope.question_id is not None:
-            question_ids = intersect(question_ids, (scope.question_id,))
         if scope.source_ids:
             source_ids = intersect(query.source_ids, scope.source_ids)
             add_in("source_id", source_ids)
@@ -1537,110 +1857,14 @@ def _query_metadata_filters(
             add_in("source_id", query.source_ids)
     elif query.source_ids:
         add_in("source_id", query.source_ids)
-    add_in("trial_id", trial_ids)
-    if scoped_result_id is not None:
-        filters.append(
-            "(u.result_id = ? OR (u.result_id IS NULL "
-            "AND u.applicability IN ('trial_wide', 'unresolved') "
-            "AND EXISTS (SELECT 1 FROM json_each(COALESCE(u.applicable_result_ids, '[]')) "
-            "WHERE json_each.value = ?)))"
-        )
-        params.extend((scoped_result_id, scoped_result_id))
-    else:
-        add_in("result_id", result_ids)
-    if domain_ids and scope is not None and scope.allow_unclassified:
-        filters.append(
-            "(u.domain_id IN (" + ",".join("?" for _ in domain_ids) + ") OR u.domain_id IS NULL)"
-        )
-        params.extend(domain_ids)
-    else:
-        add_in("domain_id", domain_ids)
-    if question_ids:
-        filters.append(
-            "EXISTS (SELECT 1 FROM json_each(COALESCE(u.question_ids, '[]')) "
-            "WHERE json_each.value IN (" + ",".join("?" for _ in question_ids) + "))"
-        )
-        params.extend(question_ids)
-    source_roles = query.source_roles
-    if scope and scope.source_roles:
-        if source_roles:
-            source_roles = tuple(role for role in source_roles if role in scope.source_roles)
-            if not source_roles:
-                filters.append("1 = 0")
-        else:
-            source_roles = scope.source_roles
-    add_in("source_role", source_roles)
-    zones = query.document_zones
-    if scope and scope.document_zones:
-        if zones:
-            zones = tuple(zone for zone in zones if zone in scope.document_zones)
-            if not zones:
-                filters.append("1 = 0")
-        else:
-            zones = scope.document_zones
-    add_in("document_zone", tuple(zone.value for zone in zones))
-
-    include_other = scope.include_other_trial if scope else query.include_other_trial
-    if apply_policy_exclusions and not include_other:
-        filters.append("COALESCE(u.discourse_scope, 'none') NOT IN ('other')")
-    include_uncertain = scope.include_uncertain if scope else query.include_uncertain
-    if apply_policy_exclusions and not include_uncertain:
-        filters.append("COALESCE(u.discourse_scope, 'none') NOT IN ('uncertain', 'mixed')")
-    # Ordinary retrieval excludes known non-evidence zones.  The blacklist is
-    # immutable at this boundary, so semantic refinements cannot opt them back in.
-    if apply_policy_exclusions:
-        # Missing or unknown parser zones are never silently promoted to main
-        # text, including for lower-level callers without a workflow scope.
-        filters.append("u.document_zone IS NOT NULL")
-        filters.append("u.document_zone != 'unknown'")
-        filters.append(
-            "u.document_zone NOT IN "
-            "('bibliography', 'contents', 'page_furniture', 'extraction_artifact')"
-        )
+    # Trial/result/domain/question/zone/discourse/kind labels are diagnostic
+    # semantic observations.  They can rank or annotate candidates, but may
+    # never make source-authored material invisible before review.
     return filters, params
 
 
 def _unit_in_scope(unit: CanonicalEvidenceUnit, scope: EvidenceScope) -> bool:
-    if unit.document_zone is None or unit.document_zone is DocumentZone.UNKNOWN:
-        return False
-    if scope.trial_id is not None and unit.trial_id != scope.trial_id:
-        return False
-    if scope.result_id is not None:
-        if unit.result_id != scope.result_id and not (
-            unit.result_id is None
-            and unit.applicability
-            in {
-                EvidenceApplicability.TRIAL_WIDE,
-                EvidenceApplicability.UNRESOLVED,
-            }
-            and scope.result_id in unit.applicable_result_ids
-        ):
-            return False
-    if (
-        scope.domain_id is not None
-        and unit.domain_id != scope.domain_id
-        and not (scope.allow_unclassified and scope.question_id is None and unit.domain_id is None)
-    ):
-        return False
-    if scope.question_id is not None and scope.question_id not in unit.question_ids:
-        return False
     if scope.source_ids and unit.source_id not in scope.source_ids:
-        return False
-    if scope.source_roles and unit.source_role not in scope.source_roles:
-        return False
-    if scope.document_zones and unit.document_zone not in scope.document_zones:
-        return False
-    if (
-        unit.document_zone in FORBIDDEN_RETRIEVAL_ZONES
-        or unit.document_zone is DocumentZone.UNKNOWN
-    ):
-        return False
-    if not scope.include_other_trial and unit.discourse_scope is TrialDiscourseScope.OTHER:
-        return False
-    if not scope.include_uncertain and unit.discourse_scope in {
-        TrialDiscourseScope.MIXED,
-        TrialDiscourseScope.UNCERTAIN,
-    }:
         return False
     return True
 
@@ -1702,6 +1926,24 @@ def _encode_cursor(
             "policy": canonical_hash(policy),
             "offset": offset,
             "scope": canonical_hash(scope) if scope is not None else None,
+        },
+        secret,
+    )
+
+
+def _encode_location_handle(
+    unit: CanonicalEvidenceUnit, snapshot: ContentHash, secret: bytes
+) -> str:
+    """Issue an opaque handle bound to the exact source/Parse lineage."""
+    return _SignedCursorCodec.encode(
+        {
+            "kind": "location",
+            "snapshot": snapshot,
+            "unit": unit.unit_id,
+            "source_artifact_hash": unit.source_artifact_hash,
+            "parse_id": unit.parse_id,
+            "fragment_ids": list(unit.fragment_ids),
+            "canonicalization_version": unit.canonicalization_version,
         },
         secret,
     )

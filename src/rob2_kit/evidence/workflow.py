@@ -12,7 +12,11 @@ from typing import Any
 from pydantic import Field, model_validator
 
 from rob2_kit.domain.canonical import canonical_hash, sha256_digest
-from rob2_kit.domain.evidence import VerificationStatus
+from rob2_kit.domain.evidence import (
+    EvidenceReviewDisposition,
+    EvidenceReviewRevision,
+    VerificationStatus,
+)
 from rob2_kit.domain.revisions import (
     ContentHash,
     FrozenModel,
@@ -1102,6 +1106,7 @@ class FrozenEvidenceBundle(FrozenModel):
     visual_item_ids: tuple[Identifier, ...]
     conflicts: tuple[tuple[Identifier, ...], ...]
     policy_ids: tuple[Identifier, ...]
+    review_revision_ids: tuple[Identifier, ...] = ()
     content_hash: ContentHash
 
 
@@ -1136,6 +1141,7 @@ def freeze_evidence_bundle(
     visual_gates: tuple[VisualGate, ...] = (),
     visual_item_ids: tuple[Identifier, ...] = (),
     conflicts: tuple[tuple[Identifier, ...], ...] = (),
+    review_revisions: tuple[EvidenceReviewRevision, ...] = (),
 ) -> FrozenEvidenceBundle:
     """Freeze only complete, fully dispositioned search and visual work."""
     if not receipts or any(not receipt.is_complete() for receipt in receipts):
@@ -1167,6 +1173,36 @@ def freeze_evidence_bundle(
     retained_candidates = set().union(
         *(receipt.retained_candidate_ids() for receipt in receipts)
     )
+    review_by_candidate = {review.candidate_id: review for review in review_revisions}
+    if len(review_by_candidate) != len(review_revisions):
+        raise ValueError("each retained Evidence candidate requires one latest review revision")
+    if set(review_by_candidate) != retained_candidates:
+        raise ValueError(
+            "every retained Evidence candidate requires a substantive review revision"
+        )
+    if any(not review.is_complete for review in review_revisions):
+        raise ValueError(
+            "visual-review or unresolved semantic conditions block Evidence freeze"
+        )
+    if review_revisions:
+        accepted_by_review = {
+            review.candidate_id
+            for review in review_revisions
+            if any(
+                span.disposition
+                in {
+                    EvidenceReviewDisposition.SUPPORTING,
+                    EvidenceReviewDisposition.CONTRADICTING,
+                    EvidenceReviewDisposition.CONTEXTUAL,
+                }
+                for span in review.spans
+            )
+        }
+        accepted_by_disposition = {
+            item.candidate_id for item in candidate_dispositions if item.kind in _ACCEPTED
+        }
+        if accepted_by_review != accepted_by_disposition:
+            raise ValueError("frozen candidate acceptance must match completed semantic review")
     disposition_ids = {item.candidate_id for item in candidate_dispositions}
     if len(disposition_ids) != len(candidate_dispositions):
         raise ValueError("each Evidence candidate must have exactly one disposition")
@@ -1189,6 +1225,7 @@ def freeze_evidence_bundle(
     )
     ordered_claims = tuple(sorted(claims, key=lambda item: item.claim_id))
     ordered_facts = tuple(sorted(derived_facts, key=lambda item: item.fact_id))
+    ordered_reviews = tuple(sorted(review_revisions, key=lambda item: item.revision_id))
     ordered_visuals = tuple(sorted(visual_item_ids))
     ordered_conflicts = tuple(sorted(tuple(sorted(item)) for item in conflicts))
     policy_ids = tuple(sorted({receipt.policy_id for receipt in ordered_receipts}))
@@ -1206,6 +1243,8 @@ def freeze_evidence_bundle(
         "visual_item_ids": ordered_visuals,
         "conflicts": ordered_conflicts,
         "policy_ids": policy_ids,
+        "review_revision_ids": [item.revision_id for item in ordered_reviews],
+        "review_hashes": [canonical_hash(item) for item in ordered_reviews],
     }
     return FrozenEvidenceBundle(
         result_spec_id=result_spec_id,
@@ -1216,6 +1255,7 @@ def freeze_evidence_bundle(
         visual_item_ids=ordered_visuals,
         conflicts=ordered_conflicts,
         policy_ids=policy_ids,
+        review_revision_ids=tuple(item.revision_id for item in ordered_reviews),
         content_hash=canonical_hash(payload),
     )
 

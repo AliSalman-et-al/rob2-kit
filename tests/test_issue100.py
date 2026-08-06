@@ -57,6 +57,7 @@ from rob2_kit.evidence.errors import (
     StaleCursor,
     StaleWorkToken,
 )
+from rob2_kit.evidence.search import EvidenceRead
 from rob2_kit.ingestion.project import (
     PageExtraction,
     PageTextItem,
@@ -159,7 +160,7 @@ def test_trial_wide_canonical_block_does_not_inherit_result_id() -> None:
     assert units[0].applicable_result_ids == ("result:one", "result:two")
 
 
-def test_uncertain_discourse_is_warned_candidate_but_other_trial_is_excluded(
+def test_uncertain_and_other_trial_discourse_remain_visible_with_warnings(
     tmp_path: Path,
 ) -> None:
     index = EvidenceSearchIndex(tmp_path / "evidence.sqlite3")
@@ -176,8 +177,7 @@ def test_uncertain_discourse_is_warned_candidate_but_other_trial_is_excluded(
         include_uncertain=True,
     )
     page = index.search(SearchQuery(terms=("allocation",)), scope=scope)
-    assert [hit.unit.unit_id for hit in page.hits] == [uncertain.unit_id]
-    assert any("discourse" in warning for warning in page.hits[0].warnings)
+    assert {hit.unit.unit_id for hit in page.hits} == {uncertain.unit_id, other.unit_id}
 
 
 def test_legacy_null_result_rows_migrate_to_unresolved(tmp_path: Path) -> None:
@@ -247,7 +247,7 @@ def _unit(
     )
 
 
-def test_scope_excludes_reference_zones_and_other_trial_discourse(tmp_path: Path) -> None:
+def test_scope_keeps_reference_and_other_trial_candidates_visible(tmp_path: Path) -> None:
     index = EvidenceSearchIndex(tmp_path / "evidence.sqlite3")
     index.replace_units(
         (
@@ -283,17 +283,20 @@ def test_scope_excludes_reference_zones_and_other_trial_discourse(tmp_path: Path
         ),
     )
 
-    assert [hit.unit.unit_id for hit in page.hits] == ["unit:active"]
-    assert page.excluded_count == 3
+    assert {hit.unit.unit_id for hit in page.hits} == {
+        "unit:active",
+        "unit:bibliography",
+        "unit:other",
+    }
+    assert page.excluded_count == 1
     assert page.condition == "results"
     ordinary = index.search(SearchQuery(terms=("allocation",)))
-    assert "unit:bibliography" not in {hit.unit.unit_id for hit in ordinary.hits}
+    assert "unit:bibliography" in {hit.unit.unit_id for hit in ordinary.hits}
     assert "unit:active" in {hit.unit.unit_id for hit in ordinary.hits}
-    with pytest.raises(ValidationError, match="excluded from evidence retrieval"):
-        SearchQuery(
-            terms=("allocation",),
-            document_zones=(DocumentZone.BIBLIOGRAPHY,),
-        )
+    bibliography_only = index.search(
+        SearchQuery(terms=("allocation",), document_zones=(DocumentZone.BIBLIOGRAPHY,))
+    )
+    assert "unit:bibliography" in {hit.unit.unit_id for hit in bibliography_only.hits}
 
     unclassified = _unit("unit:unclassified", "source:report", "allocation")
     index.replace_units((unclassified,))
@@ -308,7 +311,7 @@ def test_scope_excludes_reference_zones_and_other_trial_discourse(tmp_path: Path
     ).hits
 
 
-def test_unknown_or_missing_zone_fails_closed_with_safe_next_action(tmp_path: Path) -> None:
+def test_unknown_or_missing_zone_remains_visible_with_diagnostic_warnings(tmp_path: Path) -> None:
     index = EvidenceSearchIndex(tmp_path / "evidence.sqlite3")
     index.replace_units(
         (
@@ -320,15 +323,12 @@ def test_unknown_or_missing_zone_fails_closed_with_safe_next_action(tmp_path: Pa
         SearchQuery(terms=("allocation",)),
         scope=EvidenceScope(trial_id="trial:active", result_id="result:active"),
     )
-    assert page.hits == ()
-    assert page.condition == "excluded_only"
-    assert "retrieval_scope_excluded_matches" in page.scope_warnings
-    assert page.next_actions == (
-        "review Source/zone classification, then retry with the active Work token",
-    )
+    assert {hit.unit.unit_id for hit in page.hits} == {"unit:unknown", "unit:missing"}
+    assert page.condition == "results"
+    assert all(any("document_zone" in warning for warning in hit.warnings) for hit in page.hits)
 
 
-def test_domain_and_question_provenance_scope_fails_closed(tmp_path: Path) -> None:
+def test_domain_and_question_provenance_remains_visible_for_review(tmp_path: Path) -> None:
     index = EvidenceSearchIndex(tmp_path / "evidence.sqlite3")
     index.replace_units(
         (
@@ -350,9 +350,8 @@ def test_domain_and_question_provenance_scope_fails_closed(tmp_path: Path) -> No
             question_id="sq:randomization:sequence",
         ),
     )
-    assert page.hits == ()
-    assert page.condition == "excluded_only"
-    assert "scope_provenance_unclassified_units_excluded" in page.scope_warnings
+    assert {hit.unit.unit_id for hit in page.hits} == {"unit:no-domain", "unit:no-question"}
+    assert page.condition == "results"
 
 
 def test_duplicate_groups_collapse_and_sources_are_diversified(tmp_path: Path) -> None:
@@ -392,11 +391,12 @@ def test_section_and_unit_reads_are_bounded_and_scope_safe(tmp_path: Path) -> No
     assert single.neighbors == ()
     assert [item.unit_id for item in section.neighbors] == [units[1].unit_id]
     assert section.mode is ReadContextMode.SECTION
-    with pytest.raises(ValueError, match="outside"):
-        index.read_unit("unit:other-section", scope=EvidenceScope(trial_id="trial:other"))
+    assert index.read_unit("unit:other-section", scope=EvidenceScope(trial_id="trial:other")) == (
+        units[2]
+    )
 
 
-def test_neighbors_stop_at_section_and_zone_boundaries(tmp_path: Path) -> None:
+def test_neighbors_cross_semantic_labels_but_stop_at_structural_boundaries(tmp_path: Path) -> None:
     index = EvidenceSearchIndex(tmp_path / "evidence.sqlite3")
     units = (
         _unit("unit:target", "source:report", "target", reading_order=1).model_copy(
@@ -410,6 +410,7 @@ def test_neighbors_stop_at_section_and_zone_boundaries(tmp_path: Path) -> None:
             "source:report",
             "other",
             zone=DocumentZone.RESULTS,
+            discourse=TrialDiscourseScope.OTHER,
             reading_order=3,
         ).model_copy(update={"hierarchy_path": ("1",)}),
         _unit(
@@ -430,14 +431,18 @@ def test_neighbors_stop_at_section_and_zone_boundaries(tmp_path: Path) -> None:
         neighbor_limit=6,
         scope=EvidenceScope(trial_id="trial:active", result_id="result:active"),
     )
-    assert [item.unit_id for item in context.neighbors] == [units[1].unit_id]
+    assert [item.unit_id for item in context.neighbors] == [units[1].unit_id, units[2].unit_id]
+    assert "document_zone_boundary_crossed" in context.warnings
+    assert "trial_discourse_boundary_crossed" in context.warnings
     assert "structural_boundary_reached" in context.warnings
     section = index.read_context(
         units[0].unit_id,
         mode=ReadContextMode.SECTION,
         scope=EvidenceScope(trial_id="trial:active", result_id="result:active"),
     )
-    assert [item.unit_id for item in section.neighbors] == [units[1].unit_id]
+    assert [item.unit_id for item in section.neighbors] == [units[1].unit_id, units[2].unit_id]
+    assert "document_zone_boundary_crossed" in section.warnings
+    assert "trial_discourse_boundary_crossed" in section.warnings
     assert "structural_boundary_reached" in section.warnings
 
 
@@ -485,7 +490,7 @@ def test_section_cursor_advances_past_oversized_neighbors(tmp_path: Path) -> Non
     assert "oversized_neighbor_skipped" in first.warnings
 
 
-def test_generic_units_are_result_scoped_and_marked_unresolved(tmp_path: Path) -> None:
+def test_generic_and_other_result_units_remain_visible_for_review(tmp_path: Path) -> None:
     index = EvidenceSearchIndex(tmp_path / "evidence.sqlite3")
     generic = _unit(
         "unit:generic",
@@ -512,7 +517,7 @@ def test_generic_units_are_result_scoped_and_marked_unresolved(tmp_path: Path) -
         ),
     )
     hit_ids = {hit.unit.unit_id for hit in page.hits}
-    assert hit_ids == {"unit:generic", "unit:b"}
+    assert hit_ids == {"unit:generic", "unit:a", "unit:b"}
     generic_hit = next(hit for hit in page.hits if hit.unit.unit_id == "unit:generic")
     assert generic_hit.unit.applicability is EvidenceApplicability.UNRESOLVED
     assert "result_scope_unresolved_units" in page.scope_warnings
@@ -825,9 +830,9 @@ results:
     async def invoke_read():
         return await server.call_tool(
             "read_evidence",
-            {
-                "run_id": prepared.run_id,
-                "unit_id": unit.unit_id,
+                {
+                    "run_id": prepared.run_id,
+                    "location_handle": page.hits[0].location_handle,
                 "work_token": token_payload,
                 "sq_id": "sq:randomization:sequence",
                 "result_id": evidence_work.result_id,
@@ -841,16 +846,23 @@ results:
     assert read_result.structured_content["unit"]["unit_id"] == unit.unit_id
 
     outside = unit.model_copy(
-        update={"unit_id": "unit:outside-domain", "domain_id": "domain:other"}
+        update={
+            "unit_id": "unit:outside-domain",
+            "text": "outside-domain allocation was concealed",
+            "domain_id": "domain:other",
+            "duplicate_group_id": None,
+        }
     )
     index.replace_units((unit, outside))
+    refreshed = index.search(SearchQuery(terms=("allocation",)))
+    handles = {hit.unit.unit_id: hit.location_handle for hit in refreshed.hits}
 
     async def invoke_boundary():
         return await server.call_tool(
             "read_evidence",
             {
                 "run_id": prepared.run_id,
-                "unit_id": outside.unit_id,
+                "location_handle": handles[outside.unit_id],
                 "work_token": token_payload,
                 "sq_id": "sq:randomization:sequence",
                 "result_id": evidence_work.result_id,
@@ -860,8 +872,8 @@ results:
     boundary_result = anyio.run(invoke_boundary)
     assert boundary_result.is_error is False
     assert boundary_result.structured_content is not None
-    assert boundary_result.structured_content["condition"] == "retrieval_error"
-    assert boundary_result.structured_content["error"]["code"] == "scope_mismatch"
+    assert boundary_result.structured_content["condition"] == "completed"
+    assert boundary_result.structured_content["unit"]["unit_id"] == outside.unit_id
 
     wrong_token = dict(token_payload, domain_id="domain:other")
 
@@ -870,7 +882,7 @@ results:
             "read_evidence",
             {
                 "run_id": prepared.run_id,
-                "unit_id": unit.unit_id,
+                "location_handle": handles[unit.unit_id],
                 "work_token": wrong_token,
                 "sq_id": "sq:randomization:sequence",
                 "result_id": evidence_work.result_id,
@@ -1187,7 +1199,7 @@ def test_mcp_read_evidence_executes_typed_route_deterministically(monkeypatch) -
             "read_evidence",
             {
                 "run_id": "run:mcp",
-                "unit_id": unit.unit_id,
+                "location_handle": "location:mcp",
                 "work_token": token,
                 "sq_id": "sq:randomization",
                 "mode": "unit",
@@ -1271,6 +1283,16 @@ def test_visual_handoff_requires_matching_domain_and_sq_on_same_source_page(
         def __init__(self, _path):
             pass
 
+        def read_location(self, *_args, **_kwargs):
+            return EvidenceRead(
+                snapshot_hash=HASH,
+                unit=unit,
+                text=unit.text,
+                start=0,
+                end=len(unit.text),
+                character_target=16_000,
+            )
+
         def read_context(self, *_args, **_kwargs):
             return context
 
@@ -1303,7 +1325,7 @@ def test_visual_handoff_requires_matching_domain_and_sq_on_same_source_page(
     response = engine.read_evidence(
         ReadEvidenceRequest(
             run_id="run:visual-handoff",
-            unit_id=unit.unit_id,
+            location_handle="location:visual-handoff",
             work_token=token,
             result_id="result:active",
             sq_id="sq:randomization",

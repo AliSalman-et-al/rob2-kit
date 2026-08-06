@@ -1,67 +1,114 @@
 # Evidence search reference
 
-Use this reference when the engine issues an evidence work item. Start from the
-bounded context it returns, search through the typed MCP tools, and inspect the
-issued evidence units or visual candidates only. Follow returned pagination and
-coverage constraints; do not treat a context limit or a lack of a convenient
-hit as absence of evidence.
+Use this reference for an engine-issued evidence work item. Evidence work is a
+bounded, repeatable workflow:
 
-Copy the active Domain-evidence `work_token` from `continue_run` into both
-`search_evidence` and `read_evidence`. The token supplies the Trial, Result,
-Domain, and eligible Source scope; do not reconstruct those IDs from chat
-history or broaden a failed search. Search returns non-citable projections;
-only exact spans from the returned canonical unit can be submitted as evidence.
-Search and read are engine-bounded (hit, character, and neighbor limits are not
-caller-controlled). Use the returned `unit_id` with `read_evidence` next and
-copy any `next_cursor` verbatim; after review, call `submit_domain_evidence` to
-record coverage and dispositions.
-Use `read_evidence` with `mode="unit"` by default, `mode="neighbors"` for a
-small same-section expansion, or `mode="section"` for bounded paginated
-section context. Continue a section only with its returned opaque cursor.
+```
+search -> read/expand -> semantic review -> exact-span freeze
+```
 
-Record the required candidate dispositions and coverage through the supplied
-typed submission. Material ambiguity, incomplete coverage, unreadable sources,
-or a conflict remains a reported limitation or blocker. The pinned engine and
-packs decide the evidence protocol and all decision-relevant behavior.
-Do not construct abbreviated coverage receipts: submit a receipt only when a
-tool has supplied the complete typed receipt object; otherwise omit it.
+The active Domain-evidence `work_token` supplies the mechanically authorized
+Trial, Result, Domain, Source, and Parse scope. Copy it verbatim to every
+evidence action. Do not reconstruct identifiers from chat history, widen the
+scope, or infer that a search limit means there is no evidence.
 
-For the legacy candidate-disposition branch, use only the exact enum values
-`supporting`, `contradicting`, `contextual`, `duplicate`, `out_of_scope`,
-`immaterial`, `superseded`, or `unresolved`; `irrelevant` is not accepted.
-When using exact `passages`, do not also send legacy `items`,
-`evidence_by_question`, `candidate_dispositions`, or `conflicts`—these branches
-are mutually exclusive. Record residual source/search issues in the
-`coverage_limitations` list (the singular `limitation` field does not exist).
+## Visibility is not eligibility
 
-An adequate completed search with no relevant evidence remains `complete` and
-may support `no_information` when complete receipts establish that basis. Use
-`complete_with_limitations` only when completed work retains a material source
-or search uncertainty. Use `incomplete` only when required searching or source
-inspection could not be completed. Coverage state alone does not determine
-report eligibility: `complete_with_limitations` remains eligible only when every
-active non-`no_information` answer has qualifying frozen supporting or
-contradicting Evidence or a qualifying Visual transcription, and a
-`no_information` answer requires an engine-verified complete basis. Any active
-answer without one of those bases produces a diagnostic report without Domain
-or Overall judgments.
+Search is deliberately broad within the authorized scope. A hit can be a
+canonical unit or an uncertain source fragment, including a bibliography,
+footnote, table or caption, unclassified material, or text apparently about a
+different Trial. Zone, discourse, unit-kind, filename, cardinality, and
+applicability labels are diagnostic cues only: they can warn or rank, but do
+not hide a candidate or make it citable.
 
-Use structured lexical input such as `{"terms": ["allocation"]}`. A
-`guidance_seed` pass uses a stable identifier-shaped `seed_family` label chosen
-by the caller and reused exactly in its coverage receipt; for `trial_follow_up`
-and `contradiction`, omit `seed_family`. Terms are individual tokens, phrases
-belong in `phrases`, and `any_of` is a list of token lists. Completion means every
-required pass is complete, every pagination cursor is traversed, and every
-unique returned unit has its engine-required disposition or recorded
-limitation.
+Search returns a non-citable projection with an opaque `location_handle`,
+lightweight source/Parse/location lineage, warnings, and a small source-text
+preview. It is not a quotation or evidence claim. Keep the handle, not a
+guessed unit ID or source path. A handle is stable for its bound Source,
+Parse, fragment lineage, and canonicalization snapshot; an index ranking
+change alone does not invalidate it. A stale-handle response is a typed
+condition: discard the handle and search again under the current WorkToken.
 
-To cite readable canonical text, pass the `unit_id` returned by
-`search_evidence` or `read_evidence` to `submit_domain_evidence.passages` with
-the exact `span_start`, `claim_type`, and applicable `question_ids`. Supply
-`span_end` for a partial unit or omit it to select through the unit's end.
-rob2-kit materializes the quote and all immutable hashes and
-references. Never calculate a quote hash or invent an entity, revision, or
-artifact reference in the Harness. Passage submission is checked against the
-active Domain WorkToken; each passage's `question_ids` supplies its own
-question attribution, so one submission may contain passages for multiple
-questions in that Domain.
+Older semantic override inputs such as `include_other_trial` and
+`include_uncertain` are not supported. Their presence receives a typed
+upgrade-required response rather than silently changing retrieval behavior.
+
+## Search and continuation
+
+Call `search_evidence` with structured lexical input, for example
+`{"terms": ["allocation"]}`. Terms are individual tokens; phrases belong in
+`phrases`; `any_of` is a list of token lists. Follow each returned opaque
+continuation exactly. A bounded page declares omissions, returned candidates,
+and the continuation needed to inspect the remainder. Do not manufacture,
+alter, or reuse a continuation across changed scope or a stale WorkToken.
+
+For a `guidance_seed` pass, use the stable identifier-shaped `seed_family`
+label supplied by the work context and reuse it exactly in coverage. For
+`trial_follow_up` and `contradiction`, omit `seed_family`. Completion requires
+every required pass and returned page to be traversed and reviewed or
+explicitly limited; a convenient hit or a first page is never enough.
+
+## Read and expand context
+
+Pass the returned `location_handle` to `read_evidence`. Start with the smallest
+useful view, then request bounded expansion as needed:
+
+- `unit` reads the anchored canonical unit or source fragment.
+- `neighbors` and `section` provide bounded same-source context.
+- `window` provides a bounded character or line continuation for an oversized
+  unit.
+- `page` returns page-scoped source context.
+- `render` supplies a bounded visual fallback when text order, provenance, or
+  content cannot be established safely.
+
+Read responses preserve source-authored text in deterministic order and expose
+the original hit, Source artifact, Parse revision, page/geometry, source
+bounds, fragment lineage, applied bounds, warnings, omissions, and any stable
+continuation. They never silently cross a Source, Parse revision, or requested
+page boundary. Ambiguous reading order remains separate fragments with a
+warning; it is not synthetic prose.
+
+Use `inspect_visual_candidate` only through the issued visual route. A visual
+render is a review aid, not an automatically citable screenshot. If a coherent
+exact text span cannot be established, retain the typed parse or visual-review
+limitation instead of reporting generic absence.
+
+## Semantic review before freeze
+
+Read enough context to identify the sentence subject and Result. Record the
+candidate's Trial attribution as `active`, `other`, `mixed`, `not_explicit`,
+or `unresolved`, with rationale and the read handles considered. Then record
+every material exact span as `supporting`, `contradicting`, `contextual`,
+`out_of_scope`, `immaterial`, `superseded`, `duplicate`,
+`needs_visual_review`, or `unresolved` using the installed typed review
+submission. Review is append-only: correcting an attribution,
+disposition, rationale, or considered context creates a later review revision;
+it does not rewrite history.
+
+Other-Trial and bibliography material may be read and explicitly rejected as
+out of scope. Omission is not rejection. A mixed candidate must isolate any
+active-Trial span; a `not_explicit` or unresolved candidate cannot support a
+claim. A potentially material unresolved span or visual-review condition blocks
+freeze and must remain visible as a limitation.
+
+## Exact-span freeze
+
+Only a completed review of an exact source span can be frozen into Evidence.
+The engine validates Result custody, WorkToken authorization, artifact/Parse
+and fragment lineage, exact bounds, hashes and revisions, review completeness,
+and immutable dependency materialization. Search projections, snippets,
+diagnostic labels, inferred applicability, and synthesized reconstruction are
+never freezable Evidence.
+
+Use the current typed freeze submission supplied by the work item; do not
+invent quote text, hashes, revisions, or artifact references. The legacy
+`passages`/`items` submission branch is a compatibility path only. If the
+installed contract offers the generalized review-and-freeze fields, use them
+instead; do not mix legacy and generalized branches in one request.
+
+An adequate complete search with no relevant evidence may support
+`no_information` only when the engine verifies the complete search basis.
+`complete_with_limitations` retains a material source or search uncertainty;
+`incomplete` means required searching or inspection could not finish. Neither
+coverage state nor an empty hit list converts an unresolved candidate into a
+negative finding.

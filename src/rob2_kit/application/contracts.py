@@ -17,6 +17,7 @@ from rob2_kit.domain.evidence import (
     ConsiderationDisposition,
     EvidenceCoverageState,
     EvidenceInsufficiency,
+    EvidenceReviewRevision,
 )
 from rob2_kit.domain.results import Estimate, Result, ResultSpecRevision
 from rob2_kit.domain.revisions import (
@@ -39,6 +40,7 @@ from rob2_kit.evidence.errors import RetrievalErrorCode
 from rob2_kit.evidence.search import (
     CanonicalEvidenceUnit,
     EvidenceContext,
+    EvidenceRead,
     ReadContextMode,
     SearchPage,
     SearchQuery,
@@ -716,9 +718,11 @@ class SearchEvidenceRequest(FrozenModel):
 
 class ReadEvidenceRequest(FrozenModel):
     run_id: Identifier = Field(description="Run identifier returned by prepare_run.")
-    unit_id: Identifier = Field(
-        description="Canonical unit identifier issued by search_evidence.",
-        examples=["unit:report-p1-b2"],
+    location_handle: str = Field(
+        min_length=1,
+        max_length=4096,
+        description="Opaque source/Parse-bound location handle issued by search_evidence.",
+        examples=["eyJwYXlsb2FkIjoi..."],
     )
     work_token: WorkToken = Field(
         description=(
@@ -737,7 +741,7 @@ class ReadEvidenceRequest(FrozenModel):
     )
     mode: ReadContextMode = Field(
         default=ReadContextMode.UNIT,
-        description="Read mode: unit, same-zone neighbors, or same-zone section continuation.",
+        description="Read mode: bounded unit window, source neighbors, or section continuation.",
     )
     cursor: str | None = Field(
         default=None,
@@ -839,6 +843,14 @@ class SubmitDomainEvidenceRequest(FrozenModel):
         default=(),
         description=("Legacy candidate disposition records; mutually exclusive with passages."),
     )
+    review_revisions: tuple[EvidenceReviewRevision, ...] = Field(
+        default=(),
+        description=(
+            "Append-only substantive candidate review revisions. Each binds Trial attribution, "
+            "exact spans, rationale, and the read-context handles considered; unresolved or "
+            "needs-visual-review spans prevent freeze."
+        ),
+    )
     coverage_receipts: tuple[SearchCoverageReceipt, ...] = Field(
         default=(),
         description=(
@@ -860,6 +872,14 @@ class SubmitDomainEvidenceRequest(FrozenModel):
                 "evidence_by_question, candidate_dispositions, and conflicts, or submit the "
                 "legacy branch without passages"
             )
+        review_candidate_ids = tuple(review.candidate_id for review in self.review_revisions)
+        if len(review_candidate_ids) != len(set(review_candidate_ids)):
+            raise ValueError("review batch may contain only one latest revision per candidate")
+        if any(
+            review.result_id != self.result_id or review.domain_id != self.domain_id
+            for review in self.review_revisions
+        ):
+            raise ValueError("review revisions must bind the submitted Result and Domain")
         return self
 
 
@@ -1103,6 +1123,7 @@ class SearchEvidenceResponse(OperationResponse):
 class ReadEvidenceResponse(OperationResponse):
     run_id: Identifier
     unit: CanonicalEvidenceUnit
+    read: EvidenceRead | None = None
     context: EvidenceContext | None = None
     visual_inspection: VisualInspectionPath | None = None
 

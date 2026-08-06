@@ -30,6 +30,7 @@ from rob2_kit.application.contracts import (
     EvidenceConsiderationInput,
     EvidenceCoverageState,
     EvidencePassageInput,
+    EvidenceReviewRevision,
     FinalJudgmentInput,
     GetWorkContextRequest,
     InspectVisualCandidateRequest,
@@ -66,6 +67,7 @@ from rob2_kit.application.determinism import QualificationDeterminism
 from rob2_kit.application.lifecycle import RunState
 from rob2_kit.application.run_engine import RunEngine, SecondProjectRootError
 from rob2_kit.evidence.errors import (
+    InvalidRetrievalRequest,
     OperationalRetrievalFailure,
     RetrievalFailure,
     invalid_request_from_validation,
@@ -162,6 +164,10 @@ def _dump(response: Any) -> dict[str, Any]:
             compact_projection.pop("text", None)
             compact_hits.append(
                 {
+                    # Opaque source/Parse-bound navigation identity.  It is
+                    # intentionally separate from the canonical or fragment
+                    # preview below: the preview can never be frozen directly.
+                    "location_handle": hit.location_handle,
                     "unit": {
                         "unit_id": hit.unit.unit_id,
                         "source_id": hit.unit.source_id,
@@ -482,12 +488,36 @@ def create_server(
                 description="Stable identifier-shaped guidance seed family, e.g. seed:allocation."
             ),
         ] = None,
+        include_other_trial: Annotated[
+            bool | None,
+            Field(
+                deprecated=True,
+                description=(
+                    "Retired semantic-visibility override. Any supplied value is rejected with "
+                    "typed upgrade_required recovery; candidates are now visible by default."
+                ),
+            ),
+        ] = None,
+        include_uncertain: Annotated[
+            bool | None,
+            Field(
+                deprecated=True,
+                description=(
+                    "Retired semantic-visibility override. Any supplied value is rejected with "
+                    "typed upgrade_required recovery; uncertain candidates are now visible "
+                    "by default."
+                ),
+            ),
+        ] = None,
     ) -> CallToolResult:
         """When to use: search evidence for the active Domain question.
 
         Prerequisite: a current ``submit_domain_evidence`` WorkToken. Safe default:
-        use structured terms and traverse returned pages. Not for: raw FTS, caller
-        budgets, or widening scope beyond the issued Result.
+        use structured terms and traverse returned pages. Search returns visible,
+        non-citable candidates (including uncertain, reference, and other-Trial
+        material) with diagnostic labels and opaque location handles. Not for: raw
+        FTS, caller budgets, semantic eligibility filtering, or widening scope
+        beyond the issued Result.
 
         For example, use query={"terms":["allocation"]}. With
         pass_kind="guidance_seed", reuse that exact label in the coverage receipt,
@@ -497,8 +527,30 @@ def create_server(
         During Domain evidence work, copy ``work_token`` from the active
         ``continue_run`` item. It supplies Trial/Result/Domain scope; never
         widen that scope with IDs from conversation history.
+
+        Do not send retired ``include_other_trial`` or ``include_uncertain``
+        overrides. They receive typed ``upgrade_required`` recovery instead of
+        silently changing candidate visibility.
         """
         try:
+            if include_other_trial is not None or include_uncertain is not None:
+                return _wire_result(
+                    _retrieval_error(
+                        InvalidRetrievalRequest(
+                            "upgrade_required: semantic visibility overrides are retired; "
+                            "search candidates are visible by default",
+                            field=(
+                                "include_other_trial"
+                                if include_other_trial is not None
+                                else "include_uncertain"
+                            ),
+                            recovery=(
+                                "remove the retired override",
+                                "retry the same bounded search with the active WorkToken",
+                            ),
+                        )
+                    )
+                )
             request = SearchEvidenceRequest.model_validate(
                 {
                     "run_id": run_id,
@@ -528,8 +580,14 @@ def create_server(
         run_id: Annotated[
             str, Field(min_length=1, description="Run identifier returned by prepare_run.")
         ],
-        unit_id: Annotated[
-            str, Field(min_length=1, description="Canonical unit_id issued by search_evidence.")
+        location_handle: Annotated[
+            str,
+            Field(
+                min_length=1,
+                description=(
+                    "Opaque source/Parse-bound location handle returned by search_evidence."
+                ),
+            )
         ],
         work_token: Annotated[
             WorkToken,
@@ -547,11 +605,14 @@ def create_server(
             Field(min_length=1, description="Opaque section cursor returned by a prior read."),
         ] = None,
     ) -> CallToolResult:
-        """When to use: read one canonical unit returned by scoped search.
+        """When to use: read one source-preserving candidate returned by scoped search.
 
-        Prerequisite: the issued unit ID and current evidence WorkToken. Safe default:
-        use ``unit`` mode. Not for: unbounded document reading; use ``neighbors`` or
-        paginated ``section`` only when the returned context calls for it.
+        Prerequisite: the issued location handle and current
+        evidence WorkToken. Safe default: use ``unit`` mode. Not for: unbounded
+        document reading; use bounded neighbors, section, window, page, or visual
+        expansion only when the returned context calls for it. A read preserves
+        source/Parse/fragment lineage, omissions, warnings, and stable continuation;
+        it does not turn a search projection into citable Evidence.
         """
         try:
             return _wire_result(
@@ -559,7 +620,7 @@ def create_server(
                     ReadEvidenceRequest.model_validate(
                         {
                             "run_id": run_id,
-                            "unit_id": unit_id,
+                            "location_handle": location_handle,
                             "work_token": work_token,
                             "result_id": result_id,
                             "sq_id": sq_id,
@@ -754,6 +815,16 @@ def create_server(
                 )
             ),
         ] = None,
+        review_revisions: Annotated[
+            list[EvidenceReviewRevision] | None,
+            Field(
+                description=(
+                    "Append-only semantic review revisions. Each records Trial attribution, "
+                    "reviewed context handles, exact spans, dispositions, and rationale; "
+                    "unresolved or needs_visual_review spans block freeze."
+                )
+            ),
+        ] = None,
         coverage_receipts: Annotated[
             list[SearchCoverageReceipt] | None,
             Field(
@@ -769,9 +840,17 @@ def create_server(
     ) -> dict[str, Any]:
         """When to use: freeze the reviewed evidence for one active Domain.
 
-        Prerequisite: current Domain context and completed required search coverage.
-        Safe default: use exact issued ``passages``. Not for: mixing it with legacy
-        evidence inputs or treating an incomplete search as no information.
+        Prerequisite: current Domain context, completed required search coverage,
+        and append-only semantic review of every material candidate. Safe default:
+        submit the issued exact spans and review revisions. Not for: treating a
+        search projection, parser label, or incomplete search as citable Evidence
+        or as no information.
+
+        ``review_revisions`` bind Trial attribution, Result scope, considered read
+        handles, exact source spans, dispositions, and rationale. They are
+        append-only; correction creates a later revision. A material unresolved or
+        ``needs_visual_review`` span prevents freeze. Other-Trial or reference text
+        may be reviewed and rejected explicitly, but omission is not rejection.
 
         Use passages using issued ``unit_id``, exact spans, and active
         ``question_ids``; this branch is mutually exclusive with legacy
@@ -806,6 +885,7 @@ def create_server(
                         "conflicts": conflicts or (),
                         "evidence_by_question": evidence_by_question or {},
                         "candidate_dispositions": candidate_dispositions or (),
+                        "review_revisions": review_revisions or (),
                         "coverage_receipts": coverage_receipts or (),
                         "project_rules": project_rules or (),
                         "contract_version": contract_version,

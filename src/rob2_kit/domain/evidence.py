@@ -56,6 +56,111 @@ class ConsiderationDisposition(StrEnum):
     UNRESOLVED = "unresolved"
 
 
+class TrialAttribution(StrEnum):
+    """A reviewer's attributable relationship between a candidate and the active Trial."""
+
+    ACTIVE = "active"
+    OTHER = "other"
+    MIXED = "mixed"
+    NOT_EXPLICIT = "not_explicit"
+    UNRESOLVED = "unresolved"
+
+
+class EvidenceReviewDisposition(StrEnum):
+    """Substantive, exact-span semantic review outcomes.
+
+    This is deliberately separate from result-page dispositions.  Search pages
+    only account for what was seen; they never decide whether source material
+    can freeze as Evidence.
+    """
+
+    SUPPORTING = "supporting"
+    CONTRADICTING = "contradicting"
+    CONTEXTUAL = "contextual"
+    OUT_OF_SCOPE = "out_of_scope"
+    IMMATERIAL = "immaterial"
+    SUPERSEDED = "superseded"
+    DUPLICATE = "duplicate"
+    NEEDS_VISUAL_REVIEW = "needs_visual_review"
+    UNRESOLVED = "unresolved"
+
+
+class EvidenceReviewSpan(FrozenModel):
+    """One reviewed source span, bound to the read context that exposed it."""
+
+    location_handle: Identifier
+    span_start: int = Field(ge=0)
+    span_end: int = Field(gt=0)
+    disposition: EvidenceReviewDisposition
+    rationale: str = Field(min_length=1)
+    context_handles: tuple[Identifier, ...] = Field(min_length=1)
+    visual_review_condition: Identifier | None = None
+    duplicate_of: Identifier | None = None
+
+    @model_validator(mode="after")
+    def validate_review_span(self) -> "EvidenceReviewSpan":
+        if self.span_end <= self.span_start:
+            raise ValueError("review span must have positive extent")
+        if self.location_handle not in self.context_handles:
+            raise ValueError("review span must bind its location handle as reviewed context")
+        if len(set(self.context_handles)) != len(self.context_handles):
+            raise ValueError("review span context handles must be unique")
+        if (
+            self.disposition is EvidenceReviewDisposition.NEEDS_VISUAL_REVIEW
+        ) != (self.visual_review_condition is not None):
+            raise ValueError("visual-review condition is required only for needs-visual-review")
+        if self.disposition is EvidenceReviewDisposition.DUPLICATE and self.duplicate_of is None:
+            raise ValueError("duplicate review spans require a duplicate target")
+        if self.disposition is not EvidenceReviewDisposition.DUPLICATE and self.duplicate_of:
+            raise ValueError("duplicate target is valid only for duplicate review spans")
+        return self
+
+
+class EvidenceReviewRevision(Revision):
+    """Immutable candidate-level semantic review superseding prior reviews."""
+
+    candidate_id: Identifier
+    result_id: Identifier
+    domain_id: Identifier
+    question_ids: tuple[Identifier, ...] = Field(min_length=1)
+    trial_attribution: TrialAttribution
+    reviewed_context_handles: tuple[Identifier, ...] = Field(min_length=1)
+    spans: tuple[EvidenceReviewSpan, ...] = Field(min_length=1)
+
+    @model_validator(mode="after")
+    def validate_review(self) -> "EvidenceReviewRevision":
+        if len(set(self.question_ids)) != len(self.question_ids):
+            raise ValueError("review question IDs must be unique")
+        if len(set(self.reviewed_context_handles)) != len(self.reviewed_context_handles):
+            raise ValueError("reviewed context handles must be unique")
+        if any(
+            handle not in self.reviewed_context_handles
+            for span in self.spans
+            for handle in span.context_handles
+        ):
+            raise ValueError("review span context must be included in reviewed context handles")
+        if self.trial_attribution is TrialAttribution.UNRESOLVED:
+            raise ValueError("unresolved Trial attribution cannot complete a substantive review")
+        if self.trial_attribution is TrialAttribution.OTHER and any(
+            span.disposition
+            in {EvidenceReviewDisposition.SUPPORTING, EvidenceReviewDisposition.CONTRADICTING}
+            for span in self.spans
+        ):
+            raise ValueError("other-Trial material cannot support or contradict the active Result")
+        return self
+
+    @property
+    def is_complete(self) -> bool:
+        return all(
+            span.disposition
+            not in {
+                EvidenceReviewDisposition.NEEDS_VISUAL_REVIEW,
+                EvidenceReviewDisposition.UNRESOLVED,
+            }
+            for span in self.spans
+        )
+
+
 class EvidenceConsideration(FrozenModel):
     """One complete, question-specific consideration-manifest entry."""
 
@@ -165,6 +270,7 @@ class EvidenceBundle(Revision):
         "items": "dependency:evidence-item",
         "coverage_receipts": "dependency:search-coverage",
         "consideration_manifest": "dependency:evidence-consideration",
+        "review_revisions": "dependency:evidence-review",
     }
     result_spec: RecordReference
     disposition: RecordReference
@@ -176,6 +282,7 @@ class EvidenceBundle(Revision):
     domain_id: Identifier | None = None
     coverage_receipts: tuple[RecordReference, ...] = ()
     consideration_manifest: RecordReference | None = None
+    review_revisions: tuple[RecordReference, ...] = ()
     coverage_state: EvidenceCoverageState = EvidenceCoverageState.COMPLETE
     coverage_limitations: tuple[str, ...] = ()
     no_information_basis: bool = False

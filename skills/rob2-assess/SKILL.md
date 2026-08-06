@@ -8,22 +8,46 @@ description: assess or judge RoB 2, continue a Run, or explain its terminal stat
 If the project is uninitialized, has an unconfirmed Run definition, or needs a
 new run, hand initialization to `rob2-init` and use
 `../references/RUN-DEFINITION.md` only for that handoff.
-Otherwise use the static `rob2` tools to resume the confirmed run,
-request the next engine-issued work item, inspect only bounded evidence and
-visual candidates, and submit typed work with the supplied mutation context.
+Otherwise use the static `rob2` tools to resume the confirmed run, request the
+next engine-issued work item, inspect only bounded evidence and visual
+candidates, and submit typed work with the supplied mutation context.
 
 Drive one engine-issued item at a time: `continue_run`, `get_work_context`, then
 the named submission tool with the returned work token and identifiers copied
 verbatim. After a successful submission, return to `continue_run`. Completion
 means the directive is terminal, not merely that all five Domains were visited.
 
-For `submit_domain_evidence`, prefer `passages`. The `passages` branch is
+During evidence work, use the generalized bounded loop: `search_evidence`,
+`read_evidence` or its issued visual route, semantic review, then exact-span
+freeze. Search results are visible candidates, not eligible Evidence. They may
+include uncertain fragments, bibliography, tables, footnotes, unclassified
+text, and apparent other-Trial text. Labels can explain or rank a result, but
+never make it disappear or make it citable.
+
+Keep the opaque `location_handle` returned by search and pass it unchanged to
+reading. Expand only by the bounded `unit`, `neighbors`, `section`, `window`,
+`page`, or `render` operation the response supports, and follow its opaque
+continuation verbatim. A stale handle or continuation is a typed recovery
+condition: discard it and restart from the current WorkToken. Do not send the
+retired semantic overrides `include_other_trial` or `include_uncertain`; an
+installed server rejects them as upgrade-required rather than silently changing
+candidate visibility.
+
+Before freeze, submit the installed typed, append-only semantic review. Record
+Trial/Result attribution (`active`, `other`, `mixed`, `not_explicit`, or
+`unresolved`), an exact-span disposition, rationale, and the context handles
+considered. Other-Trial or reference material may be explicitly reviewed and
+rejected, but omission is not rejection. An unresolved material candidate,
+uncertain source order, or visual-review condition remains a typed limitation
+and blocks an unsupported freeze. Never cite a non-citable search projection,
+snippet, parser label, inferred applicability, or synthetic reconstruction.
+
+For the legacy `submit_domain_evidence` branch, prefer `passages`. It is
 mutually exclusive with legacy `items`, `evidence_by_question`,
 `candidate_dispositions`, and `conflicts`; choose one branch and do not send
-empty legacy fields alongside passages. Use the exact field name
-`coverage_limitations` (never `limitation`). Candidate dispositions accept only
-`supporting`, `contradicting`, `contextual`, `duplicate`, `out_of_scope`,
-`immaterial`, `superseded`, or `unresolved`; `irrelevant` is not an alias.
+empty fields from another branch. Use the exact field name
+`coverage_limitations` (never `limitation`). This compatibility branch does not
+replace the current review-and-freeze contract when that contract is available.
 
 When a retry or dynamic branch returns, discard the previous work token and
 context, call `get_work_context` for the new token, and copy its current

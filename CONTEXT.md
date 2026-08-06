@@ -29,31 +29,59 @@ The ordered experimental and comparator Arms selected from one Randomization for
 _Avoid_: Trial, intervention pair
 
 **Evidence candidate**:
-A potentially relevant retrieval result that has not yet been accepted as support for an assessment claim. Its compact view carries a stable identity, coherent source-authored preview, human-readable Source and section provenance, unit kind, match reason, scope and parse warnings, duplicate grouping, estimated size, and next actions. Internal hashes, word boxes, raw ranking scores, full receipts, and policy identities remain progressively disclosed diagnostics. It cannot be cited by a signaling-question answer.
+A potentially relevant retrieval result that has not yet been accepted as support for an assessment claim. It may resolve to a Canonical evidence unit or an Evidence fragment candidate and carries source provenance, diagnostic semantic metadata, warnings, and bounded navigation actions; it cannot be cited by a signaling-question answer.
 _Avoid_: Evidence, verified quote
 
+**Evidence candidate duplication**:
+The attributable relationship between a candidate and the retained candidate or reviewed span it repeats. Lineage duplicates share underlying source fragments and collapse to one candidate; repetitions within one Source remain visibly linked and cannot double-count; independently located cross-Source text remains distinct unless review establishes that it is merely a reproduced copy.
+_Avoid_: Text similarity, silent deduplication
+
+**Evidence fragment candidate**:
+A source-preserving parser fragment or fragment group whose coherent reading order or unit boundary has not been established deterministically. It remains searchable and readable with exact lineage and warnings, but cannot ground an Evidence claim unless deterministic canonicalization succeeds or Visual review produces a qualifying transcription.
+_Avoid_: Canonical evidence unit, synthetic paragraph
+
 **Evidence candidate disposition**:
-The attributable substantive decision for a retained Evidence candidate: accept an exact canonical span as supporting, contradicting, or contextual for a typed Trial, Result, and signaling-question scope; reject it as out of scope, immaterial, or superseded; identify it as a duplicate of a retained item; or leave it unresolved. Accepted quotation text is materialized deterministically, duplicates cannot count as independent corroboration, and an Evidence Bundle cannot be frozen while a potentially material retained candidate remains unresolved.
+The attributable semantic review record for one retained Evidence candidate, combining an overall Trial attribution with exact-span decisions classified as supporting, contradicting, contextual, out of scope, immaterial, superseded, duplicate, or unresolved and bound to a Result, signaling-question scope, rationale, and at least one Evidence read view containing the span and reviewer-chosen context. Retaining a candidate makes it potentially material until every identified relevant span has a terminal disposition or is explicitly unresolved; search previews alone cannot support substantive review.
 _Avoid_: Silent exclusion, answer-driven selection
 
+**Evidence candidate Trial attribution**:
+The reviewer's attributable classification of a candidate's relationship to the assessment Trial: active, other, mixed, not explicit, or unresolved. Only an exact span attributed as active may support or contradict the active Result; a mixed candidate must isolate such a span, not-explicit material requires attributable contextual resolution, and other-Trial material remains contextual or rejected.
+_Avoid_: Current Trial, unknown Trial
+
+**Evidence review revision**:
+An immutable candidate-level semantic review and its exact-span decisions, superseding rather than modifying an earlier review. Changing attribution, span bounds, disposition, rationale, or considered context invalidates dependent Evidence Bundles and downstream assessment and verification artifacts.
+_Avoid_: Mutable disposition, review edit
+
+**Evidence contract revision**:
+The versioned canonicalization, retrieval, review, and policy identities under which evidence work is interpreted and reproduced. Historical runs retain their original revisions read-only; the new contract has no semantic-eligibility override parameters, and explicit reprocessing creates new Parse, canonical, index, and review dependencies rather than reinterpreting old records in place.
+_Avoid_: In-place migration, compatibility guess
+
 **Evidence review submission**:
-An attributable, Work-token-bound batch that durably records Search-result dispositions and retained Evidence-candidate dispositions, including exact accepted spans, typed scope, and duplicate relationships. It is separate from repeatable read-only search and reading; later freezing validates the accumulated review and creates immutable Evidence Bundles.
+An attributable, idempotent, append-only batch that durably records Search-result dispositions, candidate and span review revisions, rationales, considered Evidence read views, and duplicate relationships throughout evidence work. It is separate from repeatable read-only search and reading; the later Domain freeze validates and closes accumulated review into immutable question-specific Evidence Bundles rather than receiving its first and only copy.
 _Avoid_: Search side effect, chat-memory shortlist, mutable bundle
 
 **Canonical evidence unit**:
-The smallest preserved source-authored unit that may ground an Evidence claim, with stable page, spatial, hierarchy, and reading-order provenance. A reconstructed paragraph is the normal prose unit and an Evidence claim selects exact sentence or span ranges within it; list items, captions, and footnotes remain distinct units; a table row retains its applicable column headers and caption as context. Headings and sections orient or expand context but do not normally support a claim alone. When reliable structure or reading order cannot be reconstructed, the unit carries a limitation and may require selective Visual inspection rather than exposing fragmented words.
+The smallest coherently reconstructed, page-bound source-authored unit that may ground an Evidence claim, identified deterministically from artifact, Parse, page, source bounds, fragment lineage, and canonicalization revision rather than ordinal position or normalized text. Fragments merge only when order, column geometry, and structural role are unambiguous, with complete fragment-to-canonical character mapping; cross-page continuity links separate units and ambiguous material remains an Evidence fragment candidate.
 _Avoid_: Generated chunk, search aggregate
 
+**Evidence location handle**:
+An opaque engine-issued reference to one Canonical evidence unit or Evidence fragment candidate, bound to its Source artifact, Parse revision, location kind, fragment lineage, and canonicalization revision. It is reusable within that snapshot and becomes explicitly stale when any bound source or canonicalization identity changes, while index-only ranking changes do not invalidate it.
+_Avoid_: Unit ID, source path, search cursor
+
 **Search projection**:
-A versioned, non-citable retrieval representation derived from one or more Canonical evidence units, which may combine sentence windows, normalized text, ancestor headings, Trial or Result aliases, or generated contextual prefixes to improve search and ranking. Every hit resolves back to intact canonical source content; projection text, enrichment, and generated wording can navigate but never become an Evidence claim or quoted Source phrase.
+A versioned, non-citable retrieval representation derived from Canonical evidence units or independently indexed source fragments. Related uncertain fragments may be grouped as one candidate but remain separate in previews without an implied reading order; generated neighbor terms, normalization, headings, or aliases may aid ranking but never become displayed source prose, an Evidence claim, or a quoted Source phrase.
 _Avoid_: Evidence candidate, source quotation, citable chunk
 
 **Evidence read view**:
-A bounded, non-authoritative presentation that dereferences an issued Evidence-candidate or Canonical-unit identity to the intact unit and, when explicitly requested, its structural neighbors or parent section. The default unit mode may read a small policy-bounded list of same-scope identities while preserving each unit's separate provenance; neighbor or section expansion uses one anchor because its size is less predictable. Neighbor expansion is conservative and same-section, while section reads are paginated. Expansion follows reconstructed hierarchy and reading order, declares estimated size and omissions, and never crosses a section, Source component, document zone, or Trial boundary silently. An oversized unit receives an explicit continuation path rather than silent clipping. When meaning depends on layout or canonical extraction has a reading-order, missing-text, or render discrepancy, the view identifies a bounded Visual-inspection path rather than attaching every page or silently replacing canonical text.
+A bounded, non-authoritative presentation that dereferences one Evidence location handle and, when explicitly requested, expands by neighbors, section, line or character window, page, or render. Requests express desired extent while versioned Evidence-search policy applies maximum units, characters, pages, and render size; responses declare applied bounds, size, omissions, and stable continuation, including character or line continuation for oversized units. Uncertain material remains separate source fragments rather than concatenated prose; semantic boundaries may be crossed with warnings, but Source, Parse revision, and requested page scope are never crossed silently.
 _Avoid_: New search, full document dump, flat block adjacency
 
+**Visual-review condition**:
+An unresolved requirement attached to a retained Evidence candidate or exact span whose meaning or provenance cannot yet be established from canonical text. It closes only through a reviewed Visual transcription, successful deterministic re-canonicalization, or an attributable substantive rejection after sufficient visual context, and blocks freeze while potentially material.
+_Avoid_: Needs-visual-review disposition, terminal rejection
+
 **Evidence result page**:
-A snapshot-bound, policy-bounded page of unique Evidence candidates constrained by both candidate count and estimated model tokens. After safe scope filtering and duplicate collapse, deterministic lexical ordering is simply diversified across Sources and Source roles so one document or copy cluster cannot monopolize the page; rank controls inspection order rather than Evidence quality or truth. Truncation declares omitted content, estimated size, and the exact refine, continue, or read action; its opaque continuation cursor cannot be reused after the underlying index, scope, or policy changes. Numeric limits belong to the versioned Evidence search policy and are calibrated on evaluation rather than treated as scientific constants.
+A snapshot-bound, policy-bounded page of unique Evidence candidates constrained by both candidate count and estimated model tokens. Within mechanically authorized Source and Parse scope, lineage duplicates collapse and deterministic ordering is diversified across Sources and Source roles so one document or copy cluster cannot monopolize the page; semantic metadata may affect rank but never visibility or Evidence truth. Truncation declares omissions and an exact continuation action, while numeric limits belong to the versioned Evidence-search policy and are calibrated by evaluation rather than treated as scientific constants.
 _Avoid_: Unbounded results, rank cutoff as evidence, agent-chosen raw character budget
 
 **Evidence retrieval condition**:
@@ -65,7 +93,7 @@ A deterministic report view binding an Evidence claim's exact Canonical evidence
 _Avoid_: Visual candidate, Visual transcription, screenshot evidence
 
 **Evidence claim**:
-An immutable, typed assertion linked to an exact span selected from a Canonical evidence unit and its source provenance; deterministic code materializes the quoted text rather than accepting agent-authored quotation text. It records whether its basis is canonical text or a Visual transcription, and its status must never imply stronger validation than it received.
+An immutable, typed assertion linked to an exact reviewed span selected from a Canonical evidence unit and its source provenance, or to a qualifying Visual transcription. Deterministic code materializes canonical quoted text and validates mechanical provenance, bounds, custody, authorization, review completeness, and dependency revisions rather than accepting agent-authored quotation text or classifier labels as semantic authority.
 _Avoid_: Retrieval hit, evidence snippet
 
 **Derived fact**:
@@ -81,15 +109,15 @@ The complete account of how every accepted item in an Evidence Bundle was consid
 _Avoid_: Context summary, model memory
 
 **Search coverage receipt**:
-An immutable account of the versioned minimum search protocol performed for one signaling question, including the exact ResultSpec, Source inventory, Parses, index, Guidance, rules, and Evidence search policy used; required expected-evidence and contradiction/follow-up passes; Source roles and visual regions covered or unavailable; queries, applied scope, pages traversed, unique-result dispositions, retained-candidate dispositions, conflicts, stopping reason, and operational limits. It establishes procedural search adequacy rather than proving that absent Evidence does not exist; truncation, zero hits, or an exhausted ceiling alone cannot establish a No-information basis, and deterministic dependency rules decide when the receipt becomes stale.
+An immutable account of the versioned minimum search protocol performed for one signaling question, including the exact ResultSpec, Source inventory, Parses, index, Guidance, rules, and Evidence search policy used; required passes; Source roles and visual regions covered or unavailable; queries, every traversed page and unique returned candidate's lightweight disposition, retained-candidate reviews, conflicts, stopping reason, and operational limits. It establishes procedural search adequacy rather than proving absence; untraversed continuations are incomplete coverage, while truncation, zero hits, or an exhausted ceiling alone cannot establish a No-information basis.
 _Avoid_: Search confidence, retrieval log
 
 **Search query**:
-A structured, attributable expression of a plain-language evidence need with optional exact phrases or lexical terms, search purpose, and safe Source-role, zone, or section refinements. The active Preparation work item binds the default Trial, Result, Domain, signaling question, Guidance seeds, and associated readable Sources; bibliography entries, tables of contents, page furniture, extraction artifacts, and units classified as concerning another Trial are excluded from ordinary evidence search. Introduction and Discussion remain labeled and searchable but may be down-ranked for conduct claims. Deterministic code compiles engine syntax and suggests refinements, so agents neither provide executable search expressions, ranking weights, raw token limits, nor repeated safe-scope boilerplate.
+A structured, attributable expression of a plain-language evidence need with optional exact phrases or lexical terms, search purpose, and Source or page refinements. One generalized search/read contract serves all purposes; purpose selects protocol obligations, ranking, diversification, and coverage accounting but never visibility, while Source, Trial, registry, and Result discovery or revision remain outside evidence navigation.
 _Avoid_: Raw FTS expression, prompt
 
 **Search result disposition**:
-The attributable lightweight account of whether a unique canonical unit returned by an accepted Search query was inspected and found irrelevant, retained for substantive Evidence-candidate disposition, or already covered as a duplicate. It avoids citation-level work for irrelevant hits while ensuring complete paginated traversal accounts for every unique returned unit.
+The attributable lightweight classification of each unique Evidence candidate actually returned on traversed Search-result pages as irrelevant, retained, or duplicate. Irrelevant requires a compact reason code and may include a short rationale; duplicate requires a retained-candidate target, while ambiguity requires retention and an Evidence read view rather than preview-only pruning.
 _Avoid_: Rank cutoff, implicit omission
 
 **Trial orientation pack**:
@@ -117,7 +145,7 @@ One of the five canonical assessor-selectable answers: Yes, Probably yes, Probab
 _Avoid_: Not applicable answer, localized stored value
 
 **No-information basis**:
-The completed Search coverage receipts and adequate readable-source coverage that justify concluding that required information was not found. Missing, unreadable, unsearched, or search-limited material cannot itself establish this basis.
+The completed Search coverage receipts showing that every required pass reached its deterministic stopping condition, every returned candidate was dispositioned, every retained candidate was substantively reviewed, all potentially material unresolved or Visual-review conditions were closed, and required Sources and regions were readable and covered. Explicitly rejected bibliography or other-Trial material may contribute reviewed coverage, while missing, unreadable, unsearched, truncated, or policy-limited material produces a limitation or diagnostic outcome rather than establishing this basis.
 _Avoid_: No search hit, tool failure
 
 **Terminal evidence checkpoint**:
@@ -429,7 +457,7 @@ A portable, manifest-rooted package for checking an Assessment revision outside 
 _Avoid_: Report bundle, backup, equally verifiable thin export
 
 **Release acceptance gate**:
-An executable criterion tied to a claimed v1 behavior. Failure of a core gate blocks release, while an optional or experimental capability may degrade only when it is excluded from the completed assessment and its limitation is explicit.
+An executable criterion tied to a claimed v1 behavior. Evidence-pipeline gates require fixture-complete discovery and lineage, fail-closed freeze of projections, ambiguous fragments and unreviewed spans, deterministic stale/truncation recovery, exact dependency invalidation, and successful generalized-workflow replay of CHAARTED PFS; efficiency uses versioned fixture budgets rather than a universal scientific threshold.
 _Avoid_: Aspirational requirement, documented known failure
 
 **Private release evaluation**:
