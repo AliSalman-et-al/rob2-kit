@@ -13,6 +13,7 @@ from rob2_kit.application.contracts import (
     ReopenResultRequest,
     ReprioritizeResultsRequest,
     RunOperation,
+    RunProposalSelection,
     RunStatusRequest,
     SourceClassificationInput,
     SubmitRunProposalRequest,
@@ -87,12 +88,28 @@ def _confirmed_multi_result_run(root: Path) -> tuple[RunEngine, str, tuple[str, 
     engine = RunEngine(parser=StubParser())
     prepared = engine.prepare_run(PrepareRunRequest(project_root=root, authorized=True))
     assert prepared.proposal is not None
+    # Neither Trial's sole Result candidate is auto-bound by cardinality
+    # alone (#119); each pairing needs its own explicit accepted selection.
     submitted = engine.submit_run_proposal(
         SubmitRunProposalRequest(
             contract_version="1.0.0",
             run_id=prepared.run_id,
             proposal_token=prepared.proposal.proposal_token,
             idempotency_key="idempotency:work-order-proposal",
+            selections=(
+                RunProposalSelection(
+                    trial_id="trial:trial-a",
+                    outcome_target_id="outcome-target:mortality",
+                    result_id=result_ids[0],
+                    accepted=True,
+                ),
+                RunProposalSelection(
+                    trial_id="trial:trial-b",
+                    outcome_target_id="outcome-target:mortality",
+                    result_id=result_ids[1],
+                    accepted=True,
+                ),
+            ),
         )
     )
     engine.confirm_run_definition(
@@ -344,6 +361,20 @@ def test_result_control_key_reuse_from_a_retired_run_is_structured_for_every_con
             run_id=replacement.run_id,
             proposal_token=replacement.proposal.proposal_token,
             idempotency_key="idempotency:replacement-proposal",
+            selections=(
+                RunProposalSelection(
+                    trial_id="trial:trial-a",
+                    outcome_target_id="outcome-target:mortality",
+                    result_id=result_ids[0],
+                    accepted=True,
+                ),
+                RunProposalSelection(
+                    trial_id="trial:trial-b",
+                    outcome_target_id="outcome-target:mortality",
+                    result_id=result_ids[1],
+                    accepted=True,
+                ),
+            ),
         )
     )
     engine.confirm_run_definition(

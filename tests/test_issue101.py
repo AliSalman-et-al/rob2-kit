@@ -349,6 +349,17 @@ def test_successive_natural_language_corrections_preserve_unaffected_disposition
             correction=(
                 "Exclude trial:trial-a outcome-target:mortality because it is outside scope."
             ),
+            # The correction addresses mortality only; morbidity's sole
+            # candidate still needs its own explicit accept (#119: no
+            # candidate is ever auto-bound by cardinality alone).
+            selections=(
+                RunProposalSelection(
+                    trial_id="trial:trial-a",
+                    outcome_target_id="outcome-target:morbidity",
+                    result_id="result:morbidity",
+                    accepted=True,
+                ),
+            ),
         )
     )
     assert first.proposal is not None
@@ -488,6 +499,14 @@ def test_production_one_page_report_can_bind_an_exact_result_locator(tmp_path: P
             run_id=prepared.run_id,
             proposal_token=prepared.proposal.proposal_token,
             idempotency_key="idempotency:issue101-one-page",
+            selections=(
+                RunProposalSelection(
+                    trial_id="trial:trial-a",
+                    outcome_target_id="outcome-target:mortality",
+                    result_id="result:one-page",
+                    accepted=True,
+                ),
+            ),
         )
     )
     assert submitted.proposal is not None
@@ -510,6 +529,14 @@ def test_production_multi_page_report_requires_page_bound_locator(tmp_path: Path
                 run_id=prepared.run_id,
                 proposal_token=prepared.proposal.proposal_token,
                 idempotency_key="idempotency:issue101-unbound-provenance",
+                selections=(
+                    RunProposalSelection(
+                        trial_id="trial:trial-a",
+                        outcome_target_id="outcome-target:mortality",
+                        result_id="result:unbound-provenance",
+                        accepted=True,
+                    ),
+                ),
             )
         )
 

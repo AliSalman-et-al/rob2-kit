@@ -155,6 +155,10 @@ def _prepare_confirm(
     engine = RunEngine(parser=parser or StubParser())
     prepared = engine.prepare_run(PrepareRunRequest(project_root=root, authorized=True))
     assert prepared.proposal is not None
+    # A Result candidate is never auto-bound by cardinality alone (#119): even
+    # a sole "resolved" candidate needs an explicit accepted selection, so
+    # this helper always emits one rather than relying on any implicit
+    # single-candidate fallback.
     selections = tuple(
         RunProposalSelection(
             trial_id=candidate.trial_id,
@@ -164,7 +168,7 @@ def _prepare_confirm(
             accepted=True,
         )
         for candidate in prepared.proposal.result_candidates
-        if candidate.status == "needs_input" and candidate.result_id is not None
+        if candidate.status in ("needs_input", "resolved") and candidate.result_id is not None
     )
     submitted = engine.submit_run_proposal(
         SubmitRunProposalRequest(

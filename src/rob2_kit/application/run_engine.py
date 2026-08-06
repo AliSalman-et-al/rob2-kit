@@ -2945,6 +2945,18 @@ class RunEngine:
             observed_at=now,
             idempotency_validated=True,
         )
+        # Closes #113: a confirmed Result was never reflected back into the
+        # evidence index, so canonical units stayed permanently unresolved
+        # for Trial/Result applicability. Rebuild against every ResultSpec
+        # resolved so far for this Run, matching the same synchronous,
+        # full-rebuild call already made from prepare_run, submit_run_proposal,
+        # and reconciliation.
+        if not committed.duplicate:
+            historical_result_specs = self._historical_result_specs(ledger, request.run_id)
+            reindexed_initialization = proposal.initialization.model_copy(
+                update={"result_specs": tuple(historical_result_specs.values())}
+            )
+            self._index_initial_evidence(self._required_root(), reindexed_initialization)
         projection = self._projection(ledger, request.run_id)
         return SubmitResultResolutionResponse(
             operation_id=committed.operation_id,

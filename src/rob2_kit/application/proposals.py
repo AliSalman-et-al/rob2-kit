@@ -361,9 +361,6 @@ def _pairing_for_target(
         proposal,
         pair_candidates if target.time_point is None else (),
     )
-    resolved_candidates = tuple(
-        item for item in pair_candidates if item.status == "resolved" and item.result_id
-    )
     if removed:
         disposition = "removed"
         result_id = None
@@ -380,13 +377,11 @@ def _pairing_for_target(
             if preferred_candidate is not None and preferred_candidate.status == "resolved"
             else None
         )
-        automatic_result_id = (
-            preferred_result_id if len(resolved_candidates) == 1 else None
-        )
+        # A single Result candidate is never auto-bound: applicability requires
+        # an explicit accepted selection even when it is the only candidate.
         result_id = next(
             (item.result_id for item in accepted if item.result_id is not None),
-            automatic_result_id
-            or (resolved_candidates[0].result_id if len(resolved_candidates) == 1 else None),
+            None,
         )
         disposition = "selected" if result_id is not None else "unresolved"
         reason = None

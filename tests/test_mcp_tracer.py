@@ -18,6 +18,7 @@ from rob2_kit.application.contracts import (
     ConfirmRunDefinitionRequest,
     ContinueRunRequest,
     PrepareRunRequest,
+    RunProposalSelection,
     RunStatusRequest,
     SearchEvidenceRequest,
     SubmitDomainAnswersRequest,
@@ -324,6 +325,16 @@ async def _prepare_and_confirm(session: ClientSession, root: Path) -> str:
                 "run_id": prepared["run_id"],
                 "proposal_token": proposal["proposal_token"],
                 "contract_version": "1.0.0",
+                # The sole Result candidate is never auto-bound by cardinality
+                # alone (#119); it still needs an explicit accepted selection.
+                "selections": [
+                    {
+                        "trial_id": "trial:trial-a",
+                        "outcome_target_id": "outcome-target:mortality",
+                        "result_id": "result:trial-a-mortality",
+                        "accepted": True,
+                    }
+                ],
             },
         )
     ).structured_content
@@ -669,6 +680,22 @@ def test_report_history_preserves_an_earlier_immutable_bundle(tmp_path: Path) ->
             proposal_token=prepared.proposal.proposal_token,
             idempotency_key="idempotency:history-proposal",
             contract_version="1.0.0",
+            # Neither sole Result candidate is auto-bound by cardinality
+            # alone (#119); each pairing needs its own explicit selection.
+            selections=(
+                RunProposalSelection(
+                    trial_id="trial:trial-a",
+                    outcome_target_id="outcome-target:mortality",
+                    result_id="result:trial-a-mortality",
+                    accepted=True,
+                ),
+                RunProposalSelection(
+                    trial_id="trial:trial-a",
+                    outcome_target_id="outcome-target:morbidity",
+                    result_id="result:trial-a-morbidity",
+                    accepted=True,
+                ),
+            ),
         )
     )
     engine.confirm_run_definition(
