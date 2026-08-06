@@ -120,6 +120,14 @@ _Avoid_: Not applicable answer, localized stored value
 The completed Search coverage receipts and adequate readable-source coverage that justify concluding that required information was not found. Missing, unreadable, unsearched, or search-limited material cannot itself establish this basis.
 _Avoid_: No search hit, tool failure
 
+**Terminal evidence checkpoint**:
+The deterministic publication gate that recomputes the active signaling questions from the latest committed answers and bound Logic pack, then requires each to have either a frozen, question-scoped supporting or contradicting Evidence claim, a qualifying Visual transcription with one of those roles, or an engine-verified complete No-information basis. Contextual items, Derived facts without their underlying claims, receipts, and limitation strings do not independently satisfy the gate; any unsupported active answer makes the Result diagnostic-ready without Domain or Overall judgments, while inactive questions and evidence-backed disclosed limitations do not block publication.
+_Avoid_: Bundle-exists check, limitation-string check, report-time guess
+
+**Evidence insufficiency reason**:
+A stable typed explanation for why an active signaling-question answer failed evidence validation, paired with human-readable scoped details. It distinguishes missing qualifying Evidence, an invalid No-information basis, a stale Evidence dependency, and Evidence that cannot be deterministically resolved into its claimed source content; failure to render an otherwise valid report asset is not Evidence insufficiency.
+_Avoid_: Free-text limitation, report-rendering error, hidden validation failure
+
 **Logic element ID**:
 The permanent semantic identity of a signaling question, branch, rule, judgment table, or required assessor input. Changes to wording or display labels preserve the identity, while changes to meaning, applicability, or decision behavior require a new identity.
 _Avoid_: Official question number, wording-derived ID
@@ -307,6 +315,10 @@ _Avoid_: Dashboard, project workspace, run controller
 **Result report**:
 The static human-audit projection of one complete Assessment revision, organized by RoB 2 domain and signaling question and exposing answers, rationales, supporting and contradicting Evidence claims, exact source phrases, Visual citations, Decision traces, coverage, and limitations through progressive disclosure. It is read-only and carries no correction, override, review, or sign-off state.
 _Avoid_: Review case, editable assessment, paper-level report
+
+**Diagnostic report**:
+The static human-audit projection of a Result that could not produce a valid Assessment, listing every scoped blocker and any submitted signaling-question answers and rationales as diagnostic inputs. It contains no Domain or Overall judgments and never presents those inputs as a completed assessment.
+_Avoid_: Partial Result report, provisional judgment, failed HTML report
 
 **Visual-inspection gate**:
 A condition indicating that a signaling question depends on a table, figure, spatial layout, or suspect text extraction and therefore requires inspection of a rendered page or crop. Visual inspection is selective because it consumes substantially more model context than verified text.

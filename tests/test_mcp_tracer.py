@@ -4,8 +4,10 @@ from __future__ import annotations
 
 import hashlib
 import json
+import sqlite3
 import subprocess
 from pathlib import Path
+from types import SimpleNamespace
 
 import anyio
 import yaml
@@ -17,13 +19,24 @@ from rob2_kit.application.contracts import (
     ContinueRunRequest,
     PrepareRunRequest,
     RunStatusRequest,
+    SearchEvidenceRequest,
     SubmitDomainAnswersRequest,
     SubmitDomainEvidenceRequest,
     SubmitRunProposalRequest,
     SubmitSourceClassificationRequest,
+    WorkToken,
 )
 from rob2_kit.application.run_engine import RunEngine
-from rob2_kit.domain.revisions import Actor, ActorKind
+from rob2_kit.domain.canonical import canonical_hash
+from rob2_kit.domain.evidence import VisualTranscription
+from rob2_kit.domain.revisions import Actor, ActorKind, Dependency, RecordReference
+from rob2_kit.evidence.search import SearchQuery
+from rob2_kit.evidence.workflow import (
+    SearchCoverageReceipt,
+    SearchPassKind,
+    SourceSearchCoverage,
+    SourceSearchState,
+)
 from rob2_kit.interfaces.mcp.server import CANONICAL_TOOL_NAMES, registered_tool_names
 from rob2_kit.reports.archives import verify_archive
 from rob2_kit.storage import ArtifactStore, WorkflowLedger
@@ -62,11 +75,20 @@ def _low_answers() -> dict[str, str]:
         "sq:randomization:baseline-imbalance": "no",
         "sq:deviations:participants-aware": "no",
         "sq:deviations:personnel-aware": "no",
+        "sq:deviations:context-deviations": "no",
+        "sq:deviations:affected-outcome": "no",
+        "sq:deviations:balanced": "yes",
         "sq:deviations:appropriate-analysis": "yes",
+        "sq:deviations:substantial-impact": "no",
         "sq:missing:data-available": "yes",
+        "sq:missing:evidence-unbiased": "yes",
+        "sq:missing:true-value-dependent": "no",
+        "sq:missing:likely-dependent": "no",
         "sq:measurement:method-inappropriate": "no",
         "sq:measurement:differential": "no",
         "sq:measurement:assessor-aware": "no",
+        "sq:measurement:influence-possible": "no",
+        "sq:measurement:influence-likely": "no",
         "sq:selection:prespecified-analysis": "yes",
         "sq:selection:multiple-measurements": "no",
         "sq:selection:multiple-analyses": "no",
@@ -82,13 +104,24 @@ DOMAINS = {
     "domain:deviations": (
         "sq:deviations:participants-aware",
         "sq:deviations:personnel-aware",
+        "sq:deviations:context-deviations",
+        "sq:deviations:affected-outcome",
+        "sq:deviations:balanced",
         "sq:deviations:appropriate-analysis",
+        "sq:deviations:substantial-impact",
     ),
-    "domain:missing": ("sq:missing:data-available",),
+    "domain:missing": (
+        "sq:missing:data-available",
+        "sq:missing:evidence-unbiased",
+        "sq:missing:true-value-dependent",
+        "sq:missing:likely-dependent",
+    ),
     "domain:measurement": (
         "sq:measurement:method-inappropriate",
         "sq:measurement:differential",
         "sq:measurement:assessor-aware",
+        "sq:measurement:influence-possible",
+        "sq:measurement:influence-likely",
     ),
     "domain:selection": (
         "sq:selection:prespecified-analysis",
@@ -96,6 +129,170 @@ DOMAINS = {
         "sq:selection:multiple-analyses",
     ),
 }
+
+_FIXTURE_ACTOR = Actor(
+    kind=ActorKind.HUMAN,
+    actor_id="actor:mcp-tracer-fixture",
+    display_name="MCP tracer fixture",
+)
+
+
+def _active_answer_ids(domain_id: str) -> tuple[str, ...]:
+    """Return the fixture's active signaling questions under `_low_answers()`."""
+
+    return {
+        "domain:randomization": DOMAINS["domain:randomization"],
+        "domain:deviations": (
+            "sq:deviations:participants-aware",
+            "sq:deviations:personnel-aware",
+            "sq:deviations:appropriate-analysis",
+        ),
+        "domain:missing": ("sq:missing:data-available",),
+        "domain:measurement": (
+            "sq:measurement:method-inappropriate",
+            "sq:measurement:differential",
+            "sq:measurement:assessor-aware",
+        ),
+        "domain:selection": DOMAINS["domain:selection"],
+    }[domain_id]
+
+
+def _synthetic_visual_ref(engine: RunEngine, run_id: str, result_id: str) -> RecordReference:
+    """Freeze one source-scoped visual citation for the synthetic tracer report."""
+
+    ledger = engine._bound_ledger(run_id)
+    proposal = engine._latest_proposal(ledger, run_id)
+    result_spec = engine._result_spec_for(ledger, run_id, result_id)
+    assert result_spec is not None
+    trial = next(
+        item
+        for item in proposal.initialization.trials
+        if item.trial_id == result_spec.result.trial_id
+    )
+    inventory = trial.inventory
+    assert inventory is not None
+    source = inventory.sources[0]
+    suffix = engine._digest(f"{run_id}|{source.source_id}|{source.artifact_hash}")
+    source_ref = engine._commit_frozen_artifact(
+        ledger,
+        scope=result_id,
+        operation="operation:test-mcp-visual-source-frozen",
+        operation_key=f"idempotency:test-mcp-visual-source:{source.source_id}",
+        entity_id=source.source_id,
+        revision_id=f"revision:mcp-evidence-source-{suffix}",
+        artifact=source,
+        actor=_FIXTURE_ACTOR,
+    )
+    transcription = VisualTranscription(
+        entity_id=f"visual-transcription:{suffix}",
+        revision_id=f"revision:mcp-visual-transcription-{suffix}",
+        dependencies=(Dependency(**source_ref.model_dump(), role="dependency:source"),),
+        actor=_FIXTURE_ACTOR,
+        observed_at=engine._now(),
+        source=source_ref,
+        page=1,
+        region=(1.0, 1.0, 20.0, 20.0),
+        render_mode="crop",
+        dpi=144,
+        transcription="Synthetic visual evidence supports the scoped answer.",
+    )
+    return engine._commit_frozen_artifact(
+        ledger,
+        scope=result_id,
+        operation="operation:test-mcp-visual-transcription-frozen",
+        operation_key=f"idempotency:test-mcp-visual-transcription:{suffix}",
+        entity_id=transcription.entity_id,
+        revision_id=transcription.revision_id,
+        artifact=transcription,
+        actor=_FIXTURE_ACTOR,
+        dependencies=transcription.dependencies,
+    )
+
+
+def _complete_empty_receipts(
+    engine: RunEngine, run_id: str, work: object, question_ids: tuple[str, ...]
+) -> tuple[SearchCoverageReceipt, ...]:
+    """Create complete three-pass receipts for visual-only fixture evidence."""
+
+    token = getattr(work, "work_token")
+    result_id = getattr(work, "result_id")
+    ledger = engine._bound_ledger(run_id)
+    result_spec = engine._result_spec_for(ledger, run_id, result_id)
+    assert result_spec is not None
+    proposal = engine._latest_proposal(ledger, run_id)
+    trial = next(item for item in proposal.initialization.trials if item.trial_id == token.trial_id)
+    inventory = trial.inventory
+    assert inventory is not None
+    result_ref = RecordReference(
+        entity_id=result_spec.entity_id,
+        revision_id=result_spec.revision_id,
+        content_hash=canonical_hash(result_spec),
+    )
+    inventory_suffix = engine._digest(
+        f"{run_id}|{result_id}|{result_ref.content_hash}|source-inventory"
+    )
+    receipts: list[SearchCoverageReceipt] = []
+    for question_id in question_ids:
+        slug = question_id.removeprefix("sq:").replace(":", "-")
+        queries = (
+            (SearchQuery(terms=(f"absent-{slug}",)), SearchPassKind.GUIDANCE_SEED, f"seed:{slug}"),
+            (SearchQuery(terms=(f"followup-{slug}",)), SearchPassKind.TRIAL_FOLLOW_UP, None),
+            (SearchQuery(terms=(f"contradiction-{slug}",)), SearchPassKind.CONTRADICTION, None),
+        )
+        responses = tuple(
+            engine.search_evidence(
+                SearchEvidenceRequest(
+                    run_id=run_id, work_token=token, result_id=result_id, sq_id=question_id,
+                    query=query, pass_kind=pass_kind, seed_family=seed_family,
+                )
+            )
+            for query, pass_kind, seed_family in queries
+        )
+        receipt = SearchCoverageReceipt(
+            receipt_id=f"coverage:mcp-synthetic-{slug}", sq_id=question_id,
+            snapshot_hash=responses[0].page.snapshot_hash, policy_id=responses[0].page.policy_id,
+            policy_hash=responses[0].page.policy_hash, result_spec=result_ref,
+            source_inventory=RecordReference(
+                entity_id=f"source-inventory:{result_id.removeprefix('result:')}",
+                revision_id=f"revision:source-inventory-{inventory_suffix}",
+                content_hash=canonical_hash(inventory),
+            ),
+            parse_record_hashes=tuple(
+                sorted(
+                    {
+                        parse.output_hash
+                        for source in inventory.sources
+                        for parse in source.parse_records
+                    }
+                )
+            ),
+            guidance_release_id="guidance:rob2-2019.1", required_seed_families=(f"seed:{slug}",),
+            completed_seed_families=(f"seed:{slug}",),
+            completed_passes=tuple(pass_kind for _query, pass_kind, _seed in queries),
+            executed_queries=tuple(response.executed_query for response in responses),
+            returned_unit_ids=(),
+            result_dispositions=(),
+            sources=tuple(
+                SourceSearchCoverage(
+                    source_id=source.source_id,
+                    state=SourceSearchState.SEARCHED,
+                    sufficiently_readable=True,
+                    artifact_hash=source.artifact_hash,
+                )
+                for source in inventory.sources
+            ),
+            inventory_source_ids=tuple(source.source_id for source in inventory.sources),
+            traversal_complete=True, interrupted=False,
+        )
+        proof = receipt.model_dump(mode="json")
+        proof["recorder_proof"] = None
+        receipts.append(
+            SearchCoverageReceipt.model_validate(
+                receipt.model_dump(mode="json")
+                | {"recorder_proof": canonical_hash(proof)}
+            )
+        )
+    return tuple(receipts)
 
 
 async def _session(root: Path, wheel: Path):
@@ -147,49 +344,46 @@ async def _prepare_and_confirm(session: ClientSession, root: Path) -> str:
     return prepared["run_id"]
 
 
-async def _finish_domains(session: ClientSession, run_id: str) -> None:
+async def _finish_domains(session: ClientSession, root: Path, run_id: str) -> None:
     answers = _low_answers()
+    fixture_engine = RunEngine()
+    fixture_engine._root = root
+    with sqlite3.connect(root / ".rob2" / "ledger.sqlite3") as connection:
+        owner_row = connection.execute(
+            "SELECT owner_id FROM writer_lease WHERE singleton = 1"
+        ).fetchone()
+    assert owner_row is not None
+    fixture_engine._owner_id = owner_row[0]
+    visual_ref: RecordReference | None = None
     for index, (domain_id, question_ids) in enumerate(DOMAINS.items()):
         work = (await session.call_tool("continue_run", {"run_id": run_id})).structured_content
         assert work is not None
-        passages = []
-        if index == 0:
-            search = await session.call_tool(
-                "search_evidence",
-                {
-                    "run_id": run_id,
-                    "work_token": work["work_item"]["work_token"],
-                    "sq_id": question_ids[0],
-                    "result_id": "result:trial-a-mortality",
-                    "query": {"terms": ["Trial"]},
-                },
-            )
-            assert search.structured_content is not None
-            hits = search.structured_content["page"]["hits"]
-            if hits:
-                hit = hits[0]
-                unit = hit["unit"]
-                passages = [
-                    {
-                        "unit_id": unit["unit_id"],
-                        "span_start": hit["projection"]["start"],
-                        "span_end": hit["projection"]["end"],
-                        "claim_type": "claim-type:trial-report",
-                        "question_ids": list(question_ids),
-                    }
-                ]
-            else:
-                assert search.structured_content["page"]["condition"] == "excluded_only"
-                assert "retrieval_scope_excluded_matches" in search.structured_content[
-                    "page"
-                ]["scope_warnings"]
+        fixture_work = SimpleNamespace(
+            work_token=WorkToken.model_validate(work["work_item"]["work_token"]),
+            result_id=work["work_item"]["result_id"],
+        )
+        if visual_ref is None:
+            visual_ref = _synthetic_visual_ref(fixture_engine, run_id, fixture_work.result_id)
+            fixture_engine._visual_citations = lambda *_args: ()
         evidence_payload = {
             "run_id": run_id,
             "work_token": work["work_item"]["work_token"],
             "contract_version": "1.0.0",
             "result_id": "result:trial-a-mortality",
             "domain_id": domain_id,
-            "passages": passages,
+            "items": [visual_ref.model_dump(mode="json")],
+            "evidence_by_question": {
+                question_id: [visual_ref.model_dump(mode="json")] for question_id in question_ids
+            },
+            "candidate_dispositions": [
+                {"item_id": visual_ref.entity_id, "disposition": "supporting"}
+            ],
+            "coverage_receipts": [
+                receipt.model_dump(mode="json")
+                for receipt in _complete_empty_receipts(
+                    fixture_engine, run_id, fixture_work, question_ids
+                )
+            ],
         }
         if index == 0:
             evidence_payload.update(
@@ -213,7 +407,7 @@ async def _finish_domains(session: ClientSession, run_id: str) -> None:
                 "answer": answers[question_id],
                 "rationale": "Supported by the frozen synthetic evidence.",
             }
-            for question_id in question_ids
+            for question_id in _active_answer_ids(domain_id)
         ]
         submitted = await session.call_tool(
             "submit_domain_answers",
@@ -308,7 +502,7 @@ def test_five_domain_journey_survives_stdio_restart_and_publishes_report(
                 ).structured_content
                 assert rebound is not None
                 assert rebound["run_id"] == run_id
-                await _finish_domains(session, run_id)
+                await _finish_domains(session, tmp_path, run_id)
                 # The first terminal continuation must leave the run index
                 # synchronized with the committed readiness event and the
                 # already-visible report bundle.  A status call must not be
@@ -506,11 +700,15 @@ def test_report_history_preserves_an_earlier_immutable_bundle(tmp_path: Path) ->
 
     def finish_result(result_id: str, suffix: str) -> None:
         answers = _low_answers()
+        visual_ref: RecordReference | None = None
         for index, (domain_id, question_ids) in enumerate(DOMAINS.items()):
             evidence_work = engine.continue_run(
                 ContinueRunRequest(run_id=prepared.run_id)
             ).work_item
             assert evidence_work is not None
+            if visual_ref is None:
+                visual_ref = _synthetic_visual_ref(engine, prepared.run_id, result_id)
+                engine._visual_citations = lambda *_args: ()
             engine.submit_domain_evidence(
                 SubmitDomainEvidenceRequest.model_validate(
                     {
@@ -520,6 +718,20 @@ def test_report_history_preserves_an_earlier_immutable_bundle(tmp_path: Path) ->
                         "result_id": result_id,
                         "domain_id": domain_id,
                         "contract_version": "1.0.0",
+                        "items": [visual_ref.model_dump(mode="json")],
+                        "evidence_by_question": {
+                            question_id: [visual_ref.model_dump(mode="json")]
+                            for question_id in question_ids
+                        },
+                        "candidate_dispositions": [
+                            {"item_id": visual_ref.entity_id, "disposition": "supporting"}
+                        ],
+                        "coverage_receipts": [
+                            receipt.model_dump(mode="json")
+                            for receipt in _complete_empty_receipts(
+                                engine, prepared.run_id, evidence_work, question_ids
+                            )
+                        ],
                     }
                 )
             )
@@ -539,7 +751,7 @@ def test_report_history_preserves_an_earlier_immutable_bundle(tmp_path: Path) ->
                                 "answer": answers[question_id],
                                 "rationale": "Frozen synthetic evidence.",
                             }
-                            for question_id in question_ids
+                            for question_id in _active_answer_ids(domain_id)
                         ],
                         "contract_version": "1.0.0",
                     }

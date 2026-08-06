@@ -30,9 +30,9 @@ from rob2_kit.application.contracts import (
 from rob2_kit.application.lifecycle import ResultState, RunState
 from rob2_kit.application.run_engine import RunEngine
 from rob2_kit.domain.canonical import canonical_hash
-from rob2_kit.domain.evidence import EvidenceClaim
+from rob2_kit.domain.evidence import EvidenceClaim, VisualTranscription
 from rob2_kit.domain.results import Estimate, Result
-from rob2_kit.domain.revisions import Actor, ActorKind, RecordReference
+from rob2_kit.domain.revisions import Actor, ActorKind, Dependency, RecordReference
 from rob2_kit.evidence.search import EvidenceScope, EvidenceSearchIndex, SearchQuery
 from rob2_kit.evidence.workflow import (
     SearchCoverageReceipt,
@@ -43,7 +43,7 @@ from rob2_kit.evidence.workflow import (
     SourceSearchState,
 )
 from rob2_kit.ingestion.project import PageExtraction, PageTextItem, ParserResult
-from tests.test_mcp_tracer import DOMAINS, _low_answers
+from tests.test_mcp_tracer import DOMAINS, _active_answer_ids, _low_answers
 from tests.test_run_proposal import StubParser
 
 OPERATOR = Actor(
@@ -319,6 +319,160 @@ def _complete_passage_receipts(
     return tuple(receipts)
 
 
+def _complete_empty_receipts(
+    engine: RunEngine,
+    run_id: str,
+    work: object,
+    *,
+    domain_id: str,
+    question_ids: tuple[str, ...],
+) -> tuple[SearchCoverageReceipt, ...]:
+    """Build complete, zero-hit receipts for synthetic visual fixtures."""
+
+    token = getattr(work, "work_token")
+    result_id = getattr(work, "result_id")
+    ledger = engine._bound_ledger(run_id)
+    result_spec = engine._result_spec_for(ledger, run_id, result_id)
+    assert result_spec is not None
+    proposal = engine._latest_proposal(ledger, run_id)
+    trial = next(item for item in proposal.initialization.trials if item.trial_id == token.trial_id)
+    inventory = trial.inventory
+    assert inventory is not None
+    result_ref = RecordReference(
+        entity_id=result_spec.entity_id,
+        revision_id=result_spec.revision_id,
+        content_hash=canonical_hash(result_spec),
+    )
+    inventory_suffix = engine._digest(
+        f"{run_id}|{result_id}|{result_ref.content_hash}|source-inventory"
+    )
+    receipts: list[SearchCoverageReceipt] = []
+    for question_id in question_ids:
+        slug = question_id.removeprefix("sq:").replace(":", "-")
+        queries = (
+            (SearchQuery(terms=(f"absent-{slug}",)), SearchPassKind.GUIDANCE_SEED, f"seed:{slug}"),
+            (SearchQuery(terms=(f"followup-{slug}",)), SearchPassKind.TRIAL_FOLLOW_UP, None),
+            (SearchQuery(terms=(f"contradiction-{slug}",)), SearchPassKind.CONTRADICTION, None),
+        )
+        responses = tuple(
+            engine.search_evidence(
+                SearchEvidenceRequest(
+                    run_id=run_id,
+                    work_token=token,
+                    result_id=result_id,
+                    sq_id=question_id,
+                    query=query,
+                    pass_kind=pass_kind,
+                    seed_family=seed_family,
+                )
+            )
+            for query, pass_kind, seed_family in queries
+        )
+        receipt = SearchCoverageReceipt(
+            receipt_id=f"coverage:synthetic-{slug}",
+            sq_id=question_id,
+            snapshot_hash=responses[0].page.snapshot_hash,
+            policy_id=responses[0].page.policy_id,
+            policy_hash=responses[0].page.policy_hash,
+            result_spec=result_ref,
+            source_inventory=RecordReference(
+                entity_id=f"source-inventory:{result_id.removeprefix('result:')}",
+                revision_id=f"revision:source-inventory-{inventory_suffix}",
+                content_hash=canonical_hash(inventory),
+            ),
+            parse_record_hashes=tuple(
+                sorted(
+                    parse.output_hash
+                    for source in inventory.sources
+                    for parse in source.parse_records
+                )
+            ),
+            guidance_release_id="guidance:rob2-2019.1",
+            required_seed_families=(f"seed:{slug}",),
+            completed_seed_families=(f"seed:{slug}",),
+            completed_passes=tuple(pass_kind for _query, pass_kind, _seed in queries),
+            executed_queries=tuple(response.executed_query for response in responses),
+            returned_unit_ids=(),
+            result_dispositions=(),
+            sources=tuple(
+                SourceSearchCoverage(
+                    source_id=source.source_id,
+                    state=SourceSearchState.SEARCHED,
+                    sufficiently_readable=True,
+                    artifact_hash=source.artifact_hash,
+                )
+                for source in inventory.sources
+            ),
+            inventory_source_ids=tuple(source.source_id for source in inventory.sources),
+            traversal_complete=True,
+            interrupted=False,
+        )
+        proof = receipt.model_dump(mode="json")
+        proof["recorder_proof"] = None
+        receipts.append(
+            SearchCoverageReceipt.model_validate(
+                receipt.model_dump(mode="json") | {"recorder_proof": canonical_hash(proof)}
+            )
+        )
+    return tuple(receipts)
+
+
+def _synthetic_visual_ref(engine: RunEngine, run_id: str, result_id: str) -> RecordReference:
+    """Persist one scoped visual transcription for legacy synthetic journeys."""
+
+    ledger = engine._bound_ledger(run_id)
+    proposal = engine._latest_proposal(ledger, run_id)
+    result_spec = engine._result_spec_for(ledger, run_id, result_id)
+    assert result_spec is not None
+    trial = next(
+        item
+        for item in proposal.initialization.trials
+        if item.trial_id == result_spec.result.trial_id
+    )
+    inventory = trial.inventory
+    assert inventory is not None
+    source = inventory.sources[0]
+    source_suffix = engine._digest(f"{run_id}|{source.source_id}|{source.artifact_hash}")
+    source_ref = engine._commit_frozen_artifact(
+        ledger,
+        scope=result_id,
+        operation="operation:test-visual-source-frozen",
+        operation_key=f"idempotency:test-visual-source:{source_suffix}",
+        # Scope validation binds visual transcriptions to the issued source ID.
+        entity_id=source.source_id,
+        revision_id=f"revision:evidence-source-{source_suffix}",
+        artifact=source,
+        actor=OPERATOR,
+    )
+    suffix = engine._digest(
+        f"{run_id}|{result_id}|{source.source_id}|{source.artifact_hash}|synthetic-visual"
+    )
+    transcription = VisualTranscription(
+        entity_id=f"visual-transcription:{suffix}",
+        revision_id=f"revision:visual-transcription-{suffix}",
+        dependencies=(Dependency(**source_ref.model_dump(), role="dependency:source"),),
+        actor=OPERATOR,
+        observed_at=engine._now(),
+        source=source_ref,
+        page=1,
+        region=(1.0, 1.0, 20.0, 20.0),
+        render_mode="crop",
+        dpi=144,
+        transcription="Synthetic visual evidence supports the scoped answer.",
+    )
+    return engine._commit_frozen_artifact(
+        ledger,
+        scope=result_id,
+        operation="operation:test-visual-transcription-frozen",
+        operation_key=f"idempotency:test-visual-transcription:{suffix}",
+        entity_id=transcription.entity_id,
+        revision_id=transcription.revision_id,
+        artifact=transcription,
+        actor=OPERATOR,
+        dependencies=transcription.dependencies,
+    )
+
+
 def _finish_current_result(
     engine: RunEngine,
     run_id: str,
@@ -330,9 +484,24 @@ def _finish_current_result(
 ) -> dict[str, SubmitDomainAnswersRequest]:
     answer_values = answers or _low_answers()
     submissions: dict[str, SubmitDomainAnswersRequest] = {}
+    # The legacy reconciliation journeys intentionally exercise answer and
+    # report lifecycle behaviour rather than retrieval.  Freeze one scoped
+    # visual transcription plus complete search accounting at this public
+    # evidence boundary so the strict terminal checkpoint has a qualifying
+    # basis for every active question.
+    visual_ref: RecordReference | None = None
     for index, (domain_id, question_ids) in enumerate(DOMAINS.items()):
         evidence = engine.continue_run(ContinueRunRequest(run_id=run_id)).work_item
         assert evidence is not None
+        if visual_ref is None:
+            visual_ref = _synthetic_visual_ref(engine, run_id, evidence.result_id)
+            # StubParser has no screenshot implementation.  These fixtures
+            # assert lifecycle/report state, so keep the visual-only evidence
+            # citation textual and avoid coupling them to rendering support.
+            engine._visual_citations = lambda *_args: ()
+        actual_question_ids = next(
+            domain.question_ids for domain in engine._logic_pack().domains if domain.id == domain_id
+        )
         engine.submit_domain_evidence(
             SubmitDomainEvidenceRequest(
                 contract_version="1.0.0",
@@ -341,6 +510,24 @@ def _finish_current_result(
                 idempotency_key=f"idempotency:{prefix}-evidence-{index}",
                 result_id=evidence.result_id,
                 domain_id=evidence.domain_id,
+                items=(visual_ref,),
+                evidence_by_question={
+                    question_id: (visual_ref,) for question_id in actual_question_ids
+                },
+                candidate_dispositions=(
+                    {
+                        "item_id": visual_ref.entity_id,
+                        "disposition": "supporting",
+                    },
+                ),
+                coverage_receipts=_complete_empty_receipts(
+                    engine,
+                    run_id,
+                    evidence,
+                    domain_id=domain_id,
+                    question_ids=actual_question_ids,
+                ),
+                coverage_state="complete",
             )
         )
         answer = engine.continue_run(ContinueRunRequest(run_id=run_id)).work_item
@@ -358,7 +545,7 @@ def _finish_current_result(
                     "answer": answer_values[question_id],
                     "rationale": "Reconciliation fixture.",
                 }
-                for question_id in question_ids
+                for question_id in _active_answer_ids(answer.domain_id)
             ),
             assessor_inputs=(assessor_inputs_by_domain or {}).get(
                 answer.domain_id, assessor_inputs or {}

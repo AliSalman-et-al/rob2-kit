@@ -26,6 +26,23 @@ class EvidenceCoverageState(StrEnum):
     INCOMPLETE = "incomplete"
 
 
+class EvidenceInsufficiencyReason(StrEnum):
+    """Stable machine-readable reasons for a terminal evidence blocker."""
+
+    MISSING_QUALIFYING_EVIDENCE = "missing_qualifying_evidence"
+    INVALID_NO_INFORMATION_BASIS = "invalid_no_information_basis"
+    STALE_EVIDENCE_DEPENDENCY = "stale_evidence_dependency"
+    UNRESOLVABLE_EVIDENCE = "unresolvable_evidence"
+
+
+class EvidenceInsufficiency(FrozenModel):
+    """One scoped active-question evidence readiness failure."""
+
+    question_id: Identifier
+    reason: EvidenceInsufficiencyReason
+    detail: str = Field(min_length=1)
+
+
 class ConsiderationDisposition(StrEnum):
     """The attributable pre-answer disposition of one frozen evidence item."""
 

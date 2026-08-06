@@ -38,8 +38,13 @@ An adequate completed search with no relevant evidence remains `complete` and
 may support `no_information` when complete receipts establish that basis. Use
 `complete_with_limitations` only when completed work retains a material source
 or search uncertainty. Use `incomplete` only when required searching or source
-inspection could not be completed; only this state prevents an assessment
-report from being generated.
+inspection could not be completed. Coverage state alone does not determine
+report eligibility: `complete_with_limitations` remains eligible only when every
+active non-`no_information` answer has qualifying frozen supporting or
+contradicting Evidence or a qualifying Visual transcription, and a
+`no_information` answer requires an engine-verified complete basis. Any active
+answer without one of those bases produces a diagnostic report without Domain
+or Overall judgments.
 
 Use structured lexical input such as `{"terms": ["allocation"]}`. A
 `guidance_seed` pass uses a stable identifier-shaped `seed_family` label chosen

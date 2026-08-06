@@ -13,7 +13,11 @@ from pydantic import AliasChoices, ConfigDict, Field, model_validator
 from rob2_kit.application.lifecycle import ResultState, RunState
 from rob2_kit.domain.assessment import JudgmentLevel, SQAnswerCategory
 from rob2_kit.domain.canonical import canonical_hash
-from rob2_kit.domain.evidence import ConsiderationDisposition, EvidenceCoverageState
+from rob2_kit.domain.evidence import (
+    ConsiderationDisposition,
+    EvidenceCoverageState,
+    EvidenceInsufficiency,
+)
 from rob2_kit.domain.results import Estimate, Result, ResultSpecRevision
 from rob2_kit.domain.revisions import (
     Actor,
@@ -156,6 +160,7 @@ class OperationError(FrozenModel):
         "human_actor_required",
         "authorization_required",
         "material_ambiguity",
+        "evidence_insufficient",
     ]
     detail: str = Field(min_length=1)
     recovery: tuple[str, ...] = Field(min_length=1)
@@ -1153,6 +1158,7 @@ class SubmitDomainAnswersResponse(SubmissionResponse):
     answer_revisions: tuple[RecordReference, ...] = ()
     judgments: tuple[RecordReference, ...] = ()
     correction_token: WorkToken | None = None
+    evidence_insufficiencies: tuple[EvidenceInsufficiency, ...] = ()
 
 
 RUN_OPERATION_CONTRACTS: tuple[OperationContract, ...] = (
@@ -1291,6 +1297,7 @@ RUN_OPERATION_CONTRACTS: tuple[OperationContract, ...] = (
         expected_conditions=(
             WorkflowCondition.ACCEPTED,
             WorkflowCondition.RUN_COMPLETE,
+            WorkflowCondition.RUN_BLOCKED,
             WorkflowCondition.STALE,
         ),
     ),
@@ -1298,6 +1305,10 @@ RUN_OPERATION_CONTRACTS: tuple[OperationContract, ...] = (
         operation=RunOperation.CORRECT_DOMAIN_ANSWERS,
         request_type=CorrectDomainAnswersRequest,
         response_type=SubmitDomainAnswersResponse,
-        expected_conditions=(WorkflowCondition.ACCEPTED, WorkflowCondition.STALE),
+        expected_conditions=(
+            WorkflowCondition.ACCEPTED,
+            WorkflowCondition.RUN_BLOCKED,
+            WorkflowCondition.STALE,
+        ),
     ),
 )
