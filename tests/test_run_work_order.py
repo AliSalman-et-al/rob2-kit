@@ -15,9 +15,8 @@ from rob2_kit.application.contracts import (
     RunOperation,
     RunProposalSelection,
     RunStatusRequest,
-    SourceClassificationInput,
     SubmitRunProposalRequest,
-    SubmitSourceClassificationRequest,
+    SubmitSourceRoleReviewRequest,
     WithdrawResultRequest,
 )
 from rob2_kit.application.lifecycle import ResultState, RunState
@@ -88,6 +87,27 @@ def _confirmed_multi_result_run(root: Path) -> tuple[RunEngine, str, tuple[str, 
     engine = RunEngine(parser=StubParser())
     prepared = engine.prepare_run(PrepareRunRequest(project_root=root, authorized=True))
     assert prepared.proposal is not None
+    # Source-role review now resolves before the proposal (#119): every
+    # Source-role candidate needs an explicit accept before submit_run_proposal
+    # will trust any role.
+    review_work = engine.continue_run(ContinueRunRequest(run_id=prepared.run_id)).work_item
+    assert review_work is not None
+    assert review_work.operation is RunOperation.SUBMIT_SOURCE_ROLE_REVIEW
+    proposal = engine._latest_proposal(engine._bound_ledger(prepared.run_id), prepared.run_id)
+    engine.submit_source_role_review(
+        SubmitSourceRoleReviewRequest(
+            contract_version="1.0.0",
+            run_id=prepared.run_id,
+            work_token=review_work.work_token,
+            idempotency_key="idempotency:work-order-source-review",
+            selections=tuple(
+                RunProposalSelection(
+                    trial_id=candidate.trial_id, source_id=candidate.source_id, accepted=True
+                )
+                for candidate in proposal.initialization.source_role_candidates
+            ),
+        )
+    )
     # Neither Trial's sole Result candidate is auto-bound by cardinality
     # alone (#119); each pairing needs its own explicit accepted selection.
     submitted = engine.submit_run_proposal(
@@ -124,28 +144,6 @@ def _confirmed_multi_result_run(root: Path) -> tuple[RunEngine, str, tuple[str, 
     return engine, prepared.run_id, result_ids
 
 
-def _complete_shared_source_preparation(engine: RunEngine, run_id: str) -> None:
-    work = engine.continue_run(ContinueRunRequest(run_id=run_id)).work_item
-    assert work is not None
-    assert work.operation is RunOperation.SUBMIT_SOURCE_CLASSIFICATION
-    context = engine.get_work_context(
-        GetWorkContextRequest(run_id=run_id, work_token=work.work_token)
-    ).context
-    assert context is not None
-    engine.submit_source_classification(
-        SubmitSourceClassificationRequest(
-            contract_version="1.0.0",
-            run_id=run_id,
-            work_token=work.work_token,
-            idempotency_key="idempotency:shared-preparation",
-            classifications=tuple(
-                SourceClassificationInput(source_id=source.source_id, roles=source.roles)
-                for source in context.sources
-            ),
-        )
-    )
-
-
 def test_pending_results_can_be_reprioritized_without_changing_confirmed_scope(
     tmp_path: Path,
 ) -> None:
@@ -160,7 +158,6 @@ def test_pending_results_can_be_reprioritized_without_changing_confirmed_scope(
             requested_by=OPERATOR,
         )
     )
-    _complete_shared_source_preparation(engine, run_id)
     next_work = engine.continue_run(ContinueRunRequest(run_id=run_id)).work_item
 
     assert response.committed is True
@@ -355,6 +352,26 @@ def test_result_control_key_reuse_from_a_retired_run_is_structured_for_every_con
         PrepareRunRequest(project_root=tmp_path, authorized=True, start_new=True)
     )
     assert replacement.proposal is not None
+    review_work = engine.continue_run(ContinueRunRequest(run_id=replacement.run_id)).work_item
+    assert review_work is not None
+    assert review_work.operation is RunOperation.SUBMIT_SOURCE_ROLE_REVIEW
+    replacement_proposal = engine._latest_proposal(
+        engine._bound_ledger(replacement.run_id), replacement.run_id
+    )
+    engine.submit_source_role_review(
+        SubmitSourceRoleReviewRequest(
+            contract_version="1.0.0",
+            run_id=replacement.run_id,
+            work_token=review_work.work_token,
+            idempotency_key="idempotency:replacement-source-review",
+            selections=tuple(
+                RunProposalSelection(
+                    trial_id=candidate.trial_id, source_id=candidate.source_id, accepted=True
+                )
+                for candidate in replacement_proposal.initialization.source_role_candidates
+            ),
+        )
+    )
     submitted = engine.submit_run_proposal(
         SubmitRunProposalRequest(
             contract_version="1.0.0",

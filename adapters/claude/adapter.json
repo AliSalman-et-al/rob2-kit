@@ -13,14 +13,14 @@
     "search_evidence",
     "read_evidence",
     "inspect_visual_candidate",
-    "submit_source_classification",
+    "submit_source_role_review",
     "submit_result_resolution",
     "submit_domain_evidence",
     "submit_domain_answers"
   ],
   "forward_fixtures_hashes": {
     "rob2-assess": "sha256:ba79e4400550b4fe5cfcfbb8b276beb9a40c14eed67acc9e9eff3f4151b06efe",
-    "rob2-init": "sha256:6634696004ec0ee5449e5c6d125f8199da86725dbaaa9ca2b56f9a64b256232a"
+    "rob2-init": "sha256:ef9fc215240d90f8719ad1900fcb7717f789b770d735a384c955d524a3cff013"
   },
   "host": "claude",
   "integration": "mcp",

@@ -23,7 +23,7 @@ EXPECTED_OPERATIONS = (
     "search_evidence",
     "read_evidence",
     "inspect_visual_candidate",
-    "submit_source_classification",
+    "submit_source_role_review",
     "submit_result_resolution",
     "submit_domain_evidence",
     "submit_domain_answers",

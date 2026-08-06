@@ -63,8 +63,8 @@ from rob2_kit.application.contracts import (
     SubmitResultResolutionResponse,
     SubmitRunProposalRequest,
     SubmitRunProposalResponse,
-    SubmitSourceClassificationRequest,
-    SubmitSourceClassificationResponse,
+    SubmitSourceRoleReviewRequest,
+    SubmitSourceRoleReviewResponse,
     TrialContextSummary,
     VisualInspectionArguments,
     VisualInspectionPath,
@@ -1711,6 +1711,19 @@ class RunEngine:
                 integrity=self._integrity_from_error(error),
             )
         if projection.run_state is RunState.AWAITING_CONFIRMATION:
+            # Source-role review (#119) is issued here, before proposal
+            # submission, so it must be checked ahead of the usual
+            # confirmation-required response.
+            pending_work = self._next_work_item(ledger, request.run_id)
+            if pending_work is not None:
+                return self._continue_response(
+                    ledger,
+                    request.run_id,
+                    projection,
+                    RunDirective.AGENT_WORK_REQUIRED,
+                    committed=False,
+                    work_item=pending_work,
+                )
             return self._continue_response(
                 ledger,
                 request.run_id,
@@ -1888,7 +1901,7 @@ class RunEngine:
                 ),
             )
         is_global_source_work = (
-            work_item.operation is RunOperation.SUBMIT_SOURCE_CLASSIFICATION
+            work_item.operation is RunOperation.SUBMIT_SOURCE_ROLE_REVIEW
             and work_item.trial_id is None
         )
         selected_trial_ids = self._active_trial_ids(ledger, request.run_id)
@@ -1974,6 +1987,19 @@ class RunEngine:
         if projection.run_state is not RunState.AWAITING_CONFIRMATION:
             raise ValueError("a Run proposal can only be submitted before confirmation")
         proposal = self._latest_proposal(ledger, request.run_id)
+        events = self._events_for_run(ledger, request.run_id)
+        if not self._source_role_review_complete(
+            proposal, ledger, events, selected_trial_ids=None
+        ):
+            raise ValueError(
+                "Source-role review must resolve every inventory-ready source before "
+                "a Run proposal can be submitted; call submit_source_role_review first"
+            )
+        # #119: nothing here may trust _classify's raw cue. Overlay every
+        # accepted Source-role disposition onto the sources this proposal
+        # (and everything derived from it below — validate_result_sources,
+        # _preferred_candidate via proposal_pairings) reads.
+        proposal = self._apply_resolved_source_roles(proposal, ledger, request.run_id)
         translated_selections = (
             translate_correction(proposal, request.correction)
             if request.correction is not None
@@ -2669,34 +2695,34 @@ class RunEngine:
             render=render,
         )
 
-    def submit_source_classification(
-        self, request: SubmitSourceClassificationRequest
-    ) -> SubmitSourceClassificationResponse:
+    def submit_source_role_review(
+        self, request: SubmitSourceRoleReviewRequest
+    ) -> SubmitSourceRoleReviewResponse:
         bound_ledger = self._bound_ledger(request.run_id)
         existing = self._submission_retry_event(
             bound_ledger,
             request.run_id,
             request.idempotency_key,
-            {"operation:submit-source-classification"},
+            {"operation:submit-source-role-review"},
         )
         if existing is not None:
             if (
-                SubmitSourceClassificationRequest.model_validate_json(
+                SubmitSourceRoleReviewRequest.model_validate_json(
                     bound_ledger.artifacts.read(existing.output_revision_hashes[0])
                 )
                 != request
             ):
-                return SubmitSourceClassificationResponse(
+                return SubmitSourceRoleReviewResponse(
                     **self._stale_submission_kwargs(
                         StaleWorkTokenError(
                             request.run_id, self._next_work_item(bound_ledger, request.run_id)
                         ),
-                        RunOperation.SUBMIT_SOURCE_CLASSIFICATION,
+                        RunOperation.SUBMIT_SOURCE_ROLE_REVIEW,
                         bound_ledger,
                     )
                 )
             projection = self._projection(bound_ledger, request.run_id)
-            return SubmitSourceClassificationResponse(
+            return SubmitSourceRoleReviewResponse(
                 operation_id=existing.operation_id,
                 ledger_cursor=f"ledger:{len(bound_ledger.events())}",
                 affected_scope=(request.run_id,),
@@ -2710,45 +2736,50 @@ class RunEngine:
             ledger = self._submission_ledger(
                 request.run_id,
                 request.work_token,
-                RunOperation.SUBMIT_SOURCE_CLASSIFICATION,
+                RunOperation.SUBMIT_SOURCE_ROLE_REVIEW,
                 request.idempotency_key,
             )
         except StaleWorkTokenError as error:
             ledger = self._bound_ledger(request.run_id)
-            return SubmitSourceClassificationResponse(
+            return SubmitSourceRoleReviewResponse(
                 **self._stale_submission_kwargs(
-                    error, RunOperation.SUBMIT_SOURCE_CLASSIFICATION, ledger
+                    error, RunOperation.SUBMIT_SOURCE_ROLE_REVIEW, ledger
                 )
             )
         proposal = self._latest_proposal(ledger, request.run_id)
-        selected_trial_ids = self._active_trial_ids(ledger, request.run_id)
+        # No Trial/Result scope is confirmed yet at this point in the
+        # sequence (#119: this runs before submit_run_proposal), so every
+        # inventory-ready Trial's non-registry sources are in scope.
         issued_sources = {
             source.source_id
             for trial in proposal.initialization.trials
-            if trial.status == "inventory_ready" and trial.trial_id in selected_trial_ids
+            if trial.status == "inventory_ready"
             for source in trial.inventory.sources
             if SourceRole.REGISTRY_CURRENT not in source.roles
         }
-        submitted_sources = {item.source_id for item in request.classifications}
+        for selection in request.selections:
+            if selection.source_id is None:
+                raise ValueError("Source-role review selections must set source_id")
+        submitted_sources = {item.source_id for item in request.selections}
         if not submitted_sources <= issued_sources:
-            raise ValueError("Source classification includes an unissued source identifier")
+            raise ValueError("Source-role review includes an unissued source identifier")
         if submitted_sources != issued_sources:
-            raise ValueError("Source classification must include every inventory-ready source")
+            raise ValueError("Source-role review must include every inventory-ready source")
         try:
             result = self._commit_submission(
                 ledger,
                 run_id=request.run_id,
                 scope=request.run_id,
-                operation="operation:submit-source-classification",
+                operation="operation:submit-source-role-review",
                 operation_key=request.idempotency_key,
                 artifact=request,
-                checkpoint="checkpoint:source-classification",
+                checkpoint="checkpoint:source-role-review",
             )
         except LeaseConflictError:
             projection = self._projection(ledger, request.run_id)
-            return SubmitSourceClassificationResponse(
+            return SubmitSourceRoleReviewResponse(
                 operation_id=self._read_operation_id(
-                    RunOperation.SUBMIT_SOURCE_CLASSIFICATION, request.run_id
+                    RunOperation.SUBMIT_SOURCE_ROLE_REVIEW, request.run_id
                 ),
                 ledger_cursor=f"ledger:{len(ledger.events())}",
                 affected_scope=(request.run_id,),
@@ -2765,7 +2796,7 @@ class RunEngine:
                 ),
             )
         projection = self._projection(ledger, request.run_id)
-        return SubmitSourceClassificationResponse(
+        return SubmitSourceRoleReviewResponse(
             operation_id=result.operation_id,
             ledger_cursor=f"ledger:{result.sequence}",
             affected_scope=(request.run_id,),
@@ -8099,19 +8130,26 @@ class RunEngine:
         ):
             raise StaleWorkTokenError(run_id, self._next_work_item(ledger, run_id))
         projection = self._projection(ledger, run_id)
+        # Source-role review is the one submission that happens before
+        # confirmation (#119: it must resolve before submit_run_proposal can
+        # trust any role), so it alone also accepts AWAITING_CONFIRMATION.
+        allowed_states = (
+            {RunState.AWAITING_CONFIRMATION, RunState.ASSESSING}
+            if expected_operation is RunOperation.SUBMIT_SOURCE_ROLE_REVIEW
+            else {RunState.ASSESSING}
+        )
         if work_token.run_id != run_id or work_token.operation is not expected_operation:
             expected = (
                 self._next_work_item(ledger, run_id)
-                if projection.run_state is RunState.ASSESSING
+                if projection.run_state in allowed_states
                 else None
             )
             raise StaleWorkTokenError(run_id, expected)
-        if projection.run_state is not RunState.ASSESSING:
+        if projection.run_state not in allowed_states:
             raise StaleWorkTokenError(run_id, None)
-        if projection.run_state is RunState.ASSESSING:
-            expected = self._next_work_item(ledger, run_id)
-            if expected is None or expected.work_token != work_token:
-                raise StaleWorkTokenError(run_id, expected)
+        expected = self._next_work_item(ledger, run_id)
+        if expected is None or expected.work_token != work_token:
+            raise StaleWorkTokenError(run_id, expected)
         return ledger
 
     def _submission_retry_event(
@@ -8706,6 +8744,21 @@ class RunEngine:
         """Derive the next bounded submission from committed checkpoints."""
 
         projection = self._projection(ledger, run_id)
+        if projection.run_state is RunState.AWAITING_CONFIRMATION:
+            # Source-role review must resolve before submit_run_proposal can
+            # trust any role (#119) — no Trial selection is confirmed yet at
+            # this point, so every inventory-ready Trial is in scope.
+            proposal = self._latest_proposal(ledger, run_id)
+            events = self._events_for_run(ledger, run_id)
+            if any(
+                trial.status == "inventory_ready" for trial in proposal.initialization.trials
+            ) and not self._source_role_review_complete(
+                proposal, ledger, events, selected_trial_ids=None
+            ):
+                return self._work_item(
+                    run_id, "source-roles", RunOperation.SUBMIT_SOURCE_ROLE_REVIEW
+                )
+            return None
         if projection.run_state is not RunState.ASSESSING:
             return None
         proposal = self._latest_proposal(ledger, run_id)
@@ -8717,13 +8770,13 @@ class RunEngine:
         if any(
             trial.status == "inventory_ready" and trial.trial_id in selected_trial_ids
             for trial in proposal.initialization.trials
-        ) and not self._source_classification_complete(
+        ) and not self._source_role_review_complete(
             proposal,
             ledger,
             events,
             selected_trial_ids=selected_trial_ids,
         ):
-            return self._work_item(run_id, "sources", RunOperation.SUBMIT_SOURCE_CLASSIFICATION)
+            return self._work_item(run_id, "sources", RunOperation.SUBMIT_SOURCE_ROLE_REVIEW)
         if not selected_trial_ids:
             return None
 
@@ -9458,37 +9511,117 @@ class RunEngine:
         )
 
     @staticmethod
-    def _source_classification_complete(
+    def _source_role_review_complete(
         proposal: RunProposal,
         ledger: WorkflowLedger,
         events: tuple[WorkflowEvent, ...],
         *,
-        selected_trial_ids: set[Identifier],
+        selected_trial_ids: set[Identifier] | None,
     ) -> bool:
-        """Return whether every inventory-ready source has a durable role set."""
+        """Return whether every inventory-ready source has a recorded disposition.
+
+        ``selected_trial_ids=None`` scopes to every inventory-ready Trial —
+        used pre-confirmation, before any Trial selection exists yet.
+        """
 
         issued_sources = {
             source.source_id
             for trial in proposal.initialization.trials
-            if trial.status == "inventory_ready" and trial.trial_id in selected_trial_ids
+            if trial.status == "inventory_ready"
+            and (selected_trial_ids is None or trial.trial_id in selected_trial_ids)
             for source in trial.inventory.sources
             if SourceRole.REGISTRY_CURRENT not in source.roles
         }
         if not issued_sources:
             return True
-        classified: set[Identifier] = set()
+        reviewed: set[Identifier] = set()
         for event in events:
-            if event.operation != "operation:submit-source-classification":
+            if event.operation != "operation:submit-source-role-review":
                 continue
             payload = RunEngine._event_payload(ledger, event)
-            raw = payload.get("classifications")
+            raw = payload.get("selections")
             if not isinstance(raw, (list, tuple)):
                 continue
             for item in raw:
                 source_id = item.get("source_id") if isinstance(item, dict) else None
                 if isinstance(source_id, str):
-                    classified.add(source_id)
-        return issued_sources <= classified
+                    reviewed.add(source_id)
+        return issued_sources <= reviewed
+
+    def _resolved_source_roles(
+        self, ledger: WorkflowLedger, run_id: Identifier
+    ) -> dict[Identifier, tuple[SourceRole, ...]]:
+        """Read every committed Source-role disposition for this Run.
+
+        An accepted selection resolves to its own ``roles`` override when
+        given, else the matching Source-role candidate's proposed roles. A
+        rejected selection resolves to ``UNCLASSIFIED_SUPPORTING`` — the
+        reviewer said the cue was wrong, so nothing downstream may keep
+        trusting it. Later events win on repeated review of the same source.
+        """
+
+        proposal = self._latest_proposal(ledger, run_id)
+        candidate_roles = {
+            candidate.source_id: candidate.roles
+            for candidate in proposal.initialization.source_role_candidates
+        }
+        resolved: dict[Identifier, tuple[SourceRole, ...]] = {}
+        for event in self._events_for_run(ledger, run_id):
+            if event.operation != "operation:submit-source-role-review":
+                continue
+            payload = self._event_payload(ledger, event)
+            raw = payload.get("selections")
+            if not isinstance(raw, (list, tuple)):
+                continue
+            for item in raw:
+                if not isinstance(item, dict):
+                    continue
+                source_id = item.get("source_id")
+                if not isinstance(source_id, str):
+                    continue
+                if item.get("accepted", True):
+                    roles = item.get("roles")
+                    if isinstance(roles, (list, tuple)) and roles:
+                        resolved[source_id] = tuple(SourceRole(value) for value in roles)
+                    elif source_id in candidate_roles:
+                        resolved[source_id] = candidate_roles[source_id]
+                else:
+                    resolved[source_id] = (SourceRole.UNCLASSIFIED_SUPPORTING,)
+        return resolved
+
+    def _apply_resolved_source_roles(
+        self, proposal: RunProposal, ledger: WorkflowLedger, run_id: Identifier
+    ) -> RunProposal:
+        """Overlay accepted/rejected Source-role dispositions onto SourceDescriptor.roles.
+
+        ``_classify``'s cue is never authoritative by itself (#119); this is
+        the one place that turns a recorded disposition into the role value
+        ``validate_result_sources``, ``_preferred_candidate``, and Source
+        criticality read from the proposal built here onward.
+        """
+
+        resolved = self._resolved_source_roles(ledger, run_id)
+        if not resolved:
+            return proposal
+        trials = tuple(
+            trial.model_copy(
+                update={
+                    "inventory": trial.inventory.model_copy(
+                        update={
+                            "sources": tuple(
+                                source.model_copy(update={"roles": resolved[source.source_id]})
+                                if source.source_id in resolved
+                                else source
+                                for source in trial.inventory.sources
+                            )
+                        }
+                    )
+                }
+            )
+            for trial in proposal.initialization.trials
+        )
+        initialization = proposal.initialization.model_copy(update={"trials": trials})
+        return proposal.model_copy(update={"initialization": initialization})
 
     def _latest_prepared_record(self, ledger: WorkflowLedger) -> _PreparedRunRecord | None:
         records = self._prepared_records(ledger)
@@ -11284,6 +11417,7 @@ class RunEngine:
             initialization=initialization,
             registry_candidates=initialization.registry_candidates,
             result_candidates=initialization.result_candidates,
+            source_role_candidates=initialization.source_role_candidates,
             ambiguities=ambiguities,
         )
 

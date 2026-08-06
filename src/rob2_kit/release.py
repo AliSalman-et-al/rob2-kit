@@ -28,6 +28,7 @@ JOURNEY_DOCUMENTATION_FILENAMES = ("USER-JOURNEY.md", "LOCAL-RUNBOOK.md")
 _OBSOLETE_DOCUMENTATION_TERMS = (
     "run_status",
     "classify_sources",
+    "submit_source_classification",
     "resolve_result",
     "correct_domain_answers",
     "limitation field",
@@ -43,7 +44,7 @@ SKILL_ALLOWED_TOOL_NAMES = (
     "search_evidence",
     "read_evidence",
     "inspect_visual_candidate",
-    "submit_source_classification",
+    "submit_source_role_review",
     "submit_result_resolution",
     "submit_domain_evidence",
     "submit_domain_answers",

@@ -10,16 +10,20 @@ as a resume and continue from its returned state. Start a new run only after
 the operator explicitly asks to replace the Current run; pass the explicit
 start-new intent rather than inferring it from a new conversation.
 
+Before the Run proposal can be submitted, review every Source-role candidate
+`continue_run` issues: accept, reject, or correct exactly the sources returned
+by `get_work_context`. No Source's role is ever settled from its classifier
+cue alone, including a source with only one candidate role — an explicit
+accepted selection is required regardless of cardinality.
+
 Present the Run proposal in plain language, identify material ambiguity, and
 obtain the one-time confirmation before preparation. Do not represent proposal
 acceptance as assessment approval.
 
-For source classification, classify exactly the sources returned by
-`get_work_context`; proposal registry candidates are orientation data unless
-that work context also issues them. For Result resolution, copy the issued
-Result identity and its identifier-shaped fields, then add only the observed
-estimate and attributable locator. Completion means every object submitted was
-issued for the current work token.
+For Result resolution, copy the issued Result identity and its
+identifier-shaped fields, then add only the observed estimate and
+attributable locator. Completion means every object submitted was issued for
+the current work token.
 
 If the engine returns `retry` or a dynamic branch, rebind the next operation to
 the newly returned work item: call `get_work_context` with its fresh token and

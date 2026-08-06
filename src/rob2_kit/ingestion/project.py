@@ -549,6 +549,22 @@ class ResultCandidate(FrozenModel):
     status: Literal["resolved", "needs_input"]
 
 
+class SourceRoleCandidate(FrozenModel):
+    """Engine-issued advisory candidate for one Source's role(s).
+
+    ``roles`` is the classifier's proposed cue, carried alongside its
+    ``classification`` provenance (authority, cues, classifier version). It
+    never binds ``SourceDescriptor.roles`` by itself; only an accepted
+    ``RunProposalSelection`` (matched by ``source_id``) does.
+    """
+
+    candidate_id: Identifier
+    trial_id: Identifier
+    source_id: Identifier
+    roles: tuple[SourceRole, ...]
+    classification: ClassificationProvenance
+
+
 class InitializationDiagnosticKind(StrEnum):
     PRIMARY_REPORT_AMBIGUOUS = "primary_report_ambiguous"
     TRIAL_FAILED = "trial_failed"
@@ -584,6 +600,7 @@ class ProjectInitialization(FrozenModel):
     diagnostics: tuple[InitializationDiagnostic, ...]
     registry_candidates: tuple[RegistryCandidate, ...] = ()
     result_candidates: tuple[ResultCandidate, ...] = ()
+    source_role_candidates: tuple[SourceRoleCandidate, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -683,6 +700,7 @@ def initialize_project(
         now=clock,
     )
     result_candidates = _result_candidates(tuple(trials), result_specs, outcome_target_specs)
+    source_role_candidates = _source_role_candidates(tuple(trials))
     return ProjectInitialization(
         manifest=manifest,
         trials=tuple(trials),
@@ -691,6 +709,7 @@ def initialize_project(
         diagnostics=tuple(findings),
         registry_candidates=tuple(registry_candidates),
         result_candidates=result_candidates,
+        source_role_candidates=source_role_candidates,
     )
 
 
@@ -926,6 +945,38 @@ def _result_candidates(
                     result_id=f"result:{digest}",
                     label=target.label,
                     status="needs_input",
+                )
+            )
+    return tuple(candidates)
+
+
+def _source_role_candidates(
+    trials: tuple[TrialInitialization, ...],
+) -> tuple[SourceRoleCandidate, ...]:
+    """Expose every classified Source's role(s) as a reviewable candidate.
+
+    Registry sources are excluded: their role is assigned deterministically
+    by acquisition (see ``_registry_source_descriptor``), not by the
+    filename/folder heuristic this candidate exists to make advisory.
+    """
+
+    candidates: list[SourceRoleCandidate] = []
+    for trial in trials:
+        if trial.status == "trial_failed":
+            continue
+        for source in trial.inventory.sources:
+            if SourceRole.REGISTRY_CURRENT in source.roles:
+                continue
+            digest = hashlib.sha256(f"{source.source_id}|{trial.trial_id}".encode()).hexdigest()[
+                :24
+            ]
+            candidates.append(
+                SourceRoleCandidate(
+                    candidate_id=f"source-role-candidate:{digest}",
+                    trial_id=trial.trial_id,
+                    source_id=source.source_id,
+                    roles=source.roles,
+                    classification=source.classification,
                 )
             )
     return tuple(candidates)

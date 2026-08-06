@@ -8,9 +8,12 @@ import yaml
 
 from rob2_kit.application.contracts import (
     ConfirmRunDefinitionRequest,
+    ContinueRunRequest,
     PrepareRunRequest,
+    RunOperation,
     RunProposalSelection,
     SubmitRunProposalRequest,
+    SubmitSourceRoleReviewRequest,
 )
 from rob2_kit.application.run_engine import RunEngine
 from rob2_kit.domain.revisions import Actor, ActorKind
@@ -84,6 +87,24 @@ def _prepare(
     engine = RunEngine(parser=parser or StubParser())
     prepared = engine.prepare_run(PrepareRunRequest(project_root=root, authorized=True))
     assert prepared.proposal is not None
+    # Source-role review resolves before the proposal (#119), independently
+    # of whatever Result-candidate selections each test submits afterward.
+    review_work = engine.continue_run(ContinueRunRequest(run_id=prepared.run_id)).work_item
+    if review_work is not None and review_work.operation is RunOperation.SUBMIT_SOURCE_ROLE_REVIEW:
+        engine.submit_source_role_review(
+            SubmitSourceRoleReviewRequest(
+                contract_version="1.0.0",
+                run_id=prepared.run_id,
+                work_token=review_work.work_token,
+                idempotency_key="idempotency:issue101-source-review",
+                selections=tuple(
+                    RunProposalSelection(
+                        trial_id=candidate.trial_id, source_id=candidate.source_id, accepted=True
+                    )
+                    for candidate in prepared.proposal.source_role_candidates
+                ),
+            )
+        )
     return engine, prepared
 
 
@@ -546,7 +567,7 @@ def test_real_mcp_registers_all_preconfirmation_route_names() -> None:
 
     assert {
         "prepare_run",
-        "submit_source_classification",
+        "submit_source_role_review",
         "submit_result_resolution",
         "submit_run_proposal",
         "confirm_run_definition",

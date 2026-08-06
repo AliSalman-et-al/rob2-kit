@@ -51,7 +51,12 @@ from rob2_kit.evidence.visual import (
     VisualRenderRequest,
 )
 from rob2_kit.evidence.workflow import ExecutedSearchQuery, SearchCoverageReceipt, SearchPassKind
-from rob2_kit.ingestion.project import OutcomeTarget, ProjectInitialization, ResultCandidate
+from rob2_kit.ingestion.project import (
+    OutcomeTarget,
+    ProjectInitialization,
+    ResultCandidate,
+    SourceRoleCandidate,
+)
 from rob2_kit.logic.packs import GuidanceItem
 from rob2_kit.registry import RegistryCandidate
 
@@ -71,7 +76,7 @@ class RunOperation(StrEnum):
     SEARCH_EVIDENCE = "search_evidence"
     READ_EVIDENCE = "read_evidence"
     INSPECT_VISUAL_CANDIDATE = "inspect_visual_candidate"
-    SUBMIT_SOURCE_CLASSIFICATION = "submit_source_classification"
+    SUBMIT_SOURCE_ROLE_REVIEW = "submit_source_role_review"
     SUBMIT_RESULT_RESOLUTION = "submit_result_resolution"
     SUBMIT_DOMAIN_EVIDENCE = "submit_domain_evidence"
     SUBMIT_DOMAIN_ANSWERS = "submit_domain_answers"
@@ -445,19 +450,50 @@ class RunProposalSelection(FrozenModel):
     result_candidate_id: Identifier | None = None
     registry_candidate_id: Identifier | None = None
     outcome_target_id: Identifier | None = None
+    # Source-role disposition uses this same shape rather than a second
+    # record type (#119): source_id selects the Source-role candidate's
+    # slot, mutually exclusive with the Trial × Outcome fields above. roles
+    # is the accepted role set — omit it to accept the candidate's proposed
+    # roles as-is, or supply a corrected set explicitly.
+    source_id: Identifier | None = None
+    roles: tuple[SourceRole, ...] | None = None
     accepted: bool = True
     removed: bool = False
     exclusion_reason: str | None = Field(
         default=None,
         validation_alias=AliasChoices("exclusion_reason", "reason"),
         description=(
-            "Human-readable reason for explicitly excluding this Trial × Outcome target. "
-            "Required when accepted is false."
+            "Human-readable reason for explicitly excluding this Trial × Outcome target "
+            "or Source-role candidate. Required when accepted is false."
         ),
     )
 
     @model_validator(mode="after")
     def validate_disposition(self) -> RunProposalSelection:
+        if self.source_id is not None:
+            if (
+                self.outcome_target_id is not None
+                or self.result_id is not None
+                or self.result_candidate_id is not None
+                or self.registry_candidate_id is not None
+            ):
+                raise ValueError(
+                    "a Source-role selection cannot also select an Outcome target, "
+                    "Result, or Registry candidate"
+                )
+            if self.removed:
+                raise ValueError("a Source-role selection cannot be removed")
+            if self.accepted:
+                if self.exclusion_reason is not None and not self.exclusion_reason.strip():
+                    raise ValueError("exclusion_reason cannot be blank")
+            else:
+                if self.roles is not None:
+                    raise ValueError("a rejected Source-role selection cannot set roles")
+                if not self.exclusion_reason or not self.exclusion_reason.strip():
+                    raise ValueError("a rejected Source-role selection requires exclusion_reason")
+            return self
+        if self.roles is not None:
+            raise ValueError("roles is only meaningful for a Source-role selection")
         if self.removed:
             if self.accepted:
                 raise ValueError("a removed Run proposal pairing must set accepted=false")
@@ -515,6 +551,7 @@ class RunProposal(FrozenModel):
     selections: tuple[RunProposalSelection, ...] = ()
     registry_candidates: tuple[RegistryCandidate, ...] = ()
     result_candidates: tuple[ResultCandidate, ...] = ()
+    source_role_candidates: tuple[SourceRoleCandidate, ...] = ()
     ambiguities: tuple[RunProposalAmbiguity, ...] = ()
     supersedes_proposal_id: Identifier | None = None
     semantic_diff: tuple[str, ...] = ()
@@ -762,19 +799,14 @@ class InspectVisualCandidateRequest(FrozenModel):
     still_ambiguous: bool = True
 
 
-class SourceClassificationInput(FrozenModel):
-    source_id: Identifier = Field(description="Source ID issued in get_work_context.sources.")
-    roles: tuple[SourceRole, ...] = Field(
-        min_length=1, description="One or more schema-enumerated roles; the key is plural roles."
-    )
-
-
-class SubmitSourceClassificationRequest(FrozenModel):
+class SubmitSourceRoleReviewRequest(FrozenModel):
     contract_version: Literal["1.0.0"]
     run_id: Identifier
     work_token: WorkToken
     idempotency_key: Identifier
-    classifications: tuple[SourceClassificationInput, ...] = Field(min_length=1)
+    # Source-id-scoped RunProposalSelection entries — one shared disposition
+    # shape across Result, Registry, and Source-role candidates (#119).
+    selections: tuple[RunProposalSelection, ...] = Field(min_length=1)
 
 
 class SubmitResultResolutionRequest(FrozenModel):
@@ -1159,7 +1191,7 @@ class SubmissionResponse(OperationResponse):
     work_item: WorkItem | None = None
 
 
-class SubmitSourceClassificationResponse(SubmissionResponse):
+class SubmitSourceRoleReviewResponse(SubmissionResponse):
     pass
 
 
@@ -1282,9 +1314,9 @@ RUN_OPERATION_CONTRACTS: tuple[OperationContract, ...] = (
         expected_conditions=(WorkflowCondition.COMPLETED,),
     ),
     OperationContract(
-        operation=RunOperation.SUBMIT_SOURCE_CLASSIFICATION,
-        request_type=SubmitSourceClassificationRequest,
-        response_type=SubmitSourceClassificationResponse,
+        operation=RunOperation.SUBMIT_SOURCE_ROLE_REVIEW,
+        request_type=SubmitSourceRoleReviewRequest,
+        response_type=SubmitSourceRoleReviewResponse,
         expected_conditions=(
             WorkflowCondition.ACCEPTED,
             WorkflowCondition.STALE,

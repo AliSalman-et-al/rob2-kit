@@ -16,15 +16,15 @@ from rob2_kit.application.contracts import (
     EvidencePassageInput,
     GetWorkContextRequest,
     PrepareRunRequest,
+    RunOperation,
     RunProposalSelection,
     RunStatusRequest,
     SearchEvidenceRequest,
-    SourceClassificationInput,
     SubmitDomainAnswersRequest,
     SubmitDomainEvidenceRequest,
     SubmitResultResolutionRequest,
     SubmitRunProposalRequest,
-    SubmitSourceClassificationRequest,
+    SubmitSourceRoleReviewRequest,
     WorkToken,
 )
 from rob2_kit.application.lifecycle import ResultState, RunState
@@ -170,6 +170,25 @@ def _prepare_confirm(
         for candidate in prepared.proposal.result_candidates
         if candidate.status in ("needs_input", "resolved") and candidate.result_id is not None
     )
+    # Source-role review resolves before the proposal (#119): every
+    # Source-role candidate needs an explicit accept before submit_run_proposal
+    # will trust any role.
+    review_work = engine.continue_run(ContinueRunRequest(run_id=prepared.run_id)).work_item
+    if review_work is not None and review_work.operation is RunOperation.SUBMIT_SOURCE_ROLE_REVIEW:
+        engine.submit_source_role_review(
+            SubmitSourceRoleReviewRequest(
+                contract_version="1.0.0",
+                run_id=prepared.run_id,
+                work_token=review_work.work_token,
+                idempotency_key="idempotency:reconciliation-source-review",
+                selections=tuple(
+                    RunProposalSelection(
+                        trial_id=candidate.trial_id, source_id=candidate.source_id, accepted=True
+                    )
+                    for candidate in prepared.proposal.source_role_candidates
+                ),
+            )
+        )
     submitted = engine.submit_run_proposal(
         SubmitRunProposalRequest(
             contract_version="1.0.0",
@@ -192,23 +211,37 @@ def _prepare_confirm(
 
 
 def _classify_current_sources(engine: RunEngine, run_id: str) -> None:
+    """Complete a pending Source-role review work item, if one remains.
+
+    Most callers' sources are already reviewed pre-confirmation inside
+    ``_prepare_confirm`` (#119), so this is a no-op then. A source that
+    only appears (or changes) after confirmation, via reconciliation,
+    still surfaces its own post-confirmation review work item here.
+    """
+
     work = engine.continue_run(ContinueRunRequest(run_id=run_id)).work_item
-    assert work is not None
+    if work is None or work.operation is not RunOperation.SUBMIT_SOURCE_ROLE_REVIEW:
+        return
     context = engine.get_work_context(
         GetWorkContextRequest(run_id=run_id, work_token=work.work_token)
     ).context
     assert context is not None
     assert context.detailed_sources == ()
     assert all(source.page_count >= 0 for source in context.sources)
-    response = engine.submit_source_classification(
-        SubmitSourceClassificationRequest(
+    proposal = engine._latest_proposal(engine._bound_ledger(run_id), run_id)
+    context_source_ids = {source.source_id for source in context.sources}
+    response = engine.submit_source_role_review(
+        SubmitSourceRoleReviewRequest(
             contract_version="1.0.0",
             run_id=run_id,
             work_token=work.work_token,
             idempotency_key="idempotency:reconciliation-sources",
-            classifications=tuple(
-                SourceClassificationInput(source_id=source.source_id, roles=source.roles)
-                for source in context.sources
+            selections=tuple(
+                RunProposalSelection(
+                    trial_id=candidate.trial_id, source_id=candidate.source_id, accepted=True
+                )
+                for candidate in proposal.initialization.source_role_candidates
+                if candidate.source_id in context_source_ids
             ),
         )
     )
@@ -1249,6 +1282,24 @@ def test_resolved_outcome_candidate_survives_unrelated_source_change(
         result_candidate_id=candidate.candidate_id,
         outcome_target_id=candidate.outcome_target_id,
     )
+    review_work = engine.continue_run(ContinueRunRequest(run_id=prepared.run_id)).work_item
+    assert review_work is not None
+    engine.submit_source_role_review(
+        SubmitSourceRoleReviewRequest(
+            contract_version="1.0.0",
+            run_id=prepared.run_id,
+            work_token=review_work.work_token,
+            idempotency_key="idempotency:reconciliation-candidate-source-review",
+            selections=tuple(
+                RunProposalSelection(
+                    trial_id=source_candidate.trial_id,
+                    source_id=source_candidate.source_id,
+                    accepted=True,
+                )
+                for source_candidate in prepared.proposal.source_role_candidates
+            ),
+        )
+    )
     submitted = engine.submit_run_proposal(
         SubmitRunProposalRequest(
             contract_version="1.0.0",
@@ -1626,7 +1677,7 @@ def test_recovering_failed_trial_with_primary_addition_reopens_assessment(
     continued = engine.continue_run(ContinueRunRequest(run_id=run_id))
     assert continued.run_state is RunState.ASSESSING
     assert continued.work_item is not None
-    assert continued.work_item.operation.value == "submit_source_classification"
+    assert continued.work_item.operation.value == "submit_source_role_review"
     assert not any(
         event.operation == "operation:run-blocked"
         for event in engine._bound_ledger(run_id).events()

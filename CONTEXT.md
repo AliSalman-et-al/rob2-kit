@@ -129,8 +129,8 @@ A proposed but unconfirmed identity for a Source's role, a Trial's Result, or a 
 _Avoid_: Auto-classification, inferred identity, sole-match binding
 
 **Discovery candidate disposition**:
-The attributable outcome recorded for one Discovery candidate: accepted, rejected, superseded by a different accepted candidate in the same slot, or left unresolved. It is distinct from an Evidence candidate disposition, which judges a span's relevance to a signaling-question answer rather than a Source's, Trial's, or registry record's identity.
-_Avoid_: Evidence candidate disposition, auto-accept, cardinality default
+The outcome recognized for one Discovery candidate: accepted, rejected, superseded by a different accepted candidate in the same slot, or left unresolved. Accepted and rejected are attributable, explicitly recorded reviews; superseded is derived, never separately recorded — a candidate whose slot holds a different accepted candidate is superseded by that fact alone, so only one explicit review establishes both outcomes at once. It is distinct from an Evidence candidate disposition, which judges a span's relevance to a signaling-question answer rather than a Source's, Trial's, or registry record's identity.
+_Avoid_: Evidence candidate disposition, auto-accept, cardinality default, stored superseded flag
 
 **Result candidate**:
 A Discovery candidate proposing that one ResultSpec-shaped analysis in a Trial's Sources satisfies a requested Outcome target, produced by matching outcome construct, time point, effect measure, or instrument wording. A Trial with exactly one Result candidate for a target is not automatically citable for it; its disposition still requires recorded review.
@@ -145,8 +145,8 @@ A Discovery candidate proposing one or more Source roles from folder position, f
 _Avoid_: Auto-classified role, forced label
 
 **Trial discovery record**:
-A durable, revision-tracked pre-confirmation account of one proposed Trial's identity candidates — its Source-role, Result, and Registry candidates — together with relevant document sections, coherent supporting passages, conflicts, and unresolved alternatives, bound to the exact Source artifacts and Parse records inspected. It gains a new revision whenever a contained candidate's disposition changes, carries no separate closed state, and lets an agent form and resume a robust Run proposal without treating its prose summary or context window as authority.
-_Avoid_: Agent memory, Trial orientation pack, Evidence Bundle, full dossier
+The pre-confirmation view of one proposed Trial's identity candidates — its Source-role, Result, and Registry candidates — together with relevant document sections, coherent supporting passages, conflicts, and unresolved alternatives, bound to the exact Source artifacts and Parse records inspected. It is not a separate persisted type: no consumer needs one candidate's disposition history independent of the others, so it is the same whole-snapshot Run proposal that already carries this content, superseded atomically as one revision rather than accruing independent per-candidate history. It lets an agent form and resume a robust Run proposal without treating its prose summary or context window as authority.
+_Avoid_: Agent memory, Trial orientation pack, Evidence Bundle, full dossier, standalone revision-tracked record
 
 **Domain context pack**:
 The bounded, reproducible starting view for one Domain assessment work item, containing its Trial, Result, and Domain identity; applicable signaling questions, exact decision need, guidance, and Project rules; accepted supporting, contradicting, and contextual Evidence claims grouped by question and Source chronology; relevant unresolved candidates; Source, search, and parse limitations; and the next permitted action. It points to bounded retrieval capabilities and successive Context view manifests rather than reproducing a complete Evidence Bundle or source dossier.

@@ -52,13 +52,12 @@ from rob2_kit.application.contracts import (
     SearchPassKind,
     SearchQuery,
     SearchQueryEnvelope,
-    SourceClassificationInput,
     SQAnswerInput,
     SubmitDomainAnswersRequest,
     SubmitDomainEvidenceRequest,
     SubmitResultResolutionRequest,
     SubmitRunProposalRequest,
-    SubmitSourceClassificationRequest,
+    SubmitSourceRoleReviewRequest,
     VisualRenderRequest,
     WorkflowCondition,
     WorkToken,
@@ -668,31 +667,33 @@ def create_server(
             )
         )
 
-    @server.tool(name="submit_source_classification")
-    def submit_source_classification(
+    @server.tool(name="submit_source_role_review")
+    def submit_source_role_review(
         run_id: str,
         work_token: WorkToken,
-        classifications: list[SourceClassificationInput],
+        selections: list[RunProposalSelection],
         contract_version: Literal["1.0.0"],
     ) -> dict[str, Any]:
-        """When to use: classify Sources for the current proposal work item.
+        """When to use: review every Source-role candidate before proposing the Run.
 
-        Prerequisite: classifications issued by ``get_work_context``. Safe default:
-        classify only those Sources. Not for: treating registry orientation data as issued evidence.
+        Prerequisite: Source-role candidates issued by ``get_work_context``. Safe default:
+        accept each candidate's proposed roles as-is. Not for: treating an unreviewed
+        classifier cue as a settled role.
 
-        Classify exactly the sources in get_work_context with
-        {"source_id":...,"roles":[...]}.
+        Review exactly the sources in get_work_context with
+        {"source_id":...,"accepted":true}. Supply "roles" only to override
+        the candidate's proposed roles, and exclusion_reason when rejecting.
         """
         return _dump(
-            engine.submit_source_classification(
-                SubmitSourceClassificationRequest.model_validate(
+            engine.submit_source_role_review(
+                SubmitSourceRoleReviewRequest.model_validate(
                     {
                         "run_id": run_id,
                         "work_token": work_token,
                         "idempotency_key": _submission_key(
-                            "source-classification", work_token.token
+                            "source-role-review", work_token.token
                         ),
-                        "classifications": classifications,
+                        "selections": selections,
                         "contract_version": contract_version,
                     }
                 )

@@ -66,7 +66,7 @@ def test_mcp_tool_schemas_explain_nested_inputs_and_expose_passage_freezing() ->
         "submit_run_proposal": "selections",
         "confirm_run_definition": "confirmed_by",
         "search_evidence": "query",
-        "submit_source_classification": "classifications",
+        "submit_source_role_review": "selections",
         "submit_result_resolution": "result",
         "submit_domain_answers": "answers",
     }.items():
@@ -80,7 +80,7 @@ def test_mcp_tool_schemas_explain_nested_inputs_and_expose_passage_freezing() ->
     for tool_name in (
         "submit_run_proposal",
         "confirm_run_definition",
-        "submit_source_classification",
+        "submit_source_role_review",
         "submit_result_resolution",
         "submit_domain_evidence",
         "submit_domain_answers",
@@ -108,7 +108,7 @@ def test_mcp_tool_descriptions_prevent_cleanroom_schema_guessing() -> None:
     assert 'estimate={"value":' in resolution
     assert "work_token.result_id" in resolution
 
-    classification = tools["submit_source_classification"].description or ""
+    classification = tools["submit_source_role_review"].description or ""
     assert "exactly the sources in get_work_context" in classification
     assert '"roles"' in classification
 

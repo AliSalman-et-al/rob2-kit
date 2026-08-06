@@ -24,7 +24,7 @@ from rob2_kit.application.contracts import (
     SubmitDomainAnswersRequest,
     SubmitDomainEvidenceRequest,
     SubmitRunProposalRequest,
-    SubmitSourceClassificationRequest,
+    SubmitSourceRoleReviewRequest,
     WorkToken,
 )
 from rob2_kit.application.run_engine import RunEngine
@@ -318,6 +318,29 @@ async def _prepare_and_confirm(session: ClientSession, root: Path) -> str:
     ).structured_content
     assert prepared is not None
     proposal = prepared["proposal"]
+    # Source-role review resolves before the proposal (#119): every
+    # Source-role candidate needs an explicit accept before submit_run_proposal
+    # will trust any role.
+    review_work = (
+        await session.call_tool("continue_run", {"run_id": prepared["run_id"]})
+    ).structured_content
+    assert review_work is not None
+    if review_work["work_item"]["operation"] == "submit_source_role_review":
+        await session.call_tool(
+            "submit_source_role_review",
+            {
+                "run_id": prepared["run_id"],
+                "work_token": review_work["work_item"]["work_token"],
+                "contract_version": "1.0.0",
+                "selections": [
+                    {
+                        "trial_id": "trial:trial-a",
+                        "source_id": "source:trial-a-1",
+                        "accepted": True,
+                    }
+                ],
+            },
+        )
     submitted = (
         await session.call_tool(
             "submit_run_proposal",
@@ -482,26 +505,10 @@ def test_five_domain_journey_survives_stdio_restart_and_publishes_report(
                     if tool.name.startswith("submit_"):
                         assert "contract_version" in tool.input_schema["required"]
                         assert "mutation_context" not in tool.input_schema["properties"]
+                # Source-role review already resolved pre-confirmation, inside
+                # _prepare_and_confirm (#119) — the next work item is the
+                # first real preparation step, not source review again.
                 run_id = await _prepare_and_confirm(session, tmp_path)
-                work = (
-                    await session.call_tool("continue_run", {"run_id": run_id})
-                ).structured_content
-                assert work is not None
-                assert work["work_item"]["operation"] == "submit_source_classification"
-                source = await session.call_tool(
-                    "submit_source_classification",
-                    {
-                        "run_id": run_id,
-                        "work_token": work["work_item"]["work_token"],
-                        "contract_version": "1.0.0",
-                        "classifications": [
-                            {"source_id": "source:trial-a-1", "roles": ["primary_report"]}
-                        ],
-                    },
-                )
-                assert source.structured_content is not None
-                assert source.structured_content["condition"] == "accepted"
-                assert source.structured_content["committed"] is True
 
         # A new process has no conversation state; prepare_run must rebind to
         # the same durable Current run before the remaining work continues.
@@ -674,6 +681,21 @@ def test_report_history_preserves_an_earlier_immutable_bundle(tmp_path: Path) ->
     engine = RunEngine()
     prepared = engine.prepare_run(PrepareRunRequest(project_root=tmp_path, authorized=True))
     assert prepared.proposal is not None
+    review_work = engine.continue_run(ContinueRunRequest(run_id=prepared.run_id)).work_item
+    assert review_work is not None
+    engine.submit_source_role_review(
+        SubmitSourceRoleReviewRequest(
+            run_id=prepared.run_id,
+            work_token=review_work.work_token,
+            idempotency_key="idempotency:history-source",
+            selections=(
+                RunProposalSelection(
+                    trial_id="trial:trial-a", source_id="source:trial-a-1", accepted=True
+                ),
+            ),
+            contract_version="1.0.0",
+        )
+    )
     submitted = engine.submit_run_proposal(
         SubmitRunProposalRequest(
             run_id=prepared.run_id,
@@ -711,20 +733,6 @@ def test_report_history_preserves_an_earlier_immutable_bundle(tmp_path: Path) ->
             contract_version="1.0.0",
         )
     )
-    source_work = engine.continue_run(ContinueRunRequest(run_id=prepared.run_id)).work_item
-    assert source_work is not None
-    engine.submit_source_classification(
-        SubmitSourceClassificationRequest.model_validate(
-            {
-                "run_id": prepared.run_id,
-                "work_token": source_work.work_token,
-                "idempotency_key": "idempotency:history-source",
-                "classifications": [{"source_id": "source:trial-a-1", "roles": ["primary_report"]}],
-                "contract_version": "1.0.0",
-            }
-        )
-    )
-
     def finish_result(result_id: str, suffix: str) -> None:
         answers = _low_answers()
         visual_ref: RecordReference | None = None

@@ -34,7 +34,7 @@ CANONICAL_TOOL_NAMES = (
     "search_evidence",
     "read_evidence",
     "inspect_visual_candidate",
-    "submit_source_classification",
+    "submit_source_role_review",
     "submit_result_resolution",
     "submit_domain_evidence",
     "submit_domain_answers",
@@ -1223,6 +1223,91 @@ def _journey(
                     "continue_run",
                     {"run_id": "run:" + "0" * 24},
                 )
+                # Source-role review (#119) now resolves before submit_run_proposal,
+                # issued as a work item while the Run still awaits confirmation.
+                work = (
+                    await call(client, "continue_run", {"run_id": prepared["run_id"]})
+                ).structured_content
+                assert work is not None
+                result = await call(
+                    client,
+                    "submit_source_role_review",
+                    {
+                        "run_id": prepared["run_id"],
+                        "work_token": work["work_item"]["work_token"],
+                        "idempotency_key": "qualification:source",
+                        "contract_version": "1.0.0",
+                        "selections": [
+                            {
+                                "trial_id": "trial:trial-a",
+                                "source_id": "source:trial-a-1",
+                                "accepted": True,
+                            }
+                        ],
+                    },
+                )
+                if expected_fault == "writer" and not (
+                    result.structured_content and result.structured_content.get("committed")
+                ):
+                    response = result.structured_content or {}
+                    error = response.get("error", {})
+                    fault_matrix["writer"] = {
+                        "operation": "submit_source_role_review",
+                        "mutation_free": True,
+                        "response_class": error.get("error_class"),
+                        "legal_replacement_action": error.get("recovery"),
+                    }
+                    return
+                assert result.structured_content and result.structured_content["committed"]
+                before_retry = _durable_state_digest(project)
+                retried = await call(
+                    client,
+                    "submit_source_role_review",
+                    {
+                        "run_id": prepared["run_id"],
+                        "work_token": work["work_item"]["work_token"],
+                        "contract_version": "1.0.0",
+                        "selections": [
+                            {
+                                "trial_id": "trial:trial-a",
+                                "source_id": "source:trial-a-1",
+                                "accepted": True,
+                            }
+                        ],
+                    },
+                )
+                if _durable_state_digest(project) != before_retry:
+                    raise AssertionError("idempotent retry duplicated durable work")
+                retry_response = trace_calls[-1]["response"]
+                assert isinstance(retry_response, dict)
+                fault_matrix["retry"] = {
+                    "operation": "submit_source_role_review",
+                    "mutation_free": True,
+                    "response_class": "accepted" if not retried.is_error else "protocol",
+                    "legal_replacement_action": "continue from the committed checkpoint",
+                }
+                stale_token = dict(work["work_item"]["work_token"])
+                stale_token["token"] = "work-token:qualification-stale"
+                await rejected_probe(
+                    client,
+                    "stale",
+                    "submit_source_role_review",
+                    {
+                        "run_id": prepared["run_id"],
+                        "work_token": stale_token,
+                        "contract_version": "1.0.0",
+                        "selections": [
+                            {
+                                "trial_id": "trial:trial-a",
+                                "source_id": "source:trial-a-1",
+                                "accepted": True,
+                            }
+                        ],
+                    },
+                )
+                run_id = prepared["run_id"]
+                if stop_after_source:
+                    return
                 proposed = (
                     await call(
                         client,
@@ -1251,77 +1336,6 @@ def _journey(
                         "contract_version": "1.0.0",
                     },
                 )
-                work = (
-                    await call(client, "continue_run", {"run_id": prepared["run_id"]})
-                ).structured_content
-                assert work is not None
-                result = await call(
-                    client,
-                    "submit_source_classification",
-                    {
-                        "run_id": prepared["run_id"],
-                        "work_token": work["work_item"]["work_token"],
-                        "idempotency_key": "qualification:source",
-                        "contract_version": "1.0.0",
-                        "classifications": [
-                            {"source_id": "source:trial-a-1", "roles": ["primary_report"]}
-                        ],
-                    },
-                )
-                if expected_fault == "writer" and not (
-                    result.structured_content and result.structured_content.get("committed")
-                ):
-                    response = result.structured_content or {}
-                    error = response.get("error", {})
-                    fault_matrix["writer"] = {
-                        "operation": "submit_source_classification",
-                        "mutation_free": True,
-                        "response_class": error.get("error_class"),
-                        "legal_replacement_action": error.get("recovery"),
-                    }
-                    return
-                assert result.structured_content and result.structured_content["committed"]
-                before_retry = _durable_state_digest(project)
-                retried = await call(
-                    client,
-                    "submit_source_classification",
-                    {
-                        "run_id": prepared["run_id"],
-                        "work_token": work["work_item"]["work_token"],
-                        "contract_version": "1.0.0",
-                        "classifications": [
-                            {"source_id": "source:trial-a-1", "roles": ["primary_report"]}
-                        ],
-                    },
-                )
-                if _durable_state_digest(project) != before_retry:
-                    raise AssertionError("idempotent retry duplicated durable work")
-                retry_response = trace_calls[-1]["response"]
-                assert isinstance(retry_response, dict)
-                fault_matrix["retry"] = {
-                    "operation": "submit_source_classification",
-                    "mutation_free": True,
-                    "response_class": "accepted" if not retried.is_error else "protocol",
-                    "legal_replacement_action": "continue from the committed checkpoint",
-                }
-                stale_token = dict(work["work_item"]["work_token"])
-                stale_token["token"] = "work-token:qualification-stale"
-                await rejected_probe(
-                    client,
-                    "stale",
-                    "submit_source_classification",
-                    {
-                        "run_id": prepared["run_id"],
-                        "work_token": stale_token,
-                        "contract_version": "1.0.0",
-                        "classifications": [
-                            {"source_id": "source:trial-a-1", "roles": ["primary_report"]}
-                        ],
-                    },
-                )
-                run_id = prepared["run_id"]
-                if stop_after_source:
-                    return
                 if not restart_after_source:
                     completed = await finish_domains(client, run_id)
                     if not completed:

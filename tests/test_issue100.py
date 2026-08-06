@@ -10,7 +10,6 @@ from pydantic import ValidationError
 from rob2_kit.application.contracts import (
     ConfirmRunDefinitionRequest,
     ContinueRunRequest,
-    GetWorkContextRequest,
     PrepareRunRequest,
     ReadEvidenceRequest,
     ReadEvidenceResponse,
@@ -18,15 +17,13 @@ from rob2_kit.application.contracts import (
     RunProposalSelection,
     SearchEvidenceRequest,
     SearchQueryEnvelope,
-    SourceClassificationInput,
     SubmitRunProposalRequest,
-    SubmitSourceClassificationRequest,
+    SubmitSourceRoleReviewRequest,
     WorkflowCondition,
 )
 from rob2_kit.application.run_engine import RunEngine
 from rob2_kit.domain.canonical import canonical_hash
 from rob2_kit.domain.revisions import Actor, ActorKind
-from rob2_kit.domain.sources import SourceRole
 from rob2_kit.evidence import (
     CanonicalBlock,
     CanonicalEvidenceUnit,
@@ -680,6 +677,24 @@ results:
         for item in prepared.proposal.result_candidates
         if item.result_id == "result:trial-a-mortality"
     )
+    review_work = engine.continue_run(ContinueRunRequest(run_id=prepared.run_id)).work_item
+    assert review_work is not None
+    engine.submit_source_role_review(
+        SubmitSourceRoleReviewRequest(
+            contract_version="1.0.0",
+            run_id=prepared.run_id,
+            work_token=review_work.work_token,
+            idempotency_key="idempotency:metadata-index-review",
+            selections=tuple(
+                RunProposalSelection(
+                    trial_id=source_candidate.trial_id,
+                    source_id=source_candidate.source_id,
+                    accepted=True,
+                )
+                for source_candidate in prepared.proposal.source_role_candidates
+            ),
+        )
+    )
     submitted = engine.submit_run_proposal(
         SubmitRunProposalRequest(
             contract_version="1.0.0",
@@ -790,36 +805,17 @@ results:
             ),
         )
     )
+    # Source-role review already resolved pre-confirmation (#119); the next
+    # work item after confirmation is the first real preparation step.
     continued = engine.continue_run(ContinueRunRequest(run_id=prepared.run_id))
-    source_work = continued.work_item
-    assert source_work is not None, (
+    evidence_work = continued.work_item
+    assert evidence_work is not None, (
         continued.run_state,
         continued.directive,
         continued.next_action,
         confirmed.run_state,
         continued.progress.blockers if continued.progress else None,
     )
-    work_context = engine.get_work_context(
-        GetWorkContextRequest(run_id=prepared.run_id, work_token=source_work.work_token)
-    ).context
-    assert work_context is not None
-    engine.submit_source_classification(
-        SubmitSourceClassificationRequest(
-            contract_version="1.0.0",
-            run_id=prepared.run_id,
-            work_token=source_work.work_token,
-            idempotency_key="idempotency:metadata-index-classify",
-            classifications=tuple(
-                SourceClassificationInput(
-                    source_id=source.source_id,
-                    roles=(SourceRole.PRIMARY_REPORT,),
-                )
-                for source in work_context.sources
-            ),
-        )
-    )
-    evidence_work = engine.continue_run(ContinueRunRequest(run_id=prepared.run_id)).work_item
-    assert evidence_work is not None
     token_payload = evidence_work.work_token.model_dump(mode="json")
     monkeypatch.setattr(
         "rob2_kit.interfaces.mcp.server.RunEngine",
