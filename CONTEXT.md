@@ -124,8 +124,28 @@ _Avoid_: Rank cutoff, implicit omission
 A bounded summary that orients an assessor to one Trial preparation through its ResultSpec, Source inventory, coverage limitations, document outlines, registry projection, and applicable pack and policy identities. It points to complete searchable sources rather than attempting to reproduce the full dossier.
 _Avoid_: Full-text context, trial dossier
 
+**Discovery candidate**:
+A proposed but unconfirmed identity for a Source's role, a Trial's Result, or a Trial's registry record, produced by a bounded heuristic (folder or filename cues, lexical or identifier-shape matches) and carrying its originating cue, source location, parser or revision identity, and stated uncertainty. It ranks and explains itself but never binds identity by itself, including when it is the only candidate found; an attributable disposition is what establishes or excludes it.
+_Avoid_: Auto-classification, inferred identity, sole-match binding
+
+**Discovery candidate disposition**:
+The attributable outcome recorded for one Discovery candidate: accepted, rejected, superseded by a different accepted candidate in the same slot, or left unresolved. It is distinct from an Evidence candidate disposition, which judges a span's relevance to a signaling-question answer rather than a Source's, Trial's, or registry record's identity.
+_Avoid_: Evidence candidate disposition, auto-accept, cardinality default
+
+**Result candidate**:
+A Discovery candidate proposing that one ResultSpec-shaped analysis in a Trial's Sources satisfies a requested Outcome target, produced by matching outcome construct, time point, effect measure, or instrument wording. A Trial with exactly one Result candidate for a target is not automatically citable for it; its disposition still requires recorded review.
+_Avoid_: Auto-selected Result, sole-candidate binding
+
+**Registry candidate**:
+A Discovery candidate proposing that a specific registry record (for example a ClinicalTrials.gov NCT number) identifies a Trial, produced by an identifier-shaped match or declared text. An unrecognized or non-standard identifier remains a visible, reviewable candidate rather than being silently dropped for not matching an expected shape.
+_Avoid_: Auto-linked registry record, NCT inference
+
+**Source-role candidate**:
+A Discovery candidate proposing one or more Source roles from folder position, filename cues, or an explicit Trial declaration. Until it is accepted, dependent decisions — a Result's required-Source check, which protocol or SAP a proposal shows as preferred, and a Source's computed criticality — must not treat the cue as settled.
+_Avoid_: Auto-classified role, forced label
+
 **Trial discovery record**:
-A durable, content-digested pre-confirmation account of one proposed Trial's identity candidates, Randomizations and Arms, Source roles, relevant document sections, candidate outcome definitions and analyses, coherent supporting passages, conflicts, missing information, and unresolved alternatives, bound to the exact Source artifacts and Parse records inspected. It lets an agent form and resume a robust Run proposal without treating its prose summary or context window as authority, and it does not duplicate full Source content or post-confirmation RoB 2 Evidence.
+A durable, revision-tracked pre-confirmation account of one proposed Trial's identity candidates — its Source-role, Result, and Registry candidates — together with relevant document sections, coherent supporting passages, conflicts, and unresolved alternatives, bound to the exact Source artifacts and Parse records inspected. It gains a new revision whenever a contained candidate's disposition changes, carries no separate closed state, and lets an agent form and resume a robust Run proposal without treating its prose summary or context window as authority.
 _Avoid_: Agent memory, Trial orientation pack, Evidence Bundle, full dossier
 
 **Domain context pack**:
@@ -193,7 +213,7 @@ The assessor-attributed Domain or overall judgment for an Assessment revision. I
 _Avoid_: Proposed judgment, mutable judgment, in-report override
 
 **Source descriptor**:
-The identity and expected roles of an obtained, missing, or discovered information source, including relevant dates and external identifiers. Roles are attributable classifications rather than forced labels, and the descriptor can exist even when no content was acquired.
+The identity and expected roles of an obtained, missing, or discovered information source, including relevant dates and external identifiers. A role is the accepted disposition of that source's Source-role candidate, not a forced label, and the descriptor can exist even when no content was acquired.
 _Avoid_: PDF, source file
 
 **Source–Trial association**:
@@ -209,7 +229,7 @@ An attributable revision correcting a Canonical evidence unit's document zone, T
 _Avoid_: Filter bypass, agent-confidence override, silent reclassification
 
 **Source criticality**:
-The consequence of a source’s unavailability for a particular Result preparation: required sources must be acquired and sufficiently readable, expected sources receive a bounded acquisition attempt, and optional sources are used when available. Criticality is contextual and distinct from source role or authority.
+The consequence of a source’s unavailability for a particular Result preparation: required sources must be acquired and sufficiently readable, expected sources receive a bounded acquisition attempt, and optional sources are used when available. Criticality is contextual and distinct from source role or authority, and it is derived from a Source-role candidate's accepted disposition, recomputed whenever that disposition changes rather than fixed at ingestion.
 _Avoid_: Source role, global evidence ranking
 
 **Result-bearing full-text report**:
