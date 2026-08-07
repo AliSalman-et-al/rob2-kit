@@ -26,9 +26,11 @@ from rob2_kit.application.contracts import (
     ContinueRunRequest,
     ContinueRunResponse,
     CorrectDomainAnswersRequest,
+    CoverageProgress,
     DomainContextPack,
     ErrorClass,
     EvidenceConsiderationInput,
+    EvidencePassageInput,
     FinalJudgmentInput,
     GetWorkContextRequest,
     GetWorkContextResponse,
@@ -163,8 +165,11 @@ from rob2_kit.evidence.visual import (
     build_visual_citation,
 )
 from rob2_kit.evidence.workflow import (
-    ExecutedSearchQuery,
     SearchCoverageReceipt,
+    SearchCoverageRecorder,
+    SearchPassKind,
+    SourceSearchCoverage,
+    SourceSearchState,
     verify_complete_search_coverage_receipt,
 )
 from rob2_kit.ingestion.project import (
@@ -524,6 +529,21 @@ class _DomainCoverageReceiptRecord(FrozenModel):
     receipts: tuple[SearchCoverageReceipt, ...] = ()
 
 
+class _DomainEvidenceBlockedRecord(FrozenModel):
+    """Durable marker: the latest frozen evidence for this Domain fell short.
+
+    Committed (not scientific work) so continue_run can reroute back to
+    submit_domain_evidence on a fresh derivation instead of silently
+    re-offering the same blocked submit_domain_answers work item forever
+    (#127/#128, ADR-0008).
+    """
+
+    run_id: Identifier
+    result_id: Identifier
+    domain_id: Identifier
+    insufficiencies: tuple[str, ...]
+
+
 class _DomainAnswersRecord(FrozenModel):
     """Normalized signaling-question answers for one Result × domain."""
 
@@ -609,6 +629,14 @@ class RunEngine:
         self._determinism = determinism
         self._report_projector_factory = report_projector_factory or ReportProjector
         self._lease_acquirer = lease_acquirer
+        # Server-side Search coverage accounting (#127), keyed by business
+        # identity (run, Result, Domain, SQ) rather than the opaque WorkToken
+        # so a reissued token still finds prior accumulated progress
+        # (ADR-0007, ADR-0008). Intentionally process-lifetime only: it is
+        # not durable across a Harness disconnect (ADR-0007).
+        self._coverage_recorders: dict[
+            tuple[Identifier, Identifier, Identifier, Identifier], SearchCoverageRecorder
+        ] = {}
 
     def __getattr__(self, name: str) -> Any:
         """Expose the canonical status spelling without expanding the legacy API.
@@ -2455,20 +2483,47 @@ class RunEngine:
                 "unable to search the evidence retrieval index"
             ) from error
         executed_query = None
-        if request.pass_kind is not None:
-            executed_query = ExecutedSearchQuery(
-                sq_id=request.sq_id,
-                query=request.query,
-                query_hash=page.query_hash,
-                pass_kind=request.pass_kind,
-                seed_family=request.seed_family,
-                returned_unit_ids=tuple(hit.unit.unit_id for hit in page.hits),
-                traversal_complete=page.next_cursor is None,
-                broad_query=page.preview.requires_broad_query_justification,
-                broad_query_justification=broad_justification,
+        coverage_progress = None
+        recording_scope = (
+            request.pass_kind is not None
+            and scope.result_id is not None
+            and scope.domain_id is not None
+        )
+        if recording_scope:
+            # Accumulate this verified page into the engine-owned coverage
+            # recorder for this Result x Domain x SQ (#127); the caller never
+            # constructs or resubmits this accounting.
+            recorder = self._recorder_for(
+                ledger,
+                request.run_id,
+                scope.result_id,
+                scope.domain_id,
+                request.sq_id,
                 snapshot_hash=page.snapshot_hash,
                 policy_id=page.policy_id,
                 policy_hash=page.policy_hash,
+            )
+            executed_query = recorder.record_page(
+                page,
+                index=index,
+                policy=policy,
+                query=request.query,
+                pass_kind=request.pass_kind,
+                seed_family=request.seed_family,
+                cursor=request.cursor,
+                broad_query_justification=broad_justification,
+                scope=scope,
+            )
+            completed_passes = recorder.completed_passes()
+            coverage_progress = CoverageProgress(
+                sq_id=request.sq_id,
+                required_seed_families=recorder.required_seed_families,
+                completed_seed_families=recorder.completed_seed_families(),
+                completed_passes=completed_passes,
+                missing_passes=tuple(
+                    pass_kind for pass_kind in SearchPassKind if pass_kind not in completed_passes
+                ),
+                coverage_complete=recorder.is_coverage_complete(),
             )
         return SearchEvidenceResponse(
             operation_id=self._read_operation_id(RunOperation.SEARCH_EVIDENCE, request.run_id),
@@ -2479,6 +2534,7 @@ class RunEngine:
             run_id=request.run_id,
             page=page,
             executed_query=executed_query,
+            coverage_progress=coverage_progress,
         )
 
     def read_evidence(self, request: ReadEvidenceRequest) -> ReadEvidenceResponse:
@@ -3089,10 +3145,15 @@ class RunEngine:
             self._validate_legacy_evidence_items(ledger, request)
         if request.passages:
             self._validate_domain_evidence_submission(
-                ledger, request.model_copy(update={"passages": ()})
+                ledger, request.model_copy(update={"passages": ()}), enforce_non_empty=False
             )
-            self._validate_retained_passage_links(ledger, request)
+            submitted_passages = request.passages
+            # _resolve_evidence_passages runs first so its own structural
+            # checks (domain/question membership, span bounds, canonical-unit
+            # lookup) raise their own specific errors before the
+            # search-provenance link check below.
             request = self._resolve_evidence_passages(ledger, request)
+            self._validate_retained_passage_links(ledger, request, submitted_passages)
         self._validate_domain_evidence_submission(
             ledger, request, passages_materialized=bool(original_request.passages)
         )
@@ -3450,6 +3511,7 @@ class RunEngine:
             domain_id=request.domain_id,
         )
         if insufficiencies:
+            self._commit_evidence_insufficient_block(ledger, request, insufficiencies)
             return self._evidence_insufficiency_response(
                 ledger, request, insufficiencies, RunOperation.SUBMIT_DOMAIN_ANSWERS
             )
@@ -3713,6 +3775,7 @@ class RunEngine:
         request: SubmitDomainEvidenceRequest,
         *,
         passages_materialized: bool = False,
+        enforce_non_empty: bool = True,
     ) -> None:
         """Validate the evidence-first freeze boundary before writing anything."""
         domain = next(
@@ -3734,14 +3797,33 @@ class RunEngine:
         mapped_item_ids = {
             item.entity_id for items in request.evidence_by_question.values() for item in items
         }
-        receipt_question_ids = tuple(receipt.sq_id for receipt in request.coverage_receipts)
-        if any(receipt_id not in domain_questions for receipt_id in receipt_question_ids):
-            raise ValueError("Search coverage receipts must bind this domain's signaling questions")
-        if len(receipt_question_ids) != len(set(receipt_question_ids)):
-            raise ValueError("each signaling question may have only one Search coverage receipt")
-        if request.items and not request.coverage_receipts:
-            raise ValueError("freezing Evidence items requires complete Search coverage receipts")
-        if request.items and request.coverage_receipts and not passages_materialized:
+        # Search coverage is engine-owned recorder state keyed by this active
+        # Result x Domain x SQ, accumulated by prior search_evidence calls
+        # (#127) -- never a client-supplied receipt.
+        recorders = {
+            question_id: self._coverage_recorders.get(
+                (request.run_id, request.result_id, request.domain_id, question_id)
+            )
+            for question_id in domain_questions
+        }
+        coverage_complete = {
+            question_id: recorder is not None and recorder.is_coverage_complete()
+            for question_id, recorder in recorders.items()
+        }
+        if request.items and not all(coverage_complete.values()):
+            raise ValueError(
+                "freezing Evidence items requires complete Search coverage for every active "
+                "signaling question; call search_evidence to complete the mandatory passes first"
+            )
+        if request.items and any(
+            self._visual_coverage_blocked(ledger, request, question_id)
+            for question_id in domain_questions
+        ):
+            raise ValueError(
+                "issued Visual candidates require an engine-recorded completed inspection "
+                "before Evidence can freeze"
+            )
+        if request.items and any(recorders.values()) and not passages_materialized:
             visual_items = True
             for item in request.items:
                 try:
@@ -3754,31 +3836,7 @@ class RunEngine:
                     "receipt-backed Evidence freezing requires exact canonical passages, "
                     "not legacy items"
                 )
-        if request.items and set(receipt_question_ids) != domain_questions:
-            raise ValueError(
-                "freezing Evidence items requires one complete Search coverage receipt for "
-                "every active signaling question"
-            )
-        if request.coverage_receipts:
-            index = EvidenceSearchIndex(self._required_root() / ".rob2" / "evidence.sqlite3")
-            for receipt in request.coverage_receipts:
-                self._validate_coverage_receipt_dependencies(ledger, request, receipt)
-                self._validate_visual_coverage(ledger, request, receipt)
-                receipt_scope = self._retrieval_scope(
-                    ledger,
-                    request.run_id,
-                    request.work_token,
-                    request.result_id,
-                    receipt.sq_id,
-                )
-                verify_complete_search_coverage_receipt(
-                    receipt,
-                    index=index,
-                    scope=receipt_scope,
-                )
-        retained_candidates = set().union(
-            *(receipt.retained_candidate_ids() for receipt in request.coverage_receipts)
-        ) if request.coverage_receipts else set()
+        retained_candidates = {passage.unit_id for passage in request.passages}
         if (
             retained_candidates
             and request.review_revisions
@@ -3808,26 +3866,37 @@ class RunEngine:
         if request.no_information_basis:
             if request.coverage_state.value != "complete" or request.coverage_limitations:
                 raise ValueError("no-information answers require complete, unlimited coverage")
-            if not request.coverage_receipts:
+            if not all(coverage_complete.values()):
                 raise ValueError("no-information basis requires complete Search coverage receipts")
+            previews = {
+                question_id: self._freeze_recorder(request, question_id, recorder)
+                for question_id, recorder in recorders.items()
+                if recorder is not None
+            }
             if any(
-                not receipt.establishes_no_information_basis()
-                for receipt in request.coverage_receipts
+                not previews[question_id].establishes_no_information_basis()
+                for question_id in domain_questions
             ):
                 raise ValueError(
                     "no-information basis requires adequate readable-source Search coverage"
                 )
-            if any(receipt.retained_candidate_ids() for receipt in request.coverage_receipts):
+            if any(
+                previews[question_id].retained_candidate_ids() for question_id in domain_questions
+            ):
                 raise ValueError(
                     "no-information basis is unavailable while retained Evidence candidates remain"
                 )
-            if set(receipt_question_ids) != domain_questions or len(receipt_question_ids) != len(
-                domain_questions
-            ):
-                raise ValueError(
-                    "no-information basis requires one complete Search coverage receipt for "
-                    "every active signaling question"
-                )
+        if enforce_non_empty and not (
+            request.items
+            or request.passages
+            or request.no_information_basis
+            or request.coverage_state.value == "incomplete"
+        ):
+            raise ValueError(
+                "Evidence submission must include real passages/items, an explicit "
+                "no_information_basis with complete Search coverage, or "
+                "coverage_state='incomplete' with a stated limitation"
+            )
         item_ids = tuple(item.entity_id for item in request.items)
         if len(item_ids) != len(set(item_ids)):
             raise ValueError("Evidence Bundle items must be unique")
@@ -3892,46 +3961,52 @@ class RunEngine:
             raise ValueError("review revision references a question outside the submitted Domain")
 
     def _validate_retained_passage_links(
-        self, ledger: WorkflowLedger, request: SubmitDomainEvidenceRequest
+        self,
+        ledger: WorkflowLedger,
+        request: SubmitDomainEvidenceRequest,
+        passages: tuple[EvidencePassageInput, ...],
     ) -> None:
-        """Require each retained search candidate to bind one exact selected span."""
-        if not request.coverage_receipts:
-            return
+        """Require each retained passage to select a unit search_evidence actually returned.
+
+        Runs after _resolve_evidence_passages so its own structural checks
+        (domain/question membership, span bounds, canonical-unit lookup)
+        surface their own specific errors first; ``passages`` is the
+        pre-resolution list since resolution clears ``request.passages``.
+        """
         retained_candidates: dict[Identifier, tuple[Identifier, Identifier]] = {}
-        for receipt in request.coverage_receipts:
-            for disposition in receipt.result_dispositions:
-                if disposition.candidate_id is None:
-                    continue
-                if disposition.candidate_id in retained_candidates:
-                    raise ValueError("a retained Evidence candidate cannot span multiple questions")
-                retained_candidates[disposition.candidate_id] = (disposition.unit_id, receipt.sq_id)
-        passage_candidate_ids = [passage.candidate_id for passage in request.passages]
-        if any(candidate_id is None for candidate_id in passage_candidate_ids):
-            raise ValueError("passages with Search coverage receipts require candidate_id")
-        if len(passage_candidate_ids) != len(set(passage_candidate_ids)):
-            raise ValueError("each retained Evidence candidate must select one exact passage")
-        if set(passage_candidate_ids) != set(retained_candidates):
-            raise ValueError("every retained Evidence candidate must select one exact passage")
-        for passage in request.passages:
-            assert passage.candidate_id is not None
-            unit_id, sq_id = retained_candidates[passage.candidate_id]
-            if passage.unit_id != unit_id or passage.question_ids != (sq_id,):
-                raise ValueError(
-                    "retained Evidence candidates must keep their issued unit and "
-                    "signaling-question scope"
+        for passage in passages:
+            candidate_id = passage.candidate_id or passage.unit_id
+            sq_id = passage.question_ids[0]
+            for question_id in passage.question_ids:
+                recorder = self._coverage_recorders.get(
+                    (request.run_id, request.result_id, request.domain_id, question_id)
                 )
-        self._validate_review_span_links(ledger, request, retained_candidates)
+                if recorder is None or passage.unit_id not in recorder.returned_unit_ids():
+                    raise ValueError(
+                        "retained Evidence candidates must select a unit search_evidence "
+                        "returned for its mapped signaling question"
+                    )
+            if candidate_id in retained_candidates and retained_candidates[candidate_id] != (
+                passage.unit_id,
+                sq_id,
+            ):
+                raise ValueError("a retained Evidence candidate cannot span multiple questions")
+            retained_candidates[candidate_id] = (passage.unit_id, sq_id)
+        self._validate_review_span_links(ledger, request, retained_candidates, passages)
 
     def _validate_review_span_links(
         self,
         ledger: WorkflowLedger,
         request: SubmitDomainEvidenceRequest,
         retained_candidates: dict[Identifier, tuple[Identifier, Identifier]],
+        passages_input: tuple[EvidencePassageInput, ...],
     ) -> None:
         """Bind semantic review spans to an issued read window and selected passage."""
         if not request.review_revisions:
             return
-        passages = {passage.candidate_id: passage for passage in request.passages}
+        passages = {
+            (passage.candidate_id or passage.unit_id): passage for passage in passages_input
+        }
         index = EvidenceSearchIndex(self._required_root() / ".rob2" / "evidence.sqlite3")
         scope = self._retrieval_scope(
             ledger,
@@ -3972,36 +4047,30 @@ class RunEngine:
                         "and issued read bounds"
                     )
 
-    def _validate_coverage_receipt_dependencies(
+    def _coverage_recorder_metadata(
         self,
         ledger: WorkflowLedger,
-        request: SubmitDomainEvidenceRequest,
-        receipt: SearchCoverageReceipt,
-    ) -> None:
-        """Bind a supplied receipt to the active Result and Source inventory."""
-        result_spec = self._result_spec_for(ledger, request.run_id, request.result_id)
+        run_id: Identifier,
+        result_id: Identifier,
+        sq_id: Identifier,
+    ) -> dict[str, Any]:
+        """Derive the exact Search coverage dependencies for one Result x SQ.
+
+        Every value here is engine-derived from ledger/proposal state, never
+        supplied by a caller, so the receipt a recorder eventually freezes is
+        correct by construction (#127).
+        """
+        result_spec = self._result_spec_for(ledger, run_id, result_id)
         if result_spec is None:
-            raise ValueError("Search coverage receipt requires the active ResultSpec")
-        expected_result = RecordReference(
+            raise ValueError("Search coverage requires the active ResultSpec")
+        result_ref = RecordReference(
             entity_id=result_spec.entity_id,
             revision_id=result_spec.revision_id,
             content_hash=canonical_hash(result_spec),
         )
-        if receipt.result_spec != expected_result:
-            raise ValueError("Search coverage receipt does not bind the active ResultSpec")
         guidance = load_guidance_pack(self._guidance_pack_path())
-        if receipt.guidance_release_id != f"guidance:rob2-{guidance.release_id}":
-            raise ValueError("Search coverage receipt does not bind the active Guidance release")
-        expected_seed_family = "seed:" + receipt.sq_id.removeprefix("sq:").replace(":", "-")
-        if receipt.required_seed_families != (
-            expected_seed_family,
-        ) or receipt.completed_seed_families != (expected_seed_family,):
-            raise ValueError("Search coverage receipt does not use the engine-issued expected pass")
-        expected_rule_ids = tuple(sorted(rule.entity_id for rule in request.project_rules))
-        if receipt.project_rule_ids != expected_rule_ids:
-            raise ValueError("Search coverage receipt does not bind the active project rules")
-
-        proposal = self._latest_proposal(ledger, request.run_id)
+        seed_family = "seed:" + sq_id.removeprefix("sq:").replace(":", "-")
+        proposal = self._latest_proposal(ledger, run_id)
         trial = next(
             (
                 item
@@ -4011,19 +4080,17 @@ class RunEngine:
             None,
         )
         if trial is None or trial.inventory is None:
-            raise ValueError("Search coverage receipt requires the active Trial source inventory")
+            raise ValueError("Search coverage requires the active Trial source inventory")
         inventory = trial.inventory
         inventory_suffix = self._digest(
-            f"{request.run_id}|{request.result_id}|{expected_result.content_hash}|source-inventory"
+            f"{run_id}|{result_id}|{result_ref.content_hash}|source-inventory"
         )
-        expected_inventory = RecordReference(
-            entity_id=f"source-inventory:{request.result_id.removeprefix('result:')}",
+        source_inventory_ref = RecordReference(
+            entity_id=f"source-inventory:{result_id.removeprefix('result:')}",
             revision_id=f"revision:source-inventory-{inventory_suffix}",
             content_hash=canonical_hash(inventory),
         )
-        if receipt.source_inventory != expected_inventory:
-            raise ValueError("Search coverage receipt does not bind the active Source inventory")
-        expected_parse_hashes = tuple(
+        parse_record_hashes = tuple(
             sorted(
                 {
                     parse.output_hash
@@ -4032,63 +4099,121 @@ class RunEngine:
                 }
             )
         )
-        if receipt.parse_record_hashes != expected_parse_hashes:
-            raise ValueError("Search coverage receipt does not bind active Parse records")
-        if receipt.coverage_limits != inventory.coverage_limitations:
-            raise ValueError(
-                "Search coverage receipt does not preserve Source coverage limitations"
-            )
-
-        receipt_sources = {source.source_id: source for source in receipt.sources}
-        expected_source_ids = {source.source_id for source in inventory.sources}
-        if (
-            set(receipt.inventory_source_ids) != expected_source_ids
-            or set(receipt_sources) != expected_source_ids
-        ):
-            raise ValueError("Search coverage receipt does not cover every active Source role")
+        sources: list[SourceSearchCoverage] = []
         for source in inventory.sources:
-            recorded = receipt_sources[source.source_id]
-            if recorded.artifact_hash != source.artifact_hash:
-                raise ValueError("Search coverage receipt Source artifact does not match inventory")
             if source.availability is not SourceAvailability.ACQUIRED:
-                state = "unobtained"
-                readable = False
+                state, readable = SourceSearchState.UNOBTAINED, False
             elif source.processing is SourceProcessing.USABLE:
-                state = "searched"
-                readable = True
+                state, readable = SourceSearchState.SEARCHED, True
             elif source.processing is SourceProcessing.COVERAGE_LIMITED:
-                state = "search_limited"
-                readable = False
+                state, readable = SourceSearchState.SEARCH_LIMITED, False
             else:
-                state = "unreadable"
-                readable = False
-            if recorded.state.value != state or recorded.sufficiently_readable != readable:
-                raise ValueError(
-                    "Search coverage receipt Source readability is not engine-verified"
+                state, readable = SourceSearchState.UNREADABLE, False
+            sources.append(
+                SourceSearchCoverage(
+                    source_id=source.source_id,
+                    state=state,
+                    sufficiently_readable=readable,
+                    artifact_hash=source.artifact_hash,
                 )
+            )
+        return {
+            "result_spec": result_ref,
+            "source_inventory": source_inventory_ref,
+            "parse_record_hashes": parse_record_hashes,
+            "guidance_release_id": f"guidance:rob2-{guidance.release_id}",
+            "required_seed_families": (seed_family,),
+            "sources": tuple(sources),
+            "inventory_source_ids": tuple(source.source_id for source in inventory.sources),
+            "coverage_limits": inventory.coverage_limitations,
+        }
 
-    def _validate_visual_coverage(
+    def _recorder_for(
+        self,
+        ledger: WorkflowLedger,
+        run_id: Identifier,
+        result_id: Identifier,
+        domain_id: Identifier,
+        sq_id: Identifier,
+        *,
+        snapshot_hash: ContentHash,
+        policy_id: Identifier,
+        policy_hash: ContentHash,
+    ) -> SearchCoverageRecorder:
+        """Get or create the server-side coverage recorder for one Result x Domain x SQ.
+
+        Keying on business identity rather than the opaque WorkToken means
+        recorder state survives a WorkToken reissue -- e.g. the #127/#128
+        recovery route back into submit_domain_evidence after an
+        evidence_insufficient block carries forward whatever was already
+        found instead of forcing a full re-search (ADR-0008). A recorder
+        bound to a since-superseded index snapshot (e.g. input reconciliation
+        reparsed a Source mid-run) is discarded and rebuilt fresh rather than
+        reused, since its accumulated pages no longer verify against the
+        live index.
+        """
+        key = (run_id, result_id, domain_id, sq_id)
+        recorder = self._coverage_recorders.get(key)
+        if recorder is not None and recorder.snapshot_hash == snapshot_hash:
+            return recorder
+        metadata = self._coverage_recorder_metadata(ledger, run_id, result_id, sq_id)
+        receipt_id = f"coverage:{self._digest(f'{run_id}|{result_id}|{sq_id}')}"
+        recorder = SearchCoverageRecorder(
+            receipt_id=receipt_id,
+            sq_id=sq_id,
+            snapshot_hash=snapshot_hash,
+            policy_id=policy_id,
+            policy_hash=policy_hash,
+            **metadata,
+        )
+        self._coverage_recorders[key] = recorder
+        return recorder
+
+    def _freeze_recorder(
+        self,
+        request: SubmitDomainEvidenceRequest,
+        question_id: Identifier,
+        recorder: SearchCoverageRecorder,
+    ) -> SearchCoverageReceipt:
+        """Freeze one recorder's accumulated state into an immutable receipt.
+
+        Pure and idempotent over the recorder's current accumulated state:
+        dispositions are (re)derived from which returned units the caller is
+        retaining as Evidence for this question via submitted passages,
+        never supplied by the caller directly (#127).
+        """
+        retained_units = {
+            passage.unit_id for passage in request.passages if question_id in passage.question_ids
+        }
+        recorder.auto_disposition(retained_units)
+        recorder.bind_project_rules(tuple(sorted(rule.entity_id for rule in request.project_rules)))
+        return recorder.freeze(
+            completed_seed_families=recorder.completed_seed_families(),
+            traversal_complete=recorder.traversal_complete,
+            interrupted=False,
+        )
+
+    def _visual_coverage_blocked(
         self,
         ledger: WorkflowLedger,
         request: SubmitDomainEvidenceRequest,
-        receipt: SearchCoverageReceipt,
-    ) -> None:
-        """Require receipt coverage for exactly the visual candidates issued by the Run."""
-        issued_ids = {
-            candidate.candidate_id
-            for candidate in self._visual_candidates(
-                ledger, request.run_id, result_id=request.result_id
-            )
-            if candidate.domain_id == request.domain_id and candidate.sq_id == receipt.sq_id
-        }
-        recorded = {candidate.candidate_id: candidate for candidate in receipt.visual_candidates}
-        if set(recorded) != issued_ids:
-            raise ValueError("Search coverage receipt does not cover issued Visual candidates")
-        if issued_ids:
-            raise ValueError(
-                "issued Visual candidates require an engine-recorded completed inspection "
-                "before Evidence can freeze"
-            )
+        question_id: Identifier,
+    ) -> bool:
+        """Whether an issued Visual candidate still blocks this SQ's freeze.
+
+        Visual-inspection completion is not yet tracked by the recorder; any
+        issued candidate blocks freeze until it is (unchanged pre-existing
+        behavior, out of #127's scope).
+        """
+        return bool(
+            {
+                candidate.candidate_id
+                for candidate in self._visual_candidates(
+                    ledger, request.run_id, result_id=request.result_id
+                )
+                if candidate.domain_id == request.domain_id and candidate.sq_id == question_id
+            }
+        )
 
     def _freeze_domain_evidence(
         self,
@@ -4148,30 +4273,35 @@ class RunEngine:
             dependencies=disposition_record.dependencies,
         )
         coverage_refs_by_question: dict[Identifier, RecordReference] = {}
-        if request.coverage_receipts:
-            for receipt in request.coverage_receipts:
-                coverage_suffix = self._digest(
-                    f"{request.run_id}|{request.idempotency_key}|coverage|{receipt.sq_id}"
-                )
-                coverage_record = EvidenceCoverageReceiptRecord(
-                    entity_id=f"search-coverage:{coverage_suffix}",
-                    revision_id=f"revision:search-coverage-{coverage_suffix}",
-                    actor=actor,
-                    observed_at=self._now(),
-                    result_id=request.result_id,
-                    domain_id=request.domain_id,
-                    receipts=(receipt.model_dump(mode="json"),),
-                )
-                coverage_refs_by_question[receipt.sq_id] = self._commit_frozen_artifact(
-                    ledger,
-                    scope=request.result_id,
-                    operation="operation:search-coverage-receipt",
-                    operation_key=f"{request.idempotency_key}:coverage:{receipt.sq_id}",
-                    entity_id=f"search-coverage:{coverage_suffix}",
-                    revision_id=f"revision:search-coverage-{coverage_suffix}",
-                    artifact=coverage_record,
-                    actor=actor,
-                )
+        for question_id in domain.question_ids:
+            recorder = self._coverage_recorders.get(
+                (request.run_id, request.result_id, request.domain_id, question_id)
+            )
+            if recorder is None:
+                continue
+            receipt = self._freeze_recorder(request, question_id, recorder)
+            coverage_suffix = self._digest(
+                f"{request.run_id}|{request.idempotency_key}|coverage|{question_id}"
+            )
+            coverage_record = EvidenceCoverageReceiptRecord(
+                entity_id=f"search-coverage:{coverage_suffix}",
+                revision_id=f"revision:search-coverage-{coverage_suffix}",
+                actor=actor,
+                observed_at=self._now(),
+                result_id=request.result_id,
+                domain_id=request.domain_id,
+                receipts=(receipt.model_dump(mode="json"),),
+            )
+            coverage_refs_by_question[question_id] = self._commit_frozen_artifact(
+                ledger,
+                scope=request.result_id,
+                operation="operation:search-coverage-receipt",
+                operation_key=f"{request.idempotency_key}:coverage:{question_id}",
+                entity_id=f"search-coverage:{coverage_suffix}",
+                revision_id=f"revision:search-coverage-{coverage_suffix}",
+                artifact=coverage_record,
+                actor=actor,
+            )
         bundles: list[RecordReference] = []
         manifests: list[RecordReference] = []
         for question_id in domain.question_ids:
@@ -4669,6 +4799,77 @@ class RunEngine:
         return "; ".join(
             f"{item.question_id}: {item.reason.value} ({item.detail})"
             for item in insufficiencies
+        )
+
+    def _commit_evidence_insufficient_block(
+        self,
+        ledger: WorkflowLedger,
+        request: SubmitDomainAnswersRequest,
+        insufficiencies: tuple[EvidenceInsufficiency, ...],
+    ) -> None:
+        """Durably mark this Domain's latest evidence as insufficient.
+
+        Not scientific work -- an operational marker so a later continue_run
+        (a fresh derivation from ledger state, possibly in a new process)
+        reroutes back to submit_domain_evidence instead of re-offering the
+        same blocked answer work item (ADR-0008). Append-only: each call is a
+        distinct event, so retrying after a corrected-but-still-insufficient
+        resubmission is visible too.
+        """
+        now = self._now()
+        slug = request.domain_id.removeprefix("domain:")
+        suffix = self._digest(
+            f"{request.run_id}|{request.result_id}|{request.domain_id}|{len(ledger.events())}"
+        )
+        record = _DomainEvidenceBlockedRecord(
+            run_id=request.run_id,
+            result_id=request.result_id,
+            domain_id=request.domain_id,
+            insufficiencies=tuple(
+                f"{item.question_id}:{item.reason.value}" for item in insufficiencies
+            ),
+        )
+        transition = self._transition(
+            scope=request.result_id,
+            operation="operation:domain-evidence-insufficient",
+            operation_key=f"idempotency:evidence-insufficient-{slug}-{suffix}",
+            entity_id=f"evidence-insufficient:{slug}-{suffix}",
+            revision_id=f"revision:evidence-insufficient-{suffix}",
+            artifact=record,
+            checkpoint=f"checkpoint:evidence-insufficient-{slug}",
+            outcome=WorkflowEventOutcome.WORK_REQUIRED,
+            observed_at=now,
+        )
+        lease = self._acquire_lease(ledger, now)
+        ledger.commit(transition, lease, now=now)
+
+    @staticmethod
+    def _domain_evidence_needs_retry(
+        events: tuple[WorkflowEvent, ...], result_id: Identifier, domain_id: Identifier
+    ) -> bool:
+        """Whether the latest frozen evidence for this Domain was already blocked.
+
+        Mirrors _has_domain_checkpoint's sequence-comparison pattern: a block
+        recorded after the latest evidence checkpoint means the next work
+        item must reroute back to submit_domain_evidence.
+        """
+        slug = domain_id.removeprefix("domain:")
+        latest_evidence = max(
+            (
+                event.sequence
+                for event in events
+                if event.operation == "operation:submit-domain-evidence"
+                and event.scope == result_id
+                and event.checkpoint == f"checkpoint:evidence-{slug}"
+            ),
+            default=0,
+        )
+        return any(
+            event.operation == "operation:domain-evidence-insufficient"
+            and event.scope == result_id
+            and event.checkpoint == f"checkpoint:evidence-insufficient-{slug}"
+            and event.sequence > latest_evidence
+            for event in events
         )
 
     def _evidence_insufficiency_response(
@@ -8846,7 +9047,9 @@ class RunEngine:
         for result_id in result_ids:
             for domain in logic.domains:
                 domain_id = domain.id
-                if not self._has_domain_checkpoint(events, result_id, domain_id, "evidence"):
+                if not self._has_domain_checkpoint(
+                    events, result_id, domain_id, "evidence"
+                ) or self._domain_evidence_needs_retry(events, result_id, domain_id):
                     return self._work_item(
                         run_id,
                         f"{result_id}|{domain_id}|evidence",

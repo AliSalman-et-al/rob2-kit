@@ -29,19 +29,11 @@ from rob2_kit.application.contracts import (
 )
 from rob2_kit.application.lifecycle import ResultState, RunState
 from rob2_kit.application.run_engine import RunEngine
-from rob2_kit.domain.canonical import canonical_hash
 from rob2_kit.domain.evidence import EvidenceClaim, VisualTranscription
 from rob2_kit.domain.results import Estimate, Result
 from rob2_kit.domain.revisions import Actor, ActorKind, Dependency, RecordReference
 from rob2_kit.evidence.search import EvidenceScope, EvidenceSearchIndex, SearchQuery
-from rob2_kit.evidence.workflow import (
-    SearchCoverageReceipt,
-    SearchPassKind,
-    SearchResultDisposition,
-    SearchResultDispositionKind,
-    SourceSearchCoverage,
-    SourceSearchState,
-)
+from rob2_kit.evidence.workflow import SearchPassKind
 from rob2_kit.ingestion.project import PageExtraction, PageTextItem, ParserResult
 from tests.test_mcp_tracer import DOMAINS, _active_answer_ids, _low_answers
 from tests.test_run_proposal import StubParser
@@ -254,26 +246,18 @@ def _complete_passage_receipts(
     work: object,
     *,
     unit_id: str,
-) -> tuple[SearchCoverageReceipt, ...]:
-    """Build a real three-pass receipt for the structured passage fixture."""
+) -> None:
+    """Complete the mandatory search protocol via real search_evidence calls.
+
+    The engine's server-side SearchCoverageRecorder (#127) accumulates these
+    calls itself, keyed by the active WorkToken's Result/Domain scope and
+    each question ID; callers no longer construct or submit a receipt. The
+    document fixtures behind these tests are literally the word "primary"
+    (see the ``report.pdf`` bytes in each caller), so a "primary" query
+    genuinely retrieves ``unit_id`` through the real index.
+    """
     token = getattr(work, "work_token")
     result_id = getattr(work, "result_id")
-    result_spec = engine._result_spec_for(engine._bound_ledger(run_id), run_id, result_id)
-    assert result_spec is not None
-    proposal = engine._latest_proposal(engine._bound_ledger(run_id), run_id)
-    trial = next(item for item in proposal.initialization.trials if item.trial_id == token.trial_id)
-    inventory = trial.inventory
-    assert inventory is not None
-    result_ref = RecordReference(
-        entity_id=result_spec.entity_id,
-        revision_id=result_spec.revision_id,
-        content_hash=canonical_hash(result_spec),
-    )
-    inventory_suffix = engine._digest(
-        f"{run_id}|{result_id}|{result_ref.content_hash}|source-inventory"
-    )
-    receipts: list[SearchCoverageReceipt] = []
-    primary_question = DOMAINS["domain:randomization"][0]
     for question_id in DOMAINS["domain:randomization"]:
         seed_family = "seed:" + question_id.removeprefix("sq:").replace(":", "-")
         queries = (
@@ -281,7 +265,7 @@ def _complete_passage_receipts(
             (SearchQuery(terms=("followup",)), SearchPassKind.TRIAL_FOLLOW_UP, None),
             (SearchQuery(terms=("contradiction",)), SearchPassKind.CONTRADICTION, None),
         )
-        responses = tuple(
+        for query, pass_kind, family in queries:
             engine.search_evidence(
                 SearchEvidenceRequest(
                     run_id=run_id,
@@ -290,70 +274,9 @@ def _complete_passage_receipts(
                     sq_id=question_id,
                     query=query,
                     pass_kind=pass_kind,
-                    seed_family=seed_family,
+                    seed_family=family,
                 )
             )
-            for query, pass_kind, seed_family in queries
-        )
-        assert all(response.executed_query is not None for response in responses)
-        retained = question_id == primary_question
-        receipt = SearchCoverageReceipt(
-            receipt_id=f"coverage:passage-{question_id.removeprefix('sq:').replace(':', '-')}",
-            sq_id=question_id,
-            snapshot_hash=responses[0].page.snapshot_hash,
-            policy_id=responses[0].page.policy_id,
-            policy_hash=responses[0].page.policy_hash,
-            result_spec=result_ref,
-            source_inventory=RecordReference(
-                entity_id=f"source-inventory:{result_id.removeprefix('result:')}",
-                revision_id=f"revision:source-inventory-{inventory_suffix}",
-                content_hash=canonical_hash(inventory),
-            ),
-            parse_record_hashes=tuple(
-                sorted(
-                    parse.output_hash
-                    for source in inventory.sources
-                    for parse in source.parse_records
-                )
-            ),
-            guidance_release_id="guidance:rob2-2019.1",
-            required_seed_families=(seed_family,),
-            completed_seed_families=(seed_family,),
-            completed_passes=tuple(pass_kind for _query, pass_kind, _seed in queries),
-            executed_queries=tuple(response.executed_query for response in responses),
-            returned_unit_ids=(unit_id,) if retained else (),
-            result_dispositions=(
-                (
-                    SearchResultDisposition(
-                        unit_id=unit_id,
-                        kind=SearchResultDispositionKind.RETAINED_CANDIDATE,
-                        candidate_id=unit_id,
-                    ),
-                )
-                if retained
-                else ()
-            ),
-            sources=tuple(
-                SourceSearchCoverage(
-                    source_id=source.source_id,
-                    state=SourceSearchState.SEARCHED,
-                    sufficiently_readable=True,
-                    artifact_hash=source.artifact_hash,
-                )
-                for source in inventory.sources
-            ),
-            inventory_source_ids=tuple(source.source_id for source in inventory.sources),
-            traversal_complete=True,
-            interrupted=False,
-        )
-        proof = receipt.model_dump(mode="json")
-        proof["recorder_proof"] = None
-        receipts.append(
-            SearchCoverageReceipt.model_validate(
-                receipt.model_dump(mode="json") | {"recorder_proof": canonical_hash(proof)}
-            )
-        )
-    return tuple(receipts)
 
 
 def _complete_empty_receipts(
@@ -363,27 +286,11 @@ def _complete_empty_receipts(
     *,
     domain_id: str,
     question_ids: tuple[str, ...],
-) -> tuple[SearchCoverageReceipt, ...]:
-    """Build complete, zero-hit receipts for synthetic visual fixtures."""
+) -> None:
+    """Complete the mandatory zero-hit search protocol via real search_evidence calls."""
 
     token = getattr(work, "work_token")
     result_id = getattr(work, "result_id")
-    ledger = engine._bound_ledger(run_id)
-    result_spec = engine._result_spec_for(ledger, run_id, result_id)
-    assert result_spec is not None
-    proposal = engine._latest_proposal(ledger, run_id)
-    trial = next(item for item in proposal.initialization.trials if item.trial_id == token.trial_id)
-    inventory = trial.inventory
-    assert inventory is not None
-    result_ref = RecordReference(
-        entity_id=result_spec.entity_id,
-        revision_id=result_spec.revision_id,
-        content_hash=canonical_hash(result_spec),
-    )
-    inventory_suffix = engine._digest(
-        f"{run_id}|{result_id}|{result_ref.content_hash}|source-inventory"
-    )
-    receipts: list[SearchCoverageReceipt] = []
     for question_id in question_ids:
         slug = question_id.removeprefix("sq:").replace(":", "-")
         queries = (
@@ -391,7 +298,7 @@ def _complete_empty_receipts(
             (SearchQuery(terms=(f"followup-{slug}",)), SearchPassKind.TRIAL_FOLLOW_UP, None),
             (SearchQuery(terms=(f"contradiction-{slug}",)), SearchPassKind.CONTRADICTION, None),
         )
-        responses = tuple(
+        for query, pass_kind, family in queries:
             engine.search_evidence(
                 SearchEvidenceRequest(
                     run_id=run_id,
@@ -400,58 +307,9 @@ def _complete_empty_receipts(
                     sq_id=question_id,
                     query=query,
                     pass_kind=pass_kind,
-                    seed_family=seed_family,
+                    seed_family=family,
                 )
             )
-            for query, pass_kind, seed_family in queries
-        )
-        receipt = SearchCoverageReceipt(
-            receipt_id=f"coverage:synthetic-{slug}",
-            sq_id=question_id,
-            snapshot_hash=responses[0].page.snapshot_hash,
-            policy_id=responses[0].page.policy_id,
-            policy_hash=responses[0].page.policy_hash,
-            result_spec=result_ref,
-            source_inventory=RecordReference(
-                entity_id=f"source-inventory:{result_id.removeprefix('result:')}",
-                revision_id=f"revision:source-inventory-{inventory_suffix}",
-                content_hash=canonical_hash(inventory),
-            ),
-            parse_record_hashes=tuple(
-                sorted(
-                    parse.output_hash
-                    for source in inventory.sources
-                    for parse in source.parse_records
-                )
-            ),
-            guidance_release_id="guidance:rob2-2019.1",
-            required_seed_families=(f"seed:{slug}",),
-            completed_seed_families=(f"seed:{slug}",),
-            completed_passes=tuple(pass_kind for _query, pass_kind, _seed in queries),
-            executed_queries=tuple(response.executed_query for response in responses),
-            returned_unit_ids=(),
-            result_dispositions=(),
-            sources=tuple(
-                SourceSearchCoverage(
-                    source_id=source.source_id,
-                    state=SourceSearchState.SEARCHED,
-                    sufficiently_readable=True,
-                    artifact_hash=source.artifact_hash,
-                )
-                for source in inventory.sources
-            ),
-            inventory_source_ids=tuple(source.source_id for source in inventory.sources),
-            traversal_complete=True,
-            interrupted=False,
-        )
-        proof = receipt.model_dump(mode="json")
-        proof["recorder_proof"] = None
-        receipts.append(
-            SearchCoverageReceipt.model_validate(
-                receipt.model_dump(mode="json") | {"recorder_proof": canonical_hash(proof)}
-            )
-        )
-    return tuple(receipts)
 
 
 def _synthetic_visual_ref(engine: RunEngine, run_id: str, result_id: str) -> RecordReference:
@@ -539,6 +397,13 @@ def _finish_current_result(
         actual_question_ids = next(
             domain.question_ids for domain in engine._logic_pack().domains if domain.id == domain_id
         )
+        _complete_empty_receipts(
+            engine,
+            run_id,
+            evidence,
+            domain_id=domain_id,
+            question_ids=actual_question_ids,
+        )
         engine.submit_domain_evidence(
             SubmitDomainEvidenceRequest(
                 contract_version="1.0.0",
@@ -556,13 +421,6 @@ def _finish_current_result(
                         "item_id": visual_ref.entity_id,
                         "disposition": "supporting",
                     },
-                ),
-                coverage_receipts=_complete_empty_receipts(
-                    engine,
-                    run_id,
-                    evidence,
-                    domain_id=domain_id,
-                    question_ids=actual_question_ids,
                 ),
                 coverage_state="complete",
             )
@@ -862,6 +720,8 @@ def test_final_judgment_departure_must_bind_the_authorized_domain(tmp_path: Path
             idempotency_key="idempotency:departure-scope-evidence",
             result_id=evidence.result_id,
             domain_id=evidence.domain_id,
+            coverage_state="incomplete",
+            coverage_limitations=("Fixture intentionally skips evidence search.",),
         )
     )
     answer = engine.continue_run(ContinueRunRequest(run_id=run_id)).work_item
@@ -924,6 +784,8 @@ def test_identical_domain_evidence_retry_returns_the_committed_result(
         idempotency_key="idempotency:retry-domain-evidence",
         result_id=work.result_id,
         domain_id=work.domain_id,
+        coverage_state="incomplete",
+        coverage_limitations=("original",),
     )
 
     first = engine.submit_domain_evidence(request)
@@ -976,6 +838,7 @@ def test_domain_evidence_freezes_engine_issued_passages_without_host_hashes(
     unit_id = next(iter(index.unit_ids()))
     unit = index.read_unit(unit_id)
 
+    _complete_passage_receipts(engine, run_id, work, unit_id=unit_id)
     request = SubmitDomainEvidenceRequest(
         contract_version="1.0.0",
         run_id=run_id,
@@ -993,7 +856,6 @@ def test_domain_evidence_freezes_engine_issued_passages_without_host_hashes(
                 question_ids=(DOMAINS["domain:randomization"][0],),
             ),
         ),
-        coverage_receipts=_complete_passage_receipts(engine, run_id, work, unit_id=unit_id),
     )
     response = engine.submit_domain_evidence(request)
 
@@ -1037,6 +899,7 @@ def test_domain_evidence_passage_can_select_to_unit_end_without_counting_charact
     index = EvidenceSearchIndex(tmp_path / ".rob2" / "evidence.sqlite3")
     unit = index.read_unit(next(iter(index.unit_ids())))
 
+    _complete_passage_receipts(engine, run_id, work, unit_id=unit.unit_id)
     response = engine.submit_domain_evidence(
         SubmitDomainEvidenceRequest(
             contract_version="1.0.0",
@@ -1053,9 +916,6 @@ def test_domain_evidence_passage_can_select_to_unit_end_without_counting_charact
                     candidate_id=unit.unit_id,
                     question_ids=(DOMAINS["domain:randomization"][0],),
                 ),
-            ),
-            coverage_receipts=_complete_passage_receipts(
-                engine, run_id, work, unit_id=unit.unit_id
             ),
         )
     )
@@ -2044,6 +1904,8 @@ def test_changed_source_invalidates_partial_pending_checkpoints(tmp_path: Path) 
             idempotency_key="idempotency:partial-evidence",
             result_id=evidence.result_id,
             domain_id=evidence.domain_id,
+            coverage_state="incomplete",
+            coverage_limitations=("Fixture intentionally skips evidence search.",),
         )
     )
     report.write_bytes(b"changed primary")

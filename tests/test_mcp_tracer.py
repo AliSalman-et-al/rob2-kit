@@ -4,10 +4,13 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import sqlite3
 import subprocess
+import sys
 from pathlib import Path
 from types import SimpleNamespace
+from typing import Any
 
 import anyio
 import yaml
@@ -28,16 +31,10 @@ from rob2_kit.application.contracts import (
     WorkToken,
 )
 from rob2_kit.application.run_engine import RunEngine
-from rob2_kit.domain.canonical import canonical_hash
 from rob2_kit.domain.evidence import VisualTranscription
 from rob2_kit.domain.revisions import Actor, ActorKind, Dependency, RecordReference
 from rob2_kit.evidence.search import SearchQuery
-from rob2_kit.evidence.workflow import (
-    SearchCoverageReceipt,
-    SearchPassKind,
-    SourceSearchCoverage,
-    SourceSearchState,
-)
+from rob2_kit.evidence.workflow import SearchPassKind
 from rob2_kit.interfaces.mcp.server import CANONICAL_TOOL_NAMES, registered_tool_names
 from rob2_kit.reports.archives import verify_archive
 from rob2_kit.storage import ArtifactStore, WorkflowLedger
@@ -212,27 +209,18 @@ def _synthetic_visual_ref(engine: RunEngine, run_id: str, result_id: str) -> Rec
 
 def _complete_empty_receipts(
     engine: RunEngine, run_id: str, work: object, question_ids: tuple[str, ...]
-) -> tuple[SearchCoverageReceipt, ...]:
-    """Create complete three-pass receipts for visual-only fixture evidence."""
+) -> None:
+    """Complete the mandatory zero-hit search protocol via real search_evidence calls.
+
+    The engine's server-side SearchCoverageRecorder (#127) accumulates these
+    calls itself; callers no longer construct or submit a receipt. Only valid
+    when ``engine`` is the same in-process RunEngine that will later handle
+    ``submit_domain_evidence`` -- see ``_complete_empty_receipts_via_session``
+    for the MCP-subprocess-backed case.
+    """
 
     token = getattr(work, "work_token")
     result_id = getattr(work, "result_id")
-    ledger = engine._bound_ledger(run_id)
-    result_spec = engine._result_spec_for(ledger, run_id, result_id)
-    assert result_spec is not None
-    proposal = engine._latest_proposal(ledger, run_id)
-    trial = next(item for item in proposal.initialization.trials if item.trial_id == token.trial_id)
-    inventory = trial.inventory
-    assert inventory is not None
-    result_ref = RecordReference(
-        entity_id=result_spec.entity_id,
-        revision_id=result_spec.revision_id,
-        content_hash=canonical_hash(result_spec),
-    )
-    inventory_suffix = engine._digest(
-        f"{run_id}|{result_id}|{result_ref.content_hash}|source-inventory"
-    )
-    receipts: list[SearchCoverageReceipt] = []
     for question_id in question_ids:
         slug = question_id.removeprefix("sq:").replace(":", "-")
         queries = (
@@ -240,73 +228,95 @@ def _complete_empty_receipts(
             (SearchQuery(terms=(f"followup-{slug}",)), SearchPassKind.TRIAL_FOLLOW_UP, None),
             (SearchQuery(terms=(f"contradiction-{slug}",)), SearchPassKind.CONTRADICTION, None),
         )
-        responses = tuple(
+        for query, pass_kind, seed_family in queries:
             engine.search_evidence(
                 SearchEvidenceRequest(
                     run_id=run_id, work_token=token, result_id=result_id, sq_id=question_id,
                     query=query, pass_kind=pass_kind, seed_family=seed_family,
                 )
             )
-            for query, pass_kind, seed_family in queries
+
+
+async def _complete_empty_receipts_via_session(
+    session: ClientSession,
+    run_id: str,
+    work_token: dict[str, Any],
+    result_id: str,
+    question_ids: tuple[str, ...],
+) -> None:
+    """Complete the mandatory zero-hit search protocol via real search_evidence calls.
+
+    The MCP server subprocess's own server-side SearchCoverageRecorder (#127)
+    accumulates these calls itself, keyed by its own process memory -- so
+    this must call the real search_evidence tool through the session rather
+    than a same-process fixture engine, which would populate an unrelated
+    RunEngine instance's recorder state.
+    """
+
+    for question_id in question_ids:
+        slug = question_id.removeprefix("sq:").replace(":", "-")
+        queries = (
+            ({"terms": [f"absent-{slug}"]}, "guidance_seed", f"seed:{slug}"),
+            ({"terms": [f"followup-{slug}"]}, "trial_follow_up", None),
+            ({"terms": [f"contradiction-{slug}"]}, "contradiction", None),
         )
-        receipt = SearchCoverageReceipt(
-            receipt_id=f"coverage:mcp-synthetic-{slug}", sq_id=question_id,
-            snapshot_hash=responses[0].page.snapshot_hash, policy_id=responses[0].page.policy_id,
-            policy_hash=responses[0].page.policy_hash, result_spec=result_ref,
-            source_inventory=RecordReference(
-                entity_id=f"source-inventory:{result_id.removeprefix('result:')}",
-                revision_id=f"revision:source-inventory-{inventory_suffix}",
-                content_hash=canonical_hash(inventory),
-            ),
-            parse_record_hashes=tuple(
-                sorted(
-                    {
-                        parse.output_hash
-                        for source in inventory.sources
-                        for parse in source.parse_records
-                    }
-                )
-            ),
-            guidance_release_id="guidance:rob2-2019.1", required_seed_families=(f"seed:{slug}",),
-            completed_seed_families=(f"seed:{slug}",),
-            completed_passes=tuple(pass_kind for _query, pass_kind, _seed in queries),
-            executed_queries=tuple(response.executed_query for response in responses),
-            returned_unit_ids=(),
-            result_dispositions=(),
-            sources=tuple(
-                SourceSearchCoverage(
-                    source_id=source.source_id,
-                    state=SourceSearchState.SEARCHED,
-                    sufficiently_readable=True,
-                    artifact_hash=source.artifact_hash,
-                )
-                for source in inventory.sources
-            ),
-            inventory_source_ids=tuple(source.source_id for source in inventory.sources),
-            traversal_complete=True, interrupted=False,
-        )
-        proof = receipt.model_dump(mode="json")
-        proof["recorder_proof"] = None
-        receipts.append(
-            SearchCoverageReceipt.model_validate(
-                receipt.model_dump(mode="json")
-                | {"recorder_proof": canonical_hash(proof)}
+        for query, pass_kind, seed_family in queries:
+            await session.call_tool(
+                "search_evidence",
+                {
+                    "run_id": run_id,
+                    "work_token": work_token,
+                    "result_id": result_id,
+                    "sq_id": question_id,
+                    "query": query,
+                    "pass_kind": pass_kind,
+                    "seed_family": seed_family,
+                },
             )
-        )
-    return tuple(receipts)
 
 
-async def _session(root: Path, wheel: Path):
+def _build_isolated_environment(wheel_dir: Path) -> Path:
+    """Build the wheel and install it into one throwaway isolated venv.
+
+    A restart scenario launches the server subprocess more than once; reusing
+    one pre-installed venv (instead of `uv run --isolated --with <wheel>` per
+    launch) pays dependency resolution and install cost once instead of once
+    per launch, while still exercising the real packaged, isolated wheel.
+    """
+    build = subprocess.run(
+        ["uv", "build", "--wheel", "--out-dir", str(wheel_dir)],
+        cwd=Path(__file__).resolve().parents[1],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    assert build.returncode == 0
+    wheel = next(wheel_dir.glob("rob2_kit-*.whl"))
+    venv_dir = wheel_dir / "venv"
+    subprocess.run(
+        ["uv", "venv", "--python", sys.executable, str(venv_dir)],
+        cwd=Path(__file__).resolve().parents[1],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    python = venv_dir / ("Scripts/python.exe" if os.name == "nt" else "bin/python")
+    install = subprocess.run(
+        ["uv", "pip", "install", "--python", str(python), str(wheel)],
+        cwd=Path(__file__).resolve().parents[1],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    assert install.returncode == 0
+    return venv_dir
+
+
+async def _session(root: Path, venv_dir: Path):
+    script = venv_dir / ("Scripts/rob2-mcp.exe" if os.name == "nt" else "bin/rob2-mcp")
     parameters = StdioServerParameters(
-        command="uv",
-        args=[
-            "run",
-            "--isolated",
-            "--no-project",
-            "--with",
-            str(wheel),
-            "rob2-mcp",
-        ],
+        command=str(script),
+        args=[],
         cwd=Path.cwd(),
     )
     return stdio_client(parameters)
@@ -399,6 +409,9 @@ async def _finish_domains(session: ClientSession, root: Path, run_id: str) -> No
         if visual_ref is None:
             visual_ref = _synthetic_visual_ref(fixture_engine, run_id, fixture_work.result_id)
             fixture_engine._visual_citations = lambda *_args: ()
+        await _complete_empty_receipts_via_session(
+            session, run_id, work["work_item"]["work_token"], fixture_work.result_id, question_ids
+        )
         evidence_payload = {
             "run_id": run_id,
             "work_token": work["work_item"]["work_token"],
@@ -411,12 +424,6 @@ async def _finish_domains(session: ClientSession, root: Path, run_id: str) -> No
             },
             "candidate_dispositions": [
                 {"item_id": visual_ref.entity_id, "disposition": "supporting"}
-            ],
-            "coverage_receipts": [
-                receipt.model_dump(mode="json")
-                for receipt in _complete_empty_receipts(
-                    fixture_engine, run_id, fixture_work, question_ids
-                )
             ],
         }
         if index == 0:
@@ -485,18 +492,10 @@ def test_five_domain_journey_survives_stdio_restart_and_publishes_report(
     )
     wheel_dir = tmp_path / "wheel"
     wheel_dir.mkdir()
-    build = subprocess.run(
-        ["uv", "build", "--wheel", "--out-dir", str(wheel_dir)],
-        cwd=Path(__file__).resolve().parents[1],
-        check=True,
-        capture_output=True,
-        text=True,
-    )
-    assert build.returncode == 0
-    wheel = next(wheel_dir.glob("rob2_kit-*.whl"))
+    venv_dir = _build_isolated_environment(wheel_dir)
 
     async def journey() -> None:
-        async with await _session(tmp_path, wheel) as (read, write):
+        async with await _session(tmp_path, venv_dir) as (read, write):
             async with ClientSession(read, write) as session:
                 await session.initialize()
                 tools = await session.list_tools()
@@ -512,7 +511,7 @@ def test_five_domain_journey_survives_stdio_restart_and_publishes_report(
 
         # A new process has no conversation state; prepare_run must rebind to
         # the same durable Current run before the remaining work continues.
-        async with await _session(tmp_path, wheel) as (read, write):
+        async with await _session(tmp_path, venv_dir) as (read, write):
             async with ClientSession(read, write) as session:
                 await session.initialize()
                 rebound = (
@@ -744,6 +743,7 @@ def test_report_history_preserves_an_earlier_immutable_bundle(tmp_path: Path) ->
             if visual_ref is None:
                 visual_ref = _synthetic_visual_ref(engine, prepared.run_id, result_id)
                 engine._visual_citations = lambda *_args: ()
+            _complete_empty_receipts(engine, prepared.run_id, evidence_work, question_ids)
             engine.submit_domain_evidence(
                 SubmitDomainEvidenceRequest.model_validate(
                     {
@@ -760,12 +760,6 @@ def test_report_history_preserves_an_earlier_immutable_bundle(tmp_path: Path) ->
                         },
                         "candidate_dispositions": [
                             {"item_id": visual_ref.entity_id, "disposition": "supporting"}
-                        ],
-                        "coverage_receipts": [
-                            receipt.model_dump(mode="json")
-                            for receipt in _complete_empty_receipts(
-                                engine, prepared.run_id, evidence_work, question_ids
-                            )
                         ],
                     }
                 )

@@ -47,7 +47,6 @@ from rob2_kit.application.contracts import (
     RunProposal,
     RunProposalAmbiguity,
     RunProposalSelection,
-    SearchCoverageReceipt,
     SearchEvidenceRequest,
     SearchPassKind,
     SearchQuery,
@@ -789,7 +788,12 @@ def create_server(
         ] = None,
         no_information_basis: Annotated[
             bool,
-            Field(description="Set true only with complete search receipts and readable coverage."),
+            Field(
+                description=(
+                    "Set true only after search_evidence reports coverage_complete=true for "
+                    "every active question in this Domain and every Source was readable."
+                )
+            ),
         ] = False,
         conflicts: Annotated[
             list[list[str]] | None,
@@ -826,14 +830,6 @@ def create_server(
                 )
             ),
         ] = None,
-        coverage_receipts: Annotated[
-            list[SearchCoverageReceipt] | None,
-            Field(
-                description=(
-                    "Complete typed receipts returned by search_evidence; omit partial receipts."
-                )
-            ),
-        ] = None,
         project_rules: Annotated[
             list[RecordReference] | None,
             Field(description="Issued project-rule references that materially guide this bundle."),
@@ -862,12 +858,14 @@ def create_server(
         ``irrelevant`` is not valid. Rebind every identifier and token from the
         latest ``get_work_context`` after a retry or dynamic branch.
 
-        Use claim-type IDs. An adequate completed search with no evidence stays
-        coverage_state="complete" and may support no_information with complete
-        receipts. Use coverage_state="complete_with_limitations" only for a
-        material residual source/search uncertainty, and coverage_state="incomplete"
-        only when required searching or reading could not finish. Omit
-        coverage_receipts unless a tool supplied the complete typed receipt object.
+        Use claim-type IDs. An adequate completed search (call search_evidence until
+        its coverage_progress reports coverage_complete=true) with no evidence stays
+        coverage_state="complete" and may support no_information_basis=true; the
+        engine looks up your accumulated Search coverage itself, so there is no
+        receipt to construct or submit. Use coverage_state="complete_with_limitations"
+        only for a material residual source/search uncertainty, and
+        coverage_state="incomplete" only when required searching or reading could
+        not finish.
         """
         return _dump(
             engine.submit_domain_evidence(
@@ -887,7 +885,6 @@ def create_server(
                         "evidence_by_question": evidence_by_question or {},
                         "candidate_dispositions": candidate_dispositions or (),
                         "review_revisions": review_revisions or (),
-                        "coverage_receipts": coverage_receipts or (),
                         "project_rules": project_rules or (),
                         "contract_version": contract_version,
                     }

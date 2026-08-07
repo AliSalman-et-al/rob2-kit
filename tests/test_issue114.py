@@ -41,6 +41,8 @@ def test_unsupported_active_answers_are_rejected_before_answer_revisions(tmp_pat
             idempotency_key="idempotency:issue114-evidence",
             result_id=evidence.result_id,
             domain_id=evidence.domain_id,
+            coverage_state="incomplete",
+            coverage_limitations=("Fixture intentionally skips evidence search.",),
         )
     )
     answer = engine.continue_run(ContinueRunRequest(run_id=run_id)).work_item
@@ -73,8 +75,17 @@ def test_unsupported_active_answers_are_rejected_before_answer_revisions(tmp_pat
         DOMAINS[answer.domain_id]
     )
     ledger = engine._bound_ledger(run_id)
-    assert len(ledger.events()) == before
+    # No scientific work commits (no answer revision), but the block itself is
+    # durably marked (ADR-0008) so a later continue_run reroutes back to
+    # submit_domain_evidence instead of re-offering the same blocked item.
+    assert len(ledger.events()) == before + 1
+    new_events = ledger.events()[before:]
+    assert all(event.operation == "operation:domain-evidence-insufficient" for event in new_events)
     assert not any(event.operation == "operation:sq-answer-revision" for event in ledger.events())
+    rerouted = engine.continue_run(ContinueRunRequest(run_id=run_id)).work_item
+    assert rerouted is not None
+    assert rerouted.operation.value == "submit_domain_evidence"
+    assert rerouted.domain_id == answer.domain_id
 
 
 def test_complete_no_information_basis_remains_a_qualifying_answer_basis(tmp_path) -> None:
@@ -89,6 +100,13 @@ def test_complete_no_information_basis_remains_a_qualifying_answer_basis(tmp_pat
     evidence = engine.continue_run(ContinueRunRequest(run_id=run_id)).work_item
     assert evidence is not None
     question_ids = DOMAINS[evidence.domain_id]
+    _complete_empty_receipts(
+        engine,
+        run_id,
+        evidence,
+        domain_id=evidence.domain_id,
+        question_ids=question_ids,
+    )
     engine.submit_domain_evidence(
         SubmitDomainEvidenceRequest(
             contract_version="1.0.0",
@@ -97,13 +115,6 @@ def test_complete_no_information_basis_remains_a_qualifying_answer_basis(tmp_pat
             idempotency_key="idempotency:issue114-no-information-evidence",
             result_id=evidence.result_id,
             domain_id=evidence.domain_id,
-            coverage_receipts=_complete_empty_receipts(
-                engine,
-                run_id,
-                evidence,
-                domain_id=evidence.domain_id,
-                question_ids=question_ids,
-            ),
             coverage_state="complete",
             no_information_basis=True,
         )
@@ -130,6 +141,13 @@ def test_complete_with_limitations_evidence_remains_qualifying(tmp_path) -> None
     assert evidence is not None
     visual_ref = _synthetic_visual_ref(engine, run_id, evidence.result_id)
     question_ids = DOMAINS[evidence.domain_id]
+    _complete_empty_receipts(
+        engine,
+        run_id,
+        evidence,
+        domain_id=evidence.domain_id,
+        question_ids=question_ids,
+    )
     engine.submit_domain_evidence(
         SubmitDomainEvidenceRequest(
             contract_version="1.0.0",
@@ -142,13 +160,6 @@ def test_complete_with_limitations_evidence_remains_qualifying(tmp_path) -> None
             evidence_by_question={question_id: (visual_ref,) for question_id in question_ids},
             candidate_dispositions=(
                 {"item_id": visual_ref.entity_id, "disposition": "supporting"},
-            ),
-            coverage_receipts=_complete_empty_receipts(
-                engine,
-                run_id,
-                evidence,
-                domain_id=evidence.domain_id,
-                question_ids=question_ids,
             ),
             coverage_state="complete_with_limitations",
             coverage_limitations=("Synthetic retained limitation.",),
@@ -268,6 +279,14 @@ def test_legacy_unsupported_answers_become_diagnostic_without_terminal_judgments
     for index, domain_id in enumerate(DOMAINS):
         evidence = engine.continue_run(ContinueRunRequest(run_id=run_id)).work_item
         assert evidence is not None
+        # Complete, unlimited coverage with no items and no_information_basis
+        # reproduces the pre-#127/#128 "empty but accepted" evidence shape:
+        # coverage_state="incomplete" would instead trip the coverage-unresolved
+        # diagnostic before ever reaching the per-question missing-evidence
+        # check this test exercises.
+        _complete_empty_receipts(
+            engine, run_id, evidence, domain_id=domain_id, question_ids=DOMAINS[domain_id]
+        )
         engine.submit_domain_evidence(
             SubmitDomainEvidenceRequest(
                 contract_version="1.0.0",
@@ -276,6 +295,8 @@ def test_legacy_unsupported_answers_become_diagnostic_without_terminal_judgments
                 idempotency_key=f"idempotency:issue114-legacy-terminal-evidence-{index}",
                 result_id=result_id,
                 domain_id=domain_id,
+                coverage_state="complete",
+                no_information_basis=True,
             )
         )
         answer = engine.continue_run(ContinueRunRequest(run_id=run_id)).work_item

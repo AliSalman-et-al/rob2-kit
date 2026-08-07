@@ -28,6 +28,7 @@ dev = [
     "coverage>=7.15.2",
     "hypothesis>=6.162.0",
     "pytest>=9.1.1",
+    "pytest-xdist>=3.8.0",
     "ruff>=0.16.0",
     "ty>=0.0.64",
 ]

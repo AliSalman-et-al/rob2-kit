@@ -18,7 +18,7 @@
     }
   },
   "application_contract": "1.0.0",
-  "dependency_lock_hash": "sha256:75c7a1ada0ab14f05e524c8c506d722e96d160926b9c001051acb79c289bd348",
+  "dependency_lock_hash": "sha256:8098e93df27002be207e9c5ccc20faee79fd8cc023c8ac337940ad7d22fd3f8d",
   "guidance_pack": "rob2-parallel-assignment-en-2019.1",
   "guidance_pack_hash": "sha256:4c2a1ecc406e2a0f63285fc9ec72c04f930525a36f5be2dc3bbd4da9b99a1a25",
   "launcher": "uvx --python 3.13 --from rob2-kit==0.1.0 rob2-mcp",

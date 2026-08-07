@@ -5,6 +5,7 @@ from __future__ import annotations
 import base64
 import binascii
 import json
+from collections.abc import Iterable
 from decimal import ROUND_HALF_EVEN, Decimal, InvalidOperation
 from enum import StrEnum
 from typing import Any
@@ -613,6 +614,7 @@ class SearchCoverageRecorder:
         seed_family: Identifier | None = None,
         cursor: str | None = None,
         broad_query_justification: str | None = None,
+        scope: EvidenceScope | None = None,
     ) -> ExecutedSearchQuery:
         """Record one server-bounded page and its attributable traversal metadata."""
         active_policy = policy or SearchPolicy(policy_id=self._metadata["policy_id"])
@@ -624,6 +626,7 @@ class SearchCoverageRecorder:
                 policy=active_policy,
                 cursor=cursor,
                 broad_query_justification=broad_query_justification,
+                scope=scope,
             )
         except ValueError as error:
             raise ValueError("recorded page failed index verification") from error
@@ -691,6 +694,80 @@ class SearchCoverageRecorder:
         if disposition.unit_id not in returned:
             raise ValueError("disposition must cover a unit returned by a recorded query")
         self._dispositions[disposition.unit_id] = disposition
+
+    def bind_project_rules(self, project_rule_ids: tuple[Identifier, ...]) -> None:
+        """Bind the applicable project-rule IDs, known only once evidence is submitted."""
+        self._metadata["project_rule_ids"] = project_rule_ids
+
+    @property
+    def snapshot_hash(self) -> ContentHash:
+        return self._metadata["snapshot_hash"]
+
+    def returned_unit_ids(self) -> tuple[Identifier, ...]:
+        """Distinct unit IDs returned across every recorded query so far."""
+        return tuple(
+            dict.fromkeys(
+                unit_id for query in self._queries for unit_id in query.returned_unit_ids
+            )
+        )
+
+    def auto_disposition(self, retained_unit_ids: Iterable[Identifier]) -> None:
+        """Disposition every returned-but-undispositioned unit from caller retention.
+
+        A unit the caller is retaining as Evidence (it appears in a submitted
+        passage for this question) becomes ``retained_candidate``, bound to
+        itself as its own candidate ID; every other returned-but-unclaimed
+        unit becomes ``irrelevant``. This lets a caller retain evidence by
+        submitting exact passages instead of separately dispositioning every
+        search hit through a dedicated review step.
+        """
+        retained = set(retained_unit_ids)
+        for unit_id in self.returned_unit_ids():
+            if unit_id in self._dispositions:
+                continue
+            if unit_id in retained:
+                self.record_disposition(
+                    SearchResultDisposition(
+                        unit_id=unit_id,
+                        kind=SearchResultDispositionKind.RETAINED_CANDIDATE,
+                        candidate_id=unit_id,
+                    )
+                )
+            else:
+                self.record_disposition(
+                    SearchResultDisposition(
+                        unit_id=unit_id, kind=SearchResultDispositionKind.IRRELEVANT
+                    )
+                )
+
+    def completed_passes(self) -> tuple[SearchPassKind, ...]:
+        """Distinct search passes recorded so far, in first-seen order."""
+        return tuple(dict.fromkeys(query.pass_kind for query in self._queries))
+
+    def completed_seed_families(self) -> tuple[Identifier, ...]:
+        """Distinct Guidance-seed families recorded so far, in first-seen order."""
+        return tuple(
+            dict.fromkeys(
+                query.seed_family for query in self._queries if query.seed_family is not None
+            )
+        )
+
+    @property
+    def required_seed_families(self) -> tuple[Identifier, ...]:
+        return self._metadata["required_seed_families"]
+
+    @property
+    def traversal_complete(self) -> bool:
+        """Whether every recorded pass has traversed to its final page."""
+        return not self._partial_traversal and all(
+            query.traversal_complete for query in self._queries
+        )
+
+    def is_coverage_complete(self) -> bool:
+        """Whether the mandatory search protocol is satisfied by recorded state so far."""
+        missing_passes = set(SearchPassKind) - set(self.completed_passes())
+        missing_seeds = set(self.required_seed_families) - set(self.completed_seed_families())
+        return not missing_passes and not missing_seeds and self.traversal_complete
 
     def freeze(
         self,

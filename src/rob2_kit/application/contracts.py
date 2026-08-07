@@ -50,7 +50,7 @@ from rob2_kit.evidence.visual import (
     VisualCandidate,
     VisualRenderRequest,
 )
-from rob2_kit.evidence.workflow import ExecutedSearchQuery, SearchCoverageReceipt, SearchPassKind
+from rob2_kit.evidence.workflow import ExecutedSearchQuery, SearchPassKind
 from rob2_kit.ingestion.project import (
     OutcomeTarget,
     ProjectInitialization,
@@ -883,12 +883,6 @@ class SubmitDomainEvidenceRequest(FrozenModel):
             "needs-visual-review spans prevent freeze."
         ),
     )
-    coverage_receipts: tuple[SearchCoverageReceipt, ...] = Field(
-        default=(),
-        description=(
-            "Complete typed search receipts supplied by search_evidence; omit partial receipts."
-        ),
-    )
     project_rules: tuple[RecordReference, ...] = Field(
         default=(), description="Issued project-rule references that materially guide this bundle."
     )
@@ -1146,10 +1140,27 @@ class ConfirmRunDefinitionResponse(OperationResponse):
     run_definition: ConfirmedRunDefinition | None = None
 
 
+class CoverageProgress(FrozenModel):
+    """Read-only report of accumulated Search coverage for one signaling question.
+
+    The engine tracks the underlying accounting itself; a caller never
+    constructs or resubmits this object, and it is a preview of, not a
+    substitute for, the receipt materialized when Evidence is frozen.
+    """
+
+    sq_id: Identifier
+    required_seed_families: tuple[Identifier, ...]
+    completed_seed_families: tuple[Identifier, ...]
+    completed_passes: tuple[SearchPassKind, ...]
+    missing_passes: tuple[SearchPassKind, ...]
+    coverage_complete: bool
+
+
 class SearchEvidenceResponse(OperationResponse):
     run_id: Identifier
     page: SearchPage
     executed_query: ExecutedSearchQuery | None = None
+    coverage_progress: CoverageProgress | None = None
 
 
 class ReadEvidenceResponse(OperationResponse):
