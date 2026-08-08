@@ -756,7 +756,7 @@ dependencies = [
     { name = "typer" },
 ]
 wheels = [
-    { filename = "rob2_kit-0.1.0-py3-none-any.whl", hash = "sha256:2232b225499f84d8d8ab3bf86de4ff73ae0052ec3d16e17e05a09627c6de781b" },
+    { filename = "rob2_kit-0.1.0-py3-none-any.whl", hash = "sha256:fcc1bbdc071a2ed0fb747a426f5fe142676bc19ba54d07a8e32e06cbdf47fb67" },
 ]
 
 [package.metadata]
