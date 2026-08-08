@@ -9,8 +9,6 @@ ADR-0008 for the accepted design.
 
 from pathlib import Path
 
-import pytest
-
 from rob2_kit.application.contracts import (
     ContinueRunRequest,
     SearchEvidenceRequest,
@@ -156,17 +154,21 @@ def test_empty_evidence_submission_is_rejected(tmp_path: Path) -> None:
     work = engine.continue_run(ContinueRunRequest(run_id=run_id)).work_item
     assert work is not None
 
-    with pytest.raises(ValueError, match="must include real passages/items"):
-        engine.submit_domain_evidence(
-            SubmitDomainEvidenceRequest(
-                contract_version="1.0.0",
-                run_id=run_id,
-                work_token=work.work_token,
-                idempotency_key="idempotency:issue128-empty",
-                result_id=work.result_id,
-                domain_id=work.domain_id,
-            )
+    response = engine.submit_domain_evidence(
+        SubmitDomainEvidenceRequest(
+            contract_version="1.0.0",
+            run_id=run_id,
+            work_token=work.work_token,
+            idempotency_key="idempotency:issue128-empty",
+            result_id=work.result_id,
+            domain_id=work.domain_id,
         )
+    )
+    # #125: business-rule violations are reported as a structured response,
+    # not a raised exception, so every problem can be batched together.
+    assert response.condition is WorkflowCondition.RUN_BLOCKED
+    assert response.error is not None
+    assert "must include real passages/items" in response.error.detail
 
 
 def test_evidence_insufficient_block_reroutes_and_preserves_recorder_state(

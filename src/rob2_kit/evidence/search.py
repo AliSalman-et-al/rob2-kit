@@ -2,10 +2,6 @@
 
 from __future__ import annotations
 
-import base64
-import binascii
-import hashlib
-import hmac
 import json
 import re
 import secrets
@@ -26,6 +22,7 @@ from rob2_kit.evidence.errors import (
     RetrievalFailure,
     ScopeMismatch,
     StaleCursor,
+    UnknownCursor,
 )
 
 PROJECTION_TARGET = 2_400
@@ -908,9 +905,10 @@ class EvidenceSearchIndex:
                     singleton INTEGER PRIMARY KEY CHECK (singleton = 1),
                     content_hash TEXT NOT NULL
                 );
-                CREATE TABLE IF NOT EXISTS evidence_cursor_secret (
-                    singleton INTEGER PRIMARY KEY CHECK (singleton = 1),
-                    secret BLOB NOT NULL
+                CREATE TABLE IF NOT EXISTS evidence_cursor_token (
+                    token TEXT PRIMARY KEY,
+                    kind TEXT NOT NULL,
+                    payload TEXT NOT NULL
                 );
                 CREATE VIRTUAL TABLE IF NOT EXISTS evidence_fts USING fts5(
                     projection_id UNINDEXED,
@@ -960,10 +958,6 @@ class EvidenceSearchIndex:
                 "UPDATE evidence_units SET applicability = 'unresolved' "
                 "WHERE result_id IS NULL "
                 "AND (applicability IS NULL OR applicability = 'result')"
-            )
-            connection.execute(
-                "INSERT OR IGNORE INTO evidence_cursor_secret(singleton, secret) VALUES (1, ?)",
-                (secrets.token_bytes(32),),
             )
 
     def replace_units(self, units: tuple[CanonicalEvidenceUnit, ...]) -> ContentHash:
@@ -1111,12 +1105,12 @@ class EvidenceSearchIndex:
             )
         snapshot = self._snapshot()
         try:
-            payload = _SignedCursorCodec.decode(location_handle, self._cursor_secret())
-        except ValueError as error:
-            raise StaleCursor(
+            payload = self._resolve_token("loc", location_handle)
+        except UnknownCursor:
+            raise UnknownCursor(
                 "invalid evidence location handle", field="location_handle"
-            ) from error
-        if payload.get("kind") != "location" or payload.get("snapshot") != snapshot:
+            ) from None
+        if payload.get("snapshot") != snapshot:
             raise StaleCursor("evidence location handle is stale", field="location_handle")
         unit_id = payload.get("unit")
         if not isinstance(unit_id, str):
@@ -1133,9 +1127,7 @@ class EvidenceSearchIndex:
         ):
             raise StaleCursor("evidence location handle is stale", field="location_handle")
         start = (
-            _decode_read_cursor(cursor, snapshot, unit.unit_id, self._cursor_secret(), scope=scope)
-            if cursor
-            else 0
+            self._decode_read_cursor(cursor, snapshot, unit.unit_id, scope=scope) if cursor else 0
         )
         if start >= len(unit.text):
             raise StaleCursor("read continuation cursor is outside the unit", field="cursor")
@@ -1148,7 +1140,7 @@ class EvidenceSearchIndex:
             end=end,
             character_target=character_target,
             continuation_cursor=(
-                _encode_read_cursor(snapshot, unit.unit_id, end, self._cursor_secret(), scope=scope)
+                self._encode_read_cursor(snapshot, unit.unit_id, end, scope=scope)
                 if end < len(unit.text)
                 else None
             ),
@@ -1244,11 +1236,10 @@ class EvidenceSearchIndex:
         if mode is ReadContextMode.SECTION:
             candidate_ids = [candidate_id for candidate_id in source_ids if candidate_id != unit_id]
             offset = (
-                _decode_read_cursor(
+                self._decode_read_cursor(
                     cursor,
                     snapshot,
                     unit_id,
-                    self._cursor_secret(),
                     scope=scope,
                 )
                 if cursor
@@ -1379,11 +1370,10 @@ class EvidenceSearchIndex:
             mode=mode,
             section_path=target.section_path,
             continuation_cursor=(
-                _encode_read_cursor(
+                self._encode_read_cursor(
                     snapshot,
                     target.unit_id,
                     next_offset,
-                    self._cursor_secret(),
                     scope=scope,
                 )
                 if mode is ReadContextMode.SECTION and next_offset < len(candidate_ids) + offset
@@ -1418,12 +1408,11 @@ class EvidenceSearchIndex:
         snapshot = self._snapshot()
         query_hash = canonical_hash(query)
         offset = (
-            _decode_cursor(
+            self._decode_cursor(
                 cursor,
                 snapshot,
                 query_hash,
                 policy,
-                self._cursor_secret(),
                 scope=scope,
             )
             if cursor
@@ -1468,12 +1457,11 @@ class EvidenceSearchIndex:
                 break
         consumed = offset + len(selected)
         next_cursor = (
-            _encode_cursor(
+            self._encode_cursor(
                 snapshot,
                 query_hash,
                 policy,
                 consumed,
-                self._cursor_secret(),
                 scope=scope,
             )
             if consumed < len(rows)
@@ -1652,17 +1640,113 @@ class EvidenceSearchIndex:
                 else ()
             ),
             duplicate_group_id=unit.duplicate_group_id,
-            location_handle=_encode_location_handle(unit, self._snapshot(), self._cursor_secret()),
+            location_handle=self._encode_location_handle(unit, self._snapshot()),
         )
 
-    def _cursor_secret(self) -> bytes:
+    def _issue_token(self, kind: str, payload: dict[str, object]) -> str:
         with self._connect() as connection:
-            row = connection.execute(
-                "SELECT secret FROM evidence_cursor_secret WHERE singleton = 1"
-            ).fetchone()
-        if row is None:
-            raise OperationalRetrievalFailure("evidence index has no cursor secret")
-        return bytes(row["secret"])
+            return _LookupTokenCodec.encode(connection, kind, payload)
+
+    def _resolve_token(self, kind: str, token: str) -> dict[str, object]:
+        with self._connect() as connection:
+            return _LookupTokenCodec.decode(connection, kind, token)
+
+    def _encode_location_handle(self, unit: CanonicalEvidenceUnit, snapshot: ContentHash) -> str:
+        """Issue an opaque handle bound to the exact source/Parse lineage."""
+        return self._issue_token(
+            "loc",
+            {
+                "snapshot": snapshot,
+                "unit": unit.unit_id,
+                "source_artifact_hash": unit.source_artifact_hash,
+                "parse_id": unit.parse_id,
+                "fragment_ids": list(unit.fragment_ids),
+                "canonicalization_version": unit.canonicalization_version,
+            },
+        )
+
+    def _encode_cursor(
+        self,
+        snapshot: str,
+        query_hash: str,
+        policy: SearchPolicy,
+        offset: int,
+        *,
+        scope: EvidenceScope | None = None,
+    ) -> str:
+        return self._issue_token(
+            "cur",
+            {
+                "snapshot": snapshot,
+                "query": query_hash,
+                "policy": canonical_hash(policy),
+                "offset": offset,
+                "scope": canonical_hash(scope) if scope is not None else None,
+            },
+        )
+
+    def _decode_cursor(
+        self,
+        cursor: str,
+        snapshot: str,
+        query_hash: str,
+        policy: SearchPolicy,
+        *,
+        scope: EvidenceScope | None = None,
+    ) -> int:
+        payload = self._resolve_token("cur", cursor)
+        if payload.get("snapshot") != snapshot:
+            raise StaleCursor("cursor belongs to a different index snapshot")
+        if payload.get("query") != query_hash:
+            raise StaleCursor("cursor belongs to a different structured query")
+        if payload.get("policy") != canonical_hash(policy):
+            raise StaleCursor("cursor belongs to a different search policy")
+        if payload.get("scope") != (canonical_hash(scope) if scope is not None else None):
+            raise CursorScopeMismatch("cursor belongs to a different Evidence scope")
+        offset = payload.get("offset")
+        if isinstance(offset, bool) or not isinstance(offset, int) or offset < 0:
+            raise StaleCursor("search cursor offset is invalid")
+        return offset
+
+    def _encode_read_cursor(
+        self,
+        snapshot: str,
+        unit_id: str,
+        offset: int,
+        *,
+        scope: EvidenceScope | None = None,
+    ) -> str:
+        return self._issue_token(
+            "read",
+            {
+                "snapshot": snapshot,
+                "unit": unit_id,
+                "offset": offset,
+                "scope": canonical_hash(scope) if scope is not None else None,
+            },
+        )
+
+    def _decode_read_cursor(
+        self,
+        cursor: str,
+        snapshot: str,
+        unit_id: str,
+        *,
+        scope: EvidenceScope | None = None,
+    ) -> int:
+        payload = self._resolve_token("read", cursor)
+        if payload.get("snapshot") != snapshot:
+            raise StaleCursor("read continuation cursor belongs to a different snapshot")
+        if payload.get("unit") != unit_id:
+            raise CursorScopeMismatch("read continuation cursor belongs to a different unit")
+        if payload.get("scope") != (canonical_hash(scope) if scope is not None else None):
+            raise CursorScopeMismatch(
+                "read continuation cursor belongs to a different Evidence scope"
+            )
+        offset = payload.get("offset")
+        if isinstance(offset, bool) or not isinstance(offset, int) or offset < 0:
+            raise StaleCursor("read continuation cursor offset is invalid")
+        return offset
 
     def _connect(self) -> sqlite3.Connection:
         try:
@@ -1869,165 +1953,44 @@ def _unit_in_scope(unit: CanonicalEvidenceUnit, scope: EvidenceScope) -> bool:
     return True
 
 
-class _SignedCursorCodec:
-    """Shared authenticated envelope codec for search and read cursors."""
+class _LookupTokenCodec:
+    """Shared server-side lookup-table codec for search and read cursors.
+
+    Retired the HMAC-signed self-verifying envelope in favor of a short
+    ``kind:``-prefixed token looked up against a local table (ADR-0011).
+    This server is the sole issuer and sole verifier of every cursor and
+    handle for a run's lifetime, so the cross-process portability an
+    authenticated envelope buys is never exercised here -- a lookup gives
+    the same tamper-resistance and staleness detection with far less
+    machinery and none of the transcription risk of a multi-kilobyte blob.
+    """
 
     @staticmethod
-    def encode(payload: dict[str, object], secret: bytes) -> str:
-        raw = json.dumps(payload, sort_keys=True, separators=(",", ":")).encode()
-        envelope = {
-            "payload": base64.urlsafe_b64encode(raw).decode().rstrip("="),
-            "mac": hmac.new(secret, raw, hashlib.sha256).hexdigest(),
-        }
-        return (
-            base64.urlsafe_b64encode(
-                json.dumps(envelope, sort_keys=True, separators=(",", ":")).encode()
-            )
-            .decode()
-            .rstrip("=")
+    def encode(connection: sqlite3.Connection, kind: str, payload: dict[str, object]) -> str:
+        token = f"{kind}:{secrets.token_urlsafe(16)}"
+        connection.execute(
+            "INSERT INTO evidence_cursor_token(token, kind, payload) VALUES (?, ?, ?)",
+            (token, kind, json.dumps(payload, sort_keys=True, separators=(",", ":"))),
         )
+        return token
 
     @staticmethod
-    def decode(cursor: str, secret: bytes) -> dict[str, object]:
+    def decode(connection: sqlite3.Connection, kind: str, token: str) -> dict[str, object]:
+        # A lookup miss is distinguished from a stale-but-known row: an
+        # unrecognized or wrong-kind token was most likely mistranscribed
+        # (or never issued) rather than genuinely superseded (#125/#126).
+        if not token.startswith(f"{kind}:"):
+            raise UnknownCursor(f"not a recognized {kind} token")
+        row = connection.execute(
+            "SELECT payload FROM evidence_cursor_token WHERE token = ? AND kind = ?",
+            (token, kind),
+        ).fetchone()
+        if row is None:
+            raise UnknownCursor(f"no {kind} token matches this value")
         try:
-            envelope = json.loads(base64.urlsafe_b64decode(cursor + "=" * (-len(cursor) % 4)))
-            encoded = envelope["payload"]
-            raw = base64.urlsafe_b64decode(encoded + "=" * (-len(encoded) % 4))
-            expected = hmac.new(secret, raw, hashlib.sha256).hexdigest()
-            if not isinstance(envelope.get("mac"), str) or not hmac.compare_digest(
-                envelope["mac"], expected
-            ):
-                raise ValueError("invalid cursor integrity tag")
-            payload = json.loads(raw)
-            if not isinstance(payload, dict):
-                raise ValueError("invalid cursor payload")
-            return payload
-        except UnicodeDecodeError as error:
-            raise ValueError("invalid cursor") from error
-        except ValueError:
-            raise
-        except (KeyError, TypeError, OverflowError, binascii.Error, json.JSONDecodeError) as error:
-            raise ValueError("invalid cursor") from error
-
-
-def _encode_cursor(
-    snapshot: str,
-    query_hash: str,
-    policy: SearchPolicy,
-    offset: int,
-    secret: bytes,
-    *,
-    scope: EvidenceScope | None = None,
-) -> str:
-    return _SignedCursorCodec.encode(
-        {
-            "snapshot": snapshot,
-            "query": query_hash,
-            "policy": canonical_hash(policy),
-            "offset": offset,
-            "scope": canonical_hash(scope) if scope is not None else None,
-        },
-        secret,
-    )
-
-
-def _encode_location_handle(
-    unit: CanonicalEvidenceUnit, snapshot: ContentHash, secret: bytes
-) -> str:
-    """Issue an opaque handle bound to the exact source/Parse lineage."""
-    return _SignedCursorCodec.encode(
-        {
-            "kind": "location",
-            "snapshot": snapshot,
-            "unit": unit.unit_id,
-            "source_artifact_hash": unit.source_artifact_hash,
-            "parse_id": unit.parse_id,
-            "fragment_ids": list(unit.fragment_ids),
-            "canonicalization_version": unit.canonicalization_version,
-        },
-        secret,
-    )
-
-
-def _encode_read_cursor(
-    snapshot: str,
-    unit_id: str,
-    offset: int,
-    secret: bytes,
-    *,
-    scope: EvidenceScope | None = None,
-) -> str:
-    return _SignedCursorCodec.encode(
-        {
-            "snapshot": snapshot,
-            "unit": unit_id,
-            "offset": offset,
-            "scope": canonical_hash(scope) if scope is not None else None,
-        },
-        secret,
-    )
-
-
-def _decode_read_cursor(
-    cursor: str,
-    snapshot: str,
-    unit_id: str,
-    secret: bytes,
-    *,
-    scope: EvidenceScope | None = None,
-) -> int:
-    try:
-        payload = _SignedCursorCodec.decode(cursor, secret)
-        if payload.get("snapshot") != snapshot:
-            raise StaleCursor("read continuation cursor belongs to a different snapshot")
-        if payload.get("unit") != unit_id:
-            raise CursorScopeMismatch("read continuation cursor belongs to a different unit")
-        if payload.get("scope") != (canonical_hash(scope) if scope is not None else None):
-            raise CursorScopeMismatch(
-                "read continuation cursor belongs to a different Evidence scope"
-            )
-        offset = payload.get("offset")
-        if isinstance(offset, bool) or not isinstance(offset, int) or offset < 0:
-            raise StaleCursor("read continuation cursor offset is invalid")
-        return offset
-    except RetrievalFailure:
-        raise
-    except ValueError as error:
-        raise StaleCursor("invalid read continuation cursor") from error
-
-
-def _decode_cursor(
-    cursor: str,
-    snapshot: str,
-    query_hash: str,
-    policy: SearchPolicy,
-    secret: bytes,
-    *,
-    scope: EvidenceScope | None = None,
-) -> int:
-    try:
-        payload = _SignedCursorCodec.decode(cursor, secret)
-        if payload["snapshot"] != snapshot:
-            raise StaleCursor("cursor belongs to a different index snapshot")
-        if payload["query"] != query_hash:
-            raise StaleCursor("cursor belongs to a different structured query")
-        if payload["policy"] != canonical_hash(policy):
-            raise StaleCursor("cursor belongs to a different search policy")
-        if payload.get("scope") != (canonical_hash(scope) if scope is not None else None):
-            raise CursorScopeMismatch("cursor belongs to a different Evidence scope")
-        raw_offset = payload["offset"]
-        if isinstance(raw_offset, bool) or not isinstance(raw_offset, int):
-            raise StaleCursor("search cursor offset is not an integer")
-        offset = raw_offset
-        if offset < 0:
-            raise StaleCursor("search cursor offset cannot be negative")
-        return offset
-    except RetrievalFailure:
-        raise
-    except ValueError as error:
-        # Preserve authenticated-envelope diagnostics (notably integrity-tag
-        # failures) while still presenting them through the typed stale-cursor
-        # condition expected by retrieval callers.
-        raise StaleCursor(str(error)) from error
-    except (KeyError, TypeError) as error:
-        raise StaleCursor("invalid search cursor") from error
+            payload = json.loads(row["payload"])
+        except json.JSONDecodeError as error:
+            raise UnknownCursor(f"corrupt {kind} token payload") from error
+        if not isinstance(payload, dict):
+            raise UnknownCursor(f"corrupt {kind} token payload")
+        return payload

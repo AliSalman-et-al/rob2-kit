@@ -252,6 +252,10 @@ def _retrieval_error(error: RetrievalFailure) -> RetrievalErrorResponse:
             "field": error.field,
             "message": error.message,
             "recovery": error.recovery,
+            "violations": [
+                {"field": violation.field, "message": violation.message}
+                for violation in error.violations
+            ],
         },
         next_actions=error.next_actions,
     )
@@ -575,7 +579,11 @@ def create_server(
         except RetrievalFailure as error:
             return _wire_result(_retrieval_error(error))
         except ValidationError as error:
-            return _wire_result(_retrieval_error(invalid_request_from_validation(error)))
+            return _wire_result(
+                _retrieval_error(
+                    invalid_request_from_validation(error, sibling_model=SearchEvidenceRequest)
+                )
+            )
         except (sqlite3.OperationalError, OSError):
             return _wire_result(
                 _retrieval_error(
@@ -641,7 +649,11 @@ def create_server(
         except RetrievalFailure as error:
             return _wire_result(_retrieval_error(error))
         except ValidationError as error:
-            return _wire_result(_retrieval_error(invalid_request_from_validation(error)))
+            return _wire_result(
+                _retrieval_error(
+                    invalid_request_from_validation(error, sibling_model=ReadEvidenceRequest)
+                )
+            )
         except (sqlite3.OperationalError, OSError):
             return _wire_result(
                 _retrieval_error(

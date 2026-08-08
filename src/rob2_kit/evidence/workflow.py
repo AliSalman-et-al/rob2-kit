@@ -2,9 +2,6 @@
 
 from __future__ import annotations
 
-import base64
-import binascii
-import json
 from collections.abc import Iterable
 from decimal import ROUND_HALF_EVEN, Decimal, InvalidOperation
 from enum import StrEnum
@@ -34,6 +31,26 @@ from rob2_kit.evidence.search import (
 )
 
 
+def _stripped_for_replay_check(page: SearchPage) -> SearchPage:
+    """Normalize a page's freshly-issued opaque tokens before comparing replays.
+
+    ``next_cursor`` and every hit's ``location_handle`` are lookup-table
+    tokens issued fresh on every call (ADR-0011), unlike the old
+    deterministic HMAC-signed cursor. Two calls with identical inputs now
+    return equal *content* but different token strings, so a raw equality
+    check would always fail; strip the volatile fields before comparing.
+    """
+
+    return page.model_copy(
+        update={
+            "next_cursor": None,
+            "hits": tuple(
+                hit.model_copy(update={"location_handle": "unverified"}) for hit in page.hits
+            ),
+        }
+    )
+
+
 def _dependency_changed(
     current: RecordReference | ContentHash,
     bound: RecordReference,
@@ -43,27 +60,23 @@ def _dependency_changed(
     return current != bound.content_hash
 
 
+_CURSOR_TOKEN_CHARACTERS = frozenset(
+    "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_"
+)
+
+
 def _looks_like_search_cursor(cursor: str) -> bool:
-    """Check the structural envelope before an index verifies its MAC."""
-    try:
-        raw = base64.urlsafe_b64decode(cursor + "=" * (-len(cursor) % 4))
-        envelope = json.loads(raw)
-        encoded_payload = envelope["payload"]
-        mac = envelope["mac"]
-        if (
-            not isinstance(encoded_payload, str)
-            or not isinstance(mac, str)
-            or len(mac) != 64
-            or any(character not in "0123456789abcdef" for character in mac)
-        ):
-            return False
-        payload = base64.urlsafe_b64decode(
-            encoded_payload + "=" * (-len(encoded_payload) % 4)
-        )
-        values = json.loads(payload)
-        return {"snapshot", "query", "policy", "offset"} <= set(values)
-    except (KeyError, TypeError, ValueError, binascii.Error, json.JSONDecodeError):
+    """Check the structural shape of an engine-issued lookup-table token (ADR-0011).
+
+    This is a shape check only, ahead of the index's own lookup -- it
+    catches an obviously wrong value (a location handle, a hand-typed
+    guess) without needing index access, the same role the old MAC-envelope
+    shape check played before an index verified its signature.
+    """
+    prefix, separator, suffix = cursor.partition(":")
+    if prefix != "cur" or not separator or not suffix:
         return False
+    return all(character in _CURSOR_TOKEN_CHARACTERS for character in suffix)
 
 
 class SearchPassKind(StrEnum):
@@ -630,7 +643,7 @@ class SearchCoverageRecorder:
             )
         except ValueError as error:
             raise ValueError("recorded page failed index verification") from error
-        if verified_page != page:
+        if _stripped_for_replay_check(verified_page) != _stripped_for_replay_check(page):
             raise ValueError("recorded page does not match the index result")
         if page.snapshot_hash != self._metadata["snapshot_hash"]:
             raise ValueError("search page snapshot does not match the recorder")

@@ -172,6 +172,14 @@ class OperationError(FrozenModel):
     detail: str = Field(min_length=1)
     recovery: tuple[str, ...] = Field(min_length=1)
     correlation_id: Identifier | None = None
+    violations: tuple[OperationError, ...] = Field(default_factory=tuple)
+
+
+class RetrievalFieldViolation(FrozenModel):
+    """One field-level validation failure within a possibly-batched request."""
+
+    field: str | None = None
+    message: str = Field(min_length=1)
 
 
 class RetrievalError(FrozenModel):
@@ -179,6 +187,7 @@ class RetrievalError(FrozenModel):
     field: str | None = None
     message: str = Field(min_length=1)
     recovery: tuple[str, ...] = Field(min_length=1)
+    violations: tuple[RetrievalFieldViolation, ...] = Field(default_factory=tuple)
 
     @property
     def detail(self) -> str:

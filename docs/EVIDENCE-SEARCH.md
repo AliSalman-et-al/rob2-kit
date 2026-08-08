@@ -42,10 +42,21 @@ continuation exactly. A bounded page declares omissions, returned candidates,
 and the continuation needed to inspect the remainder. Do not manufacture,
 alter, or reuse a continuation across changed scope or a stale WorkToken.
 
-For a `guidance_seed` pass, use the stable identifier-shaped `seed_family`
-label supplied by the work context and reuse it exactly in coverage. For
-`trial_follow_up` and `contradiction`, omit `seed_family`. Completion requires
-every required pass and returned page to be traversed and reviewed or
+For a `guidance_seed` pass, pass the stable identifier-shaped `seed_family`
+label supplied by the work context as its own top-level `search_evidence`
+argument, a sibling of `query` rather than a field inside it, and reuse it
+exactly in coverage:
+
+```json
+{
+  "query": {"terms": ["allocation"]},
+  "pass_kind": "guidance_seed",
+  "seed_family": "seed:sq-1a"
+}
+```
+
+For `trial_follow_up` and `contradiction`, omit `seed_family` entirely. Completion
+requires every required pass and returned page to be traversed and reviewed or
 explicitly limited; a convenient hit or a first page is never enough.
 
 ## Read and expand context

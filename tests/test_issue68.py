@@ -1,7 +1,6 @@
 from __future__ import annotations
 
-import base64
-import json
+import secrets
 from pathlib import Path
 
 import pytest
@@ -132,22 +131,12 @@ def test_cursor_binds_policy_and_rejects_tampering(tmp_path: Path) -> None:
     with pytest.raises(ValueError):
         index.search(query, cursor="not-a-cursor")
 
-    envelope = json.loads(
-        base64.urlsafe_b64decode(first.next_cursor + "=" * (-len(first.next_cursor) % 4))
-    )
-    payload = json.loads(
-        base64.urlsafe_b64decode(
-            envelope["payload"] + "=" * (-len(envelope["payload"]) % 4)
-        )
-    )
-    payload["offset"] = 2
-    envelope["payload"] = base64.urlsafe_b64encode(
-        json.dumps(payload, sort_keys=True, separators=(",", ":")).encode()
-    ).decode().rstrip("=")
-    forged = base64.urlsafe_b64encode(
-        json.dumps(envelope, sort_keys=True, separators=(",", ":")).encode()
-    ).decode().rstrip("=")
-    with pytest.raises(ValueError, match="integrity"):
+    # There is no client-visible payload to tamper with anymore (ADR-0011):
+    # a cursor is an unguessable random reference to a server-side row, not
+    # a self-describing signed blob. A mutated token simply matches no row.
+    last_character = first.next_cursor[-1]
+    forged = first.next_cursor[:-1] + ("0" if last_character != "0" else "1")
+    with pytest.raises(ValueError, match="token"):
         index.search(query, policy=SearchPolicy(page_hit_target=1), cursor=forged)
 
     with pytest.raises(ValueError, match="character_target"):
@@ -161,26 +150,10 @@ def test_receipt_staleness_tracks_exact_dependencies_and_interruptions() -> None
     assert receipt.is_stale(current_snapshot_hash="sha256:" + "b" * 64) is True
     assert receipt.stale_reasons(current_policy_id="policy:other") == ("policy_id",)
     assert receipt.content_hash == canonical_hash(receipt.model_dump(mode="json"))
-    cursor_payload = json.dumps(
-        {
-            "snapshot": HASH,
-            "query": canonical_hash(receipt.executed_queries[0].query),
-            "policy": canonical_hash(SearchPolicy()),
-            "offset": 1,
-        },
-        sort_keys=True,
-        separators=(",", ":"),
-    ).encode()
-    resume_cursor = base64.urlsafe_b64encode(
-        json.dumps(
-            {
-                "payload": base64.urlsafe_b64encode(cursor_payload).decode().rstrip("="),
-                "mac": "0" * 64,
-            },
-            sort_keys=True,
-            separators=(",", ":"),
-        ).encode()
-    ).decode().rstrip("=")
+    # A resume cursor only needs to look like an engine-issued lookup-table
+    # token here (ADR-0011); this test exercises the receipt's own shape
+    # validation, not the index's token lookup.
+    resume_cursor = "cur:" + secrets.token_urlsafe(16)
 
     interrupted = SearchCoverageReceipt.model_validate(
         receipt.model_dump(mode="json")

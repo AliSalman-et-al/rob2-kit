@@ -237,6 +237,19 @@ class VisualAssetMaterializationError(RuntimeError):
     """A visual citation could not be materialized atomically."""
 
 
+_DEFAULT_EVIDENCE_RECOVERY = ("Resubmit only the corrected field(s).",)
+
+
+def _evidence_violation(detail: str, *, recovery: tuple[str, ...] | None = None) -> OperationError:
+    """Build one evidence-submission violation for a batched OperationError."""
+
+    return OperationError(
+        code="invalid_configuration",
+        detail=detail,
+        recovery=recovery or _DEFAULT_EVIDENCE_RECOVERY,
+    )
+
+
 def _canonical_word_boxes(text: str, words: tuple[object, ...]) -> tuple[CanonicalWordBox, ...]:
     """Retain parser word geometry only when it binds unambiguously to text."""
 
@@ -2884,45 +2897,40 @@ class RunEngine:
             if SourceRole.REGISTRY_CURRENT not in source.roles
         }
         projection = self._projection(ledger, request.run_id)
-        for selection in request.selections:
-            if selection.source_id is None:
-                return SubmitSourceRoleReviewResponse(
-                    operation_id=self._read_operation_id(
-                        RunOperation.SUBMIT_SOURCE_ROLE_REVIEW, request.run_id
-                    ),
-                    ledger_cursor=f"ledger:{len(ledger.events())}",
-                    affected_scope=(request.run_id,),
-                    condition=WorkflowCondition.RUN_BLOCKED,
-                    committed=False,
-                    next_permitted_action=RunOperation.SUBMIT_SOURCE_ROLE_REVIEW,
-                    run_id=request.run_id,
-                    run_state=projection.run_state,
-                    error=OperationError(
-                        code="invalid_configuration",
-                        detail="Source-role review selections must set source_id.",
-                        recovery=("Resubmit with source_id set on every selection.",),
-                    ),
+        violations: list[OperationError] = []
+        if any(selection.source_id is None for selection in request.selections):
+            violations.append(
+                OperationError(
+                    code="invalid_configuration",
+                    detail="Source-role review selections must set source_id.",
+                    recovery=("Resubmit with source_id set on every selection.",),
                 )
-        submitted_sources = {item.source_id for item in request.selections}
-        if not submitted_sources <= issued_sources:
-            return SubmitSourceRoleReviewResponse(
-                operation_id=self._read_operation_id(
-                    RunOperation.SUBMIT_SOURCE_ROLE_REVIEW, request.run_id
-                ),
-                ledger_cursor=f"ledger:{len(ledger.events())}",
-                affected_scope=(request.run_id,),
-                condition=WorkflowCondition.RUN_BLOCKED,
-                committed=False,
-                next_permitted_action=RunOperation.SUBMIT_SOURCE_ROLE_REVIEW,
-                run_id=request.run_id,
-                run_state=projection.run_state,
-                error=OperationError(
+            )
+        submitted_sources = {
+            selection.source_id
+            for selection in request.selections
+            if selection.source_id is not None
+        }
+        unissued_sources = submitted_sources - issued_sources
+        if unissued_sources:
+            violations.append(
+                OperationError(
                     code="invalid_configuration",
                     detail="Source-role review includes an unissued source identifier.",
                     recovery=("Resubmit using only source IDs issued for this Run.",),
-                ),
+                )
             )
-        if submitted_sources != issued_sources:
+        missing_sources = issued_sources - submitted_sources
+        if missing_sources:
+            violations.append(
+                OperationError(
+                    code="invalid_configuration",
+                    detail="Source-role review must include every inventory-ready source.",
+                    recovery=("Resubmit including a disposition for every issued source.",),
+                )
+            )
+        if violations:
+            primary = violations[0]
             return SubmitSourceRoleReviewResponse(
                 operation_id=self._read_operation_id(
                     RunOperation.SUBMIT_SOURCE_ROLE_REVIEW, request.run_id
@@ -2934,11 +2942,7 @@ class RunEngine:
                 next_permitted_action=RunOperation.SUBMIT_SOURCE_ROLE_REVIEW,
                 run_id=request.run_id,
                 run_state=projection.run_state,
-                error=OperationError(
-                    code="invalid_configuration",
-                    detail="Source-role review must include every inventory-ready source.",
-                    recovery=("Resubmit including a disposition for every issued source.",),
-                ),
+                error=primary.model_copy(update={"violations": tuple(violations)}),
             )
         try:
             result = self._commit_submission(
@@ -3263,9 +3267,11 @@ class RunEngine:
         if request.items:
             self._validate_legacy_evidence_items(ledger, request)
         if request.passages:
-            self._validate_domain_evidence_submission(
+            violations = self._validate_domain_evidence_submission(
                 ledger, request.model_copy(update={"passages": ()}), enforce_non_empty=False
             )
+            if violations:
+                return self._domain_evidence_blocked_response(ledger, request, violations)
             submitted_passages = request.passages
             # _resolve_evidence_passages runs first so its own structural
             # checks (domain/question membership, span bounds, canonical-unit
@@ -3273,9 +3279,11 @@ class RunEngine:
             # search-provenance link check below.
             request = self._resolve_evidence_passages(ledger, request)
             self._validate_retained_passage_links(ledger, request, submitted_passages)
-        self._validate_domain_evidence_submission(
+        violations = self._validate_domain_evidence_submission(
             ledger, request, passages_materialized=bool(original_request.passages)
         )
+        if violations:
+            return self._domain_evidence_blocked_response(ledger, request, violations)
         evidence_bundles, manifests, receipts = self._freeze_domain_evidence(ledger, request)
         normalized = _DomainEvidenceRecord(
             run_id=request.run_id,
@@ -3888,6 +3896,33 @@ class RunEngine:
                 question_ids=referenced_questions,
             )
 
+    def _domain_evidence_blocked_response(
+        self,
+        ledger: WorkflowLedger,
+        request: SubmitDomainEvidenceRequest,
+        violations: tuple[OperationError, ...],
+    ) -> SubmitDomainEvidenceResponse:
+        """Report every collected evidence-submission violation in one response (#125)."""
+
+        projection = self._projection(ledger, request.run_id)
+        primary = violations[0]
+        return SubmitDomainEvidenceResponse(
+            operation_id=self._read_operation_id(
+                RunOperation.SUBMIT_DOMAIN_EVIDENCE, request.run_id
+            ),
+            ledger_cursor=f"ledger:{len(ledger.events())}",
+            affected_scope=(request.result_id,),
+            condition=WorkflowCondition.RUN_BLOCKED,
+            committed=False,
+            next_permitted_action=RunOperation.SUBMIT_DOMAIN_EVIDENCE,
+            run_id=request.run_id,
+            run_state=projection.run_state,
+            result_id=request.result_id,
+            result_state=self._result_state(projection, request.result_id),
+            domain_id=request.domain_id,
+            error=primary.model_copy(update={"violations": tuple(violations)}),
+        )
+
     def _validate_domain_evidence_submission(
         self,
         ledger: WorkflowLedger,
@@ -3895,24 +3930,41 @@ class RunEngine:
         *,
         passages_materialized: bool = False,
         enforce_non_empty: bool = True,
-    ) -> None:
-        """Validate the evidence-first freeze boundary before writing anything."""
+    ) -> tuple[OperationError, ...]:
+        """Collect every violation of the evidence-first freeze boundary.
+
+        Returns an empty tuple when the submission is valid. Domain
+        resolution is the only genuine structural gate here -- every other
+        check below is independent of the others and is always evaluated,
+        so a caller sees every problem with a submission in one response
+        rather than one raised exception at a time (#125).
+        """
         domain = next(
             (item for item in self._logic_pack().domains if item.id == request.domain_id),
             None,
         )
         if domain is None:
-            raise ValueError(f"unknown Logic domain {request.domain_id!r}")
+            return (_evidence_violation(f"unknown Logic domain {request.domain_id!r}"),)
         domain_questions = set(domain.question_ids)
+        violations: list[OperationError] = []
+
         supplied_question_ids = set(request.evidence_by_question)
         unknown_question_ids = supplied_question_ids - domain_questions
         if unknown_question_ids:
-            raise ValueError(
-                f"Evidence mapping includes another domain's signaling questions: "
-                f"{sorted(unknown_question_ids)}"
+            violations.append(
+                _evidence_violation(
+                    "Evidence mapping includes another domain's signaling questions: "
+                    f"{sorted(unknown_question_ids)}",
+                    recovery=("Map evidence only to this domain's active signaling questions.",),
+                )
             )
         if request.items and supplied_question_ids != domain_questions:
-            raise ValueError("each domain signaling question requires an explicit evidence mapping")
+            violations.append(
+                _evidence_violation(
+                    "each domain signaling question requires an explicit evidence mapping",
+                    recovery=("Add an evidence_by_question entry for every active question.",),
+                )
+            )
         mapped_item_ids = {
             item.entity_id for items in request.evidence_by_question.values() for item in items
         }
@@ -3930,17 +3982,24 @@ class RunEngine:
             for question_id, recorder in recorders.items()
         }
         if request.items and not all(coverage_complete.values()):
-            raise ValueError(
-                "freezing Evidence items requires complete Search coverage for every active "
-                "signaling question; call search_evidence to complete the mandatory passes first"
+            violations.append(
+                _evidence_violation(
+                    "freezing Evidence items requires complete Search coverage for every "
+                    "active signaling question; call search_evidence to complete the "
+                    "mandatory passes first",
+                    recovery=("Call search_evidence until coverage_complete=true for each SQ.",),
+                )
             )
         if request.items and any(
             self._visual_coverage_blocked(ledger, request, question_id)
             for question_id in domain_questions
         ):
-            raise ValueError(
-                "issued Visual candidates require an engine-recorded completed inspection "
-                "before Evidence can freeze"
+            violations.append(
+                _evidence_violation(
+                    "issued Visual candidates require an engine-recorded completed inspection "
+                    "before Evidence can freeze",
+                    recovery=("Inspect every issued Visual candidate before freezing.",),
+                )
             )
         if request.items and any(recorders.values()) and not passages_materialized:
             visual_items = True
@@ -3951,9 +4010,12 @@ class RunEngine:
                     visual_items = False
                     break
             if not visual_items:
-                raise ValueError(
-                    "receipt-backed Evidence freezing requires exact canonical passages, "
-                    "not legacy items"
+                violations.append(
+                    _evidence_violation(
+                        "receipt-backed Evidence freezing requires exact canonical passages, "
+                        "not legacy items",
+                        recovery=("Resubmit using passages instead of legacy items.",),
+                    )
                 )
         retained_candidates = {passage.unit_id for passage in request.passages}
         if (
@@ -3962,104 +4024,171 @@ class RunEngine:
             and not request.passages
             and not passages_materialized
         ):
-            raise ValueError(
-                "retained candidate reviews require exact passages bound to issued read views"
+            violations.append(
+                _evidence_violation(
+                    "retained candidate reviews require exact passages bound to issued read views",
+                    recovery=("Resubmit with the exact passages bound to the reviewed spans.",),
+                )
             )
-        self._validate_review_revisions(
-            request.review_revisions,
-            retained_candidates=retained_candidates,
-            domain_questions=domain_questions,
-        )
+        try:
+            self._validate_review_revisions(
+                request.review_revisions,
+                retained_candidates=retained_candidates,
+                domain_questions=domain_questions,
+            )
+        except ValueError as error:
+            violations.append(_evidence_violation(str(error)))
         if request.coverage_state.value == "incomplete" and not request.coverage_limitations:
-            raise ValueError("incomplete evidence coverage requires an explicit limitation")
+            violations.append(
+                _evidence_violation(
+                    "incomplete evidence coverage requires an explicit limitation",
+                    recovery=("Add at least one coverage_limitations entry.",),
+                )
+            )
         if (
             request.coverage_state.value == "complete_with_limitations"
             and not request.coverage_limitations
         ):
-            raise ValueError("complete-with-limitations coverage requires an explicit limitation")
+            violations.append(
+                _evidence_violation(
+                    "complete-with-limitations coverage requires an explicit limitation",
+                    recovery=("Add at least one coverage_limitations entry.",),
+                )
+            )
         if request.coverage_state.value == "complete" and request.coverage_limitations:
-            raise ValueError(
-                "coverage limitations require coverage_state='complete_with_limitations' "
-                "or 'incomplete'"
+            violations.append(
+                _evidence_violation(
+                    "coverage limitations require coverage_state='complete_with_limitations' "
+                    "or 'incomplete'",
+                    recovery=(
+                        "Set coverage_state to complete_with_limitations or incomplete, "
+                        "or drop coverage_limitations.",
+                    ),
+                )
             )
         if request.no_information_basis:
+            # These sub-checks are genuinely sequential -- each later one
+            # only makes sense once the earlier ones already hold -- so
+            # this block still contributes at most one violation, exactly
+            # like before. It is otherwise independent of every other
+            # check in this function.
             if request.coverage_state.value != "complete" or request.coverage_limitations:
-                raise ValueError("no-information answers require complete, unlimited coverage")
-            if not all(coverage_complete.values()):
-                raise ValueError("no-information basis requires complete Search coverage receipts")
-            previews = {
-                question_id: self._freeze_recorder(request, question_id, recorder)
-                for question_id, recorder in recorders.items()
-                if recorder is not None
-            }
-            if any(
-                not previews[question_id].establishes_no_information_basis()
-                for question_id in domain_questions
-            ):
-                raise ValueError(
-                    "no-information basis requires adequate readable-source Search coverage"
+                violations.append(
+                    _evidence_violation(
+                        "no-information answers require complete, unlimited coverage",
+                        recovery=("Set coverage_state='complete' with no limitations.",),
+                    )
                 )
-            if any(
-                previews[question_id].retained_candidate_ids() for question_id in domain_questions
-            ):
-                raise ValueError(
-                    "no-information basis is unavailable while retained Evidence candidates remain"
+            elif not all(coverage_complete.values()):
+                violations.append(
+                    _evidence_violation(
+                        "no-information basis requires complete Search coverage receipts",
+                        recovery=("Call search_evidence until coverage_complete=true.",),
+                    )
                 )
+            else:
+                previews = {
+                    question_id: self._freeze_recorder(request, question_id, recorder)
+                    for question_id, recorder in recorders.items()
+                    if recorder is not None
+                }
+                if any(
+                    not previews[question_id].establishes_no_information_basis()
+                    for question_id in domain_questions
+                ):
+                    violations.append(
+                        _evidence_violation(
+                            "no-information basis requires adequate readable-source "
+                            "Search coverage",
+                        )
+                    )
+                elif any(
+                    previews[question_id].retained_candidate_ids()
+                    for question_id in domain_questions
+                ):
+                    violations.append(
+                        _evidence_violation(
+                            "no-information basis is unavailable while retained Evidence "
+                            "candidates remain",
+                            recovery=("Disposition every retained Evidence candidate first.",),
+                        )
+                    )
         if enforce_non_empty and not (
             request.items
             or request.passages
             or request.no_information_basis
             or request.coverage_state.value == "incomplete"
         ):
-            raise ValueError(
-                "Evidence submission must include real passages/items, an explicit "
-                "no_information_basis with complete Search coverage, or "
-                "coverage_state='incomplete' with a stated limitation"
+            violations.append(
+                _evidence_violation(
+                    "Evidence submission must include real passages/items, an explicit "
+                    "no_information_basis with complete Search coverage, or "
+                    "coverage_state='incomplete' with a stated limitation",
+                )
             )
         item_ids = tuple(item.entity_id for item in request.items)
         if len(item_ids) != len(set(item_ids)):
-            raise ValueError("Evidence Bundle items must be unique")
+            violations.append(_evidence_violation("Evidence Bundle items must be unique"))
         for reference in request.items:
             try:
                 ledger.artifacts.read(reference.content_hash)
-            except Exception as error:  # ArtifactStore exposes several typed read failures.
-                raise ValueError(
-                    f"Evidence item {reference.entity_id!r} is not an immutable artifact"
-                ) from error
+            except Exception:  # ArtifactStore exposes several typed read failures.
+                violations.append(
+                    _evidence_violation(
+                        f"Evidence item {reference.entity_id!r} is not an immutable artifact",
+                    )
+                )
         dispositions = request.candidate_dispositions
         disposition_ids = tuple(item.item_id for item in dispositions)
         if len(disposition_ids) != len(set(disposition_ids)):
-            raise ValueError("every Evidence candidate requires exactly one disposition")
+            violations.append(
+                _evidence_violation("every Evidence candidate requires exactly one disposition")
+            )
         if dispositions:
             if not set(disposition_ids).issubset(set(item_ids)):
-                raise ValueError(
-                    "candidate dispositions must be attributable to submitted Evidence items"
+                violations.append(
+                    _evidence_violation(
+                        "candidate dispositions must be attributable to submitted Evidence items",
+                    )
                 )
             if not set(item_ids).issubset(set(disposition_ids)):
-                raise ValueError(
-                    "every accepted Evidence item must appear in the consideration manifest"
+                violations.append(
+                    _evidence_violation(
+                        "every accepted Evidence item must appear in the consideration manifest",
+                    )
                 )
             if any(
                 item.disposition is ConsiderationDisposition.UNRESOLVED for item in dispositions
             ):
-                raise ValueError("material Evidence candidates cannot remain unresolved")
+                violations.append(
+                    _evidence_violation("material Evidence candidates cannot remain unresolved")
+                )
         if request.items and mapped_item_ids != set(item_ids):
-            raise ValueError(
-                "every submitted Evidence item must be attributed to at least one "
-                "signaling question"
+            violations.append(
+                _evidence_violation(
+                    "every submitted Evidence item must be attributed to at least one "
+                    "signaling question",
+                )
             )
         for conflict in request.conflicts:
             if len(conflict) < 2 or not set(conflict).issubset(set(item_ids)):
-                raise ValueError("source conflicts must bind at least two frozen Evidence items")
+                violations.append(
+                    _evidence_violation(
+                        "source conflicts must bind at least two frozen Evidence items",
+                    )
+                )
         conflict_groups = tuple(frozenset(conflict) for conflict in request.conflicts)
         for disposition in dispositions:
             if disposition.disposition is ConsiderationDisposition.SUPERSEDED:
                 assert disposition.superseded_by is not None
                 supersession_pair = frozenset((disposition.item_id, disposition.superseded_by))
                 if not any(supersession_pair <= group for group in conflict_groups):
-                    raise ValueError(
-                        "superseded evidence must link its replacement in a recorded conflict"
+                    violations.append(
+                        _evidence_violation(
+                            "superseded evidence must link its replacement in a recorded conflict",
+                        )
                     )
+        return tuple(violations)
 
     @staticmethod
     def _validate_review_revisions(

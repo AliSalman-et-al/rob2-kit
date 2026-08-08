@@ -83,7 +83,13 @@ def test_search_has_stable_order_and_snapshot_bound_cursors(tmp_path: Path) -> N
     second = index.search(query, policy=policy)
 
     assert [hit.unit.unit_id for hit in first.hits] == ["unit:report-002"]
-    assert first == second
+    # next_cursor and each hit's location_handle are lookup-table tokens
+    # issued fresh on every call (ADR-0011), so two calls with identical
+    # inputs return equal *content* but different token strings.
+    assert [hit.unit.unit_id for hit in second.hits] == ["unit:report-002"]
+    assert first.model_copy(update={"next_cursor": None, "hits": ()}) == second.model_copy(
+        update={"next_cursor": None, "hits": ()}
+    )
     assert first.next_cursor is not None
     assert index.search(query, policy=policy, cursor=first.next_cursor).hits[0].unit.unit_id == (
         "unit:report-001"
