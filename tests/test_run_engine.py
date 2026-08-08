@@ -77,6 +77,30 @@ def test_run_engine_resumes_current_run_from_concrete_durable_state(tmp_path) ->
     assert resumed.committed is False
 
 
+def test_run_engine_threads_one_persistent_verified_hash_cache_across_calls(tmp_path) -> None:
+    """RunEngine rebuilds WorkflowLedger/ArtifactStore fresh on every call
+    (#130), so preflight()'s artifact-verification cache can only survive
+    across calls if RunEngine owns it and passes the same set through each
+    time. test_storage.py separately proves that a shared set actually makes
+    preflight() skip re-reading bytes; this proves RunEngine wires that
+    sharing correctly rather than handing each call its own fresh set.
+    """
+
+    engine = RunEngine()
+    assert engine._verified_artifact_hashes == set()
+
+    prepared = engine.prepare_run(PrepareRunRequest(project_root=tmp_path, authorized=True))
+    engine.run_status(RunStatusRequest(run_id=prepared.run_id))
+    verified_after_first_call = set(engine._verified_artifact_hashes)
+    assert verified_after_first_call
+
+    engine.run_status(RunStatusRequest(run_id=prepared.run_id))
+
+    # The same RunEngine-owned set keeps growing (or staying put), never
+    # getting replaced by a fresh, empty one on a later call.
+    assert engine._verified_artifact_hashes >= verified_after_first_call
+
+
 def test_starting_new_run_retires_prior_unfinished_run_durably(tmp_path) -> None:
     engine = RunEngine()
     first = engine.prepare_run(

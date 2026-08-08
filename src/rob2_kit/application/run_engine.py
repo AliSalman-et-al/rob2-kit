@@ -644,6 +644,13 @@ class RunEngine:
         self._coverage_recorders: dict[
             tuple[Identifier, Identifier, Identifier, Identifier], SearchCoverageRecorder
         ] = {}
+        # Content-addressed Source artifacts are immutable once written, so a
+        # hash verified once by preflight() needn't be re-read from disk by a
+        # later call in this same process (#130). Process-lifetime only, like
+        # ``_coverage_recorders`` above: a new process gets a fresh, empty set
+        # and re-verifies everything, which is the accepted trade-off for
+        # this fix.
+        self._verified_artifact_hashes: set[str] = set()
 
     def __getattr__(self, name: str) -> Any:
         """Expose the canonical status spelling without expanding the legacy API.
@@ -669,6 +676,7 @@ class RunEngine:
             event_identifiers=(
                 self._determinism.event_identifiers if self._determinism is not None else None
             ),
+            verified_artifact_hashes=self._verified_artifact_hashes,
         )
 
     def prepare_run(self, request: PrepareRunRequest) -> PrepareRunResponse:

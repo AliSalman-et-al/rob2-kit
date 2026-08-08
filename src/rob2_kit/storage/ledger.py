@@ -222,12 +222,20 @@ class WorkflowLedger:
         *,
         now: Callable[[], datetime] | None = None,
         event_identifiers: Callable[[str, str, int], tuple[str, str]] | None = None,
+        verified_artifact_hashes: set[str] | None = None,
     ) -> None:
         self.path = Path(path)
         self.path.parent.mkdir(parents=True, exist_ok=True)
         self.artifacts = artifacts
         self._now = now or (lambda: datetime.now(UTC))
         self._event_identifiers = event_identifiers
+        # Owned by the caller when it wants verification to persist across
+        # ledger instances (e.g. RunEngine, which rebuilds WorkflowLedger on
+        # every call); a fresh set here preserves always-full-reverify
+        # behavior for direct construction.
+        self._verified_artifact_hashes = (
+            verified_artifact_hashes if verified_artifact_hashes is not None else set()
+        )
         self._initialize()
 
     def acquire_lease(
@@ -919,10 +927,12 @@ class WorkflowLedger:
         if referenced_hashes != reachable_hashes:
             raise IntegrityError("reachable artifact projection does not match revision references")
         for content_hash in sorted(referenced_hashes):
-            try:
-                self.artifacts.read(content_hash)
-            except (ArtifactCorruptionError, ArtifactNotFoundError) as error:
-                raise IntegrityError(str(error)) from error
+            if content_hash not in self._verified_artifact_hashes:
+                try:
+                    self.artifacts.read(content_hash)
+                except (ArtifactCorruptionError, ArtifactNotFoundError) as error:
+                    raise IntegrityError(str(error)) from error
+                self._verified_artifact_hashes.add(content_hash)
             artifact_count += 1
         active_dependencies = connection.execute(
             """

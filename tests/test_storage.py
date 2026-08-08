@@ -399,6 +399,60 @@ def test_integrity_preflight_detects_corrupted_current_projection(
         ledger.preflight()
 
 
+def test_preflight_skips_reading_artifacts_already_verified_via_shared_cache(
+    tmp_path: Path,
+) -> None:
+    verified: set[str] = set()
+    artifacts = ArtifactStore(tmp_path / "artifacts")
+    read_calls: list[str] = []
+    original_read = artifacts.read
+
+    def counting_read(content_hash: str) -> bytes:
+        read_calls.append(content_hash)
+        return original_read(content_hash)
+
+    artifacts.read = counting_read  # type: ignore[method-assign]
+
+    first = WorkflowLedger(
+        tmp_path / "ledger.sqlite3", artifacts, verified_artifact_hashes=verified
+    )
+    first.commit(transition("one"), acquire(first), now=NOW)
+    assert first.preflight().ok is True
+    assert len(read_calls) == 1
+
+    # A fresh WorkflowLedger instance over the same path, sharing the same
+    # verified-hash set (as RunEngine does across calls), must not re-read
+    # bytes it already verified.
+    second = WorkflowLedger(
+        tmp_path / "ledger.sqlite3", artifacts, verified_artifact_hashes=verified
+    )
+    assert second.preflight().ok is True
+    assert len(read_calls) == 1
+
+
+def test_preflight_does_not_redetect_tampering_of_already_verified_artifact(
+    tmp_path: Path,
+) -> None:
+    """Accepted trade-off (#130): once an artifact hash is cached as verified
+    within a process, later preflight() calls trust it rather than re-reading
+    it from disk. Content-addressed artifacts are immutable once written, so
+    on-disk tampering after first verification is only caught by a fresh
+    process (a fresh, empty cache), not by a later call in the same one.
+    """
+
+    verified: set[str] = set()
+    artifacts = ArtifactStore(tmp_path / "artifacts")
+    ledger = WorkflowLedger(
+        tmp_path / "ledger.sqlite3", artifacts, verified_artifact_hashes=verified
+    )
+    result = ledger.commit(transition("one"), acquire(ledger), now=NOW)
+    assert ledger.preflight().ok is True
+
+    ledger.artifacts.path_for(result.artifact_hash).write_bytes(b"tampered")
+
+    assert ledger.preflight().ok is True
+
+
 def test_replay_and_jsonl_export_are_deterministic_projections(
     ledger: WorkflowLedger, tmp_path: Path
 ) -> None:
