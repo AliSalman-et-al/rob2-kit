@@ -675,6 +675,7 @@ class SubmitRunProposalRequest(FrozenModel):
     run_id: Identifier
     proposal_token: Identifier
     idempotency_key: Identifier
+    authorized: bool = False
     selections: tuple[RunProposalSelection, ...] = ()
     ambiguities: tuple[RunProposalAmbiguity, ...] = ()
     unresolved_ambiguities: tuple[RunProposalAmbiguity, ...] = ()

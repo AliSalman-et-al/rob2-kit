@@ -398,6 +398,10 @@ def create_server(
         run_id: str,
         proposal_token: str,
         contract_version: Literal["1.0.0"],
+        authorized: Annotated[
+            bool,
+            Field(description="Set true only after explicit operator authorization."),
+        ] = False,
         selections: list[RunProposalSelection] | None = None,
         ambiguities: list[RunProposalAmbiguity] | None = None,
         correction: str | None = None,
@@ -406,6 +410,10 @@ def create_server(
 
         Prerequisite: copy the issued proposal token. Safe default: submit the
         complete issued selection. Not for: free-form scope changes without issued IDs.
+
+        Set ``authorized=true`` only after explicit operator authorization; it
+        permits registry acquisition for accepted registry candidates on this
+        call only.
         """
         return _dump(
             engine.submit_run_proposal(
@@ -414,6 +422,7 @@ def create_server(
                         "run_id": run_id,
                         "proposal_token": proposal_token,
                         "idempotency_key": _submission_key("proposal", proposal_token),
+                        "authorized": authorized,
                         "selections": selections or (),
                         "ambiguities": ambiguities or (),
                         "correction": correction,

@@ -308,6 +308,44 @@ def test_one_run_engine_process_rejects_a_second_project_root(tmp_path) -> None:
         raise AssertionError("a process must not bind a second project root")
 
 
+def test_prepare_run_without_ledger_returns_structured_authorization_required(tmp_path) -> None:
+    """Issue #123: this gate used to raise a bare PermissionError instead of
+    returning through the normal tool result contract."""
+
+    response = RunEngine().prepare_run(PrepareRunRequest(project_root=tmp_path, authorized=False))
+
+    assert response.committed is False
+    assert response.run_state is RunState.BLOCKED
+    assert response.condition is WorkflowCondition.RUN_BLOCKED
+    assert response.proposal is None
+    assert response.error is not None
+    assert response.error.code == "authorization_required"
+    assert not (tmp_path / ".rob2" / "ledger.sqlite3").is_file()
+
+
+def test_prepare_run_with_existing_ledger_and_no_current_run_returns_structured_condition(
+    tmp_path,
+) -> None:
+    """Issue #123: this gate used to raise a bare PermissionError instead of
+    returning through the normal tool result contract. It is only reachable
+    once a ledger already exists on disk (e.g. from an earlier authorized
+    call) but no run was ever prepared into it."""
+
+    WorkflowLedger(
+        tmp_path / ".rob2" / "ledger.sqlite3",
+        ArtifactStore(tmp_path / ".rob2" / "artifacts"),
+    )
+
+    response = RunEngine().prepare_run(PrepareRunRequest(project_root=tmp_path, authorized=False))
+
+    assert response.committed is False
+    assert response.run_state is RunState.BLOCKED
+    assert response.condition is WorkflowCondition.RUN_BLOCKED
+    assert response.proposal is None
+    assert response.error is not None
+    assert response.error.code == "authorization_required"
+
+
 def test_run_engine_retrieval_contract_rejects_missing_work_token(tmp_path) -> None:
     with pytest.raises(Exception, match="work_token"):
         SearchEvidenceRequest.model_validate(

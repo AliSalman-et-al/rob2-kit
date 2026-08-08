@@ -1,0 +1,9 @@
+# Split RunEngine's authorization scoping: per-call for submit_run_proposal, latched-with-reset for continue_run
+
+RunEngine's `authorized` gate used one instance-scoped `self._authorized_root` latch to answer whether *any* subsequent call — `submit_run_proposal`'s registry acquisition included — was allowed to reach the network. The latch had no reset, so a single `authorized=true` `prepare_run` call left registry acquisition unlocked for the rest of the process; `submit_run_proposal` had no `authorized` field of its own, so it could only ever read that stale latch rather than express its own per-call intent.
+
+We split the two use cases instead of patching the latch uniformly. `submit_run_proposal` gained its own request-scoped `authorized: bool = False` field (mirroring `PrepareRunRequest.authorized`), threaded directly into `_refresh_registry_candidates`; it no longer reads `self._authorized_root` at all, so there is nothing to forget to reset on that path. `continue_run`'s reconciliation (`_reconcile_current_run`) is deliberately parameter-free — a "what's next" query reconstructed from durable ledger state — so it has no natural per-call argument to carry authorization through; it keeps the instance-scoped latch, with the previously-missing `else: self._authorized_root = None` reset added in `prepare_run` so the latch no longer stays open indefinitely.
+
+## Considered Options
+
+Fully eliminate `self._authorized_root` by threading a request-scoped flag through every call site, including `continue_run`. Rejected: `continue_run`'s contract has no clean place to carry it without changing what `continue_run` is (a parameter-free continuation query), and there's no evidence concurrent-session use of one project root is a scenario this server needs to support safely — the invasiveness of full request-scoping isn't justified by a problem that the latch-plus-reset doesn't already solve for the one remaining use.

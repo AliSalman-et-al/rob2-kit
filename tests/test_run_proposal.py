@@ -8,8 +8,11 @@ import yaml
 
 from rob2_kit.application.contracts import (
     ConfirmRunDefinitionRequest,
+    ContinueRunRequest,
     PrepareRunRequest,
+    RunProposalSelection,
     SubmitRunProposalRequest,
+    SubmitSourceRoleReviewRequest,
     WorkflowCondition,
 )
 from rob2_kit.application.run_engine import RunEngine
@@ -154,3 +157,207 @@ def test_confirmation_is_idempotent_and_only_current_token_succeeds(tmp_path: Pa
         engine.confirm_run_definition(
             request.model_copy(update={"idempotency_key": "idempotency:other"})
         )
+
+
+def test_submit_run_proposal_after_confirmation_is_a_structured_run_blocked_condition(
+    tmp_path: Path,
+) -> None:
+    """Issue #123: this gate used to raise a bare ValueError instead of
+    returning through the normal tool result contract."""
+
+    engine = RunEngine()
+    prepared = engine.prepare_run(PrepareRunRequest(project_root=tmp_path, authorized=True))
+    assert prepared.proposal is not None
+    submitted = engine.submit_run_proposal(
+        SubmitRunProposalRequest(
+            contract_version="1.0.0",
+            run_id=prepared.run_id,
+            proposal_token=prepared.proposal.proposal_token,
+            idempotency_key="idempotency:proposal",
+        )
+    )
+    engine.confirm_run_definition(
+        ConfirmRunDefinitionRequest(
+            contract_version="1.0.0",
+            run_id=prepared.run_id,
+            proposal_token=submitted.proposal.proposal_token,
+            idempotency_key="idempotency:confirmation",
+            confirmed_by=OPERATOR,
+        )
+    )
+
+    response = engine.submit_run_proposal(
+        SubmitRunProposalRequest(
+            contract_version="1.0.0",
+            run_id=prepared.run_id,
+            proposal_token=submitted.proposal.proposal_token,
+            idempotency_key="idempotency:proposal-after-confirmation",
+        )
+    )
+
+    assert response.committed is False
+    assert response.condition is WorkflowCondition.RUN_BLOCKED
+    assert response.error is not None
+    assert response.error.code == "invalid_configuration"
+    assert "before confirmation" in response.error.detail
+
+
+def test_submit_run_proposal_before_source_role_review_is_a_structured_run_blocked_condition(
+    tmp_path: Path,
+) -> None:
+    """Issue #123: this gate used to raise a bare ValueError instead of
+    returning through the normal tool result contract."""
+
+    trial = tmp_path / "input" / "trial-a"
+    trial.mkdir(parents=True)
+    (trial / "report.pdf").write_bytes(b"unreviewed report")
+
+    engine = RunEngine(parser=StubParser())
+    prepared = engine.prepare_run(PrepareRunRequest(project_root=tmp_path, authorized=True))
+    assert prepared.proposal is not None
+
+    response = engine.submit_run_proposal(
+        SubmitRunProposalRequest(
+            contract_version="1.0.0",
+            run_id=prepared.run_id,
+            proposal_token=prepared.proposal.proposal_token,
+            idempotency_key="idempotency:proposal-before-review",
+        )
+    )
+
+    assert response.committed is False
+    assert response.condition is WorkflowCondition.RUN_BLOCKED
+    assert response.error is not None
+    assert response.error.code == "invalid_configuration"
+    assert "Source-role review" in response.error.detail
+
+
+def test_submit_source_role_review_shape_violations_are_structured_run_blocked_conditions(
+    tmp_path: Path,
+) -> None:
+    """Issue #123: these three gates used to raise bare ValueErrors instead of
+    returning through the normal tool result contract."""
+
+    trial = tmp_path / "input" / "trial-a"
+    trial.mkdir(parents=True)
+    (trial / "report.pdf").write_bytes(b"first report")
+    (trial / "protocol.pdf").write_bytes(b"second report")
+
+    engine = RunEngine(parser=StubParser())
+    prepared = engine.prepare_run(PrepareRunRequest(project_root=tmp_path, authorized=True))
+    assert prepared.proposal is not None
+    review_work = engine.continue_run(ContinueRunRequest(run_id=prepared.run_id)).work_item
+    assert review_work is not None
+    issued_sources = [
+        source.source_id
+        for candidate_trial in prepared.proposal.initialization.trials
+        for source in candidate_trial.inventory.sources
+    ]
+    assert len(issued_sources) == 2
+
+    missing_source_id = engine.submit_source_role_review(
+        SubmitSourceRoleReviewRequest(
+            contract_version="1.0.0",
+            run_id=prepared.run_id,
+            work_token=review_work.work_token,
+            idempotency_key="idempotency:review-missing-source-id",
+            selections=(RunProposalSelection(trial_id="trial:trial-a"),),
+        )
+    )
+    unissued_source_id = engine.submit_source_role_review(
+        SubmitSourceRoleReviewRequest(
+            contract_version="1.0.0",
+            run_id=prepared.run_id,
+            work_token=review_work.work_token,
+            idempotency_key="idempotency:review-unissued-source-id",
+            selections=(
+                RunProposalSelection(trial_id="trial:trial-a", source_id="source:bogus"),
+            ),
+        )
+    )
+    incomplete_review = engine.submit_source_role_review(
+        SubmitSourceRoleReviewRequest(
+            contract_version="1.0.0",
+            run_id=prepared.run_id,
+            work_token=review_work.work_token,
+            idempotency_key="idempotency:review-incomplete",
+            selections=(
+                RunProposalSelection(trial_id="trial:trial-a", source_id=issued_sources[0]),
+            ),
+        )
+    )
+
+    for response, expected_detail_fragment in (
+        (missing_source_id, "must set source_id"),
+        (unissued_source_id, "unissued source identifier"),
+        (incomplete_review, "must include every inventory-ready source"),
+    ):
+        assert response.committed is False
+        assert response.condition is WorkflowCondition.RUN_BLOCKED
+        assert response.error is not None
+        assert response.error.code == "invalid_configuration"
+        assert expected_detail_fragment in response.error.detail
+
+
+def test_refresh_registry_candidates_reads_its_own_authorized_argument(tmp_path: Path) -> None:
+    """Issue #123 / #129: _refresh_registry_candidates used to read the
+    engine's stale, process-lifetime ``_authorized_root`` latch instead of a
+    per-call argument. It must now be gated by its own ``authorized``
+    parameter, independent of whatever the latch currently holds."""
+
+    trial = tmp_path / "input" / "trial-a"
+    trial.mkdir(parents=True)
+    # No trial.yaml declaration: leaving the NCT id only in source text keeps
+    # the resulting candidate's status "discovered" rather than "declared",
+    # which is required for _refresh_registry_candidates to consider it
+    # eligible for re-acquisition at all.
+    (trial / "report.pdf").write_bytes(b"NCT01234567 trial report")
+    registry = StubRegistry()
+
+    engine = RunEngine(parser=StubParser(), registry=registry)
+    prepared = engine.prepare_run(PrepareRunRequest(project_root=tmp_path, authorized=True))
+    assert prepared.proposal is not None
+    assert prepared.proposal.registry_candidates[0].status == "discovered"
+    # The engine's process-lifetime latch is still set from the authorized
+    # prepare_run call above (self._authorized_root == self._root); a caller
+    # reading the stale latch instead of its own argument would wrongly
+    # treat both calls below as authorized.
+    assert engine._authorized_root == engine._root
+    registry.calls.clear()
+    candidate = prepared.proposal.registry_candidates[0]
+    selections = (
+        RunProposalSelection(
+            trial_id="trial:trial-a",
+            registry_candidate_id=candidate.candidate_id,
+            accepted=True,
+        ),
+    )
+
+    unauthorized_proposal = engine._refresh_registry_candidates(
+        prepared.proposal, selections, authorized=False
+    )
+
+    assert registry.calls == []
+    assert unauthorized_proposal == prepared.proposal
+
+    engine._refresh_registry_candidates(prepared.proposal, selections, authorized=True)
+
+    assert registry.calls == ["NCT01234567"]
+
+
+def test_prepare_run_authorization_latch_resets_when_call_is_unauthorized(
+    tmp_path: Path,
+) -> None:
+    """Issue #123 / #129: an authorized prepare_run call used to leave
+    ``_authorized_root`` latched for the rest of the process, with no reset
+    when a later call arrives unauthorized. continue_run's parameter-free
+    reconciliation (_reconcile_current_run) reads this latch, so a stale
+    latch would leave registry acquisition unlocked indefinitely."""
+
+    engine = RunEngine()
+    engine.prepare_run(PrepareRunRequest(project_root=tmp_path, authorized=True))
+    assert engine._authorized_root == engine._root
+
+    engine.prepare_run(PrepareRunRequest(project_root=tmp_path, authorized=False))
+
+    assert engine._authorized_root is None

@@ -688,10 +688,19 @@ class RunEngine:
             return self._prepare_root_configuration_error(root, error)
         if request.authorized:
             self._authorized_root = root
+        else:
+            self._authorized_root = None
         state_root = root / ".rob2"
         ledger_path = state_root / "ledger.sqlite3"
         if not request.authorized and not ledger_path.is_file():
-            raise PermissionError("Run preparation requires explicit project-root authorization")
+            return self._prepare_root_authorization_required(
+                root,
+                detail="Run preparation requires explicit project-root authorization.",
+                recovery=(
+                    "Retry prepare_run with authorized=true after explicit operator "
+                    "authorization.",
+                ),
+            )
         try:
             artifacts = ArtifactStore(state_root / "artifacts")
             ledger = self._ledger(ledger_path, artifacts)
@@ -1039,7 +1048,15 @@ class RunEngine:
                         proposal=self._latest_proposal(ledger, latest.run_id),
                     )
         if not request.authorized:
-            raise PermissionError("Starting a new Run requires project-root authorization")
+            return self._prepare_root_authorization_required(
+                root,
+                ledger=ledger,
+                detail="Starting a new Run requires explicit project-root authorization.",
+                recovery=(
+                    "Retry prepare_run with authorized=true and start_new=true after "
+                    "explicit operator authorization.",
+                ),
+            )
 
         try:
             initialization = initialize_project(
@@ -2030,15 +2047,49 @@ class RunEngine:
         ledger = self._bound_ledger(request.run_id)
         projection = self._projection(ledger, request.run_id)
         if projection.run_state is not RunState.AWAITING_CONFIRMATION:
-            raise ValueError("a Run proposal can only be submitted before confirmation")
+            return SubmitRunProposalResponse(
+                operation_id=self._read_operation_id(
+                    RunOperation.SUBMIT_RUN_PROPOSAL, request.run_id
+                ),
+                ledger_cursor=f"ledger:{len(ledger.events())}",
+                affected_scope=(request.run_id,),
+                condition=WorkflowCondition.RUN_BLOCKED,
+                committed=False,
+                next_permitted_action=RunOperation.CONTINUE_RUN,
+                run_id=request.run_id,
+                run_state=projection.run_state,
+                proposal=None,
+                error=OperationError(
+                    code="invalid_configuration",
+                    detail="A Run proposal can only be submitted before confirmation.",
+                    recovery=("Call continue_run instead; this Run has already been confirmed.",),
+                ),
+            )
         proposal = self._latest_proposal(ledger, request.run_id)
         events = self._events_for_run(ledger, request.run_id)
         if not self._source_role_review_complete(
             proposal, ledger, events, selected_trial_ids=None
         ):
-            raise ValueError(
-                "Source-role review must resolve every inventory-ready source before "
-                "a Run proposal can be submitted; call submit_source_role_review first"
+            return SubmitRunProposalResponse(
+                operation_id=self._read_operation_id(
+                    RunOperation.SUBMIT_RUN_PROPOSAL, request.run_id
+                ),
+                ledger_cursor=f"ledger:{len(ledger.events())}",
+                affected_scope=(request.run_id,),
+                condition=WorkflowCondition.RUN_BLOCKED,
+                committed=False,
+                next_permitted_action=RunOperation.SUBMIT_SOURCE_ROLE_REVIEW,
+                run_id=request.run_id,
+                run_state=projection.run_state,
+                proposal=proposal,
+                error=OperationError(
+                    code="invalid_configuration",
+                    detail=(
+                        "Source-role review must resolve every inventory-ready source "
+                        "before a Run proposal can be submitted."
+                    ),
+                    recovery=("Call submit_source_role_review first.",),
+                ),
             )
         # #119: nothing here may trust _classify's raw cue. Overlay every
         # accepted Source-role disposition onto the sources this proposal
@@ -2150,7 +2201,9 @@ class RunEngine:
                 ),
             )
         self._validate_proposal_selections(proposal, selections)
-        proposal = self._refresh_registry_candidates(proposal, selections)
+        proposal = self._refresh_registry_candidates(
+            proposal, selections, authorized=request.authorized
+        )
         self._index_initial_evidence(self._required_root(), proposal.initialization)
         requested_ambiguities = request.ambiguities + request.unresolved_ambiguities
         if translated_selections:
@@ -2830,14 +2883,63 @@ class RunEngine:
             for source in trial.inventory.sources
             if SourceRole.REGISTRY_CURRENT not in source.roles
         }
+        projection = self._projection(ledger, request.run_id)
         for selection in request.selections:
             if selection.source_id is None:
-                raise ValueError("Source-role review selections must set source_id")
+                return SubmitSourceRoleReviewResponse(
+                    operation_id=self._read_operation_id(
+                        RunOperation.SUBMIT_SOURCE_ROLE_REVIEW, request.run_id
+                    ),
+                    ledger_cursor=f"ledger:{len(ledger.events())}",
+                    affected_scope=(request.run_id,),
+                    condition=WorkflowCondition.RUN_BLOCKED,
+                    committed=False,
+                    next_permitted_action=RunOperation.SUBMIT_SOURCE_ROLE_REVIEW,
+                    run_id=request.run_id,
+                    run_state=projection.run_state,
+                    error=OperationError(
+                        code="invalid_configuration",
+                        detail="Source-role review selections must set source_id.",
+                        recovery=("Resubmit with source_id set on every selection.",),
+                    ),
+                )
         submitted_sources = {item.source_id for item in request.selections}
         if not submitted_sources <= issued_sources:
-            raise ValueError("Source-role review includes an unissued source identifier")
+            return SubmitSourceRoleReviewResponse(
+                operation_id=self._read_operation_id(
+                    RunOperation.SUBMIT_SOURCE_ROLE_REVIEW, request.run_id
+                ),
+                ledger_cursor=f"ledger:{len(ledger.events())}",
+                affected_scope=(request.run_id,),
+                condition=WorkflowCondition.RUN_BLOCKED,
+                committed=False,
+                next_permitted_action=RunOperation.SUBMIT_SOURCE_ROLE_REVIEW,
+                run_id=request.run_id,
+                run_state=projection.run_state,
+                error=OperationError(
+                    code="invalid_configuration",
+                    detail="Source-role review includes an unissued source identifier.",
+                    recovery=("Resubmit using only source IDs issued for this Run.",),
+                ),
+            )
         if submitted_sources != issued_sources:
-            raise ValueError("Source-role review must include every inventory-ready source")
+            return SubmitSourceRoleReviewResponse(
+                operation_id=self._read_operation_id(
+                    RunOperation.SUBMIT_SOURCE_ROLE_REVIEW, request.run_id
+                ),
+                ledger_cursor=f"ledger:{len(ledger.events())}",
+                affected_scope=(request.run_id,),
+                condition=WorkflowCondition.RUN_BLOCKED,
+                committed=False,
+                next_permitted_action=RunOperation.SUBMIT_SOURCE_ROLE_REVIEW,
+                run_id=request.run_id,
+                run_state=projection.run_state,
+                error=OperationError(
+                    code="invalid_configuration",
+                    detail="Source-role review must include every inventory-ready source.",
+                    recovery=("Resubmit including a disposition for every issued source.",),
+                ),
+            )
         try:
             result = self._commit_submission(
                 ledger,
@@ -5158,13 +5260,19 @@ class RunEngine:
         self,
         proposal: RunProposal,
         selections: tuple[RunProposalSelection, ...],
+        *,
+        authorized: bool,
     ) -> RunProposal:
         """Fetch and durably project provenance for accepted registry candidates.
 
         Registry acquisition is an external capability, so it is only invoked
-        during an explicitly authorized prepare/submit call.  The immutable
-        proposal carries the complete acquisition, source, and receipt
-        projection; later assessment calls only read that projection.
+        during an explicitly authorized submit_run_proposal call. This method
+        reads the caller's own ``authorized`` argument directly rather than
+        any cross-call engine state, so acquisition cannot be triggered merely
+        by resuming a previously authorized project on a later, unauthorized
+        call. The immutable proposal carries the complete acquisition,
+        source, and receipt projection; later assessment calls only read
+        that projection.
         """
 
         accepted_ids = {
@@ -5174,7 +5282,7 @@ class RunEngine:
         }
         if not accepted_ids:
             return proposal
-        if self._authorized_root is None or self._authorized_root != self._root:
+        if not authorized:
             return proposal
         adapter = self._registry_adapter or self._registry_client
         if adapter is None:
@@ -12018,6 +12126,35 @@ class RunEngine:
                     "and registry provenance.",
                     "Do not submit the existing proposal token after changing project inputs.",
                 ),
+            ),
+        )
+
+    def _prepare_root_authorization_required(
+        self,
+        root: Path,
+        *,
+        detail: str,
+        recovery: tuple[str, ...],
+        ledger: WorkflowLedger | None = None,
+    ) -> PrepareRunResponse:
+        run_id = f"run:rejected-{self._digest(str(root))}"
+        return PrepareRunResponse(
+            operation_id=self._read_operation_id(RunOperation.PREPARE_RUN, run_id),
+            ledger_cursor=(
+                f"ledger:{len(ledger.events())}" if ledger is not None else "ledger:unbound"
+            ),
+            affected_scope=(run_id,),
+            condition=WorkflowCondition.RUN_BLOCKED,
+            committed=False,
+            next_permitted_action=RunOperation.PREPARE_RUN,
+            run_id=run_id,
+            run_state=RunState.BLOCKED,
+            proposal=None,
+            error=OperationError(
+                error_class=ErrorClass.AUTHORITY,
+                code="authorization_required",
+                detail=detail,
+                recovery=recovery,
             ),
         )
 
