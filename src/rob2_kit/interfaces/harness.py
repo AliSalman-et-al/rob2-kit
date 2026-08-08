@@ -14,7 +14,7 @@ import tomllib
 import uuid
 import zipfile
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
 
 from rob2_kit.release import (
     CANONICAL_SKILL_NAMES,
@@ -22,12 +22,17 @@ from rob2_kit.release import (
     SKILL_REFERENCE_FILENAMES,
     SUPPORTED_HOSTS,
     ReleaseLock,
+    installed_release_fingerprint,
     load_release_lock,
     verify_host_adapters,
     verify_mcp_launchability,
+    verify_ownership_identities,
 )
+from rob2_kit.release import release_root as _resolve_release_root
 from rob2_kit.storage import ArtifactStore, WorkflowLedger
 from rob2_kit.storage.ledger import IntegrityError, LedgerError, LedgerSchemaRefusal
+
+RuntimeMode = Literal["locked", "unlocked"]
 
 _MCP_SERVER_NAME = "rob2-kit"
 _BOOTSTRAP_LOCK = "rob2.lock"
@@ -114,6 +119,11 @@ def upgrade_project(project_root: Path, *, apply: bool = False) -> dict[str, Any
         raise HarnessBootstrapError(
             "durable project state is incompatible with the candidate release. "
             "Follow state_compatibility.recovery before upgrading."
+        )
+    if _declared_runtime_mode(root) == "unlocked":
+        raise HarnessBootstrapError(
+            "unlocked runtime mode does not yet support in-place upgrade. "
+            "Re-run rob2 bootstrap --unlocked against the new release instead."
         )
     release_root = _release_root()
     lock = load_release_lock(release_root)
@@ -228,6 +238,11 @@ def rollback_project(project_root: Path, *, apply: bool = False) -> dict[str, An
             "durable project state is incompatible with the rollback release. "
             "Follow state_compatibility.recovery before rolling back."
         )
+    if current.get("runtime_mode", "locked") == "unlocked":
+        raise HarnessBootstrapError(
+            "unlocked runtime mode does not yet support rollback. "
+            "Re-run rob2 bootstrap --unlocked against the desired release instead."
+        )
     _validate_manifest_owned_files(root, current)
     _validate_metadata_owned_files(root, current)
     _validate_owned_host_configuration(root, current)
@@ -325,22 +340,35 @@ class HarnessBootstrapError(ValueError):
         )
 
 
-def bootstrap_project(project_root: Path) -> dict[str, Any]:
-    """Install the locked adapters without changing unrelated host settings."""
+def bootstrap_project(project_root: Path, *, mode: RuntimeMode = "locked") -> dict[str, Any]:
+    """Install the locked adapters without changing unrelated host settings.
 
+    ``mode="unlocked"`` wires the Harness configuration directly to the
+    shared release runtime instead of installing a project-local
+    ``.rob2/runtime`` copy. It is a declared alternative to the default
+    locked install, not a fallback for a failed one.
+    """
+
+    if mode not in ("locked", "unlocked"):
+        raise HarnessBootstrapError(f"unsupported runtime mode: {mode}")
     root = project_root.resolve()
     root.mkdir(parents=True, exist_ok=True)
     _recover_interrupted_upgrade(root)
     release_root = _release_root()
     lock = load_release_lock(release_root)
     verify_host_adapters(release_root)
+    if mode == "unlocked" and _runtime_assets(release_root) is None:
+        raise HarnessBootstrapError(
+            "unlocked runtime mode requires a release with an embedded runtime; "
+            "this source checkout has none to wire to."
+        )
 
     codex_path = root / ".codex" / "config.toml"
     claude_path = root / ".mcp.json"
     codex_config = _read_toml(codex_path)
     claude_config = _read_json_object(claude_path)
-    expected_codex_server = _server_config(lock, release_root, "codex")
-    expected_claude_server = _server_config(lock, release_root, "claude")
+    expected_codex_server = _server_config(lock, release_root, "codex", mode=mode)
+    expected_claude_server = _server_config(lock, release_root, "claude", mode=mode)
     codex_servers = codex_config.get("mcp_servers", {})
     if not isinstance(codex_servers, dict):
         raise HarnessBootstrapError(f"{codex_path} has a non-table mcp_servers value.")
@@ -360,14 +388,15 @@ def bootstrap_project(project_root: Path) -> dict[str, Any]:
     _write_journal(journal, "started", (), ())
     changed = False
     try:
-        changed |= _install_runtime(root, release_root)
+        if mode == "locked":
+            changed |= _install_runtime(root, release_root)
         changed |= _install_adapter_trees(root, release_root)
         changed |= _install_skills(root, release_root)
         changed |= _install_references(root, release_root)
         changed |= _install_bootstrap_lock(root, release_root)
         changed |= _install_codex_server(codex_path, codex_config, expected_codex_server)
         changed |= _install_claude_server(claude_path, claude_config, expected_claude_server)
-        changed |= _install_ownership_manifest(root, release_root, lock)
+        changed |= _install_ownership_manifest(root, release_root, lock, mode=mode)
         _write_journal(journal, "complete", _changed_paths(root, snapshot), ())
     except Exception as error:
         changed_paths = _changed_paths(root, snapshot)
@@ -395,7 +424,10 @@ def bootstrap_project(project_root: Path) -> dict[str, Any]:
         "hosts": list(sorted(SUPPORTED_HOSTS)),
         "project_root": str(root),
         "launcher": _launcher_text(expected_codex_server),
-        "runtime": _RUNTIME_RELATIVE if _runtime_assets(release_root) else None,
+        "runtime": (
+            _RUNTIME_RELATIVE if mode == "locked" and _runtime_assets(release_root) else None
+        ),
+        "runtime_mode": mode,
         "ownership_manifest": "rob2.lock",
         "recovery": "Run rob2 doctor to verify this locked project-local Harness install.",
     }
@@ -424,29 +456,75 @@ def _doctor_project(
         "project_state_schema": _check_project_state(root),
     }
     if _runtime_assets(release_root):
-        checks["locked_runtime"] = _check_locked_runtime(root, release_root)
+        if _declared_runtime_mode(root) == "locked":
+            checks["locked_runtime"] = _check_locked_runtime(root, release_root)
         checks["ownership"] = _check_ownership(root, release_root)
         checks["install_journal"] = _check_install_journal(root)
     return {"ok": all(check["ok"] for check in checks.values()), "checks": checks}
 
 
+def _declared_runtime_mode(root: Path) -> RuntimeMode:
+    """Return the project's declared runtime mode, defaulting to locked.
+
+    Any manifest that predates this declaration, or is missing or malformed,
+    is treated as locked -- the only mode that existed before unlocked mode
+    was introduced.
+    """
+
+    try:
+        raw = json.loads((root / _BOOTSTRAP_LOCK).read_text(encoding="utf-8"))
+        mode = raw.get("runtime_mode", "locked") if isinstance(raw, dict) else "locked"
+    except (OSError, ValueError, json.JSONDecodeError):
+        return "locked"
+    return mode if mode in ("locked", "unlocked") else "locked"
+
+
 def _release_root() -> Path:
-    package_root = Path(__file__).resolve().parents[1]
-    if (package_root / _BOOTSTRAP_LOCK).is_file():
-        return package_root
-    return package_root.parents[1]
+    return _resolve_release_root()
 
 
-def _server_config(lock: ReleaseLock, release_root: Path, host: str = "codex") -> dict[str, Any]:
+def verify_runtime_self_consistency() -> None:
+    """Verify this installation's own runtime wheel still matches its own pin.
+
+    This is a project-independent check: at MCP server process startup there
+    is no project root yet (``project_root`` only arrives per-tool-call), so
+    the only thing that can be verified this early is whether the install
+    itself is internally consistent -- for example, catching
+    ``release/runtime`` having been rebuilt in place without re-pinning.
+    Per-project ownership drift is a separate, later check
+    (``RunEngine._verify_project_ownership``). A source checkout with no
+    embedded runtime has nothing to check and passes trivially.
+    """
+
+    release_root = _release_root()
+    runtime = _runtime_assets(release_root)
+    if runtime is None:
+        return
+    wheel = _wheel_artifact(release_root)
+    if wheel is None:
+        raise HarnessBootstrapError("this install's runtime wheel artifact is missing")
+    _validate_wheel(wheel, _wheel_pin(release_root))
+
+
+def _server_config(
+    lock: ReleaseLock, release_root: Path, host: str = "codex", *, mode: RuntimeMode = "locked"
+) -> dict[str, Any]:
     runtime = _runtime_assets(release_root)
     if runtime is not None:
-        project = _RUNTIME_RELATIVE
-        if host == "claude":
-            project = "${CLAUDE_PROJECT_DIR}/" + _RUNTIME_RELATIVE
+        if mode == "unlocked":
+            project = str(release_root / "runtime")
+        else:
+            project = _RUNTIME_RELATIVE
+            if host == "claude":
+                project = "${CLAUDE_PROJECT_DIR}/" + _RUNTIME_RELATIVE
         return {
             "command": "uv",
             "args": ["run", "--locked", "--project", project, "rob2-mcp"],
         }
+    if mode == "unlocked":
+        raise HarnessBootstrapError(
+            "unlocked runtime mode requires a release with an embedded runtime."
+        )
     if _is_bundled_install(release_root):
         return {
             "command": sys.executable,
@@ -884,10 +962,12 @@ def _validate_ownership_target(root: Path, release_root: Path, lock: ReleaseLock
         raise HarnessBootstrapError(f"{target} contains an absolute project path and is unsafe.")
 
 
-def _install_ownership_manifest(root: Path, release_root: Path, lock: ReleaseLock) -> bool:
+def _install_ownership_manifest(
+    root: Path, release_root: Path, lock: ReleaseLock, *, mode: RuntimeMode = "locked"
+) -> bool:
     target = root / _BOOTSTRAP_LOCK
     existing = target.read_bytes() if target.exists() else None
-    manifest = _ownership_manifest(root, release_root, lock)
+    manifest = _ownership_manifest(root, release_root, lock, mode=mode)
     encoded = (json.dumps(manifest, indent=2, sort_keys=True) + "\n").encode("utf-8")
     if existing == encoded:
         return False
@@ -895,28 +975,32 @@ def _install_ownership_manifest(root: Path, release_root: Path, lock: ReleaseLoc
     return True
 
 
-def _ownership_manifest(root: Path, release_root: Path, lock: ReleaseLock) -> dict[str, Any]:
+def _ownership_manifest(
+    root: Path, release_root: Path, lock: ReleaseLock, *, mode: RuntimeMode = "locked"
+) -> dict[str, Any]:
     runtime = _runtime_assets(release_root)
-    schema_hashes = {
-        path.name: _content_hash(path)
-        for path in sorted((release_root / "schemas").glob("*.json"))
-        if path.is_file()
-    }
-    generated_paths: dict[str, str] = {}
-    for target in (
+    fingerprint = installed_release_fingerprint(release_root, lock)
+    owned_targets: list[Path] = [
         root / ".rob2" / "adapters",
         root / ".rob2" / "references",
-        root / ".rob2" / "runtime" / "pyproject.toml",
-        root / ".rob2" / "runtime" / "uv.lock",
-        root / ".rob2" / "runtime" / "runtime-install.json",
-        *root.glob(".rob2/runtime/*.whl"),
-        root / ".rob2" / "runtime" / "src" / "rob2_kit",
-        *(
-            root / skill_root / skill_name
-            for _host, skill_root in _HOST_SKILL_ROOTS
-            for skill_name in CANONICAL_SKILL_NAMES
-        ),
-    ):
+    ]
+    if mode == "locked":
+        owned_targets.extend(
+            (
+                root / ".rob2" / "runtime" / "pyproject.toml",
+                root / ".rob2" / "runtime" / "uv.lock",
+                root / ".rob2" / "runtime" / "runtime-install.json",
+                *root.glob(".rob2/runtime/*.whl"),
+                root / ".rob2" / "runtime" / "src" / "rob2_kit",
+            )
+        )
+    owned_targets.extend(
+        root / skill_root / skill_name
+        for _host, skill_root in _HOST_SKILL_ROOTS
+        for skill_name in CANONICAL_SKILL_NAMES
+    )
+    generated_paths: dict[str, str] = {}
+    for target in owned_targets:
         if target.is_file():
             generated_paths[target.relative_to(root).as_posix()] = _content_hash(target)
         elif target.is_dir():
@@ -954,36 +1038,50 @@ def _ownership_manifest(root: Path, release_root: Path, lock: ReleaseLock) -> di
             "application_contract": lock.application_contract,
         },
         "identities": {
-            "engine": {"package": lock.package, "version": lock.package_version},
-            "schema": {"version": "1", "hashes": schema_hashes},
-            "parser": {"name": "liteparse", "version": _distribution_version("liteparse")},
+            "engine": {"package": lock.package, "version": fingerprint["engine_version"]},
+            "schema": {"version": "1", "hashes": fingerprint["schema_hashes"]},
+            "parser": {
+                "name": fingerprint["parser_name"],
+                "version": fingerprint["parser_version"],
+            },
             "packs": {
-                "logic": {"id": lock.logic_pack, "hash": lock.logic_pack_hash},
-                "guidance": {"id": lock.guidance_pack, "hash": lock.guidance_pack_hash},
+                "logic": {"id": lock.logic_pack, "hash": fingerprint["logic_pack_hash"]},
+                "guidance": {"id": lock.guidance_pack, "hash": fingerprint["guidance_pack_hash"]},
             },
             "skills": {
                 name: {
-                    "hash": pin.content_hash,
+                    "hash": fingerprint["skill_hashes"][name],
                     "activation_fixtures_hash": pin.activation_fixtures_hash,
                 }
                 for name, pin in lock.skills.items()
             },
             "adapters": {
-                host: {"version": pin.version, "hash": pin.content_hash}
+                host: {"version": pin.version, "hash": fingerprint["adapter_hashes"][host]}
                 for host, pin in lock.adapters.items()
             },
-            "policies": {"release_status": lock.release_status},
+            "policies": {"release_status": fingerprint["release_status"]},
         },
         "hosts": list(sorted(SUPPORTED_HOSTS)),
-        "runtime": {
-            "path": _RUNTIME_RELATIVE,
-            "pyproject_hash": _content_hash(runtime / "pyproject.toml") if runtime else None,
-            "lock_hash": _content_hash(runtime / "uv.lock") if runtime else None,
-            "wheel_hash": next(
-                (_content_hash(path) for path in (root / _RUNTIME_RELATIVE).glob("*.whl")),
-                None,
-            ),
-        },
+        "runtime_mode": mode,
+        "runtime": (
+            {
+                "path": _RUNTIME_RELATIVE,
+                "pyproject_hash": _content_hash(runtime / "pyproject.toml") if runtime else None,
+                "lock_hash": _content_hash(runtime / "uv.lock") if runtime else None,
+                "wheel_hash": next(
+                    (_content_hash(path) for path in (root / _RUNTIME_RELATIVE).glob("*.whl")),
+                    None,
+                ),
+            }
+            if mode == "locked"
+            else {
+                "path": str(release_root / "runtime"),
+                "wheel_hash": next(
+                    (_content_hash(path) for path in (release_root / "runtime").glob("*.whl")),
+                    None,
+                ),
+            }
+        ),
         "owned_paths": generated_paths,
         "owned_metadata_paths": list(_OWNED_METADATA_PATHS),
         "config_ownership": config_ownership,
@@ -2058,7 +2156,7 @@ def _check_execution_contract(root: Path, release_root: Path) -> dict[str, Any]:
     return {
         "ok": True,
         "lock": lock.model_dump(mode="json"),
-        "effective_launcher": _server_config(lock, release_root),
+        "effective_launcher": _server_config(lock, release_root, mode=_declared_runtime_mode(root)),
         "launcher_note": (
             "lock.launcher declares the published registry release; "
             "effective_launcher is the installed adapter that doctor probes"
@@ -2092,9 +2190,12 @@ def _check_host_adapters(root: Path, release_root: Path) -> dict[str, Any]:
                 root / ".rob2" / "adapters" / host,
             ):
                 raise ValueError(f"project-local {host} adapter differs from the locked adapter")
-        expected_server = _server_config(load_release_lock(release_root), release_root)
+        declared_mode = _declared_runtime_mode(root)
+        expected_server = _server_config(
+            load_release_lock(release_root), release_root, mode=declared_mode
+        )
         expected_claude_server = _server_config(
-            load_release_lock(release_root), release_root, "claude"
+            load_release_lock(release_root), release_root, "claude", mode=declared_mode
         )
         codex_config = _read_toml(root / ".codex" / "config.toml")
         codex_servers = codex_config.get("mcp_servers")
@@ -2125,7 +2226,9 @@ def _check_mcp_launchability(
     try:
         release_root = _release_root()
         lock = load_release_lock(release_root)
-        launcher = _server_config(lock, release_root, "codex")
+        launcher = _server_config(
+            lock, release_root, "codex", mode=_declared_runtime_mode(project_root)
+        )
         if launcher["command"] == "uvx" and shutil.which("uvx") is None:
             raise ValueError("uvx is not available on PATH")
         arguments = (project_root, launcher["command"], tuple(launcher["args"]))
@@ -2212,57 +2315,46 @@ def _check_ownership(root: Path, release_root: Path) -> dict[str, Any]:
             path = root / relative
             if not path.is_file() or _content_hash(path) != expected:
                 raise ValueError(f"owned generated file differs: {relative}")
-        runtime_manifest = raw.get("runtime", {})
-        if not isinstance(runtime_manifest, dict):
-            raise ValueError("ownership runtime identity is malformed")
-        runtime = _runtime_assets(release_root)
-        if runtime is None or runtime_manifest.get("pyproject_hash") != _content_hash(
-            runtime / "pyproject.toml"
-        ) or runtime_manifest.get("lock_hash") != _content_hash(runtime / "uv.lock"):
-            raise ValueError("ownership runtime lock identity differs from the installed release")
-        wheel_paths = tuple((root / _RUNTIME_RELATIVE).glob("*.whl"))
-        if len(wheel_paths) != 1 or runtime_manifest.get("wheel_hash") != _content_hash(
-            wheel_paths[0]
-        ):
-            raise ValueError("runtime wheel hash is missing or differs from ownership manifest")
-        marker = json.loads(
-            (root / _RUNTIME_RELATIVE / "runtime-install.json").read_text(encoding="utf-8")
-        )
-        if marker.get("wheel_hash") != runtime_manifest.get("wheel_hash"):
-            raise ValueError("runtime installation marker differs from the pinned wheel")
+        runtime_mode = raw.get("runtime_mode", "locked")
+        if runtime_mode not in ("locked", "unlocked"):
+            raise ValueError("ownership runtime_mode is unsupported")
+        if runtime_mode == "unlocked":
+            shared_runtime = _runtime_assets(release_root)
+            if shared_runtime is None:
+                raise ValueError(
+                    "unlocked runtime mode requires a release with an embedded runtime"
+                )
+            shared_wheel = _wheel_artifact(release_root)
+            if shared_wheel is None:
+                raise ValueError("shared runtime wheel is missing")
+            _validate_wheel(shared_wheel, _wheel_pin(release_root))
+        else:
+            runtime_manifest = raw.get("runtime", {})
+            if not isinstance(runtime_manifest, dict):
+                raise ValueError("ownership runtime identity is malformed")
+            runtime = _runtime_assets(release_root)
+            if (
+                runtime is None
+                or runtime_manifest.get("pyproject_hash")
+                != _content_hash(runtime / "pyproject.toml")
+                or runtime_manifest.get("lock_hash") != _content_hash(runtime / "uv.lock")
+            ):
+                raise ValueError(
+                    "ownership runtime lock identity differs from the installed release"
+                )
+            wheel_paths = tuple((root / _RUNTIME_RELATIVE).glob("*.whl"))
+            if len(wheel_paths) != 1 or runtime_manifest.get("wheel_hash") != _content_hash(
+                wheel_paths[0]
+            ):
+                raise ValueError("runtime wheel hash is missing or differs from ownership manifest")
+            marker = json.loads(
+                (root / _RUNTIME_RELATIVE / "runtime-install.json").read_text(encoding="utf-8")
+            )
+            if marker.get("wheel_hash") != runtime_manifest.get("wheel_hash"):
+                raise ValueError("runtime installation marker differs from the pinned wheel")
         if raw.get("package") != lock.package:
             raise ValueError("ownership manifest package differs from the installed release")
-        identities = raw.get("identities", {})
-        if not isinstance(identities, dict):
-            raise ValueError("ownership identities are malformed")
-        if identities.get("engine", {}).get("version") != lock.package_version:
-            raise ValueError("ownership engine identity differs from the installed release")
-        expected_schema_hashes = {
-            path.name: _content_hash(path)
-            for path in sorted((release_root / "schemas").glob("*.json"))
-            if path.is_file()
-        }
-        schema = identities.get("schema", {})
-        if schema.get("version") != "1" or schema.get("hashes") != expected_schema_hashes:
-            raise ValueError("ownership schema identity differs from the installed release")
-        parser = identities.get("parser", {})
-        if parser.get("name") != "liteparse" or parser.get("version") != _distribution_version(
-            "liteparse"
-        ):
-            raise ValueError("ownership parser identity differs from the installed release")
-        packs = identities.get("packs", {})
-        if packs.get("logic", {}).get("hash") != lock.logic_pack_hash or packs.get(
-            "guidance", {}
-        ).get("hash") != lock.guidance_pack_hash:
-            raise ValueError("ownership pack identity differs from the installed release")
-        for name, pin in lock.skills.items():
-            if identities.get("skills", {}).get(name, {}).get("hash") != pin.content_hash:
-                raise ValueError(f"ownership skill identity differs for {name}")
-        for host, pin in lock.adapters.items():
-            if identities.get("adapters", {}).get(host, {}).get("hash") != pin.content_hash:
-                raise ValueError(f"ownership adapter identity differs for {host}")
-        if identities.get("policies", {}).get("release_status") != lock.release_status:
-            raise ValueError("ownership policy identity differs from the installed release")
+        verify_ownership_identities(raw, release_root, lock)
         config_ownership = raw.get("config_ownership", {})
         codex_value = _read_toml(root / ".codex" / "config.toml").get("mcp_servers", {}).get(
             _MCP_SERVER_NAME
@@ -2285,6 +2377,7 @@ def _check_ownership(root: Path, release_root: Path) -> dict[str, Any]:
         "manifest": "rob2.lock",
         "owned_paths": len(raw.get("owned_paths", {})),
         "hosts": raw.get("hosts", []),
+        "runtime_mode": raw.get("runtime_mode", "locked"),
         "recovery": (),
     }
 

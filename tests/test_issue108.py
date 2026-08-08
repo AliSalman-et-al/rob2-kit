@@ -31,10 +31,10 @@ def _install_switchable_candidate_launcher(monkeypatch: pytest.MonkeyPatch) -> d
     candidate = {"enabled": False}
 
     def server_config(
-        lock: ReleaseLock, release_root: Path, host: str = "codex"
+        lock: ReleaseLock, release_root: Path, host: str = "codex", *, mode: str = "locked"
     ) -> dict[str, object]:
         if not candidate["enabled"]:
-            return original_server_config(lock, release_root, host)
+            return original_server_config(lock, release_root, host, mode=mode)
         return {"command": "candidate-launcher", "args": ["--host", host, "rob2-mcp"]}
 
     monkeypatch.setattr(harness, "_server_config", server_config)

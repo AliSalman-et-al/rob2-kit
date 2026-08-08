@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import hashlib
+import importlib.metadata
 import json
 import os
 import re
@@ -170,6 +171,101 @@ def build_host_adapters(root: Path, *, package_version: str) -> ReleaseLock:
         manifest.model_dump(mode="json", exclude_none=True),
     )
     return manifest
+
+
+def release_root() -> Path:
+    """Return the root containing this installation's ``rob2.lock`` release contract.
+
+    A release wheel embeds ``rob2.lock`` next to the installed ``rob2_kit``
+    package; a source checkout keeps it at the repository root instead.
+    """
+
+    package_root = Path(__file__).resolve().parent
+    if (package_root / LOCK_FILENAME).is_file():
+        return package_root
+    return package_root.parents[1]
+
+
+def installed_release_fingerprint(root: Path, lock: ReleaseLock) -> dict[str, object]:
+    """Canonical named identity components of one installed release.
+
+    This is the single source of the schema/parser/pack/skill/adapter identity
+    computation that the ownership-manifest check (bootstrap/doctor time) and
+    the execution-contract check (per-run drift detection) each need; every
+    caller compares only the subset of these components it actually depends
+    on, rather than recomputing its own copy of the hashing.
+    """
+
+    schema_hashes = {
+        path.name: _content_hash(path)
+        for path in sorted((root / "schemas").glob("*.json"))
+        if path.is_file()
+    }
+    return {
+        "engine_version": lock.package_version,
+        "schema_hashes": schema_hashes,
+        "parser_name": "liteparse",
+        "parser_version": _distribution_version("liteparse"),
+        "logic_pack_hash": lock.logic_pack_hash,
+        "guidance_pack_hash": lock.guidance_pack_hash,
+        "skill_hashes": {name: pin.content_hash for name, pin in lock.skills.items()},
+        "adapter_hashes": {host: pin.content_hash for host, pin in lock.adapters.items()},
+        "release_status": lock.release_status,
+        "dependency_lock_hash": lock.dependency_lock_hash,
+    }
+
+
+def verify_ownership_identities(manifest: dict[str, object], root: Path, lock: ReleaseLock) -> None:
+    """Verify one project's recorded ownership identities against the installed release.
+
+    Raises ``ValueError`` describing the first mismatch found. This is the
+    identity-comparison logic shared by the harness ownership-manifest check
+    (which also verifies unrelated host-configuration and owned-file
+    concerns) and any lighter caller -- such as a per-run drift check -- that
+    only needs to know whether a project's recorded release identity still
+    matches what is currently installed.
+    """
+
+    identities = manifest.get("identities", {})
+    if not isinstance(identities, dict):
+        raise ValueError("ownership identities are malformed")
+    fingerprint = installed_release_fingerprint(root, lock)
+    if identities.get("engine", {}).get("version") != fingerprint["engine_version"]:
+        raise ValueError("ownership engine identity differs from the installed release")
+    schema = identities.get("schema", {})
+    if schema.get("version") != "1" or schema.get("hashes") != fingerprint["schema_hashes"]:
+        raise ValueError("ownership schema identity differs from the installed release")
+    parser = identities.get("parser", {})
+    if (
+        parser.get("name") != fingerprint["parser_name"]
+        or parser.get("version") != fingerprint["parser_version"]
+    ):
+        raise ValueError("ownership parser identity differs from the installed release")
+    packs = identities.get("packs", {})
+    if (
+        packs.get("logic", {}).get("hash") != fingerprint["logic_pack_hash"]
+        or packs.get("guidance", {}).get("hash") != fingerprint["guidance_pack_hash"]
+    ):
+        raise ValueError("ownership pack identity differs from the installed release")
+    for name, expected_hash in fingerprint["skill_hashes"].items():
+        if identities.get("skills", {}).get(name, {}).get("hash") != expected_hash:
+            raise ValueError(f"ownership skill identity differs for {name}")
+    for host, expected_hash in fingerprint["adapter_hashes"].items():
+        if identities.get("adapters", {}).get(host, {}).get("hash") != expected_hash:
+            raise ValueError(f"ownership adapter identity differs for {host}")
+    if identities.get("policies", {}).get("release_status") != fingerprint["release_status"]:
+        raise ValueError("ownership policy identity differs from the installed release")
+
+
+def _content_hash(path: Path) -> str:
+    return "sha256:" + hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def _distribution_version(name: str) -> str:
+    try:
+        return importlib.metadata.version(name)
+    except importlib.metadata.PackageNotFoundError:
+        return "unavailable"
 
 
 def load_release_lock(root: Path) -> ReleaseLock:

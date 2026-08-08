@@ -5,7 +5,14 @@ from pathlib import Path
 
 import pytest
 
-from rob2_kit.release import build_host_adapters, load_release_lock, verify_host_adapters
+from rob2_kit.release import (
+    build_host_adapters,
+    installed_release_fingerprint,
+    load_release_lock,
+    release_root,
+    verify_host_adapters,
+    verify_ownership_identities,
+)
 
 ROOT = Path(__file__).resolve().parents[1]
 EXPECTED_SKILLS = {"rob2-init", "rob2-assess"}
@@ -126,3 +133,73 @@ def test_lock_file_is_json_with_no_legacy_single_skill_hash() -> None:
     assert set(raw["skills"]) == EXPECTED_SKILLS
     assert "canonical_skill_hash" not in raw
     assert "skill_hash" not in raw
+
+
+def test_release_root_resolves_the_source_checkout() -> None:
+    assert release_root() == ROOT
+
+
+def test_installed_release_fingerprint_matches_the_checked_in_release_lock() -> None:
+    lock = load_release_lock(ROOT)
+
+    fingerprint = installed_release_fingerprint(ROOT, lock)
+
+    assert fingerprint["engine_version"] == lock.package_version
+    assert fingerprint["logic_pack_hash"] == lock.logic_pack_hash
+    assert fingerprint["guidance_pack_hash"] == lock.guidance_pack_hash
+    assert fingerprint["release_status"] == lock.release_status
+    assert fingerprint["dependency_lock_hash"] == lock.dependency_lock_hash
+    assert fingerprint["skill_hashes"] == {
+        name: pin.content_hash for name, pin in lock.skills.items()
+    }
+    assert fingerprint["adapter_hashes"] == {
+        host: pin.content_hash for host, pin in lock.adapters.items()
+    }
+    assert fingerprint["schema_hashes"]
+    assert set(fingerprint["schema_hashes"]) == {
+        path.name for path in (ROOT / "schemas").glob("*.json")
+    }
+
+
+def _manifest_from_fingerprint(fingerprint: dict[str, object]) -> dict[str, object]:
+    return {
+        "identities": {
+            "engine": {"version": fingerprint["engine_version"]},
+            "schema": {"version": "1", "hashes": fingerprint["schema_hashes"]},
+            "parser": {
+                "name": fingerprint["parser_name"],
+                "version": fingerprint["parser_version"],
+            },
+            "packs": {
+                "logic": {"hash": fingerprint["logic_pack_hash"]},
+                "guidance": {"hash": fingerprint["guidance_pack_hash"]},
+            },
+            "skills": {
+                name: {"hash": content_hash}
+                for name, content_hash in fingerprint["skill_hashes"].items()
+            },
+            "adapters": {
+                host: {"hash": content_hash}
+                for host, content_hash in fingerprint["adapter_hashes"].items()
+            },
+            "policies": {"release_status": fingerprint["release_status"]},
+        }
+    }
+
+
+def test_verify_ownership_identities_accepts_a_manifest_matching_the_installed_release() -> None:
+    lock = load_release_lock(ROOT)
+    fingerprint = installed_release_fingerprint(ROOT, lock)
+    manifest = _manifest_from_fingerprint(fingerprint)
+
+    verify_ownership_identities(manifest, ROOT, lock)
+
+
+def test_verify_ownership_identities_rejects_a_drifted_skill_hash() -> None:
+    lock = load_release_lock(ROOT)
+    fingerprint = installed_release_fingerprint(ROOT, lock)
+    manifest = _manifest_from_fingerprint(fingerprint)
+    manifest["identities"]["skills"]["rob2-assess"]["hash"] = "sha256:" + "0" * 64
+
+    with pytest.raises(ValueError, match="skill identity"):
+        verify_ownership_identities(manifest, ROOT, lock)

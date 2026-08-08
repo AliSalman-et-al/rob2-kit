@@ -186,6 +186,12 @@ from rob2_kit.ingestion.project import (
 from rob2_kit.logic.evaluator import EvaluationRequest, LogicEvaluator
 from rob2_kit.logic.packs import load_guidance_pack, load_logic_pack
 from rob2_kit.registry import ClinicalTrialsGovAdapter, RegistryAcquisitionStatus, RegistryPolicy
+from rob2_kit.release import (
+    installed_release_fingerprint,
+    load_release_lock,
+    release_root,
+    verify_ownership_identities,
+)
 from rob2_kit.reports import (
     AssessmentView,
     DiagnosticReportProjector,
@@ -618,6 +624,7 @@ class RunEngine:
         lease_acquirer: Callable[[WorkflowLedger, datetime], LeaseToken] | None = None,
     ) -> None:
         self._root: Path | None = None
+        self._ownership_verified = False
         self._parser = parser
         # Keep the adapter injectable for recorded HTTP fixtures.  The default
         # is constructed lazily in ``prepare_run`` after the project root is
@@ -681,6 +688,7 @@ class RunEngine:
             artifacts = ArtifactStore(state_root / "artifacts")
             ledger = self._ledger(ledger_path, artifacts)
             ledger.preflight()
+            self._verify_project_ownership(root)
         except LedgerSchemaRefusal as error:
             return self._schema_refusal(root, error)
         except RunIntegrityFailure as error:
@@ -1716,6 +1724,7 @@ class RunEngine:
     def continue_run(self, request: ContinueRunRequest) -> ContinueRunResponse:
         try:
             ledger = self._bound_ledger(request.run_id)
+            self._verify_project_ownership(self._required_root())
             current = self._current_prepared_record(ledger)
             if current is not None and current.run_id == request.run_id:
                 self._reconcile_execution_contract(ledger, current)
@@ -5077,6 +5086,41 @@ class RunEngine:
         if self._root is not None and self._root != root:
             raise SecondProjectRootError(self._root, root)
         self._root = root
+
+    def _verify_project_ownership(self, root: Path) -> None:
+        """Verify this project's recorded release identity still matches what's installed.
+
+        Runs lazily once ``project_root`` is known: the MCP server has no
+        fixed project root at process startup, so this cannot happen any
+        earlier than the first ``prepare_run``/``continue_run`` call. It is
+        deliberately narrower than the full harness ownership-manifest check
+        (``rob2 doctor``): it verifies only the release-identity fingerprint a
+        project's ownership manifest declares, not host-configuration wiring
+        or owned generated files, which are Harness bootstrap concerns
+        outside what running a Run needs to trust. A successful check is
+        cached for this engine's lifetime (one project root per instance); a
+        failed check is not cached, so a since-repaired install is recognized
+        on the next call rather than staying blocked for the process lifetime.
+        """
+
+        if self._ownership_verified:
+            return
+        manifest_path = root / "rob2.lock"
+        if not manifest_path.is_file():
+            # Unbootstrapped or source-checkout dev usage: nothing recorded
+            # to verify the installed release against.
+            self._ownership_verified = True
+            return
+        try:
+            raw = json.loads(manifest_path.read_text(encoding="utf-8"))
+            if not isinstance(raw, dict):
+                raise ValueError("project ownership manifest is not an object")
+            installed_root = release_root()
+            lock = load_release_lock(installed_root)
+            verify_ownership_identities(raw, installed_root, lock)
+        except (OSError, ValueError, json.JSONDecodeError) as error:
+            raise RunIntegrityFailure(str(error)) from error
+        self._ownership_verified = True
 
     def _registry(self, root: Path) -> Any:
         if self._registry_adapter is not None:
@@ -9481,20 +9525,14 @@ class RunEngine:
     def _installed_execution_contract(self) -> _ExecutionContract:
         """Digest the installed execution dependencies pinned by ``rob2.lock``."""
 
-        lock_path = next(
-            (
-                candidate
-                for candidate in (
-                    Path(__file__).resolve().parents[1] / "rob2.lock",
-                    Path(__file__).resolve().parents[3] / "rob2.lock",
-                )
-                if candidate.is_file()
-            ),
-            None,
-        )
-        if lock_path is None:
-            raise FileNotFoundError("the installed rob2.lock release contract is missing")
-        raw = json.loads(lock_path.read_text(encoding="utf-8"))
+        root = release_root()
+        try:
+            lock = load_release_lock(root)
+        except ValueError as error:
+            raise FileNotFoundError(
+                "the installed rob2.lock release contract is missing"
+            ) from error
+        fingerprint = installed_release_fingerprint(root, lock)
 
         def content_hash(value: str) -> ContentHash:
             return "sha256:" + hashlib.sha256(value.encode()).hexdigest()
@@ -9509,14 +9547,14 @@ class RunEngine:
         project_policy = self._required_root() / "rob2.yaml"
         components = {
             "engine-schema": content_hash(
-                f"{raw['package']}|{raw['package_version']}|"
-                f"{raw['application_contract']}|{SCHEMA_VERSION}"
+                f"{lock.package}|{lock.package_version}|"
+                f"{lock.application_contract}|{SCHEMA_VERSION}"
             ),
-            "dependency-lock": raw["dependency_lock_hash"],
-            "logic-pack": raw["logic_pack_hash"],
-            "guidance-pack": raw["guidance_pack_hash"],
-            "assessment-skill": raw["skills"]["rob2-assess"]["content_hash"],
-            "initialization-skill": raw["skills"]["rob2-init"]["content_hash"],
+            "dependency-lock": fingerprint["dependency_lock_hash"],
+            "logic-pack": fingerprint["logic_pack_hash"],
+            "guidance-pack": fingerprint["guidance_pack_hash"],
+            "assessment-skill": fingerprint["skill_hashes"]["rob2-assess"],
+            "initialization-skill": fingerprint["skill_hashes"]["rob2-init"],
             "parser": content_hash(parser_identity),
             "project-policies": (
                 "sha256:" + hashlib.sha256(project_policy.read_bytes()).hexdigest()

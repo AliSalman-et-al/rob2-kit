@@ -1119,6 +1119,44 @@ def test_execution_contract_change_records_attempt_and_invalidates_declared_resu
     ] == ["result:contract"]
 
 
+def test_prepare_run_reports_integrity_failure_when_project_ownership_identity_drifts(
+    tmp_path: Path,
+) -> None:
+    """A project's recorded ownership manifest that no longer matches the
+    installed release stops new Run mutations for that project rather than
+    silently proceeding."""
+
+    (tmp_path / "rob2.lock").write_text(
+        json.dumps({"identities": {"engine": {"version": "not-the-installed-version"}}}),
+        encoding="utf-8",
+    )
+    engine = RunEngine(parser=StubParser())
+
+    response = engine.prepare_run(PrepareRunRequest(project_root=tmp_path, authorized=True))
+
+    assert response.run_state == RunState.INTEGRITY_FAILED
+
+
+def test_prepare_run_ignores_ownership_verification_without_a_recorded_manifest(
+    tmp_path: Path,
+) -> None:
+    """A dev/source checkout with no bootstrapped ownership manifest has
+    nothing recorded to verify the installed release against, so preparation
+    proceeds normally."""
+
+    trial = tmp_path / "input" / "no-manifest"
+    trial.mkdir(parents=True)
+    (trial / "report.pdf").write_bytes(b"primary")
+    engine, run_id = _prepare_confirm(
+        tmp_path,
+        config=_config(_result("result:no-manifest", "trial:no-manifest")),
+    )
+
+    assert engine._ownership_verified is True
+    resumed = engine.continue_run(ContinueRunRequest(run_id=run_id))
+    assert resumed.run_state != RunState.INTEGRITY_FAILED
+
+
 def test_resolved_outcome_candidate_survives_unrelated_source_change(
     tmp_path: Path,
 ) -> None:

@@ -2,13 +2,16 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 import shutil
 import sys
 import tomllib
+import zipfile
 from pathlib import Path
 from typing import cast
 
+import pytest
 from typer.testing import CliRunner
 
 from rob2_kit.application.contracts import RUN_OPERATION_NAMES
@@ -65,6 +68,173 @@ def test_bootstrap_from_an_installed_wheel_uses_that_exact_install(
         "command": sys.executable,
         "args": ["-m", "rob2_kit.interfaces.mcp.server"],
     }
+
+
+def _build_bundled_release_with_runtime(root: Path) -> Path:
+    """Build an installed-wheel-shaped release root with an embedded runtime wheel."""
+
+    bundled_root = root / "site-packages" / "rob2_kit"
+    bundled_root.mkdir(parents=True)
+    (bundled_root / "__init__.py").write_text("", encoding="utf-8")
+    for name in ("adapters", "skills", "docs", "packs", "schemas"):
+        shutil.copytree(ROOT / name, bundled_root / name)
+    shutil.copyfile(ROOT / "rob2.lock", bundled_root / "rob2.lock")
+    shutil.copyfile(ROOT / "uv.lock", bundled_root / "uv.lock")
+
+    runtime = bundled_root / "release" / "runtime"
+    runtime.mkdir(parents=True)
+    (runtime / "pyproject.toml").write_text('[project]\nname = "stub"\n', encoding="utf-8")
+    (runtime / "uv.lock").write_text("", encoding="utf-8")
+
+    wheel = runtime / "rob2_kit-0.1.0-py3-none-any.whl"
+    with zipfile.ZipFile(wheel, "w") as archive:
+        archive.writestr(
+            "rob2_kit-0.1.0.dist-info/METADATA",
+            "Metadata-Version: 2.1\nName: rob2-kit\nVersion: 0.1.0\n",
+        )
+    (bundled_root / "release" / "runtime-wheel-pin.json").write_text(
+        json.dumps(
+            {
+                "filename": wheel.name,
+                "version": "0.1.0",
+                "sha256": hashlib.sha256(wheel.read_bytes()).hexdigest(),
+            }
+        ),
+        encoding="utf-8",
+    )
+    return bundled_root
+
+
+def test_bootstrap_unlocked_wires_directly_to_the_shared_runtime(
+    tmp_path: Path, monkeypatch
+) -> None:
+    """--unlocked skips the project-local runtime copy and declares the mode."""
+
+    bundled_root = _build_bundled_release_with_runtime(tmp_path)
+    monkeypatch.setattr("rob2_kit.interfaces.harness._release_root", lambda: bundled_root)
+
+    project_root = tmp_path / "consumer"
+    result = CliRunner().invoke(app, ["bootstrap", str(project_root), "--unlocked"])
+
+    assert result.exit_code == 0, result.output
+    receipt = json.loads(result.stdout)
+    assert receipt["runtime_mode"] == "unlocked"
+    assert receipt["runtime"] is None
+    assert not (project_root / ".rob2" / "runtime").exists()
+
+    codex = tomllib.loads((project_root / ".codex" / "config.toml").read_text(encoding="utf-8"))
+    server = codex["mcp_servers"]["rob2-kit"]
+    assert server["command"] == "uv"
+    assert str(bundled_root / "runtime") in server["args"]
+    assert ".rob2/runtime" not in " ".join(server["args"])
+
+    manifest = json.loads((project_root / "rob2.lock").read_text(encoding="utf-8"))
+    assert manifest["runtime_mode"] == "unlocked"
+
+    from rob2_kit.interfaces.harness import doctor_project
+
+    doctor = doctor_project(project_root)
+    assert doctor["ok"], doctor
+    assert "locked_runtime" not in doctor["checks"]
+    assert doctor["checks"]["ownership"]["ok"]
+    assert doctor["checks"]["ownership"]["runtime_mode"] == "unlocked"
+
+
+def test_upgrade_refuses_an_unlocked_mode_project_instead_of_recreating_a_local_runtime(
+    tmp_path: Path, monkeypatch
+) -> None:
+    """Unlocked mode has no in-place upgrade path yet; it must refuse, not mishandle."""
+
+    from rob2_kit.interfaces.harness import HarnessBootstrapError, upgrade_project
+
+    bundled_root = _build_bundled_release_with_runtime(tmp_path)
+    monkeypatch.setattr("rob2_kit.interfaces.harness._release_root", lambda: bundled_root)
+    project_root = tmp_path / "consumer"
+    CliRunner().invoke(app, ["bootstrap", str(project_root), "--unlocked"])
+
+    with pytest.raises(HarnessBootstrapError, match="does not yet support in-place upgrade"):
+        upgrade_project(project_root, apply=True)
+
+    assert not (project_root / ".rob2" / "runtime").exists()
+
+
+def test_rollback_refuses_an_unlocked_mode_project(tmp_path: Path) -> None:
+    """A rollback record recorded against a declared-unlocked project is refused."""
+
+    from rob2_kit.interfaces.harness import HarnessBootstrapError, rollback_project
+
+    root = tmp_path
+    (root / "rob2.lock").write_text(
+        json.dumps(
+            {
+                "kind": "rob2-kit-project",
+                "schema_version": 1,
+                "owned_paths": {},
+                "owned_metadata_paths": [],
+                "release": {},
+                "runtime_mode": "unlocked",
+            }
+        ),
+        encoding="utf-8",
+    )
+    backup = root / ".rob2" / "release-rollbacks" / "backup-1"
+    backup.mkdir(parents=True)
+    (root / ".rob2" / "rollback.json").write_text(
+        json.dumps(
+            {
+                "schema_version": 1,
+                "backup": str(backup.relative_to(root)),
+                "paths": [],
+                "release": {"version": "0.1.0"},
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    with pytest.raises(HarnessBootstrapError, match="does not yet support rollback"):
+        rollback_project(root, apply=True)
+
+
+def test_bootstrap_unlocked_requires_a_release_with_an_embedded_runtime(
+    tmp_path: Path, monkeypatch
+) -> None:
+    """Unlocked mode has nothing to wire to in a source checkout without a runtime."""
+
+    monkeypatch.setattr("rob2_kit.interfaces.harness._release_root", lambda: ROOT)
+
+    result = CliRunner().invoke(app, ["bootstrap", str(tmp_path / "consumer"), "--unlocked"])
+    normalized = result.output.replace("│", " ")
+    normalized = " ".join(normalized.split())
+
+    assert result.exit_code != 0
+    assert "requires a release with an embedded runtime" in normalized
+
+
+def test_verify_runtime_self_consistency_passes_for_a_source_checkout(monkeypatch) -> None:
+    """A source checkout has no embedded runtime, so there is nothing to check."""
+
+    from rob2_kit.interfaces.harness import verify_runtime_self_consistency
+
+    monkeypatch.setattr("rob2_kit.interfaces.harness._release_root", lambda: ROOT)
+
+    verify_runtime_self_consistency()
+
+
+def test_verify_runtime_self_consistency_fails_when_the_runtime_wheel_drifts_from_its_pin(
+    tmp_path: Path, monkeypatch
+) -> None:
+    """A rebuilt-in-place runtime wheel that no longer matches its own pin is refused."""
+
+    from rob2_kit.interfaces.harness import HarnessBootstrapError, verify_runtime_self_consistency
+
+    bundled_root = _build_bundled_release_with_runtime(tmp_path)
+    monkeypatch.setattr("rob2_kit.interfaces.harness._release_root", lambda: bundled_root)
+
+    wheel = next((bundled_root / "release" / "runtime").glob("*.whl"))
+    wheel.write_bytes(wheel.read_bytes() + b"drift")
+
+    with pytest.raises(HarnessBootstrapError, match="release pin"):
+        verify_runtime_self_consistency()
 
 
 def test_bootstrap_installs_both_hosts_idempotently_without_overwriting_user_config(

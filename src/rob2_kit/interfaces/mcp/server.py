@@ -71,6 +71,7 @@ from rob2_kit.evidence.errors import (
     invalid_request_from_validation,
 )
 from rob2_kit.evidence.search import ReadContextMode
+from rob2_kit.interfaces.harness import verify_runtime_self_consistency
 from rob2_kit.release import SKILL_ALLOWED_TOOL_NAMES
 
 # This is the release-owned, model-visible contract.  Engine maintenance
@@ -937,6 +938,7 @@ def create_server(
 
 
 def main() -> None:
+    verify_runtime_self_consistency()
     pending = Path.cwd() / ".rob2" / "pending-release-transaction.json"
     if pending.exists() and os.environ.get("ROB2_LIFECYCLE_DOCTOR") != "1":
         raise RuntimeError(

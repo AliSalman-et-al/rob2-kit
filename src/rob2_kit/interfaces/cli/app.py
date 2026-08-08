@@ -31,11 +31,21 @@ def _run_lifecycle(operation: _LifecycleOperation, project_root: Path, apply: bo
 
 
 @app.command("bootstrap")
-def bootstrap(project_root: Path = typer.Argument(Path("."))) -> None:
+def bootstrap(
+    project_root: Path = typer.Argument(Path(".")),
+    unlocked: bool = typer.Option(
+        False,
+        "--unlocked",
+        help=(
+            "Wire directly to the shared release runtime instead of installing a "
+            "project-local .rob2/runtime copy."
+        ),
+    ),
+) -> None:
     """Install the locked Codex and Claude project-local Harness adapters."""
 
     try:
-        result = bootstrap_project(project_root)
+        result = bootstrap_project(project_root, mode="unlocked" if unlocked else "locked")
     except ValueError as error:
         raise typer.BadParameter(str(error)) from error
     typer.echo(json.dumps(result, sort_keys=True))

@@ -292,6 +292,14 @@ _Avoid_: User, model
 A supported agent host, initially Codex or Claude Code, that invokes rob2-kit skills and MCP tools while presenting progress and required run-control choices in its own conversation. It is an orchestration client; authoritative assessment and resume state remains in rob2-kit.
 _Avoid_: Companion workspace, web client, workflow engine
 
+**Locked runtime**:
+The default Harness installation mode, in which a project keeps its own `.rob2/runtime` copy of the released wheel and environment, content-verified against the installed release's pin at bootstrap and doctor time. Undeclared wiring that does not match this shape is a configuration failure, not an alternative mode.
+_Avoid_: Bundled runtime, pinned install
+
+**Unlocked runtime**:
+An explicitly declared alternative Harness installation mode in which a project's configuration wires directly to the shared release runtime instead of keeping a project-local `.rob2/runtime` copy. It is created only through its own bootstrap mode, recorded once in the project's lock state, and verified against the shared release runtime's own self-consistency rather than a project-local copy. Wiring that resembles this shape without the recorded declaration remains a Run integrity failure rather than a tolerated third state.
+_Avoid_: Bypassed runtime, dev mode, misconfigured wiring
+
 **Evidence search policy**:
 The versioned project convention governing minimum search completion, result traversal, context-view assembly, visual escalation, operational ceilings, and the consequences of incomplete evidence coverage. Completion requires guidance-seeded expected-evidence and contradiction or follow-up passes across available primary-report, protocol/SAP, registry, supplement, and later-report roles. Statements are aligned by Trial, event, population, Arm, Result, analysis, time point, and chronology; duplicate copies do not count as independent corroboration, and material conflicts remain separately attributable without a universal Source hierarchy. The policy changes how evidence is sought and presented without changing RoB 2 decision logic or the semantic retrieval aids carried by the Guidance pack.
 _Avoid_: Guidance pack, hard-coded search limits
