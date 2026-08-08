@@ -583,6 +583,11 @@ class SearchCoverageRecorder:
         self._dispositions: dict[Identifier, SearchResultDisposition] = {}
         self._next_cursors: dict[tuple[SearchPassKind, ContentHash], str | None] = {}
         self._partial_traversal = False
+        # Queries whose zero-hit result was flagged as a likely AND/OR misuse
+        # (search.py's malformed_query_hints) are still recorded for the audit
+        # trail and traversal bookkeeping, but do not credit their pass -- a
+        # caller must retry with a corrected query before that pass counts.
+        self._excluded_from_pass_credit: set[ContentHash] = set()
 
     def record_query(self, query: ExecutedSearchQuery) -> None:
         """Reject unverified query metadata; use :meth:`record_page` instead."""
@@ -658,6 +663,8 @@ class SearchCoverageRecorder:
                 raise ValueError("search pages must follow the issued continuation cursor")
         elif cursor is not None:
             self._partial_traversal = True
+        if page.malformed_query_hints:
+            self._excluded_from_pass_credit.add(page.query_hash)
         page_record = ExecutedSearchQuery(
             query=query,
             query_hash=page.query_hash,
@@ -753,9 +760,25 @@ class SearchCoverageRecorder:
                     )
                 )
 
+    def _credited_passes(self) -> tuple[SearchPassKind, ...]:
+        """Distinct search passes backed by at least one non-excluded query.
+
+        A query flagged as a likely AND/OR misuse (empty result, structurally
+        unmatchable) is recorded but does not, by itself, satisfy its pass --
+        that would let a malformed zero_hits result look identical to a
+        genuine absence-of-evidence pass.
+        """
+        return tuple(
+            dict.fromkeys(
+                query.pass_kind
+                for query in self._queries
+                if query.query_hash not in self._excluded_from_pass_credit
+            )
+        )
+
     def completed_passes(self) -> tuple[SearchPassKind, ...]:
         """Distinct search passes recorded so far, in first-seen order."""
-        return tuple(dict.fromkeys(query.pass_kind for query in self._queries))
+        return self._credited_passes()
 
     def completed_seed_families(self) -> tuple[Identifier, ...]:
         """Distinct Guidance-seed families recorded so far, in first-seen order."""
@@ -801,7 +824,7 @@ class SearchCoverageRecorder:
         ),
         broad_query_justifications: tuple[str, ...] = (),
     ) -> SearchCoverageReceipt:
-        passes = tuple(dict.fromkeys(query.pass_kind for query in self._queries))
+        passes = self._credited_passes()
         returned_unit_ids = tuple(
             dict.fromkeys(
                 unit_id for query in self._queries for unit_id in query.returned_unit_ids

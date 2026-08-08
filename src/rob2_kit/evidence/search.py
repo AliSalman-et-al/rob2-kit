@@ -543,7 +543,10 @@ class SearchQueryFields(BaseModel):
     terms: tuple[str, ...] = Field(
         default=(),
         max_length=32,
-        description="Lexical tokens; e.g. ['allocation'].",
+        description=(
+            "Lexical tokens; every term must match (AND). For alternatives, use a single "
+            "any_of group instead."
+        ),
         examples=[["allocation"]],
     )
     phrases: tuple[str, ...] = Field(
@@ -561,8 +564,12 @@ class SearchQueryFields(BaseModel):
     any_of: tuple[tuple[str, ...], ...] = Field(
         default=(),
         max_length=8,
-        description="Boolean alternative groups of lexical tokens; each group is non-empty.",
-        examples=[[["sealed"], ["central"]]],
+        description=(
+            "AND-of-ORs Boolean groups: every group must match (AND across groups); within a "
+            "group, any one listed token satisfies it (OR within group). For 'any of these "
+            "words' semantics, put every alternative in one group."
+        ),
+        examples=[[["sealed", "central", "opaque"]]],
     )
     source_ids: tuple[Identifier, ...] = Field(
         default=(),
@@ -736,6 +743,7 @@ class QueryPreview(FrozenModel):
     scoped_unit_count: int
     source_distribution: tuple[tuple[Identifier, int], ...]
     requires_broad_query_justification: bool
+    malformed_query_hints: tuple[str, ...] = ()
 
 
 class SearchPage(FrozenModel):
@@ -753,6 +761,7 @@ class SearchPage(FrozenModel):
     estimated_omitted_characters: int = Field(default=0, ge=0)
     next_actions: tuple[str, ...] = ()
     scope_warnings: tuple[str, ...] = ()
+    malformed_query_hints: tuple[str, ...] = ()
 
     @property
     def has_more(self) -> bool:
@@ -1033,7 +1042,7 @@ class EvidenceSearchIndex:
         scope: EvidenceScope | None = None,
     ) -> QueryPreview:
         policy = policy or SearchPolicy()
-        rows, scoped_count, _ = self._matches(query, scope=scope)
+        rows, scoped_count, excluded_count = self._matches(query, scope=scope)
         sources: dict[str, set[str]] = {}
         for row in rows:
             sources.setdefault(row["source_id"], set()).add(row["unit_id"])
@@ -1048,6 +1057,9 @@ class EvidenceSearchIndex:
                 unique_count > policy.broad_unique_hit_threshold
                 and scoped_count > 0
                 and unique_count / scoped_count > policy.broad_index_fraction
+            ),
+            malformed_query_hints=(
+                _malformed_query_hints(query) if unique_count == 0 and excluded_count == 0 else ()
             ),
         )
 
@@ -1505,11 +1517,13 @@ class EvidenceSearchIndex:
         source_counts: dict[str, int] = {}
         for row in rows:
             source_counts[row["source_id"]] = source_counts.get(row["source_id"], 0) + 1
+        malformed_hints = _malformed_query_hints(query) if not rows and excluded_count == 0 else ()
         preview = QueryPreview(
             unique_hit_count=len(rows),
             scoped_unit_count=scoped_count,
             source_distribution=tuple(sorted(source_counts.items())),
             requires_broad_query_justification=is_broad,
+            malformed_query_hints=malformed_hints,
         )
         return SearchPage(
             snapshot_hash=snapshot,
@@ -1544,11 +1558,12 @@ class EvidenceSearchIndex:
                             "Work token",
                         )
                         if excluded_count
-                        else ("refine the plain-language need",)
+                        else ("refine the plain-language need", *malformed_hints)
                     )
                 )
             ),
             scope_warnings=scope_warnings,
+            malformed_query_hints=malformed_hints,
         )
 
     def _matches(
@@ -1765,6 +1780,23 @@ def _compile_match(query: SearchQuery) -> str:
     clauses.extend(f'"{prefix}"*' for prefix in query.prefixes)
     clauses.extend("(" + " OR ".join(f'"{term}"' for term in group) + ")" for group in query.any_of)
     return " AND ".join(clauses)
+
+
+def _malformed_query_hints(query: SearchQuery) -> tuple[str, ...]:
+    """Flag query shapes that almost certainly meant OR but got AND-of-ORs semantics."""
+    hints: list[str] = []
+    if len(query.any_of) >= 2 and all(len(group) == 1 for group in query.any_of):
+        hints.append(
+            "every any_of group has exactly one term, so they were AND'd together, not "
+            "treated as alternatives — put every alternative in a single any_of group for "
+            "OR semantics"
+        )
+    if len(query.terms) > 1:
+        hints.append(
+            "multiple terms are AND'd together, not OR'd — move alternative words into a "
+            "single any_of group instead of terms"
+        )
+    return tuple(hints)
 
 
 def _unit_from_row(row: sqlite3.Row) -> CanonicalEvidenceUnit:
