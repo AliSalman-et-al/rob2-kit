@@ -523,7 +523,7 @@ def _server_config(
     runtime = _runtime_assets(release_root)
     if runtime is not None:
         if mode == "unlocked":
-            project = str(release_root / "runtime")
+            project = str(runtime)
         else:
             project = _RUNTIME_RELATIVE
             if host == "claude":
