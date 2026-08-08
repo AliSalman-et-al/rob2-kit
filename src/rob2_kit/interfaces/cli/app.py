@@ -38,7 +38,10 @@ def bootstrap(
         "--unlocked",
         help=(
             "Wire directly to the shared release runtime instead of installing a "
-            "project-local .rob2/runtime copy."
+            "project-local .rob2/runtime copy. From a source checkout, wires "
+            "directly to that checkout instead of the published-registry "
+            "launcher -- the supported way to bootstrap against local, "
+            "unpublished rob2-kit source."
         ),
     ),
 ) -> None:

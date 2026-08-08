@@ -347,6 +347,13 @@ def bootstrap_project(project_root: Path, *, mode: RuntimeMode = "locked") -> di
     shared release runtime instead of installing a project-local
     ``.rob2/runtime`` copy. It is a declared alternative to the default
     locked install, not a fallback for a failed one.
+
+    From a source checkout (no embedded release runtime), ``mode="unlocked"``
+    instead wires the launcher directly to the checkout via ``uv run
+    --project <checkout> rob2-mcp``. This is the supported way to bootstrap a
+    project against local, unpublished rob2-kit source for development and
+    testing; the default locked mode there emits a registry-only launcher
+    that requires a published PyPI release.
     """
 
     if mode not in ("locked", "unlocked"):
@@ -357,10 +364,14 @@ def bootstrap_project(project_root: Path, *, mode: RuntimeMode = "locked") -> di
     release_root = _release_root()
     lock = load_release_lock(release_root)
     verify_host_adapters(release_root)
-    if mode == "unlocked" and _runtime_assets(release_root) is None:
+    if (
+        mode == "unlocked"
+        and _runtime_assets(release_root) is None
+        and _is_bundled_install(release_root)
+    ):
         raise HarnessBootstrapError(
             "unlocked runtime mode requires a release with an embedded runtime; "
-            "this source checkout has none to wire to."
+            "this bundled install has none to wire to."
         )
 
     codex_path = root / ".codex" / "config.toml"
@@ -521,14 +532,23 @@ def _server_config(
             "command": "uv",
             "args": ["run", "--locked", "--project", project, "rob2-mcp"],
         }
-    if mode == "unlocked":
-        raise HarnessBootstrapError(
-            "unlocked runtime mode requires a release with an embedded runtime."
-        )
     if _is_bundled_install(release_root):
+        if mode == "unlocked":
+            raise HarnessBootstrapError(
+                "unlocked runtime mode requires a release with an embedded runtime."
+            )
         return {
             "command": sys.executable,
             "args": ["-m", "rob2_kit.interfaces.mcp.server"],
+        }
+    if mode == "unlocked":
+        # Source checkout: release_root is the repository root, which is a
+        # valid uv project in its own right. Wire the launcher straight to it
+        # instead of the registry-only compatibility launcher below, so local
+        # development doesn't depend on a published PyPI release.
+        return {
+            "command": "uv",
+            "args": ["run", "--project", str(release_root), "rob2-mcp"],
         }
     parts = lock.launcher.split()
     if not parts or parts[0] != "uvx":

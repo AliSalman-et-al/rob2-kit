@@ -195,19 +195,21 @@ def test_rollback_refuses_an_unlocked_mode_project(tmp_path: Path) -> None:
         rollback_project(root, apply=True)
 
 
-def test_bootstrap_unlocked_requires_a_release_with_an_embedded_runtime(
-    tmp_path: Path, monkeypatch
-) -> None:
-    """Unlocked mode has nothing to wire to in a source checkout without a runtime."""
+def test_bootstrap_unlocked_wires_a_source_checkout_directly(tmp_path: Path, monkeypatch) -> None:
+    """Unlocked mode in a source checkout wires straight to it, not the registry."""
 
     monkeypatch.setattr("rob2_kit.interfaces.harness._release_root", lambda: ROOT)
 
-    result = CliRunner().invoke(app, ["bootstrap", str(tmp_path / "consumer"), "--unlocked"])
-    normalized = result.output.replace("│", " ")
-    normalized = " ".join(normalized.split())
+    consumer = tmp_path / "consumer"
+    result = CliRunner().invoke(app, ["bootstrap", str(consumer), "--unlocked"])
 
-    assert result.exit_code != 0
-    assert "requires a release with an embedded runtime" in normalized
+    assert result.exit_code == 0, result.output
+    claude_config = json.loads((consumer / ".mcp.json").read_text(encoding="utf-8"))
+    server = claude_config["mcpServers"]["rob2-kit"]
+    assert server == {
+        "command": "uv",
+        "args": ["run", "--project", str(ROOT), "rob2-mcp"],
+    }
 
 
 def test_verify_runtime_self_consistency_passes_for_a_source_checkout(monkeypatch) -> None:
