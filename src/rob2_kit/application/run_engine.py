@@ -3265,14 +3265,17 @@ class RunEngine:
             )
         self._validate_result_domain(ledger, request.run_id, request.result_id, request.domain_id)
         if request.items:
-            self._validate_legacy_evidence_items(ledger, request)
+            self._validate_visual_evidence_items(ledger, request)
+        submitted_passages = request.passages
         if request.passages:
             violations = self._validate_domain_evidence_submission(
-                ledger, request.model_copy(update={"passages": ()}), enforce_non_empty=False
+                ledger,
+                request.model_copy(update={"passages": ()}),
+                submitted_passages=submitted_passages,
+                enforce_non_empty=False,
             )
             if violations:
                 return self._domain_evidence_blocked_response(ledger, request, violations)
-            submitted_passages = request.passages
             # _resolve_evidence_passages runs first so its own structural
             # checks (domain/question membership, span bounds, canonical-unit
             # lookup) raise their own specific errors before the
@@ -3280,11 +3283,15 @@ class RunEngine:
             request = self._resolve_evidence_passages(ledger, request)
             self._validate_retained_passage_links(ledger, request, submitted_passages)
         violations = self._validate_domain_evidence_submission(
-            ledger, request, passages_materialized=bool(original_request.passages)
+            ledger,
+            request,
+            submitted_passages=submitted_passages,
         )
         if violations:
             return self._domain_evidence_blocked_response(ledger, request, violations)
-        evidence_bundles, manifests, receipts = self._freeze_domain_evidence(ledger, request)
+        evidence_bundles, manifests, receipts = self._freeze_domain_evidence(
+            ledger, request, submitted_passages
+        )
         normalized = _DomainEvidenceRecord(
             run_id=request.run_id,
             result_id=request.result_id,
@@ -3480,6 +3487,7 @@ class RunEngine:
                     item_id=claim.entity_id,
                     disposition=passage.disposition,
                     basis=passage.basis,
+                    superseded_by=passage.superseded_by,
                 )
             )
         return request.model_copy(
@@ -3811,13 +3819,21 @@ class RunEngine:
             judgments=judgments,
         )
 
-    def _validate_legacy_evidence_items(
+    def _validate_visual_evidence_items(
         self,
         ledger: WorkflowLedger,
         request: SubmitDomainEvidenceRequest,
     ) -> None:
-        """Revalidate legacy EvidenceClaim references against the active scope."""
+        """Revalidate visual-transcription evidence references against the active scope.
 
+        items/evidence_by_question/candidate_dispositions remain accepted only
+        for VisualTranscription-backed material: an inspected Visual candidate
+        (table, figure) has no ``passages``-equivalent citation path today, so
+        this narrow legacy shape stays as its only route to structured
+        Evidence. A reference that is not a valid VisualTranscription --
+        including the retired legacy EvidenceClaim shape, which ``passages``
+        fully supersedes -- is rejected.
+        """
         scope = self._retrieval_scope(
             ledger,
             request.run_id,
@@ -3825,76 +3841,37 @@ class RunEngine:
             request.result_id,
             require_question=False,
         )
-        index = EvidenceSearchIndex(self._required_root() / ".rob2" / "evidence.sqlite3")
-        question_by_item: dict[Identifier, set[Identifier]] = {}
-        for question_id, references in request.evidence_by_question.items():
-            for reference in references:
-                question_by_item.setdefault(reference.entity_id, set()).add(question_id)
         for reference in request.items:
             try:
                 raw = ledger.artifacts.read(reference.content_hash)
-                claim = EvidenceClaim.model_validate_json(raw)
+                transcription = VisualTranscription.model_validate_json(raw)
                 if (
-                    claim.entity_id != reference.entity_id
-                    or claim.revision_id != reference.revision_id
+                    transcription.entity_id != reference.entity_id
+                    or transcription.revision_id != reference.revision_id
                 ):
-                    raise ValueError("EvidenceClaim reference identity does not match its artifact")
-                canonical_raw = ledger.artifacts.read(claim.canonical_unit.content_hash)
-                canonical = CanonicalEvidenceUnit.model_validate_json(canonical_raw)
-                unit = index.read_unit(canonical.unit_id, scope=scope)
-            except (KeyError, TypeError, ValueError, OSError):
-                # A frozen VisualTranscription is a valid citable fallback for
-                # layout-dependent material.  It remains explicitly visual-only
-                # and is accepted only when its source binds the active scope.
-                try:
-                    transcription = VisualTranscription.model_validate_json(raw)
-                    if (
-                        transcription.entity_id != reference.entity_id
-                        or transcription.revision_id != reference.revision_id
-                    ):
-                        raise ValueError("VisualTranscription reference identity mismatch")
-                    source = SourceDescriptor.model_validate_json(
-                        ledger.artifacts.read(transcription.source.content_hash)
-                    )
-                    if (
-                        source.source_id != transcription.source.entity_id
-                        or canonical_hash(source) != transcription.source.content_hash
-                    ):
-                        raise ValueError("VisualTranscription source reference is invalid")
-                    if scope.source_ids and transcription.source.entity_id not in scope.source_ids:
-                        raise ValueError("VisualTranscription source is outside active scope")
-                    proposal = self._latest_proposal(ledger, request.run_id)
-                    current_source = self._sources_by_trial(proposal.initialization).get(
-                        scope.trial_id, {}
-                    ).get(transcription.source.entity_id)
-                    if (
-                        current_source is None
-                        or current_source.artifact_hash != source.artifact_hash
-                    ):
-                        raise ValueError("VisualTranscription source artifact is stale")
-                except (KeyError, TypeError, ValueError, OSError) as visual_error:
-                    raise ValueError(
-                        "legacy EvidenceClaim is unverifiable; resubmit using issued canonical "
-                        "passages with active WorkToken scope"
-                    ) from visual_error
-                continue
-            referenced_questions = question_by_item.get(reference.entity_id, set())
-            if (
-                unit.unit_id != canonical.unit_id
-                or unit.source_id != canonical.source_id
-                or unit.source_artifact_hash != canonical.source_artifact_hash
-            ):
-                raise ValueError(
-                    "legacy EvidenceClaim is outside the active WorkToken scope or is not "
-                    "citable; resubmit with issued canonical passages"
+                    raise ValueError("VisualTranscription reference identity mismatch")
+                source = SourceDescriptor.model_validate_json(
+                    ledger.artifacts.read(transcription.source.content_hash)
                 )
-            self._validate_citable_unit(
-                unit,
-                scope,
-                result_id=request.result_id,
-                domain_id=request.domain_id,
-                question_ids=referenced_questions,
-            )
+                if (
+                    source.source_id != transcription.source.entity_id
+                    or canonical_hash(source) != transcription.source.content_hash
+                ):
+                    raise ValueError("VisualTranscription source reference is invalid")
+                if scope.source_ids and transcription.source.entity_id not in scope.source_ids:
+                    raise ValueError("VisualTranscription source is outside active scope")
+                proposal = self._latest_proposal(ledger, request.run_id)
+                current_source = self._sources_by_trial(proposal.initialization).get(
+                    scope.trial_id, {}
+                ).get(transcription.source.entity_id)
+                if current_source is None or current_source.artifact_hash != source.artifact_hash:
+                    raise ValueError("VisualTranscription source artifact is stale")
+            except (KeyError, TypeError, ValueError, OSError) as visual_error:
+                raise ValueError(
+                    "items/evidence_by_question/candidate_dispositions accept only "
+                    "visual-transcription-backed evidence; resubmit textual evidence "
+                    "using passages"
+                ) from visual_error
 
     def _domain_evidence_blocked_response(
         self,
@@ -3928,7 +3905,7 @@ class RunEngine:
         ledger: WorkflowLedger,
         request: SubmitDomainEvidenceRequest,
         *,
-        passages_materialized: bool = False,
+        submitted_passages: tuple[EvidencePassageInput, ...] = (),
         enforce_non_empty: bool = True,
     ) -> tuple[OperationError, ...]:
         """Collect every violation of the evidence-first freeze boundary.
@@ -4001,43 +3978,14 @@ class RunEngine:
                     recovery=("Inspect every issued Visual candidate before freezing.",),
                 )
             )
-        if request.items and any(recorders.values()) and not passages_materialized:
-            visual_items = True
-            for item in request.items:
-                try:
-                    VisualTranscription.model_validate_json(ledger.artifacts.read(item.content_hash))
-                except (KeyError, OSError, TypeError, ValueError, json.JSONDecodeError):
-                    visual_items = False
-                    break
-            if not visual_items:
-                violations.append(
-                    _evidence_violation(
-                        "receipt-backed Evidence freezing requires exact canonical passages, "
-                        "not legacy items",
-                        recovery=("Resubmit using passages instead of legacy items.",),
-                    )
-                )
-        retained_candidates = {passage.unit_id for passage in request.passages}
-        if (
-            retained_candidates
-            and request.review_revisions
-            and not request.passages
-            and not passages_materialized
-        ):
-            violations.append(
-                _evidence_violation(
-                    "retained candidate reviews require exact passages bound to issued read views",
-                    recovery=("Resubmit with the exact passages bound to the reviewed spans.",),
-                )
-            )
-        try:
+        retained_candidates = self._retained_candidate_ids(submitted_passages)
+        violations.extend(
             self._validate_review_revisions(
                 request.review_revisions,
                 retained_candidates=retained_candidates,
                 domain_questions=domain_questions,
             )
-        except ValueError as error:
-            violations.append(_evidence_violation(str(error)))
+        )
         if request.coverage_state.value == "incomplete" and not request.coverage_limitations:
             violations.append(
                 _evidence_violation(
@@ -4088,7 +4036,9 @@ class RunEngine:
                 )
             else:
                 previews = {
-                    question_id: self._freeze_recorder(request, question_id, recorder)
+                    question_id: self._freeze_recorder(
+                        request, question_id, recorder, submitted_passages
+                    )
                     for question_id, recorder in recorders.items()
                     if recorder is not None
                 }
@@ -4170,25 +4120,46 @@ class RunEngine:
                     "signaling question",
                 )
             )
-        for conflict in request.conflicts:
-            if len(conflict) < 2 or not set(conflict).issubset(set(item_ids)):
-                violations.append(
-                    _evidence_violation(
-                        "source conflicts must bind at least two frozen Evidence items",
-                    )
-                )
-        conflict_groups = tuple(frozenset(conflict) for conflict in request.conflicts)
-        for disposition in dispositions:
-            if disposition.disposition is ConsiderationDisposition.SUPERSEDED:
-                assert disposition.superseded_by is not None
-                supersession_pair = frozenset((disposition.item_id, disposition.superseded_by))
-                if not any(supersession_pair <= group for group in conflict_groups):
+        # conflicts and dispositions bind resolved (frozen) item IDs, which
+        # only exist after passage resolution -- skip on the pre-resolution
+        # pass so a passages+conflicts submission isn't rejected against an
+        # item set that hasn't been populated yet.
+        if enforce_non_empty:
+            for conflict in request.conflicts:
+                if len(conflict) < 2 or not set(conflict).issubset(set(item_ids)):
                     violations.append(
                         _evidence_violation(
-                            "superseded evidence must link its replacement in a recorded conflict",
+                            "source conflicts must bind at least two frozen Evidence items",
                         )
                     )
+            conflict_groups = tuple(frozenset(conflict) for conflict in request.conflicts)
+            for disposition in dispositions:
+                if disposition.disposition is ConsiderationDisposition.SUPERSEDED:
+                    assert disposition.superseded_by is not None
+                    supersession_pair = frozenset((disposition.item_id, disposition.superseded_by))
+                    if not any(supersession_pair <= group for group in conflict_groups):
+                        violations.append(
+                            _evidence_violation(
+                                "superseded evidence must link its replacement in a recorded "
+                                "conflict",
+                            )
+                        )
         return tuple(violations)
+
+    @staticmethod
+    def _retained_candidate_ids(passages: tuple[EvidencePassageInput, ...]) -> set[Identifier]:
+        """Compute retained-candidate identity for review-revision binding.
+
+        A passage's ``candidate_id`` override takes precedence over its
+        ``unit_id`` -- the same fallback ``_validate_retained_passage_links``
+        already uses -- so review-revision binding and passage-link
+        validation agree on identity. This is distinct from
+        ``_freeze_recorder``'s retained-*unit* bookkeeping, which must stay
+        keyed on ``unit_id`` alone: it marks dispositions against units
+        Search actually returned, a caller-chosen ``candidate_id`` never
+        appears there.
+        """
+        return {passage.candidate_id or passage.unit_id for passage in passages}
 
     @staticmethod
     def _validate_review_revisions(
@@ -4196,17 +4167,40 @@ class RunEngine:
         *,
         retained_candidates: set[Identifier],
         domain_questions: set[Identifier],
-    ) -> None:
-        """Fail closed on incomplete semantic review without trusting parser labels."""
+    ) -> tuple[OperationError, ...]:
+        """Collect every semantic-review violation without trusting parser labels.
+
+        Every check below is independent and always evaluated, consistent
+        with #125's every-violation-in-one-response policy for the
+        surrounding submission check.
+        """
+        violations: list[OperationError] = []
         by_candidate = {review.candidate_id: review for review in reviews}
         if len(by_candidate) != len(reviews):
-            raise ValueError("review batch must contain one latest revision per candidate")
-        if retained_candidates != set(by_candidate):
-            raise ValueError("every retained candidate requires a substantive review revision")
+            violations.append(
+                _evidence_violation("review batch must contain one latest revision per candidate")
+            )
+        reviewed_candidates = set(by_candidate)
+        if retained_candidates != reviewed_candidates:
+            missing = sorted(retained_candidates - reviewed_candidates)
+            extra = sorted(reviewed_candidates - retained_candidates)
+            detail = "every retained candidate requires a substantive review revision"
+            if missing:
+                detail += f"; missing review for retained candidates: {missing}"
+            if extra:
+                detail += f"; review revisions have no matching retained candidate: {extra}"
+            violations.append(_evidence_violation(detail))
         if any(not review.is_complete for review in reviews):
-            raise ValueError("unresolved or visual-review conditions block Evidence freeze")
+            violations.append(
+                _evidence_violation("unresolved or visual-review conditions block Evidence freeze")
+            )
         if any(not set(review.question_ids).issubset(domain_questions) for review in reviews):
-            raise ValueError("review revision references a question outside the submitted Domain")
+            violations.append(
+                _evidence_violation(
+                    "review revision references a question outside the submitted Domain"
+                )
+            )
+        return tuple(violations)
 
     def _validate_retained_passage_links(
         self,
@@ -4273,9 +4267,14 @@ class RunEngine:
             unit_id, sq_id = expected
             if passage.unit_id != unit_id or passage.question_ids != (sq_id,):
                 raise ValueError("review revision does not bind the retained candidate passage")
-            span_end = passage.span_end
-            if span_end is None:
-                raise ValueError("review revision requires exact retained passage bounds")
+            # A passage may omit span_end to select through the end of the
+            # unit; resolve the same default _resolve_evidence_passages
+            # applies when materializing the claim, so review binding agrees
+            # with what actually freezes.
+            if passage.span_end is not None:
+                span_end = passage.span_end
+            else:
+                span_end = len(index.read_unit(unit_id, scope=scope).text)
             for span in review.spans:
                 try:
                     read = index.read_location(span.location_handle, scope=scope)
@@ -4422,16 +4421,22 @@ class RunEngine:
         request: SubmitDomainEvidenceRequest,
         question_id: Identifier,
         recorder: SearchCoverageRecorder,
+        submitted_passages: tuple[EvidencePassageInput, ...] = (),
     ) -> SearchCoverageReceipt:
         """Freeze one recorder's accumulated state into an immutable receipt.
 
         Pure and idempotent over the recorder's current accumulated state:
         dispositions are (re)derived from which returned units the caller is
         retaining as Evidence for this question via submitted passages,
-        never supplied by the caller directly (#127).
+        never supplied by the caller directly (#127). ``submitted_passages``
+        must be the pre-resolution list -- by the time a freeze runs,
+        ``request.passages`` has already been cleared by
+        ``_resolve_evidence_passages``.
         """
         retained_units = {
-            passage.unit_id for passage in request.passages if question_id in passage.question_ids
+            passage.unit_id
+            for passage in submitted_passages
+            if question_id in passage.question_ids
         }
         recorder.auto_disposition(retained_units)
         recorder.bind_project_rules(tuple(sorted(rule.entity_id for rule in request.project_rules)))
@@ -4467,6 +4472,7 @@ class RunEngine:
         self,
         ledger: WorkflowLedger,
         request: SubmitDomainEvidenceRequest,
+        submitted_passages: tuple[EvidencePassageInput, ...] = (),
     ) -> tuple[
         tuple[RecordReference, ...],
         tuple[RecordReference, ...],
@@ -4527,7 +4533,7 @@ class RunEngine:
             )
             if recorder is None:
                 continue
-            receipt = self._freeze_recorder(request, question_id, recorder)
+            receipt = self._freeze_recorder(request, question_id, recorder, submitted_passages)
             coverage_suffix = self._digest(
                 f"{request.run_id}|{request.idempotency_key}|coverage|{question_id}"
             )
@@ -4563,6 +4569,12 @@ class RunEngine:
                 raise ValueError(
                     f"Evidence for {question_id} must reference the domain submission items"
                 )
+            # A conflict only belongs on a bundle that actually holds every
+            # item it links -- request.conflicts is submission-wide, but
+            # each per-question bundle only carries its own item subset.
+            question_conflicts = tuple(
+                conflict for conflict in request.conflicts if set(conflict).issubset(question_item_ids)
+            )
             manifest_items = tuple(question_items)
             manifest_dispositions = tuple(
                 item for item in request.candidate_dispositions if item.item_id in question_item_ids
@@ -4632,7 +4644,7 @@ class RunEngine:
                 "coverage_state": request.coverage_state.value,
                 "coverage_limitations": request.coverage_limitations,
                 "no_information_basis": request.no_information_basis,
-                "conflicts": request.conflicts,
+                "conflicts": question_conflicts,
                 "coverage_receipts": [
                     receipt.model_dump(mode="json") for receipt in question_coverage_refs
                 ],
@@ -4658,7 +4670,7 @@ class RunEngine:
                 coverage_limitations=request.coverage_limitations,
                 coverage_state=request.coverage_state,
                 no_information_basis=request.no_information_basis,
-                conflicts=request.conflicts,
+                conflicts=question_conflicts,
             )
             bundle_ref = self._commit_frozen_artifact(
                 ledger,

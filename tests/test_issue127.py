@@ -22,9 +22,11 @@ from tests.test_input_reconciliation import (
     StructuredPassageParser,
     _classify_current_sources,
     _config,
+    _location_handle_for,
     _low_answers,
     _prepare_confirm,
     _result,
+    _review_revision,
 )
 from tests.test_mcp_tracer import DOMAINS
 
@@ -86,6 +88,9 @@ def test_passages_only_submission_succeeds_without_a_client_supplied_receipt(
         )
     )
     assert preview.coverage_progress is None
+    question_id = DOMAINS["domain:randomization"][0]
+    # Its hits also carry a real location_handle for the review_revisions binding below.
+    location_handle = _location_handle_for(engine, run_id, work, question_id, unit_id)
 
     response = engine.submit_domain_evidence(
         SubmitDomainEvidenceRequest(
@@ -101,8 +106,20 @@ def test_passages_only_submission_succeeds_without_a_client_supplied_receipt(
                     "span_start": 0,
                     "span_end": len(unit.text),
                     "claim_type": "claim-type:randomization-method",
-                    "question_ids": (DOMAINS["domain:randomization"][0],),
+                    "question_ids": (question_id,),
                 },
+            ),
+            review_revisions=(
+                _review_revision(
+                    candidate_id=unit_id,
+                    result_id=work.result_id,
+                    domain_id="domain:randomization",
+                    question_id=question_id,
+                    location_handle=location_handle,
+                    span_start=0,
+                    span_end=len(unit.text),
+                    entity_suffix="issue127-1",
+                ),
             ),
         )
     )
@@ -242,8 +259,14 @@ def test_evidence_insufficient_block_reroutes_and_preserves_recorder_state(
     assert rerouted.domain_id == domain_id
     assert rerouted.result_id == result_id
 
-    # No further search_evidence calls: the recorder accumulated before the
-    # block is carried forward, so the already-found unit remains citable.
+    # A preview search call carries a real location_handle for the
+    # review_revisions binding below; it is not itself a fresh accounted pass.
+    question_id = DOMAINS[domain_id][0]
+    location_handle = _location_handle_for(engine, run_id, rerouted, question_id, unit_id)
+
+    # No further accounted search_evidence calls: the recorder accumulated
+    # before the block is carried forward, so the already-found unit remains
+    # citable.
     resubmitted = engine.submit_domain_evidence(
         SubmitDomainEvidenceRequest(
             contract_version="1.0.0",
@@ -258,8 +281,20 @@ def test_evidence_insufficient_block_reroutes_and_preserves_recorder_state(
                     "span_start": 0,
                     "span_end": len(unit.text),
                     "claim_type": "claim-type:randomization-method",
-                    "question_ids": (DOMAINS[domain_id][0],),
+                    "question_ids": (question_id,),
                 },
+            ),
+            review_revisions=(
+                _review_revision(
+                    candidate_id=unit_id,
+                    result_id=result_id,
+                    domain_id=domain_id,
+                    question_id=question_id,
+                    location_handle=location_handle,
+                    span_start=0,
+                    span_end=len(unit.text),
+                    entity_suffix="issue128-1",
+                ),
             ),
         )
     )

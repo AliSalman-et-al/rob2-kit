@@ -783,17 +783,34 @@ def create_server(
             list[EvidencePassageInput] | None,
             Field(
                 description=(
-                    "Preferred exact passages. Mutually exclusive with items, "
-                    "evidence_by_question, "
-                    "candidate_dispositions, and conflicts."
+                    "Exact canonical passages selected for this Domain's Evidence. Mutually "
+                    "exclusive with items, evidence_by_question, and candidate_dispositions."
                 )
             ),
         ] = None,
         items: Annotated[
             list[RecordReference] | None,
             Field(
-                description="Legacy items evidence references; use only when passages is omitted."
+                description=(
+                    "Visual-transcription-backed Evidence references only; an inspected "
+                    "Visual candidate (table, figure) has no passages equivalent. Requires "
+                    "evidence_by_question and candidate_dispositions; reject textual "
+                    "material here, resubmit it via passages instead."
+                )
             ),
+        ] = None,
+        evidence_by_question: Annotated[
+            dict[str, list[RecordReference]] | None,
+            Field(
+                description=(
+                    "evidence_by_question maps items above to signaling questions; "
+                    "visual-transcription references only."
+                )
+            ),
+        ] = None,
+        candidate_dispositions: Annotated[
+            list[EvidenceConsiderationInput] | None,
+            Field(description="Per-item disposition for visual-transcription items above."),
         ] = None,
         coverage_state: Annotated[
             EvidenceCoverageState | None,
@@ -821,24 +838,8 @@ def create_server(
             list[list[str]] | None,
             Field(
                 description=(
-                    "Legacy conflicts candidate-ID groups; mutually exclusive with passages."
-                )
-            ),
-        ] = None,
-        evidence_by_question: Annotated[
-            dict[str, list[RecordReference]] | None,
-            Field(
-                description=(
-                    "Legacy evidence_by_question mapping; mutually exclusive with passages."
-                )
-            ),
-        ] = None,
-        candidate_dispositions: Annotated[
-            list[EvidenceConsiderationInput] | None,
-            Field(
-                description=(
-                    "Legacy candidate dispositions; use exact enum values and mutually exclusive "
-                    "with passages."
+                    "conflicts links a superseded item to its replacement as candidate-ID groups; "
+                    "required whenever a review revision's span disposition is superseded."
                 )
             ),
         ] = None,
@@ -872,13 +873,18 @@ def create_server(
         may be reviewed and rejected explicitly, but omission is not rejection.
 
         Use passages using issued ``unit_id``, exact spans, and active
-        ``question_ids``; this branch is mutually exclusive with legacy
-        ``items``, ``evidence_by_question``, ``candidate_dispositions``, and
-        ``conflicts``. Legacy candidate dispositions accept only the enum values
+        ``question_ids``. A passage's disposition accepts only the enum values
         ``supporting``, ``contradicting``, ``contextual``, ``duplicate``,
         ``out_of_scope``, ``immaterial``, ``superseded``, and ``unresolved``;
-        ``irrelevant`` is not valid. Rebind every identifier and token from the
-        latest ``get_work_context`` after a retry or dynamic branch.
+        ``irrelevant`` is not valid. ``conflicts`` links a superseded passage to
+        its replacement. Rebind every identifier and token from the latest
+        ``get_work_context`` after a retry or dynamic branch.
+
+        ``items``, ``evidence_by_question``, and ``candidate_dispositions`` are
+        accepted only for Visual-transcription-backed material returned by
+        ``inspect_visual_candidate``; a table or figure has no ``passages``
+        equivalent. Any other reference there is rejected -- resubmit textual
+        material using ``passages`` instead.
 
         Use claim-type IDs. An adequate completed search (call search_evidence until
         its coverage_progress reports coverage_complete=true) with no evidence stays
@@ -898,14 +904,14 @@ def create_server(
                         "idempotency_key": _submission_key("domain-evidence", work_token.token),
                         "result_id": result_id,
                         "domain_id": domain_id,
-                        "items": items or (),
                         "passages": passages or (),
+                        "items": items or (),
+                        "evidence_by_question": evidence_by_question or {},
+                        "candidate_dispositions": candidate_dispositions or (),
                         "coverage_state": coverage_state or EvidenceCoverageState.COMPLETE,
                         "coverage_limitations": coverage_limitations or (),
                         "no_information_basis": no_information_basis,
                         "conflicts": conflicts or (),
-                        "evidence_by_question": evidence_by_question or {},
-                        "candidate_dispositions": candidate_dispositions or (),
                         "review_revisions": review_revisions or (),
                         "project_rules": project_rules or (),
                         "contract_version": contract_version,

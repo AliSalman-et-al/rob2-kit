@@ -325,7 +325,17 @@ class EvidencePassageInput(FrozenModel):
         description="How the selected passage bears on the mapped questions.",
     )
     basis: str | None = Field(
-        default=None, description="Optional concise basis for the disposition."
+        default=None,
+        description=(
+            "Optional concise basis for the disposition; required for superseded chronology."
+        ),
+    )
+    superseded_by: Identifier | None = Field(
+        default=None,
+        description=(
+            "Evidence item that supersedes this passage's claim. Required only for "
+            "superseded; it must be recorded in the same conflicts group."
+        ),
     )
 
     @model_validator(mode="after")
@@ -338,8 +348,14 @@ class EvidencePassageInput(FrozenModel):
             ConsiderationDisposition.SUPPORTING,
             ConsiderationDisposition.CONTRADICTING,
             ConsiderationDisposition.CONTEXTUAL,
+            ConsiderationDisposition.SUPERSEDED,
         }:
             raise ValueError("passage disposition must accept the selected passage")
+        superseded = self.disposition is ConsiderationDisposition.SUPERSEDED
+        if superseded and (self.superseded_by is None or not self.basis):
+            raise ValueError("superseded passage requires replacing item and chronology basis")
+        if not superseded and self.superseded_by is not None:
+            raise ValueError("superseded_by is valid only for superseded passages")
         return self
 
 
@@ -847,7 +863,8 @@ class SubmitDomainEvidenceRequest(FrozenModel):
         default=(),
         description=(
             "Preferred exact canonical passages. Mutually exclusive with legacy items, "
-            "evidence_by_question, candidate_dispositions, and conflicts."
+            "evidence_by_question, and candidate_dispositions. May be combined with "
+            "conflicts to link a superseded passage's claim to its replacement."
         ),
     )
     coverage_state: EvidenceCoverageState = Field(
@@ -871,8 +888,9 @@ class SubmitDomainEvidenceRequest(FrozenModel):
     conflicts: tuple[tuple[Identifier, ...], ...] = Field(
         default=(),
         description=(
-            "Material candidate-ID conflicts for the legacy evidence branch; mutually exclusive "
-            "with passages."
+            "Material candidate-ID conflicts. Links a superseded item to its replacement, "
+            "whether from the legacy evidence branch or from a passages-based SUPERSEDED "
+            "disposition."
         ),
     )
     # New evidence-first fields.  They are optional for compatibility with
@@ -901,11 +919,11 @@ class SubmitDomainEvidenceRequest(FrozenModel):
     @model_validator(mode="after")
     def validate_evidence_inputs(self) -> SubmitDomainEvidenceRequest:
         if self.passages and (
-            self.items or self.evidence_by_question or self.candidate_dispositions or self.conflicts
+            self.items or self.evidence_by_question or self.candidate_dispositions
         ):
             raise ValueError(
                 "passages are mutually exclusive with legacy evidence inputs: clear items, "
-                "evidence_by_question, candidate_dispositions, and conflicts, or submit the "
+                "evidence_by_question, and candidate_dispositions, or submit the "
                 "legacy branch without passages"
             )
         review_candidate_ids = tuple(review.candidate_id for review in self.review_revisions)

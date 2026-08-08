@@ -312,6 +312,52 @@ def _complete_empty_receipts(
             )
 
 
+def _location_handle_for(
+    engine: RunEngine, run_id: str, work: object, question_id: str, unit_id: str
+) -> str:
+    """Issue a real location handle for unit_id via the public search tool."""
+    response = engine.search_evidence(
+        SearchEvidenceRequest(
+            run_id=run_id,
+            work_token=getattr(work, "work_token"),
+            result_id=getattr(work, "result_id"),
+            sq_id=question_id,
+            query=SearchQuery(terms=("primary",)),
+        )
+    )
+    hit = next(hit for hit in response.page.hits if hit.unit.unit_id == unit_id)
+    return hit.location_handle
+
+
+def _review_revision(
+    *, candidate_id: str, result_id: str, domain_id: str, question_id: str, location_handle: str,
+    span_start: int, span_end: int, entity_suffix: str, disposition: str = "supporting",
+) -> dict[str, object]:
+    """Build one minimal complete review revision bound to an issued read view."""
+    return {
+        "entity_id": f"evidence-review:{entity_suffix}",
+        "revision_id": f"revision:{entity_suffix}:1",
+        "actor": {"kind": "agent", "actor_id": "actor:test", "display_name": "test"},
+        "observed_at": "2026-08-08T12:00:00Z",
+        "candidate_id": candidate_id,
+        "result_id": result_id,
+        "domain_id": domain_id,
+        "question_ids": (question_id,),
+        "trial_attribution": "active",
+        "reviewed_context_handles": (location_handle,),
+        "spans": (
+            {
+                "location_handle": location_handle,
+                "span_start": span_start,
+                "span_end": span_end,
+                "disposition": disposition,
+                "rationale": "test span",
+                "context_handles": (location_handle,),
+            },
+        ),
+    }
+
+
 def _synthetic_visual_ref(engine: RunEngine, run_id: str, result_id: str) -> RecordReference:
     """Persist one scoped visual transcription for legacy synthetic journeys."""
 
@@ -839,6 +885,8 @@ def test_domain_evidence_freezes_engine_issued_passages_without_host_hashes(
     unit = index.read_unit(unit_id)
 
     _complete_passage_receipts(engine, run_id, work, unit_id=unit_id)
+    question_id = DOMAINS["domain:randomization"][0]
+    location_handle = _location_handle_for(engine, run_id, work, question_id, unit_id)
     request = SubmitDomainEvidenceRequest(
         contract_version="1.0.0",
         run_id=run_id,
@@ -853,7 +901,19 @@ def test_domain_evidence_freezes_engine_issued_passages_without_host_hashes(
                 span_end=len(unit.text),
                 claim_type="claim-type:randomization-method",
                 candidate_id=unit_id,
-                question_ids=(DOMAINS["domain:randomization"][0],),
+                question_ids=(question_id,),
+            ),
+        ),
+        review_revisions=(
+            _review_revision(
+                candidate_id=unit_id,
+                result_id="result:passages",
+                domain_id="domain:randomization",
+                question_id=question_id,
+                location_handle=location_handle,
+                span_start=0,
+                span_end=len(unit.text),
+                entity_suffix="passage-domain-evidence",
             ),
         ),
     )
@@ -900,6 +960,8 @@ def test_domain_evidence_passage_can_select_to_unit_end_without_counting_charact
     unit = index.read_unit(next(iter(index.unit_ids())))
 
     _complete_passage_receipts(engine, run_id, work, unit_id=unit.unit_id)
+    question_id = DOMAINS["domain:randomization"][0]
+    location_handle = _location_handle_for(engine, run_id, work, question_id, unit.unit_id)
     response = engine.submit_domain_evidence(
         SubmitDomainEvidenceRequest(
             contract_version="1.0.0",
@@ -914,7 +976,19 @@ def test_domain_evidence_passage_can_select_to_unit_end_without_counting_charact
                     span_start=0,
                     claim_type="claim-type:randomization-method",
                     candidate_id=unit.unit_id,
-                    question_ids=(DOMAINS["domain:randomization"][0],),
+                    question_ids=(question_id,),
+                ),
+            ),
+            review_revisions=(
+                _review_revision(
+                    candidate_id=unit.unit_id,
+                    result_id="result:passage-end",
+                    domain_id="domain:randomization",
+                    question_id=question_id,
+                    location_handle=location_handle,
+                    span_start=0,
+                    span_end=len(unit.text),
+                    entity_suffix="passage-to-end",
                 ),
             ),
         )
@@ -977,6 +1051,9 @@ def test_invalid_late_passage_writes_no_artifacts_or_ledger_events(tmp_path: Pat
     revisions_before = ledger.current_revisions()
     artifacts_before = tuple(sorted((tmp_path / ".rob2" / "artifacts").rglob("*")))
 
+    # Both passages share unit_id with no candidate_id override, so they
+    # collapse to one retained candidate; one matching review revision
+    # satisfies the pre-check ahead of the structural error under test.
     with pytest.raises(ValueError, match="another domain's questions"):
         engine.submit_domain_evidence(
             SubmitDomainEvidenceRequest(
@@ -1002,6 +1079,18 @@ def test_invalid_late_passage_writes_no_artifacts_or_ledger_events(tmp_path: Pat
                         question_ids=(DOMAINS["domain:deviations"][0],),
                     ),
                 ),
+                review_revisions=(
+                    _review_revision(
+                        candidate_id=unit_id,
+                        result_id="result:invalid-passage",
+                        domain_id="domain:randomization",
+                        question_id=DOMAINS["domain:randomization"][0],
+                        location_handle="handle:invalid-late-passage",
+                        span_start=0,
+                        span_end=len(unit.text),
+                        entity_suffix="invalid-late-passage",
+                    ),
+                ),
             )
         )
 
@@ -1025,6 +1114,18 @@ def test_invalid_late_passage_writes_no_artifacts_or_ledger_events(tmp_path: Pat
                             span_start=span_start,
                             claim_type="claim-type:randomization-method",
                             question_ids=(DOMAINS["domain:randomization"][0],),
+                        ),
+                    ),
+                    review_revisions=(
+                        _review_revision(
+                            candidate_id=unit_id,
+                            result_id="result:invalid-passage",
+                            domain_id="domain:randomization",
+                            question_id=DOMAINS["domain:randomization"][0],
+                            location_handle=f"handle:invalid-open-span-{span_start}",
+                            span_start=0,
+                            span_end=len(unit.text),
+                            entity_suffix=f"invalid-open-span-{span_start}",
                         ),
                     ),
                 )

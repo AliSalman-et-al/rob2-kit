@@ -137,7 +137,7 @@ def test_mcp_schema_names_the_friction_prone_evidence_contract() -> None:
     assert "limitation" in properties["coverage_limitations"]["description"].lower()
     assert "passages" in properties["passages"]["description"]
     assert "mutually exclusive" in properties["passages"]["description"].lower()
-    assert "items" in properties["items"]["description"]
+    assert "visual" in properties["items"]["description"].lower()
     assert "evidence_by_question" in properties["evidence_by_question"]["description"]
     assert "conflicts" in properties["conflicts"]["description"]
 
