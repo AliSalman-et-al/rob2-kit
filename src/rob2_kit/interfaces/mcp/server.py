@@ -704,6 +704,8 @@ def create_server(
         Review exactly the sources in get_work_context with
         {"source_id":...,"accepted":true}. Supply "roles" only to override
         the candidate's proposed roles, and exclusion_reason when rejecting.
+        Sources already carrying a registry_current role are deliberately
+        excluded from get_work_context's list and must not be submitted here.
         """
         return _dump(
             engine.submit_source_role_review(

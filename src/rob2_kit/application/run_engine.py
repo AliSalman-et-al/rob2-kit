@@ -1979,7 +1979,18 @@ class RunEngine:
             work_item.operation is RunOperation.SUBMIT_SOURCE_ROLE_REVIEW
             and work_item.trial_id is None
         )
-        selected_trial_ids = self._active_trial_ids(ledger, request.run_id)
+        # Pre-confirmation, no Trial selection is confirmed yet (#119), so
+        # _active_trial_ids is unconditionally empty -- unlike
+        # _source_role_review_complete, which already treats
+        # selected_trial_ids=None as "scope to every inventory-ready Trial"
+        # for this same reason. Filtering by it here would leave the
+        # pre-confirmation source-role-review work item with no sources to
+        # review at all (#136).
+        selected_trial_ids = (
+            None
+            if projection.run_state is RunState.AWAITING_CONFIRMATION
+            else self._active_trial_ids(ledger, request.run_id)
+        )
         trial = (
             None
             if is_global_source_work
@@ -1995,7 +2006,8 @@ class RunEngine:
             tuple(
                 source
                 for item in proposal.initialization.trials
-                if item.status == "inventory_ready" and item.trial_id in selected_trial_ids
+                if item.status == "inventory_ready"
+                and (selected_trial_ids is None or item.trial_id in selected_trial_ids)
                 for source in item.inventory.sources
                 if SourceRole.REGISTRY_CURRENT not in source.roles
             )
