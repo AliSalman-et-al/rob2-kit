@@ -453,6 +453,81 @@ def test_bootstrap_reports_a_scalar_codex_mcp_setting_as_recoverable(tmp_path: P
     assert "recovery" in result.output.lower()
 
 
+def test_bootstrap_reports_conflicts_in_both_host_configs_together(tmp_path: Path) -> None:
+    """A stale entry in both files is reported in one pass, not one-file-at-a-time."""
+
+    from rob2_kit.interfaces.harness import HarnessBootstrapError, bootstrap_project
+
+    codex_config = tmp_path / ".codex" / "config.toml"
+    codex_config.parent.mkdir()
+    codex_config.write_text(
+        'mcp_servers.rob2-kit = { command = "stale-codex-launcher", args = [] }\n',
+        encoding="utf-8",
+    )
+    claude_config = tmp_path / ".mcp.json"
+    claude_config.write_text(
+        json.dumps({"mcpServers": {"rob2-kit": {"command": "stale-claude-launcher", "args": []}}}),
+        encoding="utf-8",
+    )
+    original_codex = codex_config.read_bytes()
+    original_claude = claude_config.read_bytes()
+
+    with pytest.raises(HarnessBootstrapError) as excinfo:
+        bootstrap_project(tmp_path)
+
+    message = str(excinfo.value)
+    assert str(codex_config) in message
+    assert str(claude_config) in message
+    assert message.count("already defines a different") == 2
+    assert message.count("Recovery:") == 1
+    assert codex_config.read_bytes() == original_codex
+    assert claude_config.read_bytes() == original_claude
+
+
+def test_bootstrap_reports_a_single_conflict_without_an_empty_second_line(tmp_path: Path) -> None:
+    """A lone conflict keeps today's exact single-line message shape."""
+
+    from rob2_kit.interfaces.harness import HarnessBootstrapError, bootstrap_project
+
+    config = tmp_path / ".mcp.json"
+    config.write_text(
+        json.dumps({"mcpServers": {"rob2-kit": {"command": "different-launcher", "args": []}}}),
+        encoding="utf-8",
+    )
+
+    with pytest.raises(HarnessBootstrapError) as excinfo:
+        bootstrap_project(tmp_path)
+
+    message = str(excinfo.value)
+    assert message.count("already defines a different") == 1
+    assert message.count("Recovery:") == 1
+
+
+def test_bootstrap_reports_a_malformed_config_together_with_an_entry_conflict(
+    tmp_path: Path,
+) -> None:
+    """A wrong-type mcp_servers value in one file surfaces alongside a real conflict."""
+
+    from rob2_kit.interfaces.harness import HarnessBootstrapError, bootstrap_project
+
+    codex_config = tmp_path / ".codex" / "config.toml"
+    codex_config.parent.mkdir()
+    codex_config.write_text('mcp_servers = "not-a-table"\n', encoding="utf-8")
+    claude_config = tmp_path / ".mcp.json"
+    claude_config.write_text(
+        json.dumps({"mcpServers": {"rob2-kit": {"command": "different-launcher", "args": []}}}),
+        encoding="utf-8",
+    )
+
+    with pytest.raises(HarnessBootstrapError) as excinfo:
+        bootstrap_project(tmp_path)
+
+    message = str(excinfo.value)
+    assert "mcp_servers" in message
+    assert "already defines a different" in message
+    assert message.count("Recovery:") == 1
+
+
 def test_canonical_skills_share_progressively_disclosed_harness_references() -> None:
     """Harness prose narrates the journey but leaves methods to the pinned tools."""
 

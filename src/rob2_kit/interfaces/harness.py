@@ -14,7 +14,7 @@ import tomllib
 import uuid
 import zipfile
 from pathlib import Path
-from typing import Any, Literal
+from typing import Any, Literal, NamedTuple
 
 from rob2_kit.release import (
     CANONICAL_SKILL_NAMES,
@@ -380,15 +380,11 @@ def bootstrap_project(project_root: Path, *, mode: RuntimeMode = "locked") -> di
     claude_config = _read_json_object(claude_path)
     expected_codex_server = _server_config(lock, release_root, "codex", mode=mode)
     expected_claude_server = _server_config(lock, release_root, "claude", mode=mode)
-    codex_servers = codex_config.get("mcp_servers", {})
-    if not isinstance(codex_servers, dict):
-        raise HarnessBootstrapError(f"{codex_path} has a non-table mcp_servers value.")
-    _validate_server_entry(codex_servers.get(_MCP_SERVER_NAME), expected_codex_server, codex_path)
-    claude_servers = claude_config.get("mcpServers", {})
-    if not isinstance(claude_servers, dict):
-        raise HarnessBootstrapError(f"{claude_path} has a non-object mcpServers value.")
-    _validate_server_entry(
-        claude_servers.get(_MCP_SERVER_NAME), expected_claude_server, claude_path
+    _validate_host_configurations(
+        (
+            _HostConfig(codex_path, codex_config, "mcp_servers", "table", expected_codex_server),
+            _HostConfig(claude_path, claude_config, "mcpServers", "object", expected_claude_server),
+        )
     )
     _validate_adapter_targets(root, release_root)
     _validate_ownership_target(root, release_root, lock)
@@ -604,13 +600,38 @@ def _read_json_object(path: Path) -> dict[str, Any]:
     return value
 
 
-def _validate_server_entry(entry: object, expected: dict[str, Any], path: Path) -> None:
-    if entry is None:
-        return
-    if entry != expected:
-        raise HarnessBootstrapError(
-            f"{path} already defines a different {_MCP_SERVER_NAME!r} MCP server."
-        )
+class _HostConfig(NamedTuple):
+    """One Harness host's server-config file, keyed and phrased for validation."""
+
+    path: Path
+    config: dict[str, Any]
+    servers_key: str
+    servers_noun: str
+    expected_server: dict[str, Any]
+
+
+def _validate_host_configurations(configurations: tuple[_HostConfig, ...]) -> None:
+    """Collect every host-configuration conflict before raising, not just the first.
+
+    A project can carry stale or conflicting ``rob2-kit`` entries in both
+    ``.codex/config.toml`` and ``.mcp.json`` at once (for example, left over
+    from an earlier install). Reporting them together lets an operator fix
+    both files in one pass instead of one fix-rerun cycle per file.
+    """
+
+    details: list[str] = []
+    for host in configurations:
+        servers = host.config.get(host.servers_key, {})
+        if not isinstance(servers, dict):
+            details.append(f"{host.path} has a non-{host.servers_noun} {host.servers_key} value.")
+            continue
+        entry = servers.get(_MCP_SERVER_NAME)
+        if entry is not None and entry != host.expected_server:
+            details.append(
+                f"{host.path} already defines a different {_MCP_SERVER_NAME!r} MCP server."
+            )
+    if details:
+        raise HarnessBootstrapError("\n".join(details))
 
 
 def _validate_adapter_targets(root: Path, release_root: Path) -> None:
