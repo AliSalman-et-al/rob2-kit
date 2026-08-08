@@ -128,6 +128,139 @@ def test_neighbors_fail_closed_without_structural_anchor(tmp_path: Path) -> None
     )
     assert context.neighbors == ()
     assert "structural_boundary_reached" in context.warnings
+    assert context.omitted_neighbor_count == 0
+
+
+def test_unit_mode_fail_closed_without_structural_anchor_reports_no_omissions(
+    tmp_path: Path,
+) -> None:
+    index = EvidenceSearchIndex(tmp_path / "evidence.sqlite3")
+    units = tuple(
+        _unit(
+            f"unit:empty-{number}", "source:report", "allocation", reading_order=number
+        ).model_copy(update={"section_path": (), "hierarchy_path": ()})
+        for number in range(3)
+    )
+    index.replace_units(units)
+    context = index.read_context(
+        units[0].unit_id,
+        mode=ReadContextMode.UNIT,
+        scope=EvidenceScope(trial_id="trial:active"),
+    )
+    assert context.neighbors == ()
+    assert "structural_boundary_reached" in context.warnings
+    assert context.omitted_neighbor_count == 0
+
+
+def test_line_wrap_hyphen_is_stripped_and_rejoined() -> None:
+    units = canonicalize_evidence_units(
+        source_id="source:report",
+        source_artifact_hash=HASH,
+        parse_id="parse:1",
+        pages=(
+            CanonicalPage(
+                page=1,
+                blocks=(
+                    CanonicalBlock(
+                        kind=CanonicalUnitKind.PARAGRAPH,
+                        text="Patient characteristics were well balanced be-",
+                        spatial=(20.0, 30.0, 400.0, 50.0),
+                        reading_order=1,
+                    ),
+                    CanonicalBlock(
+                        kind=CanonicalUnitKind.PARAGRAPH,
+                        text="tween the two groups (Table 1).",
+                        spatial=(20.0, 52.0, 400.0, 72.0),
+                        reading_order=2,
+                    ),
+                ),
+            ),
+        ),
+    )
+    assert len(units) == 1
+    unit = units[0]
+    assert unit.text == (
+        "Patient characteristics were well balanced between the two groups (Table 1)."
+    )
+    assert "-" not in unit.text
+    assert len(unit.fragment_ids) == 2
+    # The deleted hyphen keeps a zero-width canonical mapping (ADR-0014):
+    # the trailing span from the first fragment shrinks by one character and
+    # a zero-width sibling span records the hyphen's own source position.
+    first_fragment_id, second_fragment_id = unit.fragment_ids
+    assert [span.fragment_id for span in unit.fragment_spans] == [
+        first_fragment_id,
+        first_fragment_id,
+        second_fragment_id,
+    ]
+    shrunk_span, deleted_hyphen_span, second_fragment_span = unit.fragment_spans
+    assert deleted_hyphen_span.canonical_start == deleted_hyphen_span.canonical_end
+    assert deleted_hyphen_span.canonical_start == shrunk_span.canonical_end
+    assert shrunk_span.canonical_end == len("Patient characteristics were well balanced be")
+    assert second_fragment_span.canonical_start == shrunk_span.canonical_end
+    assert second_fragment_span.canonical_end == len(unit.text)
+
+
+def test_genuine_hyphenated_compound_at_line_break_is_also_rejoined() -> None:
+    # ADR-0013: no dictionary check, so a genuine compound word landing on a
+    # line break is merged too, accepted as a known limitation of the fix.
+    units = canonicalize_evidence_units(
+        source_id="source:report",
+        source_artifact_hash=HASH,
+        parse_id="parse:1",
+        pages=(
+            CanonicalPage(
+                page=1,
+                blocks=(
+                    CanonicalBlock(
+                        kind=CanonicalUnitKind.PARAGRAPH,
+                        text="Overall well-",
+                        spatial=(20.0, 30.0, 400.0, 50.0),
+                        reading_order=1,
+                    ),
+                    CanonicalBlock(
+                        kind=CanonicalUnitKind.PARAGRAPH,
+                        text="being improved.",
+                        spatial=(20.0, 52.0, 400.0, 72.0),
+                        reading_order=2,
+                    ),
+                ),
+            ),
+        ),
+    )
+    assert len(units) == 1
+    assert units[0].text == "Overall wellbeing improved."
+
+
+def test_non_hyphen_line_wraps_still_require_whitespace_boundary() -> None:
+    # Ordinary line wraps (no trailing hyphen) must keep requiring a
+    # whitespace boundary; two words separated only by page geometry, with no
+    # space or hyphen, must not be silently mashed together.
+    units = canonicalize_evidence_units(
+        source_id="source:report",
+        source_artifact_hash=HASH,
+        parse_id="parse:1",
+        pages=(
+            CanonicalPage(
+                page=1,
+                blocks=(
+                    CanonicalBlock(
+                        kind=CanonicalUnitKind.PARAGRAPH,
+                        text="randomly",
+                        spatial=(20.0, 30.0, 400.0, 50.0),
+                        reading_order=1,
+                    ),
+                    CanonicalBlock(
+                        kind=CanonicalUnitKind.PARAGRAPH,
+                        text="assigned",
+                        spatial=(20.0, 52.0, 400.0, 72.0),
+                        reading_order=2,
+                    ),
+                ),
+            ),
+        ),
+    )
+    assert len(units) == 2
 
 
 def test_trial_wide_canonical_block_does_not_inherit_result_id() -> None:

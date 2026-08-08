@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import itertools
 import json
 import re
 import secrets
@@ -29,6 +30,10 @@ PROJECTION_TARGET = 2_400
 CONTEXT_CHARACTER_TARGET = 16_000
 CONTEXT_NEIGHBOR_LIMIT = 6
 CONTEXT_UNIT_LIMIT = 6
+# Bumped from 1.1.0: fragment-merge now rejoins PDF line-wrap hyphens
+# (see ADR-0013/ADR-0014), changing merged CanonicalEvidenceUnit text and
+# fragment_spans for affected units.
+CANONICALIZATION_VERSION = "canonicalization:1.2.0"
 PAGE_HIT_TARGET_MAX = 20
 PAGE_CHARACTER_TARGET_MAX = 8_000
 BROAD_UNIQUE_HIT_THRESHOLD_MAX = 100
@@ -149,22 +154,33 @@ class CanonicalWordBox(FrozenModel):
 
 
 class CanonicalFragmentSpan(FrozenModel):
-    """An exact parser-fragment range retained in canonical-unit coordinates."""
+    """An exact parser-fragment range retained in canonical-unit coordinates.
+
+    Normally a span's canonical extent equals its source-fragment extent
+    (pure preservation).  A zero-width canonical extent instead records that
+    the source range produced no canonical text at all -- for example a
+    PDF line-wrap hyphen character deleted while dehyphenating a merged
+    fragment.  Every source character stays attributable to a canonical
+    position, even a "produced nothing" one, rather than silently dropped
+    from the mapping.
+    """
 
     fragment_id: Identifier
     fragment_start: int = Field(ge=0)
     fragment_end: int = Field(gt=0)
     canonical_start: int = Field(ge=0)
-    canonical_end: int = Field(gt=0)
+    canonical_end: int = Field(ge=0)
 
     @model_validator(mode="after")
     def validate_mapping(self) -> CanonicalFragmentSpan:
         if self.fragment_end <= self.fragment_start:
             raise ValueError("fragment span must have positive extent")
-        if self.canonical_end <= self.canonical_start:
-            raise ValueError("canonical fragment span must have positive extent")
-        if self.fragment_end - self.fragment_start != self.canonical_end - self.canonical_start:
-            raise ValueError("fragment and canonical spans must have equal extent")
+        if self.canonical_end < self.canonical_start:
+            raise ValueError("canonical fragment span cannot end before it starts")
+        fragment_extent = self.fragment_end - self.fragment_start
+        canonical_extent = self.canonical_end - self.canonical_start
+        if canonical_extent not in (0, fragment_extent):
+            raise ValueError("canonical extent must equal the fragment extent or be zero (deleted)")
         return self
 
 
@@ -230,7 +246,17 @@ class CanonicalEvidenceUnit(FrozenModel):
                 raise ValueError("word box text must equal its canonical unit span")
             previous_end = box.span_end
         if self.fragment_spans:
-            if tuple(span.fragment_id for span in self.fragment_spans) != self.fragment_ids:
+            # A fragment may be split into consecutive spans (e.g. its
+            # preserved text plus a zero-width deletion span for a stripped
+            # hyphen), so dedupe consecutive repeats before comparing identity
+            # order against fragment_ids.
+            deduped_span_ids = tuple(
+                fragment_id
+                for fragment_id, _ in itertools.groupby(
+                    span.fragment_id for span in self.fragment_spans
+                )
+            )
+            if deduped_span_ids != self.fragment_ids:
                 raise ValueError("fragment spans must match canonical fragment identity order")
             for span in self.fragment_spans:
                 if span.canonical_end > len(self.text):
@@ -285,13 +311,38 @@ def _block_order(block: CanonicalBlock) -> tuple[object, ...]:
     )
 
 
+def _hyphen_rejoin_boundary(previous: CanonicalBlock, candidate: CanonicalBlock) -> bool:
+    """Recognize a PDF line-wrap hyphen split ("balanced be-" + "tween").
+
+    Deliberately no dictionary or heuristic check for genuine hyphenated
+    compounds ("well-being") landing on a line break -- see ADR-0013.  Any
+    trailing ASCII hyphen after a letter, immediately followed by another
+    letter on the next line-wrap-consecutive fragment, is treated as a split
+    word rather than punctuation, a numeric range, or an em/en dash.
+    """
+
+    previous_text = previous.text
+    candidate_text = candidate.text
+    return (
+        len(previous_text) >= 2
+        and previous_text[-1] == "-"
+        and previous_text[-2].isalpha()
+        and bool(candidate_text)
+        and candidate_text[0].isalpha()
+    )
+
+
 def _mergeable_fragments(previous: CanonicalBlock, candidate: CanonicalBlock) -> bool:
     """Recognize only consecutive, single-column parser fragments.
 
     This intentionally modest rule avoids turning ordinary nearby paragraphs or
-    ambiguous multi-column extraction into invented prose.
+    ambiguous multi-column extraction into invented prose.  A trailing
+    line-wrap hyphen is the one exception to the whitespace-boundary
+    requirement, since a hyphenated split word never has whitespace on
+    either side of the break.
     """
 
+    whitespace_boundary = previous.text[-1].isspace() or candidate.text[0].isspace()
     if (
         previous.kind is CanonicalUnitKind.UNCLASSIFIED
         or candidate.kind is not previous.kind
@@ -299,7 +350,7 @@ def _mergeable_fragments(previous: CanonicalBlock, candidate: CanonicalBlock) ->
         or candidate.reading_order != previous.reading_order + 1
         or "reading_order_uncertain" in previous.warnings
         or "reading_order_uncertain" in candidate.warnings
-        or (not previous.text[-1].isspace() and not candidate.text[0].isspace())
+        or not (whitespace_boundary or _hyphen_rejoin_boundary(previous, candidate))
     ):
         return False
     if any(
@@ -332,20 +383,87 @@ def _mergeable_fragments(previous: CanonicalBlock, candidate: CanonicalBlock) ->
     )
 
 
-def _merged_block(previous: CanonicalBlock, candidate: CanonicalBlock) -> CanonicalBlock:
-    """Combine two already-proven adjacent fragments without changing their text."""
+def _drop_trailing_hyphen_word_box(
+    word_boxes: tuple[CanonicalWordBox, ...], original_text_length: int
+) -> tuple[CanonicalWordBox, ...]:
+    """Trim or drop the word box covering a stripped trailing hyphen."""
 
-    offset = len(previous.text)
+    if not word_boxes:
+        return word_boxes
+    last = word_boxes[-1]
+    if last.span_end != original_text_length:
+        return word_boxes
+    if last.text == "-":
+        return word_boxes[:-1]
+    if last.text.endswith("-"):
+        return word_boxes[:-1] + (
+            last.model_copy(update={"text": last.text[:-1], "span_end": last.span_end - 1}),
+        )
+    return word_boxes
+
+
+def _drop_trailing_hyphen_fragment_span(
+    spans: tuple[CanonicalFragmentSpan, ...], original_text_length: int
+) -> tuple[CanonicalFragmentSpan, ...]:
+    """Shrink the trailing fragment span by one character (the deleted hyphen).
+
+    The hyphen's own source position keeps a zero-width canonical mapping
+    (ADR-0014) rather than being silently dropped from the fragment lineage.
+    """
+
+    if not spans:
+        return spans
+    last = spans[-1]
+    if last.canonical_end != original_text_length:
+        return spans
+    if last.canonical_end - last.canonical_start == 1:
+        return spans[:-1] + (last.model_copy(update={"canonical_end": last.canonical_start}),)
+    shrunk_canonical_end = last.canonical_end - 1
+    shrunk_fragment_end = last.fragment_end - 1
+    return spans[:-1] + (
+        last.model_copy(
+            update={"fragment_end": shrunk_fragment_end, "canonical_end": shrunk_canonical_end}
+        ),
+        CanonicalFragmentSpan(
+            fragment_id=last.fragment_id,
+            fragment_start=shrunk_fragment_end,
+            fragment_end=last.fragment_end,
+            canonical_start=shrunk_canonical_end,
+            canonical_end=shrunk_canonical_end,
+        ),
+    )
+
+
+def _merged_block(previous: CanonicalBlock, candidate: CanonicalBlock) -> CanonicalBlock:
+    """Combine two already-proven adjacent fragments.
+
+    A trailing PDF line-wrap hyphen is stripped when rejoining ("balanced
+    be-" + "tween" -> "balanced between"); see ADR-0013.  The deleted hyphen
+    character's fragment lineage is preserved as a zero-width canonical span
+    rather than dropped, per ADR-0014.
+    """
+
+    strip_hyphen = _hyphen_rejoin_boundary(previous, candidate)
+    original_length = len(previous.text)
+    previous_text = previous.text[:-1] if strip_hyphen else previous.text
+    offset = len(previous_text)
+
+    previous_word_boxes = previous.word_boxes
+    previous_spans = _block_fragment_spans(previous)
+    if strip_hyphen:
+        previous_word_boxes = _drop_trailing_hyphen_word_box(previous_word_boxes, original_length)
+        previous_spans = _drop_trailing_hyphen_fragment_span(previous_spans, original_length)
+
     return previous.model_copy(
         update={
-            "text": previous.text + candidate.text,
+            "text": previous_text + candidate.text,
             "spatial": (
                 min(previous.spatial[0], candidate.spatial[0]),
                 min(previous.spatial[1], candidate.spatial[1]),
                 max(previous.spatial[2], candidate.spatial[2]),
                 max(previous.spatial[3], candidate.spatial[3]),
             ),
-            "word_boxes": previous.word_boxes
+            "word_boxes": previous_word_boxes
             + tuple(
                 box.model_copy(
                     update={
@@ -356,7 +474,7 @@ def _merged_block(previous: CanonicalBlock, candidate: CanonicalBlock) -> Canoni
                 for box in candidate.word_boxes
             ),
             "fragment_ids": previous.fragment_ids + candidate.fragment_ids,
-            "fragment_spans": _block_fragment_spans(previous)
+            "fragment_spans": previous_spans
             + tuple(
                 span.model_copy(
                     update={
@@ -464,7 +582,7 @@ def canonicalize_evidence_units(
                     "fragment_ids": fragment_ids,
                     "text": block.text,
                     "spatial": block.spatial,
-                    "canonicalization_version": "canonicalization:1.1.0",
+                    "canonicalization_version": CANONICALIZATION_VERSION,
                 }
             ).removeprefix("sha256:")
             units.append(
@@ -502,7 +620,7 @@ def canonicalize_evidence_units(
                     fragment_spans=_block_fragment_spans(
                         block.model_copy(update={"fragment_ids": fragment_ids})
                     ),
-                    canonicalization_version="canonicalization:1.1.0",
+                    canonicalization_version=CANONICALIZATION_VERSION,
                     warnings=block.warnings,
                 )
             )
@@ -1267,7 +1385,10 @@ class EvidenceSearchIndex:
                 # Neighbors require an explicit structural anchor.  Shared
                 # zone/discourse alone is not enough to infer scientific
                 # adjacency; return the target with a limitation warning.
+                # No candidate was ever considered here, so the omitted
+                # count must not claim same-page siblings were filtered.
                 section_boundary_reached = len(source_ids) > 1
+                source_ids = [unit_id]
             else:
                 for direction in (-1, 1):
                     index = position + direction
