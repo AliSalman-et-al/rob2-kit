@@ -16,10 +16,10 @@ scope, or infer that a search limit means there is no evidence.
 
 Search is deliberately broad within the authorized scope. A hit can be a
 canonical unit or an uncertain source fragment, including a bibliography,
-footnote, table or caption, unclassified material, or text apparently about a
-different Trial. Zone, discourse, unit-kind, filename, cardinality, and
-applicability labels are diagnostic cues only: they can warn or rank, but do
-not hide a candidate or make it citable.
+footnote, table or caption, unclassified material, or text about any Trial.
+Zone, unit-kind, filename, cardinality, and applicability labels are
+diagnostic cues only: they can warn or rank, but do not hide a candidate or
+make it citable.
 
 Search returns a non-citable projection with an opaque `location_handle`,
 lightweight source/Parse/location lineage, warnings, and a small source-text
@@ -29,9 +29,8 @@ Parse, fragment lineage, and canonicalization snapshot; an index ranking
 change alone does not invalidate it. A stale-handle response is a typed
 condition: discard the handle and search again under the current WorkToken.
 
-Older semantic override inputs such as `include_other_trial` and
-`include_uncertain` are not supported. Their presence receives a typed
-upgrade-required response rather than silently changing retrieval behavior.
+Parser Trial-discourse labels are not an input, output, warning, filter, or
+eligibility signal. Attribution is established only by the reviewed span.
 
 ## Search and continuation
 
@@ -75,7 +74,10 @@ useful view, then request bounded expansion as needed:
 Read responses preserve source-authored text in deterministic order and expose
 the original hit, Source artifact, Parse revision, page/geometry, source
 bounds, fragment lineage, applied bounds, warnings, omissions, and any stable
-continuation. They never silently cross a Source, Parse revision, or requested
+continuation. Each response also issues an opaque `read_view_receipt` binding
+the exact snapshot, requested/applied mode, continuation input/output, displayed units,
+bounds, content hashes, and source/Parse/canonical lineage. Submit that receipt with a review span; never use
+a location handle as frozen provenance. They never silently cross a Source, Parse revision, or requested
 page boundary. Ambiguous reading order remains separate fragments with a
 warning; it is not synthetic prose.
 
@@ -86,10 +88,12 @@ limitation instead of reporting generic absence.
 
 ## Semantic review before freeze
 
-Read enough context to identify the sentence subject and Result. Record the
-candidate's Trial attribution as `active`, `other`, `mixed`, `not_explicit`,
-or `unresolved`, with rationale and the read handles considered. Then record
-every material exact span as `supporting`, `contradicting`, `contextual`,
+Read enough context to identify the sentence subject and Result. Record each
+exact span's Trial attribution as `active`, `other`, `not_explicit`, or
+`unresolved`, with its issued read-view receipt and rationale. A revision is
+for one `sq_id`, while one candidate can have separate revisions/spans for
+different questions. Submit the 1.1.0 Domain-Evidence contract with `sq_id`
+and span-level review inputs. Then record every material exact span as `supporting`, `contradicting`, `contextual`,
 `out_of_scope`, `immaterial`, `superseded`, `duplicate`,
 `needs_visual_review`, or `unresolved` using the installed typed review
 submission. Review is append-only: correcting an attribution,
@@ -97,25 +101,27 @@ disposition, rationale, or considered context creates a later review revision;
 it does not rewrite history.
 
 Other-Trial and bibliography material may be read and explicitly rejected as
-out of scope. Omission is not rejection. A mixed candidate must isolate any
-active-Trial span; a `not_explicit` or unresolved candidate cannot support a
-claim. A potentially material unresolved span or visual-review condition blocks
-freeze and must remain visible as a limitation.
+out of scope. Omission is not rejection. `other` and `not_explicit` spans may
+complete only non-substantive dispositions. A passage whose Trial is not
+explicit may become `active` only after bounded context is recorded in the
+receipt descriptor and the reviewer records the resolution rationale. An
+unresolved span or visual-review condition blocks freeze and must remain
+visible as a limitation.
 
 ## Exact-span freeze
 
-Only a completed review of an exact source span can be frozen into Evidence.
-The engine validates Result custody, WorkToken authorization, artifact/Parse
+Only an `active` supporting or contradicting review of an exact source span can
+authorize qualifying textual Evidence. The engine commits that review before
+materializing the claim, which stores the authorizing review reference and
+engine-derived span ID. The engine validates Result custody, WorkToken authorization, artifact/Parse
 and fragment lineage, exact bounds, hashes and revisions, review completeness,
 and immutable dependency materialization. Search projections, snippets,
 diagnostic labels, inferred applicability, and synthesized reconstruction are
 never freezable Evidence.
 
 Use the current typed freeze submission supplied by the work item; do not
-invent quote text, hashes, revisions, or artifact references. The legacy
-`passages`/`items` submission branch is a compatibility path only. If the
-installed contract offers the generalized review-and-freeze fields, use them
-instead; do not mix legacy and generalized branches in one request.
+invent quote text, hashes, revisions, artifact references, or span IDs. Do not
+mix textual passages with visual-transcription items in one request.
 
 An adequate complete search with no relevant evidence may support
 `no_information` only when the engine verifies the complete search basis.

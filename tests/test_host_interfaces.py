@@ -190,7 +190,7 @@ def test_domain_evidence_contract_rejects_aliases_and_mixed_branches() -> None:
     )
     with pytest.raises(ValidationError, match="mutually exclusive"):
         SubmitDomainEvidenceRequest(
-            contract_version="1.0.0",
+            contract_version="1.1.0",
             run_id="run:test",
             work_token=token,
             idempotency_key="idempotency:test",

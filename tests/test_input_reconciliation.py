@@ -16,6 +16,7 @@ from rob2_kit.application.contracts import (
     EvidencePassageInput,
     GetWorkContextRequest,
     PrepareRunRequest,
+    ReadEvidenceRequest,
     RunOperation,
     RunProposalSelection,
     RunStatusRequest,
@@ -116,7 +117,6 @@ class StructuredPassageParser:
                             height=12,
                             unit_kind="paragraph",
                             document_zone="main",
-                            discourse_scope="active",
                             domain_id="domain:randomization",
                             question_ids=(DOMAINS["domain:randomization"][0],),
                         ),
@@ -326,7 +326,15 @@ def _location_handle_for(
         )
     )
     hit = next(hit for hit in response.page.hits if hit.unit.unit_id == unit_id)
-    return hit.location_handle
+    return engine.read_evidence(
+        ReadEvidenceRequest(
+            run_id=run_id,
+            work_token=getattr(work, "work_token"),
+            result_id=getattr(work, "result_id"),
+            sq_id=question_id,
+            location_handle=hit.location_handle,
+        )
+    ).read_view_receipt
 
 
 def _review_revision(
@@ -342,17 +350,16 @@ def _review_revision(
         "candidate_id": candidate_id,
         "result_id": result_id,
         "domain_id": domain_id,
-        "question_ids": (question_id,),
-        "trial_attribution": "active",
-        "reviewed_context_handles": (location_handle,),
+        "sq_id": question_id,
         "spans": (
             {
-                "location_handle": location_handle,
+                "read_view_receipt": location_handle,
                 "span_start": span_start,
                 "span_end": span_end,
+                "trial_attribution": "active",
                 "disposition": disposition,
                 "rationale": "test span",
-                "context_handles": (location_handle,),
+                "attribution_rationale": "bounded issued context identifies the active trial",
             },
         ),
     }
@@ -452,7 +459,7 @@ def _finish_current_result(
         )
         engine.submit_domain_evidence(
             SubmitDomainEvidenceRequest(
-                contract_version="1.0.0",
+                contract_version="1.1.0",
                 run_id=run_id,
                 work_token=evidence.work_token,
                 idempotency_key=f"idempotency:{prefix}-evidence-{index}",
@@ -760,7 +767,7 @@ def test_final_judgment_departure_must_bind_the_authorized_domain(tmp_path: Path
     assert evidence is not None
     engine.submit_domain_evidence(
         SubmitDomainEvidenceRequest(
-            contract_version="1.0.0",
+            contract_version="1.1.0",
             run_id=run_id,
             work_token=evidence.work_token,
             idempotency_key="idempotency:departure-scope-evidence",
@@ -775,8 +782,8 @@ def test_final_judgment_departure_must_bind_the_authorized_domain(tmp_path: Path
 
     with pytest.raises(ValueError, match="authorized by this WorkToken"):
         engine.submit_domain_answers(
-            SubmitDomainAnswersRequest(
-                contract_version="1.0.0",
+        SubmitDomainAnswersRequest(
+            contract_version="1.0.0",
                 run_id=run_id,
                 work_token=answer.work_token,
                 idempotency_key="idempotency:departure-scope-answers",
@@ -824,7 +831,7 @@ def test_identical_domain_evidence_retry_returns_the_committed_result(
     assert work is not None
     event_count = len(engine._bound_ledger(run_id).events())
     request = SubmitDomainEvidenceRequest(
-        contract_version="1.0.0",
+        contract_version="1.1.0",
         run_id=run_id,
         work_token=work.work_token,
         idempotency_key="idempotency:retry-domain-evidence",
@@ -888,7 +895,7 @@ def test_domain_evidence_freezes_engine_issued_passages_without_host_hashes(
     question_id = DOMAINS["domain:randomization"][0]
     location_handle = _location_handle_for(engine, run_id, work, question_id, unit_id)
     request = SubmitDomainEvidenceRequest(
-        contract_version="1.0.0",
+        contract_version="1.1.0",
         run_id=run_id,
         work_token=work.work_token,
         idempotency_key="idempotency:passage-domain-evidence",
@@ -964,7 +971,7 @@ def test_domain_evidence_passage_can_select_to_unit_end_without_counting_charact
     location_handle = _location_handle_for(engine, run_id, work, question_id, unit.unit_id)
     response = engine.submit_domain_evidence(
         SubmitDomainEvidenceRequest(
-            contract_version="1.0.0",
+            contract_version="1.1.0",
             run_id=run_id,
             work_token=work.work_token,
             idempotency_key="idempotency:passage-to-end",
@@ -1006,7 +1013,7 @@ def test_domain_evidence_passage_can_select_to_unit_end_without_counting_charact
     assert claim.span_end == len(unit.text)
 
 
-def test_unstructured_units_require_visual_or_classification_recovery(tmp_path: Path) -> None:
+def test_unstructured_units_remain_visible_for_attributable_review(tmp_path: Path) -> None:
     from rob2_kit.evidence.search import CanonicalEvidenceUnit, CanonicalUnitKind, DocumentZone
 
     index = EvidenceSearchIndex(tmp_path / "evidence.sqlite3")
@@ -1024,11 +1031,10 @@ def test_unstructured_units_require_visual_or_classification_recovery(tmp_path: 
         applicability="result",
     )
     index.replace_units((unit,))
-    with pytest.raises(ValueError, match="outside the active retrieval scope"):
-        index.read_unit(
-            unit.unit_id,
-            scope=EvidenceScope(trial_id="trial:active", result_id="result:active"),
-        )
+    assert index.read_unit(
+        unit.unit_id,
+        scope=EvidenceScope(trial_id="trial:active", result_id="result:active"),
+    ) == unit
 
 
 def test_invalid_late_passage_writes_no_artifacts_or_ledger_events(tmp_path: Path) -> None:
@@ -1051,13 +1057,12 @@ def test_invalid_late_passage_writes_no_artifacts_or_ledger_events(tmp_path: Pat
     revisions_before = ledger.current_revisions()
     artifacts_before = tuple(sorted((tmp_path / ".rob2" / "artifacts").rglob("*")))
 
-    # Both passages share unit_id with no candidate_id override, so they
-    # collapse to one retained candidate; one matching review revision
-    # satisfies the pre-check ahead of the structural error under test.
-    with pytest.raises(ValueError, match="another domain's questions"):
-        engine.submit_domain_evidence(
+    # The second passage names another Domain question.  The complete
+    # question-specific review graph is rejected before it can write a
+    # review, claim, or submission artifact.
+    response = engine.submit_domain_evidence(
             SubmitDomainEvidenceRequest(
-                contract_version="1.0.0",
+                contract_version="1.1.0",
                 run_id=run_id,
                 work_token=work.work_token,
                 idempotency_key="idempotency:invalid-late-passage",
@@ -1093,16 +1098,17 @@ def test_invalid_late_passage_writes_no_artifacts_or_ledger_events(tmp_path: Pat
                 ),
             )
         )
+    assert not response.committed
 
     assert ledger.events() == events_before
     assert ledger.current_revisions() == revisions_before
     assert tuple(sorted((tmp_path / ".rob2" / "artifacts").rglob("*"))) == artifacts_before
 
     for span_start in (len(unit.text), len(unit.text) + 1):
-        with pytest.raises(ValueError, match="passage span is empty or exceeds"):
+        with pytest.raises(ValueError, match="invalid evidence read-view receipt"):
             engine.submit_domain_evidence(
-                SubmitDomainEvidenceRequest(
-                    contract_version="1.0.0",
+            SubmitDomainEvidenceRequest(
+                contract_version="1.1.0",
                     run_id=run_id,
                     work_token=work.work_token,
                     idempotency_key=f"idempotency:invalid-open-span-{span_start}",
@@ -1137,7 +1143,7 @@ def test_invalid_late_passage_writes_no_artifacts_or_ledger_events(tmp_path: Pat
     with pytest.raises(ValueError, match="question_ids must be unique"):
         engine.submit_domain_evidence(
             SubmitDomainEvidenceRequest(
-                contract_version="1.0.0",
+                contract_version="1.1.0",
                 run_id=run_id,
                 work_token=work.work_token,
                 idempotency_key="idempotency:duplicate-question-passage",
@@ -2037,7 +2043,7 @@ def test_changed_source_invalidates_partial_pending_checkpoints(tmp_path: Path) 
     assert evidence is not None
     engine.submit_domain_evidence(
         SubmitDomainEvidenceRequest(
-            contract_version="1.0.0",
+            contract_version="1.1.0",
             run_id=run_id,
             work_token=evidence.work_token,
             idempotency_key="idempotency:partial-evidence",

@@ -13,7 +13,8 @@ from typing import Literal
 
 from pydantic import AliasChoices, BaseModel, ConfigDict, Field, model_validator
 
-from rob2_kit.domain.canonical import canonical_hash
+from rob2_kit.domain.canonical import canonical_hash, sha256_digest
+from rob2_kit.domain.evidence import ReviewedEvidenceContext, ReviewedEvidenceFragment
 from rob2_kit.domain.revisions import ContentHash, FrozenModel, Identifier
 from rob2_kit.domain.sources import SourceRole
 from rob2_kit.evidence.errors import (
@@ -83,16 +84,6 @@ FORBIDDEN_RETRIEVAL_ZONES = frozenset(
         DocumentZone.EXTRACTION_ARTIFACT,
     }
 )
-
-
-class TrialDiscourseScope(StrEnum):
-    """Classification of the Trial discourse in a source-authored unit."""
-
-    ACTIVE = "active"
-    OTHER = "other"
-    MIXED = "mixed"
-    UNCERTAIN = "uncertain"
-    NONE = "none"
 
 
 class ReadContextMode(StrEnum):
@@ -214,7 +205,6 @@ class CanonicalEvidenceUnit(FrozenModel):
         default=None,
         validation_alias=AliasChoices("document_zone", "zone"),
     )
-    discourse_scope: TrialDiscourseScope = TrialDiscourseScope.NONE
     duplicate_group_id: Identifier | None = None
     # Parser fragment identity is retained even when a later conservative
     # canonicalization combines source-authored fragments.  It is lineage, not
@@ -285,7 +275,6 @@ class CanonicalBlock(FrozenModel):
         default=None,
         validation_alias=AliasChoices("document_zone", "zone"),
     )
-    discourse_scope: TrialDiscourseScope = TrialDiscourseScope.NONE
     duplicate_group_id: Identifier | None = None
     fragment_ids: tuple[Identifier, ...] = ()
     fragment_spans: tuple[CanonicalFragmentSpan, ...] = ()
@@ -368,7 +357,6 @@ def _mergeable_fragments(previous: CanonicalBlock, candidate: CanonicalBlock) ->
             "hierarchy_path",
             "source_role",
             "document_zone",
-            "discourse_scope",
             "duplicate_group_id",
         )
     ):
@@ -614,7 +602,6 @@ def canonicalize_evidence_units(
                     reading_order=block.reading_order or len(units),
                     source_role=block.source_role,
                     document_zone=block.document_zone,
-                    discourse_scope=block.discourse_scope,
                     duplicate_group_id=block.duplicate_group_id,
                     fragment_ids=fragment_ids,
                     fragment_spans=_block_fragment_spans(
@@ -758,13 +745,6 @@ class SearchQueryFields(BaseModel):
         ),
         examples=[[DocumentZone.RESULTS.value]],
     )
-    include_uncertain: bool = Field(
-        default=False,
-        description="Include parser-uncertain Trial discourse only when explicitly requested.",
-    )
-    include_other_trial: bool = Field(
-        default=False, description="Include other-Trial discourse only when explicitly justified."
-    )
 
 
 class SearchQuery(SearchQueryFields):
@@ -815,8 +795,6 @@ class EvidenceScope(FrozenModel):
     source_ids: tuple[Identifier, ...] = ()
     source_roles: tuple[SourceRole, ...] = ()
     document_zones: tuple[DocumentZone, ...] = ()
-    include_uncertain: bool = False
-    include_other_trial: bool = False
     work_token_id: Identifier | None = None
     # Structure-aware parsers may not map every authored unit to a signaling
     # Domain.  The engine can explicitly permit those same-Result units while
@@ -1017,7 +995,6 @@ class EvidenceSearchIndex:
                     reading_order INTEGER NOT NULL DEFAULT 0,
                     source_role TEXT,
                     document_zone TEXT,
-                    discourse_scope TEXT NOT NULL DEFAULT 'none',
                     applicability TEXT NOT NULL DEFAULT 'result',
                     applicable_result_ids TEXT,
                     table_headers TEXT,
@@ -1061,7 +1038,6 @@ class EvidenceSearchIndex:
                 "reading_order": "INTEGER NOT NULL DEFAULT 0",
                 "source_role": "TEXT",
                 "document_zone": "TEXT",
-                "discourse_scope": "TEXT NOT NULL DEFAULT 'none'",
                 "applicability": "TEXT NOT NULL DEFAULT 'result'",
                 "applicable_result_ids": "TEXT",
                 "table_headers": "TEXT",
@@ -1102,11 +1078,11 @@ class EvidenceSearchIndex:
                     "(unit_id, source_id, source_artifact_hash, parse_id, page, kind, text, "
                     "spatial, word_boxes, trial_id, result_id, domain_id, question_ids, "
                     "section_path, hierarchy_path, reading_order, source_role, document_zone, "
-                    "discourse_scope, applicability, applicable_result_ids, table_headers, "
+                    "applicability, applicable_result_ids, table_headers, "
                     "caption, duplicate_group_id, fragment_ids, canonicalization_version, "
                     "fragment_spans, warnings) "
                     "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, "
-                    "?, ?, ?, ?, ?)",
+                    "?, ?, ?, ?)",
                     (
                         item.unit_id,
                         item.source_id,
@@ -1126,7 +1102,6 @@ class EvidenceSearchIndex:
                         item.reading_order,
                         item.source_role,
                         item.document_zone.value if item.document_zone else None,
-                        item.discourse_scope.value,
                         item.applicability.value,
                         json.dumps(item.applicable_result_ids),
                         json.dumps(item.table_headers),
@@ -1426,15 +1401,6 @@ class EvidenceSearchIndex:
             else ()
         )
 
-        def discourse_warnings(units: tuple[CanonicalEvidenceUnit, ...]) -> tuple[str, ...]:
-            if any(
-                item.discourse_scope in {TrialDiscourseScope.MIXED, TrialDiscourseScope.UNCERTAIN}
-                for item in units
-            ):
-                return ("trial_discourse_uncertain",)
-            return ()
-
-        target_discourse_warnings = discourse_warnings((target,))
         oversized = len(target.text) > character_target
         if oversized:
             if self._snapshot() != snapshot:
@@ -1449,7 +1415,7 @@ class EvidenceSearchIndex:
                 omitted_neighbor_count=max(0, len(source_ids) - 1),
                 mode=mode,
                 section_path=target.section_path,
-                warnings=target.warnings + target_discourse_warnings + boundary_warnings,
+                warnings=target.warnings + boundary_warnings,
                 visual_inspection_available=(target.spatial is not None),
             )
 
@@ -1481,10 +1447,6 @@ class EvidenceSearchIndex:
                     "document_zone_boundary_crossed",
                     any(item.document_zone != target.document_zone for item in selected),
                 ),
-                (
-                    "trial_discourse_boundary_crossed",
-                    any(item.discourse_scope != target.discourse_scope for item in selected),
-                ),
             )
             if crossed
         )
@@ -1513,7 +1475,6 @@ class EvidenceSearchIndex:
                 else None
             ),
             warnings=target.warnings
-            + discourse_warnings((target, *selected))
             + boundary_warnings
             + semantic_crossing_warnings
             + (("oversized_neighbor_skipped",) if oversized_neighbor_skipped else ()),
@@ -1768,12 +1729,6 @@ class EvidenceSearchIndex:
                 (f"document_zone:{unit.document_zone.value}",)
                 if unit.document_zone is not None
                 else ("document_zone:unclassified",)
-            )
-            + (
-                (f"Trial discourse classified as {unit.discourse_scope.value}",)
-                if unit.discourse_scope
-                in {TrialDiscourseScope.MIXED, TrialDiscourseScope.UNCERTAIN}
-                else ()
             ),
             duplicate_group_id=unit.duplicate_group_id,
             location_handle=self._encode_location_handle(unit, self._snapshot()),
@@ -1783,9 +1738,200 @@ class EvidenceSearchIndex:
         with self._connect() as connection:
             return _LookupTokenCodec.encode(connection, kind, payload)
 
+    def _issue_stable_token(self, kind: str, payload: dict[str, object]) -> str:
+        """Persist one collision-checked opaque lookup token per exact payload.
+
+        Read-view receipts become durable review-submission inputs.  Their
+        identity must therefore converge when an interrupted qualification
+        journey reissues the exact same displayed view; a random lookup token
+        would otherwise leak process history into immutable Evidence records.
+        """
+
+        encoded = json.dumps(payload, sort_keys=True, separators=(",", ":"))
+        token = f"{kind}:{canonical_hash(payload).removeprefix('sha256:')}"
+        with self._connect() as connection:
+            connection.execute(
+                "INSERT OR IGNORE INTO evidence_cursor_token(token, kind, payload) VALUES (?, ?, ?)",
+                (token, kind, encoded),
+            )
+            existing = connection.execute(
+                "SELECT kind, payload FROM evidence_cursor_token WHERE token = ?", (token,)
+            ).fetchone()
+            if existing is None or existing["kind"] != kind or existing["payload"] != encoded:
+                raise OperationalRetrievalFailure(
+                    "read-view receipt identity collision in the evidence index"
+                )
+        return token
+
     def _resolve_token(self, kind: str, token: str) -> dict[str, object]:
         with self._connect() as connection:
             return _LookupTokenCodec.decode(connection, kind, token)
+
+    def issue_read_view_receipt(
+        self,
+        *,
+        snapshot_hash: ContentHash,
+        requested_mode: ReadContextMode,
+        applied_mode: ReadContextMode,
+        continuation_input: str | None,
+        continuation: str | None,
+        fragments: tuple[ReviewedEvidenceFragment, ...],
+        displayed_units: tuple[CanonicalEvidenceUnit, ...],
+    ) -> str:
+        """Persist an opaque, exact read-view receipt for later review binding.
+
+        The receipt is deliberately a lookup token rather than a caller-owned
+        descriptor.  Its payload retains all units actually displayed and the
+        source/Parse/canonical lineage needed to reject a changed snapshot.
+        """
+        by_id = {unit.unit_id: unit for unit in displayed_units}
+        if len(by_id) != len(displayed_units) or set(by_id) != {
+            fragment.unit_id for fragment in fragments
+        }:
+            raise InvalidRetrievalRequest(
+                "read-view fragments must exactly describe displayed canonical units",
+                field="read_view_receipt",
+            )
+        payload = {
+            "snapshot_hash": snapshot_hash,
+            "requested_mode": requested_mode.value,
+            "applied_mode": applied_mode.value,
+            "continuation_input": continuation_input,
+            "continuation": continuation,
+            "fragments": [fragment.model_dump(mode="json") for fragment in fragments],
+            "lineage": [
+                {
+                    "unit_id": unit.unit_id,
+                    "source_id": unit.source_id,
+                    "source_artifact_hash": unit.source_artifact_hash,
+                    "parse_id": unit.parse_id,
+                    "canonicalization_version": unit.canonicalization_version,
+                    "unit_content_hash": sha256_digest(unit.text.encode()),
+                }
+                for unit in displayed_units
+            ],
+        }
+        return self._issue_stable_token("read-view", payload)
+
+    def resolve_read_view_receipt(
+        self,
+        receipt: str,
+        *,
+        scope: EvidenceScope | None = None,
+    ) -> ReviewedEvidenceContext:
+        """Resolve and revalidate an opaque receipt against this exact index.
+
+        An issued receipt whose snapshot or lineage changed is stale and must
+        be recreated by a fresh search/read.  An unknown or corrupt token is
+        intentionally distinguishable from that recoverable stale condition.
+        """
+        try:
+            payload = self._resolve_token("read-view", receipt)
+        except UnknownCursor:
+            raise UnknownCursor(
+                "invalid evidence read-view receipt", field="read_view_receipt"
+            ) from None
+        try:
+            snapshot_hash = payload["snapshot_hash"]
+            requested_mode = payload["requested_mode"]
+            applied_mode = payload["applied_mode"]
+            raw_fragments = payload["fragments"]
+            raw_lineage = payload["lineage"]
+            continuation_input = payload.get("continuation_input")
+            continuation = payload.get("continuation")
+            if (
+                not isinstance(snapshot_hash, str)
+                or not isinstance(requested_mode, str)
+                or not isinstance(applied_mode, str)
+                or not isinstance(raw_fragments, list)
+                or not isinstance(raw_lineage, list)
+                or not isinstance(continuation_input, (str, type(None)))
+                or not isinstance(continuation, (str, type(None)))
+            ):
+                raise ValueError("receipt payload has invalid field types")
+            ReadContextMode(requested_mode)
+            ReadContextMode(applied_mode)
+            fragments = tuple(ReviewedEvidenceFragment.model_validate(item) for item in raw_fragments)
+            if not fragments or len({fragment.unit_id for fragment in fragments}) != len(fragments):
+                raise ValueError("receipt fragments are empty or duplicate")
+            lineage_by_unit = {
+                str(item["unit_id"]): item
+                for item in raw_lineage
+                if isinstance(item, dict) and isinstance(item.get("unit_id"), str)
+            }
+            if len(lineage_by_unit) != len(raw_lineage) or set(lineage_by_unit) != {
+                fragment.unit_id for fragment in fragments
+            }:
+                raise ValueError("receipt lineage does not exactly match fragments")
+        except (KeyError, TypeError, ValueError):
+            raise UnknownCursor(
+                "malformed evidence read-view receipt", field="read_view_receipt"
+            ) from None
+        if snapshot_hash != self._snapshot():
+            raise StaleCursor(
+                "evidence read-view receipt is stale; rerun search and read",
+                field="read_view_receipt",
+                recovery=("rerun search_evidence", "rerun read_evidence"),
+            )
+        for fragment in fragments:
+            try:
+                unit = self.read_unit(fragment.unit_id, scope=scope)
+            except (InvalidRetrievalRequest, ScopeMismatch) as error:
+                raise StaleCursor(
+                    "evidence read-view receipt no longer resolves; rerun search and read",
+                    field="read_view_receipt",
+                    recovery=("rerun search_evidence", "rerun read_evidence"),
+                ) from error
+            lineage = lineage_by_unit[fragment.unit_id]
+            if (
+                any(
+                    lineage.get(key) != value
+                    for key, value in (
+                        ("source_id", unit.source_id),
+                        ("source_artifact_hash", unit.source_artifact_hash),
+                        ("parse_id", unit.parse_id),
+                        ("canonicalization_version", unit.canonicalization_version),
+                        ("unit_content_hash", sha256_digest(unit.text.encode())),
+                    )
+                )
+                or fragment.span_end > len(unit.text)
+                or fragment.content_hash
+                != sha256_digest(unit.text[fragment.span_start : fragment.span_end].encode())
+            ):
+                raise StaleCursor(
+                    "evidence read-view receipt lineage changed; rerun search and read",
+                    field="read_view_receipt",
+                    recovery=("rerun search_evidence", "rerun read_evidence"),
+                )
+        frozen_fragments = tuple(
+            ReviewedEvidenceFragment(
+                unit_id=fragment.unit_id,
+                source_id=str(lineage_by_unit[fragment.unit_id]["source_id"]),
+                source_artifact_hash=str(
+                    lineage_by_unit[fragment.unit_id]["source_artifact_hash"]
+                ),
+                parse_id=str(lineage_by_unit[fragment.unit_id]["parse_id"]),
+                canonicalization_version=str(
+                    lineage_by_unit[fragment.unit_id]["canonicalization_version"]
+                ),
+                unit_content_hash=str(
+                    lineage_by_unit[fragment.unit_id]["unit_content_hash"]
+                ),
+                span_start=fragment.span_start,
+                span_end=fragment.span_end,
+                content_hash=fragment.content_hash,
+            )
+            for fragment in fragments
+        )
+        return ReviewedEvidenceContext(
+            receipt_hash=canonical_hash(payload),
+            snapshot_hash=snapshot_hash,
+            requested_mode=requested_mode,
+            applied_mode=applied_mode,
+            continuation_input=continuation_input,
+            continuation=continuation,
+            fragments=frozen_fragments,
+        )
 
     def _encode_location_handle(self, unit: CanonicalEvidenceUnit, snapshot: ContentHash) -> str:
         """Issue an opaque handle bound to the exact source/Parse lineage."""
@@ -1949,7 +2095,6 @@ def _unit_from_row(row: sqlite3.Row) -> CanonicalEvidenceUnit:
         reading_order=row["reading_order"] or 0,
         source_role=(SourceRole(row["source_role"]) if row["source_role"] else None),
         document_zone=row["document_zone"],
-        discourse_scope=row["discourse_scope"] or TrialDiscourseScope.NONE,
         duplicate_group_id=row["duplicate_group_id"],
         fragment_ids=tuple(json.loads(row["fragment_ids"] or "[]")),
         fragment_spans=tuple(

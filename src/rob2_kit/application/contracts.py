@@ -17,7 +17,8 @@ from rob2_kit.domain.evidence import (
     ConsiderationDisposition,
     EvidenceCoverageState,
     EvidenceInsufficiency,
-    EvidenceReviewRevision,
+    EvidenceReviewDisposition,
+    TrialAttribution,
 )
 from rob2_kit.domain.results import Estimate, Result, ResultSpecRevision
 from rob2_kit.domain.revisions import (
@@ -26,6 +27,7 @@ from rob2_kit.domain.revisions import (
     FrozenModel,
     Identifier,
     RecordReference,
+    Supersession,
 )
 from rob2_kit.domain.sources import (
     SourceAvailability,
@@ -60,7 +62,7 @@ from rob2_kit.ingestion.project import (
 from rob2_kit.logic.packs import GuidanceItem
 from rob2_kit.registry import RegistryCandidate
 
-CONTRACT_VERSION = "1.0.0"
+CONTRACT_VERSION = "1.1.0"
 
 
 class RunOperation(StrEnum):
@@ -357,6 +359,47 @@ class EvidencePassageInput(FrozenModel):
         if not superseded and self.superseded_by is not None:
             raise ValueError("superseded_by is valid only for superseded passages")
         return self
+
+
+class EvidenceReviewSpanInput(FrozenModel):
+    """Agent's review of an exact span in one engine-issued read view."""
+
+    read_view_receipt: str = Field(min_length=1, max_length=8192)
+    span_start: int = Field(ge=0)
+    span_end: int = Field(gt=0)
+    trial_attribution: TrialAttribution
+    disposition: EvidenceReviewDisposition
+    rationale: str = Field(min_length=1)
+    attribution_rationale: str | None = None
+    visual_review_condition: Identifier | None = None
+    duplicate_of: Identifier | None = None
+
+    @model_validator(mode="after")
+    def validate_span(self) -> "EvidenceReviewSpanInput":
+        if self.span_end <= self.span_start:
+            raise ValueError("review span must have positive extent")
+        if self.trial_attribution is TrialAttribution.ACTIVE and not self.attribution_rationale:
+            raise ValueError("active attribution requires bounded-context rationale")
+        return self
+
+
+class EvidenceReviewRevisionInput(FrozenModel):
+    """Candidate review submitted for exactly one signaling question.
+
+    The engine resolves receipts and derives stable span identities before it
+    writes the immutable EvidenceReviewRevision.
+    """
+
+    entity_id: Identifier
+    revision_id: Identifier
+    actor: Actor
+    observed_at: datetime
+    supersedes: Supersession | None = None
+    candidate_id: Identifier
+    result_id: Identifier
+    domain_id: Identifier
+    sq_id: Identifier
+    spans: tuple[EvidenceReviewSpanInput, ...] = Field(min_length=1)
 
 
 class SourceContextSummary(FrozenModel):
@@ -846,7 +889,7 @@ class SubmitResultResolutionRequest(FrozenModel):
 
 
 class SubmitDomainEvidenceRequest(FrozenModel):
-    contract_version: Literal["1.0.0"]
+    contract_version: Literal["1.1.0"]
     run_id: Identifier
     work_token: WorkToken
     idempotency_key: Identifier
@@ -903,7 +946,7 @@ class SubmitDomainEvidenceRequest(FrozenModel):
         default=(),
         description=("Legacy candidate disposition records; mutually exclusive with passages."),
     )
-    review_revisions: tuple[EvidenceReviewRevision, ...] = Field(
+    review_revisions: tuple[EvidenceReviewRevisionInput, ...] = Field(
         default=(),
         description=(
             "Append-only substantive candidate review revisions. Each binds Trial attribution, "
@@ -926,9 +969,9 @@ class SubmitDomainEvidenceRequest(FrozenModel):
                 "evidence_by_question, and candidate_dispositions, or submit the "
                 "legacy branch without passages"
             )
-        review_candidate_ids = tuple(review.candidate_id for review in self.review_revisions)
+        review_candidate_ids = tuple((review.candidate_id, review.sq_id) for review in self.review_revisions)
         if len(review_candidate_ids) != len(set(review_candidate_ids)):
-            raise ValueError("review batch may contain only one latest revision per candidate")
+            raise ValueError("review batch may contain only one latest revision per candidate and SQ")
         if any(
             review.result_id != self.result_id or review.domain_id != self.domain_id
             for review in self.review_revisions
@@ -1194,6 +1237,13 @@ class SearchEvidenceResponse(OperationResponse):
 class ReadEvidenceResponse(OperationResponse):
     run_id: Identifier
     unit: CanonicalEvidenceUnit
+    read_view_receipt: str = Field(
+        min_length=1,
+        description=(
+            "Opaque engine-issued receipt for this exact displayed view. Submit it only in "
+            "an EvidenceReviewSpanInput; location handles are not frozen provenance."
+        ),
+    )
     read: EvidenceRead | None = None
     context: EvidenceContext | None = None
     visual_inspection: VisualInspectionPath | None = None

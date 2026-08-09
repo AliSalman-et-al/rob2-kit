@@ -1,6 +1,6 @@
 # Natural-language user journey
 
-<!-- rob2-kit-contract-version: 1.0.0 -->
+<!-- rob2-kit-contract-version: 1.1.0 -->
 
 This is the human path through rob2-kit. You ask Codex or Claude Code to do
 the work in ordinary language; the installed skills choose the bounded MCP

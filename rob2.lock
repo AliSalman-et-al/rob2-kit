@@ -1,23 +1,23 @@
 {
   "adapters": {
     "claude": {
-      "content_hash": "sha256:02ff49e55a6c26525a083e7d57de80089a2c53da5394384100cecc8c54006d5c",
+      "content_hash": "sha256:af97b83c6b47d53d19385a718133278f2ce7ade98c06814285c1b496fea023a9",
       "skill_hashes": {
-        "rob2-assess": "sha256:42a63dff136970f9d2a8603174c52195048443dbb7894423eaf3a1eff753a41b",
+        "rob2-assess": "sha256:0f5267230870969459b4169bb5024d33c50647daa88c9b1b8d3a987b76619383",
         "rob2-init": "sha256:54f73d6bdb471e5d50318b7112be9085dd67b45b080b146a36bb1603853e700f"
       },
       "version": "1"
     },
     "codex": {
-      "content_hash": "sha256:60a2b57f72e21bfdd527f27bfa50fce03c26eb427e7c9bd997fd4eb6d035bd09",
+      "content_hash": "sha256:5b16d7033b84786752c40c80b6a6e74bf6dd0be18789c9c09f03f1f15a5aca9e",
       "skill_hashes": {
-        "rob2-assess": "sha256:42a63dff136970f9d2a8603174c52195048443dbb7894423eaf3a1eff753a41b",
+        "rob2-assess": "sha256:0f5267230870969459b4169bb5024d33c50647daa88c9b1b8d3a987b76619383",
         "rob2-init": "sha256:54f73d6bdb471e5d50318b7112be9085dd67b45b080b146a36bb1603853e700f"
       },
       "version": "1"
     }
   },
-  "application_contract": "1.0.0",
+  "application_contract": "1.1.0",
   "dependency_lock_hash": "sha256:8098e93df27002be207e9c5ccc20faee79fd8cc023c8ac337940ad7d22fd3f8d",
   "guidance_pack": "rob2-parallel-assignment-en-2019.1",
   "guidance_pack_hash": "sha256:4c2a1ecc406e2a0f63285fc9ec72c04f930525a36f5be2dc3bbd4da9b99a1a25",
@@ -32,7 +32,7 @@
   "skills": {
     "rob2-assess": {
       "activation_fixtures_hash": "sha256:f0f67312e0cd5ede2126c071729af55b468ad403d1dd01981c46ee0b54dc49d1",
-      "content_hash": "sha256:42a63dff136970f9d2a8603174c52195048443dbb7894423eaf3a1eff753a41b",
+      "content_hash": "sha256:0f5267230870969459b4169bb5024d33c50647daa88c9b1b8d3a987b76619383",
       "forward_fixtures_hash": "sha256:ba79e4400550b4fe5cfcfbb8b276beb9a40c14eed67acc9e9eff3f4151b06efe"
     },
     "rob2-init": {

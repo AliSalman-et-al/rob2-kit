@@ -76,7 +76,7 @@ def test_documentation_validation_rejects_contract_version_drift(tmp_path: Path)
     journey = tmp_path / "docs" / "USER-JOURNEY.md"
     journey.write_text(
         journey.read_text(encoding="utf-8").replace(
-            "rob2-kit-contract-version: 1.0.0", "rob2-kit-contract-version: 9.9.9"
+            "rob2-kit-contract-version: 1.1.0", "rob2-kit-contract-version: 9.9.9"
         ),
         encoding="utf-8",
     )

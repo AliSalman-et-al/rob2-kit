@@ -704,13 +704,24 @@ def _journey(
         "domain:deviations": (
             "sq:deviations:participants-aware",
             "sq:deviations:personnel-aware",
+            "sq:deviations:context-deviations",
+            "sq:deviations:affected-outcome",
+            "sq:deviations:balanced",
             "sq:deviations:appropriate-analysis",
+            "sq:deviations:substantial-impact",
         ),
-        "domain:missing": ("sq:missing:data-available",),
+        "domain:missing": (
+            "sq:missing:data-available",
+            "sq:missing:evidence-unbiased",
+            "sq:missing:true-value-dependent",
+            "sq:missing:likely-dependent",
+        ),
         "domain:measurement": (
             "sq:measurement:method-inappropriate",
             "sq:measurement:differential",
             "sq:measurement:assessor-aware",
+            "sq:measurement:influence-possible",
+            "sq:measurement:influence-likely",
         ),
         "domain:selection": (
             "sq:selection:prespecified-analysis",
@@ -724,15 +735,25 @@ def _journey(
         "sq:randomization:baseline-imbalance": "no",
         "sq:deviations:participants-aware": "no",
         "sq:deviations:personnel-aware": "no",
+        "sq:deviations:context-deviations": "no",
+        "sq:deviations:affected-outcome": "no",
+        "sq:deviations:balanced": "no",
         "sq:deviations:appropriate-analysis": "yes",
+        "sq:deviations:substantial-impact": "no",
         "sq:missing:data-available": "yes",
+        "sq:missing:evidence-unbiased": "no",
+        "sq:missing:true-value-dependent": "no",
+        "sq:missing:likely-dependent": "no",
         "sq:measurement:method-inappropriate": "no",
         "sq:measurement:differential": "no",
         "sq:measurement:assessor-aware": "no",
+        "sq:measurement:influence-possible": "no",
+        "sq:measurement:influence-likely": "no",
         "sq:selection:prespecified-analysis": "yes",
         "sq:selection:multiple-measurements": "no",
         "sq:selection:multiple-analyses": "no",
     }
+    use_primary_report_for_all_domains = True
     trial = project / "input" / "trial-a"
     if not resume_only:
         trial.mkdir(parents=True)
@@ -828,6 +849,18 @@ def _journey(
         for index, (domain, questions) in enumerate(domains.items()):
             evidence = (await call(client, "continue_run", {"run_id": run_id})).structured_content
             assert evidence is not None
+            context = (
+                await call(
+                    client,
+                    "get_work_context",
+                    {
+                        "run_id": run_id,
+                        "work_token": evidence["work_item"]["work_token"],
+                    },
+                )
+            ).structured_content
+            assert context is not None and context["context"]["domain_context"] is not None
+            active_questions = tuple(context["context"]["domain_context"]["active_question_ids"])
             if index == 0:
                 issued_token = evidence["work_item"]["work_token"]
                 await rejected_probe(
@@ -857,7 +890,7 @@ def _journey(
                                 "rationale": "Qualification wrong-state probe.",
                             }
                         ],
-                        "contract_version": "1.0.0",
+                        "contract_version": "1.1.0",
                     },
                 )
                 await rejected_probe(
@@ -869,7 +902,7 @@ def _journey(
                         "work_token": issued_token,
                         "result_id": "result:other",
                         "domain_id": "domain:other",
-                        "contract_version": "1.0.0",
+                        "contract_version": "1.1.0",
                     },
                 )
                 await rejected_probe(
@@ -878,7 +911,7 @@ def _journey(
                     "read_evidence",
                     {
                         "run_id": run_id,
-                        "unit_id": "unit:qualification-unknown",
+                        "location_handle": "loc:qualification-unknown",
                         "work_token": issued_token,
                         "sq_id": questions[0],
                         "result_id": "result:trial-a-mortality",
@@ -886,7 +919,11 @@ def _journey(
                 )
             passages: list[dict[str, object]] = []
             coverage_receipts: list[dict[str, object]] = []
-            if index == 0:
+            # The fixed primary report is reviewed separately for every SQ,
+            # including when the registry fixture is deliberately unavailable.
+            # This preserves complete five-domain terminal exercise without
+            # misrepresenting unavailable registry coverage as no-information.
+            if use_primary_report_for_all_domains:
                 from rob2_kit.domain.canonical import canonical_hash
                 from rob2_kit.domain.results import ResultSpecRevision
                 from rob2_kit.domain.revisions import RecordReference
@@ -970,11 +1007,6 @@ def _journey(
                         response = searched.structured_content
                         assert response is not None and response["executed_query"] is not None
                         responses.append(response)
-                    if question_index == 0:
-                        hits = responses[0]["page"]["hits"]
-                        if not hits:
-                            raise AssertionError("release fixture omitted its scoped Trial unit")
-                        hit = hits[0]
                     returned_ids = tuple(
                         dict.fromkeys(
                             unit_id
@@ -1050,21 +1082,76 @@ def _journey(
                         update={"recorder_proof": canonical_hash(proof)}
                     )
                     coverage_receipts.append(completed_receipt.model_dump(mode="json"))
+                # Retrieval intentionally remains broad: source-authored
+                # candidates are visible before attributable review, so the
+                # first lexical hit is not necessarily for this Domain.  Walk
+                # the public continuation until the fixture's separately
+                # scoped canonical unit is encountered rather than borrowing
+                # a same-text unit from another Domain.
+                cursor: str | None = None
+                read_receipts: dict[str, str] = {}
+                while hit is None:
+                    searched = await call(
+                        client,
+                        "search_evidence",
+                        {
+                            "run_id": run_id,
+                            "work_token": evidence["work_item"]["work_token"],
+                            "sq_id": questions[0],
+                            "result_id": "result:trial-a-mortality",
+                            "query": {"terms": ["Allocation"]},
+                            **({"cursor": cursor} if cursor is not None else {}),
+                        },
+                    )
+                    response = searched.structured_content
+                    assert response is not None
+                    for candidate in response["page"]["hits"]:
+                        read = await call(
+                            client,
+                            "read_evidence",
+                            {
+                                "run_id": run_id,
+                                "location_handle": candidate["location_handle"],
+                                "work_token": evidence["work_item"]["work_token"],
+                                "sq_id": questions[0],
+                                "result_id": "result:trial-a-mortality",
+                            },
+                        )
+                        read_content = read.structured_content
+                        if read_content is None:
+                            continue
+                        unit = read_content["unit"]
+                        if (
+                            unit["domain_id"] == domain
+                            and questions[0] in unit["question_ids"]
+                        ):
+                            hit = candidate
+                            read_receipts[questions[0]] = read_content["read_view_receipt"]
+                            break
+                    cursor = response["page"].get("next_cursor")
+                    if cursor is None and hit is None:
+                        raise AssertionError(
+                            "release fixture omitted its Domain-scoped canonical unit"
+                        )
                 assert hit is not None
                 unit_id = hit["unit"]["unit_id"]
-                read = await call(
-                    client,
-                    "read_evidence",
-                    {
-                        "run_id": run_id,
-                        "unit_id": unit_id,
-                        "work_token": evidence["work_item"]["work_token"],
-                        "sq_id": questions[0],
-                        "result_id": "result:trial-a-mortality",
-                    },
-                )
-                if read.structured_content is None:
-                    raise AssertionError("canonical Trial unit could not be read")
+                for question in questions:
+                    if question in read_receipts:
+                        continue
+                    read = await call(
+                        client,
+                        "read_evidence",
+                        {
+                            "run_id": run_id,
+                            "location_handle": hit["location_handle"],
+                            "work_token": evidence["work_item"]["work_token"],
+                            "sq_id": question,
+                            "result_id": "result:trial-a-mortality",
+                        },
+                    )
+                    if read.structured_content is None:
+                        raise AssertionError("canonical Trial unit could not be read")
+                    read_receipts[question] = read.structured_content["read_view_receipt"]
                 passages = [
                     {
                         "unit_id": unit_id,
@@ -1072,9 +1159,44 @@ def _journey(
                         "span_start": hit["projection"]["start"],
                         "span_end": hit["projection"]["end"],
                         "claim_type": "claim-type:trial-report",
-                        "question_ids": [questions[0]],
+                        "question_ids": list(questions),
                     }
                 ]
+            else:
+                # Coverage is recorder-owned in the 1.1 contract.  Domains
+                # without a retained passage still need their own completed
+                # Search passes before they can establish no-information.
+                for question in questions:
+                    seed_family = "seed:" + question.removeprefix("sq:").replace(":", "-")
+                    for pass_kind, seed, terms in (
+                        ("guidance_seed", seed_family, ("Allocation",)),
+                        ("trial_follow_up", None, ("participants",)),
+                        ("contradiction", None, ("open",)),
+                    ):
+                        cursor: str | None = None
+                        while True:
+                            arguments: dict[str, object] = {
+                                "run_id": run_id,
+                                "work_token": evidence["work_item"]["work_token"],
+                                "sq_id": question,
+                                "result_id": "result:trial-a-mortality",
+                                "query": {"terms": list(terms)},
+                                "pass_kind": pass_kind,
+                            }
+                            if seed is not None:
+                                arguments["seed_family"] = seed
+                            if cursor is not None:
+                                arguments["cursor"] = cursor
+                            searched = await call(client, "search_evidence", arguments)
+                            response = searched.structured_content
+                            assert response is not None and response["executed_query"] is not None
+                            cursor = response["page"].get("next_cursor")
+                            if cursor is None:
+                                break
+                        if pass_kind == "contradiction":
+                            assert response["coverage_progress"]["coverage_complete"], response[
+                                "coverage_progress"
+                            ]
             committed = await call(
                 client,
                 "submit_domain_evidence",
@@ -1082,11 +1204,45 @@ def _journey(
                     "run_id": run_id,
                     "work_token": evidence["work_item"]["work_token"],
                     "idempotency_key": f"qualification:evidence:{index}",
-                    "contract_version": "1.0.0",
+                    "contract_version": "1.1.0",
                     "result_id": "result:trial-a-mortality",
                     "domain_id": domain,
                     "passages": passages,
-                    "coverage_receipts": coverage_receipts,
+                    "no_information_basis": not passages,
+                    "review_revisions": (
+                        [
+                            {
+                                "entity_id": f"evidence-review:qualification:{index}:{question}",
+                                "revision_id": (
+                                    f"revision:evidence-review:qualification:{index}:{question}:1"
+                                ),
+                                "actor": {
+                                    "kind": "agent",
+                                    "actor_id": "actor:qualification",
+                                    "display_name": "Release qualification",
+                                },
+                                "observed_at": "2026-01-01T00:00:00Z",
+                                "candidate_id": unit_id,
+                                "result_id": "result:trial-a-mortality",
+                                "domain_id": domain,
+                                "sq_id": question,
+                                "spans": [
+                                    {
+                                        "read_view_receipt": read_receipts[question],
+                                        "span_start": hit["projection"]["start"],
+                                        "span_end": hit["projection"]["end"],
+                                        "trial_attribution": "active",
+                                        "disposition": "supporting",
+                                        "rationale": "Qualification source span.",
+                                        "attribution_rationale": "Issued bounded context identifies the active Trial.",
+                                    }
+                                ],
+                            }
+                            for question in questions
+                        ]
+                        if passages
+                        else []
+                    ),
                 },
             )
             assert committed.structured_content and committed.structured_content["committed"], (
@@ -1094,6 +1250,20 @@ def _journey(
             )
             answer = (await call(client, "continue_run", {"run_id": run_id})).structured_content
             assert answer is not None
+            # get_work_context reports activation against empty answers.  The
+            # fixed low-risk measurement responses then activate the assessor
+            # question, which must be supplied in the same atomic answer
+            # request (the public submit boundary reevaluates conditions).
+            answer_question_ids = tuple(
+                dict.fromkeys(
+                    active_questions
+                    + (
+                        ("sq:measurement:assessor-aware",)
+                        if domain == "domain:measurement"
+                        else ()
+                    )
+                )
+            )
             committed = await call(
                 client,
                 "submit_domain_answers",
@@ -1107,14 +1277,16 @@ def _journey(
                     "answers": [
                         {
                             "question_id": question,
-                            "answer": answers[question],
+                            "answer": answers[question] if passages else "no_information",
                             "rationale": "Frozen synthetic qualification evidence.",
                         }
-                        for question in questions
+                        for question in answer_question_ids
                     ],
                 },
             )
-            if expected_fault == "report-failure" and not committed.structured_content:
+            if expected_fault == "report-failure" and not (
+                committed.structured_content and committed.structured_content.get("committed")
+            ):
                 fault_matrix["report-failure"] = {
                     "operation": "submit_domain_answers",
                     "mutation_free": True,
@@ -1122,7 +1294,9 @@ def _journey(
                     "legal_replacement_action": "continue_run",
                 }
                 return False
-            assert committed.structured_content and committed.structured_content["committed"]
+            assert committed.structured_content and committed.structured_content["committed"], (
+                committed.structured_content or committed.content
+            )
         complete = (await call(client, "continue_run", {"run_id": run_id})).structured_content
         if complete and complete["run_state"] == "complete":
             return True
@@ -1164,6 +1338,40 @@ def _journey(
                     run_id = prepared["run_id"]
                     if prepared.get("run_state") == "complete":
                         return
+                    if prepared.get("condition") == "confirmation_required":
+                        proposal = prepared.get("proposal")
+                        if not isinstance(proposal, dict):
+                            raise AssertionError(
+                                "resumed confirmation-required Run omitted its proposal"
+                            )
+                        proposed = (
+                            await call(
+                                client,
+                                "submit_run_proposal",
+                                {
+                                    "run_id": run_id,
+                                    "proposal_token": proposal["proposal_token"],
+                                    "idempotency_key": "qualification:proposal",
+                                    "contract_version": "1.0.0",
+                                },
+                            )
+                        ).structured_content
+                        assert proposed is not None
+                        await call(
+                            client,
+                            "confirm_run_definition",
+                            {
+                                "run_id": run_id,
+                                "proposal_token": proposed["proposal"]["proposal_token"],
+                                "idempotency_key": "qualification:confirm",
+                                "confirmed_by": {
+                                    "kind": "human",
+                                    "actor_id": "actor:qualification",
+                                    "display_name": "Qualification",
+                                },
+                                "contract_version": "1.0.0",
+                            },
+                        )
                     completed = await finish_domains(client, run_id)
                     if not completed:
                         raise AssertionError("resumed installed Run did not complete")
@@ -1661,7 +1869,18 @@ def _qualify(
             raise AssertionError("resume replaced committed revision identities")
         if resumed_checkpoint_ids[: len(seed_checkpoint_ids)] != seed_checkpoint_ids:
             raise AssertionError("resume replaced committed checkpoint identities")
-        seed_work_token = normalize_semantic_value(seed["active_work_token"])
+        source_role_events = [
+            event
+            for event in resumed_workflow["events"]
+            if event["operation"] == "operation:submit-source-role-review"
+        ]
+        if len(source_role_events) != 1:
+            raise AssertionError("resume repeated the committed source-role review")
+        seed_work_token = seed["active_work_token"]
+        if not isinstance(seed_work_token, dict) or (
+            seed_work_token.get("operation") != "submit_source_role_review"
+        ):
+            raise AssertionError("seed did not stop at the source-role review stage")
         first_resumed_work_token = normalize_semantic_value(
             next(
                 call_receipt["response"]["work_item"]["work_token"]
@@ -1670,8 +1889,21 @@ def _qualify(
                 and isinstance(call_receipt["response"].get("work_item"), dict)
             )
         )
-        if first_resumed_work_token != seed_work_token:
-            raise AssertionError("resume did not reissue the committed active work-token identity")
+        if not isinstance(first_resumed_work_token, dict) or (
+            first_resumed_work_token.get("operation") != "submit_domain_evidence"
+        ):
+            raise AssertionError("resume did not continue with post-confirmation domain evidence work")
+        resumed_context_work_token = normalize_semantic_value(
+            next(
+                call_receipt["arguments"]["work_token"]
+                for call_receipt in all_absent_replay["raw_trace_calls"]
+                if call_receipt["name"] == "get_work_context"
+                and isinstance(call_receipt.get("arguments"), dict)
+                and isinstance(call_receipt["arguments"].get("work_token"), dict)
+            )
+        )
+        if resumed_context_work_token != first_resumed_work_token:
+            raise AssertionError("resume did not retain its post-confirmation work-token identity")
         fixture_replays = {
             "registry_history": {
                 "absent": list(all_absent),

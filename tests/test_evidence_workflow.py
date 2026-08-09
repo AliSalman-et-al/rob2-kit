@@ -10,6 +10,8 @@ from rob2_kit.domain.evidence import (
     EvidenceReviewDisposition,
     EvidenceReviewRevision,
     EvidenceReviewSpan,
+    ReviewedEvidenceContext,
+    ReviewedEvidenceFragment,
     TrialAttribution,
 )
 from rob2_kit.domain.revisions import Actor, ActorKind, RecordReference
@@ -510,17 +512,26 @@ def test_exact_claim_is_materialized_from_canonical_text_and_conflicts_are_prese
                 candidate_id=candidate_id,
                 result_id="result:one",
                 domain_id="domain:one",
-                question_ids=("sq:1.1",),
-                trial_attribution=TrialAttribution.ACTIVE,
-                reviewed_context_handles=(handle,),
+                sq_id="sq:1.1",
                 spans=(
                     EvidenceReviewSpan(
-                        location_handle=handle,
+                        span_id=f"review-span:{candidate_id}",
                         span_start=span_start,
                         span_end=span_end,
+                        trial_attribution=TrialAttribution.ACTIVE,
                         disposition=disposition,
                         rationale="Reviewed exact source span.",
-                        context_handles=(handle,),
+                        attribution_rationale="Bounded context identifies the active Result.",
+                        reviewed_context=ReviewedEvidenceContext(
+                            receipt_hash=canonical_hash({"handle": handle}),
+                            snapshot_hash=canonical_hash({"snapshot": handle}),
+                            requested_mode="unit",
+                            applied_mode="unit",
+                            fragments=(ReviewedEvidenceFragment(
+                                unit_id="unit:allocation", span_start=span_start,
+                                span_end=span_end, content_hash=canonical_hash({"span": handle}),
+                            ),),
+                        ),
                     ),
                 ),
             )
@@ -644,17 +655,25 @@ def test_bundle_freeze_rejects_incomplete_work_and_has_stable_hash() -> None:
                 candidate_id="candidate:one",
                 result_id="result:one",
                 domain_id="domain:one",
-                question_ids=("sq:1.1",),
-                trial_attribution=TrialAttribution.ACTIVE,
-                reviewed_context_handles=("handle:one",),
+                sq_id="sq:1.1",
                 spans=(
                     EvidenceReviewSpan(
-                        location_handle="handle:one",
+                        span_id="review-span:candidate-one",
                         span_start=0,
                         span_end=10,
+                        trial_attribution=TrialAttribution.ACTIVE,
                         disposition=EvidenceReviewDisposition.SUPPORTING,
                         rationale="Allocation concealment supports the assessment.",
-                        context_handles=("handle:one",),
+                        attribution_rationale="Bounded context identifies the active Result.",
+                        reviewed_context=ReviewedEvidenceContext(
+                            receipt_hash=canonical_hash({"handle": "handle:one"}),
+                            snapshot_hash=canonical_hash({"snapshot": "one"}),
+                            requested_mode="unit", applied_mode="unit",
+                            fragments=(ReviewedEvidenceFragment(
+                                unit_id="unit:allocation", span_start=0, span_end=10,
+                                content_hash=canonical_hash({"span": "one"}),
+                            ),),
+                        ),
                     ),
                 ),
             ),

@@ -5,7 +5,11 @@ from types import SimpleNamespace
 
 from rob2_kit.application.run_engine import RunEngine
 from rob2_kit.domain.canonical import sha256_digest
-from rob2_kit.domain.evidence import EvidenceBundle, EvidenceClaim, VerificationStatus
+from rob2_kit.domain.evidence import (
+    EvidenceBundle, EvidenceClaim, EvidenceReviewDisposition, EvidenceReviewRevision,
+    EvidenceReviewSpan, ReviewedEvidenceContext, ReviewedEvidenceFragment, TrialAttribution,
+    VerificationStatus,
+)
 from rob2_kit.domain.revisions import Actor, ActorKind, Dependency, RecordReference
 from rob2_kit.evidence.search import CanonicalEvidenceUnit, CanonicalUnitKind
 
@@ -33,17 +37,41 @@ def _claim_and_bundle(*, spatial: tuple[float, float, float, float] | None):
     )
     unit_ref = _reference("unit")
     source_ref = _reference("source")
+    review = EvidenceReviewRevision(
+        entity_id="entity:review", revision_id="revision:review-1", actor=ACTOR,
+        observed_at=datetime(2026, 8, 1, tzinfo=UTC), candidate_id="candidate:claim",
+        result_id="result:one", domain_id="domain:one", sq_id="sq:one",
+        spans=(EvidenceReviewSpan(
+            span_id="review-span:claim", span_start=0, span_end=10,
+            trial_attribution=TrialAttribution.ACTIVE,
+            disposition=EvidenceReviewDisposition.SUPPORTING,
+            rationale="Exact source passage reviewed.",
+            attribution_rationale="Bounded context identifies the active Result.",
+            reviewed_context=ReviewedEvidenceContext(
+                receipt_hash=HASH, snapshot_hash=HASH, requested_mode="unit", applied_mode="unit",
+                fragments=(ReviewedEvidenceFragment(
+                    unit_id=unit.unit_id, span_start=0, span_end=10,
+                    content_hash=sha256_digest(unit.text[:10].encode()),
+                ),),
+            ),
+        ),),
+    )
+    review_ref = _reference("review", digest=sha256_digest(review.model_dump_json().encode()))
     claim = EvidenceClaim(
         entity_id="entity:claim",
         revision_id="revision:claim-1",
         dependencies=(
             Dependency(**unit_ref.model_dump(), role="dependency:canonical-unit"),
             Dependency(**source_ref.model_dump(), role="dependency:source"),
+            Dependency(**review_ref.model_dump(), role="dependency:evidence-review"),
         ),
         actor=ACTOR,
         observed_at=datetime(2026, 8, 1, tzinfo=UTC),
         canonical_unit=unit_ref,
         source=source_ref,
+        authorizing_review=review_ref,
+        review_span_id="review-span:claim",
+        candidate_id="candidate:claim",
         span_start=0,
         span_end=10,
         quoted_text_hash=sha256_digest(unit.text[:10].encode()),
@@ -60,6 +88,7 @@ def _claim_and_bundle(*, spatial: tuple[float, float, float, float] | None):
                 **_reference("disposition").model_dump(), role="dependency:evidence-disposition"
             ),
             Dependency(**claim_ref.model_dump(), role="dependency:evidence-item"),
+            Dependency(**review_ref.model_dump(), role="dependency:evidence-review"),
         ),
         actor=ACTOR,
         observed_at=datetime(2026, 8, 1, tzinfo=UTC),
@@ -67,12 +96,14 @@ def _claim_and_bundle(*, spatial: tuple[float, float, float, float] | None):
         disposition=_reference("disposition"),
         items=(claim_ref,),
         frozen_content_hash=HASH,
+        review_revisions=(review_ref,),
     )
     bundle_ref = _reference("bundle")
     artifacts = {
         bundle_ref.content_hash: bundle.model_dump_json().encode(),
         claim_ref.content_hash: claim.model_dump_json().encode(),
         unit_ref.content_hash: unit.model_dump_json().encode(),
+        review_ref.content_hash: review.model_dump_json().encode(),
     }
     ledger = SimpleNamespace(artifacts=SimpleNamespace(read=artifacts.__getitem__))
     return ledger, bundle_ref

@@ -30,7 +30,7 @@ from rob2_kit.application.contracts import (
     EvidenceConsiderationInput,
     EvidenceCoverageState,
     EvidencePassageInput,
-    EvidenceReviewRevision,
+    EvidenceReviewRevisionInput,
     FinalJudgmentInput,
     GetWorkContextRequest,
     InspectVisualCandidateRequest,
@@ -500,34 +500,12 @@ def create_server(
                 description="Stable identifier-shaped guidance seed family, e.g. seed:allocation."
             ),
         ] = None,
-        include_other_trial: Annotated[
-            bool | None,
-            Field(
-                deprecated=True,
-                description=(
-                    "Retired semantic-visibility override. Any supplied value is rejected with "
-                    "typed upgrade_required recovery; candidates are now visible by default."
-                ),
-            ),
-        ] = None,
-        include_uncertain: Annotated[
-            bool | None,
-            Field(
-                deprecated=True,
-                description=(
-                    "Retired semantic-visibility override. Any supplied value is rejected with "
-                    "typed upgrade_required recovery; uncertain candidates are now visible "
-                    "by default."
-                ),
-            ),
-        ] = None,
     ) -> CallToolResult:
         """When to use: search evidence for the active Domain question.
 
         Prerequisite: a current ``submit_domain_evidence`` WorkToken. Safe default:
         use structured terms and traverse returned pages. Search returns visible,
-        non-citable candidates (including uncertain, reference, and other-Trial
-        material) with diagnostic labels and opaque location handles. Not for: raw
+        non-citable candidates with opaque location handles. Not for: raw
         FTS, caller budgets, semantic eligibility filtering, or widening scope
         beyond the issued Result.
 
@@ -540,29 +518,8 @@ def create_server(
         ``continue_run`` item. It supplies Trial/Result/Domain scope; never
         widen that scope with IDs from conversation history.
 
-        Do not send retired ``include_other_trial`` or ``include_uncertain``
-        overrides. They receive typed ``upgrade_required`` recovery instead of
-        silently changing candidate visibility.
         """
         try:
-            if include_other_trial is not None or include_uncertain is not None:
-                return _wire_result(
-                    _retrieval_error(
-                        InvalidRetrievalRequest(
-                            "upgrade_required: semantic visibility overrides are retired; "
-                            "search candidates are visible by default",
-                            field=(
-                                "include_other_trial"
-                                if include_other_trial is not None
-                                else "include_uncertain"
-                            ),
-                            recovery=(
-                                "remove the retired override",
-                                "retry the same bounded search with the active WorkToken",
-                            ),
-                        )
-                    )
-                )
             request = SearchEvidenceRequest.model_validate(
                 {
                     "run_id": run_id,
@@ -778,7 +735,7 @@ def create_server(
             str, Field(description="Domain ID issued by get_work_context; copy verbatim.")
         ],
         contract_version: Annotated[
-            Literal["1.0.0"],
+            Literal["1.1.0"],
             Field(description="Exact contract version returned by the installed release."),
         ],
         passages: Annotated[
@@ -846,11 +803,11 @@ def create_server(
             ),
         ] = None,
         review_revisions: Annotated[
-            list[EvidenceReviewRevision] | None,
+            list[EvidenceReviewRevisionInput] | None,
             Field(
                 description=(
-                    "Append-only semantic review revisions. Each records Trial attribution, "
-                    "reviewed context handles, exact spans, dispositions, and rationale; "
+                    "Question-specific, append-only semantic review revisions. Each span "
+                    "references an issued read-view receipt, attribution, exact bounds, and rationale; "
                     "unresolved or needs_visual_review spans block freeze."
                 )
             ),
@@ -868,8 +825,8 @@ def create_server(
         search projection, parser label, or incomplete search as citable Evidence
         or as no information.
 
-        ``review_revisions`` bind Trial attribution, Result scope, considered read
-        handles, exact source spans, dispositions, and rationale. They are
+        ``review_revisions`` bind each span's Trial attribution, Result scope, issued
+        read-view receipt, exact source bounds, dispositions, and rationale. They are
         append-only; correction creates a later revision. A material unresolved or
         ``needs_visual_review`` span prevents freeze. Other-Trial or reference text
         may be reviewed and rejected explicitly, but omission is not rejection.

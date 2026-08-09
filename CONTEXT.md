@@ -41,15 +41,15 @@ A source-preserving parser fragment or fragment group whose coherent reading ord
 _Avoid_: Canonical evidence unit, synthetic paragraph
 
 **Evidence candidate disposition**:
-The attributable semantic review record for one retained Evidence candidate, combining an overall Trial attribution with exact-span decisions classified as supporting, contradicting, contextual, out of scope, immaterial, superseded, duplicate, or unresolved and bound to a Result, signaling-question scope, rationale, and at least one Evidence read view containing the span and reviewer-chosen context. Retaining a candidate makes it potentially material until every identified relevant span has a terminal disposition or is explicitly unresolved; search previews alone cannot support substantive review.
+The attributable semantic review record for one retained Evidence candidate, combining exact-span Trial attributions and decisions classified as supporting, contradicting, contextual, out of scope, immaterial, superseded, duplicate, or unresolved and bound to a Result, signaling-question scope, rationale, and at least one Evidence read view containing the span and reviewer-chosen context. Retaining a candidate makes it potentially material until every identified relevant span has a terminal disposition or is explicitly unresolved; search previews alone cannot support substantive review.
 _Avoid_: Silent exclusion, answer-driven selection
 
-**Evidence candidate Trial attribution**:
-The reviewer's attributable classification of a candidate's relationship to the assessment Trial: active, other, mixed, not explicit, or unresolved. Only an exact span attributed as active may support or contradict the active Result; a mixed candidate must isolate such a span, not-explicit material requires attributable contextual resolution, and other-Trial material remains contextual or rejected.
-_Avoid_: Current Trial, unknown Trial
+**Evidence span Trial attribution**:
+The reviewer's attributable classification of an exact span's relationship to the assessment Trial: active, other, not explicit, or unresolved. Only a span attributed as active may support or contradict the active Result. A span whose subject is not explicit may become active only through a rationale bound to issued surrounding-context views; a candidate that mixes Trials must be divided into exact attributable spans or remain unresolved.
+_Avoid_: Evidence candidate Trial attribution, Trial discourse scope, agent confidence
 
 **Evidence review revision**:
-An immutable candidate-level semantic review and its exact-span decisions, superseding rather than modifying an earlier review. Changing attribution, span bounds, disposition, rationale, or considered context invalidates dependent Evidence Bundles and downstream assessment and verification artifacts.
+An immutable candidate-level semantic review aggregating independently identified exact-span decisions and their resolved Reviewed evidence contexts, superseding rather than modifying an earlier review. Each reviewed span has a stable identity within the revision. Changing attribution, span bounds, disposition, rationale, or considered context invalidates dependent Evidence claims, Evidence Bundles, and downstream assessment and verification artifacts.
 _Avoid_: Mutable disposition, review edit
 
 **Evidence contract revision**:
@@ -65,7 +65,7 @@ The smallest coherently reconstructed, page-bound source-authored unit that may 
 _Avoid_: Generated chunk, search aggregate
 
 **Evidence location handle**:
-An opaque engine-issued reference to one Canonical evidence unit or Evidence fragment candidate, bound to its Source artifact, Parse revision, location kind, fragment lineage, and canonicalization revision. It is reusable within that snapshot and becomes explicitly stale when any bound source or canonicalization identity changes, while index-only ranking changes do not invalidate it.
+An opaque engine-issued navigation reference to one Canonical evidence unit or Evidence fragment candidate, bound to its Source artifact, Parse revision, location kind, fragment lineage, and canonicalization revision. It is reusable within that snapshot and becomes explicitly stale when any bound source or canonicalization identity changes, while index-only ranking changes do not invalidate it. It is submission-only and is resolved into Reviewed evidence context before a semantic review freezes.
 _Avoid_: Unit ID, source path, search cursor
 
 **Search projection**:
@@ -75,6 +75,10 @@ _Avoid_: Evidence candidate, source quotation, citable chunk
 **Evidence read view**:
 A bounded, non-authoritative presentation that dereferences one Evidence location handle and, when explicitly requested, expands by neighbors, section, line or character window, page, or render. Requests express desired extent while versioned Evidence-search policy applies maximum units, characters, pages, and render size; responses declare applied bounds, size, omissions, and stable continuation, including character or line continuation for oversized units. Uncertain material remains separate source fragments rather than concatenated prose; semantic boundaries may be crossed with warnings, but Source, Parse revision, and requested page scope are never crossed silently.
 _Avoid_: New search, full document dump, flat block adjacency
+
+**Reviewed evidence context**:
+The immutable descriptor created when the engine resolves an Evidence read view used for semantic review, binding its snapshot identity, Canonical evidence unit or source-fragment references, displayed bounds, and displayed-text hashes. It records exactly what informed the reviewer without making surrounding context citable Evidence or preserving a stale navigation token as provenance.
+_Avoid_: Evidence location handle, Evidence claim, chat context
 
 **Visual-review condition**:
 An unresolved requirement attached to a retained Evidence candidate or exact span whose meaning or provenance cannot yet be established from canonical text. It closes only through a reviewed Visual transcription, successful deterministic re-canonicalization, or an attributable substantive rejection after sufficient visual context, and blocks freeze while potentially material.
@@ -93,7 +97,7 @@ A deterministic report view binding an Evidence claim's exact Canonical evidence
 _Avoid_: Visual candidate, Visual transcription, screenshot evidence
 
 **Evidence claim**:
-An immutable, typed assertion linked to an exact reviewed span selected from a Canonical evidence unit and its source provenance, or to a qualifying Visual transcription. Deterministic code materializes canonical quoted text and validates mechanical provenance, bounds, custody, authorization, review completeness, and dependency revisions rather than accepting agent-authored quotation text or classifier labels as semantic authority.
+An immutable, typed assertion linked to an exact reviewed span selected from a Canonical evidence unit and its source provenance, or to a qualifying Visual transcription. A textual claim directly depends on the content-bound Evidence review revision and stable reviewed-span identity that authorized it. Deterministic code materializes canonical quoted text and validates mechanical provenance, bounds, custody, authorization, review completeness, and dependency revisions rather than accepting agent-authored quotation text or classifier labels as semantic authority.
 _Avoid_: Retrieval hit, evidence snippet
 
 **Derived fact**:
@@ -101,7 +105,7 @@ An immutable value produced by a named, deterministic RoB 2-relevant derivation 
 _Avoid_: Narrative calculation, general statistical analysis
 
 **Evidence Bundle**:
-The immutable, content-hashed set of accepted supporting and contradicting Evidence claims, derived facts, Visual transcriptions, Search coverage receipts, and declared limitations frozen before a signaling-question answer is made. Discovering or correcting evidence requires a new bundle revision rather than changing an existing bundle or silently extending it during answering.
+The immutable, content-hashed, question-specific set of accepted supporting and contradicting Evidence claims, their authorizing review revisions, derived facts, Visual transcriptions, Search coverage receipts, and declared limitations frozen before a signaling-question answer is made. Reviews or reviewed spans outside that signaling question are excluded. Discovering or correcting evidence requires a new bundle revision rather than changing an existing bundle or silently extending it during answering.
 _Avoid_: Context window, search results
 
 **Evidence consideration manifest**:
@@ -220,12 +224,8 @@ _Avoid_: PDF, source file
 An attributable relationship stating why a Source or Source component pertains to a Trial and what role it may play. One Source may have separately justified associations with multiple Trials, but an association permits scoped inspection rather than making every passage Evidence for each Trial. Bibliography entries, background discussion, and descriptions of another Trial do not create an association or transfer Evidence; an uncertain association remains excluded from proposal and assessment support until resolved.
 _Avoid_: Folder membership, whole-document evidence, citation-based linkage
 
-**Trial discourse scope**:
-The contextual classification of a Canonical evidence unit as concerning the active Trial, another Trial, mixed or uncertain Trial subjects, or no explicit Trial subject. Clearly other-Trial units are excluded from ordinary evidence results; mixed or uncertain units remain retrievable with a scope warning. The classification guides filtering and review but never establishes truth or automatically accepts or rejects Evidence, and excluded counts remain visible with an explicit diagnostic recovery path.
-_Avoid_: Trial identity, relevance score, automatic Evidence disposition
-
 **Retrieval classification correction**:
-An attributable revision correcting a Canonical evidence unit's document zone, Trial discourse scope, hierarchy, or reading-order classification after diagnostic inspection. An excluded unit may be inspected but cannot become citable Evidence under a known-wrong classification; correction updates the applicable Parse/index lineage and returns the unit to ordinary scoped retrieval without an “ignore warning” override.
+An attributable revision correcting a Canonical evidence unit's document zone, hierarchy, or reading-order classification after diagnostic inspection. Correction updates the applicable Parse/index lineage and returns structurally misclassified material to ordinary scoped retrieval without an “ignore warning” override.
 _Avoid_: Filter bypass, agent-confidence override, silent reclassification
 
 **Source criticality**:

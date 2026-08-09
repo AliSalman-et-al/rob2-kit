@@ -94,7 +94,7 @@ def test_passages_only_submission_succeeds_without_a_client_supplied_receipt(
 
     response = engine.submit_domain_evidence(
         SubmitDomainEvidenceRequest(
-            contract_version="1.0.0",
+            contract_version="1.1.0",
             run_id=run_id,
             work_token=work.work_token,
             idempotency_key="idempotency:issue127-passages",
@@ -144,7 +144,7 @@ def test_no_information_basis_succeeds_without_a_client_supplied_receipt(tmp_pat
 
     response = engine.submit_domain_evidence(
         SubmitDomainEvidenceRequest(
-            contract_version="1.0.0",
+            contract_version="1.1.0",
             run_id=run_id,
             work_token=work.work_token,
             idempotency_key="idempotency:issue127-no-info",
@@ -173,7 +173,7 @@ def test_empty_evidence_submission_is_rejected(tmp_path: Path) -> None:
 
     response = engine.submit_domain_evidence(
         SubmitDomainEvidenceRequest(
-            contract_version="1.0.0",
+            contract_version="1.1.0",
             run_id=run_id,
             work_token=work.work_token,
             idempotency_key="idempotency:issue128-empty",
@@ -215,7 +215,7 @@ def test_evidence_insufficient_block_reroutes_and_preserves_recorder_state(
     # An honest declared gap: coverage_state=incomplete, no items/passages.
     engine.submit_domain_evidence(
         SubmitDomainEvidenceRequest(
-            contract_version="1.0.0",
+            contract_version="1.1.0",
             run_id=run_id,
             work_token=work.work_token,
             idempotency_key="idempotency:issue128-first-evidence",
@@ -269,7 +269,7 @@ def test_evidence_insufficient_block_reroutes_and_preserves_recorder_state(
     # citable.
     resubmitted = engine.submit_domain_evidence(
         SubmitDomainEvidenceRequest(
-            contract_version="1.0.0",
+            contract_version="1.1.0",
             run_id=run_id,
             work_token=rerouted.work_token,
             idempotency_key="idempotency:issue128-second-evidence",
@@ -326,7 +326,7 @@ def test_evidence_insufficient_block_reroute_also_accepts_no_information_resubmi
 
     engine.submit_domain_evidence(
         SubmitDomainEvidenceRequest(
-            contract_version="1.0.0",
+            contract_version="1.1.0",
             run_id=run_id,
             work_token=work.work_token,
             idempotency_key="idempotency:issue128-no-info-first-evidence",
@@ -367,7 +367,7 @@ def test_evidence_insufficient_block_reroute_also_accepts_no_information_resubmi
     # block is carried forward for the no_information_basis path too.
     resubmitted = engine.submit_domain_evidence(
         SubmitDomainEvidenceRequest(
-            contract_version="1.0.0",
+            contract_version="1.1.0",
             run_id=run_id,
             work_token=rerouted.work_token,
             idempotency_key="idempotency:issue128-no-info-second-evidence",

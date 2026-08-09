@@ -8,16 +8,13 @@ from rob2_kit.evidence.search import (
     DocumentZone,
     EvidenceSearchIndex,
     SearchQuery,
-    TrialDiscourseScope,
     canonicalize_evidence_units,
 )
 
 HASH = "sha256:" + "1" * 64
 
 
-def _unit(
-    unit_id: str, text: str, *, zone: DocumentZone, discourse: TrialDiscourseScope
-) -> CanonicalEvidenceUnit:
+def _unit(unit_id: str, text: str, *, zone: DocumentZone) -> CanonicalEvidenceUnit:
     return CanonicalEvidenceUnit(
         unit_id=unit_id,
         source_id="source:report",
@@ -28,7 +25,6 @@ def _unit(
         text=text,
         spatial=(10, 10, 200, 30),
         document_zone=zone,
-        discourse_scope=discourse,
     )
 
 
@@ -127,13 +123,11 @@ def test_search_keeps_semantically_labeled_fragments_visible_and_issues_stale_ha
         "unit:bibliography",
         "allocation cited",
         zone=DocumentZone.BIBLIOGRAPHY,
-        discourse=TrialDiscourseScope.OTHER,
     )
     unknown = _unit(
         "unit:unknown",
         "allocation uncertain",
         zone=DocumentZone.UNKNOWN,
-        discourse=TrialDiscourseScope.UNCERTAIN,
     )
     index.replace_units((bibliography, unknown))
 
@@ -197,7 +191,7 @@ def test_ambiguous_fragments_remain_separate_search_candidates(tmp_path) -> None
 def test_read_location_continues_an_oversized_unit_by_character_window(tmp_path) -> None:
     index = EvidenceSearchIndex(tmp_path / "evidence.sqlite3")
     unit = _unit(
-        "unit:large", "large " * 8, zone=DocumentZone.MAIN, discourse=TrialDiscourseScope.ACTIVE
+        "unit:large", "large " * 8, zone=DocumentZone.MAIN
     )
     index.replace_units((unit,))
     handle = index.search(SearchQuery(terms=("large",))).hits[0].location_handle

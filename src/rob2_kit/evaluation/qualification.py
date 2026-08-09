@@ -41,29 +41,74 @@ class _ReleaseFixtureParser:
         self, data: bytes, *, ocr_enabled: bool, target_pages: tuple[int, ...] | None = None
     ) -> ParserResult:
         parsed = self._delegate.parse(data, ocr_enabled=ocr_enabled, target_pages=target_pages)
-        questions = (
-            "sq:randomization:sequence",
-            "sq:randomization:concealment",
-            "sq:randomization:baseline-imbalance",
-        )
+        domain_questions = {
+            "domain:randomization": (
+                "sq:randomization:sequence",
+                "sq:randomization:concealment",
+                "sq:randomization:baseline-imbalance",
+            ),
+            "domain:deviations": (
+                "sq:deviations:participants-aware",
+                "sq:deviations:personnel-aware",
+                "sq:deviations:context-deviations",
+                "sq:deviations:affected-outcome",
+                "sq:deviations:balanced",
+                "sq:deviations:appropriate-analysis",
+                "sq:deviations:substantial-impact",
+            ),
+            "domain:missing": (
+                "sq:missing:data-available",
+                "sq:missing:evidence-unbiased",
+                "sq:missing:true-value-dependent",
+                "sq:missing:likely-dependent",
+            ),
+            "domain:measurement": (
+                "sq:measurement:method-inappropriate",
+                "sq:measurement:differential",
+                "sq:measurement:assessor-aware",
+                "sq:measurement:influence-possible",
+                "sq:measurement:influence-likely",
+            ),
+            "domain:selection": (
+                "sq:selection:prespecified-analysis",
+                "sq:selection:multiple-measurements",
+                "sq:selection:multiple-analyses",
+            ),
+        }
         pages = tuple(
             page.model_copy(
                 update={
+                    # The fixed release dossier is a known complete textual
+                    # fixture.  LiteParse's sparse-layout heuristic is useful
+                    # for unknown uploads but would otherwise turn this
+                    # deterministic one-page qualification source into a
+                    # coverage-limited surrogate.
+                    "reasons": (),
                     "text_items": tuple(
                         item.model_copy(
                             update={
+                                # Canonical unit identity is derived from the
+                                # parser fragment lineage, not the domain
+                                # annotation.  The fixture deliberately
+                                # exposes the same source passage to each RoB
+                                # domain, so its synthetic parser lineage must
+                                # distinguish those independently scoped units.
+                                "fragment_id": (
+                                    f"fragment:qualification:{domain_id.removeprefix('domain:')}"
+                                    f":{item_index}"
+                                ),
                                 "trial_id": "trial:trial-a",
                                 "result_id": "result:trial-a-mortality",
-                                "domain_id": "domain:randomization",
+                                "domain_id": domain_id,
                                 "question_ids": questions,
                                 "applicability": "result",
                                 "applicable_result_ids": ("result:trial-a-mortality",),
                                 "unit_kind": "paragraph",
                                 "document_zone": "methods",
-                                "discourse_scope": "same_trial",
                             }
                         )
-                        for item in page.text_items
+                        for domain_id, questions in domain_questions.items()
+                        for item_index, item in enumerate(page.text_items)
                     )
                 }
             )
@@ -118,7 +163,9 @@ class _FailingProjector:
 def _writer_conflict(ledger: WorkflowLedger, now: datetime) -> LeaseToken:
     """Let setup use the ledger, then conflict on the next actual write."""
 
-    if any(event.operation == "operation:run-confirmed" for event in ledger.events()):
+    # Source-role review now precedes confirmation.  The prepared run is the
+    # setup boundary; the following write must exercise the fenced owner path.
+    if any(event.operation == "operation:run-prepared" for event in ledger.events()):
         raise LeaseConflictError("qualification writer lease is held by another owner")
     return ledger.acquire_lease(
         "owner:qualification-setup",

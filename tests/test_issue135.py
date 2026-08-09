@@ -35,6 +35,8 @@ def _claim_id(
     run_id: str,
     result_id: str,
     domain_id: str,
+    question_id: str,
+    candidate_id: str,
     unit_id: str,
     span_start: int,
     span_end: int,
@@ -48,7 +50,17 @@ def _claim_id(
     """
     suffix = hashlib.sha256(
         "|".join(
-            (run_id, result_id, domain_id, unit_id, str(span_start), str(span_end), claim_type)
+            (
+                run_id,
+                result_id,
+                domain_id,
+                question_id,
+                candidate_id,
+                unit_id,
+                str(span_start),
+                str(span_end),
+                claim_type,
+            )
         ).encode()
     ).hexdigest()[:24]
     return f"evidence-claim:{suffix}"
@@ -76,7 +88,7 @@ def test_review_revisions_plus_matching_passages_freeze_is_accepted(tmp_path: Pa
 
     response = engine.submit_domain_evidence(
         SubmitDomainEvidenceRequest(
-            contract_version="1.0.0",
+            contract_version="1.1.0",
             run_id=run_id,
             work_token=work.work_token,
             idempotency_key="idempotency:issue135-review-revisions",
@@ -132,7 +144,7 @@ def test_review_revisions_alone_without_passages_is_rejected_for_missing_candida
 
     response = engine.submit_domain_evidence(
         SubmitDomainEvidenceRequest(
-            contract_version="1.0.0",
+            contract_version="1.1.0",
             run_id=run_id,
             work_token=work.work_token,
             idempotency_key="idempotency:issue135-review-revisions-alone",
@@ -200,15 +212,29 @@ def test_passages_based_superseded_disposition_with_matching_conflicts_is_accept
     superseded_claim_type = "claim-type:randomization-method"
 
     replacement_claim_id = _claim_id(
-        run_id, work.result_id, domain_id, unit_id, *replacement_span, replacement_claim_type
+        run_id,
+        work.result_id,
+        domain_id,
+        question_id,
+        "candidate:issue135-superseded-replacement",
+        unit_id,
+        *replacement_span,
+        replacement_claim_type,
     )
     superseded_claim_id = _claim_id(
-        run_id, work.result_id, domain_id, unit_id, *superseded_span, superseded_claim_type
+        run_id,
+        work.result_id,
+        domain_id,
+        question_id,
+        "candidate:issue135-superseded-original",
+        unit_id,
+        *superseded_span,
+        superseded_claim_type,
     )
 
     response = engine.submit_domain_evidence(
         SubmitDomainEvidenceRequest(
-            contract_version="1.0.0",
+            contract_version="1.1.0",
             run_id=run_id,
             work_token=work.work_token,
             idempotency_key="idempotency:issue135-superseded",
@@ -256,7 +282,6 @@ def test_passages_based_superseded_disposition_with_matching_conflicts_is_accept
                     span_start=superseded_span[0],
                     span_end=superseded_span[1],
                     entity_suffix="issue135-superseded-original",
-                    disposition="superseded",
                 ),
             ),
         )

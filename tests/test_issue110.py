@@ -53,6 +53,32 @@ def test_installed_replay_normalizes_live_call_ids_and_projects_to_durable_seman
     assert normalize_semantic_value({"run_id": "run:one"}) == {"run_id": "<run-1>"}
 
 
+def test_installed_replay_normalizes_ephemeral_location_handles_but_preserves_reuse() -> None:
+    """Navigation-token bytes may change, but their call structure may not."""
+
+    def trace(handles: tuple[str, str]) -> dict[str, object]:
+        return normalize_replay_trace(
+            [
+                {
+                    "name": "search_evidence",
+                    "arguments": {},
+                    "response": {
+                        "page": {
+                            "hits": [
+                                {"location_handle": handles[0]},
+                                {"location_handle": handles[1]},
+                            ]
+                        }
+                    },
+                }
+            ],
+            final={"run_state": "complete"},
+        )
+
+    assert trace(("loc:first", "loc:second")) == trace(("loc:renamed-a", "loc:renamed-b"))
+    assert trace(("loc:reused", "loc:reused")) != trace(("loc:distinct-a", "loc:distinct-b"))
+
+
 def test_installed_replay_qualification_has_the_required_contract_matrix() -> None:
     qualification = (ROOT / "scripts" / "release_qualification.py").read_text(encoding="utf-8")
 
@@ -78,7 +104,12 @@ def test_installed_replay_qualification_has_the_required_contract_matrix() -> No
     assert 'issued_token = evidence["work_item"]["work_token"]' in qualification
     assert '"sq_id": "sq:qualification-invalid"' in qualification
     assert '"result_id": "result:other"' in qualification
-    assert '"unit_id": "unit:qualification-unknown"' in qualification
+    assert '"location_handle": "loc:qualification-unknown"' in qualification
+    assert '"read_view_receipt": read_receipts[question]' in qualification
+    assert '"contract_version": "1.1.0"' in qualification
+    assert '"get_work_context"' in qualification
+    assert '"active_question_ids"' in qualification
+    assert '"sq:measurement:assessor-aware"' in qualification
     assert "protocol validation recovery" not in qualification
 
 
@@ -119,9 +150,34 @@ def test_qualification_composition_uses_real_engine_dependencies() -> None:
     )
     with pytest.raises(LeaseConflictError, match="writer lease"):
         writer_conflict._lease_acquirer(  # type: ignore[misc]
-            SimpleNamespace(events=lambda: (SimpleNamespace(operation="operation:run-confirmed"),)),
+            SimpleNamespace(events=lambda: (SimpleNamespace(operation="operation:run-prepared"),)),
             None,
         )
+
+
+def test_release_fixture_exposes_distinct_domain_scoped_canonical_lineage() -> None:
+    """The public journey must not borrow a same-text unit from another Domain."""
+
+    from rob2_kit.evaluation.qualification import _ReleaseFixtureParser
+    from scripts.release_qualification import _blank_pdf
+
+    parsed = _ReleaseFixtureParser().parse(_blank_pdf(), ocr_enabled=False)
+    items = parsed.pages[0].text_items
+    assert len({item.fragment_id for item in items}) == len(items)
+    for domain_id, sq_prefix in (
+        ("domain:randomization", "sq:randomization:"),
+        ("domain:deviations", "sq:deviations:"),
+        ("domain:missing", "sq:missing:"),
+        ("domain:measurement", "sq:measurement:"),
+        ("domain:selection", "sq:selection:"),
+    ):
+        scoped = [item for item in items if item.domain_id == domain_id]
+        assert scoped
+        assert all(item.fragment_id is not None for item in scoped)
+        assert all(question.startswith(sq_prefix) for item in scoped for question in item.question_ids)
+
+    qualification = (ROOT / "scripts" / "release_qualification.py").read_text(encoding="utf-8")
+    assert 'unit["domain_id"] == domain' in qualification
 
 
 def test_qualification_receipt_records_stable_stage_timing_metadata() -> None:
@@ -148,6 +204,18 @@ def test_ci_runs_replay_without_repeating_the_release_lifecycle_gate() -> None:
         "lifecycle = (\n            None\n            if replay_only\n"
         "            else _qualify_lifecycle" in script
     )
+    assert script.count('"idempotency_key": "qualification:proposal"') == 2
+    assert script.count('"idempotency_key": "qualification:confirm"') == 2
+
+
+def test_optional_fixture_resume_checks_post_confirmation_work_without_repeating_source_review() -> None:
+    qualification = (ROOT / "scripts" / "release_qualification.py").read_text(encoding="utf-8")
+
+    assert 'event["operation"] == "operation:submit-source-role-review"' in qualification
+    assert "resume repeated the committed source-role review" in qualification
+    assert "resume did not continue with post-confirmation domain evidence work" in qualification
+    assert "resume did not retain its post-confirmation work-token identity" in qualification
+    assert "resume did not reissue the committed active work-token identity" not in qualification
 
 
 def test_timeout_cleanup_remains_bounded_when_tree_termination_fails(monkeypatch) -> None:

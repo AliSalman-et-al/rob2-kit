@@ -99,6 +99,12 @@ class _ReplayNormalizer:
             return None
         if normalized == "ledger_cursor":
             return "ledger-cursor"
+        # Search location handles are short-lived navigation capabilities.
+        # They identify neither citable content nor durable provenance, so an
+        # installed replay must compare their reuse pattern, not their random
+        # token bytes.
+        if normalized == "location_handle":
+            return "location-handle"
         if normalized in {"project_root", "path", "file_path", "artifact_path"}:
             return "path"
         if normalized.endswith("_token") or normalized in {"token", "work_token"}:

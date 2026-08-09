@@ -28,19 +28,26 @@ Keep the opaque `location_handle` returned by search and pass it unchanged to
 reading. Expand only by the bounded `unit`, `neighbors`, `section`, `window`,
 `page`, or `render` operation the response supports, and follow its opaque
 continuation verbatim. A stale handle or continuation is a typed recovery
-condition: discard it and restart from the current WorkToken. Do not send the
-retired semantic overrides `include_other_trial` or `include_uncertain`; an
-installed server rejects them as upgrade-required rather than silently changing
-candidate visibility.
+condition: discard it and restart from the current WorkToken. Handles navigate
+only; they are never frozen provenance.
 
-Before freeze, submit the installed typed, append-only semantic review. Record
-Trial/Result attribution (`active`, `other`, `mixed`, `not_explicit`, or
-`unresolved`), an exact-span disposition, rationale, and the context handles
-considered. Other-Trial or reference material may be explicitly reviewed and
-rejected, but omission is not rejection. An unresolved material candidate,
-uncertain source order, or visual-review condition remains a typed limitation
-and blocks an unsupported freeze. Never cite a non-citable search projection,
-snippet, parser label, inferred applicability, or synthetic reconstruction.
+Before freeze, call `read_evidence` and submit its opaque `read_view_receipt`
+on every exact review span. A review revision is one candidate and one `sq_id`;
+it may aggregate independently attributed spans. Each span records
+`trial_attribution` as `active`, `other`, `not_explicit`, or `unresolved`, an
+exact-span disposition, and rationale. An `active` span also records an
+attributable bounded-context rationale. Other-Trial or reference material may
+be explicitly reviewed and rejected, but omission is not rejection. An
+unresolved retained span, uncertain source order, or visual-review condition
+remains a typed limitation and blocks an unsupported freeze. Never cite a
+non-citable search projection, snippet, parser label, inferred applicability,
+or synthetic reconstruction.
+
+Use the `submit_domain_evidence` 1.1.0 review-and-passage shape. Each review
+has `sq_id`; each span supplies `read_view_receipt`, exact bounds,
+`trial_attribution`, disposition, and rationale. Only an `active` span with a
+`supporting` or `contradicting` disposition authorizes an exact textual claim.
+Other and not-explicit spans can record non-substantive dispositions only.
 
 For the legacy `submit_domain_evidence` branch, prefer `passages`. It is
 mutually exclusive with legacy `items`, `evidence_by_question`,

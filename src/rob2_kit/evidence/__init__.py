@@ -40,7 +40,6 @@ from rob2_kit.evidence.search import (
     SearchPolicy,
     SearchProjection,
     SearchQuery,
-    TrialDiscourseScope,
     canonicalize_evidence_units,
 )
 from rob2_kit.evidence.visual import (
@@ -126,7 +125,6 @@ __all__ = [
     "SearchQuery",
     "DocumentZone",
     "ReadContextMode",
-    "TrialDiscourseScope",
     "SearchCoverageReceipt",
     "SearchCoverageRecorder",
     "SearchPassKind",

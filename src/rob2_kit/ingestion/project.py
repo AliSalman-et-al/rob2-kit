@@ -171,10 +171,6 @@ class PageTextItem(FrozenModel):
         default=None,
         validation_alias=AliasChoices("document_zone", "zone"),
     )
-    discourse_scope: str | None = Field(
-        default=None,
-        validation_alias=AliasChoices("discourse_scope", "trial_scope"),
-    )
 
 
 class PageExtraction(FrozenModel):
@@ -197,10 +193,6 @@ class PageExtraction(FrozenModel):
     document_zone: str | None = Field(
         default=None,
         validation_alias=AliasChoices("document_zone", "zone"),
-    )
-    discourse_scope: str | None = Field(
-        default=None,
-        validation_alias=AliasChoices("discourse_scope", "trial_scope"),
     )
 
 
@@ -367,9 +359,6 @@ class LiteParseAdapter:
                         document_zone=_optional_metadata(
                             getattr(item, "document_zone", getattr(item, "zone", None))
                         ),
-                        discourse_scope=_optional_metadata(
-                            getattr(item, "discourse_scope", getattr(item, "trial_scope", None))
-                        ),
                     )
                     for item in getattr(page, "text_items", ())
                 ),
@@ -379,9 +368,6 @@ class LiteParseAdapter:
                 hierarchy_path=tuple(getattr(page, "hierarchy_path", ()) or ()),
                 document_zone=_optional_metadata(
                     getattr(page, "document_zone", getattr(page, "zone", None))
-                ),
-                discourse_scope=_optional_metadata(
-                    getattr(page, "discourse_scope", getattr(page, "trial_scope", None))
                 ),
             )
             for page in parsed.pages
@@ -421,7 +407,6 @@ class LiteParseAdapter:
                                 "applicability": item.applicability,
                                 "applicable_result_ids": item.applicable_result_ids,
                                 "document_zone": item.document_zone,
-                                "discourse_scope": item.discourse_scope,
                             }
                             for item in page.text_items
                         ],
@@ -430,7 +415,6 @@ class LiteParseAdapter:
                         "section_path": page.section_path,
                         "hierarchy_path": page.hierarchy_path,
                         "document_zone": page.document_zone,
-                        "discourse_scope": page.discourse_scope,
                     }
                     for page in pages
                 ]

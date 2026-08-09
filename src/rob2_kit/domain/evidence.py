@@ -57,11 +57,10 @@ class ConsiderationDisposition(StrEnum):
 
 
 class TrialAttribution(StrEnum):
-    """A reviewer's attributable relationship between a candidate and the active Trial."""
+    """A reviewer's attributable relationship between one span and the active Trial."""
 
     ACTIVE = "active"
     OTHER = "other"
-    MIXED = "mixed"
     NOT_EXPLICIT = "not_explicit"
     UNRESOLVED = "unresolved"
 
@@ -85,15 +84,53 @@ class EvidenceReviewDisposition(StrEnum):
     UNRESOLVED = "unresolved"
 
 
-class EvidenceReviewSpan(FrozenModel):
-    """One reviewed source span, bound to the read context that exposed it."""
+class ReviewedEvidenceFragment(FrozenModel):
+    """One exact, displayed canonical range in an issued read view."""
 
-    location_handle: Identifier
+    unit_id: Identifier
+    source_id: Identifier
+    source_artifact_hash: ContentHash
+    parse_id: Identifier
+    canonicalization_version: str = Field(min_length=1)
+    unit_content_hash: ContentHash
     span_start: int = Field(ge=0)
     span_end: int = Field(gt=0)
+    content_hash: ContentHash
+
+    @model_validator(mode="after")
+    def validate_bounds(self) -> "ReviewedEvidenceFragment":
+        if self.span_end <= self.span_start:
+            raise ValueError("reviewed fragment must have positive extent")
+        return self
+
+
+class ReviewedEvidenceContext(FrozenModel):
+    """Immutable descriptor of exactly what a reviewer was issued and saw.
+
+    Navigation handles are intentionally absent: they are short-lived retrieval
+    affordances, whereas this descriptor is retained as claim provenance.
+    """
+
+    receipt_hash: ContentHash
+    snapshot_hash: ContentHash
+    requested_mode: str = Field(min_length=1)
+    applied_mode: str = Field(min_length=1)
+    continuation_input: str | None = None
+    continuation: str | None = None
+    fragments: tuple[ReviewedEvidenceFragment, ...] = Field(min_length=1)
+
+
+class EvidenceReviewSpan(FrozenModel):
+    """One attributable exact span and immutable read-view context."""
+
+    span_id: Identifier
+    span_start: int = Field(ge=0)
+    span_end: int = Field(gt=0)
+    trial_attribution: TrialAttribution
     disposition: EvidenceReviewDisposition
     rationale: str = Field(min_length=1)
-    context_handles: tuple[Identifier, ...] = Field(min_length=1)
+    reviewed_context: ReviewedEvidenceContext
+    attribution_rationale: str | None = None
     visual_review_condition: Identifier | None = None
     duplicate_of: Identifier | None = None
 
@@ -101,10 +138,13 @@ class EvidenceReviewSpan(FrozenModel):
     def validate_review_span(self) -> "EvidenceReviewSpan":
         if self.span_end <= self.span_start:
             raise ValueError("review span must have positive extent")
-        if self.location_handle not in self.context_handles:
-            raise ValueError("review span must bind its location handle as reviewed context")
-        if len(set(self.context_handles)) != len(self.context_handles):
-            raise ValueError("review span context handles must be unique")
+        if self.trial_attribution in {TrialAttribution.OTHER, TrialAttribution.NOT_EXPLICIT} and (
+            self.disposition
+            in {EvidenceReviewDisposition.SUPPORTING, EvidenceReviewDisposition.CONTRADICTING}
+        ):
+            raise ValueError("non-active material cannot support or contradict the active Result")
+        if self.trial_attribution is TrialAttribution.ACTIVE and not self.attribution_rationale:
+            raise ValueError("active span attribution requires an attributable rationale")
         if (
             self.disposition is EvidenceReviewDisposition.NEEDS_VISUAL_REVIEW
         ) != (self.visual_review_condition is not None):
@@ -117,36 +157,18 @@ class EvidenceReviewSpan(FrozenModel):
 
 
 class EvidenceReviewRevision(Revision):
-    """Immutable candidate-level semantic review superseding prior reviews."""
+    """Immutable candidate-level, question-specific semantic review."""
 
     candidate_id: Identifier
     result_id: Identifier
     domain_id: Identifier
-    question_ids: tuple[Identifier, ...] = Field(min_length=1)
-    trial_attribution: TrialAttribution
-    reviewed_context_handles: tuple[Identifier, ...] = Field(min_length=1)
+    sq_id: Identifier
     spans: tuple[EvidenceReviewSpan, ...] = Field(min_length=1)
 
     @model_validator(mode="after")
     def validate_review(self) -> "EvidenceReviewRevision":
-        if len(set(self.question_ids)) != len(self.question_ids):
-            raise ValueError("review question IDs must be unique")
-        if len(set(self.reviewed_context_handles)) != len(self.reviewed_context_handles):
-            raise ValueError("reviewed context handles must be unique")
-        if any(
-            handle not in self.reviewed_context_handles
-            for span in self.spans
-            for handle in span.context_handles
-        ):
-            raise ValueError("review span context must be included in reviewed context handles")
-        if self.trial_attribution is TrialAttribution.UNRESOLVED:
-            raise ValueError("unresolved Trial attribution cannot complete a substantive review")
-        if self.trial_attribution is TrialAttribution.OTHER and any(
-            span.disposition
-            in {EvidenceReviewDisposition.SUPPORTING, EvidenceReviewDisposition.CONTRADICTING}
-            for span in self.spans
-        ):
-            raise ValueError("other-Trial material cannot support or contradict the active Result")
+        if len({span.span_id for span in self.spans}) != len(self.spans):
+            raise ValueError("review span IDs must be unique within a revision")
         return self
 
     @property
@@ -157,6 +179,7 @@ class EvidenceReviewRevision(Revision):
                 EvidenceReviewDisposition.NEEDS_VISUAL_REVIEW,
                 EvidenceReviewDisposition.UNRESOLVED,
             }
+            and span.trial_attribution is not TrialAttribution.UNRESOLVED
             for span in self.spans
         )
 
@@ -219,9 +242,13 @@ class EvidenceClaim(Revision):
     dependency_roles = {
         "canonical_unit": "dependency:canonical-unit",
         "source": "dependency:source",
+        "authorizing_review": "dependency:evidence-review",
     }
     canonical_unit: RecordReference
     source: RecordReference
+    authorizing_review: RecordReference
+    review_span_id: Identifier
+    candidate_id: Identifier
     span_start: int = Field(ge=0)
     span_end: int = Field(gt=0)
     quoted_text_hash: ContentHash

@@ -38,7 +38,6 @@ from rob2_kit.evidence import (
     ReadContextMode,
     SearchPolicy,
     SearchQuery,
-    TrialDiscourseScope,
     VisualCandidate,
     VisualCandidateKind,
     VisualNominationBasis,
@@ -290,26 +289,6 @@ def test_trial_wide_canonical_block_does_not_inherit_result_id() -> None:
     assert units[0].applicable_result_ids == ("result:one", "result:two")
 
 
-def test_uncertain_and_other_trial_discourse_remain_visible_with_warnings(
-    tmp_path: Path,
-) -> None:
-    index = EvidenceSearchIndex(tmp_path / "evidence.sqlite3")
-    uncertain = _unit("unit:uncertain", "source:report", "allocation").model_copy(
-        update={"discourse_scope": TrialDiscourseScope.UNCERTAIN}
-    )
-    other = _unit("unit:other", "source:report", "allocation", reading_order=1).model_copy(
-        update={"discourse_scope": TrialDiscourseScope.OTHER}
-    )
-    index.replace_units((uncertain, other))
-    scope = EvidenceScope(
-        trial_id="trial:active",
-        result_id="result:active",
-        include_uncertain=True,
-    )
-    page = index.search(SearchQuery(terms=("allocation",)), scope=scope)
-    assert {hit.unit.unit_id for hit in page.hits} == {uncertain.unit_id, other.unit_id}
-
-
 def test_legacy_null_result_rows_migrate_to_unresolved(tmp_path: Path) -> None:
     path = tmp_path / "legacy.sqlite3"
     with sqlite3.connect(path) as connection:
@@ -351,7 +330,6 @@ def _unit(
     result_id: str | None = "result:active",
     section: tuple[str, ...] = ("Methods",),
     zone: DocumentZone = DocumentZone.METHODS,
-    discourse: TrialDiscourseScope = TrialDiscourseScope.ACTIVE,
     duplicate_group_id: str | None = None,
     reading_order: int = 0,
     domain_id: str | None = None,
@@ -372,7 +350,6 @@ def _unit(
         section_path=section,
         reading_order=reading_order,
         document_zone=zone,
-        discourse_scope=discourse,
         duplicate_group_id=duplicate_group_id,
     )
 
@@ -392,7 +369,6 @@ def test_scope_keeps_reference_and_other_trial_candidates_visible(tmp_path: Path
                 "unit:other",
                 "source:report",
                 "allocation concealed",
-                discourse=TrialDiscourseScope.OTHER,
             ),
             _unit(
                 "unit:other-trial",
@@ -526,7 +502,7 @@ def test_section_and_unit_reads_are_bounded_and_scope_safe(tmp_path: Path) -> No
     )
 
 
-def test_neighbors_cross_semantic_labels_but_stop_at_structural_boundaries(tmp_path: Path) -> None:
+def test_neighbors_cross_document_zones_but_stop_at_structural_boundaries(tmp_path: Path) -> None:
     index = EvidenceSearchIndex(tmp_path / "evidence.sqlite3")
     units = (
         _unit("unit:target", "source:report", "target", reading_order=1).model_copy(
@@ -540,7 +516,6 @@ def test_neighbors_cross_semantic_labels_but_stop_at_structural_boundaries(tmp_p
             "source:report",
             "other",
             zone=DocumentZone.RESULTS,
-            discourse=TrialDiscourseScope.OTHER,
             reading_order=3,
         ).model_copy(update={"hierarchy_path": ("1",)}),
         _unit(
@@ -563,7 +538,6 @@ def test_neighbors_cross_semantic_labels_but_stop_at_structural_boundaries(tmp_p
     )
     assert [item.unit_id for item in context.neighbors] == [units[1].unit_id, units[2].unit_id]
     assert "document_zone_boundary_crossed" in context.warnings
-    assert "trial_discourse_boundary_crossed" in context.warnings
     assert "structural_boundary_reached" in context.warnings
     section = index.read_context(
         units[0].unit_id,
@@ -572,13 +546,7 @@ def test_neighbors_cross_semantic_labels_but_stop_at_structural_boundaries(tmp_p
     )
     assert [item.unit_id for item in section.neighbors] == [units[1].unit_id, units[2].unit_id]
     assert "document_zone_boundary_crossed" in section.warnings
-    assert "trial_discourse_boundary_crossed" in section.warnings
     assert "structural_boundary_reached" in section.warnings
-
-
-def test_other_trial_parser_alias_is_excluded() -> None:
-    assert RunEngine._canonical_discourse("other-trial", text="") is TrialDiscourseScope.OTHER
-    assert RunEngine._canonical_discourse("other trial", text="") is TrialDiscourseScope.OTHER
 
 
 def test_section_read_disables_expansion_without_structure(tmp_path: Path) -> None:
@@ -642,9 +610,7 @@ def test_generic_and_other_result_units_remain_visible_for_review(tmp_path: Path
         scope=EvidenceScope(
             trial_id="trial:active",
             result_id="result:b",
-            allow_unclassified=True,
-            include_uncertain=True,
-        ),
+            allow_unclassified=True,        ),
     )
     hit_ids = {hit.unit.unit_id for hit in page.hits}
     assert hit_ids == {"unit:generic", "unit:a", "unit:b"}
@@ -708,9 +674,7 @@ def test_index_initial_evidence_preserves_parser_provenance_metadata(
                         text="allocation was concealed",
                         section_path=("Methods", "Allocation"),
                         hierarchy_path=("2", "2.1"),
-                        document_zone="methods",
-                        discourse_scope="active",
-                        text_items=(
+                        document_zone="methods",                        text_items=(
                             PageTextItem(
                                 text="allocation was concealed",
                                 x=10,
@@ -721,9 +685,7 @@ def test_index_initial_evidence_preserves_parser_provenance_metadata(
                                 section_path=("Methods", "Allocation"),
                                 hierarchy_path=("2", "2.1"),
                                 reading_order=9,
-                                document_zone="methods",
-                                discourse_scope="active",
-                                domain_id="domain:randomization",
+                                document_zone="methods",                                domain_id="domain:randomization",
                                 question_ids=("sq:randomization:sequence",),
                             ),
                             PageTextItem(
@@ -736,9 +698,7 @@ def test_index_initial_evidence_preserves_parser_provenance_metadata(
                                 section_path=("Methods", "Allocation"),
                                 hierarchy_path=("2", "2.1"),
                                 reading_order=10,
-                                document_zone="methods",
-                                discourse_scope="active",
-                                domain_id="domain:randomization",
+                                document_zone="methods",                                domain_id="domain:randomization",
                                 question_ids=("sq:randomization:sequence",),
                             ),
                         ),
@@ -915,9 +875,7 @@ results:
         SearchQuery(terms=("allocation",)),
         scope=EvidenceScope(
             trial_id="trial:trial-a",
-            result_id="result:trial-a-mortality",
-            include_uncertain=True,
-        ),
+            result_id="result:trial-a-mortality",        ),
     )
     assert len(ordinary_page.hits) == 1
     assert ordinary_page.hits[0].unit.document_zone is DocumentZone.MAIN
@@ -1098,7 +1056,7 @@ def test_public_retrieval_requests_require_a_work_token() -> None:
         )
 
 
-def test_parser_extraction_preserves_structure_and_discourse_metadata() -> None:
+def test_parser_extraction_preserves_structure_metadata() -> None:
     page = PageExtraction(
         page_number=1,
         width=612,
@@ -1106,9 +1064,7 @@ def test_parser_extraction_preserves_structure_and_discourse_metadata() -> None:
         text="Methods",
         section_path=("Methods", "Allocation"),
         hierarchy_path=("2", "2.1"),
-        document_zone="methods",
-        discourse_scope="active",
-        text_items=(
+        document_zone="methods",        text_items=(
             PageTextItem(
                 text="Allocation was concealed.",
                 x=10,
@@ -1119,9 +1075,7 @@ def test_parser_extraction_preserves_structure_and_discourse_metadata() -> None:
                 section_path=("Methods", "Allocation"),
                 hierarchy_path=("2", "2.1"),
                 reading_order=4,
-                document_zone="methods",
-                discourse_scope="active",
-            ),
+                document_zone="methods",            ),
         ),
     )
     assert page.text_items[0].unit_kind == "paragraph"
@@ -1310,7 +1264,8 @@ def test_mcp_read_evidence_executes_typed_route_deterministically(monkeypatch) -
                 committed=False,
                 run_id=request.run_id,
                 unit=unit,
-                context=context,
+                read_view_receipt="read-view:fixture",
+                    context=context,
             )
 
     monkeypatch.setattr("rob2_kit.interfaces.mcp.server.RunEngine", FakeEngine)
@@ -1425,6 +1380,9 @@ def test_visual_handoff_requires_matching_domain_and_sq_on_same_source_page(
         def read_context(self, *_args, **_kwargs):
             return context
 
+        def issue_read_view_receipt(self, **_kwargs):
+            return "read-view:visual-handoff"
+
     monkeypatch.setattr("rob2_kit.application.run_engine.EvidenceSearchIndex", FakeIndex)
     engine = RunEngine()
 
@@ -1462,5 +1420,6 @@ def test_visual_handoff_requires_matching_domain_and_sq_on_same_source_page(
     )
 
     assert response.visual_inspection is not None
+    assert response.read_view_receipt == "read-view:visual-handoff"
     assert response.visual_inspection.candidate_id == "visual:matching-domain-sq"
     assert response.visual_inspection.next_arguments.candidate_id == "visual:matching-domain-sq"

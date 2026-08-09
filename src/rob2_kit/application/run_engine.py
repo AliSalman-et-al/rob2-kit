@@ -31,6 +31,7 @@ from rob2_kit.application.contracts import (
     ErrorClass,
     EvidenceConsiderationInput,
     EvidencePassageInput,
+    EvidenceReviewRevisionInput,
     FinalJudgmentInput,
     GetWorkContextRequest,
     GetWorkContextResponse,
@@ -113,6 +114,10 @@ from rob2_kit.domain.evidence import (
     EvidenceInsufficiency,
     EvidenceInsufficiencyReason,
     EvidenceReviewRevision,
+    EvidenceReviewDisposition,
+    EvidenceReviewSpan,
+    ReviewedEvidenceFragment,
+    TrialAttribution,
     VisualTranscription,
 )
 from rob2_kit.domain.releases import PolicyKind, PolicyRelease
@@ -156,7 +161,6 @@ from rob2_kit.evidence.search import (
     EvidenceSearchIndex,
     ReadContextMode,
     SearchPolicy,
-    TrialDiscourseScope,
     canonicalize_evidence_units,
 )
 from rob2_kit.evidence.visual import (
@@ -2695,6 +2699,39 @@ class RunEngine:
             ),
             None,
         )
+        displayed = (
+            context.all_units
+            if context is not None
+            else (read.unit,)
+        )
+        fragments = tuple(
+            ReviewedEvidenceFragment(
+                unit_id=item.unit_id,
+                source_id=item.source_id,
+                source_artifact_hash=item.source_artifact_hash,
+                parse_id=item.parse_id,
+                canonicalization_version=item.canonicalization_version,
+                unit_content_hash=sha256_digest(item.text.encode()),
+                span_start=(read.start if context is None else 0),
+                span_end=(read.end if context is None else len(item.text)),
+                content_hash=sha256_digest(
+                    item.text[(read.start if context is None else 0) : (read.end if context is None else len(item.text))].encode()
+                ),
+            )
+            for item in displayed
+        )
+        continuation = (
+            context.continuation_cursor if context is not None else read.continuation_cursor
+        )
+        receipt = index.issue_read_view_receipt(
+            snapshot_hash=read.snapshot_hash,
+            requested_mode=request.mode,
+            applied_mode=context.mode if context is not None else ReadContextMode.UNIT,
+            continuation_input=request.cursor,
+            continuation=continuation,
+            fragments=fragments,
+            displayed_units=displayed,
+        )
         return ReadEvidenceResponse(
             operation_id=self._read_operation_id(RunOperation.READ_EVIDENCE, request.run_id),
             ledger_cursor=f"ledger:{len(ledger.events())}",
@@ -2703,6 +2740,7 @@ class RunEngine:
             committed=False,
             run_id=request.run_id,
             unit=read.unit,
+            read_view_receipt=receipt,
             read=read if request.mode is ReadContextMode.UNIT else None,
             context=context,
             visual_inspection=visual_path,
@@ -2777,9 +2815,6 @@ class RunEngine:
             domain_id=work_token.domain_id,
             question_id=sq_id,
             source_ids=source_ids,
-            # Surface uncertain/mixed discourse as explicitly warned
-            # candidates; citation resolution below still requires ACTIVE.
-            include_uncertain=True,
             allow_unclassified=True,
             work_token_id=work_token.token,
         )
@@ -3289,7 +3324,8 @@ class RunEngine:
         if request.items:
             self._validate_visual_evidence_items(ledger, request)
         submitted_passages = request.passages
-        if request.passages:
+        review_refs: dict[tuple[Identifier, Identifier], tuple[EvidenceReviewRevision, RecordReference]] = {}
+        if request.passages or request.review_revisions:
             violations = self._validate_domain_evidence_submission(
                 ledger,
                 request.model_copy(update={"passages": ()}),
@@ -3298,12 +3334,16 @@ class RunEngine:
             )
             if violations:
                 return self._domain_evidence_blocked_response(ledger, request, violations)
+            # A review is a committed provenance dependency, not submission
+            # decoration.  Resolve its opaque read receipt and commit it before
+            # any textual claim can be materialized.
+            review_refs = self._resolve_review_revisions(ledger, request, submitted_passages)
             # _resolve_evidence_passages runs first so its own structural
             # checks (domain/question membership, span bounds, canonical-unit
             # lookup) raise their own specific errors before the
             # search-provenance link check below.
-            request = self._resolve_evidence_passages(ledger, request)
-            self._validate_retained_passage_links(ledger, request, submitted_passages)
+            if request.passages:
+                request = self._resolve_evidence_passages(ledger, request, review_refs)
         violations = self._validate_domain_evidence_submission(
             ledger,
             request,
@@ -3312,7 +3352,7 @@ class RunEngine:
         if violations:
             return self._domain_evidence_blocked_response(ledger, request, violations)
         evidence_bundles, manifests, receipts = self._freeze_domain_evidence(
-            ledger, request, submitted_passages
+            ledger, request, submitted_passages, review_refs
         )
         normalized = _DomainEvidenceRecord(
             run_id=request.run_id,
@@ -3332,7 +3372,7 @@ class RunEngine:
                     revision_id=review.revision_id,
                     content_hash=canonical_hash(review),
                 )
-                for review in request.review_revisions
+                for review, _ in review_refs.values()
             ),
             candidate_dispositions=request.candidate_dispositions,
             project_rules=request.project_rules,
@@ -3369,6 +3409,7 @@ class RunEngine:
         self,
         ledger: WorkflowLedger,
         request: SubmitDomainEvidenceRequest,
+        review_refs: dict[tuple[Identifier, Identifier], tuple[EvidenceReviewRevision, RecordReference]],
     ) -> SubmitDomainEvidenceRequest:
         """Freeze engine-issued canonical spans into immutable Evidence claims."""
 
@@ -3424,28 +3465,59 @@ class RunEngine:
                 raise ValueError(
                     f"passage span is empty or exceeds canonical unit {passage.unit_id!r} text"
                 )
-            suffix = self._digest(
-                "|".join(
-                    (
-                        request.run_id,
-                        request.result_id,
-                        request.domain_id,
-                        passage.unit_id,
-                        str(passage.span_start),
-                        str(span_end),
-                        passage.claim_type,
-                    )
-                )
-            )
             source = sources.get(unit.source_id)
             if source is None or source.artifact_hash != unit.source_artifact_hash:
                 raise ValueError("canonical passage source is not current for this Run")
-            if suffix in claim_suffixes:
-                raise ValueError("duplicate canonical passage selection")
-            claim_suffixes.add(suffix)
-            prepared_passages.append((passage, unit, source, suffix, span_end))
+            candidate_id = passage.candidate_id or passage.unit_id
+            for question_id in passage.question_ids:
+                suffix = self._digest(
+                    "|".join(
+                        (
+                            request.run_id,
+                            request.result_id,
+                            request.domain_id,
+                            question_id,
+                            candidate_id,
+                            passage.unit_id,
+                            str(passage.span_start),
+                            str(span_end),
+                            passage.claim_type,
+                        )
+                    )
+                )
+                if suffix in claim_suffixes:
+                    raise ValueError("duplicate canonical passage selection for question")
+                review_pair = review_refs.get((candidate_id, question_id))
+                if review_pair is None:
+                    raise ValueError("textual Evidence requires a committed question-specific review")
+                review, review_ref = review_pair
+                matching_spans = [
+                    span
+                    for span in review.spans
+                    if span.span_start == passage.span_start
+                    and span.span_end == span_end
+                    and any(fragment.unit_id == unit.unit_id for fragment in span.reviewed_context.fragments)
+                ]
+                if len(matching_spans) != 1:
+                    raise ValueError("textual Evidence passage must exactly match one reviewed span")
+                authorizing_span = matching_spans[0]
+                if (
+                    authorizing_span.trial_attribution is not TrialAttribution.ACTIVE
+                    or authorizing_span.disposition
+                    not in {
+                        EvidenceReviewDisposition.SUPPORTING,
+                        EvidenceReviewDisposition.CONTRADICTING,
+                    }
+                ):
+                    raise ValueError(
+                        "textual Evidence requires an ACTIVE supporting or contradicting review span"
+                    )
+                claim_suffixes.add(suffix)
+                prepared_passages.append(
+                    (passage, question_id, unit, source, suffix, span_end, review_ref, authorizing_span)
+                )
 
-        for passage, unit, source, suffix, span_end in prepared_passages:
+        for passage, question_id, unit, source, suffix, span_end, review_ref, authorizing_span in prepared_passages:
             source_suffix = self._digest(
                 f"{request.run_id}|{unit.source_id}|{unit.source_artifact_hash}"
             )
@@ -3479,11 +3551,15 @@ class RunEngine:
                 dependencies=(
                     Dependency(**canonical_ref.model_dump(), role="dependency:canonical-unit"),
                     Dependency(**source_ref.model_dump(), role="dependency:source"),
+                    Dependency(**review_ref.model_dump(), role="dependency:evidence-review"),
                 ),
                 actor=actor,
                 observed_at=self._now(),
                 canonical_unit=canonical_ref,
                 source=source_ref,
+                authorizing_review=review_ref,
+                review_span_id=authorizing_span.span_id,
+                candidate_id=passage.candidate_id or passage.unit_id,
                 span_start=passage.span_start,
                 span_end=span_end,
                 quoted_text_hash=("sha256:" + hashlib.sha256(quote.encode()).hexdigest()),
@@ -3502,8 +3578,7 @@ class RunEngine:
                 dependencies=claim.dependencies,
             )
             item_refs.append(claim_ref)
-            for question_id in passage.question_ids:
-                evidence_by_question[question_id].append(claim_ref)
+            evidence_by_question[question_id].append(claim_ref)
             dispositions.append(
                 EvidenceConsiderationInput(
                     item_id=claim.entity_id,
@@ -4169,25 +4244,30 @@ class RunEngine:
         return tuple(violations)
 
     @staticmethod
-    def _retained_candidate_ids(passages: tuple[EvidencePassageInput, ...]) -> set[Identifier]:
+    def _retained_candidate_ids(
+        passages: tuple[EvidencePassageInput, ...],
+    ) -> set[tuple[Identifier, Identifier]]:
         """Compute retained-candidate identity for review-revision binding.
 
         A passage's ``candidate_id`` override takes precedence over its
-        ``unit_id`` -- the same fallback ``_validate_retained_passage_links``
-        already uses -- so review-revision binding and passage-link
+        ``unit_id`` so the review-revision binding and passage-link
         validation agree on identity. This is distinct from
         ``_freeze_recorder``'s retained-*unit* bookkeeping, which must stay
         keyed on ``unit_id`` alone: it marks dispositions against units
         Search actually returned, a caller-chosen ``candidate_id`` never
         appears there.
         """
-        return {passage.candidate_id or passage.unit_id for passage in passages}
+        return {
+            (passage.candidate_id or passage.unit_id, question_id)
+            for passage in passages
+            for question_id in passage.question_ids
+        }
 
     @staticmethod
     def _validate_review_revisions(
-        reviews: tuple[EvidenceReviewRevision, ...],
+        reviews: tuple[EvidenceReviewRevisionInput, ...],
         *,
-        retained_candidates: set[Identifier],
+        retained_candidates: set[tuple[Identifier, Identifier]],
         domain_questions: set[Identifier],
     ) -> tuple[OperationError, ...]:
         """Collect every semantic-review violation without trusting parser labels.
@@ -4197,124 +4277,218 @@ class RunEngine:
         surrounding submission check.
         """
         violations: list[OperationError] = []
-        by_candidate = {review.candidate_id: review for review in reviews}
+        by_candidate = {(review.candidate_id, review.sq_id): review for review in reviews}
         if len(by_candidate) != len(reviews):
             violations.append(
-                _evidence_violation("review batch must contain one latest revision per candidate")
+                _evidence_violation(
+                    "review batch must contain one latest revision per candidate and question"
+                )
             )
         reviewed_candidates = set(by_candidate)
-        if retained_candidates != reviewed_candidates:
-            missing = sorted(retained_candidates - reviewed_candidates)
-            extra = sorted(reviewed_candidates - retained_candidates)
-            detail = "every retained candidate requires a substantive review revision"
+        missing = retained_candidates - reviewed_candidates
+        if missing:
+            detail = "every retained candidate and question requires a substantive review revision"
             if missing:
-                detail += f"; missing review for retained candidates: {missing}"
-            if extra:
-                detail += f"; review revisions have no matching retained candidate: {extra}"
+                detail += f"; missing review for retained candidates: {sorted(missing)}"
             violations.append(_evidence_violation(detail))
-        if any(not review.is_complete for review in reviews):
+        standalone_reviews = [
+            review
+            for pair, review in by_candidate.items()
+            if pair not in retained_candidates
+        ]
+        if any(
+            span.trial_attribution
+            not in {
+                TrialAttribution.OTHER,
+                TrialAttribution.NOT_EXPLICIT,
+                TrialAttribution.UNRESOLVED,
+            }
+            or span.disposition
+            in {
+                EvidenceReviewDisposition.SUPPORTING,
+                EvidenceReviewDisposition.CONTRADICTING,
+            }
+            for review in standalone_reviews
+            for span in review.spans
+        ):
+            violations.append(
+                _evidence_violation(
+                    "a standalone review may record only non-substantive other, "
+                    "not-explicit, or unresolved spans"
+                )
+            )
+        if any(
+            span.disposition.value in {"needs_visual_review", "unresolved"}
+            or span.trial_attribution.value == "unresolved"
+            for review in reviews
+            if (review.candidate_id, review.sq_id) in retained_candidates
+            for span in review.spans
+        ):
             violations.append(
                 _evidence_violation("unresolved or visual-review conditions block Evidence freeze")
             )
-        if any(not set(review.question_ids).issubset(domain_questions) for review in reviews):
+        if any(review.sq_id not in domain_questions for review in reviews):
             violations.append(
                 _evidence_violation(
                     "review revision references a question outside the submitted Domain"
                 )
             )
+        if any(
+            len({(span.span_start, span.span_end) for span in review.spans}) != len(review.spans)
+            for review in reviews
+        ):
+            violations.append(
+                _evidence_violation("review spans must not duplicate exact bounds within a revision")
+            )
         return tuple(violations)
 
-    def _validate_retained_passage_links(
+    def _resolve_review_revisions(
         self,
         ledger: WorkflowLedger,
         request: SubmitDomainEvidenceRequest,
         passages: tuple[EvidencePassageInput, ...],
-    ) -> None:
-        """Require each retained passage to select a unit search_evidence actually returned.
-
-        Runs after _resolve_evidence_passages so its own structural checks
-        (domain/question membership, span bounds, canonical-unit lookup)
-        surface their own specific errors first; ``passages`` is the
-        pre-resolution list since resolution clears ``request.passages``.
-        """
-        retained_candidates: dict[Identifier, tuple[Identifier, Identifier]] = {}
+    ) -> dict[tuple[Identifier, Identifier], tuple[EvidenceReviewRevision, RecordReference]]:
+        """Resolve issued read views, derive span IDs, and commit reviews first."""
+        scope = self._retrieval_scope(
+            ledger, request.run_id, request.work_token, request.result_id, require_question=False
+        )
+        index = EvidenceSearchIndex(self._required_root() / ".rob2" / "evidence.sqlite3")
+        passages_by_pair: dict[tuple[Identifier, Identifier], list[EvidencePassageInput]] = {}
+        units_by_candidate: dict[Identifier, dict[Identifier, CanonicalEvidenceUnit]] = {}
         for passage in passages:
             candidate_id = passage.candidate_id or passage.unit_id
-            sq_id = passage.question_ids[0]
+            unit = index.read_unit(passage.unit_id, scope=scope)
+            units_by_candidate.setdefault(candidate_id, {})[unit.unit_id] = unit
             for question_id in passage.question_ids:
-                recorder = self._coverage_recorders.get(
-                    (request.run_id, request.result_id, request.domain_id, question_id)
+                passages_by_pair.setdefault((candidate_id, question_id), []).append(passage)
+        prepared: dict[tuple[Identifier, Identifier], EvidenceReviewRevision] = {}
+        for submitted in request.review_revisions:
+            candidate_passages = passages_by_pair.get((submitted.candidate_id, submitted.sq_id), [])
+            candidate_units = units_by_candidate.get(submitted.candidate_id, {})
+            if candidate_passages and not candidate_units:
+                raise ValueError("review revision requires one retained candidate for its sq_id")
+            spans: list[EvidenceReviewSpan] = []
+            for submitted_span in submitted.spans:
+                context = index.resolve_read_view_receipt(
+                    submitted_span.read_view_receipt,
+                    scope=scope,
                 )
-                if recorder is None or passage.unit_id not in recorder.returned_unit_ids():
-                    raise ValueError(
-                        "retained Evidence candidates must select a unit search_evidence "
-                        "returned for its mapped signaling question"
-                    )
-            if candidate_id in retained_candidates and retained_candidates[candidate_id] != (
-                passage.unit_id,
-                sq_id,
-            ):
-                raise ValueError("a retained Evidence candidate cannot span multiple questions")
-            retained_candidates[candidate_id] = (passage.unit_id, sq_id)
-        self._validate_review_span_links(ledger, request, retained_candidates, passages)
-
-    def _validate_review_span_links(
-        self,
-        ledger: WorkflowLedger,
-        request: SubmitDomainEvidenceRequest,
-        retained_candidates: dict[Identifier, tuple[Identifier, Identifier]],
-        passages_input: tuple[EvidencePassageInput, ...],
-    ) -> None:
-        """Bind semantic review spans to an issued read window and selected passage."""
-        if not request.review_revisions:
-            return
-        passages = {
-            (passage.candidate_id or passage.unit_id): passage for passage in passages_input
-        }
-        index = EvidenceSearchIndex(self._required_root() / ".rob2" / "evidence.sqlite3")
-        scope = self._retrieval_scope(
-            ledger,
-            request.run_id,
-            request.work_token,
-            request.result_id,
-            require_question=False,
-        )
-        for review in request.review_revisions:
-            expected = retained_candidates.get(review.candidate_id)
-            if expected is None:
-                raise ValueError("review revision does not bind a retained Evidence candidate")
-            passage = passages.get(review.candidate_id)
-            if passage is None:
-                raise ValueError("review revision requires a retained candidate passage")
-            unit_id, sq_id = expected
-            if passage.unit_id != unit_id or passage.question_ids != (sq_id,):
-                raise ValueError("review revision does not bind the retained candidate passage")
-            # A passage may omit span_end to select through the end of the
-            # unit; resolve the same default _resolve_evidence_passages
-            # applies when materializing the claim, so review binding agrees
-            # with what actually freezes.
-            if passage.span_end is not None:
-                span_end = passage.span_end
-            else:
-                span_end = len(index.read_unit(unit_id, scope=scope).text)
-            for span in review.spans:
-                try:
-                    read = index.read_location(span.location_handle, scope=scope)
-                except (sqlite3.Error, OSError, ValueError) as error:
-                    raise ValueError(
-                        "review span location_handle is not an issued active read view"
-                    ) from error
+                matching_units = (
+                    [
+                        unit
+                        for unit_id, unit in candidate_units.items()
+                        if any(fragment.unit_id == unit_id for fragment in context.fragments)
+                    ]
+                    if candidate_units
+                    else [
+                        index.read_unit(fragment.unit_id, scope=scope)
+                        for fragment in context.fragments
+                        if fragment.unit_id == submitted.candidate_id
+                    ]
+                )
+                if len(matching_units) != 1:
+                    raise ValueError("review span receipt must identify exactly one candidate canonical unit")
+                unit = matching_units[0]
+                fragment = next(item for item in context.fragments if item.unit_id == unit.unit_id)
                 if (
-                    read.unit.unit_id != unit_id
-                    or span.span_start != passage.span_start
-                    or span.span_end != span_end
-                    or span.span_start < read.start
-                    or span.span_end > read.end
+                    fragment is None
+                    or submitted_span.span_start < fragment.span_start
+                    or submitted_span.span_end > fragment.span_end
+                    or fragment.content_hash
+                    != sha256_digest(unit.text[fragment.span_start : fragment.span_end].encode())
+                ):
+                    raise ValueError("review span is not contained in its exact issued read view")
+                span_id = f"review-span:{self._digest('|'.join((submitted.candidate_id, unit.unit_id, unit.parse_id, unit.source_artifact_hash, str(submitted_span.span_start), str(submitted_span.span_end))))}"
+                spans.append(
+                    EvidenceReviewSpan(
+                        span_id=span_id,
+                        span_start=submitted_span.span_start,
+                        span_end=submitted_span.span_end,
+                        trial_attribution=submitted_span.trial_attribution,
+                        disposition=submitted_span.disposition,
+                        rationale=submitted_span.rationale,
+                        attribution_rationale=submitted_span.attribution_rationale,
+                        reviewed_context=context,
+                        visual_review_condition=submitted_span.visual_review_condition,
+                        duplicate_of=submitted_span.duplicate_of,
+                    )
+                )
+            review = EvidenceReviewRevision(
+                entity_id=submitted.entity_id,
+                revision_id=submitted.revision_id,
+                actor=submitted.actor,
+                observed_at=submitted.observed_at,
+                supersedes=submitted.supersedes,
+                candidate_id=submitted.candidate_id,
+                result_id=submitted.result_id,
+                domain_id=submitted.domain_id,
+                sq_id=submitted.sq_id,
+                spans=tuple(spans),
+            )
+            prepared[(review.candidate_id, review.sq_id)] = review
+
+        # A retained exact passage needs one and only one review span.  A
+        # review may additionally retain non-substantive spans to document a
+        # candidate disposition, but it cannot smuggle in an unmatched claim.
+        for pair, selected_passages in passages_by_pair.items():
+            review = prepared.get(pair)
+            if review is None:
+                raise ValueError("every retained candidate and question requires a review revision")
+            candidate_id, _ = pair
+            candidate_units = units_by_candidate[candidate_id]
+            selected_bounds: set[tuple[Identifier, int, int]] = set()
+            for passage in selected_passages:
+                unit = candidate_units[passage.unit_id]
+                end = passage.span_end if passage.span_end is not None else len(unit.text)
+                identity = (unit.unit_id, passage.span_start, end)
+                if identity in selected_bounds:
+                    raise ValueError("duplicate retained Evidence passage bounds")
+                selected_bounds.add(identity)
+                matches = [
+                    span
+                    for span in review.spans
+                    if span.span_start == passage.span_start
+                    and span.span_end == end
+                    and any(fragment.unit_id == unit.unit_id for fragment in span.reviewed_context.fragments)
+                ]
+                if len(matches) != 1:
+                    raise ValueError("each retained passage requires exactly one matching review span")
+                authorizing_span = matches[0]
+                if (
+                    authorizing_span.trial_attribution is not TrialAttribution.ACTIVE
+                    or authorizing_span.disposition
+                    not in {
+                        EvidenceReviewDisposition.SUPPORTING,
+                        EvidenceReviewDisposition.CONTRADICTING,
+                    }
                 ):
                     raise ValueError(
-                        "review span must bind its retained candidate, exact passage, "
-                        "and issued read bounds"
+                        "textual Evidence requires an ACTIVE supporting or contradicting review span"
                     )
+            for span in review.spans:
+                if span.disposition not in {
+                    EvidenceReviewDisposition.SUPPORTING,
+                    EvidenceReviewDisposition.CONTRADICTING,
+                }:
+                    continue
+                unit_ids = {fragment.unit_id for fragment in span.reviewed_context.fragments}
+                if not any((unit_id, span.span_start, span.span_end) in selected_bounds for unit_id in unit_ids):
+                    raise ValueError("substantive review span must exactly match a retained passage")
+
+        resolved: dict[tuple[Identifier, Identifier], tuple[EvidenceReviewRevision, RecordReference]] = {}
+        for review in prepared.values():
+            ref = self._commit_frozen_artifact(
+                ledger,
+                scope=request.result_id,
+                operation="operation:evidence-review-revision",
+                operation_key=f"{request.idempotency_key}:review:{review.candidate_id}:{review.sq_id}",
+                entity_id=review.entity_id,
+                revision_id=review.revision_id,
+                artifact=review,
+                actor=review.actor,
+            )
+            resolved[(review.candidate_id, review.sq_id)] = (review, ref)
+        return resolved
 
     def _coverage_recorder_metadata(
         self,
@@ -4495,6 +4669,7 @@ class RunEngine:
         ledger: WorkflowLedger,
         request: SubmitDomainEvidenceRequest,
         submitted_passages: tuple[EvidencePassageInput, ...] = (),
+        resolved_reviews: dict[tuple[Identifier, Identifier], tuple[EvidenceReviewRevision, RecordReference]] | None = None,
     ) -> tuple[
         tuple[RecordReference, ...],
         tuple[RecordReference, ...],
@@ -4505,20 +4680,7 @@ class RunEngine:
         domain = next(item for item in logic.domains if item.id == request.domain_id)
         result_spec = self._result_spec_reference(ledger, request.run_id, request.result_id)
         actor = request.actor or ASSESSMENT_AGENT_ACTOR
-        review_refs: tuple[RecordReference, ...] = tuple(
-            self._commit_frozen_artifact(
-                ledger,
-                scope=request.result_id,
-                operation="operation:evidence-review-revision",
-                operation_key=f"{request.idempotency_key}:review:{review.candidate_id}",
-                entity_id=review.entity_id,
-                revision_id=review.revision_id,
-                artifact=review,
-                actor=review.actor,
-                dependencies=review.dependencies,
-            )
-            for review in request.review_revisions
-        )
+        resolved_reviews = resolved_reviews or {}
         suffix = self._digest(f"{request.run_id}|{request.idempotency_key}|dispositions")
         disposition_record = EvidenceCandidateDispositionRecord(
             entity_id=f"evidence-disposition:{suffix}",
@@ -4550,6 +4712,11 @@ class RunEngine:
         )
         coverage_refs_by_question: dict[Identifier, RecordReference] = {}
         for question_id in domain.question_ids:
+            review_refs = tuple(
+                reference
+                for (candidate_id, sq_id), (_, reference) in resolved_reviews.items()
+                if sq_id == question_id
+            )
             recorder = self._coverage_recorders.get(
                 (request.run_id, request.result_id, request.domain_id, question_id)
             )
@@ -4581,6 +4748,13 @@ class RunEngine:
         bundles: list[RecordReference] = []
         manifests: list[RecordReference] = []
         for question_id in domain.question_ids:
+            # Reviews are question-specific.  Recompute inside the bundle
+            # loop rather than leaking the final coverage-loop value.
+            review_refs = tuple(
+                reference
+                for (_, sq_id), (_, reference) in resolved_reviews.items()
+                if sq_id == question_id
+            )
             slug = question_id.removeprefix("sq:").replace(":", "-")
             bundle_suffix = self._digest(
                 f"{request.run_id}|{request.idempotency_key}|bundle|{question_id}"
@@ -4843,6 +5017,9 @@ class RunEngine:
             )
             for current_domain in domain_ids
         }
+        current_revisions = {
+            revision.entity_id: revision for revision in ledger.current_revisions()
+        }
         for question_id, answer in sorted(answers_by_question.items()):
             current_domain = question_domains.get(question_id)
             if current_domain is None or current_domain not in payloads:
@@ -4939,6 +5116,13 @@ class RunEngine:
                                 or claim.revision_id != item_ref.revision_id
                             ):
                                 raise ValueError("Evidence claim reference identity does not match")
+                            review = EvidenceReviewRevision.model_validate_json(
+                                ledger.artifacts.read(claim.authorizing_review.content_hash)
+                            )
+                            review_span = next(
+                                (span for span in review.spans if span.span_id == claim.review_span_id),
+                                None,
+                            )
                             canonical = CanonicalEvidenceUnit.model_validate_json(
                                 ledger.artifacts.read(claim.canonical_unit.content_hash)
                             )
@@ -4951,10 +5135,45 @@ class RunEngine:
                                 or canonical.domain_id != current_domain
                                 or question_id not in canonical.question_ids
                                 or canonical.applicability is not EvidenceApplicability.RESULT
-                                or canonical.discourse_scope is not TrialDiscourseScope.ACTIVE
                                 or canonical.trial_id != current_spec.result.trial_id
-                                or canonical.source_id != claim.source.entity_id
+                                or canonical.source_id != source.source_id
                                 or canonical.source_artifact_hash != source.artifact_hash
+                                or review.entity_id != claim.authorizing_review.entity_id
+                                or review.revision_id != claim.authorizing_review.revision_id
+                                or canonical_hash(review) != claim.authorizing_review.content_hash
+                                or claim.authorizing_review not in bundle.review_revisions
+                                or review.result_id != result_id
+                                or review.domain_id != current_domain
+                                or review.sq_id != question_id
+                                or review.candidate_id != claim.candidate_id
+                                or review_span is None
+                                or review_span.span_start != claim.span_start
+                                or review_span.span_end != claim.span_end
+                                or review_span.trial_attribution.value != "active"
+                                or review_span.disposition.value not in {"supporting", "contradicting"}
+                                or not any(
+                                    fragment.unit_id == canonical.unit_id
+                                    and fragment.source_id == canonical.source_id
+                                    and fragment.source_artifact_hash
+                                    == canonical.source_artifact_hash
+                                    and fragment.parse_id == canonical.parse_id
+                                    and fragment.canonicalization_version
+                                    == canonical.canonicalization_version
+                                    and fragment.unit_content_hash
+                                    == sha256_digest(canonical.text.encode())
+                                    and fragment.span_start <= claim.span_start
+                                    and fragment.span_end >= claim.span_end
+                                    and fragment.content_hash == sha256_digest(
+                                        canonical.text[fragment.span_start : fragment.span_end].encode()
+                                    )
+                                    for fragment in review_span.reviewed_context.fragments
+                                )
+                                or not any(
+                                    parse.parse_id == canonical.parse_id
+                                    and parse.source_id == canonical.source_id
+                                    and parse.artifact_hash == canonical.source_artifact_hash
+                                    for parse in source.parse_records
+                                )
                                 or claim.span_end > len(canonical.text)
                                 or claim.span_end <= claim.span_start
                                 or claim.quoted_text_hash
@@ -4965,6 +5184,20 @@ class RunEngine:
                                 raise ValueError(
                                     "Evidence claim provenance is outside active scope"
                                 )
+                            current_review = current_revisions.get(review.entity_id)
+                            if (
+                                current_review is None
+                                or current_review.revision_id != review.revision_id
+                                or current_review.artifact_hash
+                                != claim.authorizing_review.content_hash
+                            ):
+                                # The claim still identifies and verifies its
+                                # historical review, but that review is no
+                                # longer the ledger's current revision for
+                                # this exact review entity.  This is a stale
+                                # dependency, not malformed provenance.
+                                stale = True
+                                continue
                         except (KeyError, OSError, TypeError, ValueError, json.JSONDecodeError):
                             try:
                                 visual_status = self._visual_transcription_status(
@@ -5718,26 +5951,6 @@ class RunEngine:
             return DocumentZone.MAIN
         return DocumentZone.UNKNOWN
 
-    @classmethod
-    def _canonical_discourse(cls, value: str | None, *, text: str) -> TrialDiscourseScope:
-        normalized = cls._normalize_parser_label(value)
-        if normalized is not None:
-            normalized = {
-                "other_trial": TrialDiscourseScope.OTHER.value,
-                "external_trial": TrialDiscourseScope.OTHER.value,
-                "another_trial": TrialDiscourseScope.OTHER.value,
-                "same_trial": TrialDiscourseScope.ACTIVE.value,
-                "current_trial": TrialDiscourseScope.ACTIVE.value,
-            }.get(normalized, normalized)
-            try:
-                return TrialDiscourseScope(normalized)
-            except ValueError:
-                pass
-        lowered = text.casefold()
-        if any(marker in lowered for marker in ("another trial", "other trial", "external trial")):
-            return TrialDiscourseScope.OTHER
-        return TrialDiscourseScope.UNCERTAIN
-
     def _index_initial_evidence(self, root: Path, initialization: ProjectInitialization) -> None:
         """Materialize canonical text units for a prepared Run."""
 
@@ -5766,11 +5979,8 @@ class RunEngine:
                 for page in indexed_pages:
                     structure_metadata = page.structure_tree or {}
                     structure_zone = structure_metadata.get("document_zone")
-                    structure_discourse = structure_metadata.get("discourse_scope")
                     if not isinstance(structure_zone, str):
                         structure_zone = None
-                    if not isinstance(structure_discourse, str):
-                        structure_discourse = None
                     parser_has_semantics = any(
                         item.unit_kind
                         or item.document_zone
@@ -5792,10 +6002,6 @@ class RunEngine:
                         # safe heading replaces the inherited boundary.
                         inherited_zone = page_zone
                     page_zone_unknown = page_zone is DocumentZone.UNKNOWN
-                    page_discourse = self._canonical_discourse(
-                        page.discourse_scope or structure_discourse,
-                        text=page.text,
-                    )
                     markdown_lines = [
                         line.strip() for line in page.markdown.splitlines() if line.strip()
                     ]
@@ -5898,14 +6104,6 @@ class RunEngine:
                                 page_text=text_item.text,
                             )
                         )
-                        block_discourse = (
-                            page_discourse
-                            if text_item.discourse_scope is None
-                            else self._canonical_discourse(
-                                text_item.discourse_scope,
-                                text=text_item.text,
-                            )
-                        )
                         parser_applicability = None
                         if text_item.applicability is not None:
                             try:
@@ -5931,14 +6129,6 @@ class RunEngine:
                                 (
                                     "document_zone_unclassified",
                                     page_zone_unknown or block_zone is DocumentZone.UNKNOWN,
-                                ),
-                                (
-                                    "trial_discourse_uncertain",
-                                    block_discourse
-                                    in {
-                                        TrialDiscourseScope.UNCERTAIN,
-                                        TrialDiscourseScope.MIXED,
-                                    },
                                 ),
                                 (
                                     "result_scope_unresolved",
@@ -5988,7 +6178,6 @@ class RunEngine:
                                 else (),
                                 source_role=(source.roles[0].value if source.roles else None),
                                 document_zone=block_zone,
-                                discourse_scope=block_discourse,
                                 warnings=warnings,
                             )
                         )
@@ -6004,11 +6193,6 @@ class RunEngine:
                         )
                         if len(trial_result_ids) != 1:
                             fallback_warnings += ("result_scope_unresolved",)
-                        if page_discourse in {
-                            TrialDiscourseScope.UNCERTAIN,
-                            TrialDiscourseScope.MIXED,
-                        }:
-                            fallback_warnings += ("trial_discourse_uncertain",)
                         blocks.append(
                             CanonicalBlock(
                                 # The parser supplied page text but no unit
@@ -6029,7 +6213,6 @@ class RunEngine:
                                 applicable_result_ids=trial_result_ids,
                                 source_role=(source.roles[0].value if source.roles else None),
                                 document_zone=page_zone,
-                                discourse_scope=page_discourse,
                                 warnings=fallback_warnings,
                             )
                         )
@@ -6084,7 +6267,6 @@ class RunEngine:
                     "domain_id": item.domain_id,
                     "question_ids": item.question_ids,
                     "document_zone": item.document_zone.value if item.document_zone else None,
-                    "discourse_scope": item.discourse_scope.value,
                     "table_headers": item.table_headers,
                     "caption": item.caption,
                     "section_path": item.section_path,

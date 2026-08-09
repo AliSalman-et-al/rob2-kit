@@ -12,15 +12,26 @@ from rob2_kit.domain.assessment import (
     AssessmentRevision,
     DecisionTrace,
 )
+from rob2_kit.domain.evidence import (
+    EvidenceReviewDisposition,
+    EvidenceReviewRevision,
+    EvidenceReviewSpan,
+    ReviewedEvidenceContext,
+    ReviewedEvidenceFragment,
+    TrialAttribution,
+)
+from rob2_kit.domain.canonical import sha256_digest
 from rob2_kit.domain.releases import PolicyRelease
 from rob2_kit.domain.results import Comparison, Estimate, Result, ResultSpecRevision
 from rob2_kit.domain.revisions import Dependency, RecordReference
 from rob2_kit.domain.sources import SourceInventoryRevision
 from rob2_kit.reports.archives import (
+    ArchiveArtifact,
     ArchiveBuilder,
     ArchiveVerificationError,
     verify_archive,
 )
+from rob2_kit.reports import archives
 from rob2_kit.storage.artifacts import ArtifactStore
 from rob2_kit.storage.ledger import (
     DependencyInput,
@@ -33,6 +44,71 @@ from tests.fixtures import actor
 
 NOW = datetime(2026, 7, 29, 12, tzinfo=UTC)
 REPOSITORY_ROOT = Path(__file__).parents[1]
+
+
+def test_archive_recognizes_typed_evidence_review_dependencies() -> None:
+    """Issue 151 review provenance remains independently verifiable offline."""
+
+    review = EvidenceReviewRevision(
+        entity_id="evidence-review:archive",
+        revision_id="revision:evidence-review-archive-1",
+        actor=actor(),
+        observed_at=NOW,
+        candidate_id="candidate:archive",
+        result_id="result:archive",
+        domain_id="domain:archive",
+        sq_id="sq:archive",
+        spans=(
+            EvidenceReviewSpan(
+                span_id="review-span:archive",
+                span_start=0,
+                span_end=9,
+                trial_attribution=TrialAttribution.ACTIVE,
+                disposition=EvidenceReviewDisposition.SUPPORTING,
+                rationale="The exact source span was reviewed.",
+                attribution_rationale="The bounded context identifies the active result.",
+                reviewed_context=ReviewedEvidenceContext(
+                    receipt_hash="sha256:" + ("a" * 64),
+                    snapshot_hash="sha256:" + ("b" * 64),
+                    requested_mode="unit",
+                    applied_mode="unit",
+                    fragments=(
+                        ReviewedEvidenceFragment(
+                            unit_id="unit:archive",
+                            source_id="source:archive",
+                            source_artifact_hash="sha256:" + ("c" * 64),
+                            parse_id="parse:archive",
+                            canonicalization_version="canonicalization:1.0.0",
+                            unit_content_hash="sha256:" + ("d" * 64),
+                            span_start=0,
+                            span_end=9,
+                            content_hash=sha256_digest(b"archive span"),
+                        ),
+                    ),
+                ),
+            ),
+        ),
+    )
+    content = review.model_dump_json().encode()
+    artifact = ArchiveArtifact(
+        archive_path="records/review.json",
+        content_hash=sha256_digest(content),
+        dependencies=(),
+        entity_id=review.entity_id,
+        media_type="application/json",
+        omitted=False,
+        revision_id=review.revision_id,
+    )
+    buffer = io.BytesIO()
+    with ZipFile(buffer, "w", ZIP_DEFLATED) as bundle:
+        bundle.writestr(artifact.archive_path, content)
+    with ZipFile(io.BytesIO(buffer.getvalue())) as bundle:
+        validated = archives._validate_revision_artifacts(bundle, (artifact,))
+
+    assert isinstance(validated[review.revision_id], EvidenceReviewRevision)
+    assert archives._EXPECTED_DEPENDENCY_MODELS["dependency:evidence-review"] == (
+        EvidenceReviewRevision,
+    )
 
 
 def verification_pins() -> dict[str, bytes]:
