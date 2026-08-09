@@ -15,6 +15,8 @@ from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
+from rob2_kit.domain.canonical import canonical_hash
+from rob2_kit.domain.results import ResultSpecRevision
 from rob2_kit.domain.revisions import (
     SCHEMA_VERSION as RECORD_SCHEMA_VERSION,
 )
@@ -25,6 +27,7 @@ from rob2_kit.domain.revisions import (
     SchemaVersion,
 )
 from rob2_kit.storage.artifacts import (
+    Artifact,
     ArtifactCorruptionError,
     ArtifactNotFoundError,
     ArtifactStore,
@@ -190,6 +193,14 @@ class IntegrityReceipt(LedgerModel):
     schema_version: int
 
 
+class ArtifactVerificationCache:
+    """One process-lifetime cache for verified bytes and parsed ResultSpec identities."""
+
+    def __init__(self) -> None:
+        self.verified_hashes: set[str] = set()
+        self.result_spec_identities: dict[str, tuple[tuple[str, str, str], ...]] = {}
+
+
 class ReplayProjection(LedgerModel):
     current_revisions: tuple[RevisionProjection, ...]
     checkpoints: tuple[Checkpoint, ...]
@@ -223,6 +234,7 @@ class WorkflowLedger:
         now: Callable[[], datetime] | None = None,
         event_identifiers: Callable[[str, str, int], tuple[str, str]] | None = None,
         verified_artifact_hashes: set[str] | None = None,
+        verification_cache: ArtifactVerificationCache | None = None,
     ) -> None:
         self.path = Path(path)
         self.path.parent.mkdir(parents=True, exist_ok=True)
@@ -233,9 +245,18 @@ class WorkflowLedger:
         # ledger instances (e.g. RunEngine, which rebuilds WorkflowLedger on
         # every call); a fresh set here preserves always-full-reverify
         # behavior for direct construction.
-        self._verified_artifact_hashes = (
-            verified_artifact_hashes if verified_artifact_hashes is not None else set()
-        )
+        if verification_cache is not None and verified_artifact_hashes is not None:
+            raise ValueError("provide verification_cache instead of verified_artifact_hashes")
+        self._verification_cache = verification_cache or ArtifactVerificationCache()
+        if verified_artifact_hashes is not None:
+            # Legacy callers can still supply an initially empty set. A
+            # non-empty orphaned set cannot safely prove identities were
+            # parsed, so reject it rather than rereading or trusting it.
+            if verified_artifact_hashes:
+                raise ValueError(
+                    "non-empty verified_artifact_hashes requires ArtifactVerificationCache"
+                )
+            self._verification_cache.verified_hashes = verified_artifact_hashes
         self._initialize()
 
     def acquire_lease(
@@ -331,6 +352,11 @@ class WorkflowLedger:
             if any(duplicate is not None for duplicate in duplicates):
                 if not all(duplicate is not None for duplicate in duplicates):
                     raise StaleWriterError("commit batch is only partially present")
+                for transition, artifact in zip(transitions, artifacts, strict=True):
+                    if not self._duplicate_operation_matches(connection, transition, artifact):
+                        raise RunIntegrityFailure(
+                            "operation key was already committed with a different transition"
+                        )
                 return tuple(
                     CommitResult.model_validate_json(duplicate["result_json"]).model_copy(
                         update={"duplicate": True}
@@ -926,14 +952,29 @@ class WorkflowLedger:
         }
         if referenced_hashes != reachable_hashes:
             raise IntegrityError("reachable artifact projection does not match revision references")
+        json_artifact_hashes = {
+            row["artifact_hash"]
+            for row in connection.execute(
+                "SELECT artifact_hash FROM revisions WHERE media_type = 'application/json'"
+            )
+        }
         for content_hash in sorted(referenced_hashes):
-            if content_hash not in self._verified_artifact_hashes:
+            if content_hash not in self._verification_cache.verified_hashes:
                 try:
-                    self.artifacts.read(content_hash)
+                    content = self.artifacts.read(content_hash)
                 except (ArtifactCorruptionError, ArtifactNotFoundError) as error:
                     raise IntegrityError(str(error)) from error
-                self._verified_artifact_hashes.add(content_hash)
+                if content_hash in json_artifact_hashes:
+                    try:
+                        self._cache_result_spec_identities(content_hash, content)
+                    except (UnicodeDecodeError, json.JSONDecodeError) as error:
+                        raise IntegrityError("JSON revision artifact is unreadable") from error
+                # JSON artifacts are not marked verified until their ResultSpec
+                # identities have been parsed and cached.  The paired cache
+                # entries make a cached byte verification an identity proof.
+                self._verification_cache.verified_hashes.add(content_hash)
             artifact_count += 1
+        self._verify_result_spec_revision_identity(connection)
         active_dependencies = connection.execute(
             """
             SELECT dependency.revision_id
@@ -999,6 +1040,34 @@ class WorkflowLedger:
             event_count=event_count,
             artifact_count=artifact_count,
             schema_version=version,
+        )
+
+    def _verify_result_spec_revision_identity(self, connection: sqlite3.Connection) -> None:
+        """Reject any nested ResultSpec identity bound to more than one content hash."""
+        seen: dict[tuple[str, str], str] = {}
+        rows = connection.execute(
+            "SELECT DISTINCT artifact_hash FROM revisions WHERE media_type = 'application/json'"
+        )
+        for row in rows:
+            artifact_hash = row["artifact_hash"]
+            identities = self._verification_cache.result_spec_identities.get(artifact_hash)
+            if identities is None:
+                raise IntegrityError(
+                    "verified JSON artifact lacks parsed ResultSpec identity cache entry"
+                )
+            for entity_id, revision_id, content_hash in identities:
+                identity = (entity_id, revision_id)
+                existing = seen.setdefault(identity, content_hash)
+                if existing != content_hash:
+                    raise IntegrityError(
+                        "ResultSpec revision identity is bound to different canonical content"
+                    )
+
+    def _cache_result_spec_identities(self, artifact_hash: str, content: bytes) -> None:
+        payload = json.loads(content)
+        self._verification_cache.result_spec_identities[artifact_hash] = tuple(
+            (spec.entity_id, spec.revision_id, canonical_hash(spec))
+            for spec in _nested_result_spec_revisions(payload)
         )
 
     def _event_data(
@@ -1071,6 +1140,71 @@ class WorkflowLedger:
             "supersedes_revision_id": transition.supersedes_revision_id,
         }
 
+    def _duplicate_operation_matches(
+        self,
+        connection: sqlite3.Connection,
+        transition: Transition,
+        artifact: Artifact,
+    ) -> bool:
+        """Return whether an operation-key replay supplies the exact transition."""
+        row = connection.execute(
+            """
+            SELECT workflow_events.*, revisions.media_type
+            FROM workflow_events
+            JOIN revisions USING(revision_id)
+            WHERE workflow_events.operation_key = ?
+            """,
+            (transition.operation_key,),
+        ).fetchone()
+        if row is None:
+            return False
+        stored = {
+            "record_schema_version": json.loads(row["transition_json"])["record_schema_version"],
+            "scope": row["scope"],
+            "operation": row["operation"],
+            "operation_key": row["operation_key"],
+            "actor": json.loads(row["actor_json"]),
+            "observed_at": row["observed_at"],
+            "entity_id": row["entity_id"],
+            "revision_id": row["revision_id"],
+            "artifact_hash": json.loads(row["output_hashes_json"])[0],
+            "artifact_media_type": row["media_type"],
+            "dependencies": json.loads(row["transition_json"])["dependencies"],
+            "expected_dependency_fingerprint": dependency_fingerprint(
+                tuple(
+                    DependencyInput.model_validate(item)
+                    for item in json.loads(row["transition_json"])["dependencies"]
+                )
+            ),
+            "checkpoint": json.loads(row["transition_json"])["checkpoint"],
+            "outcome": row["outcome"],
+            "causation_id": row["causation_id"],
+            "correlation_id": row["correlation_id"],
+            "supersedes_revision_id": json.loads(row["transition_json"])[
+                "supersedes_revision_id"
+            ],
+        }
+        submitted = {
+            "record_schema_version": transition.record_schema_version,
+            "scope": transition.scope,
+            "operation": transition.operation,
+            "operation_key": transition.operation_key,
+            "actor": transition.actor.model_dump(mode="json"),
+            "observed_at": transition.observed_at.isoformat(),
+            "entity_id": transition.entity_id,
+            "revision_id": transition.revision_id,
+            "artifact_hash": artifact.content_hash,
+            "artifact_media_type": transition.artifact_media_type,
+            "dependencies": [item.model_dump(mode="json") for item in transition.dependencies],
+            "expected_dependency_fingerprint": transition.expected_dependency_fingerprint,
+            "checkpoint": transition.checkpoint,
+            "outcome": transition.outcome,
+            "causation_id": transition.causation_id,
+            "correlation_id": transition.correlation_id,
+            "supersedes_revision_id": transition.supersedes_revision_id,
+        }
+        return stored == submitted
+
     def _revision_query(self, *, active: bool) -> tuple[RevisionProjection, ...]:
         with self._connection() as connection:
             join = "JOIN" if active else "LEFT JOIN"
@@ -1127,6 +1261,20 @@ def _event_identifiers(_transition: Transition, _sequence: int) -> tuple[str, st
 def _hash_json(value: object) -> str:
     payload = json.dumps(value, sort_keys=True, separators=(",", ":")).encode()
     return f"sha256:{hashlib.sha256(payload).hexdigest()}"
+
+
+def _nested_result_spec_revisions(value: Any) -> Iterator[ResultSpecRevision]:
+    """Typed-walk JSON values for direct or envelope-nested ResultSpecs."""
+    if isinstance(value, dict):
+        try:
+            yield ResultSpecRevision.model_validate(value)
+        except (TypeError, ValueError):
+            pass
+        for nested in value.values():
+            yield from _nested_result_spec_revisions(nested)
+    elif isinstance(value, list):
+        for nested in value:
+            yield from _nested_result_spec_revisions(nested)
 
 
 def workflow_event_hash_payload(event: WorkflowEvent) -> dict[str, Any]:

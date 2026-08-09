@@ -3,6 +3,7 @@ from __future__ import annotations
 import subprocess
 import sys
 from dataclasses import dataclass, field
+from datetime import UTC, datetime
 from io import BytesIO
 from pathlib import Path
 from zipfile import ZIP_DEFLATED, ZipFile
@@ -11,6 +12,7 @@ import pytest
 import yaml
 
 from rob2_kit.application.preparation import TrialFailureReason
+from rob2_kit.domain.results import derive_result_spec_revision_id
 from rob2_kit.domain.revisions import Actor, ActorKind
 from rob2_kit.domain.sources import (
     CoverageState,
@@ -236,6 +238,66 @@ def test_project_configuration_declares_multiple_exact_results_per_trial(
         "result:trial-a-readmission-90d",
     ]
     assert initialized.result_specs[0].result.source_locator == "report.pdf p. 8 table 2"
+
+
+def test_declared_result_spec_revision_identity_binds_actor_and_observation_time(
+    tmp_path: Path,
+) -> None:
+    trial = tmp_path / "input" / "trial-a"
+    trial.mkdir(parents=True)
+    (trial / "report.pdf").write_bytes(b"report")
+    (tmp_path / "rob2.yaml").write_text(
+        yaml.safe_dump(
+            {
+                "schema_version": 1,
+                "results": [
+                    {
+                        "result": {
+                            "result_id": "result:trial-a-mortality",
+                            "trial_id": "trial:trial-a",
+                            "randomization_id": "randomization:trial-a",
+                            "comparison": {
+                                "experimental_arm_id": "arm:treatment",
+                                "comparator_arm_id": "arm:control",
+                            },
+                            "effect_of_interest": "assignment",
+                            "outcome_construct": "Mortality",
+                            "measurement_instrument": "Vital status",
+                            "time_point": "30 days",
+                            "analysis_population": "Intention to treat",
+                            "analysis_model": "Risk ratio, unadjusted",
+                            "effect_measure": "RR",
+                            "source_locator": "report.pdf p. 8 table 2",
+                        },
+                        "estimate": {"value": "0.82"},
+                        "provenance_note": "Protocol-defined primary result.",
+                    }
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+    parser = StubParser({"report": (page(1, "Report"),)})
+
+    first = initialize_project(
+        tmp_path,
+        actor=ACTOR,
+        parser=parser,
+        now=lambda: datetime(2026, 8, 9, 12, tzinfo=UTC),
+    )
+    second = initialize_project(
+        tmp_path,
+        actor=ACTOR,
+        parser=parser,
+        now=lambda: datetime(2026, 8, 9, 12, 1, tzinfo=UTC),
+    )
+
+    assert first.result_specs[0].entity_id == second.result_specs[0].entity_id
+    assert first.result_specs[0].revision_id != second.result_specs[0].revision_id
+    for declared in (*first.result_specs, *second.result_specs):
+        assert declared.revision_id == derive_result_spec_revision_id(
+            declared.model_dump(mode="json", exclude={"revision_id"})
+        )
 
 
 def test_multiple_primary_candidates_are_nonblocking_and_trial_yaml_disambiguates(

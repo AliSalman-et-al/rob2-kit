@@ -19,7 +19,13 @@ from rob2_kit.domain.evidence import (
     VisualTranscription,
 )
 from rob2_kit.domain.releases import PackKind, PackRelease, PolicyKind, PolicyRelease
-from rob2_kit.domain.results import Comparison, Estimate, Result, ResultSpecRevision
+from rob2_kit.domain.results import (
+    Comparison,
+    Estimate,
+    Result,
+    ResultSpecRevision,
+    derive_result_spec_revision_id,
+)
 from tests.fixtures import HASH, dependency, reference, revision_fields
 
 
@@ -61,6 +67,29 @@ def test_result_spec_round_trip_preserves_stable_identity_and_numbers() -> None:
     assert restored == spec
     assert restored.result.result_id == "result:trial-a-mortality"
     assert restored.estimate.value == Decimal("0.82")
+
+
+def test_result_spec_revision_id_binds_complete_non_circular_preimage() -> None:
+    spec = result_spec()
+    preimage = spec.model_dump(mode="json", exclude={"revision_id"})
+
+    derived = derive_result_spec_revision_id(preimage)
+
+    assert derived == derive_result_spec_revision_id(preimage)
+    assert derived != derive_result_spec_revision_id(
+        preimage | {"observed_at": "2026-08-09T12:00:00Z"}
+    )
+    assert derived != derive_result_spec_revision_id(
+        preimage
+        | {
+            "actor": {
+                **preimage["actor"],
+                "actor_id": "actor:another-test",
+            }
+        }
+    )
+    with pytest.raises(ValueError, match="must not contain revision_id"):
+        derive_result_spec_revision_id(preimage | {"revision_id": spec.revision_id})
 
 
 def test_evidence_bundle_round_trips() -> None:

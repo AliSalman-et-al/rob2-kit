@@ -22,7 +22,7 @@ import yaml
 from pydantic import AliasChoices, ConfigDict, Field
 
 from rob2_kit.application.preparation import TrialFailed, TrialFailureReason
-from rob2_kit.domain.results import ResultSpecRevision
+from rob2_kit.domain.results import ResultSpecRevision, derive_result_spec_revision_id
 from rob2_kit.domain.revisions import Actor, ContentHash, FrozenModel, Identifier
 from rob2_kit.domain.sources import (
     AcquisitionMethod,
@@ -1016,20 +1016,32 @@ def _declared_result_specs(
         if trial_id not in trial_ids and not allow_unknown_trial_refs:
             raise ValueError(f"declared Result references unknown Trial {trial_id}")
         result_id = str(result.get("result_id", ""))
-        digest = hashlib.sha256(
-            json.dumps(item, sort_keys=True, separators=(",", ":")).encode()
-        ).hexdigest()[:24]
+        entity_id = f"result-spec:{result_id.removeprefix('result:')}"
+        # A ResultSpec revision binds every caller-authored revision field.
+        # In particular, an identical declaration observed later is a distinct
+        # immutable observation, not a re-use of the earlier revision ID.
+        # ``revision_id`` is deliberately absent from its own preimage.
+        preimage = {
+            "schema_version": item.get("schema_version", "1.0.0"),
+            "entity_id": entity_id,
+            "dependencies": item.get("dependencies", ()),
+            "actor": actor.model_dump(mode="json"),
+            "observed_at": observed_at.isoformat(),
+            "supersedes": item.get("supersedes"),
+            "result": result,
+            "estimate": item.get("estimate", {}),
+            "provenance_note": str(item.get("provenance_note", "")),
+            "analysis_priority": item.get("analysis_priority"),
+            "preference_source_locator": item.get("preference_source_locator"),
+        }
+        normalized = ResultSpecRevision(
+            **preimage,
+            revision_id="revision:result-spec-pending",
+        )
+        normalized_preimage = normalized.model_dump(mode="json", exclude={"revision_id"})
         specs.append(
-            ResultSpecRevision(
-                entity_id=f"result-spec:{result_id.removeprefix('result:')}",
-                revision_id=f"revision:result-spec-{digest}",
-                actor=actor,
-                observed_at=observed_at,
-                result=result,
-                estimate=item.get("estimate", {}),
-                provenance_note=str(item.get("provenance_note", "")),
-                analysis_priority=item.get("analysis_priority"),
-                preference_source_locator=item.get("preference_source_locator"),
+            normalized.model_copy(
+                update={"revision_id": derive_result_spec_revision_id(normalized_preimage)}
             )
         )
     result_ids = [item.result.result_id for item in specs]

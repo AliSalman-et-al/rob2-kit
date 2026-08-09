@@ -116,7 +116,7 @@ from rob2_kit.domain.evidence import (
     VisualTranscription,
 )
 from rob2_kit.domain.releases import PolicyKind, PolicyRelease
-from rob2_kit.domain.results import ResultSpecRevision
+from rob2_kit.domain.results import ResultSpecRevision, derive_result_spec_revision_id
 from rob2_kit.domain.revisions import (
     SCHEMA_VERSION,
     Actor,
@@ -223,6 +223,7 @@ from rob2_kit.storage import (
     WorkflowLedger,
     dependency_fingerprint,
 )
+from rob2_kit.storage.ledger import ArtifactVerificationCache
 
 ENGINE_ACTOR = Actor(
     kind=ActorKind.SYSTEM,
@@ -663,7 +664,9 @@ class RunEngine:
         # ``_coverage_recorders`` above: a new process gets a fresh, empty set
         # and re-verifies everything, which is the accepted trade-off for
         # this fix.
-        self._verified_artifact_hashes: set[str] = set()
+        self._verification_cache = ArtifactVerificationCache()
+        # Compatibility projection for #130's observable process cache.
+        self._verified_artifact_hashes = self._verification_cache.verified_hashes
 
     def __getattr__(self, name: str) -> Any:
         """Expose the canonical status spelling without expanding the legacy API.
@@ -689,7 +692,7 @@ class RunEngine:
             event_identifiers=(
                 self._determinism.event_identifiers if self._determinism is not None else None
             ),
-            verified_artifact_hashes=self._verified_artifact_hashes,
+            verification_cache=self._verification_cache,
         )
 
     def prepare_run(self, request: PrepareRunRequest) -> PrepareRunResponse:
@@ -755,6 +758,9 @@ class RunEngine:
                     )
                 except ValueError as error:
                     return self._prepare_configuration_error(root, ledger, error)
+                initialization = self._bind_declared_result_spec_supersessions(
+                    ledger, initialization, run_id=current.run_id
+                )
                 existing = self._latest_proposal(ledger, current.run_id)
                 try:
                     inputs_changed = self._input_snapshot_hash(root) != existing.input_snapshot_hash
@@ -814,7 +820,10 @@ class RunEngine:
                                         operation_key=(
                                             f"idempotency:result-spec-superseded-{supersede_suffix}"
                                         ),
-                                        entity_id=f"result-spec:{result_id.removeprefix('result:')}",
+                                        entity_id=(
+                                            "run-result-spec-supersession:"
+                                            f"{supersede_suffix}"
+                                        ),
                                         revision_id=(
                                             f"revision:result-spec-superseded-{supersede_suffix}"
                                         ),
@@ -1081,6 +1090,7 @@ class RunEngine:
             )
         except ValueError as error:
             return self._prepare_configuration_error(root, ledger, error)
+        initialization = self._bind_declared_result_spec_supersessions(ledger, initialization)
         # The typed boundary owns the evidence index used by its read/search
         # operations.  Indexing is deterministic and happens once at prepare
         # time, so a fresh MCP process can resume from the durable index.
@@ -4493,7 +4503,7 @@ class RunEngine:
         """Materialize one immutable Evidence Bundle and manifest per domain SQ."""
         logic = self._logic_pack()
         domain = next(item for item in logic.domains if item.id == request.domain_id)
-        result_spec = self._result_spec_reference(ledger, request.result_id)
+        result_spec = self._result_spec_reference(ledger, request.run_id, request.result_id)
         actor = request.actor or ASSESSMENT_AGENT_ACTOR
         review_refs: tuple[RecordReference, ...] = tuple(
             self._commit_frozen_artifact(
@@ -4585,7 +4595,9 @@ class RunEngine:
             # item it links -- request.conflicts is submission-wide, but
             # each per-question bundle only carries its own item subset.
             question_conflicts = tuple(
-                conflict for conflict in request.conflicts if set(conflict).issubset(question_item_ids)
+                conflict
+                for conflict in request.conflicts
+                if set(conflict).issubset(question_item_ids)
             )
             manifest_items = tuple(question_items)
             manifest_dispositions = tuple(
@@ -4861,7 +4873,7 @@ class RunEngine:
             unresolved = False
             stale = False
             try:
-                current_result_spec = self._result_spec_reference(ledger, result_id)
+                current_result_spec = self._result_spec_reference(ledger, run_id, result_id)
             except (KeyError, OSError, TypeError, ValueError):
                 current_result_spec = None
             current_spec = self._result_spec_for(ledger, run_id, result_id)
@@ -6995,7 +7007,7 @@ class RunEngine:
             ),
             overall_decision_trace=(final_overall_rule.id,),
         )
-        result_spec_ref = self._result_spec_reference(ledger, result_id)
+        result_spec_ref = self._result_spec_reference(ledger, run_id, result_id)
         source_inventory_ref = self._freeze_source_inventory(
             ledger, run_id, result_id, result_spec_ref
         )
@@ -8786,10 +8798,11 @@ class RunEngine:
     def _result_spec_reference(
         self,
         ledger: WorkflowLedger,
+        run_id: Identifier,
         result_id: Identifier,
     ) -> RecordReference:
         """Return the exact ledger reference for one resolved ResultSpec."""
-        for event in reversed(self._events_for_run(ledger, self._run_id_for_ledger(ledger))):
+        for event in reversed(self._events_for_run(ledger, run_id)):
             if event.operation not in {
                 "operation:result-discovered",
                 "operation:submit-result-resolution",
@@ -8807,30 +8820,138 @@ class RunEngine:
                 spec = ResultSpecRevision.model_validate(raw_spec)
             except (ValueError, TypeError):
                 continue
-            # Result resolution stores a typed submission envelope.  Project
-            # the nested ResultSpec as its own immutable artifact so bundles
-            # can bind the exact semantic Result revision rather than the
-            # mutable envelope around it.
-            suffix = self._digest(f"{result_id}|{spec.revision_id}")
-            return self._commit_frozen_artifact(
-                ledger,
-                scope=result_id,
-                operation="operation:result-spec-frozen",
-                operation_key=f"idempotency:result-spec-frozen-{suffix}",
-                entity_id=spec.entity_id,
-                revision_id=spec.revision_id,
-                artifact=spec,
-                actor=ENGINE_ACTOR,
-            )
+            return self._freeze_result_spec_reference(ledger, run_id, result_id, spec)
         raise ValueError("a ResultSpec is required before freezing domain evidence")
 
-    @staticmethod
-    def _run_id_for_ledger(ledger: WorkflowLedger) -> Identifier:
-        for event in ledger.events():
-            payload = json.loads(ledger.artifacts.read(event.output_revision_hashes[0]))
-            if isinstance(payload, dict) and isinstance(payload.get("run_id"), str):
-                return payload["run_id"]
-        raise ValueError("ledger does not contain a Run identifier")
+    def _freeze_result_spec_reference(
+        self,
+        ledger: WorkflowLedger,
+        run_id: Identifier,
+        result_id: Identifier,
+        result_spec: ResultSpecRevision,
+    ) -> RecordReference:
+        """Commit the Run-held ResultSpec unchanged as this Run's freeze event."""
+        current = next(
+            (
+                revision
+                for revision in ledger.current_revisions()
+                if revision.entity_id == result_spec.entity_id
+            ),
+            None,
+        )
+        if result_spec.supersedes is not None and (
+            current is None or current.revision_id != result_spec.revision_id
+        ):
+            historical = self._result_spec_by_revision(
+                ledger, result_spec.entity_id, result_spec.supersedes.revision_id
+            )
+            if (
+                historical is None
+                or canonical_hash(historical) != result_spec.supersedes.content_hash
+            ):
+                raise ValueError("ResultSpec supersession predecessor is not recoverable")
+            self._materialize_result_spec_history(ledger, run_id, historical)
+            current = next(
+                (
+                    revision
+                    for revision in ledger.current_revisions()
+                    if revision.entity_id == result_spec.entity_id
+                ),
+                None,
+            )
+            if current is None or current.revision_id != result_spec.supersedes.revision_id:
+                raise ValueError(
+                    "ResultSpec supersession does not descend from the current revision"
+                )
+        suffix = self._digest(f"{run_id}|{result_id}|{result_spec.revision_id}")
+        transition = self._transition(
+            scope=run_id,
+            operation="operation:result-spec-frozen",
+            operation_key=f"idempotency:result-spec-frozen-{suffix}",
+            entity_id=result_spec.entity_id,
+            revision_id=result_spec.revision_id,
+            artifact=result_spec,
+            checkpoint=None,
+            outcome=WorkflowEventOutcome.COMPLETED,
+            observed_at=result_spec.observed_at,
+            actor=result_spec.actor,
+            dependencies=tuple(
+                DependencyInput.model_validate(item.model_dump())
+                for item in result_spec.dependencies
+            ),
+            supersedes_revision_id=(
+                result_spec.supersedes.revision_id if result_spec.supersedes is not None else None
+            ),
+        )
+        committed = ledger.commit(
+            transition,
+            self._acquire_lease(ledger, result_spec.observed_at),
+            now=result_spec.observed_at,
+        )
+        return RecordReference(
+            entity_id=result_spec.entity_id,
+            revision_id=result_spec.revision_id,
+            content_hash=committed.artifact_hash,
+        )
+
+    def _materialize_result_spec_history(
+        self, ledger: WorkflowLedger, run_id: Identifier, result_spec: ResultSpecRevision
+    ) -> None:
+        """Advance direct history through only the missing descendants of current."""
+        current = next(
+            (
+                revision
+                for revision in ledger.current_revisions()
+                if revision.entity_id == result_spec.entity_id
+            ),
+            None,
+        )
+        pending: list[ResultSpecRevision] = []
+        candidate = result_spec
+        while current is None or candidate.revision_id != current.revision_id:
+            pending.append(candidate)
+            if candidate.supersedes is None:
+                if current is not None:
+                    raise ValueError(
+                        "ResultSpec history does not descend from the current revision"
+                    )
+                break
+            predecessor = self._result_spec_by_revision(
+                ledger, candidate.entity_id, candidate.supersedes.revision_id
+            )
+            if (
+                predecessor is None
+                or canonical_hash(predecessor) != candidate.supersedes.content_hash
+            ):
+                raise ValueError("ResultSpec supersession ancestor is not recoverable")
+            candidate = predecessor
+        for missing in reversed(pending):
+            suffix = self._digest(f"{run_id}|{missing.revision_id}|history")
+            ledger.commit(
+                self._transition(
+                    scope=run_id,
+                    operation="operation:result-spec-historical-projected",
+                    operation_key=f"idempotency:result-spec-history-{suffix}",
+                    entity_id=missing.entity_id,
+                    revision_id=missing.revision_id,
+                    artifact=missing,
+                    checkpoint=None,
+                    outcome=WorkflowEventOutcome.COMPLETED,
+                    observed_at=missing.observed_at,
+                    actor=missing.actor,
+                    dependencies=tuple(
+                        DependencyInput.model_validate(item.model_dump())
+                        for item in missing.dependencies
+                    ),
+                    supersedes_revision_id=(
+                        missing.supersedes.revision_id
+                        if missing.supersedes is not None
+                        else None
+                    ),
+                ),
+                self._acquire_lease(ledger, missing.observed_at),
+                now=missing.observed_at,
+            )
 
     def _confirmed_for_idempotency(
         self,
@@ -10458,6 +10579,9 @@ class RunEngine:
             existing_result_ids=set(existing.result_ids),
             run_id=run_id,
         )
+        initialization = self._bind_declared_result_spec_supersessions(
+            ledger, initialization, run_id=run_id
+        )
         try:
             refreshed = self._proposal(run_id, initialization)
         except ValueError as error:
@@ -11201,6 +11325,113 @@ class RunEngine:
                 resolved[record.result_id] = record.result_spec
         return resolved
 
+    def _result_spec_by_revision(
+        self,
+        ledger: WorkflowLedger,
+        entity_id: Identifier,
+        revision_id: Identifier,
+        *,
+        run_id: Identifier | None = None,
+    ) -> ResultSpecRevision | None:
+        events = self._events_for_run(ledger, run_id) if run_id is not None else ledger.events()
+        for event in reversed(events):
+            try:
+                if event.entity_id == entity_id and event.revision_id == revision_id:
+                    spec = ResultSpecRevision.model_validate_json(
+                        ledger.artifacts.read(event.output_revision_hashes[0])
+                    )
+                    if spec.entity_id == entity_id and spec.revision_id == revision_id:
+                        return spec
+                payload = self._event_payload(ledger, event)
+                raw_spec = payload.get("result_spec")
+                if isinstance(raw_spec, dict):
+                    spec = ResultSpecRevision.model_validate(raw_spec)
+                    if spec.entity_id == entity_id and spec.revision_id == revision_id:
+                        return spec
+            except (IndexError, OSError, TypeError, ValueError):
+                continue
+        return None
+
+    def _bind_declared_result_spec_supersessions(
+        self,
+        ledger: WorkflowLedger,
+        initialization: ProjectInitialization,
+        *,
+        run_id: Identifier | None = None,
+    ) -> ProjectInitialization:
+        """Establish a declaration's predecessor before deriving its revision ID."""
+        current_by_entity = {
+            revision.entity_id: revision for revision in ledger.current_revisions()
+        }
+        bound: list[ResultSpecRevision] = []
+        for spec in initialization.result_specs:
+            # Within an existing Run, a later reconciliation envelope is the
+            # authoritative predecessor even while an earlier frozen revision
+            # remains project-current.  Otherwise a new Run retains the
+            # project-wide current-revision behavior.
+            predecessor = (
+                self._latest_result_spec_for_entity(ledger, spec.entity_id, run_id=run_id)
+                if run_id is not None
+                else None
+            )
+            if predecessor is None:
+                current = current_by_entity.get(spec.entity_id)
+                predecessor = (
+                    self._result_spec_by_revision(ledger, current.entity_id, current.revision_id)
+                    if current is not None
+                    else self._latest_result_spec_for_entity(ledger, spec.entity_id, run_id=None)
+                )
+            if predecessor is None:
+                bound.append(spec)
+                continue
+            if spec.supersedes is not None and (
+                spec.supersedes.revision_id != predecessor.revision_id
+                or spec.supersedes.content_hash != canonical_hash(predecessor)
+            ):
+                raise ValueError(
+                    "declared ResultSpec supersedes a revision other than the current "
+                    "Project ResultSpec revision"
+                )
+            supersedes = Supersession(
+                entity_id=spec.entity_id,
+                revision_id=predecessor.revision_id,
+                content_hash=canonical_hash(predecessor),
+                reason="new declared ResultSpec observation supersedes the prior revision",
+            )
+            preimage = spec.model_dump(mode="json", exclude={"revision_id"})
+            preimage["supersedes"] = supersedes.model_dump(mode="json")
+            bound.append(
+                spec.model_copy(
+                    update={
+                        "revision_id": derive_result_spec_revision_id(preimage),
+                        "supersedes": supersedes,
+                    }
+                )
+            )
+        return initialization.model_copy(update={"result_specs": tuple(bound)})
+
+    def _latest_result_spec_for_entity(
+        self, ledger: WorkflowLedger, entity_id: Identifier, *, run_id: Identifier | None
+    ) -> ResultSpecRevision | None:
+        events = self._events_for_run(ledger, run_id) if run_id is not None else ledger.events()
+        for event in reversed(events):
+            try:
+                if event.entity_id == entity_id:
+                    spec = ResultSpecRevision.model_validate_json(
+                        ledger.artifacts.read(event.output_revision_hashes[0])
+                    )
+                    if spec.entity_id == entity_id:
+                        return spec
+                payload = self._event_payload(ledger, event)
+                raw_spec = payload.get("result_spec")
+                if isinstance(raw_spec, dict):
+                    spec = ResultSpecRevision.model_validate(raw_spec)
+                    if spec.entity_id == entity_id:
+                        return spec
+            except (OSError, TypeError, ValueError):
+                continue
+        return None
+
     @staticmethod
     def _result_mappings(
         initialization: ProjectInitialization,
@@ -11373,6 +11604,30 @@ class RunEngine:
                 observed_at=now,
             )
         ]
+        for result_spec in record.proposal.initialization.result_specs:
+            previous = self._result_spec_for(ledger, run_id, result_spec.result.result_id)
+            if previous is None or previous == result_spec:
+                continue
+            suffix = self._digest(
+                f"{run_id}|{result_spec.result.result_id}|{result_spec.revision_id}"
+            )
+            transitions.append(
+                self._transition(
+                    scope=result_spec.result.result_id,
+                    operation="operation:result-spec-superseded",
+                    operation_key=f"idempotency:reconcile-result-spec-superseded-{suffix}",
+                    entity_id=f"run-result-spec-supersession:{suffix}",
+                    revision_id=f"revision:run-result-spec-supersession-{suffix}",
+                    artifact=_ResultDiscoveredRecord(
+                        run_id=run_id,
+                        result_id=result_spec.result.result_id,
+                        result_spec=result_spec,
+                    ),
+                    checkpoint=f"checkpoint:result-spec-superseded-{suffix}",
+                    outcome=WorkflowEventOutcome.COMPLETED,
+                    observed_at=now,
+                )
+            )
         recomputable_result_ids = tuple(
             result_id
             for result_id in invalidated_result_ids

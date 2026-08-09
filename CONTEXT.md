@@ -13,7 +13,7 @@ The stable, trial-specific intervention-effect analysis to which one RoB 2 asses
 _Avoid_: Paper assessment, study-level risk of bias
 
 **ResultSpec revision**:
-An immutable resolved description of a Result at a point in time, including its numerical values, denominators, locators, and provenance. Correcting any of that content creates a new revision and invalidates dependent judgments and signatures without changing the Result’s identity.
+An immutable resolved description of a Result at a point in time, including its numerical values, denominators, locators, provenance, actor, and observation time. Within one Project ledger, its entity and revision identities bind exactly one canonical byte sequence: changing any bound content, including observing the same declaration at a different time, creates a new revision and invalidates dependent judgments and signatures without changing the Result’s identity.
 _Avoid_: Result, outcome target
 
 **Trial**:

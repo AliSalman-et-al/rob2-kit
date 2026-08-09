@@ -213,7 +213,7 @@ def test_wrong_scope_visual_transcription_is_unresolvable_evidence(tmp_path, mon
         revision_id=manifest.revision_id,
         content_hash=manifest_artifact.content_hash,
     )
-    result_spec_ref = engine._result_spec_reference(ledger, evidence.result_id)
+    result_spec_ref = engine._result_spec_reference(ledger, run_id, evidence.result_id)
     bundle = EvidenceBundle.model_validate(
         {
             "entity_id": "bundle:wrong-visual",

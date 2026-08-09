@@ -1,10 +1,13 @@
 """Stable Result identity and immutable ResultSpec contracts."""
 
+import hashlib
+from collections.abc import Mapping
 from decimal import Decimal
-from typing import Literal
+from typing import Any, Literal
 
 from pydantic import Field
 
+from rob2_kit.domain.canonical import canonical_json_bytes
 from rob2_kit.domain.revisions import FrozenModel, Identifier, Revision
 
 
@@ -49,3 +52,11 @@ class ResultSpecRevision(Revision):
     # the basis must name an acquired protocol/SAP source explicitly.
     analysis_priority: Literal["protocol_primary", "prespecified_cutoff"] | None = None
     preference_source_locator: str | None = None
+
+
+def derive_result_spec_revision_id(preimage: Mapping[str, Any]) -> Identifier:
+    """Derive a ResultSpec revision ID from its complete non-circular preimage."""
+    if "revision_id" in preimage:
+        raise ValueError("ResultSpec revision preimage must not contain revision_id")
+    digest = hashlib.sha256(canonical_json_bytes(dict(preimage))).hexdigest()[:24]
+    return f"revision:result-spec-{digest}"
