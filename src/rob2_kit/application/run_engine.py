@@ -5361,10 +5361,10 @@ class RunEngine:
         ledger.commit(transition, lease, now=now)
 
     @staticmethod
-    def _domain_evidence_needs_retry(
+    def _latest_domain_evidence_retry_event(
         events: tuple[WorkflowEvent, ...], result_id: Identifier, domain_id: Identifier
-    ) -> bool:
-        """Whether the latest frozen evidence for this Domain was already blocked.
+    ) -> WorkflowEvent | None:
+        """Return the latest block that requires a fresh evidence work item.
 
         Mirrors _has_domain_checkpoint's sequence-comparison pattern: a block
         recorded after the latest evidence checkpoint means the next work
@@ -5381,13 +5381,17 @@ class RunEngine:
             ),
             default=0,
         )
-        return any(
-            event.operation == "operation:domain-evidence-insufficient"
+        retry_events = tuple(
+            event
+            for event in events
+            if event.operation == "operation:domain-evidence-insufficient"
             and event.scope == result_id
             and event.checkpoint == f"checkpoint:evidence-insufficient-{slug}"
             and event.sequence > latest_evidence
-            for event in events
         )
+        if not retry_events:
+            return None
+        return max(retry_events, key=lambda event: event.sequence)
 
     def _evidence_insufficiency_response(
         self,
@@ -9663,12 +9667,17 @@ class RunEngine:
         for result_id in result_ids:
             for domain in logic.domains:
                 domain_id = domain.id
-                if not self._has_domain_checkpoint(
-                    events, result_id, domain_id, "evidence"
-                ) or self._domain_evidence_needs_retry(events, result_id, domain_id):
+                retry_event = self._latest_domain_evidence_retry_event(events, result_id, domain_id)
+                if (
+                    not self._has_domain_checkpoint(events, result_id, domain_id, "evidence")
+                    or retry_event is not None
+                ):
+                    work_key = f"{result_id}|{domain_id}|evidence"
+                    if retry_event is not None:
+                        work_key += f"|retry:{retry_event.event_id}"
                     return self._work_item(
                         run_id,
-                        f"{result_id}|{domain_id}|evidence",
+                        work_key,
                         RunOperation.SUBMIT_DOMAIN_EVIDENCE,
                         result_id=result_id,
                         domain_id=domain_id,
