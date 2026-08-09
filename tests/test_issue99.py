@@ -197,10 +197,24 @@ def test_rebootstrap_refuses_a_tampered_existing_runtime(tmp_path: Path, monkeyp
 def test_built_main_wheel_bootstraps_a_real_project_runtime(tmp_path: Path) -> None:
     """Exercise the published-wheel path with uv rather than source fixtures."""
 
-    subprocess.run(["python", "scripts/build_release.py"], cwd=ROOT, check=True)
-    runtime_wheels = tuple((ROOT / "release" / "runtime").glob("rob2_kit*.whl"))
+    source_root = tmp_path / "source"
+    shutil.copytree(
+        ROOT,
+        source_root,
+        ignore=shutil.ignore_patterns(
+            ".git",
+            ".venv",
+            ".pytest_cache",
+            ".ruff_cache",
+            ".hypothesis",
+            "__pycache__",
+            "dist",
+        ),
+    )
+    subprocess.run([sys.executable, "scripts/build_release.py"], cwd=source_root, check=True)
+    runtime_wheels = tuple((source_root / "release" / "runtime").glob("rob2_kit*.whl"))
     assert [wheel.name for wheel in runtime_wheels] == ["rob2_kit-0.1.0-py3-none-any.whl"]
-    wheel = next((ROOT / "dist").glob("rob2_kit-*.whl"))
+    wheel = next((source_root / "dist").glob("rob2_kit-*.whl"))
     environment = tmp_path / "venv"
     subprocess.run(["uv", "venv", str(environment), "--python", sys.executable], check=True)
     python = environment / ("Scripts/python.exe" if os.name == "nt" else "bin/python")

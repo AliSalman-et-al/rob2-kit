@@ -94,6 +94,10 @@ def test_bootstrap_unlocked_wires_directly_to_the_shared_runtime(
 
     bundled_root = _build_bundled_release_with_runtime(tmp_path)
     monkeypatch.setattr("rob2_kit.interfaces.harness._release_root", lambda: bundled_root)
+    monkeypatch.setattr(
+        "rob2_kit.interfaces.harness.verify_mcp_launchability",
+        lambda _project_root, _command, _args: RUN_OPERATION_NAMES,
+    )
 
     project_root = tmp_path / "consumer"
     result = CliRunner().invoke(app, ["bootstrap", str(project_root), "--unlocked"])

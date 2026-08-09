@@ -124,6 +124,20 @@ def test_json_artifacts_are_canonicalized_before_hashing(store: ArtifactStore) -
     assert store.read(spaced.content_hash) == '{"a":"é","z":1}'.encode()
 
 
+def test_cached_event_snapshot_refreshes_after_commit(ledger: WorkflowLedger) -> None:
+    lease = acquire(ledger)
+    ledger.commit(transition("first"), lease, now=NOW)
+    first = ledger.events()
+
+    ledger.commit(transition("second", entity="entity:second"), lease, now=NOW)
+
+    assert tuple(event.revision_id for event in first) == ("revision:first",)
+    assert tuple(event.revision_id for event in ledger.events()) == (
+        "revision:first",
+        "revision:second",
+    )
+
+
 def test_failed_transaction_exposes_no_event_revision_or_reachable_artifact(
     ledger: WorkflowLedger,
 ) -> None:

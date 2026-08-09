@@ -194,11 +194,15 @@ class IntegrityReceipt(LedgerModel):
 
 
 class ArtifactVerificationCache:
-    """One process-lifetime cache for verified bytes and parsed ResultSpec identities."""
+    """One process-lifetime cache for verified immutable ledger data."""
 
     def __init__(self) -> None:
         self.verified_hashes: set[str] = set()
         self.result_spec_identities: dict[str, tuple[tuple[str, str, str], ...]] = {}
+        self.json_payloads: dict[str, Any] = {}
+        self.event_snapshots: dict[
+            Path, tuple[tuple[int, str], tuple[WorkflowEvent, ...]]
+        ] = {}
 
 
 class ReplayProjection(LedgerModel):
@@ -511,14 +515,42 @@ class WorkflowLedger:
                     (transition.operation_key, result.model_dump_json()),
                 )
                 results.append(result)
+        self._verification_cache.event_snapshots.pop(self.path.resolve(), None)
         return tuple(results)
 
     def events(self) -> tuple[WorkflowEvent, ...]:
         with self._connection() as connection:
-            return tuple(
+            row = connection.execute(
+                "SELECT sequence, event_hash FROM workflow_events "
+                "ORDER BY sequence DESC LIMIT 1"
+            ).fetchone()
+            cursor = (0, GENESIS_HASH) if row is None else (row["sequence"], row["event_hash"])
+            cached = self._verification_cache.event_snapshots.get(self.path.resolve())
+            if cached is not None and cached[0] == cursor:
+                return cached[1]
+            events = tuple(
                 self._row_to_event(row)
                 for row in connection.execute("SELECT * FROM workflow_events ORDER BY sequence")
             )
+        self._verification_cache.event_snapshots[self.path.resolve()] = (cursor, events)
+        return events
+
+    def verified_event_snapshot(self) -> tuple[tuple[int, str], tuple[WorkflowEvent, ...]]:
+        """Return the event snapshot established by preflight or the latest read."""
+        cached = self._verification_cache.event_snapshots.get(self.path.resolve())
+        if cached is not None:
+            return cached
+        self.events()
+        return self._verification_cache.event_snapshots[self.path.resolve()]
+
+    def artifact_json(self, content_hash: str) -> Any:
+        """Read one immutable JSON artifact, reusing its verified parsed value."""
+        cached = self._verification_cache.json_payloads.get(content_hash)
+        if cached is not None:
+            return cached
+        payload = json.loads(self.artifacts.read(content_hash))
+        self._verification_cache.json_payloads[content_hash] = payload
+        return payload
 
     def current_revisions(self) -> tuple[RevisionProjection, ...]:
         return self._revision_query(active=True)
@@ -856,6 +888,7 @@ class WorkflowLedger:
         previous_hash = GENESIS_HASH
         expected_sequence = 1
         event_count = 0
+        verified_events: list[WorkflowEvent] = []
         for row in connection.execute("SELECT * FROM workflow_events ORDER BY sequence"):
             if row["sequence"] != expected_sequence:
                 raise IntegrityError("event order is not contiguous")
@@ -885,6 +918,7 @@ class WorkflowLedger:
             if row["event_hash"] != expected_hash:
                 raise IntegrityError(f"event hash is corrupted at sequence {expected_sequence}")
             event = self._row_to_event(row)
+            verified_events.append(event)
             if event.record_schema_version != RECORD_SCHEMA_VERSION:
                 raise IntegrityError(
                     f"unsupported record schema version {event.record_schema_version}"
@@ -1005,10 +1039,7 @@ class WorkflowLedger:
                 raise IntegrityError("writer lease expiry must use UTC")
             if lease["fencing_token"] < 1:
                 raise IntegrityError("writer lease fencing token is invalid")
-        events = tuple(
-            self._row_to_event(row)
-            for row in connection.execute("SELECT * FROM workflow_events ORDER BY sequence")
-        )
+        events = tuple(verified_events)
         replayed = self._replay_events(events)
         persisted_revisions = tuple(
             RevisionProjection.model_validate(dict(row))
@@ -1035,6 +1066,10 @@ class WorkflowLedger:
             raise IntegrityError("current revision projection does not match event replay")
         if replayed.checkpoints != persisted_checkpoints:
             raise IntegrityError("checkpoint projection does not match event replay")
+        self._verification_cache.event_snapshots[self.path.resolve()] = (
+            (event_count, previous_hash),
+            events,
+        )
         return IntegrityReceipt(
             ok=True,
             event_count=event_count,
@@ -1065,6 +1100,7 @@ class WorkflowLedger:
 
     def _cache_result_spec_identities(self, artifact_hash: str, content: bytes) -> None:
         payload = json.loads(content)
+        self._verification_cache.json_payloads[artifact_hash] = payload
         self._verification_cache.result_spec_identities[artifact_hash] = tuple(
             (spec.entity_id, spec.revision_id, canonical_hash(spec))
             for spec in _nested_result_spec_revisions(payload)

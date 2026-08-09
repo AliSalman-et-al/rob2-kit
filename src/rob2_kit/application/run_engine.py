@@ -113,8 +113,8 @@ from rob2_kit.domain.evidence import (
     EvidenceCoverageReceiptRecord,
     EvidenceInsufficiency,
     EvidenceInsufficiencyReason,
-    EvidenceReviewRevision,
     EvidenceReviewDisposition,
+    EvidenceReviewRevision,
     EvidenceReviewSpan,
     ReviewedEvidenceFragment,
     TrialAttribution,
@@ -671,6 +671,11 @@ class RunEngine:
         self._verification_cache = ArtifactVerificationCache()
         # Compatibility projection for #130's observable process cache.
         self._verified_artifact_hashes = self._verification_cache.verified_hashes
+        self._run_event_cache: dict[
+            tuple[Path, Identifier], tuple[tuple[int, str], tuple[WorkflowEvent, ...]]
+        ] = {}
+        self._logic_pack_cache: tuple[str, Any] | None = None
+        self._guidance_pack_cache: tuple[str, Any] | None = None
 
     def __getattr__(self, name: str) -> Any:
         """Expose the canonical status spelling without expanding the legacy API.
@@ -4509,7 +4514,7 @@ class RunEngine:
             revision_id=result_spec.revision_id,
             content_hash=canonical_hash(result_spec),
         )
-        guidance = load_guidance_pack(self._guidance_pack_path())
+        guidance = self._guidance_pack()
         seed_family = "seed:" + sq_id.removeprefix("sq:").replace(":", "-")
         proposal = self._latest_proposal(ledger, run_id)
         trial = next(
@@ -5435,7 +5440,7 @@ class RunEngine:
         domain: Any,
     ) -> tuple[RecordReference, ...]:
         logic = self._logic_pack()
-        guidance = load_guidance_pack(self._guidance_pack_path())
+        guidance = self._guidance_pack()
         evidence_events = [
             self._event_payload(ledger, event)
             for event in self._events_for_run(ledger, request.run_id)
@@ -7076,7 +7081,7 @@ class RunEngine:
             evaluation.matched_rule_ids,
             visual_citations,
         )
-        guidance = load_guidance_pack(self._guidance_pack_path())
+        guidance = self._guidance_pack()
         guidance_by_id = {item.logic_element_id: item for item in guidance.items}
         questions_by_id = {
             question_id: question.model_copy(update={"wording": guidance_by_id[question_id].text})
@@ -9931,7 +9936,18 @@ class RunEngine:
             return None
 
     def _logic_pack(self):
-        return load_logic_pack(self._logic_pack_path())
+        path = self._logic_pack_path()
+        content_hash = hashlib.sha256(path.read_bytes()).hexdigest()
+        if self._logic_pack_cache is None or self._logic_pack_cache[0] != content_hash:
+            self._logic_pack_cache = (content_hash, load_logic_pack(path))
+        return self._logic_pack_cache[1]
+
+    def _guidance_pack(self):
+        path = self._guidance_pack_path()
+        content_hash = hashlib.sha256(path.read_bytes()).hexdigest()
+        if self._guidance_pack_cache is None or self._guidance_pack_cache[0] != content_hash:
+            self._guidance_pack_cache = (content_hash, load_guidance_pack(path))
+        return self._guidance_pack_cache[1]
 
     @staticmethod
     def _guidance_pack_path() -> Path:
@@ -9962,7 +9978,7 @@ class RunEngine:
         if work_item.domain_id is None or work_item.result_id is None:
             raise ValueError("a Domain context requires Result and domain scope")
         logic = self._logic_pack()
-        guidance = load_guidance_pack(self._guidance_pack_path())
+        guidance = self._guidance_pack()
         domain = next((item for item in logic.domains if item.id == work_item.domain_id), None)
         if domain is None:
             raise ValueError(f"unknown Logic domain {work_item.domain_id!r}")
@@ -10276,15 +10292,22 @@ class RunEngine:
     def _events_for_run(
         self, ledger: WorkflowLedger, run_id: Identifier
     ) -> tuple[WorkflowEvent, ...]:
+        cursor, events = ledger.verified_event_snapshot()
+        cache_key = (ledger.path.resolve(), run_id)
+        cached = self._run_event_cache.get(cache_key)
+        if cached is not None and cached[0] == cursor:
+            return cached[1]
         selected = []
-        for event in ledger.events():
+        for event in events:
             if event.scope == run_id:
                 selected.append(event)
                 continue
             payload = self._event_payload(ledger, event)
             if payload.get("run_id") == run_id:
                 selected.append(event)
-        return tuple(selected)
+        result = tuple(selected)
+        self._run_event_cache[cache_key] = (cursor, result)
+        return result
 
     def _current_prepared_record(self, ledger: WorkflowLedger) -> _PreparedRunRecord | None:
         records = self._unfinished_prepared_records(ledger)
@@ -12799,7 +12822,7 @@ class RunEngine:
     @staticmethod
     def _event_payload(ledger: WorkflowLedger, event: WorkflowEvent) -> dict[str, object]:
         try:
-            payload = json.loads(ledger.artifacts.read(event.output_revision_hashes[0]))
+            payload = ledger.artifact_json(event.output_revision_hashes[0])
         except (UnicodeDecodeError, json.JSONDecodeError):
             return {}
         return payload if isinstance(payload, dict) else {}
