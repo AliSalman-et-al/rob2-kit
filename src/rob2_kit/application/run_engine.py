@@ -4291,11 +4291,8 @@ class RunEngine:
             if missing:
                 detail += f"; missing review for retained candidates: {sorted(missing)}"
             violations.append(_evidence_violation(detail))
-        standalone_reviews = [
-            review
-            for pair, review in by_candidate.items()
-            if pair not in retained_candidates
-        ]
+        standalone_pairs = sorted(pair for pair in by_candidate if pair not in retained_candidates)
+        standalone_reviews = [by_candidate[pair] for pair in standalone_pairs]
         if any(
             span.trial_attribution
             not in {
@@ -4314,7 +4311,8 @@ class RunEngine:
             violations.append(
                 _evidence_violation(
                     "a standalone review may record only non-substantive other, "
-                    "not-explicit, or unresolved spans"
+                    "not-explicit, or unresolved spans; standalone candidates: "
+                    f"{standalone_pairs}"
                 )
             )
         if any(

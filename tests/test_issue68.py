@@ -25,7 +25,7 @@ from tests.test_evidence_workflow import HASH, complete_receipt, unit
 def test_read_context_is_bounded_and_preserves_source_parse_provenance(tmp_path: Path) -> None:
     index = EvidenceSearchIndex(tmp_path / "evidence.sqlite3")
     units = tuple(
-        unit(number, f"Allocation context {number}.", page=number)
+        unit(number, f"Allocation context {number}.", page=1)
         for number in range(1, 9)
     )
     index.replace_units(units)

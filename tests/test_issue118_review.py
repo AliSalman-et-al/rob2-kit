@@ -21,7 +21,15 @@ def _context() -> ReviewedEvidenceContext:
         applied_mode="unit",
         fragments=(
             ReviewedEvidenceFragment(
-                unit_id="unit:one", span_start=0, span_end=9, content_hash="sha256:" + "3" * 64
+                unit_id="unit:one",
+                source_id="source:one",
+                source_artifact_hash="sha256:" + "3" * 64,
+                parse_id="parse:one",
+                canonicalization_version="1.0.0",
+                unit_content_hash="sha256:" + "4" * 64,
+                span_start=0,
+                span_end=9,
+                content_hash="sha256:" + "5" * 64,
             ),
         ),
     )

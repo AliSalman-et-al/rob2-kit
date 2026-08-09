@@ -6,8 +6,14 @@ from types import SimpleNamespace
 from rob2_kit.application.run_engine import RunEngine
 from rob2_kit.domain.canonical import sha256_digest
 from rob2_kit.domain.evidence import (
-    EvidenceBundle, EvidenceClaim, EvidenceReviewDisposition, EvidenceReviewRevision,
-    EvidenceReviewSpan, ReviewedEvidenceContext, ReviewedEvidenceFragment, TrialAttribution,
+    EvidenceBundle,
+    EvidenceClaim,
+    EvidenceReviewDisposition,
+    EvidenceReviewRevision,
+    EvidenceReviewSpan,
+    ReviewedEvidenceContext,
+    ReviewedEvidenceFragment,
+    TrialAttribution,
     VerificationStatus,
 )
 from rob2_kit.domain.revisions import Actor, ActorKind, Dependency, RecordReference
@@ -50,7 +56,13 @@ def _claim_and_bundle(*, spatial: tuple[float, float, float, float] | None):
             reviewed_context=ReviewedEvidenceContext(
                 receipt_hash=HASH, snapshot_hash=HASH, requested_mode="unit", applied_mode="unit",
                 fragments=(ReviewedEvidenceFragment(
-                    unit_id=unit.unit_id, span_start=0, span_end=10,
+                    unit_id=unit.unit_id,
+                    source_id=unit.source_id,
+                    source_artifact_hash=unit.source_artifact_hash,
+                    parse_id=unit.parse_id,
+                    canonicalization_version=unit.canonicalization_version,
+                    unit_content_hash=sha256_digest(unit.text.encode()),
+                    span_start=0, span_end=10,
                     content_hash=sha256_digest(unit.text[:10].encode()),
                 ),),
             ),

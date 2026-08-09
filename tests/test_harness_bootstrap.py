@@ -2,12 +2,10 @@
 
 from __future__ import annotations
 
-import hashlib
 import json
 import shutil
 import sys
 import tomllib
-import zipfile
 from pathlib import Path
 from typing import cast
 
@@ -81,26 +79,10 @@ def _build_bundled_release_with_runtime(root: Path) -> Path:
     shutil.copyfile(ROOT / "rob2.lock", bundled_root / "rob2.lock")
     shutil.copyfile(ROOT / "uv.lock", bundled_root / "uv.lock")
 
-    runtime = bundled_root / "release" / "runtime"
-    runtime.mkdir(parents=True)
-    (runtime / "pyproject.toml").write_text('[project]\nname = "stub"\n', encoding="utf-8")
-    (runtime / "uv.lock").write_text("", encoding="utf-8")
-
-    wheel = runtime / "rob2_kit-0.1.0-py3-none-any.whl"
-    with zipfile.ZipFile(wheel, "w") as archive:
-        archive.writestr(
-            "rob2_kit-0.1.0.dist-info/METADATA",
-            "Metadata-Version: 2.1\nName: rob2-kit\nVersion: 0.1.0\n",
-        )
-    (bundled_root / "release" / "runtime-wheel-pin.json").write_text(
-        json.dumps(
-            {
-                "filename": wheel.name,
-                "version": "0.1.0",
-                "sha256": hashlib.sha256(wheel.read_bytes()).hexdigest(),
-            }
-        ),
-        encoding="utf-8",
+    shutil.copytree(ROOT / "release" / "runtime", bundled_root / "release" / "runtime")
+    shutil.copyfile(
+        ROOT / "release" / "runtime-wheel-pin.json",
+        bundled_root / "release" / "runtime-wheel-pin.json",
     )
     return bundled_root
 
@@ -125,7 +107,7 @@ def test_bootstrap_unlocked_wires_directly_to_the_shared_runtime(
     codex = tomllib.loads((project_root / ".codex" / "config.toml").read_text(encoding="utf-8"))
     server = codex["mcp_servers"]["rob2-kit"]
     assert server["command"] == "uv"
-    assert str(bundled_root / "runtime") in server["args"]
+    assert str(bundled_root / "release" / "runtime") in server["args"]
     assert ".rob2/runtime" not in " ".join(server["args"])
 
     manifest = json.loads((project_root / "rob2.lock").read_text(encoding="utf-8"))

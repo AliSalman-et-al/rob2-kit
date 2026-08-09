@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from rob2_kit.domain.canonical import canonical_hash
+from rob2_kit.domain.canonical import canonical_hash, sha256_digest
 from rob2_kit.domain.evidence import (
     EvidenceReviewDisposition,
     EvidenceReviewRevision,
@@ -527,10 +527,21 @@ def test_exact_claim_is_materialized_from_canonical_text_and_conflicts_are_prese
                             snapshot_hash=canonical_hash({"snapshot": handle}),
                             requested_mode="unit",
                             applied_mode="unit",
-                            fragments=(ReviewedEvidenceFragment(
-                                unit_id="unit:allocation", span_start=span_start,
-                                span_end=span_end, content_hash=canonical_hash({"span": handle}),
-                            ),),
+                            fragments=(
+                                ReviewedEvidenceFragment(
+                                    unit_id=canonical.unit_id,
+                                    source_id=canonical.source_id,
+                                    source_artifact_hash=canonical.source_artifact_hash,
+                                    parse_id=canonical.parse_id,
+                                    canonicalization_version=canonical.canonicalization_version,
+                                    unit_content_hash=sha256_digest(canonical.text.encode()),
+                                    span_start=span_start,
+                                    span_end=span_end,
+                                    content_hash=sha256_digest(
+                                        canonical.text[span_start:span_end].encode()
+                                    ),
+                                ),
+                            ),
                         ),
                     ),
                 ),
@@ -669,10 +680,19 @@ def test_bundle_freeze_rejects_incomplete_work_and_has_stable_hash() -> None:
                             receipt_hash=canonical_hash({"handle": "handle:one"}),
                             snapshot_hash=canonical_hash({"snapshot": "one"}),
                             requested_mode="unit", applied_mode="unit",
-                            fragments=(ReviewedEvidenceFragment(
-                                unit_id="unit:allocation", span_start=0, span_end=10,
-                                content_hash=canonical_hash({"span": "one"}),
-                            ),),
+                            fragments=(
+                                ReviewedEvidenceFragment(
+                                    unit_id=canonical.unit_id,
+                                    source_id=canonical.source_id,
+                                    source_artifact_hash=canonical.source_artifact_hash,
+                                    parse_id=canonical.parse_id,
+                                    canonicalization_version=canonical.canonicalization_version,
+                                    unit_content_hash=sha256_digest(canonical.text.encode()),
+                                    span_start=0,
+                                    span_end=10,
+                                    content_hash=sha256_digest(canonical.text[:10].encode()),
+                                ),
+                            ),
                         ),
                     ),
                 ),
