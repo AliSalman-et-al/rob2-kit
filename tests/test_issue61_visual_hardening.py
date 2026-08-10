@@ -37,9 +37,7 @@ def test_visual_citation_uses_word_geometry_and_marks_block_fallback() -> None:
             CanonicalWordBox(
                 text="Allocation", span_start=0, span_end=10, spatial=(10, 20, 80, 30)
             ),
-            CanonicalWordBox(
-                text="was", span_start=11, span_end=14, spatial=(84, 20, 105, 30)
-            ),
+            CanonicalWordBox(text="was", span_start=11, span_end=14, spatial=(84, 20, 105, 30)),
             CanonicalWordBox(
                 text="concealed", span_start=15, span_end=24, spatial=(109, 20, 170, 30)
             ),
@@ -57,9 +55,7 @@ def test_visual_citation_uses_word_geometry_and_marks_block_fallback() -> None:
         "bottom": 30.0,
     }
     assert block.geometry_scope == "block"
-    assert block.boxes == (
-        type(block.boxes[0])(left=10, top=20, right=200, bottom=60),
-    )
+    assert block.boxes == (type(block.boxes[0])(left=10, top=20, right=200, bottom=60),)
     assert exact.geometry_hash != block.geometry_hash
 
 
@@ -149,11 +145,7 @@ def _asset_engine(*, parser: object) -> tuple[RunEngine, object, VisualCitationV
                     SimpleNamespace(
                         trial_id="trial:1",
                         inventory=SimpleNamespace(
-                            sources=(
-                                SimpleNamespace(
-                                    source_id="source:1", artifact_hash=HASH
-                                ),
-                            )
+                            sources=(SimpleNamespace(source_id="source:1", artifact_hash=HASH),)
                         ),
                     ),
                 )
@@ -221,8 +213,7 @@ def test_visual_asset_hashes_are_manifest_bound(tmp_path) -> None:
     }
     manifest = {
         "files": {
-            name: "sha256:" + hashlib.sha256(content).hexdigest()
-            for name, content in files.items()
+            name: "sha256:" + hashlib.sha256(content).hexdigest() for name, content in files.items()
         }
     }
     files["manifest.json"] = (

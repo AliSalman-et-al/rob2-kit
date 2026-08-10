@@ -1235,9 +1235,7 @@ class CoverageProgress(FrozenModel):
 
 class SearchEvidenceResponse(OperationResponse):
     run_id: Identifier
-    retrieval_schema_version: Literal[RETRIEVAL_SCHEMA_VERSION] = (
-        RETRIEVAL_SCHEMA_VERSION
-    )
+    retrieval_schema_version: Literal[RETRIEVAL_SCHEMA_VERSION] = RETRIEVAL_SCHEMA_VERSION
     page: SearchPage
     executed_query: ExecutedSearchQuery | None = None
     coverage_progress: CoverageProgress | None = None
@@ -1245,9 +1243,7 @@ class SearchEvidenceResponse(OperationResponse):
 
 class ReadEvidenceResponse(OperationResponse):
     run_id: Identifier
-    retrieval_schema_version: Literal[RETRIEVAL_SCHEMA_VERSION] = (
-        RETRIEVAL_SCHEMA_VERSION
-    )
+    retrieval_schema_version: Literal[RETRIEVAL_SCHEMA_VERSION] = RETRIEVAL_SCHEMA_VERSION
     unit: CanonicalEvidenceUnit
     read_view_receipt: str = Field(
         min_length=1,

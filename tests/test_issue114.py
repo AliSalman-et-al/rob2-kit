@@ -119,13 +119,16 @@ def test_complete_no_information_basis_remains_a_qualifying_answer_basis(tmp_pat
             no_information_basis=True,
         )
     )
-    assert engine._evidence_insufficiencies(
-        engine._bound_ledger(run_id),
-        run_id,
-        evidence.result_id,
-        {question_id: "no_information" for question_id in question_ids},
-        domain_id=evidence.domain_id,
-    ) == ()
+    assert (
+        engine._evidence_insufficiencies(
+            engine._bound_ledger(run_id),
+            run_id,
+            evidence.result_id,
+            {question_id: "no_information" for question_id in question_ids},
+            domain_id=evidence.domain_id,
+        )
+        == ()
+    )
 
 
 def test_complete_with_limitations_evidence_remains_qualifying(tmp_path) -> None:
@@ -165,13 +168,16 @@ def test_complete_with_limitations_evidence_remains_qualifying(tmp_path) -> None
             coverage_limitations=("Synthetic retained limitation.",),
         )
     )
-    assert engine._evidence_insufficiencies(
-        engine._bound_ledger(run_id),
-        run_id,
-        evidence.result_id,
-        {question_id: _low_answers()[question_id] for question_id in question_ids},
-        domain_id=evidence.domain_id,
-    ) == ()
+    assert (
+        engine._evidence_insufficiencies(
+            engine._bound_ledger(run_id),
+            run_id,
+            evidence.result_id,
+            {question_id: _low_answers()[question_id] for question_id in question_ids},
+            domain_id=evidence.domain_id,
+        )
+        == ()
+    )
 
 
 def test_wrong_scope_visual_transcription_is_unresolvable_evidence(tmp_path, monkeypatch) -> None:
@@ -200,9 +206,7 @@ def test_wrong_scope_visual_transcription_is_unresolvable_evidence(tmp_path, mon
             "observed_at": engine._now(),
             "sq_id": DOMAINS[evidence.domain_id][0],
             "considered_items": (wrong_ref,),
-            "dispositions": [
-                {"item_id": wrong_ref.entity_id, "disposition": "supporting"}
-            ],
+            "dispositions": [{"item_id": wrong_ref.entity_id, "disposition": "supporting"}],
         }
     )
     manifest_artifact = ledger.artifacts.put(
@@ -247,8 +251,11 @@ def test_wrong_scope_visual_transcription_is_unresolvable_evidence(tmp_path, mon
         lambda *_args, **_kwargs: {"evidence_bundles": (bundle_ref.model_dump(mode="json"),)},
     )
     insufficiencies = engine._evidence_insufficiencies(
-        ledger, run_id, evidence.result_id,
-        {DOMAINS[evidence.domain_id][0]: "no"}, domain_id=evidence.domain_id,
+        ledger,
+        run_id,
+        evidence.result_id,
+        {DOMAINS[evidence.domain_id][0]: "no"},
+        domain_id=evidence.domain_id,
     )
     assert insufficiencies[0].reason.value == "unresolvable_evidence"
 

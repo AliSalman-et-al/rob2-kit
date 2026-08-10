@@ -106,9 +106,7 @@ class DomainView(ReportModel):
     domain_id: Identifier
     label: str = Field(min_length=1)
     judgment: str = Field(pattern=r"^(low|some_concerns|high)$")
-    algorithmic_judgment: str | None = Field(
-        default=None, pattern=r"^(low|some_concerns|high)$"
-    )
+    algorithmic_judgment: str | None = Field(default=None, pattern=r"^(low|some_concerns|high)$")
     rationale: str = Field(min_length=1)
     questions: tuple[SignalingQuestionView, ...] = ()
     coverage: str = "not recorded"
@@ -153,7 +151,11 @@ class VisualCitationView(ReportModel):
     def validate_structured_identity(self) -> VisualCitationView:
         if (self.span_start is None) != (self.span_end is None):
             raise ValueError("visual citation span_start and span_end must be supplied together")
-        if self.span_start is not None and self.span_end is not None and self.span_end <= self.span_start:
+        if (
+            self.span_start is not None
+            and self.span_end is not None
+            and self.span_end <= self.span_start
+        ):
             raise ValueError("visual citation span_end must be greater than span_start")
         if (
             self.quoted_text_hash is not None
@@ -163,7 +165,10 @@ class VisualCitationView(ReportModel):
             raise ValueError("quoted_text_hash requires canonical span coordinates")
         if self.geometry_scope == "phrase_exact" and self.geometry_hash is None:
             raise ValueError("phrase-exact geometry requires a geometry hash")
-        if self.inspection_status == "visual_only_transcription" and self.agent_inspected is not True:
+        if (
+            self.inspection_status == "visual_only_transcription"
+            and self.agent_inspected is not True
+        ):
             raise ValueError("visual transcriptions must be marked agent_inspected")
         if self.inspection_status == "automatic_spatial_claim" and self.agent_inspected is True:
             raise ValueError("automatic spatial claims cannot be marked agent_inspected")
@@ -275,9 +280,9 @@ class DiagnosticView(ReportModel):
     result_id: Identifier
     trial_id: Identifier
     reason: str = Field(min_length=1)
-    preparation_outcome: Literal[
-        "trial_failed", "preparation_incomplete", "result_withdrawn"
-    ] = "preparation_incomplete"
+    preparation_outcome: Literal["trial_failed", "preparation_incomplete", "result_withdrawn"] = (
+        "preparation_incomplete"
+    )
     recovery: tuple[str, ...] = (
         "Correct the documented Result-scoped problem and continue the Run.",
     )
@@ -317,7 +322,8 @@ class ReportProjector:
                     "estimate": _estimate_text(self.assessment.estimate),
                     "effect_of_interest": self.assessment.effect_of_interest,
                     "outcome": self.assessment.outcome,
-                    "measurement_instrument": self.assessment.measurement_instrument or "not recorded",
+                    "measurement_instrument": self.assessment.measurement_instrument
+                    or "not recorded",
                     "time_point": self.assessment.time_point,
                     "analysis_population": self.assessment.analysis_population or "not recorded",
                     "analysis_model": self.assessment.analysis_model or "not recorded",
@@ -345,15 +351,13 @@ class ReportProjector:
         # the original compact AssessmentView fields. Extended terminal
         # reports take the evidence-first layout below.
         if not _has_extended_identity(assessment) and not any(
-            question.wording
-            for domain in assessment.domains
-            for question in domain.questions
+            question.wording for domain in assessment.domains for question in domain.questions
         ):
             return self._legacy_html()
         ordered_domains = _ordered_domains(assessment.domains)
         domain_navigation = "".join(
             f'<li><a href="#{_anchor(domain.domain_id)}"><span class="domain-number">{index}</span>'
-            f'<span>{html.escape(domain.label)}</span>{_judgment_badge(domain.judgment, label="")}</a></li>'
+            f"<span>{html.escape(domain.label)}</span>{_judgment_badge(domain.judgment, label='')}</a></li>"
             for index, domain in enumerate(ordered_domains, start=1)
         )
         domains = "".join(_render_domain(domain) for domain in ordered_domains)
@@ -383,7 +387,7 @@ class ReportProjector:
             '<section class="audit-summary" aria-labelledby="summary-heading">'
             '<h2 id="summary-heading">Audit summary</h2>'
             f"{_judgment_badge(assessment.overall_judgment, label='Overall judgment')}"
-            f"<span class=\"summary-count\">{_evidence_count(assessment)} accepted evidence claims</span>"
+            f'<span class="summary-count">{_evidence_count(assessment)} accepted evidence claims</span>'
             "</section>"
             f"{_limitations(assessment.limitations)}"
             f"{_render_overall_policy(assessment)}"
@@ -485,7 +489,11 @@ class ReportProjector:
             f"{_escape_markdown(domain.rationale)} |"
             for domain in _ordered_domains(assessment.domains)
         )
-        if assessment.overall_policy_id or assessment.overall_policy_hash or assessment.overall_decision_trace:
+        if (
+            assessment.overall_policy_id
+            or assessment.overall_policy_hash
+            or assessment.overall_decision_trace
+        ):
             lines.extend(
                 [
                     "",
@@ -503,10 +511,10 @@ class ReportProjector:
                 f"Evidence claims: {_evidence_count(assessment)}",
                 f"Result identity: {_escape_markdown(_result_identity_text(assessment))}",
             ]
-            if assessment.effect_measure or assessment.estimate or any(
-                question.wording
-                for domain in assessment.domains
-                for question in domain.questions
+            if assessment.effect_measure
+            or assessment.estimate
+            or any(
+                question.wording for domain in assessment.domains for question in domain.questions
             )
             else []
         )
@@ -543,10 +551,11 @@ class ReportProjector:
                     lines.append("No-information basis: completed searchable-source coverage.")
                 if question.conflicts:
                     lines.append(
-                        "Conflicts: "
-                        + "; ".join(", ".join(group) for group in question.conflicts)
+                        "Conflicts: " + "; ".join(", ".join(group) for group in question.conflicts)
                     )
-                lines.extend(f"- Uncertainty: {_escape_markdown(item)}" for item in question.uncertainty)
+                lines.extend(
+                    f"- Uncertainty: {_escape_markdown(item)}" for item in question.uncertainty
+                )
                 lines.extend(
                     f"- Limitation: {_escape_markdown(item)}" for item in question.limitations
                 )
@@ -638,26 +647,44 @@ class ReportProjector:
                 {
                     "Effect of interest": _spreadsheet_cell(self.assessment.effect_of_interest),
                     "Outcome": _spreadsheet_cell(self.assessment.outcome),
-                    "Measurement instrument": _spreadsheet_cell(self.assessment.measurement_instrument or "not recorded"),
+                    "Measurement instrument": _spreadsheet_cell(
+                        self.assessment.measurement_instrument or "not recorded"
+                    ),
                     "Time point": _spreadsheet_cell(self.assessment.time_point),
-                    "Analysis population": _spreadsheet_cell(self.assessment.analysis_population or "not recorded"),
-                    "Analysis model": _spreadsheet_cell(self.assessment.analysis_model or "not recorded"),
-                    "Effect measure": _spreadsheet_cell(self.assessment.effect_measure or "not recorded"),
-                    "Estimate": _spreadsheet_cell(self.assessment.estimate.value if self.assessment.estimate else "not recorded"),
+                    "Analysis population": _spreadsheet_cell(
+                        self.assessment.analysis_population or "not recorded"
+                    ),
+                    "Analysis model": _spreadsheet_cell(
+                        self.assessment.analysis_model or "not recorded"
+                    ),
+                    "Effect measure": _spreadsheet_cell(
+                        self.assessment.effect_measure or "not recorded"
+                    ),
+                    "Estimate": _spreadsheet_cell(
+                        self.assessment.estimate.value
+                        if self.assessment.estimate
+                        else "not recorded"
+                    ),
                     "95% CI": _spreadsheet_cell(
-                        self.assessment.estimate.interval if self.assessment.estimate and self.assessment.estimate.interval else "not recorded"
+                        self.assessment.estimate.interval
+                        if self.assessment.estimate and self.assessment.estimate.interval
+                        else "not recorded"
                     ),
                     "Denominator experimental": _spreadsheet_cell(
                         str(self.assessment.estimate.denominator_experimental)
-                        if self.assessment.estimate and self.assessment.estimate.denominator_experimental is not None
+                        if self.assessment.estimate
+                        and self.assessment.estimate.denominator_experimental is not None
                         else "not recorded"
                     ),
                     "Denominator comparator": _spreadsheet_cell(
                         str(self.assessment.estimate.denominator_comparator)
-                        if self.assessment.estimate and self.assessment.estimate.denominator_comparator is not None
+                        if self.assessment.estimate
+                        and self.assessment.estimate.denominator_comparator is not None
                         else "not recorded"
                     ),
-                    "Source locator": _spreadsheet_cell(self.assessment.source_locator or "not recorded"),
+                    "Source locator": _spreadsheet_cell(
+                        self.assessment.source_locator or "not recorded"
+                    ),
                     "Evidence claims": str(_evidence_count(self.assessment)),
                 }
             )
@@ -723,7 +750,11 @@ class ReportProjector:
                         _spreadsheet_cell(self.assessment.analysis_population or "not recorded"),
                         _spreadsheet_cell(self.assessment.analysis_model or "not recorded"),
                         _spreadsheet_cell(self.assessment.effect_measure or "not recorded"),
-                        _spreadsheet_cell(self.assessment.estimate.value if self.assessment.estimate else "not recorded"),
+                        _spreadsheet_cell(
+                            self.assessment.estimate.value
+                            if self.assessment.estimate
+                            else "not recorded"
+                        ),
                         _spreadsheet_cell(
                             self.assessment.estimate.interval
                             if self.assessment.estimate and self.assessment.estimate.interval
@@ -731,12 +762,14 @@ class ReportProjector:
                         ),
                         _spreadsheet_cell(
                             str(self.assessment.estimate.denominator_experimental)
-                            if self.assessment.estimate and self.assessment.estimate.denominator_experimental is not None
+                            if self.assessment.estimate
+                            and self.assessment.estimate.denominator_experimental is not None
                             else "not recorded"
                         ),
                         _spreadsheet_cell(
                             str(self.assessment.estimate.denominator_comparator)
-                            if self.assessment.estimate and self.assessment.estimate.denominator_comparator is not None
+                            if self.assessment.estimate
+                            and self.assessment.estimate.denominator_comparator is not None
                             else "not recorded"
                         ),
                         _spreadsheet_cell(self.assessment.source_locator or "not recorded"),
@@ -793,7 +826,9 @@ class RunIndexProjector:
     def html(self) -> bytes:
         run = self.run
         counts = Counter(item.state for item in run.results)
-        observed_domain_ids = {domain_id for item in run.results for domain_id in item.domain_judgments}
+        observed_domain_ids = {
+            domain_id for item in run.results for domain_id in item.domain_judgments
+        }
         # Keep the official D1–D5 cells in every Run index, including scoped
         # diagnostic rows where no domain judgment exists.  Unknown extension
         # domains remain visible after the official columns.
@@ -834,7 +869,7 @@ class RunIndexProjector:
             '<section class="run-dashboard" aria-labelledby="terminal-heading"><h2 id="terminal-heading">Terminal outcomes</h2>'
             f"<p>{counts['report_ready']} report ready; {counts['diagnostic_ready']} diagnostic ready.</p>"
             '<div class="table-wrap"><table><caption>Trial × Result dashboard</caption><thead><tr><th scope="col">Trial × Result</th><th scope="col">State</th><th scope="col">Comparison</th><th scope="col">Evidence claims</th>'
-            f"{traffic_headers}<th scope=\"col\">Overall judgment</th><th scope=\"col\">Coverage</th><th scope=\"col\">Limitations</th><th scope=\"col\">Report</th>"
+            f'{traffic_headers}<th scope="col">Overall judgment</th><th scope="col">Coverage</th><th scope="col">Limitations</th><th scope="col">Report</th>'
             f"</tr></thead><tbody>{rows}</tbody></table></div></section>"
             '<section aria-labelledby="outputs-heading"><h2 id="outputs-heading">Ancillary outputs</h2>'
             f"<ul>{outputs or '<li>No ancillary outputs recorded.</li>'}</ul></section></main>"
@@ -911,10 +946,8 @@ def _render_question(question: SignalingQuestionView) -> str:
         else ""
     )
     conflicts = (
-        "<section class=\"conflicts\"><h4>Material source conflicts</h4><ul>"
-        + "".join(
-            f"<li>{html.escape(', '.join(group))}</li>" for group in question.conflicts
-        )
+        '<section class="conflicts"><h4>Material source conflicts</h4><ul>'
+        + "".join(f"<li>{html.escape(', '.join(group))}</li>" for group in question.conflicts)
         + "</ul></section>"
         if question.conflicts
         else ""
@@ -992,7 +1025,9 @@ def _render_visual_citation(citation: VisualCitationView) -> str:
         # Keep the stable phrase used by existing audit snapshots while
         # making the automatic-vs-visual distinction explicit.
         state = "agent inspection not performed (automatic spatial claim)"
-        asset_caption = "Agent inspection not performed; geometry is a deterministic spatial binding."
+        asset_caption = (
+            "Agent inspection not performed; geometry is a deterministic spatial binding."
+        )
     assets = (
         f'<figure><img src="{_local_href(citation.crop_path)}" '
         f'alt="Highlighted local crop for {html.escape(citation.label)}">'
@@ -1026,7 +1061,7 @@ def _judgment_badge(judgment: str | None, *, label: str) -> str:
         # technology while presenting one non-duplicated sighted label.
         return (
             f'<p class="judgment judgment-{html.escape(judgment)}"><span aria-hidden="true">o</span> '
-            f'<strong>Text-labelled judgment: {html.escape(text)}</strong>'
+            f"<strong>Text-labelled judgment: {html.escape(text)}</strong>"
             f'<span class="sr-only">{html.escape(label)}</span></p>'
         )
     return (
@@ -1101,7 +1136,7 @@ def _render_overall_policy(assessment: AssessmentView) -> str:
         '<section class="overall-policy" aria-labelledby="overall-policy-heading">'
         '<h2 id="overall-policy-heading">Overall maximum-domain policy</h2>'
         f"<p>{html.escape(policy_text)}</p>"
-        f"<dl class=\"identity-grid\"><div><dt>Policy id</dt><dd><code>{html.escape(assessment.overall_policy_id or 'not recorded')}</code></dd></div>"
+        f'<dl class="identity-grid"><div><dt>Policy id</dt><dd><code>{html.escape(assessment.overall_policy_id or "not recorded")}</code></dd></div>'
         f"<div><dt>Policy hash</dt><dd><code>{html.escape(assessment.overall_policy_hash or 'not recorded')}</code></dd></div></dl>"
         f"<h3>Decision trace</h3><ul>{trace_html}</ul></section>"
     )
@@ -1148,14 +1183,18 @@ def _estimate_card(assessment: AssessmentView) -> str:
         return ""
     estimate = assessment.estimate
     denominators = ""
-    if estimate and estimate.denominator_experimental is not None and estimate.denominator_comparator is not None:
+    if (
+        estimate
+        and estimate.denominator_experimental is not None
+        and estimate.denominator_comparator is not None
+    ):
         denominators = (
             f"<small>Denominators: {estimate.denominator_experimental} experimental; "
             f"{estimate.denominator_comparator} comparator</small>"
         )
     return (
         '<aside class="estimate-card" aria-label="Reported result estimate">'
-        f"<span class=\"eyebrow\">{html.escape(assessment.effect_measure or 'Reported estimate')}</span>"
+        f'<span class="eyebrow">{html.escape(assessment.effect_measure or "Reported estimate")}</span>'
         f"<strong>{html.escape(_estimate_text(estimate))}</strong>{denominators}</aside>"
     )
 
@@ -1270,9 +1309,9 @@ def _html_document(
 ) -> str:
     csp = (
         '<meta http-equiv="Content-Security-Policy" content="default-src \'none\'; '
-        "style-src \'unsafe-inline\'; img-src \'self\'; font-src \'none\'; "
-        "connect-src \'none\'; object-src \'none\'; frame-src \'none\'; "
-        'base-uri \'none\'; form-action \'none\'">'
+        "style-src 'unsafe-inline'; img-src 'self'; font-src 'none'; "
+        "connect-src 'none'; object-src 'none'; frame-src 'none'; "
+        "base-uri 'none'; form-action 'none'\">"
         if include_csp
         else ""
     )
@@ -1371,7 +1410,9 @@ def latest_assessment_view(ledger: WorkflowLedger) -> AssessmentView:
             if not active_question_ids or question_id in active_question_ids
         }
         evaluation = LogicEvaluator(logic).evaluate(
-            EvaluationRequest(answers=evaluation_answers, assessor_inputs=assessment.assessor_inputs)
+            EvaluationRequest(
+                answers=evaluation_answers, assessor_inputs=assessment.assessor_inputs
+            )
         )
         expected = {judgment.domain_id: judgment.judgment for judgment in judgments}
         if evaluation.domain_judgments != expected:
@@ -1487,47 +1528,52 @@ def latest_assessment_view(ledger: WorkflowLedger) -> AssessmentView:
             estimate=estimate,
         ),
         overall_judgment=overall_judgment,
-        domains=_ordered_domains(tuple(
-            DomainView(
-                domain_id=judgment.domain_id,
-                label=_domain_label(judgment.domain_id),
-                judgment=final_by_domain.get(judgment.domain_id, judgment).judgment.value,
-                algorithmic_judgment=(
-                    judgment.judgment.value
-                    if getattr(final_by_domain.get(judgment.domain_id), "departure", False)
-                    else None
-                ),
-                rationale=(
-                    final_by_domain[judgment.domain_id].material_bias_rationale
-                    if judgment.domain_id in final_by_domain
-                    and final_by_domain[judgment.domain_id].departure
-                    else f"Algorithmic judgment from {judgment.decision_trace.revision_id}."
-                ),
-                questions=tuple(
-                    sorted(
-                        question_domains.get(judgment.domain_id, ()),
-                        key=lambda question: (
-                            question_order.get(
-                                str(getattr(question, "question_id", "")), 10_000
+        domains=_ordered_domains(
+            tuple(
+                DomainView(
+                    domain_id=judgment.domain_id,
+                    label=_domain_label(judgment.domain_id),
+                    judgment=final_by_domain.get(judgment.domain_id, judgment).judgment.value,
+                    algorithmic_judgment=(
+                        judgment.judgment.value
+                        if getattr(final_by_domain.get(judgment.domain_id), "departure", False)
+                        else None
+                    ),
+                    rationale=(
+                        final_by_domain[judgment.domain_id].material_bias_rationale
+                        if judgment.domain_id in final_by_domain
+                        and final_by_domain[judgment.domain_id].departure
+                        else f"Algorithmic judgment from {judgment.decision_trace.revision_id}."
+                    ),
+                    questions=tuple(
+                        sorted(
+                            question_domains.get(judgment.domain_id, ()),
+                            key=lambda question: (
+                                question_order.get(
+                                    str(getattr(question, "question_id", "")), 10_000
+                                ),
+                                str(getattr(question, "question_id", "")),
                             ),
-                            str(getattr(question, "question_id", "")),
-                        ),
-                    )
-                ),
-                decision_trace=(judgment.decision_trace.revision_id,),
-                coverage=(
-                    "incomplete"
-                    if any(question.coverage == "incomplete" for question in question_domains.get(judgment.domain_id, ()))
-                    else "complete"
-                ),
-                limitations=tuple(
-                    limitation
-                    for question in question_domains.get(judgment.domain_id, ())
-                    for limitation in question.limitations
-                ),
+                        )
+                    ),
+                    decision_trace=(judgment.decision_trace.revision_id,),
+                    coverage=(
+                        "incomplete"
+                        if any(
+                            question.coverage == "incomplete"
+                            for question in question_domains.get(judgment.domain_id, ())
+                        )
+                        else "complete"
+                    ),
+                    limitations=tuple(
+                        limitation
+                        for question in question_domains.get(judgment.domain_id, ())
+                        for limitation in question.limitations
+                    ),
+                )
+                for judgment in ordered
             )
-            for judgment in ordered
-        )),
+        ),
         visual_citations=visual_citations,
         overall_policy_id=(
             f"{logic.family_id}:overall:{logic.release_id}"
@@ -1537,7 +1583,11 @@ def latest_assessment_view(ledger: WorkflowLedger) -> AssessmentView:
             else None
         ),
         overall_policy_hash=(
-            logic.content_hash if logic is not None else ordered[0].overall_policy_hash if ordered else None
+            logic.content_hash
+            if logic is not None
+            else ordered[0].overall_policy_hash
+            if ordered
+            else None
         ),
         overall_policy_text=(
             "The versioned Logic pack evaluates Final Domain judgments, including its "
@@ -1585,9 +1635,7 @@ def _latest_question_views(
         if bundle.sq_id is None:
             continue
         answer = answers.get(bundle.sq_id)
-        if answer is None or (
-            active_question_ids and bundle.sq_id not in active_question_ids
-        ):
+        if answer is None or (active_question_ids and bundle.sq_id not in active_question_ids):
             # Inactive Logic branches and bundles without a durable answer
             # revision are not questions in the current Assessment view.
             continue
@@ -1636,8 +1684,7 @@ def _latest_question_views(
                         page=citation.page,
                         region=region,
                         boxes=tuple(
-                            (box.left, box.top, box.right, box.bottom)
-                            for box in citation.boxes
+                            (box.left, box.top, box.right, box.bottom) for box in citation.boxes
                         ),
                         label="Canonical evidence span",
                         exact_phrase=phrase,
@@ -1735,11 +1782,13 @@ def _latest_question_views(
             )
             visual_citations[visual.citation_id] = visual
         uncertainty = (
-            (f"coverage state: {bundle.coverage_state.value}",)
-            if bundle.coverage_state.value != "complete"
-            else ()
-        ) + bundle.coverage_limitations + (
-            ("material source conflict retained",) if bundle.conflicts else ()
+            (
+                (f"coverage state: {bundle.coverage_state.value}",)
+                if bundle.coverage_state.value != "complete"
+                else ()
+            )
+            + bundle.coverage_limitations
+            + (("material source conflict retained",) if bundle.conflicts else ())
         )
         question = SignalingQuestionView(
             question_id=bundle.sq_id,

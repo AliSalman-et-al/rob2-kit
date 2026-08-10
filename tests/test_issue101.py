@@ -42,9 +42,7 @@ class OnePageParser:
         target_pages: tuple[int, ...] | None = None,
     ) -> ParserResult:
         return ParserResult(
-            pages=(
-                PageExtraction(page_number=1, width=612, height=792, text=data.decode()),
-            ),
+            pages=(PageExtraction(page_number=1, width=612, height=792, text=data.decode()),),
             raw_output=data,
         )
 
@@ -396,9 +394,7 @@ def test_successive_natural_language_corrections_preserve_unaffected_disposition
     )
 
     assert second.proposal is not None
-    dispositions = {
-        item.outcome_target_id: item.disposition for item in second.proposal.pairings()
-    }
+    dispositions = {item.outcome_target_id: item.disposition for item in second.proposal.pairings()}
     assert dispositions == {
         "outcome-target:mortality": "excluded",
         "outcome-target:morbidity": "removed",

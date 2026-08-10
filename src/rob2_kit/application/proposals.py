@@ -54,9 +54,7 @@ def _preferred_candidate(
 
     if not candidates:
         return None, None
-    result_specs = {
-        item.result.result_id: item for item in proposal.initialization.result_specs
-    }
+    result_specs = {item.result.result_id: item for item in proposal.initialization.result_specs}
     trials = {item.trial_id: item for item in proposal.initialization.trials}
     scored: list[tuple[int, ResultCandidate]] = []
     for candidate in candidates:
@@ -75,8 +73,7 @@ def _preferred_candidate(
             or SourceRole.STATISTICAL_ANALYSIS_PLAN in source.roles
         )
         if not any(
-            _source_is_readable(source)
-            and _locator_binds_source(preference_locator, source)
+            _source_is_readable(source) and _locator_binds_source(preference_locator, source)
             for source in preference_sources
         ):
             continue
@@ -101,9 +98,7 @@ _TRIAL_ID = re.compile(rf"trial:{_ID_BODY}")
 _TARGET_ID = re.compile(rf"outcome-target:{_ID_BODY}")
 _RESULT_ID = re.compile(rf"result:(?!candidate:){_ID_BODY}")
 _RESULT_CANDIDATE_ID = re.compile(rf"result-candidate:{_ID_BODY}")
-_ANY_ISSUED_ID = re.compile(
-    rf"(?:trial|outcome-target|result-candidate|result):{_ID_BODY}"
-)
+_ANY_ISSUED_ID = re.compile(rf"(?:trial|outcome-target|result-candidate|result):{_ID_BODY}")
 _CORRECTION_SELECT = re.compile(
     rf"^(?P<action>select|choose|use|include)\s+"
     rf"(?P<trial>trial:{_ID_BODY})\s+"
@@ -220,24 +215,21 @@ def translate_correction(
     candidate = None
     if candidate_match is not None:
         candidate = next(
-            (
-                item
-                for item in proposal.result_candidates
-                if item.candidate_id == candidate_match
-            ),
+            (item for item in proposal.result_candidates if item.candidate_id == candidate_match),
             None,
         )
         if candidate is None:
             raise ValueError(
-                "Run proposal correction references unknown Result candidate "
-                f"{candidate_match}"
+                f"Run proposal correction references unknown Result candidate {candidate_match}"
             )
         if candidate.trial_id != trial_id or candidate.outcome_target_id != outcome_target_id:
             raise ValueError(
                 "Result candidate is not issued for the selected Trial × Outcome target"
             )
-    result_id = result_match if result_match is not None else (
-        candidate.result_id if candidate is not None else None
+    result_id = (
+        result_match
+        if result_match is not None
+        else (candidate.result_id if candidate is not None else None)
     )
     if result_id is None:
         raise ValueError("the selected Result candidate has no engine-issued Result identity")
@@ -296,24 +288,18 @@ def correction_ambiguity_updates(
                 )
             elif not selection.accepted:
                 candidate_match = (
-                    (
-                        ambiguity.trial_id == selection.trial_id
-                        and ambiguity.outcome_target_id == selection.outcome_target_id
-                    )
-                    or any(
-                        item.candidate_id == ambiguity.scope
-                        and item.trial_id == selection.trial_id
-                        and item.outcome_target_id == selection.outcome_target_id
-                        for item in proposal.result_candidates
-                    )
+                    ambiguity.trial_id == selection.trial_id
+                    and ambiguity.outcome_target_id == selection.outcome_target_id
+                ) or any(
+                    item.candidate_id == ambiguity.scope
+                    and item.trial_id == selection.trial_id
+                    and item.outcome_target_id == selection.outcome_target_id
+                    for item in proposal.result_candidates
                 )
             else:
-                candidate_match = (
-                    selection.result_candidate_id == ambiguity.scope
-                    or (
-                        ambiguity.trial_id == selection.trial_id
-                        and ambiguity.outcome_target_id == selection.outcome_target_id
-                    )
+                candidate_match = selection.result_candidate_id == ambiguity.scope or (
+                    ambiguity.trial_id == selection.trial_id
+                    and ambiguity.outcome_target_id == selection.outcome_target_id
                 )
             if candidate_match and ambiguity.material:
                 updates.append(
@@ -387,9 +373,7 @@ def _pairing_for_target(
         reason = None
     differences = ()
     if len({item.result_id for item in pair_candidates if item.result_id}) > 1:
-        differences = (
-            "Competing Result analyses could change selection; choose one explicitly.",
-        )
+        differences = ("Competing Result analyses could change selection; choose one explicitly.",)
     return RunProposalPair(
         trial_id=trial_id,
         outcome_target_id=target_id,
@@ -441,9 +425,7 @@ def compact_proposal_payload(proposal: RunProposal) -> dict[str, object]:
 
     targets = tuple(proposal.initialization.manifest.outcome_target_specs)
     trials = tuple(proposal.initialization.trials)
-    result_specs = {
-        item.result.result_id: item for item in proposal.initialization.result_specs
-    }
+    result_specs = {item.result.result_id: item for item in proposal.initialization.result_specs}
     return {
         "proposal_id": proposal.proposal_id,
         "proposal_token": proposal.proposal_token,
@@ -582,9 +564,7 @@ def semantic_diff(before: RunProposal, after: RunProposal) -> tuple[str, ...]:
             f"Method scope changed from {before.supported_scope} to {after.supported_scope}."
         )
     if before.trial_ids != after.trial_ids:
-        differences.append(
-            f"Trial grouping changed from {before.trial_ids} to {after.trial_ids}."
-        )
+        differences.append(f"Trial grouping changed from {before.trial_ids} to {after.trial_ids}.")
     before_pairs = {
         (item.trial_id, item.outcome_target_id): item for item in proposal_pairings(before)
     }
@@ -634,12 +614,8 @@ def semantic_diff(before: RunProposal, after: RunProposal) -> tuple[str, ...]:
         != after.initialization.manifest.outcome_target_specs
     ):
         differences.append("Outcome-target rules changed.")
-    before_specs = {
-        item.result.result_id: item for item in before.initialization.result_specs
-    }
-    after_specs = {
-        item.result.result_id: item for item in after.initialization.result_specs
-    }
+    before_specs = {item.result.result_id: item for item in before.initialization.result_specs}
+    after_specs = {item.result.result_id: item for item in after.initialization.result_specs}
     result_fields = (
         ("Trial", "trial_id"),
         ("Randomization", "randomization_id"),
@@ -658,8 +634,7 @@ def semantic_diff(before: RunProposal, after: RunProposal) -> tuple[str, ...]:
         current = after_specs.get(result_id)
         if previous is None or current is None:
             differences.append(
-                f"Result definition {result_id} was "
-                f"{'added' if previous is None else 'removed'}."
+                f"Result definition {result_id} was {'added' if previous is None else 'removed'}."
             )
             continue
         for label, field_name in result_fields:
@@ -667,8 +642,7 @@ def semantic_diff(before: RunProposal, after: RunProposal) -> tuple[str, ...]:
             new_value = getattr(current.result, field_name)
             if old_value != new_value:
                 differences.append(
-                    f"Result {result_id} {label} changed from {old_value!r} "
-                    f"to {new_value!r}."
+                    f"Result {result_id} {label} changed from {old_value!r} to {new_value!r}."
                 )
         if previous.provenance_note != current.provenance_note:
             differences.append(f"Result {result_id} provenance changed.")

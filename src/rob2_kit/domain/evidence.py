@@ -145,9 +145,9 @@ class EvidenceReviewSpan(FrozenModel):
             raise ValueError("non-active material cannot support or contradict the active Result")
         if self.trial_attribution is TrialAttribution.ACTIVE and not self.attribution_rationale:
             raise ValueError("active span attribution requires an attributable rationale")
-        if (
-            self.disposition is EvidenceReviewDisposition.NEEDS_VISUAL_REVIEW
-        ) != (self.visual_review_condition is not None):
+        if (self.disposition is EvidenceReviewDisposition.NEEDS_VISUAL_REVIEW) != (
+            self.visual_review_condition is not None
+        ):
             raise ValueError("visual-review condition is required only for needs-visual-review")
         if self.disposition is EvidenceReviewDisposition.DUPLICATE and self.duplicate_of is None:
             raise ValueError("duplicate review spans require a duplicate target")

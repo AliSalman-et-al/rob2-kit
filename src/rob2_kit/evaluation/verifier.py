@@ -90,9 +90,7 @@ class VerifierMetrics(FrozenModel):
 class VerifierEvaluation(FrozenModel):
     policy_version: str = "blinded-verifier-experiment:1"
     trigger_reasons: tuple[str, ...]
-    outcome: Literal[
-        "baseline_only", "verification_unavailable", "agreement", "diagnostic_result"
-    ]
+    outcome: Literal["baseline_only", "verification_unavailable", "agreement", "diagnostic_result"]
     baseline_judgment: Judgment
     verifier_judgment: Judgment | None = None
     metrics: VerifierMetrics
@@ -116,9 +114,7 @@ class VerifierUnavailable(RuntimeError):
     """Isolated verifier execution is unavailable or interrupted."""
 
 
-Verifier = Callable[
-    [BlindedVerifierContext, ReconsiderationRequest | None], VerifierReply
-]
+Verifier = Callable[[BlindedVerifierContext, ReconsiderationRequest | None], VerifierReply]
 
 
 def evaluate_blinded_verifier(
@@ -282,13 +278,9 @@ def _metrics(
     )
 
 
-def _linked_evidence_ids(
-    context: BlindedVerifierContext, reply: VerifierReply
-) -> tuple[str, ...]:
+def _linked_evidence_ids(context: BlindedVerifierContext, reply: VerifierReply) -> tuple[str, ...]:
     available = {
-        str(item["claim_id"])
-        for item in context.evidence
-        if isinstance(item.get("claim_id"), str)
+        str(item["claim_id"]) for item in context.evidence if isinstance(item.get("claim_id"), str)
     }
     return tuple(identity for identity in reply.evidence_ids if identity in available)
 

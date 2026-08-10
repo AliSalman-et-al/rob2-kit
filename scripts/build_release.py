@@ -10,7 +10,7 @@ import tomllib
 from pathlib import Path
 
 ROOT = Path(__file__).parents[1]
-VERSION = tomllib.loads((ROOT / "pyproject.toml").read_text())['project']['version']
+VERSION = tomllib.loads((ROOT / "pyproject.toml").read_text())["project"]["version"]
 
 
 def main() -> None:
@@ -61,11 +61,11 @@ def main() -> None:
     shutil.copyfile(runtime, embedded)
     runtime_project = runtime_root / "pyproject.toml"
     runtime_project.write_text(
-        "[project]\nname = \"rob2-kit-project-runtime\"\n"
-        f"version = \"{VERSION}\"\nrequires-python = \">=3.13\"\n"
-        f"dependencies = [\"rob2-kit=={VERSION}\"]\n\n"
+        '[project]\nname = "rob2-kit-project-runtime"\n'
+        f'version = "{VERSION}"\nrequires-python = ">=3.13"\n'
+        f'dependencies = ["rob2-kit=={VERSION}"]\n\n'
         "[tool.uv]\npackage = false\n\n[tool.uv.sources]\n"
-        f"rob2-kit = {{ path = \"{runtime.name}\" }}\n",
+        f'rob2-kit = {{ path = "{runtime.name}" }}\n',
         encoding="utf-8",
     )
     subprocess.run(

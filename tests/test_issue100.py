@@ -479,8 +479,9 @@ def test_section_and_unit_reads_are_bounded_and_scope_safe(tmp_path: Path) -> No
     assert single.neighbors == ()
     assert [item.unit_id for item in section.neighbors] == [units[1].unit_id]
     assert section.mode is ReadContextMode.SECTION
-    assert index.read_unit("unit:other-section", scope=EvidenceScope(trial_id="trial:other")) == (
-        units[2]
+    assert (
+        index.read_unit("unit:other-section", scope=EvidenceScope(trial_id="trial:other"))
+        == (units[2])
     )
 
 
@@ -578,9 +579,7 @@ def test_source_scoped_units_remain_visible_for_review(tmp_path: Path) -> None:
     index.replace_units((generic, result_a, result_b))
     page = index.search(
         SearchQuery(terms=("allocation",)),
-        scope=EvidenceScope(
-            trial_id="trial:active",
-            result_id="result:b"),
+        scope=EvidenceScope(trial_id="trial:active", result_id="result:b"),
     )
     hit_ids = {hit.unit.unit_id for hit in page.hits}
     assert hit_ids == {"unit:generic", "unit:a", "unit:b"}
@@ -641,7 +640,8 @@ def test_index_initial_evidence_preserves_parser_provenance_metadata(
                         text="allocation was concealed",
                         section_path=("Methods", "Allocation"),
                         hierarchy_path=("2", "2.1"),
-                        document_zone="methods",                        text_items=(
+                        document_zone="methods",
+                        text_items=(
                             PageTextItem(
                                 text="allocation was concealed",
                                 x=10,
@@ -838,7 +838,8 @@ results:
         SearchQuery(terms=("allocation",)),
         scope=EvidenceScope(
             trial_id="trial:trial-a",
-            result_id="result:trial-a-mortality",        ),
+            result_id="result:trial-a-mortality",
+        ),
     )
     assert len(ordinary_page.hits) == 1
     assert ordinary_page.hits[0].unit.document_zone is DocumentZone.MAIN
@@ -880,9 +881,9 @@ results:
     async def invoke_read():
         return await server.call_tool(
             "read_evidence",
-                {
-                    "run_id": prepared.run_id,
-                    "location_handle": page.hits[0].location_handle,
+            {
+                "run_id": prepared.run_id,
+                "location_handle": page.hits[0].location_handle,
                 "work_token": token_payload,
                 "sq_id": "sq:randomization:sequence",
                 "result_id": evidence_work.result_id,
@@ -1027,7 +1028,8 @@ def test_parser_extraction_preserves_structure_metadata() -> None:
         text="Methods",
         section_path=("Methods", "Allocation"),
         hierarchy_path=("2", "2.1"),
-        document_zone="methods",        text_items=(
+        document_zone="methods",
+        text_items=(
             PageTextItem(
                 text="Allocation was concealed.",
                 x=10,
@@ -1038,7 +1040,8 @@ def test_parser_extraction_preserves_structure_metadata() -> None:
                 section_path=("Methods", "Allocation"),
                 hierarchy_path=("2", "2.1"),
                 reading_order=4,
-                document_zone="methods",            ),
+                document_zone="methods",
+            ),
         ),
     )
     assert page.text_items[0].unit_kind == "paragraph"
@@ -1228,7 +1231,7 @@ def test_mcp_read_evidence_executes_typed_route_deterministically(monkeypatch) -
                 run_id=request.run_id,
                 unit=unit,
                 read_view_receipt="read-view:fixture",
-                    context=context,
+                context=context,
             )
 
     monkeypatch.setattr("rob2_kit.interfaces.mcp.server.RunEngine", FakeEngine)

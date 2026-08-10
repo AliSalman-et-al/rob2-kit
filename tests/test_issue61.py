@@ -44,29 +44,44 @@ def _claim_and_bundle(*, spatial: tuple[float, float, float, float] | None):
     unit_ref = _reference("unit")
     source_ref = _reference("source")
     review = EvidenceReviewRevision(
-        entity_id="entity:review", revision_id="revision:review-1", actor=ACTOR,
-        observed_at=datetime(2026, 8, 1, tzinfo=UTC), candidate_id="candidate:claim",
-        result_id="result:one", domain_id="domain:one", sq_id="sq:one",
-        spans=(EvidenceReviewSpan(
-            span_id="review-span:claim", span_start=0, span_end=10,
-            trial_attribution=TrialAttribution.ACTIVE,
-            disposition=EvidenceReviewDisposition.SUPPORTING,
-            rationale="Exact source passage reviewed.",
-            attribution_rationale="Bounded context identifies the active Result.",
-            reviewed_context=ReviewedEvidenceContext(
-                receipt_hash=HASH, snapshot_hash=HASH, requested_mode="unit", applied_mode="unit",
-                fragments=(ReviewedEvidenceFragment(
-                    unit_id=unit.unit_id,
-                    source_id=unit.source_id,
-                    source_artifact_hash=unit.source_artifact_hash,
-                    parse_id=unit.parse_id,
-                    canonicalization_version=unit.canonicalization_version,
-                    unit_content_hash=sha256_digest(unit.text.encode()),
-                    span_start=0, span_end=10,
-                    content_hash=sha256_digest(unit.text[:10].encode()),
-                ),),
+        entity_id="entity:review",
+        revision_id="revision:review-1",
+        actor=ACTOR,
+        observed_at=datetime(2026, 8, 1, tzinfo=UTC),
+        candidate_id="candidate:claim",
+        result_id="result:one",
+        domain_id="domain:one",
+        sq_id="sq:one",
+        spans=(
+            EvidenceReviewSpan(
+                span_id="review-span:claim",
+                span_start=0,
+                span_end=10,
+                trial_attribution=TrialAttribution.ACTIVE,
+                disposition=EvidenceReviewDisposition.SUPPORTING,
+                rationale="Exact source passage reviewed.",
+                attribution_rationale="Bounded context identifies the active Result.",
+                reviewed_context=ReviewedEvidenceContext(
+                    receipt_hash=HASH,
+                    snapshot_hash=HASH,
+                    requested_mode="unit",
+                    applied_mode="unit",
+                    fragments=(
+                        ReviewedEvidenceFragment(
+                            unit_id=unit.unit_id,
+                            source_id=unit.source_id,
+                            source_artifact_hash=unit.source_artifact_hash,
+                            parse_id=unit.parse_id,
+                            canonicalization_version=unit.canonicalization_version,
+                            unit_content_hash=sha256_digest(unit.text.encode()),
+                            span_start=0,
+                            span_end=10,
+                            content_hash=sha256_digest(unit.text[:10].encode()),
+                        ),
+                    ),
+                ),
             ),
-        ),),
+        ),
     )
     review_ref = _reference("review", digest=sha256_digest(review.model_dump_json().encode()))
     claim = EvidenceClaim(

@@ -196,10 +196,7 @@ def materialize_visual_citation(
         if (claim_start, claim_end) != (span_start, span_end):
             raise ValueError("visual citation span must match the accepted canonical quote")
     text = str(text_value)
-    if (
-        not claim_quote
-        and (span_start < 0 or span_end <= span_start or span_end > len(text))
-    ):
+    if not claim_quote and (span_start < 0 or span_end <= span_start or span_end > len(text)):
         raise ValueError("visual citation span must be an exact canonical text range")
     if claim_quote and not text:
         raise ValueError("accepted canonical quotes must contain text")
@@ -231,9 +228,7 @@ def materialize_visual_citation(
     # Exact phrase geometry is safe only when the selected range starts and
     # ends on retained word boundaries and every intervening word is retained.
     covered = tuple(
-        item
-        for item in word_boxes
-        if item.span_end > span_start and item.span_start < span_end
+        item for item in word_boxes if item.span_end > span_start and item.span_start < span_end
     )
     phrase_exact = bool(covered) and (
         covered[0].span_start == span_start and covered[-1].span_end == span_end
@@ -259,9 +254,7 @@ def materialize_visual_citation(
         )
     else:
         boxes = (block_crop,)
-    geometry_scope: Literal["phrase_exact", "block"] = (
-        "phrase_exact" if phrase_exact else "block"
-    )
+    geometry_scope: Literal["phrase_exact", "block"] = "phrase_exact" if phrase_exact else "block"
     # The render crop is the bounding rectangle of all retained word boxes;
     # block-level fallback remains explicit rather than implying exactness.
     crop = CropBox(
@@ -381,17 +374,13 @@ class VisualInspectionPolicy(FrozenModel):
         if not still_ambiguous:
             return current
         if current.mode is VisualRenderMode.CROP and not candidate.context_inside_crop:
-            return current.model_copy(
-                update={"mode": VisualRenderMode.FULL_PAGE, "crop": None}
-            )
+            return current.model_copy(update={"mode": VisualRenderMode.FULL_PAGE, "crop": None})
         if not candidate.small_type:
             return None
         dpi_sequence = (self.initial_dpi, *self.escalation_dpi)
         current_index = dpi_sequence.index(current.dpi)
         next_dpi = (
-            dpi_sequence[current_index + 1]
-            if current_index + 1 < len(dpi_sequence)
-            else None
+            dpi_sequence[current_index + 1] if current_index + 1 < len(dpi_sequence) else None
         )
         if next_dpi is None:
             return None
@@ -491,9 +480,7 @@ class VisualCandidateDisposition(FrozenModel):
             and self.limitation is not None
         ):
             raise ValueError("only ambiguous visual candidates may carry a limitation")
-        if (self.kind is VisualCandidateDispositionKind.AMBIGUOUS) != (
-            self.limitation is not None
-        ):
+        if (self.kind is VisualCandidateDispositionKind.AMBIGUOUS) != (self.limitation is not None):
             raise ValueError("ambiguous visual candidates require exactly one coverage limitation")
         if (self.kind is VisualCandidateDispositionKind.DUPLICATE) != (
             self.duplicate_of is not None
@@ -563,9 +550,7 @@ class VisualInspectionManifest(FrozenModel):
             duplicate_of = result.disposition.duplicate_of
             if duplicate_of is not None and duplicate_of not in candidate_ids:
                 raise ValueError("duplicate visual candidates must reference a nominated candidate")
-        dispositions = {
-            result.disposition.candidate_id: result.disposition for result in results
-        }
+        dispositions = {result.disposition.candidate_id: result.disposition for result in results}
         for result in results:
             current = result.disposition.candidate_id
             seen: set[str] = set()

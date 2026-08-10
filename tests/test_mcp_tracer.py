@@ -231,8 +231,13 @@ def _complete_empty_receipts(
         for query, pass_kind, seed_family in queries:
             engine.search_evidence(
                 SearchEvidenceRequest(
-                    run_id=run_id, work_token=token, result_id=result_id, sq_id=question_id,
-                    query=query, pass_kind=pass_kind, seed_family=seed_family,
+                    run_id=run_id,
+                    work_token=token,
+                    result_id=result_id,
+                    sq_id=question_id,
+                    query=query,
+                    pass_kind=pass_kind,
+                    seed_family=seed_family,
                 )
             )
 
@@ -529,9 +534,7 @@ def test_five_domain_journey_survives_stdio_restart_and_publishes_report(
                 ).structured_content
                 assert continued is not None
                 assert continued["run_state"] == "complete"
-                run_indexes = tuple(
-                    (tmp_path / "output" / "report-bundle").rglob("run-index.json")
-                )
+                run_indexes = tuple((tmp_path / "output" / "report-bundle").rglob("run-index.json"))
                 assert len(run_indexes) == 1
                 first_index = json.loads(run_indexes[0].read_text(encoding="utf-8"))
                 assert len(first_index["results"]) == 1
@@ -732,6 +735,7 @@ def test_report_history_preserves_an_earlier_immutable_bundle(tmp_path: Path) ->
             contract_version="1.0.0",
         )
     )
+
     def finish_result(result_id: str, suffix: str) -> None:
         answers = _low_answers()
         visual_ref: RecordReference | None = None

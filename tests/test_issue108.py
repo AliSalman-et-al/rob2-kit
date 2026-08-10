@@ -88,9 +88,7 @@ def test_uninstall_is_previewed_and_refuses_ambiguous_owned_content(tmp_path: Pa
     preview = preview_uninstall_project(tmp_path)
     assert preview["preview"] is True
     assert preview["owned_removals"]
-    assert {"rob2.lock", ".rob2/rob2.lock", ".rob2/rollback.json"} <= set(
-        preview["owned_removals"]
-    )
+    assert {"rob2.lock", ".rob2/rob2.lock", ".rob2/rollback.json"} <= set(preview["owned_removals"])
     assert {
         ".codex/config.toml:mcp_servers.rob2-kit",
         ".mcp.json:mcpServers.rob2-kit",
@@ -348,12 +346,13 @@ def test_upgrade_and_rollback_replace_both_owned_launcher_entries(
     upgraded_codex = tomllib.loads(
         (tmp_path / ".codex" / "config.toml").read_text(encoding="utf-8")
     )
-    assert upgraded_codex["mcp_servers"][
-        "rob2-kit"
-    ]["command"] == "candidate-launcher"
-    assert json.loads((tmp_path / ".mcp.json").read_text(encoding="utf-8"))["mcpServers"][
-        "rob2-kit"
-    ]["command"] == "candidate-launcher"
+    assert upgraded_codex["mcp_servers"]["rob2-kit"]["command"] == "candidate-launcher"
+    assert (
+        json.loads((tmp_path / ".mcp.json").read_text(encoding="utf-8"))["mcpServers"]["rob2-kit"][
+            "command"
+        ]
+        == "candidate-launcher"
+    )
 
     with (tmp_path / ".codex" / "config.toml").open("a", encoding="utf-8") as handle:
         handle.write('[mcp_servers.unrelated]\ncommand = "keep"\n')

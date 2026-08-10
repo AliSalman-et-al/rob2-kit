@@ -8,9 +8,8 @@ from typing import Any
 # These names are intentionally owned by the installed package rather than by
 # the release script.  The script runs from a checkout, while the behaviour it
 # qualifies must be supplied by the wheel under test.
-RELEASE_LOCKED_OPTIONAL_FIXTURES = (
-    "registry_history",
-)
+RELEASE_LOCKED_OPTIONAL_FIXTURES = ("registry_history",)
+
 
 def normalize_replay_trace(
     calls: Sequence[Mapping[str, Any]], *, final: Mapping[str, Any]

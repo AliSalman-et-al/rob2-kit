@@ -166,8 +166,9 @@ def test_release_fixture_exposes_reusable_structure_only_canonical_lineage() -> 
     assert len({item.fragment_id for item in items}) == len(items)
     assert all(item.fragment_id is not None for item in items)
     assert all(
-        not {"trial_id", "result_id", "domain_id", "question_ids", "applicability"}
-        .intersection(item.model_dump())
+        not {"trial_id", "result_id", "domain_id", "question_ids", "applicability"}.intersection(
+            item.model_dump()
+        )
         for item in items
     )
 
@@ -203,7 +204,9 @@ def test_ci_runs_replay_without_repeating_the_release_lifecycle_gate() -> None:
     assert script.count('"idempotency_key": "qualification:confirm"') == 2
 
 
-def test_optional_fixture_resume_checks_post_confirmation_work_without_repeating_source_review() -> None:
+def test_optional_fixture_resume_checks_post_confirmation_work_without_repeating_source_review() -> (
+    None
+):
     qualification = (ROOT / "scripts" / "release_qualification.py").read_text(encoding="utf-8")
 
     assert 'event["operation"] == "operation:submit-source-role-review"' in qualification

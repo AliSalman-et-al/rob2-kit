@@ -270,9 +270,7 @@ def test_submit_source_role_review_shape_violations_are_structured_run_blocked_c
             run_id=prepared.run_id,
             work_token=review_work.work_token,
             idempotency_key="idempotency:review-unissued-source-id",
-            selections=(
-                RunProposalSelection(trial_id="trial:trial-a", source_id="source:bogus"),
-            ),
+            selections=(RunProposalSelection(trial_id="trial:trial-a", source_id="source:bogus"),),
         )
     )
     incomplete_review = engine.submit_source_role_review(

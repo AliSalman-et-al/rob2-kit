@@ -463,9 +463,9 @@ class _ResultDiagnosticRecord(FrozenModel):
     result_id: Identifier
     trial_id: Identifier
     reason: str
-    preparation_outcome: Literal[
-        "trial_failed", "preparation_incomplete", "result_withdrawn"
-    ] = "preparation_incomplete"
+    preparation_outcome: Literal["trial_failed", "preparation_incomplete", "result_withdrawn"] = (
+        "preparation_incomplete"
+    )
     recovery: tuple[str, ...] = (
         "Correct the documented Result-scoped problem and continue the Run.",
     )
@@ -721,8 +721,7 @@ class RunEngine:
                 root,
                 detail="Run preparation requires explicit project-root authorization.",
                 recovery=(
-                    "Retry prepare_run with authorized=true after explicit operator "
-                    "authorization.",
+                    "Retry prepare_run with authorized=true after explicit operator authorization.",
                 ),
             )
         try:
@@ -829,8 +828,7 @@ class RunEngine:
                                             f"idempotency:result-spec-superseded-{supersede_suffix}"
                                         ),
                                         entity_id=(
-                                            "run-result-spec-supersession:"
-                                            f"{supersede_suffix}"
+                                            f"run-result-spec-supersession:{supersede_suffix}"
                                         ),
                                         revision_id=(
                                             f"revision:result-spec-superseded-{supersede_suffix}"
@@ -1249,8 +1247,7 @@ class RunEngine:
                             reason=reason,
                             preparation_outcome="trial_failed",
                             recovery=(
-                                "Provide the required readable Trial Source and "
-                                "continue the Run.",
+                                "Provide the required readable Trial Source and continue the Run.",
                             ),
                         ),
                         checkpoint=f"checkpoint:result-diagnostic-{diagnostic_suffix}",
@@ -2110,9 +2107,7 @@ class RunEngine:
             )
         proposal = self._latest_proposal(ledger, request.run_id)
         events = self._events_for_run(ledger, request.run_id)
-        if not self._source_role_review_complete(
-            proposal, ledger, events, selected_trial_ids=None
-        ):
+        if not self._source_role_review_complete(proposal, ledger, events, selected_trial_ids=None):
             return SubmitRunProposalResponse(
                 operation_id=self._read_operation_id(
                     RunOperation.SUBMIT_RUN_PROPOSAL, request.run_id
@@ -2701,11 +2696,7 @@ class RunEngine:
             ),
             None,
         )
-        displayed = (
-            context.all_units
-            if context is not None
-            else (read.unit,)
-        )
+        displayed = context.all_units if context is not None else (read.unit,)
         fragments = tuple(
             ReviewedEvidenceFragment(
                 unit_id=item.unit_id,
@@ -2717,7 +2708,11 @@ class RunEngine:
                 span_start=(read.start if context is None else 0),
                 span_end=(read.end if context is None else len(item.text)),
                 content_hash=sha256_digest(
-                    item.text[(read.start if context is None else 0) : (read.end if context is None else len(item.text))].encode()
+                    item.text[
+                        (read.start if context is None else 0) : (
+                            read.end if context is None else len(item.text)
+                        )
+                    ].encode()
                 ),
             )
             for item in displayed
@@ -3309,7 +3304,9 @@ class RunEngine:
         if request.items:
             self._validate_visual_evidence_items(ledger, request)
         submitted_passages = request.passages
-        review_refs: dict[tuple[Identifier, Identifier], tuple[EvidenceReviewRevision, RecordReference]] = {}
+        review_refs: dict[
+            tuple[Identifier, Identifier], tuple[EvidenceReviewRevision, RecordReference]
+        ] = {}
         if request.passages or request.review_revisions:
             violations = self._validate_domain_evidence_submission(
                 ledger,
@@ -3394,7 +3391,9 @@ class RunEngine:
         self,
         ledger: WorkflowLedger,
         request: SubmitDomainEvidenceRequest,
-        review_refs: dict[tuple[Identifier, Identifier], tuple[EvidenceReviewRevision, RecordReference]],
+        review_refs: dict[
+            tuple[Identifier, Identifier], tuple[EvidenceReviewRevision, RecordReference]
+        ],
     ) -> SubmitDomainEvidenceRequest:
         """Freeze engine-issued canonical spans into immutable Evidence claims."""
 
@@ -3471,17 +3470,24 @@ class RunEngine:
                     raise ValueError("duplicate canonical passage selection for question")
                 review_pair = review_refs.get((candidate_id, question_id))
                 if review_pair is None:
-                    raise ValueError("textual Evidence requires a committed question-specific review")
+                    raise ValueError(
+                        "textual Evidence requires a committed question-specific review"
+                    )
                 review, review_ref = review_pair
                 matching_spans = [
                     span
                     for span in review.spans
                     if span.span_start == passage.span_start
                     and span.span_end == span_end
-                    and any(fragment.unit_id == unit.unit_id for fragment in span.reviewed_context.fragments)
+                    and any(
+                        fragment.unit_id == unit.unit_id
+                        for fragment in span.reviewed_context.fragments
+                    )
                 ]
                 if len(matching_spans) != 1:
-                    raise ValueError("textual Evidence passage must exactly match one reviewed span")
+                    raise ValueError(
+                        "textual Evidence passage must exactly match one reviewed span"
+                    )
                 authorizing_span = matching_spans[0]
                 if (
                     authorizing_span.trial_attribution is not TrialAttribution.ACTIVE
@@ -3496,10 +3502,28 @@ class RunEngine:
                     )
                 claim_suffixes.add(suffix)
                 prepared_passages.append(
-                    (passage, question_id, unit, source, suffix, span_end, review_ref, authorizing_span)
+                    (
+                        passage,
+                        question_id,
+                        unit,
+                        source,
+                        suffix,
+                        span_end,
+                        review_ref,
+                        authorizing_span,
+                    )
                 )
 
-        for passage, question_id, unit, source, suffix, span_end, review_ref, authorizing_span in prepared_passages:
+        for (
+            passage,
+            question_id,
+            unit,
+            source,
+            suffix,
+            span_end,
+            review_ref,
+            authorizing_span,
+        ) in prepared_passages:
             source_suffix = self._digest(
                 f"{request.run_id}|{unit.source_id}|{unit.source_artifact_hash}"
             )
@@ -3940,9 +3964,11 @@ class RunEngine:
                 if scope.source_ids and transcription.source.entity_id not in scope.source_ids:
                     raise ValueError("VisualTranscription source is outside active scope")
                 proposal = self._latest_proposal(ledger, request.run_id)
-                current_source = self._sources_by_trial(proposal.initialization).get(
-                    scope.trial_id, {}
-                ).get(transcription.source.entity_id)
+                current_source = (
+                    self._sources_by_trial(proposal.initialization)
+                    .get(scope.trial_id, {})
+                    .get(transcription.source.entity_id)
+                )
                 if current_source is None or current_source.artifact_hash != source.artifact_hash:
                     raise ValueError("VisualTranscription source artifact is stale")
             except (KeyError, TypeError, ValueError, OSError) as visual_error:
@@ -4318,7 +4344,9 @@ class RunEngine:
             for review in reviews
         ):
             violations.append(
-                _evidence_violation("review spans must not duplicate exact bounds within a revision")
+                _evidence_violation(
+                    "review spans must not duplicate exact bounds within a revision"
+                )
             )
         return tuple(violations)
 
@@ -4367,7 +4395,9 @@ class RunEngine:
                     ]
                 )
                 if len(matching_units) != 1:
-                    raise ValueError("review span receipt must identify exactly one candidate canonical unit")
+                    raise ValueError(
+                        "review span receipt must identify exactly one candidate canonical unit"
+                    )
                 unit = matching_units[0]
                 fragment = next(item for item in context.fragments if item.unit_id == unit.unit_id)
                 if (
@@ -4429,10 +4459,15 @@ class RunEngine:
                     for span in review.spans
                     if span.span_start == passage.span_start
                     and span.span_end == end
-                    and any(fragment.unit_id == unit.unit_id for fragment in span.reviewed_context.fragments)
+                    and any(
+                        fragment.unit_id == unit.unit_id
+                        for fragment in span.reviewed_context.fragments
+                    )
                 ]
                 if len(matches) != 1:
-                    raise ValueError("each retained passage requires exactly one matching review span")
+                    raise ValueError(
+                        "each retained passage requires exactly one matching review span"
+                    )
                 authorizing_span = matches[0]
                 if (
                     authorizing_span.trial_attribution is not TrialAttribution.ACTIVE
@@ -4452,10 +4487,17 @@ class RunEngine:
                 }:
                     continue
                 unit_ids = {fragment.unit_id for fragment in span.reviewed_context.fragments}
-                if not any((unit_id, span.span_start, span.span_end) in selected_bounds for unit_id in unit_ids):
-                    raise ValueError("substantive review span must exactly match a retained passage")
+                if not any(
+                    (unit_id, span.span_start, span.span_end) in selected_bounds
+                    for unit_id in unit_ids
+                ):
+                    raise ValueError(
+                        "substantive review span must exactly match a retained passage"
+                    )
 
-        resolved: dict[tuple[Identifier, Identifier], tuple[EvidenceReviewRevision, RecordReference]] = {}
+        resolved: dict[
+            tuple[Identifier, Identifier], tuple[EvidenceReviewRevision, RecordReference]
+        ] = {}
         for review in prepared.values():
             ref = self._commit_frozen_artifact(
                 ledger,
@@ -4610,9 +4652,7 @@ class RunEngine:
         ``_resolve_evidence_passages``.
         """
         retained_units = {
-            passage.unit_id
-            for passage in submitted_passages
-            if question_id in passage.question_ids
+            passage.unit_id for passage in submitted_passages if question_id in passage.question_ids
         }
         recorder.auto_disposition(retained_units)
         recorder.bind_project_rules(tuple(sorted(rule.entity_id for rule in request.project_rules)))
@@ -4649,7 +4689,10 @@ class RunEngine:
         ledger: WorkflowLedger,
         request: SubmitDomainEvidenceRequest,
         submitted_passages: tuple[EvidencePassageInput, ...] = (),
-        resolved_reviews: dict[tuple[Identifier, Identifier], tuple[EvidenceReviewRevision, RecordReference]] | None = None,
+        resolved_reviews: dict[
+            tuple[Identifier, Identifier], tuple[EvidenceReviewRevision, RecordReference]
+        ]
+        | None = None,
     ) -> tuple[
         tuple[RecordReference, ...],
         tuple[RecordReference, ...],
@@ -5065,10 +5108,8 @@ class RunEngine:
                                 ledger.artifacts.read(bundle.consideration_manifest.content_hash)
                             )
                             if (
-                                manifest.entity_id
-                                != bundle.consideration_manifest.entity_id
-                                or manifest.revision_id
-                                != bundle.consideration_manifest.revision_id
+                                manifest.entity_id != bundle.consideration_manifest.entity_id
+                                or manifest.revision_id != bundle.consideration_manifest.revision_id
                                 or canonical_hash(manifest)
                                 != bundle.consideration_manifest.content_hash
                                 or manifest.sq_id != question_id
@@ -5100,7 +5141,11 @@ class RunEngine:
                                 ledger.artifacts.read(claim.authorizing_review.content_hash)
                             )
                             review_span = next(
-                                (span for span in review.spans if span.span_id == claim.review_span_id),
+                                (
+                                    span
+                                    for span in review.spans
+                                    if span.span_id == claim.review_span_id
+                                ),
                                 None,
                             )
                             canonical = CanonicalEvidenceUnit.model_validate_json(
@@ -5144,7 +5189,8 @@ class RunEngine:
                                 or review_span.span_start != claim.span_start
                                 or review_span.span_end != claim.span_end
                                 or review_span.trial_attribution.value != "active"
-                                or review_span.disposition.value not in {"supporting", "contradicting"}
+                                or review_span.disposition.value
+                                not in {"supporting", "contradicting"}
                                 or not any(
                                     fragment.unit_id == canonical.unit_id
                                     and fragment.source_id == canonical.source_id
@@ -5157,8 +5203,11 @@ class RunEngine:
                                     == sha256_digest(canonical.text.encode())
                                     and fragment.span_start <= claim.span_start
                                     and fragment.span_end >= claim.span_end
-                                    and fragment.content_hash == sha256_digest(
-                                        canonical.text[fragment.span_start : fragment.span_end].encode()
+                                    and fragment.content_hash
+                                    == sha256_digest(
+                                        canonical.text[
+                                            fragment.span_start : fragment.span_end
+                                        ].encode()
                                     )
                                     for fragment in review_span.reviewed_context.fragments
                                 )
@@ -5233,12 +5282,12 @@ class RunEngine:
                     "the frozen Evidence Bundle depends on an older ResultSpec revision"
                     if stale
                     else (
-                    "a frozen supporting/contradicting item could not be resolved"
-                    if unresolved
-                    else (
-                        "no frozen supporting or contradicting Evidence item is scoped to "
-                        "this question"
-                    )
+                        "a frozen supporting/contradicting item could not be resolved"
+                        if unresolved
+                        else (
+                            "no frozen supporting or contradicting Evidence item is scoped to "
+                            "this question"
+                        )
                     )
                 )
                 insufficiencies.append(
@@ -5287,9 +5336,11 @@ class RunEngine:
             ):
                 return "unresolvable"
             proposal = self._latest_proposal(ledger, run_id)
-            current_source = self._sources_by_trial(proposal.initialization).get(
-                current_spec.result.trial_id, {}
-            ).get(source.source_id)
+            current_source = (
+                self._sources_by_trial(proposal.initialization)
+                .get(current_spec.result.trial_id, {})
+                .get(source.source_id)
+            )
             if current_source is None or current_source.artifact_hash != source.artifact_hash:
                 return "stale"
             if canonical_hash(current_source) != transcription.source.content_hash:
@@ -5308,8 +5359,7 @@ class RunEngine:
         insufficiencies: tuple[EvidenceInsufficiency, ...],
     ) -> str:
         return "; ".join(
-            f"{item.question_id}: {item.reason.value} ({item.detail})"
-            for item in insufficiencies
+            f"{item.question_id}: {item.reason.value} ({item.detail})" for item in insufficiencies
         )
 
     def _commit_evidence_insufficient_block(
@@ -7425,9 +7475,7 @@ class RunEngine:
                 f"{self._escape_markdown(diagnostic.preparation_outcome.replace('_', ' '))}\n"
                 f"- Limitation: {self._escape_markdown(diagnostic.reason)}\n"
                 "\n## Recovery path\n\n"
-                + "".join(
-                    f"- {self._escape_markdown(item)}\n" for item in diagnostic.recovery
-                )
+                + "".join(f"- {self._escape_markdown(item)}\n" for item in diagnostic.recovery)
             ).encode(),
             "diagnostic.html": projector.html(),
         }
@@ -9069,9 +9117,7 @@ class RunEngine:
                         for item in missing.dependencies
                     ),
                     supersedes_revision_id=(
-                        missing.supersedes.revision_id
-                        if missing.supersedes is not None
-                        else None
+                        missing.supersedes.revision_id if missing.supersedes is not None else None
                     ),
                 ),
                 self._acquire_lease(ledger, missing.observed_at),

@@ -12,9 +12,7 @@ from pathlib import Path
 def main() -> None:
     wheel = Path(sys.argv[1]).resolve()
     metadata_name = next(
-        name
-        for name in zipfile.ZipFile(wheel).namelist()
-        if name.endswith(".dist-info/METADATA")
+        name for name in zipfile.ZipFile(wheel).namelist() if name.endswith(".dist-info/METADATA")
     )
     with zipfile.ZipFile(wheel) as archive:
         metadata = archive.read(metadata_name).decode()

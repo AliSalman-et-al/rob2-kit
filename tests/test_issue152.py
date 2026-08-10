@@ -220,9 +220,7 @@ def test_terminal_qualification_requires_current_trial_source_parse_custody(
     ledger = engine._bound_ledger(run_id)
     proposal = engine._latest_proposal(ledger, run_id)
     trial = next(
-        item
-        for item in proposal.initialization.trials
-        if item.trial_id == "trial:issue151"
+        item for item in proposal.initialization.trials if item.trial_id == "trial:issue151"
     )
     assert trial.inventory is not None
     source = trial.inventory.sources[0]
@@ -237,17 +235,13 @@ def test_terminal_qualification_requires_current_trial_source_parse_custody(
             replacement_source = source.model_copy(
                 update={
                     "parse_records": (
-                        source.parse_records[0].model_copy(
-                            update={"parse_id": "parse:wrong"}
-                        ),
+                        source.parse_records[0].model_copy(update={"parse_id": "parse:wrong"}),
                     )
                 }
             )
         replacement = trial.model_copy(
             update={
-                "inventory": trial.inventory.model_copy(
-                    update={"sources": (replacement_source,)}
-                )
+                "inventory": trial.inventory.model_copy(update={"sources": (replacement_source,)})
             }
         )
     changed = proposal.model_copy(
@@ -341,9 +335,9 @@ def test_legacy_semantic_index_is_atomically_replaced_and_old_token_stales(tmp_p
                 "trial:legacy",
                 "result:legacy",
                 "domain:legacy",
-                "[\"sq:legacy\"]",
+                '["sq:legacy"]',
                 "result",
-                "[\"result:legacy\"]",
+                '["result:legacy"]',
             ),
         )
         connection.execute(
@@ -399,7 +393,9 @@ def test_legacy_snapshot_identity_fails_closed_before_any_search_or_read(tmp_pat
         lambda: index.read_unit("unit:legacy"),
         lambda: index.unit_ids(),
     ):
-        with pytest.raises(ReprocessingRequired, match="current retrieval schema identity") as failure:
+        with pytest.raises(
+            ReprocessingRequired, match="current retrieval schema identity"
+        ) as failure:
             access()
         assert failure.value.code.value == "reprocessing_required"
 
@@ -466,7 +462,10 @@ def test_assessing_run_resume_surfaces_reprocessing_required_for_legacy_index(tm
             )
         )
     assert failure.value.code.value == "reprocessing_required"
-    assert ledger.artifacts.read(ledger.events()[0].output_revision_hashes[0]) == historical_event_bytes
+    assert (
+        ledger.artifacts.read(ledger.events()[0].output_revision_hashes[0])
+        == historical_event_bytes
+    )
 
 
 def test_same_source_span_independently_freezes_and_qualifies_two_results(tmp_path) -> None:
@@ -474,10 +473,17 @@ def test_same_source_span_independently_freezes_and_qualifies_two_results(tmp_pa
         def screenshot(self, _data: bytes, *, page_numbers: tuple[int, ...], dpi: int):
             image = b"\x89PNG\r\n\x1a\n" + b"fixture"
             return tuple(
-                PageRender(page_number=page, dpi=dpi, pixel_width=1, pixel_height=1,
-                           image_hash=sha256_digest(image), image_bytes=image)
+                PageRender(
+                    page_number=page,
+                    dpi=dpi,
+                    pixel_width=1,
+                    pixel_height=1,
+                    image_hash=sha256_digest(image),
+                    image_bytes=image,
+                )
                 for page in page_numbers
             )
+
     trial = tmp_path / "input" / "shared"
     trial.mkdir(parents=True)
     (trial / "report.pdf").write_bytes(b"primary")
@@ -506,7 +512,9 @@ def test_same_source_span_independently_freezes_and_qualifies_two_results(tmp_pa
                 result_id=result_id,
                 domain_id="domain:randomization",
                 question_id=question_id,
-                location_handle=_location_handle_for(engine, run_id, work, question_id, unit.unit_id),
+                location_handle=_location_handle_for(
+                    engine, run_id, work, question_id, unit.unit_id
+                ),
                 span_start=0,
                 span_end=len(unit.text),
                 entity_suffix=f"{result_id}-{number}",
@@ -515,10 +523,22 @@ def test_same_source_span_independently_freezes_and_qualifies_two_results(tmp_pa
         )
         evidence = engine.submit_domain_evidence(
             SubmitDomainEvidenceRequest(
-                contract_version="1.2.0", run_id=run_id, work_token=work.work_token,
-                idempotency_key=f"idempotency:{result_id}:evidence", result_id=result_id,
+                contract_version="1.2.0",
+                run_id=run_id,
+                work_token=work.work_token,
+                idempotency_key=f"idempotency:{result_id}:evidence",
+                result_id=result_id,
                 domain_id="domain:randomization",
-                passages=(EvidencePassageInput(unit_id=unit.unit_id, span_start=0, span_end=len(unit.text), claim_type="claim-type:randomization", candidate_id=unit.unit_id, question_ids=question_ids),),
+                passages=(
+                    EvidencePassageInput(
+                        unit_id=unit.unit_id,
+                        span_start=0,
+                        span_end=len(unit.text),
+                        claim_type="claim-type:randomization",
+                        candidate_id=unit.unit_id,
+                        question_ids=question_ids,
+                    ),
+                ),
                 review_revisions=reviews,
             )
         )
@@ -527,10 +547,18 @@ def test_same_source_span_independently_freezes_and_qualifies_two_results(tmp_pa
         assert answer_work is not None and answer_work.result_id == result_id
         answers = engine.submit_domain_answers(
             SubmitDomainAnswersRequest(
-                contract_version="1.0.0", run_id=run_id, work_token=answer_work.work_token,
-                idempotency_key=f"idempotency:{result_id}:answers", result_id=result_id,
+                contract_version="1.0.0",
+                run_id=run_id,
+                work_token=answer_work.work_token,
+                idempotency_key=f"idempotency:{result_id}:answers",
+                result_id=result_id,
                 domain_id="domain:randomization",
-                answers=tuple(SQAnswerInput(question_id=q, answer="yes", rationale="same reviewed source span") for q in question_ids),
+                answers=tuple(
+                    SQAnswerInput(
+                        question_id=q, answer="yes", rationale="same reviewed source span"
+                    )
+                    for q in question_ids
+                ),
             )
         )
         assert answers.condition.value == "accepted"
@@ -552,16 +580,38 @@ def test_same_source_span_independently_freezes_and_qualifies_two_results(tmp_pa
                     question_ids=DOMAINS[domain_id],
                 )
                 reviews = tuple(
-                    _review_revision(candidate_id=unit.unit_id, result_id=result_id, domain_id=domain_id, question_id=q, location_handle=_location_handle_for(engine, run_id, remaining_work, q, unit.unit_id), span_start=0, span_end=len(unit.text), entity_suffix=f"{result_id}-{domain_id}-{n}")
+                    _review_revision(
+                        candidate_id=unit.unit_id,
+                        result_id=result_id,
+                        domain_id=domain_id,
+                        question_id=q,
+                        location_handle=_location_handle_for(
+                            engine, run_id, remaining_work, q, unit.unit_id
+                        ),
+                        span_start=0,
+                        span_end=len(unit.text),
+                        entity_suffix=f"{result_id}-{domain_id}-{n}",
+                    )
                     for n, q in enumerate(active)
                 )
                 empty = engine.submit_domain_evidence(
                     SubmitDomainEvidenceRequest(
-                        contract_version="1.2.0", run_id=run_id,
+                        contract_version="1.2.0",
+                        run_id=run_id,
                         work_token=remaining_work.work_token,
                         idempotency_key=f"idempotency:{result_id}:{domain_id}:empty",
-                        result_id=result_id, domain_id=domain_id,
-                        passages=(EvidencePassageInput(unit_id=unit.unit_id, span_start=0, span_end=len(unit.text), claim_type="claim-type:shared", candidate_id=unit.unit_id, question_ids=active),),
+                        result_id=result_id,
+                        domain_id=domain_id,
+                        passages=(
+                            EvidencePassageInput(
+                                unit_id=unit.unit_id,
+                                span_start=0,
+                                span_end=len(unit.text),
+                                claim_type="claim-type:shared",
+                                candidate_id=unit.unit_id,
+                                question_ids=active,
+                            ),
+                        ),
                         review_revisions=reviews,
                     )
                 )
@@ -570,13 +620,19 @@ def test_same_source_span_independently_freezes_and_qualifies_two_results(tmp_pa
                 assert answer_work is not None
                 response = engine.submit_domain_answers(
                     SubmitDomainAnswersRequest(
-                        contract_version="1.0.0", run_id=run_id,
+                        contract_version="1.0.0",
+                        run_id=run_id,
                         work_token=answer_work.work_token,
                         idempotency_key=f"idempotency:{result_id}:{domain_id}:answers",
-                        result_id=result_id, domain_id=domain_id,
-                            answers=tuple(
-                                    SQAnswerInput(question_id=q, answer=_low_answers()[q], rationale="reviewed shared source span")
-                                for q in active
+                        result_id=result_id,
+                        domain_id=domain_id,
+                        answers=tuple(
+                            SQAnswerInput(
+                                question_id=q,
+                                answer=_low_answers()[q],
+                                rationale="reviewed shared source span",
+                            )
+                            for q in active
                         ),
                     )
                 )

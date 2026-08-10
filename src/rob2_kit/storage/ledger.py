@@ -200,9 +200,7 @@ class ArtifactVerificationCache:
         self.verified_hashes: set[str] = set()
         self.result_spec_identities: dict[str, tuple[tuple[str, str, str], ...]] = {}
         self.json_payloads: dict[str, Any] = {}
-        self.event_snapshots: dict[
-            Path, tuple[tuple[int, str], tuple[WorkflowEvent, ...]]
-        ] = {}
+        self.event_snapshots: dict[Path, tuple[tuple[int, str], tuple[WorkflowEvent, ...]]] = {}
 
 
 class ReplayProjection(LedgerModel):
@@ -521,8 +519,7 @@ class WorkflowLedger:
     def events(self) -> tuple[WorkflowEvent, ...]:
         with self._connection() as connection:
             row = connection.execute(
-                "SELECT sequence, event_hash FROM workflow_events "
-                "ORDER BY sequence DESC LIMIT 1"
+                "SELECT sequence, event_hash FROM workflow_events ORDER BY sequence DESC LIMIT 1"
             ).fetchone()
             cursor = (0, GENESIS_HASH) if row is None else (row["sequence"], row["event_hash"])
             cached = self._verification_cache.event_snapshots.get(self.path.resolve())
@@ -1216,9 +1213,7 @@ class WorkflowLedger:
             "outcome": row["outcome"],
             "causation_id": row["causation_id"],
             "correlation_id": row["correlation_id"],
-            "supersedes_revision_id": json.loads(row["transition_json"])[
-                "supersedes_revision_id"
-            ],
+            "supersedes_revision_id": json.loads(row["transition_json"])["supersedes_revision_id"],
         }
         submitted = {
             "record_schema_version": transition.record_schema_version,

@@ -123,12 +123,8 @@ def test_failed_reconsideration_records_the_attempt_and_preserves_baseline() -> 
 def test_reconsideration_can_resolve_disagreement_without_replacing_baseline() -> None:
     replies = iter(
         (
-            VerifierReply(
-                judgment="high", rationale="Conflict.", evidence_ids=("claim:registry",)
-            ),
-            VerifierReply(
-                judgment="low", rationale="Resolved.", evidence_ids=("claim:registry",)
-            ),
+            VerifierReply(judgment="high", rationale="Conflict.", evidence_ids=("claim:registry",)),
+            VerifierReply(judgment="low", rationale="Resolved.", evidence_ids=("claim:registry",)),
         )
     )
     result = evaluate_blinded_verifier(
@@ -248,12 +244,16 @@ def test_public_replay_compares_present_and_absent_reproducibly() -> None:
         )
 
     first = compare_verifier_modes(
-        context=_context(), triggers=TriggerFacts(pivotal_source_conflict=True),
-        baseline_judgment="low", verifier=verifier,
+        context=_context(),
+        triggers=TriggerFacts(pivotal_source_conflict=True),
+        baseline_judgment="low",
+        verifier=verifier,
     )
     second = compare_verifier_modes(
-        context=_context(), triggers=TriggerFacts(pivotal_source_conflict=True),
-        baseline_judgment="low", verifier=verifier,
+        context=_context(),
+        triggers=TriggerFacts(pivotal_source_conflict=True),
+        baseline_judgment="low",
+        verifier=verifier,
     )
     assert first == second
     assert first.without_verifier.baseline_judgment == first.with_verifier.baseline_judgment

@@ -98,8 +98,8 @@ class RetrievalFailure(ValueError):
         self.message = message
         self.recovery = tuple(recovery or _DEFAULT_RECOVERY[self.code])
         self.next_actions = tuple(next_actions or self.recovery)
-        self.violations = tuple(violations) if violations is not None else (
-            FieldViolation(field, message),
+        self.violations = (
+            tuple(violations) if violations is not None else (FieldViolation(field, message),)
         )
         super().__init__(message)
 

@@ -184,9 +184,9 @@ class ClinicalTrialsGovAdapter:
         source_texts: tuple[RegistrySourceText | tuple[str, str], ...] = (),
     ) -> RegistryAcquisition:
         normalized_sources = tuple(
-            item if isinstance(item, RegistrySourceText) else RegistrySourceText(
-                locator=item[0], text=item[1]
-            )
+            item
+            if isinstance(item, RegistrySourceText)
+            else RegistrySourceText(locator=item[0], text=item[1])
             for item in source_texts
         )
         retrieved_at = self._utc_now()
@@ -271,9 +271,7 @@ class ClinicalTrialsGovAdapter:
 
         history = None
         if self._policy.probe_history:
-            history_fetch = self._fetch(
-                f"/api/int/studies/{resolution.nct_id}/history", retries=0
-            )
+            history_fetch = self._fetch(f"/api/int/studies/{resolution.nct_id}/history", retries=0)
             exchanges.extend(history_fetch.exchanges)
             if history_fetch.response is None:
                 history = HistoryCapability(available=False)
@@ -381,8 +379,7 @@ class ClinicalTrialsGovAdapter:
                     RegistryFinding(
                         kind=RegistryFindingKind.REGISTRY_ACQUISITION_FAILED,
                         detail=(
-                            "Registry candidate search failed with status "
-                            f"{fetched.status_code}"
+                            f"Registry candidate search failed with status {fetched.status_code}"
                         ),
                     ),
                 ),
@@ -425,9 +422,7 @@ class ClinicalTrialsGovAdapter:
         exchanges: list[HttpExchange],
     ) -> None:
         listed = (
-            parsed.get("documentSection", {})
-            .get("largeDocumentModule", {})
-            .get("largeDocs", ())
+            parsed.get("documentSection", {}).get("largeDocumentModule", {}).get("largeDocs", ())
         )
         for index, document in enumerate(listed):
             roles = _document_roles(document)
@@ -449,8 +444,7 @@ class ClinicalTrialsGovAdapter:
                     RegistryFinding(
                         kind=RegistryFindingKind.REGISTRY_ACQUISITION_FAILED,
                         detail=(
-                            "Provider document could not be acquired: "
-                            f"{document.get('filename')}"
+                            f"Provider document could not be acquired: {document.get('filename')}"
                         ),
                     )
                 )
@@ -584,9 +578,7 @@ class ClinicalTrialsGovAdapter:
 
     def _put_raw_json(self, content: bytes) -> ContentHash:
         json.loads(content)
-        return self._artifacts.put(
-            content, "application/vnd.rob2.registry-raw+json"
-        ).content_hash
+        return self._artifacts.put(content, "application/vnd.rob2.registry-raw+json").content_hash
 
     def _utc_now(self) -> datetime:
         value = self._clock()

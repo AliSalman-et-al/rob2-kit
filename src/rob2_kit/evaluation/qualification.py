@@ -62,7 +62,7 @@ class _ReleaseFixtureParser:
                             }
                         )
                         for item_index, item in enumerate(page.text_items)
-                    )
+                    ),
                 }
             )
             for page in parsed.pages

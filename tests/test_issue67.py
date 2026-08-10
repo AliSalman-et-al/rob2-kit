@@ -56,11 +56,7 @@ class _Parser:
         target_pages: tuple[int, ...] | None = None,
     ) -> ParserResult:
         self.calls.append((ocr_enabled, target_pages))
-        pages = (
-            self.recovered
-            if ocr_enabled
-            else self.initial_by_data.get(data, self.initial)
-        )
+        pages = self.recovered if ocr_enabled else self.initial_by_data.get(data, self.initial)
         return ParserResult(pages=pages, raw_output=data + bytes([len(self.calls)]))
 
 

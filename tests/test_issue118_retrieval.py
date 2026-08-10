@@ -190,9 +190,7 @@ def test_ambiguous_fragments_remain_separate_search_candidates(tmp_path) -> None
 
 def test_read_location_continues_an_oversized_unit_by_character_window(tmp_path) -> None:
     index = EvidenceSearchIndex(tmp_path / "evidence.sqlite3")
-    unit = _unit(
-        "unit:large", "large " * 8, zone=DocumentZone.MAIN
-    )
+    unit = _unit("unit:large", "large " * 8, zone=DocumentZone.MAIN)
     index.replace_units((unit,))
     handle = index.search(SearchQuery(terms=("large",))).hits[0].location_handle
 

@@ -334,9 +334,7 @@ def test_multiple_primary_candidates_are_nonblocking_and_trial_yaml_disambiguate
         if source.criticality is SourceCriticality.REQUIRED
     )
     assert primary.title == "b.pdf"
-    assert not any(
-        finding.kind == "primary_report_ambiguous" for finding in explicit.diagnostics
-    )
+    assert not any(finding.kind == "primary_report_ambiguous" for finding in explicit.diagnostics)
 
 
 def test_liteparse_coverage_uses_one_targeted_recovery_and_preserves_diagnostics(

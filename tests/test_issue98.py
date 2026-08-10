@@ -8,22 +8,26 @@ from tests.test_issue61_report_design import _assessment
 
 def test_extended_audit_report_is_offline_and_discloses_limitations_and_structure() -> None:
     assessment = _assessment()
-    question = assessment.domains[0].questions[0].model_copy(
-        update={
-            "evidence": (
-                EvidenceView(
-                    evidence_id="claim:table",
-                    disposition="supporting",
-                    exact_phrase="Treatment arm had 4 events.",
-                    source_id="source:report",
-                    page=3,
-                    provenance="canonical unit unit:report-p3-b2",
-                    unit_kind="table_row",
-                    table_headers=("Arm", "Events"),
-                    context="Primary outcome table",
-                ),
-            )
-        }
+    question = (
+        assessment.domains[0]
+        .questions[0]
+        .model_copy(
+            update={
+                "evidence": (
+                    EvidenceView(
+                        evidence_id="claim:table",
+                        disposition="supporting",
+                        exact_phrase="Treatment arm had 4 events.",
+                        source_id="source:report",
+                        page=3,
+                        provenance="canonical unit unit:report-p3-b2",
+                        unit_kind="table_row",
+                        table_headers=("Arm", "Events"),
+                        context="Primary outcome table",
+                    ),
+                )
+            }
+        )
     )
     assessment = assessment.model_copy(
         update={

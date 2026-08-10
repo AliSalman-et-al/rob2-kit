@@ -673,9 +673,7 @@ def _validate_adapter_targets(root: Path, release_root: Path) -> None:
     if runtime is not None:
         destination = root / _RUNTIME_RELATIVE
         if destination.exists() and not _runtime_matches(runtime, destination):
-            raise HarnessBootstrapError(
-                f"{destination} differs from the locked project runtime."
-            )
+            raise HarnessBootstrapError(f"{destination} differs from the locked project runtime.")
 
 
 def _install_adapter_trees(root: Path, release_root: Path) -> bool:
@@ -800,8 +798,7 @@ def _wheel_pin(release_root: Path) -> dict[str, str]:
             "authoritative wheel provenance is missing or malformed"
         ) from error
     if not all(
-        isinstance(raw.get(key), str) and raw[key]
-        for key in ("filename", "version", "sha256")
+        isinstance(raw.get(key), str) and raw[key] for key in ("filename", "version", "sha256")
     ):
         raise HarnessBootstrapError("authoritative wheel provenance is incomplete")
     return raw
@@ -822,9 +819,7 @@ def _validate_wheel(wheel: Path, pin: dict[str, str]) -> None:
             )
     except (OSError, KeyError, StopIteration, zipfile.BadZipFile) as error:
         raise HarnessBootstrapError("supplied wheel is not a valid distribution archive") from error
-    fields = dict(
-        line.split(": ", 1) for line in metadata.splitlines() if ": " in line
-    )
+    fields = dict(line.split(": ", 1) for line in metadata.splitlines() if ": " in line)
     if fields.get("Name", "").casefold() != "rob2-kit" or fields.get("Version") != pin["version"]:
         raise HarnessBootstrapError(
             "wheel metadata does not match authoritative release provenance"
@@ -857,9 +852,12 @@ def _changed_paths(root: Path, snapshot: dict[Path, bytes]) -> tuple[str, ...]:
 
 
 def _runtime_matches(source: Path, destination: Path) -> bool:
-    return destination.is_dir() and all(
-        (destination / name).is_file() for name in ("pyproject.toml", "uv.lock")
-    ) and any(destination.glob("*.whl")) and not (destination / "src").exists()
+    return (
+        destination.is_dir()
+        and all((destination / name).is_file() for name in ("pyproject.toml", "uv.lock"))
+        and any(destination.glob("*.whl"))
+        and not (destination / "src").exists()
+    )
 
 
 def _acquire_install_mutex(root: Path) -> Path:
@@ -922,10 +920,7 @@ def _snapshot_managed_state(root: Path) -> dict[Path, bytes]:
 
 def _restore_managed_state(root: Path, snapshot: dict[Path, bytes]) -> None:
     managed_files = {
-        path
-        for target in _managed_roots(root)
-        if target.is_file()
-        for path in (target,)
+        path for target in _managed_roots(root) if target.is_file() for path in (target,)
     }
     for target in _managed_roots(root):
         if target.is_dir():
@@ -1062,9 +1057,7 @@ def _ownership_manifest(
             "path": ".mcp.json",
             "key": "mcpServers.rob2-kit",
             "value_hash": _value_hash(
-                _read_json_object(root / ".mcp.json")
-                .get("mcpServers", {})
-                .get(_MCP_SERVER_NAME)
+                _read_json_object(root / ".mcp.json").get("mcpServers", {}).get(_MCP_SERVER_NAME)
             ),
         },
     }
@@ -1339,9 +1332,7 @@ def _stage_candidate_generation(
             candidate_ledger.parent.mkdir(parents=True, exist_ok=True)
             shutil.copyfile(ledger, candidate_ledger)
         _refresh_release_assets(stage, release_root)
-        _stage_candidate_runtime(
-            stage, release_root, destination=stage / _RUNTIME_RELATIVE
-        )
+        _stage_candidate_runtime(stage, release_root, destination=stage / _RUNTIME_RELATIVE)
         _apply_candidate_host_configuration(stage, manifest, lock, release_root)
         _install_ownership_manifest(stage, release_root, lock)
         _write_journal(stage / ".rob2" / "install-journal.json", "upgrade_complete", (), ())
@@ -1416,9 +1407,7 @@ def _require_complete_doctor(
     }
     if all(check["ok"] for check in required.values()):
         return
-    failed = ", ".join(
-        name for name, check in required.items() if not check["ok"]
-    )
+    failed = ", ".join(name for name, check in required.items() if not check["ok"])
     raise HarnessBootstrapError(f"{generation} doctor failed: {failed}")
 
 
@@ -1849,9 +1838,7 @@ def _validate_owned_host_configuration(root: Path, manifest: dict[str, Any]) -> 
         "section_hash"
     ) != _codex_server_section_hash(codex_path):
         raise HarnessBootstrapError("Codex MCP section differs from its ownership receipt")
-    claude_value = _read_json_object(root / ".mcp.json").get("mcpServers", {}).get(
-        _MCP_SERVER_NAME
-    )
+    claude_value = _read_json_object(root / ".mcp.json").get("mcpServers", {}).get(_MCP_SERVER_NAME)
     if _value_hash(claude_value) != ownership.get("claude", {}).get("value_hash"):
         raise HarnessBootstrapError("Claude MCP entry differs from its ownership receipt")
 
@@ -2010,9 +1997,12 @@ def _distribution_version(name: str) -> str:
 
 
 def _value_hash(value: object) -> str:
-    return "sha256:" + hashlib.sha256(
-        json.dumps(value, sort_keys=True, separators=(",", ":")).encode("utf-8")
-    ).hexdigest()
+    return (
+        "sha256:"
+        + hashlib.sha256(
+            json.dumps(value, sort_keys=True, separators=(",", ":")).encode("utf-8")
+        ).hexdigest()
+    )
 
 
 def _install_skills(root: Path, release_root: Path) -> bool:
@@ -2077,9 +2067,7 @@ def _install_codex_server(
             rf"(?ms)^[ \t]*\[mcp_servers\.{re.escape(_MCP_SERVER_NAME)}\][ \t]*\r?$"
             rf".*?(?=^[ \t]*\[|\Z)"
         )
-        rendered, changed = re.subn(
-            section, _render_codex_server(expected), _read_utf8_bytes(path)
-        )
+        rendered, changed = re.subn(section, _render_codex_server(expected), _read_utf8_bytes(path))
         if changed != 1:
             raise HarnessBootstrapError(
                 "Codex MCP entry cannot be replaced without touching user content"
@@ -2093,9 +2081,7 @@ def _install_codex_server(
             f"{path} defines mcp_servers as an inline value that cannot be extended safely."
         )
     separator = "" if not prefix or prefix.endswith(("\n", "\r")) else "\n"
-    path.write_bytes(
-        (f"{prefix}{separator}{_render_codex_server(expected)}").encode()
-    )
+    path.write_bytes((f"{prefix}{separator}{_render_codex_server(expected)}").encode())
     return True
 
 
@@ -2274,9 +2260,7 @@ def _check_mcp_launchability(
             raise ValueError("uvx is not available on PATH")
         arguments = (project_root, launcher["command"], tuple(launcher["args"]))
         if allow_pending_lifecycle_probe:
-            tools = verify_mcp_launchability(
-                *arguments, environment={"ROB2_LIFECYCLE_DOCTOR": "1"}
-            )
+            tools = verify_mcp_launchability(*arguments, environment={"ROB2_LIFECYCLE_DOCTOR": "1"})
         else:
             tools = verify_mcp_launchability(*arguments)
     except Exception as error:
@@ -2348,9 +2332,7 @@ def _check_ownership(root: Path, release_root: Path) -> dict[str, Any]:
         if raw.get("kind") != _OWNERSHIP_KIND or raw.get("schema_version") != _OWNERSHIP_SCHEMA:
             raise ValueError("ownership manifest schema is unsupported")
         lock = load_release_lock(release_root)
-        if raw.get("release", {}).get("lock_hash") != _content_hash(
-            release_root / _BOOTSTRAP_LOCK
-        ):
+        if raw.get("release", {}).get("lock_hash") != _content_hash(release_root / _BOOTSTRAP_LOCK):
             raise ValueError("ownership manifest release hash differs from the installed release")
         for relative, expected in raw.get("owned_paths", {}).items():
             path = root / relative
@@ -2397,11 +2379,11 @@ def _check_ownership(root: Path, release_root: Path) -> dict[str, Any]:
             raise ValueError("ownership manifest package differs from the installed release")
         verify_ownership_identities(raw, release_root, lock)
         config_ownership = raw.get("config_ownership", {})
-        codex_value = _read_toml(root / ".codex" / "config.toml").get("mcp_servers", {}).get(
-            _MCP_SERVER_NAME
+        codex_value = (
+            _read_toml(root / ".codex" / "config.toml").get("mcp_servers", {}).get(_MCP_SERVER_NAME)
         )
-        claude_value = _read_json_object(root / ".mcp.json").get("mcpServers", {}).get(
-            _MCP_SERVER_NAME
+        claude_value = (
+            _read_json_object(root / ".mcp.json").get("mcpServers", {}).get(_MCP_SERVER_NAME)
         )
         if config_ownership.get("codex", {}).get("value_hash") != _value_hash(codex_value):
             raise ValueError("Codex configuration ownership hash differs")

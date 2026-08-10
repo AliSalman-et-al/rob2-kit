@@ -679,7 +679,8 @@ def test_bundle_freeze_rejects_incomplete_work_and_has_stable_hash() -> None:
                         reviewed_context=ReviewedEvidenceContext(
                             receipt_hash=canonical_hash({"handle": "handle:one"}),
                             snapshot_hash=canonical_hash({"snapshot": "one"}),
-                            requested_mode="unit", applied_mode="unit",
+                            requested_mode="unit",
+                            applied_mode="unit",
                             fragments=(
                                 ReviewedEvidenceFragment(
                                     unit_id=canonical.unit_id,

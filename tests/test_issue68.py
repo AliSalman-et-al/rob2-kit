@@ -24,10 +24,7 @@ from tests.test_evidence_workflow import HASH, complete_receipt, unit
 
 def test_read_context_is_bounded_and_preserves_source_parse_provenance(tmp_path: Path) -> None:
     index = EvidenceSearchIndex(tmp_path / "evidence.sqlite3")
-    units = tuple(
-        unit(number, f"Allocation context {number}.", page=1)
-        for number in range(1, 9)
-    )
+    units = tuple(unit(number, f"Allocation context {number}.", page=1) for number in range(1, 9))
     index.replace_units(units)
 
     context = index.read_context(
@@ -51,10 +48,7 @@ def test_read_context_is_bounded_and_preserves_source_parse_provenance(tmp_path:
 
 def test_read_context_orders_canonical_blocks_numerically(tmp_path: Path) -> None:
     index = EvidenceSearchIndex(tmp_path / "evidence.sqlite3")
-    units = tuple(
-        unit(number, f"Allocation block {number}.", page=1)
-        for number in (1, 2, 10, 11)
-    )
+    units = tuple(unit(number, f"Allocation block {number}.", page=1) for number in (1, 2, 10, 11))
     # Canonical IDs use a page/block suffix; emulate a source with >9 blocks.
     units = tuple(
         item.model_copy(update={"unit_id": f"unit:report-p1-b{number}"})
@@ -160,8 +154,7 @@ def test_receipt_staleness_tracks_exact_dependencies_and_interruptions() -> None
         | {
             "completed_passes": ["guidance_seed"],
             "executed_queries": [
-                receipt.executed_queries[0].model_dump(mode="json")
-                | {"last_cursor": resume_cursor}
+                receipt.executed_queries[0].model_dump(mode="json") | {"last_cursor": resume_cursor}
             ],
             "completed_seed_families": ["seed:allocation"],
             "returned_unit_ids": ["unit:report-001"],

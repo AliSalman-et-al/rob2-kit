@@ -121,10 +121,9 @@ def verification_pins() -> dict[str, bytes]:
 
 
 def archive_ledger(tmp_path: Path) -> WorkflowLedger:
-    ledger = WorkflowLedger(
-        tmp_path / "workflow.sqlite3", ArtifactStore(tmp_path / "artifacts")
-    )
+    ledger = WorkflowLedger(tmp_path / "workflow.sqlite3", ArtifactStore(tmp_path / "artifacts"))
     lease = ledger.acquire_lease("process:archive-test", NOW, timedelta(minutes=5))
+
     def commit(
         record: object,
         dependencies: tuple[DependencyInput, ...] = (),
@@ -210,10 +209,7 @@ def archive_ledger(tmp_path: Path) -> WorkflowLedger:
     )
     inventory_hash = commit(
         inventory,
-        tuple(
-            DependencyInput.model_validate(item.model_dump())
-            for item in inventory_dependencies
-        ),
+        tuple(DependencyInput.model_validate(item.model_dump()) for item in inventory_dependencies),
     )
     trace = DecisionTrace(
         entity_id="decision-trace:one",
@@ -231,9 +227,7 @@ def archive_ledger(tmp_path: Path) -> WorkflowLedger:
         revision_id=trace.revision_id,
         content_hash=trace_hash,
     )
-    trace_dependency = Dependency(
-        **trace_reference.model_dump(), role="dependency:decision-trace"
-    )
+    trace_dependency = Dependency(**trace_reference.model_dump(), role="dependency:decision-trace")
     judgment = AlgorithmicJudgmentRevision(
         entity_id="judgment:one",
         revision_id="revision:judgment-1",
@@ -279,9 +273,7 @@ def archive_ledger(tmp_path: Path) -> WorkflowLedger:
     )
     assessment_dependencies = (
         Dependency(**result_reference.model_dump(), role="dependency:result-spec"),
-        Dependency(
-            **inventory_reference.model_dump(), role="dependency:source-inventory"
-        ),
+        Dependency(**inventory_reference.model_dump(), role="dependency:source-inventory"),
         Dependency(
             **judgment_reference.model_dump(),
             role="dependency:algorithmic-judgment",
@@ -303,8 +295,7 @@ def archive_ledger(tmp_path: Path) -> WorkflowLedger:
     commit(
         assessment,
         tuple(
-            DependencyInput.model_validate(item.model_dump())
-            for item in assessment_dependencies
+            DependencyInput.model_validate(item.model_dump()) for item in assessment_dependencies
         ),
     )
     return ledger
@@ -383,14 +374,10 @@ def test_verifier_rejects_dependency_hash_inconsistent_with_manifest(
     members = {name: source.read(name) for name in source.namelist()}
     manifest = json.loads(members["manifest.json"])
     assessment = next(
-        item
-        for item in manifest["artifacts"]
-        if item["revision_id"] == "revision:assessment-1"
+        item for item in manifest["artifacts"] if item["revision_id"] == "revision:assessment-1"
     )
     assessment["dependencies"][1]["content_hash"] = "sha256:" + ("f" * 64)
-    members["manifest.json"] = json.dumps(
-        manifest, sort_keys=True, separators=(",", ":")
-    ).encode()
+    members["manifest.json"] = json.dumps(manifest, sort_keys=True, separators=(",", ":")).encode()
 
     with pytest.raises(ArchiveVerificationError, match="pinned identity and hash"):
         verify_archive(_zip_members(members))
@@ -407,12 +394,8 @@ def test_verifier_validates_pinned_json_schemas(tmp_path: Path) -> None:
     members[schema_path] = b'{"type":"not-a-json-schema-type"}'
     manifest = json.loads(members["manifest.json"])
     pin = next(item for item in manifest["pins"] if item["archive_path"] == schema_path)
-    pin["content_hash"] = (
-        "sha256:" + hashlib.sha256(members[schema_path]).hexdigest()
-    )
-    members["manifest.json"] = json.dumps(
-        manifest, sort_keys=True, separators=(",", ":")
-    ).encode()
+    pin["content_hash"] = "sha256:" + hashlib.sha256(members[schema_path]).hexdigest()
+    members["manifest.json"] = json.dumps(manifest, sort_keys=True, separators=(",", ":")).encode()
 
     with pytest.raises(ArchiveVerificationError, match="valid JSON Schema"):
         verify_archive(_zip_members(members))
@@ -460,9 +443,7 @@ def test_verifier_independently_requires_complete_archive_pins(tmp_path: Path) -
     manifest = json.loads(members["manifest.json"])
     pin_paths = {pin["archive_path"] for pin in manifest["pins"]}
     manifest["pins"] = []
-    members["manifest.json"] = json.dumps(
-        manifest, sort_keys=True, separators=(",", ":")
-    ).encode()
+    members["manifest.json"] = json.dumps(manifest, sort_keys=True, separators=(",", ":")).encode()
     for path in pin_paths:
         del members[path]
 

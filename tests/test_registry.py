@@ -73,9 +73,7 @@ def test_exact_source_nct_id_acquires_raw_record_and_stable_projection(tmp_path:
     assert store.read(result.raw_record_hash) == fixture("ctg_study.json")
     assert result.projection is not None
     assert result.projection.nct_id.value == "NCT01234567"
-    assert result.projection.nct_id.json_pointer == (
-        "/protocolSection/identificationModule/nctId"
-    )
+    assert result.projection.nct_id.json_pointer == ("/protocolSection/identificationModule/nctId")
     assert result.projection.last_update_posted is not None
     assert result.projection.last_update_posted.json_pointer == (
         "/protocolSection/statusModule/lastUpdatePostDateStruct/date"

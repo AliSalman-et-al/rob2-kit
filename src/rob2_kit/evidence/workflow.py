@@ -253,8 +253,7 @@ class SearchCoverageReceipt(FrozenModel):
         ):
             raise ValueError("executed queries must bind the receipt index snapshot")
         if any(
-            query.sq_id is not None and query.sq_id != self.sq_id
-            for query in self.executed_queries
+            query.sq_id is not None and query.sq_id != self.sq_id for query in self.executed_queries
         ):
             raise ValueError("executed queries must bind the receipt signaling question")
         if any(
@@ -282,11 +281,7 @@ class SearchCoverageReceipt(FrozenModel):
         if self.resume_cursor is not None and self.resume_query_hash is None:
             raise ValueError("a resume cursor must bind the interrupted query hash")
         resume_record = next(
-            (
-                item
-                for item in self.executed_queries
-                if item.query_hash == self.resume_query_hash
-            ),
+            (item for item in self.executed_queries if item.query_hash == self.resume_query_hash),
             None,
         )
         if self.resume_cursor is not None and (
@@ -385,9 +380,7 @@ class SearchCoverageReceipt(FrozenModel):
 
     @property
     def resumable(self) -> bool:
-        return self.interrupted and (
-            self.resume_cursor is not None or not self.traversal_complete
-        )
+        return self.interrupted and (self.resume_cursor is not None or not self.traversal_complete)
 
     @property
     def has_contradiction_pass(self) -> bool:
@@ -414,9 +407,7 @@ class SearchCoverageReceipt(FrozenModel):
 
     def retained_candidate_ids(self) -> set[Identifier]:
         return {
-            item.candidate_id
-            for item in self.result_dispositions
-            if item.candidate_id is not None
+            item.candidate_id for item in self.result_dispositions if item.candidate_id is not None
         }
 
     @property
@@ -708,9 +699,7 @@ class SearchCoverageRecorder:
         """Record exactly one disposition for each unique returned unit."""
         if disposition.unit_id in self._dispositions:
             raise ValueError("search result unit already has a disposition")
-        returned = {
-            unit_id for query in self._queries for unit_id in query.returned_unit_ids
-        }
+        returned = {unit_id for query in self._queries for unit_id in query.returned_unit_ids}
         if disposition.unit_id not in returned:
             raise ValueError("disposition must cover a unit returned by a recorded query")
         self._dispositions[disposition.unit_id] = disposition
@@ -726,9 +715,7 @@ class SearchCoverageRecorder:
     def returned_unit_ids(self) -> tuple[Identifier, ...]:
         """Distinct unit IDs returned across every recorded query so far."""
         return tuple(
-            dict.fromkeys(
-                unit_id for query in self._queries for unit_id in query.returned_unit_ids
-            )
+            dict.fromkeys(unit_id for query in self._queries for unit_id in query.returned_unit_ids)
         )
 
     def auto_disposition(self, retained_unit_ids: Iterable[Identifier]) -> None:
@@ -826,9 +813,7 @@ class SearchCoverageRecorder:
     ) -> SearchCoverageReceipt:
         passes = self._credited_passes()
         returned_unit_ids = tuple(
-            dict.fromkeys(
-                unit_id for query in self._queries for unit_id in query.returned_unit_ids
-            )
+            dict.fromkeys(unit_id for query in self._queries for unit_id in query.returned_unit_ids)
         )
         if self._partial_traversal and traversal_complete and not interrupted:
             raise ValueError(
@@ -902,8 +887,7 @@ class SearchCoverageRecorder:
         proof_payload = receipt.model_dump(mode="json")
         proof_payload["recorder_proof"] = None
         return SearchCoverageReceipt.model_validate(
-            receipt.model_dump(mode="json")
-            | {"recorder_proof": canonical_hash(proof_payload)}
+            receipt.model_dump(mode="json") | {"recorder_proof": canonical_hash(proof_payload)}
         )
 
 
@@ -1123,8 +1107,7 @@ class DerivationDefinition(FrozenModel):
 _RISK_RATIO = DerivationDefinition(
     derivation_id="derivation:risk-ratio",
     required_roles=frozenset(RiskRatioInputRole),
-    formula="(experimental_events / experimental_total) / "
-    "(comparator_events / comparator_total)",
+    formula="(experimental_events / experimental_total) / (comparator_events / comparator_total)",
 )
 _DERIVATIONS = {_RISK_RATIO.derivation_id: _RISK_RATIO}
 
@@ -1174,8 +1157,7 @@ def derive_fact(
     ):
         raise ValueError("event counts must be between zero and their arm totals")
     comparator_risk = (
-        values[RiskRatioInputRole.COMPARATOR_EVENTS]
-        / values[RiskRatioInputRole.COMPARATOR_TOTAL]
+        values[RiskRatioInputRole.COMPARATOR_EVENTS] / values[RiskRatioInputRole.COMPARATOR_TOTAL]
     )
     if comparator_risk == 0:
         raise ValueError("risk ratio is undefined when comparator risk is zero")
@@ -1283,20 +1265,14 @@ def freeze_evidence_bundle(
         raise ValueError("every required visual candidate needs its completed visual gate")
     if any(gate.required and not gate.complete for gate in visual_gates):
         raise ValueError("every required visual gate must be complete")
-    retained_candidates = set().union(
-        *(receipt.retained_candidate_ids() for receipt in receipts)
-    )
+    retained_candidates = set().union(*(receipt.retained_candidate_ids() for receipt in receipts))
     review_by_candidate = {review.candidate_id: review for review in review_revisions}
     if len(review_by_candidate) != len(review_revisions):
         raise ValueError("each retained Evidence candidate requires one latest review revision")
     if set(review_by_candidate) != retained_candidates:
-        raise ValueError(
-            "every retained Evidence candidate requires a substantive review revision"
-        )
+        raise ValueError("every retained Evidence candidate requires a substantive review revision")
     if any(not review.is_complete for review in review_revisions):
-        raise ValueError(
-            "visual-review or unresolved semantic conditions block Evidence freeze"
-        )
+        raise ValueError("visual-review or unresolved semantic conditions block Evidence freeze")
     if review_revisions:
         accepted_by_review = {
             review.candidate_id
@@ -1324,18 +1300,14 @@ def freeze_evidence_bundle(
     claim_ids = {claim.claim_id for claim in claims}
     if len(claim_ids) != len(claims):
         raise ValueError("claim IDs must be unique")
-    referenced_claims = {
-        claim_id for item in candidate_dispositions for claim_id in item.claim_ids
-    }
+    referenced_claims = {claim_id for item in candidate_dispositions for claim_id in item.claim_ids}
     if referenced_claims != claim_ids:
         raise ValueError("accepted candidate claims and frozen claims must match exactly")
     for conflict in conflicts:
         if len(conflict) < 2 or not set(conflict).issubset(claim_ids):
             raise ValueError("conflicts must preserve at least two frozen claims")
     ordered_receipts = tuple(sorted(receipts, key=lambda item: item.receipt_id))
-    ordered_dispositions = tuple(
-        sorted(candidate_dispositions, key=lambda item: item.candidate_id)
-    )
+    ordered_dispositions = tuple(sorted(candidate_dispositions, key=lambda item: item.candidate_id))
     ordered_claims = tuple(sorted(claims, key=lambda item: item.claim_id))
     ordered_facts = tuple(sorted(derived_facts, key=lambda item: item.fact_id))
     ordered_reviews = tuple(sorted(review_revisions, key=lambda item: item.revision_id))
@@ -1345,12 +1317,8 @@ def freeze_evidence_bundle(
     payload = {
         "result_spec_id": result_spec_id,
         "receipt_ids": [item.receipt_id for item in ordered_receipts],
-        "receipt_hashes": [
-            canonical_hash(item) for item in ordered_receipts
-        ],
-        "candidate_dispositions": [
-            item.model_dump(mode="json") for item in ordered_dispositions
-        ],
+        "receipt_hashes": [canonical_hash(item) for item in ordered_receipts],
+        "candidate_dispositions": [item.model_dump(mode="json") for item in ordered_dispositions],
         "claims": [item.model_dump(mode="json") for item in ordered_claims],
         "derived_facts": [item.model_dump(mode="json") for item in ordered_facts],
         "visual_item_ids": ordered_visuals,

@@ -308,9 +308,9 @@ def test_preflight_compares_new_result_spec_artifacts_against_cached_identities(
             entity="proposal:new",
             artifact=json.dumps(
                 {
-                    "result_spec": embedded_result_spec(
-                        NOW + timedelta(seconds=1)
-                    ).model_dump(mode="json")
+                    "result_spec": embedded_result_spec(NOW + timedelta(seconds=1)).model_dump(
+                        mode="json"
+                    )
                 }
             ).encode(),
         ),

@@ -83,9 +83,7 @@ def test_search_cursor_and_location_handle_use_distinct_kind_prefixes(tmp_path: 
     from rob2_kit.evidence.search import SearchPolicy
 
     index = EvidenceSearchIndex(tmp_path / "evidence.sqlite3")
-    index.replace_units(
-        tuple(_unit(f"unit:{i}", f"Allocation concealed {i}.") for i in range(5))
-    )
+    index.replace_units(tuple(_unit(f"unit:{i}", f"Allocation concealed {i}.") for i in range(5)))
     page = index.search(SearchQuery(terms=("allocation",)), policy=SearchPolicy(page_hit_target=2))
     assert page.next_cursor is not None
     assert page.next_cursor.startswith("cur:")

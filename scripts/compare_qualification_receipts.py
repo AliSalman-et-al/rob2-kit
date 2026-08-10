@@ -35,9 +35,7 @@ def main() -> None:
                 f"{receipt['platform']}"
             )
         if receipt["installed_replay"] != expected_replay:
-            raise SystemExit(
-                "installed-wheel replay semantics differ on " f"{receipt['platform']}"
-            )
+            raise SystemExit(f"installed-wheel replay semantics differ on {receipt['platform']}")
         if not all(receipt["doctor"].values()):
             raise SystemExit(f"doctor qualification was incomplete on {receipt['platform']}")
         telemetry = receipt["telemetry"]

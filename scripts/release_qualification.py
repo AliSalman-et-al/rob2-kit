@@ -1256,11 +1256,7 @@ def _journey(
             answer_question_ids = tuple(
                 dict.fromkeys(
                     active_questions
-                    + (
-                        ("sq:measurement:assessor-aware",)
-                        if domain == "domain:measurement"
-                        else ()
-                    )
+                    + (("sq:measurement:assessor-aware",) if domain == "domain:measurement" else ())
                 )
             )
             committed = await call(
@@ -1891,7 +1887,9 @@ def _qualify(
         if not isinstance(first_resumed_work_token, dict) or (
             first_resumed_work_token.get("operation") != "submit_domain_evidence"
         ):
-            raise AssertionError("resume did not continue with post-confirmation domain evidence work")
+            raise AssertionError(
+                "resume did not continue with post-confirmation domain evidence work"
+            )
         resumed_context_work_token = normalize_semantic_value(
             next(
                 call_receipt["arguments"]["work_token"]

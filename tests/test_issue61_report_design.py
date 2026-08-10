@@ -93,28 +93,32 @@ def test_extended_assessment_is_consistent_across_formats() -> None:
 
 
 def test_run_index_has_trial_result_traffic_dashboard_and_zero_evidence() -> None:
-    rendered = RunIndexProjector(
-        RunIndexView(
-            run_id="run:orbit",
-            results=(
-                RunIndexResultView(
-                    trial_id="trial:orbit-2",
-                    result_id="result:orbit-survival",
-                    state="report_ready",
-                    outcome="Overall survival",
-                    time_point="36-month data cut",
-                    comparison="arm:novaferon vs arm:control",
-                    effect_measure="HR",
-                    estimate=EstimateView(
-                        value="0.61", interval_lower="0.50", interval_upper="0.75"
+    rendered = (
+        RunIndexProjector(
+            RunIndexView(
+                run_id="run:orbit",
+                results=(
+                    RunIndexResultView(
+                        trial_id="trial:orbit-2",
+                        result_id="result:orbit-survival",
+                        state="report_ready",
+                        outcome="Overall survival",
+                        time_point="36-month data cut",
+                        comparison="arm:novaferon vs arm:control",
+                        effect_measure="HR",
+                        estimate=EstimateView(
+                            value="0.61", interval_lower="0.50", interval_upper="0.75"
+                        ),
+                        evidence_count=0,
+                        overall_judgment="some_concerns",
+                        domain_judgments={"domain:randomization": "low"},
                     ),
-                    evidence_count=0,
-                    overall_judgment="some_concerns",
-                    domain_judgments={"domain:randomization": "low"},
                 ),
-            ),
+            )
         )
-    ).html().decode()
+        .html()
+        .decode()
+    )
     assert "Trial × Result dashboard" in rendered
     assert "Overall survival" in rendered
     assert "Evidence claims" in rendered
@@ -129,10 +133,15 @@ def test_report_retains_material_conflicts_uncertainty_and_overall_policy() -> N
             "overall_policy_hash": "sha256:overall-policy",
             "overall_decision_trace": ("rule:overall:any-concerns",),
             "domains": (
-                _assessment().domains[0].model_copy(
+                _assessment()
+                .domains[0]
+                .model_copy(
                     update={
                         "questions": (
-                            _assessment().domains[0].questions[0].model_copy(
+                            _assessment()
+                            .domains[0]
+                            .questions[0]
+                            .model_copy(
                                 update={
                                     "conflicts": (("claim:one", "claim:two"),),
                                     "uncertainty": ("registry source unavailable",),
@@ -166,11 +175,9 @@ def test_evidence_count_is_unique_by_evidence_id_across_questions_and_formats() 
         page=1,
         provenance="canonical unit unit:one",
     )
-    question = _assessment().domains[0].questions[0].model_copy(
-        update={"evidence": (evidence,)}
-    )
-    duplicate_question = _assessment().domains[1].questions[0].model_copy(
-        update={"evidence": (evidence,)}
+    question = _assessment().domains[0].questions[0].model_copy(update={"evidence": (evidence,)})
+    duplicate_question = (
+        _assessment().domains[1].questions[0].model_copy(update={"evidence": (evidence,)})
     )
     assessment = _assessment().model_copy(
         update={

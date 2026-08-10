@@ -336,8 +336,16 @@ def _location_handle_for(
 
 
 def _review_revision(
-    *, candidate_id: str, result_id: str, domain_id: str, question_id: str, location_handle: str,
-    span_start: int, span_end: int, entity_suffix: str, disposition: str = "supporting",
+    *,
+    candidate_id: str,
+    result_id: str,
+    domain_id: str,
+    question_id: str,
+    location_handle: str,
+    span_start: int,
+    span_end: int,
+    entity_suffix: str,
+    disposition: str = "supporting",
 ) -> dict[str, object]:
     """Build one minimal complete review revision bound to an issued read view."""
     return {
@@ -569,13 +577,16 @@ def test_report_render_failure_preserves_assessment_ready_and_retries_only_mater
     continued = engine.continue_run(ContinueRunRequest(run_id=run_id))
 
     assert continued.run_state is RunState.COMPLETE
-    assert len(
-        [
-            event
-            for event in ledger.events()
-            if event.operation == "operation:assessment-revision-frozen"
-        ]
-    ) == 1
+    assert (
+        len(
+            [
+                event
+                for event in ledger.events()
+                if event.operation == "operation:assessment-revision-frozen"
+            ]
+        )
+        == 1
+    )
     assert engine.run_status(RunStatusRequest(run_id=run_id)).result_states[0].state is (
         ResultState.REPORT_READY
     )
@@ -719,9 +730,7 @@ def test_correction_replaces_prior_assessor_inputs_in_terminal_assessment(tmp_pa
         run_id,
         prefix="corrected-overall-input",
         answers=answers,
-        assessor_inputs_by_domain={
-            "domain:randomization": {"input:combined-concerns": False}
-        },
+        assessor_inputs_by_domain={"domain:randomization": {"input:combined-concerns": False}},
     )
     before = next((tmp_path / "output" / "report-bundle").rglob("assessment.json"))
     assert json.loads(before.read_text(encoding="utf-8"))["overall_judgment"] == "some_concerns"
@@ -747,8 +756,7 @@ def test_correction_replaces_prior_assessor_inputs_in_terminal_assessment(tmp_pa
     reports = tuple((tmp_path / "output" / "report-bundle").rglob("assessment.json"))
     assert len(reports) == 2
     assert {
-        json.loads(report.read_text(encoding="utf-8"))["overall_judgment"]
-        for report in reports
+        json.loads(report.read_text(encoding="utf-8"))["overall_judgment"] for report in reports
     } == {"some_concerns", "high"}
 
 
@@ -780,8 +788,8 @@ def test_final_judgment_departure_must_bind_the_authorized_domain(tmp_path: Path
 
     with pytest.raises(ValueError, match="authorized by this WorkToken"):
         engine.submit_domain_answers(
-        SubmitDomainAnswersRequest(
-            contract_version="1.0.0",
+            SubmitDomainAnswersRequest(
+                contract_version="1.0.0",
                 run_id=run_id,
                 work_token=answer.work_token,
                 idempotency_key="idempotency:departure-scope-answers",
@@ -1026,10 +1034,13 @@ def test_unstructured_units_remain_visible_for_attributable_review(tmp_path: Pat
         document_zone=DocumentZone.UNKNOWN,
     )
     index.replace_units((unit,))
-    assert index.read_unit(
-        unit.unit_id,
-        scope=EvidenceScope(trial_id="trial:active", result_id="result:active"),
-    ) == unit
+    assert (
+        index.read_unit(
+            unit.unit_id,
+            scope=EvidenceScope(trial_id="trial:active", result_id="result:active"),
+        )
+        == unit
+    )
 
 
 def test_invalid_late_passage_writes_no_artifacts_or_ledger_events(tmp_path: Path) -> None:
@@ -1056,43 +1067,43 @@ def test_invalid_late_passage_writes_no_artifacts_or_ledger_events(tmp_path: Pat
     # question-specific review graph is rejected before it can write a
     # review, claim, or submission artifact.
     response = engine.submit_domain_evidence(
-            SubmitDomainEvidenceRequest(
-                contract_version="1.2.0",
-                run_id=run_id,
-                work_token=work.work_token,
-                idempotency_key="idempotency:invalid-late-passage",
-                result_id="result:invalid-passage",
-                domain_id="domain:randomization",
-                passages=(
-                    EvidencePassageInput(
-                        unit_id=unit_id,
-                        span_start=0,
-                        span_end=len(unit.text),
-                        claim_type="claim-type:randomization-method",
-                        question_ids=(DOMAINS["domain:randomization"][0],),
-                    ),
-                    EvidencePassageInput(
-                        unit_id=unit_id,
-                        span_start=0,
-                        span_end=len(unit.text),
-                        claim_type="claim-type:wrong-domain",
-                        question_ids=(DOMAINS["domain:deviations"][0],),
-                    ),
+        SubmitDomainEvidenceRequest(
+            contract_version="1.2.0",
+            run_id=run_id,
+            work_token=work.work_token,
+            idempotency_key="idempotency:invalid-late-passage",
+            result_id="result:invalid-passage",
+            domain_id="domain:randomization",
+            passages=(
+                EvidencePassageInput(
+                    unit_id=unit_id,
+                    span_start=0,
+                    span_end=len(unit.text),
+                    claim_type="claim-type:randomization-method",
+                    question_ids=(DOMAINS["domain:randomization"][0],),
                 ),
-                review_revisions=(
-                    _review_revision(
-                        candidate_id=unit_id,
-                        result_id="result:invalid-passage",
-                        domain_id="domain:randomization",
-                        question_id=DOMAINS["domain:randomization"][0],
-                        location_handle="handle:invalid-late-passage",
-                        span_start=0,
-                        span_end=len(unit.text),
-                        entity_suffix="invalid-late-passage",
-                    ),
+                EvidencePassageInput(
+                    unit_id=unit_id,
+                    span_start=0,
+                    span_end=len(unit.text),
+                    claim_type="claim-type:wrong-domain",
+                    question_ids=(DOMAINS["domain:deviations"][0],),
                 ),
-            )
+            ),
+            review_revisions=(
+                _review_revision(
+                    candidate_id=unit_id,
+                    result_id="result:invalid-passage",
+                    domain_id="domain:randomization",
+                    question_id=DOMAINS["domain:randomization"][0],
+                    location_handle="handle:invalid-late-passage",
+                    span_start=0,
+                    span_end=len(unit.text),
+                    entity_suffix="invalid-late-passage",
+                ),
+            ),
         )
+    )
     assert not response.committed
 
     assert ledger.events() == events_before
@@ -1102,8 +1113,8 @@ def test_invalid_late_passage_writes_no_artifacts_or_ledger_events(tmp_path: Pat
     for span_start in (len(unit.text), len(unit.text) + 1):
         with pytest.raises(ValueError, match="invalid evidence read-view receipt"):
             engine.submit_domain_evidence(
-            SubmitDomainEvidenceRequest(
-                contract_version="1.2.0",
+                SubmitDomainEvidenceRequest(
+                    contract_version="1.2.0",
                     run_id=run_id,
                     work_token=work.work_token,
                     idempotency_key=f"idempotency:invalid-open-span-{span_start}",

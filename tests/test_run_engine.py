@@ -103,17 +103,13 @@ def test_run_engine_threads_one_persistent_verified_hash_cache_across_calls(tmp_
 
 def test_starting_new_run_retires_prior_unfinished_run_durably(tmp_path) -> None:
     engine = RunEngine()
-    first = engine.prepare_run(
-        PrepareRunRequest(project_root=tmp_path, authorized=True)
-    )
+    first = engine.prepare_run(PrepareRunRequest(project_root=tmp_path, authorized=True))
 
     second = engine.prepare_run(
         PrepareRunRequest(project_root=tmp_path, authorized=True, start_new=True)
     )
     retired = engine.run_status(RunStatusRequest(run_id=first.run_id))
-    resumed = RunEngine().prepare_run(
-        PrepareRunRequest(project_root=tmp_path, authorized=False)
-    )
+    resumed = RunEngine().prepare_run(PrepareRunRequest(project_root=tmp_path, authorized=False))
 
     assert second.run_id != first.run_id
     assert retired.run_state is RunState.RETIRED
@@ -180,13 +176,9 @@ def test_prepare_run_refuses_incompatible_pre_release_schema_actionably(tmp_path
         ).fetchone() == ("0",)
 
     status_engine = RunEngine()
-    rebound = status_engine.prepare_run(
-        PrepareRunRequest(project_root=tmp_path, authorized=True)
-    )
+    rebound = status_engine.prepare_run(PrepareRunRequest(project_root=tmp_path, authorized=True))
     status_response = status_engine.run_status(RunStatusRequest(run_id=rebound.run_id))
-    continue_response = status_engine.continue_run(
-        ContinueRunRequest(run_id=rebound.run_id)
-    )
+    continue_response = status_engine.continue_run(ContinueRunRequest(run_id=rebound.run_id))
 
     assert status_response.condition is WorkflowCondition.RUN_INTEGRITY_FAILURE
     assert status_response.integrity is not None
@@ -198,9 +190,7 @@ def test_prepare_run_refuses_incompatible_pre_release_schema_actionably(tmp_path
 
 def test_invalid_persisted_lifecycle_is_a_typed_run_integrity_condition(tmp_path) -> None:
     engine = RunEngine()
-    prepared = engine.prepare_run(
-        PrepareRunRequest(project_root=tmp_path, authorized=True)
-    )
+    prepared = engine.prepare_run(PrepareRunRequest(project_root=tmp_path, authorized=True))
     ledger_path = tmp_path / ".rob2" / "ledger.sqlite3"
     with sqlite3.connect(ledger_path) as connection:
         connection.execute(
@@ -244,9 +234,7 @@ def test_invalid_persisted_lifecycle_is_a_typed_run_integrity_condition(tmp_path
 
 def test_run_proposal_rejects_identifiers_not_issued_by_the_engine(tmp_path) -> None:
     engine = RunEngine()
-    prepared = engine.prepare_run(
-        PrepareRunRequest(project_root=tmp_path, authorized=True)
-    )
+    prepared = engine.prepare_run(PrepareRunRequest(project_root=tmp_path, authorized=True))
     assert prepared.proposal is not None
 
     with pytest.raises(ValueError, match="not issued"):
@@ -263,9 +251,7 @@ def test_run_proposal_rejects_identifiers_not_issued_by_the_engine(tmp_path) -> 
 
 def test_result_resolution_rejects_unissued_preconfirmation_token(tmp_path) -> None:
     engine = RunEngine()
-    prepared = engine.prepare_run(
-        PrepareRunRequest(project_root=tmp_path, authorized=True)
-    )
+    prepared = engine.prepare_run(PrepareRunRequest(project_root=tmp_path, authorized=True))
     token = WorkToken(
         token="work-token:result-resolution",
         run_id=prepared.run_id,

@@ -1722,7 +1722,9 @@ class EvidenceSearchIndex:
                 raise ValueError("receipt payload has invalid field types")
             ReadContextMode(requested_mode)
             ReadContextMode(applied_mode)
-            fragments = tuple(ReviewedEvidenceFragment.model_validate(item) for item in raw_fragments)
+            fragments = tuple(
+                ReviewedEvidenceFragment.model_validate(item) for item in raw_fragments
+            )
             if not fragments or len({fragment.unit_id for fragment in fragments}) != len(fragments):
                 raise ValueError("receipt fragments are empty or duplicate")
             lineage_by_unit = {
@@ -1778,16 +1780,12 @@ class EvidenceSearchIndex:
             ReviewedEvidenceFragment(
                 unit_id=fragment.unit_id,
                 source_id=str(lineage_by_unit[fragment.unit_id]["source_id"]),
-                source_artifact_hash=str(
-                    lineage_by_unit[fragment.unit_id]["source_artifact_hash"]
-                ),
+                source_artifact_hash=str(lineage_by_unit[fragment.unit_id]["source_artifact_hash"]),
                 parse_id=str(lineage_by_unit[fragment.unit_id]["parse_id"]),
                 canonicalization_version=str(
                     lineage_by_unit[fragment.unit_id]["canonicalization_version"]
                 ),
-                unit_content_hash=str(
-                    lineage_by_unit[fragment.unit_id]["unit_content_hash"]
-                ),
+                unit_content_hash=str(lineage_by_unit[fragment.unit_id]["unit_content_hash"]),
                 span_start=fragment.span_start,
                 span_end=fragment.span_end,
                 content_hash=fragment.content_hash,

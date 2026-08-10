@@ -558,7 +558,7 @@ def create_server(
                 description=(
                     "Opaque source/Parse-bound location handle returned by search_evidence."
                 ),
-            )
+            ),
         ],
         work_token: Annotated[
             WorkToken,
@@ -668,9 +668,7 @@ def create_server(
                     {
                         "run_id": run_id,
                         "work_token": work_token,
-                        "idempotency_key": _submission_key(
-                            "source-role-review", work_token.token
-                        ),
+                        "idempotency_key": _submission_key("source-role-review", work_token.token),
                         "selections": selections,
                         "contract_version": contract_version,
                     }
