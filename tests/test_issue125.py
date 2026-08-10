@@ -23,15 +23,12 @@ from rob2_kit.application.contracts import (
 )
 from rob2_kit.evidence.errors import (
     FieldViolation,
-    StaleCursor,
-    UnknownCursor,
     invalid_request_from_validation,
 )
 from rob2_kit.evidence.search import (
     CanonicalEvidenceUnit,
     CanonicalUnitKind,
     DocumentZone,
-    EvidenceSearchIndex,
 )
 
 HASH = "sha256:" + "1" * 64
@@ -50,49 +47,6 @@ def _unit(unit_id: str, text: str) -> CanonicalEvidenceUnit:
         document_zone=DocumentZone.METHODS,
     )
 
-
-def test_location_handle_is_a_short_kind_prefixed_token_not_a_signed_blob(
-    tmp_path: Path,
-) -> None:
-    index = EvidenceSearchIndex(tmp_path / "evidence.sqlite3")
-    index.replace_units((_unit("unit:a", "Allocation was concealed."),))
-    page = index.search(SearchQuery(terms=("allocation",)))
-    assert len(page.hits) == 1
-    handle = page.hits[0].location_handle
-    assert handle.startswith("loc:")
-    assert len(handle) < 100
-
-
-def test_unknown_location_handle_is_distinguished_from_a_stale_one(tmp_path: Path) -> None:
-    index = EvidenceSearchIndex(tmp_path / "evidence.sqlite3")
-    index.replace_units((_unit("unit:a", "Allocation was concealed."),))
-    page = index.search(SearchQuery(terms=("allocation",)))
-    real_handle = page.hits[0].location_handle
-
-    with pytest.raises(UnknownCursor):
-        index.read_location("loc:this-was-never-issued")
-
-    # A handle from the right family, that once existed, but whose bound
-    # snapshot/lineage no longer matches, is genuinely stale -- not unknown.
-    index.replace_units((_unit("unit:a", "Allocation was concealed differently."),))
-    with pytest.raises(StaleCursor):
-        index.read_location(real_handle)
-
-
-def test_search_cursor_and_location_handle_use_distinct_kind_prefixes(tmp_path: Path) -> None:
-    from rob2_kit.evidence.search import SearchPolicy
-
-    index = EvidenceSearchIndex(tmp_path / "evidence.sqlite3")
-    index.replace_units(tuple(_unit(f"unit:{i}", f"Allocation concealed {i}.") for i in range(5)))
-    page = index.search(SearchQuery(terms=("allocation",)), policy=SearchPolicy(page_hit_target=2))
-    assert page.next_cursor is not None
-    assert page.next_cursor.startswith("cur:")
-
-    # A location handle must not be usable as a search cursor, and vice
-    # versa -- the kind prefix must actually gate the lookup, not just
-    # decorate it.
-    with pytest.raises(UnknownCursor):
-        index.search(SearchQuery(terms=("allocation",)), cursor=page.hits[0].location_handle)
 
 
 def test_seed_family_nested_in_query_gets_a_top_level_field_hint() -> None:

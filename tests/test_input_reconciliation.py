@@ -399,7 +399,7 @@ def _complete_passage_receipts(
 ) -> None:
     """Complete the mandatory search protocol via real search_evidence calls.
 
-    The engine's server-side SearchCoverageRecorder (#127) accumulates these
+    The engine's durable v2 navigation state accumulates these
     calls itself, keyed by the active WorkToken's Result/Domain scope and
     each question ID; callers no longer construct or submit a receipt. The
     document fixtures behind these tests are literally the word "primary"

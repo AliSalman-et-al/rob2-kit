@@ -20,7 +20,6 @@ from rob2_kit.domain import assessment, evidence, projects, releases, results, s
 from rob2_kit.domain.canonical import canonical_json_bytes
 from rob2_kit.domain.revisions import ContentHash, Identifier, Revision, SchemaVersion
 from rob2_kit.evidence.search import CanonicalEvidenceUnit
-from rob2_kit.evidence.workflow import SearchCoverageReceipt
 from rob2_kit.logic.packs import parse_pack_yaml
 from rob2_kit.reports._deterministic_zip import write_deterministic_zip
 from rob2_kit.storage.artifacts import ArtifactNotFoundError
@@ -63,7 +62,6 @@ _REVISION_MODELS: tuple[type[Revision], ...] = (
 _RECORD_MODELS: tuple[type[BaseModel], ...] = (
     *_REVISION_MODELS,
     CanonicalEvidenceUnit,
-    SearchCoverageReceipt,
     sources.SourceDescriptor,
 )
 _ANY_REVISION = _REVISION_MODELS
@@ -71,7 +69,6 @@ _EVIDENCE_ITEMS = (
     evidence.EvidenceClaim,
     evidence.DerivedFact,
     evidence.VisualTranscription,
-    SearchCoverageReceipt,
 )
 _EXPECTED_DEPENDENCY_MODELS: dict[str, tuple[type[BaseModel], ...]] = {
     "dependency:algorithmic-judgment": (assessment.AlgorithmicJudgmentRevision,),

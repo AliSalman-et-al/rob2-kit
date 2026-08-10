@@ -43,10 +43,6 @@ CONTEXT_UNIT_LIMIT = 6
 CANONICALIZATION_VERSION = "canonicalization:1.3.0"
 RETRIEVAL_SCHEMA_VERSION = "retrieval-schema:1.0.0"
 EVIDENCE_INDEX_SCHEMA_VERSION = "evidence-index-schema:1.0.0"
-PAGE_HIT_TARGET_MAX = 20
-PAGE_CHARACTER_TARGET_MAX = 8_000
-BROAD_UNIQUE_HIT_THRESHOLD_MAX = 100
-BROAD_INDEX_FRACTION_MAX = 0.05
 EVIDENCE_SEARCH_POLICY_ID = "policy:evidence-search-2.0.0"
 EVIDENCE_READ_POLICY_ID = "policy:evidence-read-2.0.0"
 EVIDENCE_SEARCH_ESTIMATOR_ID = "estimator:serialized-utf8-ceil-bytes-div-4:1.0.0"
@@ -77,16 +73,6 @@ class DocumentZone(StrEnum):
     EXTRACTION_ARTIFACT = "extraction_artifact"
     UNKNOWN = "unknown"
     OTHER = "other"
-
-
-FORBIDDEN_RETRIEVAL_ZONES = frozenset(
-    {
-        DocumentZone.BIBLIOGRAPHY,
-        DocumentZone.CONTENTS,
-        DocumentZone.PAGE_FURNITURE,
-        DocumentZone.EXTRACTION_ARTIFACT,
-    }
-)
 
 
 class ReadContextMode(StrEnum):
@@ -567,7 +553,7 @@ def canonicalize_evidence_units(
     return tuple(units)
 
 
-class SearchProjection(FrozenModel):
+class _SearchProjection(FrozenModel):
     projection_id: Identifier
     canonical_unit_id: Identifier
     text: str = Field(min_length=1)
@@ -577,7 +563,7 @@ class SearchProjection(FrozenModel):
     projection_version: Literal["1.0.0"] = "1.0.0"
 
     @model_validator(mode="after")
-    def validate_non_citable(self) -> SearchProjection:
+    def validate_non_citable(self) -> _SearchProjection:
         if self.citable:
             raise ValueError("search projections are non-citable")
         if self.end <= self.start:
@@ -679,26 +665,6 @@ class EvidenceScope(FrozenModel):
     question_id: Identifier | None = None
     source_ids: tuple[Identifier, ...] = ()
     work_token_id: Identifier | None = None
-
-
-class SearchPolicy(FrozenModel):
-    policy_id: Identifier = "policy:evidence-search-1.1.0"
-    page_hit_target: int = Field(default=20, ge=1, le=PAGE_HIT_TARGET_MAX)
-    page_character_target: int = Field(
-        default=8_000,
-        ge=1,
-        le=PAGE_CHARACTER_TARGET_MAX,
-    )
-    broad_unique_hit_threshold: int = Field(
-        default=100,
-        ge=1,
-        le=BROAD_UNIQUE_HIT_THRESHOLD_MAX,
-    )
-    broad_index_fraction: float = Field(
-        default=0.05,
-        gt=0,
-        le=BROAD_INDEX_FRACTION_MAX,
-    )
 
 
 class EvidenceSearchPolicy(FrozenModel):
@@ -1227,49 +1193,7 @@ class EvidenceSearchPage(FrozenModel):
         return self
 
 
-class SearchHit(FrozenModel):
-    unit: CanonicalEvidenceUnit
-    projection: SearchProjection
-    rank: float
-    oversized: bool = False
-    preview: str = ""
-    match_explanation: str = "lexical match"
-    warnings: tuple[str, ...] = ()
-    duplicate_group_id: Identifier | None = None
-    location_handle: str = Field(min_length=1)
-
-
-class QueryPreview(FrozenModel):
-    unique_hit_count: int
-    scoped_unit_count: int
-    source_distribution: tuple[tuple[Identifier, int], ...]
-    requires_broad_query_justification: bool
-    malformed_query_hints: tuple[str, ...] = ()
-
-
-class SearchPage(FrozenModel):
-    snapshot_hash: ContentHash
-    query_hash: ContentHash
-    policy_id: Identifier
-    policy_hash: ContentHash
-    hits: tuple[SearchHit, ...]
-    next_cursor: str | None = Field(default=None, min_length=1)
-    preview: QueryPreview
-    character_count: int = Field(default=0, ge=0)
-    oversized_unit_ids: tuple[Identifier, ...] = ()
-    condition: Literal["results", "zero_hits", "excluded_only", "truncated"] = "results"
-    excluded_count: int = Field(default=0, ge=0)
-    estimated_omitted_characters: int = Field(default=0, ge=0)
-    next_actions: tuple[str, ...] = ()
-    scope_warnings: tuple[str, ...] = ()
-    malformed_query_hints: tuple[str, ...] = ()
-
-    @property
-    def has_more(self) -> bool:
-        return self.next_cursor is not None
-
-
-class EvidenceContext(FrozenModel):
+class _EvidenceContext(FrozenModel):
     """A bounded, snapshot-bound view around one intact canonical unit."""
 
     snapshot_hash: ContentHash
@@ -1287,7 +1211,7 @@ class EvidenceContext(FrozenModel):
     visual_inspection_available: bool = False
 
     @model_validator(mode="after")
-    def validate_bounds_and_provenance(self) -> EvidenceContext:
+    def validate_bounds_and_provenance(self) -> _EvidenceContext:
         if self.character_target > CONTEXT_CHARACTER_TARGET:
             raise ValueError(
                 f"character_target cannot exceed {CONTEXT_CHARACTER_TARGET} characters"
@@ -1348,7 +1272,7 @@ class EvidenceContext(FrozenModel):
         return (self.unit, *self.neighbors)
 
 
-class EvidenceRead(FrozenModel):
+class _EvidenceRead(FrozenModel):
     """One bounded, source-authored character window resolved from a handle."""
 
     snapshot_hash: ContentHash
@@ -1361,7 +1285,7 @@ class EvidenceRead(FrozenModel):
     warnings: tuple[str, ...] = ()
 
     @model_validator(mode="after")
-    def validate_window(self) -> EvidenceRead:
+    def validate_window(self) -> _EvidenceRead:
         if self.end < self.start or self.text != self.unit.text[self.start : self.end]:
             raise ValueError("read text must be the exact source-authored unit window")
         return self
@@ -1529,36 +1453,6 @@ class EvidenceSearchIndex:
             raise
         return snapshot
 
-    def preview(
-        self,
-        query: SearchQuery,
-        *,
-        policy: SearchPolicy | None = None,
-        scope: EvidenceScope | None = None,
-    ) -> QueryPreview:
-        policy = policy or SearchPolicy()
-        self._snapshot()
-        rows, scoped_count, excluded_count = self._matches(query, scope=scope)
-        sources: dict[str, set[str]] = {}
-        for row in rows:
-            sources.setdefault(row["source_id"], set()).add(row["unit_id"])
-        unique_count = len({row["unit_id"] for row in rows})
-        return QueryPreview(
-            unique_hit_count=unique_count,
-            scoped_unit_count=scoped_count,
-            source_distribution=tuple(
-                (source, len(unit_ids)) for source, unit_ids in sorted(sources.items())
-            ),
-            requires_broad_query_justification=(
-                unique_count > policy.broad_unique_hit_threshold
-                and scoped_count > 0
-                and unique_count / scoped_count > policy.broad_index_fraction
-            ),
-            malformed_query_hints=(
-                _malformed_query_hints(query) if unique_count == 0 and excluded_count == 0 else ()
-            ),
-        )
-
     def read_unit(
         self,
         unit_id: Identifier,
@@ -1593,14 +1487,14 @@ class EvidenceSearchIndex:
                 field="unit_id",
             ) from error
 
-    def read_location(
+    def _read_location(
         self,
         location_handle: str,
         *,
         character_target: int = CONTEXT_CHARACTER_TARGET,
         cursor: str | None = None,
         scope: EvidenceScope | None = None,
-    ) -> EvidenceRead:
+    ) -> _EvidenceRead:
         """Dereference an opaque, snapshot-bound location in a bounded window.
 
         Handles deliberately contain no caller-controlled path or ordinal.  A
@@ -1641,7 +1535,7 @@ class EvidenceSearchIndex:
         if start >= len(unit.text):
             raise StaleCursor("read continuation cursor is outside the unit", field="cursor")
         end = min(start + character_target, len(unit.text))
-        return EvidenceRead(
+        return _EvidenceRead(
             snapshot_hash=snapshot,
             unit=unit,
             text=unit.text[start:end],
@@ -1656,7 +1550,7 @@ class EvidenceSearchIndex:
             warnings=unit.warnings,
         )
 
-    def read_context(
+    def _read_context(
         self,
         unit_id: Identifier,
         *,
@@ -1665,7 +1559,7 @@ class EvidenceSearchIndex:
         mode: ReadContextMode = ReadContextMode.UNIT,
         scope: EvidenceScope | None = None,
         cursor: str | None = None,
-    ) -> EvidenceContext:
+    ) -> _EvidenceContext:
         """Read an intact unit with deterministic, bounded same-source neighbors.
 
         The target is never split or replaced by a projection.  If it is larger
@@ -1715,7 +1609,7 @@ class EvidenceSearchIndex:
                 ):
                     raise StaleCursor("section continuation is malformed", field="cursor")
                 deferred_unit = self.read_unit(deferred_id, scope=scope)
-                return EvidenceContext(
+                return _EvidenceContext(
                     snapshot_hash=snapshot,
                     unit=deferred_unit,
                     character_count=len(deferred_unit.text),
@@ -1852,7 +1746,7 @@ class EvidenceSearchIndex:
         if oversized:
             if self._snapshot() != snapshot:
                 raise StaleCursor("evidence snapshot changed while reading context", field="cursor")
-            return EvidenceContext(
+            return _EvidenceContext(
                 snapshot_hash=snapshot,
                 unit=target,
                 character_count=len(target.text),
@@ -1914,7 +1808,7 @@ class EvidenceSearchIndex:
         if self._snapshot() != snapshot:
             raise StaleCursor("evidence snapshot changed while reading context", field="cursor")
         next_offset = offset + scanned
-        return EvidenceContext(
+        return _EvidenceContext(
             snapshot_hash=snapshot,
             unit=target,
             neighbors=tuple(selected),
@@ -2078,7 +1972,7 @@ class EvidenceSearchIndex:
         policy: EvidenceReadPolicy,
     ) -> EvidenceReadBatchOutcome:
         try:
-            read = self.read_location(
+            read = self._read_location(
                 item.location_handle,
                 character_target=policy.per_view_character_target,
                 scope=EvidenceScope(source_ids=item.source_ids),
@@ -2138,7 +2032,7 @@ class EvidenceSearchIndex:
                             policy=policy,
                             continuation_input=item.continuation,
                         )
-                context = self.read_context(
+                context = self._read_context(
                     unit.unit_id,
                     character_target=policy.per_view_character_target,
                     mode=item.mode,
@@ -2273,7 +2167,7 @@ class EvidenceSearchIndex:
                 if not 0 <= next_start < len(unit.text):
                     raise StaleCursor("v2 item continuation is outside the canonical unit")
                 end = min(next_start + policy.per_view_character_target, len(unit.text))
-                read = EvidenceRead(
+                read = _EvidenceRead(
                     snapshot_hash=read.snapshot_hash,
                     unit=unit,
                     text=unit.text[next_start:end],
@@ -2838,147 +2732,6 @@ class EvidenceSearchIndex:
             read_evidence=EvidenceSearchReadAction(location_handle=location_handle),
         )
 
-    def search(
-        self,
-        query: SearchQuery,
-        *,
-        policy: SearchPolicy | None = None,
-        cursor: str | None = None,
-        broad_query_justification: str | None = None,
-        scope: EvidenceScope | None = None,
-    ) -> SearchPage:
-        policy = policy or SearchPolicy()
-        snapshot = self._snapshot()
-        query_hash = canonical_hash(query)
-        offset = (
-            self._decode_cursor(
-                cursor,
-                snapshot,
-                query_hash,
-                policy,
-                scope=scope,
-            )
-            if cursor
-            else 0
-        )
-        rows, scoped_count, excluded_count = self._matches(query, scope=scope)
-        if self._snapshot() != snapshot:
-            raise StaleCursor("evidence snapshot changed while searching", field="cursor")
-        rows = _best_projection_per_unit(rows)
-        rows = _collapse_duplicate_groups(rows)
-        rows = _diversify_rows(rows)
-        if offset > len(rows):
-            raise StaleCursor("search cursor offset is outside the current result set")
-        is_broad = (
-            len(rows) > policy.broad_unique_hit_threshold
-            and scoped_count > 0
-            and len(rows) / scoped_count > policy.broad_index_fraction
-        )
-        if is_broad and (
-            broad_query_justification is None or not broad_query_justification.strip()
-        ):
-            raise InvalidRetrievalRequest(
-                "broad query requires refinement or complete-traversal justification",
-                field="broad_query_justification",
-            )
-        selected: list[sqlite3.Row] = []
-        characters = 0
-        for row in rows[offset:]:
-            length = len(row["text"])
-            if selected and (
-                len(selected) >= policy.page_hit_target
-                or characters + length > policy.page_character_target
-            ):
-                break
-            selected.append(row)
-            characters += length
-            # An indivisible canonical unit gets a dedicated page, even when
-            # it exceeds the ordinary character target.
-            if length > policy.page_character_target:
-                break
-            if len(selected) >= policy.page_hit_target:
-                break
-        consumed = offset + len(selected)
-        next_cursor = (
-            self._encode_cursor(
-                snapshot,
-                query_hash,
-                policy,
-                consumed,
-                scope=scope,
-            )
-            if consumed < len(rows)
-            else None
-        )
-        hits = tuple(
-            self._hit(row, oversized=len(row["text"]) > policy.page_character_target)
-            for row in selected
-        )
-        warning_values: list[str] = []
-        if excluded_count:
-            warning_values.append("retrieval_scope_excluded_matches")
-        scope_warnings = tuple(warning_values)
-        if scope_warnings:
-            hits = tuple(
-                hit.model_copy(update={"warnings": hit.warnings + scope_warnings}) for hit in hits
-            )
-        if self._snapshot() != snapshot:
-            raise StaleCursor("evidence snapshot changed while searching", field="cursor")
-        oversized_unit_ids = tuple(
-            hit.unit.unit_id for hit in hits if len(hit.unit.text) > policy.page_character_target
-        )
-        source_counts: dict[str, int] = {}
-        for row in rows:
-            source_counts[row["source_id"]] = source_counts.get(row["source_id"], 0) + 1
-        malformed_hints = _malformed_query_hints(query) if not rows and excluded_count == 0 else ()
-        preview = QueryPreview(
-            unique_hit_count=len(rows),
-            scoped_unit_count=scoped_count,
-            source_distribution=tuple(sorted(source_counts.items())),
-            requires_broad_query_justification=is_broad,
-            malformed_query_hints=malformed_hints,
-        )
-        return SearchPage(
-            snapshot_hash=snapshot,
-            query_hash=query_hash,
-            policy_id=policy.policy_id,
-            policy_hash=canonical_hash(policy),
-            hits=hits,
-            next_cursor=next_cursor,
-            preview=preview,
-            character_count=characters,
-            oversized_unit_ids=oversized_unit_ids,
-            condition=(
-                "zero_hits"
-                if not hits and excluded_count == 0
-                else "excluded_only"
-                if not hits and excluded_count > 0
-                else "truncated"
-                if next_cursor is not None
-                else "results"
-            ),
-            excluded_count=excluded_count,
-            estimated_omitted_characters=sum(len(row["text"]) for row in rows[consumed:]),
-            next_actions=(
-                ("refine the plain-language need or continue with the returned cursor",)
-                if next_cursor is not None
-                else (
-                    ("read an issued canonical unit",)
-                    if hits
-                    else (
-                        (
-                            "review Source/zone classification, then retry with the active "
-                            "Work token",
-                        )
-                        if excluded_count
-                        else ("refine the plain-language need", *malformed_hints)
-                    )
-                )
-            ),
-            scope_warnings=scope_warnings,
-            malformed_query_hints=malformed_hints,
-        )
-
     def _matches(
         self,
         query: SearchQuery,
@@ -3055,29 +2808,6 @@ class EvidenceSearchIndex:
                 "evidence index schema is retired; current Source/Parse reprocessing is required"
             )
         return row[0]
-
-    def _hit(self, row: sqlite3.Row, *, oversized: bool = False) -> SearchHit:
-        unit = _unit_from_row(row)
-        projection_number = int(row["projection_id"].rsplit("-", 1)[1])
-        projections = _project(unit)
-        projection = projections[projection_number]
-        return SearchHit(
-            unit=unit,
-            projection=projection,
-            rank=row["score"],
-            oversized=oversized,
-            preview=_coherent_preview(unit.text),
-            match_explanation="lexical match in canonical source text",
-            warnings=unit.warnings
-            + (
-                (f"document_zone:{unit.document_zone.value}",)
-                if unit.document_zone is not None
-                else ("document_zone:unclassified",)
-            ),
-            duplicate_group_id=unit.duplicate_group_id,
-            location_handle=self._encode_location_handle(unit, self._snapshot()),
-        )
-
     def _issue_token(self, kind: str, payload: dict[str, object]) -> str:
         with self._connect() as connection:
             return _LookupTokenCodec.encode(connection, kind, payload)
@@ -3328,50 +3058,6 @@ class EvidenceSearchIndex:
                 "issuance_context": issuance_context,
             },
         )
-
-    def _encode_cursor(
-        self,
-        snapshot: str,
-        query_hash: str,
-        policy: SearchPolicy,
-        offset: int,
-        *,
-        scope: EvidenceScope | None = None,
-    ) -> str:
-        return self._issue_token(
-            "cur",
-            {
-                "snapshot": snapshot,
-                "query": query_hash,
-                "policy": canonical_hash(policy),
-                "offset": offset,
-                "scope": canonical_hash(scope) if scope is not None else None,
-            },
-        )
-
-    def _decode_cursor(
-        self,
-        cursor: str,
-        snapshot: str,
-        query_hash: str,
-        policy: SearchPolicy,
-        *,
-        scope: EvidenceScope | None = None,
-    ) -> int:
-        payload = self._resolve_token("cur", cursor)
-        if payload.get("snapshot") != snapshot:
-            raise StaleCursor("cursor belongs to a different index snapshot")
-        if payload.get("query") != query_hash:
-            raise StaleCursor("cursor belongs to a different structured query")
-        if payload.get("policy") != canonical_hash(policy):
-            raise StaleCursor("cursor belongs to a different search policy")
-        if payload.get("scope") != (canonical_hash(scope) if scope is not None else None):
-            raise CursorScopeMismatch("cursor belongs to a different Evidence scope")
-        offset = payload.get("offset")
-        if isinstance(offset, bool) or not isinstance(offset, int) or offset < 0:
-            raise StaleCursor("search cursor offset is invalid")
-        return offset
-
     def _encode_read_cursor(
         self,
         snapshot: str,
@@ -3949,23 +3635,6 @@ def _validate_materialized_v2_pages(
         expected_prior += len(page.candidates)
 
 
-def _malformed_query_hints(query: SearchQuery) -> tuple[str, ...]:
-    """Flag query shapes that almost certainly meant OR but got AND-of-ORs semantics."""
-    hints: list[str] = []
-    if len(query.any_of) >= 2 and all(len(group) == 1 for group in query.any_of):
-        hints.append(
-            "every any_of group has exactly one term, so they were AND'd together, not "
-            "treated as alternatives — put every alternative in a single any_of group for "
-            "OR semantics"
-        )
-    if len(query.terms) > 1:
-        hints.append(
-            "multiple terms are AND'd together, not OR'd — move alternative words into a "
-            "single any_of group instead of terms"
-        )
-    return tuple(hints)
-
-
 def _unit_from_row(row: sqlite3.Row) -> CanonicalEvidenceUnit:
     """Convert one stored row to the canonical unit used by every read path."""
 
@@ -4008,13 +3677,13 @@ def _canonical_unit_order(unit: CanonicalEvidenceUnit | str) -> tuple[object, ..
     return (0, 0, unit)
 
 
-def _project(unit: CanonicalEvidenceUnit) -> tuple[SearchProjection, ...]:
+def _project(unit: CanonicalEvidenceUnit) -> tuple[_SearchProjection, ...]:
     if len(unit.text) <= PROJECTION_TARGET:
         spans = ((0, len(unit.text)),)
     else:
         spans = _projection_spans(unit.text)
     return tuple(
-        SearchProjection(
+        _SearchProjection(
             projection_id=f"projection:{unit.unit_id.removeprefix('unit:')}-{number}",
             canonical_unit_id=unit.unit_id,
             text=unit.text[start:end],
@@ -4090,15 +3759,6 @@ def _diversify_rows(rows: list[sqlite3.Row]) -> list[sqlite3.Row]:
             if index < len(values):
                 ordered.append(values[index])
     return ordered
-
-
-def _coherent_preview(text: str, limit: int = 480) -> str:
-    """Return a bounded source-authored preview without clipping mid-word."""
-
-    if len(text) <= limit:
-        return text
-    candidate = text[:limit].rsplit(" ", 1)[0]
-    return (candidate or text[:limit]).rstrip() + "…"
 
 
 def _query_metadata_filters(

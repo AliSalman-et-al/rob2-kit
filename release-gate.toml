@@ -17,7 +17,7 @@ evidence = ["tests/test_boundaries.py::test_result_spec_round_trip_preserves_sta
 id = "evidence"
 description = "Evidence provenance, coverage, and visual typing"
 evidence = [
-  "tests/test_evidence_workflow.py::test_coverage_receipt_requires_all_passes_results_and_safe_no_information_basis",
+  "tests/test_issue143_application_contract.py::test_navigation_state_survives_restart_and_triage_is_idempotent",
   "tests/test_visual_inspection.py::test_legible_visual_transcription_preserves_crop_provenance_and_review_requirement",
 ]
 

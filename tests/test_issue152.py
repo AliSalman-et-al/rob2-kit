@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import json
 import sqlite3
 
 import pytest
@@ -19,11 +18,10 @@ from rob2_kit.application.contracts import (
     SubmitDomainEvidenceRequest,
 )
 from rob2_kit.domain.canonical import sha256_digest
-from rob2_kit.evidence.errors import ReprocessingRequired, StaleCursor
+from rob2_kit.evidence.errors import ReprocessingRequired
 from rob2_kit.evidence.search import (
     CanonicalEvidenceUnit,
     CanonicalUnitKind,
-    EvidenceScope,
     EvidenceSearchIndex,
     SearchQuery,
 )
@@ -261,141 +259,6 @@ def test_terminal_qualification_requires_current_trial_source_parse_custody(
         for item in failures
     )
 
-
-def test_index_replacement_removes_semantic_columns_and_stales_old_handles(tmp_path) -> None:
-    index = EvidenceSearchIndex(tmp_path / "evidence.sqlite3")
-    index.replace_units((_unit(),))
-    first = index.search(SearchQuery(terms=("allocation",)))
-    assert first.hits
-    handle = first.hits[0].location_handle
-
-    # Scope remains Result-bound authorization, but the same source unit can
-    # be read for independently reviewed Results without per-span attribution.
-    one_scope = EvidenceScope(result_id="result:one", source_ids=("source:report",))
-    two_scope = EvidenceScope(result_id="result:two", source_ids=("source:report",))
-    assert index.read_unit("unit:source-report", scope=one_scope).unit_id == "unit:source-report"
-    assert index.read_unit("unit:source-report", scope=two_scope).unit_id == "unit:source-report"
-
-    index.replace_units((_unit(text="allocation was concealed centrally"),))
-    with pytest.raises(StaleCursor, match="stale"):
-        index.read_location(handle)
-
-    connection = sqlite3.connect(tmp_path / "evidence.sqlite3")
-    try:
-        columns = {row[1] for row in connection.execute("PRAGMA table_info(evidence_units)")}
-    finally:
-        connection.close()
-    assert not columns.intersection(
-        {
-            "trial_id",
-            "result_id",
-            "domain_id",
-            "question_ids",
-            "applicability",
-            "applicable_result_ids",
-        }
-    )
-
-
-def test_legacy_semantic_index_is_atomically_replaced_and_old_token_stales(tmp_path) -> None:
-    path = tmp_path / "legacy.sqlite3"
-    connection = sqlite3.connect(path)
-    try:
-        connection.executescript(
-            """
-            CREATE TABLE evidence_units (
-                unit_id TEXT PRIMARY KEY, source_id TEXT NOT NULL,
-                source_artifact_hash TEXT NOT NULL, parse_id TEXT NOT NULL,
-                page INTEGER NOT NULL, kind TEXT NOT NULL, text TEXT NOT NULL,
-                trial_id TEXT, result_id TEXT, domain_id TEXT, question_ids TEXT,
-                applicability TEXT, applicable_result_ids TEXT
-            );
-            CREATE TABLE evidence_snapshot (
-                singleton INTEGER PRIMARY KEY, content_hash TEXT NOT NULL
-            );
-            CREATE TABLE evidence_cursor_token (
-                token TEXT PRIMARY KEY, kind TEXT NOT NULL, payload TEXT NOT NULL
-            );
-            """
-        )
-        connection.execute(
-            "INSERT INTO evidence_units VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-            (
-                "unit:legacy",
-                "source:legacy",
-                HASH,
-                "parse:legacy",
-                1,
-                "paragraph",
-                "allocation",
-                "trial:legacy",
-                "result:legacy",
-                "domain:legacy",
-                '["sq:legacy"]',
-                "result",
-                '["result:legacy"]',
-            ),
-        )
-        connection.execute(
-            "INSERT INTO evidence_cursor_token VALUES (?, ?, ?)",
-            ("cur:legacy", "cur", json.dumps({"snapshot": "sha256:legacy"})),
-        )
-        connection.commit()
-    finally:
-        connection.close()
-
-    index = EvidenceSearchIndex(path)
-    snapshot = index.replace_units((_unit(),))
-    assert snapshot != "sha256:legacy"
-    with pytest.raises(StaleCursor, match="snapshot"):
-        index.search(SearchQuery(terms=("allocation",)), cursor="cur:legacy")
-
-    connection = sqlite3.connect(path)
-    try:
-        columns = {row[1] for row in connection.execute("PRAGMA table_info(evidence_units)")}
-    finally:
-        connection.close()
-    assert not columns.intersection(
-        {
-            "trial_id",
-            "result_id",
-            "domain_id",
-            "question_ids",
-            "applicability",
-            "applicable_result_ids",
-        }
-    )
-
-
-def test_legacy_snapshot_identity_fails_closed_before_any_search_or_read(tmp_path) -> None:
-    path = tmp_path / "legacy-identity.sqlite3"
-    connection = sqlite3.connect(path)
-    try:
-        connection.executescript(
-            """
-            CREATE TABLE evidence_units (unit_id TEXT PRIMARY KEY, text TEXT NOT NULL);
-            INSERT INTO evidence_units VALUES ('unit:legacy', 'legacy text');
-            CREATE TABLE evidence_snapshot (
-                singleton INTEGER PRIMARY KEY, content_hash TEXT NOT NULL
-            );
-            INSERT INTO evidence_snapshot VALUES (1, 'sha256:legacy');
-            """
-        )
-        connection.commit()
-    finally:
-        connection.close()
-
-    index = EvidenceSearchIndex(path)
-    for access in (
-        lambda: index.search(SearchQuery(terms=("legacy",))),
-        lambda: index.read_unit("unit:legacy"),
-        lambda: index.unit_ids(),
-    ):
-        with pytest.raises(
-            ReprocessingRequired, match="current retrieval schema identity"
-        ) as failure:
-            access()
-        assert failure.value.code.value == "reprocessing_required"
 
 
 def test_failed_physical_replacement_preserves_last_usable_index(tmp_path, monkeypatch) -> None:

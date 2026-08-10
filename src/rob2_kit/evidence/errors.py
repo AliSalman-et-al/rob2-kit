@@ -232,17 +232,6 @@ class OperationalRetrievalFailure(RetrievalFailure):
         )
 
 
-# Descriptive aliases make the boundary easy to discover without requiring
-# callers to know the shorter concrete class names.
-InvalidRetrievalRequestFailure = InvalidRetrievalRequest
-StaleCursorFailure = StaleCursor
-StaleSearchContinuationFailure = StaleSearchContinuation
-SearchPolicyMismatchFailure = SearchPolicyMismatch
-CursorScopeMismatchFailure = CursorScopeMismatch
-ScopeMismatchFailure = ScopeMismatch
-StaleWorkTokenFailure = StaleWorkToken
-
-
 def _extra_field_hint(entry: dict[str, object], sibling_model: type[BaseModel] | None) -> str:
     """Suggest the correct top-level field when an extra-forbidden field matches one."""
 

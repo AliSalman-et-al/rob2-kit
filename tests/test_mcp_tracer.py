@@ -219,7 +219,7 @@ def _complete_empty_receipts(
 ) -> None:
     """Complete the mandatory zero-hit search protocol via real search_evidence calls.
 
-    The engine's server-side SearchCoverageRecorder (#127) accumulates these
+    The engine's durable v2 navigation state accumulates these
     calls itself; callers no longer construct or submit a receipt. Only valid
     when ``engine`` is the same in-process RunEngine that will later handle
     ``submit_domain_evidence`` -- see ``_complete_empty_receipts_via_session``
@@ -278,7 +278,7 @@ async def _complete_empty_receipts_via_session(
 ) -> None:
     """Complete the mandatory zero-hit search protocol via real search_evidence calls.
 
-    The MCP server subprocess's own server-side SearchCoverageRecorder (#127)
+    The MCP server subprocess's durable v2 navigation state
     accumulates these calls itself, keyed by its own process memory -- so
     this must call the real search_evidence tool through the session rather
     than a same-process fixture engine, which would populate an unrelated

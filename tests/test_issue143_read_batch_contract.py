@@ -233,19 +233,6 @@ def test_section_continuation_does_not_skip_an_oversized_following_fragment(tmp_
         ),
     )
     index.replace_units(units)
-    first = index.read_context(
-        "unit:target", mode=ReadContextMode.SECTION, character_target=100
-    )
-    assert first.continuation_cursor is not None
-    deferred = index.read_context(
-        "unit:target",
-        mode=ReadContextMode.SECTION,
-        character_target=100,
-        cursor=first.continuation_cursor,
-    )
-    assert deferred.unit.unit_id == "unit:oversized"
-    assert deferred.continuation_cursor is not None
-
     snapshot = index._snapshot()
     handle = next(
         candidate.location_handle

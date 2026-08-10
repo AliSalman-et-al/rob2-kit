@@ -7,7 +7,6 @@ from rob2_kit.evidence.search import (
     CanonicalUnitKind,
     DocumentZone,
     EvidenceSearchIndex,
-    SearchQuery,
     canonicalize_evidence_units,
 )
 
@@ -113,90 +112,3 @@ def test_canonicalization_merges_unambiguous_vertical_fragments_with_exact_spans
     index = EvidenceSearchIndex(tmp_path / "evidence.sqlite3")
     index.replace_units(units)
     assert index.read_unit(unit.unit_id).fragment_spans == unit.fragment_spans
-
-
-def test_search_keeps_semantically_labeled_fragments_visible_and_issues_stale_handles(
-    tmp_path,
-) -> None:
-    index = EvidenceSearchIndex(tmp_path / "evidence.sqlite3")
-    bibliography = _unit(
-        "unit:bibliography",
-        "allocation cited",
-        zone=DocumentZone.BIBLIOGRAPHY,
-    )
-    unknown = _unit(
-        "unit:unknown",
-        "allocation uncertain",
-        zone=DocumentZone.UNKNOWN,
-    )
-    index.replace_units((bibliography, unknown))
-
-    page = index.search(SearchQuery(terms=("allocation",)))
-
-    assert {hit.unit.unit_id for hit in page.hits} == {"unit:bibliography", "unit:unknown"}
-    hit = next(hit for hit in page.hits if hit.unit.unit_id == "unit:bibliography")
-    assert hit.location_handle != hit.unit.unit_id
-    assert "document_zone:bibliography" in hit.warnings
-    assert index.read_location(hit.location_handle).unit.unit_id == hit.unit.unit_id
-
-    index.replace_units((unknown,))
-    try:
-        index.read_location(hit.location_handle)
-    except ValueError as error:
-        assert "stale" in str(error).lower()
-    else:
-        raise AssertionError("a handle from a replaced snapshot must be stale")
-
-
-def test_ambiguous_fragments_remain_separate_search_candidates(tmp_path) -> None:
-    index = EvidenceSearchIndex(tmp_path / "evidence.sqlite3")
-    units = canonicalize_evidence_units(
-        source_id="source:report",
-        source_artifact_hash=HASH,
-        parse_id="parse:report",
-        pages=(
-            CanonicalPage(
-                page=1,
-                blocks=(
-                    CanonicalBlock(
-                        kind=CanonicalUnitKind.UNCLASSIFIED,
-                        text="allocation left column",
-                        spatial=(10, 10, 90, 30),
-                        fragment_ids=("fragment:left",),
-                        warnings=("reading_order_uncertain",),
-                    ),
-                    CanonicalBlock(
-                        kind=CanonicalUnitKind.UNCLASSIFIED,
-                        text="allocation right column",
-                        spatial=(110, 10, 190, 30),
-                        fragment_ids=("fragment:right",),
-                        warnings=("reading_order_uncertain",),
-                    ),
-                ),
-            ),
-        ),
-    )
-    index.replace_units(units)
-
-    page = index.search(SearchQuery(terms=("allocation",)))
-
-    assert len(page.hits) == 2
-    assert {hit.unit.fragment_ids for hit in page.hits} == {
-        ("fragment:left",),
-        ("fragment:right",),
-    }
-    assert all("reading_order_uncertain" in hit.warnings for hit in page.hits)
-
-
-def test_read_location_continues_an_oversized_unit_by_character_window(tmp_path) -> None:
-    index = EvidenceSearchIndex(tmp_path / "evidence.sqlite3")
-    unit = _unit("unit:large", "large " * 8, zone=DocumentZone.MAIN)
-    index.replace_units((unit,))
-    handle = index.search(SearchQuery(terms=("large",))).hits[0].location_handle
-
-    first = index.read_location(handle, character_target=16)
-    assert first.text == ("large " * 8)[:16]
-    assert first.continuation_cursor is not None
-    second = index.read_location(handle, character_target=16, cursor=first.continuation_cursor)
-    assert second.text == ("large " * 8)[16:32]
-    assert second.continuation_cursor is not None

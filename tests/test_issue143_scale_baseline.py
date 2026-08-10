@@ -3,17 +3,14 @@
 from __future__ import annotations
 
 import json
-from collections.abc import Iterable
 from pathlib import Path
-
-import pytest
 
 from rob2_kit.application.contracts import (
     CoverageProgress,
     SearchEvidenceResponse,
     WorkflowCondition,
 )
-from rob2_kit.domain.canonical import canonical_hash, canonical_json_bytes
+from rob2_kit.domain.canonical import canonical_hash, canonical_json_bytes, sha256_digest
 from rob2_kit.domain.sources import SourceRole
 from rob2_kit.evidence.search import (
     CanonicalBlock,
@@ -25,19 +22,12 @@ from rob2_kit.evidence.search import (
     EvidenceReadPolicy,
     EvidenceSearchIndex,
     EvidenceSearchPolicy,
-    ReadContextMode,
     SearchContinuationReason,
-    SearchPolicy,
     SearchQuery,
     canonicalize_evidence_units,
 )
 from rob2_kit.evidence.workflow import (
-    SearchCoverageRecorder,
     SearchPassKind,
-    SearchResultDisposition,
-    SearchResultDispositionKind,
-    SourceSearchCoverage,
-    SourceSearchState,
     V2CandidateTriageRevision,
     V2EvidenceWorkflowState,
     V2IrrelevantReason,
@@ -45,13 +35,10 @@ from rob2_kit.evidence.workflow import (
     V2SearchAttempt,
     V2TriageBasis,
     V2TriageKind,
-    materialize_evidence_claim,
     record_v2_page_exposure,
     start_v2_search_attempt,
     submit_v2_page_triage,
-    verify_complete_search_coverage_receipt,
 )
-from tests.fixtures import reference
 
 FIXTURE = Path(__file__).parent / "public_fixtures" / "issue143" / "scale-baseline.json"
 BROAD_JUSTIFICATION = "Synthetic broad-term traversal is intentionally exhausted for baseline."
@@ -243,267 +230,24 @@ def _estimated_tokens(byte_count: int) -> int:
     return (byte_count + 3) // 4
 
 
-def _all_pages(
-    index: EvidenceSearchIndex,
-    query: SearchQuery,
-    *,
-    justification: str | None,
-) -> Iterable:
-    cursor = None
-    while True:
-        page = index.search(query, cursor=cursor, broad_query_justification=justification)
-        yield page
-        cursor = page.next_cursor
-        if cursor is None:
-            return
-
-
-def _measure(tmp_path: Path, fixture: dict[str, object]) -> dict[str, object]:
-    workload = fixture["workload"]
-    assert isinstance(workload, dict)
-    units = _units(workload)
-    index = EvidenceSearchIndex(tmp_path / "issue143.sqlite3")
-    snapshot_hash = index.replace_units(units)
-    policy = SearchPolicy()
-    recorder = SearchCoverageRecorder(
-        receipt_id="coverage:issue143-synthetic",
-        sq_id="sq:synthetic-allocation",
-        snapshot_hash=snapshot_hash,
-        policy_id=policy.policy_id,
-        policy_hash=canonical_hash(policy),
-        result_spec=reference("issue143-result-spec"),
-        source_inventory=reference("issue143-source-inventory"),
-        parse_record_hashes=tuple(sorted({unit.source_artifact_hash for unit in units})),
-        guidance_release_id="guidance:rob2-2019.1",
-        required_seed_families=("seed:allocation",),
-        sources=tuple(
-            SourceSearchCoverage(
-                source_id=str(source["source_id"]),
-                state=SourceSearchState.SEARCHED,
-                sufficiently_readable=True,
-            )
-            for source in workload["sources"]  # type: ignore[index]
-        ),
-        inventory_source_ids=tuple(str(source["source_id"]) for source in workload["sources"]),  # type: ignore[index]
-    )
-    responses: list[tuple[str, object]] = []
-    query_pages: dict[str, list] = {}
-    for specification in workload["queries"]:  # type: ignore[index]
-        pass_kind = SearchPassKind(specification["pass_kind"])
-        query = SearchQuery(terms=tuple(specification["terms"]))
-        pages = list(
-            _all_pages(
-                index,
-                query,
-                justification=BROAD_JUSTIFICATION
-                if pass_kind is SearchPassKind.GUIDANCE_SEED
-                else None,
-            )
-        )
-        query_pages[pass_kind.value] = pages
-        cursor = None
-        for page_number, page in enumerate(pages, start=1):
-            responses.append((f"search:{pass_kind.value}:{page_number}", page))
-            recorder.record_page(
-                page,
-                index=index,
-                query=query,
-                pass_kind=pass_kind,
-                seed_family=specification.get("seed_family"),
-                cursor=cursor,
-                broad_query_justification=(
-                    BROAD_JUSTIFICATION if pass_kind is SearchPassKind.GUIDANCE_SEED else None
-                ),
-            )
-            cursor = page.next_cursor
-    returned = recorder.returned_unit_ids()
-    supporting = next(unit for unit in units if unit.text.startswith("Allocation was concealed"))
-    contradicting = next(unit for unit in units if unit.text.startswith("A later supplement"))
-    ambiguous = next(unit for unit in units if "ambiguous" in unit.text)
-    duplicate = next(
-        unit for unit in units if unit.duplicate_group_id is not None and unit.unit_id in returned
-    )
-    table = next(unit for unit in units if unit.kind is CanonicalUnitKind.TABLE_ROW)
-    oversized = next(unit for unit in units if len(unit.text) > 8_000)
-    handles = {
-        hit.unit.unit_id: hit.location_handle
-        for pages in query_pages.values()
-        for page in pages
-        for hit in page.hits
-    }
-    for label, unit in (
-        ("supporting", supporting),
-        ("contradicting", contradicting),
-        ("ambiguous", ambiguous),
-    ):
-        read = index.read_location(handles[unit.unit_id])
-        responses.append((f"read_location:{label}", read))
-    table_context = index.read_context(
-        table.unit_id, mode=ReadContextMode.NEIGHBORS, neighbor_limit=2
-    )
-    oversized_context = index.read_context(
-        oversized.unit_id, mode=ReadContextMode.UNIT, character_target=8_000
-    )
-    responses.extend(
-        (("read_context:table", table_context), ("read_context:oversized", oversized_context))
-    )
-    for unit_id in returned:
-        if unit_id in {supporting.unit_id, contradicting.unit_id, table.unit_id}:
-            recorder.record_disposition(
-                SearchResultDisposition(
-                    unit_id=unit_id,
-                    kind=SearchResultDispositionKind.RETAINED_CANDIDATE,
-                    candidate_id=f"candidate:{unit_id.removeprefix('unit:')}",
-                )
-            )
-        elif unit_id == duplicate.unit_id:
-            recorder.record_disposition(
-                SearchResultDisposition(
-                    unit_id=unit_id,
-                    kind=SearchResultDispositionKind.DUPLICATE,
-                    duplicate_of=supporting.unit_id,
-                )
-            )
-        else:
-            recorder.record_disposition(
-                SearchResultDisposition(
-                    unit_id=unit_id, kind=SearchResultDispositionKind.IRRELEVANT
-                )
-            )
-    receipt = recorder.freeze(completed_seed_families=("seed:allocation",))
-    verify_complete_search_coverage_receipt(receipt, index=index)
-    claims = (
-        materialize_evidence_claim(
-            claim_id="claim:synthetic-concealed",
-            unit=supporting,
-            span_start=0,
-            span_end=len("Allocation was concealed"),
-            claim_type="claim_type:allocation-concealment",
-        ),
-        materialize_evidence_claim(
-            claim_id="claim:synthetic-open",
-            unit=contradicting,
-            span_start=contradicting.text.index("open"),
-            span_end=contradicting.text.index("open") + len("open"),
-            claim_type="claim_type:allocation-concealment",
-        ),
-    )
-    response_metrics = [
-        {"response": label, "serialized_utf8_bytes": _response_bytes(response)}
-        for label, response in responses
-    ]
-    page_limits = [
-        {
-            "response": f"search:{pass_kind}:{number}",
-            "hit_count": len(page.hits),
-            "projection_character_count": page.character_count,
-            "limiting_bound": (
-                "oversized_unit"
-                if page.oversized_unit_ids
-                else "page_hit_target"
-                if len(page.hits) == policy.page_hit_target and page.next_cursor is not None
-                else "page_character_target"
-                if page.character_count >= policy.page_character_target
-                and page.next_cursor is not None
-                else "exhausted"
-            ),
-        }
-        for pass_kind, pages in query_pages.items()
-        for number, page in enumerate(pages, start=1)
-    ]
-    review_operations = (
-        {"candidate_id": supporting.unit_id, "disposition": "supporting"},
-        {"candidate_id": contradicting.unit_id, "disposition": "contradicting"},
-        {"candidate_id": ambiguous.unit_id, "disposition": "needs_visual_review"},
-        {"candidate_id": duplicate.unit_id, "disposition": "duplicate"},
-        {
-            "candidate_id": next(
-                unit_id
-                for unit_id in returned
-                if unit_id
-                not in {
-                    supporting.unit_id,
-                    contradicting.unit_id,
-                    ambiguous.unit_id,
-                    duplicate.unit_id,
-                }
-            ),
-            "disposition": "irrelevant",
-        },
-    )
-    selected = tuple(
-        disposition.candidate_id
-        for disposition in receipt.result_dispositions
-        if disposition.candidate_id is not None
-    )
+def _exact_claim(unit, *, claim_id: str, start: int, end: int) -> dict[str, object]:
+    quote = unit.text[start:end]
     return {
-        "snapshot_hash": snapshot_hash,
-        "old_policy_identity": policy.model_dump(mode="json"),
-        "old_policy_hash": canonical_hash(policy),
-        "search_calls_and_pages_to_exhaustion": {
-            pass_kind: {"calls": len(pages), "pages": len(pages)}
-            for pass_kind, pages in query_pages.items()
-        },
-        "read_calls_used_by_scripted_review_path": len(response_metrics)
-        - sum(len(pages) for pages in query_pages.values()),
-        "review_disposition_operations": review_operations,
-        "per_response_complete_serialized_utf8_bytes": response_metrics,
-        "estimated_model_facing_tokens": {
-            "estimator_id": "utf8-byte-div4-ceil:v1",
-            "total": sum(
-                _estimated_tokens(item["serialized_utf8_bytes"]) for item in response_metrics
-            ),
-            "per_response": [
-                {
-                    "response": item["response"],
-                    "tokens": _estimated_tokens(item["serialized_utf8_bytes"]),
-                }
-                for item in response_metrics
-            ],
-        },
-        "candidate_counts": {
-            "returned_hits_across_passes": sum(
-                len(page.hits) for pages in query_pages.values() for page in pages
-            ),
-            "unique_candidate_universe": len(returned),
-            "retained_candidates": len(selected),
-            "duplicate_lineage_groups": len(
-                {unit.duplicate_group_id for unit in units if unit.duplicate_group_id}
-            ),
-        },
-        "source_character_counts": {
-            source_id: sum(len(unit.text) for unit in units if unit.source_id == source_id)
-            for source_id in sorted({unit.source_id for unit in units})
-        },
-        "limiting_bound_under_old_policy": {
-            "page_hit_target": policy.page_hit_target,
-            "page_character_target": policy.page_character_target,
-            "pages": page_limits,
-            "max_complete_response_serialized_utf8_bytes": max(
-                item["serialized_utf8_bytes"] for item in response_metrics
-            ),
-        },
-        "ordered_candidate_universe_hash": canonical_hash(returned),
-        "scientific_equivalence_evidence": {
-            "selection_semantics_version": "synthetic-exact-span-selection:1",
-            "selected_candidate_ids": selected,
-            "selected_candidate_hash": canonical_hash(selected),
-            "exact_claim_hash": canonical_hash(
-                [claim.model_dump(mode="json", exclude={"canonical_unit"}) for claim in claims]
-            ),
-            "review_disposition_hash": canonical_hash(review_operations),
-        },
-        "coverage_receipt_hash": receipt.content_hash,
-        "shape_evidence": {
-            "oversized_context": oversized_context.oversized,
-            "table_context_has_caption": table_context.unit.caption is not None,
-            "table_context_neighbor_count": len(table_context.neighbors),
-            "ambiguous_warnings": ambiguous.warnings,
-            "source_roles": sorted({unit.source_role.value for unit in units if unit.source_role}),
-            "unit_count": len(units),
-            "source_ids": sorted({unit.source_id for unit in units}),
-        },
+        "claim_id": claim_id,
+        "canonical_unit_id": unit.unit_id,
+        "source_id": unit.source_id,
+        "source_artifact_hash": unit.source_artifact_hash,
+        "parse_id": unit.parse_id,
+        "page": unit.page,
+        "spatial": unit.spatial,
+        "span_start": start,
+        "span_end": end,
+        "quoted_text": quote,
+        "quoted_text_hash": sha256_digest(quote.encode()),
+        "claim_type": "claim_type:allocation-concealment",
+        "verification_status": "machine_verified",
     }
+
 
 
 def _measure_v2(tmp_path: Path, fixture: dict[str, object]) -> dict[str, object]:
@@ -692,19 +436,17 @@ def _measure_v2(tmp_path: Path, fixture: dict[str, object]) -> dict[str, object]
     )
     selected = tuple(sorted(selected_unit_ids))
     claims = (
-        materialize_evidence_claim(
+        _exact_claim(
+            supporting,
             claim_id="claim:synthetic-concealed",
-            unit=supporting,
-            span_start=0,
-            span_end=len("Allocation was concealed"),
-            claim_type="claim_type:allocation-concealment",
+            start=0,
+            end=len("Allocation was concealed"),
         ),
-        materialize_evidence_claim(
+        _exact_claim(
+            contradicting,
             claim_id="claim:synthetic-open",
-            unit=contradicting,
-            span_start=contradicting.text.index("open"),
-            span_end=contradicting.text.index("open") + len("open"),
-            claim_type="claim_type:allocation-concealment",
+            start=contradicting.text.index("open"),
+            end=contradicting.text.index("open") + len("open"),
         ),
     )
     metrics = [
@@ -739,49 +481,11 @@ def _measure_v2(tmp_path: Path, fixture: dict[str, object]) -> dict[str, object]
             "selected_underlying_unit_ids": selected,
             "selected_underlying_unit_hash": canonical_hash(selected),
             "exact_claim_hash": canonical_hash(
-                [claim.model_dump(mode="json", exclude={"canonical_unit"}) for claim in claims]
+                list(claims)
             ),
         },
     }
 
-
-def test_issue143_frozen_old_contract_navigation_baseline(tmp_path: Path) -> None:
-    fixture = _fixture()
-    measured = _measure(tmp_path, fixture)
-    old_policy = {
-        "identity": measured.pop("old_policy_identity"),
-        "hash": measured.pop("old_policy_hash"),
-    }
-    measured_json = json.loads(canonical_json_bytes(measured))
-    if not fixture["baseline"]:
-        pytest.fail(
-            "Populate frozen baseline with:\n" + json.dumps(measured_json, indent=2, sort_keys=True)
-        )
-    assert fixture["old_policy"] == old_policy
-    assert measured_json == fixture["baseline"]
-
-
-def test_issue143_predeclared_improvement_gate_is_scientifically_strict(tmp_path: Path) -> None:
-    fixture = _fixture()
-    measured = _measure(tmp_path, fixture)
-    target = fixture["later_policy_improvement_target"]
-    assert target["not_chaarted_empirical_target"] is True
-    assert (
-        target["maximum_per_response_serialized_utf8_bytes"]
-        == measured["limiting_bound_under_old_policy"][
-            "max_complete_response_serialized_utf8_bytes"
-        ]
-    )
-    assert target["hard_gates"] == {
-        "candidate_loss": 0,
-        "candidate_duplication": 0,
-        "identical_scientific_selection_semantics": True,
-        "no_relaxation_of_old_maximum_response_bytes": True,
-    }
-    assert target["minimum_estimated_model_facing_token_reduction_fraction"] == 0.30
-    assert measured["shape_evidence"]["oversized_context"] is True
-    assert measured["shape_evidence"]["table_context_has_caption"] is True
-    assert "reading_order_uncertain" in measured["shape_evidence"]["ambiguous_warnings"]
 
 
 def test_issue143_v2_navigation_compaction_meets_the_frozen_gate(tmp_path: Path) -> None:

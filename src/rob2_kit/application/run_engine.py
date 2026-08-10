@@ -142,10 +142,8 @@ from rob2_kit.domain.revisions import (
     Supersession,
 )
 from rob2_kit.domain.sources import (
-    SourceAvailability,
     SourceDescriptor,
     SourceInventoryRevision,
-    SourceProcessing,
     SourceRole,
 )
 from rob2_kit.evidence.errors import (
@@ -169,7 +167,6 @@ from rob2_kit.evidence.search import (
     EvidenceScope,
     EvidenceSearchIndex,
     EvidenceSearchPolicy,
-    SearchPolicy,
     canonicalize_evidence_units,
 )
 from rob2_kit.evidence.visual import (
@@ -178,11 +175,7 @@ from rob2_kit.evidence.visual import (
     build_visual_citation,
 )
 from rob2_kit.evidence.workflow import (
-    SearchCoverageReceipt,
-    SearchCoverageRecorder,
     SearchPassKind,
-    SourceSearchCoverage,
-    SourceSearchState,
     V2EvidenceWorkflowState,
     V2PageExposure,
     V2QueryAttemptKind,
@@ -193,7 +186,6 @@ from rob2_kit.evidence.workflow import (
     start_v2_search_attempt,
     submit_v2_page_triage,
     supersede_v2_search_attempt,
-    verify_complete_search_coverage_receipt,
 )
 from rob2_kit.ingestion.project import (
     DocumentParser,
@@ -571,15 +563,6 @@ class _DomainEvidenceDispositionRecord(FrozenModel):
     dispositions: tuple[EvidenceConsiderationInput, ...] = ()
 
 
-class _DomainCoverageReceiptRecord(FrozenModel):
-    """Immutable wrapper that lets bundles bind otherwise frozen receipts."""
-
-    run_id: Identifier
-    result_id: Identifier
-    domain_id: Identifier
-    receipts: tuple[SearchCoverageReceipt, ...] = ()
-
-
 class _DomainEvidenceBlockedRecord(FrozenModel):
     """Durable marker: the latest frozen evidence for this Domain fell short.
 
@@ -681,20 +664,10 @@ class RunEngine:
         self._determinism = determinism
         self._report_projector_factory = report_projector_factory or ReportProjector
         self._lease_acquirer = lease_acquirer
-        # Server-side Search coverage accounting (#127), keyed by business
-        # identity (run, Result, Domain, SQ) rather than the opaque WorkToken
-        # so a reissued token still finds prior accumulated progress
-        # (ADR-0007, ADR-0008). Intentionally process-lifetime only: it is
-        # not durable across a Harness disconnect (ADR-0007).
-        self._coverage_recorders: dict[
-            tuple[Identifier, Identifier, Identifier, Identifier], SearchCoverageRecorder
-        ] = {}
         # Content-addressed Source artifacts are immutable once written, so a
         # hash verified once by preflight() needn't be re-read from disk by a
         # later call in this same process (#130). Process-lifetime only, like
-        # ``_coverage_recorders`` above: a new process gets a fresh, empty set
-        # and re-verifies everything, which is the accepted trade-off for
-        # this fix.
+        # A new process gets a fresh, empty set and re-verifies everything.
         self._verification_cache = ArtifactVerificationCache()
         # Compatibility projection for #130's observable process cache.
         self._verified_artifact_hashes = self._verification_cache.verified_hashes
@@ -4937,156 +4910,6 @@ class RunEngine:
             resolved[(review.candidate_id, review.sq_id)] = (review, ref)
         return resolved
 
-    def _coverage_recorder_metadata(
-        self,
-        ledger: WorkflowLedger,
-        run_id: Identifier,
-        result_id: Identifier,
-        sq_id: Identifier,
-    ) -> dict[str, Any]:
-        """Derive the exact Search coverage dependencies for one Result x SQ.
-
-        Every value here is engine-derived from ledger/proposal state, never
-        supplied by a caller, so the receipt a recorder eventually freezes is
-        correct by construction (#127).
-        """
-        result_spec = self._result_spec_for(ledger, run_id, result_id)
-        if result_spec is None:
-            raise ValueError("Search coverage requires the active ResultSpec")
-        result_ref = RecordReference(
-            entity_id=result_spec.entity_id,
-            revision_id=result_spec.revision_id,
-            content_hash=canonical_hash(result_spec),
-        )
-        guidance = self._guidance_pack()
-        seed_family = "seed:" + sq_id.removeprefix("sq:").replace(":", "-")
-        proposal = self._latest_proposal(ledger, run_id)
-        trial = next(
-            (
-                item
-                for item in proposal.initialization.trials
-                if item.trial_id == result_spec.result.trial_id
-            ),
-            None,
-        )
-        if trial is None or trial.inventory is None:
-            raise ValueError("Search coverage requires the active Trial source inventory")
-        inventory = trial.inventory
-        inventory_suffix = self._digest(
-            f"{run_id}|{result_id}|{result_ref.content_hash}|source-inventory"
-        )
-        source_inventory_ref = RecordReference(
-            entity_id=f"source-inventory:{result_id.removeprefix('result:')}",
-            revision_id=f"revision:source-inventory-{inventory_suffix}",
-            content_hash=canonical_hash(inventory),
-        )
-        parse_record_hashes = tuple(
-            sorted(
-                {
-                    parse.output_hash
-                    for source in inventory.sources
-                    for parse in source.parse_records
-                }
-            )
-        )
-        sources: list[SourceSearchCoverage] = []
-        for source in inventory.sources:
-            if source.availability is not SourceAvailability.ACQUIRED:
-                state, readable = SourceSearchState.UNOBTAINED, False
-            elif source.processing is SourceProcessing.USABLE:
-                state, readable = SourceSearchState.SEARCHED, True
-            elif source.processing is SourceProcessing.COVERAGE_LIMITED:
-                state, readable = SourceSearchState.SEARCH_LIMITED, False
-            else:
-                state, readable = SourceSearchState.UNREADABLE, False
-            sources.append(
-                SourceSearchCoverage(
-                    source_id=source.source_id,
-                    state=state,
-                    sufficiently_readable=readable,
-                    artifact_hash=source.artifact_hash,
-                )
-            )
-        return {
-            "result_spec": result_ref,
-            "source_inventory": source_inventory_ref,
-            "parse_record_hashes": parse_record_hashes,
-            "guidance_release_id": f"guidance:rob2-{guidance.release_id}",
-            "required_seed_families": (seed_family,),
-            "sources": tuple(sources),
-            "inventory_source_ids": tuple(source.source_id for source in inventory.sources),
-            "coverage_limits": inventory.coverage_limitations,
-        }
-
-    def _recorder_for(
-        self,
-        ledger: WorkflowLedger,
-        run_id: Identifier,
-        result_id: Identifier,
-        domain_id: Identifier,
-        sq_id: Identifier,
-        *,
-        snapshot_hash: ContentHash,
-        policy_id: Identifier,
-        policy_hash: ContentHash,
-    ) -> SearchCoverageRecorder:
-        """Get or create the server-side coverage recorder for one Result x Domain x SQ.
-
-        Keying on business identity rather than the opaque WorkToken means
-        recorder state survives a WorkToken reissue -- e.g. the #127/#128
-        recovery route back into submit_domain_evidence after an
-        evidence_insufficient block carries forward whatever was already
-        found instead of forcing a full re-search (ADR-0008). A recorder
-        bound to a since-superseded index snapshot (e.g. input reconciliation
-        reparsed a Source mid-run) is discarded and rebuilt fresh rather than
-        reused, since its accumulated pages no longer verify against the
-        live index.
-        """
-        key = (run_id, result_id, domain_id, sq_id)
-        recorder = self._coverage_recorders.get(key)
-        if recorder is not None and recorder.snapshot_hash == snapshot_hash:
-            return recorder
-        metadata = self._coverage_recorder_metadata(ledger, run_id, result_id, sq_id)
-        receipt_id = f"coverage:{self._digest(f'{run_id}|{result_id}|{sq_id}')}"
-        recorder = SearchCoverageRecorder(
-            receipt_id=receipt_id,
-            sq_id=sq_id,
-            snapshot_hash=snapshot_hash,
-            policy_id=policy_id,
-            policy_hash=policy_hash,
-            **metadata,
-        )
-        self._coverage_recorders[key] = recorder
-        return recorder
-
-    def _freeze_recorder(
-        self,
-        request: SubmitDomainEvidenceRequest,
-        question_id: Identifier,
-        recorder: SearchCoverageRecorder,
-        submitted_passages: tuple[EvidencePassageInput, ...] = (),
-    ) -> SearchCoverageReceipt:
-        """Freeze one recorder's accumulated state into an immutable receipt.
-
-        Pure and idempotent over the recorder's current accumulated state:
-        dispositions are (re)derived from which returned units the caller is
-        retaining as Evidence for this question via submitted passages,
-        never supplied by the caller directly (#127). ``submitted_passages``
-        must be the pre-resolution list -- by the time a freeze runs,
-        ``request.passages`` has already been cleared by
-        ``_resolve_evidence_passages``.
-        """
-        retained_units = {
-            passage.unit_id for passage in submitted_passages if question_id in passage.question_ids
-        }
-        recorder.auto_disposition(retained_units)
-        recorder.bind_project_rules(tuple(sorted(rule.entity_id for rule in request.project_rules)))
-        return recorder.freeze(
-            completed_seed_families=recorder.completed_seed_families(),
-            traversal_complete=recorder.traversal_complete,
-            interrupted=False,
-        )
-
     def _visual_coverage_blocked(
         self,
         ledger: WorkflowLedger,
@@ -5451,7 +5274,6 @@ class RunEngine:
         raw_bundles = evidence_payload.get("evidence_bundles", ())
         if not isinstance(raw_bundles, (list, tuple)):
             return False
-        index = EvidenceSearchIndex(self._required_root() / ".rob2" / "evidence.sqlite3")
         for raw_bundle in raw_bundles:
             try:
                 bundle_ref = RecordReference.model_validate(raw_bundle)
@@ -5477,36 +5299,23 @@ class RunEngine:
                 except (KeyError, OSError, TypeError, ValueError, json.JSONDecodeError):
                     continue
                 for raw_receipt in receipt_record.receipts:
+                    if not isinstance(raw_receipt, dict):
+                        continue
+                    selected = raw_receipt.get("selected_attempts", ())
+                    triage = raw_receipt.get("triage_revisions", ())
+                    selected_passes = {
+                        item.get("pass_kind") for item in selected if isinstance(item, dict)
+                    }
                     if (
-                        isinstance(raw_receipt, dict)
-                        and raw_receipt.get("receipt_type") == "evidence-navigation-v2"
+                        raw_receipt.get("receipt_type") == "evidence-navigation-v2"
+                        and raw_receipt.get("sq_id") == question_id
+                        and selected_passes == {item.value for item in SearchPassKind}
+                        and all(
+                            item.get("kind") != V2TriageKind.RETAINED.value
+                            for item in triage
+                            if isinstance(item, dict)
+                        )
                     ):
-                        selected = raw_receipt.get("selected_attempts", ())
-                        triage = raw_receipt.get("triage_revisions", ())
-                        selected_passes = {
-                            item.get("pass_kind") for item in selected if isinstance(item, dict)
-                        }
-                        if (
-                            raw_receipt.get("sq_id") == question_id
-                            and selected_passes == {item.value for item in SearchPassKind}
-                            and all(
-                                item.get("kind") != V2TriageKind.RETAINED.value
-                                for item in triage
-                                if isinstance(item, dict)
-                            )
-                        ):
-                            return True
-                        continue
-                    try:
-                        receipt = SearchCoverageReceipt.model_validate(raw_receipt)
-                        if receipt.sq_id != question_id:
-                            continue
-                        if receipt.retained_candidate_ids():
-                            continue
-                        verify_complete_search_coverage_receipt(receipt, index=index)
-                    except (KeyError, OSError, TypeError, ValueError, json.JSONDecodeError):
-                        continue
-                    else:
                         return True
         return False
 
@@ -6045,8 +5854,8 @@ class RunEngine:
                 logic_pack_hash=logic.content_hash,
                 guidance_pack_release_id=guidance.release_id,
                 guidance_pack_hash=guidance.content_hash,
-                evidence_policy_id=SearchPolicy().policy_id,
-                evidence_policy_hash=canonical_hash({"policy_id": SearchPolicy().policy_id}),
+                evidence_policy_id=EvidenceSearchPolicy().policy_id,
+                evidence_policy_hash=canonical_hash(EvidenceSearchPolicy()),
                 decision_rule_ids=rules,
             )
             answer_refs.append(
@@ -8992,8 +8801,9 @@ class RunEngine:
     ) -> RecordReference:
         """Freeze the policy identity required for a complete archive closure."""
 
-        policy_id = SearchPolicy().policy_id
-        policy_hash = canonical_hash({"policy_id": policy_id, "version": "1.1.0"})
+        search_policy = EvidenceSearchPolicy()
+        policy_id = search_policy.policy_id
+        policy_hash = canonical_hash(search_policy)
         policy = PolicyRelease(
             entity_id=policy_id,
             revision_id=f"revision:evidence-policy-{self._digest(policy_hash)}",
@@ -9001,7 +8811,7 @@ class RunEngine:
             observed_at=self._now(),
             kind=PolicyKind.EVIDENCE_SEARCH_POLICY,
             family_id="policy-family:evidence-search",
-            release_id="1.1.0",
+            release_id="2.0.0",
             canonical_content_hash=policy_hash,
             required_schema_version=SCHEMA_VERSION,
             inventory=(),

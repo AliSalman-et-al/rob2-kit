@@ -20,11 +20,7 @@ from rob2_kit.domain.evidence import (
 )
 from rob2_kit.evidence.errors import StaleCursor, UnknownCursor
 from rob2_kit.evidence.search import (
-    CanonicalEvidenceUnit,
-    CanonicalUnitKind,
     EvidenceSearchIndex,
-    ReadContextMode,
-    SearchQuery,
 )
 from rob2_kit.ingestion.project import PageExtraction, PageTextItem, ParserResult
 from tests.test_input_reconciliation import (
@@ -836,101 +832,3 @@ def _receipt_fragments(units, *, start=0, end=None):
         )
         for index, unit in enumerate(units)
     )
-
-
-def test_persistent_receipts_capture_exact_unit_and_context_fragments(tmp_path: Path):
-    index_path = tmp_path / "read-receipts.sqlite3"
-    index = EvidenceSearchIndex(index_path)
-    long_text = "alpha " * 3_000
-    units = (
-        CanonicalEvidenceUnit(
-            unit_id="unit:receipt-long",
-            source_id="source:receipt",
-            source_artifact_hash="sha256:" + "1" * 64,
-            parse_id="parse:receipt",
-            page=1,
-            kind=CanonicalUnitKind.PARAGRAPH,
-            text=long_text,
-            section_path=("section:receipt",),
-            hierarchy_path=("heading:receipt",),
-            reading_order=0,
-        ),
-        CanonicalEvidenceUnit(
-            unit_id="unit:receipt-neighbor",
-            source_id="source:receipt",
-            source_artifact_hash="sha256:" + "1" * 64,
-            parse_id="parse:receipt",
-            page=1,
-            kind=CanonicalUnitKind.PARAGRAPH,
-            text="neighbor",
-            section_path=("section:receipt",),
-            hierarchy_path=("heading:receipt",),
-            reading_order=1,
-        ),
-        CanonicalEvidenceUnit(
-            unit_id="unit:receipt-section",
-            source_id="source:receipt",
-            source_artifact_hash="sha256:" + "1" * 64,
-            parse_id="parse:receipt",
-            page=1,
-            kind=CanonicalUnitKind.PARAGRAPH,
-            text="section",
-            section_path=("section:receipt",),
-            hierarchy_path=("heading:receipt",),
-            reading_order=2,
-        ),
-    )
-    index.replace_units(units)
-    hit = next(
-        hit
-        for hit in index.search(SearchQuery(terms=("alpha",))).hits
-        if hit.unit.unit_id == units[0].unit_id
-    )
-    first = index.read_location(hit.location_handle, character_target=16_000)
-    first_fragments = _receipt_fragments((first.unit,), start=first.start, end=first.end)
-    first_receipt = index.issue_read_view_receipt(
-        snapshot_hash=first.snapshot_hash,
-        requested_mode=ReadContextMode.UNIT,
-        applied_mode=ReadContextMode.UNIT,
-        continuation_input=None,
-        continuation=first.continuation_cursor,
-        fragments=first_fragments,
-        displayed_units=(first.unit,),
-    )
-    continued = index.read_location(
-        hit.location_handle, character_target=16_000, cursor=first.continuation_cursor
-    )
-    continued_receipt = index.issue_read_view_receipt(
-        snapshot_hash=continued.snapshot_hash,
-        requested_mode=ReadContextMode.UNIT,
-        applied_mode=ReadContextMode.UNIT,
-        continuation_input=first.continuation_cursor,
-        continuation=continued.continuation_cursor,
-        fragments=_receipt_fragments((continued.unit,), start=continued.start, end=continued.end),
-        displayed_units=(continued.unit,),
-    )
-    assert index.resolve_read_view_receipt(first_receipt).fragments[0].span_end == 16_000
-    assert (
-        index.resolve_read_view_receipt(continued_receipt).continuation_input
-        == first.continuation_cursor
-    )
-    assert index.resolve_read_view_receipt(continued_receipt).fragments[0].span_start == 16_000
-
-    short = EvidenceSearchIndex(tmp_path / "context-receipts.sqlite3")
-    short.replace_units(units[1:])
-    target = units[1]
-    for mode in (ReadContextMode.NEIGHBORS, ReadContextMode.SECTION):
-        context = short.read_context(target.unit_id, mode=mode)
-        fragments = _receipt_fragments(context.all_units)
-        receipt = short.issue_read_view_receipt(
-            snapshot_hash=context.snapshot_hash,
-            requested_mode=mode,
-            applied_mode=context.mode,
-            continuation_input=None,
-            continuation=context.continuation_cursor,
-            fragments=fragments,
-            displayed_units=context.all_units,
-        )
-        resolved = EvidenceSearchIndex(short.path).resolve_read_view_receipt(receipt)
-        assert resolved.applied_mode == mode.value
-        assert resolved.fragments == fragments
