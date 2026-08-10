@@ -415,7 +415,7 @@ async def _finish_domains(session: ClientSession, root: Path, run_id: str) -> No
         evidence_payload = {
             "run_id": run_id,
             "work_token": work["work_item"]["work_token"],
-            "contract_version": "1.1.0",
+            "contract_version": "1.2.0",
             "result_id": "result:trial-a-mortality",
             "domain_id": domain_id,
             "items": [visual_ref.model_dump(mode="json")],
@@ -752,7 +752,7 @@ def test_report_history_preserves_an_earlier_immutable_bundle(tmp_path: Path) ->
                         "idempotency_key": f"idempotency:{suffix}-evidence-{index}",
                         "result_id": result_id,
                         "domain_id": domain_id,
-                        "contract_version": "1.1.0",
+                        "contract_version": "1.2.0",
                         "items": [visual_ref.model_dump(mode="json")],
                         "evidence_by_question": {
                             question_id: [visual_ref.model_dump(mode="json")]

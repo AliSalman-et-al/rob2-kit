@@ -117,8 +117,6 @@ class StructuredPassageParser:
                             height=12,
                             unit_kind="paragraph",
                             document_zone="main",
-                            domain_id="domain:randomization",
-                            question_ids=(DOMAINS["domain:randomization"][0],),
                         ),
                     ),
                 ),
@@ -459,7 +457,7 @@ def _finish_current_result(
         )
         engine.submit_domain_evidence(
             SubmitDomainEvidenceRequest(
-                contract_version="1.1.0",
+                contract_version="1.2.0",
                 run_id=run_id,
                 work_token=evidence.work_token,
                 idempotency_key=f"idempotency:{prefix}-evidence-{index}",
@@ -767,7 +765,7 @@ def test_final_judgment_departure_must_bind_the_authorized_domain(tmp_path: Path
     assert evidence is not None
     engine.submit_domain_evidence(
         SubmitDomainEvidenceRequest(
-            contract_version="1.1.0",
+            contract_version="1.2.0",
             run_id=run_id,
             work_token=evidence.work_token,
             idempotency_key="idempotency:departure-scope-evidence",
@@ -831,7 +829,7 @@ def test_identical_domain_evidence_retry_returns_the_committed_result(
     assert work is not None
     event_count = len(engine._bound_ledger(run_id).events())
     request = SubmitDomainEvidenceRequest(
-        contract_version="1.1.0",
+        contract_version="1.2.0",
         run_id=run_id,
         work_token=work.work_token,
         idempotency_key="idempotency:retry-domain-evidence",
@@ -895,7 +893,7 @@ def test_domain_evidence_freezes_engine_issued_passages_without_host_hashes(
     question_id = DOMAINS["domain:randomization"][0]
     location_handle = _location_handle_for(engine, run_id, work, question_id, unit_id)
     request = SubmitDomainEvidenceRequest(
-        contract_version="1.1.0",
+        contract_version="1.2.0",
         run_id=run_id,
         work_token=work.work_token,
         idempotency_key="idempotency:passage-domain-evidence",
@@ -971,7 +969,7 @@ def test_domain_evidence_passage_can_select_to_unit_end_without_counting_charact
     location_handle = _location_handle_for(engine, run_id, work, question_id, unit.unit_id)
     response = engine.submit_domain_evidence(
         SubmitDomainEvidenceRequest(
-            contract_version="1.1.0",
+            contract_version="1.2.0",
             run_id=run_id,
             work_token=work.work_token,
             idempotency_key="idempotency:passage-to-end",
@@ -1025,10 +1023,7 @@ def test_unstructured_units_remain_visible_for_attributable_review(tmp_path: Pat
         page=1,
         kind=CanonicalUnitKind.UNCLASSIFIED,
         text="unstructured prose",
-        trial_id="trial:active",
-        result_id="result:active",
         document_zone=DocumentZone.UNKNOWN,
-        applicability="result",
     )
     index.replace_units((unit,))
     assert index.read_unit(
@@ -1062,7 +1057,7 @@ def test_invalid_late_passage_writes_no_artifacts_or_ledger_events(tmp_path: Pat
     # review, claim, or submission artifact.
     response = engine.submit_domain_evidence(
             SubmitDomainEvidenceRequest(
-                contract_version="1.1.0",
+                contract_version="1.2.0",
                 run_id=run_id,
                 work_token=work.work_token,
                 idempotency_key="idempotency:invalid-late-passage",
@@ -1108,7 +1103,7 @@ def test_invalid_late_passage_writes_no_artifacts_or_ledger_events(tmp_path: Pat
         with pytest.raises(ValueError, match="invalid evidence read-view receipt"):
             engine.submit_domain_evidence(
             SubmitDomainEvidenceRequest(
-                contract_version="1.1.0",
+                contract_version="1.2.0",
                     run_id=run_id,
                     work_token=work.work_token,
                     idempotency_key=f"idempotency:invalid-open-span-{span_start}",
@@ -1143,7 +1138,7 @@ def test_invalid_late_passage_writes_no_artifacts_or_ledger_events(tmp_path: Pat
     with pytest.raises(ValueError, match="question_ids must be unique"):
         engine.submit_domain_evidence(
             SubmitDomainEvidenceRequest(
-                contract_version="1.1.0",
+                contract_version="1.2.0",
                 run_id=run_id,
                 work_token=work.work_token,
                 idempotency_key="idempotency:duplicate-question-passage",
@@ -2043,7 +2038,7 @@ def test_changed_source_invalidates_partial_pending_checkpoints(tmp_path: Path) 
     assert evidence is not None
     engine.submit_domain_evidence(
         SubmitDomainEvidenceRequest(
-            contract_version="1.1.0",
+            contract_version="1.2.0",
             run_id=run_id,
             work_token=evidence.work_token,
             idempotency_key="idempotency:partial-evidence",

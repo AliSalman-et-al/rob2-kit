@@ -1,5 +1,5 @@
-from rob2_kit.interfaces.mcp.server import create_server
 from rob2_kit.application.contracts import EvidenceReviewRevisionInput
+from rob2_kit.interfaces.mcp.server import create_server
 
 
 def _tools():
@@ -29,4 +29,4 @@ def test_freeze_schema_is_question_specific_and_receipt_bound() -> None:
 
 def test_freeze_contract_requires_1_1_0() -> None:
     schema = _tools()["submit_domain_evidence"].parameters
-    assert schema["properties"]["contract_version"]["const"] == "1.1.0"
+    assert schema["properties"]["contract_version"]["const"] == "1.2.0"

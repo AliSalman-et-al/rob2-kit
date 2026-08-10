@@ -156,7 +156,6 @@ from rob2_kit.evidence.search import (
     CanonicalUnitKind,
     CanonicalWordBox,
     DocumentZone,
-    EvidenceApplicability,
     EvidenceScope,
     EvidenceSearchIndex,
     ReadContextMode,
@@ -2574,8 +2573,6 @@ class RunEngine:
     def search_evidence(self, request: SearchEvidenceRequest) -> SearchEvidenceResponse:
         ledger = self._bound_ledger(request.run_id)
         index = EvidenceSearchIndex(self._required_root() / ".rob2" / "evidence.sqlite3")
-        if request.query.question_id is not None and request.query.question_id != request.sq_id:
-            raise ValueError("query question_id must match the active sq_id")
         scope = self._retrieval_scope(
             ledger, request.run_id, request.work_token, request.result_id, request.sq_id
         )
@@ -2820,7 +2817,6 @@ class RunEngine:
             domain_id=work_token.domain_id,
             question_id=sq_id,
             source_ids=source_ids,
-            allow_unclassified=True,
             work_token_id=work_token.token,
         )
 
@@ -2828,10 +2824,6 @@ class RunEngine:
     def _validate_citable_unit(
         unit: CanonicalEvidenceUnit,
         scope: EvidenceScope,
-        *,
-        result_id: Identifier,
-        domain_id: Identifier,
-        question_ids: set[Identifier],
     ) -> None:
         """Shared citation gate for passage and legacy EvidenceClaim paths."""
         # Parser/search labels are visibility diagnostics, never semantic
@@ -3217,18 +3209,6 @@ class RunEngine:
             observed_at=now,
             idempotency_validated=True,
         )
-        # Closes #113: a confirmed Result was never reflected back into the
-        # evidence index, so canonical units stayed permanently unresolved
-        # for Trial/Result applicability. Rebuild against every ResultSpec
-        # resolved so far for this Run, matching the same synchronous,
-        # full-rebuild call already made from prepare_run, submit_run_proposal,
-        # and reconciliation.
-        if not committed.duplicate:
-            historical_result_specs = self._historical_result_specs(ledger, request.run_id)
-            reindexed_initialization = proposal.initialization.model_copy(
-                update={"result_specs": tuple(historical_result_specs.values())}
-            )
-            self._index_initial_evidence(self._required_root(), reindexed_initialization)
         projection = self._projection(ledger, request.run_id)
         return SubmitResultResolutionResponse(
             operation_id=committed.operation_id,
@@ -3456,14 +3436,11 @@ class RunEngine:
                 self._validate_citable_unit(
                     unit,
                     retrieval_scope,
-                    result_id=request.result_id,
-                    domain_id=request.domain_id,
-                    question_ids=set(passage.question_ids),
                 )
             except ValueError as error:
                 raise ValueError(
                     "canonical passage is outside the active WorkToken scope or is not a "
-                    "citable, domain-mapped unit"
+                    "citable unit with attributable reviewed scope"
                 ) from error
             span_end = passage.span_end if passage.span_end is not None else len(unit.text)
             if span_end <= passage.span_start or span_end > len(unit.text):
@@ -5134,13 +5111,27 @@ class RunEngine:
                             )
                             if (
                                 current_spec is None
-                                or canonical.result_id != result_id
-                                or canonical.domain_id != current_domain
-                                or question_id not in canonical.question_ids
-                                or canonical.applicability is not EvidenceApplicability.RESULT
-                                or canonical.trial_id != current_spec.result.trial_id
                                 or canonical.source_id != source.source_id
                                 or canonical.source_artifact_hash != source.artifact_hash
+                                or not any(
+                                    trial.trial_id == current_spec.result.trial_id
+                                    and any(
+                                        current_source.source_id == canonical.source_id
+                                        and current_source.artifact_hash
+                                        == canonical.source_artifact_hash
+                                        and any(
+                                            parse.parse_id == canonical.parse_id
+                                            and parse.source_id == canonical.source_id
+                                            and parse.artifact_hash
+                                            == canonical.source_artifact_hash
+                                            for parse in current_source.parse_records
+                                        )
+                                        for current_source in trial.inventory.sources
+                                    )
+                                    for trial in self._latest_proposal(
+                                        ledger, run_id
+                                    ).initialization.trials
+                                )
                                 or review.entity_id != claim.authorizing_review.entity_id
                                 or review.revision_id != claim.authorizing_review.revision_id
                                 or canonical_hash(review) != claim.authorizing_review.content_hash
@@ -5500,8 +5491,8 @@ class RunEngine:
                 logic_pack_hash=logic.content_hash,
                 guidance_pack_release_id=guidance.release_id,
                 guidance_pack_hash=guidance.content_hash,
-                evidence_policy_id="policy:evidence-search-1.0.0",
-                evidence_policy_hash=canonical_hash({"policy_id": "policy:evidence-search-1.0.0"}),
+                evidence_policy_id=SearchPolicy().policy_id,
+                evidence_policy_hash=canonical_hash({"policy_id": SearchPolicy().policy_id}),
                 decision_rule_ids=rules,
             )
             answer_refs.append(
@@ -5965,11 +5956,6 @@ class RunEngine:
         artifacts = ArtifactStore(root / ".rob2" / "artifacts")
         units = []
         for trial in initialization.trials:
-            trial_result_ids = tuple(
-                spec.result.result_id
-                for spec in initialization.result_specs
-                if spec.result.trial_id == trial.trial_id
-            )
             for source in trial.inventory.sources:
                 if source.artifact_hash is None or not source.parse_records:
                     continue
@@ -6111,24 +6097,6 @@ class RunEngine:
                                 page_text=text_item.text,
                             )
                         )
-                        parser_applicability = None
-                        if text_item.applicability is not None:
-                            try:
-                                parser_applicability = EvidenceApplicability(
-                                    self._normalize_parser_label(text_item.applicability)
-                                )
-                            except (TypeError, ValueError):
-                                parser_applicability = EvidenceApplicability.UNRESOLVED
-                        applicability = parser_applicability or (
-                            EvidenceApplicability.RESULT
-                            if text_item.result_id is not None
-                            else (
-                                EvidenceApplicability.RESULT
-                                if len(trial_result_ids) == 1
-                                else EvidenceApplicability.UNRESOLVED
-                            )
-                        )
-                        applicable_result_ids = text_item.applicable_result_ids or trial_result_ids
                         warnings = tuple(
                             warning
                             for warning, condition in (
@@ -6136,10 +6104,6 @@ class RunEngine:
                                 (
                                     "document_zone_unclassified",
                                     page_zone_unknown or block_zone is DocumentZone.UNKNOWN,
-                                ),
-                                (
-                                    "result_scope_unresolved",
-                                    applicability is not EvidenceApplicability.RESULT,
                                 ),
                             )
                             if condition
@@ -6161,14 +6125,8 @@ class RunEngine:
                                     text_item.text,
                                     text_item.words,
                                 ),
-                                trial_id=text_item.trial_id,
-                                result_id=text_item.result_id,
-                                domain_id=text_item.domain_id,
-                                question_ids=text_item.question_ids,
                                 table_headers=table_headers,
                                 caption=caption,
-                                applicability=applicability,
-                                applicable_result_ids=applicable_result_ids,
                                 section_path=(
                                     text_item.section_path
                                     or page.section_path
@@ -6198,8 +6156,6 @@ class RunEngine:
                             if page_zone_unknown or page_zone is DocumentZone.UNKNOWN
                             else ("canonical_structure_unavailable",)
                         )
-                        if len(trial_result_ids) != 1:
-                            fallback_warnings += ("result_scope_unresolved",)
                         blocks.append(
                             CanonicalBlock(
                                 # The parser supplied page text but no unit
@@ -6212,12 +6168,6 @@ class RunEngine:
                                 section_path=page.section_path,
                                 hierarchy_path=page.hierarchy_path,
                                 reading_order=reading_order_cursor,
-                                applicability=(
-                                    EvidenceApplicability.RESULT
-                                    if len(trial_result_ids) == 1
-                                    else EvidenceApplicability.UNRESOLVED
-                                ),
-                                applicable_result_ids=trial_result_ids,
                                 source_role=(source.roles[0].value if source.roles else None),
                                 document_zone=page_zone,
                                 warnings=fallback_warnings,
@@ -6232,7 +6182,6 @@ class RunEngine:
                             )
                         )
                 pages = tuple(pages_list)
-                default_result_id = trial_result_ids[0] if len(trial_result_ids) == 1 else None
                 canonical_units = tuple(
                     unit
                     for page in pages
@@ -6243,14 +6192,6 @@ class RunEngine:
                             page_parse_ids.get(page.page) or source.parse_records[0].parse_id
                         ),
                         pages=(page,),
-                        trial_id=trial.trial_id,
-                        result_id=default_result_id,
-                        applicability=(
-                            EvidenceApplicability.RESULT
-                            if default_result_id is not None
-                            else EvidenceApplicability.UNRESOLVED
-                        ),
-                        applicable_result_ids=trial_result_ids,
                     )
                 )
                 units.extend(
@@ -6268,11 +6209,6 @@ class RunEngine:
                     "source_artifact_hash": item.source_artifact_hash,
                     "kind": item.kind.value,
                     "text": " ".join(item.text.split()),
-                    "result_id": item.result_id,
-                    "applicability": item.applicability.value,
-                    "applicable_result_ids": item.applicable_result_ids,
-                    "domain_id": item.domain_id,
-                    "question_ids": item.question_ids,
                     "document_zone": item.document_zone.value if item.document_zone else None,
                     "table_headers": item.table_headers,
                     "caption": item.caption,
@@ -8505,8 +8441,8 @@ class RunEngine:
     ) -> RecordReference:
         """Freeze the policy identity required for a complete archive closure."""
 
-        policy_id = "policy:evidence-search-1.0.0"
-        policy_hash = canonical_hash({"policy_id": policy_id, "version": "1.0.0"})
+        policy_id = SearchPolicy().policy_id
+        policy_hash = canonical_hash({"policy_id": policy_id, "version": "1.1.0"})
         policy = PolicyRelease(
             entity_id=policy_id,
             revision_id=f"revision:evidence-policy-{self._digest(policy_hash)}",
@@ -8514,7 +8450,7 @@ class RunEngine:
             observed_at=self._now(),
             kind=PolicyKind.EVIDENCE_SEARCH_POLICY,
             family_id="policy-family:evidence-search",
-            release_id="1.0.0",
+            release_id="1.1.0",
             canonical_content_hash=policy_hash,
             required_schema_version=SCHEMA_VERSION,
             inventory=(),

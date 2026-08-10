@@ -95,7 +95,7 @@ def test_evidence_insufficiency_issues_a_fresh_stable_retry_work_item(
     run = _prepare_evidence_run(tmp_path, "retry-identity-141")
     frozen = run.engine.submit_domain_evidence(
         SubmitDomainEvidenceRequest(
-            contract_version="1.1.0",
+            contract_version="1.2.0",
             run_id=run.run_id,
             work_token=run.first.work_token,
             idempotency_key="idempotency:issue141-first-evidence",
@@ -141,7 +141,7 @@ def test_mcp_caller_can_commit_corrected_evidence_and_replay_it_exactly(
             "work_token": run.first.work_token.model_dump(mode="json"),
             "result_id": run.result_id,
             "domain_id": run.domain_id,
-            "contract_version": "1.1.0",
+            "contract_version": "1.2.0",
             "coverage_state": "incomplete",
             "coverage_limitations": ["Intentionally incomplete for MCP retry."],
         },
@@ -162,7 +162,7 @@ def test_mcp_caller_can_commit_corrected_evidence_and_replay_it_exactly(
         "work_token": rerouted.work_token.model_dump(mode="json"),
         "result_id": run.result_id,
         "domain_id": run.domain_id,
-        "contract_version": "1.1.0",
+        "contract_version": "1.2.0",
         "passages": [
             {
                 "unit_id": unit_id,

@@ -37,7 +37,7 @@ def _freeze(tmp_path: Path):
     unit = EvidenceSearchIndex(tmp_path / ".rob2" / "evidence.sqlite3").read_unit(next(iter(EvidenceSearchIndex(tmp_path / ".rob2" / "evidence.sqlite3").unit_ids()))); sq = DOMAINS["domain:randomization"][0]
     _complete_passage_receipts(engine, run_id, work, unit_id=unit.unit_id)
     receipt = _location_handle_for(engine, run_id, work, sq, unit.unit_id)
-    response = engine.submit_domain_evidence(SubmitDomainEvidenceRequest(contract_version="1.1.0", run_id=run_id, work_token=work.work_token, idempotency_key="idempotency:issue151", result_id="result:issue151", domain_id="domain:randomization", passages=(EvidencePassageInput(unit_id=unit.unit_id, span_start=0, span_end=len(unit.text), claim_type="claim-type:randomization", candidate_id=unit.unit_id, question_ids=(sq,)),), review_revisions=(_review_revision(candidate_id=unit.unit_id, result_id="result:issue151", domain_id="domain:randomization", question_id=sq, location_handle=receipt, span_start=0, span_end=len(unit.text), entity_suffix="issue151"),)))
+    response = engine.submit_domain_evidence(SubmitDomainEvidenceRequest(contract_version="1.2.0", run_id=run_id, work_token=work.work_token, idempotency_key="idempotency:issue151", result_id="result:issue151", domain_id="domain:randomization", passages=(EvidencePassageInput(unit_id=unit.unit_id, span_start=0, span_end=len(unit.text), claim_type="claim-type:randomization", candidate_id=unit.unit_id, question_ids=(sq,)),), review_revisions=(_review_revision(candidate_id=unit.unit_id, result_id="result:issue151", domain_id="domain:randomization", question_id=sq, location_handle=receipt, span_start=0, span_end=len(unit.text), entity_suffix="issue151"),)))
     assert response.committed
     return engine, run_id, response, sq
 
@@ -65,7 +65,7 @@ def _submit(
 ):
     return engine.submit_domain_evidence(
         SubmitDomainEvidenceRequest(
-            contract_version="1.1.0",
+            contract_version="1.2.0",
             run_id=run_id,
             work_token=work.work_token,
             idempotency_key=f"idempotency:issue151:{suffix}",
@@ -103,8 +103,6 @@ class _TwoQuestionParser:
                             height=12,
                             unit_kind="paragraph",
                             document_zone="main",
-                            domain_id="domain:randomization",
-                            question_ids=DOMAINS["domain:randomization"][:2],
                         ),
                     ),
                 ),

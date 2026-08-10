@@ -35,7 +35,7 @@ def test_unsupported_active_answers_are_rejected_before_answer_revisions(tmp_pat
     assert evidence is not None
     engine.submit_domain_evidence(
         SubmitDomainEvidenceRequest(
-            contract_version="1.1.0",
+            contract_version="1.2.0",
             run_id=run_id,
             work_token=evidence.work_token,
             idempotency_key="idempotency:issue114-evidence",
@@ -109,7 +109,7 @@ def test_complete_no_information_basis_remains_a_qualifying_answer_basis(tmp_pat
     )
     engine.submit_domain_evidence(
         SubmitDomainEvidenceRequest(
-            contract_version="1.1.0",
+            contract_version="1.2.0",
             run_id=run_id,
             work_token=evidence.work_token,
             idempotency_key="idempotency:issue114-no-information-evidence",
@@ -150,7 +150,7 @@ def test_complete_with_limitations_evidence_remains_qualifying(tmp_path) -> None
     )
     engine.submit_domain_evidence(
         SubmitDomainEvidenceRequest(
-            contract_version="1.1.0",
+            contract_version="1.2.0",
             run_id=run_id,
             work_token=evidence.work_token,
             idempotency_key="idempotency:issue114-limited-evidence",
@@ -289,7 +289,7 @@ def test_legacy_unsupported_answers_become_diagnostic_without_terminal_judgments
         )
         engine.submit_domain_evidence(
             SubmitDomainEvidenceRequest(
-                contract_version="1.1.0",
+                contract_version="1.2.0",
                 run_id=run_id,
                 work_token=evidence.work_token,
                 idempotency_key=f"idempotency:issue114-legacy-terminal-evidence-{index}",

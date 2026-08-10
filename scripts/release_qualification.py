@@ -890,7 +890,7 @@ def _journey(
                                 "rationale": "Qualification wrong-state probe.",
                             }
                         ],
-                        "contract_version": "1.1.0",
+                        "contract_version": "1.2.0",
                     },
                 )
                 await rejected_probe(
@@ -902,7 +902,7 @@ def _journey(
                         "work_token": issued_token,
                         "result_id": "result:other",
                         "domain_id": "domain:other",
-                        "contract_version": "1.1.0",
+                        "contract_version": "1.2.0",
                     },
                 )
                 await rejected_probe(
@@ -1005,7 +1005,11 @@ def _journey(
                             arguments["seed_family"] = seed
                         searched = await call(client, "search_evidence", arguments)
                         response = searched.structured_content
-                        assert response is not None and response["executed_query"] is not None
+                        if response is None or response.get("executed_query") is None:
+                            raise AssertionError(
+                                "release search did not produce an executed query: "
+                                f"response={response!r}, result={searched!r}"
+                            )
                         responses.append(response)
                     returned_ids = tuple(
                         dict.fromkeys(
@@ -1120,14 +1124,9 @@ def _journey(
                         read_content = read.structured_content
                         if read_content is None:
                             continue
-                        unit = read_content["unit"]
-                        if (
-                            unit["domain_id"] == domain
-                            and questions[0] in unit["question_ids"]
-                        ):
-                            hit = candidate
-                            read_receipts[questions[0]] = read_content["read_view_receipt"]
-                            break
+                        hit = candidate
+                        read_receipts[questions[0]] = read_content["read_view_receipt"]
+                        break
                     cursor = response["page"].get("next_cursor")
                     if cursor is None and hit is None:
                         raise AssertionError(
@@ -1204,7 +1203,7 @@ def _journey(
                     "run_id": run_id,
                     "work_token": evidence["work_item"]["work_token"],
                     "idempotency_key": f"qualification:evidence:{index}",
-                    "contract_version": "1.1.0",
+                    "contract_version": "1.2.0",
                     "result_id": "result:trial-a-mortality",
                     "domain_id": domain,
                     "passages": passages,

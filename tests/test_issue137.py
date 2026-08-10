@@ -60,7 +60,7 @@ def _recorder(index: EvidenceSearchIndex) -> SearchCoverageRecorder:
         receipt_id="coverage:issue137",
         sq_id="sq:1.1",
         snapshot_hash=index.search(SearchQuery(terms=("allocation",))).snapshot_hash,
-        policy_id="policy:evidence-search-1.0.0",
+        policy_id="policy:evidence-search-1.1.0",
         result_spec=RecordReference(
             entity_id="result_spec:trial-1",
             revision_id="revision:result-spec-1",

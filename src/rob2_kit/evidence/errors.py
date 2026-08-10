@@ -32,6 +32,7 @@ class RetrievalErrorCode(StrEnum):
     UNKNOWN_CURSOR = "unknown_cursor"
     SCOPE_MISMATCH = "scope_mismatch"
     STALE_WORK_TOKEN = "stale_work_token"
+    REPROCESSING_REQUIRED = "reprocessing_required"
     INVALID_REQUEST = "invalid_request"
     OPERATIONAL = "retrieval_operational"
 
@@ -56,6 +57,10 @@ _DEFAULT_RECOVERY: dict[RetrievalErrorCode, tuple[str, ...]] = {
     RetrievalErrorCode.STALE_WORK_TOKEN: (
         "call continue_run",
         "copy the current submit_domain_evidence WorkToken",
+    ),
+    RetrievalErrorCode.REPROCESSING_REQUIRED: (
+        "reprocess the current Trial Sources and Parses",
+        "resume only after the current-schema evidence index is materialized",
     ),
     RetrievalErrorCode.INVALID_REQUEST: (
         "inspect the field-level validation detail",
@@ -182,6 +187,17 @@ class StaleWorkToken(RetrievalFailure):
         )
 
 
+class ReprocessingRequired(RetrievalFailure):
+    """The derived index belongs to a retired retrieval or index schema."""
+
+    def __init__(self, message: str, *, field: str | None = "evidence_index") -> None:
+        super().__init__(
+            code=RetrievalErrorCode.REPROCESSING_REQUIRED,
+            field=field,
+            message=message,
+        )
+
+
 class OperationalRetrievalFailure(RetrievalFailure):
     def __init__(
         self,
@@ -202,11 +218,9 @@ class OperationalRetrievalFailure(RetrievalFailure):
 # callers to know the shorter concrete class names.
 InvalidRetrievalRequestFailure = InvalidRetrievalRequest
 StaleCursorFailure = StaleCursor
-UnknownCursorFailure = UnknownCursor
 CursorScopeMismatchFailure = CursorScopeMismatch
 ScopeMismatchFailure = ScopeMismatch
 StaleWorkTokenFailure = StaleWorkToken
-RetrievalOperationalFailure = OperationalRetrievalFailure
 
 
 def _extra_field_hint(entry: dict[str, object], sibling_model: type[BaseModel] | None) -> str:

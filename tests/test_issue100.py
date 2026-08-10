@@ -31,7 +31,6 @@ from rob2_kit.evidence import (
     CanonicalUnitKind,
     CropBox,
     DocumentZone,
-    EvidenceApplicability,
     EvidenceContext,
     EvidenceScope,
     EvidenceSearchIndex,
@@ -262,36 +261,22 @@ def test_non_hyphen_line_wraps_still_require_whitespace_boundary() -> None:
     assert len(units) == 2
 
 
-def test_trial_wide_canonical_block_does_not_inherit_result_id() -> None:
-    units = canonicalize_evidence_units(
-        source_id="source:report",
-        source_artifact_hash=HASH,
-        parse_id="parse:1",
-        trial_id="trial:one",
-        result_id="result:one",
-        pages=(
-            CanonicalPage(
-                page=1,
-                blocks=(
-                    CanonicalBlock(
-                        kind=CanonicalUnitKind.PARAGRAPH,
-                        text="Trial-wide outcome statement",
-                        spatial=(0, 0, 10, 10),
-                        applicability=EvidenceApplicability.TRIAL_WIDE,
-                        applicable_result_ids=("result:one", "result:two"),
-                    ),
-                ),
-            ),
-        ),
-    )
-    assert units[0].applicability is EvidenceApplicability.TRIAL_WIDE
-    assert units[0].result_id is None
-    assert units[0].applicable_result_ids == ("result:one", "result:two")
+def test_canonical_models_reject_parser_scientific_semantics() -> None:
+    with pytest.raises(ValueError, match="extra_forbidden"):
+        CanonicalBlock.model_validate(
+            {
+                "kind": "paragraph",
+                "text": "source statement",
+                "spatial": (0, 0, 10, 10),
+                "result_id": "result:one",
+            }
+        )
 
 
-def test_legacy_null_result_rows_migrate_to_unresolved(tmp_path: Path) -> None:
+def test_legacy_semantic_index_is_physically_replaced(tmp_path: Path) -> None:
     path = tmp_path / "legacy.sqlite3"
-    with sqlite3.connect(path) as connection:
+    connection = sqlite3.connect(path)
+    try:
         connection.execute(
             "CREATE TABLE evidence_units ("
             "unit_id TEXT PRIMARY KEY, source_id TEXT NOT NULL, "
@@ -317,8 +302,13 @@ def test_legacy_null_result_rows_migrate_to_unresolved(tmp_path: Path) -> None:
                 "methods",
             ),
         )
-    unit = EvidenceSearchIndex(path).read_unit("unit:legacy")
-    assert unit.applicability is EvidenceApplicability.UNRESOLVED
+        connection.commit()
+    finally:
+        connection.close()
+    index = EvidenceSearchIndex(path)
+    replacement = _unit("unit:replacement", "source:replacement", "allocation")
+    index.replace_units((replacement,))
+    assert index.read_unit(replacement.unit_id) == replacement
 
 
 def _unit(
@@ -343,10 +333,6 @@ def _unit(
         page=1,
         kind=CanonicalUnitKind.PARAGRAPH,
         text=text,
-        trial_id=trial_id,
-        result_id=result_id,
-        domain_id=domain_id,
-        question_ids=question_ids,
         section_path=section,
         reading_order=reading_order,
         document_zone=zone,
@@ -399,10 +385,8 @@ def test_scope_keeps_reference_and_other_trial_candidates_visible(tmp_path: Path
     ordinary = index.search(SearchQuery(terms=("allocation",)))
     assert "unit:bibliography" in {hit.unit.unit_id for hit in ordinary.hits}
     assert "unit:active" in {hit.unit.unit_id for hit in ordinary.hits}
-    bibliography_only = index.search(
+    with pytest.raises(ValueError):
         SearchQuery(terms=("allocation",), document_zones=(DocumentZone.BIBLIOGRAPHY,))
-    )
-    assert "unit:bibliography" in {hit.unit.unit_id for hit in bibliography_only.hits}
 
     unclassified = _unit("unit:unclassified", "source:report", "allocation")
     index.replace_units((unclassified,))
@@ -411,8 +395,6 @@ def test_scope_keeps_reference_and_other_trial_candidates_visible(tmp_path: Path
         scope=EvidenceScope(
             trial_id="trial:active",
             result_id="result:active",
-            domain_id="domain:randomization",
-            allow_unclassified=True,
         ),
     ).hits
 
@@ -448,7 +430,7 @@ def test_domain_and_question_provenance_remains_visible_for_review(tmp_path: Pat
         )
     )
     page = index.search(
-        SearchQuery(terms=("allocation",), question_id="sq:randomization:sequence"),
+        SearchQuery(terms=("allocation",)),
         scope=EvidenceScope(
             trial_id="trial:active",
             result_id="result:active",
@@ -588,35 +570,20 @@ def test_section_cursor_advances_past_oversized_neighbors(tmp_path: Path) -> Non
     assert "oversized_neighbor_skipped" in first.warnings
 
 
-def test_generic_and_other_result_units_remain_visible_for_review(tmp_path: Path) -> None:
+def test_source_scoped_units_remain_visible_for_review(tmp_path: Path) -> None:
     index = EvidenceSearchIndex(tmp_path / "evidence.sqlite3")
-    generic = _unit(
-        "unit:generic",
-        "source:report",
-        "allocation context",
-        result_id=None,
-        domain_id=None,
-    ).model_copy(
-        update={
-            "applicability": EvidenceApplicability.UNRESOLVED,
-            "applicable_result_ids": ("result:a", "result:b"),
-        }
-    )
-    result_a = _unit("unit:a", "source:report", "allocation result a", result_id="result:a")
-    result_b = _unit("unit:b", "source:report", "allocation result b", result_id="result:b")
+    generic = _unit("unit:generic", "source:report", "allocation context")
+    result_a = _unit("unit:a", "source:report", "allocation result a")
+    result_b = _unit("unit:b", "source:report", "allocation result b")
     index.replace_units((generic, result_a, result_b))
     page = index.search(
         SearchQuery(terms=("allocation",)),
         scope=EvidenceScope(
             trial_id="trial:active",
-            result_id="result:b",
-            allow_unclassified=True,        ),
+            result_id="result:b"),
     )
     hit_ids = {hit.unit.unit_id for hit in page.hits}
     assert hit_ids == {"unit:generic", "unit:a", "unit:b"}
-    generic_hit = next(hit for hit in page.hits if hit.unit.unit_id == "unit:generic")
-    assert generic_hit.unit.applicability is EvidenceApplicability.UNRESOLVED
-    assert "result_scope_unresolved_units" in page.scope_warnings
 
 
 def test_context_uses_stored_reading_order_with_unit_id_tie_breaker(tmp_path: Path) -> None:
@@ -685,8 +652,7 @@ def test_index_initial_evidence_preserves_parser_provenance_metadata(
                                 section_path=("Methods", "Allocation"),
                                 hierarchy_path=("2", "2.1"),
                                 reading_order=9,
-                                document_zone="methods",                                domain_id="domain:randomization",
-                                question_ids=("sq:randomization:sequence",),
+                                document_zone="methods",
                             ),
                             PageTextItem(
                                 text="allocation was concealed",
@@ -698,8 +664,7 @@ def test_index_initial_evidence_preserves_parser_provenance_metadata(
                                 section_path=("Methods", "Allocation"),
                                 hierarchy_path=("2", "2.1"),
                                 reading_order=10,
-                                document_zone="methods",                                domain_id="domain:randomization",
-                                question_ids=("sq:randomization:sequence",),
+                                document_zone="methods",
                             ),
                         ),
                     ),
@@ -716,7 +681,7 @@ def test_index_initial_evidence_preserves_parser_provenance_metadata(
                         "text_items": (
                             parsed_metadata.pages[0]
                             .text_items[0]
-                            .model_copy(update={"domain_id": "domain:other"}),
+                            .model_copy(update={"section_path": ("Other",)}),
                         )
                     },
                 ),
@@ -821,8 +786,6 @@ results:
     assert unit.hierarchy_path == ("2", "2.1")
     assert unit.reading_order == 9
     assert unit.document_zone is DocumentZone.METHODS
-    assert unit.domain_id == "domain:randomization"
-    assert unit.question_ids == ("sq:randomization:sequence",)
 
     class OrdinaryParser:
         name = "stub"
@@ -1144,17 +1107,17 @@ def test_mcp_tools_list_exposes_bounded_closed_search_query_schema() -> None:
     assert query_schema["additionalProperties"] is False
     assert properties["terms"]["maxItems"] == 32
     assert properties["terms"]["examples"] == [["allocation"]]
-    assert properties["kinds"]["items"]["$ref"].endswith("CanonicalUnitKind")
-    assert properties["source_roles"]["items"]["$ref"].endswith("SourceRole")
-    assert properties["document_zones"]["items"]["$ref"].endswith("DocumentZone")
-    assert properties["kinds"]["description"]
-    assert properties["source_roles"]["description"]
-    assert properties["document_zones"]["description"]
-
+    assert {
+        "kinds",
+        "trial_id",
+        "result_id",
+        "domain_id",
+        "question_id",
+        "source_roles",
+        "document_zones",
+    }.isdisjoint(properties)
     with pytest.raises(ValidationError):
-        SearchQueryEnvelope.model_validate({"kinds": ["not-a-canonical-kind"]})
-    with pytest.raises(ValidationError):
-        SearchQueryEnvelope.model_validate({"document_zones": ["not-a-zone"]})
+        SearchQueryEnvelope.model_validate({"kinds": ["paragraph"]})
 
 
 def test_search_query_and_transport_envelope_have_schema_parity() -> None:

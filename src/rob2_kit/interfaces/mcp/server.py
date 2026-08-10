@@ -65,7 +65,6 @@ from rob2_kit.application.determinism import QualificationDeterminism
 from rob2_kit.application.lifecycle import RunState
 from rob2_kit.application.run_engine import RunEngine, SecondProjectRootError
 from rob2_kit.evidence.errors import (
-    InvalidRetrievalRequest,
     OperationalRetrievalFailure,
     RetrievalFailure,
     invalid_request_from_validation,
@@ -177,7 +176,6 @@ def _dump(response: Any) -> dict[str, Any]:
                         ),
                         "source_role": hit.unit.source_role,
                         "section_path": hit.unit.section_path,
-                        "applicability": hit.unit.applicability.value,
                         "warnings": hit.unit.warnings,
                         "table_headers": hit.unit.table_headers,
                         "caption": hit.unit.caption,
@@ -735,7 +733,7 @@ def create_server(
             str, Field(description="Domain ID issued by get_work_context; copy verbatim.")
         ],
         contract_version: Annotated[
-            Literal["1.1.0"],
+            Literal["1.2.0"],
             Field(description="Exact contract version returned by the installed release."),
         ],
         passages: Annotated[

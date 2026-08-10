@@ -4,9 +4,11 @@ from __future__ import annotations
 
 import itertools
 import json
+import os
 import re
 import secrets
 import sqlite3
+from contextlib import contextmanager
 from enum import StrEnum
 from pathlib import Path
 from typing import Literal
@@ -21,6 +23,7 @@ from rob2_kit.evidence.errors import (
     CursorScopeMismatch,
     InvalidRetrievalRequest,
     OperationalRetrievalFailure,
+    ReprocessingRequired,
     RetrievalFailure,
     ScopeMismatch,
     StaleCursor,
@@ -34,7 +37,9 @@ CONTEXT_UNIT_LIMIT = 6
 # Bumped from 1.1.0: fragment-merge now rejoins PDF line-wrap hyphens
 # (see ADR-0013/ADR-0014), changing merged CanonicalEvidenceUnit text and
 # fragment_spans for affected units.
-CANONICALIZATION_VERSION = "canonicalization:1.2.0"
+CANONICALIZATION_VERSION = "canonicalization:1.3.0"
+RETRIEVAL_SCHEMA_VERSION = "retrieval-schema:1.0.0"
+EVIDENCE_INDEX_SCHEMA_VERSION = "evidence-index-schema:1.0.0"
 PAGE_HIT_TARGET_MAX = 20
 PAGE_CHARACTER_TARGET_MAX = 8_000
 BROAD_UNIQUE_HIT_THRESHOLD_MAX = 100
@@ -50,14 +55,6 @@ class CanonicalUnitKind(StrEnum):
     CAPTION = "caption"
     FOOTNOTE = "footnote"
     TABLE_ROW = "table_row"
-
-
-class EvidenceApplicability(StrEnum):
-    """Typed Result applicability for a canonical evidence unit."""
-
-    RESULT = "result"
-    TRIAL_WIDE = "trial_wide"
-    UNRESOLVED = "unresolved"
 
 
 class DocumentZone(StrEnum):
@@ -185,18 +182,8 @@ class CanonicalEvidenceUnit(FrozenModel):
     text: str = Field(min_length=1)
     spatial: tuple[float, float, float, float] | None = None
     word_boxes: tuple[CanonicalWordBox, ...] = ()
-    # Optional structure metadata is populated by parsers that can preserve
-    # hierarchy and Trial discourse.  Keeping it optional retains compatibility
-    # with older parse records while allowing retrieval to fail closed when a
-    # Work-token scope requires an explicit identity.
-    trial_id: Identifier | None = None
-    result_id: Identifier | None = None
-    domain_id: Identifier | None = None
-    question_ids: tuple[Identifier, ...] = ()
     table_headers: tuple[str, ...] = ()
     caption: str | None = None
-    applicability: EvidenceApplicability = EvidenceApplicability.UNRESOLVED
-    applicable_result_ids: tuple[Identifier, ...] = ()
     section_path: tuple[str, ...] = ()
     hierarchy_path: tuple[str, ...] = ()
     reading_order: int = Field(default=0, ge=0)
@@ -212,20 +199,11 @@ class CanonicalEvidenceUnit(FrozenModel):
     # material as well as citable units.
     fragment_ids: tuple[Identifier, ...] = ()
     fragment_spans: tuple[CanonicalFragmentSpan, ...] = ()
-    canonicalization_version: str = "canonicalization:1.0.0"
+    canonicalization_version: str = CANONICALIZATION_VERSION
     warnings: tuple[str, ...] = ()
 
     @model_validator(mode="after")
     def validate_word_boxes(self) -> CanonicalEvidenceUnit:
-        if self.applicability is EvidenceApplicability.RESULT and self.result_id is None:
-            raise ValueError("result applicability requires result_id")
-        if self.applicability is EvidenceApplicability.TRIAL_WIDE and self.result_id is not None:
-            raise ValueError("trial-wide applicability cannot carry result_id")
-        if (
-            self.applicability is EvidenceApplicability.TRIAL_WIDE
-            and not self.applicable_result_ids
-        ):
-            raise ValueError("trial-wide applicability requires applicable_result_ids")
         previous_end = -1
         for box in self.word_boxes:
             if box.span_end > len(self.text):
@@ -259,14 +237,8 @@ class CanonicalBlock(FrozenModel):
     text: str = Field(min_length=1)
     spatial: tuple[float, float, float, float]
     word_boxes: tuple[CanonicalWordBox, ...] = ()
-    trial_id: Identifier | None = None
-    result_id: Identifier | None = None
-    domain_id: Identifier | None = None
-    question_ids: tuple[Identifier, ...] = ()
     table_headers: tuple[str, ...] = ()
     caption: str | None = None
-    applicability: EvidenceApplicability | None = None
-    applicable_result_ids: tuple[Identifier, ...] = ()
     section_path: tuple[str, ...] = ()
     hierarchy_path: tuple[str, ...] = ()
     reading_order: int = Field(default=0, ge=0)
@@ -345,14 +317,8 @@ def _mergeable_fragments(previous: CanonicalBlock, candidate: CanonicalBlock) ->
     if any(
         getattr(previous, field) != getattr(candidate, field)
         for field in (
-            "trial_id",
-            "result_id",
-            "domain_id",
-            "question_ids",
             "table_headers",
             "caption",
-            "applicability",
-            "applicable_result_ids",
             "section_path",
             "hierarchy_path",
             "source_role",
@@ -533,11 +499,6 @@ def canonicalize_evidence_units(
     source_artifact_hash: ContentHash,
     parse_id: Identifier,
     pages: tuple[CanonicalPage, ...],
-    trial_id: Identifier | None = None,
-    result_id: Identifier | None = None,
-    domain_id: Identifier | None = None,
-    applicability: EvidenceApplicability = EvidenceApplicability.UNRESOLVED,
-    applicable_result_ids: tuple[Identifier, ...] = (),
 ) -> tuple[CanonicalEvidenceUnit, ...]:
     """Turn parser-preserved structural blocks into immutable citable units."""
     source_slug = source_id.removeprefix("source:")
@@ -558,9 +519,6 @@ def canonicalize_evidence_units(
             ),
         )
         for block in _canonical_page_blocks(identified_page):
-            block_applicability = block.applicability or (
-                EvidenceApplicability.RESULT if block.result_id is not None else applicability
-            )
             fragment_ids = block.fragment_ids
             unit_identity = canonical_hash(
                 {
@@ -584,19 +542,8 @@ def canonicalize_evidence_units(
                     text=block.text,
                     spatial=block.spatial,
                     word_boxes=block.word_boxes,
-                    trial_id=block.trial_id or trial_id,
-                    result_id=(
-                        block.result_id
-                        if block_applicability is EvidenceApplicability.RESULT
-                        else None
-                    )
-                    or (result_id if block_applicability is EvidenceApplicability.RESULT else None),
-                    domain_id=block.domain_id or domain_id,
-                    question_ids=block.question_ids,
                     table_headers=block.table_headers,
                     caption=block.caption,
-                    applicability=block_applicability,
-                    applicable_result_ids=(block.applicable_result_ids or applicable_result_ids),
                     section_path=block.section_path,
                     hierarchy_path=block.hierarchy_path,
                     reading_order=block.reading_order or len(units),
@@ -681,69 +628,11 @@ class SearchQueryFields(BaseModel):
         max_length=64,
         description="Source IDs issued by get_work_context.",
     )
-    kinds: tuple[CanonicalUnitKind, ...] = Field(
-        default=(),
-        max_length=8,
-        description="Finite canonical-unit kind filters.",
-        examples=[[CanonicalUnitKind.PARAGRAPH.value]],
-    )
     pages: tuple[int, ...] = Field(
         default=(),
         max_length=128,
         description="One-based source page numbers.",
         examples=[[1, 2]],
-    )
-    # Safe metadata refinements.  These are values, never executable FTS
-    # syntax; active Work-token scope is applied in addition to these filters.
-    trial_id: Identifier | None = Field(
-        default=None,
-        description="One Trial identifier refinement; do not combine with trial_ids.",
-    )
-    result_id: Identifier | None = Field(
-        default=None,
-        description="One Result identifier refinement; do not combine with result_ids.",
-    )
-    domain_id: Identifier | None = Field(
-        default=None,
-        description="One Domain identifier refinement; do not combine with domain_ids.",
-    )
-    question_id: Identifier | None = Field(
-        default=None,
-        description="One signaling-question identifier; do not combine with question_ids.",
-    )
-    trial_ids: tuple[Identifier, ...] = Field(
-        default=(),
-        max_length=64,
-        description="Explicit Trial ID set; mutually exclusive with trial_id.",
-    )
-    result_ids: tuple[Identifier, ...] = Field(
-        default=(),
-        max_length=64,
-        description="Explicit Result ID set; mutually exclusive with result_id.",
-    )
-    domain_ids: tuple[Identifier, ...] = Field(
-        default=(),
-        max_length=64,
-        description="Explicit Domain ID set; mutually exclusive with domain_id.",
-    )
-    question_ids: tuple[Identifier, ...] = Field(
-        default=(),
-        max_length=64,
-        description="Explicit question ID set; mutually exclusive with question_id.",
-    )
-    source_roles: tuple[SourceRole, ...] = Field(
-        default=(),
-        max_length=8,
-        description="Finite source-role values from Source classification.",
-        examples=[[SourceRole.PRIMARY_REPORT.value]],
-    )
-    document_zones: tuple[DocumentZone, ...] = Field(
-        default=(),
-        max_length=8,
-        description=(
-            "Finite semantic document zones; forbidden bibliography/contents zones are rejected."
-        ),
-        examples=[[DocumentZone.RESULTS.value]],
     )
 
 
@@ -772,16 +661,6 @@ class SearchQuery(SearchQueryFields):
             raise ValueError("raw FTS syntax is not accepted")
         if any(page < 1 for page in self.pages):
             raise ValueError("page filters use one-based positive page numbers")
-        if any(not role.strip() for role in self.source_roles):
-            raise ValueError("source roles cannot be blank")
-        for singular, plural, label in (
-            (self.trial_id, self.trial_ids, "trial"),
-            (self.result_id, self.result_ids, "result"),
-            (self.domain_id, self.domain_ids, "domain"),
-            (self.question_id, self.question_ids, "question"),
-        ):
-            if singular is not None and plural:
-                raise ValueError(f"{label}_id and {label}_ids are mutually exclusive")
         return self
 
 
@@ -793,17 +672,11 @@ class EvidenceScope(FrozenModel):
     domain_id: Identifier | None = None
     question_id: Identifier | None = None
     source_ids: tuple[Identifier, ...] = ()
-    source_roles: tuple[SourceRole, ...] = ()
-    document_zones: tuple[DocumentZone, ...] = ()
     work_token_id: Identifier | None = None
-    # Structure-aware parsers may not map every authored unit to a signaling
-    # Domain.  The engine can explicitly permit those same-Result units while
-    # retaining Trial/Result scope; ad-hoc callers remain fail-closed.
-    allow_unclassified: bool = False
 
 
 class SearchPolicy(FrozenModel):
-    policy_id: Identifier = "policy:evidence-search-1.0.0"
+    policy_id: Identifier = "policy:evidence-search-1.1.0"
     page_hit_target: int = Field(default=20, ge=1, le=PAGE_HIT_TARGET_MAX)
     page_character_target: int = Field(
         default=8_000,
@@ -973,116 +846,86 @@ class EvidenceSearchIndex:
             raise OperationalRetrievalFailure(
                 "unable to prepare the evidence retrieval index directory"
             ) from error
-        with self._connect() as connection:
-            connection.executescript(
-                """
-                CREATE TABLE IF NOT EXISTS evidence_units (
-                    unit_id TEXT PRIMARY KEY,
-                    source_id TEXT NOT NULL,
-                    source_artifact_hash TEXT NOT NULL,
-                    parse_id TEXT NOT NULL,
-                    page INTEGER NOT NULL,
-                    kind TEXT NOT NULL,
-                    text TEXT NOT NULL,
-                    spatial TEXT,
-                    word_boxes TEXT,
-                    trial_id TEXT,
-                    result_id TEXT,
-                    domain_id TEXT,
-                    question_ids TEXT,
-                    section_path TEXT,
-                    hierarchy_path TEXT,
-                    reading_order INTEGER NOT NULL DEFAULT 0,
-                    source_role TEXT,
-                    document_zone TEXT,
-                    applicability TEXT NOT NULL DEFAULT 'result',
-                    applicable_result_ids TEXT,
-                    table_headers TEXT,
-                    caption TEXT,
-                    duplicate_group_id TEXT,
-                    fragment_ids TEXT,
-                    fragment_spans TEXT,
-                    canonicalization_version TEXT NOT NULL DEFAULT 'canonicalization:1.0.0',
-                    warnings TEXT
-                );
-                CREATE TABLE IF NOT EXISTS evidence_snapshot (
-                    singleton INTEGER PRIMARY KEY CHECK (singleton = 1),
-                    content_hash TEXT NOT NULL
-                );
-                CREATE TABLE IF NOT EXISTS evidence_cursor_token (
-                    token TEXT PRIMARY KEY,
-                    kind TEXT NOT NULL,
-                    payload TEXT NOT NULL
-                );
-                CREATE VIRTUAL TABLE IF NOT EXISTS evidence_fts USING fts5(
-                    projection_id UNINDEXED,
-                    unit_id UNINDEXED,
-                    text,
-                    tokenize='porter unicode61'
-                );
-                """
-            )
-            columns = {
-                row["name"]
-                for row in connection.execute("PRAGMA table_info(evidence_units)").fetchall()
-            }
-            if "word_boxes" not in columns:
-                connection.execute("ALTER TABLE evidence_units ADD COLUMN word_boxes TEXT")
-            migrations = {
-                "trial_id": "TEXT",
-                "result_id": "TEXT",
-                "domain_id": "TEXT",
-                "question_ids": "TEXT",
-                "section_path": "TEXT",
-                "hierarchy_path": "TEXT",
-                "reading_order": "INTEGER NOT NULL DEFAULT 0",
-                "source_role": "TEXT",
-                "document_zone": "TEXT",
-                "applicability": "TEXT NOT NULL DEFAULT 'result'",
-                "applicable_result_ids": "TEXT",
-                "table_headers": "TEXT",
-                "caption": "TEXT",
-                "duplicate_group_id": "TEXT",
-                "fragment_ids": "TEXT",
-                "fragment_spans": "TEXT",
-                "canonicalization_version": "TEXT NOT NULL DEFAULT 'canonicalization:1.0.0'",
-                "warnings": "TEXT",
-            }
-            for name, declaration in migrations.items():
-                if name not in columns:
-                    connection.execute(
-                        f"ALTER TABLE evidence_units ADD COLUMN {name} {declaration}"
-                    )
-            # Historical rows (including databases that already carried an
-            # applicability column from an interrupted migration) must never
-            # inherit RESULT when they have no Result identity. Preserve
-            # explicit TRIAL_WIDE/UNRESOLVED values.
-            connection.execute(
-                "UPDATE evidence_units SET applicability = 'unresolved' "
-                "WHERE result_id IS NULL "
-                "AND (applicability IS NULL OR applicability = 'result')"
-            )
+
+    @staticmethod
+    def _create_schema(connection: sqlite3.Connection) -> None:
+        """Create the current physical schema in a newly materialized database.
+
+        Schema changes intentionally never mutate an existing derived index:
+        callers must fully re-canonicalize first, then swap this ready database
+        into place atomically.
+        """
+        connection.executescript(
+            """
+            CREATE TABLE evidence_units (
+                unit_id TEXT PRIMARY KEY,
+                source_id TEXT NOT NULL,
+                source_artifact_hash TEXT NOT NULL,
+                parse_id TEXT NOT NULL,
+                page INTEGER NOT NULL,
+                kind TEXT NOT NULL,
+                text TEXT NOT NULL,
+                spatial TEXT,
+                word_boxes TEXT,
+                section_path TEXT,
+                hierarchy_path TEXT,
+                reading_order INTEGER NOT NULL DEFAULT 0,
+                source_role TEXT,
+                document_zone TEXT,
+                table_headers TEXT,
+                caption TEXT,
+                duplicate_group_id TEXT,
+                fragment_ids TEXT,
+                fragment_spans TEXT,
+                canonicalization_version TEXT NOT NULL,
+                warnings TEXT
+            );
+            CREATE TABLE evidence_snapshot (
+                singleton INTEGER PRIMARY KEY CHECK (singleton = 1),
+                content_hash TEXT NOT NULL,
+                retrieval_schema_version TEXT NOT NULL,
+                index_schema_version TEXT NOT NULL
+            );
+            CREATE TABLE evidence_cursor_token (
+                token TEXT PRIMARY KEY,
+                kind TEXT NOT NULL,
+                payload TEXT NOT NULL
+            );
+            CREATE VIRTUAL TABLE evidence_fts USING fts5(
+                projection_id UNINDEXED,
+                unit_id UNINDEXED,
+                text,
+                tokenize='porter unicode61'
+            );
+            """
+        )
 
     def replace_units(self, units: tuple[CanonicalEvidenceUnit, ...]) -> ContentHash:
         ordered = tuple(sorted(units, key=lambda item: item.unit_id))
         if len({item.unit_id for item in ordered}) != len(ordered):
             raise InvalidRetrievalRequest("canonical unit IDs must be unique", field="units")
-        snapshot = canonical_hash([item.model_dump(mode="json") for item in ordered])
-        with self._connect() as connection:
-            connection.execute("BEGIN IMMEDIATE")
-            connection.execute("DELETE FROM evidence_fts")
-            connection.execute("DELETE FROM evidence_units")
+        snapshot = canonical_hash(
+            {
+                "units": [item.model_dump(mode="json") for item in ordered],
+                "retrieval_schema_version": RETRIEVAL_SCHEMA_VERSION,
+                "index_schema_version": EVIDENCE_INDEX_SCHEMA_VERSION,
+            }
+        )
+        replacement = self.path.with_name(f"{self.path.name}.{secrets.token_hex(12)}.next")
+        connection: sqlite3.Connection | None = None
+        try:
+            connection = sqlite3.connect(replacement)
+            connection.row_factory = sqlite3.Row
+            self._create_schema(connection)
             for item in ordered:
                 connection.execute(
                     "INSERT INTO evidence_units "
                     "(unit_id, source_id, source_artifact_hash, parse_id, page, kind, text, "
-                    "spatial, word_boxes, trial_id, result_id, domain_id, question_ids, "
-                    "section_path, hierarchy_path, reading_order, source_role, document_zone, "
-                    "applicability, applicable_result_ids, table_headers, "
+                    "spatial, word_boxes, section_path, hierarchy_path, reading_order, "
+                    "source_role, document_zone, table_headers, "
                     "caption, duplicate_group_id, fragment_ids, canonicalization_version, "
                     "fragment_spans, warnings) "
-                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, "
-                    "?, ?, ?, ?)",
+                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                     (
                         item.unit_id,
                         item.source_id,
@@ -1093,17 +936,11 @@ class EvidenceSearchIndex:
                         item.text,
                         json.dumps(item.spatial),
                         json.dumps([box.model_dump(mode="json") for box in item.word_boxes]),
-                        item.trial_id,
-                        item.result_id,
-                        item.domain_id,
-                        json.dumps(item.question_ids),
                         json.dumps(item.section_path),
                         json.dumps(item.hierarchy_path),
                         item.reading_order,
                         item.source_role,
                         item.document_zone.value if item.document_zone else None,
-                        item.applicability.value,
-                        json.dumps(item.applicable_result_ids),
                         json.dumps(item.table_headers),
                         item.caption,
                         item.duplicate_group_id,
@@ -1118,13 +955,46 @@ class EvidenceSearchIndex:
                         "INSERT INTO evidence_fts(projection_id, unit_id, text) VALUES (?, ?, ?)",
                         (projection.projection_id, item.unit_id, projection.text),
                     )
+            # Retain issued lookup tokens solely so a caller receives the
+            # precise stale-snapshot failure after a replacement. They carry
+            # no indexed content and cannot resolve against the new snapshot.
+            if self.path.exists():
+                try:
+                    previous = sqlite3.connect(self.path)
+                    try:
+                        rows = previous.execute(
+                            "SELECT token, kind, payload FROM evidence_cursor_token"
+                        ).fetchall()
+                    finally:
+                        previous.close()
+                    connection.executemany(
+                        "INSERT OR IGNORE INTO evidence_cursor_token(token, kind, payload) "
+                        "VALUES (?, ?, ?)",
+                        rows,
+                    )
+                except sqlite3.Error:
+                    # A legacy/partial index has no transferable token state;
+                    # its opaque values remain fail-closed as unknown.
+                    pass
             connection.execute(
                 """
-                INSERT INTO evidence_snapshot(singleton, content_hash) VALUES (1, ?)
-                ON CONFLICT(singleton) DO UPDATE SET content_hash = excluded.content_hash
+                INSERT INTO evidence_snapshot(
+                    singleton, content_hash, retrieval_schema_version, index_schema_version
+                ) VALUES (1, ?, ?, ?)
                 """,
-                (snapshot,),
+                (snapshot, RETRIEVAL_SCHEMA_VERSION, EVIDENCE_INDEX_SCHEMA_VERSION),
             )
+            connection.commit()
+            connection.close()
+            connection = None
+            # A complete committed replacement is the only point at which the
+            # prior index is replaced.  If construction fails it remains intact.
+            os.replace(replacement, self.path)
+        except (sqlite3.Error, OSError):
+            if connection is not None:
+                connection.close()
+            replacement.unlink(missing_ok=True)
+            raise
         return snapshot
 
     def preview(
@@ -1135,6 +1005,7 @@ class EvidenceSearchIndex:
         scope: EvidenceScope | None = None,
     ) -> QueryPreview:
         policy = policy or SearchPolicy()
+        self._snapshot()
         rows, scoped_count, excluded_count = self._matches(query, scope=scope)
         sources: dict[str, set[str]] = {}
         for row in rows:
@@ -1163,6 +1034,7 @@ class EvidenceSearchIndex:
         scope: EvidenceScope | None = None,
     ) -> CanonicalEvidenceUnit:
         """Read one engine-issued canonical unit without accepting raw source locators."""
+        self._snapshot()
         try:
             with self._connect() as connection:
                 row = connection.execute(
@@ -1483,6 +1355,7 @@ class EvidenceSearchIndex:
 
     def unit_ids(self) -> frozenset[Identifier]:
         """Return the stable engine-issued unit identities in the current snapshot."""
+        self._snapshot()
         with self._connect() as connection:
             rows = connection.execute(
                 "SELECT unit_id FROM evidence_units ORDER BY unit_id"
@@ -1566,26 +1439,8 @@ class EvidenceSearchIndex:
             for row in selected
         )
         warning_values: list[str] = []
-        if (
-            scope is not None
-            and scope.allow_unclassified
-            and any(row["domain_id"] is None for row in rows)
-        ):
-            warning_values.append("domain_scope_unclassified_units")
-        if (
-            scope is not None
-            and scope.result_id is not None
-            and any(
-                (row["applicability"] or EvidenceApplicability.UNRESOLVED.value)
-                != EvidenceApplicability.RESULT.value
-                for row in rows
-            )
-        ):
-            warning_values.append("result_scope_unresolved_units")
         if excluded_count:
             warning_values.append("retrieval_scope_excluded_matches")
-            if scope is not None and (scope.domain_id is not None or scope.question_id is not None):
-                warning_values.append("scope_provenance_unclassified_units_excluded")
         scope_warnings = tuple(warning_values)
         if scope_warnings:
             hits = tuple(
@@ -1704,12 +1559,25 @@ class EvidenceSearchIndex:
         return rows, scoped_count, max(0, len(lexical_ids - scoped_ids))
 
     def _snapshot(self) -> ContentHash:
-        with self._connect() as connection:
-            row = connection.execute(
-                "SELECT content_hash FROM evidence_snapshot WHERE singleton = 1"
-            ).fetchone()
+        try:
+            with self._connect() as connection:
+                row = connection.execute(
+                    "SELECT content_hash, retrieval_schema_version, index_schema_version "
+                    "FROM evidence_snapshot WHERE singleton = 1"
+                ).fetchone()
+        except sqlite3.Error as error:
+            raise ReprocessingRequired(
+                "evidence index cannot prove its current retrieval schema identity"
+            ) from error
         if row is None:
-            raise OperationalRetrievalFailure("evidence index has no snapshot")
+            raise ReprocessingRequired("evidence index has no current-schema snapshot")
+        if (
+            row["retrieval_schema_version"] != RETRIEVAL_SCHEMA_VERSION
+            or row["index_schema_version"] != EVIDENCE_INDEX_SCHEMA_VERSION
+        ):
+            raise ReprocessingRequired(
+                "evidence index schema is retired; current Source/Parse reprocessing is required"
+            )
         return row[0]
 
     def _hit(self, row: sqlite3.Row, *, oversized: bool = False) -> SearchHit:
@@ -1784,6 +1652,9 @@ class EvidenceSearchIndex:
         descriptor.  Its payload retains all units actually displayed and the
         source/Parse/canonical lineage needed to reject a changed snapshot.
         """
+        current_snapshot = self._snapshot()
+        if snapshot_hash != current_snapshot:
+            raise StaleCursor("read-view receipt snapshot is stale", field="snapshot_hash")
         by_id = {unit.unit_id: unit for unit in displayed_units}
         if len(by_id) != len(displayed_units) or set(by_id) != {
             fragment.unit_id for fragment in fragments
@@ -2030,7 +1901,8 @@ class EvidenceSearchIndex:
             raise StaleCursor("read continuation cursor offset is invalid")
         return offset
 
-    def _connect(self) -> sqlite3.Connection:
+    @contextmanager
+    def _connect(self):
         try:
             connection = sqlite3.connect(self.path)
         except (sqlite3.Error, OSError) as error:
@@ -2038,7 +1910,15 @@ class EvidenceSearchIndex:
                 "unable to open the evidence retrieval index"
             ) from error
         connection.row_factory = sqlite3.Row
-        return connection
+        try:
+            yield connection
+        except BaseException:
+            connection.rollback()
+            raise
+        else:
+            connection.commit()
+        finally:
+            connection.close()
 
 
 def _compile_match(query: SearchQuery) -> str:
@@ -2082,12 +1962,6 @@ def _unit_from_row(row: sqlite3.Row) -> CanonicalEvidenceUnit:
         word_boxes=tuple(
             CanonicalWordBox.model_validate(item) for item in json.loads(row["word_boxes"] or "[]")
         ),
-        trial_id=row["trial_id"],
-        result_id=row["result_id"],
-        domain_id=row["domain_id"],
-        question_ids=tuple(json.loads(row["question_ids"] or "[]")),
-        applicability=row["applicability"] or EvidenceApplicability.UNRESOLVED,
-        applicable_result_ids=tuple(json.loads(row["applicable_result_ids"] or "[]")),
         table_headers=tuple(json.loads(row["table_headers"] or "[]")),
         caption=row["caption"],
         section_path=tuple(json.loads(row["section_path"] or "[]")),
@@ -2101,7 +1975,7 @@ def _unit_from_row(row: sqlite3.Row) -> CanonicalEvidenceUnit:
             CanonicalFragmentSpan.model_validate(item)
             for item in json.loads(row["fragment_spans"] or "[]")
         ),
-        canonicalization_version=row["canonicalization_version"] or "canonicalization:1.0.0",
+        canonicalization_version=row["canonicalization_version"],
         warnings=tuple(json.loads(row["warnings"] or "[]")),
     )
 
@@ -2210,8 +2084,6 @@ def _coherent_preview(text: str, limit: int = 480) -> str:
 def _query_metadata_filters(
     query: SearchQuery,
     scope: EvidenceScope | None,
-    *,
-    apply_policy_exclusions: bool = True,
 ) -> tuple[list[str], list[object]]:
     filters: list[str] = []
     params: list[object] = []
@@ -2239,9 +2111,9 @@ def _query_metadata_filters(
             add_in("source_id", query.source_ids)
     elif query.source_ids:
         add_in("source_id", query.source_ids)
-    # Trial/result/domain/question/zone/discourse/kind labels are diagnostic
-    # semantic observations.  They can rank or annotate candidates, but may
-    # never make source-authored material invisible before review.
+    # Parser output contributes only structural and provenance fields. Trial,
+    # Result, Domain, and signaling-question scope is authorized by WorkTokens
+    # and attributable review, never candidate ranking metadata.
     return filters, params
 
 

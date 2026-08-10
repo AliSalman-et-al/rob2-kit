@@ -106,7 +106,7 @@ def test_installed_replay_qualification_has_the_required_contract_matrix() -> No
     assert '"result_id": "result:other"' in qualification
     assert '"location_handle": "loc:qualification-unknown"' in qualification
     assert '"read_view_receipt": read_receipts[question]' in qualification
-    assert '"contract_version": "1.1.0"' in qualification
+    assert '"contract_version": "1.2.0"' in qualification
     assert '"get_work_context"' in qualification
     assert '"active_question_ids"' in qualification
     assert '"sq:measurement:assessor-aware"' in qualification
@@ -155,8 +155,8 @@ def test_qualification_composition_uses_real_engine_dependencies() -> None:
         )
 
 
-def test_release_fixture_exposes_distinct_domain_scoped_canonical_lineage() -> None:
-    """The public journey must not borrow a same-text unit from another Domain."""
+def test_release_fixture_exposes_reusable_structure_only_canonical_lineage() -> None:
+    """The public journey reviews one source fragment in each Domain/SQ scope."""
 
     from rob2_kit.evaluation.qualification import _ReleaseFixtureParser
     from scripts.release_qualification import _blank_pdf
@@ -164,20 +164,15 @@ def test_release_fixture_exposes_distinct_domain_scoped_canonical_lineage() -> N
     parsed = _ReleaseFixtureParser().parse(_blank_pdf(), ocr_enabled=False)
     items = parsed.pages[0].text_items
     assert len({item.fragment_id for item in items}) == len(items)
-    for domain_id, sq_prefix in (
-        ("domain:randomization", "sq:randomization:"),
-        ("domain:deviations", "sq:deviations:"),
-        ("domain:missing", "sq:missing:"),
-        ("domain:measurement", "sq:measurement:"),
-        ("domain:selection", "sq:selection:"),
-    ):
-        scoped = [item for item in items if item.domain_id == domain_id]
-        assert scoped
-        assert all(item.fragment_id is not None for item in scoped)
-        assert all(question.startswith(sq_prefix) for item in scoped for question in item.question_ids)
+    assert all(item.fragment_id is not None for item in items)
+    assert all(
+        not {"trial_id", "result_id", "domain_id", "question_ids", "applicability"}
+        .intersection(item.model_dump())
+        for item in items
+    )
 
     qualification = (ROOT / "scripts" / "release_qualification.py").read_text(encoding="utf-8")
-    assert 'unit["domain_id"] == domain' in qualification
+    assert 'unit["domain_id"] == domain' not in qualification
 
 
 def test_qualification_receipt_records_stable_stage_timing_metadata() -> None:

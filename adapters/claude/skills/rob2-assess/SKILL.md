@@ -43,7 +43,7 @@ remains a typed limitation and blocks an unsupported freeze. Never cite a
 non-citable search projection, snippet, parser label, inferred applicability,
 or synthetic reconstruction.
 
-Use the `submit_domain_evidence` 1.1.0 review-and-passage shape. Each review
+Use the `submit_domain_evidence` 1.2.0 review-and-passage shape. Each review
 has `sq_id`; each span supplies `read_view_receipt`, exact bounds,
 `trial_attribution`, disposition, and rationale. Only an `active` span with a
 `supporting` or `contradicting` disposition authorizes an exact textual claim.

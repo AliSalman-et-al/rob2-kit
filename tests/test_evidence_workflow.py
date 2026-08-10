@@ -196,7 +196,7 @@ def complete_receipt(*, retain_second: bool = False) -> SearchCoverageReceipt:
         receipt_id="coverage:sq1-1",
         sq_id="sq:1.1",
         snapshot_hash=HASH,
-        policy_id="policy:evidence-search-1.0.0",
+        policy_id="policy:evidence-search-1.1.0",
         policy_hash=canonical_hash(SearchPolicy()),
         result_spec=RecordReference(
             entity_id="result_spec:trial-1",
@@ -353,7 +353,7 @@ def test_complete_coverage_receipt_replays_every_scoped_page(tmp_path: Path) -> 
         receipt_id="coverage:replay",
         sq_id="sq:1.1",
         snapshot_hash=index.search(SearchQuery(terms=("allocation",))).snapshot_hash,
-        policy_id="policy:evidence-search-1.0.0",
+        policy_id="policy:evidence-search-1.1.0",
         result_spec=RecordReference(
             entity_id="result_spec:trial-1",
             revision_id="revision:result-spec-1",

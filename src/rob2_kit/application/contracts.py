@@ -40,6 +40,7 @@ from rob2_kit.domain.sources import (
 )
 from rob2_kit.evidence.errors import RetrievalErrorCode
 from rob2_kit.evidence.search import (
+    RETRIEVAL_SCHEMA_VERSION,
     CanonicalEvidenceUnit,
     EvidenceContext,
     EvidenceRead,
@@ -63,6 +64,7 @@ from rob2_kit.logic.packs import GuidanceItem
 from rob2_kit.registry import RegistryCandidate
 
 CONTRACT_VERSION = "1.1.0"
+DOMAIN_EVIDENCE_CONTRACT_VERSION = "1.2.0"
 
 
 class RunOperation(StrEnum):
@@ -375,7 +377,7 @@ class EvidenceReviewSpanInput(FrozenModel):
     duplicate_of: Identifier | None = None
 
     @model_validator(mode="after")
-    def validate_span(self) -> "EvidenceReviewSpanInput":
+    def validate_span(self) -> EvidenceReviewSpanInput:
         if self.span_end <= self.span_start:
             raise ValueError("review span must have positive extent")
         if self.trial_attribution is TrialAttribution.ACTIVE and not self.attribution_rationale:
@@ -889,7 +891,7 @@ class SubmitResultResolutionRequest(FrozenModel):
 
 
 class SubmitDomainEvidenceRequest(FrozenModel):
-    contract_version: Literal["1.1.0"]
+    contract_version: Literal[DOMAIN_EVIDENCE_CONTRACT_VERSION]
     run_id: Identifier
     work_token: WorkToken
     idempotency_key: Identifier
@@ -969,9 +971,13 @@ class SubmitDomainEvidenceRequest(FrozenModel):
                 "evidence_by_question, and candidate_dispositions, or submit the "
                 "legacy branch without passages"
             )
-        review_candidate_ids = tuple((review.candidate_id, review.sq_id) for review in self.review_revisions)
+        review_candidate_ids = tuple(
+            (review.candidate_id, review.sq_id) for review in self.review_revisions
+        )
         if len(review_candidate_ids) != len(set(review_candidate_ids)):
-            raise ValueError("review batch may contain only one latest revision per candidate and SQ")
+            raise ValueError(
+                "review batch may contain only one latest revision per candidate and SQ"
+            )
         if any(
             review.result_id != self.result_id or review.domain_id != self.domain_id
             for review in self.review_revisions
@@ -1229,6 +1235,9 @@ class CoverageProgress(FrozenModel):
 
 class SearchEvidenceResponse(OperationResponse):
     run_id: Identifier
+    retrieval_schema_version: Literal[RETRIEVAL_SCHEMA_VERSION] = (
+        RETRIEVAL_SCHEMA_VERSION
+    )
     page: SearchPage
     executed_query: ExecutedSearchQuery | None = None
     coverage_progress: CoverageProgress | None = None
@@ -1236,6 +1245,9 @@ class SearchEvidenceResponse(OperationResponse):
 
 class ReadEvidenceResponse(OperationResponse):
     run_id: Identifier
+    retrieval_schema_version: Literal[RETRIEVAL_SCHEMA_VERSION] = (
+        RETRIEVAL_SCHEMA_VERSION
+    )
     unit: CanonicalEvidenceUnit
     read_view_receipt: str = Field(
         min_length=1,

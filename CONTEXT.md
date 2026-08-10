@@ -29,7 +29,7 @@ The ordered experimental and comparator Arms selected from one Randomization for
 _Avoid_: Trial, intervention pair
 
 **Evidence candidate**:
-A potentially relevant retrieval result that has not yet been accepted as support for an assessment claim. It may resolve to a Canonical evidence unit or an Evidence fragment candidate and carries source provenance, diagnostic semantic metadata, warnings, and bounded navigation actions; it cannot be cited by a signaling-question answer.
+A potentially relevant retrieval result that has not yet been accepted as support for an assessment claim. It may resolve to a Canonical evidence unit or an Evidence fragment candidate and carries source provenance, source-preserving structural metadata, warnings, and bounded navigation actions; it cannot be cited by a signaling-question answer, and parser output carries no Trial, Result, Domain, or signaling-question meaning.
 _Avoid_: Evidence, verified quote
 
 **Evidence candidate duplication**:
@@ -85,7 +85,7 @@ An unresolved requirement attached to a retained Evidence candidate or exact spa
 _Avoid_: Needs-visual-review disposition, terminal rejection
 
 **Evidence result page**:
-A snapshot-bound, policy-bounded page of unique Evidence candidates constrained by both candidate count and estimated model tokens. Within mechanically authorized Source and Parse scope, lineage duplicates collapse and deterministic ordering is diversified across Sources and Source roles so one document or copy cluster cannot monopolize the page; semantic metadata may affect rank but never visibility or Evidence truth. Truncation declares omissions and an exact continuation action, while numeric limits belong to the versioned Evidence-search policy and are calibrated by evaluation rather than treated as scientific constants.
+A snapshot-bound, policy-bounded page of unique Evidence candidates constrained by both candidate count and estimated model tokens. Within mechanically authorized Source and Parse scope, lineage duplicates collapse and deterministic ordering is diversified across Sources and Source roles so one document or copy cluster cannot monopolize the page; parser-inferred scientific scope neither filters nor ranks candidates. Truncation declares omissions and an exact continuation action, while numeric limits belong to the versioned Evidence-search policy and are calibrated by evaluation rather than treated as scientific constants.
 _Avoid_: Unbounded results, rank cutoff as evidence, agent-chosen raw character budget
 
 **Evidence retrieval condition**:

@@ -41,40 +41,6 @@ class _ReleaseFixtureParser:
         self, data: bytes, *, ocr_enabled: bool, target_pages: tuple[int, ...] | None = None
     ) -> ParserResult:
         parsed = self._delegate.parse(data, ocr_enabled=ocr_enabled, target_pages=target_pages)
-        domain_questions = {
-            "domain:randomization": (
-                "sq:randomization:sequence",
-                "sq:randomization:concealment",
-                "sq:randomization:baseline-imbalance",
-            ),
-            "domain:deviations": (
-                "sq:deviations:participants-aware",
-                "sq:deviations:personnel-aware",
-                "sq:deviations:context-deviations",
-                "sq:deviations:affected-outcome",
-                "sq:deviations:balanced",
-                "sq:deviations:appropriate-analysis",
-                "sq:deviations:substantial-impact",
-            ),
-            "domain:missing": (
-                "sq:missing:data-available",
-                "sq:missing:evidence-unbiased",
-                "sq:missing:true-value-dependent",
-                "sq:missing:likely-dependent",
-            ),
-            "domain:measurement": (
-                "sq:measurement:method-inappropriate",
-                "sq:measurement:differential",
-                "sq:measurement:assessor-aware",
-                "sq:measurement:influence-possible",
-                "sq:measurement:influence-likely",
-            ),
-            "domain:selection": (
-                "sq:selection:prespecified-analysis",
-                "sq:selection:multiple-measurements",
-                "sq:selection:multiple-analyses",
-            ),
-        }
         pages = tuple(
             page.model_copy(
                 update={
@@ -87,27 +53,14 @@ class _ReleaseFixtureParser:
                     "text_items": tuple(
                         item.model_copy(
                             update={
-                                # Canonical unit identity is derived from the
-                                # parser fragment lineage, not the domain
-                                # annotation.  The fixture deliberately
-                                # exposes the same source passage to each RoB
-                                # domain, so its synthetic parser lineage must
-                                # distinguish those independently scoped units.
-                                "fragment_id": (
-                                    f"fragment:qualification:{domain_id.removeprefix('domain:')}"
-                                    f":{item_index}"
-                                ),
-                                "trial_id": "trial:trial-a",
-                                "result_id": "result:trial-a-mortality",
-                                "domain_id": domain_id,
-                                "question_ids": questions,
-                                "applicability": "result",
-                                "applicable_result_ids": ("result:trial-a-mortality",),
+                                # Parser lineage is source structure only;
+                                # later reviews bind this neutral fragment to
+                                # Result, Domain, and signaling-question scope.
+                                "fragment_id": f"fragment:qualification:page:{page.page_number}:item:{item_index}",
                                 "unit_kind": "paragraph",
                                 "document_zone": "methods",
                             }
                         )
-                        for domain_id, questions in domain_questions.items()
                         for item_index, item in enumerate(page.text_items)
                     )
                 }

@@ -17,9 +17,10 @@ scope, or infer that a search limit means there is no evidence.
 Search is deliberately broad within the authorized scope. A hit can be a
 canonical unit or an uncertain source fragment, including a bibliography,
 footnote, table or caption, unclassified material, or text about any Trial.
-Zone, unit-kind, filename, cardinality, and applicability labels are
-diagnostic cues only: they can warn or rank, but do not hide a candidate or
-make it citable.
+Zone, unit-kind, filename, and cardinality are structural diagnostic cues
+only: they can warn or rank, but do not hide a candidate or make it citable.
+Parser output has no applicability or scientific-scope labels; those are
+authorized by WorkTokens and established through attributable review.
 
 Search returns a non-citable projection with an opaque `location_handle`,
 lightweight source/Parse/location lineage, warnings, and a small source-text
@@ -92,7 +93,7 @@ Read enough context to identify the sentence subject and Result. Record each
 exact span's Trial attribution as `active`, `other`, `not_explicit`, or
 `unresolved`, with its issued read-view receipt and rationale. A revision is
 for one `sq_id`, while one candidate can have separate revisions/spans for
-different questions. Submit the 1.1.0 Domain-Evidence contract with `sq_id`
+different questions. Submit the 1.2.0 Domain-Evidence contract with `sq_id`
 and span-level review inputs. Then record every material exact span as `supporting`, `contradicting`, `contextual`,
 `out_of_scope`, `immaterial`, `superseded`, `duplicate`,
 `needs_visual_review`, or `unresolved` using the installed typed review
@@ -115,9 +116,11 @@ authorize qualifying textual Evidence. The engine commits that review before
 materializing the claim, which stores the authorizing review reference and
 engine-derived span ID. The engine validates Result custody, WorkToken authorization, artifact/Parse
 and fragment lineage, exact bounds, hashes and revisions, review completeness,
-and immutable dependency materialization. Search projections, snippets,
-diagnostic labels, inferred applicability, and synthesized reconstruction are
-never freezable Evidence.
+and immutable dependency materialization. Parsers and Canonical evidence units
+carry source-preserving structure, not Trial, Result, Domain, or signaling-question
+meaning; that scientific scope comes from the engine-issued work scope and the
+attributable exact-span review. Search projections, snippets, and synthesized
+reconstruction are never freezable Evidence.
 
 Use the current typed freeze submission supplied by the work item; do not
 invent quote text, hashes, revisions, artifact references, or span IDs. Do not

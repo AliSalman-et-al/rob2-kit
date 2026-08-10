@@ -51,7 +51,7 @@ from rob2_kit.registry import (
 from rob2_kit.storage import ArtifactStore, WorkflowLedger
 
 CLASSIFIER_VERSION = "source-classifier:1.0.0"
-CANONICALIZATION_VERSION = "liteparse-adapter:2.2.0"
+CANONICALIZATION_VERSION = "liteparse-adapter:2.3.0"
 PARSER_QUALITY_POLICY = ParserQualityPolicy()
 RECOVERY_POLICY_RELEASE = "policy:source-recovery-1.0.0"
 RECOVERY_REASONS = frozenset(PARSER_QUALITY_POLICY.recovery_reasons)
@@ -156,14 +156,8 @@ class PageTextItem(FrozenModel):
         default=None,
         validation_alias=AliasChoices("unit_kind", "kind"),
     )
-    trial_id: Identifier | None = None
-    result_id: Identifier | None = None
-    domain_id: Identifier | None = None
-    question_ids: tuple[Identifier, ...] = ()
     table_headers: tuple[str, ...] = ()
     caption: str | None = None
-    applicability: str | None = None
-    applicable_result_ids: tuple[Identifier, ...] = ()
     section_path: tuple[str, ...] = ()
     hierarchy_path: tuple[str, ...] = ()
     reading_order: int = Field(default=0, ge=0)
@@ -343,16 +337,8 @@ class LiteParseAdapter:
                         unit_kind=_optional_metadata(
                             getattr(item, "unit_kind", getattr(item, "kind", None))
                         ),
-                        trial_id=_optional_metadata(getattr(item, "trial_id", None)),
-                        result_id=_optional_metadata(getattr(item, "result_id", None)),
-                        domain_id=_optional_metadata(getattr(item, "domain_id", None)),
-                        question_ids=tuple(getattr(item, "question_ids", ()) or ()),
                         table_headers=tuple(getattr(item, "table_headers", ()) or ()),
                         caption=_optional_metadata(getattr(item, "caption", None)),
-                        applicability=_optional_metadata(getattr(item, "applicability", None)),
-                        applicable_result_ids=tuple(
-                            getattr(item, "applicable_result_ids", ()) or ()
-                        ),
                         section_path=tuple(getattr(item, "section_path", ()) or ()),
                         hierarchy_path=tuple(getattr(item, "hierarchy_path", ()) or ()),
                         reading_order=int(getattr(item, "reading_order", 0) or 0),
@@ -398,14 +384,8 @@ class LiteParseAdapter:
                                 "section_path": item.section_path,
                                 "hierarchy_path": item.hierarchy_path,
                                 "reading_order": item.reading_order,
-                                "trial_id": item.trial_id,
-                                "result_id": item.result_id,
-                                "domain_id": item.domain_id,
-                                "question_ids": item.question_ids,
                                 "table_headers": item.table_headers,
                                 "caption": item.caption,
-                                "applicability": item.applicability,
-                                "applicable_result_ids": item.applicable_result_ids,
                                 "document_zone": item.document_zone,
                             }
                             for item in page.text_items
