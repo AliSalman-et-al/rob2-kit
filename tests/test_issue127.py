@@ -11,7 +11,6 @@ from pathlib import Path
 
 from rob2_kit.application.contracts import (
     ContinueRunRequest,
-    SearchEvidenceRequest,
     SubmitDomainAnswersRequest,
     SubmitDomainEvidenceRequest,
     WorkflowCondition,
@@ -27,6 +26,7 @@ from tests.test_input_reconciliation import (
     _prepare_confirm,
     _result,
     _review_revision,
+    _v2_search_and_triage,
 )
 from tests.test_mcp_tracer import DOMAINS
 
@@ -40,19 +40,16 @@ def _complete_real_search(engine, run_id, work, question_ids) -> None:
             (SearchQuery(terms=("followup",)), SearchPassKind.TRIAL_FOLLOW_UP, None),
             (SearchQuery(terms=("contradiction",)), SearchPassKind.CONTRADICTION, None),
         ):
-            response = engine.search_evidence(
-                SearchEvidenceRequest(
-                    run_id=run_id,
-                    work_token=work.work_token,
-                    result_id=work.result_id,
-                    sq_id=question_id,
-                    query=query,
-                    pass_kind=pass_kind,
-                    seed_family=family,
-                )
+            _v2_search_and_triage(
+                engine,
+                run_id,
+                work.work_token,
+                work.result_id,
+                question_id,
+                query,
+                pass_kind,
+                family,
             )
-            assert response.coverage_progress is not None
-            assert response.coverage_progress.sq_id == question_id
 
 
 def test_passages_only_submission_succeeds_without_a_client_supplied_receipt(
@@ -76,25 +73,13 @@ def test_passages_only_submission_succeeds_without_a_client_supplied_receipt(
 
     _complete_real_search(engine, run_id, work, DOMAINS["domain:randomization"])
 
-    # A preview call without pass_kind reports no fresh accounting, distinct
-    # from an accounted pass.
-    preview = engine.search_evidence(
-        SearchEvidenceRequest(
-            run_id=run_id,
-            work_token=work.work_token,
-            result_id=work.result_id,
-            sq_id=DOMAINS["domain:randomization"][0],
-            query=SearchQuery(terms=("primary",)),
-        )
-    )
-    assert preview.coverage_progress is None
     question_id = DOMAINS["domain:randomization"][0]
     # Its hits also carry a real location_handle for the review_revisions binding below.
     location_handle = _location_handle_for(engine, run_id, work, question_id, unit_id)
 
     response = engine.submit_domain_evidence(
         SubmitDomainEvidenceRequest(
-            contract_version="1.2.0",
+            contract_version="2.0.0",
             run_id=run_id,
             work_token=work.work_token,
             idempotency_key="idempotency:issue127-passages",
@@ -144,7 +129,7 @@ def test_no_information_basis_succeeds_without_a_client_supplied_receipt(tmp_pat
 
     response = engine.submit_domain_evidence(
         SubmitDomainEvidenceRequest(
-            contract_version="1.2.0",
+            contract_version="2.0.0",
             run_id=run_id,
             work_token=work.work_token,
             idempotency_key="idempotency:issue127-no-info",
@@ -173,7 +158,7 @@ def test_empty_evidence_submission_is_rejected(tmp_path: Path) -> None:
 
     response = engine.submit_domain_evidence(
         SubmitDomainEvidenceRequest(
-            contract_version="1.2.0",
+            contract_version="2.0.0",
             run_id=run_id,
             work_token=work.work_token,
             idempotency_key="idempotency:issue128-empty",
@@ -215,7 +200,7 @@ def test_evidence_insufficient_block_reroutes_and_preserves_recorder_state(
     # An honest declared gap: coverage_state=incomplete, no items/passages.
     engine.submit_domain_evidence(
         SubmitDomainEvidenceRequest(
-            contract_version="1.2.0",
+            contract_version="2.0.0",
             run_id=run_id,
             work_token=work.work_token,
             idempotency_key="idempotency:issue128-first-evidence",
@@ -269,7 +254,7 @@ def test_evidence_insufficient_block_reroutes_and_preserves_recorder_state(
     # citable.
     resubmitted = engine.submit_domain_evidence(
         SubmitDomainEvidenceRequest(
-            contract_version="1.2.0",
+            contract_version="2.0.0",
             run_id=run_id,
             work_token=rerouted.work_token,
             idempotency_key="idempotency:issue128-second-evidence",
@@ -326,7 +311,7 @@ def test_evidence_insufficient_block_reroute_also_accepts_no_information_resubmi
 
     engine.submit_domain_evidence(
         SubmitDomainEvidenceRequest(
-            contract_version="1.2.0",
+            contract_version="2.0.0",
             run_id=run_id,
             work_token=work.work_token,
             idempotency_key="idempotency:issue128-no-info-first-evidence",
@@ -367,7 +352,7 @@ def test_evidence_insufficient_block_reroute_also_accepts_no_information_resubmi
     # block is carried forward for the no_information_basis path too.
     resubmitted = engine.submit_domain_evidence(
         SubmitDomainEvidenceRequest(
-            contract_version="1.2.0",
+            contract_version="2.0.0",
             run_id=run_id,
             work_token=rerouted.work_token,
             idempotency_key="idempotency:issue128-no-info-second-evidence",

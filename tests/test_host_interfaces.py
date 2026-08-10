@@ -53,7 +53,7 @@ def blank_pdf() -> bytes:
 
 def test_stdio_mcp_surface_is_the_fixed_run_engine_inventory() -> None:
     assert registered_tool_names() == CANONICAL_TOOL_NAMES
-    assert len(registered_tool_names()) == 12
+    assert len(registered_tool_names()) == 13
     assert "open_review" not in registered_tool_names()
 
 
@@ -190,7 +190,7 @@ def test_domain_evidence_contract_rejects_aliases_and_mixed_branches() -> None:
     )
     with pytest.raises(ValidationError, match="mutually exclusive"):
         SubmitDomainEvidenceRequest(
-            contract_version="1.2.0",
+            contract_version="2.0.0",
             run_id="run:test",
             work_token=token,
             idempotency_key="idempotency:test",

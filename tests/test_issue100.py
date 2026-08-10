@@ -567,8 +567,29 @@ def test_section_cursor_advances_past_oversized_neighbors(tmp_path: Path) -> Non
         scope=EvidenceScope(trial_id="trial:active", result_id="result:active"),
     )
     assert first.neighbors == ()
-    assert first.continuation_cursor is None
-    assert "oversized_neighbor_skipped" in first.warnings
+    assert first.continuation_cursor is not None
+    assert first.continuation_cursor.startswith("sectionoversize:")
+    deferred = index.read_context(
+        target.unit_id,
+        mode=ReadContextMode.SECTION,
+        neighbor_limit=1,
+        character_target=100,
+        cursor=first.continuation_cursor,
+        scope=EvidenceScope(trial_id="trial:active", result_id="result:active"),
+    )
+    assert deferred.unit.unit_id == oversized.unit_id
+    assert deferred.oversized is True
+    assert deferred.continuation_cursor is not None
+    exhausted = index.read_context(
+        target.unit_id,
+        mode=ReadContextMode.SECTION,
+        neighbor_limit=1,
+        character_target=100,
+        cursor=deferred.continuation_cursor,
+        scope=EvidenceScope(trial_id="trial:active", result_id="result:active"),
+    )
+    assert exhausted.neighbors == ()
+    assert exhausted.continuation_cursor is None
 
 
 def test_source_scoped_units_remain_visible_for_review(tmp_path: Path) -> None:
@@ -878,23 +899,59 @@ results:
     )
     server = create_server()
 
+    def batch(location_handle: str, snapshot_hash: str) -> dict[str, object]:
+        return {
+            "scope": {
+                "result_id": evidence_work.result_id,
+                "domain_id": evidence_work.domain_id,
+                "snapshot_hash": snapshot_hash,
+            },
+            "items": [
+                {
+                    "location_handle": location_handle,
+                    "question_ids": ["sq:randomization:sequence"],
+                }
+            ],
+        }
+
+    async def invoke_search(attempt_id: str):
+        return await server.call_tool(
+            "search_evidence",
+            {
+                "run_id": prepared.run_id,
+                "work_token": token_payload,
+                "result_id": evidence_work.result_id,
+                "sq_id": "sq:randomization:sequence",
+                "query": {"terms": ["allocation"]},
+                "pass_kind": "guidance_seed",
+                "seed_family": "seed:allocation",
+                "attempt_id": attempt_id,
+                "attempt_kind": "selected",
+            },
+        )
+
+    def searched_handle(attempt_id: str, canonical_unit_id: str) -> tuple[str, str]:
+        search_result = anyio.run(invoke_search, attempt_id)
+        assert search_result.is_error is False
+        assert search_result.structured_content is not None
+        search_page = search_result.structured_content["page"]
+        candidate = next(
+            item
+            for item in search_page["candidates"]
+            if item["canonical_unit_id"] == canonical_unit_id
+        )
+        return candidate["location_handle"], search_page["snapshot_hash"]
+
     async def invoke_read():
         return await server.call_tool(
             "read_evidence",
             {
                 "run_id": prepared.run_id,
-                "location_handle": page.hits[0].location_handle,
                 "work_token": token_payload,
-                "sq_id": "sq:randomization:sequence",
                 "result_id": evidence_work.result_id,
-                "mode": "unit",
+                "batch": batch(unit_handle, unit_snapshot),
             },
         )
-
-    read_result = anyio.run(invoke_read)
-    assert read_result.is_error is False
-    assert read_result.structured_content is not None
-    assert read_result.structured_content["unit"]["unit_id"] == unit.unit_id
 
     outside = unit.model_copy(
         update={
@@ -906,17 +963,38 @@ results:
     )
     index.replace_units((unit, outside))
     refreshed = index.search(SearchQuery(terms=("allocation",)))
-    handles = {hit.unit.unit_id: hit.location_handle for hit in refreshed.hits}
+    del refreshed
+    post_index_search = anyio.run(invoke_search, "attempt:issue100:post-index")
+    assert post_index_search.is_error is False
+    assert post_index_search.structured_content is not None
+    post_index_page = post_index_search.structured_content["page"]
+    post_index_handles = {
+        item["canonical_unit_id"]: item["location_handle"]
+        for item in post_index_page["candidates"]
+    }
+    outside_handle = post_index_handles[outside.unit_id]
+    unit_handle = post_index_handles[unit.unit_id]
+    outside_snapshot = unit_snapshot = post_index_page["snapshot_hash"]
+
+    # The public v2 route preserves the canonical identity even after the
+    # same source snapshot now contains another Domain-labelled unit.
+    read_result = anyio.run(invoke_read)
+    assert read_result.is_error is False
+    assert read_result.structured_content is not None
+    assert read_result.structured_content["condition"] == "completed"
+    assert (
+        read_result.structured_content["page"]["outcomes"][0]["view"]["canonical_unit_id"]
+        == unit.unit_id
+    )
 
     async def invoke_boundary():
         return await server.call_tool(
             "read_evidence",
             {
                 "run_id": prepared.run_id,
-                "location_handle": handles[outside.unit_id],
                 "work_token": token_payload,
-                "sq_id": "sq:randomization:sequence",
                 "result_id": evidence_work.result_id,
+                "batch": batch(outside_handle, outside_snapshot),
             },
         )
 
@@ -924,7 +1002,10 @@ results:
     assert boundary_result.is_error is False
     assert boundary_result.structured_content is not None
     assert boundary_result.structured_content["condition"] == "completed"
-    assert boundary_result.structured_content["unit"]["unit_id"] == outside.unit_id
+    assert (
+        boundary_result.structured_content["page"]["outcomes"][0]["view"]["canonical_unit_id"]
+        == outside.unit_id
+    )
 
     wrong_token = dict(token_payload, domain_id="domain:other")
 
@@ -933,10 +1014,9 @@ results:
             "read_evidence",
             {
                 "run_id": prepared.run_id,
-                "location_handle": handles[unit.unit_id],
                 "work_token": wrong_token,
-                "sq_id": "sq:randomization:sequence",
                 "result_id": evidence_work.result_id,
+                "batch": batch(unit_handle, unit_snapshot),
             },
         )
 
@@ -1097,7 +1177,8 @@ def test_mcp_retrieval_routes_advertise_token_scope_and_read_modes() -> None:
     read = tools["read_evidence"].input_schema["properties"]
     assert "work_token" in search
     assert "work_token" in read
-    assert read["mode"]["$ref"].endswith("ReadContextMode")
+    assert "batch" in read
+    assert "mode" not in read
     assert "WorkToken" in str(search["work_token"])
 
 
@@ -1193,6 +1274,10 @@ def test_mcp_retrieval_operational_failures_are_structured(monkeypatch) -> None:
                 "sq_id": "sq:randomization",
                 "query": {"terms": ["allocation"]},
                 "work_token": token,
+                "pass_kind": "guidance_seed",
+                "seed_family": "seed:allocation",
+                "attempt_id": "attempt:mcp:locked",
+                "attempt_kind": "selected",
             },
         )
 
@@ -1203,17 +1288,6 @@ def test_mcp_retrieval_operational_failures_are_structured(monkeypatch) -> None:
 
 
 def test_mcp_read_evidence_executes_typed_route_deterministically(monkeypatch) -> None:
-    unit = _unit("unit:mcp", "source:report", "allocation was concealed")
-    context = EvidenceContext(
-        snapshot_hash=HASH,
-        unit=unit,
-        character_count=len(unit.text),
-        character_target=16_000,
-        neighbor_limit=0,
-        omitted_neighbor_count=0,
-        mode=ReadContextMode.UNIT,
-        section_path=unit.section_path,
-    )
     captured = {}
 
     class FakeEngine:
@@ -1229,9 +1303,20 @@ def test_mcp_read_evidence_executes_typed_route_deterministically(monkeypatch) -
                 condition=WorkflowCondition.COMPLETED,
                 committed=False,
                 run_id=request.run_id,
-                unit=unit,
-                read_view_receipt="read-view:fixture",
-                context=context,
+                page={
+                    "snapshot_hash": HASH,
+                    "policy_id": "policy:evidence-read-2.0.0",
+                    "policy_hash": HASH,
+                    "scope": {
+                        "result_id": "result:active",
+                        "domain_id": "domain:randomization",
+                        "snapshot_hash": HASH,
+                    },
+                    "outcomes": (),
+                    "next_index": 0,
+                    "serialized_response_bytes": 0,
+                    "estimated_response_tokens": 0,
+                },
             )
 
     monkeypatch.setattr("rob2_kit.interfaces.mcp.server.RunEngine", FakeEngine)
@@ -1249,10 +1334,21 @@ def test_mcp_read_evidence_executes_typed_route_deterministically(monkeypatch) -
             "read_evidence",
             {
                 "run_id": "run:mcp",
-                "location_handle": "location:mcp",
                 "work_token": token,
-                "sq_id": "sq:randomization",
-                "mode": "unit",
+                "result_id": "result:active",
+                "batch": {
+                    "scope": {
+                        "result_id": "result:active",
+                        "domain_id": "domain:randomization",
+                        "snapshot_hash": HASH,
+                    },
+                    "items": [
+                        {
+                            "location_handle": "location:mcp",
+                            "question_ids": ["sq:randomization"],
+                        }
+                    ],
+                },
             },
         )
 
@@ -1260,8 +1356,7 @@ def test_mcp_read_evidence_executes_typed_route_deterministically(monkeypatch) -
     assert result.is_error is False
     assert result.structured_content is not None
     assert result.structured_content["run_id"] == "run:mcp"
-    assert result.structured_content["unit"]["unit_id"] == unit.unit_id
-    assert result.structured_content["context"]["mode"] == "unit"
+    assert result.structured_content["page"]["outcomes"] == []
     assert captured["request"].work_token.token == token["token"]
 
 
@@ -1375,7 +1470,7 @@ def test_visual_handoff_requires_matching_domain_and_sq_on_same_source_page(
         "result_id": "result:active",
         "domain_id": "domain:randomization",
     }
-    response = engine.read_evidence(
+    with pytest.raises(ValidationError):
         ReadEvidenceRequest(
             run_id="run:visual-handoff",
             location_handle="location:visual-handoff",
@@ -1383,9 +1478,3 @@ def test_visual_handoff_requires_matching_domain_and_sq_on_same_source_page(
             result_id="result:active",
             sq_id="sq:randomization",
         )
-    )
-
-    assert response.visual_inspection is not None
-    assert response.read_view_receipt == "read-view:visual-handoff"
-    assert response.visual_inspection.candidate_id == "visual:matching-domain-sq"
-    assert response.visual_inspection.next_arguments.candidate_id == "visual:matching-domain-sq"

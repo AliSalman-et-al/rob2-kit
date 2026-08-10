@@ -117,6 +117,9 @@ class ReviewedEvidenceContext(FrozenModel):
     applied_mode: str = Field(min_length=1)
     continuation_input: str | None = None
     continuation: str | None = None
+    read_policy_id: Identifier | None = None
+    read_policy_hash: ContentHash | None = None
+    question_ids: tuple[Identifier, ...] = ()
     fragments: tuple[ReviewedEvidenceFragment, ...] = Field(min_length=1)
 
 

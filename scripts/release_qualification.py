@@ -33,6 +33,7 @@ CANONICAL_TOOL_NAMES = (
     "confirm_run_definition",
     "search_evidence",
     "read_evidence",
+    "submit_evidence_review",
     "inspect_visual_candidate",
     "submit_source_role_review",
     "submit_result_resolution",
@@ -794,7 +795,7 @@ def _journey(
     trace_calls: list[dict[str, object]] = []
     fault_matrix: dict[str, dict[str, object]] = {}
 
-    async def call(client, name: str, arguments: dict[str, object]):
+    async def call(client: Any, name: str, arguments: dict[str, object]) -> Any:
         result = await client.call_tool(name, arguments)
         response = result.structured_content
         trace_calls.append(
@@ -845,24 +846,274 @@ def _journey(
             )
         )
 
-    async def finish_domains(client, run_id: str) -> bool:
+    def response_object(result: Any, *, operation: str) -> dict[str, Any]:
+        """Return the JSON object wire payload without leaking ``object`` to ty."""
+
+        response = result if isinstance(result, dict) else result.structured_content
+        if not isinstance(response, dict):
+            raise AssertionError(
+                f"{operation} returned no structured object: {response!r}; "
+                f"MCP content={getattr(result, 'content', None)!r}"
+            )
+        return cast(dict[str, Any], response)
+
+    async def complete_v2_navigation(
+        client: Any,
+        *,
+        run_id: str,
+        work_token: object,
+        domain_id: str,
+        question_ids: tuple[str, ...],
+        domain_index: int,
+        retain_passage: bool,
+    ) -> tuple[list[dict[str, object]], dict[str, dict[str, Any]]]:
+        """Exercise the public v2 selected-search, triage, and batch-read path."""
+
+        read_views: dict[str, dict[str, Any]] = {}
+        retained_candidate: dict[str, Any] | None = None
+        retained_question: str | None = None
+        snapshot_hash: str | None = None
+        for question in question_ids:
+            seed_family = "seed:" + question.removeprefix("sq:").replace(":", "-")
+            pass_specs = (
+                ("guidance_seed", seed_family, ("Allocation",)),
+                ("trial_follow_up", None, ("participants",)),
+                ("contradiction", None, ("open",)),
+            )
+            for pass_kind, seed, terms in pass_specs:
+                attempt_id = f"attempt:qualification:{domain_index}:{question}:{pass_kind}"
+                arguments: dict[str, object] = {
+                    "run_id": run_id,
+                    "work_token": work_token,
+                    "result_id": "result:trial-a-mortality",
+                    "sq_id": question,
+                    "query": {"terms": list(terms)},
+                    "pass_kind": pass_kind,
+                    "seed_family": seed,
+                    "attempt_id": attempt_id,
+                    "attempt_kind": "selected",
+                }
+                pages: list[dict[str, Any]] = []
+                while True:
+                    searched = response_object(
+                        await call(client, "search_evidence", arguments),
+                        operation="search_evidence",
+                    )
+                    page = searched.get("page")
+                    if not isinstance(page, dict):
+                        raise AssertionError(f"v2 search omitted page: {searched!r}")
+                    typed_page = cast(dict[str, Any], page)
+                    pages.append(typed_page)
+                    if snapshot_hash is None:
+                        value = typed_page.get("snapshot_hash")
+                        if not isinstance(value, str):
+                            raise AssertionError("v2 search page omitted snapshot_hash")
+                        snapshot_hash = value
+                    continuation = typed_page.get("continuation")
+                    if continuation is None:
+                        break
+                    if not isinstance(continuation, str):
+                        raise AssertionError("v2 continuation must be opaque text")
+                    arguments = {
+                        **arguments,
+                        "continuation": continuation,
+                        "continue_reason": "coverage_requires_breadth",
+                        "continue_rationale": "Complete selected-pass traversal for qualification.",
+                    }
+                revisions: list[dict[str, object]] = []
+                page_handles: list[str] = []
+                for page in pages:
+                    handle = page.get("page_handle")
+                    candidates = page.get("candidates")
+                    if not isinstance(handle, str) or not isinstance(candidates, list):
+                        raise AssertionError("v2 page omitted handle or candidates")
+                    page_handles.append(handle)
+                    for candidate in candidates:
+                        if not isinstance(candidate, dict):
+                            raise AssertionError("v2 candidate must be an object")
+                        typed_candidate = cast(dict[str, Any], candidate)
+                        candidate_id = typed_candidate.get("candidate_id")
+                        location_handle = typed_candidate.get("location_handle")
+                        if not isinstance(candidate_id, str) or not isinstance(
+                            location_handle, str
+                        ):
+                            raise AssertionError("v2 candidate omitted candidate_id")
+                        # Qualification intentionally takes the conservative
+                        # path: every candidate is read in a question-bound,
+                        # one-item batch before its terminal irrelevance
+                        # classification.  This accommodates all risk flags
+                        # without attempting to reimplement search's preview
+                        # safety predicate in the release harness.
+                        candidate_read = response_object(
+                            await call(
+                                client,
+                                "read_evidence",
+                                {
+                                    "run_id": run_id,
+                                    "work_token": work_token,
+                                    "result_id": "result:trial-a-mortality",
+                                    "batch": {
+                                        "scope": {
+                                            "result_id": "result:trial-a-mortality",
+                                            "domain_id": domain_id,
+                                            "snapshot_hash": page["snapshot_hash"],
+                                        },
+                                        "items": [
+                                            {
+                                                "location_handle": location_handle,
+                                                "question_ids": [question],
+                                            }
+                                        ],
+                                    },
+                                },
+                            ),
+                            operation="read_evidence",
+                        )
+                        read_page = candidate_read.get("page")
+                        outcomes = (
+                            read_page.get("outcomes") if isinstance(read_page, dict) else None
+                        )
+                        if (
+                            not isinstance(outcomes, list)
+                            or len(outcomes) != 1
+                            or not isinstance(outcomes[0], dict)
+                            or not isinstance(outcomes[0].get("view"), dict)
+                        ):
+                            raise AssertionError(
+                                f"v2 triage read omitted an exact view: {candidate_read!r}"
+                            )
+                        receipt = outcomes[0]["view"].get("read_view_receipt")
+                        if not isinstance(receipt, str):
+                            raise AssertionError("v2 triage read omitted its receipt")
+                        revisions.append(
+                            {
+                                "revision_id": f"triage:{attempt_id}:{handle}:{candidate_id}",
+                                "candidate_id": candidate_id,
+                                "attempt_id": attempt_id,
+                                "sq_id": question,
+                                "page_handle": handle,
+                                "kind": "irrelevant",
+                                "irrelevant_reason": "lexical_false_positive",
+                                "basis": "read_view_receipt",
+                                "read_view_receipt": receipt,
+                            }
+                        )
+                        if retain_passage and retained_candidate is None:
+                            retained_candidate = typed_candidate
+                            retained_question = question
+                reviewed = response_object(
+                    await call(
+                        client,
+                        "submit_evidence_review",
+                        {
+                            "run_id": run_id,
+                            "work_token": work_token,
+                            "result_id": "result:trial-a-mortality",
+                            "domain_id": domain_id,
+                            "contract_version": "2.0.0",
+                            "submission_id": f"submission:{attempt_id}",
+                            "idempotency_key": f"qualification:triage:{attempt_id}",
+                            "page_handles": page_handles,
+                            "triage_revisions": revisions,
+                        },
+                    ),
+                    operation="submit_evidence_review",
+                )
+                if reviewed.get("committed") is not True:
+                    raise AssertionError(f"v2 triage did not commit: {reviewed!r}")
+        if not retain_passage:
+            return [], read_views
+        if retained_candidate is None or retained_question is None or snapshot_hash is None:
+            raise AssertionError("release fixture omitted a v2 candidate for passage review")
+        location_handle = retained_candidate.get("location_handle")
+        candidate_id = retained_candidate.get("candidate_id")
+        canonical_unit_id = retained_candidate.get("canonical_unit_id")
+        if not all(
+            isinstance(value, str)
+            for value in (location_handle, candidate_id, canonical_unit_id)
+        ):
+            raise AssertionError("v2 candidate omitted passage identity")
+        read = response_object(
+            await call(
+                client,
+                "read_evidence",
+                {
+                    "run_id": run_id,
+                    "work_token": work_token,
+                    "result_id": "result:trial-a-mortality",
+                    "batch": {
+                        "scope": {
+                            "result_id": "result:trial-a-mortality",
+                            "domain_id": domain_id,
+                            "snapshot_hash": snapshot_hash,
+                        },
+                        "items": [
+                            {
+                                "location_handle": location_handle,
+                                "question_ids": [retained_question],
+                            }
+                        ],
+                    },
+                },
+            ),
+            operation="read_evidence",
+        )
+        page = read.get("page")
+        outcomes = page.get("outcomes") if isinstance(page, dict) else None
+        if not isinstance(outcomes, list) or not outcomes or not isinstance(outcomes[0], dict):
+            raise AssertionError(f"v2 batch read omitted an outcome: {read!r}")
+        view = outcomes[0].get("view")
+        if not isinstance(view, dict):
+            raise AssertionError(f"v2 batch read failed: {outcomes[0]!r}")
+        typed_view = cast(dict[str, Any], view)
+        fragments = typed_view.get("fragments")
+        if (
+            not isinstance(fragments, list)
+            or len(fragments) != 1
+            or not isinstance(fragments[0], dict)
+        ):
+            raise AssertionError(
+                "qualification's retained Evidence must be one exact source fragment"
+            )
+        fragment = cast(dict[str, Any], fragments[0])
+        span_start = fragment.get("start")
+        span_end = fragment.get("end")
+        if not isinstance(span_start, int) or not isinstance(span_end, int):
+            raise AssertionError("v2 read fragment omitted exact source bounds")
+        for question in question_ids:
+            read_views[question] = typed_view
+        return [
+            {
+                "unit_id": canonical_unit_id,
+                "candidate_id": candidate_id,
+                "span_start": span_start,
+                "span_end": span_end,
+                "claim_type": "claim-type:trial-report",
+                "question_ids": list(question_ids),
+            }
+        ], read_views
+
+    async def finish_domains(client: Any, run_id: str) -> bool:
         for index, (domain, questions) in enumerate(domains.items()):
             evidence = (await call(client, "continue_run", {"run_id": run_id})).structured_content
             assert evidence is not None
+            evidence_payload = response_object(evidence, operation="continue_run")
             context = (
                 await call(
                     client,
                     "get_work_context",
                     {
                         "run_id": run_id,
-                        "work_token": evidence["work_item"]["work_token"],
+                        "work_token": evidence_payload["work_item"]["work_token"],
                     },
                 )
             ).structured_content
-            assert context is not None and context["context"]["domain_context"] is not None
-            active_questions = tuple(context["context"]["domain_context"]["active_question_ids"])
+            context_payload = response_object(context, operation="get_work_context")
+            domain_context = context_payload["context"]["domain_context"]
+            assert isinstance(domain_context, dict)
+            active_questions = tuple(cast(list[str], domain_context["active_question_ids"]))
             if index == 0:
-                issued_token = evidence["work_item"]["work_token"]
+                issued_token = evidence_payload["work_item"]["work_token"]
                 await rejected_probe(
                     client,
                     "invalid",
@@ -890,7 +1141,7 @@ def _journey(
                                 "rationale": "Qualification wrong-state probe.",
                             }
                         ],
-                        "contract_version": "1.2.0",
+                        "contract_version": "2.0.0",
                     },
                 )
                 await rejected_probe(
@@ -902,7 +1153,7 @@ def _journey(
                         "work_token": issued_token,
                         "result_id": "result:other",
                         "domain_id": "domain:other",
-                        "contract_version": "1.2.0",
+                        "contract_version": "2.0.0",
                     },
                 )
                 await rejected_probe(
@@ -911,299 +1162,43 @@ def _journey(
                     "read_evidence",
                     {
                         "run_id": run_id,
-                        "location_handle": "loc:qualification-unknown",
                         "work_token": issued_token,
-                        "sq_id": questions[0],
                         "result_id": "result:trial-a-mortality",
+                        "batch": {
+                            "scope": {
+                                "result_id": "result:trial-a-mortality",
+                                "domain_id": domain,
+                                "snapshot_hash": "sha256:" + "0" * 64,
+                            },
+                            "items": [
+                                {
+                                    "location_handle": "loc:qualification-unknown",
+                                    "question_ids": [questions[0]],
+                                }
+                            ],
+                        },
                     },
                 )
-            passages: list[dict[str, object]] = []
-            coverage_receipts: list[dict[str, object]] = []
-            # The fixed primary report is reviewed separately for every SQ,
-            # including when the registry fixture is deliberately unavailable.
-            # This preserves complete five-domain terminal exercise without
-            # misrepresenting unavailable registry coverage as no-information.
-            if use_primary_report_for_all_domains:
-                from rob2_kit.domain.canonical import canonical_hash
-                from rob2_kit.domain.results import ResultSpecRevision
-                from rob2_kit.domain.revisions import RecordReference
-                from rob2_kit.domain.sources import TrialSourceInventory
-                from rob2_kit.evidence import (
-                    SearchCoverageReceipt,
-                    SearchResultDisposition,
-                    SearchResultDispositionKind,
-                    SourceSearchCoverage,
-                    SourceSearchState,
-                )
-                from rob2_kit.storage import ArtifactStore, WorkflowLedger
-
-                state = project / ".rob2"
-                store = ArtifactStore(state / "artifacts")
-                ledger = WorkflowLedger(state / "ledger.sqlite3", store)
-                prepared_revision = next(
-                    revision
-                    for revision in ledger.current_revisions()
-                    if revision.checkpoint == "checkpoint:run-prepared"
-                )
-                prepared_artifact = json.loads(
-                    store.read(prepared_revision.artifact_hash).decode("utf-8")
-                )
-                inventory = TrialSourceInventory.model_validate(
-                    prepared_artifact["proposal"]["initialization"]["trials"][0]["inventory"]
-                )
-                result_revision = next(
-                    revision
-                    for revision in ledger.current_revisions()
-                    if revision.checkpoint and revision.checkpoint.startswith("checkpoint:result-")
-                )
-                result_artifact = json.loads(
-                    store.read(result_revision.artifact_hash).decode("utf-8")
-                )
-                result_spec = ResultSpecRevision.model_validate(result_artifact["result_spec"])
-                result_ref = RecordReference(
-                    entity_id=result_spec.entity_id,
-                    revision_id=result_spec.revision_id,
-                    content_hash=canonical_hash(result_spec),
-                )
-                inventory_suffix = hashlib.sha256(
-                    (
-                        f"{run_id}|result:trial-a-mortality|{result_ref.content_hash}|"
-                        "source-inventory"
-                    ).encode()
-                ).hexdigest()[:24]
-                inventory_ref = RecordReference(
-                    entity_id="source-inventory:trial-a-mortality",
-                    revision_id=f"revision:source-inventory-{inventory_suffix}",
-                    content_hash=canonical_hash(inventory),
-                )
-                parse_hashes = tuple(
-                    sorted(
-                        parse.output_hash
-                        for source in inventory.sources
-                        for parse in source.parse_records
-                    )
-                )
-                hit = None
-                for question_index, question in enumerate(questions):
-                    seed_family = "seed:" + question.removeprefix("sq:").replace(":", "-")
-                    pass_specs = (
-                        ("guidance_seed", seed_family, ("Allocation",)),
-                        ("trial_follow_up", None, ("participants",)),
-                        ("contradiction", None, ("open",)),
-                    )
-                    responses: list[dict[str, object]] = []
-                    for pass_kind, seed, terms in pass_specs:
-                        arguments: dict[str, object] = {
-                            "run_id": run_id,
-                            "work_token": evidence["work_item"]["work_token"],
-                            "sq_id": question,
-                            "result_id": "result:trial-a-mortality",
-                            "query": {"terms": list(terms)},
-                            "pass_kind": pass_kind,
-                        }
-                        if seed is not None:
-                            arguments["seed_family"] = seed
-                        searched = await call(client, "search_evidence", arguments)
-                        response = searched.structured_content
-                        if response is None or response.get("executed_query") is None:
-                            raise AssertionError(
-                                "release search did not produce an executed query: "
-                                f"response={response!r}, result={searched!r}"
-                            )
-                        responses.append(response)
-                    returned_ids = tuple(
-                        dict.fromkeys(
-                            unit_id
-                            for response in responses
-                            for unit_id in response["executed_query"]["returned_unit_ids"]
-                        )
-                    )
-                    dispositions = tuple(
-                        SearchResultDisposition(
-                            unit_id=unit_id,
-                            kind=(
-                                SearchResultDispositionKind.RETAINED_CANDIDATE
-                                if question_index == 0 and hit and unit_id == hit["unit"]["unit_id"]
-                                else SearchResultDispositionKind.IRRELEVANT
-                            ),
-                            candidate_id=(
-                                unit_id
-                                if question_index == 0 and hit and unit_id == hit["unit"]["unit_id"]
-                                else None
-                            ),
-                        )
-                        for unit_id in returned_ids
-                    )
-                    receipt = SearchCoverageReceipt(
-                        receipt_id=f"coverage:qualification-{question_index}",
-                        sq_id=question,
-                        snapshot_hash=responses[0]["page"]["snapshot_hash"],
-                        policy_id=responses[0]["page"]["policy_id"],
-                        policy_hash=responses[0]["page"]["policy_hash"],
-                        result_spec=result_ref,
-                        source_inventory=inventory_ref,
-                        parse_record_hashes=parse_hashes,
-                        guidance_release_id="guidance:rob2-2019.1",
-                        required_seed_families=(seed_family,),
-                        completed_seed_families=(seed_family,),
-                        completed_passes=tuple(item[0] for item in pass_specs),
-                        executed_queries=tuple(
-                            response["executed_query"] for response in responses
-                        ),
-                        returned_unit_ids=returned_ids,
-                        result_dispositions=dispositions,
-                        sources=tuple(
-                            SourceSearchCoverage(
-                                source_id=source.source_id,
-                                state=(
-                                    SourceSearchState.SEARCHED
-                                    if source.artifact_hash is not None
-                                    else SourceSearchState.UNOBTAINED
-                                ),
-                                sufficiently_readable=source.artifact_hash is not None,
-                                artifact_hash=source.artifact_hash,
-                                parse_record_hashes=tuple(
-                                    parse.output_hash for parse in source.parse_records
-                                ),
-                                limitations=(
-                                    ()
-                                    if source.artifact_hash is not None
-                                    else ("declared registry source was unavailable",)
-                                ),
-                            )
-                            for source in inventory.sources
-                        ),
-                        inventory_source_ids=tuple(
-                            source.source_id for source in inventory.sources
-                        ),
-                        coverage_limits=inventory.coverage_limitations,
-                        traversal_complete=True,
-                        interrupted=False,
-                    )
-                    proof = receipt.model_dump(mode="json")
-                    proof["recorder_proof"] = None
-                    completed_receipt = receipt.model_copy(
-                        update={"recorder_proof": canonical_hash(proof)}
-                    )
-                    coverage_receipts.append(completed_receipt.model_dump(mode="json"))
-                # Retrieval intentionally remains broad: source-authored
-                # candidates are visible before attributable review, so the
-                # first lexical hit is not necessarily for this Domain.  Walk
-                # the public continuation until the fixture's separately
-                # scoped canonical unit is encountered rather than borrowing
-                # a same-text unit from another Domain.
-                cursor: str | None = None
-                read_receipts: dict[str, str] = {}
-                while hit is None:
-                    searched = await call(
-                        client,
-                        "search_evidence",
-                        {
-                            "run_id": run_id,
-                            "work_token": evidence["work_item"]["work_token"],
-                            "sq_id": questions[0],
-                            "result_id": "result:trial-a-mortality",
-                            "query": {"terms": ["Allocation"]},
-                            **({"cursor": cursor} if cursor is not None else {}),
-                        },
-                    )
-                    response = searched.structured_content
-                    assert response is not None
-                    for candidate in response["page"]["hits"]:
-                        read = await call(
-                            client,
-                            "read_evidence",
-                            {
-                                "run_id": run_id,
-                                "location_handle": candidate["location_handle"],
-                                "work_token": evidence["work_item"]["work_token"],
-                                "sq_id": questions[0],
-                                "result_id": "result:trial-a-mortality",
-                            },
-                        )
-                        read_content = read.structured_content
-                        if read_content is None:
-                            continue
-                        hit = candidate
-                        read_receipts[questions[0]] = read_content["read_view_receipt"]
-                        break
-                    cursor = response["page"].get("next_cursor")
-                    if cursor is None and hit is None:
-                        raise AssertionError(
-                            "release fixture omitted its Domain-scoped canonical unit"
-                        )
-                assert hit is not None
-                unit_id = hit["unit"]["unit_id"]
-                for question in questions:
-                    if question in read_receipts:
-                        continue
-                    read = await call(
-                        client,
-                        "read_evidence",
-                        {
-                            "run_id": run_id,
-                            "location_handle": hit["location_handle"],
-                            "work_token": evidence["work_item"]["work_token"],
-                            "sq_id": question,
-                            "result_id": "result:trial-a-mortality",
-                        },
-                    )
-                    if read.structured_content is None:
-                        raise AssertionError("canonical Trial unit could not be read")
-                    read_receipts[question] = read.structured_content["read_view_receipt"]
-                passages = [
-                    {
-                        "unit_id": unit_id,
-                        "candidate_id": unit_id,
-                        "span_start": hit["projection"]["start"],
-                        "span_end": hit["projection"]["end"],
-                        "claim_type": "claim-type:trial-report",
-                        "question_ids": list(questions),
-                    }
-                ]
-            else:
-                # Coverage is recorder-owned in the 1.1 contract.  Domains
-                # without a retained passage still need their own completed
-                # Search passes before they can establish no-information.
-                for question in questions:
-                    seed_family = "seed:" + question.removeprefix("sq:").replace(":", "-")
-                    for pass_kind, seed, terms in (
-                        ("guidance_seed", seed_family, ("Allocation",)),
-                        ("trial_follow_up", None, ("participants",)),
-                        ("contradiction", None, ("open",)),
-                    ):
-                        cursor: str | None = None
-                        while True:
-                            arguments: dict[str, object] = {
-                                "run_id": run_id,
-                                "work_token": evidence["work_item"]["work_token"],
-                                "sq_id": question,
-                                "result_id": "result:trial-a-mortality",
-                                "query": {"terms": list(terms)},
-                                "pass_kind": pass_kind,
-                            }
-                            if seed is not None:
-                                arguments["seed_family"] = seed
-                            if cursor is not None:
-                                arguments["cursor"] = cursor
-                            searched = await call(client, "search_evidence", arguments)
-                            response = searched.structured_content
-                            assert response is not None and response["executed_query"] is not None
-                            cursor = response["page"].get("next_cursor")
-                            if cursor is None:
-                                break
-                        if pass_kind == "contradiction":
-                            assert response["coverage_progress"]["coverage_complete"], response[
-                                "coverage_progress"
-                            ]
+            passages, read_views = await complete_v2_navigation(
+                client,
+                run_id=run_id,
+                work_token=evidence_payload["work_item"]["work_token"],
+                domain_id=domain,
+                question_ids=questions,
+                domain_index=index,
+                retain_passage=use_primary_report_for_all_domains,
+            )
+            candidate_id = passages[0]["candidate_id"] if passages else None
+            span_start = passages[0]["span_start"] if passages else None
+            span_end = passages[0]["span_end"] if passages else None
             committed = await call(
                 client,
                 "submit_domain_evidence",
                 {
                     "run_id": run_id,
-                    "work_token": evidence["work_item"]["work_token"],
+                    "work_token": evidence_payload["work_item"]["work_token"],
                     "idempotency_key": f"qualification:evidence:{index}",
-                    "contract_version": "1.2.0",
+                    "contract_version": "2.0.0",
                     "result_id": "result:trial-a-mortality",
                     "domain_id": domain,
                     "passages": passages,
@@ -1221,19 +1216,23 @@ def _journey(
                                     "display_name": "Release qualification",
                                 },
                                 "observed_at": "2026-01-01T00:00:00Z",
-                                "candidate_id": unit_id,
+                                "candidate_id": candidate_id,
                                 "result_id": "result:trial-a-mortality",
                                 "domain_id": domain,
                                 "sq_id": question,
                                 "spans": [
                                     {
-                                        "read_view_receipt": read_receipts[question],
-                                        "span_start": hit["projection"]["start"],
-                                        "span_end": hit["projection"]["end"],
+                                        "read_view_receipt": read_views[question][
+                                            "read_view_receipt"
+                                        ],
+                                        "span_start": span_start,
+                                        "span_end": span_end,
                                         "trial_attribution": "active",
                                         "disposition": "supporting",
                                         "rationale": "Qualification source span.",
-                                        "attribution_rationale": "Issued bounded context identifies the active Trial.",
+                                        "attribution_rationale": (
+                                            "Issued bounded context identifies the active Trial."
+                                        ),
                                     }
                                 ],
                             }
@@ -1567,14 +1566,14 @@ def _journey(
 
         state = project / ".rob2"
         ledger = WorkflowLedger(state / "ledger.sqlite3", ArtifactStore(state / "artifacts"))
-        prepared_response = trace_calls[0]["response"]
-        assert isinstance(prepared_response, dict)
+        prepared_response = response_object(trace_calls[0]["response"], operation="prepare_run")
         active_work_token = next(
             (
-                response["work_item"]["work_token"]
+                work_item.get("work_token")
                 for call_receipt in reversed(trace_calls)
                 if isinstance((response := call_receipt["response"]), dict)
-                and isinstance(response.get("work_item"), dict)
+                and isinstance((work_item := response.get("work_item")), dict)
+                and work_item.get("work_token") is not None
             ),
             None,
         )
@@ -1657,7 +1656,7 @@ def _qualify(
         initial_doctor = json.loads(
             _run([str(rob2), "doctor", str(project)], cwd=workspace, env=checked_env).stdout
         )
-        assert initial_doctor["ok"] is True
+        assert initial_doctor["ok"] is True, initial_doctor
         original_codex_config = (project / ".codex" / "config.toml").read_bytes()
         original_claude_config = (project / ".mcp.json").read_bytes()
         lock = project / ".rob2" / "rob2.lock"

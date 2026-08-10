@@ -144,6 +144,24 @@ class StaleCursor(RetrievalFailure):
         )
 
 
+class StaleSearchContinuation(StaleCursor):
+    """A v2 Search continuation or page handle no longer names this view.
+
+    This remains a stale-cursor condition at the transport boundary, while
+    giving in-process callers a precise type for the v2 navigation seam.
+    """
+
+    def __init__(self, message: str, *, field: str | None = "continuation") -> None:
+        super().__init__(message, field=field)
+
+
+class SearchPolicyMismatch(StaleSearchContinuation):
+    """A v2 continuation was issued under a different engine-owned policy."""
+
+    def __init__(self, message: str = "continuation belongs to a different search policy") -> None:
+        super().__init__(message, field="continuation")
+
+
 class UnknownCursor(RetrievalFailure):
     """A cursor/handle token that was never issued by this server, or is malformed.
 
@@ -218,6 +236,8 @@ class OperationalRetrievalFailure(RetrievalFailure):
 # callers to know the shorter concrete class names.
 InvalidRetrievalRequestFailure = InvalidRetrievalRequest
 StaleCursorFailure = StaleCursor
+StaleSearchContinuationFailure = StaleSearchContinuation
+SearchPolicyMismatchFailure = SearchPolicyMismatch
 CursorScopeMismatchFailure = CursorScopeMismatch
 ScopeMismatchFailure = ScopeMismatch
 StaleWorkTokenFailure = StaleWorkToken

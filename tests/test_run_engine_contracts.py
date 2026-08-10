@@ -26,17 +26,18 @@ EXPECTED_OPERATIONS = (
     "submit_source_role_review",
     "submit_result_resolution",
     "submit_domain_evidence",
+    "submit_evidence_review",
     "submit_domain_answers",
     "correct_domain_answers",
 )
 
 
-def test_fixed_run_engine_surface_has_seventeen_one_to_one_typed_operations() -> None:
+def test_fixed_run_engine_surface_has_eighteen_one_to_one_typed_operations() -> None:
     assert RUN_OPERATION_NAMES == EXPECTED_OPERATIONS
     assert tuple(contract.operation.value for contract in RUN_OPERATION_CONTRACTS) == (
         EXPECTED_OPERATIONS
     )
-    assert len(set(RUN_OPERATION_NAMES)) == 17
+    assert len(set(RUN_OPERATION_NAMES)) == 18
 
     for contract in RUN_OPERATION_CONTRACTS:
         method = getattr(RunEngine, contract.operation.value)

@@ -18,19 +18,17 @@ from rob2_kit.application.contracts import (
     SubmitDomainAnswersRequest,
     SubmitDomainEvidenceRequest,
 )
+from rob2_kit.domain.canonical import sha256_digest
 from rob2_kit.evidence.errors import ReprocessingRequired, StaleCursor
 from rob2_kit.evidence.search import (
-    RETRIEVAL_SCHEMA_VERSION,
     CanonicalEvidenceUnit,
     CanonicalUnitKind,
     EvidenceScope,
     EvidenceSearchIndex,
     SearchQuery,
 )
-from rob2_kit.ingestion.project import PageTextItem
-from rob2_kit.ingestion.project import PageRender
-from rob2_kit.domain.canonical import sha256_digest
-from rob2_kit.logic.evaluator import LogicEvaluator
+from rob2_kit.evidence.workflow import SearchPassKind, V2QueryAttemptKind
+from rob2_kit.ingestion.project import PageRender, PageTextItem
 from tests.test_input_reconciliation import (
     DOMAINS,
     StructuredPassageParser,
@@ -43,8 +41,8 @@ from tests.test_input_reconciliation import (
     _result,
     _review_revision,
 )
-from tests.test_mcp_tracer import _active_answer_ids, _low_answers
 from tests.test_issue151 import _freeze
+from tests.test_mcp_tracer import _active_answer_ids, _low_answers
 
 HASH = "sha256:" + "a" * 64
 
@@ -118,9 +116,7 @@ def test_removed_search_refinements_are_closed_schema_fields(field: str) -> None
 def test_outer_retrieval_schema_identity_is_closed_and_serialized() -> None:
     for response_type in (SearchEvidenceResponse, ReadEvidenceResponse):
         schema = response_type.model_json_schema()
-        identity = schema["properties"]["retrieval_schema_version"]
-        assert identity["default"] == RETRIEVAL_SCHEMA_VERSION
-        assert identity["const"] == RETRIEVAL_SCHEMA_VERSION
+        assert "retrieval_schema_version" not in schema["properties"]
     with pytest.raises(ValidationError):
         SearchEvidenceResponse.model_validate(
             {
@@ -169,7 +165,7 @@ def test_structure_only_parser_freezes_and_qualifies_answers(tmp_path) -> None:
     )
     evidence = engine.submit_domain_evidence(
         SubmitDomainEvidenceRequest(
-            contract_version="1.2.0",
+            contract_version="2.0.0",
             run_id=run_id,
             work_token=work.work_token,
             idempotency_key="idempotency:issue152-full-freeze",
@@ -379,7 +375,9 @@ def test_legacy_snapshot_identity_fails_closed_before_any_search_or_read(tmp_pat
             """
             CREATE TABLE evidence_units (unit_id TEXT PRIMARY KEY, text TEXT NOT NULL);
             INSERT INTO evidence_units VALUES ('unit:legacy', 'legacy text');
-            CREATE TABLE evidence_snapshot (singleton INTEGER PRIMARY KEY, content_hash TEXT NOT NULL);
+            CREATE TABLE evidence_snapshot (
+                singleton INTEGER PRIMARY KEY, content_hash TEXT NOT NULL
+            );
             INSERT INTO evidence_snapshot VALUES (1, 'sha256:legacy');
             """
         )
@@ -441,7 +439,9 @@ def test_assessing_run_resume_surfaces_reprocessing_required_for_legacy_index(tm
             """
             CREATE TABLE evidence_units (unit_id TEXT PRIMARY KEY, text TEXT NOT NULL);
             INSERT INTO evidence_units VALUES ('unit:legacy', 'legacy text');
-            CREATE TABLE evidence_snapshot (singleton INTEGER PRIMARY KEY, content_hash TEXT NOT NULL);
+            CREATE TABLE evidence_snapshot (
+                singleton INTEGER PRIMARY KEY, content_hash TEXT NOT NULL
+            );
             INSERT INTO evidence_snapshot VALUES (1, 'sha256:legacy');
             """
         )
@@ -454,11 +454,16 @@ def test_assessing_run_resume_surfaces_reprocessing_required_for_legacy_index(tm
     with pytest.raises(ReprocessingRequired) as failure:
         engine.search_evidence(
             SearchEvidenceRequest(
+                contract_version="2.0.0",
                 run_id=run_id,
                 work_token=resumed.work_token,
                 result_id="result:upgrade",
                 sq_id=DOMAINS["domain:randomization"][0],
                 query=SearchQuery(terms=("legacy",)),
+                pass_kind=SearchPassKind.GUIDANCE_SEED,
+                seed_family="seed:upgrade",
+                attempt_id="attempt:upgrade:legacy",
+                attempt_kind=V2QueryAttemptKind.SELECTED,
             )
         )
     assert failure.value.code.value == "reprocessing_required"
@@ -523,7 +528,7 @@ def test_same_source_span_independently_freezes_and_qualifies_two_results(tmp_pa
         )
         evidence = engine.submit_domain_evidence(
             SubmitDomainEvidenceRequest(
-                contract_version="1.2.0",
+                contract_version="2.0.0",
                 run_id=run_id,
                 work_token=work.work_token,
                 idempotency_key=f"idempotency:{result_id}:evidence",
@@ -596,7 +601,7 @@ def test_same_source_span_independently_freezes_and_qualifies_two_results(tmp_pa
                 )
                 empty = engine.submit_domain_evidence(
                     SubmitDomainEvidenceRequest(
-                        contract_version="1.2.0",
+                        contract_version="2.0.0",
                         run_id=run_id,
                         work_token=remaining_work.work_token,
                         idempotency_key=f"idempotency:{result_id}:{domain_id}:empty",

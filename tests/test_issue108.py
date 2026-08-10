@@ -41,11 +41,11 @@ def _install_switchable_candidate_launcher(monkeypatch: pytest.MonkeyPatch) -> d
     return candidate
 
 
-def test_cutover_exposes_exactly_the_twelve_canonical_tools() -> None:
+def test_cutover_exposes_exactly_the_thirteen_canonical_tools() -> None:
     names = tuple(tool.name for tool in anyio.run(create_server().list_tools))
 
     assert names == CANONICAL_TOOL_NAMES
-    assert len(names) == 12
+    assert len(names) == 13
     assert not {"run_status", "classify_sources", "resolve_result", "correct_domain_answers"} & set(
         names
     )

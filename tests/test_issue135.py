@@ -88,7 +88,7 @@ def test_review_revisions_plus_matching_passages_freeze_is_accepted(tmp_path: Pa
 
     response = engine.submit_domain_evidence(
         SubmitDomainEvidenceRequest(
-            contract_version="1.2.0",
+            contract_version="2.0.0",
             run_id=run_id,
             work_token=work.work_token,
             idempotency_key="idempotency:issue135-review-revisions",
@@ -144,7 +144,7 @@ def test_review_revisions_alone_without_passages_is_rejected_for_missing_candida
 
     response = engine.submit_domain_evidence(
         SubmitDomainEvidenceRequest(
-            contract_version="1.2.0",
+            contract_version="2.0.0",
             run_id=run_id,
             work_token=work.work_token,
             idempotency_key="idempotency:issue135-review-revisions-alone",
@@ -234,7 +234,7 @@ def test_passages_based_superseded_disposition_with_matching_conflicts_is_accept
 
     response = engine.submit_domain_evidence(
         SubmitDomainEvidenceRequest(
-            contract_version="1.2.0",
+            contract_version="2.0.0",
             run_id=run_id,
             work_token=work.work_token,
             idempotency_key="idempotency:issue135-superseded",

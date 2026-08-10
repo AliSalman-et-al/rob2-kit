@@ -29,4 +29,4 @@ def test_freeze_schema_is_question_specific_and_receipt_bound() -> None:
 
 def test_freeze_contract_requires_1_1_0() -> None:
     schema = _tools()["submit_domain_evidence"].parameters
-    assert schema["properties"]["contract_version"]["const"] == "1.2.0"
+    assert schema["properties"]["contract_version"]["const"] == "2.0.0"

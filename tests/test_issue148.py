@@ -109,7 +109,7 @@ def test_second_run_freezes_its_own_declared_result_spec(tmp_path: Path) -> None
     assert first_evidence.domain_id is not None
     first_freeze = engine.submit_domain_evidence(
         SubmitDomainEvidenceRequest(
-            contract_version="1.2.0",
+            contract_version="2.0.0",
             run_id=first.run_id,
             work_token=first_evidence.work_token,
             idempotency_key="idempotency:issue148:first:freeze",
@@ -129,7 +129,7 @@ def test_second_run_freezes_its_own_declared_result_spec(tmp_path: Path) -> None
     assert second_evidence.domain_id is not None
     second_freeze = engine.submit_domain_evidence(
         SubmitDomainEvidenceRequest(
-            contract_version="1.2.0",
+            contract_version="2.0.0",
             run_id=second.run_id,
             work_token=second_evidence.work_token,
             idempotency_key="idempotency:issue148:second:freeze",
@@ -195,7 +195,7 @@ def test_awaiting_confirmation_refreshes_chain_before_first_result_spec_freeze(
     assert evidence.domain_id is not None
     frozen = engine.submit_domain_evidence(
         SubmitDomainEvidenceRequest(
-            contract_version="1.2.0",
+            contract_version="2.0.0",
             run_id=initial.run_id,
             work_token=evidence.work_token,
             idempotency_key="idempotency:issue148:awaiting-refresh:freeze",
@@ -254,7 +254,7 @@ def test_reconciliation_refreshes_after_freeze_extend_the_run_result_spec_chain(
     assert initial_work.domain_id is not None
     engine.submit_domain_evidence(
         SubmitDomainEvidenceRequest(
-            contract_version="1.2.0",
+            contract_version="2.0.0",
             run_id=prepared.run_id,
             work_token=initial_work.work_token,
             idempotency_key="idempotency:issue148:post-freeze-refresh:freeze",
@@ -293,7 +293,7 @@ def test_reconciliation_refreshes_after_freeze_extend_the_run_result_spec_chain(
     assert refreshed_work.domain_id == initial_work.domain_id
     refreshed_freeze = engine.submit_domain_evidence(
         SubmitDomainEvidenceRequest(
-            contract_version="1.2.0",
+            contract_version="2.0.0",
             run_id=prepared.run_id,
             work_token=refreshed_work.work_token,
             idempotency_key="idempotency:issue148:post-freeze-refresh:freeze-c",
@@ -361,7 +361,7 @@ def test_second_run_terminal_report_materializes_its_active_result_spec(tmp_path
     assert first_evidence.domain_id is not None
     engine.submit_domain_evidence(
         SubmitDomainEvidenceRequest(
-            contract_version="1.2.0",
+            contract_version="2.0.0",
             run_id=first.run_id,
             work_token=first_evidence.work_token,
             idempotency_key="idempotency:issue148:terminal:first:freeze",
@@ -432,7 +432,7 @@ def test_second_run_detects_a_superseded_result_spec_as_stale_evidence(tmp_path:
     assert first_work.domain_id is not None
     engine.submit_domain_evidence(
         SubmitDomainEvidenceRequest(
-            contract_version="1.2.0",
+            contract_version="2.0.0",
             run_id=first.run_id,
             work_token=first_work.work_token,
             idempotency_key="idempotency:issue148:stale:first-freeze",
@@ -462,7 +462,7 @@ def test_second_run_detects_a_superseded_result_spec_as_stale_evidence(tmp_path:
     )
     engine.submit_domain_evidence(
         SubmitDomainEvidenceRequest(
-            contract_version="1.2.0",
+            contract_version="2.0.0",
             run_id=second.run_id,
             work_token=evidence.work_token,
             idempotency_key="idempotency:issue148:stale:current-freeze",

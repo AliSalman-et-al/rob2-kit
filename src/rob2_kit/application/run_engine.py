@@ -62,6 +62,8 @@ from rob2_kit.application.contracts import (
     SubmitDomainAnswersResponse,
     SubmitDomainEvidenceRequest,
     SubmitDomainEvidenceResponse,
+    SubmitEvidenceReviewRequest,
+    SubmitEvidenceReviewResponse,
     SubmitResultResolutionRequest,
     SubmitResultResolutionResponse,
     SubmitRunProposalRequest,
@@ -69,15 +71,20 @@ from rob2_kit.application.contracts import (
     SubmitSourceRoleReviewRequest,
     SubmitSourceRoleReviewResponse,
     TrialContextSummary,
-    VisualInspectionArguments,
-    VisualInspectionPath,
     WithdrawResultRequest,
     WorkContext,
     WorkflowCondition,
     WorkItem,
     WorkToken,
+    v2_model_facing_operation_payload,
 )
 from rob2_kit.application.determinism import QualificationDeterminism
+from rob2_kit.application.evidence_navigation import (
+    ConcurrentEvidenceNavigationUpdate,
+    EvidenceNavigationStore,
+    IncompatibleEvidenceNavigationState,
+    new_navigation_state,
+)
 from rob2_kit.application.lifecycle import (
     LifecycleIntegrityError,
     LifecycleProjection,
@@ -111,12 +118,12 @@ from rob2_kit.domain.evidence import (
     EvidenceConsideration,
     EvidenceConsiderationManifest,
     EvidenceCoverageReceiptRecord,
+    EvidenceCoverageState,
     EvidenceInsufficiency,
     EvidenceInsufficiencyReason,
     EvidenceReviewDisposition,
     EvidenceReviewRevision,
     EvidenceReviewSpan,
-    ReviewedEvidenceFragment,
     TrialAttribution,
     VisualTranscription,
 )
@@ -144,21 +151,24 @@ from rob2_kit.domain.sources import (
 from rob2_kit.evidence.errors import (
     InvalidRetrievalRequest,
     OperationalRetrievalFailure,
+    RetrievalErrorCode,
+    RetrievalFailure,
     ScopeMismatch,
+    SearchPolicyMismatch,
+    StaleSearchContinuation,
     StaleWorkToken,
 )
 from rob2_kit.evidence.search import (
-    CONTEXT_CHARACTER_TARGET,
-    CONTEXT_NEIGHBOR_LIMIT,
     CanonicalBlock,
     CanonicalEvidenceUnit,
     CanonicalPage,
     CanonicalUnitKind,
     CanonicalWordBox,
     DocumentZone,
+    EvidenceReadPolicy,
     EvidenceScope,
     EvidenceSearchIndex,
-    ReadContextMode,
+    EvidenceSearchPolicy,
     SearchPolicy,
     canonicalize_evidence_units,
 )
@@ -173,6 +183,16 @@ from rob2_kit.evidence.workflow import (
     SearchPassKind,
     SourceSearchCoverage,
     SourceSearchState,
+    V2EvidenceWorkflowState,
+    V2PageExposure,
+    V2QueryAttemptKind,
+    V2SearchAttempt,
+    V2TriageBasis,
+    V2TriageKind,
+    record_v2_page_exposure,
+    start_v2_search_attempt,
+    submit_v2_page_triage,
+    supersede_v2_search_attempt,
     verify_complete_search_coverage_receipt,
 )
 from rob2_kit.ingestion.project import (
@@ -531,6 +551,14 @@ class _DomainEvidenceRecord(FrozenModel):
     candidate_dispositions: tuple[EvidenceConsiderationInput, ...] = ()
     project_rules: tuple[RecordReference, ...] = ()
     submission: SubmitDomainEvidenceRequest
+
+
+class _EvidenceReviewRecord(FrozenModel):
+    run_id: Identifier
+    result_id: Identifier
+    domain_id: Identifier
+    submission: SubmitEvidenceReviewRequest
+    workflow_state_hash: ContentHash
 
 
 class _DomainEvidenceDispositionRecord(FrozenModel):
@@ -1004,7 +1032,7 @@ class RunEngine:
                         affected_scope=(current.run_id,),
                         condition=WorkflowCondition.CONFIRMATION_REQUIRED,
                         committed=not result.duplicate,
-                        next_permitted_action=RunOperation.SUBMIT_RUN_PROPOSAL,
+                        next_action=RunOperation.SUBMIT_RUN_PROPOSAL,
                         run_id=current.run_id,
                         run_state=projection.run_state,
                         proposal=refreshed,
@@ -1052,7 +1080,7 @@ class RunEngine:
                 affected_scope=(current.run_id,),
                 condition=self._condition_for_state(projection.run_state),
                 committed=False,
-                next_permitted_action=self._next_action_for_state(projection.run_state),
+                next_action=self._next_action_for_state(projection.run_state),
                 run_id=current.run_id,
                 run_state=projection.run_state,
                 proposal=self._latest_proposal(ledger, current.run_id),
@@ -1265,7 +1293,7 @@ class RunEngine:
             affected_scope=tuple(item.run_id for item in unfinished) + (run_id,),
             condition=WorkflowCondition.CONFIRMATION_REQUIRED,
             committed=True,
-            next_permitted_action=RunOperation.SUBMIT_RUN_PROPOSAL,
+            next_action=RunOperation.SUBMIT_RUN_PROPOSAL,
             run_id=run_id,
             run_state=projection.run_state,
             proposal=proposal,
@@ -1354,7 +1382,7 @@ class RunEngine:
             affected_scope=(request.run_id,) + result_order,
             condition=WorkflowCondition.ACCEPTED,
             committed=not committed.duplicate,
-            next_permitted_action=RunOperation.CONTINUE_RUN,
+            next_action=RunOperation.CONTINUE_RUN,
             run_id=request.run_id,
             run_state=self._projection(ledger, request.run_id).run_state,
             result_order=result_order,
@@ -1501,7 +1529,7 @@ class RunEngine:
             affected_scope=(request.run_id, request.result_id),
             condition=WorkflowCondition.ACCEPTED,
             committed=any(not item.duplicate for item in committed),
-            next_permitted_action=RunOperation.CONTINUE_RUN,
+            next_action=RunOperation.CONTINUE_RUN,
             run_id=request.run_id,
             run_state=next_projection.run_state,
             result_id=request.result_id,
@@ -1638,7 +1666,7 @@ class RunEngine:
             affected_scope=(request.run_id, request.result_id),
             condition=WorkflowCondition.ACCEPTED,
             committed=any(not item.duplicate for item in committed),
-            next_permitted_action=RunOperation.CONTINUE_RUN,
+            next_action=RunOperation.CONTINUE_RUN,
             run_id=request.run_id,
             run_state=self._projection(ledger, request.run_id).run_state,
             result_id=request.result_id,
@@ -1667,7 +1695,7 @@ class RunEngine:
             affected_scope=tuple(item for item in (run_id, result_id) if item is not None),
             condition=WorkflowCondition.STALE,
             committed=False,
-            next_permitted_action=RunOperation.CONTINUE_RUN,
+            next_action=RunOperation.CONTINUE_RUN,
             run_id=run_id,
             run_state=projection.run_state,
             result_id=result_id,
@@ -1707,7 +1735,7 @@ class RunEngine:
             affected_scope=tuple(item for item in (run_id, result_id) if item is not None),
             condition=WorkflowCondition.ACCEPTED,
             committed=False,
-            next_permitted_action=RunOperation.CONTINUE_RUN,
+            next_action=RunOperation.CONTINUE_RUN,
             run_id=run_id,
             run_state=projection.run_state,
             result_id=result_id,
@@ -1758,7 +1786,7 @@ class RunEngine:
             affected_scope=(request.run_id,),
             condition=WorkflowCondition.COMPLETED,
             committed=False,
-            next_permitted_action=self._next_action_for_state(projection.run_state),
+            next_action=self._next_action_for_state(projection.run_state),
             run_id=request.run_id,
             run_state=projection.run_state,
             result_states=tuple(
@@ -2095,7 +2123,7 @@ class RunEngine:
                 affected_scope=(request.run_id,),
                 condition=WorkflowCondition.RUN_BLOCKED,
                 committed=False,
-                next_permitted_action=RunOperation.CONTINUE_RUN,
+                next_action=RunOperation.CONTINUE_RUN,
                 run_id=request.run_id,
                 run_state=projection.run_state,
                 proposal=None,
@@ -2116,7 +2144,7 @@ class RunEngine:
                 affected_scope=(request.run_id,),
                 condition=WorkflowCondition.RUN_BLOCKED,
                 committed=False,
-                next_permitted_action=RunOperation.SUBMIT_SOURCE_ROLE_REVIEW,
+                next_action=RunOperation.SUBMIT_SOURCE_ROLE_REVIEW,
                 run_id=request.run_id,
                 run_state=projection.run_state,
                 proposal=proposal,
@@ -2172,7 +2200,7 @@ class RunEngine:
                 affected_scope=(request.run_id,),
                 condition=WorkflowCondition.CONFIRMATION_REQUIRED,
                 committed=False,
-                next_permitted_action=RunOperation.CONFIRM_RUN_DEFINITION,
+                next_action=RunOperation.CONFIRM_RUN_DEFINITION,
                 run_id=request.run_id,
                 run_state=projection.run_state,
                 proposal=existing_record.proposal,
@@ -2188,7 +2216,7 @@ class RunEngine:
                     affected_scope=(request.run_id,),
                     condition=WorkflowCondition.STALE,
                     committed=False,
-                    next_permitted_action=RunOperation.PREPARE_RUN,
+                    next_action=RunOperation.PREPARE_RUN,
                     run_id=request.run_id,
                     run_state=projection.run_state,
                     proposal=historical,
@@ -2206,7 +2234,7 @@ class RunEngine:
                 affected_scope=(request.run_id,),
                 condition=WorkflowCondition.STALE,
                 committed=False,
-                next_permitted_action=RunOperation.PREPARE_RUN,
+                next_action=RunOperation.PREPARE_RUN,
                 run_id=request.run_id,
                 run_state=projection.run_state,
                 proposal=proposal,
@@ -2225,7 +2253,7 @@ class RunEngine:
                 affected_scope=(request.run_id,),
                 condition=WorkflowCondition.STALE,
                 committed=False,
-                next_permitted_action=RunOperation.PREPARE_RUN,
+                next_action=RunOperation.PREPARE_RUN,
                 run_id=request.run_id,
                 run_state=projection.run_state,
                 proposal=proposal,
@@ -2302,7 +2330,7 @@ class RunEngine:
             affected_scope=(request.run_id,),
             condition=WorkflowCondition.CONFIRMATION_REQUIRED,
             committed=not result.duplicate,
-            next_permitted_action=RunOperation.CONFIRM_RUN_DEFINITION,
+            next_action=RunOperation.CONFIRM_RUN_DEFINITION,
             run_id=request.run_id,
             run_state=self._projection(ledger, request.run_id).run_state,
             proposal=submitted,
@@ -2323,7 +2351,7 @@ class RunEngine:
                 affected_scope=(request.run_id,),
                 condition=WorkflowCondition.RUN_BLOCKED,
                 committed=False,
-                next_permitted_action=RunOperation.SUBMIT_RUN_PROPOSAL,
+                next_action=RunOperation.SUBMIT_RUN_PROPOSAL,
                 run_id=request.run_id,
                 run_state=projection.run_state,
                 run_definition=None,
@@ -2346,7 +2374,7 @@ class RunEngine:
                     affected_scope=(request.run_id,),
                     condition=WorkflowCondition.STALE,
                     committed=False,
-                    next_permitted_action=RunOperation.PREPARE_RUN,
+                    next_action=RunOperation.PREPARE_RUN,
                     run_id=request.run_id,
                     run_state=projection.run_state,
                     run_definition=None,
@@ -2364,7 +2392,7 @@ class RunEngine:
                 affected_scope=(request.run_id,),
                 condition=WorkflowCondition.STALE,
                 committed=False,
-                next_permitted_action=RunOperation.PREPARE_RUN,
+                next_action=RunOperation.PREPARE_RUN,
                 run_id=request.run_id,
                 run_state=projection.run_state,
                 run_definition=None,
@@ -2391,7 +2419,7 @@ class RunEngine:
                 affected_scope=(request.run_id,),
                 condition=WorkflowCondition.AGENT_WORK_REQUIRED,
                 committed=False,
-                next_permitted_action=RunOperation.CONTINUE_RUN,
+                next_action=RunOperation.CONTINUE_RUN,
                 run_id=request.run_id,
                 run_state=projection.run_state,
                 run_definition=existing,
@@ -2407,7 +2435,7 @@ class RunEngine:
                 affected_scope=(request.run_id,),
                 condition=WorkflowCondition.STALE,
                 committed=False,
-                next_permitted_action=RunOperation.PREPARE_RUN,
+                next_action=RunOperation.PREPARE_RUN,
                 run_id=request.run_id,
                 run_state=projection.run_state,
                 run_definition=None,
@@ -2429,7 +2457,7 @@ class RunEngine:
                 affected_scope=(request.run_id,),
                 condition=WorkflowCondition.RUN_BLOCKED,
                 committed=False,
-                next_permitted_action=RunOperation.SUBMIT_RUN_PROPOSAL,
+                next_action=RunOperation.SUBMIT_RUN_PROPOSAL,
                 run_id=request.run_id,
                 run_state=projection.run_state,
                 run_definition=None,
@@ -2468,7 +2496,7 @@ class RunEngine:
                 affected_scope=(request.run_id,),
                 condition=WorkflowCondition.RUN_BLOCKED,
                 committed=False,
-                next_permitted_action=RunOperation.SUBMIT_RUN_PROPOSAL,
+                next_action=RunOperation.SUBMIT_RUN_PROPOSAL,
                 run_id=request.run_id,
                 run_state=projection.run_state,
                 run_definition=None,
@@ -2559,7 +2587,7 @@ class RunEngine:
             affected_scope=(request.run_id,),
             condition=WorkflowCondition.AGENT_WORK_REQUIRED,
             committed=not result.duplicate,
-            next_permitted_action=RunOperation.CONTINUE_RUN,
+            next_action=RunOperation.CONTINUE_RUN,
             run_id=request.run_id,
             run_state=self._projection(ledger, request.run_id).run_state,
             run_definition=definition,
@@ -2571,75 +2599,159 @@ class RunEngine:
         scope = self._retrieval_scope(
             ledger, request.run_id, request.work_token, request.result_id, request.sq_id
         )
-        # Retrieval budgets and ranking policy are engine-owned.  Public MCP
-        # callers may provide only semantic query refinements and a signed
-        # continuation cursor.
-        policy = SearchPolicy()
-        broad_justification = "Engine-managed bounded traversal of the active Work-token scope."
+        policy = EvidenceSearchPolicy()
+        read_policy = EvidenceReadPolicy()
         try:
-            page = index.search(
+            provisional_page = index.search_v2(
                 request.query,
+                issuance_context=f"{request.run_id}|{request.attempt_id}",
                 policy=policy,
-                cursor=request.cursor,
-                broad_query_justification=broad_justification,
                 scope=scope,
+                continuation=request.continuation,
+                continue_reason=request.continue_reason,
+                continue_rationale=request.continue_rationale,
             )
         except (sqlite3.Error, OSError) as error:
             raise OperationalRetrievalFailure(
                 "unable to search the evidence retrieval index"
             ) from error
-        executed_query = None
-        coverage_progress = None
-        recording_scope = (
-            request.pass_kind is not None
-            and scope.result_id is not None
-            and scope.domain_id is not None
-        )
-        if recording_scope:
-            # Accumulate this verified page into the engine-owned coverage
-            # recorder for this Result x Domain x SQ (#127); the caller never
-            # constructs or resubmits this accounting.
-            recorder = self._recorder_for(
-                ledger,
-                request.run_id,
-                scope.result_id,
-                scope.domain_id,
-                request.sq_id,
-                snapshot_hash=page.snapshot_hash,
-                policy_id=page.policy_id,
-                policy_hash=page.policy_hash,
+        assert scope.result_id is not None and scope.domain_id is not None
+        store = EvidenceNavigationStore(self._required_root())
+        try:
+            persisted = store.load(
+                run_id=request.run_id,
+                result_id=scope.result_id,
+                domain_id=scope.domain_id,
+                snapshot_hash=provisional_page.snapshot_hash,
+                search_policy_id=policy.policy_id,
+                search_policy_hash=canonical_hash(policy),
+                read_policy_id=read_policy.policy_id,
+                read_policy_hash=canonical_hash(read_policy),
             )
-            executed_query = recorder.record_page(
-                page,
-                index=index,
-                policy=policy,
-                query=request.query,
-                pass_kind=request.pass_kind,
-                seed_family=request.seed_family,
-                cursor=request.cursor,
-                broad_query_justification=broad_justification,
-                scope=scope,
-            )
-            completed_passes = recorder.completed_passes()
-            coverage_progress = CoverageProgress(
-                sq_id=request.sq_id,
-                required_seed_families=recorder.required_seed_families,
-                completed_seed_families=recorder.completed_seed_families(),
-                completed_passes=completed_passes,
-                missing_passes=tuple(
-                    pass_kind for pass_kind in SearchPassKind if pass_kind not in completed_passes
+        except IncompatibleEvidenceNavigationState as error:
+            raise RetrievalFailure(
+                code=RetrievalErrorCode.STALE_WORK_TOKEN,
+                field="work_token",
+                message=str(error),
+                recovery=(
+                    "supersede the current Preparation attempt",
+                    "call continue_run and use the reissued Domain-Evidence WorkToken",
                 ),
-                coverage_complete=recorder.is_coverage_complete(),
+            ) from error
+        workflow = (
+            persisted.workflow
+            if persisted is not None
+            else V2EvidenceWorkflowState(
+                result_id=scope.result_id,
+                domain_id=scope.domain_id,
+                snapshot_hash=provisional_page.snapshot_hash,
+                search_policy_id=policy.policy_id,
+                search_policy_hash=canonical_hash(policy),
             )
+        )
+        attempt = next(
+            (item for item in workflow.attempts if item.attempt_id == request.attempt_id), None
+        )
+        if attempt is None:
+            requested_attempt = V2SearchAttempt(
+                attempt_id=request.attempt_id,
+                sq_id=request.sq_id,
+                pass_kind=request.pass_kind,
+                query=request.query,
+                query_hash=canonical_hash(request.query),
+                kind=V2QueryAttemptKind(request.attempt_kind),
+            )
+            if request.supersedes_attempt_id is not None:
+                workflow = supersede_v2_search_attempt(
+                    workflow,
+                    old_attempt_id=request.supersedes_attempt_id,
+                    replacement=requested_attempt,
+                    rationale=request.supersession_rationale or "",
+                )
+            else:
+                workflow = start_v2_search_attempt(workflow, requested_attempt)
+        elif (
+            attempt.sq_id,
+            attempt.pass_kind,
+            attempt.query_hash,
+        ) != (request.sq_id, request.pass_kind, canonical_hash(request.query)):
+            raise InvalidRetrievalRequest("attempt ID was replayed with different search semantics")
+        selected = tuple(
+            item.pass_kind
+            for item in workflow.attempts
+            if item.kind is V2QueryAttemptKind.SELECTED and item.sq_id == request.sq_id
+        )
+        coverage_progress = CoverageProgress(
+            sq_id=request.sq_id,
+            required_seed_families=("seed:allocation",)
+            if request.pass_kind is SearchPassKind.GUIDANCE_SEED
+            else (),
+            completed_seed_families=("seed:allocation",)
+            if request.pass_kind is SearchPassKind.GUIDANCE_SEED
+            else (),
+            completed_passes=selected,
+            missing_passes=tuple(item for item in SearchPassKind if item not in selected),
+            coverage_complete=workflow.coverage_complete(),
+        )
+        operation_id = self._read_operation_id(RunOperation.SEARCH_EVIDENCE, request.run_id)
+        ledger_cursor = f"ledger:{len(ledger.events())}"
+
+        def exact_envelope_measure(candidate_page) -> tuple[int, int]:
+            payload = v2_model_facing_operation_payload(
+                SearchEvidenceResponse(
+                    operation_id=operation_id,
+                    ledger_cursor=ledger_cursor,
+                    affected_scope=(request.result_id or request.run_id,),
+                    condition=WorkflowCondition.COMPLETED,
+                    committed=False,
+                    run_id=request.run_id,
+                    page=candidate_page,
+                    coverage_progress=coverage_progress,
+                )
+            )
+            accounting = payload["response_accounting"]
+            return (
+                int(accounting["serialized_response_bytes"]),
+                int(accounting["estimated_response_tokens"]),
+            )
+
+        try:
+            page = index.search_v2(
+                request.query,
+                issuance_context=f"{request.run_id}|{request.attempt_id}",
+                policy=policy,
+                scope=scope,
+                continuation=request.continuation,
+                continue_reason=request.continue_reason,
+                continue_rationale=request.continue_rationale,
+                envelope_measure=exact_envelope_measure,
+            )
+        except (sqlite3.Error, OSError) as error:
+            raise OperationalRetrievalFailure(
+                "unable to pack the evidence search response envelope"
+            ) from error
+        workflow = record_v2_page_exposure(workflow, attempt_id=request.attempt_id, page=page)
+        state = new_navigation_state(
+            run_id=request.run_id,
+            workflow=workflow,
+            read_policy_id=read_policy.policy_id,
+            read_policy_hash=canonical_hash(read_policy),
+        )
+        try:
+            store.save(
+                state,
+                expected_content_hash=(persisted.content_hash if persisted is not None else None),
+            )
+        except ConcurrentEvidenceNavigationUpdate as error:
+            raise InvalidRetrievalRequest(str(error), field="continuation") from error
         return SearchEvidenceResponse(
-            operation_id=self._read_operation_id(RunOperation.SEARCH_EVIDENCE, request.run_id),
-            ledger_cursor=f"ledger:{len(ledger.events())}",
+            operation_id=operation_id,
+            ledger_cursor=ledger_cursor,
             affected_scope=(request.result_id or request.run_id,),
             condition=WorkflowCondition.COMPLETED,
             committed=False,
             run_id=request.run_id,
             page=page,
-            executed_query=executed_query,
             coverage_progress=coverage_progress,
         )
 
@@ -2647,88 +2759,88 @@ class RunEngine:
         ledger = self._bound_ledger(request.run_id)
         index = EvidenceSearchIndex(self._required_root() / ".rob2" / "evidence.sqlite3")
         scope = self._retrieval_scope(
-            ledger, request.run_id, request.work_token, request.result_id, request.sq_id
+            ledger,
+            request.run_id,
+            request.work_token,
+            request.result_id,
+            require_question=False,
         )
+        assert scope.result_id is not None and scope.domain_id is not None
+        if (
+            request.batch.scope.result_id,
+            request.batch.scope.domain_id,
+        ) != (scope.result_id, scope.domain_id):
+            raise ScopeMismatch(
+                "read batch Result and Domain must match the active WorkToken scope",
+                field="batch.scope",
+            )
+        domain = next(
+            (item for item in self._logic_pack().domains if item.id == scope.domain_id), None
+        )
+        if domain is None:
+            raise ScopeMismatch("active WorkToken Domain is not available", field="work_token")
+        if any(
+            question_id not in domain.question_ids
+            for item in request.batch.items
+            for question_id in item.question_ids
+        ):
+            raise ScopeMismatch(
+                "read batch question binding is not active in the WorkToken Domain",
+                field="batch.items.question_ids",
+            )
+        if any(
+            source_id not in scope.source_ids
+            for item in request.batch.items
+            for source_id in item.source_ids
+        ):
+            raise ScopeMismatch(
+                "read batch Source binding is not authorized by the WorkToken scope",
+                field="batch.items.source_ids",
+            )
+        policy = EvidenceReadPolicy()
+        search_policy = EvidenceSearchPolicy()
+        store = EvidenceNavigationStore(self._required_root())
         try:
-            read = index.read_location(
-                request.location_handle,
-                character_target=CONTEXT_CHARACTER_TARGET,
-                cursor=request.cursor if request.mode is ReadContextMode.UNIT else None,
-                scope=scope,
+            state = store.load(
+                run_id=request.run_id,
+                result_id=scope.result_id,
+                domain_id=scope.domain_id,
+                snapshot_hash=request.batch.scope.snapshot_hash,
+                search_policy_id=search_policy.policy_id,
+                search_policy_hash=canonical_hash(search_policy),
+                read_policy_id=policy.policy_id,
+                read_policy_hash=canonical_hash(policy),
             )
-            context = (
-                None
-                if request.mode is ReadContextMode.UNIT
-                else index.read_context(
-                    read.unit.unit_id,
-                    neighbor_limit=CONTEXT_NEIGHBOR_LIMIT,
-                    character_target=CONTEXT_CHARACTER_TARGET,
-                    mode=request.mode,
-                    scope=scope,
-                    cursor=request.cursor,
+        except IncompatibleEvidenceNavigationState as error:
+            raise SearchPolicyMismatch(str(error)) from error
+        if state is None:
+            raise StaleSearchContinuation(
+                "read batch has no current v2 search exposure", field="batch.items"
+            )
+        attempts = {attempt.attempt_id: attempt for attempt in state.workflow.attempts}
+        for item in request.batch.items:
+            exposures = [
+                exposure
+                for exposure in state.workflow.exposures
+                if exposure.location_handle == item.location_handle
+            ]
+            if not exposures:
+                raise StaleSearchContinuation(
+                    "read batch location handle is stale or was not exposed for this Domain",
+                    field="batch.items",
                 )
-            )
+            for question_id in item.question_ids:
+                if not any(attempts[edge.attempt_id].sq_id == question_id for edge in exposures):
+                    raise StaleSearchContinuation(
+                        "read batch handle was not exposed for its claimed signaling question",
+                        field="batch.items.question_ids",
+                    )
+        try:
+            page = index.read_batch_v2(request.batch, policy=policy)
         except (sqlite3.Error, OSError) as error:
             raise OperationalRetrievalFailure(
                 "unable to read the evidence retrieval index"
             ) from error
-        visual_path = next(
-            (
-                VisualInspectionPath(
-                    unit_id=read.unit.unit_id,
-                    source_id=read.unit.source_id,
-                    page=read.unit.page,
-                    candidate_id=candidate.candidate_id,
-                    next_arguments=VisualInspectionArguments(
-                        run_id=request.run_id,
-                        candidate_id=candidate.candidate_id,
-                        result_id=request.result_id,
-                    ),
-                )
-                for candidate in self._visual_candidates(
-                    ledger, request.run_id, result_id=scope.result_id
-                )
-                if candidate.source_id == read.unit.source_id
-                and candidate.page == read.unit.page
-                and candidate.sq_id == request.sq_id
-                and candidate.domain_id == scope.domain_id
-                and request.sq_id in candidate.question_ids
-            ),
-            None,
-        )
-        displayed = context.all_units if context is not None else (read.unit,)
-        fragments = tuple(
-            ReviewedEvidenceFragment(
-                unit_id=item.unit_id,
-                source_id=item.source_id,
-                source_artifact_hash=item.source_artifact_hash,
-                parse_id=item.parse_id,
-                canonicalization_version=item.canonicalization_version,
-                unit_content_hash=sha256_digest(item.text.encode()),
-                span_start=(read.start if context is None else 0),
-                span_end=(read.end if context is None else len(item.text)),
-                content_hash=sha256_digest(
-                    item.text[
-                        (read.start if context is None else 0) : (
-                            read.end if context is None else len(item.text)
-                        )
-                    ].encode()
-                ),
-            )
-            for item in displayed
-        )
-        continuation = (
-            context.continuation_cursor if context is not None else read.continuation_cursor
-        )
-        receipt = index.issue_read_view_receipt(
-            snapshot_hash=read.snapshot_hash,
-            requested_mode=request.mode,
-            applied_mode=context.mode if context is not None else ReadContextMode.UNIT,
-            continuation_input=request.cursor,
-            continuation=continuation,
-            fragments=fragments,
-            displayed_units=displayed,
-        )
         return ReadEvidenceResponse(
             operation_id=self._read_operation_id(RunOperation.READ_EVIDENCE, request.run_id),
             ledger_cursor=f"ledger:{len(ledger.events())}",
@@ -2736,11 +2848,293 @@ class RunEngine:
             condition=WorkflowCondition.COMPLETED,
             committed=False,
             run_id=request.run_id,
-            unit=read.unit,
-            read_view_receipt=receipt,
-            read=read if request.mode is ReadContextMode.UNIT else None,
-            context=context,
-            visual_inspection=visual_path,
+            page=page,
+        )
+
+    def submit_evidence_review(
+        self, request: SubmitEvidenceReviewRequest
+    ) -> SubmitEvidenceReviewResponse:
+        """Durably append one v2 complete-page triage partition.
+
+        Review authority intentionally remains the active Domain-Evidence
+        work token; this operation records navigation triage, not a frozen
+        scientific claim.
+        """
+        ledger = self._bound_ledger(request.run_id)
+        existing = self._submission_retry_event(
+            ledger,
+            request.run_id,
+            request.idempotency_key,
+            {"operation:submit-evidence-review"},
+        )
+        if existing is not None:
+            record = _EvidenceReviewRecord.model_validate_json(
+                ledger.artifacts.read(existing.output_revision_hashes[0])
+            )
+            if record.submission != request:
+                raise InvalidRetrievalRequest(
+                    "review idempotency key was replayed with different content"
+                )
+            projection = self._projection(ledger, request.run_id)
+            index = EvidenceSearchIndex(self._required_root() / ".rob2" / "evidence.sqlite3")
+            search_policy = EvidenceSearchPolicy()
+            read_policy = EvidenceReadPolicy()
+            store = EvidenceNavigationStore(self._required_root())
+            try:
+                state = store.load(
+                    run_id=request.run_id,
+                    result_id=request.result_id,
+                    domain_id=request.domain_id,
+                    snapshot_hash=index._snapshot(),
+                    search_policy_id=search_policy.policy_id,
+                    search_policy_hash=canonical_hash(search_policy),
+                    read_policy_id=read_policy.policy_id,
+                    read_policy_hash=canonical_hash(read_policy),
+                )
+            except IncompatibleEvidenceNavigationState as error:
+                raise SearchPolicyMismatch(str(error)) from error
+            if state is None:
+                raise StaleSearchContinuation(
+                    "review retry has no current durable navigation state", field="page_handles"
+                )
+            return SubmitEvidenceReviewResponse(
+                operation_id=existing.operation_id,
+                ledger_cursor=f"ledger:{len(ledger.events())}",
+                affected_scope=(request.result_id,),
+                condition=WorkflowCondition.ACCEPTED,
+                committed=False,
+                next_action=RunOperation.SUBMIT_DOMAIN_EVIDENCE,
+                run_id=request.run_id,
+                run_state=projection.run_state,
+                result_id=request.result_id,
+                result_state=self._result_state(projection, request.result_id),
+                domain_id=request.domain_id,
+                workflow_state_hash=state.content_hash,
+                outstanding_triage_candidate_ids=state.workflow.outstanding_triage_candidate_ids(),
+            )
+        scope = self._retrieval_scope(
+            ledger,
+            request.run_id,
+            request.work_token,
+            request.result_id,
+            require_question=False,
+        )
+        assert scope.result_id is not None and scope.domain_id is not None
+        if (scope.result_id, scope.domain_id) != (request.result_id, request.domain_id):
+            raise InvalidRetrievalRequest(
+                "review request is outside the active Domain-Evidence scope"
+            )
+        index = EvidenceSearchIndex(self._required_root() / ".rob2" / "evidence.sqlite3")
+        search_policy = EvidenceSearchPolicy()
+        read_policy = EvidenceReadPolicy()
+        store = EvidenceNavigationStore(self._required_root())
+        try:
+            persisted = store.load(
+                run_id=request.run_id,
+                result_id=request.result_id,
+                domain_id=request.domain_id,
+                snapshot_hash=index._snapshot(),
+                search_policy_id=search_policy.policy_id,
+                search_policy_hash=canonical_hash(search_policy),
+                read_policy_id=read_policy.policy_id,
+                read_policy_hash=canonical_hash(read_policy),
+            )
+        except IncompatibleEvidenceNavigationState as error:
+            raise SearchPolicyMismatch(str(error)) from error
+        if persisted is None:
+            raise StaleSearchContinuation(
+                "review requires a current exposed v2 search page", field="page_handles"
+            )
+        attempts = {attempt.attempt_id: attempt for attempt in persisted.workflow.attempts}
+        exposed_candidate_ids = {
+            edge.candidate_id for edge in persisted.workflow.exposures
+        }
+        retained_candidate_ids = {
+            revision.candidate_id
+            for revision in (*persisted.workflow.triage_revisions, *request.triage_revisions)
+            if revision.kind is V2TriageKind.RETAINED
+        }
+        exposures = {
+            (
+                edge.attempt_id,
+                attempts[edge.attempt_id].sq_id,
+                edge.page_handle,
+                edge.candidate_id,
+            ): edge
+            for edge in persisted.workflow.exposures
+            if edge.page_handle in request.page_handles
+        }
+
+        def receipt_displays_edge(
+            receipt_id: str | None, edge: V2PageExposure, *, sq_id: str
+        ) -> bool:
+            """Resolve one receipt and prove that it displays this exact exposure."""
+
+            if not receipt_id:
+                return False
+            try:
+                reviewed = index.resolve_read_view_receipt(receipt_id, scope=scope)
+            except RetrievalFailure:
+                return False
+            return (
+                reviewed.snapshot_hash == persisted.snapshot_hash
+                and (reviewed.read_policy_id, reviewed.read_policy_hash)
+                == (read_policy.policy_id, canonical_hash(read_policy))
+                and sq_id in reviewed.question_ids
+                and any(
+                    fragment.unit_id == edge.canonical_unit_id
+                    and fragment.source_id == edge.source_id
+                    and fragment.source_artifact_hash == edge.source_artifact_hash
+                    and fragment.parse_id == edge.parse_id
+                    and fragment.span_start <= edge.canonical_start
+                    and fragment.span_end >= edge.canonical_end
+                    for fragment in reviewed.fragments
+                )
+            )
+
+        for revision in request.triage_revisions:
+            edge = exposures.get(
+                (revision.attempt_id, revision.sq_id, revision.page_handle, revision.candidate_id)
+            )
+            if edge is None:
+                raise StaleSearchContinuation(
+                    "triage revision binds a stale or unexposed candidate occurrence",
+                    field="triage_revisions",
+                )
+            preview_safe = _preview_is_self_contained(edge)
+            if revision.kind is V2TriageKind.IRRELEVANT:
+                if revision.basis is V2TriageBasis.PREVIEW and not preview_safe:
+                    raise InvalidRetrievalRequest(
+                        "risk-bearing candidate requires an exact read-view receipt "
+                        "for irrelevant triage"
+                    )
+                if revision.basis is V2TriageBasis.READ_VIEW_RECEIPT:
+                    try:
+                        reviewed = index.resolve_read_view_receipt(
+                            revision.read_view_receipt or "", scope=scope
+                        )
+                    except RetrievalFailure as error:
+                        raise InvalidRetrievalRequest(
+                            "triage read-view receipt is invalid or stale"
+                        ) from error
+                    if (
+                        reviewed.snapshot_hash != persisted.snapshot_hash
+                        or (reviewed.read_policy_id, reviewed.read_policy_hash)
+                        != (read_policy.policy_id, canonical_hash(read_policy))
+                        or revision.sq_id not in reviewed.question_ids
+                        or not any(
+                            fragment.unit_id == edge.canonical_unit_id
+                            and fragment.source_id == edge.source_id
+                            and fragment.source_artifact_hash == edge.source_artifact_hash
+                            and fragment.parse_id == edge.parse_id
+                            and fragment.span_start <= edge.canonical_start
+                            and fragment.span_end >= edge.canonical_end
+                            for fragment in reviewed.fragments
+                        )
+                    ):
+                        raise InvalidRetrievalRequest(
+                            "triage receipt does not display the exposed candidate context"
+                        )
+            if revision.kind is V2TriageKind.DUPLICATE and (
+                revision.retained_target_id not in exposed_candidate_ids
+                or revision.retained_target_id not in retained_candidate_ids
+            ):
+                raise InvalidRetrievalRequest(
+                    "duplicate retained_target_id must name an exposed retained candidate",
+                    field="triage_revisions.retained_target_id",
+                )
+            if revision.kind is V2TriageKind.DUPLICATE:
+                if edge.duplicate_group_id is not None:
+                    if (
+                        edge.retained_duplicate_target_id is not None
+                        and edge.retained_duplicate_target_id != edge.candidate_id
+                        and revision.retained_target_id != edge.retained_duplicate_target_id
+                    ):
+                        raise InvalidRetrievalRequest(
+                            "duplicate target conflicts with exposed duplicate lineage",
+                            field="triage_revisions.retained_target_id",
+                        )
+                else:
+                    target_edge = next(
+                        (
+                            candidate
+                            for candidate in persisted.workflow.exposures
+                            if candidate.candidate_id == revision.retained_target_id
+                            and attempts[candidate.attempt_id].sq_id == revision.sq_id
+                        ),
+                        None,
+                    )
+                    if target_edge is None:
+                        raise InvalidRetrievalRequest(
+                            "duplicate retained target has no exposure for this signaling question",
+                            field="triage_revisions.retained_target_id",
+                        )
+                    if not receipt_displays_edge(
+                        revision.read_view_receipt, edge, sq_id=revision.sq_id
+                    ):
+                        raise InvalidRetrievalRequest(
+                            "duplicate receipt does not display the exposed candidate context",
+                            field="triage_revisions.read_view_receipt",
+                        )
+                    if not receipt_displays_edge(
+                        revision.retained_target_read_view_receipt,
+                        target_edge,
+                        sq_id=revision.sq_id,
+                    ):
+                        raise InvalidRetrievalRequest(
+                            "duplicate receipt does not display the retained target context",
+                            field="triage_revisions.retained_target_read_view_receipt",
+                        )
+        workflow = submit_v2_page_triage(
+            persisted.workflow,
+            submission_id=request.submission_id,
+            page_handles=request.page_handles,
+            revisions=request.triage_revisions,
+        )
+        state = new_navigation_state(
+            run_id=request.run_id,
+            workflow=workflow,
+            read_policy_id=read_policy.policy_id,
+            read_policy_hash=canonical_hash(read_policy),
+        )
+        try:
+            store.save(
+                state,
+                expected_content_hash=persisted.content_hash,
+            )
+        except ConcurrentEvidenceNavigationUpdate as error:
+            raise InvalidRetrievalRequest(str(error), field="submission_id") from error
+        record = _EvidenceReviewRecord(
+            run_id=request.run_id,
+            result_id=request.result_id,
+            domain_id=request.domain_id,
+            submission=request,
+            workflow_state_hash=state.content_hash,
+        )
+        committed = self._commit_submission(
+            ledger,
+            run_id=request.run_id,
+            scope=request.result_id,
+            operation="operation:submit-evidence-review",
+            operation_key=request.idempotency_key,
+            artifact=record,
+            checkpoint="checkpoint:evidence-review",
+        )
+        projection = self._projection(ledger, request.run_id)
+        return SubmitEvidenceReviewResponse(
+            operation_id=committed.operation_id,
+            ledger_cursor=f"ledger:{committed.sequence}",
+            affected_scope=(request.result_id,),
+            condition=WorkflowCondition.ACCEPTED,
+            committed=not committed.duplicate,
+            next_action=RunOperation.SUBMIT_DOMAIN_EVIDENCE,
+            run_id=request.run_id,
+            run_state=projection.run_state,
+            result_id=request.result_id,
+            result_state=self._result_state(projection, request.result_id),
+            domain_id=request.domain_id,
+            workflow_state_hash=state.content_hash,
+            outstanding_triage_candidate_ids=workflow.outstanding_triage_candidate_ids(),
         )
 
     def _retrieval_scope(
@@ -2916,7 +3310,7 @@ class RunEngine:
                 affected_scope=(request.run_id,),
                 condition=WorkflowCondition.ACCEPTED,
                 committed=False,
-                next_permitted_action=RunOperation.CONTINUE_RUN,
+                next_action=RunOperation.CONTINUE_RUN,
                 run_id=request.run_id,
                 run_state=projection.run_state,
             )
@@ -2988,7 +3382,7 @@ class RunEngine:
                 affected_scope=(request.run_id,),
                 condition=WorkflowCondition.RUN_BLOCKED,
                 committed=False,
-                next_permitted_action=RunOperation.SUBMIT_SOURCE_ROLE_REVIEW,
+                next_action=RunOperation.SUBMIT_SOURCE_ROLE_REVIEW,
                 run_id=request.run_id,
                 run_state=projection.run_state,
                 error=primary.model_copy(update={"violations": tuple(violations)}),
@@ -3013,7 +3407,7 @@ class RunEngine:
                 affected_scope=(request.run_id,),
                 condition=WorkflowCondition.RETRY,
                 committed=False,
-                next_permitted_action=RunOperation.CONTINUE_RUN,
+                next_action=RunOperation.CONTINUE_RUN,
                 run_id=request.run_id,
                 run_state=projection.run_state,
                 error=OperationError(
@@ -3030,7 +3424,7 @@ class RunEngine:
             affected_scope=(request.run_id,),
             condition=WorkflowCondition.ACCEPTED,
             committed=not result.duplicate,
-            next_permitted_action=RunOperation.CONTINUE_RUN,
+            next_action=RunOperation.CONTINUE_RUN,
             run_id=request.run_id,
             run_state=projection.run_state,
         )
@@ -3072,7 +3466,7 @@ class RunEngine:
                 affected_scope=(request.result.result_id,),
                 condition=WorkflowCondition.ACCEPTED,
                 committed=False,
-                next_permitted_action=RunOperation.CONTINUE_RUN,
+                next_action=RunOperation.CONTINUE_RUN,
                 run_id=request.run_id,
                 run_state=projection.run_state,
                 result_id=request.result.result_id,
@@ -3211,7 +3605,7 @@ class RunEngine:
             affected_scope=(request.result.result_id,),
             condition=WorkflowCondition.ACCEPTED,
             committed=not committed.duplicate,
-            next_permitted_action=RunOperation.CONTINUE_RUN,
+            next_action=RunOperation.CONTINUE_RUN,
             run_id=request.run_id,
             run_state=projection.run_state,
             result_id=request.result.result_id,
@@ -3254,7 +3648,7 @@ class RunEngine:
                 affected_scope=(request.result_id,),
                 condition=WorkflowCondition.ACCEPTED,
                 committed=False,
-                next_permitted_action=RunOperation.CONTINUE_RUN,
+                next_action=RunOperation.CONTINUE_RUN,
                 run_id=request.run_id,
                 run_state=projection.run_state,
                 result_id=request.result_id,
@@ -3334,7 +3728,11 @@ class RunEngine:
         if violations:
             return self._domain_evidence_blocked_response(ledger, request, violations)
         evidence_bundles, manifests, receipts = self._freeze_domain_evidence(
-            ledger, request, submitted_passages, review_refs
+            ledger,
+            request,
+            submitted_passages,
+            review_refs,
+            materialize_coverage=request.coverage_state is not EvidenceCoverageState.INCOMPLETE,
         )
         normalized = _DomainEvidenceRecord(
             run_id=request.run_id,
@@ -3376,7 +3774,7 @@ class RunEngine:
             affected_scope=(request.result_id,),
             condition=WorkflowCondition.ACCEPTED,
             committed=not result.duplicate,
-            next_permitted_action=RunOperation.CONTINUE_RUN,
+            next_action=RunOperation.CONTINUE_RUN,
             run_id=request.run_id,
             run_state=projection.run_state,
             result_id=request.result_id,
@@ -3498,7 +3896,8 @@ class RunEngine:
                     }
                 ):
                     raise ValueError(
-                        "textual Evidence requires an ACTIVE supporting or contradicting review span"
+                        "textual Evidence requires an ACTIVE supporting or contradicting "
+                        "review span"
                     )
                 claim_suffixes.add(suffix)
                 prepared_passages.append(
@@ -3639,7 +4038,7 @@ class RunEngine:
                 affected_scope=(request.result_id,),
                 condition=WorkflowCondition.ACCEPTED,
                 committed=False,
-                next_permitted_action=RunOperation.CONTINUE_RUN,
+                next_action=RunOperation.CONTINUE_RUN,
                 run_id=request.run_id,
                 run_state=projection.run_state,
                 result_id=request.result_id,
@@ -3785,7 +4184,7 @@ class RunEngine:
             affected_scope=(request.result_id,),
             condition=WorkflowCondition.ACCEPTED,
             committed=not result.duplicate,
-            next_permitted_action=RunOperation.CONTINUE_RUN,
+            next_action=RunOperation.CONTINUE_RUN,
             run_id=request.run_id,
             run_state=projection.run_state,
             result_id=request.result_id,
@@ -3820,7 +4219,7 @@ class RunEngine:
                 affected_scope=(request.result_id,),
                 condition=WorkflowCondition.ACCEPTED,
                 committed=False,
-                next_permitted_action=RunOperation.CONTINUE_RUN,
+                next_action=RunOperation.CONTINUE_RUN,
                 run_id=request.run_id,
                 run_state=projection.run_state,
                 result_id=request.result_id,
@@ -3911,7 +4310,7 @@ class RunEngine:
             affected_scope=(request.result_id,),
             condition=WorkflowCondition.ACCEPTED,
             committed=not result.duplicate,
-            next_permitted_action=RunOperation.CONTINUE_RUN,
+            next_action=RunOperation.CONTINUE_RUN,
             run_id=request.run_id,
             run_state=projection.run_state,
             result_id=request.result_id,
@@ -3996,7 +4395,7 @@ class RunEngine:
             affected_scope=(request.result_id,),
             condition=WorkflowCondition.RUN_BLOCKED,
             committed=False,
-            next_permitted_action=RunOperation.SUBMIT_DOMAIN_EVIDENCE,
+            next_action=RunOperation.SUBMIT_DOMAIN_EVIDENCE,
             run_id=request.run_id,
             run_state=projection.run_state,
             result_id=request.result_id,
@@ -4004,6 +4403,42 @@ class RunEngine:
             domain_id=request.domain_id,
             error=primary.model_copy(update={"violations": tuple(violations)}),
         )
+
+    def _v2_workflow_for(
+        self, run_id: Identifier, result_id: Identifier, domain_id: Identifier
+    ) -> V2EvidenceWorkflowState | None:
+        """Load only a current v2 navigation state; stale state never authorizes freeze."""
+        try:
+            index = EvidenceSearchIndex(self._required_root() / ".rob2" / "evidence.sqlite3")
+            search_policy = EvidenceSearchPolicy()
+            read_policy = EvidenceReadPolicy()
+            state = EvidenceNavigationStore(self._required_root()).load(
+                run_id=run_id,
+                result_id=result_id,
+                domain_id=domain_id,
+                snapshot_hash=index._snapshot(),
+                search_policy_id=search_policy.policy_id,
+                search_policy_hash=canonical_hash(search_policy),
+                read_policy_id=read_policy.policy_id,
+                read_policy_hash=canonical_hash(read_policy),
+            )
+        except (IncompatibleEvidenceNavigationState, OperationalRetrievalFailure):
+            return None
+        return state.workflow if state is not None else None
+
+    @staticmethod
+    def _v2_freeze_ready(workflow: V2EvidenceWorkflowState, question_ids: set[Identifier]) -> bool:
+        if not workflow.freeze_valid():
+            return False
+        for question_id in question_ids:
+            selected = {
+                item.pass_kind
+                for item in workflow.attempts
+                if item.sq_id == question_id and item.kind is V2QueryAttemptKind.SELECTED
+            }
+            if selected != set(SearchPassKind):
+                return False
+        return True
 
     def _validate_domain_evidence_submission(
         self,
@@ -4030,6 +4465,11 @@ class RunEngine:
         domain_questions = set(domain.question_ids)
         violations: list[OperationError] = []
 
+        workflow = self._v2_workflow_for(request.run_id, request.result_id, request.domain_id)
+        freezes_scientific_evidence = bool(
+            request.items or request.passages or request.evidence_by_question
+        )
+
         supplied_question_ids = set(request.evidence_by_question)
         unknown_question_ids = supplied_question_ids - domain_questions
         if unknown_question_ids:
@@ -4050,20 +4490,13 @@ class RunEngine:
         mapped_item_ids = {
             item.entity_id for items in request.evidence_by_question.values() for item in items
         }
-        # Search coverage is engine-owned recorder state keyed by this active
-        # Result x Domain x SQ, accumulated by prior search_evidence calls
-        # (#127) -- never a client-supplied receipt.
-        recorders = {
-            question_id: self._coverage_recorders.get(
-                (request.run_id, request.result_id, request.domain_id, question_id)
-            )
+        # v2 navigation state is project-local and content-bound. Legacy
+        # in-memory recorders remain inspectable history only.
+        coverage_complete = {
+            question_id: workflow is not None and self._v2_freeze_ready(workflow, domain_questions)
             for question_id in domain_questions
         }
-        coverage_complete = {
-            question_id: recorder is not None and recorder.is_coverage_complete()
-            for question_id, recorder in recorders.items()
-        }
-        if request.items and not all(coverage_complete.values()):
+        if freezes_scientific_evidence and not all(coverage_complete.values()):
             violations.append(
                 _evidence_violation(
                     "freezing Evidence items requires complete Search coverage for every "
@@ -4072,7 +4505,7 @@ class RunEngine:
                     recovery=("Call search_evidence until coverage_complete=true for each SQ.",),
                 )
             )
-        if request.items and any(
+        if freezes_scientific_evidence and any(
             self._visual_coverage_blocked(ledger, request, question_id)
             for question_id in domain_questions
         ):
@@ -4139,35 +4572,16 @@ class RunEngine:
                         recovery=("Call search_evidence until coverage_complete=true.",),
                     )
                 )
-            else:
-                previews = {
-                    question_id: self._freeze_recorder(
-                        request, question_id, recorder, submitted_passages
+            elif workflow is not None and any(
+                item.kind.value == "retained" for item in workflow.triage_revisions
+            ):
+                violations.append(
+                    _evidence_violation(
+                        "no-information basis is unavailable while retained Evidence "
+                        "candidates remain",
+                        recovery=("Disposition every retained Evidence candidate first.",),
                     )
-                    for question_id, recorder in recorders.items()
-                    if recorder is not None
-                }
-                if any(
-                    not previews[question_id].establishes_no_information_basis()
-                    for question_id in domain_questions
-                ):
-                    violations.append(
-                        _evidence_violation(
-                            "no-information basis requires adequate readable-source "
-                            "Search coverage",
-                        )
-                    )
-                elif any(
-                    previews[question_id].retained_candidate_ids()
-                    for question_id in domain_questions
-                ):
-                    violations.append(
-                        _evidence_violation(
-                            "no-information basis is unavailable while retained Evidence "
-                            "candidates remain",
-                            recovery=("Disposition every retained Evidence candidate first.",),
-                        )
-                    )
+                )
         if enforce_non_empty and not (
             request.items
             or request.passages
@@ -4408,7 +4822,17 @@ class RunEngine:
                     != sha256_digest(unit.text[fragment.span_start : fragment.span_end].encode())
                 ):
                     raise ValueError("review span is not contained in its exact issued read view")
-                span_id = f"review-span:{self._digest('|'.join((submitted.candidate_id, unit.unit_id, unit.parse_id, unit.source_artifact_hash, str(submitted_span.span_start), str(submitted_span.span_end))))}"
+                span_identity = "|".join(
+                    (
+                        submitted.candidate_id,
+                        unit.unit_id,
+                        unit.parse_id,
+                        unit.source_artifact_hash,
+                        str(submitted_span.span_start),
+                        str(submitted_span.span_end),
+                    )
+                )
+                span_id = f"review-span:{self._digest(span_identity)}"
                 spans.append(
                     EvidenceReviewSpan(
                         span_id=span_id,
@@ -4478,7 +4902,8 @@ class RunEngine:
                     }
                 ):
                     raise ValueError(
-                        "textual Evidence requires an ACTIVE supporting or contradicting review span"
+                        "textual Evidence requires an ACTIVE supporting or contradicting "
+                        "review span"
                     )
             for span in review.spans:
                 if span.disposition not in {
@@ -4693,6 +5118,7 @@ class RunEngine:
             tuple[Identifier, Identifier], tuple[EvidenceReviewRevision, RecordReference]
         ]
         | None = None,
+        materialize_coverage: bool = True,
     ) -> tuple[
         tuple[RecordReference, ...],
         tuple[RecordReference, ...],
@@ -4734,18 +5160,76 @@ class RunEngine:
             dependencies=disposition_record.dependencies,
         )
         coverage_refs_by_question: dict[Identifier, RecordReference] = {}
-        for question_id in domain.question_ids:
+        workflow = self._v2_workflow_for(request.run_id, request.result_id, request.domain_id)
+        if materialize_coverage and workflow is None:
+            raise ValueError("v2 Evidence navigation state is required to freeze Evidence")
+        read_policy = EvidenceReadPolicy()
+        for question_id in domain.question_ids if materialize_coverage else ():
+            assert workflow is not None
             review_refs = tuple(
                 reference
                 for (candidate_id, sq_id), (_, reference) in resolved_reviews.items()
                 if sq_id == question_id
             )
-            recorder = self._coverage_recorders.get(
-                (request.run_id, request.result_id, request.domain_id, question_id)
-            )
-            if recorder is None:
-                continue
-            receipt = self._freeze_recorder(request, question_id, recorder, submitted_passages)
+            attempt_ids = {
+                attempt.attempt_id for attempt in workflow.attempts if attempt.sq_id == question_id
+            }
+            page_handles = {
+                page.page_handle for page in workflow.pages if page.attempt_id in attempt_ids
+            }
+            revision_ids = {
+                revision.revision_id
+                for revision in workflow.triage_revisions
+                if revision.attempt_id in attempt_ids and revision.sq_id == question_id
+            }
+            receipt = {
+                "receipt_type": "evidence-navigation-v2",
+                "contract_version": "2.0.0",
+                "run_id": request.run_id,
+                "result_id": request.result_id,
+                "domain_id": request.domain_id,
+                "sq_id": question_id,
+                "workflow_content_hash": workflow.content_hash,
+                "snapshot_hash": workflow.snapshot_hash,
+                "search_policy_id": workflow.search_policy_id,
+                "search_policy_hash": workflow.search_policy_hash,
+                "read_policy_id": read_policy.policy_id,
+                "read_policy_hash": canonical_hash(read_policy),
+                "selected_attempts": [
+                    attempt.model_dump(mode="json")
+                    for attempt in workflow.attempts
+                    if attempt.attempt_id in attempt_ids
+                    and attempt.kind is V2QueryAttemptKind.SELECTED
+                ],
+                "attempts": [
+                    attempt.model_dump(mode="json")
+                    for attempt in workflow.attempts
+                    if attempt.attempt_id in attempt_ids
+                ],
+                "pages": [
+                    page.model_dump(mode="json")
+                    for page in workflow.pages
+                    if page.attempt_id in attempt_ids
+                ],
+                "exposures": [
+                    exposure.model_dump(mode="json")
+                    for exposure in workflow.exposures
+                    if exposure.attempt_id in attempt_ids
+                ],
+                "triage_revisions": [
+                    revision.model_dump(mode="json")
+                    for revision in workflow.triage_revisions
+                    if revision.revision_id in revision_ids
+                ],
+                "triage_submissions": [
+                    submission.model_dump(mode="json")
+                    for submission in workflow.triage_submissions
+                    if set(submission.page_handles).issubset(page_handles)
+                    and set(submission.triage_revision_ids).issubset(revision_ids)
+                ],
+                "content_hash": None,
+            }
+            receipt["content_hash"] = canonical_hash(receipt)
             coverage_suffix = self._digest(
                 f"{request.run_id}|{request.idempotency_key}|coverage|{question_id}"
             )
@@ -4756,7 +5240,7 @@ class RunEngine:
                 observed_at=self._now(),
                 result_id=request.result_id,
                 domain_id=request.domain_id,
-                receipts=(receipt.model_dump(mode="json"),),
+                receipts=(receipt,),
             )
             coverage_refs_by_question[question_id] = self._commit_frozen_artifact(
                 ledger,
@@ -4993,6 +5477,26 @@ class RunEngine:
                 except (KeyError, OSError, TypeError, ValueError, json.JSONDecodeError):
                     continue
                 for raw_receipt in receipt_record.receipts:
+                    if (
+                        isinstance(raw_receipt, dict)
+                        and raw_receipt.get("receipt_type") == "evidence-navigation-v2"
+                    ):
+                        selected = raw_receipt.get("selected_attempts", ())
+                        triage = raw_receipt.get("triage_revisions", ())
+                        selected_passes = {
+                            item.get("pass_kind") for item in selected if isinstance(item, dict)
+                        }
+                        if (
+                            raw_receipt.get("sq_id") == question_id
+                            and selected_passes == {item.value for item in SearchPassKind}
+                            and all(
+                                item.get("kind") != V2TriageKind.RETAINED.value
+                                for item in triage
+                                if isinstance(item, dict)
+                            )
+                        ):
+                            return True
+                        continue
                     try:
                         receipt = SearchCoverageReceipt.model_validate(raw_receipt)
                         if receipt.sq_id != question_id:
@@ -5453,7 +5957,7 @@ class RunEngine:
             affected_scope=(request.result_id, request.domain_id),
             condition=WorkflowCondition.RUN_BLOCKED,
             committed=False,
-            next_permitted_action=RunOperation.SUBMIT_DOMAIN_EVIDENCE,
+            next_action=RunOperation.SUBMIT_DOMAIN_EVIDENCE,
             run_id=request.run_id,
             run_state=projection.run_state,
             result_id=request.result_id,
@@ -6161,6 +6665,7 @@ class RunEngine:
                         reading_order = text_item.reading_order or reading_order_cursor + 1
                         reading_order = max(reading_order, reading_order_cursor + 1)
                         reading_order_cursor = reading_order
+                        fragment_id = getattr(text_item, "fragment_id", None)
                         blocks.append(
                             CanonicalBlock(
                                 kind=kind or CanonicalUnitKind.UNCLASSIFIED,
@@ -6188,9 +6693,7 @@ class RunEngine:
                                     or inferred_hierarchy_path
                                 ),
                                 reading_order=reading_order,
-                                fragment_ids=(text_item.fragment_id,)
-                                if getattr(text_item, "fragment_id", None)
-                                else (),
+                                fragment_ids=(fragment_id,) if isinstance(fragment_id, str) else (),
                                 source_role=(source.roles[0].value if source.roles else None),
                                 document_zone=block_zone,
                                 warnings=warnings,
@@ -10111,6 +10614,20 @@ class RunEngine:
             ) from error
         fingerprint = installed_release_fingerprint(root, lock)
 
+        def fingerprint_hash(name: str) -> str:
+            value = fingerprint.get(name)
+            if not isinstance(value, str):
+                raise ValueError(f"installed release fingerprint omitted {name}")
+            return value
+
+        skill_hashes = fingerprint.get("skill_hashes")
+        if not isinstance(skill_hashes, dict):
+            raise ValueError("installed release fingerprint omitted skill hashes")
+        assessment_skill = skill_hashes.get("rob2-assess")
+        initialization_skill = skill_hashes.get("rob2-init")
+        if not isinstance(assessment_skill, str) or not isinstance(initialization_skill, str):
+            raise ValueError("installed release fingerprint omitted required skill hashes")
+
         def content_hash(value: str) -> ContentHash:
             return "sha256:" + hashlib.sha256(value.encode()).hexdigest()
 
@@ -10122,16 +10639,16 @@ class RunEngine:
             f"{json.dumps(parser_configuration, default=str, sort_keys=True)}"
         )
         project_policy = self._required_root() / "rob2.yaml"
-        components = {
+        components: dict[str, str] = {
             "engine-schema": content_hash(
                 f"{lock.package}|{lock.package_version}|"
                 f"{lock.application_contract}|{SCHEMA_VERSION}"
             ),
-            "dependency-lock": fingerprint["dependency_lock_hash"],
-            "logic-pack": fingerprint["logic_pack_hash"],
-            "guidance-pack": fingerprint["guidance_pack_hash"],
-            "assessment-skill": fingerprint["skill_hashes"]["rob2-assess"],
-            "initialization-skill": fingerprint["skill_hashes"]["rob2-init"],
+            "dependency-lock": fingerprint_hash("dependency_lock_hash"),
+            "logic-pack": fingerprint_hash("logic_pack_hash"),
+            "guidance-pack": fingerprint_hash("guidance_pack_hash"),
+            "assessment-skill": assessment_skill,
+            "initialization-skill": initialization_skill,
             "parser": content_hash(parser_identity),
             "project-policies": (
                 "sha256:" + hashlib.sha256(project_policy.read_bytes()).hexdigest()
@@ -10270,6 +10787,7 @@ class RunEngine:
             )
         lease = self._acquire_lease(ledger, now)
         self._commit_transitions(ledger, tuple(transitions), lease, now=now)
+        EvidenceNavigationStore(self._required_root()).supersede_run(prepared.run_id)
 
     def _events_for_run(
         self, ledger: WorkflowLedger, run_id: Identifier
@@ -12025,6 +12543,10 @@ class RunEngine:
             )
         lease = self._acquire_lease(ledger, now)
         self._commit_transitions(ledger, tuple(transitions), lease, now=now)
+        if invalidated_result_ids:
+            EvidenceNavigationStore(self._required_root()).supersede_run(
+                run_id, result_ids=invalidated_result_ids
+            )
 
     @staticmethod
     def _remap_initialization_identities(
@@ -12477,7 +12999,7 @@ class RunEngine:
             affected_scope=(run_id,),
             condition=WorkflowCondition(directive.value),
             committed=committed,
-            next_permitted_action=(
+            next_action=(
                 RunOperation.SUBMIT_RUN_PROPOSAL
                 if directive is RunDirective.CONFIRMATION_REQUIRED
                 else work_item.operation
@@ -12641,7 +13163,7 @@ class RunEngine:
             affected_scope=(rejected_run_id,),
             condition=WorkflowCondition.RUN_BLOCKED,
             committed=False,
-            next_permitted_action=RunOperation.PREPARE_RUN,
+            next_action=RunOperation.PREPARE_RUN,
             run_id=rejected_run_id,
             run_state=RunState.BLOCKED,
             error=OperationError(code=code, detail=detail, recovery=recovery),
@@ -12684,7 +13206,7 @@ class RunEngine:
             affected_scope=(run_id,),
             condition=WorkflowCondition.RUN_BLOCKED,
             committed=False,
-            next_permitted_action=RunOperation.PREPARE_RUN,
+            next_action=RunOperation.PREPARE_RUN,
             run_id=run_id,
             run_state=RunState.BLOCKED,
             error=OperationError(
@@ -12712,7 +13234,7 @@ class RunEngine:
             affected_scope=(run_id,),
             condition=WorkflowCondition.RUN_BLOCKED,
             committed=False,
-            next_permitted_action=RunOperation.PREPARE_RUN,
+            next_action=RunOperation.PREPARE_RUN,
             run_id=run_id,
             run_state=run_state,
             proposal=proposal,
@@ -12748,7 +13270,7 @@ class RunEngine:
             affected_scope=(run_id,),
             condition=WorkflowCondition.RUN_BLOCKED,
             committed=False,
-            next_permitted_action=RunOperation.PREPARE_RUN,
+            next_action=RunOperation.PREPARE_RUN,
             run_id=run_id,
             run_state=RunState.BLOCKED,
             proposal=None,
@@ -12849,3 +13371,22 @@ class RunEngine:
         prefix = readable[:48] or "id"
         digest = hashlib.sha256(raw.encode("utf-8")).hexdigest()[:16]
         return f"{prefix}-{digest}"
+
+
+def _preview_is_self_contained(edge: V2PageExposure) -> bool:
+    """Whether objective search facts permit terminal preview-only irrelevance."""
+
+    return (
+        edge.left_omitted_character_count == 0
+        and edge.right_omitted_character_count == 0
+        and edge.undisplayed_match_count == 0
+        and not edge.warnings
+        and not edge.table_headers
+        and edge.caption is None
+        and not edge.triage_flags.has_reading_order_uncertainty
+        and not edge.triage_flags.has_visual_uncertainty
+        and not edge.triage_flags.has_duplicate_lineage
+        and not edge.triage_flags.is_table_content
+        and not edge.triage_flags.has_context_dependency
+        and not edge.triage_flags.has_possible_contradiction
+    )

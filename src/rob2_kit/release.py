@@ -44,6 +44,7 @@ SKILL_ALLOWED_TOOL_NAMES = (
     "confirm_run_definition",
     "search_evidence",
     "read_evidence",
+    "submit_evidence_review",
     "inspect_visual_candidate",
     "submit_source_role_review",
     "submit_result_resolution",
@@ -406,7 +407,10 @@ def verify_mcp_launchability(
 
     tools = anyio.run(inspect)
     if tools != SKILL_ALLOWED_TOOL_NAMES:
-        raise ValueError("the launched MCP server does not expose the locked tool surface")
+        raise ValueError(
+            "the launched MCP server does not expose the locked tool surface: "
+            f"expected {SKILL_ALLOWED_TOOL_NAMES!r}, got {tools!r}"
+        )
     return tools
 
 
@@ -558,8 +562,8 @@ def validate_skill_contract(root: Path) -> None:
     """Validate the release-owned skill, reference, and forward-test contract."""
 
     root = root.resolve()
-    if len(SKILL_ALLOWED_TOOL_NAMES) != 12 or len(set(SKILL_ALLOWED_TOOL_NAMES)) != 12:
-        raise ValueError("skill tool allowlist must contain exactly twelve unique tools")
+    if len(SKILL_ALLOWED_TOOL_NAMES) != 13 or len(set(SKILL_ALLOWED_TOOL_NAMES)) != 13:
+        raise ValueError("skill tool allowlist must contain exactly thirteen unique tools")
     if any(not isinstance(name, str) or not name for name in SKILL_ALLOWED_TOOL_NAMES):
         raise ValueError("skill tool allowlist is malformed")
     if not set(SKILL_ALLOWED_TOOL_NAMES) <= set(RUN_OPERATION_NAMES):

@@ -26,6 +26,7 @@ from rob2_kit.application.contracts import (
     SearchEvidenceRequest,
     SubmitDomainAnswersRequest,
     SubmitDomainEvidenceRequest,
+    SubmitEvidenceReviewRequest,
     SubmitRunProposalRequest,
     SubmitSourceRoleReviewRequest,
     WorkToken,
@@ -34,12 +35,18 @@ from rob2_kit.application.run_engine import RunEngine
 from rob2_kit.domain.evidence import VisualTranscription
 from rob2_kit.domain.revisions import Actor, ActorKind, Dependency, RecordReference
 from rob2_kit.evidence.search import SearchQuery
-from rob2_kit.evidence.workflow import SearchPassKind
+from rob2_kit.evidence.workflow import SearchPassKind, V2QueryAttemptKind
 from rob2_kit.interfaces.mcp.server import CANONICAL_TOOL_NAMES, registered_tool_names
 from rob2_kit.reports.archives import verify_archive
 from rob2_kit.storage import ArtifactStore, WorkflowLedger
 from rob2_kit.storage.ledger import LeaseConflictError
 from tests.test_host_interfaces import blank_pdf
+
+
+def _v2_tool_names() -> tuple[str, ...]:
+    """Use the generated public inventory as the sole registration order."""
+
+    return CANONICAL_TOOL_NAMES
 
 
 def _result_declaration() -> dict[str, object]:
@@ -229,8 +236,13 @@ def _complete_empty_receipts(
             (SearchQuery(terms=(f"contradiction-{slug}",)), SearchPassKind.CONTRADICTION, None),
         )
         for query, pass_kind, seed_family in queries:
-            engine.search_evidence(
+            attempt_id = (
+                f"attempt:{token.token.removeprefix('work-token:')}:{question_id}:"
+                f"{pass_kind.value}"
+            )
+            response = engine.search_evidence(
                 SearchEvidenceRequest(
+                    contract_version="2.0.0",
                     run_id=run_id,
                     work_token=token,
                     result_id=result_id,
@@ -238,6 +250,21 @@ def _complete_empty_receipts(
                     query=query,
                     pass_kind=pass_kind,
                     seed_family=seed_family,
+                    attempt_id=attempt_id,
+                    attempt_kind=V2QueryAttemptKind.SELECTED,
+                )
+            )
+            engine.submit_evidence_review(
+                SubmitEvidenceReviewRequest(
+                    contract_version="2.0.0",
+                    run_id=run_id,
+                    work_token=token,
+                    idempotency_key=f"triage:{attempt_id}:{response.page.snapshot_hash}",
+                    result_id=result_id,
+                    domain_id=token.domain_id,
+                    submission_id=f"submission:{attempt_id}:{response.page.snapshot_hash}",
+                    page_handles=(response.page.page_handle,),
+                    triage_revisions=(),
                 )
             )
 
@@ -266,9 +293,11 @@ async def _complete_empty_receipts_via_session(
             ({"terms": [f"contradiction-{slug}"]}, "contradiction", None),
         )
         for query, pass_kind, seed_family in queries:
-            await session.call_tool(
+            attempt_id = f"attempt:{work_token['token']}:{question_id}:{pass_kind}"
+            response = await session.call_tool(
                 "search_evidence",
                 {
+                    "contract_version": "2.0.0",
                     "run_id": run_id,
                     "work_token": work_token,
                     "result_id": result_id,
@@ -276,6 +305,23 @@ async def _complete_empty_receipts_via_session(
                     "query": query,
                     "pass_kind": pass_kind,
                     "seed_family": seed_family,
+                    "attempt_id": attempt_id,
+                    "attempt_kind": "selected",
+                },
+            )
+            page = response.structured_content["page"]
+            await session.call_tool(
+                "submit_evidence_review",
+                {
+                    "contract_version": "2.0.0",
+                    "run_id": run_id,
+                    "work_token": work_token,
+                    "result_id": result_id,
+                    "domain_id": work_token["domain_id"],
+                    "submission_id": f"submission:{attempt_id}:{page['snapshot_hash']}",
+                    "idempotency_key": f"triage:{attempt_id}:{page['snapshot_hash']}",
+                    "page_handles": [page["page_handle"]],
+                    "triage_revisions": [],
                 },
             )
 
@@ -420,7 +466,7 @@ async def _finish_domains(session: ClientSession, root: Path, run_id: str) -> No
         evidence_payload = {
             "run_id": run_id,
             "work_token": work["work_item"]["work_token"],
-            "contract_version": "1.2.0",
+            "contract_version": "2.0.0",
             "result_id": "result:trial-a-mortality",
             "domain_id": domain_id,
             "items": [visual_ref.model_dump(mode="json")],
@@ -504,10 +550,10 @@ def test_five_domain_journey_survives_stdio_restart_and_publishes_report(
             async with ClientSession(read, write) as session:
                 await session.initialize()
                 tools = await session.list_tools()
-                assert tuple(tool.name for tool in tools.tools) == CANONICAL_TOOL_NAMES
+                assert tuple(tool.name for tool in tools.tools) == _v2_tool_names()
                 for tool in tools.tools:
                     if tool.name.startswith("submit_"):
-                        assert "contract_version" in tool.input_schema["required"]
+                        assert "contract_version" in tool.input_schema["properties"]
                         assert "mutation_context" not in tool.input_schema["properties"]
                 # Source-role review already resolved pre-confirmation, inside
                 # _prepare_and_confirm (#119) — the next work item is the
@@ -756,7 +802,7 @@ def test_report_history_preserves_an_earlier_immutable_bundle(tmp_path: Path) ->
                         "idempotency_key": f"idempotency:{suffix}-evidence-{index}",
                         "result_id": result_id,
                         "domain_id": domain_id,
-                        "contract_version": "1.2.0",
+                        "contract_version": "2.0.0",
                         "items": [visual_ref.model_dump(mode="json")],
                         "evidence_by_question": {
                             question_id: [visual_ref.model_dump(mode="json")]

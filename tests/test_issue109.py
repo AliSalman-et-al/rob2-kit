@@ -45,7 +45,7 @@ def test_every_public_tool_description_front_loads_safe_use_guidance() -> None:
     """Tool discovery must orient a Harness before it sees schema detail."""
 
     tools = {tool.name: tool for tool in anyio.run(create_server().list_tools)}
-    assert len(tools) == 12
+    assert len(tools) == 13
     for name, tool in tools.items():
         description = tool.description or ""
         assert description.startswith("When to use:"), name

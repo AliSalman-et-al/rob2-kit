@@ -46,7 +46,7 @@ def test_two_canonical_skills_are_linted_with_four_direct_references() -> None:
 def test_generated_host_adapters_pin_exactly_the_skill_allowlist_and_hashes() -> None:
     """Host copies are generated from canonical sources and expose no extra skill tools."""
 
-    assert len(SKILL_ALLOWED_TOOL_NAMES) == 12
+    assert len(SKILL_ALLOWED_TOOL_NAMES) == 13
     assert set(SKILL_ALLOWED_TOOL_NAMES) <= set(RUN_OPERATION_NAMES)
     lock = load_release_lock(ROOT)
     for host in ("codex", "claude"):

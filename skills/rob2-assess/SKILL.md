@@ -17,44 +17,44 @@ the named submission tool with the returned work token and identifiers copied
 verbatim. After a successful submission, return to `continue_run`. Completion
 means the directive is terminal, not merely that all five Domains were visited.
 
-During evidence work, use the generalized bounded loop: `search_evidence`,
-`read_evidence` or its issued visual route, semantic review, then exact-span
-freeze. Search results are visible candidates, not eligible Evidence. They may
-include uncertain fragments, bibliography, tables, footnotes, unclassified
-text, and apparent other-Trial text. Labels can explain or rank a result, but
-never make it disappear or make it citable.
+During evidence work, use only the v2 bounded loop: selected search attempts,
+complete-page triage, ordered batch reads, exact-span review, then freeze.
+Search candidates are lightweight and non-citable. They can include uncertain
+fragments, bibliography, tables, captions, footnotes, unclassified text, and
+apparent other-Trial text. Labels can explain or rank a candidate, but never
+hide it or make it citable.
 
-Keep the opaque `location_handle` returned by search and pass it unchanged to
-reading. Expand only by the bounded `unit`, `neighbors`, `section`, `window`,
-`page`, or `render` operation the response supports, and follow its opaque
-continuation verbatim. A stale handle or continuation is a typed recovery
-condition: discard it and restart from the current WorkToken. Handles navigate
+For every active signaling question, issue distinct selected attempts for the
+mandatory `guidance_seed`, `trial_follow_up`, and `contradiction` passes. Give
+each attempt a stable `attempt_id`; selected and exploratory attempts are
+different. Use a high-cost decision to refine or explicitly supersede an
+attempt, recording the superseded attempt ID and rationale. When continuing a
+page, use the opaque continuation with its closed continuation reason and
+rationale. Traverse every page of each selected attempt; a convenient hit or
+first page never completes coverage.
+
+After every exposed page—including a superseded or exploratory attempt—call
+`submit_evidence_review` with its exact page handles and append-only candidate
+triage revisions. Triage every candidate on those pages. Do not auto-dispose,
+drop, or silently reclassify candidates. Retain the receipt/audit trail when a
+candidate is irrelevant, duplicated, or needs more review.
+
+Batch selected `location_handle` values through `read_evidence` using the
+ordered v2 batch request. Read views are bounded, preserve source/Parse
+lineage and warnings, and issue a `read_view_receipt`. Use that receipt on each
+exact review span. A stale handle, continuation, or batch outcome is a typed
+recovery condition: follow its recovery, obtain current work context when
+needed, and do not reuse stale inputs. Handles and search previews navigate
 only; they are never frozen provenance.
 
-Before freeze, call `read_evidence` and submit its opaque `read_view_receipt`
-on every exact review span. A review revision is one candidate and one `sq_id`;
-it may aggregate independently attributed spans. Each span records
-`trial_attribution` as `active`, `other`, `not_explicit`, or `unresolved`, an
-exact-span disposition, and rationale. An `active` span also records an
-attributable bounded-context rationale. Other-Trial or reference material may
-be explicitly reviewed and rejected, but omission is not rejection. An
-unresolved retained span, uncertain source order, or visual-review condition
-remains a typed limitation and blocks an unsupported freeze. Never cite a
-non-citable search projection, snippet, parser label, inferred applicability,
-or synthetic reconstruction.
-
-Use the `submit_domain_evidence` 1.2.0 review-and-passage shape. Each review
-has `sq_id`; each span supplies `read_view_receipt`, exact bounds,
-`trial_attribution`, disposition, and rationale. Only an `active` span with a
-`supporting` or `contradicting` disposition authorizes an exact textual claim.
-Other and not-explicit spans can record non-substantive dispositions only.
-
-For the legacy `submit_domain_evidence` branch, prefer `passages`. It is
-mutually exclusive with legacy `items`, `evidence_by_question`,
-`candidate_dispositions`, and `conflicts`; choose one branch and do not send
-empty fields from another branch. Use the exact field name
-`coverage_limitations` (never `limitation`). This compatibility branch does not
-replace the current review-and-freeze contract when that contract is available.
+Only freeze through the current `submit_domain_evidence` contract after v2
+coverage and triage are ready: all selected mandatory passes traversed and all
+exposed candidates resolved. Exact review spans remain append-only and bind
+their read-view receipt, bounds, trial attribution, disposition, and rationale.
+An unresolved candidate, uncertain reading order, or visual-review condition
+remains a typed limitation and blocks an unsupported complete/no-information
+freeze. Never cite a search candidate, snippet, parser label, inferred
+applicability, or synthetic reconstruction.
 
 When a retry or dynamic branch returns, discard the previous work token and
 context, call `get_work_context` for the new token, and copy its current
@@ -66,7 +66,7 @@ For progressively disclosed operating detail, consult
 `../references/SIGNALING-QUESTIONS.md` only when their topic is active.
 Narrate meaningful Trial, Result, and Domain milestones, blockers, interruption
 consequences, and the terminal report summary in plain language. Do not narrate
-raw protocol identifiers, work tokens, cursors, or polling noise.
+raw protocol identifiers, work tokens, opaque continuations, or polling noise.
 
 Treat every structured status as authoritative. On `agent_work_required`, complete
 only the returned work item. On `run_complete`, present the static report

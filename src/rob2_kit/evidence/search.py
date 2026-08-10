@@ -8,6 +8,7 @@ import os
 import re
 import secrets
 import sqlite3
+from collections.abc import Callable
 from contextlib import contextmanager
 from enum import StrEnum
 from pathlib import Path
@@ -15,7 +16,7 @@ from typing import Literal
 
 from pydantic import AliasChoices, BaseModel, ConfigDict, Field, model_validator
 
-from rob2_kit.domain.canonical import canonical_hash, sha256_digest
+from rob2_kit.domain.canonical import canonical_hash, canonical_json_bytes, sha256_digest
 from rob2_kit.domain.evidence import ReviewedEvidenceContext, ReviewedEvidenceFragment
 from rob2_kit.domain.revisions import ContentHash, FrozenModel, Identifier
 from rob2_kit.domain.sources import SourceRole
@@ -26,7 +27,9 @@ from rob2_kit.evidence.errors import (
     ReprocessingRequired,
     RetrievalFailure,
     ScopeMismatch,
+    SearchPolicyMismatch,
     StaleCursor,
+    StaleSearchContinuation,
     UnknownCursor,
 )
 
@@ -44,6 +47,9 @@ PAGE_HIT_TARGET_MAX = 20
 PAGE_CHARACTER_TARGET_MAX = 8_000
 BROAD_UNIQUE_HIT_THRESHOLD_MAX = 100
 BROAD_INDEX_FRACTION_MAX = 0.05
+EVIDENCE_SEARCH_POLICY_ID = "policy:evidence-search-2.0.0"
+EVIDENCE_READ_POLICY_ID = "policy:evidence-read-2.0.0"
+EVIDENCE_SEARCH_ESTIMATOR_ID = "estimator:serialized-utf8-ceil-bytes-div-4:1.0.0"
 _TOKEN = re.compile(r"^[^\s\"'()*:^{}[\]\\]+$")
 
 
@@ -695,6 +701,532 @@ class SearchPolicy(FrozenModel):
     )
 
 
+class EvidenceSearchPolicy(FrozenModel):
+    """Engine-owned bounds for the v2 lightweight candidate page.
+
+    ``serialized_response_bytes`` is measured from ``canonical_json_bytes`` of
+    the model-facing compact page projection.  ``estimated_response_tokens`` is consequently
+    always ``ceil(bytes / 4)``: a stable provider-neutral proxy, not a claim
+    about any provider tokenizer.
+    """
+
+    policy_id: Identifier = EVIDENCE_SEARCH_POLICY_ID
+    estimator_id: Identifier = EVIDENCE_SEARCH_ESTIMATOR_ID
+    estimated_token_target: int = Field(default=1_800, ge=1)
+    serialized_byte_ceiling: int = Field(default=10_000, ge=1)
+    candidate_ceiling: int = Field(default=12, ge=1)
+    oversized_candidate_byte_ceiling: int = Field(default=16_000, ge=1)
+    snippet_character_target: int = Field(default=480, ge=1, le=2_400)
+    high_cost_page_threshold: int = Field(default=4, ge=1)
+    high_cost_estimated_token_threshold: int = Field(default=6_500, ge=1)
+
+    @model_validator(mode="after")
+    def validate_bounds(self) -> EvidenceSearchPolicy:
+        if self.oversized_candidate_byte_ceiling < self.serialized_byte_ceiling:
+            raise ValueError("oversized candidate ceiling cannot be below page byte ceiling")
+        return self
+
+
+class EvidenceReadPolicy(FrozenModel):
+    """Engine-owned limits for one v2 ordered read response."""
+
+    policy_id: Identifier = EVIDENCE_READ_POLICY_ID
+    estimator_id: Identifier = EVIDENCE_SEARCH_ESTIMATOR_ID
+    estimated_token_target: int = Field(default=2_400, ge=1)
+    serialized_byte_ceiling: int = Field(default=12_000, ge=1)
+    item_ceiling: int = Field(default=8, ge=1)
+    per_view_character_target: int = Field(default=2_000, ge=1, le=CONTEXT_CHARACTER_TARGET)
+    absolute_oversized_byte_ceiling: int = Field(default=16_000, ge=1)
+
+    @model_validator(mode="after")
+    def validate_read_bounds(self) -> EvidenceReadPolicy:
+        if self.absolute_oversized_byte_ceiling < self.serialized_byte_ceiling:
+            raise ValueError("absolute read ceiling cannot be below the response ceiling")
+        return self
+
+
+class EvidenceReadBatchScope(FrozenModel):
+    result_id: Identifier
+    domain_id: Identifier
+    snapshot_hash: ContentHash
+
+
+class EvidenceReadBatchItem(FrozenModel):
+    location_handle: str = Field(min_length=1)
+    continuation: str | None = None
+    mode: ReadContextMode = ReadContextMode.UNIT
+    # A read is only reviewable when it is attributable to at least one
+    # signaling question.  In particular, an unbound receipt must never be
+    # usable to dismiss a candidate under a later, unrelated selected query.
+    question_ids: tuple[Identifier, ...] = Field(min_length=1)
+    source_ids: tuple[Identifier, ...] = ()
+
+    @model_validator(mode="after")
+    def validate_questions(self) -> EvidenceReadBatchItem:
+        if len(self.question_ids) != len(set(self.question_ids)):
+            raise ValueError("question bindings must be unique")
+        if len(self.source_ids) != len(set(self.source_ids)):
+            raise ValueError("item source bindings must be unique")
+        return self
+
+
+class EvidenceReadBatchRequest(FrozenModel):
+    scope: EvidenceReadBatchScope
+    items: tuple[EvidenceReadBatchItem, ...] = Field(min_length=1)
+    continuation: str | None = None
+
+    @model_validator(mode="after")
+    def validate_request(self) -> EvidenceReadBatchRequest:
+        handles = [item.location_handle for item in self.items]
+        if len(handles) != len(set(handles)):
+            raise ValueError("duplicate location handles reject the whole batch")
+        return self
+
+
+class EvidenceReadItemCondition(StrEnum):
+    SUCCESS = "success"
+    STALE = "stale"
+    UNREADABLE = "unreadable"
+    WRONG_SCOPE = "wrong_scope"
+
+
+class EvidenceReadBatchFragment(FrozenModel):
+    """One exact, non-concatenated canonical-unit portion in a batch view."""
+
+    canonical_unit_id: Identifier
+    source_id: Identifier
+    source_artifact_hash: ContentHash
+    parse_id: Identifier
+    canonicalization_version: str
+    start: int = Field(ge=0)
+    end: int = Field(ge=0)
+    text: str
+    text_hash: ContentHash
+    warnings: tuple[str, ...] = ()
+    table_headers: tuple[str, ...] = ()
+    caption: str | None = None
+    section_path: tuple[str, ...] = ()
+    hierarchy_path: tuple[str, ...] = ()
+
+    @model_validator(mode="after")
+    def validate_text(self) -> EvidenceReadBatchFragment:
+        if self.end < self.start:
+            raise ValueError("fragment end cannot precede fragment start")
+        if self.text_hash != sha256_digest(self.text.encode()):
+            raise ValueError("fragment text hash must bind its exact source-authored text")
+        return self
+
+
+class EvidenceReadBatchView(FrozenModel):
+    location_handle: str
+    read_view_receipt: str = Field(min_length=1)
+    fragments: tuple[EvidenceReadBatchFragment, ...] = Field(min_length=1)
+    # Convenience identity is present only for a one-unit view.  Text remains
+    # exclusively on fragments so multi-unit context cannot be mistaken for a
+    # synthesized source passage.
+    canonical_unit_id: Identifier | None = None
+    source_id: Identifier | None = None
+    source_artifact_hash: ContentHash | None = None
+    parse_id: Identifier | None = None
+    mode: ReadContextMode
+    warnings: tuple[str, ...] = ()
+    policy_id: Identifier
+    policy_hash: ContentHash
+    continuation: str | None = None
+    oversized: bool = False
+    limiting_bounds: tuple[str, ...] = ()
+    omitted_fragment_count: int = Field(default=0, ge=0)
+    omitted_character_count: int = Field(default=0, ge=0)
+    citable: Literal[False] = False
+
+    @model_validator(mode="after")
+    def validate_primary_identity(self) -> EvidenceReadBatchView:
+        identities = (
+            self.canonical_unit_id,
+            self.source_id,
+            self.source_artifact_hash,
+            self.parse_id,
+        )
+        if len(self.fragments) == 1:
+            fragment = self.fragments[0]
+            expected = (
+                fragment.canonical_unit_id,
+                fragment.source_id,
+                fragment.source_artifact_hash,
+                fragment.parse_id,
+            )
+            if identities != expected:
+                raise ValueError("single-fragment view must expose its primary identity")
+        elif any(identity is not None for identity in identities):
+            raise ValueError("multi-fragment view cannot expose a misleading primary identity")
+        return self
+
+
+class EvidenceReadBatchOutcome(FrozenModel):
+    input_index: int = Field(ge=0)
+    location_handle: str
+    question_ids: tuple[Identifier, ...] = ()
+    condition: EvidenceReadItemCondition
+    detail: str = Field(min_length=1)
+    next_actions: tuple[str, ...] = ()
+    view: EvidenceReadBatchView | None = None
+
+    @model_validator(mode="after")
+    def validate_outcome(self) -> EvidenceReadBatchOutcome:
+        if (self.condition is EvidenceReadItemCondition.SUCCESS) != (self.view is not None):
+            raise ValueError("successful read outcomes require exactly one view")
+        return self
+
+
+class EvidenceReadBatchPage(FrozenModel):
+    snapshot_hash: ContentHash
+    policy_id: Identifier
+    policy_hash: ContentHash
+    scope: EvidenceReadBatchScope
+    outcomes: tuple[EvidenceReadBatchOutcome, ...]
+    next_index: int = Field(ge=0)
+    continuation: str | None = None
+    serialized_response_bytes: int = Field(ge=0)
+    estimated_response_tokens: int = Field(ge=0)
+    limiting_bounds: tuple[str, ...] = ()
+
+    @model_validator(mode="after")
+    def validate_measurement(self) -> EvidenceReadBatchPage:
+        if self.estimated_response_tokens != _estimate_response_tokens(
+            self.serialized_response_bytes
+        ):
+            raise ValueError("read batch token estimate must use ceil(bytes / 4)")
+        return self
+
+
+class SearchContinuationReason(StrEnum):
+    COVERAGE_REQUIRES_BREADTH = "coverage_requires_breadth"
+    SOURCE_SCOPE_ALREADY_MINIMAL = "source_scope_already_minimal"
+    NARROWING_WOULD_OMIT_VARIANTS = "narrowing_would_omit_variants"
+    TERM_IS_INHERENTLY_REPETITIVE = "term_is_inherently_repetitive"
+    OTHER = "other"
+
+
+class EvidenceSearchReadAction(FrozenModel):
+    """The only action a candidate offers for authoritative source text."""
+
+    action: Literal["read_evidence"] = "read_evidence"
+    location_handle: str = Field(min_length=1)
+
+
+class EvidenceSearchTriageFlags(FrozenModel):
+    """Mechanical inspection facts; deliberately no relevance verdict."""
+
+    has_reading_order_uncertainty: bool = False
+    has_visual_uncertainty: bool = False
+    has_duplicate_lineage: bool = False
+    is_table_content: bool = False
+    is_oversized_unit: bool = False
+    has_context_dependency: bool = False
+    has_possible_contradiction: bool = False
+
+
+class EvidenceSearchCandidate(FrozenModel):
+    """A non-citable, source-preserving navigation candidate.
+
+    The candidate intentionally does not contain a ``CanonicalEvidenceUnit``
+    or a full-text field.  Its location handle must be resolved through the
+    Evidence read boundary before any text can become reviewed Evidence.
+    """
+
+    candidate_id: Identifier
+    exposure_id: Identifier
+    canonical_unit_id: Identifier
+    location_handle: str = Field(min_length=1)
+    source_id: Identifier
+    source_label: str = Field(min_length=1)
+    source_artifact_hash: ContentHash
+    parse_id: Identifier
+    canonicalization_version: str = Field(min_length=1)
+    fragment_ids: tuple[Identifier, ...] = ()
+    page: int = Field(ge=1)
+    section_path: tuple[str, ...] = ()
+    hierarchy_path: tuple[str, ...] = ()
+    kind: CanonicalUnitKind
+    source_role: SourceRole | None = None
+    document_zone: DocumentZone | None = None
+    table_headers: tuple[str, ...] = ()
+    caption: str | None = None
+    source_snippet: str = Field(min_length=1)
+    displayed_match_spans: tuple[tuple[int, int], ...] = ()
+    displayed_match_count: int = Field(ge=0)
+    undisplayed_match_count: int = Field(ge=0)
+    canonical_start: int = Field(ge=0)
+    canonical_end: int = Field(gt=0)
+    left_omitted_character_count: int = Field(ge=0)
+    right_omitted_character_count: int = Field(ge=0)
+    warnings: tuple[str, ...] = ()
+    triage_flags: EvidenceSearchTriageFlags
+    duplicate_group_id: Identifier | None = None
+    retained_duplicate_target_id: Identifier | None = None
+    estimated_full_unit_bytes: int = Field(ge=1)
+    estimated_full_unit_tokens: int = Field(ge=1)
+    oversized_unit: bool = False
+    read_evidence: EvidenceSearchReadAction
+    citable: Literal[False] = False
+
+    @model_validator(mode="after")
+    def validate_snippet(self) -> EvidenceSearchCandidate:
+        if self.canonical_end - self.canonical_start != len(self.source_snippet):
+            raise ValueError("candidate snippet must bind its canonical character range")
+        if self.displayed_match_count != len(self.displayed_match_spans):
+            raise ValueError("displayed match count must bind displayed match spans")
+        if any(
+            start < 0 or end <= start or end > len(self.source_snippet)
+            for start, end in self.displayed_match_spans
+        ):
+            raise ValueError("displayed match spans must stay inside the source snippet")
+        if self.read_evidence.location_handle != self.location_handle:
+            raise ValueError("read action must use the candidate location handle")
+        return self
+
+
+class EvidenceSearchSourceDiagnostic(FrozenModel):
+    source_id: Identifier
+    source_label: str = Field(min_length=1)
+    candidate_count: int = Field(ge=0)
+    scoped_unit_count: int = Field(ge=0)
+    scoped_candidate_fraction: float = Field(ge=0, le=1)
+    page_candidate_count: int = Field(ge=0)
+
+
+class EvidenceSearchTraversalCost(FrozenModel):
+    classification: Literal["ordinary", "high"]
+    projected_page_count: int = Field(ge=1)
+    projected_cumulative_response_bytes: int = Field(ge=0)
+    projected_cumulative_estimated_tokens: int = Field(ge=0)
+    decision_required: bool = False
+
+
+class EvidenceSearchPage(FrozenModel):
+    """A deterministic v2 page measured as one complete JSON response."""
+
+    snapshot_hash: ContentHash
+    query_hash: ContentHash
+    policy_id: Identifier
+    policy_hash: ContentHash
+    page_handle: str = Field(min_length=1)
+    continuation: str | None = None
+    candidate_ids: tuple[Identifier, ...]
+    candidates: tuple[EvidenceSearchCandidate, ...]
+    page_number: int = Field(ge=1)
+    total_page_count: int = Field(ge=1)
+    remaining_page_count: int = Field(ge=0)
+    returned_candidate_count: int = Field(ge=0)
+    prior_candidate_count: int = Field(ge=0)
+    total_candidate_count: int = Field(ge=0)
+    remaining_candidate_count: int = Field(ge=0)
+    estimated_response_tokens: int = Field(ge=0)
+    serialized_response_bytes: int = Field(ge=0)
+    current_cumulative_response_bytes: int = Field(ge=0)
+    current_cumulative_estimated_tokens: int = Field(ge=0)
+    projected_cumulative_response_bytes: int = Field(ge=0)
+    projected_cumulative_estimated_tokens: int = Field(ge=0)
+    limiting_bounds: tuple[str, ...] = ()
+    omitted_candidate_count: int = Field(ge=0)
+    omitted_estimated_response_bytes: int = Field(ge=0)
+    traversal_complete: bool
+    source_diagnostics: tuple[EvidenceSearchSourceDiagnostic, ...] = ()
+    traversal_cost: EvidenceSearchTraversalCost
+    next_actions: tuple[str, ...] = ()
+    condition: Literal["results", "zero_hits", "excluded_only", "truncated"] = "results"
+    excluded_count: int = Field(default=0, ge=0)
+
+    def model_facing_payload(self) -> dict[str, object]:
+        """Return the authoritative compact, non-citable search wire shape.
+
+        The typed page deliberately remains complete: workflow persistence and
+        audit need every field.  A model, however, needs a page catalogue, not
+        the same policy defaults and source accounting repeated for every page.
+        This projection is consequently the sole model-facing representation
+        and retains every fact that can change a conservative triage decision.
+        """
+
+        source_keys = tuple(
+            sorted(
+                {
+                    (
+                        candidate.source_id,
+                        candidate.source_label,
+                        candidate.source_artifact_hash,
+                        candidate.parse_id,
+                        candidate.canonicalization_version,
+                    )
+                    for candidate in self.candidates
+                }
+            )
+        )
+        source_refs = {key: number for number, key in enumerate(source_keys)}
+
+        def _candidate(candidate: EvidenceSearchCandidate) -> dict[str, object]:
+            source_key = (
+                candidate.source_id,
+                candidate.source_label,
+                candidate.source_artifact_hash,
+                candidate.parse_id,
+                candidate.canonicalization_version,
+            )
+            payload: dict[str, object] = {
+                "candidate_id": candidate.candidate_id,
+                "canonical_unit_id": candidate.canonical_unit_id,
+                "location_handle": candidate.location_handle,
+                "source_ref": source_refs[source_key],
+                "page": candidate.page,
+                "kind": candidate.kind.value,
+                "snippet": candidate.source_snippet,
+                "span": (candidate.canonical_start, candidate.canonical_end),
+                "estimated_full_unit": (
+                    candidate.estimated_full_unit_bytes,
+                    candidate.estimated_full_unit_tokens,
+                ),
+            }
+            optional = {
+                "fragment_ids": candidate.fragment_ids,
+                "section_path": candidate.section_path,
+                "hierarchy_path": candidate.hierarchy_path,
+                "source_role": candidate.source_role.value if candidate.source_role else None,
+                "document_zone": candidate.document_zone.value if candidate.document_zone else None,
+                "table_headers": candidate.table_headers,
+                "caption": candidate.caption,
+                "displayed_match_spans": candidate.displayed_match_spans,
+                "displayed_match_count": (
+                    candidate.displayed_match_count if candidate.displayed_match_count else None
+                ),
+                "undisplayed_match_count": (
+                    candidate.undisplayed_match_count if candidate.undisplayed_match_count else None
+                ),
+                "omitted_characters": (
+                    (
+                        candidate.left_omitted_character_count,
+                        candidate.right_omitted_character_count,
+                    )
+                    if (
+                        candidate.left_omitted_character_count
+                        or candidate.right_omitted_character_count
+                    )
+                    else None
+                ),
+                "warnings": candidate.warnings,
+                "duplicate_group_id": candidate.duplicate_group_id,
+                "retained_duplicate_target_id": candidate.retained_duplicate_target_id,
+            }
+            payload.update(
+                {
+                    key: value
+                    for key, value in optional.items()
+                    if value not in (None, (), 0, (0, 0))
+                }
+            )
+            flags = candidate.triage_flags.model_dump(mode="json", exclude_defaults=True)
+            if flags:
+                payload["triage_flags"] = flags
+            if candidate.oversized_unit:
+                payload["oversized_unit"] = True
+            return payload
+
+        def _source_diagnostic(diagnostic: EvidenceSearchSourceDiagnostic) -> dict[str, object]:
+            source_key = next(
+                (
+                    key
+                    for key in source_keys
+                    if key[0] == diagnostic.source_id and key[1] == diagnostic.source_label
+                ),
+                None,
+            )
+            return {
+                **(
+                    {"source_ref": source_refs[source_key]}
+                    if source_key is not None
+                    else {"source_id": diagnostic.source_id}
+                ),
+                "candidate_count": diagnostic.candidate_count,
+                "page_candidate_count": diagnostic.page_candidate_count,
+            }
+
+        return {
+            "snapshot_hash": self.snapshot_hash,
+            "query_hash": self.query_hash,
+            "policy_id": self.policy_id,
+            "policy_hash": self.policy_hash,
+            "page_handle": self.page_handle,
+            "continuation": self.continuation,
+            "page_number": self.page_number,
+            "total_page_count": self.total_page_count,
+            "remaining_page_count": self.remaining_page_count,
+            "returned_candidate_count": self.returned_candidate_count,
+            "prior_candidate_count": self.prior_candidate_count,
+            "total_candidate_count": self.total_candidate_count,
+            "remaining_candidate_count": self.remaining_candidate_count,
+            "serialized_response_bytes": self.serialized_response_bytes,
+            "estimated_response_tokens": self.estimated_response_tokens,
+            "current_cumulative_response_bytes": self.current_cumulative_response_bytes,
+            "current_cumulative_estimated_tokens": self.current_cumulative_estimated_tokens,
+            "projected_cumulative_response_bytes": self.projected_cumulative_response_bytes,
+            "projected_cumulative_estimated_tokens": self.projected_cumulative_estimated_tokens,
+            "limiting_bounds": self.limiting_bounds,
+            "traversal_complete": self.traversal_complete,
+            "traversal_cost": self.traversal_cost.model_dump(mode="json"),
+            # Source-level breadth is a decision fact, not durable-only
+            # bookkeeping.  Use the catalogue's compact source reference so
+            # it costs one small integer per diagnostic, rather than repeat
+            # source provenance already emitted above.
+            "source_diagnostics": tuple(
+                _source_diagnostic(diagnostic) for diagnostic in self.source_diagnostics
+            ),
+            "next_actions": self.next_actions,
+            "condition": self.condition,
+            "catalog": {
+                "candidate_read_action": "read_evidence",
+                "candidates_citable": False,
+                "sources": tuple(
+                    {
+                        "source_id": source_id,
+                        "source_label": source_label,
+                        "source_artifact_hash": artifact_hash,
+                        "parse_id": parse_id,
+                        "canonicalization_version": canonicalization_version,
+                    }
+                    for (
+                        source_id,
+                        source_label,
+                        artifact_hash,
+                        parse_id,
+                        canonicalization_version,
+                    ) in source_keys
+                ),
+            },
+            "candidates": [_candidate(candidate) for candidate in self.candidates],
+        }
+
+    @model_validator(mode="after")
+    def validate_page(self) -> EvidenceSearchPage:
+        if self.candidate_ids != tuple(candidate.candidate_id for candidate in self.candidates):
+            raise ValueError("candidate IDs must preserve candidate order")
+        if self.returned_candidate_count != len(self.candidates):
+            raise ValueError("returned candidate count must bind page candidates")
+        if (
+            self.remaining_candidate_count
+            != self.total_candidate_count
+            - self.prior_candidate_count
+            - self.returned_candidate_count
+        ):
+            raise ValueError("remaining candidate count must bind the current page")
+        if self.remaining_page_count != self.total_page_count - self.page_number:
+            raise ValueError("remaining page count must bind the current page")
+        if self.traversal_complete != (self.continuation is None):
+            raise ValueError("traversal completion must bind continuation presence")
+        if self.estimated_response_tokens != _estimate_response_tokens(
+            self.serialized_response_bytes
+        ):
+            raise ValueError("estimated tokens must use the declared byte-derived estimator")
+        return self
+
+
 class SearchHit(FrozenModel):
     unit: CanonicalEvidenceUnit
     projection: SearchProjection
@@ -1160,6 +1692,49 @@ class EvidenceSearchIndex:
             )
         snapshot = self._snapshot()
         target = self.read_unit(unit_id, scope=scope)
+        if cursor is not None and mode is ReadContextMode.SECTION:
+            try:
+                deferred = self._resolve_token("sectionoversize", cursor)
+            except UnknownCursor:
+                deferred = None
+            if deferred is not None:
+                if (
+                    deferred.get("snapshot") != snapshot
+                    or deferred.get("target") != target.unit_id
+                    or deferred.get("source_artifact_hash") != target.source_artifact_hash
+                    or deferred.get("parse_id") != target.parse_id
+                ):
+                    raise StaleCursor("section continuation is stale", field="cursor")
+                deferred_id = deferred.get("deferred_unit_id")
+                resume_offset = deferred.get("resume_offset")
+                if (
+                    not isinstance(deferred_id, str)
+                    or isinstance(resume_offset, bool)
+                    or not isinstance(resume_offset, int)
+                    or resume_offset < 0
+                ):
+                    raise StaleCursor("section continuation is malformed", field="cursor")
+                deferred_unit = self.read_unit(deferred_id, scope=scope)
+                return EvidenceContext(
+                    snapshot_hash=snapshot,
+                    unit=deferred_unit,
+                    character_count=len(deferred_unit.text),
+                    character_target=character_target,
+                    neighbor_limit=(
+                        min(neighbor_limit, max(0, CONTEXT_UNIT_LIMIT - 1))
+                        if mode is not ReadContextMode.UNIT
+                        else 0
+                    ),
+                    oversized=True,
+                    omitted_neighbor_count=0,
+                    mode=mode,
+                    section_path=deferred_unit.section_path,
+                    continuation_cursor=self._encode_read_cursor(
+                        snapshot, target.unit_id, resume_offset, scope=scope
+                    ),
+                    warnings=deferred_unit.warnings + ("oversized_section_fragment",),
+                    visual_inspection_available=(deferred_unit.spatial is not None),
+                )
         if mode is ReadContextMode.UNIT:
             neighbor_limit = 0
         effective_neighbor_limit = min(neighbor_limit, max(0, CONTEXT_UNIT_LIMIT - 1))
@@ -1295,6 +1870,7 @@ class EvidenceSearchIndex:
         characters = len(target.text)
         scanned = 0
         oversized_neighbor_skipped = False
+        deferred_cursor: str | None = None
         for candidate_id in candidate_ids:
             if len(selected) >= effective_neighbor_limit:
                 break
@@ -1306,6 +1882,19 @@ class EvidenceSearchIndex:
                 # boundaries, not implicit expansion candidates.
                 continue
             if characters + len(candidate.text) > character_target:
+                if mode is ReadContextMode.SECTION:
+                    deferred_cursor = self._issue_token(
+                        "sectionoversize",
+                        {
+                            "snapshot": snapshot,
+                            "target": target.unit_id,
+                            "source_artifact_hash": target.source_artifact_hash,
+                            "parse_id": target.parse_id,
+                            "deferred_unit_id": candidate.unit_id,
+                            "resume_offset": offset + scanned,
+                        },
+                    )
+                    break
                 oversized_neighbor_skipped = True
                 continue
             selected.append(candidate)
@@ -1337,13 +1926,18 @@ class EvidenceSearchIndex:
             mode=mode,
             section_path=target.section_path,
             continuation_cursor=(
-                self._encode_read_cursor(
+                deferred_cursor
+                or self._encode_read_cursor(
                     snapshot,
                     target.unit_id,
                     next_offset,
                     scope=scope,
                 )
-                if mode is ReadContextMode.SECTION and next_offset < len(candidate_ids) + offset
+                if deferred_cursor is not None
+                or (
+                    mode is ReadContextMode.SECTION
+                    and next_offset < len(candidate_ids) + offset
+                )
                 else None
             ),
             warnings=target.warnings
@@ -1361,6 +1955,888 @@ class EvidenceSearchIndex:
                 "SELECT unit_id FROM evidence_units ORDER BY unit_id"
             ).fetchall()
         return frozenset(row["unit_id"] for row in rows)
+
+    def read_batch_v2(
+        self,
+        request: EvidenceReadBatchRequest,
+        *,
+        policy: EvidenceReadPolicy | None = None,
+    ) -> EvidenceReadBatchPage:
+        """Return one deterministic, bounded prefix of independent read views."""
+        policy = policy or EvidenceReadPolicy()
+        snapshot = self._snapshot()
+        if request.scope.snapshot_hash != snapshot:
+            raise StaleSearchContinuation("read batch scope belongs to a stale snapshot")
+        request_hash = canonical_hash(
+            {
+                "scope": request.scope.model_dump(mode="json"),
+                "items": [item.model_dump(mode="json") for item in request.items],
+            }
+        )
+        start = 0
+        if request.continuation:
+            try:
+                payload = self._resolve_token("v2readcur", request.continuation)
+            except UnknownCursor:
+                raise UnknownCursor(
+                    "invalid v2 read batch continuation", field="continuation"
+                ) from None
+            if payload.get("snapshot") != snapshot:
+                raise StaleSearchContinuation("read batch continuation belongs to a stale snapshot")
+            if payload.get("policy") != canonical_hash(policy):
+                raise SearchPolicyMismatch(
+                    "read batch continuation belongs to a different read policy"
+                )
+            if payload.get("scope") != canonical_hash(request.scope):
+                raise CursorScopeMismatch("read batch continuation belongs to a different scope")
+            if payload.get("request") != request_hash:
+                raise StaleSearchContinuation(
+                    "read batch continuation belongs to a different request"
+                )
+            start = payload.get("next_index", -1)
+            if (
+                isinstance(start, bool)
+                or not isinstance(start, int)
+                or not 0 <= start < len(request.items)
+            ):
+                raise StaleSearchContinuation("read batch continuation index is invalid")
+        outcomes = tuple(
+            self._read_batch_outcome(index, item, scope=request.scope, policy=policy)
+            for index, item in enumerate(request.items[start:], start=start)
+        )
+        selected: list[EvidenceReadBatchOutcome] = []
+        for outcome in outcomes:
+            if len(selected) >= policy.item_ceiling:
+                break
+            candidate = tuple((*selected, outcome))
+            payload = self._read_batch_payload(
+                request.scope, policy, candidate, start + len(candidate), len(request.items)
+            )
+            # Probe the largest final envelope: continuation and a limiting
+            # explanation are both present whenever another item remains.
+            # Their fixed-width placeholders make the later issued token an
+            # exact measurement replacement.
+            if start + len(candidate) < len(request.items):
+                payload["limiting_bounds"] = ("response_budget",)
+            size, tokens = _read_batch_measure(payload)
+            if size <= policy.serialized_byte_ceiling and tokens <= policy.estimated_token_target:
+                selected.append(outcome)
+                continue
+            if not selected and size <= policy.absolute_oversized_byte_ceiling:
+                selected.append(outcome)
+            break
+        if not selected and outcomes:
+            raise OperationalRetrievalFailure(
+                "one v2 read outcome exceeds the absolute response ceiling"
+            )
+        next_index = start + len(selected)
+        payload = self._read_batch_payload(
+            request.scope, policy, tuple(selected), next_index, len(request.items)
+        )
+        size, tokens = _read_batch_measure(payload)
+        limiting: tuple[str, ...] = ()
+        if next_index < len(request.items):
+            limiting = (
+                ("item_ceiling",)
+                if len(selected) >= policy.item_ceiling
+                else (
+                    ("oversized_item",)
+                    if size > policy.serialized_byte_ceiling
+                    else ("response_budget",)
+                )
+            )
+        payload["limiting_bounds"] = limiting
+        size, tokens = _read_batch_measure(payload)
+        payload["serialized_response_bytes"] = size
+        payload["estimated_response_tokens"] = tokens
+        continuation = (
+            self._issue_token(
+                "v2readcur",
+                {
+                    "snapshot": snapshot,
+                    "policy": canonical_hash(policy),
+                    "scope": canonical_hash(request.scope),
+                    "request": request_hash,
+                    "next_index": next_index,
+                },
+            )
+            if next_index < len(request.items)
+            else None
+        )
+        payload["continuation"] = continuation
+        size, tokens = _read_batch_measure(payload)
+        payload["serialized_response_bytes"] = size
+        payload["estimated_response_tokens"] = tokens
+        return EvidenceReadBatchPage.model_validate(payload)
+
+    def _read_batch_outcome(
+        self,
+        index: int,
+        item: EvidenceReadBatchItem,
+        *,
+        scope: EvidenceReadBatchScope,
+        policy: EvidenceReadPolicy,
+    ) -> EvidenceReadBatchOutcome:
+        try:
+            read = self.read_location(
+                item.location_handle,
+                character_target=policy.per_view_character_target,
+                scope=EvidenceScope(source_ids=item.source_ids),
+            )
+            unit = read.unit
+            if item.mode not in {
+                ReadContextMode.UNIT,
+                ReadContextMode.NEIGHBORS,
+                ReadContextMode.SECTION,
+            }:
+                raise InvalidRetrievalRequest("unsupported v2 read mode", field="mode")
+            if item.mode is not ReadContextMode.UNIT:
+                context_cursor: str | None = None
+                if item.continuation is not None:
+                    payload = self._resolve_token("v2itemread", item.continuation)
+                    if (
+                        payload.get("snapshot") != read.snapshot_hash
+                        or payload.get("policy") != canonical_hash(policy)
+                        or payload.get("scope") != canonical_hash(scope)
+                        or payload.get("location_handle") != item.location_handle
+                        or payload.get("mode") != item.mode.value
+                        or payload.get("unit") != unit.unit_id
+                        or payload.get("source_artifact_hash") != unit.source_artifact_hash
+                        or payload.get("parse_id") != unit.parse_id
+                        or payload.get("questions") != list(item.question_ids)
+                    ):
+                        raise StaleCursor(
+                            "v2 item continuation belongs to a different read request"
+                        )
+                    raw_context_cursor = payload.get("context")
+                    if not isinstance(raw_context_cursor, str):
+                        raise StaleCursor("v2 context continuation position is invalid")
+                    context_cursor = raw_context_cursor
+                    oversized_unit_id = payload.get("oversized_unit_id")
+                    if oversized_unit_id is not None:
+                        offset = payload.get("oversized_offset")
+                        resume_context = payload.get("resume_context")
+                        if (
+                            not isinstance(oversized_unit_id, str)
+                            or isinstance(offset, bool)
+                            or not isinstance(offset, int)
+                            or not isinstance(resume_context, str)
+                        ):
+                            raise StaleCursor("oversized section continuation is invalid")
+                        oversized_unit = self.read_unit(
+                            oversized_unit_id,
+                            scope=EvidenceScope(source_ids=item.source_ids),
+                        )
+                        return self._v2_oversized_section_outcome(
+                            index=index,
+                            item=item,
+                            unit=oversized_unit,
+                            continuation_target_unit_id=unit.unit_id,
+                            start=offset,
+                            resume_context=resume_context,
+                            scope=scope,
+                            policy=policy,
+                            continuation_input=item.continuation,
+                        )
+                context = self.read_context(
+                    unit.unit_id,
+                    character_target=policy.per_view_character_target,
+                    mode=item.mode,
+                    scope=EvidenceScope(source_ids=item.source_ids),
+                    cursor=context_cursor,
+                )
+                if context.oversized:
+                    return self._v2_oversized_section_outcome(
+                        index=index,
+                        item=item,
+                        unit=context.unit,
+                        continuation_target_unit_id=unit.unit_id,
+                        start=0,
+                        resume_context=context.continuation_cursor,
+                        scope=scope,
+                        policy=policy,
+                        continuation_input=item.continuation,
+                    )
+                fragments = tuple(
+                    EvidenceReadBatchFragment(
+                        canonical_unit_id=displayed.unit_id,
+                        source_id=displayed.source_id,
+                        source_artifact_hash=displayed.source_artifact_hash,
+                        parse_id=displayed.parse_id,
+                        canonicalization_version=displayed.canonicalization_version,
+                        start=0,
+                        end=len(displayed.text),
+                        text=displayed.text,
+                        text_hash=sha256_digest(displayed.text.encode()),
+                        warnings=displayed.warnings,
+                        table_headers=displayed.table_headers,
+                        caption=displayed.caption,
+                        section_path=displayed.section_path,
+                        hierarchy_path=displayed.hierarchy_path,
+                    )
+                    for displayed in context.all_units
+                )
+                receipt_fragments = tuple(
+                    ReviewedEvidenceFragment(
+                        unit_id=fragment.canonical_unit_id,
+                        source_id=fragment.source_id,
+                        source_artifact_hash=fragment.source_artifact_hash,
+                        parse_id=fragment.parse_id,
+                        canonicalization_version=fragment.canonicalization_version,
+                        unit_content_hash=sha256_digest(displayed.text.encode()),
+                        span_start=fragment.start,
+                        span_end=fragment.end,
+                        content_hash=fragment.text_hash,
+                    )
+                    for fragment, displayed in zip(fragments, context.all_units, strict=True)
+                )
+                receipt = self.issue_read_view_receipt(
+                    snapshot_hash=context.snapshot_hash,
+                    requested_mode=item.mode,
+                    applied_mode=item.mode,
+                    continuation_input=item.continuation,
+                    continuation=context.continuation_cursor,
+                    fragments=receipt_fragments,
+                    displayed_units=context.all_units,
+                    read_policy_id=policy.policy_id,
+                    read_policy_hash=canonical_hash(policy),
+                    question_ids=item.question_ids,
+                )
+                continuation = (
+                    self._issue_token(
+                        "v2itemread",
+                        {
+                            "snapshot": context.snapshot_hash,
+                            "policy": canonical_hash(policy),
+                            "scope": canonical_hash(scope),
+                            "location_handle": item.location_handle,
+                            "mode": item.mode.value,
+                            "unit": unit.unit_id,
+                            "source_artifact_hash": unit.source_artifact_hash,
+                            "parse_id": unit.parse_id,
+                            "questions": list(item.question_ids),
+                            "context": context.continuation_cursor,
+                        },
+                    )
+                    if context.continuation_cursor
+                    else None
+                )
+                primary = fragments[0] if len(fragments) == 1 else None
+                view = EvidenceReadBatchView(
+                    location_handle=item.location_handle,
+                    read_view_receipt=receipt,
+                    fragments=fragments,
+                    canonical_unit_id=primary.canonical_unit_id if primary else None,
+                    source_id=primary.source_id if primary else None,
+                    source_artifact_hash=primary.source_artifact_hash if primary else None,
+                    parse_id=primary.parse_id if primary else None,
+                    mode=item.mode,
+                    warnings=context.warnings,
+                    policy_id=policy.policy_id,
+                    policy_hash=canonical_hash(policy),
+                    continuation=continuation,
+                    oversized=context.oversized,
+                    limiting_bounds=(("per_view_character_target",) if context.oversized else ()),
+                    omitted_fragment_count=context.omitted_neighbor_count,
+                    # The context reducer intentionally does not synthesize
+                    # omitted text.  It does retain an exact omitted-unit
+                    # count; character count is zero only when no omitted
+                    # source fragments are present in this context window.
+                    omitted_character_count=0,
+                )
+                return EvidenceReadBatchOutcome(
+                    input_index=index,
+                    location_handle=item.location_handle,
+                    question_ids=item.question_ids,
+                    condition=EvidenceReadItemCondition.SUCCESS,
+                    detail="bounded source-authored Evidence fragments",
+                    next_actions=("continue_read",) if continuation else (),
+                    view=view,
+                )
+            if item.continuation is not None:
+                payload = self._resolve_token("v2itemread", item.continuation)
+                if (
+                    payload.get("snapshot") != read.snapshot_hash
+                    or payload.get("policy") != canonical_hash(policy)
+                    or payload.get("scope") != canonical_hash(scope)
+                    or payload.get("location_handle") != item.location_handle
+                    or payload.get("mode") != item.mode.value
+                    or payload.get("unit") != unit.unit_id
+                    or payload.get("source_artifact_hash") != unit.source_artifact_hash
+                    or payload.get("parse_id") != unit.parse_id
+                    or payload.get("questions") != list(item.question_ids)
+                ):
+                    raise StaleCursor("v2 item continuation belongs to a different read request")
+                next_start = payload.get("next")
+                if isinstance(next_start, bool) or not isinstance(next_start, int):
+                    raise StaleCursor("v2 item continuation position is invalid")
+                if not 0 <= next_start < len(unit.text):
+                    raise StaleCursor("v2 item continuation is outside the canonical unit")
+                end = min(next_start + policy.per_view_character_target, len(unit.text))
+                read = EvidenceRead(
+                    snapshot_hash=read.snapshot_hash,
+                    unit=unit,
+                    text=unit.text[next_start:end],
+                    start=next_start,
+                    end=end,
+                    character_target=policy.per_view_character_target,
+                    continuation_cursor="more" if end < len(unit.text) else None,
+                    warnings=unit.warnings,
+                )
+            fragment = ReviewedEvidenceFragment(
+                unit_id=unit.unit_id,
+                source_id=unit.source_id,
+                source_artifact_hash=unit.source_artifact_hash,
+                parse_id=unit.parse_id,
+                canonicalization_version=unit.canonicalization_version,
+                unit_content_hash=sha256_digest(unit.text.encode()),
+                span_start=read.start,
+                span_end=read.end,
+                content_hash=sha256_digest(read.text.encode()),
+            )
+            receipt = self.issue_read_view_receipt(
+                snapshot_hash=read.snapshot_hash,
+                requested_mode=item.mode,
+                applied_mode=item.mode,
+                continuation_input=None,
+                continuation=read.continuation_cursor,
+                fragments=(fragment,),
+                displayed_units=(unit,),
+                read_policy_id=policy.policy_id,
+                read_policy_hash=canonical_hash(policy),
+                question_ids=item.question_ids,
+            )
+            continuation = (
+                self._issue_token(
+                    "v2itemread",
+                    {
+                        "snapshot": read.snapshot_hash,
+                        "policy": canonical_hash(policy),
+                        "scope": canonical_hash(scope),
+                        "location_handle": item.location_handle,
+                        "mode": item.mode.value,
+                        "unit": unit.unit_id,
+                        "source_artifact_hash": unit.source_artifact_hash,
+                        "parse_id": unit.parse_id,
+                        "questions": list(item.question_ids),
+                        "next": read.end,
+                    },
+                )
+                if read.continuation_cursor
+                else None
+            )
+            view = EvidenceReadBatchView(
+                location_handle=item.location_handle,
+                read_view_receipt=receipt,
+                fragments=(
+                    EvidenceReadBatchFragment(
+                        canonical_unit_id=unit.unit_id,
+                        source_id=unit.source_id,
+                        source_artifact_hash=unit.source_artifact_hash,
+                        parse_id=unit.parse_id,
+                        canonicalization_version=unit.canonicalization_version,
+                        start=read.start,
+                        end=read.end,
+                        text=read.text,
+                        text_hash=sha256_digest(read.text.encode()),
+                        warnings=read.warnings,
+                        table_headers=unit.table_headers,
+                        caption=unit.caption,
+                        section_path=unit.section_path,
+                        hierarchy_path=unit.hierarchy_path,
+                    ),
+                ),
+                canonical_unit_id=unit.unit_id,
+                source_id=unit.source_id,
+                source_artifact_hash=unit.source_artifact_hash,
+                parse_id=unit.parse_id,
+                mode=item.mode,
+                warnings=read.warnings,
+                policy_id=policy.policy_id,
+                policy_hash=canonical_hash(policy),
+                continuation=continuation,
+                oversized=len(unit.text.encode("utf-8")) > policy.per_view_character_target,
+                limiting_bounds=("per_view_character_target",) if read.end < len(unit.text) else (),
+                omitted_fragment_count=0,
+                omitted_character_count=len(unit.text) - read.end,
+            )
+            return EvidenceReadBatchOutcome(
+                input_index=index,
+                location_handle=item.location_handle,
+                question_ids=item.question_ids,
+                condition=EvidenceReadItemCondition.SUCCESS,
+                detail="bounded source-authored Evidence view",
+                next_actions=("continue_read",) if continuation else (),
+                view=view,
+            )
+        except ScopeMismatch:
+            condition = EvidenceReadItemCondition.WRONG_SCOPE
+            detail = "location is outside the item's authorized Source scope"
+        except (StaleCursor, UnknownCursor):
+            condition = EvidenceReadItemCondition.STALE
+            detail = "location handle is stale or no longer resolvable"
+        except RetrievalFailure:
+            condition = EvidenceReadItemCondition.UNREADABLE
+            detail = "Evidence source could not be read safely"
+        return EvidenceReadBatchOutcome(
+            input_index=index,
+            location_handle=item.location_handle,
+            question_ids=item.question_ids,
+            condition=condition,
+            detail=detail,
+            next_actions=("request a fresh evidence search",),
+        )
+
+    def _v2_oversized_section_outcome(
+        self,
+        *,
+        index: int,
+        item: EvidenceReadBatchItem,
+        unit: CanonicalEvidenceUnit,
+        continuation_target_unit_id: Identifier,
+        start: int,
+        resume_context: str | None,
+        scope: EvidenceReadBatchScope,
+        policy: EvidenceReadPolicy,
+        continuation_input: str | None,
+    ) -> EvidenceReadBatchOutcome:
+        """Return one bounded window of a deferred oversized section unit."""
+
+        if start < 0 or start >= len(unit.text):
+            raise StaleCursor("oversized section continuation is outside its unit")
+        # The first window of an oversized target has no deferred SECTION
+        # cursor.  Store that terminal state as None, never as an empty string:
+        # an empty cursor means "start SECTION" to read_context.
+        resume_context = resume_context or None
+        end = min(start + policy.per_view_character_target, len(unit.text))
+        text = unit.text[start:end]
+        fragment = EvidenceReadBatchFragment(
+            canonical_unit_id=unit.unit_id,
+            source_id=unit.source_id,
+            source_artifact_hash=unit.source_artifact_hash,
+            parse_id=unit.parse_id,
+            canonicalization_version=unit.canonicalization_version,
+            start=start,
+            end=end,
+            text=text,
+            text_hash=sha256_digest(text.encode()),
+            warnings=unit.warnings,
+            table_headers=unit.table_headers,
+            caption=unit.caption,
+            section_path=unit.section_path,
+            hierarchy_path=unit.hierarchy_path,
+        )
+        receipt_fragment = ReviewedEvidenceFragment(
+            unit_id=unit.unit_id,
+            source_id=unit.source_id,
+            source_artifact_hash=unit.source_artifact_hash,
+            parse_id=unit.parse_id,
+            canonicalization_version=unit.canonicalization_version,
+            unit_content_hash=sha256_digest(unit.text.encode()),
+            span_start=start,
+            span_end=end,
+            content_hash=fragment.text_hash,
+        )
+        next_context = resume_context if end >= len(unit.text) else None
+        receipt = self.issue_read_view_receipt(
+            snapshot_hash=scope.snapshot_hash,
+            requested_mode=item.mode,
+            applied_mode=item.mode,
+            continuation_input=continuation_input,
+            continuation=next_context,
+            fragments=(receipt_fragment,),
+            displayed_units=(unit,),
+            read_policy_id=policy.policy_id,
+            read_policy_hash=canonical_hash(policy),
+            question_ids=item.question_ids,
+        )
+        token_payload: dict[str, object] = {
+            "snapshot": scope.snapshot_hash,
+            "policy": canonical_hash(policy),
+            "scope": canonical_hash(scope),
+            "location_handle": item.location_handle,
+            "mode": item.mode.value,
+            "unit": continuation_target_unit_id,
+            "source_artifact_hash": unit.source_artifact_hash,
+            "parse_id": unit.parse_id,
+            "questions": list(item.question_ids),
+            "context": next_context or resume_context or "",
+        }
+        if end < len(unit.text):
+            token_payload["oversized_unit_id"] = unit.unit_id
+            token_payload["oversized_offset"] = end
+            token_payload["resume_context"] = resume_context or ""
+        # A terminal window has no next section cursor.  Issuing a token with
+        # an empty context would be interpreted as a fresh SECTION read and
+        # silently restart traversal from the first neighbor.
+        continuation = (
+            self._issue_token("v2itemread", token_payload)
+            if end < len(unit.text) or next_context is not None
+            else None
+        )
+        view = EvidenceReadBatchView(
+            location_handle=item.location_handle,
+            read_view_receipt=receipt,
+            fragments=(fragment,),
+            canonical_unit_id=unit.unit_id,
+            source_id=unit.source_id,
+            source_artifact_hash=unit.source_artifact_hash,
+            parse_id=unit.parse_id,
+            mode=item.mode,
+            warnings=unit.warnings + ("oversized_section_fragment",),
+            policy_id=policy.policy_id,
+            policy_hash=canonical_hash(policy),
+            continuation=continuation,
+            oversized=True,
+            limiting_bounds=("per_view_character_target",),
+            omitted_fragment_count=1 if end < len(unit.text) else 0,
+            omitted_character_count=len(unit.text) - end,
+        )
+        return EvidenceReadBatchOutcome(
+            input_index=index,
+            location_handle=item.location_handle,
+            question_ids=item.question_ids,
+            condition=EvidenceReadItemCondition.SUCCESS,
+            detail="bounded oversized section Evidence fragment",
+            next_actions=("continue_read",),
+            view=view,
+        )
+
+    @staticmethod
+    def _read_batch_payload(
+        scope: EvidenceReadBatchScope,
+        policy: EvidenceReadPolicy,
+        outcomes: tuple[EvidenceReadBatchOutcome, ...],
+        next_index: int,
+        total_items: int,
+    ) -> dict[str, object]:
+        del total_items
+        return {
+            "snapshot_hash": scope.snapshot_hash,
+            "policy_id": policy.policy_id,
+            "policy_hash": canonical_hash(policy),
+            "scope": scope,
+            "outcomes": outcomes,
+            "next_index": next_index,
+            "continuation": _v2_placeholder("v2readcur") if next_index else None,
+            "serialized_response_bytes": 0,
+            "estimated_response_tokens": 0,
+            "limiting_bounds": (),
+        }
+
+    def search_v2(
+        self,
+        query: SearchQuery,
+        *,
+        issuance_context: str | None = None,
+        continuation: str | None = None,
+        scope: EvidenceScope | None = None,
+        continue_reason: SearchContinuationReason | None = None,
+        continue_rationale: str | None = None,
+        policy: EvidenceSearchPolicy | None = None,
+        envelope_measure: Callable[[EvidenceSearchPage], tuple[int, int]] | None = None,
+    ) -> EvidenceSearchPage:
+        """Return one engine-bounded v2 navigation page.
+
+        The public caller controls only query semantics, authorized scope, and
+        an opaque continuation.  ``policy`` exists for engine calibration and
+        replay tests; application/MCP surfaces must select it server-side.
+        """
+        policy = policy or EvidenceSearchPolicy()
+        snapshot = self._snapshot()
+        query_hash = canonical_hash(query)
+        offset, reason_required = (
+            self._decode_v2_continuation(
+                continuation,
+                snapshot=snapshot,
+                query_hash=query_hash,
+                policy=policy,
+                scope=scope,
+                issuance_context=issuance_context,
+            )
+            if continuation
+            else (0, False)
+        )
+        if continuation is None and (continue_reason is not None or continue_rationale is not None):
+            raise InvalidRetrievalRequest(
+                "a continuation reason is valid only with a search continuation",
+                field="continue_reason",
+            )
+        if reason_required and continue_reason is None:
+            raise InvalidRetrievalRequest(
+                "continuing this high-cost search requires a reason code",
+                field="continue_reason",
+            )
+        if continue_reason is SearchContinuationReason.OTHER and not (
+            continue_rationale and continue_rationale.strip()
+        ):
+            raise InvalidRetrievalRequest(
+                "the other continuation reason requires a rationale",
+                field="continue_rationale",
+            )
+        if continue_reason is not SearchContinuationReason.OTHER and continue_rationale is not None:
+            raise InvalidRetrievalRequest(
+                "a continuation rationale is only valid for the other reason code",
+                field="continue_rationale",
+            )
+
+        rows, scoped_count, excluded_count = self._matches(query, scope=scope)
+        scoped_source_ids = self._v2_scoped_source_ids(query, scope=scope)
+        if self._snapshot() != snapshot:
+            raise StaleSearchContinuation(
+                "evidence snapshot changed while preparing the search page",
+                field="continuation",
+            )
+        rows = _diversify_rows(_collapse_duplicate_groups(_best_projection_per_unit(rows)))
+        if offset > len(rows):
+            raise StaleSearchContinuation("search continuation position is outside the result set")
+        candidates = tuple(
+            self._v2_candidate(
+                row,
+                query=query,
+                snapshot=snapshot,
+                query_hash=query_hash,
+                policy=policy,
+                issuance_context=issuance_context,
+            )
+            for row in rows
+        )
+        layouts = _pack_v2_candidate_pages(
+            candidates,
+            snapshot=snapshot,
+            query_hash=query_hash,
+            policy=policy,
+            scoped_count=scoped_count,
+            excluded_count=excluded_count,
+            scoped_source_ids=scoped_source_ids,
+            envelope_measure=envelope_measure,
+        )
+        if not layouts:
+            layouts = ((),)
+        # Self-reporting measurements and limiting-bound labels can grow after
+        # a provisional layout is chosen.  Re-materialize and split any normal
+        # bound violation until the actual wire envelopes are stable.
+        for _ in range(max(1, len(candidates) + 1)):
+            pages = _materialize_v2_pages(
+                layouts,
+                snapshot=snapshot,
+                query_hash=query_hash,
+                policy=policy,
+                scoped_count=scoped_count,
+                excluded_count=excluded_count,
+                scoped_source_ids=scoped_source_ids,
+                envelope_measure=envelope_measure,
+            )
+            offending = tuple(
+                number
+                for number, page in enumerate(pages)
+                if (
+                    page.serialized_response_bytes > policy.serialized_byte_ceiling
+                    or page.estimated_response_tokens > policy.estimated_token_target
+                )
+                and len(layouts[number]) > 1
+            )
+            if not offending:
+                break
+            layouts = _split_v2_candidate_layouts(layouts, offending)
+        else:  # pragma: no cover - each split strictly reduces a page width
+            raise OperationalRetrievalFailure("v2 evidence search layout did not stabilize")
+        starts = [sum(len(page) for page in layouts[:number]) for number in range(len(layouts))]
+        try:
+            page_index = starts.index(offset)
+        except ValueError as error:
+            raise StaleSearchContinuation(
+                "search continuation position is not a page boundary"
+            ) from error
+        _validate_materialized_v2_pages(
+            pages, policy=policy, envelope_measure=envelope_measure
+        )
+        page = pages[page_index]
+        page_handle = self._issue_stable_token(
+            "v2page",
+            {
+                "snapshot": snapshot,
+                "query": query_hash,
+                "policy": canonical_hash(policy),
+                "scope": canonical_hash(scope) if scope is not None else None,
+                "issuance_context": issuance_context,
+                "offset": offset,
+            },
+        )
+        next_offset = offset + len(page.candidates)
+        continuation_value = (
+            self._issue_stable_token(
+                "v2cur",
+                {
+                    "snapshot": snapshot,
+                    "query": query_hash,
+                    "policy": canonical_hash(policy),
+                    "scope": canonical_hash(scope) if scope is not None else None,
+                    "issuance_context": issuance_context,
+                    "offset": next_offset,
+                    "reason_required": page.traversal_cost.decision_required,
+                },
+            )
+            if next_offset < len(candidates)
+            else None
+        )
+        if self._snapshot() != snapshot:
+            raise StaleSearchContinuation(
+                "evidence snapshot changed while issuing the search page",
+                field="continuation",
+            )
+        # Lookup-token prefixes and random bodies have the fixed lengths used
+        # in packing placeholders, so replacement preserves the measured bytes.
+        return page.model_copy(
+            update={"page_handle": page_handle, "continuation": continuation_value}
+        )
+
+    def _v2_scoped_source_ids(
+        self, query: SearchQuery, *, scope: EvidenceScope | None
+    ) -> tuple[Identifier, ...]:
+        """Return every source in the query's authorized universe, including zero hits."""
+
+        filters: list[str] = []
+        parameters: list[object] = []
+        if query.source_ids:
+            filters.append(f"u.source_id IN ({','.join('?' for _ in query.source_ids)})")
+            parameters.extend(query.source_ids)
+        if query.pages:
+            filters.append(f"u.page IN ({','.join('?' for _ in query.pages)})")
+            parameters.extend(query.pages)
+        metadata_filters, metadata_parameters = _query_metadata_filters(query, scope)
+        filters.extend(metadata_filters)
+        parameters.extend(metadata_parameters)
+        where = " AND " + " AND ".join(filters) if filters else ""
+        with self._connect() as connection:
+            rows = connection.execute(
+                f"SELECT DISTINCT u.source_id FROM evidence_units AS u WHERE 1=1{where} "
+                "ORDER BY u.source_id",
+                parameters,
+            ).fetchall()
+        return tuple(row["source_id"] for row in rows)
+
+    def _decode_v2_continuation(
+        self,
+        continuation: str,
+        *,
+        snapshot: ContentHash,
+        query_hash: ContentHash,
+        policy: EvidenceSearchPolicy,
+        scope: EvidenceScope | None,
+        issuance_context: str | None,
+    ) -> tuple[int, bool]:
+        try:
+            payload = self._resolve_token("v2cur", continuation)
+        except UnknownCursor:
+            raise UnknownCursor("invalid v2 search continuation", field="continuation") from None
+        if payload.get("snapshot") != snapshot:
+            raise StaleSearchContinuation("continuation belongs to a different index snapshot")
+        if payload.get("query") != query_hash:
+            raise StaleSearchContinuation("continuation belongs to a different structured query")
+        if payload.get("issuance_context") != issuance_context:
+            raise StaleSearchContinuation("continuation belongs to a different search attempt")
+        if payload.get("policy") != canonical_hash(policy):
+            raise SearchPolicyMismatch()
+        if payload.get("scope") != (canonical_hash(scope) if scope is not None else None):
+            raise CursorScopeMismatch(
+                "continuation belongs to a different Evidence scope", field="continuation"
+            )
+        offset = payload.get("offset")
+        if isinstance(offset, bool) or not isinstance(offset, int) or offset < 0:
+            raise StaleSearchContinuation("search continuation position is invalid")
+        reason_required = payload.get("reason_required")
+        if not isinstance(reason_required, bool):
+            raise StaleSearchContinuation("search continuation decision state is invalid")
+        return offset, reason_required
+
+    def _v2_candidate(
+        self,
+        row: sqlite3.Row,
+        *,
+        query: SearchQuery,
+        snapshot: ContentHash,
+        query_hash: ContentHash,
+        policy: EvidenceSearchPolicy,
+        issuance_context: str | None,
+    ) -> EvidenceSearchCandidate:
+        unit = _unit_from_row(row)
+        snippet, start, end, spans, undisplayed = _match_centered_snippet(
+            unit.text, _query_lexical_patterns(query), policy.snippet_character_target
+        )
+        candidate_id = _v2_candidate_id(unit)
+        exposure_id = "exposure:" + canonical_hash(
+            {
+                "snapshot": snapshot,
+                "query": query_hash,
+                "policy": canonical_hash(policy),
+                "candidate_id": candidate_id,
+                "issuance_context": issuance_context,
+            }
+        ).removeprefix("sha256:")
+        full_unit_bytes = len(unit.text.encode("utf-8"))
+        flags = EvidenceSearchTriageFlags(
+            has_reading_order_uncertainty="reading_order_uncertain" in unit.warnings,
+            has_visual_uncertainty=(
+                unit.spatial is None or "parse_render_discrepancy" in unit.warnings
+            ),
+            has_duplicate_lineage=unit.duplicate_group_id is not None,
+            is_table_content=unit.kind is CanonicalUnitKind.TABLE_ROW,
+            is_oversized_unit=full_unit_bytes > policy.serialized_byte_ceiling,
+            # These are parser/reconciliation facts, never semantic verdicts.
+            has_context_dependency=any(
+                warning
+                in {
+                    "context_dependency",
+                    "negation_context_required",
+                    "pronoun_context_required",
+                }
+                for warning in unit.warnings
+            ),
+            has_possible_contradiction="possible_contradiction" in unit.warnings,
+        )
+        location_handle = self._encode_location_handle(
+            unit, snapshot, issuance_context=issuance_context
+        )
+        return EvidenceSearchCandidate(
+            candidate_id=candidate_id,
+            exposure_id=exposure_id,
+            canonical_unit_id=unit.unit_id,
+            location_handle=location_handle,
+            source_id=unit.source_id,
+            source_label=_source_label(unit.source_id),
+            source_artifact_hash=unit.source_artifact_hash,
+            parse_id=unit.parse_id,
+            canonicalization_version=unit.canonicalization_version,
+            fragment_ids=unit.fragment_ids,
+            page=unit.page,
+            section_path=unit.section_path,
+            hierarchy_path=unit.hierarchy_path,
+            kind=unit.kind,
+            source_role=unit.source_role,
+            document_zone=unit.document_zone,
+            table_headers=unit.table_headers,
+            caption=unit.caption,
+            source_snippet=snippet,
+            displayed_match_spans=spans,
+            displayed_match_count=len(spans),
+            undisplayed_match_count=undisplayed,
+            canonical_start=start,
+            canonical_end=end,
+            left_omitted_character_count=start,
+            right_omitted_character_count=len(unit.text) - end,
+            warnings=unit.warnings,
+            triage_flags=flags,
+            duplicate_group_id=unit.duplicate_group_id,
+            # Duplicate targets are navigation identities, never canonical
+            # unit IDs.  The representative of an engine-known duplicate
+            # group is the retained candidate for that lineage.
+            retained_duplicate_target_id=(candidate_id if unit.duplicate_group_id else None),
+            estimated_full_unit_bytes=full_unit_bytes,
+            estimated_full_unit_tokens=_estimate_response_tokens(full_unit_bytes),
+            oversized_unit=flags.is_oversized_unit,
+            read_evidence=EvidenceSearchReadAction(location_handle=location_handle),
+        )
 
     def search(
         self,
@@ -1616,10 +3092,14 @@ class EvidenceSearchIndex:
         """
 
         encoded = json.dumps(payload, sort_keys=True, separators=(",", ":"))
-        token = f"{kind}:{canonical_hash(payload).removeprefix('sha256:')}"
+        # Keep stable tokens at the same fixed width as ordinary lookup
+        # tokens, so page packing remains exact.  The collision check below
+        # rejects the astronomically unlikely truncated-digest collision.
+        token = f"{kind}:{canonical_hash(payload).removeprefix('sha256:')[:22]}"
         with self._connect() as connection:
             connection.execute(
-                "INSERT OR IGNORE INTO evidence_cursor_token(token, kind, payload) VALUES (?, ?, ?)",
+                "INSERT OR IGNORE INTO evidence_cursor_token(token, kind, payload) "
+                "VALUES (?, ?, ?)",
                 (token, kind, encoded),
             )
             existing = connection.execute(
@@ -1645,6 +3125,9 @@ class EvidenceSearchIndex:
         continuation: str | None,
         fragments: tuple[ReviewedEvidenceFragment, ...],
         displayed_units: tuple[CanonicalEvidenceUnit, ...],
+        read_policy_id: Identifier | None = None,
+        read_policy_hash: ContentHash | None = None,
+        question_ids: tuple[Identifier, ...] = (),
     ) -> str:
         """Persist an opaque, exact read-view receipt for later review binding.
 
@@ -1681,6 +3164,9 @@ class EvidenceSearchIndex:
                 }
                 for unit in displayed_units
             ],
+            "read_policy_id": read_policy_id,
+            "read_policy_hash": read_policy_hash,
+            "question_ids": question_ids,
         }
         return self._issue_stable_token("read-view", payload)
 
@@ -1710,6 +3196,9 @@ class EvidenceSearchIndex:
             raw_lineage = payload["lineage"]
             continuation_input = payload.get("continuation_input")
             continuation = payload.get("continuation")
+            read_policy_id = payload.get("read_policy_id")
+            read_policy_hash = payload.get("read_policy_hash")
+            question_ids = payload.get("question_ids", [])
             if (
                 not isinstance(snapshot_hash, str)
                 or not isinstance(requested_mode, str)
@@ -1718,6 +3207,10 @@ class EvidenceSearchIndex:
                 or not isinstance(raw_lineage, list)
                 or not isinstance(continuation_input, (str, type(None)))
                 or not isinstance(continuation, (str, type(None)))
+                or not isinstance(read_policy_id, (str, type(None)))
+                or not isinstance(read_policy_hash, (str, type(None)))
+                or not isinstance(question_ids, (list, tuple))
+                or not all(isinstance(question_id, str) for question_id in question_ids)
             ):
                 raise ValueError("receipt payload has invalid field types")
             ReadContextMode(requested_mode)
@@ -1767,6 +3260,16 @@ class EvidenceSearchIndex:
                         ("unit_content_hash", sha256_digest(unit.text.encode())),
                     )
                 )
+                or any(
+                    value != getattr(unit, attribute)
+                    for value, attribute in (
+                        (fragment.source_id, "source_id"),
+                        (fragment.source_artifact_hash, "source_artifact_hash"),
+                        (fragment.parse_id, "parse_id"),
+                        (fragment.canonicalization_version, "canonicalization_version"),
+                    )
+                )
+                or fragment.unit_content_hash != sha256_digest(unit.text.encode())
                 or fragment.span_end > len(unit.text)
                 or fragment.content_hash
                 != sha256_digest(unit.text[fragment.span_start : fragment.span_end].encode())
@@ -1799,12 +3302,21 @@ class EvidenceSearchIndex:
             applied_mode=applied_mode,
             continuation_input=continuation_input,
             continuation=continuation,
+            read_policy_id=read_policy_id,
+            read_policy_hash=read_policy_hash,
+            question_ids=tuple(question_ids),
             fragments=frozen_fragments,
         )
 
-    def _encode_location_handle(self, unit: CanonicalEvidenceUnit, snapshot: ContentHash) -> str:
+    def _encode_location_handle(
+        self,
+        unit: CanonicalEvidenceUnit,
+        snapshot: ContentHash,
+        *,
+        issuance_context: str | None = None,
+    ) -> str:
         """Issue an opaque handle bound to the exact source/Parse lineage."""
-        return self._issue_token(
+        return self._issue_stable_token(
             "loc",
             {
                 "snapshot": snapshot,
@@ -1813,6 +3325,7 @@ class EvidenceSearchIndex:
                 "parse_id": unit.parse_id,
                 "fragment_ids": list(unit.fragment_ids),
                 "canonicalization_version": unit.canonicalization_version,
+                "issuance_context": issuance_context,
             },
         )
 
@@ -1925,6 +3438,515 @@ def _compile_match(query: SearchQuery) -> str:
     clauses.extend(f'"{prefix}"*' for prefix in query.prefixes)
     clauses.extend("(" + " OR ".join(f'"{term}"' for term in group) + ")" for group in query.any_of)
     return " AND ".join(clauses)
+
+
+def _estimate_response_tokens(serialized_response_bytes: int) -> int:
+    """Return the versioned provider-neutral ``ceil(bytes / 4)`` estimate."""
+
+    return (serialized_response_bytes + 3) // 4
+
+
+def _read_batch_measure(payload: dict[str, object]) -> tuple[int, int]:
+    size = 0
+    tokens = 0
+    for _ in range(8):
+        measured = len(
+            canonical_json_bytes(
+                EvidenceReadBatchPage.model_construct(
+                    **(
+                        payload
+                        | {
+                            "serialized_response_bytes": size,
+                            "estimated_response_tokens": tokens,
+                        }
+                    )
+                ).model_dump(mode="json")
+            )
+        )
+        estimated = _estimate_response_tokens(measured)
+        if (measured, estimated) == (size, tokens):
+            return measured, estimated
+        size, tokens = measured, estimated
+    return size, tokens
+
+
+def _source_label(source_id: Identifier) -> str:
+    """Use the issued Source ID as the safe fallback display label."""
+
+    return source_id
+
+
+def _query_lexical_patterns(query: SearchQuery) -> tuple[re.Pattern[str], ...]:
+    """Literal source-text patterns used only to choose a visible snippet.
+
+    FTS remains the retrieval authority.  These patterns never generate prose;
+    they merely find a source-authored lexical occurrence to center the view.
+    """
+
+    patterns = [re.compile(re.escape(phrase), re.IGNORECASE) for phrase in query.phrases]
+    patterns.extend(
+        re.compile(rf"\b{re.escape(term)}\b", re.IGNORECASE)
+        for term in (*query.terms, *(term for group in query.any_of for term in group))
+    )
+    patterns.extend(
+        re.compile(rf"\b{re.escape(prefix)}\w*", re.IGNORECASE) for prefix in query.prefixes
+    )
+    return tuple(patterns)
+
+
+def _match_centered_snippet(
+    text: str,
+    patterns: tuple[re.Pattern[str], ...],
+    target: int,
+) -> tuple[str, int, int, tuple[tuple[int, int], ...], int]:
+    matches = sorted(
+        (match.start(), match.end())
+        for pattern in patterns
+        for match in pattern.finditer(text)
+        if match.end() > match.start()
+    )
+    # A porter-tokenized FTS match can have no literal substring (for example
+    # a stem variant).  Still return source-authored text, without pretending a
+    # marker is a match.
+    focus = matches[0][0] if matches else 0
+    start = max(0, min(focus - target // 2, len(text) - target))
+    end = min(len(text), start + target)
+    snippet = text[start:end]
+    displayed = tuple(
+        (match_start - start, match_end - start)
+        for match_start, match_end in matches
+        if start <= match_start and match_end <= end
+    )
+    undisplayed = len(matches) - len(displayed)
+    return snippet, start, end, displayed, undisplayed
+
+
+def _v2_placeholder(kind: str) -> str:
+    """Match the exact length of a token issued by ``_LookupTokenCodec``."""
+
+    return f"{kind}:" + "x" * 22
+
+
+def _v2_candidate_id(unit: CanonicalEvidenceUnit) -> Identifier:
+    """Return the stable candidate identity for one canonical unit."""
+
+    return "candidate:" + canonical_hash(
+        {
+            "unit_id": unit.unit_id,
+            "source_artifact_hash": unit.source_artifact_hash,
+            "parse_id": unit.parse_id,
+            "canonicalization_version": unit.canonicalization_version,
+        }
+    ).removeprefix("sha256:")
+
+
+def _v2_source_diagnostics(
+    candidates: tuple[EvidenceSearchCandidate, ...],
+    page_candidates: tuple[EvidenceSearchCandidate, ...],
+    scoped_count: int,
+    scoped_source_ids: tuple[Identifier, ...],
+) -> tuple[EvidenceSearchSourceDiagnostic, ...]:
+    totals: dict[str, int] = {}
+    page_totals: dict[str, int] = {}
+    for candidate in candidates:
+        totals[candidate.source_id] = totals.get(candidate.source_id, 0) + 1
+    for candidate in page_candidates:
+        page_totals[candidate.source_id] = page_totals.get(candidate.source_id, 0) + 1
+    return tuple(
+        EvidenceSearchSourceDiagnostic(
+            source_id=source_id,
+            source_label=_source_label(source_id),
+            candidate_count=count,
+            scoped_unit_count=scoped_count,
+            scoped_candidate_fraction=(count / scoped_count if scoped_count else 0),
+            page_candidate_count=page_totals.get(source_id, 0),
+        )
+        for source_id in scoped_source_ids
+        for count in (totals.get(source_id, 0),)
+    )
+
+
+def _v2_page_payload(
+    *,
+    all_candidates: tuple[EvidenceSearchCandidate, ...],
+    page_candidates: tuple[EvidenceSearchCandidate, ...],
+    page_number: int,
+    total_page_count: int,
+    snapshot: ContentHash,
+    query_hash: ContentHash,
+    policy: EvidenceSearchPolicy,
+    scoped_count: int,
+    excluded_count: int,
+    scoped_source_ids: tuple[Identifier, ...],
+    serialized_response_bytes: int = 0,
+    estimated_response_tokens: int = 0,
+    current_cumulative_response_bytes: int = 0,
+    current_cumulative_estimated_tokens: int = 0,
+    projected_cumulative_response_bytes: int = 0,
+    projected_cumulative_estimated_tokens: int = 0,
+    limiting_bounds: tuple[str, ...] = (),
+) -> dict[str, object]:
+    end = sum(len(page) for page in ())  # Keeps the response representation intentionally explicit.
+    del end
+    candidate_count = len(all_candidates)
+    prior = 0  # The caller supplies remaining counts; this function is reused for packing probes.
+    del prior
+    # Position is encoded in candidate membership rather than caller offset.
+    page_start = 0
+    # The first candidate ID is unique, so membership lookup remains deterministic
+    # after duplicate collapse.
+    if page_candidates:
+        page_start = all_candidates.index(page_candidates[0])
+    page_end = page_start + len(page_candidates)
+    remaining = candidate_count - page_end
+    traversal_complete = remaining == 0
+    projected_pages = total_page_count
+    high = (
+        projected_pages >= policy.high_cost_page_threshold
+        or projected_cumulative_estimated_tokens >= policy.high_cost_estimated_token_threshold
+    )
+    decision_required = high and page_number == 1 and not traversal_complete
+    condition: Literal["results", "zero_hits", "excluded_only", "truncated"]
+    if not page_candidates:
+        condition = "excluded_only" if excluded_count else "zero_hits"
+    elif traversal_complete:
+        condition = "results"
+    else:
+        condition = "truncated"
+    return {
+        "snapshot_hash": snapshot,
+        "query_hash": query_hash,
+        "policy_id": policy.policy_id,
+        "policy_hash": canonical_hash(policy),
+        "page_handle": _v2_placeholder("v2page"),
+        "continuation": None if traversal_complete else _v2_placeholder("v2cur"),
+        "candidate_ids": tuple(candidate.candidate_id for candidate in page_candidates),
+        "candidates": page_candidates,
+        "page_number": page_number,
+        "total_page_count": total_page_count,
+        "remaining_page_count": total_page_count - page_number,
+        "returned_candidate_count": len(page_candidates),
+        "prior_candidate_count": page_start,
+        "total_candidate_count": candidate_count,
+        "remaining_candidate_count": remaining,
+        "estimated_response_tokens": estimated_response_tokens,
+        "serialized_response_bytes": serialized_response_bytes,
+        "current_cumulative_response_bytes": current_cumulative_response_bytes,
+        "current_cumulative_estimated_tokens": current_cumulative_estimated_tokens,
+        "projected_cumulative_response_bytes": projected_cumulative_response_bytes,
+        "projected_cumulative_estimated_tokens": projected_cumulative_estimated_tokens,
+        "limiting_bounds": limiting_bounds,
+        "omitted_candidate_count": remaining,
+        "omitted_estimated_response_bytes": sum(
+            candidate.estimated_full_unit_bytes for candidate in all_candidates[page_end:]
+        ),
+        "traversal_complete": traversal_complete,
+        "source_diagnostics": _v2_source_diagnostics(
+            all_candidates, page_candidates, scoped_count, scoped_source_ids
+        ),
+        "traversal_cost": EvidenceSearchTraversalCost(
+            classification="high" if high else "ordinary",
+            projected_page_count=projected_pages,
+            projected_cumulative_response_bytes=projected_cumulative_response_bytes,
+            projected_cumulative_estimated_tokens=projected_cumulative_estimated_tokens,
+            decision_required=decision_required,
+        ),
+        "next_actions": (
+            ("refine_or_supersede_query", "continue_search")
+            if decision_required
+            else (
+                ("continue_search",)
+                if not traversal_complete
+                else (("read_evidence",) if page_candidates else ())
+            )
+        ),
+        "condition": condition,
+        "excluded_count": excluded_count,
+    }
+
+
+def _v2_payload_size(
+    payload: dict[str, object],
+    *,
+    envelope_measure: Callable[[EvidenceSearchPage], tuple[int, int]] | None = None,
+) -> tuple[int, int]:
+    """Solve the two self-reporting measurement fields to a stable value."""
+
+    size = 0
+    tokens = 0
+    for _ in range(8):
+        page = EvidenceSearchPage.model_construct(
+            **(
+                payload
+                | {
+                    "serialized_response_bytes": size,
+                    "estimated_response_tokens": tokens,
+                }
+            )
+        )
+        if envelope_measure is None:
+            measured = len(canonical_json_bytes(page.model_facing_payload()))
+            estimated = _estimate_response_tokens(measured)
+        else:
+            measured, estimated = envelope_measure(page)
+        if measured == size and estimated == tokens:
+            return measured, estimated
+        size, tokens = measured, estimated
+    return size, tokens
+
+
+def _pack_v2_candidate_pages(
+    candidates: tuple[EvidenceSearchCandidate, ...],
+    *,
+    snapshot: ContentHash,
+    query_hash: ContentHash,
+    policy: EvidenceSearchPolicy,
+    scoped_count: int,
+    excluded_count: int,
+    scoped_source_ids: tuple[Identifier, ...],
+    envelope_measure: Callable[[EvidenceSearchPage], tuple[int, int]] | None = None,
+) -> tuple[tuple[EvidenceSearchCandidate, ...], ...]:
+    if not candidates:
+        return ()
+    total_guess = len(candidates)
+    pages: tuple[tuple[EvidenceSearchCandidate, ...], ...] = ()
+    for _ in range(8):
+        built: list[tuple[EvidenceSearchCandidate, ...]] = []
+        offset = 0
+        while offset < len(candidates):
+            chosen: list[EvidenceSearchCandidate] = []
+            while offset + len(chosen) < len(candidates) and len(chosen) < policy.candidate_ceiling:
+                proposed = tuple((*chosen, candidates[offset + len(chosen)]))
+                payload = _v2_page_payload(
+                    all_candidates=candidates,
+                    page_candidates=proposed,
+                    page_number=len(built) + 1,
+                    total_page_count=total_guess,
+                    snapshot=snapshot,
+                    query_hash=query_hash,
+                    policy=policy,
+                    scoped_count=scoped_count,
+                    excluded_count=excluded_count,
+                    scoped_source_ids=scoped_source_ids,
+                )
+                size, tokens = _v2_payload_size(payload, envelope_measure=envelope_measure)
+                if (
+                    size <= policy.serialized_byte_ceiling
+                    and tokens <= policy.estimated_token_target
+                ):
+                    chosen.append(candidates[offset + len(chosen)])
+                    continue
+                break
+            if not chosen:
+                # An indivisible candidate is permitted only through the
+                # separately-enforced absolute ceiling, so a tail never stalls.
+                proposed = (candidates[offset],)
+                payload = _v2_page_payload(
+                    all_candidates=candidates,
+                    page_candidates=proposed,
+                    page_number=len(built) + 1,
+                    total_page_count=total_guess,
+                    snapshot=snapshot,
+                    query_hash=query_hash,
+                    policy=policy,
+                    scoped_count=scoped_count,
+                    excluded_count=excluded_count,
+                    scoped_source_ids=scoped_source_ids,
+                    limiting_bounds=("oversized_candidate",),
+                )
+                size, _ = _v2_payload_size(payload, envelope_measure=envelope_measure)
+                if (
+                    size > policy.oversized_candidate_byte_ceiling
+                ):
+                    raise OperationalRetrievalFailure(
+                        "one evidence candidate exceeds the absolute response ceiling"
+                    )
+                chosen.append(candidates[offset])
+            built.append(tuple(chosen))
+            offset += len(chosen)
+        candidate_pages = tuple(built)
+        if candidate_pages == pages and len(candidate_pages) == total_guess:
+            return candidate_pages
+        pages = candidate_pages
+        total_guess = len(candidate_pages)
+    return pages
+
+
+def _materialize_v2_pages(
+    layouts: tuple[tuple[EvidenceSearchCandidate, ...], ...],
+    *,
+    snapshot: ContentHash,
+    query_hash: ContentHash,
+    policy: EvidenceSearchPolicy,
+    scoped_count: int,
+    excluded_count: int,
+    scoped_source_ids: tuple[Identifier, ...],
+    envelope_measure: Callable[[EvidenceSearchPage], tuple[int, int]] | None = None,
+) -> tuple[EvidenceSearchPage, ...]:
+    candidates = tuple(candidate for page in layouts for candidate in page)
+    total_pages = len(layouts)
+    sizes = [0] * total_pages
+    tokens = [0] * total_pages
+    limiting_bounds: list[tuple[str, ...]] = [()] * total_pages
+    # Cumulative fields and limiting text are part of the envelope; converge
+    # their final, self-reported values together rather than measuring a
+    # smaller provisional response and relabelling it afterward.
+    for _ in range(32):
+        projected_bytes = sum(sizes)
+        projected_tokens = sum(tokens)
+        cumulative_bytes = 0
+        cumulative_tokens = 0
+        new_sizes: list[int] = []
+        new_tokens: list[int] = []
+        new_limits: list[tuple[str, ...]] = []
+        offset = 0
+        for number, page_candidates in enumerate(layouts, start=1):
+            payload = _v2_page_payload(
+                all_candidates=candidates,
+                page_candidates=page_candidates,
+                page_number=number,
+                total_page_count=total_pages,
+                snapshot=snapshot,
+                query_hash=query_hash,
+                policy=policy,
+                scoped_count=scoped_count,
+                excluded_count=excluded_count,
+                scoped_source_ids=scoped_source_ids,
+                current_cumulative_response_bytes=cumulative_bytes + sizes[number - 1],
+                current_cumulative_estimated_tokens=cumulative_tokens + tokens[number - 1],
+                projected_cumulative_response_bytes=projected_bytes,
+                projected_cumulative_estimated_tokens=projected_tokens,
+                limiting_bounds=limiting_bounds[number - 1],
+            )
+            size, estimated = _v2_payload_size(payload, envelope_measure=envelope_measure)
+            new_sizes.append(size)
+            new_tokens.append(estimated)
+            offset += len(page_candidates)
+            if (
+                size > policy.serialized_byte_ceiling
+                or estimated > policy.estimated_token_target
+            ):
+                limit = ("oversized_candidate",)
+            elif offset < len(candidates):
+                if len(page_candidates) >= policy.candidate_ceiling:
+                    limit = ("candidate_ceiling",)
+                elif estimated >= policy.estimated_token_target:
+                    limit = ("estimated_token_target",)
+                else:
+                    limit = ("serialized_byte_ceiling",)
+            else:
+                limit = ()
+            new_limits.append(limit)
+            cumulative_bytes += size
+            cumulative_tokens += estimated
+        if new_sizes == sizes and new_tokens == tokens and new_limits == limiting_bounds:
+            break
+        sizes, tokens, limiting_bounds = new_sizes, new_tokens, new_limits
+    else:  # pragma: no cover - fixed-size integer measurements converge rapidly
+        raise OperationalRetrievalFailure("v2 evidence search measurements did not stabilize")
+    projected_bytes = sum(sizes)
+    projected_tokens = sum(tokens)
+    result: list[EvidenceSearchPage] = []
+    cumulative_bytes = 0
+    cumulative_tokens = 0
+    offset = 0
+    for number, page_candidates in enumerate(layouts, start=1):
+        offset += len(page_candidates)
+        cumulative_bytes += sizes[number - 1]
+        cumulative_tokens += tokens[number - 1]
+        payload = _v2_page_payload(
+            all_candidates=candidates,
+            page_candidates=page_candidates,
+            page_number=number,
+            total_page_count=total_pages,
+            snapshot=snapshot,
+            query_hash=query_hash,
+            policy=policy,
+            scoped_count=scoped_count,
+            excluded_count=excluded_count,
+            scoped_source_ids=scoped_source_ids,
+            serialized_response_bytes=sizes[number - 1],
+            estimated_response_tokens=tokens[number - 1],
+            current_cumulative_response_bytes=cumulative_bytes,
+            current_cumulative_estimated_tokens=cumulative_tokens,
+            projected_cumulative_response_bytes=projected_bytes,
+            projected_cumulative_estimated_tokens=projected_tokens,
+            limiting_bounds=limiting_bounds[number - 1],
+        )
+        result.append(EvidenceSearchPage.model_validate(payload))
+    return tuple(result)
+
+
+def _split_v2_candidate_layouts(
+    layouts: tuple[tuple[EvidenceSearchCandidate, ...], ...], offending: tuple[int, ...]
+) -> tuple[tuple[EvidenceSearchCandidate, ...], ...]:
+    """Split each overgrown non-singleton page without changing candidate order."""
+
+    offending_set = set(offending)
+    split: list[tuple[EvidenceSearchCandidate, ...]] = []
+    for number, page in enumerate(layouts):
+        if number not in offending_set:
+            split.append(page)
+            continue
+        midpoint = len(page) // 2
+        split.extend((page[:midpoint], page[midpoint:]))
+    return tuple(split)
+
+
+def _validate_materialized_v2_pages(
+    pages: tuple[EvidenceSearchPage, ...],
+    *,
+    policy: EvidenceSearchPolicy,
+    envelope_measure: Callable[[EvidenceSearchPage], tuple[int, int]] | None = None,
+) -> None:
+    """Reject a page set whose published navigation equations are not exact."""
+
+    if not pages:
+        raise OperationalRetrievalFailure("v2 evidence search materialized no pages")
+    projected_bytes = sum(page.serialized_response_bytes for page in pages)
+    projected_tokens = sum(page.estimated_response_tokens for page in pages)
+    cumulative_bytes = 0
+    cumulative_tokens = 0
+    expected_prior = 0
+    total = pages[0].total_candidate_count
+    for number, page in enumerate(pages, start=1):
+        if envelope_measure is None:
+            actual_bytes = len(canonical_json_bytes(page.model_facing_payload()))
+            actual_tokens = _estimate_response_tokens(actual_bytes)
+        else:
+            actual_bytes, actual_tokens = envelope_measure(page)
+        if page.serialized_response_bytes != actual_bytes:
+            raise OperationalRetrievalFailure("v2 page serialized-byte measurement is not exact")
+        if page.estimated_response_tokens != actual_tokens:
+            raise OperationalRetrievalFailure("v2 page token measurement is not exact")
+        cumulative_bytes += actual_bytes
+        cumulative_tokens += page.estimated_response_tokens
+        if (
+            page.page_number != number
+            or page.total_page_count != len(pages)
+            or page.prior_candidate_count != expected_prior
+            or page.returned_candidate_count != len(page.candidates)
+            or page.remaining_candidate_count != total - expected_prior - len(page.candidates)
+            or page.remaining_page_count != len(pages) - number
+            or page.current_cumulative_response_bytes != cumulative_bytes
+            or page.current_cumulative_estimated_tokens != cumulative_tokens
+            or page.projected_cumulative_response_bytes != projected_bytes
+            or page.projected_cumulative_estimated_tokens != projected_tokens
+        ):
+            raise OperationalRetrievalFailure("v2 page navigation equations are inconsistent")
+        normal_bound_violated = (
+            actual_bytes > policy.serialized_byte_ceiling
+            or page.estimated_response_tokens > policy.estimated_token_target
+        )
+        if normal_bound_violated:
+            if (
+                page.limiting_bounds != ("oversized_candidate",)
+                or actual_bytes > policy.oversized_candidate_byte_ceiling
+            ):
+                raise OperationalRetrievalFailure("v2 page violates a hard response bound")
+        elif actual_bytes > policy.serialized_byte_ceiling:
+            raise OperationalRetrievalFailure("v2 page exceeds its normal response ceiling")
+        expected_prior += len(page.candidates)
 
 
 def _malformed_query_hints(query: SearchQuery) -> tuple[str, ...]:

@@ -6,13 +6,13 @@ from dataclasses import dataclass
 from datetime import datetime
 from enum import StrEnum
 from pathlib import Path
-from typing import Literal
+from typing import Any, Literal
 
 from pydantic import AliasChoices, ConfigDict, Field, model_validator
 
 from rob2_kit.application.lifecycle import ResultState, RunState
 from rob2_kit.domain.assessment import JudgmentLevel, SQAnswerCategory
-from rob2_kit.domain.canonical import canonical_hash
+from rob2_kit.domain.canonical import canonical_hash, canonical_json_bytes
 from rob2_kit.domain.evidence import (
     ConsiderationDisposition,
     EvidenceCoverageState,
@@ -40,12 +40,10 @@ from rob2_kit.domain.sources import (
 )
 from rob2_kit.evidence.errors import RetrievalErrorCode
 from rob2_kit.evidence.search import (
-    RETRIEVAL_SCHEMA_VERSION,
-    CanonicalEvidenceUnit,
-    EvidenceContext,
-    EvidenceRead,
-    ReadContextMode,
-    SearchPage,
+    EvidenceReadBatchPage,
+    EvidenceReadBatchRequest,
+    EvidenceSearchPage,
+    SearchContinuationReason,
     SearchQuery,
     SearchQueryFields,
 )
@@ -53,7 +51,11 @@ from rob2_kit.evidence.visual import (
     VisualCandidate,
     VisualRenderRequest,
 )
-from rob2_kit.evidence.workflow import ExecutedSearchQuery, SearchPassKind
+from rob2_kit.evidence.workflow import (
+    SearchPassKind,
+    V2CandidateTriageRevision,
+    V2QueryAttemptKind,
+)
 from rob2_kit.ingestion.project import (
     OutcomeTarget,
     ProjectInitialization,
@@ -64,7 +66,8 @@ from rob2_kit.logic.packs import GuidanceItem
 from rob2_kit.registry import RegistryCandidate
 
 CONTRACT_VERSION = "1.1.0"
-DOMAIN_EVIDENCE_CONTRACT_VERSION = "1.2.0"
+EVIDENCE_NAVIGATION_CONTRACT_VERSION = "2.0.0"
+DOMAIN_EVIDENCE_CONTRACT_VERSION = "2.0.0"
 
 
 class RunOperation(StrEnum):
@@ -83,6 +86,7 @@ class RunOperation(StrEnum):
     SUBMIT_SOURCE_ROLE_REVIEW = "submit_source_role_review"
     SUBMIT_RESULT_RESOLUTION = "submit_result_resolution"
     SUBMIT_DOMAIN_EVIDENCE = "submit_domain_evidence"
+    SUBMIT_EVIDENCE_REVIEW = "submit_evidence_review"
     SUBMIT_DOMAIN_ANSWERS = "submit_domain_answers"
     CORRECT_DOMAIN_ANSWERS = "correct_domain_answers"
 
@@ -777,6 +781,9 @@ class SearchQueryEnvelope(SearchQueryFields):
 
 
 class SearchEvidenceRequest(FrozenModel):
+    """v2-only semantic Evidence search and attempt accounting request."""
+
+    contract_version: Literal["2.0.0"]
     run_id: Identifier = Field(description="Run identifier returned by prepare_run.")
     query: SearchQuery = Field(
         description=(
@@ -794,7 +801,7 @@ class SearchEvidenceRequest(FrozenModel):
         description="Optional Result identifier; it must match the active WorkToken scope.",
         examples=["result:primary"],
     )
-    cursor: str | None = Field(
+    continuation: str | None = Field(
         default=None,
         min_length=1,
         max_length=4096,
@@ -805,33 +812,48 @@ class SearchEvidenceRequest(FrozenModel):
         description="Signaling-question identifier for the current evidence pass.",
         examples=["sq:randomization"],
     )
-    pass_kind: SearchPassKind | None = Field(
-        default=None,
-        description="Search pass classification; guidance_seed requires seed_family.",
-    )
+    pass_kind: SearchPassKind
     seed_family: Identifier | None = Field(
         default=None,
         description="Stable family identifier required only for guidance_seed passes.",
     )
 
+    attempt_id: Identifier
+    attempt_kind: Literal[V2QueryAttemptKind.SELECTED, V2QueryAttemptKind.EXPLORATORY]
+    supersedes_attempt_id: Identifier | None = None
+    supersession_rationale: str | None = None
+    continue_reason: SearchContinuationReason | None = None
+    continue_rationale: str | None = None
+
     @model_validator(mode="after")
-    def validate_seed_relation(self) -> SearchEvidenceRequest:
+    def validate_navigation(self) -> SearchEvidenceRequest:
         guidance = self.pass_kind is SearchPassKind.GUIDANCE_SEED
         if guidance and self.seed_family is None:
             raise ValueError("guidance_seed pass_kind requires seed_family")
         if not guidance and self.seed_family is not None:
             raise ValueError("seed_family is only valid with guidance_seed pass_kind")
+        if (self.supersedes_attempt_id is None) != (self.supersession_rationale is None):
+            raise ValueError("explicit query supersession requires ID and rationale together")
+        if self.supersession_rationale is not None and not self.supersession_rationale.strip():
+            raise ValueError("supersession rationale cannot be blank")
+        if self.continuation is None and (
+            self.continue_reason is not None or self.continue_rationale is not None
+        ):
+            raise ValueError("continue reason is valid only with an opaque continuation")
+        if self.continue_reason is SearchContinuationReason.OTHER and not (
+            self.continue_rationale and self.continue_rationale.strip()
+        ):
+            raise ValueError("the other continue reason requires a rationale")
+        if self.continue_reason is not SearchContinuationReason.OTHER and self.continue_rationale:
+            raise ValueError("continue rationale is only valid for the other continue reason")
         return self
 
 
 class ReadEvidenceRequest(FrozenModel):
+    """v2-only ordered read batch request."""
+
+    contract_version: Literal["2.0.0"]
     run_id: Identifier = Field(description="Run identifier returned by prepare_run.")
-    location_handle: str = Field(
-        min_length=1,
-        max_length=4096,
-        description="Opaque source/Parse-bound location handle issued by search_evidence.",
-        examples=["eyJwYXlsb2FkIjoi..."],
-    )
     work_token: WorkToken = Field(
         description=(
             "Copy the opaque token from the current submit_domain_evidence WorkItem; "
@@ -843,23 +865,27 @@ class ReadEvidenceRequest(FrozenModel):
         description="Optional Result identifier; it must match the active WorkToken scope.",
         examples=["result:primary"],
     )
-    sq_id: Identifier = Field(
-        description="Signaling-question scope; it must match any active question filter.",
-        examples=["sq:randomization"],
-    )
-    mode: ReadContextMode = Field(
-        default=ReadContextMode.UNIT,
-        description="Read mode: bounded unit window, source neighbors, or section continuation.",
-    )
-    cursor: str | None = Field(
-        default=None,
-        min_length=1,
-        max_length=4096,
-        description=(
-            "Opaque section cursor returned by a prior bounded section read; omit initially."
-        ),
-        examples=["eyJwYXlsb2FkIjoi..."],
-    )
+    batch: EvidenceReadBatchRequest
+
+
+class SubmitEvidenceReviewRequest(FrozenModel):
+    """Append one idempotent v2 triage partition under Domain-Evidence authority."""
+
+    contract_version: Literal["2.0.0"]
+    run_id: Identifier
+    work_token: WorkToken
+    idempotency_key: Identifier
+    result_id: Identifier
+    domain_id: Identifier
+    submission_id: Identifier
+    page_handles: tuple[str, ...] = Field(min_length=1)
+    triage_revisions: tuple[V2CandidateTriageRevision, ...]
+
+    @model_validator(mode="after")
+    def validate_partition(self) -> SubmitEvidenceReviewRequest:
+        if len(self.page_handles) != len(set(self.page_handles)):
+            raise ValueError("page review partition cannot repeat a page handle")
+        return self
 
 
 class InspectVisualCandidateRequest(FrozenModel):
@@ -891,7 +917,7 @@ class SubmitResultResolutionRequest(FrozenModel):
 
 
 class SubmitDomainEvidenceRequest(FrozenModel):
-    contract_version: Literal[DOMAIN_EVIDENCE_CONTRACT_VERSION]
+    contract_version: Literal["2.0.0"]
     run_id: Identifier
     work_token: WorkToken
     idempotency_key: Identifier
@@ -1235,26 +1261,49 @@ class CoverageProgress(FrozenModel):
 
 class SearchEvidenceResponse(OperationResponse):
     run_id: Identifier
-    retrieval_schema_version: Literal[RETRIEVAL_SCHEMA_VERSION] = RETRIEVAL_SCHEMA_VERSION
-    page: SearchPage
-    executed_query: ExecutedSearchQuery | None = None
-    coverage_progress: CoverageProgress | None = None
+    evidence_navigation_contract_version: Literal["2.0.0"] = (
+        EVIDENCE_NAVIGATION_CONTRACT_VERSION
+    )
+    page: EvidenceSearchPage
+    coverage_progress: CoverageProgress
+
+
+def v2_model_facing_operation_payload(response: Any) -> dict[str, Any]:
+    """Build the exact compact v2 operation envelope used on the MCP wire.
+
+    Search packing calls this same composition function before a response is
+    returned.  Keeping it here prevents a page-local estimate from drifting
+    away from the operation envelope once coverage progress and accounting are
+    attached by the MCP adapter.
+    """
+
+    payload = response.model_dump(mode="json", exclude_none=True)
+    page = getattr(response, "page", None)
+    if page is not None and hasattr(page, "model_facing_payload") and "page" in payload:
+        payload["page"] = page.model_facing_payload()
+    payload.pop("next_action", None)
+    bytes_ = tokens = 0
+    for _ in range(16):
+        payload["response_accounting"] = {
+            "estimator_id": "utf8-byte-div4-ceil:v1",
+            "scope": "complete_mcp_operation_envelope",
+            "serialized_response_bytes": bytes_,
+            "estimated_response_tokens": tokens,
+        }
+        measured = len(canonical_json_bytes(payload))
+        estimated = (measured + 3) // 4
+        if (measured, estimated) == (bytes_, tokens):
+            return payload
+        bytes_, tokens = measured, estimated
+    raise RuntimeError("v2 MCP operation-envelope accounting did not stabilize")
 
 
 class ReadEvidenceResponse(OperationResponse):
     run_id: Identifier
-    retrieval_schema_version: Literal[RETRIEVAL_SCHEMA_VERSION] = RETRIEVAL_SCHEMA_VERSION
-    unit: CanonicalEvidenceUnit
-    read_view_receipt: str = Field(
-        min_length=1,
-        description=(
-            "Opaque engine-issued receipt for this exact displayed view. Submit it only in "
-            "an EvidenceReviewSpanInput; location handles are not frozen provenance."
-        ),
+    evidence_navigation_contract_version: Literal["2.0.0"] = (
+        EVIDENCE_NAVIGATION_CONTRACT_VERSION
     )
-    read: EvidenceRead | None = None
-    context: EvidenceContext | None = None
-    visual_inspection: VisualInspectionPath | None = None
+    page: EvidenceReadBatchPage
 
 
 class VisualInspectionArguments(FrozenModel):
@@ -1301,6 +1350,12 @@ class SubmitDomainEvidenceResponse(SubmissionResponse):
     evidence_bundles: tuple[RecordReference, ...] = ()
     consideration_manifests: tuple[RecordReference, ...] = ()
     coverage_receipts: tuple[RecordReference, ...] = ()
+
+
+class SubmitEvidenceReviewResponse(SubmissionResponse):
+    domain_id: Identifier
+    workflow_state_hash: ContentHash
+    outstanding_triage_candidate_ids: tuple[Identifier, ...] = ()
 
 
 class SubmitDomainAnswersResponse(SubmissionResponse):
@@ -1439,6 +1494,12 @@ RUN_OPERATION_CONTRACTS: tuple[OperationContract, ...] = (
             WorkflowCondition.RUN_BLOCKED,
             WorkflowCondition.STALE,
         ),
+    ),
+    OperationContract(
+        operation=RunOperation.SUBMIT_EVIDENCE_REVIEW,
+        request_type=SubmitEvidenceReviewRequest,
+        response_type=SubmitEvidenceReviewResponse,
+        expected_conditions=(WorkflowCondition.ACCEPTED, WorkflowCondition.STALE),
     ),
     OperationContract(
         operation=RunOperation.SUBMIT_DOMAIN_ANSWERS,

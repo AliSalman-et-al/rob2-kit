@@ -54,12 +54,14 @@ from rob2_kit.application.contracts import (
     SQAnswerInput,
     SubmitDomainAnswersRequest,
     SubmitDomainEvidenceRequest,
+    SubmitEvidenceReviewRequest,
     SubmitResultResolutionRequest,
     SubmitRunProposalRequest,
     SubmitSourceRoleReviewRequest,
     VisualRenderRequest,
     WorkflowCondition,
     WorkToken,
+    v2_model_facing_operation_payload,
 )
 from rob2_kit.application.determinism import QualificationDeterminism
 from rob2_kit.application.lifecycle import RunState
@@ -69,7 +71,11 @@ from rob2_kit.evidence.errors import (
     RetrievalFailure,
     invalid_request_from_validation,
 )
-from rob2_kit.evidence.search import ReadContextMode
+from rob2_kit.evidence.search import (
+    EvidenceReadBatchRequest,
+    SearchContinuationReason,
+)
+from rob2_kit.evidence.workflow import V2CandidateTriageRevision, V2QueryAttemptKind
 from rob2_kit.interfaces.harness import verify_runtime_self_consistency
 from rob2_kit.release import SKILL_ALLOWED_TOOL_NAMES
 
@@ -152,7 +158,13 @@ def _dump(response: Any) -> dict[str, Any]:
     if isinstance(proposal, RunProposal):
         payload["proposal"] = proposal.compact_payload()
     page = getattr(response, "page", None)
-    if page is not None and hasattr(page, "hits") and "page" in payload:
+    if page is not None and hasattr(page, "model_facing_payload") and "page" in payload:
+        # V2 discovery pages retain their complete typed shape for workflow
+        # persistence, while models receive this authoritative compact
+        # catalogue.  It deliberately excludes repeated defaults and source
+        # diagnostics but keeps all conservative-triage facts and read action.
+        payload["page"] = page.model_facing_payload()
+    elif page is not None and hasattr(page, "hits") and "page" in payload:
         # Search is a discovery projection. Keep stable IDs and a bounded
         # exact projection snippet on the wire; read_evidence fetches the full
         # canonical unit and immutable provenance when needed for citation.
@@ -198,7 +210,16 @@ def _dump(response: Any) -> dict[str, Any]:
         # Replace the context's duplicate canonical payload with its stable ID.
         payload["context"].pop("unit", None)
         payload["context"]["unit_id"] = payload["unit"]["unit_id"]
+    if getattr(response, "evidence_navigation_contract_version", None) == "2.0.0":
+        # Search/read pages already carry their engine-authored concrete next
+        # actions.  The generic lifecycle continuation duplicates that data
+        # for every page and is not a navigation instruction.
+        # Search packing uses this exact same composition function, including
+        # coverage progress and response accounting, before a page is emitted.
+        payload = v2_model_facing_operation_payload(response)
     return payload
+
+
 
 
 def _wire_result(response: Any) -> CallToolResult:
@@ -487,17 +508,25 @@ def create_server(
         result_id: Annotated[
             str | None, Field(min_length=1, description="Optional active Result identifier.")
         ] = None,
-        cursor: Annotated[
+        attempt_id: Annotated[
+            str, Field(min_length=1, description="Stable v2 search attempt ID.")
+        ] = "",
+        attempt_kind: V2QueryAttemptKind = V2QueryAttemptKind.SELECTED,
+        continuation: Annotated[
             str | None,
-            Field(min_length=1, description="Opaque next_cursor returned by a prior page."),
+            Field(min_length=1, description="Opaque v2 continuation returned by a prior page."),
         ] = None,
-        pass_kind: SearchPassKind | None = None,
+        pass_kind: SearchPassKind = SearchPassKind.GUIDANCE_SEED,
         seed_family: Annotated[
             str | None,
             Field(
                 description="Stable identifier-shaped guidance seed family, e.g. seed:allocation."
             ),
         ] = None,
+        supersedes_attempt_id: str | None = None,
+        supersession_rationale: str | None = None,
+        continue_reason: SearchContinuationReason | None = None,
+        continue_rationale: str | None = None,
     ) -> CallToolResult:
         """When to use: search evidence for the active Domain question.
 
@@ -524,10 +553,17 @@ def create_server(
                     "work_token": work_token,
                     "query": SearchQuery.model_validate(query.model_dump()),
                     "result_id": result_id,
-                    "cursor": cursor,
+                    "contract_version": "2.0.0",
+                    "continuation": continuation,
                     "sq_id": sq_id,
                     "pass_kind": pass_kind,
                     "seed_family": seed_family,
+                    "attempt_id": attempt_id,
+                    "attempt_kind": attempt_kind,
+                    "supersedes_attempt_id": supersedes_attempt_id,
+                    "supersession_rationale": supersession_rationale,
+                    "continue_reason": continue_reason,
+                    "continue_rationale": continue_rationale,
                 }
             )
             return _wire_result(engine.search_evidence(request))
@@ -551,29 +587,15 @@ def create_server(
         run_id: Annotated[
             str, Field(min_length=1, description="Run identifier returned by prepare_run.")
         ],
-        location_handle: Annotated[
-            str,
-            Field(
-                min_length=1,
-                description=(
-                    "Opaque source/Parse-bound location handle returned by search_evidence."
-                ),
-            ),
-        ],
+        batch: EvidenceReadBatchRequest,
         work_token: Annotated[
             WorkToken,
             Field(
                 description="Opaque token copied from the active submit_domain_evidence WorkItem."
             ),
         ],
-        sq_id: Annotated[str, Field(min_length=1, description="Active signaling-question scope.")],
         result_id: Annotated[
             str | None, Field(min_length=1, description="Optional active Result identifier.")
-        ] = None,
-        mode: ReadContextMode = ReadContextMode.UNIT,
-        cursor: Annotated[
-            str | None,
-            Field(min_length=1, description="Opaque section cursor returned by a prior read."),
         ] = None,
     ) -> CallToolResult:
         """When to use: read one source-preserving candidate returned by scoped search.
@@ -591,12 +613,10 @@ def create_server(
                     ReadEvidenceRequest.model_validate(
                         {
                             "run_id": run_id,
-                            "location_handle": location_handle,
+                            "contract_version": "2.0.0",
                             "work_token": work_token,
                             "result_id": result_id,
-                            "sq_id": sq_id,
-                            "mode": mode,
-                            "cursor": cursor,
+                            "batch": batch,
                         }
                     )
                 )
@@ -613,6 +633,54 @@ def create_server(
             return _wire_result(
                 _retrieval_error(
                     OperationalRetrievalFailure("unable to read the evidence retrieval index")
+                )
+            )
+
+    @server.tool(name="submit_evidence_review", structured_output=False)
+    def submit_evidence_review(
+        run_id: str,
+        work_token: WorkToken,
+        result_id: str,
+        domain_id: str,
+        submission_id: str,
+        page_handles: tuple[str, ...],
+        triage_revisions: tuple[V2CandidateTriageRevision, ...],
+        idempotency_key: str | None = None,
+        contract_version: Literal["2.0.0"] = "2.0.0",
+    ) -> CallToolResult:
+        """When to use: record the exact page-level triage audit before Evidence freeze.
+
+        Prerequisite: an active Domain-Evidence WorkToken and complete exposed
+        page handles from v2 search attempts. Safe default: submit one exact
+        append-only partition, including selected, exploratory, and superseded
+        pages, and triage every candidate. Not for: creating a scientific
+        passage or silently auto-disposing candidates; use batch reads and
+        submit_domain_evidence after coverage and triage are ready.
+        """
+        try:
+            request = SubmitEvidenceReviewRequest.model_validate(
+                {
+                    "contract_version": contract_version,
+                    "run_id": run_id,
+                    "work_token": work_token,
+                    "idempotency_key": idempotency_key
+                    or _submission_key("evidence-review", submission_id),
+                    "result_id": result_id,
+                    "domain_id": domain_id,
+                    "submission_id": submission_id,
+                    "page_handles": page_handles,
+                    "triage_revisions": triage_revisions,
+                }
+            )
+            return _wire_result(engine.submit_evidence_review(request))
+        except RetrievalFailure as error:
+            return _wire_result(_retrieval_error(error))
+        except ValidationError as error:
+            return _wire_result(
+                _retrieval_error(
+                    invalid_request_from_validation(
+                        error, sibling_model=SubmitEvidenceReviewRequest
+                    )
                 )
             )
 
@@ -731,7 +799,7 @@ def create_server(
             str, Field(description="Domain ID issued by get_work_context; copy verbatim.")
         ],
         contract_version: Annotated[
-            Literal["1.2.0"],
+            Literal["2.0.0"],
             Field(description="Exact contract version returned by the installed release."),
         ],
         passages: Annotated[
@@ -803,7 +871,8 @@ def create_server(
             Field(
                 description=(
                     "Question-specific, append-only semantic review revisions. Each span "
-                    "references an issued read-view receipt, attribution, exact bounds, and rationale; "
+                    "references an issued read-view receipt, attribution, exact bounds, "
+                    "and rationale; "
                     "unresolved or needs_visual_review spans block freeze."
                 )
             ),

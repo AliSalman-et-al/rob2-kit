@@ -23,6 +23,7 @@ from rob2_kit.application.contracts import (
     SearchEvidenceRequest,
     SubmitDomainAnswersRequest,
     SubmitDomainEvidenceRequest,
+    SubmitEvidenceReviewRequest,
     SubmitResultResolutionRequest,
     SubmitRunProposalRequest,
     SubmitSourceRoleReviewRequest,
@@ -33,8 +34,22 @@ from rob2_kit.application.run_engine import RunEngine
 from rob2_kit.domain.evidence import EvidenceClaim, VisualTranscription
 from rob2_kit.domain.results import Estimate, Result
 from rob2_kit.domain.revisions import Actor, ActorKind, Dependency, RecordReference
-from rob2_kit.evidence.search import EvidenceScope, EvidenceSearchIndex, SearchQuery
-from rob2_kit.evidence.workflow import SearchPassKind
+from rob2_kit.evidence.search import (
+    EvidenceReadBatchItem,
+    EvidenceReadBatchRequest,
+    EvidenceReadBatchScope,
+    EvidenceScope,
+    EvidenceSearchIndex,
+    SearchQuery,
+)
+from rob2_kit.evidence.workflow import (
+    SearchPassKind,
+    V2CandidateTriageRevision,
+    V2IrrelevantReason,
+    V2QueryAttemptKind,
+    V2TriageBasis,
+    V2TriageKind,
+)
 from rob2_kit.ingestion.project import PageExtraction, PageTextItem, ParserResult
 from tests.test_mcp_tracer import DOMAINS, _active_answer_ids, _low_answers
 from tests.test_run_proposal import StubParser
@@ -238,6 +253,143 @@ def _classify_current_sources(engine: RunEngine, run_id: str) -> None:
     assert response.committed is True
 
 
+def _v2_search_and_triage(
+    engine: RunEngine,
+    run_id: str,
+    token: WorkToken,
+    result_id: str,
+    question_id: str,
+    query: SearchQuery,
+    pass_kind: SearchPassKind,
+    seed_family: str | None,
+) -> None:
+    attempt_id = (
+        f"attempt:{token.token.removeprefix('work:')}:{question_id.removeprefix('sq:')}:"
+        f"{pass_kind.value}"
+    )
+    response = engine.search_evidence(
+        SearchEvidenceRequest(
+            contract_version="2.0.0",
+            run_id=run_id,
+            work_token=token,
+            result_id=result_id,
+            sq_id=question_id,
+            query=query,
+            pass_kind=pass_kind,
+            seed_family=seed_family,
+            attempt_id=attempt_id,
+            attempt_kind=V2QueryAttemptKind.SELECTED,
+        )
+    )
+    pages = [response.page]
+    while pages[-1].continuation is not None:
+        pages.append(
+            engine.search_evidence(
+                SearchEvidenceRequest(
+                    contract_version="2.0.0",
+                    run_id=run_id,
+                    work_token=token,
+                    result_id=result_id,
+                    sq_id=question_id,
+                    query=query,
+                    pass_kind=pass_kind,
+                    seed_family=seed_family,
+                    attempt_id=attempt_id,
+                    attempt_kind=V2QueryAttemptKind.SELECTED,
+                    continuation=pages[-1].continuation,
+                )
+            ).page
+        )
+
+    # Preview-only dismissal is deliberately limited to candidates whose
+    # displayed snippet is the whole, ordinary unit.  A search candidate with
+    # omitted text, table/context indicators, warnings, or mechanical risk
+    # flags must be read first and carries the exact receipt into triage.
+    def needs_read(candidate) -> bool:
+        flags = candidate.triage_flags
+        return (
+            candidate.left_omitted_character_count > 0
+            or candidate.right_omitted_character_count > 0
+            or candidate.undisplayed_match_count > 0
+            or bool(candidate.warnings)
+            or bool(candidate.table_headers)
+            or candidate.caption is not None
+            or flags.has_reading_order_uncertainty
+            or flags.has_visual_uncertainty
+            or flags.has_duplicate_lineage
+            or flags.is_table_content
+            or flags.has_context_dependency
+            or flags.has_possible_contradiction
+        )
+
+    read_receipts: dict[str, str] = {}
+    for page in pages:
+        for candidate in page.candidates:
+            if not needs_read(candidate):
+                continue
+            read = engine.read_evidence(
+                ReadEvidenceRequest(
+                    contract_version="2.0.0",
+                    run_id=run_id,
+                    work_token=token,
+                    result_id=result_id,
+                    batch=EvidenceReadBatchRequest(
+                        scope=EvidenceReadBatchScope(
+                            result_id=result_id,
+                            domain_id=token.domain_id,
+                            snapshot_hash=page.snapshot_hash,
+                        ),
+                        items=(
+                            EvidenceReadBatchItem(
+                                location_handle=candidate.location_handle,
+                                question_ids=(question_id,),
+                            ),
+                        ),
+                    ),
+                )
+            )
+            outcome = read.page.outcomes[0]
+            assert outcome.view is not None
+            read_receipts[candidate.candidate_id] = outcome.view.read_view_receipt
+
+    revisions = tuple(
+        V2CandidateTriageRevision(
+            revision_id=(f"triage:{attempt_id}:{page.page_handle}:{candidate.candidate_id}"),
+            candidate_id=candidate.candidate_id,
+            attempt_id=attempt_id,
+            sq_id=question_id,
+            page_handle=page.page_handle,
+            kind=V2TriageKind.IRRELEVANT,
+            irrelevant_reason=V2IrrelevantReason.LEXICAL_FALSE_POSITIVE,
+            basis=(
+                V2TriageBasis.READ_VIEW_RECEIPT
+                if candidate.candidate_id in read_receipts
+                else V2TriageBasis.PREVIEW
+            ),
+            read_view_receipt=read_receipts.get(candidate.candidate_id),
+        )
+        for page in pages
+        for candidate in page.candidates
+    )
+    engine.submit_evidence_review(
+        SubmitEvidenceReviewRequest(
+            contract_version="2.0.0",
+            run_id=run_id,
+            work_token=token,
+            idempotency_key=(
+                f"triage:{attempt_id}:{pages[0].snapshot_hash}:{pages[0].page_handle}"
+            ),
+            result_id=result_id,
+            domain_id=token.domain_id,
+            submission_id=(
+                f"submission:{attempt_id}:{pages[0].snapshot_hash}:{pages[0].page_handle}"
+            ),
+            page_handles=tuple(page.page_handle for page in pages),
+            triage_revisions=revisions,
+        )
+    )
+
+
 def _complete_passage_receipts(
     engine: RunEngine,
     run_id: str,
@@ -264,16 +416,8 @@ def _complete_passage_receipts(
             (SearchQuery(terms=("contradiction",)), SearchPassKind.CONTRADICTION, None),
         )
         for query, pass_kind, family in queries:
-            engine.search_evidence(
-                SearchEvidenceRequest(
-                    run_id=run_id,
-                    work_token=token,
-                    result_id=result_id,
-                    sq_id=question_id,
-                    query=query,
-                    pass_kind=pass_kind,
-                    seed_family=family,
-                )
+            _v2_search_and_triage(
+                engine, run_id, token, result_id, question_id, query, pass_kind, family
             )
 
 
@@ -297,16 +441,8 @@ def _complete_empty_receipts(
             (SearchQuery(terms=(f"contradiction-{slug}",)), SearchPassKind.CONTRADICTION, None),
         )
         for query, pass_kind, family in queries:
-            engine.search_evidence(
-                SearchEvidenceRequest(
-                    run_id=run_id,
-                    work_token=token,
-                    result_id=result_id,
-                    sq_id=question_id,
-                    query=query,
-                    pass_kind=pass_kind,
-                    seed_family=family,
-                )
+            _v2_search_and_triage(
+                engine, run_id, token, result_id, question_id, query, pass_kind, family
             )
 
 
@@ -316,23 +452,81 @@ def _location_handle_for(
     """Issue a real location handle for unit_id via the public search tool."""
     response = engine.search_evidence(
         SearchEvidenceRequest(
+            contract_version="2.0.0",
             run_id=run_id,
             work_token=getattr(work, "work_token"),
             result_id=getattr(work, "result_id"),
             sq_id=question_id,
             query=SearchQuery(terms=("primary",)),
+            pass_kind=SearchPassKind.GUIDANCE_SEED,
+            seed_family="seed:location",
+            attempt_id=f"attempt:location:{question_id}",
+            attempt_kind=V2QueryAttemptKind.EXPLORATORY,
         )
     )
-    hit = next(hit for hit in response.page.hits if hit.unit.unit_id == unit_id)
-    return engine.read_evidence(
-        ReadEvidenceRequest(
+    hit = next(
+        candidate
+        for candidate in response.page.candidates
+        if candidate.canonical_unit_id == unit_id
+    )
+    location_attempt = f"attempt:location:{question_id}"
+    engine.submit_evidence_review(
+        SubmitEvidenceReviewRequest(
+            contract_version="2.0.0",
             run_id=run_id,
             work_token=getattr(work, "work_token"),
+            idempotency_key=(
+                f"triage:{location_attempt}:{response.page.snapshot_hash}:"
+                f"{getattr(work, 'work_token').token}:{response.page.page_handle}"
+            ),
             result_id=getattr(work, "result_id"),
-            sq_id=question_id,
-            location_handle=hit.location_handle,
+            domain_id=getattr(work, "domain_id"),
+            submission_id=(
+                f"submission:{location_attempt}:{response.page.snapshot_hash}:"
+                f"{getattr(work, 'work_token').token}:{response.page.page_handle}"
+            ),
+            page_handles=(response.page.page_handle,),
+            triage_revisions=(
+                V2CandidateTriageRevision(
+                    revision_id=(
+                        f"triage:{location_attempt}:{getattr(work, 'work_token').token}:"
+                        f"{response.page.page_handle}:{hit.candidate_id}"
+                    ),
+                    candidate_id=hit.candidate_id,
+                    attempt_id=location_attempt,
+                    sq_id=question_id,
+                    page_handle=response.page.page_handle,
+                    kind=V2TriageKind.IRRELEVANT,
+                    irrelevant_reason=V2IrrelevantReason.LEXICAL_FALSE_POSITIVE,
+                    basis=V2TriageBasis.PREVIEW,
+                ),
+            ),
         )
-    ).read_view_receipt
+    )
+    return (
+        engine.read_evidence(
+            ReadEvidenceRequest(
+                contract_version="2.0.0",
+                run_id=run_id,
+                work_token=getattr(work, "work_token"),
+                result_id=getattr(work, "result_id"),
+                batch=EvidenceReadBatchRequest(
+                    scope=EvidenceReadBatchScope(
+                        result_id=getattr(work, "result_id"),
+                        domain_id=getattr(work, "domain_id"),
+                        snapshot_hash=response.page.snapshot_hash,
+                    ),
+                    items=(
+                        EvidenceReadBatchItem(
+                            location_handle=hit.location_handle, question_ids=(question_id,)
+                        ),
+                    ),
+                ),
+            )
+        )
+        .page.outcomes[0]
+        .view.read_view_receipt
+    )
 
 
 def _review_revision(
@@ -465,7 +659,7 @@ def _finish_current_result(
         )
         engine.submit_domain_evidence(
             SubmitDomainEvidenceRequest(
-                contract_version="1.2.0",
+                contract_version="2.0.0",
                 run_id=run_id,
                 work_token=evidence.work_token,
                 idempotency_key=f"idempotency:{prefix}-evidence-{index}",
@@ -773,7 +967,7 @@ def test_final_judgment_departure_must_bind_the_authorized_domain(tmp_path: Path
     assert evidence is not None
     engine.submit_domain_evidence(
         SubmitDomainEvidenceRequest(
-            contract_version="1.2.0",
+            contract_version="2.0.0",
             run_id=run_id,
             work_token=evidence.work_token,
             idempotency_key="idempotency:departure-scope-evidence",
@@ -837,7 +1031,7 @@ def test_identical_domain_evidence_retry_returns_the_committed_result(
     assert work is not None
     event_count = len(engine._bound_ledger(run_id).events())
     request = SubmitDomainEvidenceRequest(
-        contract_version="1.2.0",
+        contract_version="2.0.0",
         run_id=run_id,
         work_token=work.work_token,
         idempotency_key="idempotency:retry-domain-evidence",
@@ -901,7 +1095,7 @@ def test_domain_evidence_freezes_engine_issued_passages_without_host_hashes(
     question_id = DOMAINS["domain:randomization"][0]
     location_handle = _location_handle_for(engine, run_id, work, question_id, unit_id)
     request = SubmitDomainEvidenceRequest(
-        contract_version="1.2.0",
+        contract_version="2.0.0",
         run_id=run_id,
         work_token=work.work_token,
         idempotency_key="idempotency:passage-domain-evidence",
@@ -977,7 +1171,7 @@ def test_domain_evidence_passage_can_select_to_unit_end_without_counting_charact
     location_handle = _location_handle_for(engine, run_id, work, question_id, unit.unit_id)
     response = engine.submit_domain_evidence(
         SubmitDomainEvidenceRequest(
-            contract_version="1.2.0",
+            contract_version="2.0.0",
             run_id=run_id,
             work_token=work.work_token,
             idempotency_key="idempotency:passage-to-end",
@@ -1068,7 +1262,7 @@ def test_invalid_late_passage_writes_no_artifacts_or_ledger_events(tmp_path: Pat
     # review, claim, or submission artifact.
     response = engine.submit_domain_evidence(
         SubmitDomainEvidenceRequest(
-            contract_version="1.2.0",
+            contract_version="2.0.0",
             run_id=run_id,
             work_token=work.work_token,
             idempotency_key="idempotency:invalid-late-passage",
@@ -1114,7 +1308,7 @@ def test_invalid_late_passage_writes_no_artifacts_or_ledger_events(tmp_path: Pat
         with pytest.raises(ValueError, match="invalid evidence read-view receipt"):
             engine.submit_domain_evidence(
                 SubmitDomainEvidenceRequest(
-                    contract_version="1.2.0",
+                    contract_version="2.0.0",
                     run_id=run_id,
                     work_token=work.work_token,
                     idempotency_key=f"idempotency:invalid-open-span-{span_start}",
@@ -1149,7 +1343,7 @@ def test_invalid_late_passage_writes_no_artifacts_or_ledger_events(tmp_path: Pat
     with pytest.raises(ValueError, match="question_ids must be unique"):
         engine.submit_domain_evidence(
             SubmitDomainEvidenceRequest(
-                contract_version="1.2.0",
+                contract_version="2.0.0",
                 run_id=run_id,
                 work_token=work.work_token,
                 idempotency_key="idempotency:duplicate-question-passage",
@@ -2049,7 +2243,7 @@ def test_changed_source_invalidates_partial_pending_checkpoints(tmp_path: Path) 
     assert evidence is not None
     engine.submit_domain_evidence(
         SubmitDomainEvidenceRequest(
-            contract_version="1.2.0",
+            contract_version="2.0.0",
             run_id=run_id,
             work_token=evidence.work_token,
             idempotency_key="idempotency:partial-evidence",

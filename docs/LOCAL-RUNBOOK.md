@@ -4,6 +4,25 @@ This runbook is opt-in local practice, not CI and not a coded sign-off gate.
 It helps an owner observe the actual installed Codex or Claude Code journey and
 then perform the required private full-corpus evaluation.
 
+## Synthetic Issue #143 baseline
+
+The checked-in public workload is deterministic and contains no private study
+material. Reproduce its frozen old-contract navigation metrics with:
+
+```powershell
+uv run pytest tests/test_issue143_scale_baseline.py -q
+```
+
+Inspect `tests/public_fixtures/issue143/scale-baseline.json` for the workload
+identity, serialized-byte and provider-neutral-token estimator calibration,
+candidate/universe hashes, scientific-equivalence evidence, and the
+predeclared later-policy target. The target is a synthetic gate, not a
+CHAARTED empirical performance claim.
+
+For a private CHAARTED replay, use the private-corpus workflow below and record
+only approved private evaluation material outside this repository. Do not copy
+sources, reports, extracted evidence, or results into the public fixture.
+
 ## Smoke one installed host
 
 The automated local orchestrator is deliberately unreachable from CI. It needs

@@ -60,7 +60,7 @@ def _freeze(tmp_path: Path):
     receipt = _location_handle_for(engine, run_id, work, sq, unit.unit_id)
     response = engine.submit_domain_evidence(
         SubmitDomainEvidenceRequest(
-            contract_version="1.2.0",
+            contract_version="2.0.0",
             run_id=run_id,
             work_token=work.work_token,
             idempotency_key="idempotency:issue151",
@@ -115,7 +115,7 @@ def _setup(tmp_path: Path, *, parser=None, suffix: str = "graph"):
 def _submit(engine, run_id: str, work, *, suffix: str, passages, reviews, **request_updates):
     return engine.submit_domain_evidence(
         SubmitDomainEvidenceRequest(
-            contract_version="1.2.0",
+            contract_version="2.0.0",
             run_id=run_id,
             work_token=work.work_token,
             idempotency_key=f"idempotency:issue151:{suffix}",

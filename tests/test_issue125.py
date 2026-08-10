@@ -212,7 +212,7 @@ def test_domain_evidence_submission_reports_every_violation_together(tmp_path: P
     # otherwise-empty submission fails the non-empty requirement too.
     response = engine.submit_domain_evidence(
         SubmitDomainEvidenceRequest(
-            contract_version="1.2.0",
+            contract_version="2.0.0",
             run_id=run_id,
             work_token=work.work_token,
             idempotency_key="idempotency:issue125-domain-evidence",
@@ -248,7 +248,7 @@ def test_domain_evidence_conflicts_are_still_validated_after_batching(tmp_path: 
 
     response = engine.submit_domain_evidence(
         SubmitDomainEvidenceRequest(
-            contract_version="1.2.0",
+            contract_version="2.0.0",
             run_id=run_id,
             work_token=work.work_token,
             idempotency_key="idempotency:issue125-conflicts",

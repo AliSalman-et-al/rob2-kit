@@ -101,12 +101,15 @@ def test_installed_replay_qualification_has_the_required_contract_matrix() -> No
     assert "installed-replay.golden.json" in qualification
     assert "accept_golden" in qualification
     assert "qualification_capabilities" not in qualification
-    assert 'issued_token = evidence["work_item"]["work_token"]' in qualification
+    assert 'issued_token = evidence_payload["work_item"]["work_token"]' in qualification
     assert '"sq_id": "sq:qualification-invalid"' in qualification
     assert '"result_id": "result:other"' in qualification
     assert '"location_handle": "loc:qualification-unknown"' in qualification
-    assert '"read_view_receipt": read_receipts[question]' in qualification
-    assert '"contract_version": "1.2.0"' in qualification
+    assert '"read_view_receipt": read_views[question][' in qualification
+    assert '"submit_evidence_review"' in qualification
+    assert '"attempt_kind": "selected"' in qualification
+    assert '"continue_reason": "coverage_requires_breadth"' in qualification
+    assert '"contract_version": "2.0.0"' in qualification
     assert '"get_work_context"' in qualification
     assert '"active_question_ids"' in qualification
     assert '"sq:measurement:assessor-aware"' in qualification
@@ -204,7 +207,8 @@ def test_ci_runs_replay_without_repeating_the_release_lifecycle_gate() -> None:
     assert script.count('"idempotency_key": "qualification:confirm"') == 2
 
 
-def test_optional_fixture_resume_checks_post_confirmation_work_without_repeating_source_review() -> (
+def test_optional_fixture_resume_checks_post_confirmation_work_without_repeating_source_review(
+) -> (
     None
 ):
     qualification = (ROOT / "scripts" / "release_qualification.py").read_text(encoding="utf-8")

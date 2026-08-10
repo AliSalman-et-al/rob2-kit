@@ -1,0 +1,88 @@
+{
+  "artifact_version": "issue143-scale-baseline:1.0.0",
+  "workload": {
+    "id": "public-synthetic-issue143-broad-long-source:1",
+    "description": "Public synthetic workload; it is not CHAARTED data or an empirical CHAARTED target.",
+    "sources": [
+      {"source_id": "source:synthetic-primary", "role": "primary_report", "repetitive_units": 112},
+      {"source_id": "source:synthetic-protocol", "role": "protocol", "repetitive_units": 24},
+      {"source_id": "source:synthetic-supplement", "role": "supplement", "repetitive_units": 14}
+    ],
+    "mandatory_passes": ["guidance_seed", "trial_follow_up", "contradiction"],
+    "queries": [
+      {"pass_kind": "guidance_seed", "seed_family": "seed:allocation", "terms": ["allocation"]},
+      {"pass_kind": "trial_follow_up", "terms": ["randomization"]},
+      {"pass_kind": "contradiction", "terms": ["open"]}
+    ],
+    "required_shape": [
+      "repetitive_broad_term", "long_source", "multiple_source_roles", "relevant_irrelevant_ambiguous_hits",
+      "oversized_unit", "duplicate_lineage", "table_caption_context", "parser_reading_order_warnings"
+    ]
+  },
+  "token_estimator": {
+    "id": "utf8-byte-div4-ceil:v1",
+    "definition": "ceil(complete serialized UTF-8 response bytes / 4); a deterministic provider-neutral estimate, not a tokenizer claim."
+  },
+  "old_policy": {
+    "identity": {"broad_index_fraction": 0.05, "broad_unique_hit_threshold": 100, "page_character_target": 8000, "page_hit_target": 20, "policy_id": "policy:evidence-search-1.1.0"},
+    "hash": "sha256:eda90926b4c3a13e732c4f517da69965d844d470ca6493eb7869054a3e0e5829"
+  },
+  "baseline": {
+    "snapshot_hash": "sha256:398192aaf60f47adf9f4e464dd76980e56cba9985f348d382c43e395e62c042b",
+    "coverage_receipt_hash": "sha256:edcde4f73b679fdcd7f759e453db54312f9a1f549b3e4009284c350b31238377",
+    "search_calls_and_pages_to_exhaustion": {"guidance_seed": {"calls": 9, "pages": 9}, "trial_follow_up": {"calls": 1, "pages": 1}, "contradiction": {"calls": 1, "pages": 1}},
+    "read_calls_used_by_scripted_review_path": 5,
+    "review_disposition_operations": [
+      {"candidate_id": "unit:synthetic-primary-75c01f7a3ff93af59bd0690cb1b75275183bc9711d0276cc502245b14e0d828b", "disposition": "supporting"},
+      {"candidate_id": "unit:synthetic-supplement-5b6a11a0aba610ad688b49731a176896779f60c03df060f6c003ae9ace29360b", "disposition": "contradicting"},
+      {"candidate_id": "unit:synthetic-primary-35a92f481ef851db62ecb3a64d9948ffed0bbb96fb2922218431959c5f75432d", "disposition": "needs_visual_review"},
+      {"candidate_id": "unit:synthetic-primary-e342d9cfeec8787e1f8fd7f478b9063cf0a0d6b91c3fba7808f571abb7c85742", "disposition": "duplicate"},
+      {"candidate_id": "unit:synthetic-primary-0030d478ffbd2ecb71be8e1ed2c9c8e1f2d2b0ba83e817c7f981eaac7129c17e", "disposition": "irrelevant"}
+    ],
+    "per_response_complete_serialized_utf8_bytes": [
+      {"response": "search:guidance_seed:1", "serialized_utf8_bytes": 37001}, {"response": "search:guidance_seed:2", "serialized_utf8_bytes": 37857}, {"response": "search:guidance_seed:3", "serialized_utf8_bytes": 37800}, {"response": "search:guidance_seed:4", "serialized_utf8_bytes": 37797}, {"response": "search:guidance_seed:5", "serialized_utf8_bytes": 37792}, {"response": "search:guidance_seed:6", "serialized_utf8_bytes": 37789}, {"response": "search:guidance_seed:7", "serialized_utf8_bytes": 37796}, {"response": "search:guidance_seed:8", "serialized_utf8_bytes": 30403}, {"response": "search:guidance_seed:9", "serialized_utf8_bytes": 16501},
+      {"response": "search:trial_follow_up:1", "serialized_utf8_bytes": 2421}, {"response": "search:contradiction:1", "serialized_utf8_bytes": 4085}, {"response": "read_location:supporting", "serialized_utf8_bytes": 1217}, {"response": "read_location:contradicting", "serialized_utf8_bytes": 1262}, {"response": "read_location:ambiguous", "serialized_utf8_bytes": 1351}, {"response": "read_context:table", "serialized_utf8_bytes": 2385}, {"response": "read_context:oversized", "serialized_utf8_bytes": 12532}
+    ],
+    "estimated_model_facing_tokens": {"estimator_id": "utf8-byte-div4-ceil:v1", "total": 84005, "per_response": [
+      {"response": "search:guidance_seed:1", "tokens": 9251}, {"response": "search:guidance_seed:2", "tokens": 9465}, {"response": "search:guidance_seed:3", "tokens": 9450}, {"response": "search:guidance_seed:4", "tokens": 9450}, {"response": "search:guidance_seed:5", "tokens": 9448}, {"response": "search:guidance_seed:6", "tokens": 9448}, {"response": "search:guidance_seed:7", "tokens": 9449}, {"response": "search:guidance_seed:8", "tokens": 7601}, {"response": "search:guidance_seed:9", "tokens": 4126}, {"response": "search:trial_follow_up:1", "tokens": 606}, {"response": "search:contradiction:1", "tokens": 1022}, {"response": "read_location:supporting", "tokens": 305}, {"response": "read_location:contradicting", "tokens": 316}, {"response": "read_location:ambiguous", "tokens": 338}, {"response": "read_context:table", "tokens": 597}, {"response": "read_context:oversized", "tokens": 3133}
+    ]},
+    "candidate_counts": {"returned_hits_across_passes": 160, "unique_candidate_universe": 158, "retained_candidates": 3, "duplicate_lineage_groups": 1},
+    "source_character_counts": {"source:synthetic-primary": 25984, "source:synthetic-protocol": 3174, "source:synthetic-supplement": 1889},
+    "limiting_bound_under_old_policy": {"page_hit_target": 20, "page_character_target": 8000, "max_complete_response_serialized_utf8_bytes": 37857, "pages": [
+      {"response": "search:guidance_seed:1", "hit_count": 20, "projection_character_count": 2219, "limiting_bound": "page_hit_target"}, {"response": "search:guidance_seed:2", "hit_count": 20, "projection_character_count": 2580, "limiting_bound": "page_hit_target"}, {"response": "search:guidance_seed:3", "hit_count": 20, "projection_character_count": 2580, "limiting_bound": "page_hit_target"}, {"response": "search:guidance_seed:4", "hit_count": 20, "projection_character_count": 2580, "limiting_bound": "page_hit_target"}, {"response": "search:guidance_seed:5", "hit_count": 20, "projection_character_count": 2580, "limiting_bound": "page_hit_target"}, {"response": "search:guidance_seed:6", "hit_count": 20, "projection_character_count": 2580, "limiting_bound": "page_hit_target"}, {"response": "search:guidance_seed:7", "hit_count": 20, "projection_character_count": 2580, "limiting_bound": "page_hit_target"}, {"response": "search:guidance_seed:8", "hit_count": 16, "projection_character_count": 2064, "limiting_bound": "exhausted"}, {"response": "search:guidance_seed:9", "hit_count": 1, "projection_character_count": 11191, "limiting_bound": "oversized_unit"}, {"response": "search:trial_follow_up:1", "hit_count": 1, "projection_character_count": 78, "limiting_bound": "exhausted"}, {"response": "search:contradiction:1", "hit_count": 2, "projection_character_count": 109, "limiting_bound": "exhausted"}
+    ]},
+    "ordered_candidate_universe_hash": "sha256:0ddecb5ff377773273f80bdc057355fccd8a54fd97d5237f651798e79289b588",
+    "scientific_equivalence_evidence": {"selection_semantics_version": "synthetic-exact-span-selection:1", "selected_candidate_ids": ["candidate:synthetic-primary-0030d478ffbd2ecb71be8e1ed2c9c8e1f2d2b0ba83e817c7f981eaac7129c17e", "candidate:synthetic-supplement-5b6a11a0aba610ad688b49731a176896779f60c03df060f6c003ae9ace29360b", "candidate:synthetic-primary-75c01f7a3ff93af59bd0690cb1b75275183bc9711d0276cc502245b14e0d828b"], "selected_candidate_hash": "sha256:e2d875cc2905623bc2ba38b6fbf79fc64a733525ee2d316b7407c8709d7dd67b", "exact_claim_hash": "sha256:e688674441ed08a1ca0b5a43944cda7f9e6368909bd753a25a7e24a5048a13e0", "review_disposition_hash": "sha256:1a0f99cc544a437b24e3bd5ff912ead664b7a8364cb5c20156a4ee76ec2322c9"},
+    "shape_evidence": {"oversized_context": true, "table_context_has_caption": true, "table_context_neighbor_count": 1, "ambiguous_warnings": ["reading_order_uncertain", "parse_render_discrepancy"], "source_roles": ["primary_report", "protocol", "supplement"], "unit_count": 159, "source_ids": ["source:synthetic-primary", "source:synthetic-protocol", "source:synthetic-supplement"]}
+  },
+  "v2_measured": {
+    "navigation_contract_version": "2.0.0",
+    "snapshot_hash": "sha256:398192aaf60f47adf9f4e464dd76980e56cba9985f348d382c43e395e62c042b",
+    "search_policy_hash": "sha256:07c8da0efbdbbc7bc5009a5a306b68d1a83e234b4b2a34d099677065b5e7229f",
+    "read_policy_hash": "sha256:b688083738a962922ac3cdb02f97e0411895aaaa0e1100b71b459406e8e7fb74",
+    "per_response_complete_serialized_utf8_bytes": [
+      {"response":"search:guidance_seed:1","serialized_utf8_bytes":6764}, {"response":"search:guidance_seed:2","serialized_utf8_bytes":6656}, {"response":"search:guidance_seed:3","serialized_utf8_bytes":6623}, {"response":"search:guidance_seed:4","serialized_utf8_bytes":6624}, {"response":"search:guidance_seed:5","serialized_utf8_bytes":6628}, {"response":"search:guidance_seed:6","serialized_utf8_bytes":6623}, {"response":"search:guidance_seed:7","serialized_utf8_bytes":6625}, {"response":"search:guidance_seed:8","serialized_utf8_bytes":6629}, {"response":"search:guidance_seed:9","serialized_utf8_bytes":6624}, {"response":"search:guidance_seed:10","serialized_utf8_bytes":7094}, {"response":"search:guidance_seed:11","serialized_utf8_bytes":7094}, {"response":"search:guidance_seed:12","serialized_utf8_bytes":7093}, {"response":"search:guidance_seed:13","serialized_utf8_bytes":7103}, {"response":"search:guidance_seed:14","serialized_utf8_bytes":6861}, {"response":"search:guidance_seed:15","serialized_utf8_bytes":6862}, {"response":"search:guidance_seed:16","serialized_utf8_bytes":6862}, {"response":"search:guidance_seed:17","serialized_utf8_bytes":6862}, {"response":"search:guidance_seed:18","serialized_utf8_bytes":6862}, {"response":"search:guidance_seed:19","serialized_utf8_bytes":6861}, {"response":"search:guidance_seed:20","serialized_utf8_bytes":6862}, {"response":"search:guidance_seed:21","serialized_utf8_bytes":6862}, {"response":"search:guidance_seed:22","serialized_utf8_bytes":6862}, {"response":"search:guidance_seed:23","serialized_utf8_bytes":6862}, {"response":"search:guidance_seed:24","serialized_utf8_bytes":6862}, {"response":"search:guidance_seed:25","serialized_utf8_bytes":6862}, {"response":"search:guidance_seed:26","serialized_utf8_bytes":6862}, {"response":"search:guidance_seed:27","serialized_utf8_bytes":6861}, {"response":"search:guidance_seed:28","serialized_utf8_bytes":5861}, {"response":"search:trial_follow_up:1","serialized_utf8_bytes":3091}, {"response":"search:contradiction:1","serialized_utf8_bytes":4114}, {"response":"read:scripted-review","serialized_utf8_bytes":8901}, {"response":"review:all-pages","serialized_utf8_bytes":26102}, {"response":"review-progress:all-pages","serialized_utf8_bytes":84}
+    ],
+    "estimated_model_facing_tokens": {"estimator_id":"utf8-byte-div4-ceil:v1","total":58114,"by_response_category":{"search":49341,"read":2226,"review":6547}},
+    "candidate_counts": {"returned_across_passes":160,"unique_canonical_unit_universe":158},
+    "ordered_canonical_unit_universe_hash": "sha256:0ddecb5ff377773273f80bdc057355fccd8a54fd97d5237f651798e79289b588",
+    "scientific_equivalence_evidence": {
+      "selected_underlying_unit_ids": ["unit:synthetic-primary-0030d478ffbd2ecb71be8e1ed2c9c8e1f2d2b0ba83e817c7f981eaac7129c17e", "unit:synthetic-primary-75c01f7a3ff93af59bd0690cb1b75275183bc9711d0276cc502245b14e0d828b", "unit:synthetic-supplement-5b6a11a0aba610ad688b49731a176896779f60c03df060f6c003ae9ace29360b"],
+      "selected_underlying_unit_hash": "sha256:359a5448ebfe8489a577190594aa40372ab299247a1c852abeebea3dd0a020dd",
+      "exact_claim_hash": "sha256:e688674441ed08a1ca0b5a43944cda7f9e6368909bd753a25a7e24a5048a13e0"
+    }
+  },
+  "later_policy_improvement_target": {
+    "target_id": "issue143-later-policy-gate:1",
+    "not_chaarted_empirical_target": true,
+    "minimum_estimated_model_facing_token_reduction_fraction": 0.30,
+    "maximum_per_response_serialized_utf8_bytes": 37857,
+    "hard_gates": {
+      "candidate_loss": 0,
+      "candidate_duplication": 0,
+      "identical_scientific_selection_semantics": true,
+      "no_relaxation_of_old_maximum_response_bytes": true
+    },
+    "justification": "The broad guidance-seed traversal dominates this synthetic public workload while every candidate remains bounded and attributable."
+  }
+}
