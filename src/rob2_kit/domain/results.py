@@ -204,12 +204,8 @@ class ProposalDiscoveryCoverageReceipt(FrozenModel):
             )
         if len(dispositions) != len(self.candidate_dispositions):
             raise ValueError("coverage receipt requires exactly one disposition per candidate")
-        if self.state in terminal and (
-            self.reviewed_by is None or self.reviewed_at is None
-        ):
-            raise ValueError(
-                "terminal discovery receipt requires reviewer identity and timestamp"
-            )
+        if self.state in terminal and (self.reviewed_by is None or self.reviewed_at is None):
+            raise ValueError("terminal discovery receipt requires reviewer identity and timestamp")
         return self
 
 

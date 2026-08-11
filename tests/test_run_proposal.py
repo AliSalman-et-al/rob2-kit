@@ -96,7 +96,7 @@ def _first_proposal(engine: RunEngine, prepared):
                     contract_version="1.0.0",
                     run_id=prepared.run_id,
                     work_token=work.work_token,
-                    idempotency_key="idempotency:test-roles",
+                    idempotency_key=f"idempotency:test-roles:{prepared.run_id}",
                     selections=tuple(
                         RunProposalSelection(trial_id=item.trial_id, source_id=item.source_id)
                         for item in prepared.initialization.source_role_candidates
@@ -149,7 +149,9 @@ def _first_proposal(engine: RunEngine, prepared):
                     contract_version="1.0.0",
                     run_id=prepared.run_id,
                     work_token=work.work_token,
-                    idempotency_key=f"idempotency:test-discovery:{source.source_id}",
+                    idempotency_key=(
+                        f"idempotency:test-discovery:{prepared.run_id}:{source.source_id}"
+                    ),
                     coverage_receipt=ProposalDiscoveryCoverageReceipt(
                         receipt_id=f"proposal-discovery-receipt:{source.source_id.removeprefix('source:')}",
                         trial_id=work.trial_id,

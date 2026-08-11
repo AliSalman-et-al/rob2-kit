@@ -207,8 +207,7 @@ def test_ci_runs_replay_without_repeating_the_release_lifecycle_gate() -> None:
     assert script.count('"idempotency_key": "qualification:confirm"') == 2
 
 
-def test_optional_fixture_resume_checks_post_confirmation_work_without_repeating_source_review(
-) -> (
+def test_optional_fixture_resume_checks_post_confirmation_work_without_repeating_source_review() -> (
     None
 ):
     qualification = (ROOT / "scripts" / "release_qualification.py").read_text(encoding="utf-8")

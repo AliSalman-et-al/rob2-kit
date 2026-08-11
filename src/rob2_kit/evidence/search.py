@@ -1829,10 +1829,7 @@ class EvidenceSearchIndex:
                     scope=scope,
                 )
                 if deferred_cursor is not None
-                or (
-                    mode is ReadContextMode.SECTION
-                    and next_offset < len(candidate_ids) + offset
-                )
+                or (mode is ReadContextMode.SECTION and next_offset < len(candidate_ids) + offset)
                 else None
             ),
             warnings=target.warnings
@@ -2543,9 +2540,7 @@ class EvidenceSearchIndex:
             raise StaleSearchContinuation(
                 "search continuation position is not a page boundary"
             ) from error
-        _validate_materialized_v2_pages(
-            pages, policy=policy, envelope_measure=envelope_measure
-        )
+        _validate_materialized_v2_pages(pages, policy=policy, envelope_measure=envelope_measure)
         page = pages[page_index]
         page_handle = self._issue_stable_token(
             "v2page",
@@ -2809,6 +2804,7 @@ class EvidenceSearchIndex:
                 "evidence index schema is retired; current Source/Parse reprocessing is required"
             )
         return row[0]
+
     def _issue_token(self, kind: str, payload: dict[str, object]) -> str:
         with self._connect() as connection:
             return _LookupTokenCodec.encode(connection, kind, payload)
@@ -3059,6 +3055,7 @@ class EvidenceSearchIndex:
                 "issuance_context": issuance_context,
             },
         )
+
     def _encode_read_cursor(
         self,
         snapshot: str,
@@ -3442,9 +3439,7 @@ def _pack_v2_candidate_pages(
                     limiting_bounds=("oversized_candidate",),
                 )
                 size, _ = _v2_payload_size(payload, envelope_measure=envelope_measure)
-                if (
-                    size > policy.oversized_candidate_byte_ceiling
-                ):
+                if size > policy.oversized_candidate_byte_ceiling:
                     raise OperationalRetrievalFailure(
                         "one evidence candidate exceeds the absolute response ceiling"
                     )
@@ -3509,10 +3504,7 @@ def _materialize_v2_pages(
             new_sizes.append(size)
             new_tokens.append(estimated)
             offset += len(page_candidates)
-            if (
-                size > policy.serialized_byte_ceiling
-                or estimated > policy.estimated_token_target
-            ):
+            if size > policy.serialized_byte_ceiling or estimated > policy.estimated_token_target:
                 limit = ("oversized_candidate",)
             elif offset < len(candidates):
                 if len(page_candidates) >= policy.candidate_ceiling:

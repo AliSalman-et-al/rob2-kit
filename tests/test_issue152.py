@@ -260,7 +260,6 @@ def test_terminal_qualification_requires_current_trial_source_parse_custody(
     )
 
 
-
 def test_failed_physical_replacement_preserves_last_usable_index(tmp_path, monkeypatch) -> None:
     path = tmp_path / "crash-safe.sqlite3"
     index = EvidenceSearchIndex(path)

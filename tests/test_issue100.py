@@ -91,7 +91,6 @@ def test_retrieval_error_transport_does_not_hide_programming_errors() -> None:
         _retrieval_error(RuntimeError("bug"))
 
 
-
 def test_line_wrap_hyphen_is_stripped_and_rejoined() -> None:
     units = canonicalize_evidence_units(
         source_id="source:report",
@@ -282,7 +281,6 @@ def _unit(
     )
 
 
-
 def test_table_row_context_round_trips_with_headers_and_caption(tmp_path: Path) -> None:
     index = EvidenceSearchIndex(tmp_path / "evidence.sqlite3")
     unit = _unit("unit:table-row", "source:report", "Treatment | 0.8").model_copy(
@@ -294,7 +292,6 @@ def test_table_row_context_round_trips_with_headers_and_caption(tmp_path: Path) 
     )
     index.replace_units((unit,))
     assert index.read_unit(unit.unit_id) == unit
-
 
 
 def test_public_retrieval_requests_require_a_work_token() -> None:
@@ -379,7 +376,6 @@ def test_zone_inference_requires_a_heading_not_a_prose_substring() -> None:
         RunEngine._canonical_zone(None, page_text="Allocation was concealed.")
         is DocumentZone.UNKNOWN
     )
-
 
 
 def test_mcp_retrieval_routes_advertise_token_scope_and_read_modes() -> None:

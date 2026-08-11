@@ -173,9 +173,7 @@ def test_navigation_state_survives_restart_and_triage_is_idempotent(tmp_path) ->
     )
     # Every surfaced attempt remains disposition-required, even exploratory
     # history that cannot earn selected-query coverage credit.
-    assert reviewed.outstanding_triage_candidate_ids() == (
-        workflow.exposures[-1].candidate_id,
-    )
+    assert reviewed.outstanding_triage_candidate_ids() == (workflow.exposures[-1].candidate_id,)
     with pytest.raises(IncompatibleEvidenceNavigationState, match="supersede Preparation"):
         store.load(
             run_id="run:one",

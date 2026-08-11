@@ -27,7 +27,11 @@ def _bundled_release(tmp_path: Path) -> Path:
         shutil.copytree(ROOT / name, bundled / name)
     shutil.copyfile(ROOT / "rob2.lock", bundled / "rob2.lock")
     shutil.copyfile(ROOT / "uv.lock", bundled / "uv.lock")
-    shutil.copytree(ROOT / "release", bundled / "release")
+    shutil.copytree(
+        ROOT / "release",
+        bundled / "release",
+        ignore=shutil.ignore_patterns(".venv", "__pycache__", "*.pyc"),
+    )
     output = tmp_path / "wheel"
     subprocess.run(
         ["uv", "build", "--wheel", "--out-dir", str(output)],

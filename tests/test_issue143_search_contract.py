@@ -223,9 +223,7 @@ def test_v2_search_packs_against_the_exact_long_identifier_mcp_envelope(tmp_path
     source_id = "source:" + "s" * 400
     index.replace_units(
         tuple(
-            _unit(number, f"Allocation detail {number}").model_copy(
-                update={"source_id": source_id}
-            )
+            _unit(number, f"Allocation detail {number}").model_copy(update={"source_id": source_id})
             for number in range(1, 4)
         )
     )
@@ -264,11 +262,7 @@ def test_v2_search_packs_against_the_exact_long_identifier_mcp_envelope(tmp_path
 def test_v2_search_rejects_an_irreducible_exact_envelope(tmp_path) -> None:
     index = EvidenceSearchIndex(tmp_path / "irreducible-envelope.sqlite3")
     index.replace_units(
-        (
-            _unit(1, "Allocation detail").model_copy(
-                update={"source_id": "source:" + "s" * 12_000}
-            ),
-        )
+        (_unit(1, "Allocation detail").model_copy(update={"source_id": "source:" + "s" * 12_000}),)
     )
     with pytest.raises(OperationalRetrievalFailure, match="absolute response ceiling"):
         index.search_v2(
