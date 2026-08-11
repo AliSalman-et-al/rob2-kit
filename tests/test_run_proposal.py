@@ -9,13 +9,17 @@ import yaml
 from rob2_kit.application.contracts import (
     ConfirmRunDefinitionRequest,
     ContinueRunRequest,
+    GetWorkContextRequest,
     PrepareRunRequest,
+    RunOperation,
     RunProposalSelection,
+    SubmitProposalDiscoveryReviewRequest,
     SubmitRunProposalRequest,
     SubmitSourceRoleReviewRequest,
     WorkflowCondition,
 )
 from rob2_kit.application.run_engine import RunEngine
+from rob2_kit.domain.results import ProposalDiscoveryCoverageReceipt
 from rob2_kit.domain.revisions import Actor, ActorKind
 from rob2_kit.ingestion.project import PageExtraction, ParserResult
 from rob2_kit.registry import (
@@ -73,6 +77,108 @@ class StubRegistry:
         )
 
 
+def _first_proposal(engine: RunEngine, prepared):
+    """Drive immutable inventory through role review and terminal discovery."""
+    assert prepared.initialization is not None
+    while True:
+        work = engine.continue_run(ContinueRunRequest(run_id=prepared.run_id)).work_item
+        if work is None:
+            return prepared.model_copy(
+                update={
+                    "proposal": engine._latest_proposal(
+                        engine._bound_ledger(prepared.run_id), prepared.run_id
+                    )
+                }
+            )
+        if work.operation is RunOperation.SUBMIT_SOURCE_ROLE_REVIEW:
+            engine.submit_source_role_review(
+                SubmitSourceRoleReviewRequest(
+                    contract_version="1.0.0",
+                    run_id=prepared.run_id,
+                    work_token=work.work_token,
+                    idempotency_key="idempotency:test-roles",
+                    selections=tuple(
+                        RunProposalSelection(trial_id=item.trial_id, source_id=item.source_id)
+                        for item in prepared.initialization.source_role_candidates
+                    ),
+                )
+            )
+            continue
+        if work.operation is RunOperation.SUBMIT_PROPOSAL_DISCOVERY_REVIEW:
+            source = next(
+                source
+                for trial in prepared.initialization.trials
+                if trial.trial_id == work.trial_id
+                for source in trial.inventory.sources
+                if source.source_id == work.source_id
+            )
+            context = engine.get_work_context(
+                GetWorkContextRequest(run_id=prepared.run_id, work_token=work.work_token)
+            )
+            assert context.context is not None
+            policy = context.context.proposal_discovery_policy
+            assert policy is not None
+            reviewed_unit_ids: list[str] = []
+            for pass_name in policy.required_passes:
+                query = next(item for item in policy.pass_queries if item.pass_id == pass_name)
+                navigated = engine.get_work_context(
+                    GetWorkContextRequest(
+                        run_id=prepared.run_id,
+                        work_token=work.work_token,
+                        proposal_discovery_query=query.canonical_query,
+                        proposal_discovery_pass=pass_name,
+                    )
+                )
+                assert navigated.context is not None
+                if navigated.context.proposal_discovery_page is not None:
+                    reviewed_unit_ids.extend(
+                        item.canonical_unit_id
+                        for item in navigated.context.proposal_discovery_page.candidates
+                    )
+            for offset in range(0, len(dict.fromkeys(reviewed_unit_ids)), 4):
+                unit_ids = tuple(dict.fromkeys(reviewed_unit_ids))[offset : offset + 4]
+                engine.get_work_context(
+                    GetWorkContextRequest(
+                        run_id=prepared.run_id,
+                        work_token=work.work_token,
+                        proposal_discovery_unit_ids=unit_ids,
+                    )
+                )
+            response = engine.submit_proposal_discovery_review(
+                SubmitProposalDiscoveryReviewRequest(
+                    contract_version="1.0.0",
+                    run_id=prepared.run_id,
+                    work_token=work.work_token,
+                    idempotency_key=f"idempotency:test-discovery:{source.source_id}",
+                    coverage_receipt=ProposalDiscoveryCoverageReceipt(
+                        receipt_id=f"proposal-discovery-receipt:{source.source_id.removeprefix('source:')}",
+                        trial_id=work.trial_id,
+                        source_id=source.source_id,
+                        parse_id=source.parse_records[0].parse_id,
+                        source_artifact_hash=source.artifact_hash,
+                        mode=(
+                            "target_guided"
+                            if prepared.initialization.manifest.outcome_target_specs
+                            else "structure_first"
+                        ),
+                        state="no_candidates",
+                        reviewed_by=OPERATOR,
+                        reviewed_at=datetime.now(UTC),
+                        discovery_policy_revision=policy.policy_revision,
+                        required_passes=policy.required_passes,
+                        query_passes=policy.required_passes,
+                        completed_passes=policy.required_passes,
+                        reviewed_unit_ids=tuple(dict.fromkeys(reviewed_unit_ids)),
+                        terminal_stopping_reason="Required pass exhausted.",
+                    ),
+                )
+            )
+            if response.proposal is not None:
+                return prepared.model_copy(update={"proposal": response.proposal})
+            continue
+        raise AssertionError(work.operation)
+
+
 def test_declared_registry_identity_is_bound_and_shown(tmp_path: Path) -> None:
     trial = tmp_path / "input" / "trial-a"
     trial.mkdir(parents=True)
@@ -80,11 +186,11 @@ def test_declared_registry_identity_is_bound_and_shown(tmp_path: Path) -> None:
     (trial / "trial.yaml").write_text("schema_version: 1\nnct: NCT01234567\n")
     registry = StubRegistry()
 
-    prepared = RunEngine(parser=StubParser(), registry=registry).prepare_run(
-        PrepareRunRequest(project_root=tmp_path, authorized=True)
-    )
+    engine = RunEngine(parser=StubParser(), registry=registry)
+    prepared = engine.prepare_run(PrepareRunRequest(project_root=tmp_path, authorized=True))
 
     assert registry.calls == ["NCT01234567"]
+    prepared = _first_proposal(engine, prepared)
     assert prepared.proposal is not None
     candidate = prepared.proposal.registry_candidates[0]
     assert candidate.nct_id == "NCT01234567"
@@ -96,12 +202,13 @@ def test_declared_registry_identity_is_bound_and_shown(tmp_path: Path) -> None:
 def test_input_change_returns_structured_stale_proposal(tmp_path: Path) -> None:
     engine = RunEngine()
     prepared = engine.prepare_run(PrepareRunRequest(project_root=tmp_path, authorized=True))
+    prepared = _first_proposal(engine, prepared)
     assert prepared.proposal is not None
     (tmp_path / "rob2.yaml").write_text("schema_version: 1\n")
 
     response = engine.submit_run_proposal(
         SubmitRunProposalRequest(
-            contract_version="1.0.0",
+            contract_version="2.0.0",
             run_id=prepared.run_id,
             proposal_token=prepared.proposal.proposal_token,
             idempotency_key="idempotency:stale-proposal",
@@ -130,10 +237,11 @@ def test_unsupported_method_is_a_structured_prepare_outcome(tmp_path: Path) -> N
 def test_confirmation_is_idempotent_and_only_current_token_succeeds(tmp_path: Path) -> None:
     engine = RunEngine()
     prepared = engine.prepare_run(PrepareRunRequest(project_root=tmp_path, authorized=True))
+    prepared = _first_proposal(engine, prepared)
     assert prepared.proposal is not None
     submitted = engine.submit_run_proposal(
         SubmitRunProposalRequest(
-            contract_version="1.0.0",
+            contract_version="2.0.0",
             run_id=prepared.run_id,
             proposal_token=prepared.proposal.proposal_token,
             idempotency_key="idempotency:proposal",
@@ -167,10 +275,11 @@ def test_submit_run_proposal_after_confirmation_is_a_structured_run_blocked_cond
 
     engine = RunEngine()
     prepared = engine.prepare_run(PrepareRunRequest(project_root=tmp_path, authorized=True))
+    prepared = _first_proposal(engine, prepared)
     assert prepared.proposal is not None
     submitted = engine.submit_run_proposal(
         SubmitRunProposalRequest(
-            contract_version="1.0.0",
+            contract_version="2.0.0",
             run_id=prepared.run_id,
             proposal_token=prepared.proposal.proposal_token,
             idempotency_key="idempotency:proposal",
@@ -188,7 +297,7 @@ def test_submit_run_proposal_after_confirmation_is_a_structured_run_blocked_cond
 
     response = engine.submit_run_proposal(
         SubmitRunProposalRequest(
-            contract_version="1.0.0",
+            contract_version="2.0.0",
             run_id=prepared.run_id,
             proposal_token=submitted.proposal.proposal_token,
             idempotency_key="idempotency:proposal-after-confirmation",
@@ -214,13 +323,15 @@ def test_submit_run_proposal_before_source_role_review_is_a_structured_run_block
 
     engine = RunEngine(parser=StubParser())
     prepared = engine.prepare_run(PrepareRunRequest(project_root=tmp_path, authorized=True))
-    assert prepared.proposal is not None
+    assert prepared.proposal is None
+    work = engine.continue_run(ContinueRunRequest(run_id=prepared.run_id)).work_item
+    assert work is not None and work.operation is RunOperation.SUBMIT_SOURCE_ROLE_REVIEW
 
     response = engine.submit_run_proposal(
         SubmitRunProposalRequest(
-            contract_version="1.0.0",
+            contract_version="2.0.0",
             run_id=prepared.run_id,
-            proposal_token=prepared.proposal.proposal_token,
+            proposal_token="proposal-token:pre-role-review",
             idempotency_key="idempotency:proposal-before-review",
         )
     )
@@ -229,7 +340,7 @@ def test_submit_run_proposal_before_source_role_review_is_a_structured_run_block
     assert response.condition is WorkflowCondition.RUN_BLOCKED
     assert response.error is not None
     assert response.error.code == "invalid_configuration"
-    assert "Source-role review" in response.error.detail
+    assert "first RunProposal" in response.error.detail
 
 
 def test_submit_source_role_review_shape_violations_are_structured_run_blocked_conditions(
@@ -245,12 +356,12 @@ def test_submit_source_role_review_shape_violations_are_structured_run_blocked_c
 
     engine = RunEngine(parser=StubParser())
     prepared = engine.prepare_run(PrepareRunRequest(project_root=tmp_path, authorized=True))
-    assert prepared.proposal is not None
+    assert prepared.proposal is None
     review_work = engine.continue_run(ContinueRunRequest(run_id=prepared.run_id)).work_item
     assert review_work is not None
     issued_sources = [
         source.source_id
-        for candidate_trial in prepared.proposal.initialization.trials
+        for candidate_trial in prepared.initialization.trials
         for source in candidate_trial.inventory.sources
     ]
     assert len(issued_sources) == 2
@@ -314,6 +425,7 @@ def test_refresh_registry_candidates_reads_its_own_authorized_argument(tmp_path:
 
     engine = RunEngine(parser=StubParser(), registry=registry)
     prepared = engine.prepare_run(PrepareRunRequest(project_root=tmp_path, authorized=True))
+    prepared = _first_proposal(engine, prepared)
     assert prepared.proposal is not None
     assert prepared.proposal.registry_candidates[0].status == "discovered"
     # The engine's process-lifetime latch is still set from the authorized

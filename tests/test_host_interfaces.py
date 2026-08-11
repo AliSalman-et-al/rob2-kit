@@ -53,7 +53,7 @@ def blank_pdf() -> bytes:
 
 def test_stdio_mcp_surface_is_the_fixed_run_engine_inventory() -> None:
     assert registered_tool_names() == CANONICAL_TOOL_NAMES
-    assert len(registered_tool_names()) == 13
+    assert len(registered_tool_names()) == 15
     assert "open_review" not in registered_tool_names()
 
 
@@ -77,6 +77,10 @@ def test_mcp_tool_schemas_explain_nested_inputs_and_expose_passage_freezing() ->
     assert "passages" in evidence_schema["properties"]
     assert "EvidencePassageInput" in str(evidence_schema)
     assert "include_source_details" in tools["get_work_context"].input_schema["properties"]
+    assert "proposal_discovery_pass" in tools["get_work_context"].input_schema["properties"]
+    assert "proposal_discovery_read_continuation" in tools["get_work_context"].input_schema[
+        "properties"
+    ]
     for tool_name in (
         "submit_run_proposal",
         "confirm_run_definition",

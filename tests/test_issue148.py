@@ -13,12 +13,10 @@ from rob2_kit.application.contracts import (
     ContinueRunRequest,
     CorrectDomainAnswersRequest,
     PrepareRunRequest,
-    RunOperation,
     RunProposalSelection,
     SubmitDomainAnswersRequest,
     SubmitDomainEvidenceRequest,
     SubmitRunProposalRequest,
-    SubmitSourceRoleReviewRequest,
 )
 from rob2_kit.application.lifecycle import RunState
 from rob2_kit.application.run_engine import RunEngine
@@ -37,29 +35,15 @@ from tests.test_input_reconciliation import (
     _synthetic_visual_ref,
 )
 from tests.test_mcp_tracer import DOMAINS
-from tests.test_run_proposal import StubParser
+from tests.test_run_proposal import StubParser, _first_proposal
 
 
 def _confirm(engine: RunEngine, root: Path, run_id: str, *, key: str) -> None:
     prepared = engine.prepare_run(PrepareRunRequest(project_root=root))
+    if prepared.proposal is None:
+        prepared = _first_proposal(engine, prepared)
     assert prepared.run_id == run_id
     assert prepared.proposal is not None
-    work = engine.continue_run(ContinueRunRequest(run_id=run_id)).work_item
-    if work is not None and work.operation is RunOperation.SUBMIT_SOURCE_ROLE_REVIEW:
-        engine.submit_source_role_review(
-            SubmitSourceRoleReviewRequest(
-                contract_version="1.0.0",
-                run_id=run_id,
-                work_token=work.work_token,
-                idempotency_key=f"idempotency:{key}:source-review",
-                selections=tuple(
-                    RunProposalSelection(
-                        trial_id=candidate.trial_id, source_id=candidate.source_id, accepted=True
-                    )
-                    for candidate in prepared.proposal.source_role_candidates
-                ),
-            )
-        )
     selections = tuple(
         RunProposalSelection(
             trial_id=candidate.trial_id,
@@ -73,7 +57,7 @@ def _confirm(engine: RunEngine, root: Path, run_id: str, *, key: str) -> None:
     )
     submitted = engine.submit_run_proposal(
         SubmitRunProposalRequest(
-            contract_version="1.0.0",
+            contract_version="2.0.0",
             run_id=run_id,
             proposal_token=prepared.proposal.proposal_token,
             idempotency_key=f"idempotency:{key}:proposal",
@@ -101,7 +85,9 @@ def test_second_run_freezes_its_own_declared_result_spec(tmp_path: Path) -> None
     )
     engine = RunEngine(parser=cast(DocumentParser, StubParser()))
 
-    first = engine.prepare_run(PrepareRunRequest(project_root=tmp_path, authorized=True))
+    first = _first_proposal(
+        engine, engine.prepare_run(PrepareRunRequest(project_root=tmp_path, authorized=True))
+    )
     _confirm(engine, tmp_path, first.run_id, key="issue148:first")
     first_evidence = engine.continue_run(ContinueRunRequest(run_id=first.run_id)).work_item
     assert first_evidence is not None
@@ -119,8 +105,11 @@ def test_second_run_freezes_its_own_declared_result_spec(tmp_path: Path) -> None
             coverage_limitations=("Fixture deliberately has no search coverage.",),
         )
     )
-    second = engine.prepare_run(
-        PrepareRunRequest(project_root=tmp_path, authorized=True, start_new=True)
+    second = _first_proposal(
+        engine,
+        engine.prepare_run(
+            PrepareRunRequest(project_root=tmp_path, authorized=True, start_new=True)
+        ),
     )
     _confirm(engine, tmp_path, second.run_id, key="issue148:second")
     second_evidence = engine.continue_run(ContinueRunRequest(run_id=second.run_id)).work_item
@@ -162,7 +151,9 @@ def test_awaiting_confirmation_refreshes_chain_before_first_result_spec_freeze(
     config_path.write_text(yaml.safe_dump(configuration), encoding="utf-8")
     engine = RunEngine(parser=cast(DocumentParser, StubParser()))
 
-    initial = engine.prepare_run(PrepareRunRequest(project_root=tmp_path, authorized=True))
+    initial = _first_proposal(
+        engine, engine.prepare_run(PrepareRunRequest(project_root=tmp_path, authorized=True))
+    )
     assert initial.proposal is not None
     initial_spec = initial.proposal.initialization.result_specs[0]
 
@@ -353,7 +344,9 @@ def test_second_run_terminal_report_materializes_its_active_result_spec(tmp_path
     (tmp_path / "rob2.yaml").write_text(yaml.safe_dump(first_config), encoding="utf-8")
     engine = RunEngine(parser=cast(DocumentParser, StubParser()))
 
-    first = engine.prepare_run(PrepareRunRequest(project_root=tmp_path, authorized=True))
+    first = _first_proposal(
+        engine, engine.prepare_run(PrepareRunRequest(project_root=tmp_path, authorized=True))
+    )
     _confirm(engine, tmp_path, first.run_id, key="issue148:terminal:first")
     first_evidence = engine.continue_run(ContinueRunRequest(run_id=first.run_id)).work_item
     assert first_evidence is not None
@@ -375,8 +368,11 @@ def test_second_run_terminal_report_materializes_its_active_result_spec(tmp_path
     second_config: dict[str, Any] = _config(_result("result:terminal", "trial:terminal"))
     second_config["results"][0]["estimate"] = {"value": 0.91}
     (tmp_path / "rob2.yaml").write_text(yaml.safe_dump(second_config), encoding="utf-8")
-    second = engine.prepare_run(
-        PrepareRunRequest(project_root=tmp_path, authorized=True, start_new=True)
+    second = _first_proposal(
+        engine,
+        engine.prepare_run(
+            PrepareRunRequest(project_root=tmp_path, authorized=True, start_new=True)
+        ),
     )
     _confirm(engine, tmp_path, second.run_id, key="issue148:terminal:second")
     _finish_current_result(engine, second.run_id, prefix="issue148-terminal-second")
@@ -424,7 +420,9 @@ def test_second_run_detects_a_superseded_result_spec_as_stale_evidence(tmp_path:
     (tmp_path / "rob2.yaml").write_text(yaml.safe_dump(configuration), encoding="utf-8")
     engine = RunEngine(parser=cast(DocumentParser, StubParser()))
 
-    first = engine.prepare_run(PrepareRunRequest(project_root=tmp_path, authorized=True))
+    first = _first_proposal(
+        engine, engine.prepare_run(PrepareRunRequest(project_root=tmp_path, authorized=True))
+    )
     _confirm(engine, tmp_path, first.run_id, key="issue148:stale:first")
     first_work = engine.continue_run(ContinueRunRequest(run_id=first.run_id)).work_item
     assert first_work is not None
@@ -442,8 +440,11 @@ def test_second_run_detects_a_superseded_result_spec_as_stale_evidence(tmp_path:
             coverage_limitations=("Fixture deliberately has no search coverage.",),
         )
     )
-    second = engine.prepare_run(
-        PrepareRunRequest(project_root=tmp_path, authorized=True, start_new=True)
+    second = _first_proposal(
+        engine,
+        engine.prepare_run(
+            PrepareRunRequest(project_root=tmp_path, authorized=True, start_new=True)
+        ),
     )
     _confirm(engine, tmp_path, second.run_id, key="issue148:stale:second")
     evidence = engine.continue_run(ContinueRunRequest(run_id=second.run_id)).work_item

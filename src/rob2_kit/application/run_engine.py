@@ -1,4 +1,5 @@
 """Typed host-neutral application boundary for lean-v1 Runs."""
+# ruff: noqa: E501
 
 from __future__ import annotations
 
@@ -41,6 +42,9 @@ from rob2_kit.application.contracts import (
     OperationError,
     PrepareRunRequest,
     PrepareRunResponse,
+    ProposalDiscoveryPassQuery,
+    ProposalDiscoveryPolicy,
+    ProposalPromotionBatchInput,
     ReadEvidenceRequest,
     ReadEvidenceResponse,
     ReopenResultRequest,
@@ -64,6 +68,10 @@ from rob2_kit.application.contracts import (
     SubmitDomainEvidenceResponse,
     SubmitEvidenceReviewRequest,
     SubmitEvidenceReviewResponse,
+    SubmitProposalDiscoveryReviewRequest,
+    SubmitProposalDiscoveryReviewResponse,
+    SubmitResultMappingReviewRequest,
+    SubmitResultMappingReviewResponse,
     SubmitResultResolutionRequest,
     SubmitResultResolutionResponse,
     SubmitRunProposalRequest,
@@ -93,12 +101,12 @@ from rob2_kit.application.lifecycle import (
     derive_lifecycle,
 )
 from rob2_kit.application.proposals import (
-    apply_correction_selections,
-    correction_ambiguity_updates,
+    _locator_binds_source,
+    _locator_page,
+    _source_pages,
     effective_result_ids,
     proposal_pairings,
     semantic_diff,
-    translate_correction,
     validate_result_sources,
 )
 from rob2_kit.domain.assessment import (
@@ -128,7 +136,16 @@ from rob2_kit.domain.evidence import (
     VisualTranscription,
 )
 from rob2_kit.domain.releases import PolicyKind, PolicyRelease
-from rob2_kit.domain.results import ResultSpecRevision, derive_result_spec_revision_id
+from rob2_kit.domain.results import (
+    ProposalDiscoveryCoverageReceipt,
+    ProposalLimitation,
+    ProposalLimitationKind,
+    ProposalMappingStatus,
+    ReportedCandidateProvenance,
+    ResultIdentityCompleteness,
+    ResultSpecRevision,
+    derive_result_spec_revision_id,
+)
 from rob2_kit.domain.revisions import (
     SCHEMA_VERSION,
     Actor,
@@ -167,6 +184,7 @@ from rob2_kit.evidence.search import (
     EvidenceScope,
     EvidenceSearchIndex,
     EvidenceSearchPolicy,
+    SearchQuery,
     canonicalize_evidence_units,
 )
 from rob2_kit.evidence.visual import (
@@ -354,7 +372,8 @@ class StaleWorkTokenError(ValueError):
 class _PreparedRunRecord(FrozenModel):
     lifecycle_event: Literal["run_prepared"] = "run_prepared"
     run_id: Identifier
-    proposal: RunProposal
+    initialization: ProjectInitialization
+    input_snapshot_hash: ContentHash
     prepared_at: datetime
     execution_contract: _ExecutionContract
 
@@ -378,6 +397,16 @@ class _ProposalSubmittedRecord(FrozenModel):
     lifecycle_event: Literal["run_proposal_submitted"] = "run_proposal_submitted"
     run_id: Identifier
     proposal: RunProposal
+    submission: SubmitRunProposalRequest | None = None
+    next_action: RunOperation = RunOperation.CONFIRM_RUN_DEFINITION
+
+
+class _ProposalDiscoveryNavigationRecord(FrozenModel):
+    """Durable, engine-authored token navigation proof."""
+
+    run_id: Identifier
+    work_token: WorkToken
+    navigation: dict[str, Any]
 
 
 class _ConfirmedRunRecord(FrozenModel):
@@ -676,6 +705,11 @@ class RunEngine:
         ] = {}
         self._logic_pack_cache: tuple[str, Any] | None = None
         self._guidance_pack_cache: tuple[str, Any] | None = None
+        # Proposal discovery is pre-confirmation navigation, not Evidence
+        # workflow state. It is nevertheless tracked under the exact issued
+        # work token so a receipt can only claim pages/units this engine
+        # actually exposed in the current bounded review.
+        self._proposal_discovery_navigation: dict[tuple[Identifier, Identifier], dict[str, Any]] = {}
 
     def __getattr__(self, name: str) -> Any:
         """Expose the canonical status spelling without expanding the legacy API.
@@ -750,6 +784,36 @@ class RunEngine:
             projection = self._projection(ledger, current.run_id)
             if len(unfinished) > 1:
                 self._retire_prior_unfinished(ledger, unfinished[:-1], current.run_id)
+            if (
+                projection.run_state is RunState.AWAITING_CONFIRMATION
+                and not self._has_durable_proposal(ledger, current.run_id)
+            ):
+                try:
+                    changed = self._input_snapshot_hash(root) != current.input_snapshot_hash
+                except ValueError as error:
+                    return self._prepare_configuration_error(root, ledger, error)
+                if changed:
+                    return self._prepare_authorization_error(
+                        ledger,
+                        current.run_id,
+                        None,
+                    )
+                return PrepareRunResponse(
+                    operation_id=self._read_operation_id(RunOperation.PREPARE_RUN, current.run_id),
+                    ledger_cursor=f"ledger:{len(ledger.events())}",
+                    affected_scope=(current.run_id,),
+                    condition=WorkflowCondition.CONFIRMATION_REQUIRED,
+                    committed=False,
+                    next_action=(
+                        self._next_work_item(ledger, current.run_id).operation
+                        if self._next_work_item(ledger, current.run_id) is not None
+                        else RunOperation.CONTINUE_RUN
+                    ),
+                    run_id=current.run_id,
+                    run_state=projection.run_state,
+                    initialization=current.initialization,
+                    proposal=None,
+                )
             # A confirmed/blocked/assessing Current run resumes from durable
             # state without reopening semantic initialization.  An awaiting
             # proposal, however, is still mutable input: re-inventory it on
@@ -1104,13 +1168,14 @@ class RunEngine:
         self._index_initial_evidence(root, initialization)
         run_id = self._new_run_id(root, len(ledger.events()))
         try:
-            proposal = self._proposal(run_id, initialization)
+            input_snapshot_hash = self._input_snapshot_hash(root)
         except ValueError as error:
             return self._prepare_configuration_error(root, ledger, error)
         now = self._now()
         prepared = _PreparedRunRecord(
             run_id=run_id,
-            proposal=proposal,
+            initialization=initialization,
+            input_snapshot_hash=input_snapshot_hash,
             prepared_at=now,
             execution_contract=self._installed_execution_contract(),
         )
@@ -1131,7 +1196,7 @@ class RunEngine:
                     checkpoint="checkpoint:run-retired",
                     outcome=WorkflowEventOutcome.COMPLETED,
                     observed_at=now,
-                )
+                ),
             )
         prepared_transition_index = len(transitions)
         transitions.append(
@@ -1266,10 +1331,13 @@ class RunEngine:
             affected_scope=tuple(item.run_id for item in unfinished) + (run_id,),
             condition=WorkflowCondition.CONFIRMATION_REQUIRED,
             committed=True,
-            next_action=RunOperation.SUBMIT_RUN_PROPOSAL,
+            next_action=self._next_work_item(ledger, run_id).operation
+            if self._next_work_item(ledger, run_id) is not None
+            else RunOperation.CONTINUE_RUN,
             run_id=run_id,
             run_state=projection.run_state,
-            proposal=proposal,
+            initialization=initialization,
+            proposal=None,
         )
 
     def reprioritize_results(self, request: ReprioritizeResultsRequest) -> ResultControlResponse:
@@ -1366,6 +1434,29 @@ class RunEngine:
 
         ledger = self._bound_ledger(request.run_id)
         projection = self._projection(ledger, request.run_id)
+        if not self._has_durable_proposal(ledger, request.run_id):
+            return SubmitRunProposalResponse(
+                operation_id=self._read_operation_id(
+                    RunOperation.SUBMIT_RUN_PROPOSAL, request.run_id
+                ),
+                ledger_cursor=f"ledger:{len(ledger.events())}",
+                affected_scope=(request.run_id,),
+                condition=WorkflowCondition.RUN_BLOCKED,
+                committed=False,
+                next_action=(
+                    self._next_work_item(ledger, request.run_id).operation
+                    if self._next_work_item(ledger, request.run_id) is not None
+                    else RunOperation.CONTINUE_RUN
+                ),
+                run_id=request.run_id,
+                run_state=projection.run_state,
+                proposal=None,
+                error=OperationError(
+                    code="invalid_configuration",
+                    detail="The first RunProposal is issued only after terminal full-text discovery.",
+                    recovery=("Complete every issued discovery review first.",),
+                ),
+            )
         proposal = self._latest_proposal(ledger, request.run_id)
         if request.requested_by.kind is not ActorKind.HUMAN:
             return self._result_control_refusal(
@@ -1762,15 +1853,19 @@ class RunEngine:
             next_action=self._next_action_for_state(projection.run_state),
             run_id=request.run_id,
             run_state=projection.run_state,
-            result_states=tuple(
-                ResultStatus(result_id=item.result_id, state=item.state)
-                for item in projection.results
-                if item.result_id
-                in self._result_ids(
-                    ledger,
-                    request.run_id,
-                    self._latest_proposal(ledger, request.run_id),
+            result_states=(
+                tuple(
+                    ResultStatus(result_id=item.result_id, state=item.state)
+                    for item in projection.results
+                    if item.result_id
+                    in self._result_ids(
+                        ledger,
+                        request.run_id,
+                        self._latest_proposal(ledger, request.run_id),
+                    )
                 )
+                if self._has_durable_proposal(ledger, request.run_id)
+                else ()
             ),
             progress=self._run_progress(ledger, request.run_id, projection),
         )
@@ -1782,12 +1877,19 @@ class RunEngine:
             current = self._current_prepared_record(ledger)
             if current is not None and current.run_id == request.run_id:
                 self._reconcile_execution_contract(ledger, current)
-            # Reconciliation is part of every continuation.  It compares the
-            # current confined input snapshot with the last committed
-            # checkpoint and commits one idempotent batch when bytes changed.
-            self._reconcile_current_run(ledger, request.run_id)
-            self._repair_report_publication(ledger, request.run_id)
-            self._resume_assessment_ready_reports(ledger, request.run_id)
+            # The preparation snapshot deliberately precedes the first
+            # durable proposal.  Reconciliation and report repair are
+            # proposal-scoped, so invoking them during source-role/discovery
+            # work would incorrectly require a Result proposal that does not
+            # exist yet.
+            if self._has_durable_proposal(ledger, request.run_id):
+                # Reconciliation is part of every post-proposal continuation.
+                # It compares the current confined input snapshot with the
+                # last committed checkpoint and commits one idempotent batch
+                # when bytes changed.
+                self._reconcile_current_run(ledger, request.run_id)
+                self._repair_report_publication(ledger, request.run_id)
+                self._resume_assessment_ready_reports(ledger, request.run_id)
             projection = self._projection(ledger, request.run_id)
         except (LifecycleIntegrityError, RunIntegrityFailure) as error:
             return ContinueRunResponse(
@@ -1815,6 +1917,39 @@ class RunEngine:
                     committed=False,
                     work_item=pending_work,
                 )
+            if not self._has_durable_proposal(ledger, request.run_id):
+                initialization = self._initialization_with_resolved_source_roles(
+                    ledger, request.run_id
+                )
+                if self._initialization_discovery_complete(
+                    initialization, ledger, request.run_id
+                ):
+                    proposal = self._proposal_from_discovery(
+                        initialization, ledger, request.run_id
+                    )
+                    now = self._now()
+                    suffix = self._digest(
+                        f"{request.run_id}|empty-discovery|{proposal.proposal_token}"
+                    )
+                    transition = self._transition(
+                        scope=request.run_id,
+                        operation="operation:run-proposal-discovery-reviewed",
+                        operation_key=f"idempotency:empty-discovery-{suffix}",
+                        entity_id=f"run-proposal-discovery:{suffix}",
+                        revision_id=f"revision:run-proposal-discovery-{suffix}",
+                        artifact=_ProposalSubmittedRecord(
+                            run_id=request.run_id, proposal=proposal
+                        ),
+                        checkpoint="checkpoint:run-proposal-discovery-reviewed",
+                        outcome=WorkflowEventOutcome.WORK_REQUIRED,
+                        observed_at=now,
+                    )
+                    self._commit_transitions(
+                        ledger,
+                        (transition,),
+                        self._acquire_lease(ledger, now),
+                        now=now,
+                    )
             return self._continue_response(
                 ledger,
                 request.run_id,
@@ -1910,7 +2045,16 @@ class RunEngine:
 
     def get_work_context(self, request: GetWorkContextRequest) -> GetWorkContextResponse:
         ledger = self._bound_ledger(request.run_id)
-        proposal = self._latest_proposal(ledger, request.run_id)
+        proposal = (
+            self._latest_proposal(ledger, request.run_id)
+            if self._has_durable_proposal(ledger, request.run_id)
+            else None
+        )
+        initialization = (
+            proposal.initialization
+            if proposal is not None
+            else self._initialization_with_resolved_source_roles(ledger, request.run_id)
+        )
         expected = self._next_work_item(ledger, request.run_id)
         projection = self._projection(ledger, request.run_id)
         if request.work_token.run_id != request.run_id or expected is None:
@@ -1933,9 +2077,7 @@ class RunEngine:
                     ),
                 ),
             )
-        if projection.run_state is RunState.ASSESSING and (
-            expected is None or expected.work_token != request.work_token
-        ):
+        if expected is None or expected.work_token != request.work_token:
             return GetWorkContextResponse(
                 operation_id=self._read_operation_id(RunOperation.GET_WORK_CONTEXT, request.run_id),
                 ledger_cursor=f"ledger:{len(ledger.events())}",
@@ -1964,7 +2106,7 @@ class RunEngine:
         result_spec = next(
             (
                 spec
-                for spec in proposal.initialization.result_specs
+                for spec in initialization.result_specs
                 if spec.result.result_id == work_item.result_id
             ),
             None,
@@ -1979,13 +2121,17 @@ class RunEngine:
             trial_id = next(
                 (
                     spec.result.trial_id
-                    for spec in proposal.initialization.result_specs
+                    for spec in initialization.result_specs
                     if spec.result.result_id == work_item.result_id
                 ),
                 next(
                     (
                         candidate.trial_id
-                        for candidate in proposal.result_candidates
+                        for candidate in (
+                            proposal.result_candidates
+                            if proposal
+                            else initialization.result_candidates
+                        )
                         if candidate.result_id == work_item.result_id
                     ),
                     None,
@@ -1995,6 +2141,16 @@ class RunEngine:
             work_item.operation is RunOperation.SUBMIT_SOURCE_ROLE_REVIEW
             and work_item.trial_id is None
         )
+        is_discovery_work = work_item.operation is RunOperation.SUBMIT_PROPOSAL_DISCOVERY_REVIEW
+        if (
+            request.proposal_discovery_query is not None
+            or request.proposal_discovery_unit_ids
+            or request.proposal_discovery_continuation is not None
+            or request.proposal_discovery_read_continuation is not None
+        ) and not is_discovery_work:
+            raise ValueError(
+                "proposal discovery navigation is available only for the active discovery WorkToken"
+            )
         # Pre-confirmation, no Trial selection is confirmed yet (#119), so
         # _active_trial_ids is unconditionally empty -- unlike
         # _source_role_review_complete, which already treats
@@ -2011,7 +2167,7 @@ class RunEngine:
             None
             if is_global_source_work
             else next(
-                (item for item in proposal.initialization.trials if item.trial_id == trial_id),
+                (item for item in initialization.trials if item.trial_id == trial_id),
                 None,
             )
         )
@@ -2021,17 +2177,157 @@ class RunEngine:
         sources = (
             tuple(
                 source
-                for item in proposal.initialization.trials
+                for item in initialization.trials
                 if item.status == "inventory_ready"
                 and (selected_trial_ids is None or item.trial_id in selected_trial_ids)
                 for source in item.inventory.sources
                 if SourceRole.REGISTRY_CURRENT not in source.roles
             )
             if is_global_source_work
+            else tuple(
+                source
+                for item in initialization.trials
+                if item.trial_id == work_item.trial_id
+                for source in item.inventory.sources
+                if source.source_id == work_item.source_id
+            )
+            if is_discovery_work
             else tuple(trial.inventory.sources)
             if trial is not None
             else ()
         )
+        discovery_page = None
+        discovery_units: tuple[CanonicalEvidenceUnit, ...] = ()
+        discovery_read_continuation: str | None = None
+        discovery_policy = (
+            self._proposal_discovery_policy(
+                initialization,
+                "target_guided"
+                if initialization.manifest.outcome_target_specs
+                else "structure_first",
+            )
+            if is_discovery_work
+            else None
+        )
+        if is_discovery_work and (
+            request.run_id,
+            work_item.work_token.token,
+        ) not in self._proposal_discovery_navigation:
+            durable_navigation = self._durable_proposal_discovery_navigation(
+                ledger, request.run_id, work_item.work_token
+            )
+            if durable_navigation is not None:
+                self._proposal_discovery_navigation[(request.run_id, work_item.work_token.token)] = (
+                    durable_navigation
+                )
+        if is_discovery_work and request.proposal_discovery_query is not None:
+            assert discovery_policy is not None
+            policy_passes = discovery_policy.required_passes
+            if request.proposal_discovery_pass not in policy_passes:
+                raise ValueError("proposal discovery search pass was not issued by the engine")
+            pass_query = next(
+                item
+                for item in discovery_policy.pass_queries
+                if item.pass_id == request.proposal_discovery_pass
+            )
+            if request.proposal_discovery_query.model_dump(mode="json") != pass_query.canonical_query.model_dump(
+                mode="json"
+            ):
+                raise ValueError(
+                    "proposal discovery query must exactly match the engine-issued pass template"
+                )
+            discovery_page = EvidenceSearchIndex(
+                self._required_root() / ".rob2" / "evidence.sqlite3"
+            ).search_v2(
+                request.proposal_discovery_query,
+                issuance_context=(
+                    f"proposal-discovery|{request.run_id}|{work_item.work_token.token}"
+                ),
+                continuation=request.proposal_discovery_continuation,
+                scope=EvidenceScope(
+                    trial_id=work_item.trial_id,
+                    source_ids=(work_item.source_id,) if work_item.source_id else (),
+                    parse_ids=(work_item.parse_id,) if work_item.parse_id else (),
+                    work_token_id=work_item.work_token.token,
+                ),
+            )
+            navigation = self._proposal_discovery_navigation.setdefault(
+                (request.run_id, work_item.work_token.token),
+                {"passes": {}, "read_unit_ids": set(), "read_continuations": {}},
+            )
+            pass_state = navigation["passes"].setdefault(
+                request.proposal_discovery_pass,
+                {
+                    "continuations": [],
+                    "candidate_unit_ids": set(),
+                    "complete": False,
+                    "qualifying_search": False,
+                },
+            )
+            if request.proposal_discovery_continuation is not None:
+                pass_state["continuations"].append(request.proposal_discovery_continuation)
+            pass_state["candidate_unit_ids"].update(
+                candidate.canonical_unit_id for candidate in discovery_page.candidates
+            )
+            pass_state["complete"] = discovery_page.traversal_complete
+            pass_state["qualifying_search"] = True
+        if is_discovery_work and (
+            request.proposal_discovery_unit_ids
+            or request.proposal_discovery_read_continuation is not None
+        ):
+            index = EvidenceSearchIndex(self._required_root() / ".rob2" / "evidence.sqlite3")
+            navigation = self._proposal_discovery_navigation.setdefault(
+                (request.run_id, work_item.work_token.token),
+                {"passes": {}, "read_unit_ids": set(), "read_continuations": {}},
+            )
+            if request.proposal_discovery_read_continuation is not None:
+                requested_unit_ids = navigation["read_continuations"].get(
+                    request.proposal_discovery_read_continuation, None
+                )
+                if requested_unit_ids is None:
+                    raise ValueError("proposal discovery read continuation was not issued for this WorkToken")
+            else:
+                requested_unit_ids = request.proposal_discovery_unit_ids
+                exposed_unit_ids = {
+                    unit_id
+                    for state in navigation["passes"].values()
+                    for unit_id in state["candidate_unit_ids"]
+                }
+                if set(requested_unit_ids) - exposed_unit_ids:
+                    raise ValueError(
+                        "proposal discovery reads must use canonical units surfaced by this token's search"
+                    )
+            selected: list[CanonicalEvidenceUnit] = []
+            remaining_ids: list[Identifier] = []
+            character_count = 0
+            for offset, unit_id in enumerate(requested_unit_ids):
+                unit = index.read_unit(unit_id)
+                if selected and character_count + len(unit.text) > discovery_policy.read_character_ceiling:
+                    remaining_ids.extend(requested_unit_ids[offset:])
+                    break
+                if not selected and len(unit.text) > discovery_policy.read_character_ceiling:
+                    raise ValueError("proposal discovery unit exceeds the engine-issued character ceiling")
+                selected.append(unit)
+                character_count += len(unit.text)
+            units = tuple(selected)
+            if any(
+                unit.source_id != work_item.source_id or unit.parse_id != work_item.parse_id
+                for unit in units
+            ):
+                raise ValueError("proposal discovery read is outside the issued Source and Parse scope")
+            discovery_units = units
+            if remaining_ids:
+                discovery_read_continuation = f"proposal-read:{self._digest('|'.join(remaining_ids))}"
+                navigation["read_continuations"][discovery_read_continuation] = tuple(remaining_ids)
+            navigation["read_unit_ids"].update(unit.unit_id for unit in units)
+        if is_discovery_work and (
+            request.proposal_discovery_query is not None
+            or request.proposal_discovery_unit_ids
+            or request.proposal_discovery_read_continuation is not None
+        ):
+            self._persist_proposal_discovery_navigation(
+                ledger, request.run_id, work_item.work_token, navigation
+            )
         context = WorkContext(
             work_item=work_item,
             trial=(
@@ -2049,14 +2345,30 @@ class RunEngine:
             detailed_sources=sources if request.include_source_details else (),
             registry_candidates=tuple(
                 candidate
-                for candidate in proposal.registry_candidates
+                for candidate in (
+                    proposal.registry_candidates if proposal else initialization.registry_candidates
+                )
                 if scoped_trial_id is None or candidate.trial_id == scoped_trial_id
             ),
             result_candidates=tuple(
                 candidate
-                for candidate in proposal.result_candidates
+                for candidate in (
+                    proposal.result_candidates if proposal else initialization.result_candidates
+                )
                 if scoped_trial_id is None or candidate.trial_id == scoped_trial_id
             ),
+            reported_endpoint_candidates=(
+                proposal.reported_endpoint_candidates if proposal else ()
+            ),
+            reported_randomization_candidates=(
+                proposal.reported_randomization_candidates if proposal else ()
+            ),
+            reported_arm_candidates=(proposal.reported_arm_candidates if proposal else ()),
+            proposal_discovery_receipts=(proposal.proposal_discovery_receipts if proposal else ()),
+            proposal_discovery_page=discovery_page,
+            proposal_discovery_units=discovery_units,
+            proposal_discovery_read_continuation=discovery_read_continuation,
+            proposal_discovery_policy=discovery_policy,
             domain_context=(
                 self._domain_context_pack(
                     ledger,
@@ -2106,6 +2418,28 @@ class RunEngine:
                     recovery=("Call continue_run instead; this Run has already been confirmed.",),
                 ),
             )
+        if not self._has_durable_proposal(ledger, request.run_id):
+            return SubmitRunProposalResponse(
+                operation_id=self._read_operation_id(
+                    RunOperation.SUBMIT_RUN_PROPOSAL, request.run_id
+                ),
+                ledger_cursor=f"ledger:{len(ledger.events())}",
+                affected_scope=(request.run_id,),
+                condition=WorkflowCondition.RUN_BLOCKED,
+                committed=False,
+                # This response does not carry an issued WorkItem or WorkToken.
+                # Let the scheduler mint the current token rather than inviting a
+                # caller to submit a token-bound operation without one.
+                next_action=RunOperation.CONTINUE_RUN,
+                run_id=request.run_id,
+                run_state=projection.run_state,
+                proposal=None,
+                error=OperationError(
+                    code="invalid_configuration",
+                    detail="The first RunProposal is issued only after terminal full-text discovery.",
+                    recovery=("Complete every issued discovery review first.",),
+                ),
+            )
         proposal = self._latest_proposal(ledger, request.run_id)
         events = self._events_for_run(ledger, request.run_id)
         if not self._source_role_review_complete(proposal, ledger, events, selected_trial_ids=None):
@@ -2117,7 +2451,7 @@ class RunEngine:
                 affected_scope=(request.run_id,),
                 condition=WorkflowCondition.RUN_BLOCKED,
                 committed=False,
-                next_action=RunOperation.SUBMIT_SOURCE_ROLE_REVIEW,
+                next_action=RunOperation.CONTINUE_RUN,
                 run_id=request.run_id,
                 run_state=projection.run_state,
                 proposal=proposal,
@@ -2135,19 +2469,26 @@ class RunEngine:
         # (and everything derived from it below — validate_result_sources,
         # _preferred_candidate via proposal_pairings) reads.
         proposal = self._apply_resolved_source_roles(proposal, ledger, request.run_id)
-        translated_selections = (
-            translate_correction(proposal, request.correction)
-            if request.correction is not None
-            else ()
-        )
-        selections = (
-            apply_correction_selections(
-                proposal,
-                request.selections + translated_selections,
+        if not self._proposal_discovery_complete(proposal, ledger, request.run_id):
+            return SubmitRunProposalResponse(
+                operation_id=self._read_operation_id(
+                    RunOperation.SUBMIT_RUN_PROPOSAL, request.run_id
+                ),
+                ledger_cursor=f"ledger:{len(ledger.events())}",
+                affected_scope=(request.run_id,),
+                condition=WorkflowCondition.RUN_BLOCKED,
+                committed=False,
+                next_action=RunOperation.CONTINUE_RUN,
+                run_id=request.run_id,
+                run_state=projection.run_state,
+                proposal=proposal,
+                error=OperationError(
+                    code="invalid_configuration",
+                    detail="Required eligible full-text discovery is unfinished.",
+                    recovery=("Complete every issued proposal discovery work item.",),
+                ),
             )
-            if request.correction is not None
-            else request.selections
-        )
+        selections = request.selections
         existing_event = self._event_for_operation_key(
             ledger, request.idempotency_key, run_id=request.run_id
         )
@@ -2158,14 +2499,7 @@ class RunEngine:
             existing_record = _ProposalSubmittedRecord.model_validate_json(
                 ledger.artifacts.read(existing_event.output_revision_hashes[0])
             )
-            requested_ambiguities = request.ambiguities + request.unresolved_ambiguities
-            existing_ambiguities = {
-                item.ambiguity_id: item for item in existing_record.proposal.ambiguities
-            }
-            if existing_record.proposal.selections != selections or any(
-                existing_ambiguities.get(item.ambiguity_id) != item
-                for item in requested_ambiguities
-            ):
+            if existing_record.submission != request:
                 raise ValueError("idempotency key was already used with a different payload")
             return SubmitRunProposalResponse(
                 operation_id=existing_event.operation_id,
@@ -2173,7 +2507,7 @@ class RunEngine:
                 affected_scope=(request.run_id,),
                 condition=WorkflowCondition.CONFIRMATION_REQUIRED,
                 committed=False,
-                next_action=RunOperation.CONFIRM_RUN_DEFINITION,
+                next_action=existing_record.next_action,
                 run_id=request.run_id,
                 run_state=projection.run_state,
                 proposal=existing_record.proposal,
@@ -2239,14 +2573,20 @@ class RunEngine:
                     ),
                 ),
             )
-        self._validate_proposal_selections(proposal, selections)
+        promotion_only_submission = request.promotions is not None and not selections
+        if request.promotions is not None:
+            proposal = self._apply_proposal_promotions(proposal, request.promotions)
+        # Human promotion is intentionally a distinct stage before semantic
+        # Result mapping.  A newly promoted Outcome target has no issued
+        # Result candidate yet, so forcing a selection here would make the
+        # mapping operation unreachable.
+        if not promotion_only_submission:
+            self._validate_proposal_selections(proposal, selections)
         proposal = self._refresh_registry_candidates(
             proposal, selections, authorized=request.authorized
         )
         self._index_initial_evidence(self._required_root(), proposal.initialization)
         requested_ambiguities = request.ambiguities + request.unresolved_ambiguities
-        if translated_selections:
-            requested_ambiguities += correction_ambiguity_updates(proposal, translated_selections)
         self._validate_proposal_ambiguities(proposal, requested_ambiguities)
         submitted = proposal.model_copy(
             update={
@@ -2256,6 +2596,7 @@ class RunEngine:
                     requested_ambiguities,
                     selections=selections,
                 ),
+                "submission_request_hash": canonical_hash(request.model_dump(mode="json")),
             }
         )
         submitted = self._resolve_result_candidates(submitted, selections)
@@ -2274,7 +2615,17 @@ class RunEngine:
             }
         )
         submitted = self._freeze_submitted_proposal(submitted)
-        record = _ProposalSubmittedRecord(run_id=request.run_id, proposal=submitted)
+        persisted_next_action = (
+            RunOperation.SUBMIT_RESULT_MAPPING_REVIEW
+            if submitted.reported_endpoint_candidates and submitted.randomization_bindings
+            else RunOperation.CONFIRM_RUN_DEFINITION
+        )
+        record = _ProposalSubmittedRecord(
+            run_id=request.run_id,
+            proposal=submitted,
+            submission=request,
+            next_action=persisted_next_action,
+        )
         now = self._now()
         suffix = self._digest(request.idempotency_key)
         transition = self._transition(
@@ -2303,7 +2654,7 @@ class RunEngine:
             affected_scope=(request.run_id,),
             condition=WorkflowCondition.CONFIRMATION_REQUIRED,
             committed=not result.duplicate,
-            next_action=RunOperation.CONFIRM_RUN_DEFINITION,
+            next_action=persisted_next_action,
             run_id=request.run_id,
             run_state=self._projection(ledger, request.run_id).run_state,
             proposal=submitted,
@@ -2443,13 +2794,34 @@ class RunEngine:
                     ),
                 ),
             )
+        if any(item.material for item in proposal.limitations):
+            return ConfirmRunDefinitionResponse(
+                operation_id=self._read_operation_id(
+                    RunOperation.CONFIRM_RUN_DEFINITION, request.run_id
+                ),
+                ledger_cursor=f"ledger:{len(ledger.events())}",
+                affected_scope=(request.run_id,),
+                condition=WorkflowCondition.RUN_BLOCKED,
+                committed=False,
+                # Confirmation responses are tokenless.  The caller must return
+                # through the scheduler to receive any corrective work token.
+                next_action=RunOperation.CONTINUE_RUN,
+                run_id=request.run_id,
+                run_state=projection.run_state,
+                run_definition=None,
+                error=OperationError(
+                    code="material_ambiguity",
+                    detail="Material proposal discovery or Result-mapping limitations remain.",
+                    recovery=("Resolve the typed proposal limitations before confirmation.",),
+                ),
+            )
         accepted = tuple(item for item in proposal.selections if item.accepted)
         pairings = proposal_pairings(proposal)
         selected_pairings = tuple(item for item in pairings if item.disposition == "selected")
         result_ids_for_scope = self._effective_proposal_result_ids(proposal)
         trial_ids = (
             tuple(dict.fromkeys(item.trial_id for item in selected_pairings))
-            if proposal.outcome_targets
+            if proposal.outcome_targets and selected_pairings
             else proposal.trial_ids
         )
         result_candidates = {item.candidate_id: item for item in proposal.result_candidates}
@@ -2458,6 +2830,80 @@ class RunEngine:
             for item in accepted
             if item.result_candidate_id is not None
         )
+        complete_mapped = tuple(
+            item
+            for item in proposal.result_candidates
+            if (
+                item.mapping_status is ProposalMappingStatus.ACCEPTED
+                and item.identity_completeness is ResultIdentityCompleteness.RESULT_COMPLETE
+                and item.result is not None
+            )
+        )
+        for candidate in complete_mapped:
+            assert candidate.result is not None
+            if candidate.result.effect_of_interest != "assignment":
+                raise ValueError("complete mapped Result has unsupported effect_of_interest")
+            trial = next(
+                item
+                for item in proposal.initialization.trials
+                if item.trial_id == candidate.result.trial_id
+            )
+            page_number = _locator_page(candidate.result.source_locator)
+            endpoint = next(
+                (
+                    item
+                    for item in proposal.reported_endpoint_candidates
+                    if item.candidate_id == candidate.endpoint_candidate_id
+                ),
+                None,
+            )
+            if page_number is None or endpoint is None:
+                raise ValueError(
+                    "complete mapped Result source_locator requires a page and mapped endpoint provenance"
+                )
+            if candidate.source_provenance is None:
+                raise ValueError(
+                    "complete mapped Result requires exact endpoint canonical provenance"
+                )
+            observed_provenance = candidate.source_provenance
+            endpoint_provenance = endpoint.provenance
+            if (
+                observed_provenance.source_id,
+                observed_provenance.parse_id,
+                observed_provenance.artifact_hash,
+                observed_provenance.canonical_unit_id,
+                observed_provenance.page_number,
+                observed_provenance.char_start,
+                observed_provenance.char_end,
+                observed_provenance.locator,
+            ) != (
+                endpoint_provenance.source_id,
+                endpoint_provenance.parse_id,
+                endpoint_provenance.artifact_hash,
+                endpoint_provenance.canonical_unit_id,
+                endpoint_provenance.page_number,
+                endpoint_provenance.char_start,
+                endpoint_provenance.char_end,
+                endpoint_provenance.locator,
+            ):
+                raise ValueError(
+                    "complete mapped Result provenance must bind the exact accepted endpoint canonical unit, page, and span"
+                )
+            if candidate.result.source_locator != endpoint.provenance.locator:
+                raise ValueError(
+                    "complete mapped Result source_locator must exactly bind endpoint canonical provenance"
+                )
+            if not any(
+                self._is_eligible_discovery_source(source)
+                and _locator_binds_source(candidate.result.source_locator, source)
+                and source.source_id == endpoint.provenance.source_id
+                and any(
+                    page.page_number == page_number and page.text.strip()
+                    for page in (_source_pages(source, ledger.artifacts) or ())
+                )
+                for source in trial.inventory.sources
+            ):
+                raise ValueError("complete mapped Result source_locator is not an eligible readable source")
         if any(
             item.status != "resolved" or item.result_id is None for item in selected_candidate_items
         ):
@@ -2478,6 +2924,79 @@ class RunEngine:
                     detail="The selected Result candidate does not identify an exact ResultSpec.",
                     recovery=("Submit an exact Trial-specific Result mapping for the candidate.",),
                 ),
+            )
+        promoted_target_ids = {
+            item.target.target_id
+            for batch in proposal.promotion_batches
+            for item in batch.outcome_targets
+        }
+        if promoted_target_ids:
+            unresolved_pairings = tuple(
+                item
+                for item in pairings
+                if item.outcome_target_id in promoted_target_ids and item.disposition == "unresolved"
+            )
+            if unresolved_pairings:
+                return ConfirmRunDefinitionResponse(
+                    operation_id=self._read_operation_id(
+                        RunOperation.CONFIRM_RUN_DEFINITION, request.run_id
+                    ),
+                    ledger_cursor=f"ledger:{len(ledger.events())}",
+                    affected_scope=(request.run_id,),
+                    condition=WorkflowCondition.RUN_BLOCKED,
+                    committed=False,
+                    # This tokenless response cannot authorize a mapping
+                    # submission.  continue_run will issue the bounded work item.
+                    next_action=RunOperation.CONTINUE_RUN,
+                    run_id=request.run_id,
+                    run_state=projection.run_state,
+                    run_definition=None,
+                    error=OperationError(
+                        code="material_ambiguity",
+                        detail=(
+                            "Every promoted Trial × Outcome target must be mapped, excluded, "
+                            "or removed before confirmation."
+                        ),
+                        recovery=(
+                            "Submit a mapping or an explicit Trial × Outcome disposition ",
+                            "for each promoted Outcome target.",
+                        ),
+                    ),
+                )
+        mapped_specs: list[ResultSpecRevision] = []
+        now = self._now()
+        for candidate in selected_candidate_items:
+            if not (
+                candidate.mapping_status is ProposalMappingStatus.ACCEPTED
+                and candidate.identity_completeness is ResultIdentityCompleteness.RESULT_COMPLETE
+            ):
+                continue
+            if (
+                candidate.result is None
+                or candidate.estimate is None
+                or candidate.provenance_note is None
+                or candidate.mapping_reviewed_by is None
+            ):
+                raise RuntimeError("complete selected mapping lost its reviewer or exact ResultSpec")
+            if self._result_spec_for(ledger, request.run_id, candidate.result.result_id) is not None:
+                continue
+            preimage = {
+                "entity_id": f"result-spec:{candidate.result.result_id.removeprefix('result:')}",
+                "actor": candidate.mapping_reviewed_by.model_dump(mode="json"),
+                "observed_at": now.isoformat(),
+                "result": candidate.result.model_dump(mode="json"),
+                "estimate": candidate.estimate.model_dump(mode="json"),
+                "provenance_note": candidate.provenance_note,
+            }
+            pending = ResultSpecRevision(**preimage, revision_id="revision:result-spec-pending")
+            mapped_specs.append(
+                pending.model_copy(
+                    update={
+                        "revision_id": derive_result_spec_revision_id(
+                            pending.model_dump(mode="json", exclude={"revision_id"})
+                        )
+                    }
+                )
             )
         result_ids = list(result_ids_for_scope)
         # A selected failed Trial without a declared Result is represented by
@@ -2516,7 +3035,6 @@ class RunEngine:
         outcome_target_ids = tuple(
             dict.fromkeys(item.outcome_target_id for item in selected_pairings)
         )
-        now = self._now()
         definition = ConfirmedRunDefinition(
             run_id=request.run_id,
             proposal_id=proposal.proposal_id,
@@ -2552,8 +3070,28 @@ class RunEngine:
             record,
             run_id=request.run_id,
         )
+        registrations = tuple(
+            self._transition(
+                scope=spec.result.result_id,
+                operation="operation:run-register-result",
+                operation_key=(
+                    f"idempotency:register-confirmed-mapped-result-"
+                    f"{self._digest(f'{request.run_id}|{request.idempotency_key}|{spec.result.result_id}')}"
+                ),
+                entity_id=spec.entity_id,
+                revision_id=spec.revision_id,
+                artifact=_ResultDiscoveredRecord(
+                    run_id=request.run_id, result_id=spec.result.result_id, result_spec=spec
+                ),
+                checkpoint=f"checkpoint:result-confirmed-{spec.result.result_id.removeprefix('result:')}",
+                outcome=WorkflowEventOutcome.COMPLETED,
+                observed_at=now,
+            )
+            for spec in mapped_specs
+        )
         lease = self._acquire_lease(ledger, now)
-        result = ledger.commit(transition, lease, now=now)
+        committed = self._commit_transitions(ledger, (*registrations, transition), lease, now=now)
+        result = committed[-1]
         return ConfirmRunDefinitionResponse(
             operation_id=result.operation_id,
             ledger_cursor=f"ledger:{result.sequence}",
@@ -2919,9 +3457,7 @@ class RunEngine:
                 "review requires a current exposed v2 search page", field="page_handles"
             )
         attempts = {attempt.attempt_id: attempt for attempt in persisted.workflow.attempts}
-        exposed_candidate_ids = {
-            edge.candidate_id for edge in persisted.workflow.exposures
-        }
+        exposed_candidate_ids = {edge.candidate_id for edge in persisted.workflow.exposures}
         retained_candidate_ids = {
             revision.candidate_id
             for revision in (*persisted.workflow.triage_revisions, *request.triage_revisions)
@@ -3301,13 +3837,18 @@ class RunEngine:
                     error, RunOperation.SUBMIT_SOURCE_ROLE_REVIEW, ledger
                 )
             )
-        proposal = self._latest_proposal(ledger, request.run_id)
-        # No Trial/Result scope is confirmed yet at this point in the
-        # sequence (#119: this runs before submit_run_proposal), so every
-        # inventory-ready Trial's non-registry sources are in scope.
+        initialization = (
+            self._latest_proposal(ledger, request.run_id).initialization
+            if self._has_durable_proposal(ledger, request.run_id)
+            else self._prepared_initialization(ledger, request.run_id)
+        )
+        # Before confirmation every inventory-ready source is in scope; after
+        # reconciliation the current successor proposal likewise owns the
+        # newly issued Source candidates rather than the historical prepared
+        # inventory.
         issued_sources = {
             source.source_id
-            for trial in proposal.initialization.trials
+            for trial in initialization.trials
             if trial.status == "inventory_ready"
             for source in trial.inventory.sources
             if SourceRole.REGISTRY_CURRENT not in source.roles
@@ -3355,7 +3896,7 @@ class RunEngine:
                 affected_scope=(request.run_id,),
                 condition=WorkflowCondition.RUN_BLOCKED,
                 committed=False,
-                next_action=RunOperation.SUBMIT_SOURCE_ROLE_REVIEW,
+                next_action=RunOperation.CONTINUE_RUN,
                 run_id=request.run_id,
                 run_state=projection.run_state,
                 error=primary.model_copy(update={"violations": tuple(violations)}),
@@ -3401,6 +3942,857 @@ class RunEngine:
             run_id=request.run_id,
             run_state=projection.run_state,
         )
+
+    def submit_proposal_discovery_review(
+        self, request: SubmitProposalDiscoveryReviewRequest
+    ) -> SubmitProposalDiscoveryReviewResponse:
+        """Persist one bounded full-text review; it cannot bind Run identity."""
+
+        # A transport retry necessarily carries a consumed discovery token.
+        # Resolve an exact durable replay before evaluating token freshness so
+        # a lost response never turns a successful source review into STALE.
+        replay_ledger = self._bound_ledger(request.run_id)
+        existing = self._event_for_operation_key(
+            replay_ledger, request.idempotency_key, run_id=request.run_id
+        )
+        if existing is not None:
+            if existing.operation != "operation:submit-proposal-discovery-review":
+                return SubmitProposalDiscoveryReviewResponse(
+                    **self._stale_submission_kwargs(
+                        StaleWorkTokenError(
+                            request.run_id, self._next_work_item(replay_ledger, request.run_id)
+                        ),
+                        RunOperation.SUBMIT_PROPOSAL_DISCOVERY_REVIEW,
+                        replay_ledger,
+                    )
+                )
+            persisted = SubmitProposalDiscoveryReviewRequest.model_validate_json(
+                replay_ledger.artifacts.read(existing.output_revision_hashes[0])
+            )
+            if persisted != request:
+                return SubmitProposalDiscoveryReviewResponse(
+                    **self._stale_submission_kwargs(
+                        StaleWorkTokenError(
+                            request.run_id, self._next_work_item(replay_ledger, request.run_id)
+                        ),
+                        RunOperation.SUBMIT_PROPOSAL_DISCOVERY_REVIEW,
+                        replay_ledger,
+                    )
+                )
+            proposal = next(
+                (
+                    _ProposalSubmittedRecord.model_validate_json(
+                        replay_ledger.artifacts.read(event.output_revision_hashes[0])
+                    ).proposal
+                    for event in self._events_for_run(replay_ledger, request.run_id)
+                    if event.operation == "operation:run-proposal-discovery-reviewed"
+                    and any(
+                        item.receipt_id == request.coverage_receipt.receipt_id
+                        for item in _ProposalSubmittedRecord.model_validate_json(
+                            replay_ledger.artifacts.read(event.output_revision_hashes[0])
+                        ).proposal.proposal_discovery_receipts
+                    )
+                ),
+                None,
+            )
+            return SubmitProposalDiscoveryReviewResponse(
+                operation_id=existing.operation_id,
+                ledger_cursor=f"ledger:{len(replay_ledger.events())}",
+                affected_scope=(request.run_id, request.work_token.trial_id or request.run_id),
+                condition=WorkflowCondition.ACCEPTED,
+                committed=False,
+                next_action=RunOperation.CONTINUE_RUN,
+                run_id=request.run_id,
+                run_state=self._projection(replay_ledger, request.run_id).run_state,
+                proposal=proposal,
+            )
+
+        try:
+            ledger = self._submission_ledger(
+                request.run_id,
+                request.work_token,
+                RunOperation.SUBMIT_PROPOSAL_DISCOVERY_REVIEW,
+                request.idempotency_key,
+            )
+        except StaleWorkTokenError as error:
+            ledger = self._bound_ledger(request.run_id)
+            return SubmitProposalDiscoveryReviewResponse(
+                **self._stale_submission_kwargs(
+                    error, RunOperation.SUBMIT_PROPOSAL_DISCOVERY_REVIEW, ledger
+                )
+            )
+        latest = self._latest_proposal(ledger, request.run_id) if self._has_durable_proposal(ledger, request.run_id) else None
+        initialization = (
+            latest.initialization
+            if latest is not None
+            else self._initialization_with_resolved_source_roles(ledger, request.run_id)
+        )
+        if request.work_token.source_id != request.coverage_receipt.source_id:
+            raise ValueError(
+                "proposal discovery receipt does not match the engine-issued Source scope"
+            )
+        source = self._discovery_source(
+            initialization, request.work_token.trial_id, request.work_token.source_id
+        )
+        if source is None or not self._is_eligible_discovery_source(source):
+            raise ValueError("proposal discovery must review one issued eligible full-text source")
+        receipt = request.coverage_receipt
+        issued_policy = self._proposal_discovery_policy(initialization, receipt.mode)
+        if receipt.discovery_policy_revision != issued_policy.policy_revision:
+            raise ValueError("proposal discovery receipt policy revision was not engine-issued")
+        if receipt.trial_id != request.work_token.trial_id or receipt.source_id != source.source_id:
+            raise ValueError("proposal discovery receipt does not match the issued work scope")
+        if request.work_token.parse_id is not None and receipt.parse_id != request.work_token.parse_id:
+            raise ValueError("proposal discovery receipt does not match the engine-issued Parse scope")
+        if (
+            source.artifact_hash is None
+            or receipt.source_artifact_hash != source.artifact_hash
+            or receipt.parse_id
+            not in {
+                record.parse_id
+                for record in source.parse_records
+                if record.artifact_hash == source.artifact_hash
+            }
+        ):
+            raise ValueError(
+                "proposal discovery receipt must bind the current Source artifact and Parse"
+            )
+        if (receipt.mode == "target_guided") != bool(initialization.manifest.outcome_target_specs):
+            raise ValueError("proposal discovery mode must match the declared-target inventory")
+        required_passes = issued_policy.required_passes
+        if receipt.required_passes != required_passes or receipt.completed_passes != required_passes:
+            raise ValueError(
+                "proposal discovery passes must exactly match the engine-issued coverage policy"
+            )
+        if receipt.structural_passes or receipt.query_passes != required_passes:
+            raise ValueError(
+                "proposal discovery receipt pass classifications must exactly match engine-issued policy"
+            )
+        navigation = self._proposal_discovery_navigation.get(
+            (request.run_id, request.work_token.token)
+        )
+        if navigation is None:
+            navigation = self._durable_proposal_discovery_navigation(
+                ledger, request.run_id, request.work_token
+            )
+            if navigation is not None:
+                self._proposal_discovery_navigation[(request.run_id, request.work_token.token)] = navigation
+        if navigation is None:
+            raise ValueError("proposal discovery receipt requires engine-observed indexed navigation")
+        pass_states = navigation["passes"]
+        if set(pass_states) != set(required_passes) or not all(
+            state["complete"] and state.get("qualifying_search", False)
+            for state in pass_states.values()
+        ):
+            raise ValueError(
+                "proposal discovery receipt requires every engine-issued semantic pass to finish"
+            )
+        observed_continuations = tuple(
+            continuation
+            for pass_name in required_passes
+            for continuation in pass_states[pass_name]["continuations"]
+        )
+        if receipt.traversed_continuations != observed_continuations:
+            raise ValueError("proposal discovery receipt continuations were not engine-observed")
+        observed_units = set().union(
+            *(state["candidate_unit_ids"] for state in pass_states.values())
+        )
+        if not observed_units <= navigation["read_unit_ids"]:
+            raise ValueError("proposal discovery receipt requires reads of all surfaced canonical units")
+        if set(receipt.reviewed_unit_ids) != navigation["read_unit_ids"]:
+            raise ValueError("proposal discovery receipt reviewed units were not engine-observed")
+        candidates = (*request.endpoints, *request.randomizations, *request.arms)
+        candidate_ids = {item.candidate_id for item in candidates}
+        if len(candidate_ids) != len(candidates):
+            raise ValueError("proposal discovery candidate IDs must be unique")
+        issued_candidate_ids: set[Identifier] = set()
+        for event in self._events_for_run(ledger, request.run_id):
+            if event.operation != "operation:submit-proposal-discovery-review":
+                continue
+            payload = self._event_payload(ledger, event)
+            issued_candidate_ids.update(
+                item.get("candidate_id")
+                for field in ("endpoints", "randomizations", "arms")
+                for item in payload.get(field, ())
+                if isinstance(item, dict) and isinstance(item.get("candidate_id"), str)
+            )
+        if candidate_ids.intersection(issued_candidate_ids):
+            raise ValueError("proposal discovery candidate IDs must be globally unique across sources")
+        if set(receipt.candidate_ids) != candidate_ids:
+            raise ValueError("proposal discovery receipt must enumerate every submitted candidate")
+        prior_candidates: dict[Identifier, Any] = {}
+        for event in self._events_for_run(ledger, request.run_id):
+            if event.operation != "operation:submit-proposal-discovery-review":
+                continue
+            payload = self._event_payload(ledger, event)
+            for field in ("endpoints", "randomizations", "arms"):
+                for item in payload.get(field, ()):
+                    if isinstance(item, dict) and isinstance(item.get("candidate_id"), str):
+                        prior_candidates[item["candidate_id"]] = item
+        known_candidates = {
+            **prior_candidates,
+            **{item.candidate_id: item for item in candidates},
+        }
+        for candidate in candidates:
+            if candidate.relationship == "reported":
+                continue
+            for related_candidate_id in candidate.related_candidate_ids:
+                related = known_candidates.get(related_candidate_id)
+                if related is None:
+                    raise ValueError("cross-source candidate relationship references an unknown candidate")
+                related_source_id = (
+                    related.provenance.source_id
+                    if not isinstance(related, dict)
+                    else ((related.get("provenance") or {}).get("source_id"))
+                )
+                if related_source_id == candidate.provenance.source_id:
+                    raise ValueError("cross-source candidate relationship must name another Source")
+        if not candidate_ids and receipt.state not in {"no_candidates", "complete_with_limitations"}:
+            raise ValueError(
+                "empty discovery requires an explicit no-candidates or limited terminal receipt"
+            )
+        if receipt.state == "no_candidates" and (
+            receipt.reviewed_by is None or receipt.reviewed_at is None
+        ):
+            raise ValueError(
+                "empty discovery receipt requires attributable reviewer identity and timestamp"
+            )
+        request_dispositions = {
+            item.candidate_id: item.model_dump(mode="json") for item in request.dispositions
+        }
+        receipt_dispositions = {
+            item.candidate_id: item.model_dump(mode="json")
+            for item in receipt.candidate_dispositions
+        }
+        if len(request_dispositions) != len(request.dispositions) or len(
+            receipt_dispositions
+        ) != len(receipt.candidate_dispositions):
+            raise ValueError("discovery dispositions must contain exactly one entry per candidate")
+        if set(request_dispositions) != candidate_ids:
+            raise ValueError("every surfaced discovery candidate requires one disposition")
+        if request_dispositions != receipt_dispositions:
+            raise ValueError("coverage receipt dispositions must match the reviewed submission")
+        for candidate in candidates:
+            if candidate.trial_id != receipt.trial_id:
+                raise ValueError("reported candidate crosses the issued Trial")
+            provenance = candidate.provenance
+            if provenance.discovery_policy_revision != receipt.discovery_policy_revision:
+                raise ValueError("reported candidate policy revision does not match the issued receipt")
+            if provenance.source_id != source.source_id or provenance.parse_id != receipt.parse_id:
+                raise ValueError(
+                    "reported candidate provenance must bind the reviewed Source and Parse"
+                )
+            if provenance.artifact_hash != receipt.source_artifact_hash:
+                raise ValueError(
+                    "reported candidate provenance must bind the receipt Source artifact"
+                )
+            self._validate_discovery_provenance(provenance, source)
+            if provenance.canonical_unit_id not in navigation["read_unit_ids"]:
+                raise ValueError(
+                    "reported candidate provenance was not read under this WorkToken"
+                )
+        randomizations = {item.candidate_id: item for item in request.randomizations}
+        for randomization in request.randomizations:
+            if randomization.arm_candidate_ids != tuple(
+                arm.candidate_id
+                for arm in request.arms
+                if arm.randomization_candidate_id == randomization.candidate_id
+            ):
+                raise ValueError(
+                    "reported randomization must name its complete linked reported Arms in order"
+                )
+        for arm in request.arms:
+            if arm.randomization_candidate_id not in randomizations:
+                raise ValueError(
+                    "reported Arm cannot be submitted independently of its Randomization"
+                )
+        for endpoint in request.endpoints:
+            if endpoint.randomization_candidate_id is not None:
+                randomization = randomizations.get(endpoint.randomization_candidate_id)
+                if (
+                    randomization is None
+                    or endpoint.experimental_arm_candidate_id not in randomization.arm_candidate_ids
+                    or endpoint.comparator_arm_candidate_id not in randomization.arm_candidate_ids
+                ):
+                    raise ValueError(
+                        "reported endpoint comparison must use Arms from its one Randomization"
+                    )
+        next_proposal: RunProposal | None = None
+        refreshed = initialization
+        now = self._now()
+        transitions = [
+            self._submission_transition(
+                run_id=request.run_id,
+                scope=request.work_token.trial_id or request.run_id,
+                operation="operation:submit-proposal-discovery-review",
+                operation_key=request.idempotency_key,
+                artifact=request,
+                checkpoint="checkpoint:proposal-discovery-review",
+                observed_at=now,
+            )
+        ]
+        if self._initialization_discovery_complete(
+            refreshed, ledger, request.run_id, pending_receipt=request.coverage_receipt
+        ):
+            next_proposal = self._proposal_from_discovery(
+                refreshed, ledger, request.run_id, pending_request=request
+            )
+            suffix = self._digest(f"{request.run_id}|discovery|{next_proposal.proposal_token}")
+            transition = self._transition(
+                scope=request.run_id,
+                operation="operation:run-proposal-discovery-reviewed",
+                operation_key=f"idempotency:proposal-discovery-{suffix}",
+                entity_id=f"run-proposal-discovery:{suffix}",
+                revision_id=f"revision:run-proposal-discovery-{suffix}",
+                artifact=_ProposalSubmittedRecord(run_id=request.run_id, proposal=next_proposal),
+                checkpoint="checkpoint:run-proposal-discovery-reviewed",
+                outcome=WorkflowEventOutcome.WORK_REQUIRED,
+                observed_at=now,
+            )
+            transitions.append(transition)
+        self._validate_idempotent_event(
+            ledger,
+            request.idempotency_key,
+            transitions[0].operation,
+            request,
+            run_id=request.run_id,
+        )
+        committed = self._commit_transitions(
+            ledger, tuple(transitions), self._acquire_lease(ledger, now), now=now
+        )
+        result = committed[0]
+        self._run_event_cache.pop((ledger.path.resolve(), request.run_id), None)
+        projection = self._projection(ledger, request.run_id)
+        return SubmitProposalDiscoveryReviewResponse(
+            operation_id=result.operation_id,
+            ledger_cursor=f"ledger:{len(ledger.events())}",
+            affected_scope=(request.run_id, request.work_token.trial_id or request.run_id),
+            condition=WorkflowCondition.ACCEPTED,
+            committed=True,
+            next_action=RunOperation.CONTINUE_RUN,
+            run_id=request.run_id,
+            run_state=projection.run_state,
+            proposal=next_proposal,
+        )
+
+    def submit_result_mapping_review(
+        self, request: SubmitResultMappingReviewRequest
+    ) -> SubmitResultMappingReviewResponse:
+        # A lost response is retried with a token that has necessarily been
+        # consumed by the first commit.  Replay the exact durable successor
+        # before applying the ordinary stale-work guard.
+        replay_ledger = self._bound_ledger(request.run_id)
+        existing = self._event_for_operation_key(
+            replay_ledger, request.idempotency_key, run_id=request.run_id
+        )
+        if existing is not None:
+            if existing.operation != "operation:submit-result-mapping-review":
+                return SubmitResultMappingReviewResponse(
+                    **self._stale_submission_kwargs(
+                        StaleWorkTokenError(
+                            request.run_id, self._next_work_item(replay_ledger, request.run_id)
+                        ),
+                        RunOperation.SUBMIT_RESULT_MAPPING_REVIEW,
+                        replay_ledger,
+                    )
+                )
+            persisted = SubmitResultMappingReviewRequest.model_validate_json(
+                replay_ledger.artifacts.read(existing.output_revision_hashes[0])
+            )
+            if persisted != request:
+                return SubmitResultMappingReviewResponse(
+                    **self._stale_submission_kwargs(
+                        StaleWorkTokenError(
+                            request.run_id, self._next_work_item(replay_ledger, request.run_id)
+                        ),
+                        RunOperation.SUBMIT_RESULT_MAPPING_REVIEW,
+                        replay_ledger,
+                    )
+                )
+            successor_event = self._event_for_operation_key(
+                replay_ledger, f"{request.idempotency_key}:proposal", run_id=request.run_id
+            )
+            if successor_event is None:
+                raise RuntimeError("Result mapping successor disappeared during replay")
+            successor = _ProposalSubmittedRecord.model_validate_json(
+                replay_ledger.artifacts.read(successor_event.output_revision_hashes[0])
+            ).proposal
+            return SubmitResultMappingReviewResponse(
+                operation_id=existing.operation_id,
+                ledger_cursor=f"ledger:{len(replay_ledger.events())}",
+                affected_scope=(request.run_id,),
+                condition=WorkflowCondition.ACCEPTED,
+                committed=False,
+                next_action=RunOperation.CONTINUE_RUN,
+                run_id=request.run_id,
+                run_state=self._projection(replay_ledger, request.run_id).run_state,
+                proposal=successor,
+            )
+        try:
+            ledger = self._submission_ledger(
+                request.run_id,
+                request.work_token,
+                RunOperation.SUBMIT_RESULT_MAPPING_REVIEW,
+                request.idempotency_key,
+            )
+        except StaleWorkTokenError as error:
+            ledger = self._bound_ledger(request.run_id)
+            return SubmitResultMappingReviewResponse(
+                **self._stale_submission_kwargs(
+                    error, RunOperation.SUBMIT_RESULT_MAPPING_REVIEW, ledger
+                )
+            )
+        proposal = self._latest_proposal(ledger, request.run_id)
+        if request.proposal_token != proposal.proposal_token:
+            return SubmitResultMappingReviewResponse(
+                operation_id=self._read_operation_id(
+                    RunOperation.SUBMIT_RESULT_MAPPING_REVIEW, request.run_id
+                ),
+                ledger_cursor=f"ledger:{len(ledger.events())}",
+                affected_scope=(request.run_id,),
+                condition=WorkflowCondition.STALE,
+                committed=False,
+                next_action=RunOperation.CONTINUE_RUN,
+                run_id=request.run_id,
+                run_state=self._projection(ledger, request.run_id).run_state,
+                proposal=proposal,
+                error=OperationError(
+                    code="stale_proposal",
+                    detail="A newer Run proposal has superseded this mapping proposal token.",
+                    recovery=("Discard the stale token and request the current mapping work.",),
+                ),
+            )
+        endpoints = {item.candidate_id: item for item in proposal.reported_endpoint_candidates}
+        randomizations = {
+            item.candidate_id: item for item in proposal.reported_randomization_candidates
+        }
+        arms = {item.candidate_id: item for item in proposal.reported_arm_candidates}
+        randomization_bindings = dict(proposal.randomization_bindings)
+        arm_bindings = dict(proposal.arm_bindings)
+        discovery_dispositions = {
+            disposition.candidate_id: disposition.disposition
+            for receipt in proposal.proposal_discovery_receipts
+            for disposition in receipt.candidate_dispositions
+        }
+        # A mapping review is an iterative proposal revision.  Retain prior
+        # reviewed mappings and replace only the explicitly re-reviewed
+        # candidate IDs; dropping a prior candidate would silently reopen a
+        # mapping that was already attributable and selected.
+        candidates_by_id = {item.candidate_id: item for item in proposal.result_candidates}
+        for mapping in request.mappings:
+            if mapping.outcome_target_id is not None and mapping.outcome_target_id not in {
+                target.target_id for target in proposal.initialization.manifest.outcome_target_specs
+            }:
+                raise ValueError("Result mapping references an unissued Outcome target")
+            endpoint = endpoints.get(mapping.endpoint_candidate_id)
+            randomization = randomizations.get(mapping.randomization_candidate_id)
+            if (
+                endpoint is None
+                or randomization is None
+                or endpoint.trial_id != mapping.trial_id
+                or randomization.trial_id != mapping.trial_id
+            ):
+                raise ValueError(
+                    "Result mapping references unissued endpoint or Randomization candidates"
+                )
+            if any(
+                discovery_dispositions.get(candidate_id) != "accepted"
+                for candidate_id in (
+                    mapping.endpoint_candidate_id,
+                    mapping.randomization_candidate_id,
+                    mapping.experimental_arm_candidate_id,
+                    mapping.comparator_arm_candidate_id,
+                )
+            ):
+                raise ValueError("Result mapping requires accepted reported candidates")
+            if (
+                endpoint.randomization_candidate_id is not None
+                and endpoint.randomization_candidate_id != mapping.randomization_candidate_id
+            ):
+                raise ValueError("Result mapping crosses the reported endpoint Randomization")
+            if endpoint.experimental_arm_candidate_id is not None and (
+                endpoint.experimental_arm_candidate_id,
+                endpoint.comparator_arm_candidate_id,
+            ) != (
+                mapping.experimental_arm_candidate_id,
+                mapping.comparator_arm_candidate_id,
+            ):
+                raise ValueError("Result mapping crosses the reported endpoint comparison")
+            if {mapping.experimental_arm_candidate_id, mapping.comparator_arm_candidate_id} - set(
+                randomization.arm_candidate_ids
+            ):
+                raise ValueError("Result mapping comparison crosses the reported Randomization")
+            if (
+                mapping.experimental_arm_candidate_id not in arms
+                or mapping.comparator_arm_candidate_id not in arms
+            ):
+                raise ValueError("Result mapping references unissued reported Arms")
+            if mapping.randomization_candidate_id not in randomization_bindings or (
+                mapping.experimental_arm_candidate_id not in arm_bindings
+                or mapping.comparator_arm_candidate_id not in arm_bindings
+            ):
+                raise ValueError("Result mapping requires human-promoted Randomization and Arms")
+            if mapping.result is not None and (
+                mapping.result.trial_id != mapping.trial_id
+                or mapping.result.randomization_id
+                != randomization_bindings[mapping.randomization_candidate_id]
+                or mapping.result.comparison.experimental_arm_id
+                != arm_bindings[mapping.experimental_arm_candidate_id]
+                or mapping.result.comparison.comparator_arm_id
+                != arm_bindings[mapping.comparator_arm_candidate_id]
+            ):
+                raise ValueError(
+                    "complete Result mapping must use engine-issued promoted design IDs"
+                )
+            if mapping.result is not None:
+                if mapping.source_provenance is None:
+                    raise ValueError("complete Result mapping requires exact endpoint provenance")
+                endpoint_provenance = endpoint.provenance
+                observed_provenance = mapping.source_provenance
+                if (
+                    observed_provenance.source_id,
+                    observed_provenance.parse_id,
+                    observed_provenance.artifact_hash,
+                    observed_provenance.canonical_unit_id,
+                    observed_provenance.page_number,
+                    observed_provenance.char_start,
+                    observed_provenance.char_end,
+                    observed_provenance.locator,
+                ) != (
+                    endpoint_provenance.source_id,
+                    endpoint_provenance.parse_id,
+                    endpoint_provenance.artifact_hash,
+                    endpoint_provenance.canonical_unit_id,
+                    endpoint_provenance.page_number,
+                    endpoint_provenance.char_start,
+                    endpoint_provenance.char_end,
+                    endpoint_provenance.locator,
+                ) or mapping.result.source_locator != endpoint_provenance.locator:
+                    raise ValueError(
+                        "complete Result mapping must bind the exact accepted endpoint canonical unit, page, and span"
+                    )
+            if mapping.result is not None and mapping.outcome_target_id is not None:
+                target = next(
+                    item
+                    for item in proposal.initialization.manifest.outcome_target_specs
+                    if item.target_id == mapping.outcome_target_id
+                )
+                if target.outcome_construct and (
+                    mapping.result.outcome_construct.casefold()
+                    != target.outcome_construct.casefold()
+                ) and mapping.construct_admissibility != "accepted_synonym":
+                    raise ValueError("complete Result mapping outcome construct conflicts with target")
+                if target.time_point and mapping.result.time_point.casefold() != target.time_point.casefold():
+                    raise ValueError("complete Result mapping time point conflicts with target")
+                if target.accepted_instruments and mapping.result.measurement_instrument not in target.accepted_instruments:
+                    raise ValueError("complete Result mapping instrument is not accepted by target")
+                if target.accepted_effect_measures and mapping.result.effect_measure not in target.accepted_effect_measures:
+                    raise ValueError("complete Result mapping effect measure is not accepted by target")
+                if target.effect_of_interest and mapping.result.effect_of_interest != target.effect_of_interest:
+                    raise ValueError("complete Result mapping effect of interest conflicts with target")
+            complete_mapping = (
+                mapping.mapping_status is ProposalMappingStatus.ACCEPTED
+                and mapping.identity_completeness is ResultIdentityCompleteness.RESULT_COMPLETE
+            )
+            result_id = (
+                mapping.result.result_id
+                if complete_mapping and mapping.result is not None
+                else (
+                    f"result:pending-{self._digest(f'{request.run_id}|{mapping.candidate_id}')}"
+                    if mapping.mapping_status is ProposalMappingStatus.PROPOSED
+                    else None
+                )
+            )
+            candidates_by_id[mapping.candidate_id] = (
+                ResultCandidate(
+                    candidate_id=mapping.candidate_id,
+                    trial_id=mapping.trial_id,
+                    outcome_target_id=mapping.outcome_target_id,
+                    result_id=result_id,
+                    label=mapping.label,
+                    source_locator=(
+                        mapping.result.source_locator
+                        if mapping.result
+                        else endpoint.provenance.locator
+                    ),
+                    status="resolved"
+                    if complete_mapping
+                    else "needs_input",
+                    mapping_status=mapping.mapping_status,
+                    identity_completeness=mapping.identity_completeness,
+                    endpoint_candidate_id=mapping.endpoint_candidate_id,
+                    randomization_candidate_id=mapping.randomization_candidate_id,
+                    experimental_arm_candidate_id=mapping.experimental_arm_candidate_id,
+                    comparator_arm_candidate_id=mapping.comparator_arm_candidate_id,
+                    result=mapping.result,
+                    estimate=mapping.estimate,
+                    provenance_note=mapping.provenance_note,
+                    source_provenance=mapping.source_provenance,
+                    mapping_reviewed_by=mapping.reviewed_by,
+                )
+            )
+        candidates = list(candidates_by_id.values())
+        limitations = tuple(
+            item
+            for item in proposal.limitations
+            if item.kind is not ProposalLimitationKind.RESULT_MAPPING_INCOMPLETE
+        )
+        if any(
+            item.mapping_status is not ProposalMappingStatus.ACCEPTED
+            or item.identity_completeness is not ResultIdentityCompleteness.RESULT_COMPLETE
+            for item in candidates
+        ):
+            limitations += (
+                ProposalLimitation(
+                    kind=ProposalLimitationKind.RESULT_MAPPING_INCOMPLETE,
+                    scope=request.run_id,
+                    # A promoted but incomplete mapping is deliberately
+                    # routed to the existing structured Result-resolution
+                    # checkpoint after the human selects its Result identity.
+                    # It is visible in the proposal but not a reason to
+                    # suppress that durable correction path.
+                    material=False,
+                    detail="One or more reviewed Result mappings remain structurally incomplete.",
+                    recovery_actions=("Complete the issued Result mapping review.",),
+                    candidate_ids=tuple(
+                        item.candidate_id
+                        for item in candidates
+                        if item.mapping_status is not ProposalMappingStatus.ACCEPTED
+                        or item.identity_completeness
+                        is not ResultIdentityCompleteness.RESULT_COMPLETE
+                    ),
+                ),
+            )
+        now = self._now()
+        # A complete mapping is still an unconfirmed candidate Run meaning.
+        # ResultSpec revisions are only materialized atomically with human
+        # confirmation, never while an agent is revising a proposal.
+        result_specs = list(proposal.initialization.result_specs)
+        initialization = proposal.initialization.model_copy(
+            update={"result_specs": tuple(result_specs), "result_candidates": tuple(candidates)}
+        )
+        result_ids = list(proposal.result_ids)
+        for candidate in candidates:
+            if candidate.result_id is not None and candidate.result_id not in result_ids:
+                result_ids.append(candidate.result_id)
+        successor = proposal.model_copy(
+            update={
+                "initialization": initialization,
+                "result_ids": tuple(result_ids),
+                "result_candidates": tuple(candidates),
+                "limitations": limitations,
+                "supersedes_proposal_id": proposal.proposal_id,
+            }
+        )
+        successor = successor.model_copy(
+            update={"semantic_diff": semantic_diff(proposal, successor)}
+        )
+        successor = self._freeze_submitted_proposal(successor)
+        transition = self._transition(
+            scope=request.run_id,
+            operation="operation:run-result-mapping-reviewed",
+            operation_key=f"{request.idempotency_key}:proposal",
+            entity_id=f"run-result-mapping:{self._digest(request.idempotency_key)}",
+            revision_id=f"revision:run-result-mapping-{self._digest(request.idempotency_key)}",
+            artifact=_ProposalSubmittedRecord(run_id=request.run_id, proposal=successor),
+            checkpoint="checkpoint:run-result-mapping-reviewed",
+            outcome=WorkflowEventOutcome.WORK_REQUIRED,
+            observed_at=now,
+        )
+        submission_transition = self._submission_transition(
+            run_id=request.run_id,
+            scope=request.run_id,
+            operation="operation:submit-result-mapping-review",
+            operation_key=request.idempotency_key,
+            artifact=request,
+            checkpoint="checkpoint:result-mapping-review",
+            observed_at=now,
+        )
+        self._validate_idempotent_event(
+            ledger,
+            request.idempotency_key,
+            submission_transition.operation,
+            request,
+            run_id=request.run_id,
+        )
+        committed = self._commit_transitions(
+            ledger,
+            (submission_transition, transition),
+            self._acquire_lease(ledger, now),
+            now=now,
+        )
+        result = committed[0]
+        return SubmitResultMappingReviewResponse(
+            operation_id=result.operation_id,
+            ledger_cursor=f"ledger:{len(ledger.events())}",
+            affected_scope=(request.run_id,),
+            condition=WorkflowCondition.ACCEPTED,
+            committed=True,
+            next_action=RunOperation.CONTINUE_RUN,
+            run_id=request.run_id,
+            run_state=self._projection(ledger, request.run_id).run_state,
+            proposal=successor,
+        )
+
+    def _apply_proposal_promotions(
+        self, proposal: RunProposal, batch: ProposalPromotionBatchInput
+    ) -> RunProposal:
+        """Bind human-approved design observations to engine-issued stable IDs."""
+
+        randomizations = {
+            item.candidate_id: item for item in proposal.reported_randomization_candidates
+        }
+        arms = {item.candidate_id: item for item in proposal.reported_arm_candidates}
+        randomization_bindings = dict(proposal.randomization_bindings)
+        arm_bindings = dict(proposal.arm_bindings)
+        endpoints = {item.candidate_id: item for item in proposal.reported_endpoint_candidates}
+        endpoint_ids = set(endpoints)
+        dispositions = {
+            disposition.candidate_id: disposition.disposition
+            for receipt in proposal.proposal_discovery_receipts
+            for disposition in receipt.candidate_dispositions
+        }
+        for promotion in batch.outcome_targets:
+            if not set(promotion.endpoint_candidate_ids) <= endpoint_ids:
+                raise ValueError("Outcome target promotion requires issued endpoint provenance seeds")
+            if any(dispositions.get(candidate_id) != "accepted" for candidate_id in promotion.endpoint_candidate_ids):
+                raise ValueError("Outcome target promotion requires accepted endpoint provenance seeds")
+        for promotion in batch.randomizations:
+            randomization = randomizations.get(promotion.randomization_candidate_id)
+            if randomization is None:
+                raise ValueError("human promotion references an unissued reported Randomization")
+            if dispositions.get(randomization.candidate_id) != "accepted":
+                raise ValueError("human promotion requires accepted reported Randomization")
+            if set(promotion.arm_candidate_ids) != set(randomization.arm_candidate_ids):
+                raise ValueError(
+                    "Randomization promotion must atomically promote its complete Arm set"
+                )
+            randomization_id = randomization_bindings.get(randomization.candidate_id)
+            if randomization_id is None:
+                randomization_id = f"randomization:{self._digest(f'{proposal.run_id}|{randomization.candidate_id}')}"
+                randomization_bindings[randomization.candidate_id] = randomization_id
+            for arm_candidate_id in randomization.arm_candidate_ids:
+                arm = arms.get(arm_candidate_id)
+                if arm is None or arm.randomization_candidate_id != randomization.candidate_id:
+                    raise ValueError("promoted Arm must belong to its promoted Randomization")
+                if dispositions.get(arm.candidate_id) != "accepted":
+                    raise ValueError("human promotion requires accepted reported Arms")
+                arm_bindings.setdefault(
+                    arm_candidate_id,
+                    f"arm:{self._digest(f'{proposal.run_id}|{randomization.candidate_id}|{arm_candidate_id}')}",
+                )
+        for promotion in batch.outcome_targets:
+            for endpoint_candidate_id in promotion.endpoint_candidate_ids:
+                endpoint = endpoints[endpoint_candidate_id]
+                design_candidate_ids = (
+                    endpoint.randomization_candidate_id,
+                    endpoint.experimental_arm_candidate_id,
+                    endpoint.comparator_arm_candidate_id,
+                )
+                if any(item is None for item in design_candidate_ids):
+                    if (
+                        promotion.admissibility_rule == "design_undiscovered"
+                        and not randomizations
+                    ):
+                        continue
+                    raise ValueError(
+                        "Outcome target promotion requires an accepted promoted Randomization and ordered Arms"
+                    )
+                randomization_candidate_id, experimental_arm_id, comparator_arm_id = (
+                    cast(Identifier, item) for item in design_candidate_ids
+                )
+                if (
+                    randomization_candidate_id not in randomization_bindings
+                    or experimental_arm_id not in arm_bindings
+                    or comparator_arm_id not in arm_bindings
+                ):
+                    if (
+                        promotion.admissibility_rule == "design_undiscovered"
+                        and not randomizations
+                    ):
+                        continue
+                    raise ValueError(
+                        "Outcome target promotion must atomically include its accepted Randomization and ordered Arms"
+                    )
+        targets = list(proposal.initialization.manifest.outcome_target_specs)
+        known_targets = {target.target_id: target for target in targets}
+        for promotion in batch.outcome_targets:
+            existing_target = known_targets.get(promotion.target.target_id)
+            if existing_target is None:
+                targets.append(promotion.target)
+                known_targets[promotion.target.target_id] = promotion.target
+            elif existing_target != promotion.target:
+                raise ValueError("Outcome target promotion conflicts with the issued target meaning")
+        manifest = proposal.initialization.manifest.model_copy(
+            update={
+                "outcome_target_specs": tuple(targets),
+                "outcome_targets": tuple(target.target_id for target in targets),
+            }
+        )
+        initialization = proposal.initialization.model_copy(update={"manifest": manifest})
+        limitations = (
+            tuple(
+                limitation
+                for limitation in proposal.limitations
+                if limitation.kind is not ProposalLimitationKind.NO_OUTCOME_TARGETS
+            )
+            if targets
+            else proposal.limitations
+        )
+        design_recovery_identities = {
+            (
+                endpoints[endpoint_candidate_id].provenance.source_id,
+                endpoints[endpoint_candidate_id].provenance.artifact_hash,
+                endpoints[endpoint_candidate_id].provenance.parse_id,
+            )
+            for promotion in batch.outcome_targets
+            if promotion.admissibility_rule == "design_undiscovered"
+            for endpoint_candidate_id in promotion.endpoint_candidate_ids
+        }
+        if design_recovery_identities:
+            limitations = tuple(
+                limitation
+                for limitation in limitations
+                if not (
+                    limitation.kind is ProposalLimitationKind.DISCOVERY_LIMITED
+                    and limitation.detail
+                    == "Reported Trial design remains undiscovered for a promoted endpoint."
+                )
+            ) + tuple(
+                ProposalLimitation(
+                    kind=ProposalLimitationKind.DISCOVERY_LIMITED,
+                    scope=source_id,
+                    material=True,
+                    detail="Reported Trial design remains undiscovered for a promoted endpoint.",
+                    recovery_actions=(
+                        "Complete the issued corrective discovery review for Trial design.",
+                    ),
+                    source_id=source_id,
+                    source_artifact_hash=artifact_hash,
+                    parse_id=parse_id,
+                )
+                for source_id, artifact_hash, parse_id in sorted(design_recovery_identities)
+            )
+        promotion_batches = proposal.promotion_batches
+        if batch not in promotion_batches:
+            promotion_batches = (*promotion_batches, batch)
+        return proposal.model_copy(
+            update={
+                "initialization": initialization,
+                "randomization_bindings": tuple(sorted(randomization_bindings.items())),
+                "arm_bindings": tuple(sorted(arm_bindings.items())),
+                "promotion_batches": promotion_batches,
+                "limitations": limitations,
+            }
+        )
+
+    @staticmethod
+    def _proposal_contains_promotions(
+        proposal: RunProposal, promotions: ProposalPromotionBatchInput
+    ) -> bool:
+        """Check replay identity against the attributable durable promotion batch."""
+
+        return promotions in proposal.promotion_batches
 
     def submit_result_resolution(
         self, request: SubmitResultResolutionRequest
@@ -6017,7 +7409,7 @@ class RunEngine:
 
     def _refresh_registry_candidates(
         self,
-        proposal: RunProposal,
+        proposal: RunProposal | None,
         selections: tuple[RunProposalSelection, ...],
         *,
         authorized: bool,
@@ -8466,10 +9858,21 @@ class RunEngine:
             raise VisualAssetMaterializationError(
                 "visual citation assets require a resolved Result and prepared source inventory"
             )
+        # Prepared-run records are proposal-free after #120.  Accept the
+        # proposal-backed shape as well while reading older persisted records
+        # and lightweight integrations that expose the same inventory.
+        initialization = getattr(prepared, "initialization", None)
+        if initialization is None:
+            proposal = getattr(prepared, "proposal", None)
+            initialization = getattr(proposal, "initialization", None)
+        if initialization is None:
+            raise VisualAssetMaterializationError(
+                "visual citation assets require prepared source inventory"
+            )
         trial = next(
             (
                 item
-                for item in prepared.proposal.initialization.trials
+                for item in initialization.trials
                 if item.trial_id == result_spec.result.trial_id
             ),
             None,
@@ -9147,7 +10550,13 @@ class RunEngine:
         # trust any role), so it alone also accepts AWAITING_CONFIRMATION.
         allowed_states = (
             {RunState.AWAITING_CONFIRMATION, RunState.ASSESSING}
-            if expected_operation is RunOperation.SUBMIT_SOURCE_ROLE_REVIEW
+            if expected_operation
+            in {
+                RunOperation.SUBMIT_SOURCE_ROLE_REVIEW,
+                RunOperation.SUBMIT_PROPOSAL_DISCOVERY_REVIEW,
+                RunOperation.SUBMIT_RESULT_MAPPING_REVIEW,
+                RunOperation.SUBMIT_RESULT_RESOLUTION,
+            }
             else {RunState.ASSESSING}
         )
         if work_token.run_id != run_id or work_token.operation is not expected_operation:
@@ -9236,16 +10645,13 @@ class RunEngine:
         idempotency_validated: bool = False,
     ) -> CommitResult:
         now = observed_at or self._now()
-        suffix = self._digest(f"{run_id}|{operation_key}")
-        transition = self._transition(
+        transition = self._submission_transition(
+            run_id=run_id,
             scope=scope,
             operation=operation,
             operation_key=operation_key,
-            entity_id=f"run-submission:{suffix}",
-            revision_id=f"revision:run-submission-{suffix}",
             artifact=artifact,
             checkpoint=checkpoint,
-            outcome=WorkflowEventOutcome.COMPLETED,
             observed_at=now,
         )
         if not idempotency_validated:
@@ -9258,6 +10664,30 @@ class RunEngine:
             )
         lease = self._acquire_lease(ledger, now)
         return ledger.commit(transition, lease, now=now)
+
+    def _submission_transition(
+        self,
+        *,
+        run_id: Identifier,
+        scope: Identifier,
+        operation: Identifier,
+        operation_key: Identifier,
+        artifact: FrozenModel,
+        checkpoint: Identifier,
+        observed_at: datetime,
+    ) -> Transition:
+        suffix = self._digest(f"{run_id}|{operation_key}")
+        return self._transition(
+            scope=scope,
+            operation=operation,
+            operation_key=operation_key,
+            entity_id=f"run-submission:{suffix}",
+            revision_id=f"revision:run-submission-{suffix}",
+            artifact=artifact,
+            checkpoint=checkpoint,
+            outcome=WorkflowEventOutcome.COMPLETED,
+            observed_at=observed_at,
+        )
 
     @staticmethod
     def _event_for_operation_key(
@@ -9587,10 +11017,25 @@ class RunEngine:
                 ):
                     continue
                 continue
+            selected_candidate = (
+                issued_result_candidates.get(selection.result_candidate_id)
+                if selection.result_candidate_id is not None
+                else None
+            )
+            candidate_supplies_exact_result = (
+                selected_candidate is not None
+                and selected_candidate.status == "resolved"
+                and selected_candidate.mapping_status is ProposalMappingStatus.ACCEPTED
+                and selected_candidate.identity_completeness
+                is ResultIdentityCompleteness.RESULT_COMPLETE
+                and selected_candidate.result is not None
+                and selected_candidate.estimate is not None
+                and selected_candidate.result_id == selection.result_id
+            )
             if issued_results.get(selection.result_id) != selection.trial_id and not (
-                selection.result_candidate_id is not None
-                and issued_result_candidates[selection.result_candidate_id].status == "needs_input"
-            ):
+                selected_candidate is not None
+                and selected_candidate.status == "needs_input"
+            ) and not candidate_supplies_exact_result:
                 raise ValueError("Run proposal Result was not issued for the selected Trial")
             if (
                 selection.result_candidate_id is not None
@@ -9867,15 +11312,229 @@ class RunEngine:
             # Source-role review must resolve before submit_run_proposal can
             # trust any role (#119) — no Trial selection is confirmed yet at
             # this point, so every inventory-ready Trial is in scope.
-            proposal = self._latest_proposal(ledger, run_id)
+            initialization = self._prepared_initialization(ledger, run_id)
             events = self._events_for_run(ledger, run_id)
             if any(
-                trial.status == "inventory_ready" for trial in proposal.initialization.trials
+                trial.status == "inventory_ready" for trial in initialization.trials
             ) and not self._source_role_review_complete(
-                proposal, ledger, events, selected_trial_ids=None
+                initialization, ledger, events, selected_trial_ids=None
             ):
                 return self._work_item(
                     run_id, "source-roles", RunOperation.SUBMIT_SOURCE_ROLE_REVIEW
+                )
+            initialization = self._initialization_with_resolved_source_roles(ledger, run_id)
+            if not self._initialization_discovery_complete(initialization, ledger, run_id):
+                reviewed = {
+                    (
+                        (item.get("coverage_receipt") or {}).get("source_id"),
+                        (item.get("coverage_receipt") or {}).get("source_artifact_hash"),
+                        (item.get("coverage_receipt") or {}).get("parse_id"),
+                    )
+                    for event in events
+                    if event.operation == "operation:submit-proposal-discovery-review"
+                    for item in (self._event_payload(ledger, event),)
+                }
+                for trial in initialization.trials:
+                    if trial.status != "inventory_ready":
+                        continue
+                    for source in trial.inventory.sources:
+                        if not self._is_eligible_discovery_source(source):
+                            continue
+                        for parse in source.parse_records:
+                            if (
+                                source.artifact_hash is None
+                                or parse.artifact_hash != source.artifact_hash
+                                or (source.source_id, source.artifact_hash, parse.parse_id)
+                                in reviewed
+                            ):
+                                continue
+                            return self._work_item(
+                                run_id,
+                                (
+                                    f"proposal-discovery:{trial.trial_id}|{source.source_id}"
+                                    f"|{parse.parse_id}"
+                                ),
+                                RunOperation.SUBMIT_PROPOSAL_DISCOVERY_REVIEW,
+                                trial_id=trial.trial_id,
+                                source_id=source.source_id,
+                                parse_id=parse.parse_id,
+                            )
+            if self._has_durable_proposal(ledger, run_id):
+                proposal = self._latest_proposal(ledger, run_id)
+            else:
+                proposal = None
+            if proposal is not None:
+                corrective_identities = {
+                    (
+                        limitation.source_id,
+                        limitation.source_artifact_hash,
+                        limitation.parse_id,
+                    )
+                    for limitation in proposal.limitations
+                    if limitation.material
+                    and limitation.kind
+                    in {
+                        ProposalLimitationKind.DISCOVERY_FAILED,
+                        ProposalLimitationKind.DISCOVERY_LIMITED,
+                    }
+                    and limitation.source_id is not None
+                }
+                corrective_sources = {
+                    limitation.scope
+                    for limitation in proposal.limitations
+                    if limitation.material
+                    and limitation.kind
+                    in {
+                        ProposalLimitationKind.DISCOVERY_FAILED,
+                        ProposalLimitationKind.DISCOVERY_LIMITED,
+                    }
+                    and limitation.source_id is None
+                    and limitation.scope != run_id
+                }
+                candidate_identities = {
+                    item.candidate_id: (
+                        item.provenance.source_id,
+                        item.provenance.artifact_hash,
+                        item.provenance.parse_id,
+                    )
+                    for item in (
+                        *proposal.reported_endpoint_candidates,
+                        *proposal.reported_randomization_candidates,
+                        *proposal.reported_arm_candidates,
+                    )
+                }
+                receipt_identities = {
+                    receipt.receipt_id: (
+                        receipt.source_id,
+                        receipt.source_artifact_hash,
+                        receipt.parse_id,
+                    )
+                    for receipt in proposal.proposal_discovery_receipts
+                }
+                for limitation in proposal.limitations:
+                    if (
+                        not limitation.material
+                        or limitation.kind
+                        not in {
+                            ProposalLimitationKind.DISCOVERY_FAILED,
+                            ProposalLimitationKind.DISCOVERY_LIMITED,
+                        }
+                        or limitation.scope != run_id
+                        or limitation.source_id is not None
+                    ):
+                        continue
+                    corrective_identities.update(
+                        candidate_identities[candidate_id]
+                        for candidate_id in limitation.candidate_ids
+                        if candidate_id in candidate_identities
+                    )
+                    corrective_identities.update(
+                        receipt_identities[receipt_id]
+                        for receipt_id in limitation.receipt_ids
+                        if receipt_id in receipt_identities
+                    )
+                if not corrective_sources and not corrective_identities and any(
+                    limitation.material
+                    and limitation.kind
+                    in {
+                        ProposalLimitationKind.DISCOVERY_FAILED,
+                        ProposalLimitationKind.DISCOVERY_LIMITED,
+                    }
+                    and limitation.scope == run_id
+                    for limitation in proposal.limitations
+                ):
+                    corrective_sources.update(
+                        source.source_id
+                        for trial in proposal.initialization.trials
+                        for source in trial.inventory.sources
+                        if self._is_eligible_discovery_source(source)
+                    )
+                for trial in proposal.initialization.trials:
+                    for source in trial.inventory.sources:
+                        for parse in source.parse_records:
+                            identity = (source.source_id, source.artifact_hash, parse.parse_id)
+                            if (
+                                identity not in corrective_identities
+                                and source.source_id not in corrective_sources
+                            ):
+                                continue
+                            return self._work_item(
+                                run_id,
+                                (
+                                    "proposal-discovery-correction:"
+                                    f"{proposal.proposal_token}:{source.source_id}:{parse.parse_id}"
+                                ),
+                                RunOperation.SUBMIT_PROPOSAL_DISCOVERY_REVIEW,
+                                trial_id=trial.trial_id,
+                                source_id=source.source_id,
+                                parse_id=parse.parse_id,
+                            )
+            partial_mapping = next(
+                (
+                    candidate
+                    for candidate in (proposal.result_candidates if proposal else ())
+                    if (
+                        candidate.mapping_status is ProposalMappingStatus.PROPOSED
+                        and candidate.identity_completeness
+                        is ResultIdentityCompleteness.ANALYSIS_PARTIAL
+                        and candidate.result_id is not None
+                    )
+                ),
+                None,
+            )
+            if partial_mapping is not None and not self._has_result_resolution(
+                events, partial_mapping.result_id
+            ):
+                return self._work_item(
+                    run_id,
+                    f"result-resolution:{proposal.proposal_token}:{partial_mapping.result_id}",
+                    RunOperation.SUBMIT_RESULT_RESOLUTION,
+                    result_id=partial_mapping.result_id,
+                    trial_id=partial_mapping.trial_id,
+                )
+            if (
+                proposal
+                and proposal.reported_endpoint_candidates
+                and proposal.randomization_bindings
+                and {
+                    item.candidate_id
+                    for item in proposal.reported_endpoint_candidates
+                    if (
+                        item.randomization_candidate_id in dict(proposal.randomization_bindings)
+                        and any(
+                            disposition.candidate_id == item.candidate_id
+                            and disposition.disposition == "accepted"
+                            for receipt in proposal.proposal_discovery_receipts
+                            for disposition in receipt.candidate_dispositions
+                        )
+                    )
+                }
+                - {
+                    item.endpoint_candidate_id
+                    for item in proposal.result_candidates
+                    if (
+                        item.endpoint_candidate_id is not None
+                        and (
+                            (
+                                item.mapping_status is ProposalMappingStatus.ACCEPTED
+                                and item.identity_completeness
+                                is ResultIdentityCompleteness.RESULT_COMPLETE
+                            )
+                            or (
+                                item.mapping_status is ProposalMappingStatus.PROPOSED
+                                and item.identity_completeness
+                                is ResultIdentityCompleteness.ANALYSIS_PARTIAL
+                                and item.result_id is not None
+                                and self._has_result_resolution(events, item.result_id)
+                            )
+                        )
+                    )
+                }
+            ):
+                return self._work_item(
+                    run_id,
+                    f"result-mapping:{proposal.proposal_token}",
+                    RunOperation.SUBMIT_RESULT_MAPPING_REVIEW,
                 )
             return None
         if projection.run_state is not RunState.ASSESSING:
@@ -9945,10 +11604,7 @@ class RunEngine:
             (
                 result_id
                 for result_id in result_ids
-                if not any(
-                    spec.result.result_id == result_id
-                    for spec in proposal.initialization.result_specs
-                )
+                if self._result_spec_for(ledger, run_id, result_id) is None
                 and not self._has_result_resolution(events, result_id)
             ),
             None,
@@ -9999,6 +11655,8 @@ class RunEngine:
         result_id: Identifier | None = None,
         domain_id: Identifier | None = None,
         trial_id: Identifier | None = None,
+        source_id: Identifier | None = None,
+        parse_id: Identifier | None = None,
     ) -> WorkItem:
         digest = self._digest(f"{run_id}|{key}|{operation.value}")
         work_item_id = f"work-item:{digest}"
@@ -10014,6 +11672,8 @@ class RunEngine:
             trial_id=scoped_trial_id,
             result_id=result_id,
             domain_id=domain_id,
+            source_id=source_id,
+            parse_id=parse_id,
         )
         return WorkItem(
             work_item_id=work_item_id,
@@ -10022,6 +11682,8 @@ class RunEngine:
             result_id=result_id,
             domain_id=domain_id,
             trial_id=scoped_trial_id,
+            source_id=source_id,
+            parse_id=parse_id,
             dependency_fingerprint=token.dependency_fingerprint,
         )
 
@@ -10567,7 +12229,7 @@ class RunEngine:
                     revision_id=f"revision:run-contract-reopened-{suffix}",
                     artifact=_RunReopenedRecord(
                         run_id=prepared.run_id,
-                        input_snapshot_hash=prepared.proposal.input_snapshot_hash,
+                        input_snapshot_hash=prepared.input_snapshot_hash,
                         invalidated_result_ids=invalidated_result_ids,
                     ),
                     checkpoint=f"checkpoint:contract-reopened-{suffix}",
@@ -10665,7 +12327,7 @@ class RunEngine:
 
     @staticmethod
     def _source_role_review_complete(
-        proposal: RunProposal,
+        initialization: ProjectInitialization | RunProposal,
         ledger: WorkflowLedger,
         events: tuple[WorkflowEvent, ...],
         *,
@@ -10677,9 +12339,14 @@ class RunEngine:
         used pre-confirmation, before any Trial selection exists yet.
         """
 
+        inventory = (
+            initialization.initialization
+            if isinstance(initialization, RunProposal)
+            else initialization
+        )
         issued_sources = {
             source.source_id
-            for trial in proposal.initialization.trials
+            for trial in inventory.trials
             if trial.status == "inventory_ready"
             and (selected_trial_ids is None or trial.trial_id in selected_trial_ids)
             for source in trial.inventory.sources
@@ -10701,6 +12368,694 @@ class RunEngine:
                     reviewed.add(source_id)
         return issued_sources <= reviewed
 
+    @staticmethod
+    def _is_eligible_discovery_source(source: SourceDescriptor) -> bool:
+        return (
+            source.availability.value == "acquired"
+            and source.processing.value == "usable"
+            and bool(source.parse_records)
+            and any(
+                role in source.roles
+                for role in (
+                    SourceRole.PRIMARY_REPORT,
+                    SourceRole.SECONDARY_REPORT,
+                    SourceRole.CLINICAL_STUDY_REPORT,
+                    SourceRole.REGULATORY_DOCUMENT,
+                )
+            )
+        )
+
+    @staticmethod
+    def _discovery_source(
+        initialization: ProjectInitialization | RunProposal,
+        trial_id: Identifier | None,
+        source_id: Identifier,
+    ) -> SourceDescriptor | None:
+        inventory = (
+            initialization.initialization
+            if isinstance(initialization, RunProposal)
+            else initialization
+        )
+        return next(
+            (
+                source
+                for trial in inventory.trials
+                if trial.trial_id == trial_id
+                for source in trial.inventory.sources
+                if source.source_id == source_id
+            ),
+            None,
+        )
+
+    def _validate_discovery_provenance(
+        self,
+        provenance: ReportedCandidateProvenance,
+        source: SourceDescriptor,
+    ) -> None:
+        """Bind advisory discovery observations to issued canonical source text."""
+
+        if source.artifact_hash is None or provenance.artifact_hash != source.artifact_hash:
+            raise ValueError("reported provenance must bind the issued Source artifact hash")
+        unit = EvidenceSearchIndex(self._required_root() / ".rob2" / "evidence.sqlite3").read_unit(
+            provenance.canonical_unit_id
+        )
+        if (
+            unit.source_id != source.source_id
+            or unit.source_artifact_hash != provenance.artifact_hash
+            or unit.parse_id != provenance.parse_id
+            or unit.page != provenance.page_number
+        ):
+            raise ValueError("reported provenance does not match the issued canonical unit")
+        if provenance.char_end > len(unit.text):
+            raise ValueError("reported provenance span exceeds the issued canonical unit")
+        displayed_hash = (
+            "sha256:"
+            + hashlib.sha256(
+                unit.text[provenance.char_start : provenance.char_end].encode("utf-8")
+            ).hexdigest()
+        )
+        if provenance.displayed_text_hash != displayed_hash:
+            raise ValueError(
+                "reported provenance displayed-text hash does not match the exact span"
+            )
+
+    def _initialization_discovery_complete(
+        self,
+        initialization: ProjectInitialization | RunProposal,
+        ledger: WorkflowLedger,
+        run_id: Identifier,
+        pending_receipt: ProposalDiscoveryCoverageReceipt | None = None,
+    ) -> bool:
+        inventory = (
+            initialization.initialization
+            if isinstance(initialization, RunProposal)
+            else initialization
+        )
+        required = {
+            (trial.trial_id, source.source_id, source.artifact_hash, parse.parse_id)
+            for trial in inventory.trials
+            if trial.status == "inventory_ready"
+            for source in trial.inventory.sources
+            if self._is_eligible_discovery_source(source)
+            and source.artifact_hash is not None
+            for parse in source.parse_records
+            if parse.artifact_hash == source.artifact_hash
+        }
+        completed: set[tuple[Identifier, Identifier, ContentHash, Identifier]] = set()
+        for event in self._events_for_run(ledger, run_id):
+            if event.operation != "operation:submit-proposal-discovery-review":
+                continue
+            payload = self._event_payload(ledger, event)
+            receipt = payload.get("coverage_receipt")
+            if isinstance(receipt, dict) and receipt.get("state") in {
+                "complete",
+                "complete_with_limitations",
+                "failed",
+                "no_candidates",
+            }:
+                trial_id, source_id = receipt.get("trial_id"), receipt.get("source_id")
+                artifact_hash, parse_id = receipt.get("source_artifact_hash"), receipt.get("parse_id")
+                if all(isinstance(item, str) for item in (trial_id, source_id, artifact_hash, parse_id)):
+                    completed.add((trial_id, source_id, artifact_hash, parse_id))
+        if pending_receipt is not None:
+            completed.add(
+                (
+                    pending_receipt.trial_id,
+                    pending_receipt.source_id,
+                    pending_receipt.source_artifact_hash,
+                    pending_receipt.parse_id,
+                )
+            )
+        return required <= completed
+
+    def _proposal_discovery_complete(
+        self, proposal: RunProposal, ledger: WorkflowLedger, run_id: Identifier
+    ) -> bool:
+        return self._initialization_discovery_complete(proposal, ledger, run_id)
+
+    def _persist_proposal_discovery_navigation(
+        self, ledger: WorkflowLedger, run_id: Identifier, token: WorkToken, navigation: dict[str, Any]
+    ) -> None:
+        payload = {
+            "passes": {
+                key: {
+                    "continuations": tuple(value["continuations"]),
+                    "candidate_unit_ids": tuple(sorted(value["candidate_unit_ids"])),
+                    "complete": value["complete"],
+                    "qualifying_search": value.get("qualifying_search", False),
+                }
+                for key, value in navigation["passes"].items()
+            },
+            "read_unit_ids": tuple(sorted(navigation["read_unit_ids"])),
+            "read_continuations": {
+                key: tuple(value) for key, value in navigation["read_continuations"].items()
+            },
+        }
+        record = _ProposalDiscoveryNavigationRecord(run_id=run_id, work_token=token, navigation=payload)
+        digest = canonical_hash(payload).removeprefix("sha256:")
+        revision_digest = self._digest(f"{token.token}|{digest}")
+        operation_key = f"proposal-discovery-navigation:{token.token}:{digest}"
+        existing = self._event_for_operation_key(ledger, operation_key, run_id=run_id)
+        if existing is not None:
+            persisted = _ProposalDiscoveryNavigationRecord.model_validate_json(
+                ledger.artifacts.read(existing.output_revision_hashes[0])
+            )
+            if canonical_hash(persisted.navigation) == canonical_hash(payload):
+                return
+            raise ValueError("navigation snapshot operation key collision")
+        now = self._now()
+        self._commit_transitions(
+            ledger,
+            (
+                self._transition(
+                    scope=run_id,
+                    operation="operation:proposal-discovery-navigation",
+                    operation_key=operation_key,
+                    entity_id=f"proposal-discovery-navigation:{token.token}:{digest}",
+                    revision_id=f"revision:proposal-discovery-navigation:{revision_digest}",
+                    artifact=record,
+                    checkpoint="checkpoint:proposal-discovery-navigation",
+                    outcome=WorkflowEventOutcome.COMPLETED,
+                    observed_at=now,
+                ),
+            ),
+            self._acquire_lease(ledger, now),
+            now=now,
+        )
+
+    def _durable_proposal_discovery_navigation(
+        self, ledger: WorkflowLedger, run_id: Identifier, token: WorkToken
+    ) -> dict[str, Any] | None:
+        for event in reversed(self._events_for_run(ledger, run_id)):
+            if event.operation != "operation:proposal-discovery-navigation":
+                continue
+            record = _ProposalDiscoveryNavigationRecord.model_validate_json(
+                ledger.artifacts.read(event.output_revision_hashes[0])
+            )
+            if record.work_token != token:
+                continue
+            raw = record.navigation
+            return {
+                "passes": {
+                    key: {
+                        "continuations": list(value["continuations"]),
+                        "candidate_unit_ids": set(value["candidate_unit_ids"]),
+                        "complete": value["complete"],
+                        "qualifying_search": value.get("qualifying_search", False),
+                    }
+                    for key, value in raw["passes"].items()
+                },
+                "read_unit_ids": set(raw["read_unit_ids"]),
+                "read_continuations": {
+                    key: tuple(value) for key, value in raw["read_continuations"].items()
+                },
+            }
+        return None
+
+    @staticmethod
+    def _required_discovery_passes(
+        initialization: ProjectInitialization, mode: str
+    ) -> tuple[str, ...]:
+        """Return the fixed pre-confirmation coverage policy, never caller input."""
+
+        if mode == "target_guided":
+            return tuple(
+                f"outcome-target:{target.target_id.removeprefix('outcome-target:')}"
+                for target in initialization.manifest.outcome_target_specs
+            )
+        return ("reported-design", "reported-endpoints")
+
+    @classmethod
+    def _proposal_discovery_policy(
+        cls, initialization: ProjectInitialization, mode: str
+    ) -> ProposalDiscoveryPolicy:
+        """Issue semantic search constraints with the pass labels.
+
+        A coverage receipt therefore attests to an engine-defined search, not
+        merely to a caller repeating an arbitrary no-hit query under each label.
+        """
+
+        required_passes = cls._required_discovery_passes(initialization, mode)
+        if mode == "target_guided":
+            queries = []
+            for target in initialization.manifest.outcome_target_specs:
+                pass_id = f"outcome-target:{target.target_id.removeprefix('outcome-target:')}"
+                target_terms = (
+                    target.target_id.removeprefix("outcome-target:").replace("-", " "),
+                    target.label,
+                    target.outcome_construct,
+                )
+                terms = tuple(
+                    term.casefold()
+                    for text in target_terms
+                    if text is not None
+                    for term in re.findall(r"[a-z0-9]+", text.casefold())
+                    if term
+                )
+                terms = tuple(
+                    dict.fromkeys(
+                        (*terms, "endpoint", "outcome", "mortality", "survival", "death", "progression")
+                    )
+                )
+                queries.append(
+                    ProposalDiscoveryPassQuery(
+                        pass_id=pass_id,
+                        required_any_terms=tuple(dict.fromkeys(terms)),
+                        canonical_query=SearchQuery(any_of=(tuple(dict.fromkeys(terms)),)),
+                    )
+                )
+        else:
+            queries = [
+                ProposalDiscoveryPassQuery(
+                    pass_id="reported-design",
+                    required_any_terms=(
+                        "randomized",
+                        "randomization",
+                        "allocated",
+                        "allocation",
+                        "assigned",
+                    ),
+                    canonical_query=SearchQuery(
+                        any_of=(
+                            ("randomized", "randomised", "allocated", "allocation", "assigned"),
+                        )
+                    ),
+                ),
+                ProposalDiscoveryPassQuery(
+                    pass_id="reported-endpoints",
+                    required_any_terms=("endpoint", "outcome", "primary", "secondary"),
+                    canonical_query=SearchQuery(
+                        any_of=(("endpoint", "outcome", "primary", "secondary"),)
+                    ),
+                ),
+            ]
+        return ProposalDiscoveryPolicy(required_passes=required_passes, pass_queries=tuple(queries))
+
+    def _has_durable_proposal(self, ledger: WorkflowLedger, run_id: Identifier) -> bool:
+        try:
+            self._latest_proposal(ledger, run_id)
+        except ValueError:
+            return False
+        return True
+
+    def _proposal_from_discovery(
+        self,
+        initialization: ProjectInitialization,
+        ledger: WorkflowLedger,
+        run_id: Identifier,
+        pending_request: SubmitProposalDiscoveryReviewRequest | None = None,
+    ) -> RunProposal:
+        """Construct the first durable proposal only after terminal discovery."""
+
+        prior_proposal = self._latest_proposal(ledger, run_id) if self._has_durable_proposal(ledger, run_id) else None
+        proposal = (
+            prior_proposal
+            if prior_proposal is not None
+            else self._proposal(run_id, initialization)
+        ).model_copy(update={"input_snapshot_hash": self._prepared_snapshot_hash(ledger, run_id)})
+        submissions: list[tuple[Any, tuple[Any, ...], tuple[Any, ...], tuple[Any, ...]]] = []
+        for event in self._events_for_run(ledger, run_id):
+            if event.operation != "operation:submit-proposal-discovery-review":
+                continue
+            payload = self._event_payload(ledger, event)
+            receipt = payload.get("coverage_receipt")
+            if receipt is not None:
+                submissions.append(
+                    (
+                        receipt,
+                        tuple(payload.get("endpoints", ())),
+                        tuple(payload.get("randomizations", ())),
+                        tuple(payload.get("arms", ())),
+                    )
+                )
+        if pending_request is not None:
+            submissions.append(
+                (
+                    pending_request.coverage_receipt,
+                    pending_request.endpoints,
+                    pending_request.randomizations,
+                    pending_request.arms,
+                )
+            )
+        # Pydantic validates ledger JSON again here, so malformed historical
+        # artifacts cannot silently become discovery observations.
+        from rob2_kit.domain.results import (
+            ProposalDiscoveryCoverageReceipt,
+            ReportedArmCandidate,
+            ReportedEndpointCandidate,
+            ReportedRandomizationCandidate,
+        )
+
+        receipt_by_source: dict[
+            tuple[Identifier, ContentHash, Identifier],
+            tuple[
+                ProposalDiscoveryCoverageReceipt,
+                tuple[Any, ...],
+                tuple[Any, ...],
+                tuple[Any, ...],
+            ],
+        ] = {}
+        current_source_identities = {
+            (source.source_id, source.artifact_hash, parse.parse_id)
+            for trial in proposal.initialization.trials
+            for source in trial.inventory.sources
+            if source.artifact_hash is not None
+            for parse in source.parse_records
+            if parse.artifact_hash == source.artifact_hash
+        }
+        proposal_events: dict[Identifier, tuple[WorkflowEvent, RunProposal]] = {}
+        for event in self._events_for_run(ledger, run_id):
+            if event.operation not in {
+                "operation:run-proposal-discovery-reviewed",
+                "operation:run-proposal-submitted",
+                "operation:run-result-mapping-reviewed",
+                "operation:run-reconciled",
+            }:
+                continue
+            try:
+                record = (
+                    _RunReconciledRecord.model_validate_json(
+                        ledger.artifacts.read(event.output_revision_hashes[0])
+                    )
+                    if event.operation == "operation:run-reconciled"
+                    else _ProposalSubmittedRecord.model_validate_json(
+                        ledger.artifacts.read(event.output_revision_hashes[0])
+                    )
+                )
+            except (IndexError, ValueError):
+                continue
+            proposal_events[record.proposal.proposal_id] = (event, record.proposal)
+
+        def is_legacy_run_wide(proposal: RunProposal) -> bool:
+            return any(
+                limitation.kind
+                in {
+                    ProposalLimitationKind.DISCOVERY_FAILED,
+                    ProposalLimitationKind.DISCOVERY_LIMITED,
+                }
+                and limitation.scope == run_id
+                and limitation.source_id is None
+                and (
+                    limitation.material
+                    or limitation.detail
+                    == "Legacy run-wide discovery limitation requires corrective review."
+                )
+                for limitation in proposal.limitations
+            )
+
+        # A legacy run-wide limitation applies to every current source identity.
+        # Its completed corrective reviews must survive *all* descendants, not
+        # just the immediately preceding proposal revision.  Walk the immutable
+        # supersession chain to the original limitation and use that event as the
+        # correction marker; receipts before it are ordinary discovery, while all
+        # later receipts are corrective completion evidence for this lineage.
+        legacy_marker_sequence: int | None = None
+        if prior_proposal is not None:
+            lineage: list[tuple[WorkflowEvent, RunProposal]] = []
+            ancestor = prior_proposal
+            visited_proposal_ids: set[Identifier] = set()
+            while ancestor.proposal_id not in visited_proposal_ids:
+                visited_proposal_ids.add(ancestor.proposal_id)
+                entry = proposal_events.get(ancestor.proposal_id)
+                if entry is None:
+                    break
+                lineage.append(entry)
+                if ancestor.supersedes_proposal_id is None:
+                    break
+                predecessor = proposal_events.get(ancestor.supersedes_proposal_id)
+                if predecessor is None:
+                    break
+                ancestor = predecessor[1]
+            markers = [event.sequence for event, item in lineage if is_legacy_run_wide(item)]
+            if markers:
+                legacy_marker_sequence = min(markers)
+        legacy_run_wide = legacy_marker_sequence is not None
+        corrected_identities = {
+            (
+                receipt.source_id,
+                receipt.source_artifact_hash,
+                receipt.parse_id,
+            )
+            for event in self._events_for_run(ledger, run_id)
+            if legacy_marker_sequence is not None and event.sequence > legacy_marker_sequence
+            and event.operation == "operation:submit-proposal-discovery-review"
+            for payload in (self._event_payload(ledger, event),)
+            for raw_receipt in (payload.get("coverage_receipt"),)
+            if isinstance(raw_receipt, dict)
+            for receipt in (ProposalDiscoveryCoverageReceipt.model_validate(raw_receipt),)
+        }
+        if pending_request is not None:
+            corrected_identities.add(
+                (
+                    pending_request.coverage_receipt.source_id,
+                    pending_request.coverage_receipt.source_artifact_hash,
+                    pending_request.coverage_receipt.parse_id,
+                )
+            )
+        for item, endpoints, randomizations, arms in submissions:
+            receipt = ProposalDiscoveryCoverageReceipt.model_validate(item)
+            if (
+                receipt.source_id,
+                receipt.source_artifact_hash,
+                receipt.parse_id,
+            ) not in current_source_identities:
+                # The source changed or was reparsed.  This receipt is
+                # immutable history, not current completion evidence.
+                continue
+            # A later corrective review replaces exactly this source-artifact-
+            # parse inventory; other parses remain independent current evidence.
+            receipt_by_source[
+                (receipt.source_id, receipt.source_artifact_hash, receipt.parse_id)
+            ] = (
+                receipt,
+                endpoints,
+                randomizations,
+                arms,
+            )
+        current_submissions = tuple(receipt_by_source.values())
+        receipt_models = tuple(item[0] for item in current_submissions)
+        current_identities = {
+            (receipt.source_id, receipt.source_artifact_hash, receipt.parse_id)
+            for receipt in receipt_models
+        }
+        endpoint_models = tuple(
+            ReportedEndpointCandidate.model_validate(item)
+            for _, endpoints, _, _ in current_submissions
+            for item in endpoints
+        )
+        randomization_models = tuple(
+            ReportedRandomizationCandidate.model_validate(item)
+            for _, _, randomizations, _ in current_submissions
+            for item in randomizations
+        )
+        arm_models = tuple(
+            ReportedArmCandidate.model_validate(item)
+            for _, _, _, arms in current_submissions
+            for item in arms
+        )
+        endpoint_models = tuple(
+            item
+            for item in endpoint_models
+            if (
+                item.provenance.source_id,
+                item.provenance.artifact_hash,
+                item.provenance.parse_id,
+            ) in current_identities
+        )
+        randomization_models = tuple(
+            item
+            for item in randomization_models
+            if (
+                item.provenance.source_id,
+                item.provenance.artifact_hash,
+                item.provenance.parse_id,
+            ) in current_identities
+        )
+        arm_models = tuple(
+            item
+            for item in arm_models
+            if (
+                item.provenance.source_id,
+                item.provenance.artifact_hash,
+                item.provenance.parse_id,
+            ) in current_identities
+        )
+        all_candidate_ids = tuple(
+            item.candidate_id for item in (*endpoint_models, *randomization_models, *arm_models)
+        )
+        if len(set(all_candidate_ids)) != len(all_candidate_ids):
+            raise ValueError("proposal discovery aggregation contains duplicate candidate IDs")
+        limitations: list[ProposalLimitation] = [
+            item
+            for item in proposal.limitations
+            if item.kind
+            not in {
+                ProposalLimitationKind.NO_OUTCOME_TARGETS,
+                ProposalLimitationKind.NO_REPORTED_ENDPOINTS,
+                ProposalLimitationKind.DISCOVERY_LIMITED,
+                ProposalLimitationKind.DISCOVERY_FAILED,
+            }
+        ]
+        if not proposal.outcome_targets:
+            limitations.append(
+                ProposalLimitation(
+                    kind=ProposalLimitationKind.NO_OUTCOME_TARGETS,
+                    scope=run_id,
+                    material=False,
+                    detail="No Outcome targets have been declared; human promotion remains available.",
+                    recovery_actions=(
+                        "Promote an Outcome target if assessment scope is intended.",
+                    ),
+                )
+            )
+        if not endpoint_models:
+            limitations.append(
+                ProposalLimitation(
+                    kind=ProposalLimitationKind.NO_REPORTED_ENDPOINTS,
+                    scope=run_id,
+                    material=bool(proposal.outcome_targets)
+                    and not bool(proposal.initialization.result_specs),
+                    detail="Completed eligible full-text discovery reported no endpoint candidates.",
+                    recovery_actions=(
+                        "Review source coverage or add an eligible full-text report.",
+                    ),
+                    receipt_ids=tuple(item.receipt_id for item in receipt_models),
+                )
+            )
+        for receipt in receipt_models:
+            if receipt.state == "complete_with_limitations":
+                limitations.append(
+                    ProposalLimitation(
+                        kind=ProposalLimitationKind.DISCOVERY_LIMITED,
+                        scope=receipt.source_id,
+                        material=bool(proposal.outcome_targets),
+                        detail=receipt.detail or "Discovery was limited.",
+                        recovery_actions=("Resolve the documented source limitation.",),
+                        receipt_ids=(receipt.receipt_id,),
+                        source_id=receipt.source_id,
+                        source_artifact_hash=receipt.source_artifact_hash,
+                        parse_id=receipt.parse_id,
+                    )
+                )
+            if receipt.state == "failed":
+                limitations.append(
+                    ProposalLimitation(
+                        kind=ProposalLimitationKind.DISCOVERY_FAILED,
+                        scope=receipt.source_id,
+                        material=True,
+                        detail=receipt.detail or "Discovery failed.",
+                        recovery_actions=("Repair or replace the eligible full-text source.",),
+                        receipt_ids=(receipt.receipt_id,),
+                        source_id=receipt.source_id,
+                        source_artifact_hash=receipt.source_artifact_hash,
+                        parse_id=receipt.parse_id,
+                    )
+                )
+        unresolved_ids = {
+            disposition.candidate_id
+            for receipt in receipt_models
+            for disposition in receipt.candidate_dispositions
+            if disposition.disposition == "unresolved"
+        }
+        unresolved_by_identity: dict[
+            tuple[Identifier, ContentHash, Identifier], list[Identifier]
+        ] = {}
+        for candidate in (*endpoint_models, *randomization_models, *arm_models):
+            if candidate.candidate_id not in unresolved_ids:
+                continue
+            provenance = candidate.provenance
+            unresolved_by_identity.setdefault(
+                (provenance.source_id, provenance.artifact_hash, provenance.parse_id), []
+            ).append(candidate.candidate_id)
+        for (source_id, artifact_hash, parse_id), candidate_ids in unresolved_by_identity.items():
+            limitations.append(
+                ProposalLimitation(
+                    kind=ProposalLimitationKind.DISCOVERY_LIMITED,
+                    scope=run_id,
+                    material=True,
+                    detail="Potentially material discovery candidates remain unresolved.",
+                    recovery_actions=("Resolve each surfaced discovery disposition.",),
+                    candidate_ids=tuple(candidate_ids),
+                    receipt_ids=tuple(
+                        receipt.receipt_id
+                        for receipt in receipt_models
+                        if (
+                            receipt.source_id,
+                            receipt.source_artifact_hash,
+                            receipt.parse_id,
+                        ) == (source_id, artifact_hash, parse_id)
+                    ),
+                    source_id=source_id,
+                    source_artifact_hash=artifact_hash,
+                    parse_id=parse_id,
+                )
+            )
+        rejected_endpoint_ids = tuple(
+            disposition.candidate_id
+            for receipt in receipt_models
+            for disposition in receipt.candidate_dispositions
+            if (
+                disposition.disposition == "rejected"
+                and disposition.candidate_id in {item.candidate_id for item in endpoint_models}
+            )
+        )
+        if rejected_endpoint_ids:
+            limitations.append(
+                ProposalLimitation(
+                    kind=ProposalLimitationKind.DISCOVERY_LIMITED,
+                    scope=run_id,
+                    material=False,
+                    detail=(
+                        "Reported endpoint candidates were rejected during discovery; "
+                        "they are terminal exclusions and will not receive mapping work."
+                    ),
+                    recovery_actions=("Promote a different accepted endpoint if required.",),
+                    candidate_ids=rejected_endpoint_ids,
+                    receipt_ids=tuple(item.receipt_id for item in receipt_models),
+                )
+            )
+        if legacy_run_wide:
+            remaining_identities = current_source_identities - corrected_identities
+            if remaining_identities:
+                limitations.append(
+                    ProposalLimitation(
+                        kind=ProposalLimitationKind.DISCOVERY_LIMITED,
+                        scope=run_id,
+                        material=False,
+                        detail="Legacy run-wide discovery limitation requires corrective review.",
+                        recovery_actions=("Complete every issued corrective discovery review.",),
+                    )
+                )
+            for source_id, artifact_hash, parse_id in sorted(remaining_identities):
+                limitations.append(
+                    ProposalLimitation(
+                        kind=ProposalLimitationKind.DISCOVERY_LIMITED,
+                        scope=run_id,
+                        material=True,
+                        detail="Legacy run-wide discovery limitation requires corrective review.",
+                        recovery_actions=("Complete this issued corrective discovery review.",),
+                        source_id=source_id,
+                        source_artifact_hash=artifact_hash,
+                        parse_id=parse_id,
+                    )
+                )
+        successor = proposal.model_copy(
+            update={
+                "reported_endpoint_candidates": endpoint_models,
+                "reported_randomization_candidates": randomization_models,
+                "reported_arm_candidates": arm_models,
+                "proposal_discovery_receipts": receipt_models,
+                "limitations": tuple(limitations),
+                "supersedes_proposal_id": (
+                    prior_proposal.proposal_id if prior_proposal is not None else None
+                ),
+            }
+        )
+        successor = successor.model_copy(
+            update={"semantic_diff": semantic_diff(proposal, successor)}
+        )
+        return self._freeze_submitted_proposal(successor)
+
     def _resolved_source_roles(
         self, ledger: WorkflowLedger, run_id: Identifier
     ) -> dict[Identifier, tuple[SourceRole, ...]]:
@@ -10713,10 +13068,14 @@ class RunEngine:
         trusting it. Later events win on repeated review of the same source.
         """
 
-        proposal = self._latest_proposal(ledger, run_id)
+        initialization = (
+            self._latest_proposal(ledger, run_id).initialization
+            if self._has_durable_proposal(ledger, run_id)
+            else self._prepared_initialization(ledger, run_id)
+        )
         candidate_roles = {
             candidate.source_id: candidate.roles
-            for candidate in proposal.initialization.source_role_candidates
+            for candidate in initialization.source_role_candidates
         }
         resolved: dict[Identifier, tuple[SourceRole, ...]] = {}
         for event in self._events_for_run(ledger, run_id):
@@ -10775,6 +13134,34 @@ class RunEngine:
         )
         initialization = proposal.initialization.model_copy(update={"trials": trials})
         return proposal.model_copy(update={"initialization": initialization})
+
+    def _initialization_with_resolved_source_roles(
+        self, ledger: WorkflowLedger, run_id: Identifier
+    ) -> ProjectInitialization:
+        """Overlay source-role reviews while the Run is still pre-proposal."""
+
+        initialization = self._prepared_initialization(ledger, run_id)
+        resolved = self._resolved_source_roles(ledger, run_id)
+        if not resolved:
+            return initialization
+        trials = tuple(
+            trial.model_copy(
+                update={
+                    "inventory": trial.inventory.model_copy(
+                        update={
+                            "sources": tuple(
+                                source.model_copy(update={"roles": resolved[source.source_id]})
+                                if source.source_id in resolved
+                                else source
+                                for source in trial.inventory.sources
+                            )
+                        }
+                    )
+                }
+            )
+            for trial in initialization.trials
+        )
+        return initialization.model_copy(update={"trials": trials})
 
     def _latest_prepared_record(self, ledger: WorkflowLedger) -> _PreparedRunRecord | None:
         records = self._prepared_records(ledger)
@@ -12512,6 +14899,17 @@ class RunEngine:
             item.model_copy(update={"trial_id": trial_map.get(item.trial_id, item.trial_id)})
             for item in current.result_candidates
         )
+        remapped_source_role_candidates = tuple(
+            item.model_copy(
+                update={
+                    "trial_id": trial_map.get(item.trial_id, item.trial_id),
+                    "source_id": source_maps.get(
+                        trial_map.get(item.trial_id, item.trial_id), {}
+                    ).get(item.source_id, item.source_id),
+                }
+            )
+            for item in current.source_role_candidates
+        )
         remapped_findings = tuple(
             item.model_copy(update={"trial_id": trial_map.get(item.trial_id, item.trial_id)})
             for item in current.diagnostics
@@ -12521,6 +14919,7 @@ class RunEngine:
                 "trials": tuple(remapped_trials),
                 "result_specs": remapped_specs,
                 "result_candidates": remapped_candidates,
+                "source_role_candidates": remapped_source_role_candidates,
                 "diagnostics": remapped_findings,
                 "registry_candidates": tuple(
                     item.model_copy(
@@ -12535,6 +14934,8 @@ class RunEngine:
         for event in reversed(self._events_for_run(ledger, run_id)):
             if event.operation in {
                 "operation:run-proposal-submitted",
+                "operation:run-proposal-discovery-reviewed",
+                "operation:run-result-mapping-reviewed",
                 "operation:run-reconciled",
             }:
                 if event.operation == "operation:run-reconciled":
@@ -12544,11 +14945,27 @@ class RunEngine:
                 return _ProposalSubmittedRecord.model_validate_json(
                     ledger.artifacts.read(event.output_revision_hashes[0])
                 ).proposal
+        raise ValueError("Run has no durable proposal")
+
+    def _prepared_initialization(
+        self, ledger: WorkflowLedger, run_id: Identifier
+    ) -> ProjectInitialization:
+        """Return immutable pre-proposal inventory for a prepared Run."""
+
+        for event in reversed(self._events_for_run(ledger, run_id)):
             if event.operation == "operation:run-prepared":
                 return _PreparedRunRecord.model_validate_json(
                     ledger.artifacts.read(event.output_revision_hashes[0])
-                ).proposal
-        raise ValueError("Run has no durable proposal")
+                ).initialization
+        raise ValueError("Run has no durable ProjectInitialization")
+
+    def _prepared_snapshot_hash(self, ledger: WorkflowLedger, run_id: Identifier) -> ContentHash:
+        for event in reversed(self._events_for_run(ledger, run_id)):
+            if event.operation == "operation:run-prepared":
+                return _PreparedRunRecord.model_validate_json(
+                    ledger.artifacts.read(event.output_revision_hashes[0])
+                ).input_snapshot_hash
+        raise ValueError("Run has no durable ProjectInitialization")
 
     def _proposal_for_token(
         self,
@@ -12559,6 +14976,8 @@ class RunEngine:
         for event in reversed(self._events_for_run(ledger, run_id)):
             if event.operation in {
                 "operation:run-proposal-submitted",
+                "operation:run-proposal-discovery-reviewed",
+                "operation:run-result-mapping-reviewed",
                 "operation:run-reconciled",
             }:
                 if event.operation == "operation:run-reconciled":
@@ -12569,10 +14988,6 @@ class RunEngine:
                     proposal = _ProposalSubmittedRecord.model_validate_json(
                         ledger.artifacts.read(event.output_revision_hashes[0])
                     ).proposal
-            elif event.operation == "operation:run-prepared":
-                proposal = _PreparedRunRecord.model_validate_json(
-                    ledger.artifacts.read(event.output_revision_hashes[0])
-                ).proposal
             else:
                 continue
             if proposal.proposal_token == proposal_token:
@@ -12856,8 +15271,12 @@ class RunEngine:
             state.value: sum(1 for item in projection.results if item.state is state)
             for state in (ResultState.REPORT_READY, ResultState.DIAGNOSTIC_READY)
         }
-        proposal = self._latest_proposal(ledger, run_id)
-        result_order = self._result_ids(ledger, run_id, proposal)
+        proposal = (
+            self._latest_proposal(ledger, run_id)
+            if self._has_durable_proposal(ledger, run_id)
+            else None
+        )
+        result_order = self._result_ids(ledger, run_id, proposal) if proposal else ()
         state_by_result = {item.result_id: item.state for item in projection.results}
         result_state_counts = {
             state.value: sum(
@@ -12867,7 +15286,7 @@ class RunEngine:
             )
             for state in ResultState
         }
-        warning_items = list(proposal.source_limitations)
+        warning_items = list(proposal.source_limitations) if proposal else []
         reconciliation = self._latest_reconciliation(ledger, run_id)
         if reconciliation is not None:
             warning_items.extend(item.detail for item in reconciliation.material_ambiguities)

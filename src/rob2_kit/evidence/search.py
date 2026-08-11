@@ -664,6 +664,7 @@ class EvidenceScope(FrozenModel):
     domain_id: Identifier | None = None
     question_id: Identifier | None = None
     source_ids: tuple[Identifier, ...] = ()
+    parse_ids: tuple[Identifier, ...] = ()
     work_token_id: Identifier | None = None
 
 
@@ -3791,6 +3792,8 @@ def _query_metadata_filters(
             add_in("source_id", query.source_ids)
     elif query.source_ids:
         add_in("source_id", query.source_ids)
+    if scope is not None and scope.parse_ids:
+        add_in("parse_id", scope.parse_ids)
     # Parser output contributes only structural and provenance fields. Trial,
     # Result, Domain, and signaling-question scope is authorized by WorkTokens
     # and attributable review, never candidate ranking metadata.
@@ -3799,6 +3802,8 @@ def _query_metadata_filters(
 
 def _unit_in_scope(unit: CanonicalEvidenceUnit, scope: EvidenceScope) -> bool:
     if scope.source_ids and unit.source_id not in scope.source_ids:
+        return False
+    if scope.parse_ids and unit.parse_id not in scope.parse_ids:
         return False
     return True
 

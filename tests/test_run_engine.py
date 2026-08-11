@@ -24,6 +24,7 @@ from rob2_kit.application.run_engine import RunEngine
 from rob2_kit.domain.results import Comparison, Estimate, Result
 from rob2_kit.domain.revisions import Actor, ActorKind
 from rob2_kit.storage import ArtifactStore, Transition, WorkflowLedger, dependency_fingerprint
+from tests.test_run_proposal import _first_proposal
 
 OPERATOR = Actor(
     kind=ActorKind.HUMAN,
@@ -56,6 +57,7 @@ def test_run_engine_resumes_current_run_from_concrete_durable_state(tmp_path) ->
     first_engine = RunEngine()
 
     prepared = first_engine.prepare_run(PrepareRunRequest(project_root=tmp_path, authorized=True))
+    prepared = _first_proposal(first_engine, prepared)
     status = first_engine.run_status(RunStatusRequest(run_id=prepared.run_id))
     resumed = RunEngine().prepare_run(PrepareRunRequest(project_root=tmp_path, authorized=False))
 
@@ -66,7 +68,7 @@ def test_run_engine_resumes_current_run_from_concrete_durable_state(tmp_path) ->
     assert status.run_state is RunState.AWAITING_CONFIRMATION
     assert status.committed is False
     assert status.progress is not None
-    assert status.progress.committed_checkpoint == "checkpoint:run-prepared"
+    assert status.progress.committed_checkpoint == "checkpoint:run-proposal-discovery-reviewed"
     assert status.progress.current_scope == ()
     assert status.progress.terminal_result_counts == {
         "diagnostic_ready": 0,
@@ -90,6 +92,7 @@ def test_run_engine_threads_one_persistent_verified_hash_cache_across_calls(tmp_
     assert engine._verified_artifact_hashes == set()
 
     prepared = engine.prepare_run(PrepareRunRequest(project_root=tmp_path, authorized=True))
+    prepared = _first_proposal(engine, prepared)
     engine.run_status(RunStatusRequest(run_id=prepared.run_id))
     verified_after_first_call = set(engine._verified_artifact_hashes)
     assert verified_after_first_call
@@ -120,11 +123,12 @@ def test_starting_new_run_retires_prior_unfinished_run_durably(tmp_path) -> None
 def test_run_proposal_confirmation_and_blocker_are_ledger_derived(tmp_path) -> None:
     engine = RunEngine()
     prepared = engine.prepare_run(PrepareRunRequest(project_root=tmp_path, authorized=True))
+    prepared = _first_proposal(engine, prepared)
     assert prepared.proposal is not None
 
     submitted = engine.submit_run_proposal(
         SubmitRunProposalRequest(
-            contract_version="1.0.0",
+            contract_version="2.0.0",
             run_id=prepared.run_id,
             proposal_token=prepared.proposal.proposal_token,
             idempotency_key="idempotency:submit-proposal",
@@ -235,12 +239,13 @@ def test_invalid_persisted_lifecycle_is_a_typed_run_integrity_condition(tmp_path
 def test_run_proposal_rejects_identifiers_not_issued_by_the_engine(tmp_path) -> None:
     engine = RunEngine()
     prepared = engine.prepare_run(PrepareRunRequest(project_root=tmp_path, authorized=True))
+    prepared = _first_proposal(engine, prepared)
     assert prepared.proposal is not None
 
     with pytest.raises(ValueError, match="not issued"):
         engine.submit_run_proposal(
             SubmitRunProposalRequest(
-                contract_version="1.0.0",
+                contract_version="2.0.0",
                 run_id=prepared.run_id,
                 proposal_token=prepared.proposal.proposal_token,
                 idempotency_key="idempotency:forged-proposal",

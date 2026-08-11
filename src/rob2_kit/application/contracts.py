@@ -20,7 +20,20 @@ from rob2_kit.domain.evidence import (
     EvidenceReviewDisposition,
     TrialAttribution,
 )
-from rob2_kit.domain.results import Estimate, Result, ResultSpecRevision
+from rob2_kit.domain.results import (
+    DiscoveryCandidateDisposition,
+    Estimate,
+    ProposalDiscoveryCoverageReceipt,
+    ProposalLimitation,
+    ProposalMappingStatus,
+    ReportedArmCandidate,
+    ReportedCandidateProvenance,
+    ReportedEndpointCandidate,
+    ReportedRandomizationCandidate,
+    Result,
+    ResultIdentityCompleteness,
+    ResultSpecRevision,
+)
 from rob2_kit.domain.revisions import (
     Actor,
     ContentHash,
@@ -40,6 +53,7 @@ from rob2_kit.domain.sources import (
 )
 from rob2_kit.evidence.errors import RetrievalErrorCode
 from rob2_kit.evidence.search import (
+    CanonicalEvidenceUnit,
     EvidenceReadBatchPage,
     EvidenceReadBatchRequest,
     EvidenceSearchPage,
@@ -79,6 +93,8 @@ class RunOperation(StrEnum):
     REOPEN_RESULT = "reopen_result"
     GET_WORK_CONTEXT = "get_work_context"
     SUBMIT_RUN_PROPOSAL = "submit_run_proposal"
+    SUBMIT_PROPOSAL_DISCOVERY_REVIEW = "submit_proposal_discovery_review"
+    SUBMIT_RESULT_MAPPING_REVIEW = "submit_result_mapping_review"
     CONFIRM_RUN_DEFINITION = "confirm_run_definition"
     SEARCH_EVIDENCE = "search_evidence"
     READ_EVIDENCE = "read_evidence"
@@ -222,6 +238,8 @@ class WorkToken(FrozenModel):
     trial_id: Identifier | None = None
     result_id: Identifier | None = None
     domain_id: Identifier | None = None
+    source_id: Identifier | None = None
+    parse_id: Identifier | None = None
 
 
 class WorkItem(FrozenModel):
@@ -232,6 +250,8 @@ class WorkItem(FrozenModel):
     result_id: Identifier | None = None
     domain_id: Identifier | None = None
     dependency_fingerprint: ContentHash
+    source_id: Identifier | None = None
+    parse_id: Identifier | None = None
 
 
 class NextActionArguments(FrozenModel):
@@ -511,6 +531,14 @@ class WorkContext(FrozenModel):
     domain_id: Identifier | None = None
     registry_candidates: tuple[RegistryCandidate, ...] = ()
     result_candidates: tuple[ResultCandidate, ...] = ()
+    reported_endpoint_candidates: tuple[ReportedEndpointCandidate, ...] = ()
+    reported_randomization_candidates: tuple[ReportedRandomizationCandidate, ...] = ()
+    reported_arm_candidates: tuple[ReportedArmCandidate, ...] = ()
+    proposal_discovery_receipts: tuple[ProposalDiscoveryCoverageReceipt, ...] = ()
+    proposal_discovery_page: EvidenceSearchPage | None = None
+    proposal_discovery_units: tuple[CanonicalEvidenceUnit, ...] = ()
+    proposal_discovery_read_continuation: str | None = None
+    proposal_discovery_policy: ProposalDiscoveryPolicy | None = None
     domain_context: DomainContextPack | None = None
 
     @property
@@ -626,6 +654,15 @@ class RunProposal(FrozenModel):
     registry_candidates: tuple[RegistryCandidate, ...] = ()
     result_candidates: tuple[ResultCandidate, ...] = ()
     source_role_candidates: tuple[SourceRoleCandidate, ...] = ()
+    reported_endpoint_candidates: tuple[ReportedEndpointCandidate, ...] = ()
+    reported_randomization_candidates: tuple[ReportedRandomizationCandidate, ...] = ()
+    reported_arm_candidates: tuple[ReportedArmCandidate, ...] = ()
+    proposal_discovery_receipts: tuple[ProposalDiscoveryCoverageReceipt, ...] = ()
+    limitations: tuple[ProposalLimitation, ...] = ()
+    randomization_bindings: tuple[tuple[Identifier, Identifier], ...] = ()
+    arm_bindings: tuple[tuple[Identifier, Identifier], ...] = ()
+    promotion_batches: tuple[ProposalPromotionBatchInput, ...] = ()
+    submission_request_hash: ContentHash | None = None
     ambiguities: tuple[RunProposalAmbiguity, ...] = ()
     supersedes_proposal_id: Identifier | None = None
     semantic_diff: tuple[str, ...] = ()
@@ -742,10 +779,62 @@ class GetWorkContextRequest(FrozenModel):
     run_id: Identifier
     work_token: WorkToken
     include_source_details: bool = False
+    proposal_discovery_query: SearchQuery | None = None
+    proposal_discovery_unit_ids: tuple[Identifier, ...] = Field(default=(), max_length=4)
+    proposal_discovery_continuation: str | None = None
+    proposal_discovery_read_continuation: str | None = None
+    proposal_discovery_pass: str | None = None
+
+    @model_validator(mode="after")
+    def validate_discovery_navigation(self) -> GetWorkContextRequest:
+        if self.proposal_discovery_query is not None and self.proposal_discovery_unit_ids:
+            raise ValueError(
+                "proposal discovery context accepts either a query or unit IDs, not both"
+            )
+        if (
+            self.proposal_discovery_continuation is not None
+            and self.proposal_discovery_query is None
+        ):
+            raise ValueError("proposal discovery continuation requires a query")
+        if self.proposal_discovery_read_continuation is not None and (
+            self.proposal_discovery_query is not None
+            or self.proposal_discovery_unit_ids
+            or self.proposal_discovery_continuation is not None
+        ):
+            raise ValueError(
+                "proposal discovery read continuation is a standalone navigation request"
+            )
+        if (self.proposal_discovery_query is None) != (self.proposal_discovery_pass is None):
+            raise ValueError("proposal discovery search requires an engine-issued pass")
+        return self
+
+
+class ProposalDiscoveryPassQuery(FrozenModel):
+    """Engine-issued semantic minimum for one discovery search pass."""
+
+    pass_id: str = Field(min_length=1)
+    required_any_terms: tuple[str, ...] = Field(min_length=1)
+    canonical_query: SearchQuery
+
+
+class ProposalDiscoveryPolicy(FrozenModel):
+    """Engine-issued bounds for one token-scoped pre-confirmation review."""
+
+    policy_revision: str = "discovery-policy:1"
+    required_passes: tuple[str, ...] = Field(min_length=1)
+    pass_queries: tuple[ProposalDiscoveryPassQuery, ...] = ()
+    read_unit_ceiling: int = Field(default=4, ge=1)
+    read_character_ceiling: int = Field(default=8_000, ge=1)
+
+    @model_validator(mode="after")
+    def validate_pass_queries(self) -> ProposalDiscoveryPolicy:
+        if tuple(item.pass_id for item in self.pass_queries) != self.required_passes:
+            raise ValueError("discovery policy must define query semantics for every required pass")
+        return self
 
 
 class SubmitRunProposalRequest(FrozenModel):
-    contract_version: Literal["1.0.0"]
+    contract_version: Literal["2.0.0"]
     run_id: Identifier
     proposal_token: Identifier
     idempotency_key: Identifier
@@ -753,19 +842,127 @@ class SubmitRunProposalRequest(FrozenModel):
     selections: tuple[RunProposalSelection, ...] = ()
     ambiguities: tuple[RunProposalAmbiguity, ...] = ()
     unresolved_ambiguities: tuple[RunProposalAmbiguity, ...] = ()
-    correction: str | None = Field(
-        default=None,
-        description=(
-            "Optional bounded natural-language correction. It must name issued Trial, "
-            "Outcome-target, and Result identifiers; unsupported prose is refused."
-        ),
+    promotions: ProposalPromotionBatchInput | None = None
+
+
+class OutcomeTargetPromotionInput(FrozenModel):
+    target: OutcomeTarget
+    endpoint_candidate_ids: tuple[Identifier, ...] = Field(min_length=1)
+    admissibility_rule: Literal["promoted_design_required", "design_undiscovered"] = (
+        "promoted_design_required"
     )
 
+
+class RandomizationPromotionInput(FrozenModel):
+    randomization_candidate_id: Identifier
+    arm_candidate_ids: tuple[Identifier, ...] = Field(min_length=1)
+
+
+class ProposalPromotionBatchInput(FrozenModel):
+    """Human-only identity binding; all durable IDs are engine issued."""
+
+    promoted_by: Actor
+    outcome_targets: tuple[OutcomeTargetPromotionInput, ...] = ()
+    randomizations: tuple[RandomizationPromotionInput, ...] = ()
+
     @model_validator(mode="after")
-    def validate_correction(self) -> SubmitRunProposalRequest:
-        if self.correction is not None and not self.correction.strip():
-            raise ValueError("correction cannot be blank")
+    def validate_human_and_unique(self) -> ProposalPromotionBatchInput:
+        if self.promoted_by.kind.value != "human":
+            raise ValueError("proposal promotion requires an attributable human actor")
+        if len({item.target.target_id for item in self.outcome_targets}) != len(
+            self.outcome_targets
+        ):
+            raise ValueError("promoted outcome targets must be unique")
+        if len({item.randomization_candidate_id for item in self.randomizations}) != len(
+            self.randomizations
+        ):
+            raise ValueError("promoted randomizations must be unique")
         return self
+
+
+class ProposalDiscoveryDispositionInput(FrozenModel):
+    candidate_id: Identifier
+    disposition: Literal["accepted", "rejected", "unresolved"]
+    detail: str = Field(min_length=1)
+    superseded_by_candidate_id: Identifier | None = None
+
+    @model_validator(mode="after")
+    def validate_supersession(self) -> ProposalDiscoveryDispositionInput:
+        DiscoveryCandidateDisposition(
+            candidate_id=self.candidate_id,
+            disposition=self.disposition,
+            detail=self.detail,
+            superseded_by_candidate_id=self.superseded_by_candidate_id,
+        )
+        return self
+
+
+class SubmitProposalDiscoveryReviewRequest(FrozenModel):
+    contract_version: Literal["1.0.0"]
+    run_id: Identifier
+    work_token: WorkToken
+    idempotency_key: Identifier
+    endpoints: tuple[ReportedEndpointCandidate, ...] = ()
+    randomizations: tuple[ReportedRandomizationCandidate, ...] = ()
+    arms: tuple[ReportedArmCandidate, ...] = ()
+    dispositions: tuple[ProposalDiscoveryDispositionInput, ...] = ()
+    coverage_receipt: ProposalDiscoveryCoverageReceipt
+
+
+class ResultMappingReviewInput(FrozenModel):
+    candidate_id: Identifier
+    trial_id: Identifier
+    endpoint_candidate_id: Identifier
+    randomization_candidate_id: Identifier
+    experimental_arm_candidate_id: Identifier
+    comparator_arm_candidate_id: Identifier
+    outcome_target_id: Identifier | None = None
+    label: str = Field(min_length=1)
+    mapping_status: ProposalMappingStatus
+    identity_completeness: ResultIdentityCompleteness
+    result: Result | None = None
+    estimate: Estimate | None = None
+    provenance_note: str | None = None
+    source_provenance: ReportedCandidateProvenance | None = None
+    construct_admissibility: Literal["exact", "accepted_synonym"] = "exact"
+    construct_synonym_rationale: str | None = None
+    reviewed_by: Actor
+
+    @model_validator(mode="after")
+    def validate_complete_mapping(self) -> ResultMappingReviewInput:
+        complete = self.mapping_status is ProposalMappingStatus.ACCEPTED and (
+            self.identity_completeness is ResultIdentityCompleteness.RESULT_COMPLETE
+        )
+        if complete and (self.result is None or self.estimate is None or not self.provenance_note):
+            raise ValueError(
+                "complete Result mapping requires Result, Estimate, and provenance_note"
+            )
+        if not complete and (self.result is not None or self.estimate is not None):
+            raise ValueError("non-complete Result mapping cannot claim an exact Result")
+        if complete and self.source_provenance is None:
+            raise ValueError("complete Result mapping requires exact source provenance")
+        if not complete and self.source_provenance is not None:
+            raise ValueError("non-complete Result mapping cannot claim exact source provenance")
+        if (
+            self.construct_admissibility == "accepted_synonym"
+            and not self.construct_synonym_rationale
+        ):
+            raise ValueError("accepted construct synonym requires a rationale")
+        if (
+            self.construct_admissibility == "accepted_synonym"
+            and self.reviewed_by.kind.value != "human"
+        ):
+            raise ValueError("accepted construct synonym requires human review")
+        return self
+
+
+class SubmitResultMappingReviewRequest(FrozenModel):
+    contract_version: Literal["1.0.0"]
+    run_id: Identifier
+    work_token: WorkToken
+    proposal_token: Identifier
+    idempotency_key: Identifier
+    mappings: tuple[ResultMappingReviewInput, ...] = Field(min_length=1)
 
 
 class ConfirmRunDefinitionRequest(FrozenModel):
@@ -1192,6 +1389,7 @@ class OperationResponse(FrozenModel):
 class PrepareRunResponse(OperationResponse):
     run_id: Identifier
     run_state: RunState
+    initialization: ProjectInitialization | None = None
     proposal: RunProposal | None = None
     integrity: IntegrityFailure | None = None
 
@@ -1261,9 +1459,7 @@ class CoverageProgress(FrozenModel):
 
 class SearchEvidenceResponse(OperationResponse):
     run_id: Identifier
-    evidence_navigation_contract_version: Literal["2.0.0"] = (
-        EVIDENCE_NAVIGATION_CONTRACT_VERSION
-    )
+    evidence_navigation_contract_version: Literal["2.0.0"] = EVIDENCE_NAVIGATION_CONTRACT_VERSION
     page: EvidenceSearchPage
     coverage_progress: CoverageProgress
 
@@ -1300,9 +1496,7 @@ def v2_model_facing_operation_payload(response: Any) -> dict[str, Any]:
 
 class ReadEvidenceResponse(OperationResponse):
     run_id: Identifier
-    evidence_navigation_contract_version: Literal["2.0.0"] = (
-        EVIDENCE_NAVIGATION_CONTRACT_VERSION
-    )
+    evidence_navigation_contract_version: Literal["2.0.0"] = EVIDENCE_NAVIGATION_CONTRACT_VERSION
     page: EvidenceReadBatchPage
 
 
@@ -1335,6 +1529,14 @@ class SubmissionResponse(OperationResponse):
     result_id: Identifier | None = None
     result_state: ResultState | None = None
     work_item: WorkItem | None = None
+
+
+class SubmitProposalDiscoveryReviewResponse(SubmissionResponse):
+    proposal: RunProposal | None = None
+
+
+class SubmitResultMappingReviewResponse(SubmissionResponse):
+    proposal: RunProposal | None = None
 
 
 class SubmitSourceRoleReviewResponse(SubmissionResponse):
@@ -1434,6 +1636,26 @@ RUN_OPERATION_CONTRACTS: tuple[OperationContract, ...] = (
             WorkflowCondition.ACCEPTED,
             WorkflowCondition.CONFIRMATION_REQUIRED,
             WorkflowCondition.STALE,
+        ),
+    ),
+    OperationContract(
+        operation=RunOperation.SUBMIT_PROPOSAL_DISCOVERY_REVIEW,
+        request_type=SubmitProposalDiscoveryReviewRequest,
+        response_type=SubmitProposalDiscoveryReviewResponse,
+        expected_conditions=(
+            WorkflowCondition.ACCEPTED,
+            WorkflowCondition.STALE,
+            WorkflowCondition.RETRY,
+        ),
+    ),
+    OperationContract(
+        operation=RunOperation.SUBMIT_RESULT_MAPPING_REVIEW,
+        request_type=SubmitResultMappingReviewRequest,
+        response_type=SubmitResultMappingReviewResponse,
+        expected_conditions=(
+            WorkflowCondition.ACCEPTED,
+            WorkflowCondition.STALE,
+            WorkflowCondition.RETRY,
         ),
     ),
     OperationContract(

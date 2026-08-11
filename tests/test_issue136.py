@@ -37,7 +37,7 @@ def test_pre_confirmation_source_role_review_lists_every_issued_source(
 
     engine = RunEngine(parser=StubParser())
     prepared = engine.prepare_run(PrepareRunRequest(project_root=tmp_path, authorized=True))
-    assert prepared.proposal is not None
+    assert prepared.initialization is not None
 
     review_work = engine.continue_run(ContinueRunRequest(run_id=prepared.run_id)).work_item
     assert review_work is not None
@@ -52,7 +52,7 @@ def test_pre_confirmation_source_role_review_lists_every_issued_source(
     assert context is not None
 
     issued_source_ids = {
-        candidate.source_id for candidate in prepared.proposal.source_role_candidates
+        candidate.source_id for candidate in prepared.initialization.source_role_candidates
     }
     assert issued_source_ids, "fixture must actually issue Source-role candidates"
     context_source_ids = {source.source_id for source in context.sources}

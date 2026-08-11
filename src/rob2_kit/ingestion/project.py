@@ -22,7 +22,15 @@ import yaml
 from pydantic import AliasChoices, ConfigDict, Field
 
 from rob2_kit.application.preparation import TrialFailed, TrialFailureReason
-from rob2_kit.domain.results import ResultSpecRevision, derive_result_spec_revision_id
+from rob2_kit.domain.results import (
+    Estimate,
+    ProposalMappingStatus,
+    ReportedCandidateProvenance,
+    Result,
+    ResultIdentityCompleteness,
+    ResultSpecRevision,
+    derive_result_spec_revision_id,
+)
 from rob2_kit.domain.revisions import Actor, ContentHash, FrozenModel, Identifier
 from rob2_kit.domain.sources import (
     AcquisitionMethod,
@@ -511,6 +519,17 @@ class ResultCandidate(FrozenModel):
     label: str = Field(min_length=1)
     source_locator: str | None = None
     status: Literal["resolved", "needs_input"]
+    mapping_status: ProposalMappingStatus = ProposalMappingStatus.UNMAPPED
+    identity_completeness: ResultIdentityCompleteness = ResultIdentityCompleteness.ENDPOINT_ONLY
+    endpoint_candidate_id: Identifier | None = None
+    randomization_candidate_id: Identifier | None = None
+    experimental_arm_candidate_id: Identifier | None = None
+    comparator_arm_candidate_id: Identifier | None = None
+    result: Result | None = None
+    estimate: Estimate | None = None
+    provenance_note: str | None = None
+    source_provenance: ReportedCandidateProvenance | None = None
+    mapping_reviewed_by: Actor | None = None
 
 
 class SourceRoleCandidate(FrozenModel):
@@ -663,7 +682,12 @@ def initialize_project(
         allow_unknown_trial_refs=allow_unknown_result_trials,
         now=clock,
     )
-    result_candidates = _result_candidates(tuple(trials), result_specs, outcome_target_specs)
+    # ProjectInitialization contains only operator-declared Result inventory.
+    # It never synthesizes targets or source-derived candidates; those enter
+    # through the reviewed proposal-discovery lifecycle.
+    result_candidates = _result_candidates(
+        tuple(trials), result_specs, outcome_target_specs, include_unresolved=False
+    )
     source_role_candidates = _source_role_candidates(tuple(trials))
     return ProjectInitialization(
         manifest=manifest,
@@ -831,6 +855,8 @@ def _result_candidates(
     trials: tuple[TrialInitialization, ...],
     result_specs: tuple[ResultSpecRevision, ...],
     outcome_targets: tuple[OutcomeTarget, ...],
+    *,
+    include_unresolved: bool = True,
 ) -> tuple[ResultCandidate, ...]:
     candidates: list[ResultCandidate] = []
     by_trial_target: set[tuple[str, str]] = set()
@@ -890,6 +916,8 @@ def _result_candidates(
     # declared for a Trial, expose a needs_input candidate rather than
     # fabricating a Result identity or silently dropping the target.
     for trial in trials:
+        if not include_unresolved:
+            continue
         if trial.status == "trial_failed":
             # A failed Trial receives a diagnostic terminal outcome during
             # Run preparation; it must not create an agent-mapping ambiguity

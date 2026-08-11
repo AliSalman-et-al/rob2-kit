@@ -106,11 +106,11 @@ def test_source_role_review_reports_unissued_and_missing_sources_together(
 
     engine = RunEngine(parser=StubParser())
     prepared = engine.prepare_run(PrepareRunRequest(project_root=tmp_path, authorized=True))
-    assert prepared.proposal is not None
+    assert prepared.initialization is not None
     review_work = engine.continue_run(ContinueRunRequest(run_id=prepared.run_id)).work_item
     assert review_work is not None
     assert review_work.operation is RunOperation.SUBMIT_SOURCE_ROLE_REVIEW
-    candidates = prepared.proposal.source_role_candidates
+    candidates = prepared.initialization.source_role_candidates
     assert len(candidates) >= 2
 
     # Omit one issued source (missing) and include one that was never issued

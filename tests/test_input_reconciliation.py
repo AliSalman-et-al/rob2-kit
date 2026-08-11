@@ -52,7 +52,7 @@ from rob2_kit.evidence.workflow import (
 )
 from rob2_kit.ingestion.project import PageExtraction, PageTextItem, ParserResult
 from tests.test_mcp_tracer import DOMAINS, _active_answer_ids, _low_answers
-from tests.test_run_proposal import StubParser
+from tests.test_run_proposal import StubParser, _first_proposal
 
 OPERATOR = Actor(
     kind=ActorKind.HUMAN,
@@ -147,18 +147,10 @@ def _prepare_confirm(
     parser: object | None = None,
 ) -> tuple[RunEngine, str]:
     config_payload = dict(config)
-    if "outcome_targets" not in config_payload:
-        config_payload["outcome_targets"] = [
-            {
-                "id": "mortality",
-                "label": "mortality",
-                "construct": "mortality",
-                "timepoint": "30 days",
-            }
-        ]
     (root / "rob2.yaml").write_text(yaml.safe_dump(config_payload), encoding="utf-8")
     engine = RunEngine(parser=parser or StubParser())
     prepared = engine.prepare_run(PrepareRunRequest(project_root=root, authorized=True))
+    prepared = _first_proposal(engine, prepared)
     assert prepared.proposal is not None
     # A Result candidate is never auto-bound by cardinality alone (#119): even
     # a sole "resolved" candidate needs an explicit accepted selection, so
@@ -175,28 +167,23 @@ def _prepare_confirm(
         for candidate in prepared.proposal.result_candidates
         if candidate.status in ("needs_input", "resolved") and candidate.result_id is not None
     )
-    # Source-role review resolves before the proposal (#119): every
-    # Source-role candidate needs an explicit accept before submit_run_proposal
-    # will trust any role.
-    review_work = engine.continue_run(ContinueRunRequest(run_id=prepared.run_id)).work_item
-    if review_work is not None and review_work.operation is RunOperation.SUBMIT_SOURCE_ROLE_REVIEW:
-        engine.submit_source_role_review(
-            SubmitSourceRoleReviewRequest(
-                contract_version="1.0.0",
-                run_id=prepared.run_id,
-                work_token=review_work.work_token,
-                idempotency_key="idempotency:reconciliation-source-review",
-                selections=tuple(
-                    RunProposalSelection(
-                        trial_id=candidate.trial_id, source_id=candidate.source_id, accepted=True
-                    )
-                    for candidate in prepared.proposal.source_role_candidates
-                ),
+    if not selections:
+        # Empty declared inventories still need an explicit Trial × Outcome
+        # disposition before confirmation.  Keeping the Trial in scope
+        # deliberately exercises the later structured Result-resolution path.
+        selections = tuple(
+            RunProposalSelection(
+                trial_id=trial.trial_id,
+                outcome_target_id=target.target_id,
+                accepted=False,
+                exclusion_reason="No exact Result is available at proposal time.",
             )
+            for trial in prepared.proposal.initialization.trials
+            for target in prepared.proposal.outcome_targets
         )
     submitted = engine.submit_run_proposal(
         SubmitRunProposalRequest(
-            contract_version="1.0.0",
+            contract_version="2.0.0",
             run_id=prepared.run_id,
             proposal_token=prepared.proposal.proposal_token,
             idempotency_key="idempotency:reconciliation-proposal",
@@ -240,7 +227,10 @@ def _classify_current_sources(engine: RunEngine, run_id: str) -> None:
             contract_version="1.0.0",
             run_id=run_id,
             work_token=work.work_token,
-            idempotency_key="idempotency:reconciliation-sources",
+                idempotency_key=(
+                    "idempotency:reconciliation-sources:"
+                    f"{work.work_token.token.removeprefix('work-token:')}"
+                ),
             selections=tuple(
                 RunProposalSelection(
                     trial_id=candidate.trial_id, source_id=candidate.source_id, accepted=True
@@ -250,7 +240,7 @@ def _classify_current_sources(engine: RunEngine, run_id: str) -> None:
             ),
         )
     )
-    assert response.committed is True
+    assert response.committed is True, response
 
 
 def _v2_search_and_triage(
@@ -1476,64 +1466,12 @@ def test_resolved_outcome_candidate_survives_unrelated_source_change(
     (tmp_path / "rob2.yaml").write_text(yaml.safe_dump(_config(with_target=True)), encoding="utf-8")
     engine = RunEngine(parser=StubParser())
     prepared = engine.prepare_run(PrepareRunRequest(project_root=tmp_path, authorized=True))
+    prepared = _first_proposal(engine, prepared)
     assert prepared.proposal is not None
-    candidate = prepared.proposal.result_candidates[0]
-    ambiguity = next(
-        item for item in prepared.proposal.ambiguities if item.scope == candidate.candidate_id
-    )
-    selection = RunProposalSelection(
-        trial_id=candidate.trial_id,
-        result_id=candidate.result_id,
-        result_candidate_id=candidate.candidate_id,
-        outcome_target_id=candidate.outcome_target_id,
-    )
-    review_work = engine.continue_run(ContinueRunRequest(run_id=prepared.run_id)).work_item
-    assert review_work is not None
-    engine.submit_source_role_review(
-        SubmitSourceRoleReviewRequest(
-            contract_version="1.0.0",
-            run_id=prepared.run_id,
-            work_token=review_work.work_token,
-            idempotency_key="idempotency:reconciliation-candidate-source-review",
-            selections=tuple(
-                RunProposalSelection(
-                    trial_id=source_candidate.trial_id,
-                    source_id=source_candidate.source_id,
-                    accepted=True,
-                )
-                for source_candidate in prepared.proposal.source_role_candidates
-            ),
-        )
-    )
-    submitted = engine.submit_run_proposal(
-        SubmitRunProposalRequest(
-            contract_version="1.0.0",
-            run_id=prepared.run_id,
-            proposal_token=prepared.proposal.proposal_token,
-            idempotency_key="idempotency:reconciliation-candidate-proposal",
-            selections=(selection,),
-            ambiguities=(
-                ambiguity.model_copy(update={"resolved": True, "resolution": "mapped by operator"}),
-            ),
-        )
-    )
-    engine.confirm_run_definition(
-        ConfirmRunDefinitionRequest(
-            contract_version="1.0.0",
-            run_id=prepared.run_id,
-            proposal_token=submitted.proposal.proposal_token,
-            idempotency_key="idempotency:reconciliation-candidate-confirmation",
-            confirmed_by=OPERATOR,
-        )
-    )
-    _classify_current_sources(engine, prepared.run_id)
-    support.write_bytes(b"changed support")
-
-    continued = engine.continue_run(ContinueRunRequest(run_id=prepared.run_id))
-    assert continued.run_state is RunState.ASSESSING
-    assert continued.error is None
-    assert continued.work_item is not None
-    assert continued.work_item.result_id == candidate.result_id
+    # Source text is no longer allowed to synthesize an Outcome/Result identity
+    # at initialization.  The new discovery operation records observations
+    # first; a human promotion and mapping review produce later candidates.
+    assert prepared.proposal.result_candidates == ()
 
 
 def test_post_confirmation_result_resolution_keeps_source_dependency_on_change(
@@ -1991,8 +1929,8 @@ def test_result_declaration_edits_block_without_rewriting_confirmed_definition(
     removed = _config(with_target=True)
     (tmp_path / "rob2.yaml").write_text(yaml.safe_dump(removed), encoding="utf-8")
     blocked = engine.continue_run(ContinueRunRequest(run_id=run_id))
-    assert blocked.run_state is RunState.ASSESSING
-    assert blocked.error is None
+    assert blocked.run_state is RunState.BLOCKED
+    assert blocked.error is not None
 
     (tmp_path / "rob2.yaml").write_text(yaml.safe_dump(original), encoding="utf-8")
     resumed = engine.continue_run(ContinueRunRequest(run_id=run_id))

@@ -1,7 +1,7 @@
 {
   "adapters": {
     "claude": {
-      "content_hash": "sha256:9c2872639ba7b29cd451885b3f6526e86eeb37e7894761598cbd6bea2f3b6e68",
+      "content_hash": "sha256:5fb692723db745efa89a5fa7190391cf984ad2166796250668a5703bafa048d8",
       "skill_hashes": {
         "rob2-assess": "sha256:f370c57d1d851fc7c0c448f781a6ce299338de21e78e996c035955e645354ab6",
         "rob2-init": "sha256:54f73d6bdb471e5d50318b7112be9085dd67b45b080b146a36bb1603853e700f"
@@ -9,7 +9,7 @@
       "version": "1"
     },
     "codex": {
-      "content_hash": "sha256:64d161483d747d92a424aa74a3ea2cd143aebe99cd6f8c8e0f45f83722a4d70f",
+      "content_hash": "sha256:9c81c528657bf586838dc4d70e6a032e81fd47a6ed3ff6a99fd691c452c169ae",
       "skill_hashes": {
         "rob2-assess": "sha256:f370c57d1d851fc7c0c448f781a6ce299338de21e78e996c035955e645354ab6",
         "rob2-init": "sha256:54f73d6bdb471e5d50318b7112be9085dd67b45b080b146a36bb1603853e700f"

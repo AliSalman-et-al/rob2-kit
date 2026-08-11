@@ -28,7 +28,6 @@ from rob2_kit.application.contracts import (
     SubmitDomainEvidenceRequest,
     SubmitEvidenceReviewRequest,
     SubmitRunProposalRequest,
-    SubmitSourceRoleReviewRequest,
     WorkToken,
 )
 from rob2_kit.application.run_engine import RunEngine
@@ -41,6 +40,7 @@ from rob2_kit.reports.archives import verify_archive
 from rob2_kit.storage import ArtifactStore, WorkflowLedger
 from rob2_kit.storage.ledger import LeaseConflictError
 from tests.test_host_interfaces import blank_pdf
+from tests.test_run_proposal import _first_proposal
 
 
 def _v2_tool_names() -> tuple[str, ...]:
@@ -378,7 +378,6 @@ async def _prepare_and_confirm(session: ClientSession, root: Path) -> str:
         await session.call_tool("prepare_run", {"project_root": str(root), "authorized": True})
     ).structured_content
     assert prepared is not None
-    proposal = prepared["proposal"]
     # Source-role review resolves before the proposal (#119): every
     # Source-role candidate needs an explicit accept before submit_run_proposal
     # will trust any role.
@@ -402,13 +401,60 @@ async def _prepare_and_confirm(session: ClientSession, root: Path) -> str:
                 ],
             },
         )
+    discovery_work = (
+        await session.call_tool("continue_run", {"run_id": prepared["run_id"]})
+    ).structured_content
+    assert discovery_work is not None
+    assert discovery_work["work_item"]["operation"] == "submit_proposal_discovery_review"
+    source = prepared["initialization"]["trials"][0]["inventory"]["sources"][0]
+    for pass_name in ("outcome-target:mortality",):
+        navigated = await session.call_tool(
+            "get_work_context",
+            {
+                "run_id": prepared["run_id"],
+                "work_token": discovery_work["work_item"]["work_token"],
+                "proposal_discovery_query": {"any_of": [["mortality"]]},
+                "proposal_discovery_pass": pass_name,
+            },
+        )
+        assert navigated.structured_content is not None
+    discovery = (
+        await session.call_tool(
+            "submit_proposal_discovery_review",
+            {
+                "run_id": prepared["run_id"],
+                "work_token": discovery_work["work_item"]["work_token"],
+                "contract_version": "1.0.0",
+                "coverage_receipt": {
+                    "receipt_id": "proposal-discovery-receipt:tracer",
+                    "trial_id": discovery_work["work_item"]["trial_id"],
+                    "source_id": discovery_work["work_item"]["source_id"],
+                    "parse_id": source["parse_records"][0]["parse_id"],
+                    "mode": "target_guided",
+                    "state": "no_candidates",
+                    "reviewed_by": {
+                        "kind": "human",
+                        "actor_id": "actor:tracer",
+                        "display_name": "Tracer",
+                    },
+                    "reviewed_at": "2026-01-01T00:00:00Z",
+                    "discovery_policy_revision": "discovery-policy:1",
+                    "required_passes": ["outcome-target:mortality"],
+                    "completed_passes": ["outcome-target:mortality"],
+                    "terminal_stopping_reason": "Required pass exhausted.",
+                },
+            },
+        )
+    ).structured_content
+    assert discovery is not None
+    proposal = discovery["proposal"]
     submitted = (
         await session.call_tool(
             "submit_run_proposal",
             {
                 "run_id": prepared["run_id"],
                 "proposal_token": proposal["proposal_token"],
-                "contract_version": "1.0.0",
+                "contract_version": "2.0.0",
                 # The sole Result candidate is never auto-bound by cardinality
                 # alone (#119); it still needs an explicit accepted selection.
                 "selections": [
@@ -727,29 +773,16 @@ def test_report_history_preserves_an_earlier_immutable_bundle(tmp_path: Path) ->
     )
 
     engine = RunEngine()
-    prepared = engine.prepare_run(PrepareRunRequest(project_root=tmp_path, authorized=True))
-    assert prepared.proposal is not None
-    review_work = engine.continue_run(ContinueRunRequest(run_id=prepared.run_id)).work_item
-    assert review_work is not None
-    engine.submit_source_role_review(
-        SubmitSourceRoleReviewRequest(
-            run_id=prepared.run_id,
-            work_token=review_work.work_token,
-            idempotency_key="idempotency:history-source",
-            selections=(
-                RunProposalSelection(
-                    trial_id="trial:trial-a", source_id="source:trial-a-1", accepted=True
-                ),
-            ),
-            contract_version="1.0.0",
-        )
+    prepared = _first_proposal(
+        engine, engine.prepare_run(PrepareRunRequest(project_root=tmp_path, authorized=True))
     )
+    assert prepared.proposal is not None
     submitted = engine.submit_run_proposal(
         SubmitRunProposalRequest(
             run_id=prepared.run_id,
             proposal_token=prepared.proposal.proposal_token,
             idempotency_key="idempotency:history-proposal",
-            contract_version="1.0.0",
+            contract_version="2.0.0",
             # Neither sole Result candidate is auto-bound by cardinality
             # alone (#119); each pairing needs its own explicit selection.
             selections=(

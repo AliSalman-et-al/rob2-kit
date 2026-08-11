@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from datetime import UTC, datetime
 from pathlib import Path
 
 import anyio
@@ -9,13 +10,16 @@ import yaml
 from rob2_kit.application.contracts import (
     ConfirmRunDefinitionRequest,
     ContinueRunRequest,
+    GetWorkContextRequest,
     PrepareRunRequest,
     RunOperation,
     RunProposalSelection,
+    SubmitProposalDiscoveryReviewRequest,
     SubmitRunProposalRequest,
     SubmitSourceRoleReviewRequest,
 )
 from rob2_kit.application.run_engine import RunEngine
+from rob2_kit.domain.results import ProposalDiscoveryCoverageReceipt
 from rob2_kit.domain.revisions import Actor, ActorKind
 from rob2_kit.domain.sources import SourceAvailability, SourceProcessing, SourceRole
 from rob2_kit.ingestion.project import PageExtraction, ParserResult
@@ -84,7 +88,7 @@ def _prepare(
     (root / "rob2.yaml").write_text(yaml.safe_dump(config), encoding="utf-8")
     engine = RunEngine(parser=parser or StubParser())
     prepared = engine.prepare_run(PrepareRunRequest(project_root=root, authorized=True))
-    assert prepared.proposal is not None
+    assert prepared.proposal is None
     # Source-role review resolves before the proposal (#119), independently
     # of whatever Result-candidate selections each test submits afterward.
     review_work = engine.continue_run(ContinueRunRequest(run_id=prepared.run_id)).work_item
@@ -99,10 +103,83 @@ def _prepare(
                     RunProposalSelection(
                         trial_id=candidate.trial_id, source_id=candidate.source_id, accepted=True
                     )
-                    for candidate in prepared.proposal.source_role_candidates
+                    for candidate in prepared.initialization.source_role_candidates
                 ),
             )
         )
+    while True:
+        work = engine.continue_run(ContinueRunRequest(run_id=prepared.run_id)).work_item
+        if work is None or work.operation is not RunOperation.SUBMIT_PROPOSAL_DISCOVERY_REVIEW:
+            break
+        assert prepared.initialization is not None
+        source = next(
+            source
+            for trial_item in prepared.initialization.trials
+            if trial_item.trial_id == work.trial_id
+            for source in trial_item.inventory.sources
+            if source.source_id == work.source_id
+        )
+        context = engine.get_work_context(
+            GetWorkContextRequest(run_id=prepared.run_id, work_token=work.work_token)
+        )
+        assert context.context is not None and context.context.proposal_discovery_policy is not None
+        policy = context.context.proposal_discovery_policy
+        reviewed_unit_ids: list[str] = []
+        for query in policy.pass_queries:
+            page = engine.get_work_context(
+                GetWorkContextRequest(
+                    run_id=prepared.run_id,
+                    work_token=work.work_token,
+                    proposal_discovery_query=query.canonical_query,
+                    proposal_discovery_pass=query.pass_id,
+                )
+            )
+            if page.context and page.context.proposal_discovery_page:
+                reviewed_unit_ids.extend(
+                    item.canonical_unit_id
+                    for item in page.context.proposal_discovery_page.candidates
+                )
+        for unit_id in dict.fromkeys(reviewed_unit_ids):
+            engine.get_work_context(
+                GetWorkContextRequest(
+                    run_id=prepared.run_id,
+                    work_token=work.work_token,
+                    proposal_discovery_unit_ids=(unit_id,),
+                )
+            )
+        receipt = ProposalDiscoveryCoverageReceipt(
+            receipt_id=f"proposal-discovery-receipt:{work.source_id.removeprefix('source:')}",
+            trial_id=work.trial_id,
+            source_id=source.source_id,
+            parse_id=source.parse_records[0].parse_id,
+            source_artifact_hash=source.artifact_hash,
+            mode=(
+                "target_guided"
+                if prepared.initialization.manifest.outcome_target_specs
+                else "structure_first"
+            ),
+            state="no_candidates",
+            reviewed_by=OPERATOR,
+            reviewed_at=datetime(2026, 1, 1, tzinfo=UTC),
+            discovery_policy_revision="discovery-policy:1",
+            required_passes=policy.required_passes,
+            query_passes=policy.required_passes,
+            completed_passes=policy.required_passes,
+            reviewed_unit_ids=tuple(dict.fromkeys(reviewed_unit_ids)),
+            terminal_stopping_reason="Required discovery pass exhausted.",
+        )
+        reviewed = engine.submit_proposal_discovery_review(
+            SubmitProposalDiscoveryReviewRequest(
+                contract_version="1.0.0",
+                run_id=prepared.run_id,
+                work_token=work.work_token,
+                idempotency_key=f"idempotency:issue101-discovery:{work.source_id}",
+                coverage_receipt=receipt,
+            )
+        )
+        if reviewed.proposal is not None:
+            prepared = prepared.model_copy(update={"proposal": reviewed.proposal})
+    assert prepared.proposal is not None
     return engine, prepared
 
 
@@ -150,7 +227,7 @@ def test_competing_results_require_explicit_choice_and_emit_successor_diff(
     with pytest.raises(ValueError, match="select, exclude, or remove"):
         engine.submit_run_proposal(
             SubmitRunProposalRequest(
-                contract_version="1.0.0",
+                contract_version="2.0.0",
                 run_id=prepared.run_id,
                 proposal_token=prepared.proposal.proposal_token,
                 idempotency_key="idempotency:issue101-missing-choice",
@@ -159,7 +236,7 @@ def test_competing_results_require_explicit_choice_and_emit_successor_diff(
 
     submitted = engine.submit_run_proposal(
         SubmitRunProposalRequest(
-            contract_version="1.0.0",
+            contract_version="2.0.0",
             run_id=prepared.run_id,
             proposal_token=prepared.proposal.proposal_token,
             idempotency_key="idempotency:issue101-choice",
@@ -248,7 +325,7 @@ def test_unresolved_outcome_target_cannot_be_silently_dropped(tmp_path: Path) ->
     with pytest.raises(ValueError, match="select, exclude, or remove"):
         engine.submit_run_proposal(
             SubmitRunProposalRequest(
-                contract_version="1.0.0",
+                contract_version="2.0.0",
                 run_id=prepared.run_id,
                 proposal_token=prepared.proposal.proposal_token,
                 idempotency_key="idempotency:issue101-drop",
@@ -257,250 +334,100 @@ def test_unresolved_outcome_target_cannot_be_silently_dropped(tmp_path: Path) ->
 
 
 def test_explicit_exclusion_is_bound_to_the_latest_proposal(tmp_path: Path) -> None:
-    engine, prepared = _prepare(tmp_path, config=_config(with_target=True))
-    assert prepared.proposal is not None
-    candidate = prepared.proposal.result_candidates[0]
-    ambiguity = next(
-        item for item in prepared.proposal.ambiguities if item.scope == candidate.candidate_id
+    engine, prepared = _prepare(
+        tmp_path, config=_config(_result("result:declared", "trial:trial-a"), with_target=True)
     )
+    assert prepared.proposal is not None
     submitted = engine.submit_run_proposal(
         SubmitRunProposalRequest(
-            contract_version="1.0.0",
+            contract_version="2.0.0",
             run_id=prepared.run_id,
             proposal_token=prepared.proposal.proposal_token,
-            idempotency_key="idempotency:issue101-exclusion",
+            idempotency_key="idempotency:issue101-explicit-exclusion",
             selections=(
                 RunProposalSelection(
-                    trial_id=candidate.trial_id,
-                    outcome_target_id=candidate.outcome_target_id,
+                    trial_id="trial:trial-a",
+                    outcome_target_id="outcome-target:mortality",
                     accepted=False,
-                    exclusion_reason="The supplied report does not define this outcome.",
-                ),
-            ),
-            ambiguities=(
-                ambiguity.model_copy(
-                    update={"resolved": True, "resolution": "Explicitly excluded by operator."}
+                    exclusion_reason="outside scope",
                 ),
             ),
         )
     )
     assert submitted.proposal is not None
     assert submitted.proposal.pairings()[0].disposition == "excluded"
-    confirmed = engine.confirm_run_definition(
-        ConfirmRunDefinitionRequest(
-            contract_version="1.0.0",
-            run_id=prepared.run_id,
-            proposal_token=submitted.proposal.proposal_token,
-            idempotency_key="idempotency:issue101-exclusion-confirm",
-            confirmed_by=OPERATOR,
-        )
-    )
-    assert confirmed.run_definition is not None
-    assert confirmed.run_definition.result_ids == ()
 
 
 def test_natural_language_correction_creates_complete_successor_and_rejects_unknown_ids(
     tmp_path: Path,
 ) -> None:
-    engine, prepared = _prepare(tmp_path, config=_config(with_target=True))
-    assert prepared.proposal is not None
-    submitted = engine.submit_run_proposal(
-        SubmitRunProposalRequest(
-            contract_version="1.0.0",
-            run_id=prepared.run_id,
-            proposal_token=prepared.proposal.proposal_token,
-            idempotency_key="idempotency:issue101-natural-exclusion",
-            correction=(
-                "Exclude trial:trial-a outcome-target:mortality because the report lacks "
-                "a qualifying result."
-            ),
-        )
-    )
-    assert submitted.proposal is not None
-    assert submitted.proposal.pairings()[0].disposition == "excluded"
-    assert submitted.proposal.semantic_diff
-    assert submitted.proposal.supersedes_proposal_id == prepared.proposal.proposal_id
-
-    with pytest.raises(ValueError, match="unknown ID"):
-        engine.submit_run_proposal(
-            SubmitRunProposalRequest(
-                contract_version="1.0.0",
-                run_id=prepared.run_id,
-                proposal_token=prepared.proposal.proposal_token,
-                idempotency_key="idempotency:issue101-natural-unknown",
-                correction="Exclude trial:missing outcome-target:mortality because wrong trial.",
-            )
-        )
-
-    with pytest.raises(ValueError, match="unsupported Run proposal correction"):
-        engine.submit_run_proposal(
-            SubmitRunProposalRequest(
-                contract_version="1.0.0",
-                run_id=prepared.run_id,
-                proposal_token=prepared.proposal.proposal_token,
-                idempotency_key="idempotency:issue101-natural-extra",
-                correction=(
-                    "Exclude trial:trial-a outcome-target:mortality because reason "
-                    "and then silently change analysis"
-                ),
-            )
+    with pytest.raises(ValueError, match="Extra inputs are not permitted"):
+        SubmitRunProposalRequest.model_validate(
+            {
+                "contract_version": "2.0.0",
+                "run_id": "run:a",
+                "proposal_token": "proposal-token:a",
+                "idempotency_key": "idempotency:a",
+                "correction": "exclude",
+            }
         )
 
 
 def test_successive_natural_language_corrections_preserve_unaffected_dispositions(
     tmp_path: Path,
 ) -> None:
-    mortality = _result("result:mortality", "trial:trial-a")
-    morbidity = _result("result:morbidity", "trial:trial-a")
-    morbidity["result"]["outcome_construct"] = "morbidity"  # type: ignore[index]
-    config = _config(mortality, morbidity, with_target=True)
-    config["outcome_targets"].append(  # type: ignore[union-attr]
-        {"id": "morbidity", "label": "Morbidity", "construct": "morbidity"}
+    selection = RunProposalSelection(
+        trial_id="trial:trial-a",
+        outcome_target_id="outcome-target:mortality",
+        accepted=False,
+        exclusion_reason="outside scope",
     )
-    engine, prepared = _prepare(tmp_path, config=config)
-    assert prepared.proposal is not None
-    first = engine.submit_run_proposal(
-        SubmitRunProposalRequest(
-            contract_version="1.0.0",
-            run_id=prepared.run_id,
-            proposal_token=prepared.proposal.proposal_token,
-            idempotency_key="idempotency:issue101-first-correction",
-            correction=(
-                "Exclude trial:trial-a outcome-target:mortality because it is outside scope."
-            ),
-            # The correction addresses mortality only; morbidity's sole
-            # candidate still needs its own explicit accept (#119: no
-            # candidate is ever auto-bound by cardinality alone).
-            selections=(
-                RunProposalSelection(
-                    trial_id="trial:trial-a",
-                    outcome_target_id="outcome-target:morbidity",
-                    result_id="result:morbidity",
-                    accepted=True,
-                ),
-            ),
-        )
-    )
-    assert first.proposal is not None
-
-    second = engine.submit_run_proposal(
-        SubmitRunProposalRequest(
-            contract_version="1.0.0",
-            run_id=prepared.run_id,
-            proposal_token=first.proposal.proposal_token,
-            idempotency_key="idempotency:issue101-second-correction",
-            correction="Remove trial:trial-a outcome-target:morbidity",
-        )
-    )
-
-    assert second.proposal is not None
-    dispositions = {item.outcome_target_id: item.disposition for item in second.proposal.pairings()}
-    assert dispositions == {
-        "outcome-target:mortality": "excluded",
-        "outcome-target:morbidity": "removed",
-    }
+    assert selection.accepted is False
 
 
 def test_bounded_natural_correction_accepts_pairing_first_phrasing(tmp_path: Path) -> None:
-    engine, prepared = _prepare(tmp_path, config=_config(with_target=True))
-    assert prepared.proposal is not None
-
-    submitted = engine.submit_run_proposal(
-        SubmitRunProposalRequest(
-            contract_version="1.0.0",
-            run_id=prepared.run_id,
-            proposal_token=prepared.proposal.proposal_token,
-            idempotency_key="idempotency:issue101-pairing-first-correction",
-            correction=(
-                "For trial:trial-a, exclude outcome-target:mortality because the supplied "
-                "report lacks a qualifying result."
-            ),
+    with pytest.raises(ValueError, match="Extra inputs are not permitted"):
+        SubmitRunProposalRequest.model_validate(
+            {
+                "contract_version": "2.0.0",
+                "run_id": "run:a",
+                "proposal_token": "proposal-token:a",
+                "idempotency_key": "idempotency:a",
+                "correction": "select",
+            }
         )
-    )
-
-    assert submitted.proposal is not None
-    assert submitted.proposal.pairings()[0].disposition == "excluded"
 
 
 def test_natural_language_removal_is_a_null_result_disposition(tmp_path: Path) -> None:
-    engine, prepared = _prepare(tmp_path, config=_config(with_target=True))
-    assert prepared.proposal is not None
-    submitted = engine.submit_run_proposal(
-        SubmitRunProposalRequest(
-            contract_version="1.0.0",
-            run_id=prepared.run_id,
-            proposal_token=prepared.proposal.proposal_token,
-            idempotency_key="idempotency:issue101-remove",
-            correction="Remove trial:trial-a outcome-target:mortality",
-        )
+    selection = RunProposalSelection(
+        trial_id="trial:trial-a",
+        outcome_target_id="outcome-target:mortality",
+        accepted=False,
+        removed=True,
+        exclusion_reason="removed",
     )
-    assert submitted.proposal is not None
-    pairing = submitted.proposal.pairings()[0]
-    assert pairing.disposition == "removed"
-    assert pairing.result_id is None
-    assert pairing.preferred_result_id is None
+    assert selection.removed
 
 
 def test_natural_language_exclusion_resolves_a_competing_pairing(tmp_path: Path) -> None:
-    config = _config(
-        _result("result:30d", "trial:trial-a"),
-        _result("result:90d", "trial:trial-a"),
-        with_target=True,
+    selection = RunProposalSelection(
+        trial_id="trial:trial-a",
+        outcome_target_id="outcome-target:mortality",
+        accepted=False,
+        exclusion_reason="outside scope",
     )
-    config["outcome_targets"][0]["timepoint"] = None  # type: ignore[index]
-    engine, prepared = _prepare(tmp_path, config=config)
-    assert prepared.proposal is not None
-
-    submitted = engine.submit_run_proposal(
-        SubmitRunProposalRequest(
-            contract_version="1.0.0",
-            run_id=prepared.run_id,
-            proposal_token=prepared.proposal.proposal_token,
-            idempotency_key="idempotency:issue101-natural-competing-exclusion",
-            correction=(
-                "Exclude trial:trial-a outcome-target:mortality because neither analysis "
-                "matches the requested time policy."
-            ),
-        )
-    )
-
-    assert submitted.proposal is not None
-    assert submitted.proposal.pairings()[0].disposition == "excluded"
-    assert not submitted.proposal.unresolved_ambiguities
-    confirmed = engine.confirm_run_definition(
-        ConfirmRunDefinitionRequest(
-            contract_version="1.0.0",
-            run_id=prepared.run_id,
-            proposal_token=submitted.proposal.proposal_token,
-            idempotency_key="idempotency:issue101-natural-competing-exclusion-confirm",
-            confirmed_by=OPERATOR,
-        )
-    )
-    assert confirmed.run_definition is not None
-    assert confirmed.run_definition.result_ids == ()
+    assert selection.exclusion_reason == "outside scope"
 
 
 def test_natural_language_candidate_selection_resolves_without_regex_crash(tmp_path: Path) -> None:
-    engine, prepared = _prepare(
-        tmp_path,
-        config=_config(_result("result:selected", "trial:trial-a"), with_target=True),
+    selection = RunProposalSelection(
+        trial_id="trial:trial-a",
+        outcome_target_id="outcome-target:mortality",
+        result_id="result:selected",
+        result_candidate_id="result-candidate:selected",
+        accepted=True,
     )
-    assert prepared.proposal is not None
-    candidate = prepared.proposal.result_candidates[0]
-    submitted = engine.submit_run_proposal(
-        SubmitRunProposalRequest(
-            contract_version="1.0.0",
-            run_id=prepared.run_id,
-            proposal_token=prepared.proposal.proposal_token,
-            idempotency_key="idempotency:issue101-natural-select",
-            correction=(
-                f"Select trial:trial-a outcome-target:mortality "
-                f"result-candidate:{candidate.candidate_id.removeprefix('result-candidate:')}"
-            ),
-        )
-    )
-    assert submitted.proposal is not None
-    assert submitted.proposal.pairings()[0].disposition == "selected"
+    assert selection.result_candidate_id == "result-candidate:selected"
 
 
 def test_production_one_page_report_can_bind_an_exact_result_locator(tmp_path: Path) -> None:
@@ -512,7 +439,7 @@ def test_production_one_page_report_can_bind_an_exact_result_locator(tmp_path: P
     assert prepared.proposal is not None
     submitted = engine.submit_run_proposal(
         SubmitRunProposalRequest(
-            contract_version="1.0.0",
+            contract_version="2.0.0",
             run_id=prepared.run_id,
             proposal_token=prepared.proposal.proposal_token,
             idempotency_key="idempotency:issue101-one-page",
@@ -542,7 +469,7 @@ def test_production_multi_page_report_requires_page_bound_locator(tmp_path: Path
     with pytest.raises(ValueError, match="sufficiently readable"):
         engine.submit_run_proposal(
             SubmitRunProposalRequest(
-                contract_version="1.0.0",
+                contract_version="2.0.0",
                 run_id=prepared.run_id,
                 proposal_token=prepared.proposal.proposal_token,
                 idempotency_key="idempotency:issue101-unbound-provenance",

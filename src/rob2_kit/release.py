@@ -41,6 +41,8 @@ SKILL_ALLOWED_TOOL_NAMES = (
     "continue_run",
     "get_work_context",
     "submit_run_proposal",
+    "submit_proposal_discovery_review",
+    "submit_result_mapping_review",
     "confirm_run_definition",
     "search_evidence",
     "read_evidence",
@@ -562,8 +564,8 @@ def validate_skill_contract(root: Path) -> None:
     """Validate the release-owned skill, reference, and forward-test contract."""
 
     root = root.resolve()
-    if len(SKILL_ALLOWED_TOOL_NAMES) != 13 or len(set(SKILL_ALLOWED_TOOL_NAMES)) != 13:
-        raise ValueError("skill tool allowlist must contain exactly thirteen unique tools")
+    if len(SKILL_ALLOWED_TOOL_NAMES) != 15 or len(set(SKILL_ALLOWED_TOOL_NAMES)) != 15:
+        raise ValueError("skill tool allowlist must contain exactly fifteen unique tools")
     if any(not isinstance(name, str) or not name for name in SKILL_ALLOWED_TOOL_NAMES):
         raise ValueError("skill tool allowlist is malformed")
     if not set(SKILL_ALLOWED_TOOL_NAMES) <= set(RUN_OPERATION_NAMES):

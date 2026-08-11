@@ -14,9 +14,7 @@ from collections.abc import Iterable
 from typing import TYPE_CHECKING
 
 from rob2_kit.application.contracts import (
-    RunProposalAmbiguity,
     RunProposalPair,
-    RunProposalSelection,
 )
 from rob2_kit.domain.sources import (
     SourceAvailability,
@@ -91,235 +89,6 @@ def _preferred_candidate(
         "from explicit protocol/SAP metadata; alternatives remain visible"
     )
     return candidate, policy
-
-
-_ID_BODY = r"[A-Za-z0-9_~:-]+(?:\.[A-Za-z0-9_~:-]+)*"
-_TRIAL_ID = re.compile(rf"trial:{_ID_BODY}")
-_TARGET_ID = re.compile(rf"outcome-target:{_ID_BODY}")
-_RESULT_ID = re.compile(rf"result:(?!candidate:){_ID_BODY}")
-_RESULT_CANDIDATE_ID = re.compile(rf"result-candidate:{_ID_BODY}")
-_ANY_ISSUED_ID = re.compile(rf"(?:trial|outcome-target|result-candidate|result):{_ID_BODY}")
-_CORRECTION_SELECT = re.compile(
-    rf"^(?P<action>select|choose|use|include)\s+"
-    rf"(?P<trial>trial:{_ID_BODY})\s+"
-    rf"(?P<target>outcome-target:{_ID_BODY})\s+"
-    rf"(?:(?P<result>result:(?!candidate:){_ID_BODY})|"
-    rf"(?P<candidate>result-candidate:{_ID_BODY}))$",
-    re.IGNORECASE,
-)
-_CORRECTION_EXCLUDE = re.compile(
-    rf"^(?P<action>exclude)\s+"
-    rf"(?P<trial>trial:{_ID_BODY})\s+"
-    rf"(?P<target>outcome-target:{_ID_BODY})\s+"
-    rf"because\s+(?P<reason>\S(?:.*\S)?)$",
-    re.IGNORECASE,
-)
-_CORRECTION_REMOVE = re.compile(
-    rf"^(?P<action>remove|omit)\s+"
-    rf"(?P<trial>trial:{_ID_BODY})\s+"
-    rf"(?P<target>outcome-target:{_ID_BODY})$",
-    re.IGNORECASE,
-)
-_PAIRING_FIRST_CORRECTION = re.compile(
-    rf"^(?:for|in)\s+(?P<trial>trial:{_ID_BODY})\s*,?\s+"
-    rf"(?P<action>select|choose|use|include|exclude|remove|omit)\s+"
-    rf"(?P<remainder>outcome-target:{_ID_BODY}(?:\s+.*)?)$",
-    re.IGNORECASE,
-)
-
-
-def _canonical_correction_form(text: str) -> str:
-    """Normalize one safe pairing-first sentence to the closed command grammar."""
-
-    correction = text.strip()
-    pairing_first = _PAIRING_FIRST_CORRECTION.fullmatch(correction)
-    if pairing_first is None:
-        return correction
-    return (
-        f"{pairing_first.group('action')} {pairing_first.group('trial')} "
-        f"{pairing_first.group('remainder')}"
-    )
-
-
-def translate_correction(
-    proposal: RunProposal,
-    text: str,
-) -> tuple[RunProposalSelection, ...]:
-    """Translate one complete, ID-bound correction or reject it.
-
-    The grammar is intentionally closed.  Any trailing clause, unsupported
-    meaning-level edit, or identifier not issued by this proposal fails before
-    a successor can be persisted.
-    """
-
-    correction = _canonical_correction_form(text)
-    if not correction:
-        raise ValueError("correction cannot be blank")
-    match = (
-        _CORRECTION_SELECT.fullmatch(correction)
-        or _CORRECTION_EXCLUDE.fullmatch(correction)
-        or _CORRECTION_REMOVE.fullmatch(correction)
-    )
-    if match is None:
-        raise ValueError(
-            "unsupported Run proposal correction; use complete select, exclude ... because, "
-            "or remove Trial × Outcome IDs"
-        )
-    issued_ids = set(proposal.trial_ids)
-    issued_ids.update(
-        item.target_id for item in proposal.initialization.manifest.outcome_target_specs
-    )
-    issued_ids.update(item.result.result_id for item in proposal.initialization.result_specs)
-    issued_ids.update(item.candidate_id for item in proposal.result_candidates)
-    unknown_ids = sorted(
-        token for token in _ANY_ISSUED_ID.findall(correction) if token not in issued_ids
-    )
-    if unknown_ids:
-        raise ValueError(f"Run proposal correction references unknown ID {unknown_ids[0]}")
-    trial_id = match.group("trial")
-    outcome_target_id = match.group("target")
-    if trial_id not in proposal.trial_ids:
-        raise ValueError(f"Run proposal correction references unknown Trial {trial_id}")
-    if outcome_target_id not in {
-        item.target_id for item in proposal.initialization.manifest.outcome_target_specs
-    }:
-        raise ValueError(
-            f"Run proposal correction references unknown Outcome target {outcome_target_id}"
-        )
-    action = match.group("action").casefold()
-    if action == "exclude":
-        reason = match.group("reason")
-        if re.search(r"\band then\b|\bchange\b|\bmodify\b|\bset\b", reason, re.IGNORECASE):
-            raise ValueError(
-                "unsupported Run proposal correction; submit one complete disposition only"
-            )
-        return (
-            RunProposalSelection(
-                trial_id=trial_id,
-                outcome_target_id=outcome_target_id,
-                accepted=False,
-                exclusion_reason=reason,
-            ),
-        )
-    if action in {"remove", "omit"}:
-        return (
-            RunProposalSelection(
-                trial_id=trial_id,
-                outcome_target_id=outcome_target_id,
-                accepted=False,
-                removed=True,
-            ),
-        )
-    candidate_match = match.group("candidate")
-    result_match = match.group("result")
-    candidate = None
-    if candidate_match is not None:
-        candidate = next(
-            (item for item in proposal.result_candidates if item.candidate_id == candidate_match),
-            None,
-        )
-        if candidate is None:
-            raise ValueError(
-                f"Run proposal correction references unknown Result candidate {candidate_match}"
-            )
-        if candidate.trial_id != trial_id or candidate.outcome_target_id != outcome_target_id:
-            raise ValueError(
-                "Result candidate is not issued for the selected Trial × Outcome target"
-            )
-    result_id = (
-        result_match
-        if result_match is not None
-        else (candidate.result_id if candidate is not None else None)
-    )
-    if result_id is None:
-        raise ValueError("the selected Result candidate has no engine-issued Result identity")
-    if result_id not in issued_ids:
-        raise ValueError(f"Run proposal correction references unknown Result {result_id}")
-    if (
-        candidate is not None
-        and candidate.result_id is not None
-        and candidate.result_id != result_id
-    ):
-        raise ValueError("Result and Result candidate identify different Results")
-    return (
-        RunProposalSelection(
-            trial_id=trial_id,
-            outcome_target_id=outcome_target_id,
-            result_id=result_id,
-            result_candidate_id=(candidate.candidate_id if candidate is not None else None),
-            accepted=True,
-        ),
-    )
-
-
-def apply_correction_selections(
-    proposal: RunProposal,
-    corrections: Iterable[RunProposalSelection],
-) -> tuple[RunProposalSelection, ...]:
-    """Apply pairing-scoped corrections without dropping unaffected dispositions."""
-
-    merged = list(proposal.selections)
-    for correction in corrections:
-        merged = [
-            item
-            for item in merged
-            if not (
-                item.trial_id == correction.trial_id
-                and item.outcome_target_id == correction.outcome_target_id
-            )
-        ]
-        merged.append(correction)
-    return tuple(merged)
-
-
-def correction_ambiguity_updates(
-    proposal: RunProposal,
-    selections: Iterable[RunProposalSelection],
-) -> tuple[RunProposalAmbiguity, ...]:
-    """Resolve only issued ambiguities directly addressed by a correction."""
-
-    updates: list[RunProposalAmbiguity] = []
-    for ambiguity in proposal.ambiguities:
-        for selection in selections:
-            if selection.removed:
-                candidate_match = (
-                    ambiguity.trial_id == selection.trial_id
-                    and ambiguity.outcome_target_id == selection.outcome_target_id
-                )
-            elif not selection.accepted:
-                candidate_match = (
-                    ambiguity.trial_id == selection.trial_id
-                    and ambiguity.outcome_target_id == selection.outcome_target_id
-                ) or any(
-                    item.candidate_id == ambiguity.scope
-                    and item.trial_id == selection.trial_id
-                    and item.outcome_target_id == selection.outcome_target_id
-                    for item in proposal.result_candidates
-                )
-            else:
-                candidate_match = selection.result_candidate_id == ambiguity.scope or (
-                    ambiguity.trial_id == selection.trial_id
-                    and ambiguity.outcome_target_id == selection.outcome_target_id
-                )
-            if candidate_match and ambiguity.material:
-                updates.append(
-                    ambiguity.model_copy(
-                        update={
-                            "resolved": True,
-                            "resolution": (
-                                (
-                                    "Applied natural-language removal correction."
-                                    if selection.removed
-                                    else "Applied natural-language exclusion correction."
-                                )
-                                if not selection.accepted
-                                else "Applied natural-language Result selection correction."
-                            ),
-                        }
-                    )
-                )
-                break
-    return tuple(updates)
 
 
 def _pairing_for_target(
@@ -411,13 +180,24 @@ def effective_result_ids(proposal: RunProposal) -> tuple[str, ...]:
         # Pre-target projects remain a supported migration shape. Their
         # declared Results are already exact Trial-specific assessment units.
         return proposal.result_ids
-    return tuple(
+    selected = tuple(
         dict.fromkeys(
             pairing.result_id
             for pairing in proposal_pairings(proposal)
             if pairing.disposition == "selected" and pairing.result_id is not None
         )
     )
+    # Explicit rob2.yaml Result declarations remain exact, pre-resolved input
+    # inventory.  They must not disappear merely because a later proposal
+    # revision has no source-derived candidate row for the declaration.
+    # An explicit excluded/removed pairing is an intentional empty scope, not
+    # an invitation to silently restore every inventoried Result.
+    if any(
+        pairing.disposition in {"selected", "excluded", "removed"}
+        for pairing in proposal_pairings(proposal)
+    ):
+        return selected
+    return proposal.result_ids
 
 
 def compact_proposal_payload(proposal: RunProposal) -> dict[str, object]:
@@ -426,6 +206,7 @@ def compact_proposal_payload(proposal: RunProposal) -> dict[str, object]:
     targets = tuple(proposal.initialization.manifest.outcome_target_specs)
     trials = tuple(proposal.initialization.trials)
     result_specs = {item.result.result_id: item for item in proposal.initialization.result_specs}
+    discovery_empty = not proposal.reported_endpoint_candidates
     return {
         "proposal_id": proposal.proposal_id,
         "proposal_token": proposal.proposal_token,
@@ -547,6 +328,45 @@ def compact_proposal_payload(proposal: RunProposal) -> dict[str, object]:
                 "preference_source_locator": spec.preference_source_locator,
             }
             for result_id, spec in sorted(result_specs.items())
+        ),
+        # Discovery is deliberately compacted, not hidden.  These are the
+        # identifiers and source-bound observations a Harness needs for the
+        # next promotion/mapping action; exact text remains behind the
+        # token-scoped indexed read route.
+        "reported_endpoint_candidates": tuple(
+            item.model_dump(mode="json") for item in proposal.reported_endpoint_candidates
+        ),
+        "reported_randomization_candidates": tuple(
+            item.model_dump(mode="json")
+            for item in proposal.reported_randomization_candidates
+        ),
+        "reported_arm_candidates": tuple(
+            item.model_dump(mode="json") for item in proposal.reported_arm_candidates
+        ),
+        "proposal_discovery_receipts": tuple(
+            item.model_dump(mode="json") for item in proposal.proposal_discovery_receipts
+        ),
+        "limitations": tuple(item.model_dump(mode="json") for item in proposal.limitations),
+        "promoted_design_bindings": {
+            "randomizations": tuple(proposal.randomization_bindings),
+            "arms": tuple(proposal.arm_bindings),
+        },
+        "promotion_batches": tuple(
+            item.model_dump(mode="json") for item in proposal.promotion_batches
+        ),
+        "empty_state_diagnostic": (
+            {
+                "kind": "no_reported_endpoint_candidates",
+                "detail": (
+                    "No reported endpoint candidates were surfaced by completed "
+                    "proposal discovery. Review the receipts and indexed source text."
+                ),
+                "receipt_ids": tuple(
+                    item.receipt_id for item in proposal.proposal_discovery_receipts
+                ),
+            }
+            if discovery_empty
+            else None
         ),
         "ambiguities": tuple(item.model_dump(mode="json") for item in proposal.ambiguities),
         "source_limitations": proposal.source_limitations,
@@ -688,6 +508,7 @@ def validate_result_sources(
             if not set(source.roles).intersection(
                 {
                     SourceRole.PRIMARY_REPORT,
+                    SourceRole.SECONDARY_REPORT,
                     SourceRole.CLINICAL_STUDY_REPORT,
                     SourceRole.REGULATORY_DOCUMENT,
                 }
@@ -806,12 +627,9 @@ def _source_pages(
 
 
 __all__ = [
-    "apply_correction_selections",
     "compact_proposal_payload",
-    "correction_ambiguity_updates",
     "effective_result_ids",
     "proposal_pairings",
     "semantic_diff",
-    "translate_correction",
     "validate_result_sources",
 ]

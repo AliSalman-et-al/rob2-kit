@@ -39,9 +39,16 @@ from rob2_kit.application.contracts import (
     OperationError,
     PrepareRunRequest,
     PrepareRunResponse,
+    ProposalDiscoveryCoverageReceipt,
+    ProposalDiscoveryDispositionInput,
+    ProposalPromotionBatchInput,
     ReadEvidenceRequest,
     RecordReference,
+    ReportedArmCandidate,
+    ReportedEndpointCandidate,
+    ReportedRandomizationCandidate,
     Result,
+    ResultMappingReviewInput,
     RetrievalErrorResponse,
     RunOperation,
     RunProposal,
@@ -55,6 +62,8 @@ from rob2_kit.application.contracts import (
     SubmitDomainAnswersRequest,
     SubmitDomainEvidenceRequest,
     SubmitEvidenceReviewRequest,
+    SubmitProposalDiscoveryReviewRequest,
+    SubmitResultMappingReviewRequest,
     SubmitResultResolutionRequest,
     SubmitRunProposalRequest,
     SubmitSourceRoleReviewRequest,
@@ -218,8 +227,6 @@ def _dump(response: Any) -> dict[str, Any]:
         # coverage progress and response accounting, before a page is emitted.
         payload = v2_model_facing_operation_payload(response)
     return payload
-
-
 
 
 def _wire_result(response: Any) -> CallToolResult:
@@ -398,6 +405,11 @@ def create_server(
             bool,
             Field(description="Set true only when page coverage or parsing details are required."),
         ] = False,
+        proposal_discovery_query: SearchQuery | None = None,
+        proposal_discovery_unit_ids: list[str] | None = None,
+        proposal_discovery_continuation: str | None = None,
+        proposal_discovery_read_continuation: str | None = None,
+        proposal_discovery_pass: str | None = None,
     ) -> dict[str, Any]:
         """When to use: inspect the bounded context for the current work item.
 
@@ -411,6 +423,13 @@ def create_server(
                         "run_id": run_id,
                         "work_token": work_token,
                         "include_source_details": include_source_details,
+                        "proposal_discovery_query": proposal_discovery_query,
+                        "proposal_discovery_unit_ids": proposal_discovery_unit_ids or (),
+                        "proposal_discovery_continuation": proposal_discovery_continuation,
+                        "proposal_discovery_read_continuation": (
+                            proposal_discovery_read_continuation
+                        ),
+                        "proposal_discovery_pass": proposal_discovery_pass,
                     }
                 )
             )
@@ -420,14 +439,14 @@ def create_server(
     def submit_run_proposal(
         run_id: str,
         proposal_token: str,
-        contract_version: Literal["1.0.0"],
+        contract_version: Literal["2.0.0"],
         authorized: Annotated[
             bool,
             Field(description="Set true only after explicit operator authorization."),
         ] = False,
         selections: list[RunProposalSelection] | None = None,
         ambiguities: list[RunProposalAmbiguity] | None = None,
-        correction: str | None = None,
+        promotions: ProposalPromotionBatchInput | None = None,
     ) -> dict[str, Any]:
         """When to use: revise an unconfirmed Run proposal or submit its selection.
 
@@ -448,7 +467,78 @@ def create_server(
                         "authorized": authorized,
                         "selections": selections or (),
                         "ambiguities": ambiguities or (),
-                        "correction": correction,
+                        "promotions": promotions,
+                        "contract_version": contract_version,
+                    }
+                )
+            )
+        )
+
+    @server.tool(name="submit_proposal_discovery_review")
+    def submit_proposal_discovery_review(
+        run_id: str,
+        work_token: WorkToken,
+        coverage_receipt: ProposalDiscoveryCoverageReceipt,
+        endpoints: list[ReportedEndpointCandidate] | None = None,
+        randomizations: list[ReportedRandomizationCandidate] | None = None,
+        arms: list[ReportedArmCandidate] | None = None,
+        dispositions: list[ProposalDiscoveryDispositionInput] | None = None,
+        contract_version: Literal["1.0.0"] = "1.0.0",
+    ) -> dict[str, Any]:
+        """When to use: submit one source-bound full-text discovery review.
+
+        Prerequisite: the engine must have issued the current source-bound
+        discovery WorkToken. Use only with exact engine-issued
+        provenance. Safe default: submit only observations and coverage that
+        can be traced to the reviewed source. Not for: binding Run identity or
+        inventing Outcome targets.
+        """
+        return _dump(
+            engine.submit_proposal_discovery_review(
+                SubmitProposalDiscoveryReviewRequest.model_validate(
+                    {
+                        "run_id": run_id,
+                        "work_token": work_token,
+                        "idempotency_key": _submission_key("proposal-discovery", work_token.token),
+                        "coverage_receipt": coverage_receipt,
+                        "endpoints": endpoints or (),
+                        "randomizations": randomizations or (),
+                        "arms": arms or (),
+                        "dispositions": dispositions or (),
+                        "contract_version": contract_version,
+                    }
+                )
+            )
+        )
+
+    @server.tool(name="submit_result_mapping_review")
+    def submit_result_mapping_review(
+        run_id: str,
+        work_token: WorkToken,
+        proposal_token: str,
+        mappings: list[ResultMappingReviewInput],
+        contract_version: Literal["1.0.0"] = "1.0.0",
+    ) -> dict[str, Any]:
+        """When to use: submit semantic Result mappings after human design promotion.
+
+        Prerequisite: the proposal must contain human-promoted design
+        identities and the current mapping WorkToken. Mapping is bounded to
+        the current proposal token and promoted design identities. Safe default:
+        leave uncertain mappings partial. Not for: inferring or
+        binding identity. Complete mappings carry an exact Result, Estimate,
+        and the accepted endpoint's canonical provenance; a construct synonym
+        is permitted only with an explicit human-reviewed rationale. Partial
+        mappings remain structured resolution work.
+        """
+        return _dump(
+            engine.submit_result_mapping_review(
+                SubmitResultMappingReviewRequest.model_validate(
+                    {
+                        "run_id": run_id,
+                        "work_token": work_token,
+                        "proposal_token": proposal_token,
+                        "idempotency_key": _submission_key("result-mapping", work_token.token),
+                        "mappings": mappings,
                         "contract_version": contract_version,
                     }
                 )

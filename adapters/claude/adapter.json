@@ -9,6 +9,8 @@
     "continue_run",
     "get_work_context",
     "submit_run_proposal",
+    "submit_proposal_discovery_review",
+    "submit_result_mapping_review",
     "confirm_run_definition",
     "search_evidence",
     "read_evidence",

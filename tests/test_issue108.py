@@ -45,7 +45,7 @@ def test_cutover_exposes_exactly_the_thirteen_canonical_tools() -> None:
     names = tuple(tool.name for tool in anyio.run(create_server().list_tools))
 
     assert names == CANONICAL_TOOL_NAMES
-    assert len(names) == 13
+    assert len(names) == 15
     assert not {"run_status", "classify_sources", "resolve_result", "correct_domain_answers"} & set(
         names
     )
