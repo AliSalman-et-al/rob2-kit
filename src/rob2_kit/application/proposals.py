@@ -337,8 +337,7 @@ def compact_proposal_payload(proposal: RunProposal) -> dict[str, object]:
             item.model_dump(mode="json") for item in proposal.reported_endpoint_candidates
         ),
         "reported_randomization_candidates": tuple(
-            item.model_dump(mode="json")
-            for item in proposal.reported_randomization_candidates
+            item.model_dump(mode="json") for item in proposal.reported_randomization_candidates
         ),
         "reported_arm_candidates": tuple(
             item.model_dump(mode="json") for item in proposal.reported_arm_candidates

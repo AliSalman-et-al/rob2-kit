@@ -1029,8 +1029,7 @@ def _journey(
         candidate_id = retained_candidate.get("candidate_id")
         canonical_unit_id = retained_candidate.get("canonical_unit_id")
         if not all(
-            isinstance(value, str)
-            for value in (location_handle, candidate_id, canonical_unit_id)
+            isinstance(value, str) for value in (location_handle, candidate_id, canonical_unit_id)
         ):
             raise AssertionError("v2 candidate omitted passage identity")
         read = response_object(

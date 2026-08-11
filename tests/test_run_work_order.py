@@ -16,7 +16,6 @@ from rob2_kit.application.contracts import (
     RunProposalSelection,
     RunStatusRequest,
     SubmitRunProposalRequest,
-    SubmitSourceRoleReviewRequest,
     WithdrawResultRequest,
 )
 from rob2_kit.application.lifecycle import ResultState, RunState
@@ -333,26 +332,6 @@ def test_result_control_key_reuse_from_a_retired_run_is_structured_for_every_con
     )
     replacement = _first_proposal(engine, replacement)
     assert replacement.proposal is not None
-    review_work = engine.continue_run(ContinueRunRequest(run_id=replacement.run_id)).work_item
-    assert review_work is not None
-    assert review_work.operation is RunOperation.SUBMIT_SOURCE_ROLE_REVIEW
-    replacement_proposal = engine._latest_proposal(
-        engine._bound_ledger(replacement.run_id), replacement.run_id
-    )
-    engine.submit_source_role_review(
-        SubmitSourceRoleReviewRequest(
-            contract_version="1.0.0",
-            run_id=replacement.run_id,
-            work_token=review_work.work_token,
-            idempotency_key="idempotency:replacement-source-review",
-            selections=tuple(
-                RunProposalSelection(
-                    trial_id=candidate.trial_id, source_id=candidate.source_id, accepted=True
-                )
-                for candidate in replacement_proposal.initialization.source_role_candidates
-            ),
-        )
-    )
     submitted = engine.submit_run_proposal(
         SubmitRunProposalRequest(
             contract_version="2.0.0",

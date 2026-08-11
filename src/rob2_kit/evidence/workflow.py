@@ -397,8 +397,7 @@ class V2EvidenceWorkflowState(FrozenModel):
         if not self.coverage_complete() or self.outstanding_triage_candidate_ids():
             return False
         return not any(
-            revision.kind is V2TriageKind.UNRESOLVED
-            for revision in self.triage_revisions
+            revision.kind is V2TriageKind.UNRESOLVED for revision in self.triage_revisions
         )
 
 

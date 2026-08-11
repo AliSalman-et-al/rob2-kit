@@ -113,9 +113,7 @@ def test_oversized_section_target_terminates_without_restarting_its_context(tmp_
                 request.model_copy(
                     update={
                         "items": (
-                            request.items[0].model_copy(
-                                update={"continuation": view.continuation}
-                            ),
+                            request.items[0].model_copy(update={"continuation": view.continuation}),
                         )
                     }
                 ),
@@ -258,8 +256,7 @@ def test_section_continuation_does_not_skip_an_oversized_following_fragment(tmp_
     for _ in range(32):
         assert current is not None
         assert all(
-            len(fragment.text) <= policy.per_view_character_target
-            for fragment in current.fragments
+            len(fragment.text) <= policy.per_view_character_target for fragment in current.fragments
         )
         oversized_windows.extend(
             (fragment.start, fragment.end, fragment.text)

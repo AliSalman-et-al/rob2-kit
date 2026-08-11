@@ -709,7 +709,9 @@ class RunEngine:
         # workflow state. It is nevertheless tracked under the exact issued
         # work token so a receipt can only claim pages/units this engine
         # actually exposed in the current bounded review.
-        self._proposal_discovery_navigation: dict[tuple[Identifier, Identifier], dict[str, Any]] = {}
+        self._proposal_discovery_navigation: dict[
+            tuple[Identifier, Identifier], dict[str, Any]
+        ] = {}
 
     def __getattr__(self, name: str) -> Any:
         """Expose the canonical status spelling without expanding the legacy API.
@@ -1921,12 +1923,8 @@ class RunEngine:
                 initialization = self._initialization_with_resolved_source_roles(
                     ledger, request.run_id
                 )
-                if self._initialization_discovery_complete(
-                    initialization, ledger, request.run_id
-                ):
-                    proposal = self._proposal_from_discovery(
-                        initialization, ledger, request.run_id
-                    )
+                if self._initialization_discovery_complete(initialization, ledger, request.run_id):
+                    proposal = self._proposal_from_discovery(initialization, ledger, request.run_id)
                     now = self._now()
                     suffix = self._digest(
                         f"{request.run_id}|empty-discovery|{proposal.proposal_token}"
@@ -1937,9 +1935,7 @@ class RunEngine:
                         operation_key=f"idempotency:empty-discovery-{suffix}",
                         entity_id=f"run-proposal-discovery:{suffix}",
                         revision_id=f"revision:run-proposal-discovery-{suffix}",
-                        artifact=_ProposalSubmittedRecord(
-                            run_id=request.run_id, proposal=proposal
-                        ),
+                        artifact=_ProposalSubmittedRecord(run_id=request.run_id, proposal=proposal),
                         checkpoint="checkpoint:run-proposal-discovery-reviewed",
                         outcome=WorkflowEventOutcome.WORK_REQUIRED,
                         observed_at=now,
@@ -2209,17 +2205,21 @@ class RunEngine:
             if is_discovery_work
             else None
         )
-        if is_discovery_work and (
-            request.run_id,
-            work_item.work_token.token,
-        ) not in self._proposal_discovery_navigation:
+        if (
+            is_discovery_work
+            and (
+                request.run_id,
+                work_item.work_token.token,
+            )
+            not in self._proposal_discovery_navigation
+        ):
             durable_navigation = self._durable_proposal_discovery_navigation(
                 ledger, request.run_id, work_item.work_token
             )
             if durable_navigation is not None:
-                self._proposal_discovery_navigation[(request.run_id, work_item.work_token.token)] = (
-                    durable_navigation
-                )
+                self._proposal_discovery_navigation[
+                    (request.run_id, work_item.work_token.token)
+                ] = durable_navigation
         if is_discovery_work and request.proposal_discovery_query is not None:
             assert discovery_policy is not None
             policy_passes = discovery_policy.required_passes
@@ -2230,9 +2230,9 @@ class RunEngine:
                 for item in discovery_policy.pass_queries
                 if item.pass_id == request.proposal_discovery_pass
             )
-            if request.proposal_discovery_query.model_dump(mode="json") != pass_query.canonical_query.model_dump(
+            if request.proposal_discovery_query.model_dump(
                 mode="json"
-            ):
+            ) != pass_query.canonical_query.model_dump(mode="json"):
                 raise ValueError(
                     "proposal discovery query must exactly match the engine-issued pass template"
                 )
@@ -2285,7 +2285,9 @@ class RunEngine:
                     request.proposal_discovery_read_continuation, None
                 )
                 if requested_unit_ids is None:
-                    raise ValueError("proposal discovery read continuation was not issued for this WorkToken")
+                    raise ValueError(
+                        "proposal discovery read continuation was not issued for this WorkToken"
+                    )
             else:
                 requested_unit_ids = request.proposal_discovery_unit_ids
                 exposed_unit_ids = {
@@ -2302,11 +2304,16 @@ class RunEngine:
             character_count = 0
             for offset, unit_id in enumerate(requested_unit_ids):
                 unit = index.read_unit(unit_id)
-                if selected and character_count + len(unit.text) > discovery_policy.read_character_ceiling:
+                if (
+                    selected
+                    and character_count + len(unit.text) > discovery_policy.read_character_ceiling
+                ):
                     remaining_ids.extend(requested_unit_ids[offset:])
                     break
                 if not selected and len(unit.text) > discovery_policy.read_character_ceiling:
-                    raise ValueError("proposal discovery unit exceeds the engine-issued character ceiling")
+                    raise ValueError(
+                        "proposal discovery unit exceeds the engine-issued character ceiling"
+                    )
                 selected.append(unit)
                 character_count += len(unit.text)
             units = tuple(selected)
@@ -2314,10 +2321,14 @@ class RunEngine:
                 unit.source_id != work_item.source_id or unit.parse_id != work_item.parse_id
                 for unit in units
             ):
-                raise ValueError("proposal discovery read is outside the issued Source and Parse scope")
+                raise ValueError(
+                    "proposal discovery read is outside the issued Source and Parse scope"
+                )
             discovery_units = units
             if remaining_ids:
-                discovery_read_continuation = f"proposal-read:{self._digest('|'.join(remaining_ids))}"
+                discovery_read_continuation = (
+                    f"proposal-read:{self._digest('|'.join(remaining_ids))}"
+                )
                 navigation["read_continuations"][discovery_read_continuation] = tuple(remaining_ids)
             navigation["read_unit_ids"].update(unit.unit_id for unit in units)
         if is_discovery_work and (
@@ -2903,7 +2914,9 @@ class RunEngine:
                 )
                 for source in trial.inventory.sources
             ):
-                raise ValueError("complete mapped Result source_locator is not an eligible readable source")
+                raise ValueError(
+                    "complete mapped Result source_locator is not an eligible readable source"
+                )
         if any(
             item.status != "resolved" or item.result_id is None for item in selected_candidate_items
         ):
@@ -2934,7 +2947,8 @@ class RunEngine:
             unresolved_pairings = tuple(
                 item
                 for item in pairings
-                if item.outcome_target_id in promoted_target_ids and item.disposition == "unresolved"
+                if item.outcome_target_id in promoted_target_ids
+                and item.disposition == "unresolved"
             )
             if unresolved_pairings:
                 return ConfirmRunDefinitionResponse(
@@ -2977,8 +2991,13 @@ class RunEngine:
                 or candidate.provenance_note is None
                 or candidate.mapping_reviewed_by is None
             ):
-                raise RuntimeError("complete selected mapping lost its reviewer or exact ResultSpec")
-            if self._result_spec_for(ledger, request.run_id, candidate.result.result_id) is not None:
+                raise RuntimeError(
+                    "complete selected mapping lost its reviewer or exact ResultSpec"
+                )
+            if (
+                self._result_spec_for(ledger, request.run_id, candidate.result.result_id)
+                is not None
+            ):
                 continue
             preimage = {
                 "entity_id": f"result-spec:{candidate.result.result_id.removeprefix('result:')}",
@@ -4021,7 +4040,11 @@ class RunEngine:
                     error, RunOperation.SUBMIT_PROPOSAL_DISCOVERY_REVIEW, ledger
                 )
             )
-        latest = self._latest_proposal(ledger, request.run_id) if self._has_durable_proposal(ledger, request.run_id) else None
+        latest = (
+            self._latest_proposal(ledger, request.run_id)
+            if self._has_durable_proposal(ledger, request.run_id)
+            else None
+        )
         initialization = (
             latest.initialization
             if latest is not None
@@ -4042,8 +4065,13 @@ class RunEngine:
             raise ValueError("proposal discovery receipt policy revision was not engine-issued")
         if receipt.trial_id != request.work_token.trial_id or receipt.source_id != source.source_id:
             raise ValueError("proposal discovery receipt does not match the issued work scope")
-        if request.work_token.parse_id is not None and receipt.parse_id != request.work_token.parse_id:
-            raise ValueError("proposal discovery receipt does not match the engine-issued Parse scope")
+        if (
+            request.work_token.parse_id is not None
+            and receipt.parse_id != request.work_token.parse_id
+        ):
+            raise ValueError(
+                "proposal discovery receipt does not match the engine-issued Parse scope"
+            )
         if (
             source.artifact_hash is None
             or receipt.source_artifact_hash != source.artifact_hash
@@ -4060,7 +4088,10 @@ class RunEngine:
         if (receipt.mode == "target_guided") != bool(initialization.manifest.outcome_target_specs):
             raise ValueError("proposal discovery mode must match the declared-target inventory")
         required_passes = issued_policy.required_passes
-        if receipt.required_passes != required_passes or receipt.completed_passes != required_passes:
+        if (
+            receipt.required_passes != required_passes
+            or receipt.completed_passes != required_passes
+        ):
             raise ValueError(
                 "proposal discovery passes must exactly match the engine-issued coverage policy"
             )
@@ -4076,9 +4107,13 @@ class RunEngine:
                 ledger, request.run_id, request.work_token
             )
             if navigation is not None:
-                self._proposal_discovery_navigation[(request.run_id, request.work_token.token)] = navigation
+                self._proposal_discovery_navigation[(request.run_id, request.work_token.token)] = (
+                    navigation
+                )
         if navigation is None:
-            raise ValueError("proposal discovery receipt requires engine-observed indexed navigation")
+            raise ValueError(
+                "proposal discovery receipt requires engine-observed indexed navigation"
+            )
         pass_states = navigation["passes"]
         if set(pass_states) != set(required_passes) or not all(
             state["complete"] and state.get("qualifying_search", False)
@@ -4098,7 +4133,9 @@ class RunEngine:
             *(state["candidate_unit_ids"] for state in pass_states.values())
         )
         if not observed_units <= navigation["read_unit_ids"]:
-            raise ValueError("proposal discovery receipt requires reads of all surfaced canonical units")
+            raise ValueError(
+                "proposal discovery receipt requires reads of all surfaced canonical units"
+            )
         if set(receipt.reviewed_unit_ids) != navigation["read_unit_ids"]:
             raise ValueError("proposal discovery receipt reviewed units were not engine-observed")
         candidates = (*request.endpoints, *request.randomizations, *request.arms)
@@ -4117,7 +4154,9 @@ class RunEngine:
                 if isinstance(item, dict) and isinstance(item.get("candidate_id"), str)
             )
         if candidate_ids.intersection(issued_candidate_ids):
-            raise ValueError("proposal discovery candidate IDs must be globally unique across sources")
+            raise ValueError(
+                "proposal discovery candidate IDs must be globally unique across sources"
+            )
         if set(receipt.candidate_ids) != candidate_ids:
             raise ValueError("proposal discovery receipt must enumerate every submitted candidate")
         prior_candidates: dict[Identifier, Any] = {}
@@ -4139,7 +4178,9 @@ class RunEngine:
             for related_candidate_id in candidate.related_candidate_ids:
                 related = known_candidates.get(related_candidate_id)
                 if related is None:
-                    raise ValueError("cross-source candidate relationship references an unknown candidate")
+                    raise ValueError(
+                        "cross-source candidate relationship references an unknown candidate"
+                    )
                 related_source_id = (
                     related.provenance.source_id
                     if not isinstance(related, dict)
@@ -4147,7 +4188,10 @@ class RunEngine:
                 )
                 if related_source_id == candidate.provenance.source_id:
                     raise ValueError("cross-source candidate relationship must name another Source")
-        if not candidate_ids and receipt.state not in {"no_candidates", "complete_with_limitations"}:
+        if not candidate_ids and receipt.state not in {
+            "no_candidates",
+            "complete_with_limitations",
+        }:
             raise ValueError(
                 "empty discovery requires an explicit no-candidates or limited terminal receipt"
             )
@@ -4177,7 +4221,9 @@ class RunEngine:
                 raise ValueError("reported candidate crosses the issued Trial")
             provenance = candidate.provenance
             if provenance.discovery_policy_revision != receipt.discovery_policy_revision:
-                raise ValueError("reported candidate policy revision does not match the issued receipt")
+                raise ValueError(
+                    "reported candidate policy revision does not match the issued receipt"
+                )
             if provenance.source_id != source.source_id or provenance.parse_id != receipt.parse_id:
                 raise ValueError(
                     "reported candidate provenance must bind the reviewed Source and Parse"
@@ -4188,9 +4234,7 @@ class RunEngine:
                 )
             self._validate_discovery_provenance(provenance, source)
             if provenance.canonical_unit_id not in navigation["read_unit_ids"]:
-                raise ValueError(
-                    "reported candidate provenance was not read under this WorkToken"
-                )
+                raise ValueError("reported candidate provenance was not read under this WorkToken")
         randomizations = {item.candidate_id: item for item in request.randomizations}
         for randomization in request.randomizations:
             if randomization.arm_candidate_ids != tuple(
@@ -4477,19 +4521,41 @@ class RunEngine:
                     for item in proposal.initialization.manifest.outcome_target_specs
                     if item.target_id == mapping.outcome_target_id
                 )
-                if target.outcome_construct and (
-                    mapping.result.outcome_construct.casefold()
-                    != target.outcome_construct.casefold()
-                ) and mapping.construct_admissibility != "accepted_synonym":
-                    raise ValueError("complete Result mapping outcome construct conflicts with target")
-                if target.time_point and mapping.result.time_point.casefold() != target.time_point.casefold():
+                if (
+                    target.outcome_construct
+                    and (
+                        mapping.result.outcome_construct.casefold()
+                        != target.outcome_construct.casefold()
+                    )
+                    and mapping.construct_admissibility != "accepted_synonym"
+                ):
+                    raise ValueError(
+                        "complete Result mapping outcome construct conflicts with target"
+                    )
+                if (
+                    target.time_point
+                    and mapping.result.time_point.casefold() != target.time_point.casefold()
+                ):
                     raise ValueError("complete Result mapping time point conflicts with target")
-                if target.accepted_instruments and mapping.result.measurement_instrument not in target.accepted_instruments:
+                if (
+                    target.accepted_instruments
+                    and mapping.result.measurement_instrument not in target.accepted_instruments
+                ):
                     raise ValueError("complete Result mapping instrument is not accepted by target")
-                if target.accepted_effect_measures and mapping.result.effect_measure not in target.accepted_effect_measures:
-                    raise ValueError("complete Result mapping effect measure is not accepted by target")
-                if target.effect_of_interest and mapping.result.effect_of_interest != target.effect_of_interest:
-                    raise ValueError("complete Result mapping effect of interest conflicts with target")
+                if (
+                    target.accepted_effect_measures
+                    and mapping.result.effect_measure not in target.accepted_effect_measures
+                ):
+                    raise ValueError(
+                        "complete Result mapping effect measure is not accepted by target"
+                    )
+                if (
+                    target.effect_of_interest
+                    and mapping.result.effect_of_interest != target.effect_of_interest
+                ):
+                    raise ValueError(
+                        "complete Result mapping effect of interest conflicts with target"
+                    )
             complete_mapping = (
                 mapping.mapping_status is ProposalMappingStatus.ACCEPTED
                 and mapping.identity_completeness is ResultIdentityCompleteness.RESULT_COMPLETE
@@ -4503,33 +4569,27 @@ class RunEngine:
                     else None
                 )
             )
-            candidates_by_id[mapping.candidate_id] = (
-                ResultCandidate(
-                    candidate_id=mapping.candidate_id,
-                    trial_id=mapping.trial_id,
-                    outcome_target_id=mapping.outcome_target_id,
-                    result_id=result_id,
-                    label=mapping.label,
-                    source_locator=(
-                        mapping.result.source_locator
-                        if mapping.result
-                        else endpoint.provenance.locator
-                    ),
-                    status="resolved"
-                    if complete_mapping
-                    else "needs_input",
-                    mapping_status=mapping.mapping_status,
-                    identity_completeness=mapping.identity_completeness,
-                    endpoint_candidate_id=mapping.endpoint_candidate_id,
-                    randomization_candidate_id=mapping.randomization_candidate_id,
-                    experimental_arm_candidate_id=mapping.experimental_arm_candidate_id,
-                    comparator_arm_candidate_id=mapping.comparator_arm_candidate_id,
-                    result=mapping.result,
-                    estimate=mapping.estimate,
-                    provenance_note=mapping.provenance_note,
-                    source_provenance=mapping.source_provenance,
-                    mapping_reviewed_by=mapping.reviewed_by,
-                )
+            candidates_by_id[mapping.candidate_id] = ResultCandidate(
+                candidate_id=mapping.candidate_id,
+                trial_id=mapping.trial_id,
+                outcome_target_id=mapping.outcome_target_id,
+                result_id=result_id,
+                label=mapping.label,
+                source_locator=(
+                    mapping.result.source_locator if mapping.result else endpoint.provenance.locator
+                ),
+                status="resolved" if complete_mapping else "needs_input",
+                mapping_status=mapping.mapping_status,
+                identity_completeness=mapping.identity_completeness,
+                endpoint_candidate_id=mapping.endpoint_candidate_id,
+                randomization_candidate_id=mapping.randomization_candidate_id,
+                experimental_arm_candidate_id=mapping.experimental_arm_candidate_id,
+                comparator_arm_candidate_id=mapping.comparator_arm_candidate_id,
+                result=mapping.result,
+                estimate=mapping.estimate,
+                provenance_note=mapping.provenance_note,
+                source_provenance=mapping.source_provenance,
+                mapping_reviewed_by=mapping.reviewed_by,
             )
         candidates = list(candidates_by_id.values())
         limitations = tuple(
@@ -4654,9 +4714,16 @@ class RunEngine:
         }
         for promotion in batch.outcome_targets:
             if not set(promotion.endpoint_candidate_ids) <= endpoint_ids:
-                raise ValueError("Outcome target promotion requires issued endpoint provenance seeds")
-            if any(dispositions.get(candidate_id) != "accepted" for candidate_id in promotion.endpoint_candidate_ids):
-                raise ValueError("Outcome target promotion requires accepted endpoint provenance seeds")
+                raise ValueError(
+                    "Outcome target promotion requires issued endpoint provenance seeds"
+                )
+            if any(
+                dispositions.get(candidate_id) != "accepted"
+                for candidate_id in promotion.endpoint_candidate_ids
+            ):
+                raise ValueError(
+                    "Outcome target promotion requires accepted endpoint provenance seeds"
+                )
         for promotion in batch.randomizations:
             randomization = randomizations.get(promotion.randomization_candidate_id)
             if randomization is None:
@@ -4690,10 +4757,7 @@ class RunEngine:
                     endpoint.comparator_arm_candidate_id,
                 )
                 if any(item is None for item in design_candidate_ids):
-                    if (
-                        promotion.admissibility_rule == "design_undiscovered"
-                        and not randomizations
-                    ):
+                    if promotion.admissibility_rule == "design_undiscovered" and not randomizations:
                         continue
                     raise ValueError(
                         "Outcome target promotion requires an accepted promoted Randomization and ordered Arms"
@@ -4706,10 +4770,7 @@ class RunEngine:
                     or experimental_arm_id not in arm_bindings
                     or comparator_arm_id not in arm_bindings
                 ):
-                    if (
-                        promotion.admissibility_rule == "design_undiscovered"
-                        and not randomizations
-                    ):
+                    if promotion.admissibility_rule == "design_undiscovered" and not randomizations:
                         continue
                     raise ValueError(
                         "Outcome target promotion must atomically include its accepted Randomization and ordered Arms"
@@ -4722,7 +4783,9 @@ class RunEngine:
                 targets.append(promotion.target)
                 known_targets[promotion.target.target_id] = promotion.target
             elif existing_target != promotion.target:
-                raise ValueError("Outcome target promotion conflicts with the issued target meaning")
+                raise ValueError(
+                    "Outcome target promotion conflicts with the issued target meaning"
+                )
         manifest = proposal.initialization.manifest.model_copy(
             update={
                 "outcome_target_specs": tuple(targets),
@@ -11032,10 +11095,13 @@ class RunEngine:
                 and selected_candidate.estimate is not None
                 and selected_candidate.result_id == selection.result_id
             )
-            if issued_results.get(selection.result_id) != selection.trial_id and not (
-                selected_candidate is not None
-                and selected_candidate.status == "needs_input"
-            ) and not candidate_supplies_exact_result:
+            if (
+                issued_results.get(selection.result_id) != selection.trial_id
+                and not (
+                    selected_candidate is not None and selected_candidate.status == "needs_input"
+                )
+                and not candidate_supplies_exact_result
+            ):
                 raise ValueError("Run proposal Result was not issued for the selected Trial")
             if (
                 selection.result_candidate_id is not None
@@ -11433,15 +11499,19 @@ class RunEngine:
                         for receipt_id in limitation.receipt_ids
                         if receipt_id in receipt_identities
                     )
-                if not corrective_sources and not corrective_identities and any(
-                    limitation.material
-                    and limitation.kind
-                    in {
-                        ProposalLimitationKind.DISCOVERY_FAILED,
-                        ProposalLimitationKind.DISCOVERY_LIMITED,
-                    }
-                    and limitation.scope == run_id
-                    for limitation in proposal.limitations
+                if (
+                    not corrective_sources
+                    and not corrective_identities
+                    and any(
+                        limitation.material
+                        and limitation.kind
+                        in {
+                            ProposalLimitationKind.DISCOVERY_FAILED,
+                            ProposalLimitationKind.DISCOVERY_LIMITED,
+                        }
+                        and limitation.scope == run_id
+                        for limitation in proposal.limitations
+                    )
                 ):
                     corrective_sources.update(
                         source.source_id
@@ -12456,8 +12526,7 @@ class RunEngine:
             for trial in inventory.trials
             if trial.status == "inventory_ready"
             for source in trial.inventory.sources
-            if self._is_eligible_discovery_source(source)
-            and source.artifact_hash is not None
+            if self._is_eligible_discovery_source(source) and source.artifact_hash is not None
             for parse in source.parse_records
             if parse.artifact_hash == source.artifact_hash
         }
@@ -12474,8 +12543,13 @@ class RunEngine:
                 "no_candidates",
             }:
                 trial_id, source_id = receipt.get("trial_id"), receipt.get("source_id")
-                artifact_hash, parse_id = receipt.get("source_artifact_hash"), receipt.get("parse_id")
-                if all(isinstance(item, str) for item in (trial_id, source_id, artifact_hash, parse_id)):
+                artifact_hash, parse_id = (
+                    receipt.get("source_artifact_hash"),
+                    receipt.get("parse_id"),
+                )
+                if all(
+                    isinstance(item, str) for item in (trial_id, source_id, artifact_hash, parse_id)
+                ):
                     completed.add((trial_id, source_id, artifact_hash, parse_id))
         if pending_receipt is not None:
             completed.add(
@@ -12494,7 +12568,11 @@ class RunEngine:
         return self._initialization_discovery_complete(proposal, ledger, run_id)
 
     def _persist_proposal_discovery_navigation(
-        self, ledger: WorkflowLedger, run_id: Identifier, token: WorkToken, navigation: dict[str, Any]
+        self,
+        ledger: WorkflowLedger,
+        run_id: Identifier,
+        token: WorkToken,
+        navigation: dict[str, Any],
     ) -> None:
         payload = {
             "passes": {
@@ -12511,7 +12589,9 @@ class RunEngine:
                 key: tuple(value) for key, value in navigation["read_continuations"].items()
             },
         }
-        record = _ProposalDiscoveryNavigationRecord(run_id=run_id, work_token=token, navigation=payload)
+        record = _ProposalDiscoveryNavigationRecord(
+            run_id=run_id, work_token=token, navigation=payload
+        )
         digest = canonical_hash(payload).removeprefix("sha256:")
         revision_digest = self._digest(f"{token.token}|{digest}")
         operation_key = f"proposal-discovery-navigation:{token.token}:{digest}"
@@ -12614,7 +12694,15 @@ class RunEngine:
                 )
                 terms = tuple(
                     dict.fromkeys(
-                        (*terms, "endpoint", "outcome", "mortality", "survival", "death", "progression")
+                        (
+                            *terms,
+                            "endpoint",
+                            "outcome",
+                            "mortality",
+                            "survival",
+                            "death",
+                            "progression",
+                        )
                     )
                 )
                 queries.append(
@@ -12667,11 +12755,13 @@ class RunEngine:
     ) -> RunProposal:
         """Construct the first durable proposal only after terminal discovery."""
 
-        prior_proposal = self._latest_proposal(ledger, run_id) if self._has_durable_proposal(ledger, run_id) else None
+        prior_proposal = (
+            self._latest_proposal(ledger, run_id)
+            if self._has_durable_proposal(ledger, run_id)
+            else None
+        )
         proposal = (
-            prior_proposal
-            if prior_proposal is not None
-            else self._proposal(run_id, initialization)
+            prior_proposal if prior_proposal is not None else self._proposal(run_id, initialization)
         ).model_copy(update={"input_snapshot_hash": self._prepared_snapshot_hash(ledger, run_id)})
         submissions: list[tuple[Any, tuple[Any, ...], tuple[Any, ...], tuple[Any, ...]]] = []
         for event in self._events_for_run(ledger, run_id):
@@ -12797,7 +12887,8 @@ class RunEngine:
                 receipt.parse_id,
             )
             for event in self._events_for_run(ledger, run_id)
-            if legacy_marker_sequence is not None and event.sequence > legacy_marker_sequence
+            if legacy_marker_sequence is not None
+            and event.sequence > legacy_marker_sequence
             and event.operation == "operation:submit-proposal-discovery-review"
             for payload in (self._event_payload(ledger, event),)
             for raw_receipt in (payload.get("coverage_receipt"),)
@@ -12860,7 +12951,8 @@ class RunEngine:
                 item.provenance.source_id,
                 item.provenance.artifact_hash,
                 item.provenance.parse_id,
-            ) in current_identities
+            )
+            in current_identities
         )
         randomization_models = tuple(
             item
@@ -12869,7 +12961,8 @@ class RunEngine:
                 item.provenance.source_id,
                 item.provenance.artifact_hash,
                 item.provenance.parse_id,
-            ) in current_identities
+            )
+            in current_identities
         )
         arm_models = tuple(
             item
@@ -12878,7 +12971,8 @@ class RunEngine:
                 item.provenance.source_id,
                 item.provenance.artifact_hash,
                 item.provenance.parse_id,
-            ) in current_identities
+            )
+            in current_identities
         )
         all_candidate_ids = tuple(
             item.candidate_id for item in (*endpoint_models, *randomization_models, *arm_models)
@@ -12983,7 +13077,8 @@ class RunEngine:
                             receipt.source_id,
                             receipt.source_artifact_hash,
                             receipt.parse_id,
-                        ) == (source_id, artifact_hash, parse_id)
+                        )
+                        == (source_id, artifact_hash, parse_id)
                     ),
                     source_id=source_id,
                     source_artifact_hash=artifact_hash,

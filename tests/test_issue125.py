@@ -48,7 +48,6 @@ def _unit(unit_id: str, text: str) -> CanonicalEvidenceUnit:
     )
 
 
-
 def test_seed_family_nested_in_query_gets_a_top_level_field_hint() -> None:
     with pytest.raises(ValidationError) as excinfo:
         SearchQuery.model_validate({"terms": ["allocation"], "seed_family": "seed:a"})

@@ -227,10 +227,10 @@ def _classify_current_sources(engine: RunEngine, run_id: str) -> None:
             contract_version="1.0.0",
             run_id=run_id,
             work_token=work.work_token,
-                idempotency_key=(
-                    "idempotency:reconciliation-sources:"
-                    f"{work.work_token.token.removeprefix('work-token:')}"
-                ),
+            idempotency_key=(
+                "idempotency:reconciliation-sources:"
+                f"{work.work_token.token.removeprefix('work-token:')}"
+            ),
             selections=tuple(
                 RunProposalSelection(
                     trial_id=candidate.trial_id, source_id=candidate.source_id, accepted=True

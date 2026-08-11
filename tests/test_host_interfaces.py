@@ -78,9 +78,10 @@ def test_mcp_tool_schemas_explain_nested_inputs_and_expose_passage_freezing() ->
     assert "EvidencePassageInput" in str(evidence_schema)
     assert "include_source_details" in tools["get_work_context"].input_schema["properties"]
     assert "proposal_discovery_pass" in tools["get_work_context"].input_schema["properties"]
-    assert "proposal_discovery_read_continuation" in tools["get_work_context"].input_schema[
-        "properties"
-    ]
+    assert (
+        "proposal_discovery_read_continuation"
+        in tools["get_work_context"].input_schema["properties"]
+    )
     for tool_name in (
         "submit_run_proposal",
         "confirm_run_definition",

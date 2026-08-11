@@ -165,9 +165,7 @@ def _indexed_provenance(
         (
             "reported-design",
             SearchQuery(
-                any_of=(
-                    ("randomized", "randomised", "allocated", "allocation", "assigned"),
-                )
+                any_of=(("randomized", "randomised", "allocated", "allocation", "assigned"),)
             ),
         ),
         (
@@ -212,9 +210,8 @@ def _indexed_provenance(
         char_start=0,
         char_end=span_end,
         locator=f"{source.relative_path} p. {unit.page}",
-        displayed_text_hash="sha256:" + hashlib.sha256(
-            unit.text[:span_end].encode("utf-8")
-        ).hexdigest(),
+        displayed_text_hash="sha256:"
+        + hashlib.sha256(unit.text[:span_end].encode("utf-8")).hexdigest(),
         discovery_policy_revision="discovery-policy:1",
         rationale="Reported in this reviewed canonical unit.",
         reviewed_by=Actor(
@@ -284,30 +281,38 @@ def _discovery_submission(
     endpoint_disposition: str = "accepted",
     without_design: bool = False,
 ) -> SubmitProposalDiscoveryReviewRequest:
-    arms = () if without_design else (
-        ReportedArmCandidate(
-            candidate_id="reported-arm:treatment",
-            trial_id=work.trial_id,
-            randomization_candidate_id="reported-randomization:main",
-            label="Treatment",
-            provenance=provenance,
-        ),
-        ReportedArmCandidate(
-            candidate_id="reported-arm:control",
-            trial_id=work.trial_id,
-            randomization_candidate_id="reported-randomization:main",
-            label="Control",
-            provenance=provenance,
-        ),
+    arms = (
+        ()
+        if without_design
+        else (
+            ReportedArmCandidate(
+                candidate_id="reported-arm:treatment",
+                trial_id=work.trial_id,
+                randomization_candidate_id="reported-randomization:main",
+                label="Treatment",
+                provenance=provenance,
+            ),
+            ReportedArmCandidate(
+                candidate_id="reported-arm:control",
+                trial_id=work.trial_id,
+                randomization_candidate_id="reported-randomization:main",
+                label="Control",
+                provenance=provenance,
+            ),
+        )
     )
-    randomizations = () if without_design else (
-        ReportedRandomizationCandidate(
-            candidate_id="reported-randomization:main",
-            trial_id=work.trial_id,
-            label="Main allocation",
-            provenance=provenance,
-            arm_candidate_ids=tuple(item.candidate_id for item in arms),
-        ),
+    randomizations = (
+        ()
+        if without_design
+        else (
+            ReportedRandomizationCandidate(
+                candidate_id="reported-randomization:main",
+                trial_id=work.trial_id,
+                label="Main allocation",
+                provenance=provenance,
+                arm_candidate_ids=tuple(item.candidate_id for item in arms),
+            ),
+        )
     )
     if second_randomization and not without_design:
         extra_arms = (
@@ -350,9 +355,7 @@ def _discovery_submission(
         ProposalDiscoveryDispositionInput(
             candidate_id=item.candidate_id,
             disposition=(
-                endpoint_disposition
-                if item.candidate_id == endpoint.candidate_id
-                else "accepted"
+                endpoint_disposition if item.candidate_id == endpoint.candidate_id else "accepted"
             ),
             detail="Faithful source observation.",
         )
@@ -370,9 +373,9 @@ def _discovery_submission(
         coverage_receipt=ProposalDiscoveryCoverageReceipt(
             receipt_id="proposal-discovery-receipt:source-backed",
             trial_id=work.trial_id,
-        source_id=source.source_id,
-        parse_id=provenance.parse_id,
-        source_artifact_hash=source.artifact_hash,
+            source_id=source.source_id,
+            parse_id=provenance.parse_id,
+            source_artifact_hash=source.artifact_hash,
             mode="structure_first",
             state="complete",
             discovery_policy_revision="discovery-policy:1",
@@ -522,10 +525,14 @@ def _exact_mapping(proposal, trial_id: str) -> ResultMappingReviewInput:
 
 
 def _complete_empty_discovery(engine: RunEngine, run_id: str, work, *, key: str):
-    proposal = engine._latest_proposal(engine._bound_ledger(run_id), run_id) if any(
-        event.operation.startswith("operation:run-proposal")
-        for event in engine._bound_ledger(run_id).events()
-    ) else None
+    proposal = (
+        engine._latest_proposal(engine._bound_ledger(run_id), run_id)
+        if any(
+            event.operation.startswith("operation:run-proposal")
+            for event in engine._bound_ledger(run_id).events()
+        )
+        else None
+    )
     initialization = (
         proposal.initialization
         if proposal is not None
@@ -855,9 +862,9 @@ def test_issue120_receipt_requires_terminal_complete_coverage_and_dispositions()
         ProposalDiscoveryCoverageReceipt(
             receipt_id="proposal-discovery-receipt:unfinished",
             trial_id="trial:a",
-        source_id="source:a",
-        parse_id="parse:a",
-        source_artifact_hash="sha256:" + "a" * 64,
+            source_id="source:a",
+            parse_id="parse:a",
+            source_artifact_hash="sha256:" + "a" * 64,
             mode="structure_first",
             state="no_candidates",
             reviewed_by=_human(),
@@ -871,9 +878,9 @@ def test_issue120_receipt_requires_terminal_complete_coverage_and_dispositions()
         ProposalDiscoveryCoverageReceipt(
             receipt_id="proposal-discovery-receipt:superseded",
             trial_id="trial:a",
-        source_id="source:a",
-        parse_id="parse:a",
-        source_artifact_hash="sha256:" + "a" * 64,
+            source_id="source:a",
+            parse_id="parse:a",
+            source_artifact_hash="sha256:" + "a" * 64,
             mode="structure_first",
             state="complete",
             discovery_policy_revision="discovery-policy:1",
@@ -983,8 +990,8 @@ def test_issue120_first_proposal_waits_for_every_eligible_source(tmp_path) -> No
                     discovery_policy_revision="discovery-policy:1",
                     required_passes=("reported-design", "reported-endpoints"),
                     query_passes=("reported-design", "reported-endpoints"),
-                        completed_passes=("reported-design", "reported-endpoints"),
-                        reviewed_unit_ids=reviewed_unit_ids,
+                    completed_passes=("reported-design", "reported-endpoints"),
+                    reviewed_unit_ids=reviewed_unit_ids,
                     terminal_stopping_reason="Required pass exhausted.",
                 ),
             )
@@ -1141,8 +1148,7 @@ def test_issue120_rejected_endpoint_is_terminal_not_mapping_work(tmp_path) -> No
     )
     assert promoted.proposal is not None
     assert any(
-        "terminal exclusions" in limitation.detail
-        for limitation in promoted.proposal.limitations
+        "terminal exclusions" in limitation.detail for limitation in promoted.proposal.limitations
     )
     assert engine.continue_run(ContinueRunRequest(run_id=prepared.run_id)).work_item is None
 
@@ -1281,9 +1287,7 @@ def test_issue120_successor_identity_digests_full_discovery_candidate_content(tm
     changed_candidate = proposal.reported_endpoint_candidates[0].model_copy(
         update={"label": "Changed reported mortality wording"}
     )
-    changed = proposal.model_copy(
-        update={"reported_endpoint_candidates": (changed_candidate,)}
-    )
+    changed = proposal.model_copy(update={"reported_endpoint_candidates": (changed_candidate,)})
     changed = engine._freeze_submitted_proposal(changed)  # type: ignore[attr-defined]
     assert same.proposal_id == proposal.proposal_id
     assert changed.proposal_id != proposal.proposal_id

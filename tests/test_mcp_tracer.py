@@ -40,7 +40,7 @@ from rob2_kit.reports.archives import verify_archive
 from rob2_kit.storage import ArtifactStore, WorkflowLedger
 from rob2_kit.storage.ledger import LeaseConflictError
 from tests.test_host_interfaces import blank_pdf
-from tests.test_run_proposal import _first_proposal
+from tests.test_run_proposal import StubParser, _first_proposal
 
 
 def _v2_tool_names() -> tuple[str, ...]:
@@ -237,8 +237,7 @@ def _complete_empty_receipts(
         )
         for query, pass_kind, seed_family in queries:
             attempt_id = (
-                f"attempt:{token.token.removeprefix('work-token:')}:{question_id}:"
-                f"{pass_kind.value}"
+                f"attempt:{token.token.removeprefix('work-token:')}:{question_id}:{pass_kind.value}"
             )
             response = engine.search_evidence(
                 SearchEvidenceRequest(
@@ -401,35 +400,71 @@ async def _prepare_and_confirm(session: ClientSession, root: Path) -> str:
                 ],
             },
         )
-    discovery_work = (
-        await session.call_tool("continue_run", {"run_id": prepared["run_id"]})
-    ).structured_content
-    assert discovery_work is not None
-    assert discovery_work["work_item"]["operation"] == "submit_proposal_discovery_review"
-    source = prepared["initialization"]["trials"][0]["inventory"]["sources"][0]
-    for pass_name in ("outcome-target:mortality",):
-        navigated = await session.call_tool(
-            "get_work_context",
-            {
-                "run_id": prepared["run_id"],
-                "work_token": discovery_work["work_item"]["work_token"],
-                "proposal_discovery_query": {"any_of": [["mortality"]]},
-                "proposal_discovery_pass": pass_name,
-            },
+    proposal = None
+    while proposal is None:
+        discovery_work = (
+            await session.call_tool("continue_run", {"run_id": prepared["run_id"]})
+        ).structured_content
+        assert discovery_work is not None
+        work = discovery_work["work_item"]
+        assert work["operation"] == "submit_proposal_discovery_review"
+        source = next(
+            source
+            for trial in prepared["initialization"]["trials"]
+            if trial["trial_id"] == work["trial_id"]
+            for source in trial["inventory"]["sources"]
+            if source["source_id"] == work["source_id"]
         )
-        assert navigated.structured_content is not None
-    discovery = (
-        await session.call_tool(
+        parse = next(
+            item for item in source["parse_records"] if item["parse_id"] == work["parse_id"]
+        )
+        context = (
+            await session.call_tool(
+                "get_work_context",
+                {"run_id": prepared["run_id"], "work_token": work["work_token"]},
+            )
+        ).structured_content
+        assert context is not None
+        policy = context["context"]["proposal_discovery_policy"]
+        queries = {item["pass_id"]: item["canonical_query"] for item in policy["pass_queries"]}
+        reviewed_unit_ids: list[str] = []
+        for pass_name in policy["required_passes"]:
+            navigated = await session.call_tool(
+                "get_work_context",
+                {
+                    "run_id": prepared["run_id"],
+                    "work_token": work["work_token"],
+                    "proposal_discovery_query": queries[pass_name],
+                    "proposal_discovery_pass": pass_name,
+                },
+            )
+            assert navigated.structured_content is not None
+            page = navigated.structured_content["context"].get("proposal_discovery_page")
+            if page is not None:
+                reviewed_unit_ids.extend(item["canonical_unit_id"] for item in page["candidates"])
+        unique_unit_ids = list(dict.fromkeys(reviewed_unit_ids))
+        for offset in range(0, len(unique_unit_ids), 4):
+            reviewed = await session.call_tool(
+                "get_work_context",
+                {
+                    "run_id": prepared["run_id"],
+                    "work_token": work["work_token"],
+                    "proposal_discovery_unit_ids": unique_unit_ids[offset : offset + 4],
+                },
+            )
+            assert reviewed.structured_content is not None
+        discovery_result = await session.call_tool(
             "submit_proposal_discovery_review",
             {
                 "run_id": prepared["run_id"],
-                "work_token": discovery_work["work_item"]["work_token"],
+                "work_token": work["work_token"],
                 "contract_version": "1.0.0",
                 "coverage_receipt": {
-                    "receipt_id": "proposal-discovery-receipt:tracer",
-                    "trial_id": discovery_work["work_item"]["trial_id"],
-                    "source_id": discovery_work["work_item"]["source_id"],
-                    "parse_id": source["parse_records"][0]["parse_id"],
+                    "receipt_id": f"proposal-discovery-receipt:{work['source_id']}",
+                    "trial_id": work["trial_id"],
+                    "source_id": work["source_id"],
+                    "parse_id": parse["parse_id"],
+                    "source_artifact_hash": source["artifact_hash"],
                     "mode": "target_guided",
                     "state": "no_candidates",
                     "reviewed_by": {
@@ -438,16 +473,18 @@ async def _prepare_and_confirm(session: ClientSession, root: Path) -> str:
                         "display_name": "Tracer",
                     },
                     "reviewed_at": "2026-01-01T00:00:00Z",
-                    "discovery_policy_revision": "discovery-policy:1",
-                    "required_passes": ["outcome-target:mortality"],
-                    "completed_passes": ["outcome-target:mortality"],
+                    "discovery_policy_revision": policy["policy_revision"],
+                    "required_passes": policy["required_passes"],
+                    "query_passes": policy["required_passes"],
+                    "completed_passes": policy["required_passes"],
+                    "reviewed_unit_ids": unique_unit_ids,
                     "terminal_stopping_reason": "Required pass exhausted.",
                 },
             },
         )
-    ).structured_content
-    assert discovery is not None
-    proposal = discovery["proposal"]
+        discovery = discovery_result.structured_content
+        assert discovery is not None, discovery_result.content
+        proposal = discovery.get("proposal")
     submitted = (
         await session.call_tool(
             "submit_run_proposal",
@@ -772,7 +809,7 @@ def test_report_history_preserves_an_earlier_immutable_bundle(tmp_path: Path) ->
         encoding="utf-8",
     )
 
-    engine = RunEngine()
+    engine = RunEngine(parser=StubParser())
     prepared = _first_proposal(
         engine, engine.prepare_run(PrepareRunRequest(project_root=tmp_path, authorized=True))
     )

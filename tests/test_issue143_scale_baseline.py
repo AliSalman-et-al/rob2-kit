@@ -249,7 +249,6 @@ def _exact_claim(unit, *, claim_id: str, start: int, end: int) -> dict[str, obje
     }
 
 
-
 def _measure_v2(tmp_path: Path, fixture: dict[str, object]) -> dict[str, object]:
     """Replay the public shape through v2 navigation without application state."""
 
@@ -288,9 +287,7 @@ def _measure_v2(tmp_path: Path, fixture: dict[str, object]) -> dict[str, object]
         pages = []
 
         def exact_envelope_measure(candidate_page) -> tuple[int, int]:
-            payload = _mcp_search_response(
-                candidate_page, pass_kind=pass_kind, workflow=workflow
-            )
+            payload = _mcp_search_response(candidate_page, pass_kind=pass_kind, workflow=workflow)
             accounting = payload["response_accounting"]
             return (
                 int(accounting["serialized_response_bytes"]),
@@ -480,12 +477,9 @@ def _measure_v2(tmp_path: Path, fixture: dict[str, object]) -> dict[str, object]
         "scientific_equivalence_evidence": {
             "selected_underlying_unit_ids": selected,
             "selected_underlying_unit_hash": canonical_hash(selected),
-            "exact_claim_hash": canonical_hash(
-                list(claims)
-            ),
+            "exact_claim_hash": canonical_hash(list(claims)),
         },
     }
-
 
 
 def test_issue143_v2_navigation_compaction_meets_the_frozen_gate(tmp_path: Path) -> None:

@@ -208,9 +208,7 @@ def test_v2_triage_is_bound_to_each_sq_page_occurrence(tmp_path) -> None:
             sq_id=attempt.sq_id,
             page_handle=page.page_handle,
             kind=(
-                V2TriageKind.RETAINED
-                if attempt.sq_id == "sq:alpha"
-                else V2TriageKind.IRRELEVANT
+                V2TriageKind.RETAINED if attempt.sq_id == "sq:alpha" else V2TriageKind.IRRELEVANT
             ),
             irrelevant_reason=(
                 None if attempt.sq_id == "sq:alpha" else V2IrrelevantReason.LEXICAL_FALSE_POSITIVE
