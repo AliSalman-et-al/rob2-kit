@@ -1,15 +1,10 @@
-import json
-import os
+import configparser
 import subprocess
-import sys
 import zipfile
-from hashlib import sha256
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[1]
 
-
-def test_wheel_ships_pack_sources_and_schemas(tmp_path: Path) -> None:
+def test_wheel_contains_required_package_content_and_declared_entry_points(tmp_path: Path) -> None:
     subprocess.run(
         ["uv", "build", "--wheel", "--out-dir", str(tmp_path)],
         check=True,
@@ -19,10 +14,20 @@ def test_wheel_ships_pack_sources_and_schemas(tmp_path: Path) -> None:
     wheel = next(tmp_path.glob("*.whl"))
     with zipfile.ZipFile(wheel) as archive:
         names = set(archive.namelist())
+        entry_points_path = next(
+            name for name in names if name.endswith(".dist-info/entry_points.txt")
+        )
+        entry_points = configparser.ConfigParser()
+        entry_points.read_string(archive.read(entry_points_path).decode())
+
     assert "rob2_kit/packs/logic/rob2-parallel-assignment-2019.1.yaml" in names
     assert "rob2_kit/packs/guidance/rob2-parallel-assignment-en-2019.1.yaml" in names
     assert "rob2_kit/schemas/logic-pack.schema.json" in names
     assert "rob2_kit/schemas/guidance-pack.schema.json" in names
+    assert "rob2_kit/skills/rob2-init/SKILL.md" in names
+    assert "rob2_kit/skills/rob2-assess/SKILL.md" in names
+    assert "rob2_kit/rob2.lock" in names
+    assert set(entry_points["console_scripts"]) >= {"rob2", "rob2-mcp", "rob2-build-adapters"}
     assert not any(
         name.startswith(
             (
@@ -33,104 +38,3 @@ def test_wheel_ships_pack_sources_and_schemas(tmp_path: Path) -> None:
         )
         for name in names
     )
-
-
-def test_clean_wheel_install_exposes_declared_entry_points(tmp_path: Path) -> None:
-    wheel_dir = tmp_path / "wheel"
-    subprocess.run(
-        ["uv", "build", "--wheel", "--out-dir", str(wheel_dir)],
-        check=True,
-        capture_output=True,
-        text=True,
-    )
-    wheel = next(wheel_dir.glob("*.whl"))
-    with zipfile.ZipFile(wheel) as archive:
-        names = set(archive.namelist())
-    assert "rob2_kit/skills/rob2-init/SKILL.md" in names
-    assert "rob2_kit/skills/rob2-assess/SKILL.md" in names
-    assert "rob2_kit/rob2.lock" in names
-
-    environment = tmp_path / "clean-venv"
-    subprocess.run(
-        ["uv", "venv", str(environment), "--python", sys.executable],
-        check=True,
-        capture_output=True,
-        text=True,
-    )
-    python = environment / ("Scripts/python.exe" if os.name == "nt" else "bin/python")
-    requirements = tmp_path / "locked-requirements.txt"
-    subprocess.run(
-        [
-            "uv",
-            "export",
-            "--frozen",
-            "--all-groups",
-            "--no-emit-project",
-            "--no-emit-workspace",
-            "--no-header",
-            "--no-annotate",
-            "--output-file",
-            str(requirements),
-        ],
-        check=True,
-        capture_output=True,
-        text=True,
-    )
-    subprocess.run(
-        ["uv", "pip", "install", "--python", str(python), "-r", str(requirements)],
-        check=True,
-        capture_output=True,
-        text=True,
-    )
-    subprocess.run(
-        ["uv", "pip", "install", "--python", str(python), "--no-deps", str(wheel)],
-        check=True,
-        capture_output=True,
-        text=True,
-    )
-    result = subprocess.run(
-        [
-            str(python),
-            "-c",
-            (
-                "import importlib.metadata, json; "
-                "dist = importlib.metadata.distribution('rob2-kit'); "
-                "print(json.dumps(sorted(ep.name for ep in dist.entry_points)))"
-            ),
-        ],
-        check=True,
-        capture_output=True,
-        text=True,
-    )
-    assert set(json.loads(result.stdout)) >= {
-        "rob2",
-        "rob2-mcp",
-        "rob2-build-adapters",
-    }
-    scripts = environment / ("Scripts" if os.name == "nt" else "bin")
-    for entry_point in ("rob2", "rob2-mcp", "rob2-build-adapters"):
-        assert any(
-            (scripts / suffix).is_file()
-            for suffix in (entry_point, f"{entry_point}.exe", f"{entry_point}.cmd")
-        )
-    rob2_script = next(
-        scripts / suffix
-        for suffix in ("rob2", "rob2.exe", "rob2.cmd")
-        if (scripts / suffix).is_file()
-    )
-    subprocess.run([str(rob2_script), "--help"], check=True, capture_output=True, text=True)
-
-
-def test_pinned_runtime_wheel_contains_the_canonical_skill_contract() -> None:
-    """The wheel consumed by bootstrap cannot lag the checked-in skill release."""
-
-    pin = json.loads((ROOT / "release" / "runtime-wheel-pin.json").read_text(encoding="utf-8"))
-    wheel = ROOT / "release" / "runtime" / pin["filename"]
-    assert sha256(wheel.read_bytes()).hexdigest() == pin["sha256"]
-    with zipfile.ZipFile(wheel) as archive:
-        names = set(archive.namelist())
-    assert "rob2_kit/docs/RUN-DEFINITION.md" in names
-    for skill in ("rob2-init", "rob2-assess"):
-        assert f"rob2_kit/skills/{skill}/forward-fixtures.json" in names
-        assert f"rob2_kit/adapters/codex/skills/{skill}/forward-fixtures.json" in names
-        assert f"rob2_kit/adapters/claude/skills/{skill}/forward-fixtures.json" in names

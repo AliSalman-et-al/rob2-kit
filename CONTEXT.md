@@ -101,11 +101,11 @@ An unresolved requirement attached to a retained Evidence candidate or exact spa
 _Avoid_: Needs-visual-review disposition, terminal rejection
 
 **Evidence result page**:
-A snapshot-bound, policy-bounded page containing the largest deterministic ordered prefix of unique Evidence candidates that fits the Evidence-search policy's complete model-facing response budget and hard safety ceilings. Within mechanically authorized Source and Parse scope, lineage duplicates collapse and deterministic ordering is diversified across Sources and Source roles so one document or copy cluster cannot monopolize the page; parser-inferred scientific scope neither filters nor ranks candidates. Every page identifies its exact position and remaining pages and candidates under the active snapshot and policy, current and projected response cost, limiting bounds, omissions, and exact continuation action, while numeric limits are calibrated by evaluation rather than treated as scientific constants.
+A snapshot-bound, policy-bounded page containing the largest deterministic ordered prefix of unique Evidence candidates that fits a stable worst-case model-facing packing estimate and the Evidence-search policy's hard safety ceilings. Within mechanically authorized Source and Parse scope, lineage duplicates collapse and deterministic ordering is diversified across Sources and Source roles so one document or copy cluster cannot monopolize the page; parser-inferred scientific scope neither filters nor ranks candidates. Every page identifies its exact position and remaining pages and candidates, exact current response cost, conservative cumulative and projected cost bounds, limiting bounds, omissions, and exact continuation action; boundaries remain stable for one search identity even as unrelated Run state changes.
 _Avoid_: Unbounded results, rank cutoff as evidence, agent-chosen raw character budget
 
 **Evidence-search policy**:
-The versioned, engine-owned rules that bound, order, and paginate Evidence candidates reproducibly using a deterministic provider-neutral estimate of the complete model-facing response cost plus hard byte and candidate ceilings. Callers may refine semantic search scope but cannot select resource budgets; every response identifies the applied policy and makes remaining traversal explicit, while supported-model measurements calibrate policy revisions without changing page boundaries inside one revision.
+The versioned, engine-owned rules that bound, order, and paginate Evidence candidates reproducibly using a deterministic provider-neutral worst-case packing estimate plus hard byte and candidate ceilings. Packing uses explicitly bounded envelope metadata independently of mutable Run progress, while a returned page reports its exact current response cost and conservative cumulative and projected cost bounds; callers may refine semantic scope but cannot select budgets, and a policy revision never changes boundaries within one search identity.
 _Avoid_: Caller-selected page size, fixed scientific threshold, hidden truncation
 
 **Evidence-read policy**:
@@ -547,10 +547,6 @@ _Avoid_: Trial failure, transient interruption
 **Verification archive**:
 A portable, manifest-rooted package for checking an Assessment revision outside its working project. A complete archive materializes all transitive source and decision dependencies; a reference archive may omit bytes but must declare that source integrity is not independently verifiable.
 _Avoid_: Report bundle, backup, equally verifiable thin export
-
-**Release acceptance gate**:
-An executable criterion tied to a claimed v1 behavior. Evidence-pipeline gates require fixture-complete discovery and lineage, fail-closed freeze of projections, ambiguous fragments and unreviewed spans, deterministic stale/truncation recovery, exact dependency invalidation, a checked-in scale fixture, and successful private generalized-workflow replay of CHAARTED PFS; efficiency freezes the old-policy baseline and predeclares the new target before tuning, using versioned whole-navigation round-trip and response budgets rather than a universal scientific threshold.
-_Avoid_: Aspirational requirement, documented known failure
 
 **Private release evaluation**:
 An owner-led, blinded run of a frozen candidate across every materializable Trial and Outcome target in the private real-RCT corpus, followed by direct review of the resulting Assessments, evidence trails, reports, usability, recovery, latency, cost signals, and Provisional reference-label discrepancies. It informs the owner's discretionary release decision without a fixed rubric, coded score, mandatory discrepancy taxonomy, or numerical threshold.

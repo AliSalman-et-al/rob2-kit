@@ -4,4 +4,4 @@ Evidence navigation uses lightweight Search projections, deterministic provider-
 
 ## Consequences
 
-Search and read contracts, cursors, page handles, review submissions, and affected operation versions change together without compatibility aliases. Policy limits are calibrated through checked-in scale fixtures and private CHAARTED replay, and efficiency is measured across Search, reading, continuation, and durable review rather than by Search-call count alone.
+Search and read contracts, cursors, page handles, review submissions, and affected operation versions change together without compatibility aliases. Policy limits are calibrated through checked-in scale fixtures and, at an owner's discretion, private CHAARTED replay. Efficiency is measured across Search, reading, continuation, and durable review rather than by Search-call count alone.

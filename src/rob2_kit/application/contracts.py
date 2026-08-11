@@ -51,7 +51,7 @@ from rob2_kit.domain.sources import (
     SourceRole,
     SourceUse,
 )
-from rob2_kit.evidence.errors import RetrievalErrorCode
+from rob2_kit.evidence.errors import OperationalRetrievalFailure, RetrievalErrorCode
 from rob2_kit.evidence.search import (
     CanonicalEvidenceUnit,
     EvidenceReadBatchPage,
@@ -1464,6 +1464,54 @@ class SearchEvidenceResponse(OperationResponse):
     coverage_progress: CoverageProgress
 
 
+def _v2_compact_payload(response: Any) -> dict[str, Any]:
+    payload = response.model_dump(mode="json", exclude_none=True)
+    page = getattr(response, "page", None)
+    if page is not None and hasattr(page, "model_facing_payload") and "page" in payload:
+        payload["page"] = page.model_facing_payload()
+    payload.pop("next_action", None)
+    return payload
+
+
+def finalize_search_evidence_response(response: SearchEvidenceResponse) -> SearchEvidenceResponse:
+    """Jointly settle the one returned Search page and its MCP envelope.
+
+    This is deliberately downstream of stable packing: a reservation overrun
+    is an operational invariant, never an instruction to move a boundary.
+    """
+    current = response
+    bytes_ = tokens = 0
+    for _ in range(16):
+        page = current.page.model_copy(
+            update={
+                "serialized_response_bytes": bytes_,
+                "estimated_response_tokens": tokens,
+            }
+        )
+        current = current.model_copy(update={"page": page})
+        payload = _v2_compact_payload(current)
+        payload["response_accounting"] = {
+            "estimator_id": "utf8-byte-div4-ceil:v1",
+            "scope": "complete_mcp_operation_envelope",
+            "serialized_response_bytes": bytes_,
+            "estimated_response_tokens": tokens,
+        }
+        measured = len(canonical_json_bytes(payload))
+        estimated = (measured + 3) // 4
+        if (measured, estimated) == (bytes_, tokens):
+            reservation = current.page.traversal_cost
+            if (
+                measured > reservation.response_bytes_upper_bound
+                or estimated > reservation.estimated_tokens_upper_bound
+            ):
+                raise OperationalRetrievalFailure(
+                    "Search returned envelope exceeds its stable packing reservation"
+                )
+            return current
+        bytes_, tokens = measured, estimated
+    raise RuntimeError("Search returned-envelope accounting did not stabilize")
+
+
 def v2_model_facing_operation_payload(response: Any) -> dict[str, Any]:
     """Build the exact compact v2 operation envelope used on the MCP wire.
 
@@ -1473,11 +1521,7 @@ def v2_model_facing_operation_payload(response: Any) -> dict[str, Any]:
     attached by the MCP adapter.
     """
 
-    payload = response.model_dump(mode="json", exclude_none=True)
-    page = getattr(response, "page", None)
-    if page is not None and hasattr(page, "model_facing_payload") and "page" in payload:
-        payload["page"] = page.model_facing_payload()
-    payload.pop("next_action", None)
+    payload = _v2_compact_payload(response)
     bytes_ = tokens = 0
     for _ in range(16):
         payload["response_accounting"] = {

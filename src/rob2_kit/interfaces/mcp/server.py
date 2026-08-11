@@ -14,7 +14,6 @@ import os
 import sqlite3
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass
-from datetime import UTC, datetime
 from pathlib import Path
 from typing import Annotated, Any, Literal, Protocol
 
@@ -72,7 +71,6 @@ from rob2_kit.application.contracts import (
     WorkToken,
     v2_model_facing_operation_payload,
 )
-from rob2_kit.application.determinism import QualificationDeterminism
 from rob2_kit.application.lifecycle import RunState
 from rob2_kit.application.run_engine import RunEngine, SecondProjectRootError
 from rob2_kit.evidence.errors import (
@@ -136,21 +134,6 @@ def canonical_tool_names() -> tuple[str, ...]:
     """Return the one release-owned model-visible MCP catalog."""
 
     return CANONICAL_TOOL_NAMES
-
-
-def _qualification_determinism_from_environment() -> QualificationDeterminism | None:
-    """Build an explicit optional qualification contract at the stdio composition root."""
-
-    value = os.environ.get("ROB2_QUALIFICATION_UTC_NOW")
-    if value is None:
-        return None
-    try:
-        parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
-    except ValueError as error:
-        raise ValueError("ROB2_QUALIFICATION_UTC_NOW must be an ISO-8601 UTC instant") from error
-    if parsed.tzinfo is None or parsed.utcoffset() != UTC.utcoffset(parsed):
-        raise ValueError("ROB2_QUALIFICATION_UTC_NOW must include a UTC offset")
-    return QualificationDeterminism(observed_at=parsed.astimezone(UTC))
 
 
 def _dump(response: Any) -> dict[str, Any]:
@@ -289,7 +272,6 @@ def _retrieval_error(error: RetrievalFailure) -> RetrievalErrorResponse:
 
 def create_server(
     *,
-    determinism: QualificationDeterminism | None = None,
     engine: RunEngine | None = None,
     route_groups: Sequence[MCPRouteGroup] = (),
 ) -> Any:
@@ -301,7 +283,7 @@ def create_server(
 
     from mcp.server import MCPServer
 
-    engine = engine or RunEngine(determinism=determinism)
+    engine = engine or RunEngine()
     server = MCPServer("rob2-kit", version="0.1.0")
 
     @server.tool(name="prepare_run")
@@ -1086,19 +1068,7 @@ def main() -> None:
             "a release transaction is pending recovery; run a rob2 lifecycle command before "
             "starting the MCP server"
         )
-    determinism = _qualification_determinism_from_environment()
-    qualification_flags = (
-        "ROB2_QUALIFICATION_ABSENT_FIXTURES",
-        "ROB2_QUALIFICATION_INJECTED_FAULT",
-        "ROB2_QUALIFICATION_RELEASE_FIXTURE",
-    )
-    if any(os.environ.get(flag) for flag in qualification_flags):
-        from rob2_kit.evaluation.qualification import qualification_engine_from_environment
-
-        engine = qualification_engine_from_environment(determinism, dict(os.environ))
-        create_server(engine=engine).run(transport="stdio")
-        return
-    create_server(determinism=determinism).run(transport="stdio")
+    create_server().run(transport="stdio")
 
 
 if __name__ == "__main__":

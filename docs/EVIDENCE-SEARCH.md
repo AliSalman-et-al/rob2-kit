@@ -16,6 +16,19 @@ synthetic reconstruction.
 
 ## Search v2
 
+The current Search policy is `policy:evidence-search-3.0.0`. It fixes page
+boundaries from the snapshot, query, scope, issuance context, ordered
+candidates, and a canonical packing-context hash. Later ledger events and
+coverage progress do not change an issued continuation. The returned page and
+complete MCP envelope are measured exactly only after that one page has been
+selected; a reservation overrun is an operational failure, never a repack.
+Policy-2 continuations are stale: discard them and restart from the first
+bounded page.
+
+Traversal-cost byte and token values are explicitly named `*_upper_bound`;
+the selected-page reservation is separate from the cumulative traversal
+reservations and is enforced after exact returned-envelope measurement.
+
 `search_evidence` accepts a semantic `query`, `sq_id`, mandatory `pass_kind`,
 stable `attempt_id`, and `attempt_kind` (`selected` or `exploratory`). A
 guidance pass also has its exact `seed_family`; reuse it exactly in coverage. A selected attempt is required

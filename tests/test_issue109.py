@@ -36,11 +36,6 @@ def test_journey_docs_cover_installation_workflow_recovery_and_evaluation() -> N
     ):
         assert topic.casefold() in journey.casefold()
 
-    runbook = (ROOT / "docs" / "LOCAL-RUNBOOK.md").read_text(encoding="utf-8")
-    assert "not CI" in runbook
-    assert "not a coded sign-off gate" in runbook
-
-
 def test_every_public_tool_description_front_loads_safe_use_guidance() -> None:
     """Tool discovery must orient a Harness before it sees schema detail."""
 

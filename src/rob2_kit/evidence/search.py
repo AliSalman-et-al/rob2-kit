@@ -8,7 +8,6 @@ import os
 import re
 import secrets
 import sqlite3
-from collections.abc import Callable
 from contextlib import contextmanager
 from enum import StrEnum
 from pathlib import Path
@@ -43,9 +42,10 @@ CONTEXT_UNIT_LIMIT = 6
 CANONICALIZATION_VERSION = "canonicalization:1.3.0"
 RETRIEVAL_SCHEMA_VERSION = "retrieval-schema:1.0.0"
 EVIDENCE_INDEX_SCHEMA_VERSION = "evidence-index-schema:1.0.0"
-EVIDENCE_SEARCH_POLICY_ID = "policy:evidence-search-2.0.0"
+EVIDENCE_SEARCH_POLICY_ID = "policy:evidence-search-3.0.0"
 EVIDENCE_READ_POLICY_ID = "policy:evidence-read-2.0.0"
 EVIDENCE_SEARCH_ESTIMATOR_ID = "estimator:serialized-utf8-ceil-bytes-div-4:1.0.0"
+EVIDENCE_SEARCH_PACKING_ESTIMATOR_ID = "estimator:evidence-search-stable-packing:1.0.0"
 _TOKEN = re.compile(r"^[^\s\"'()*:^{}[\]\\]+$")
 
 
@@ -679,6 +679,7 @@ class EvidenceSearchPolicy(FrozenModel):
 
     policy_id: Identifier = EVIDENCE_SEARCH_POLICY_ID
     estimator_id: Identifier = EVIDENCE_SEARCH_ESTIMATOR_ID
+    packing_estimator_id: Identifier = EVIDENCE_SEARCH_PACKING_ESTIMATOR_ID
     estimated_token_target: int = Field(default=1_800, ge=1)
     serialized_byte_ceiling: int = Field(default=10_000, ge=1)
     candidate_ceiling: int = Field(default=12, ge=1)
@@ -963,11 +964,81 @@ class EvidenceSearchSourceDiagnostic(FrozenModel):
 
 
 class EvidenceSearchTraversalCost(FrozenModel):
+    """Declared bounds used to pack a stable Search traversal.
+
+    They are reservations, not measurements of pages which have not yet been
+    returned.  Keeping them here avoids leaking a second competing traversal
+    accounting scheme onto every page.
+    """
+
     classification: Literal["ordinary", "high"]
     projected_page_count: int = Field(ge=1)
-    projected_cumulative_response_bytes: int = Field(ge=0)
-    projected_cumulative_estimated_tokens: int = Field(ge=0)
+    response_bytes_upper_bound: int = Field(ge=0)
+    estimated_tokens_upper_bound: int = Field(ge=0)
+    current_cumulative_response_bytes_upper_bound: int = Field(ge=0)
+    current_cumulative_estimated_tokens_upper_bound: int = Field(ge=0)
+    projected_cumulative_response_bytes_upper_bound: int = Field(ge=0)
+    projected_cumulative_estimated_tokens_upper_bound: int = Field(ge=0)
     decision_required: bool = False
+
+    @model_validator(mode="after")
+    def validate_bounds(self) -> EvidenceSearchTraversalCost:
+        if (
+            self.current_cumulative_response_bytes_upper_bound
+            > self.projected_cumulative_response_bytes_upper_bound
+        ):
+            raise ValueError("current Search bytes cannot exceed projected traversal bytes")
+        if (
+            self.current_cumulative_estimated_tokens_upper_bound
+            > self.projected_cumulative_estimated_tokens_upper_bound
+        ):
+            raise ValueError("current Search tokens cannot exceed projected traversal tokens")
+        if (
+            self.estimated_tokens_upper_bound
+            != _estimate_response_tokens(self.response_bytes_upper_bound)
+            or self.current_cumulative_estimated_tokens_upper_bound
+            != _estimate_response_tokens(self.current_cumulative_response_bytes_upper_bound)
+            or self.projected_cumulative_estimated_tokens_upper_bound
+            != _estimate_response_tokens(self.projected_cumulative_response_bytes_upper_bound)
+        ):
+            raise ValueError("Search traversal token bounds must use ceil(bytes / 4)")
+        if self.response_bytes_upper_bound > self.current_cumulative_response_bytes_upper_bound:
+            raise ValueError("selected Search page bound cannot exceed current traversal bound")
+        return self
+
+
+class SearchPackingContext(FrozenModel):
+    """Canonical, versioned envelope reservation for policy-3.0 packing."""
+
+    context_version: Literal["1.0.0"] = "1.0.0"
+    operation_id: Identifier
+    run_id: Identifier
+    affected_scope: tuple[Identifier, ...]
+    condition: str
+    committed: bool
+    summary: str = "Run operation completed."
+    warnings: tuple[str, ...] = ()
+    wrapper_keys: tuple[str, ...] = (
+        "operation_id",
+        "ledger_cursor",
+        "affected_scope",
+        "condition",
+        "committed",
+        "summary",
+        "warnings",
+        "run_id",
+        "evidence_navigation_contract_version",
+        "page",
+        "coverage_progress",
+        "response_accounting",
+    )
+    policy_id: Identifier
+    policy_hash: ContentHash
+    snapshot_hash: ContentHash
+    scope_hash: ContentHash | None = None
+    issuance_context: str | None = None
+    ledger_cursor_maximum: str = "ledger:18446744073709551615"
+    coverage_progress_maximum: dict[str, object]
 
 
 class EvidenceSearchPage(FrozenModel):
@@ -990,10 +1061,6 @@ class EvidenceSearchPage(FrozenModel):
     remaining_candidate_count: int = Field(ge=0)
     estimated_response_tokens: int = Field(ge=0)
     serialized_response_bytes: int = Field(ge=0)
-    current_cumulative_response_bytes: int = Field(ge=0)
-    current_cumulative_estimated_tokens: int = Field(ge=0)
-    projected_cumulative_response_bytes: int = Field(ge=0)
-    projected_cumulative_estimated_tokens: int = Field(ge=0)
     limiting_bounds: tuple[str, ...] = ()
     omitted_candidate_count: int = Field(ge=0)
     omitted_estimated_response_bytes: int = Field(ge=0)
@@ -1131,10 +1198,6 @@ class EvidenceSearchPage(FrozenModel):
             "remaining_candidate_count": self.remaining_candidate_count,
             "serialized_response_bytes": self.serialized_response_bytes,
             "estimated_response_tokens": self.estimated_response_tokens,
-            "current_cumulative_response_bytes": self.current_cumulative_response_bytes,
-            "current_cumulative_estimated_tokens": self.current_cumulative_estimated_tokens,
-            "projected_cumulative_response_bytes": self.projected_cumulative_response_bytes,
-            "projected_cumulative_estimated_tokens": self.projected_cumulative_estimated_tokens,
             "limiting_bounds": self.limiting_bounds,
             "traversal_complete": self.traversal_complete,
             "traversal_cost": self.traversal_cost.model_dump(mode="json"),
@@ -2426,7 +2489,7 @@ class EvidenceSearchIndex:
         continue_reason: SearchContinuationReason | None = None,
         continue_rationale: str | None = None,
         policy: EvidenceSearchPolicy | None = None,
-        envelope_measure: Callable[[EvidenceSearchPage], tuple[int, int]] | None = None,
+        packing_context: SearchPackingContext | None = None,
     ) -> EvidenceSearchPage:
         """Return one engine-bounded v2 navigation page.
 
@@ -2437,6 +2500,21 @@ class EvidenceSearchIndex:
         policy = policy or EvidenceSearchPolicy()
         snapshot = self._snapshot()
         query_hash = canonical_hash(query)
+        if packing_context is None:
+            run_id = "run:standalone"
+            packing_context = SearchPackingContext(
+                operation_id="operation:search-evidence",
+                run_id=run_id,
+                affected_scope=(run_id,),
+                condition="completed",
+                committed=False,
+                policy_id=policy.policy_id,
+                policy_hash=canonical_hash(policy),
+                snapshot_hash=snapshot,
+                scope_hash=canonical_hash(scope) if scope is not None else None,
+                issuance_context=issuance_context,
+                coverage_progress_maximum=_maximum_coverage_progress_payload(),
+            )
         offset, reason_required = (
             self._decode_v2_continuation(
                 continuation,
@@ -2445,6 +2523,7 @@ class EvidenceSearchIndex:
                 policy=policy,
                 scope=scope,
                 issuance_context=issuance_context,
+                packing_context=packing_context,
             )
             if continuation
             else (0, False)
@@ -2501,38 +2580,20 @@ class EvidenceSearchIndex:
             scoped_count=scoped_count,
             excluded_count=excluded_count,
             scoped_source_ids=scoped_source_ids,
-            envelope_measure=envelope_measure,
+            packing_context=packing_context,
         )
         if not layouts:
             layouts = ((),)
-        # Self-reporting measurements and limiting-bound labels can grow after
-        # a provisional layout is chosen.  Re-materialize and split any normal
-        # bound violation until the actual wire envelopes are stable.
-        for _ in range(max(1, len(candidates) + 1)):
-            pages = _materialize_v2_pages(
-                layouts,
-                snapshot=snapshot,
-                query_hash=query_hash,
-                policy=policy,
-                scoped_count=scoped_count,
-                excluded_count=excluded_count,
-                scoped_source_ids=scoped_source_ids,
-                envelope_measure=envelope_measure,
-            )
-            offending = tuple(
-                number
-                for number, page in enumerate(pages)
-                if (
-                    page.serialized_response_bytes > policy.serialized_byte_ceiling
-                    or page.estimated_response_tokens > policy.estimated_token_target
-                )
-                and len(layouts[number]) > 1
-            )
-            if not offending:
-                break
-            layouts = _split_v2_candidate_layouts(layouts, offending)
-        else:  # pragma: no cover - each split strictly reduces a page width
-            raise OperationalRetrievalFailure("v2 evidence search layout did not stabilize")
+        pages = _reserved_v2_pages(
+            layouts,
+            snapshot=snapshot,
+            query_hash=query_hash,
+            policy=policy,
+            scoped_count=scoped_count,
+            excluded_count=excluded_count,
+            scoped_source_ids=scoped_source_ids,
+            packing_context=packing_context,
+        )
         starts = [sum(len(page) for page in layouts[:number]) for number in range(len(layouts))]
         try:
             page_index = starts.index(offset)
@@ -2540,8 +2601,10 @@ class EvidenceSearchIndex:
             raise StaleSearchContinuation(
                 "search continuation position is not a page boundary"
             ) from error
-        _validate_materialized_v2_pages(pages, policy=policy, envelope_measure=envelope_measure)
         page = pages[page_index]
+        # Compatibility callers can still inspect one independently returned
+        # page.  This exact measurement occurs after, never during, packing.
+        page = _finalize_compact_page(page)
         page_handle = self._issue_stable_token(
             "v2page",
             {
@@ -2550,6 +2613,7 @@ class EvidenceSearchIndex:
                 "policy": canonical_hash(policy),
                 "scope": canonical_hash(scope) if scope is not None else None,
                 "issuance_context": issuance_context,
+                "packing_context": canonical_hash(packing_context),
                 "offset": offset,
             },
         )
@@ -2563,6 +2627,7 @@ class EvidenceSearchIndex:
                     "policy": canonical_hash(policy),
                     "scope": canonical_hash(scope) if scope is not None else None,
                     "issuance_context": issuance_context,
+                    "packing_context": canonical_hash(packing_context),
                     "offset": next_offset,
                     "reason_required": page.traversal_cost.decision_required,
                 },
@@ -2575,8 +2640,6 @@ class EvidenceSearchIndex:
                 "evidence snapshot changed while issuing the search page",
                 field="continuation",
             )
-        # Lookup-token prefixes and random bodies have the fixed lengths used
-        # in packing placeholders, so replacement preserves the measured bytes.
         return page.model_copy(
             update={"page_handle": page_handle, "continuation": continuation_value}
         )
@@ -2615,6 +2678,7 @@ class EvidenceSearchIndex:
         policy: EvidenceSearchPolicy,
         scope: EvidenceScope | None,
         issuance_context: str | None,
+        packing_context: SearchPackingContext,
     ) -> tuple[int, bool]:
         try:
             payload = self._resolve_token("v2cur", continuation)
@@ -2627,10 +2691,18 @@ class EvidenceSearchIndex:
         if payload.get("issuance_context") != issuance_context:
             raise StaleSearchContinuation("continuation belongs to a different search attempt")
         if payload.get("policy") != canonical_hash(policy):
-            raise SearchPolicyMismatch()
+            raise StaleSearchContinuation(
+                "search continuation belongs to an earlier Evidence-search policy; "
+                "discard the continuation and retry the first bounded page"
+            )
         if payload.get("scope") != (canonical_hash(scope) if scope is not None else None):
             raise CursorScopeMismatch(
                 "continuation belongs to a different Evidence scope", field="continuation"
+            )
+        if payload.get("packing_context") != canonical_hash(packing_context):
+            raise StaleSearchContinuation(
+                "search continuation belongs to an earlier Evidence-search policy; "
+                "discard the continuation and retry the first bounded page"
             )
         offset = payload.get("offset")
         if isinstance(offset, bool) or not isinstance(offset, int) or offset < 0:
@@ -3130,6 +3202,27 @@ def _estimate_response_tokens(serialized_response_bytes: int) -> int:
     return (serialized_response_bytes + 3) // 4
 
 
+def _maximum_coverage_progress_payload() -> dict[str, object]:
+    """Return the exhaustive policy reservation for the Search coverage shape.
+
+    Seed-family requirements are presently introduced only by the guidance
+    pass.  Keeping the enum-derived pass list here makes a new pass fail the
+    focused dominance test instead of silently shrinking a continuation page.
+    """
+    # This intentionally lists the policy-owned seed family and every current
+    # workflow pass; tests compare it with ``SearchPassKind`` so enum growth
+    # requires an explicit reservation decision here.
+    pass_names = ("guidance_seed", "trial_follow_up", "contradiction")
+    return {
+        "sq_id": "question:" + "x" * 64,
+        "required_seed_families": ("seed:allocation",),
+        "completed_seed_families": ("seed:allocation",),
+        "completed_passes": pass_names,
+        "missing_passes": pass_names,
+        "coverage_complete": False,
+    }
+
+
 def _read_batch_measure(payload: dict[str, object]) -> tuple[int, int]:
     size = 0
     tokens = 0
@@ -3264,10 +3357,12 @@ def _v2_page_payload(
     scoped_source_ids: tuple[Identifier, ...],
     serialized_response_bytes: int = 0,
     estimated_response_tokens: int = 0,
-    current_cumulative_response_bytes: int = 0,
-    current_cumulative_estimated_tokens: int = 0,
-    projected_cumulative_response_bytes: int = 0,
-    projected_cumulative_estimated_tokens: int = 0,
+    current_cumulative_response_bytes_upper_bound: int = 0,
+    current_cumulative_estimated_tokens_upper_bound: int = 0,
+    projected_cumulative_response_bytes_upper_bound: int = 0,
+    projected_cumulative_estimated_tokens_upper_bound: int = 0,
+    response_bytes_upper_bound: int = 0,
+    estimated_tokens_upper_bound: int = 0,
     limiting_bounds: tuple[str, ...] = (),
 ) -> dict[str, object]:
     end = sum(len(page) for page in ())  # Keeps the response representation intentionally explicit.
@@ -3287,7 +3382,8 @@ def _v2_page_payload(
     projected_pages = total_page_count
     high = (
         projected_pages >= policy.high_cost_page_threshold
-        or projected_cumulative_estimated_tokens >= policy.high_cost_estimated_token_threshold
+        or projected_cumulative_estimated_tokens_upper_bound
+        >= policy.high_cost_estimated_token_threshold
     )
     decision_required = high and page_number == 1 and not traversal_complete
     condition: Literal["results", "zero_hits", "excluded_only", "truncated"]
@@ -3315,10 +3411,6 @@ def _v2_page_payload(
         "remaining_candidate_count": remaining,
         "estimated_response_tokens": estimated_response_tokens,
         "serialized_response_bytes": serialized_response_bytes,
-        "current_cumulative_response_bytes": current_cumulative_response_bytes,
-        "current_cumulative_estimated_tokens": current_cumulative_estimated_tokens,
-        "projected_cumulative_response_bytes": projected_cumulative_response_bytes,
-        "projected_cumulative_estimated_tokens": projected_cumulative_estimated_tokens,
         "limiting_bounds": limiting_bounds,
         "omitted_candidate_count": remaining,
         "omitted_estimated_response_bytes": sum(
@@ -3331,8 +3423,12 @@ def _v2_page_payload(
         "traversal_cost": EvidenceSearchTraversalCost(
             classification="high" if high else "ordinary",
             projected_page_count=projected_pages,
-            projected_cumulative_response_bytes=projected_cumulative_response_bytes,
-            projected_cumulative_estimated_tokens=projected_cumulative_estimated_tokens,
+            response_bytes_upper_bound=response_bytes_upper_bound,
+            estimated_tokens_upper_bound=estimated_tokens_upper_bound,
+            current_cumulative_response_bytes_upper_bound=current_cumulative_response_bytes_upper_bound,
+            current_cumulative_estimated_tokens_upper_bound=current_cumulative_estimated_tokens_upper_bound,
+            projected_cumulative_response_bytes_upper_bound=projected_cumulative_response_bytes_upper_bound,
+            projected_cumulative_estimated_tokens_upper_bound=projected_cumulative_estimated_tokens_upper_bound,
             decision_required=decision_required,
         ),
         "next_actions": (
@@ -3349,36 +3445,6 @@ def _v2_page_payload(
     }
 
 
-def _v2_payload_size(
-    payload: dict[str, object],
-    *,
-    envelope_measure: Callable[[EvidenceSearchPage], tuple[int, int]] | None = None,
-) -> tuple[int, int]:
-    """Solve the two self-reporting measurement fields to a stable value."""
-
-    size = 0
-    tokens = 0
-    for _ in range(8):
-        page = EvidenceSearchPage.model_construct(
-            **(
-                payload
-                | {
-                    "serialized_response_bytes": size,
-                    "estimated_response_tokens": tokens,
-                }
-            )
-        )
-        if envelope_measure is None:
-            measured = len(canonical_json_bytes(page.model_facing_payload()))
-            estimated = _estimate_response_tokens(measured)
-        else:
-            measured, estimated = envelope_measure(page)
-        if measured == size and estimated == tokens:
-            return measured, estimated
-        size, tokens = measured, estimated
-    return size, tokens
-
-
 def _pack_v2_candidate_pages(
     candidates: tuple[EvidenceSearchCandidate, ...],
     *,
@@ -3388,73 +3454,158 @@ def _pack_v2_candidate_pages(
     scoped_count: int,
     excluded_count: int,
     scoped_source_ids: tuple[Identifier, ...],
-    envelope_measure: Callable[[EvidenceSearchPage], tuple[int, int]] | None = None,
+    packing_context: SearchPackingContext,
 ) -> tuple[tuple[EvidenceSearchCandidate, ...], ...]:
+    """Make policy-3 boundaries with one greedy, stable reservation pass."""
     if not candidates:
         return ()
-    total_guess = len(candidates)
-    pages: tuple[tuple[EvidenceSearchCandidate, ...], ...] = ()
-    for _ in range(8):
-        built: list[tuple[EvidenceSearchCandidate, ...]] = []
-        offset = 0
-        while offset < len(candidates):
-            chosen: list[EvidenceSearchCandidate] = []
-            while offset + len(chosen) < len(candidates) and len(chosen) < policy.candidate_ceiling:
-                proposed = tuple((*chosen, candidates[offset + len(chosen)]))
-                payload = _v2_page_payload(
-                    all_candidates=candidates,
-                    page_candidates=proposed,
-                    page_number=len(built) + 1,
-                    total_page_count=total_guess,
-                    snapshot=snapshot,
-                    query_hash=query_hash,
-                    policy=policy,
-                    scoped_count=scoped_count,
-                    excluded_count=excluded_count,
-                    scoped_source_ids=scoped_source_ids,
-                )
-                size, tokens = _v2_payload_size(payload, envelope_measure=envelope_measure)
-                if (
-                    size <= policy.serialized_byte_ceiling
-                    and tokens <= policy.estimated_token_target
-                ):
-                    chosen.append(candidates[offset + len(chosen)])
-                    continue
+    built: list[tuple[EvidenceSearchCandidate, ...]] = []
+    offset = 0
+    while offset < len(candidates):
+        chosen: list[EvidenceSearchCandidate] = []
+        while offset + len(chosen) < len(candidates) and len(chosen) < policy.candidate_ceiling:
+            proposed = tuple((*chosen, candidates[offset + len(chosen)]))
+            reserved = _stable_page_reservation(
+                candidates,
+                proposed,
+                len(built) + 1,
+                snapshot,
+                query_hash,
+                policy,
+                scoped_count,
+                excluded_count,
+                scoped_source_ids,
+                packing_context,
+            )
+            if (
+                reserved <= policy.serialized_byte_ceiling
+                and _estimate_response_tokens(reserved) <= policy.estimated_token_target
+            ):
+                chosen.append(candidates[offset + len(chosen)])
+            else:
                 break
-            if not chosen:
-                # An indivisible candidate is permitted only through the
-                # separately-enforced absolute ceiling, so a tail never stalls.
-                proposed = (candidates[offset],)
-                payload = _v2_page_payload(
-                    all_candidates=candidates,
-                    page_candidates=proposed,
-                    page_number=len(built) + 1,
-                    total_page_count=total_guess,
-                    snapshot=snapshot,
-                    query_hash=query_hash,
-                    policy=policy,
-                    scoped_count=scoped_count,
-                    excluded_count=excluded_count,
-                    scoped_source_ids=scoped_source_ids,
-                    limiting_bounds=("oversized_candidate",),
+        if not chosen:
+            reserved = _stable_page_reservation(
+                candidates,
+                (candidates[offset],),
+                len(built) + 1,
+                snapshot,
+                query_hash,
+                policy,
+                scoped_count,
+                excluded_count,
+                scoped_source_ids,
+                packing_context,
+            )
+            if reserved > policy.oversized_candidate_byte_ceiling:
+                raise OperationalRetrievalFailure(
+                    "one evidence candidate exceeds the absolute response ceiling"
                 )
-                size, _ = _v2_payload_size(payload, envelope_measure=envelope_measure)
-                if size > policy.oversized_candidate_byte_ceiling:
-                    raise OperationalRetrievalFailure(
-                        "one evidence candidate exceeds the absolute response ceiling"
-                    )
-                chosen.append(candidates[offset])
-            built.append(tuple(chosen))
-            offset += len(chosen)
-        candidate_pages = tuple(built)
-        if candidate_pages == pages and len(candidate_pages) == total_guess:
-            return candidate_pages
-        pages = candidate_pages
-        total_guess = len(candidate_pages)
-    return pages
+            chosen.append(candidates[offset])
+        built.append(tuple(chosen))
+        offset += len(chosen)
+    return tuple(built)
 
 
-def _materialize_v2_pages(
+def _stable_page_reservation(
+    all_candidates: tuple[EvidenceSearchCandidate, ...],
+    page_candidates: tuple[EvidenceSearchCandidate, ...],
+    page_number: int,
+    snapshot: ContentHash,
+    query_hash: ContentHash,
+    policy: EvidenceSearchPolicy,
+    scoped_count: int,
+    excluded_count: int,
+    scoped_source_ids: tuple[Identifier, ...],
+    packing_context: SearchPackingContext,
+) -> int:
+    """Reserve the largest declared policy-3 envelope without live run state."""
+    maximum_pages = max(1, len(all_candidates))
+    maximum_cumulative_bytes = maximum_pages * policy.oversized_candidate_byte_ceiling
+    payload = _v2_page_payload(
+        all_candidates=all_candidates,
+        page_candidates=page_candidates,
+        page_number=maximum_pages,
+        total_page_count=maximum_pages,
+        snapshot=snapshot,
+        query_hash=query_hash,
+        policy=policy,
+        scoped_count=scoped_count,
+        excluded_count=excluded_count,
+        scoped_source_ids=scoped_source_ids,
+        serialized_response_bytes=policy.oversized_candidate_byte_ceiling,
+        estimated_response_tokens=_estimate_response_tokens(
+            policy.oversized_candidate_byte_ceiling
+        ),
+        current_cumulative_response_bytes_upper_bound=maximum_cumulative_bytes,
+        current_cumulative_estimated_tokens_upper_bound=_estimate_response_tokens(
+            maximum_cumulative_bytes
+        ),
+        projected_cumulative_response_bytes_upper_bound=maximum_cumulative_bytes,
+        projected_cumulative_estimated_tokens_upper_bound=_estimate_response_tokens(
+            maximum_cumulative_bytes
+        ),
+        response_bytes_upper_bound=policy.oversized_candidate_byte_ceiling,
+        estimated_tokens_upper_bound=_estimate_response_tokens(
+            policy.oversized_candidate_byte_ceiling
+        ),
+        limiting_bounds=("serialized_byte_ceiling",),
+    )
+    page = EvidenceSearchPage.model_construct(**payload)
+    return len(canonical_json_bytes(_maximum_search_wire_payload(page, packing_context)))
+
+
+def _maximum_search_wire_payload(
+    page: EvidenceSearchPage, packing_context: SearchPackingContext
+) -> dict[str, object]:
+    """Construct the complete maximum-shaped Search MCP envelope for packing.
+
+    This mirrors compact operation composition without importing contracts,
+    which imports these Search models.  It retains every outer key and uses
+    maximum-width mutable accounting values.
+    """
+    maximum_bytes = 18_446_744_073_709_551_615
+    return {
+        "operation_id": packing_context.operation_id,
+        "ledger_cursor": packing_context.ledger_cursor_maximum,
+        "affected_scope": packing_context.affected_scope,
+        "condition": packing_context.condition,
+        "committed": packing_context.committed,
+        "summary": packing_context.summary,
+        "warnings": packing_context.warnings,
+        "run_id": packing_context.run_id,
+        "evidence_navigation_contract_version": "2.0.0",
+        "page": page.model_facing_payload(),
+        "coverage_progress": packing_context.coverage_progress_maximum,
+        "response_accounting": {
+            "estimator_id": "utf8-byte-div4-ceil:v1",
+            "scope": "complete_mcp_operation_envelope",
+            "serialized_response_bytes": maximum_bytes,
+            "estimated_response_tokens": _estimate_response_tokens(maximum_bytes),
+        },
+    }
+
+
+def _finalize_compact_page(page: EvidenceSearchPage) -> EvidenceSearchPage:
+    """Settle accounting for a standalone returned page without repacking."""
+    current = page
+    bytes_ = tokens = 0
+    for _ in range(16):
+        current = current.model_copy(
+            update={
+                "serialized_response_bytes": bytes_,
+                "estimated_response_tokens": tokens,
+            }
+        )
+        measured = len(canonical_json_bytes(current.model_facing_payload()))
+        estimated = _estimate_response_tokens(measured)
+        if (measured, estimated) == (bytes_, tokens):
+            return current
+        bytes_, tokens = measured, estimated
+    raise OperationalRetrievalFailure("Search page accounting did not stabilize")
+
+
+def _reserved_v2_pages(
     layouts: tuple[tuple[EvidenceSearchCandidate, ...], ...],
     *,
     snapshot: ContentHash,
@@ -3463,169 +3614,62 @@ def _materialize_v2_pages(
     scoped_count: int,
     excluded_count: int,
     scoped_source_ids: tuple[Identifier, ...],
-    envelope_measure: Callable[[EvidenceSearchPage], tuple[int, int]] | None = None,
+    packing_context: SearchPackingContext,
 ) -> tuple[EvidenceSearchPage, ...]:
-    candidates = tuple(candidate for page in layouts for candidate in page)
-    total_pages = len(layouts)
-    sizes = [0] * total_pages
-    tokens = [0] * total_pages
-    limiting_bounds: list[tuple[str, ...]] = [()] * total_pages
-    # Cumulative fields and limiting text are part of the envelope; converge
-    # their final, self-reported values together rather than measuring a
-    # smaller provisional response and relabelling it afterward.
-    for _ in range(32):
-        projected_bytes = sum(sizes)
-        projected_tokens = sum(tokens)
-        cumulative_bytes = 0
-        cumulative_tokens = 0
-        new_sizes: list[int] = []
-        new_tokens: list[int] = []
-        new_limits: list[tuple[str, ...]] = []
-        offset = 0
-        for number, page_candidates in enumerate(layouts, start=1):
-            payload = _v2_page_payload(
-                all_candidates=candidates,
-                page_candidates=page_candidates,
-                page_number=number,
-                total_page_count=total_pages,
-                snapshot=snapshot,
-                query_hash=query_hash,
-                policy=policy,
-                scoped_count=scoped_count,
-                excluded_count=excluded_count,
-                scoped_source_ids=scoped_source_ids,
-                current_cumulative_response_bytes=cumulative_bytes + sizes[number - 1],
-                current_cumulative_estimated_tokens=cumulative_tokens + tokens[number - 1],
-                projected_cumulative_response_bytes=projected_bytes,
-                projected_cumulative_estimated_tokens=projected_tokens,
-                limiting_bounds=limiting_bounds[number - 1],
-            )
-            size, estimated = _v2_payload_size(payload, envelope_measure=envelope_measure)
-            new_sizes.append(size)
-            new_tokens.append(estimated)
-            offset += len(page_candidates)
-            if size > policy.serialized_byte_ceiling or estimated > policy.estimated_token_target:
-                limit = ("oversized_candidate",)
-            elif offset < len(candidates):
-                if len(page_candidates) >= policy.candidate_ceiling:
-                    limit = ("candidate_ceiling",)
-                elif estimated >= policy.estimated_token_target:
-                    limit = ("estimated_token_target",)
-                else:
-                    limit = ("serialized_byte_ceiling",)
-            else:
-                limit = ()
-            new_limits.append(limit)
-            cumulative_bytes += size
-            cumulative_tokens += estimated
-        if new_sizes == sizes and new_tokens == tokens and new_limits == limiting_bounds:
-            break
-        sizes, tokens, limiting_bounds = new_sizes, new_tokens, new_limits
-    else:  # pragma: no cover - fixed-size integer measurements converge rapidly
-        raise OperationalRetrievalFailure("v2 evidence search measurements did not stabilize")
-    projected_bytes = sum(sizes)
-    projected_tokens = sum(tokens)
+    candidates = tuple(candidate for layout in layouts for candidate in layout)
+    page_count = len(layouts)
+    reservations = tuple(
+        _stable_page_reservation(
+            candidates,
+            page_candidates,
+            number,
+            snapshot,
+            query_hash,
+            policy,
+            scoped_count,
+            excluded_count,
+            scoped_source_ids,
+            packing_context,
+        )
+        for number, page_candidates in enumerate(layouts, start=1)
+    )
+    total_reservation = sum(reservations)
     result: list[EvidenceSearchPage] = []
-    cumulative_bytes = 0
-    cumulative_tokens = 0
     offset = 0
     for number, page_candidates in enumerate(layouts, start=1):
         offset += len(page_candidates)
-        cumulative_bytes += sizes[number - 1]
-        cumulative_tokens += tokens[number - 1]
+        reserved = reservations[number - 1]
+        current = sum(reservations[:number])
+        limiting = (
+            ("oversized_candidate",)
+            if reserved > policy.serialized_byte_ceiling
+            else (() if offset == len(candidates) else ("serialized_byte_ceiling",))
+        )
         payload = _v2_page_payload(
             all_candidates=candidates,
             page_candidates=page_candidates,
             page_number=number,
-            total_page_count=total_pages,
+            total_page_count=page_count,
             snapshot=snapshot,
             query_hash=query_hash,
             policy=policy,
             scoped_count=scoped_count,
             excluded_count=excluded_count,
             scoped_source_ids=scoped_source_ids,
-            serialized_response_bytes=sizes[number - 1],
-            estimated_response_tokens=tokens[number - 1],
-            current_cumulative_response_bytes=cumulative_bytes,
-            current_cumulative_estimated_tokens=cumulative_tokens,
-            projected_cumulative_response_bytes=projected_bytes,
-            projected_cumulative_estimated_tokens=projected_tokens,
-            limiting_bounds=limiting_bounds[number - 1],
+            serialized_response_bytes=reserved,
+            estimated_response_tokens=_estimate_response_tokens(reserved),
+            current_cumulative_response_bytes_upper_bound=current,
+            current_cumulative_estimated_tokens_upper_bound=_estimate_response_tokens(current),
+            projected_cumulative_response_bytes_upper_bound=total_reservation,
+            projected_cumulative_estimated_tokens_upper_bound=_estimate_response_tokens(
+                total_reservation
+            ),
+            response_bytes_upper_bound=reserved,
+            estimated_tokens_upper_bound=_estimate_response_tokens(reserved),
+            limiting_bounds=limiting,
         )
         result.append(EvidenceSearchPage.model_validate(payload))
     return tuple(result)
-
-
-def _split_v2_candidate_layouts(
-    layouts: tuple[tuple[EvidenceSearchCandidate, ...], ...], offending: tuple[int, ...]
-) -> tuple[tuple[EvidenceSearchCandidate, ...], ...]:
-    """Split each overgrown non-singleton page without changing candidate order."""
-
-    offending_set = set(offending)
-    split: list[tuple[EvidenceSearchCandidate, ...]] = []
-    for number, page in enumerate(layouts):
-        if number not in offending_set:
-            split.append(page)
-            continue
-        midpoint = len(page) // 2
-        split.extend((page[:midpoint], page[midpoint:]))
-    return tuple(split)
-
-
-def _validate_materialized_v2_pages(
-    pages: tuple[EvidenceSearchPage, ...],
-    *,
-    policy: EvidenceSearchPolicy,
-    envelope_measure: Callable[[EvidenceSearchPage], tuple[int, int]] | None = None,
-) -> None:
-    """Reject a page set whose published navigation equations are not exact."""
-
-    if not pages:
-        raise OperationalRetrievalFailure("v2 evidence search materialized no pages")
-    projected_bytes = sum(page.serialized_response_bytes for page in pages)
-    projected_tokens = sum(page.estimated_response_tokens for page in pages)
-    cumulative_bytes = 0
-    cumulative_tokens = 0
-    expected_prior = 0
-    total = pages[0].total_candidate_count
-    for number, page in enumerate(pages, start=1):
-        if envelope_measure is None:
-            actual_bytes = len(canonical_json_bytes(page.model_facing_payload()))
-            actual_tokens = _estimate_response_tokens(actual_bytes)
-        else:
-            actual_bytes, actual_tokens = envelope_measure(page)
-        if page.serialized_response_bytes != actual_bytes:
-            raise OperationalRetrievalFailure("v2 page serialized-byte measurement is not exact")
-        if page.estimated_response_tokens != actual_tokens:
-            raise OperationalRetrievalFailure("v2 page token measurement is not exact")
-        cumulative_bytes += actual_bytes
-        cumulative_tokens += page.estimated_response_tokens
-        if (
-            page.page_number != number
-            or page.total_page_count != len(pages)
-            or page.prior_candidate_count != expected_prior
-            or page.returned_candidate_count != len(page.candidates)
-            or page.remaining_candidate_count != total - expected_prior - len(page.candidates)
-            or page.remaining_page_count != len(pages) - number
-            or page.current_cumulative_response_bytes != cumulative_bytes
-            or page.current_cumulative_estimated_tokens != cumulative_tokens
-            or page.projected_cumulative_response_bytes != projected_bytes
-            or page.projected_cumulative_estimated_tokens != projected_tokens
-        ):
-            raise OperationalRetrievalFailure("v2 page navigation equations are inconsistent")
-        normal_bound_violated = (
-            actual_bytes > policy.serialized_byte_ceiling
-            or page.estimated_response_tokens > policy.estimated_token_target
-        )
-        if normal_bound_violated:
-            if (
-                page.limiting_bounds != ("oversized_candidate",)
-                or actual_bytes > policy.oversized_candidate_byte_ceiling
-            ):
-                raise OperationalRetrievalFailure("v2 page violates a hard response bound")
-        elif actual_bytes > policy.serialized_byte_ceiling:
-            raise OperationalRetrievalFailure("v2 page exceeds its normal response ceiling")
-        expected_prior += len(page.candidates)
 
 
 def _unit_from_row(row: sqlite3.Row) -> CanonicalEvidenceUnit:

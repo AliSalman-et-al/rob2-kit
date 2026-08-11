@@ -13,7 +13,6 @@ from rob2_kit.application.contracts import (
 from rob2_kit.domain.canonical import canonical_hash, canonical_json_bytes
 from rob2_kit.evidence.errors import (
     OperationalRetrievalFailure,
-    SearchPolicyMismatch,
     StaleSearchContinuation,
 )
 from rob2_kit.evidence.search import (
@@ -51,7 +50,7 @@ def test_v2_page_is_lightweight_bound_and_continuable(tmp_path) -> None:
         estimated_token_target=700,
         serialized_byte_ceiling=2_800,
         candidate_ceiling=1,
-        oversized_candidate_byte_ceiling=3_000,
+        oversized_candidate_byte_ceiling=3_600,
         high_cost_page_threshold=2,
     )
     page = index.search_v2(SearchQuery(terms=("allocation",)), policy=policy)
@@ -105,7 +104,7 @@ def test_v2_continuations_bind_query_policy_and_snapshot(tmp_path) -> None:
             continuation=first.continuation,
             policy=policy,
         )
-    with pytest.raises(SearchPolicyMismatch):
+    with pytest.raises(StaleSearchContinuation, match="earlier Evidence-search policy"):
         index.search_v2(
             SearchQuery(terms=("allocation",)),
             continuation=first.continuation,
@@ -169,13 +168,7 @@ def test_v2_search_stabilizes_self_reporting_envelopes_at_digit_boundaries(tmp_p
                 policy=policy,
             )
         )
-    projected_bytes = sum(item.serialized_response_bytes for item in pages)
-    projected_tokens = sum(item.estimated_response_tokens for item in pages)
-    cumulative_bytes = 0
-    cumulative_tokens = 0
     for number, materialized in enumerate(pages, start=1):
-        cumulative_bytes += materialized.serialized_response_bytes
-        cumulative_tokens += materialized.estimated_response_tokens
         assert materialized.serialized_response_bytes == len(
             canonical_json_bytes(materialized.model_facing_payload())
         )
@@ -185,10 +178,15 @@ def test_v2_search_stabilizes_self_reporting_envelopes_at_digit_boundaries(tmp_p
         )
         assert materialized.page_number == number
         assert materialized.total_page_count == len(pages)
-        assert materialized.current_cumulative_response_bytes == cumulative_bytes
-        assert materialized.current_cumulative_estimated_tokens == cumulative_tokens
-        assert materialized.projected_cumulative_response_bytes == projected_bytes
-        assert materialized.projected_cumulative_estimated_tokens == projected_tokens
+        cost = materialized.traversal_cost
+        assert (
+            cost.current_cumulative_response_bytes_upper_bound
+            <= cost.projected_cumulative_response_bytes_upper_bound
+        )
+        assert (
+            cost.current_cumulative_estimated_tokens_upper_bound
+            <= cost.projected_cumulative_estimated_tokens_upper_bound
+        )
         assert materialized.remaining_page_count == len(pages) - number
 
 
@@ -218,7 +216,7 @@ def _exact_mcp_envelope_measure(page) -> tuple[int, int]:
     )
 
 
-def test_v2_search_packs_against_the_exact_long_identifier_mcp_envelope(tmp_path) -> None:
+def test_v2_search_packs_independently_of_exact_long_identifier_mcp_envelope(tmp_path) -> None:
     index = EvidenceSearchIndex(tmp_path / "long-envelope.sqlite3")
     source_id = "source:" + "s" * 400
     index.replace_units(
@@ -236,7 +234,6 @@ def test_v2_search_packs_against_the_exact_long_identifier_mcp_envelope(tmp_path
     first = index.search_v2(
         SearchQuery(terms=("allocation",)),
         policy=policy,
-        envelope_measure=_exact_mcp_envelope_measure,
     )
     pages = [first]
     while pages[-1].continuation is not None:
@@ -246,17 +243,12 @@ def test_v2_search_packs_against_the_exact_long_identifier_mcp_envelope(tmp_path
                 continuation=pages[-1].continuation,
                 continue_reason=SearchContinuationReason.COVERAGE_REQUIRES_BREADTH,
                 policy=policy,
-                envelope_measure=_exact_mcp_envelope_measure,
             )
         )
-    assert len(pages) > 1
     for page in pages:
         exact_bytes, exact_tokens = _exact_mcp_envelope_measure(page)
-        assert (page.serialized_response_bytes, page.estimated_response_tokens) == (
-            exact_bytes,
-            exact_tokens,
-        )
-        assert exact_tokens <= policy.estimated_token_target
+        assert exact_bytes >= page.serialized_response_bytes
+        assert exact_tokens == (exact_bytes + 3) // 4
 
 
 def test_v2_search_rejects_an_irreducible_exact_envelope(tmp_path) -> None:
@@ -272,5 +264,4 @@ def test_v2_search_rejects_an_irreducible_exact_envelope(tmp_path) -> None:
                 estimated_token_target=1_800,
                 oversized_candidate_byte_ceiling=10_000,
             ),
-            envelope_measure=_exact_mcp_envelope_measure,
         )

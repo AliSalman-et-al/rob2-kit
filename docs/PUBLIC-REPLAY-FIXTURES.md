@@ -17,9 +17,10 @@ artifact/event IDs with stable handles while preserving call order and
 scientific Trial/Result identities.
 
 Raw commercial-host transcripts and credentials are intentionally not stored in
-the repository. A golden file is compared in CI but never rewritten. To accept
-a deliberate local change, call `accept_golden(..., accept=True)` or run the
-local helper with `--accept`; inspect the semantic diff before committing it.
+the repository. Golden fixtures are compared by focused tests but never
+rewritten automatically. To accept a deliberate local change, call
+`accept_golden(..., accept=True)` or run the local helper with `--accept`;
+inspect the semantic diff before committing it.
 
 ## Bounded blinded-verifier experiment
 

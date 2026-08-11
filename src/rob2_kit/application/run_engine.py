@@ -84,9 +84,8 @@ from rob2_kit.application.contracts import (
     WorkflowCondition,
     WorkItem,
     WorkToken,
-    v2_model_facing_operation_payload,
+    finalize_search_evidence_response,
 )
-from rob2_kit.application.determinism import QualificationDeterminism
 from rob2_kit.application.evidence_navigation import (
     ConcurrentEvidenceNavigationUpdate,
     EvidenceNavigationStore,
@@ -184,6 +183,7 @@ from rob2_kit.evidence.search import (
     EvidenceScope,
     EvidenceSearchIndex,
     EvidenceSearchPolicy,
+    SearchPackingContext,
     SearchQuery,
     canonicalize_evidence_units,
 )
@@ -676,7 +676,6 @@ class RunEngine:
         parser: DocumentParser | None = None,
         registry_adapter: Any | None = None,
         registry: Any | None = None,
-        determinism: QualificationDeterminism | None = None,
         report_projector_factory: Callable[[Any], Any] | None = None,
         lease_acquirer: Callable[[WorkflowLedger, datetime], LeaseToken] | None = None,
     ) -> None:
@@ -690,7 +689,6 @@ class RunEngine:
         self._registry_client: Any | None = None
         self._authorized_root: Path | None = None
         self._owner_id = f"owner:run-engine:{os.getpid()}:{uuid.uuid4()}"
-        self._determinism = determinism
         self._report_projector_factory = report_projector_factory or ReportProjector
         self._lease_acquirer = lease_acquirer
         # Content-addressed Source artifacts are immutable once written, so a
@@ -727,16 +725,23 @@ class RunEngine:
         raise AttributeError(name)
 
     def _now(self) -> datetime:
-        return self._determinism.now() if self._determinism is not None else datetime.now(UTC)
+        return datetime.now(UTC)
+
+    @staticmethod
+    def _search_ledger_cursor(event_count: int) -> str:
+        """Validate and publish Search's actual numeric ledger cursor."""
+        if event_count < 0 or event_count > 18_446_744_073_709_551_615:
+            raise OperationalRetrievalFailure(
+                "Search ledger event count exceeds the u64 reservation"
+            )
+        return f"ledger:{event_count}"
 
     def _ledger(self, path: Path, artifacts: ArtifactStore) -> WorkflowLedger:
         return WorkflowLedger(
             path,
             artifacts,
             now=self._now,
-            event_identifiers=(
-                self._determinism.event_identifiers if self._determinism is not None else None
-            ),
+            event_identifiers=None,
             verification_cache=self._verification_cache,
         )
 
@@ -3131,6 +3136,26 @@ class RunEngine:
         )
         policy = EvidenceSearchPolicy()
         read_policy = EvidenceReadPolicy()
+        packing_context = SearchPackingContext(
+            operation_id=self._read_operation_id(RunOperation.SEARCH_EVIDENCE, request.run_id),
+            run_id=request.run_id,
+            affected_scope=(request.result_id or request.run_id,),
+            condition=WorkflowCondition.COMPLETED.value,
+            committed=False,
+            policy_id=policy.policy_id,
+            policy_hash=canonical_hash(policy),
+            snapshot_hash=index._snapshot(),
+            scope_hash=canonical_hash(scope),
+            issuance_context=f"{request.run_id}|{request.attempt_id}",
+            coverage_progress_maximum={
+                "sq_id": request.sq_id,
+                "required_seed_families": ("seed:allocation",),
+                "completed_seed_families": ("seed:allocation",),
+                "completed_passes": tuple(item.value for item in SearchPassKind),
+                "missing_passes": tuple(item.value for item in SearchPassKind),
+                "coverage_complete": False,
+            },
+        )
         try:
             provisional_page = index.search_v2(
                 request.query,
@@ -3140,6 +3165,7 @@ class RunEngine:
                 continuation=request.continuation,
                 continue_reason=request.continue_reason,
                 continue_rationale=request.continue_rationale,
+                packing_context=packing_context,
             )
         except (sqlite3.Error, OSError) as error:
             raise OperationalRetrievalFailure(
@@ -3224,26 +3250,7 @@ class RunEngine:
             coverage_complete=workflow.coverage_complete(),
         )
         operation_id = self._read_operation_id(RunOperation.SEARCH_EVIDENCE, request.run_id)
-        ledger_cursor = f"ledger:{len(ledger.events())}"
-
-        def exact_envelope_measure(candidate_page) -> tuple[int, int]:
-            payload = v2_model_facing_operation_payload(
-                SearchEvidenceResponse(
-                    operation_id=operation_id,
-                    ledger_cursor=ledger_cursor,
-                    affected_scope=(request.result_id or request.run_id,),
-                    condition=WorkflowCondition.COMPLETED,
-                    committed=False,
-                    run_id=request.run_id,
-                    page=candidate_page,
-                    coverage_progress=coverage_progress,
-                )
-            )
-            accounting = payload["response_accounting"]
-            return (
-                int(accounting["serialized_response_bytes"]),
-                int(accounting["estimated_response_tokens"]),
-            )
+        ledger_cursor = self._search_ledger_cursor(len(ledger.events()))
 
         try:
             page = index.search_v2(
@@ -3254,7 +3261,7 @@ class RunEngine:
                 continuation=request.continuation,
                 continue_reason=request.continue_reason,
                 continue_rationale=request.continue_rationale,
-                envelope_measure=exact_envelope_measure,
+                packing_context=packing_context,
             )
         except (sqlite3.Error, OSError) as error:
             raise OperationalRetrievalFailure(
@@ -3274,15 +3281,17 @@ class RunEngine:
             )
         except ConcurrentEvidenceNavigationUpdate as error:
             raise InvalidRetrievalRequest(str(error), field="continuation") from error
-        return SearchEvidenceResponse(
-            operation_id=operation_id,
-            ledger_cursor=ledger_cursor,
-            affected_scope=(request.result_id or request.run_id,),
-            condition=WorkflowCondition.COMPLETED,
-            committed=False,
-            run_id=request.run_id,
-            page=page,
-            coverage_progress=coverage_progress,
+        return finalize_search_evidence_response(
+            SearchEvidenceResponse(
+                operation_id=operation_id,
+                ledger_cursor=ledger_cursor,
+                affected_scope=(request.result_id or request.run_id,),
+                condition=WorkflowCondition.COMPLETED,
+                committed=False,
+                run_id=request.run_id,
+                page=page,
+                coverage_progress=coverage_progress,
+            )
         )
 
     def read_evidence(self, request: ReadEvidenceRequest) -> ReadEvidenceResponse:
@@ -15258,8 +15267,6 @@ class RunEngine:
         )
 
     def _new_run_id(self, root: Path, event_count: int) -> Identifier:
-        if self._determinism is not None:
-            return self._determinism.run_id(self._digest("qualification"), root, event_count)
         return f"run:{self._digest(f'{root}|{event_count}')}"
 
     def _transition(
