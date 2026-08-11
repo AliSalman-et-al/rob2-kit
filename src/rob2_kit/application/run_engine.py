@@ -20,31 +20,41 @@ from typing import Any, Literal, cast
 from PIL import Image, ImageDraw
 from pydantic import field_validator
 
+from rob2_kit.application.active_question_frontier import (
+    QuestionAnswerCommitStep,
+    QuestionAnswerCorrection,
+    QuestionDiagnosticStop,
+    QuestionEvidenceBundleBinding,
+    active_question_frontier,
+    effective_question_steps,
+    evidence_closure_from_workflow,
+    evidence_diagnostic_from_workflow,
+)
 from rob2_kit.application.contracts import (
     ConfirmedRunDefinition,
     ConfirmRunDefinitionRequest,
     ConfirmRunDefinitionResponse,
     ContinueRunRequest,
     ContinueRunResponse,
-    CorrectDomainAnswersRequest,
-    CoverageProgress,
+    CorrectQuestionStepRequest,
+    CorrectQuestionStepResponse,
     DomainContextPack,
     ErrorClass,
-    EvidenceConsiderationInput,
     EvidencePassageInput,
-    EvidenceReviewRevisionInput,
-    FinalJudgmentInput,
     GetWorkContextRequest,
     GetWorkContextResponse,
     InspectVisualCandidateRequest,
     InspectVisualCandidateResponse,
     IntegrityFailure,
+    MaterializeQuestionEvidenceBundleRequest,
+    MaterializeQuestionEvidenceBundleResponse,
     OperationError,
     PrepareRunRequest,
     PrepareRunResponse,
     ProposalDiscoveryPassQuery,
     ProposalDiscoveryPolicy,
     ProposalPromotionBatchInput,
+    QuestionVisualProvenanceInput,
     ReadEvidenceRequest,
     ReadEvidenceResponse,
     ReopenResultRequest,
@@ -62,20 +72,22 @@ from rob2_kit.application.contracts import (
     SearchEvidenceRequest,
     SearchEvidenceResponse,
     SourceContextSummary,
-    SubmitDomainAnswersRequest,
-    SubmitDomainAnswersResponse,
-    SubmitDomainEvidenceRequest,
-    SubmitDomainEvidenceResponse,
     SubmitEvidenceReviewRequest,
     SubmitEvidenceReviewResponse,
+    SubmitEvidenceStageOutcomeRequest,
+    SubmitEvidenceStageOutcomeResponse,
     SubmitProposalDiscoveryReviewRequest,
     SubmitProposalDiscoveryReviewResponse,
+    SubmitQuestionStepRequest,
+    SubmitQuestionStepResponse,
     SubmitResultMappingReviewRequest,
     SubmitResultMappingReviewResponse,
     SubmitResultResolutionRequest,
     SubmitResultResolutionResponse,
     SubmitRunProposalRequest,
     SubmitRunProposalResponse,
+    SubmitSourceChronologyReviewRequest,
+    SubmitSourceChronologyReviewResponse,
     SubmitSourceRoleReviewRequest,
     SubmitSourceRoleReviewResponse,
     TrialContextSummary,
@@ -84,13 +96,17 @@ from rob2_kit.application.contracts import (
     WorkflowCondition,
     WorkItem,
     WorkToken,
-    finalize_search_evidence_response,
 )
-from rob2_kit.application.evidence_navigation import (
-    ConcurrentEvidenceNavigationUpdate,
-    EvidenceNavigationStore,
-    IncompatibleEvidenceNavigationState,
-    new_navigation_state,
+from rob2_kit.application.evidence_context import (
+    EvidenceContextInventory,
+    EvidenceContextInventorySource,
+    EvidenceContextUnitOrientation,
+)
+from rob2_kit.application.evidence_navigation import V3EvidenceNavigationStore
+from rob2_kit.application.evidence_runtime import (
+    V3EvidencePageTriageRequest,
+    V3EvidenceSearchContinuationRequest,
+    V3EvidenceSearchRequest,
 )
 from rob2_kit.application.lifecycle import (
     LifecycleIntegrityError,
@@ -108,6 +124,23 @@ from rob2_kit.application.proposals import (
     semantic_diff,
     validate_result_sources,
 )
+from rob2_kit.application.question_evidence_bundle import (
+    QuestionEvidenceBundleMaterializationInput,
+    ResolvedQuestionEvidenceClaim,
+    ResolvedQuestionEvidenceReview,
+    ResolvedQuestionVisualTranscription,
+)
+from rob2_kit.application.question_evidence_bundle import (
+    materialize_question_evidence_bundle as build_question_evidence_bundle,
+)
+from rob2_kit.application.question_evidence_session import (
+    QuestionEvidenceSessionProjection,
+    QuestionEvidenceSessionService,
+    QuestionEvidenceSessionStore,
+    QuestionEvidenceTransitionReceipt,
+    StaleQuestionEvidenceSession,
+    new_question_evidence_session,
+)
 from rob2_kit.domain.assessment import (
     AlgorithmicJudgmentRevision,
     AssessmentRevision,
@@ -120,18 +153,14 @@ from rob2_kit.domain.canonical import canonical_hash, canonical_json_bytes, sha2
 from rob2_kit.domain.evidence import (
     ConsiderationDisposition,
     EvidenceBundle,
-    EvidenceCandidateDispositionRecord,
     EvidenceClaim,
-    EvidenceConsideration,
     EvidenceConsiderationManifest,
-    EvidenceCoverageReceiptRecord,
     EvidenceCoverageState,
-    EvidenceInsufficiency,
-    EvidenceInsufficiencyReason,
     EvidenceReviewDisposition,
     EvidenceReviewRevision,
     EvidenceReviewSpan,
     TrialAttribution,
+    V3EvidenceCoverageReceiptRecord,
     VisualTranscription,
 )
 from rob2_kit.domain.releases import PolicyKind, PolicyRelease
@@ -165,13 +194,12 @@ from rob2_kit.domain.sources import (
 from rob2_kit.evidence.errors import (
     InvalidRetrievalRequest,
     OperationalRetrievalFailure,
-    RetrievalErrorCode,
     RetrievalFailure,
     ScopeMismatch,
-    SearchPolicyMismatch,
     StaleSearchContinuation,
     StaleWorkToken,
 )
+from rob2_kit.evidence.obligations import compile_guidance_obligations
 from rob2_kit.evidence.search import (
     CanonicalBlock,
     CanonicalEvidenceUnit,
@@ -183,7 +211,6 @@ from rob2_kit.evidence.search import (
     EvidenceScope,
     EvidenceSearchIndex,
     EvidenceSearchPolicy,
-    SearchPackingContext,
     SearchQuery,
     canonicalize_evidence_units,
 )
@@ -193,17 +220,9 @@ from rob2_kit.evidence.visual import (
     build_visual_citation,
 )
 from rob2_kit.evidence.workflow import (
-    SearchPassKind,
-    V2EvidenceWorkflowState,
-    V2PageExposure,
-    V2QueryAttemptKind,
-    V2SearchAttempt,
-    V2TriageBasis,
-    V2TriageKind,
-    record_v2_page_exposure,
-    start_v2_search_attempt,
-    submit_v2_page_triage,
-    supersede_v2_search_attempt,
+    V3EvidenceWorkflowState,
+    V3ScopeLimitationKind,
+    V3SourceChronologyFact,
 )
 from rob2_kit.ingestion.project import (
     DocumentParser,
@@ -569,9 +588,11 @@ class _DomainEvidenceRecord(FrozenModel):
     consideration_manifests: tuple[RecordReference, ...] = ()
     coverage_receipts: tuple[RecordReference, ...] = ()
     review_revisions: tuple[RecordReference, ...] = ()
-    candidate_dispositions: tuple[EvidenceConsiderationInput, ...] = ()
+    # Historical submissions remain parseable without retaining their active
+    # request contract at the application boundary.
+    candidate_dispositions: tuple[dict[str, Any], ...] = ()
     project_rules: tuple[RecordReference, ...] = ()
-    submission: SubmitDomainEvidenceRequest
+    submission: dict[str, Any] | None = None
 
 
 class _EvidenceReviewRecord(FrozenModel):
@@ -582,29 +603,65 @@ class _EvidenceReviewRecord(FrozenModel):
     workflow_state_hash: ContentHash
 
 
-class _DomainEvidenceDispositionRecord(FrozenModel):
-    """Immutable pre-freeze account of all candidate dispositions."""
+class _QuestionStepRecord(FrozenModel):
+    """Run-ledger half of an already durable v3 session transition."""
 
     run_id: Identifier
     result_id: Identifier
     domain_id: Identifier
-    items: tuple[RecordReference, ...] = ()
-    dispositions: tuple[EvidenceConsiderationInput, ...] = ()
+    question_id: Identifier
+    session_content_hash: ContentHash
+    frontier_entry_hash: ContentHash | None = None
+    transition_receipt_hash: ContentHash
+    diagnostic_terminal: bool = False
+    submission: SubmitQuestionStepRequest
 
 
-class _DomainEvidenceBlockedRecord(FrozenModel):
-    """Durable marker: the latest frozen evidence for this Domain fell short.
-
-    Committed (not scientific work) so continue_run can reroute back to
-    submit_domain_evidence on a fresh derivation instead of silently
-    re-offering the same blocked submit_domain_answers work item forever
-    (#127/#128, ADR-0008).
-    """
+class _QuestionCorrectionRecord(FrozenModel):
+    """Run-ledger receipt for a durable immutable question correction."""
 
     run_id: Identifier
     result_id: Identifier
     domain_id: Identifier
-    insufficiencies: tuple[str, ...]
+    question_id: Identifier
+    session_content_hash: ContentHash
+    transition_receipt_hash: ContentHash
+    submission: CorrectQuestionStepRequest
+
+
+class _QuestionEvidenceBundleProductionRecord(FrozenModel):
+    """Receipt proving that the engine, rather than a caller, froze a bundle."""
+
+    run_id: Identifier
+    result_id: Identifier
+    domain_id: Identifier
+    question_id: Identifier
+    session_content_hash: ContentHash
+    navigation_state_hash: ContentHash
+    evidence_bundle: QuestionEvidenceBundleBinding
+
+
+class _SourceChronologyReviewRecord(FrozenModel):
+    """One immutable source/parse-bound chronology fact."""
+
+    run_id: Identifier
+    submission: SubmitSourceChronologyReviewRequest
+
+
+class _EvidenceStageOutcomeRecord(FrozenModel):
+    run_id: Identifier
+    submission: SubmitEvidenceStageOutcomeRequest
+    navigation_state_hash: ContentHash
+
+
+class _HistoricalFinalJudgmentInput(FrozenModel):
+    """Read-only shape for final-judgment departures in older ledger records."""
+
+    domain_id: Identifier
+    judgment: JudgmentLevel
+    alternative: JudgmentLevel
+    material_bias_rationale: str
+    cited_evidence: tuple[RecordReference, ...]
 
 
 class _DomainAnswersRecord(FrozenModel):
@@ -616,11 +673,11 @@ class _DomainAnswersRecord(FrozenModel):
     answers: dict[Identifier, str]
     rationales: dict[Identifier, str]
     assessor_inputs: dict[Identifier, bool] = {}
-    final_judgment_departures: tuple[FinalJudgmentInput, ...] = ()
+    final_judgment_departures: tuple[_HistoricalFinalJudgmentInput, ...] = ()
     project_rules: tuple[RecordReference, ...] = ()
     answer_revisions: tuple[RecordReference, ...] = ()
     correction_token: WorkToken | None = None
-    submission: SubmitDomainAnswersRequest
+    submission: dict[str, Any] | None = None
 
 
 class _ResultStartedRecord(FrozenModel):
@@ -2243,7 +2300,7 @@ class RunEngine:
                 )
             discovery_page = EvidenceSearchIndex(
                 self._required_root() / ".rob2" / "evidence.sqlite3"
-            ).search_v2(
+            ).search_page(
                 request.proposal_discovery_query,
                 issuance_context=(
                     f"proposal-discovery|{request.run_id}|{work_item.work_token.token}"
@@ -3130,252 +3187,100 @@ class RunEngine:
 
     def search_evidence(self, request: SearchEvidenceRequest) -> SearchEvidenceResponse:
         ledger = self._bound_ledger(request.run_id)
-        index = EvidenceSearchIndex(self._required_root() / ".rob2" / "evidence.sqlite3")
-        scope = self._retrieval_scope(
-            ledger, request.run_id, request.work_token, request.result_id, request.sq_id
-        )
-        policy = EvidenceSearchPolicy()
-        read_policy = EvidenceReadPolicy()
-        packing_context = SearchPackingContext(
-            operation_id=self._read_operation_id(RunOperation.SEARCH_EVIDENCE, request.run_id),
-            run_id=request.run_id,
-            affected_scope=(request.result_id or request.run_id,),
-            condition=WorkflowCondition.COMPLETED.value,
-            committed=False,
-            policy_id=policy.policy_id,
-            policy_hash=canonical_hash(policy),
-            snapshot_hash=index._snapshot(),
-            scope_hash=canonical_hash(scope),
-            issuance_context=f"{request.run_id}|{request.attempt_id}",
-            coverage_progress_maximum={
-                "sq_id": request.sq_id,
-                "required_seed_families": ("seed:allocation",),
-                "completed_seed_families": ("seed:allocation",),
-                "completed_passes": tuple(item.value for item in SearchPassKind),
-                "missing_passes": tuple(item.value for item in SearchPassKind),
-                "coverage_complete": False,
-            },
-        )
-        try:
-            provisional_page = index.search_v2(
-                request.query,
-                issuance_context=f"{request.run_id}|{request.attempt_id}",
-                policy=policy,
-                scope=scope,
-                continuation=request.continuation,
-                continue_reason=request.continue_reason,
-                continue_rationale=request.continue_rationale,
-                packing_context=packing_context,
+        expected = self._next_work_item(ledger, request.run_id)
+        if expected is None or expected.work_token != request.work_token:
+            raise StaleWorkToken("stale WorkToken: reload the active question work item")
+        if (
+            expected.operation is not RunOperation.SUBMIT_QUESTION_STEP
+            or (expected.result_id, expected.domain_id, expected.question_id)
+            != (request.result_id, request.domain_id, request.question_id)
+            or expected.session_content_hash != request.session_content_hash
+        ):
+            raise ScopeMismatch("Search request is outside the active v3 question scope")
+        if request.query.source_ids:
+            raise ScopeMismatch(
+                "Source IDs are engine-injected for v3 Search", field="query.source_ids"
             )
-        except (sqlite3.Error, OSError) as error:
-            raise OperationalRetrievalFailure(
-                "unable to search the evidence retrieval index"
-            ) from error
-        assert scope.result_id is not None and scope.domain_id is not None
-        store = EvidenceNavigationStore(self._required_root())
-        try:
-            persisted = store.load(
-                run_id=request.run_id,
-                result_id=scope.result_id,
-                domain_id=scope.domain_id,
-                snapshot_hash=provisional_page.snapshot_hash,
-                search_policy_id=policy.policy_id,
-                search_policy_hash=canonical_hash(policy),
-                read_policy_id=read_policy.policy_id,
-                read_policy_hash=canonical_hash(read_policy),
-            )
-        except IncompatibleEvidenceNavigationState as error:
-            raise RetrievalFailure(
-                code=RetrievalErrorCode.STALE_WORK_TOKEN,
-                field="work_token",
-                message=str(error),
-                recovery=(
-                    "supersede the current Preparation attempt",
-                    "call continue_run and use the reissued Domain-Evidence WorkToken",
-                ),
-            ) from error
-        workflow = (
-            persisted.workflow
-            if persisted is not None
-            else V2EvidenceWorkflowState(
-                result_id=scope.result_id,
-                domain_id=scope.domain_id,
-                snapshot_hash=provisional_page.snapshot_hash,
-                search_policy_id=policy.policy_id,
-                search_policy_hash=canonical_hash(policy),
-            )
+        service = self._question_session_service(
+            ledger, request.run_id, request.result_id, request.domain_id
         )
-        attempt = next(
-            (item for item in workflow.attempts if item.attempt_id == request.attempt_id), None
-        )
-        if attempt is None:
-            requested_attempt = V2SearchAttempt(
-                attempt_id=request.attempt_id,
-                sq_id=request.sq_id,
-                pass_kind=request.pass_kind,
-                query=request.query,
-                query_hash=canonical_hash(request.query),
-                kind=V2QueryAttemptKind(request.attempt_kind),
-            )
-            if request.supersedes_attempt_id is not None:
-                workflow = supersede_v2_search_attempt(
-                    workflow,
-                    old_attempt_id=request.supersedes_attempt_id,
-                    replacement=requested_attempt,
-                    rationale=request.supersession_rationale or "",
+        runtime = service.runtime_for_question(request.question_id)
+        query = request.query.model_copy(update={"source_ids": ()})
+        if request.continuation is None:
+            outcome = runtime.runtime.search_page(
+                V3EvidenceSearchRequest(
+                    expected_content_hash=request.expected_navigation_state_hash,
+                    proposition_id=request.proposition_id,
+                    pass_id=request.pass_id,
+                    stage_id=request.stage_id,
+                    intent_id=request.intent_id,
+                    attempt_id=request.attempt_id,
+                    query=query,
+                    supersede_attempt_id=request.supersede_attempt_id,
+                    supersession_rationale=request.supersession_rationale,
                 )
-            else:
-                workflow = start_v2_search_attempt(workflow, requested_attempt)
-        elif (
-            attempt.sq_id,
-            attempt.pass_kind,
-            attempt.query_hash,
-        ) != (request.sq_id, request.pass_kind, canonical_hash(request.query)):
-            raise InvalidRetrievalRequest("attempt ID was replayed with different search semantics")
-        selected = tuple(
-            item.pass_kind
-            for item in workflow.attempts
-            if item.kind is V2QueryAttemptKind.SELECTED and item.sq_id == request.sq_id
-        )
-        coverage_progress = CoverageProgress(
-            sq_id=request.sq_id,
-            required_seed_families=("seed:allocation",)
-            if request.pass_kind is SearchPassKind.GUIDANCE_SEED
-            else (),
-            completed_seed_families=("seed:allocation",)
-            if request.pass_kind is SearchPassKind.GUIDANCE_SEED
-            else (),
-            completed_passes=selected,
-            missing_passes=tuple(item for item in SearchPassKind if item not in selected),
-            coverage_complete=workflow.coverage_complete(),
-        )
-        operation_id = self._read_operation_id(RunOperation.SEARCH_EVIDENCE, request.run_id)
-        ledger_cursor = self._search_ledger_cursor(len(ledger.events()))
-
-        try:
-            page = index.search_v2(
-                request.query,
-                issuance_context=f"{request.run_id}|{request.attempt_id}",
-                policy=policy,
-                scope=scope,
-                continuation=request.continuation,
-                continue_reason=request.continue_reason,
-                continue_rationale=request.continue_rationale,
-                packing_context=packing_context,
             )
-        except (sqlite3.Error, OSError) as error:
+        else:
+            outcome = runtime.runtime.continue_search_page(
+                V3EvidenceSearchContinuationRequest(
+                    expected_content_hash=request.expected_navigation_state_hash,
+                    attempt_id=request.attempt_id,
+                    continuation=request.continuation,
+                    continue_reason=request.continue_reason,
+                    continue_rationale=request.continue_rationale,
+                )
+            )
+        if outcome.page is None:
             raise OperationalRetrievalFailure(
-                "unable to pack the evidence search response envelope"
-            ) from error
-        workflow = record_v2_page_exposure(workflow, attempt_id=request.attempt_id, page=page)
-        state = new_navigation_state(
+                "v3 Search stage has no searchable materialized scope"
+            )
+        return SearchEvidenceResponse(
+            operation_id=self._read_operation_id(RunOperation.SEARCH_EVIDENCE, request.run_id),
+            ledger_cursor=self._search_ledger_cursor(len(ledger.events())),
+            affected_scope=(request.result_id, request.domain_id, request.question_id),
+            condition=WorkflowCondition.COMPLETED,
+            committed=False,
             run_id=request.run_id,
-            workflow=workflow,
-            read_policy_id=read_policy.policy_id,
-            read_policy_hash=canonical_hash(read_policy),
-        )
-        try:
-            store.save(
-                state,
-                expected_content_hash=(persisted.content_hash if persisted is not None else None),
-            )
-        except ConcurrentEvidenceNavigationUpdate as error:
-            raise InvalidRetrievalRequest(str(error), field="continuation") from error
-        return finalize_search_evidence_response(
-            SearchEvidenceResponse(
-                operation_id=operation_id,
-                ledger_cursor=ledger_cursor,
-                affected_scope=(request.result_id or request.run_id,),
-                condition=WorkflowCondition.COMPLETED,
-                committed=False,
-                run_id=request.run_id,
-                page=page,
-                coverage_progress=coverage_progress,
-            )
+            page=outcome.page,
+            coverage_progress=outcome.progress,
         )
 
     def read_evidence(self, request: ReadEvidenceRequest) -> ReadEvidenceResponse:
         ledger = self._bound_ledger(request.run_id)
-        index = EvidenceSearchIndex(self._required_root() / ".rob2" / "evidence.sqlite3")
-        scope = self._retrieval_scope(
-            ledger,
-            request.run_id,
-            request.work_token,
-            request.result_id,
-            require_question=False,
+        self._retrieval_scope(
+            ledger, request.run_id, request.work_token, request.result_id, request.question_id
         )
-        assert scope.result_id is not None and scope.domain_id is not None
         if (
-            request.batch.scope.result_id,
-            request.batch.scope.domain_id,
-        ) != (scope.result_id, scope.domain_id):
+            request.work_token.domain_id != request.domain_id
+            or request.work_token.session_content_hash != request.session_content_hash
+            or request.batch.scope.result_id != request.result_id
+            or request.batch.scope.domain_id != request.domain_id
+            or any(item.question_ids != (request.question_id,) for item in request.batch.items)
+        ):
             raise ScopeMismatch(
-                "read batch Result and Domain must match the active WorkToken scope",
-                field="batch.scope",
+                "read batch must bind exactly the active v3 question", field="batch"
             )
-        domain = next(
-            (item for item in self._logic_pack().domains if item.id == scope.domain_id), None
+        service = self._question_session_service(
+            ledger, request.run_id, request.result_id, request.domain_id
         )
-        if domain is None:
-            raise ScopeMismatch("active WorkToken Domain is not available", field="work_token")
-        if any(
-            question_id not in domain.question_ids
-            for item in request.batch.items
-            for question_id in item.question_ids
-        ):
-            raise ScopeMismatch(
-                "read batch question binding is not active in the WorkToken Domain",
-                field="batch.items.question_ids",
-            )
-        if any(
-            source_id not in scope.source_ids
-            for item in request.batch.items
-            for source_id in item.source_ids
-        ):
-            raise ScopeMismatch(
-                "read batch Source binding is not authorized by the WorkToken scope",
-                field="batch.items.source_ids",
-            )
-        policy = EvidenceReadPolicy()
-        search_policy = EvidenceSearchPolicy()
-        store = EvidenceNavigationStore(self._required_root())
-        try:
-            state = store.load(
-                run_id=request.run_id,
-                result_id=scope.result_id,
-                domain_id=scope.domain_id,
-                snapshot_hash=request.batch.scope.snapshot_hash,
-                search_policy_id=search_policy.policy_id,
-                search_policy_hash=canonical_hash(search_policy),
-                read_policy_id=policy.policy_id,
-                read_policy_hash=canonical_hash(policy),
-            )
-        except IncompatibleEvidenceNavigationState as error:
-            raise SearchPolicyMismatch(str(error)) from error
-        if state is None:
+        runtime = service.runtime_for_question(request.question_id)
+        if runtime.state.content_hash != request.expected_navigation_state_hash:
+            raise StaleSearchContinuation("v3 navigation state changed; reload before reading")
+        if request.batch.scope.snapshot_hash != runtime.state.workflow.snapshot_hash:
             raise StaleSearchContinuation(
-                "read batch has no current v2 search exposure", field="batch.items"
+                "read batch snapshot differs from the current v3 workflow"
             )
-        attempts = {attempt.attempt_id: attempt for attempt in state.workflow.attempts}
+        exposures = {item.location_handle: item for item in runtime.state.workflow.exposures}
         for item in request.batch.items:
-            exposures = [
-                exposure
-                for exposure in state.workflow.exposures
-                if exposure.location_handle == item.location_handle
-            ]
-            if not exposures:
-                raise StaleSearchContinuation(
-                    "read batch location handle is stale or was not exposed for this Domain",
-                    field="batch.items",
-                )
-            for question_id in item.question_ids:
-                if not any(attempts[edge.attempt_id].sq_id == question_id for edge in exposures):
-                    raise StaleSearchContinuation(
-                        "read batch handle was not exposed for its claimed signaling question",
-                        field="batch.items.question_ids",
-                    )
+            exposure = exposures.get(item.location_handle)
+            if exposure is None:
+                raise StaleSearchContinuation("read handle was not exposed for this v3 question")
+            if item.source_ids and item.source_ids != (exposure.source_id,):
+                raise ScopeMismatch("read item Source IDs do not match the exposed candidate")
         try:
-            page = index.read_batch_v2(request.batch, policy=policy)
+            page = EvidenceSearchIndex(
+                self._required_root() / ".rob2" / "evidence.sqlite3"
+            ).read_batch(request.batch, policy=EvidenceReadPolicy())
         except (sqlite3.Error, OSError) as error:
             raise OperationalRetrievalFailure(
                 "unable to read the evidence retrieval index"
@@ -3383,7 +3288,7 @@ class RunEngine:
         return ReadEvidenceResponse(
             operation_id=self._read_operation_id(RunOperation.READ_EVIDENCE, request.run_id),
             ledger_cursor=f"ledger:{len(ledger.events())}",
-            affected_scope=(request.result_id or request.run_id,),
+            affected_scope=(request.result_id, request.domain_id, request.question_id),
             condition=WorkflowCondition.COMPLETED,
             committed=False,
             run_id=request.run_id,
@@ -3393,285 +3298,1998 @@ class RunEngine:
     def submit_evidence_review(
         self, request: SubmitEvidenceReviewRequest
     ) -> SubmitEvidenceReviewResponse:
-        """Durably append one v2 complete-page triage partition.
+        ledger = self._bound_ledger(request.run_id)
+        expected = self._next_work_item(ledger, request.run_id)
+        if expected is None or expected.work_token != request.work_token:
+            raise StaleWorkTokenError(request.run_id, expected)
+        if (
+            expected.operation is not RunOperation.SUBMIT_QUESTION_STEP
+            or (expected.result_id, expected.domain_id, expected.question_id)
+            != (request.result_id, request.domain_id, request.question_id)
+            or expected.session_content_hash != request.session_content_hash
+        ):
+            raise StaleWorkTokenError(request.run_id, expected)
+        service = self._question_session_service(
+            ledger, request.run_id, request.result_id, request.domain_id
+        )
+        runtime = service.runtime_for_question(request.question_id)
+        if runtime.state.content_hash != request.expected_navigation_state_hash:
+            raise StaleSearchContinuation("v3 navigation state changed; reload before triage")
+        scope = self._retrieval_scope(
+            ledger, request.run_id, request.work_token, request.result_id, request.question_id
+        )
+        exposures = {
+            (item.attempt_id, item.page_handle, item.candidate_id): item
+            for item in runtime.state.workflow.exposures
+        }
+        page_attempt_ids = {
+            page.attempt_id
+            for page in runtime.state.workflow.pages
+            if page.page_handle in request.page_handles
+        }
+        if len(page_attempt_ids) != 1:
+            raise StaleSearchContinuation("triage pages must belong to one exposed v3 attempt")
+        attempt_id = next(iter(page_attempt_ids))
+        index = EvidenceSearchIndex(self._required_root() / ".rob2" / "evidence.sqlite3")
 
-        Review authority intentionally remains the active Domain-Evidence
-        work token; this operation records navigation triage, not a frozen
-        scientific claim.
-        """
+        def receipt_displays(receipt: str, target: Any) -> bool:
+            try:
+                view = index.resolve_read_view_receipt(receipt, scope=scope)
+            except RetrievalFailure:
+                return False
+            return any(
+                fragment.unit_id == target.canonical_unit_id
+                and fragment.source_id == target.source_id
+                and fragment.parse_id == target.parse_id
+                and fragment.span_start <= target.canonical_start
+                and fragment.span_end >= target.canonical_end
+                for fragment in view.fragments
+            )
+
+        for revision in request.triage_revisions:
+            if revision.sq_id != request.question_id:
+                raise ScopeMismatch("triage revision question differs from active work")
+            if revision.attempt_id != attempt_id:
+                raise StaleSearchContinuation(
+                    "triage revision attempt differs from its page partition"
+                )
+            exposure = exposures.get(
+                (revision.attempt_id, revision.page_handle, revision.candidate_id)
+            )
+            if exposure is None or revision.page_handle not in request.page_handles:
+                raise StaleSearchContinuation("triage revision is not an exposed v3 candidate")
+            if revision.read_view_receipt and not receipt_displays(
+                revision.read_view_receipt, exposure
+            ):
+                raise InvalidRetrievalRequest(
+                    "triage read-view receipt does not display the exposed candidate"
+                )
+            if revision.retained_target_read_view_receipt:
+                target = next(
+                    (
+                        item
+                        for item in runtime.state.workflow.exposures
+                        if item.candidate_id == revision.retained_target_id
+                    ),
+                    None,
+                )
+                if target is None or not receipt_displays(
+                    revision.retained_target_read_view_receipt, target
+                ):
+                    raise InvalidRetrievalRequest(
+                        "duplicate target receipt does not display the retained candidate"
+                    )
+        outcome = runtime.runtime.submit_page_triage(
+            V3EvidencePageTriageRequest(
+                expected_content_hash=request.expected_navigation_state_hash,
+                submission_id=request.submission_id,
+                attempt_id=attempt_id,
+                page_handles=request.page_handles,
+                revisions=request.triage_revisions,
+            )
+        )
+        return SubmitEvidenceReviewResponse(
+            operation_id=self._read_operation_id(
+                RunOperation.SUBMIT_EVIDENCE_REVIEW, request.run_id
+            ),
+            ledger_cursor=f"ledger:{len(ledger.events())}",
+            affected_scope=(request.result_id, request.domain_id, request.question_id),
+            condition=WorkflowCondition.ACCEPTED,
+            committed=True,
+            next_action=RunOperation.CONTINUE_RUN,
+            run_id=request.run_id,
+            run_state=self._projection(ledger, request.run_id).run_state,
+            result_id=request.result_id,
+            result_state=self._result_state(
+                self._projection(ledger, request.run_id), request.result_id
+            ),
+            domain_id=request.domain_id,
+            workflow_state_hash=outcome.state.content_hash,
+            outstanding_triage_candidate_ids=tuple(
+                item.candidate_id
+                for item in outcome.state.workflow.exposures
+                if item.candidate_id
+                not in {
+                    revision.candidate_id for revision in outcome.state.workflow.triage_revisions
+                }
+            ),
+        )
+
+    def materialize_question_evidence_bundle(
+        self, request: MaterializeQuestionEvidenceBundleRequest
+    ) -> MaterializeQuestionEvidenceBundleResponse:
+        """Freeze the active v3 question workflow into an engine-owned bundle."""
+
         ledger = self._bound_ledger(request.run_id)
         existing = self._submission_retry_event(
             ledger,
             request.run_id,
             request.idempotency_key,
-            {"operation:submit-evidence-review"},
+            {"operation:materialize-question-evidence-bundle"},
         )
         if existing is not None:
-            record = _EvidenceReviewRecord.model_validate_json(
+            record = _QuestionEvidenceBundleProductionRecord.model_validate_json(
+                ledger.artifacts.read(existing.output_revision_hashes[0])
+            )
+            if (
+                record.run_id,
+                record.result_id,
+                record.domain_id,
+                record.question_id,
+                record.session_content_hash,
+                record.navigation_state_hash,
+            ) != (
+                request.run_id,
+                request.result_id,
+                request.domain_id,
+                request.question_id,
+                request.session_content_hash,
+                request.expected_navigation_state_hash,
+            ):
+                raise InvalidRetrievalRequest(
+                    "question Evidence Bundle idempotency key was replayed outside its scope"
+                )
+            return self._question_bundle_response(
+                ledger, request, record, existing, committed=False
+            )
+        expected = self._next_work_item(ledger, request.run_id)
+        if (
+            expected is None
+            or expected.work_token != request.work_token
+            or (
+                expected.operation,
+                expected.result_id,
+                expected.domain_id,
+                expected.question_id,
+                expected.session_content_hash,
+                expected.frontier_entry_hash,
+            )
+            != (
+                RunOperation.SUBMIT_QUESTION_STEP,
+                request.result_id,
+                request.domain_id,
+                request.question_id,
+                request.session_content_hash,
+                request.frontier_entry_hash,
+            )
+        ):
+            raise StaleWorkTokenError(request.run_id, expected)
+        service = self._question_session_service(
+            ledger, request.run_id, request.result_id, request.domain_id
+        )
+        session = service.load()
+        if session.content_hash != request.session_content_hash:
+            raise StaleSearchContinuation(
+                "question evidence session changed; reload before freezing"
+            )
+        runtime = service.runtime_for_question(request.question_id)
+        if runtime.state.content_hash != request.expected_navigation_state_hash:
+            raise StaleSearchContinuation("v3 navigation state changed; reload before freezing")
+        result_spec, spec_transition = self._question_bundle_result_spec(
+            ledger, request.run_id, request.result_id
+        )
+        reviews, claims, visuals = self._current_question_bundle_provenance(
+            ledger, runtime.state.workflow, request.visual_transcriptions
+        )
+        now = self._now()
+        staged_reviews, staged_claims, provenance_transitions = (
+            self._stage_question_text_provenance(ledger, request, now)
+        )
+        if staged_reviews and reviews:
+            raise InvalidRetrievalRequest(
+                "question bundle cannot combine staged reviews with a current review revision"
+            )
+        reviews = (*reviews, *staged_reviews)
+        claims = (*claims, *staged_claims)
+        materialization = build_question_evidence_bundle(
+            QuestionEvidenceBundleMaterializationInput(
+                materialization_id=f"question-bundle:{self._digest(request.idempotency_key)}",
+                session=session,
+                workflow=runtime.state.workflow,
+                evidence_closure=evidence_closure_from_workflow(runtime.state.workflow),
+                result_spec=result_spec,
+                reviews=reviews,
+                claims=claims,
+                visual_transcriptions=visuals,
+                actor=ENGINE_ACTOR,
+                observed_at=now,
+            )
+        )
+        pending = materialization.pending_artifacts
+        transitions: list[Transition] = []
+        if spec_transition is not None:
+            transitions.append(spec_transition)
+        transitions.extend(provenance_transitions)
+        for label, artifact in (
+            ("disposition", pending.disposition),
+            ("coverage", pending.coverage_receipt),
+            ("manifest", pending.manifest),
+            ("bundle", pending.bundle),
+        ):
+            transitions.append(
+                self._transition(
+                    scope=request.result_id,
+                    operation=f"operation:question-evidence-{label}-frozen",
+                    operation_key=f"{request.idempotency_key}:{label}",
+                    entity_id=artifact.entity_id,
+                    revision_id=artifact.revision_id,
+                    artifact=artifact,
+                    checkpoint=None,
+                    outcome=WorkflowEventOutcome.COMPLETED,
+                    observed_at=now,
+                    dependencies=tuple(
+                        DependencyInput.model_validate(item.model_dump())
+                        for item in artifact.dependencies
+                    ),
+                )
+            )
+        record = _QuestionEvidenceBundleProductionRecord(
+            run_id=request.run_id,
+            result_id=request.result_id,
+            domain_id=request.domain_id,
+            question_id=request.question_id,
+            session_content_hash=session.content_hash,
+            navigation_state_hash=runtime.state.content_hash,
+            evidence_bundle=materialization.binding,
+        )
+        transitions.append(
+            self._submission_transition(
+                run_id=request.run_id,
+                scope=request.result_id,
+                operation="operation:materialize-question-evidence-bundle",
+                operation_key=request.idempotency_key,
+                artifact=record,
+                checkpoint=None,
+                observed_at=now,
+            )
+        )
+        committed = ledger.commit_batch(
+            tuple(transitions), self._acquire_lease(ledger, now), now=now
+        )[-1]
+        return self._question_bundle_response(ledger, request, record, committed, committed=True)
+
+    def submit_question_step(
+        self, request: SubmitQuestionStepRequest
+    ) -> SubmitQuestionStepResponse:
+        """Commit one v3 answer or terminal diagnostic and ledger receipt."""
+
+        ledger = self._bound_ledger(request.run_id)
+        existing = self._submission_retry_event(
+            ledger, request.run_id, request.idempotency_key, {"operation:submit-question-step"}
+        )
+        if existing is not None:
+            record = _QuestionStepRecord.model_validate_json(
                 ledger.artifacts.read(existing.output_revision_hashes[0])
             )
             if record.submission != request:
                 raise InvalidRetrievalRequest(
-                    "review idempotency key was replayed with different content"
+                    "question-step idempotency key was replayed differently"
                 )
-            projection = self._projection(ledger, request.run_id)
-            index = EvidenceSearchIndex(self._required_root() / ".rob2" / "evidence.sqlite3")
-            search_policy = EvidenceSearchPolicy()
-            read_policy = EvidenceReadPolicy()
-            store = EvidenceNavigationStore(self._required_root())
-            try:
-                state = store.load(
-                    run_id=request.run_id,
-                    result_id=request.result_id,
-                    domain_id=request.domain_id,
-                    snapshot_hash=index._snapshot(),
-                    search_policy_id=search_policy.policy_id,
-                    search_policy_hash=canonical_hash(search_policy),
-                    read_policy_id=read_policy.policy_id,
-                    read_policy_hash=canonical_hash(read_policy),
-                )
-            except IncompatibleEvidenceNavigationState as error:
-                raise SearchPolicyMismatch(str(error)) from error
-            if state is None:
-                raise StaleSearchContinuation(
-                    "review retry has no current durable navigation state", field="page_handles"
-                )
-            return SubmitEvidenceReviewResponse(
-                operation_id=existing.operation_id,
-                ledger_cursor=f"ledger:{len(ledger.events())}",
-                affected_scope=(request.result_id,),
-                condition=WorkflowCondition.ACCEPTED,
-                committed=False,
-                next_action=RunOperation.SUBMIT_DOMAIN_EVIDENCE,
-                run_id=request.run_id,
-                run_state=projection.run_state,
-                result_id=request.result_id,
-                result_state=self._result_state(projection, request.result_id),
-                domain_id=request.domain_id,
-                workflow_state_hash=state.content_hash,
-                outstanding_triage_candidate_ids=state.workflow.outstanding_triage_candidate_ids(),
+            return self._question_step_response(
+                ledger, request, record, existing, was_committed=False
             )
-        scope = self._retrieval_scope(
+        try:
+            ledger = self._submission_ledger(
+                request.run_id,
+                request.work_token,
+                RunOperation.SUBMIT_QUESTION_STEP,
+                request.idempotency_key,
+            )
+        except StaleWorkTokenError:
+            # A session transition is intentionally durable before its Run
+            # checkpoint. Reconcile only the exact predecessor hash; this is
+            # not permission to replay a stale step into a different frontier.
+            service = self._question_session_service(
+                ledger, request.run_id, request.result_id, request.domain_id
+            )
+            state = service.load()
+            if request.diagnostic_stop:
+                committed_step = next(
+                    (
+                        item
+                        for item in state.ledger.diagnostic_stops
+                        if item.question_id == request.question_id
+                    ),
+                    None,
+                )
+                semantics_match = committed_step is not None
+                kind = "diagnostic_stop"
+            else:
+                committed_step = next(
+                    (
+                        item
+                        for item in state.ledger.steps
+                        if item.question_id == request.question_id
+                    ),
+                    None,
+                )
+                semantics_match = (
+                    committed_step is not None
+                    and committed_step.answer == request.answer
+                    and getattr(committed_step, "rationale", None) == request.rationale
+                )
+                kind = "answer"
+            if not semantics_match or committed_step is None:
+                raise
+            transition = service.reconcile_transition(
+                predecessor_session_hash=request.session_content_hash,
+                kind=kind,
+                transition_content_hash=committed_step.content_hash,
+            )
+            return self._commit_question_step(
+                ledger, request, transition.receipt, transition.projection
+            )
+
+        token = request.work_token
+        if (
+            token.question_id != request.question_id
+            or token.result_id != request.result_id
+            or token.domain_id != request.domain_id
+            or token.session_content_hash != request.session_content_hash
+            or token.frontier_entry_hash != request.frontier_entry_hash
+        ):
+            raise StaleWorkTokenError(request.run_id, self._next_work_item(ledger, request.run_id))
+        service = self._question_session_service(
+            ledger, request.run_id, request.result_id, request.domain_id
+        )
+        runtime = service.runtime_for_question(request.question_id)
+        logic = self._logic_pack()
+        if request.diagnostic_stop:
+            transition = service.commit_diagnostic_stop(
+                expected_content_hash=request.session_content_hash,
+                stop=QuestionDiagnosticStop(
+                    stop_id=f"question-stop:{self._digest(request.idempotency_key)}",
+                    question_id=request.question_id,
+                    logic_pack_family_id=logic.family_id,
+                    logic_pack_release_id=logic.release_id,
+                    logic_pack_hash=logic.content_hash,
+                    expected_frontier_entry_hash=request.frontier_entry_hash,
+                    evidence_diagnostic=evidence_diagnostic_from_workflow(runtime.state.workflow),
+                ),
+                workflow=runtime.state.workflow,
+            )
+        else:
+            assert request.answer is not None
+            assert request.evidence_bundle is not None
+            self._require_question_evidence_bundle(
+                ledger,
+                request,
+                runtime.state.workflow.content_hash,
+                runtime.state.content_hash,
+                request.evidence_bundle,
+            )
+            transition = service.commit_answer(
+                expected_content_hash=request.session_content_hash,
+                step=QuestionAnswerCommitStep(
+                    step_id=f"question-step:{self._digest(request.idempotency_key)}",
+                    question_id=request.question_id,
+                    answer=request.answer,
+                    rationale=request.rationale or "",
+                    logic_pack_family_id=logic.family_id,
+                    logic_pack_release_id=logic.release_id,
+                    logic_pack_hash=logic.content_hash,
+                    expected_frontier_entry_hash=request.frontier_entry_hash,
+                    evidence_closure=evidence_closure_from_workflow(runtime.state.workflow),
+                    evidence_bundle=request.evidence_bundle,
+                ),
+                workflow=runtime.state.workflow,
+            )
+        return self._commit_question_step(
+            ledger, request, transition.receipt, transition.projection
+        )
+
+    def _require_question_evidence_bundle(
+        self,
+        ledger: WorkflowLedger,
+        request: SubmitQuestionStepRequest | CorrectQuestionStepRequest,
+        workflow_hash: ContentHash,
+        navigation_state_hash: ContentHash,
+        binding: QuestionEvidenceBundleBinding,
+        *,
+        allow_historical_binding: bool = False,
+    ) -> None:
+        """Reject caller-created answer bases; only an exact frozen bundle may bind a step."""
+
+        if (binding.question_id, binding.run_id, binding.result_id, binding.domain_id) != (
+            request.question_id,
+            request.run_id,
+            request.result_id,
+            request.domain_id,
+        ):
+            raise InvalidRetrievalRequest("question Evidence Bundle binding changed active scope")
+        try:
+            bundle = EvidenceBundle.model_validate_json(
+                ledger.artifacts.read(binding.bundle_content_hash)
+            )
+        except (OSError, ValueError) as error:
+            raise InvalidRetrievalRequest(
+                "question Evidence Bundle is not an engine-frozen artifact"
+            ) from error
+        if canonical_hash(bundle) != binding.bundle_content_hash or (
+            bundle.revision_id != binding.bundle_revision_id
+            or bundle.sq_id != request.question_id
+            or bundle.domain_id != request.domain_id
+        ):
+            raise InvalidRetrievalRequest(
+                "question Evidence Bundle binding does not match its artifact"
+            )
+        try:
+            manifest_ref = bundle.consideration_manifest
+            coverage_ref = bundle.v3_coverage_receipt
+            if manifest_ref is None or coverage_ref is None:
+                raise ValueError("question bundle lacks v3 manifest or coverage receipt")
+            manifest = EvidenceConsiderationManifest.model_validate_json(
+                ledger.artifacts.read(manifest_ref.content_hash)
+            )
+            coverage = V3EvidenceCoverageReceiptRecord.model_validate_json(
+                ledger.artifacts.read(coverage_ref.content_hash)
+            )
+        except (OSError, ValueError) as error:
+            raise InvalidRetrievalRequest(
+                "question Evidence Bundle has unreadable v3 provenance artifacts"
+            ) from error
+        if (
+            canonical_hash(manifest) != manifest_ref.content_hash
+            or (manifest.entity_id, manifest.revision_id)
+            != (manifest_ref.entity_id, manifest_ref.revision_id)
+            or manifest.sq_id != request.question_id
+            or manifest.considered_items != bundle.items
+            or canonical_hash(coverage) != coverage_ref.content_hash
+            or (coverage.entity_id, coverage.revision_id)
+            != (coverage_ref.entity_id, coverage_ref.revision_id)
+            or (coverage.result_id, coverage.domain_id, coverage.sq_id)
+            != (request.result_id, request.domain_id, request.question_id)
+            or coverage.workflow_state_hash != workflow_hash
+        ):
+            raise InvalidRetrievalRequest(
+                "question Evidence Bundle has stale or forged v3 scope provenance"
+            )
+        current = next(
+            (
+                item
+                for item in ledger.current_revisions()
+                if item.entity_id == bundle.result_spec.entity_id
+            ),
+            None,
+        )
+        if current is None or (current.revision_id, current.artifact_hash) != (
+            bundle.result_spec.revision_id,
+            bundle.result_spec.content_hash,
+        ):
+            raise InvalidRetrievalRequest(
+                "question Evidence Bundle does not bind the current ResultSpec revision"
+            )
+        expected_frozen_hash = canonical_hash(
+            {
+                "result_spec": bundle.result_spec.model_dump(mode="json"),
+                "disposition": bundle.disposition.model_dump(mode="json"),
+                "items": [item.model_dump(mode="json") for item in bundle.items],
+                "sq_id": bundle.sq_id,
+                "domain_id": bundle.domain_id,
+                "v3_coverage_receipt": coverage_ref.model_dump(mode="json"),
+                "consideration_manifest": manifest_ref.model_dump(mode="json"),
+                "review_revisions": [
+                    item.model_dump(mode="json") for item in bundle.review_revisions
+                ],
+                "coverage_state": bundle.coverage_state.value,
+                "coverage_limitations": bundle.coverage_limitations,
+                "no_information_basis": bundle.no_information_basis,
+                "conflicts": bundle.conflicts,
+            }
+        )
+        if bundle.frozen_content_hash != expected_frozen_hash:
+            raise InvalidRetrievalRequest("question Evidence Bundle canonical hash is forged")
+        produced = False
+        production_session_hash: ContentHash | None = None
+        for event in self._events_for_run(ledger, request.run_id):
+            if event.operation != "operation:materialize-question-evidence-bundle":
+                continue
+            try:
+                production = _QuestionEvidenceBundleProductionRecord.model_validate_json(
+                    ledger.artifacts.read(event.output_revision_hashes[0])
+                )
+            except (OSError, ValueError):
+                continue
+            if (
+                production.evidence_bundle == binding
+                and (
+                    production.session_content_hash == request.session_content_hash
+                    or (
+                        allow_historical_binding
+                        and any(
+                            step.question_id == request.question_id
+                            and step.evidence_bundle == binding
+                            for step in self._question_session_service(
+                                ledger, request.run_id, request.result_id, request.domain_id
+                            )
+                            .load()
+                            .ledger.steps
+                        )
+                    )
+                )
+                and production.navigation_state_hash == navigation_state_hash
+            ):
+                produced = True
+                production_session_hash = production.session_content_hash
+                break
+        if not produced:
+            raise InvalidRetrievalRequest(
+                "question Evidence Bundle binding was not produced by this engine session"
+            )
+        dispositions = {item.item_id: item.disposition for item in manifest.dispositions}
+        expected_supporting = tuple(
+            sorted(
+                item_id
+                for item_id, disposition in dispositions.items()
+                if disposition is ConsiderationDisposition.SUPPORTING
+            )
+        )
+        expected_contradicting = tuple(
+            sorted(
+                item_id
+                for item_id, disposition in dispositions.items()
+                if disposition is ConsiderationDisposition.CONTRADICTING
+            )
+        )
+        claims = {item.entity_id for item in bundle.items}
+        if (
+            binding.supporting_evidence_ids != expected_supporting
+            or binding.contradicting_evidence_ids != expected_contradicting
+            or not set((*expected_supporting, *expected_contradicting)) <= claims
+        ):
+            raise InvalidRetrievalRequest(
+                "question Evidence Bundle polarity does not match its frozen manifest"
+            )
+        verification = binding.engine_verified_no_information_basis
+        if bool(verification) != bundle.no_information_basis:
+            raise InvalidRetrievalRequest(
+                "question Evidence Bundle no-information state does not match its artifact"
+            )
+        if verification is not None:
+            closure_hash = coverage.question_closure_hash
+            expected = canonical_hash(
+                {
+                    "kind": "engine-verified-no-information:v3",
+                    "session_content_hash": (
+                        production_session_hash
+                        if allow_historical_binding and production_session_hash is not None
+                        else request.session_content_hash
+                    ),
+                    "closure_hash": closure_hash,
+                    "workflow_state_hash": workflow_hash,
+                    "policy": {
+                        "search": coverage.search_policy_hash,
+                        "read": coverage.read_policy_hash,
+                        "visual": coverage.visual_policy_hash,
+                    },
+                }
+            )
+            if (
+                bundle.items
+                or expected_supporting
+                or expected_contradicting
+                or bundle.coverage_state is not EvidenceCoverageState.COMPLETE
+                or bundle.coverage_limitations
+                or verification.verification_hash != expected
+                or verification.verification_id
+                != f"verification:no-information-v3-{expected[7:31]}"
+            ):
+                raise InvalidRetrievalRequest("No-information basis was not engine-verified")
+
+    def correct_question_step(
+        self, request: CorrectQuestionStepRequest
+    ) -> CorrectQuestionStepResponse:
+        """Append one immutable correction and rematerialize a completed Domain.
+
+        The correction token is derived from the exact current session, so a
+        caller cannot reuse it after a competing answer or correction.  The
+        evidence bundle is deliberately required to be the predecessor's
+        engine-produced basis; correcting a conclusion never permits a
+        caller-created basis to enter history.
+        """
+
+        ledger = self._bound_ledger(request.run_id)
+        existing = self._submission_retry_event(
             ledger,
             request.run_id,
-            request.work_token,
-            request.result_id,
-            require_question=False,
+            request.idempotency_key,
+            {"operation:correct-question-step"},
         )
-        assert scope.result_id is not None and scope.domain_id is not None
-        if (scope.result_id, scope.domain_id) != (request.result_id, request.domain_id):
-            raise InvalidRetrievalRequest(
-                "review request is outside the active Domain-Evidence scope"
+        if existing is not None:
+            record = _QuestionCorrectionRecord.model_validate_json(
+                ledger.artifacts.read(existing.output_revision_hashes[0])
             )
-        index = EvidenceSearchIndex(self._required_root() / ".rob2" / "evidence.sqlite3")
-        search_policy = EvidenceSearchPolicy()
-        read_policy = EvidenceReadPolicy()
-        store = EvidenceNavigationStore(self._required_root())
-        try:
-            persisted = store.load(
-                run_id=request.run_id,
-                result_id=request.result_id,
-                domain_id=request.domain_id,
-                snapshot_hash=index._snapshot(),
-                search_policy_id=search_policy.policy_id,
-                search_policy_hash=canonical_hash(search_policy),
-                read_policy_id=read_policy.policy_id,
-                read_policy_hash=canonical_hash(read_policy),
-            )
-        except IncompatibleEvidenceNavigationState as error:
-            raise SearchPolicyMismatch(str(error)) from error
-        if persisted is None:
-            raise StaleSearchContinuation(
-                "review requires a current exposed v2 search page", field="page_handles"
-            )
-        attempts = {attempt.attempt_id: attempt for attempt in persisted.workflow.attempts}
-        exposed_candidate_ids = {edge.candidate_id for edge in persisted.workflow.exposures}
-        retained_candidate_ids = {
-            revision.candidate_id
-            for revision in (*persisted.workflow.triage_revisions, *request.triage_revisions)
-            if revision.kind is V2TriageKind.RETAINED
-        }
-        exposures = {
-            (
-                edge.attempt_id,
-                attempts[edge.attempt_id].sq_id,
-                edge.page_handle,
-                edge.candidate_id,
-            ): edge
-            for edge in persisted.workflow.exposures
-            if edge.page_handle in request.page_handles
-        }
-
-        def receipt_displays_edge(
-            receipt_id: str | None, edge: V2PageExposure, *, sq_id: str
-        ) -> bool:
-            """Resolve one receipt and prove that it displays this exact exposure."""
-
-            if not receipt_id:
-                return False
-            try:
-                reviewed = index.resolve_read_view_receipt(receipt_id, scope=scope)
-            except RetrievalFailure:
-                return False
-            return (
-                reviewed.snapshot_hash == persisted.snapshot_hash
-                and (reviewed.read_policy_id, reviewed.read_policy_hash)
-                == (read_policy.policy_id, canonical_hash(read_policy))
-                and sq_id in reviewed.question_ids
-                and any(
-                    fragment.unit_id == edge.canonical_unit_id
-                    and fragment.source_id == edge.source_id
-                    and fragment.source_artifact_hash == edge.source_artifact_hash
-                    and fragment.parse_id == edge.parse_id
-                    and fragment.span_start <= edge.canonical_start
-                    and fragment.span_end >= edge.canonical_end
-                    for fragment in reviewed.fragments
-                )
-            )
-
-        for revision in request.triage_revisions:
-            edge = exposures.get(
-                (revision.attempt_id, revision.sq_id, revision.page_handle, revision.candidate_id)
-            )
-            if edge is None:
-                raise StaleSearchContinuation(
-                    "triage revision binds a stale or unexposed candidate occurrence",
-                    field="triage_revisions",
-                )
-            preview_safe = _preview_is_self_contained(edge)
-            if revision.kind is V2TriageKind.IRRELEVANT:
-                if revision.basis is V2TriageBasis.PREVIEW and not preview_safe:
-                    raise InvalidRetrievalRequest(
-                        "risk-bearing candidate requires an exact read-view receipt "
-                        "for irrelevant triage"
-                    )
-                if revision.basis is V2TriageBasis.READ_VIEW_RECEIPT:
-                    try:
-                        reviewed = index.resolve_read_view_receipt(
-                            revision.read_view_receipt or "", scope=scope
-                        )
-                    except RetrievalFailure as error:
-                        raise InvalidRetrievalRequest(
-                            "triage read-view receipt is invalid or stale"
-                        ) from error
-                    if (
-                        reviewed.snapshot_hash != persisted.snapshot_hash
-                        or (reviewed.read_policy_id, reviewed.read_policy_hash)
-                        != (read_policy.policy_id, canonical_hash(read_policy))
-                        or revision.sq_id not in reviewed.question_ids
-                        or not any(
-                            fragment.unit_id == edge.canonical_unit_id
-                            and fragment.source_id == edge.source_id
-                            and fragment.source_artifact_hash == edge.source_artifact_hash
-                            and fragment.parse_id == edge.parse_id
-                            and fragment.span_start <= edge.canonical_start
-                            and fragment.span_end >= edge.canonical_end
-                            for fragment in reviewed.fragments
-                        )
-                    ):
-                        raise InvalidRetrievalRequest(
-                            "triage receipt does not display the exposed candidate context"
-                        )
-            if revision.kind is V2TriageKind.DUPLICATE and (
-                revision.retained_target_id not in exposed_candidate_ids
-                or revision.retained_target_id not in retained_candidate_ids
-            ):
+            if record.submission != request:
                 raise InvalidRetrievalRequest(
-                    "duplicate retained_target_id must name an exposed retained candidate",
-                    field="triage_revisions.retained_target_id",
+                    "question correction idempotency key was replayed differently"
                 )
-            if revision.kind is V2TriageKind.DUPLICATE:
-                if edge.duplicate_group_id is not None:
-                    if (
-                        edge.retained_duplicate_target_id is not None
-                        and edge.retained_duplicate_target_id != edge.candidate_id
-                        and revision.retained_target_id != edge.retained_duplicate_target_id
-                    ):
-                        raise InvalidRetrievalRequest(
-                            "duplicate target conflicts with exposed duplicate lineage",
-                            field="triage_revisions.retained_target_id",
-                        )
-                else:
-                    target_edge = next(
-                        (
-                            candidate
-                            for candidate in persisted.workflow.exposures
-                            if candidate.candidate_id == revision.retained_target_id
-                            and attempts[candidate.attempt_id].sq_id == revision.sq_id
-                        ),
-                        None,
-                    )
-                    if target_edge is None:
-                        raise InvalidRetrievalRequest(
-                            "duplicate retained target has no exposure for this signaling question",
-                            field="triage_revisions.retained_target_id",
-                        )
-                    if not receipt_displays_edge(
-                        revision.read_view_receipt, edge, sq_id=revision.sq_id
-                    ):
-                        raise InvalidRetrievalRequest(
-                            "duplicate receipt does not display the exposed candidate context",
-                            field="triage_revisions.read_view_receipt",
-                        )
-                    if not receipt_displays_edge(
-                        revision.retained_target_read_view_receipt,
-                        target_edge,
-                        sq_id=revision.sq_id,
-                    ):
-                        raise InvalidRetrievalRequest(
-                            "duplicate receipt does not display the retained target context",
-                            field="triage_revisions.retained_target_read_view_receipt",
-                        )
-        workflow = submit_v2_page_triage(
-            persisted.workflow,
-            submission_id=request.submission_id,
-            page_handles=request.page_handles,
-            revisions=request.triage_revisions,
+            return self._question_correction_response(ledger, request, record, existing, False)
+
+        expected = self._question_correction_work_item(
+            request.run_id,
+            request.result_id,
+            request.domain_id,
+            request.question_id,
+            request.session_content_hash,
         )
-        state = new_navigation_state(
-            run_id=request.run_id,
-            workflow=workflow,
-            read_policy_id=read_policy.policy_id,
-            read_policy_hash=canonical_hash(read_policy),
+        # Trial identity is informative on a correction token, not part of its
+        # question-session authority. A process-local Result→Trial hint may be
+        # absent after terminal materialization or restart; the signed token,
+        # operation, and exact Result/Domain/question/session bindings remain
+        # stable and are all checked here.
+        if request.work_token.model_copy(update={"trial_id": None}) != (
+            expected.work_token.model_copy(update={"trial_id": None})
+        ):
+            raise StaleWorkTokenError(request.run_id, self._next_work_item(ledger, request.run_id))
+        service = self._question_session_service(
+            ledger, request.run_id, request.result_id, request.domain_id
+        )
+        state = service.load()
+        if state.content_hash != request.session_content_hash:
+            raise StaleWorkTokenError(request.run_id, self._next_work_item(ledger, request.run_id))
+        predecessor = next(
+            (
+                item
+                for item in effective_question_steps(state.ledger)
+                if item.question_id == request.question_id
+            ),
+            None,
+        )
+        if predecessor is None or predecessor.effective_step_hash != request.prior_step_hash:
+            raise InvalidRetrievalRequest("question correction predecessor is stale or conflicting")
+        if predecessor.evidence_bundle != request.evidence_bundle:
+            raise InvalidRetrievalRequest(
+                "question correction must retain its predecessor Evidence Bundle"
+            )
+        runtime = service.runtime_for_committed_question(request.question_id)
+        self._require_question_evidence_bundle(
+            ledger,
+            request,
+            runtime.state.workflow.content_hash,
+            runtime.state.content_hash,
+            request.evidence_bundle,
+            allow_historical_binding=True,
+        )
+        logic = self._logic_pack()
+        correction = QuestionAnswerCorrection(
+            correction_id=f"question-correction:{self._digest(request.idempotency_key)}",
+            question_id=request.question_id,
+            prior_step_hash=request.prior_step_hash,
+            answer=request.answer,
+            rationale=request.rationale,
+            logic_pack_family_id=logic.family_id,
+            logic_pack_release_id=logic.release_id,
+            logic_pack_hash=logic.content_hash,
+            evidence_closure=evidence_closure_from_workflow(runtime.state.workflow),
+            evidence_bundle=request.evidence_bundle,
         )
         try:
-            store.save(
-                state,
-                expected_content_hash=persisted.content_hash,
+            transition = service.commit_correction(
+                expected_content_hash=request.session_content_hash, correction=correction
             )
-        except ConcurrentEvidenceNavigationUpdate as error:
-            raise InvalidRetrievalRequest(str(error), field="submission_id") from error
-        record = _EvidenceReviewRecord(
+        except StaleQuestionEvidenceSession:
+            transition = service.reconcile_transition(
+                predecessor_session_hash=request.session_content_hash,
+                kind="correction",
+                transition_content_hash=correction.content_hash,
+            )
+        record = _QuestionCorrectionRecord(
             run_id=request.run_id,
             result_id=request.result_id,
             domain_id=request.domain_id,
+            question_id=request.question_id,
+            session_content_hash=transition.projection.session_content_hash,
+            transition_receipt_hash=canonical_hash(transition.receipt),
             submission=request,
-            workflow_state_hash=state.content_hash,
         )
-        committed = self._commit_submission(
-            ledger,
-            run_id=request.run_id,
-            scope=request.result_id,
-            operation="operation:submit-evidence-review",
-            operation_key=request.idempotency_key,
-            artifact=record,
-            checkpoint="checkpoint:evidence-review",
-        )
+        now = self._now()
+        transitions = [
+            self._submission_transition(
+                run_id=request.run_id,
+                scope=request.result_id,
+                operation="operation:correct-question-step",
+                operation_key=request.idempotency_key,
+                artifact=record,
+                checkpoint=(
+                    f"checkpoint:question-correction-{request.domain_id.removeprefix('domain:')}-"
+                    f"{request.question_id.removeprefix('sq:')}"
+                ),
+                observed_at=now,
+            )
+        ]
+        projection_before = self._projection(ledger, request.run_id)
+        prior_result_state = self._result_state(projection_before, request.result_id)
+        if prior_result_state is ResultState.REPORT_READY:
+            transitions.append(
+                self._transition(
+                    scope=request.result_id,
+                    operation="operation:result-assessment-corrected",
+                    operation_key=f"{request.idempotency_key}:result-assessment-corrected",
+                    entity_id=(
+                        f"result-assessment-correction:{request.result_id.removeprefix('result:')}-"
+                        f"{self._digest(request.idempotency_key)}"
+                    ),
+                    revision_id=(
+                        f"revision:result-assessment-correction-"
+                        f"{self._digest(request.idempotency_key)}"
+                    ),
+                    artifact=_ResultAssessmentCorrectedRecord(
+                        run_id=request.run_id,
+                        result_id=request.result_id,
+                        correction_key=request.idempotency_key,
+                    ),
+                    checkpoint=(
+                        f"checkpoint:result-assessment-correction-"
+                        f"{request.result_id.removeprefix('result:')}"
+                    ),
+                    outcome=WorkflowEventOutcome.WORK_REQUIRED,
+                    observed_at=now,
+                )
+            )
+        if projection_before.run_state is RunState.COMPLETE:
+            transitions.append(
+                self._transition(
+                    scope=request.run_id,
+                    operation="operation:run-reopened",
+                    operation_key=f"{request.idempotency_key}:run-reopened",
+                    entity_id=f"run-question-correction:{self._digest(request.idempotency_key)}",
+                    revision_id=f"revision:run-question-correction-{self._digest(request.idempotency_key)}",
+                    artifact=_RunReopenedRecord(
+                        run_id=request.run_id,
+                        input_snapshot_hash=self._latest_proposal(
+                            ledger, request.run_id
+                        ).input_snapshot_hash,
+                        invalidated_result_ids=(request.result_id,),
+                    ),
+                    checkpoint=f"checkpoint:run-question-correction-{self._digest(request.idempotency_key)}",
+                    outcome=WorkflowEventOutcome.WORK_REQUIRED,
+                    observed_at=now,
+                )
+            )
+        if transition.projection.frontier.status == "complete_with_answers":
+            transitions.extend(self._final_question_domain_transitions(ledger, request, now))
+        committed = ledger.commit_batch(
+            tuple(transitions), self._acquire_lease(ledger, now), now=now
+        )[0]
+        return self._question_correction_response(ledger, request, record, committed, True)
+
+    def _question_bundle_response(
+        self,
+        ledger: WorkflowLedger,
+        request: MaterializeQuestionEvidenceBundleRequest,
+        record: _QuestionEvidenceBundleProductionRecord,
+        result: CommitResult | WorkflowEvent,
+        *,
+        committed: bool,
+    ) -> MaterializeQuestionEvidenceBundleResponse:
         projection = self._projection(ledger, request.run_id)
-        return SubmitEvidenceReviewResponse(
-            operation_id=committed.operation_id,
-            ledger_cursor=f"ledger:{committed.sequence}",
-            affected_scope=(request.result_id,),
+        return MaterializeQuestionEvidenceBundleResponse(
+            operation_id=result.operation_id,
+            ledger_cursor=f"ledger:{result.sequence}",
+            affected_scope=(request.result_id, request.domain_id, request.question_id),
             condition=WorkflowCondition.ACCEPTED,
-            committed=not committed.duplicate,
-            next_action=RunOperation.SUBMIT_DOMAIN_EVIDENCE,
+            committed=committed,
+            next_action=RunOperation.SUBMIT_QUESTION_STEP,
             run_id=request.run_id,
             run_state=projection.run_state,
             result_id=request.result_id,
             result_state=self._result_state(projection, request.result_id),
             domain_id=request.domain_id,
-            workflow_state_hash=state.content_hash,
-            outstanding_triage_candidate_ids=workflow.outstanding_triage_candidate_ids(),
+            question_id=request.question_id,
+            session_content_hash=record.session_content_hash,
+            navigation_state_hash=record.navigation_state_hash,
+            evidence_bundle=record.evidence_bundle,
+        )
+
+    def _question_bundle_result_spec(
+        self, ledger: WorkflowLedger, run_id: Identifier, result_id: Identifier
+    ) -> tuple[RecordReference, Transition | None]:
+        """Return the current ResultSpec reference, staging its first freeze if needed."""
+
+        result_spec = self._result_spec_for(ledger, run_id, result_id)
+        if result_spec is None:
+            raise InvalidRetrievalRequest("question Evidence Bundle requires a resolved ResultSpec")
+        current = next(
+            (
+                item
+                for item in ledger.current_revisions()
+                if item.entity_id == result_spec.entity_id
+            ),
+            None,
+        )
+        if current is not None:
+            try:
+                frozen = ResultSpecRevision.model_validate_json(
+                    ledger.artifacts.read(current.artifact_hash)
+                )
+            except (OSError, ValueError) as error:
+                raise InvalidRetrievalRequest("current ResultSpec freeze is unreadable") from error
+            if frozen != result_spec:
+                raise InvalidRetrievalRequest(
+                    "current ResultSpec revision differs from active question scope"
+                )
+            return RecordReference(
+                entity_id=current.entity_id,
+                revision_id=current.revision_id,
+                content_hash=current.artifact_hash,
+            ), None
+        reference = RecordReference(
+            entity_id=result_spec.entity_id,
+            revision_id=result_spec.revision_id,
+            content_hash=canonical_hash(result_spec),
+        )
+        return reference, self._transition(
+            scope=result_id,
+            operation="operation:result-spec-frozen",
+            operation_key=(
+                f"materialize:question-result-spec:{run_id}:{result_id}:{result_spec.revision_id}"
+            ),
+            entity_id=result_spec.entity_id,
+            revision_id=result_spec.revision_id,
+            artifact=result_spec,
+            checkpoint=None,
+            outcome=WorkflowEventOutcome.COMPLETED,
+            observed_at=result_spec.observed_at,
+            actor=result_spec.actor,
+            dependencies=tuple(
+                DependencyInput.model_validate(item.model_dump())
+                for item in result_spec.dependencies
+            ),
+            supersedes_revision_id=(
+                result_spec.supersedes.revision_id if result_spec.supersedes is not None else None
+            ),
+        )
+
+    def _current_question_bundle_provenance(
+        self,
+        ledger: WorkflowLedger,
+        workflow: Any,
+        visual_inputs: tuple[QuestionVisualProvenanceInput, ...],
+    ) -> tuple[
+        tuple[ResolvedQuestionEvidenceReview, ...],
+        tuple[ResolvedQuestionEvidenceClaim, ...],
+        tuple[ResolvedQuestionVisualTranscription, ...],
+    ]:
+        """Resolve only current immutable records that exactly bind this v3 workflow.
+
+        Historical ``VisualTranscription`` records do not themselves carry a
+        question/review/span link. A caller must therefore supply that typed
+        linkage, which this method re-resolves against current immutable
+        revisions before passing it to the pure builder.
+        """
+
+        reviews: list[ResolvedQuestionEvidenceReview] = []
+        claims: list[ResolvedQuestionEvidenceClaim] = []
+        candidate_ids = {item.candidate_id for item in workflow.exposures}
+        for revision in ledger.current_revisions():
+            reference = RecordReference(
+                entity_id=revision.entity_id,
+                revision_id=revision.revision_id,
+                content_hash=revision.artifact_hash,
+            )
+            try:
+                review = EvidenceReviewRevision.model_validate_json(
+                    ledger.artifacts.read(revision.artifact_hash)
+                )
+            except (OSError, ValueError):
+                review = None
+            if review is not None:
+                if canonical_hash(review) != revision.artifact_hash:
+                    raise InvalidRetrievalRequest(
+                        "current Evidence review has a forged content hash"
+                    )
+                if (review.result_id, review.domain_id, review.sq_id, review.candidate_id) == (
+                    workflow.result_id,
+                    workflow.domain_id,
+                    workflow.question_id,
+                    review.candidate_id,
+                ) and review.candidate_id in candidate_ids:
+                    reviews.append(
+                        ResolvedQuestionEvidenceReview(review=review, reference=reference)
+                    )
+                continue
+            try:
+                claim = EvidenceClaim.model_validate_json(
+                    ledger.artifacts.read(revision.artifact_hash)
+                )
+            except (OSError, ValueError):
+                continue
+            if canonical_hash(claim) != revision.artifact_hash:
+                raise InvalidRetrievalRequest("current Evidence claim has a forged content hash")
+            if claim.candidate_id in candidate_ids:
+                claims.append(ResolvedQuestionEvidenceClaim(claim=claim, reference=reference))
+        review_by_reference = {item.reference: item for item in reviews}
+        visuals: list[ResolvedQuestionVisualTranscription] = []
+        if len({item.transcription for item in visual_inputs}) != len(visual_inputs):
+            raise InvalidRetrievalRequest("question visual provenance repeats a transcription")
+        for item in visual_inputs:
+            current = next(
+                (
+                    revision
+                    for revision in ledger.current_revisions()
+                    if (revision.entity_id, revision.revision_id, revision.artifact_hash)
+                    == (
+                        item.transcription.entity_id,
+                        item.transcription.revision_id,
+                        item.transcription.content_hash,
+                    )
+                ),
+                None,
+            )
+            if current is None:
+                raise InvalidRetrievalRequest(
+                    "visual transcription is not a current immutable record"
+                )
+            try:
+                transcription = VisualTranscription.model_validate_json(
+                    ledger.artifacts.read(current.artifact_hash)
+                )
+            except (OSError, ValueError) as error:
+                raise InvalidRetrievalRequest("visual transcription is unreadable") from error
+            if canonical_hash(transcription) != item.transcription.content_hash:
+                raise InvalidRetrievalRequest("visual transcription content hash is forged")
+            review = review_by_reference.get(item.authorizing_review)
+            if review is None or review.review.candidate_id != item.candidate_id:
+                raise InvalidRetrievalRequest(
+                    "visual transcription does not bind a current question review"
+                )
+            if not any(span.span_id == item.review_span_id for span in review.review.spans):
+                raise InvalidRetrievalRequest(
+                    "visual transcription names no authorizing review span"
+                )
+            visuals.append(
+                ResolvedQuestionVisualTranscription(
+                    transcription=transcription,
+                    reference=item.transcription,
+                    candidate_id=item.candidate_id,
+                    authorizing_review=item.authorizing_review,
+                    review_span_id=item.review_span_id,
+                )
+            )
+        return (
+            tuple(sorted(reviews, key=lambda item: item.reference.entity_id)),
+            tuple(sorted(claims, key=lambda item: item.reference.entity_id)),
+            tuple(sorted(visuals, key=lambda item: item.reference.entity_id)),
+        )
+
+    def _stage_question_text_provenance(
+        self,
+        ledger: WorkflowLedger,
+        request: MaterializeQuestionEvidenceBundleRequest,
+        observed_at: datetime,
+    ) -> tuple[
+        tuple[ResolvedQuestionEvidenceReview, ...],
+        tuple[ResolvedQuestionEvidenceClaim, ...],
+        tuple[Transition, ...],
+    ]:
+        """Resolve supplied v3 receipts into review and claim transitions without writing.
+
+        The returned order is deliberate: review records precede their claims,
+        and source/unit records precede claims that depend on them. The caller
+        commits this complete sequence with the bundle artifacts in one ledger
+        transaction.
+        """
+
+        if not request.review_revisions and not request.passages:
+            return (), (), ()
+        scope = self._retrieval_scope(
+            ledger,
+            request.run_id,
+            request.work_token,
+            request.result_id,
+            request.question_id,
+        )
+        index = EvidenceSearchIndex(self._required_root() / ".rob2" / "evidence.sqlite3")
+        units: dict[Identifier, CanonicalEvidenceUnit] = {}
+        passages_by_candidate: dict[Identifier, list[EvidencePassageInput]] = {}
+        for passage in request.passages:
+            unit = index.read_unit(passage.unit_id, scope=scope)
+            self._validate_citable_unit(unit, scope)
+            end = passage.span_end if passage.span_end is not None else len(unit.text)
+            if end <= passage.span_start or end > len(unit.text):
+                raise InvalidRetrievalRequest(
+                    "question passage span is empty or outside its canonical unit"
+                )
+            candidate_id = passage.candidate_id or passage.unit_id
+            units[passage.unit_id] = unit
+            passages_by_candidate.setdefault(candidate_id, []).append(passage)
+        reviews: dict[Identifier, ResolvedQuestionEvidenceReview] = {}
+        for submitted in request.review_revisions:
+            candidate_passages = passages_by_candidate.get(submitted.candidate_id, [])
+            if not candidate_passages:
+                raise InvalidRetrievalRequest("review revision has no retained canonical passage")
+            spans: list[EvidenceReviewSpan] = []
+            for submitted_span in submitted.spans:
+                context = index.resolve_read_view_receipt(
+                    submitted_span.read_view_receipt, scope=scope
+                )
+                matching = [
+                    unit
+                    for passage in candidate_passages
+                    for unit in (units[passage.unit_id],)
+                    if any(fragment.unit_id == unit.unit_id for fragment in context.fragments)
+                ]
+                unique = {item.unit_id: item for item in matching}
+                if len(unique) != 1:
+                    raise InvalidRetrievalRequest(
+                        "review receipt must display exactly one retained canonical candidate"
+                    )
+                unit = next(iter(unique.values()))
+                fragment = next(item for item in context.fragments if item.unit_id == unit.unit_id)
+                if (
+                    submitted_span.span_start < fragment.span_start
+                    or submitted_span.span_end > fragment.span_end
+                    or fragment.content_hash
+                    != sha256_digest(unit.text[fragment.span_start : fragment.span_end].encode())
+                ):
+                    raise InvalidRetrievalRequest(
+                        "review span is not contained in its issued read receipt"
+                    )
+                span_id = f"review-span:{self._digest('|'.join((submitted.candidate_id, unit.unit_id, unit.parse_id, str(submitted_span.span_start), str(submitted_span.span_end))))}"
+                spans.append(
+                    EvidenceReviewSpan(
+                        span_id=span_id,
+                        span_start=submitted_span.span_start,
+                        span_end=submitted_span.span_end,
+                        trial_attribution=submitted_span.trial_attribution,
+                        disposition=submitted_span.disposition,
+                        rationale=submitted_span.rationale,
+                        attribution_rationale=submitted_span.attribution_rationale,
+                        reviewed_context=context,
+                        visual_review_condition=submitted_span.visual_review_condition,
+                        duplicate_of=submitted_span.duplicate_of,
+                    )
+                )
+            review = EvidenceReviewRevision(
+                entity_id=submitted.entity_id,
+                revision_id=submitted.revision_id,
+                actor=submitted.actor,
+                observed_at=submitted.observed_at,
+                supersedes=submitted.supersedes,
+                candidate_id=submitted.candidate_id,
+                result_id=request.result_id,
+                domain_id=request.domain_id,
+                sq_id=request.question_id,
+                spans=tuple(spans),
+            )
+            reference = RecordReference(
+                entity_id=review.entity_id,
+                revision_id=review.revision_id,
+                content_hash=canonical_hash(review),
+            )
+            reviews[review.candidate_id] = ResolvedQuestionEvidenceReview(
+                review=review, reference=reference
+            )
+        transitions: list[Transition] = [
+            self._transition(
+                scope=request.result_id,
+                operation="operation:question-evidence-review-frozen",
+                operation_key=f"{request.idempotency_key}:review:{review.review.candidate_id}",
+                entity_id=review.review.entity_id,
+                revision_id=review.review.revision_id,
+                artifact=review.review,
+                checkpoint=None,
+                outcome=WorkflowEventOutcome.COMPLETED,
+                observed_at=observed_at,
+                actor=review.review.actor,
+            )
+            for review in reviews.values()
+        ]
+        proposal = self._latest_proposal(ledger, request.run_id)
+        result_spec = self._result_spec_for(ledger, request.run_id, request.result_id)
+        if result_spec is None:
+            raise InvalidRetrievalRequest("question passage requires a resolved Result")
+        sources = {
+            source.source_id: source
+            for trial in proposal.initialization.trials
+            if trial.trial_id == result_spec.result.trial_id
+            for source in trial.inventory.sources
+        }
+        source_refs: dict[Identifier, RecordReference] = {}
+        unit_refs: dict[Identifier, RecordReference] = {}
+        claims: list[ResolvedQuestionEvidenceClaim] = []
+        for passage in request.passages:
+            unit = units[passage.unit_id]
+            candidate_id = passage.candidate_id or passage.unit_id
+            review = reviews.get(candidate_id)
+            if review is None:
+                raise InvalidRetrievalRequest("retained passage has no staged current review")
+            end = passage.span_end if passage.span_end is not None else len(unit.text)
+            span = next(
+                (
+                    item
+                    for item in review.review.spans
+                    if (item.span_start, item.span_end) == (passage.span_start, end)
+                    and any(
+                        fragment.unit_id == unit.unit_id
+                        for fragment in item.reviewed_context.fragments
+                    )
+                ),
+                None,
+            )
+            if (
+                span is None
+                or span.trial_attribution is not TrialAttribution.ACTIVE
+                or span.disposition
+                not in {
+                    EvidenceReviewDisposition.SUPPORTING,
+                    EvidenceReviewDisposition.CONTRADICTING,
+                }
+            ):
+                raise InvalidRetrievalRequest(
+                    "retained passage lacks an active substantive review span"
+                )
+            source = sources.get(unit.source_id)
+            if source is None or source.artifact_hash != unit.source_artifact_hash:
+                raise InvalidRetrievalRequest(
+                    "canonical passage source is stale for the active Result"
+                )
+            source_ref = source_refs.get(source.source_id)
+            if source_ref is None:
+                digest = self._digest(
+                    f"{request.run_id}|{unit.source_id}|{unit.source_artifact_hash}"
+                )
+                source_ref = RecordReference(
+                    entity_id=f"evidence-source:{digest}",
+                    revision_id=f"revision:evidence-source-{digest}",
+                    content_hash=canonical_hash(source),
+                )
+                source_refs[source.source_id] = source_ref
+                transitions.append(
+                    self._transition(
+                        scope=request.result_id,
+                        operation="operation:question-evidence-source-frozen",
+                        operation_key=f"{request.idempotency_key}:source:{digest}",
+                        entity_id=source_ref.entity_id,
+                        revision_id=source_ref.revision_id,
+                        artifact=source,
+                        checkpoint=None,
+                        outcome=WorkflowEventOutcome.COMPLETED,
+                        observed_at=observed_at,
+                    )
+                )
+            unit_ref = unit_refs.get(unit.unit_id)
+            if unit_ref is None:
+                digest = self._digest(
+                    f"{request.run_id}|{unit.unit_id}|{unit.parse_id}|{unit.source_artifact_hash}"
+                )
+                unit_ref = RecordReference(
+                    entity_id=f"canonical-unit:{digest}",
+                    revision_id=f"revision:canonical-unit-{digest}",
+                    content_hash=canonical_hash(unit),
+                )
+                unit_refs[unit.unit_id] = unit_ref
+                transitions.append(
+                    self._transition(
+                        scope=request.result_id,
+                        operation="operation:question-canonical-unit-frozen",
+                        operation_key=f"{request.idempotency_key}:unit:{digest}",
+                        entity_id=unit_ref.entity_id,
+                        revision_id=unit_ref.revision_id,
+                        artifact=unit,
+                        checkpoint=None,
+                        outcome=WorkflowEventOutcome.COMPLETED,
+                        observed_at=observed_at,
+                    )
+                )
+            digest = self._digest(
+                "|".join(
+                    (
+                        request.idempotency_key,
+                        candidate_id,
+                        unit.unit_id,
+                        str(passage.span_start),
+                        str(end),
+                    )
+                )
+            )
+            claim = EvidenceClaim(
+                entity_id=f"evidence-claim:v3-{digest}",
+                revision_id=f"revision:evidence-claim-v3-{digest}",
+                dependencies=(
+                    Dependency(**unit_ref.model_dump(), role="dependency:canonical-unit"),
+                    Dependency(**source_ref.model_dump(), role="dependency:source"),
+                    Dependency(**review.reference.model_dump(), role="dependency:evidence-review"),
+                ),
+                actor=ENGINE_ACTOR,
+                observed_at=observed_at,
+                canonical_unit=unit_ref,
+                source=source_ref,
+                authorizing_review=review.reference,
+                review_span_id=span.span_id,
+                candidate_id=candidate_id,
+                span_start=passage.span_start,
+                span_end=end,
+                quoted_text_hash=sha256_digest(unit.text[passage.span_start : end].encode()),
+                claim_type=passage.claim_type,
+                verification_status="machine_verified",
+            )
+            reference = RecordReference(
+                entity_id=claim.entity_id,
+                revision_id=claim.revision_id,
+                content_hash=canonical_hash(claim),
+            )
+            claims.append(ResolvedQuestionEvidenceClaim(claim=claim, reference=reference))
+            transitions.append(
+                self._transition(
+                    scope=request.result_id,
+                    operation="operation:question-evidence-claim-frozen",
+                    operation_key=f"{request.idempotency_key}:claim:{digest}",
+                    entity_id=claim.entity_id,
+                    revision_id=claim.revision_id,
+                    artifact=claim,
+                    checkpoint=None,
+                    outcome=WorkflowEventOutcome.COMPLETED,
+                    observed_at=observed_at,
+                    dependencies=tuple(
+                        DependencyInput.model_validate(item.model_dump())
+                        for item in claim.dependencies
+                    ),
+                )
+            )
+        return tuple(reviews.values()), tuple(claims), tuple(transitions)
+
+    def _commit_question_step(
+        self,
+        ledger: WorkflowLedger,
+        request: SubmitQuestionStepRequest,
+        receipt: QuestionEvidenceTransitionReceipt,
+        session: QuestionEvidenceSessionProjection,
+    ) -> SubmitQuestionStepResponse:
+        record = _QuestionStepRecord(
+            run_id=request.run_id,
+            result_id=request.result_id,
+            domain_id=request.domain_id,
+            question_id=request.question_id,
+            session_content_hash=session.session_content_hash,
+            transition_receipt_hash=canonical_hash(receipt),
+            diagnostic_terminal=session.frontier.status == "diagnostic_terminal",
+            submission=request,
+        )
+        question_transition = self._submission_transition(
+            run_id=request.run_id,
+            scope=request.result_id,
+            operation="operation:submit-question-step",
+            operation_key=request.idempotency_key,
+            artifact=record,
+            checkpoint=(
+                f"checkpoint:question-step-{request.domain_id.removeprefix('domain:')}-"
+                f"{request.question_id.removeprefix('sq:')}"
+            ),
+            observed_at=self._now(),
+        )
+        if not record.diagnostic_terminal:
+            now = self._now()
+            transitions = [question_transition]
+            if session.frontier.status == "complete_with_answers":
+                transitions.extend(self._final_question_domain_transitions(ledger, request, now))
+            committed = ledger.commit_batch(
+                tuple(transitions), self._acquire_lease(ledger, now), now=now
+            )[0]
+            if session.frontier.status == "complete_with_answers":
+                # Domain products become current atomically above. Terminal
+                # materialization then consumes only those committed
+                # checkpoints; a rendering failure leaves the Result safely
+                # assessment-ready for deterministic continuation.
+                self._materialize_terminal(ledger, request.run_id, request.result_id)
+                self._commit_run_completed_if_ready(ledger, request.run_id)
+            return self._question_step_response(
+                ledger, request, record, committed, was_committed=True
+            )
+
+        # A terminal evidence limitation is a Result safe boundary, not a
+        # Domain answer. Publish its judgment-free diagnostic atomically with
+        # the question checkpoint so a restarted scheduler cannot assess a
+        # later Domain for the affected Result.
+        result_spec = self._result_spec_for(ledger, request.run_id, request.result_id)
+        if result_spec is None:
+            raise ValueError("diagnostic question transition requires a resolved Result")
+        diagnostic = self._materialize_diagnostic_bundle(
+            _ResultDiagnosticRecord(
+                run_id=request.run_id,
+                result_id=request.result_id,
+                trial_id=result_spec.result.trial_id,
+                reason=(
+                    "Question-scoped evidence workflow reached a terminal diagnostic limitation "
+                    f"for {request.question_id}; no RoB 2 answer or Domain judgment was produced."
+                ),
+                recovery=self._evidence_diagnostic_recovery_actions(
+                    self._question_session_service(
+                        ledger, request.run_id, request.result_id, request.domain_id
+                    )
+                    .runtime_for_diagnostic_question(request.question_id)
+                    .state.workflow
+                ),
+            )
+        )
+        suffix = self._digest(f"{request.run_id}|{request.idempotency_key}|diagnostic")
+        diagnostic_transition = self._transition(
+            scope=request.result_id,
+            operation="operation:result-diagnostic-ready",
+            operation_key=f"{request.idempotency_key}:diagnostic",
+            entity_id=f"result-diagnostic:{suffix}",
+            revision_id=f"revision:result-diagnostic-{suffix}",
+            artifact=diagnostic,
+            checkpoint=f"checkpoint:result-diagnostic-{suffix}",
+            outcome=WorkflowEventOutcome.TRIAL_PROBLEM,
+            observed_at=self._now(),
+        )
+        now = self._now()
+        committed = self._commit_transitions(
+            ledger,
+            (question_transition, diagnostic_transition),
+            self._acquire_lease(ledger, now),
+            now=now,
+        )
+        self._commit_run_completed_if_ready(ledger, request.run_id)
+        return self._question_step_response(
+            ledger,
+            request,
+            record,
+            committed[0],
+            was_committed=any(not item.duplicate for item in committed),
+        )
+
+    def _final_question_domain_transitions(
+        self,
+        ledger: WorkflowLedger,
+        request: SubmitQuestionStepRequest | CorrectQuestionStepRequest,
+        now: datetime,
+    ) -> tuple[Transition, ...]:
+        """Stage the completed session's canonical Domain evidence and answers."""
+
+        session = self._question_session_service(
+            ledger, request.run_id, request.result_id, request.domain_id
+        ).load()
+        steps = effective_question_steps(session.ledger)
+        if not steps:
+            raise InvalidRetrievalRequest("completed question session has no answer steps")
+        bundle_refs: list[RecordReference] = []
+        manifests: list[RecordReference] = []
+        receipts: list[RecordReference] = []
+        for step in steps:
+            binding = step.evidence_bundle
+            bundle = EvidenceBundle.model_validate_json(
+                ledger.artifacts.read(binding.bundle_content_hash)
+            )
+            if canonical_hash(bundle) != binding.bundle_content_hash:
+                raise InvalidRetrievalRequest(
+                    "completed question session references a forged bundle"
+                )
+            bundle_refs.append(
+                RecordReference(
+                    entity_id=bundle.entity_id,
+                    revision_id=bundle.revision_id,
+                    content_hash=binding.bundle_content_hash,
+                )
+            )
+            assert (
+                bundle.consideration_manifest is not None and bundle.v3_coverage_receipt is not None
+            )
+            manifests.append(bundle.consideration_manifest)
+            receipts.append(bundle.v3_coverage_receipt)
+        evidence = _DomainEvidenceRecord(
+            run_id=request.run_id,
+            result_id=request.result_id,
+            domain_id=request.domain_id,
+            items=tuple(item.revision_id for item in bundle_refs),
+            coverage_state="complete",
+            evidence_bundles=tuple(bundle_refs),
+            consideration_manifests=tuple(manifests),
+            coverage_receipts=tuple(receipts),
+        )
+        slug = request.domain_id.removeprefix("domain:")
+        prior_evidence = self._current_checkpoint_event(
+            ledger, request.result_id, f"checkpoint:evidence-{slug}"
+        )
+        evidence_entity_id = (
+            prior_evidence.entity_id
+            if prior_evidence is not None
+            else f"domain-evidence:v3-{request.result_id.removeprefix('result:')}-{slug}"
+        )
+        transitions = [
+            self._transition(
+                scope=request.result_id,
+                operation="operation:submit-domain-evidence",
+                operation_key=f"{request.idempotency_key}:domain-evidence",
+                entity_id=evidence_entity_id,
+                revision_id=f"revision:domain-evidence-v3-{self._digest(request.idempotency_key)}",
+                artifact=evidence,
+                checkpoint=f"checkpoint:evidence-{slug}",
+                outcome=WorkflowEventOutcome.COMPLETED,
+                observed_at=now,
+                supersedes_revision_id=(
+                    prior_evidence.revision_id if prior_evidence is not None else None
+                ),
+                dependencies=tuple(
+                    DependencyInput(**item.model_dump(), role="dependency:evidence-bundle")
+                    for item in bundle_refs
+                ),
+            )
+        ]
+        logic = self._logic_pack()
+        domain = next(item for item in logic.domains if item.id == request.domain_id)
+        answer_refs: list[RecordReference] = []
+        answer_revision_superseded = False
+        for step, bundle_ref in zip(steps, bundle_refs, strict=True):
+            digest = self._digest(f"{request.idempotency_key}|{step.question_id}|answer")
+            answer_entity_id = (
+                f"sq-answer:{request.result_id.removeprefix('result:')}-"
+                f"{step.question_id.removeprefix('sq:')}"
+            )
+            prior_answer = next(
+                (item for item in ledger.current_revisions() if item.entity_id == answer_entity_id),
+                None,
+            )
+            answer = SQAnswerRevision(
+                entity_id=answer_entity_id,
+                revision_id=f"revision:sq-answer-v3-{digest}",
+                dependencies=(
+                    Dependency(**bundle_ref.model_dump(), role="dependency:evidence-bundle"),
+                ),
+                actor=ENGINE_ACTOR,
+                observed_at=now,
+                sq_id=step.question_id,
+                answer=step.answer,
+                rationale=step.rationale,
+                evidence_bundle=bundle_ref,
+                logic_pack_release_id=logic.release_id,
+                logic_pack_hash=logic.content_hash,
+                guidance_pack_release_id=self._guidance_pack().release_id,
+                guidance_pack_hash=self._guidance_pack().content_hash,
+                evidence_policy_id=EvidenceSearchPolicy().policy_id,
+                evidence_policy_hash=canonical_hash(EvidenceSearchPolicy()),
+                decision_rule_ids=tuple(
+                    rule.id
+                    for rule in domain.judgment_rules
+                    if step.question_id
+                    in {
+                        condition.question_id for condition in self._walk_pack_conditions(rule.when)
+                    }
+                ),
+            )
+            if prior_answer is not None:
+                answer_revision_superseded = True
+                answer = answer.model_copy(
+                    update={
+                        "supersedes": Supersession(
+                            entity_id=answer_entity_id,
+                            revision_id=prior_answer.revision_id,
+                            content_hash=prior_answer.artifact_hash,
+                            reason="question correction rematerialized the effective Domain answer",
+                        )
+                    }
+                )
+            ref = RecordReference(
+                entity_id=answer.entity_id,
+                revision_id=answer.revision_id,
+                content_hash=canonical_hash(answer),
+            )
+            answer_refs.append(ref)
+            transitions.append(
+                self._transition(
+                    scope=request.result_id,
+                    operation="operation:sq-answer-revision",
+                    operation_key=f"{request.idempotency_key}:domain-answer:{step.question_id}",
+                    entity_id=answer.entity_id,
+                    revision_id=answer.revision_id,
+                    artifact=answer,
+                    checkpoint=None,
+                    outcome=WorkflowEventOutcome.COMPLETED,
+                    observed_at=now,
+                    dependencies=tuple(
+                        DependencyInput.model_validate(item.model_dump())
+                        for item in answer.dependencies
+                    ),
+                    supersedes_revision_id=(
+                        prior_answer.revision_id if prior_answer is not None else None
+                    ),
+                )
+            )
+        answers = _DomainAnswersRecord(
+            run_id=request.run_id,
+            result_id=request.result_id,
+            domain_id=request.domain_id,
+            answers={step.question_id: step.answer.value for step in steps},
+            rationales={step.question_id: step.rationale for step in steps},
+            answer_revisions=tuple(answer_refs),
+        )
+        prior_answers = self._current_checkpoint_event(
+            ledger, request.result_id, f"checkpoint:answers-{slug}"
+        )
+        answers_entity_id = (
+            prior_answers.entity_id
+            if prior_answers is not None
+            else f"domain-answers:v3-{request.result_id.removeprefix('result:')}-{slug}"
+        )
+        transitions.append(
+            self._transition(
+                scope=request.result_id,
+                operation="operation:submit-domain-answers",
+                operation_key=f"{request.idempotency_key}:domain-answers",
+                entity_id=answers_entity_id,
+                revision_id=f"revision:domain-answers-v3-{self._digest(request.idempotency_key)}",
+                artifact=answers,
+                checkpoint=f"checkpoint:answers-{slug}",
+                outcome=WorkflowEventOutcome.COMPLETED,
+                observed_at=now,
+                # Superseding any constituent SQAnswer invalidates its dependent
+                # DomainAnswers projection earlier in this same atomic batch. In
+                # that case the replacement is a fresh current projection; its
+                # audit ancestry is already explicit through the SQAnswer chain.
+                supersedes_revision_id=(
+                    prior_answers.revision_id
+                    if prior_answers is not None and not answer_revision_superseded
+                    else None
+                ),
+                dependencies=tuple(
+                    DependencyInput(**item.model_dump(), role="dependency:sq-answer")
+                    for item in answer_refs
+                ),
+            )
+        )
+        return tuple(transitions)
+
+    @staticmethod
+    def _current_checkpoint_event(
+        ledger: WorkflowLedger, scope: Identifier, checkpoint: Identifier
+    ) -> WorkflowEvent | None:
+        """Return the current checkpoint event to supersede, if any."""
+
+        return next(
+            (
+                event
+                for event in reversed(ledger.events())
+                if event.scope == scope and event.checkpoint == checkpoint
+            ),
+            None,
+        )
+
+    def _question_step_response(
+        self,
+        ledger: WorkflowLedger,
+        request: SubmitQuestionStepRequest,
+        record: _QuestionStepRecord,
+        result: CommitResult | WorkflowEvent,
+        *,
+        was_committed: bool,
+    ) -> SubmitQuestionStepResponse:
+        projection = self._projection(ledger, request.run_id)
+        recovery_token = None
+        if record.diagnostic_terminal:
+            service = self._question_session_service(
+                ledger, request.run_id, request.result_id, request.domain_id
+            )
+            state = service.load()
+            stop = next(
+                item
+                for item in reversed(state.ledger.diagnostic_stops)
+                if item.question_id == request.question_id
+            )
+            runtime = service.runtime_for_diagnostic_question(request.question_id)
+            if self._chronology_diagnostic_is_recoverable(runtime.state.workflow):
+                recovery_token = self._evidence_diagnostic_recovery_work_item(
+                    request.run_id,
+                    request.result_id,
+                    request.domain_id,
+                    request.question_id,
+                    record.session_content_hash,
+                    runtime.context.materialization_hash,
+                    stop.content_hash,
+                ).work_token
+        return SubmitQuestionStepResponse(
+            operation_id=result.operation_id,
+            ledger_cursor=f"ledger:{result.sequence}",
+            affected_scope=(request.result_id, request.domain_id, request.question_id),
+            condition=WorkflowCondition.ACCEPTED,
+            committed=was_committed,
+            next_action=RunOperation.CONTINUE_RUN,
+            run_id=request.run_id,
+            run_state=projection.run_state,
+            result_id=request.result_id,
+            result_state=self._result_state(projection, request.result_id),
+            domain_id=request.domain_id,
+            question_id=request.question_id,
+            session_content_hash=record.session_content_hash,
+            diagnostic_terminal=record.diagnostic_terminal,
+            correction_token=(
+                None
+                if record.diagnostic_terminal
+                else self._question_correction_work_item(
+                    request.run_id,
+                    request.result_id,
+                    request.domain_id,
+                    request.question_id,
+                    record.session_content_hash,
+                ).work_token
+            ),
+            evidence_recovery_token=recovery_token,
+        )
+
+    @staticmethod
+    def _evidence_diagnostic_recovery_actions(
+        workflow: V3EvidenceWorkflowState,
+    ) -> tuple[str, ...]:
+        outcome_stage_ids = {item.stage_id for item in workflow.stage_outcomes}
+        kinds = {
+            limitation.kind
+            for scope in workflow.stage_scopes
+            if scope.stage_id in outcome_stage_ids
+            for limitation in scope.role_limitations
+        }
+        actions: list[str] = []
+        if V3ScopeLimitationKind.CHRONOLOGY_UNRESOLVED in kinds:
+            actions.append(
+                "Submit a changed attributable chronology fact with the evidence recovery token."
+            )
+        if V3ScopeLimitationKind.SOURCE_UNAVAILABLE in kinds:
+            actions.append(
+                "Acquire the unavailable accepted Source, then reconcile the changed inventory."
+            )
+        if V3ScopeLimitationKind.MATERIAL_UNRESOLVED in kinds:
+            actions.append(
+                "Reprocess or replace the unreadable accepted Source, then reconcile the changed inventory."
+            )
+        if V3ScopeLimitationKind.CROSS_SOURCE_INSUFFICIENT in kinds:
+            actions.append(
+                "Add another applicable accepted Source, then reconcile the changed inventory."
+            )
+        if not actions:
+            actions.append(
+                "Resolve the documented semantic evidence uncertainty through a changed evidence revision."
+            )
+        return tuple(actions)
+
+    @staticmethod
+    def _chronology_diagnostic_is_recoverable(workflow: V3EvidenceWorkflowState) -> bool:
+        inventory = workflow.authorized_inventory
+        for scope in workflow.stage_scopes:
+            if not any(
+                item.kind is V3ScopeLimitationKind.CHRONOLOGY_UNRESOLVED
+                for item in scope.role_limitations
+            ):
+                continue
+            if any(
+                source.has_exact_source_parse
+                and set(source.roles).intersection(scope.applicable_source_roles)
+                for source in inventory
+            ):
+                return True
+        return False
+
+    def _question_correction_response(
+        self,
+        ledger: WorkflowLedger,
+        request: CorrectQuestionStepRequest,
+        record: _QuestionCorrectionRecord,
+        result: CommitResult | WorkflowEvent,
+        was_committed: bool,
+    ) -> CorrectQuestionStepResponse:
+        state = self._question_session_service(
+            ledger, request.run_id, request.result_id, request.domain_id
+        ).load()
+        effective_ids = {item.question_id for item in effective_question_steps(state.ledger)}
+        invalidated = tuple(
+            step.question_id for step in state.ledger.steps if step.question_id not in effective_ids
+        )
+        projection = self._projection(ledger, request.run_id)
+        return CorrectQuestionStepResponse(
+            operation_id=result.operation_id,
+            ledger_cursor=f"ledger:{result.sequence}",
+            affected_scope=(request.result_id, request.domain_id, request.question_id),
+            condition=WorkflowCondition.ACCEPTED,
+            committed=was_committed,
+            next_action=RunOperation.CONTINUE_RUN,
+            run_id=request.run_id,
+            run_state=projection.run_state,
+            result_id=request.result_id,
+            result_state=self._result_state(projection, request.result_id),
+            domain_id=request.domain_id,
+            question_id=request.question_id,
+            session_content_hash=record.session_content_hash,
+            frontier_entry_hash=next(
+                (
+                    item.entry_hash
+                    for item in active_question_frontier(state.ledger).entries
+                    if item.question_id == request.question_id
+                ),
+                None,
+            ),
+            invalidated_question_ids=invalidated,
+            correction_token=self._question_correction_work_item(
+                request.run_id,
+                request.result_id,
+                request.domain_id,
+                request.question_id,
+                record.session_content_hash,
+            ).work_token,
+        )
+
+    def submit_source_chronology_review(
+        self, request: SubmitSourceChronologyReviewRequest
+    ) -> SubmitSourceChronologyReviewResponse:
+        """Append an attributable chronology fact and refresh the v3 inventory revision."""
+
+        ledger = self._bound_ledger(request.run_id)
+        service = self._question_session_service(
+            ledger, request.run_id, request.result_id, request.domain_id
+        )
+        recovery = request.work_token.operation is RunOperation.SUBMIT_SOURCE_CHRONOLOGY_REVIEW
+        if recovery:
+            state = service.load()
+            stop = next(
+                (
+                    item
+                    for item in reversed(state.ledger.diagnostic_stops)
+                    if item.question_id == request.question_id
+                ),
+                None,
+            )
+            if stop is None:
+                raise StaleWorkTokenError(request.run_id, None)
+            runtime = service.runtime_for_diagnostic_question(request.question_id)
+            expected_recovery = self._evidence_diagnostic_recovery_work_item(
+                request.run_id,
+                request.result_id,
+                request.domain_id,
+                request.question_id,
+                state.content_hash,
+                runtime.context.materialization_hash,
+                stop.content_hash,
+            )
+            if expected_recovery.work_token != request.work_token:
+                raise StaleWorkTokenError(request.run_id, None)
+        else:
+            expected = self._next_work_item(ledger, request.run_id)
+            if expected is None or expected.work_token != request.work_token:
+                raise StaleWorkTokenError(request.run_id, expected)
+            if (
+                expected.question_id != request.question_id
+                or expected.result_id != request.result_id
+                or expected.domain_id != request.domain_id
+                or expected.operation is not RunOperation.SUBMIT_QUESTION_STEP
+            ):
+                raise StaleWorkTokenError(request.run_id, expected)
+            runtime = service.runtime_for_question(request.question_id)
+        source = next(
+            (
+                item
+                for item in runtime.context.authorized_inventory
+                if item.source_id == request.source_id
+            ),
+            None,
+        )
+        if source is None or (
+            source.source_artifact_hash,
+            source.parse_id,
+            source.parse_output_hash,
+        ) != (
+            request.source_artifact_hash,
+            request.parse_id,
+            request.parse_output_hash,
+        ):
+            raise InvalidRetrievalRequest(
+                "chronology review must bind the exact session Source/Parse"
+            )
+        if recovery:
+            prior_fact = next(
+                (item for item in source.chronology_facts if item.constraint is request.constraint),
+                None,
+            )
+            if prior_fact is not None and (
+                prior_fact.status,
+                prior_fact.rationale,
+            ) == (request.status, request.rationale):
+                raise InvalidRetrievalRequest(
+                    "evidence diagnostic recovery requires a changed materialized chronology fact"
+                )
+        index = EvidenceSearchIndex(self._required_root() / ".rob2" / "evidence.sqlite3")
+        scope = EvidenceScope(
+            result_id=request.result_id,
+            domain_id=request.domain_id,
+            question_id=request.question_id,
+            source_ids=(request.source_id,),
+            parse_ids=(request.parse_id,),
+        )
+        try:
+            index.resolve_read_view_receipt(request.evidence_read_receipt, scope=scope)
+        except RetrievalFailure as error:
+            raise InvalidRetrievalRequest(
+                "chronology review requires an exact current evidence read receipt"
+            ) from error
+        record = _SourceChronologyReviewRecord(run_id=request.run_id, submission=request)
+        if recovery:
+            now = self._now()
+            suffix = self._digest(
+                f"{request.run_id}|{request.result_id}|{request.idempotency_key}|"
+                f"{runtime.context.materialization_hash}"
+            )
+            review_transition = self._submission_transition(
+                run_id=request.run_id,
+                scope=request.result_id,
+                operation="operation:submit-source-chronology-review",
+                operation_key=request.idempotency_key,
+                artifact=record,
+                checkpoint=(
+                    f"checkpoint:source-chronology-{request.source_id.removeprefix('source:')}-"
+                    f"{request.constraint.value}"
+                ),
+                observed_at=now,
+            )
+            transitions: list[Transition] = []
+            projection = self._projection(ledger, request.run_id)
+            if projection.run_state is RunState.COMPLETE:
+                transitions.append(
+                    self._transition(
+                        scope=request.run_id,
+                        operation="operation:run-reopened",
+                        operation_key=f"{request.idempotency_key}:run-reopened",
+                        entity_id=f"run-evidence-recovery:{suffix}",
+                        revision_id=f"revision:run-evidence-recovery-{suffix}",
+                        artifact=_RunReopenedRecord(
+                            run_id=request.run_id,
+                            input_snapshot_hash=self._latest_proposal(
+                                ledger, request.run_id
+                            ).input_snapshot_hash,
+                            invalidated_result_ids=(request.result_id,),
+                        ),
+                        checkpoint=f"checkpoint:run-evidence-recovery-{suffix}",
+                        outcome=WorkflowEventOutcome.WORK_REQUIRED,
+                        observed_at=now,
+                    )
+                )
+            transitions.extend(
+                (
+                    review_transition,
+                    self._transition(
+                        scope=request.result_id,
+                        operation="operation:result-invalidated",
+                        operation_key=f"{request.idempotency_key}:result-invalidated",
+                        entity_id=f"result-evidence-recovery:{suffix}",
+                        revision_id=f"revision:result-evidence-recovery-{suffix}",
+                        artifact=_ResultInvalidatedRecord(
+                            run_id=request.run_id,
+                            result_id=request.result_id,
+                            reason="An attributable chronology fact changed after an evidence diagnostic.",
+                            affected_trial_id=self._trial_id_for_result(request.result_id)
+                            or "trial:unknown",
+                            affected_source_ids=(request.source_id,),
+                            input_snapshot_hash=self._latest_proposal(
+                                ledger, request.run_id
+                            ).input_snapshot_hash,
+                        ),
+                        checkpoint=f"checkpoint:result-evidence-recovery-{suffix}",
+                        outcome=WorkflowEventOutcome.WORK_REQUIRED,
+                        observed_at=now,
+                    ),
+                )
+            )
+            committed_results = self._commit_transitions(
+                ledger, tuple(transitions), self._acquire_lease(ledger, now), now=now
+            )
+            # Review is always immediately before the Result invalidation;
+            # an optional Run-reopened transition precedes both.
+            committed = committed_results[-2]
+        else:
+            committed = self._commit_submission(
+                ledger,
+                run_id=request.run_id,
+                scope=request.result_id,
+                operation="operation:submit-source-chronology-review",
+                operation_key=request.idempotency_key,
+                artifact=record,
+                checkpoint=(
+                    f"checkpoint:source-chronology-{request.source_id.removeprefix('source:')}-"
+                    f"{request.constraint.value}"
+                ),
+            )
+        refreshed_service = self._question_session_service(
+            ledger, request.run_id, request.result_id, request.domain_id
+        )
+        refreshed_service.initialize()
+        refreshed_runtime = refreshed_service.runtime_for_question(request.question_id)
+        if recovery and (
+            refreshed_runtime.context.materialization_hash == request.work_token.context_hash
+        ):
+            raise RunIntegrityFailure(
+                "evidence recovery did not produce a new materialized context revision"
+            )
+        projection = self._projection(ledger, request.run_id)
+        return SubmitSourceChronologyReviewResponse(
+            operation_id=committed.operation_id,
+            ledger_cursor=f"ledger:{committed.sequence}",
+            affected_scope=(request.result_id, request.domain_id, request.question_id),
+            condition=WorkflowCondition.ACCEPTED,
+            committed=not committed.duplicate,
+            next_action=RunOperation.CONTINUE_RUN,
+            run_id=request.run_id,
+            run_state=projection.run_state,
+            result_id=request.result_id,
+            result_state=self._result_state(projection, request.result_id),
+            domain_id=request.domain_id,
+            question_id=request.question_id,
+            source_id=request.source_id,
+            inventory_revision_id=refreshed_service.load().inventory_revision_id,
+            inventory_revision_hash=refreshed_service.load().inventory_revision_hash,
+        )
+
+    def submit_evidence_stage_outcome(
+        self, request: SubmitEvidenceStageOutcomeRequest
+    ) -> SubmitEvidenceStageOutcomeResponse:
+        """Commit a reducer-validated v3 stage outcome under current question authority."""
+
+        ledger = self._bound_ledger(request.run_id)
+        expected = self._next_work_item(ledger, request.run_id)
+        if expected is None or expected.work_token != request.work_token:
+            raise StaleWorkTokenError(request.run_id, expected)
+        if (
+            expected.operation is not RunOperation.SUBMIT_QUESTION_STEP
+            or expected.question_id != request.question_id
+            or expected.session_content_hash != request.session_content_hash
+            or (expected.result_id, expected.domain_id) != (request.result_id, request.domain_id)
+        ):
+            raise StaleWorkTokenError(request.run_id, expected)
+        service = self._question_session_service(
+            ledger, request.run_id, request.result_id, request.domain_id
+        )
+        runtime = service.runtime_for_question(request.question_id)
+        result = runtime.runtime.submit_stage_outcome(
+            expected_content_hash=request.expected_navigation_state_hash,
+            submission=request.submission,
+        )
+        record = _EvidenceStageOutcomeRecord(
+            run_id=request.run_id,
+            submission=request,
+            navigation_state_hash=result.state.content_hash,
+        )
+        committed = self._commit_submission(
+            ledger,
+            run_id=request.run_id,
+            scope=request.result_id,
+            operation="operation:submit-evidence-stage-outcome",
+            operation_key=request.idempotency_key,
+            artifact=record,
+            checkpoint=(
+                f"checkpoint:evidence-stage-{request.question_id.removeprefix('sq:')}-"
+                f"{request.submission.stage_id.removeprefix('stage:')}"
+            ),
+        )
+        projection = self._projection(ledger, request.run_id)
+        return SubmitEvidenceStageOutcomeResponse(
+            operation_id=committed.operation_id,
+            ledger_cursor=f"ledger:{committed.sequence}",
+            affected_scope=(request.result_id, request.domain_id, request.question_id),
+            condition=WorkflowCondition.ACCEPTED,
+            committed=not committed.duplicate,
+            next_action=RunOperation.CONTINUE_RUN,
+            run_id=request.run_id,
+            run_state=projection.run_state,
+            result_id=request.result_id,
+            result_state=self._result_state(projection, request.result_id),
+            domain_id=request.domain_id,
+            question_id=request.question_id,
+            navigation_state_hash=result.state.content_hash,
+            progress=result.progress,
         )
 
     def _retrieval_scope(
@@ -3687,10 +5305,7 @@ class RunEngine:
         """Resolve retrieval scope from the active Work token before retrieval.
 
         Search and read routes require a signaling-question scope so every
-        retrieval page is attributable to one active question. Evidence
-        passage materialization runs at Domain scope, then validates each
-        passage's question IDs against its canonical unit; callers use
-        ``require_question=False`` for that domain-wide validation step.
+        retrieval page is attributable to one active question.
         """
 
         expected = self._next_work_item(ledger, run_id)
@@ -3698,9 +5313,9 @@ class RunEngine:
             raise StaleWorkToken(
                 "stale WorkToken: call continue_run and use the current evidence work item"
             )
-        if work_token.operation is not RunOperation.SUBMIT_DOMAIN_EVIDENCE:
+        if work_token.operation is not RunOperation.SUBMIT_QUESTION_STEP:
             raise ScopeMismatch(
-                "retrieval is available only during an active submit_domain_evidence work item",
+                "retrieval is available only during an active evidence work item",
                 field="work_token.operation",
             )
         if result_id is not None and result_id != work_token.result_id:
@@ -3710,6 +5325,34 @@ class RunEngine:
         if require_question and sq_id is None:
             raise InvalidRetrievalRequest(
                 "sq_id is required for scoped evidence retrieval", field="sq_id"
+            )
+        if work_token.operation is RunOperation.SUBMIT_QUESTION_STEP:
+            if sq_id != work_token.question_id:
+                raise ScopeMismatch(
+                    "sq_id must match the question bound into the current WorkToken",
+                    field="sq_id",
+                )
+            if work_token.result_id is None or work_token.domain_id is None or sq_id is None:
+                raise ScopeMismatch("question WorkToken has incomplete scope", field="work_token")
+            runtime = self._question_session_service(
+                ledger, run_id, work_token.result_id, work_token.domain_id
+            ).runtime_for_question(sq_id)
+            return EvidenceScope(
+                trial_id=work_token.trial_id,
+                result_id=work_token.result_id,
+                domain_id=work_token.domain_id,
+                question_id=sq_id,
+                source_ids=tuple(
+                    item.source_id
+                    for item in runtime.context.authorized_inventory
+                    if item.has_exact_source_parse
+                ),
+                parse_ids=tuple(
+                    item.parse_id
+                    for item in runtime.context.authorized_inventory
+                    if item.has_exact_source_parse and item.parse_id is not None
+                ),
+                work_token_id=work_token.token,
             )
         if work_token.domain_id is not None:
             domain = next(
@@ -5050,2293 +6693,6 @@ class RunEngine:
             result_spec=result_spec,
         )
 
-    def submit_domain_evidence(
-        self, request: SubmitDomainEvidenceRequest
-    ) -> SubmitDomainEvidenceResponse:
-        original_request = request
-        bound_ledger = self._bound_ledger(request.run_id)
-        existing = self._submission_retry_event(
-            bound_ledger,
-            request.run_id,
-            request.idempotency_key,
-            {"operation:submit-domain-evidence"},
-        )
-        if existing is not None:
-            record = _DomainEvidenceRecord.model_validate_json(
-                bound_ledger.artifacts.read(existing.output_revision_hashes[0])
-            )
-            if record.submission != original_request:
-                return SubmitDomainEvidenceResponse(
-                    **self._stale_submission_kwargs(
-                        StaleWorkTokenError(
-                            request.run_id, self._next_work_item(bound_ledger, request.run_id)
-                        ),
-                        RunOperation.SUBMIT_DOMAIN_EVIDENCE,
-                        bound_ledger,
-                        result_id=request.result_id,
-                        domain_id=request.domain_id,
-                    ),
-                    domain_id=request.domain_id,
-                )
-            projection = self._projection(bound_ledger, request.run_id)
-            return SubmitDomainEvidenceResponse(
-                operation_id=existing.operation_id,
-                ledger_cursor=f"ledger:{len(bound_ledger.events())}",
-                affected_scope=(request.result_id,),
-                condition=WorkflowCondition.ACCEPTED,
-                committed=False,
-                next_action=RunOperation.CONTINUE_RUN,
-                run_id=request.run_id,
-                run_state=projection.run_state,
-                result_id=request.result_id,
-                result_state=self._result_state(projection, request.result_id),
-                domain_id=request.domain_id,
-                evidence_bundles=record.evidence_bundles,
-                consideration_manifests=record.consideration_manifests,
-                coverage_receipts=record.coverage_receipts,
-            )
-        try:
-            ledger = self._submission_ledger(
-                request.run_id,
-                request.work_token,
-                RunOperation.SUBMIT_DOMAIN_EVIDENCE,
-                request.idempotency_key,
-            )
-        except StaleWorkTokenError as error:
-            ledger = self._bound_ledger(request.run_id)
-            return SubmitDomainEvidenceResponse(
-                **self._stale_submission_kwargs(
-                    error,
-                    RunOperation.SUBMIT_DOMAIN_EVIDENCE,
-                    ledger,
-                    result_id=request.result_id,
-                    domain_id=request.domain_id,
-                ),
-                domain_id=request.domain_id,
-            )
-        expected = self._next_work_item(ledger, request.run_id)
-        if (
-            expected is not None
-            and expected.operation is RunOperation.SUBMIT_DOMAIN_EVIDENCE
-            and (expected.result_id != request.result_id or expected.domain_id != request.domain_id)
-        ):
-            stale = StaleWorkTokenError(request.run_id, expected)
-            return SubmitDomainEvidenceResponse(
-                **self._stale_submission_kwargs(
-                    stale,
-                    RunOperation.SUBMIT_DOMAIN_EVIDENCE,
-                    ledger,
-                    result_id=request.result_id,
-                    domain_id=request.domain_id,
-                ),
-                domain_id=request.domain_id,
-            )
-        self._validate_result_domain(ledger, request.run_id, request.result_id, request.domain_id)
-        if request.items:
-            self._validate_visual_evidence_items(ledger, request)
-        submitted_passages = request.passages
-        review_refs: dict[
-            tuple[Identifier, Identifier], tuple[EvidenceReviewRevision, RecordReference]
-        ] = {}
-        if request.passages or request.review_revisions:
-            violations = self._validate_domain_evidence_submission(
-                ledger,
-                request.model_copy(update={"passages": ()}),
-                submitted_passages=submitted_passages,
-                enforce_non_empty=False,
-            )
-            if violations:
-                return self._domain_evidence_blocked_response(ledger, request, violations)
-            # A review is a committed provenance dependency, not submission
-            # decoration.  Resolve its opaque read receipt and commit it before
-            # any textual claim can be materialized.
-            review_refs = self._resolve_review_revisions(ledger, request, submitted_passages)
-            # _resolve_evidence_passages runs first so its own structural
-            # checks (domain/question membership, span bounds, canonical-unit
-            # lookup) raise their own specific errors before the
-            # search-provenance link check below.
-            if request.passages:
-                request = self._resolve_evidence_passages(ledger, request, review_refs)
-        violations = self._validate_domain_evidence_submission(
-            ledger,
-            request,
-            submitted_passages=submitted_passages,
-        )
-        if violations:
-            return self._domain_evidence_blocked_response(ledger, request, violations)
-        evidence_bundles, manifests, receipts = self._freeze_domain_evidence(
-            ledger,
-            request,
-            submitted_passages,
-            review_refs,
-            materialize_coverage=request.coverage_state is not EvidenceCoverageState.INCOMPLETE,
-        )
-        normalized = _DomainEvidenceRecord(
-            run_id=request.run_id,
-            result_id=request.result_id,
-            domain_id=request.domain_id,
-            items=tuple(item.revision_id for item in request.items),
-            coverage_state=request.coverage_state.value,
-            coverage_limitations=request.coverage_limitations,
-            no_information_basis=request.no_information_basis,
-            conflicts=request.conflicts,
-            evidence_bundles=evidence_bundles,
-            consideration_manifests=manifests,
-            coverage_receipts=receipts,
-            review_revisions=tuple(
-                RecordReference(
-                    entity_id=review.entity_id,
-                    revision_id=review.revision_id,
-                    content_hash=canonical_hash(review),
-                )
-                for review, _ in review_refs.values()
-            ),
-            candidate_dispositions=request.candidate_dispositions,
-            project_rules=request.project_rules,
-            submission=original_request,
-        )
-        result = self._commit_submission(
-            ledger,
-            run_id=request.run_id,
-            scope=request.result_id,
-            operation="operation:submit-domain-evidence",
-            operation_key=request.idempotency_key,
-            artifact=normalized,
-            checkpoint=f"checkpoint:evidence-{request.domain_id.removeprefix('domain:')}",
-        )
-        projection = self._projection(ledger, request.run_id)
-        return SubmitDomainEvidenceResponse(
-            operation_id=result.operation_id,
-            ledger_cursor=f"ledger:{result.sequence}",
-            affected_scope=(request.result_id,),
-            condition=WorkflowCondition.ACCEPTED,
-            committed=not result.duplicate,
-            next_action=RunOperation.CONTINUE_RUN,
-            run_id=request.run_id,
-            run_state=projection.run_state,
-            result_id=request.result_id,
-            result_state=self._result_state(projection, request.result_id),
-            domain_id=request.domain_id,
-            evidence_bundles=evidence_bundles,
-            consideration_manifests=manifests,
-            coverage_receipts=receipts,
-        )
-
-    def _resolve_evidence_passages(
-        self,
-        ledger: WorkflowLedger,
-        request: SubmitDomainEvidenceRequest,
-        review_refs: dict[
-            tuple[Identifier, Identifier], tuple[EvidenceReviewRevision, RecordReference]
-        ],
-    ) -> SubmitDomainEvidenceRequest:
-        """Freeze engine-issued canonical spans into immutable Evidence claims."""
-
-        index = EvidenceSearchIndex(self._required_root() / ".rob2" / "evidence.sqlite3")
-        retrieval_scope = self._retrieval_scope(
-            ledger,
-            request.run_id,
-            request.work_token,
-            request.result_id,
-            require_question=False,
-        )
-        actor = request.actor or ASSESSMENT_AGENT_ACTOR
-        proposal = self._latest_proposal(ledger, request.run_id)
-        result_spec = self._result_spec_for(ledger, request.run_id, request.result_id)
-        if result_spec is None:
-            raise ValueError("passage submission requires a resolved Result")
-        sources = {
-            source.source_id: source
-            for trial in proposal.initialization.trials
-            if trial.trial_id == result_spec.result.trial_id and trial.inventory is not None
-            for source in trial.inventory.sources
-        }
-        item_refs: list[RecordReference] = []
-        domain = next(item for item in self._logic_pack().domains if item.id == request.domain_id)
-        evidence_by_question: dict[Identifier, list[RecordReference]] = {
-            question_id: [] for question_id in domain.question_ids
-        }
-        dispositions: list[EvidenceConsiderationInput] = []
-        prepared_passages = []
-        claim_suffixes: set[str] = set()
-        for passage in request.passages:
-            unknown_questions = set(passage.question_ids) - set(domain.question_ids)
-            if unknown_questions:
-                raise ValueError(
-                    f"passage maps to another domain's questions: {sorted(unknown_questions)}"
-                )
-            unit = index.read_unit(passage.unit_id, scope=retrieval_scope)
-            try:
-                self._validate_citable_unit(
-                    unit,
-                    retrieval_scope,
-                )
-            except ValueError as error:
-                raise ValueError(
-                    "canonical passage is outside the active WorkToken scope or is not a "
-                    "citable unit with attributable reviewed scope"
-                ) from error
-            span_end = passage.span_end if passage.span_end is not None else len(unit.text)
-            if span_end <= passage.span_start or span_end > len(unit.text):
-                raise ValueError(
-                    f"passage span is empty or exceeds canonical unit {passage.unit_id!r} text"
-                )
-            source = sources.get(unit.source_id)
-            if source is None or source.artifact_hash != unit.source_artifact_hash:
-                raise ValueError("canonical passage source is not current for this Run")
-            candidate_id = passage.candidate_id or passage.unit_id
-            for question_id in passage.question_ids:
-                suffix = self._digest(
-                    "|".join(
-                        (
-                            request.run_id,
-                            request.result_id,
-                            request.domain_id,
-                            question_id,
-                            candidate_id,
-                            passage.unit_id,
-                            str(passage.span_start),
-                            str(span_end),
-                            passage.claim_type,
-                        )
-                    )
-                )
-                if suffix in claim_suffixes:
-                    raise ValueError("duplicate canonical passage selection for question")
-                review_pair = review_refs.get((candidate_id, question_id))
-                if review_pair is None:
-                    raise ValueError(
-                        "textual Evidence requires a committed question-specific review"
-                    )
-                review, review_ref = review_pair
-                matching_spans = [
-                    span
-                    for span in review.spans
-                    if span.span_start == passage.span_start
-                    and span.span_end == span_end
-                    and any(
-                        fragment.unit_id == unit.unit_id
-                        for fragment in span.reviewed_context.fragments
-                    )
-                ]
-                if len(matching_spans) != 1:
-                    raise ValueError(
-                        "textual Evidence passage must exactly match one reviewed span"
-                    )
-                authorizing_span = matching_spans[0]
-                if (
-                    authorizing_span.trial_attribution is not TrialAttribution.ACTIVE
-                    or authorizing_span.disposition
-                    not in {
-                        EvidenceReviewDisposition.SUPPORTING,
-                        EvidenceReviewDisposition.CONTRADICTING,
-                    }
-                ):
-                    raise ValueError(
-                        "textual Evidence requires an ACTIVE supporting or contradicting "
-                        "review span"
-                    )
-                claim_suffixes.add(suffix)
-                prepared_passages.append(
-                    (
-                        passage,
-                        question_id,
-                        unit,
-                        source,
-                        suffix,
-                        span_end,
-                        review_ref,
-                        authorizing_span,
-                    )
-                )
-
-        for (
-            passage,
-            question_id,
-            unit,
-            source,
-            suffix,
-            span_end,
-            review_ref,
-            authorizing_span,
-        ) in prepared_passages:
-            source_suffix = self._digest(
-                f"{request.run_id}|{unit.source_id}|{unit.source_artifact_hash}"
-            )
-            source_ref = self._commit_frozen_artifact(
-                ledger,
-                scope=request.result_id,
-                operation="operation:evidence-source-frozen",
-                operation_key=f"materialize:evidence-source:{source_suffix}",
-                entity_id=f"evidence-source:{source_suffix}",
-                revision_id=f"revision:evidence-source-{source_suffix}",
-                artifact=source,
-                actor=actor,
-            )
-            unit_suffix = self._digest(
-                f"{request.run_id}|{unit.unit_id}|{unit.parse_id}|{unit.source_artifact_hash}"
-            )
-            canonical_ref = self._commit_frozen_artifact(
-                ledger,
-                scope=request.result_id,
-                operation="operation:canonical-evidence-unit-frozen",
-                operation_key=f"materialize:canonical-unit:{unit_suffix}",
-                entity_id=f"canonical-unit:{unit_suffix}",
-                revision_id=f"revision:canonical-unit-{unit_suffix}",
-                artifact=unit,
-                actor=actor,
-            )
-            quote = unit.text[passage.span_start : span_end]
-            claim = EvidenceClaim(
-                entity_id=f"evidence-claim:{suffix}",
-                revision_id=f"revision:evidence-claim-{suffix}",
-                dependencies=(
-                    Dependency(**canonical_ref.model_dump(), role="dependency:canonical-unit"),
-                    Dependency(**source_ref.model_dump(), role="dependency:source"),
-                    Dependency(**review_ref.model_dump(), role="dependency:evidence-review"),
-                ),
-                actor=actor,
-                observed_at=self._now(),
-                canonical_unit=canonical_ref,
-                source=source_ref,
-                authorizing_review=review_ref,
-                review_span_id=authorizing_span.span_id,
-                candidate_id=passage.candidate_id or passage.unit_id,
-                span_start=passage.span_start,
-                span_end=span_end,
-                quoted_text_hash=("sha256:" + hashlib.sha256(quote.encode()).hexdigest()),
-                claim_type=passage.claim_type,
-                verification_status="machine_verified",
-            )
-            claim_ref = self._commit_frozen_artifact(
-                ledger,
-                scope=request.result_id,
-                operation="operation:evidence-claim-materialized",
-                operation_key=f"{request.idempotency_key}:claim:{suffix}",
-                entity_id=claim.entity_id,
-                revision_id=claim.revision_id,
-                artifact=claim,
-                actor=actor,
-                dependencies=claim.dependencies,
-            )
-            item_refs.append(claim_ref)
-            evidence_by_question[question_id].append(claim_ref)
-            dispositions.append(
-                EvidenceConsiderationInput(
-                    item_id=claim.entity_id,
-                    disposition=passage.disposition,
-                    basis=passage.basis,
-                    superseded_by=passage.superseded_by,
-                )
-            )
-        return request.model_copy(
-            update={
-                "items": tuple(item_refs),
-                "passages": (),
-                "evidence_by_question": {
-                    question_id: tuple(references)
-                    for question_id, references in evidence_by_question.items()
-                },
-                "candidate_dispositions": tuple(dispositions),
-            }
-        )
-
-    def submit_domain_answers(
-        self, request: SubmitDomainAnswersRequest
-    ) -> SubmitDomainAnswersResponse:
-        bound_ledger = self._bound_ledger(request.run_id)
-        existing = self._submission_retry_event(
-            bound_ledger,
-            request.run_id,
-            request.idempotency_key,
-            {"operation:submit-domain-answers"},
-        )
-        if existing is not None:
-            record = _DomainAnswersRecord.model_validate_json(
-                bound_ledger.artifacts.read(existing.output_revision_hashes[0])
-            )
-            if record.submission != request:
-                return SubmitDomainAnswersResponse(
-                    **self._stale_submission_kwargs(
-                        StaleWorkTokenError(
-                            request.run_id, self._next_work_item(bound_ledger, request.run_id)
-                        ),
-                        RunOperation.SUBMIT_DOMAIN_ANSWERS,
-                        bound_ledger,
-                        result_id=request.result_id,
-                        domain_id=request.domain_id,
-                    ),
-                    domain_id=request.domain_id,
-                )
-            projection = self._projection(bound_ledger, request.run_id)
-            return SubmitDomainAnswersResponse(
-                operation_id=existing.operation_id,
-                ledger_cursor=f"ledger:{len(bound_ledger.events())}",
-                affected_scope=(request.result_id,),
-                condition=WorkflowCondition.ACCEPTED,
-                committed=False,
-                next_action=RunOperation.CONTINUE_RUN,
-                run_id=request.run_id,
-                run_state=projection.run_state,
-                result_id=request.result_id,
-                result_state=self._result_state(projection, request.result_id),
-                domain_id=request.domain_id,
-                answer_revisions=record.answer_revisions,
-                correction_token=record.correction_token,
-                judgments=self._materialize_terminal(
-                    bound_ledger, request.run_id, request.result_id
-                ),
-            )
-        try:
-            ledger = self._submission_ledger(
-                request.run_id,
-                request.work_token,
-                RunOperation.SUBMIT_DOMAIN_ANSWERS,
-                request.idempotency_key,
-            )
-        except StaleWorkTokenError as error:
-            ledger = self._bound_ledger(request.run_id)
-            return SubmitDomainAnswersResponse(
-                **self._stale_submission_kwargs(
-                    error,
-                    RunOperation.SUBMIT_DOMAIN_ANSWERS,
-                    ledger,
-                    result_id=request.result_id,
-                    domain_id=request.domain_id,
-                ),
-                domain_id=request.domain_id,
-            )
-        expected = self._next_work_item(ledger, request.run_id)
-        if (
-            expected is not None
-            and expected.operation is RunOperation.SUBMIT_DOMAIN_ANSWERS
-            and (expected.result_id != request.result_id or expected.domain_id != request.domain_id)
-        ):
-            stale = StaleWorkTokenError(request.run_id, expected)
-            return SubmitDomainAnswersResponse(
-                **self._stale_submission_kwargs(
-                    stale,
-                    RunOperation.SUBMIT_DOMAIN_ANSWERS,
-                    ledger,
-                    result_id=request.result_id,
-                    domain_id=request.domain_id,
-                ),
-                domain_id=request.domain_id,
-            )
-        self._validate_result_domain(ledger, request.run_id, request.result_id, request.domain_id)
-        logic = self._logic_pack()
-        domain = next(item for item in logic.domains if item.id == request.domain_id)
-        question_ids = set(domain.question_ids)
-        supplied = {item.question_id for item in request.answers}
-        if len(supplied) != len(request.answers):
-            raise ValueError("each signaling question may be answered only once")
-        unknown = supplied - question_ids
-        if unknown:
-            raise ValueError(f"answers supplied for another domain: {sorted(unknown)}")
-        answer_values = {item.question_id: item.answer for item in request.answers}
-        evaluator = LogicEvaluator(logic)
-        question_by_id = {question.id: question for question in logic.questions}
-        active = {
-            question_id
-            for question_id in domain.question_ids
-            if (
-                question_by_id[question_id].active_if is None
-                or evaluator._matches(
-                    question_by_id[question_id].active_if,
-                    answer_values,
-                    {},
-                    {},
-                )
-            )
-        }
-        missing = active - supplied
-        inactive = supplied - active
-        if missing:
-            raise ValueError(f"answers required for active questions: {sorted(missing)}")
-        if inactive:
-            raise ValueError(f"answers supplied for not_applicable questions: {sorted(inactive)}")
-        departure_domains = {departure.domain_id for departure in request.final_judgment_departures}
-        if departure_domains and departure_domains != {request.domain_id}:
-            raise ValueError(
-                "Final judgment departures must bind the Domain authorized by this WorkToken"
-            )
-        if len(departure_domains) != len(request.final_judgment_departures):
-            raise ValueError("each Domain may declare at most one Final judgment departure")
-        if not self._has_domain_checkpoint(
-            self._events_for_run(ledger, request.run_id),
-            request.result_id,
-            request.domain_id,
-            "evidence",
-        ):
-            raise ValueError("domain evidence must be frozen before answers")
-        if any(item.answer.value == "no_information" for item in request.answers):
-            for item in request.answers:
-                if item.answer.value == "no_information" and not self._has_no_information_basis(
-                    ledger, request, item.question_id
-                ):
-                    raise ValueError(
-                        "no-information SQ answers require their own complete Search coverage basis"
-                    )
-        insufficiencies = self._evidence_insufficiencies(
-            ledger,
-            request.run_id,
-            request.result_id,
-            {item.question_id: item.answer.value for item in request.answers},
-            domain_id=request.domain_id,
-        )
-        if insufficiencies:
-            self._commit_evidence_insufficient_block(ledger, request, insufficiencies)
-            return self._evidence_insufficiency_response(
-                ledger, request, insufficiencies, RunOperation.SUBMIT_DOMAIN_ANSWERS
-            )
-        answer_revisions = self._commit_domain_answers(ledger, request, domain)
-        correction_token = self._successor_correction_token(request, answer_revisions)
-        normalized = _DomainAnswersRecord(
-            run_id=request.run_id,
-            result_id=request.result_id,
-            domain_id=request.domain_id,
-            answers={item.question_id: item.answer.value for item in request.answers},
-            rationales={item.question_id: item.rationale for item in request.answers},
-            assessor_inputs=request.assessor_inputs,
-            final_judgment_departures=request.final_judgment_departures,
-            project_rules=request.project_rules,
-            answer_revisions=answer_revisions,
-            correction_token=correction_token,
-            submission=request,
-        )
-        result = self._commit_submission(
-            ledger,
-            run_id=request.run_id,
-            scope=request.result_id,
-            operation="operation:submit-domain-answers",
-            operation_key=request.idempotency_key,
-            artifact=normalized,
-            checkpoint=f"checkpoint:answers-{request.domain_id.removeprefix('domain:')}",
-        )
-        judgments = self._materialize_terminal(ledger, request.run_id, request.result_id)
-        projection = self._projection(ledger, request.run_id)
-        return SubmitDomainAnswersResponse(
-            operation_id=result.operation_id,
-            ledger_cursor=f"ledger:{result.sequence}",
-            affected_scope=(request.result_id,),
-            condition=WorkflowCondition.ACCEPTED,
-            committed=not result.duplicate,
-            next_action=RunOperation.CONTINUE_RUN,
-            run_id=request.run_id,
-            run_state=projection.run_state,
-            result_id=request.result_id,
-            result_state=self._result_state(projection, request.result_id),
-            domain_id=request.domain_id,
-            answer_revisions=answer_revisions,
-            correction_token=correction_token,
-            judgments=judgments,
-        )
-
-    def correct_domain_answers(
-        self, request: CorrectDomainAnswersRequest
-    ) -> SubmitDomainAnswersResponse:
-        """Create immutable answer successors from the original Domain authority."""
-
-        ledger = self._bound_ledger(request.run_id)
-        existing = self._submission_retry_event(
-            ledger, request.run_id, request.idempotency_key, {"operation:correct-domain-answers"}
-        )
-        if existing is not None:
-            record = _DomainAnswersRecord.model_validate_json(
-                ledger.artifacts.read(existing.output_revision_hashes[0])
-            )
-            if record.submission.model_dump(mode="json") != request.model_dump(mode="json"):
-                raise ValueError(
-                    "correction idempotency key was already used with different content"
-                )
-            projection = self._projection(ledger, request.run_id)
-            return SubmitDomainAnswersResponse(
-                operation_id=existing.operation_id,
-                ledger_cursor=f"ledger:{len(ledger.events())}",
-                affected_scope=(request.result_id,),
-                condition=WorkflowCondition.ACCEPTED,
-                committed=False,
-                next_action=RunOperation.CONTINUE_RUN,
-                run_id=request.run_id,
-                run_state=projection.run_state,
-                result_id=request.result_id,
-                result_state=self._result_state(projection, request.result_id),
-                domain_id=request.domain_id,
-                answer_revisions=record.answer_revisions,
-                correction_token=record.correction_token,
-                judgments=self._materialize_terminal(ledger, request.run_id, request.result_id),
-            )
-        self._validate_result_domain(ledger, request.run_id, request.result_id, request.domain_id)
-        current_correction_token: WorkToken | None = None
-        for event in self._events_for_run(ledger, request.run_id):
-            if event.scope != request.result_id or event.operation not in {
-                "operation:submit-domain-answers",
-                "operation:correct-domain-answers",
-            }:
-                continue
-            record = _DomainAnswersRecord.model_validate_json(
-                ledger.artifacts.read(event.output_revision_hashes[0])
-            )
-            if record.domain_id == request.domain_id:
-                current_correction_token = record.correction_token
-        if current_correction_token != request.work_token:
-            raise ValueError("correction requires the current engine-issued correction WorkToken")
-        logic = self._logic_pack()
-        domain = next(item for item in logic.domains if item.id == request.domain_id)
-        supplied = {item.question_id for item in request.answers}
-        if len(supplied) != len(request.answers):
-            raise ValueError("each signaling question may be answered only once")
-        evaluator = LogicEvaluator(logic)
-        questions = {question.id: question for question in logic.questions}
-        answer_values = {item.question_id: item.answer for item in request.answers}
-        active = {
-            question_id
-            for question_id in domain.question_ids
-            if questions[question_id].active_if is None
-            or evaluator._matches(questions[question_id].active_if, answer_values, {}, {})
-        }
-        if supplied != active:
-            raise ValueError("correction must answer every and only active signaling questions")
-        departure_domains = {departure.domain_id for departure in request.final_judgment_departures}
-        if departure_domains and departure_domains != {request.domain_id}:
-            raise ValueError(
-                "Final judgment departures must bind the Domain authorized by this WorkToken"
-            )
-        if len(departure_domains) != len(request.final_judgment_departures):
-            raise ValueError("each Domain may declare at most one Final judgment departure")
-        if any(item.answer.value == "no_information" for item in request.answers):
-            for item in request.answers:
-                if item.answer.value == "no_information" and not self._has_no_information_basis(
-                    ledger, request, item.question_id
-                ):
-                    raise ValueError(
-                        "no-information SQ answers require their own complete Search coverage basis"
-                    )
-        insufficiencies = self._evidence_insufficiencies(
-            ledger,
-            request.run_id,
-            request.result_id,
-            {item.question_id: item.answer.value for item in request.answers},
-            domain_id=request.domain_id,
-        )
-        if insufficiencies:
-            return self._evidence_insufficiency_response(
-                ledger, request, insufficiencies, RunOperation.CORRECT_DOMAIN_ANSWERS
-            )
-        answer_revisions = self._commit_domain_answers(ledger, request, domain)
-        correction_token = self._successor_correction_token(request, answer_revisions)
-        normalized = _DomainAnswersRecord(
-            run_id=request.run_id,
-            result_id=request.result_id,
-            domain_id=request.domain_id,
-            answers={item.question_id: item.answer.value for item in request.answers},
-            rationales={item.question_id: item.rationale for item in request.answers},
-            assessor_inputs=request.assessor_inputs,
-            final_judgment_departures=request.final_judgment_departures,
-            project_rules=request.project_rules,
-            answer_revisions=answer_revisions,
-            correction_token=correction_token,
-            submission=request,
-        )
-        result = self._commit_answer_correction(ledger, request, normalized)
-        judgments = self._materialize_terminal(ledger, request.run_id, request.result_id)
-        projection = self._projection(ledger, request.run_id)
-        return SubmitDomainAnswersResponse(
-            operation_id=result.operation_id,
-            ledger_cursor=f"ledger:{result.sequence}",
-            affected_scope=(request.result_id,),
-            condition=WorkflowCondition.ACCEPTED,
-            committed=not result.duplicate,
-            next_action=RunOperation.CONTINUE_RUN,
-            run_id=request.run_id,
-            run_state=projection.run_state,
-            result_id=request.result_id,
-            result_state=self._result_state(projection, request.result_id),
-            domain_id=request.domain_id,
-            answer_revisions=answer_revisions,
-            correction_token=correction_token,
-            judgments=judgments,
-        )
-
-    def _validate_visual_evidence_items(
-        self,
-        ledger: WorkflowLedger,
-        request: SubmitDomainEvidenceRequest,
-    ) -> None:
-        """Revalidate visual-transcription evidence references against the active scope.
-
-        items/evidence_by_question/candidate_dispositions remain accepted only
-        for VisualTranscription-backed material: an inspected Visual candidate
-        (table, figure) has no ``passages``-equivalent citation path today, so
-        this narrow legacy shape stays as its only route to structured
-        Evidence. A reference that is not a valid VisualTranscription --
-        including the retired legacy EvidenceClaim shape, which ``passages``
-        fully supersedes -- is rejected.
-        """
-        scope = self._retrieval_scope(
-            ledger,
-            request.run_id,
-            request.work_token,
-            request.result_id,
-            require_question=False,
-        )
-        for reference in request.items:
-            try:
-                raw = ledger.artifacts.read(reference.content_hash)
-                transcription = VisualTranscription.model_validate_json(raw)
-                if (
-                    transcription.entity_id != reference.entity_id
-                    or transcription.revision_id != reference.revision_id
-                ):
-                    raise ValueError("VisualTranscription reference identity mismatch")
-                source = SourceDescriptor.model_validate_json(
-                    ledger.artifacts.read(transcription.source.content_hash)
-                )
-                if (
-                    source.source_id != transcription.source.entity_id
-                    or canonical_hash(source) != transcription.source.content_hash
-                ):
-                    raise ValueError("VisualTranscription source reference is invalid")
-                if scope.source_ids and transcription.source.entity_id not in scope.source_ids:
-                    raise ValueError("VisualTranscription source is outside active scope")
-                proposal = self._latest_proposal(ledger, request.run_id)
-                current_source = (
-                    self._sources_by_trial(proposal.initialization)
-                    .get(scope.trial_id, {})
-                    .get(transcription.source.entity_id)
-                )
-                if current_source is None or current_source.artifact_hash != source.artifact_hash:
-                    raise ValueError("VisualTranscription source artifact is stale")
-            except (KeyError, TypeError, ValueError, OSError) as visual_error:
-                raise ValueError(
-                    "items/evidence_by_question/candidate_dispositions accept only "
-                    "visual-transcription-backed evidence; resubmit textual evidence "
-                    "using passages"
-                ) from visual_error
-
-    def _domain_evidence_blocked_response(
-        self,
-        ledger: WorkflowLedger,
-        request: SubmitDomainEvidenceRequest,
-        violations: tuple[OperationError, ...],
-    ) -> SubmitDomainEvidenceResponse:
-        """Report every collected evidence-submission violation in one response (#125)."""
-
-        projection = self._projection(ledger, request.run_id)
-        primary = violations[0]
-        return SubmitDomainEvidenceResponse(
-            operation_id=self._read_operation_id(
-                RunOperation.SUBMIT_DOMAIN_EVIDENCE, request.run_id
-            ),
-            ledger_cursor=f"ledger:{len(ledger.events())}",
-            affected_scope=(request.result_id,),
-            condition=WorkflowCondition.RUN_BLOCKED,
-            committed=False,
-            next_action=RunOperation.SUBMIT_DOMAIN_EVIDENCE,
-            run_id=request.run_id,
-            run_state=projection.run_state,
-            result_id=request.result_id,
-            result_state=self._result_state(projection, request.result_id),
-            domain_id=request.domain_id,
-            error=primary.model_copy(update={"violations": tuple(violations)}),
-        )
-
-    def _v2_workflow_for(
-        self, run_id: Identifier, result_id: Identifier, domain_id: Identifier
-    ) -> V2EvidenceWorkflowState | None:
-        """Load only a current v2 navigation state; stale state never authorizes freeze."""
-        try:
-            index = EvidenceSearchIndex(self._required_root() / ".rob2" / "evidence.sqlite3")
-            search_policy = EvidenceSearchPolicy()
-            read_policy = EvidenceReadPolicy()
-            state = EvidenceNavigationStore(self._required_root()).load(
-                run_id=run_id,
-                result_id=result_id,
-                domain_id=domain_id,
-                snapshot_hash=index._snapshot(),
-                search_policy_id=search_policy.policy_id,
-                search_policy_hash=canonical_hash(search_policy),
-                read_policy_id=read_policy.policy_id,
-                read_policy_hash=canonical_hash(read_policy),
-            )
-        except (IncompatibleEvidenceNavigationState, OperationalRetrievalFailure):
-            return None
-        return state.workflow if state is not None else None
-
-    @staticmethod
-    def _v2_freeze_ready(workflow: V2EvidenceWorkflowState, question_ids: set[Identifier]) -> bool:
-        if not workflow.freeze_valid():
-            return False
-        for question_id in question_ids:
-            selected = {
-                item.pass_kind
-                for item in workflow.attempts
-                if item.sq_id == question_id and item.kind is V2QueryAttemptKind.SELECTED
-            }
-            if selected != set(SearchPassKind):
-                return False
-        return True
-
-    def _validate_domain_evidence_submission(
-        self,
-        ledger: WorkflowLedger,
-        request: SubmitDomainEvidenceRequest,
-        *,
-        submitted_passages: tuple[EvidencePassageInput, ...] = (),
-        enforce_non_empty: bool = True,
-    ) -> tuple[OperationError, ...]:
-        """Collect every violation of the evidence-first freeze boundary.
-
-        Returns an empty tuple when the submission is valid. Domain
-        resolution is the only genuine structural gate here -- every other
-        check below is independent of the others and is always evaluated,
-        so a caller sees every problem with a submission in one response
-        rather than one raised exception at a time (#125).
-        """
-        domain = next(
-            (item for item in self._logic_pack().domains if item.id == request.domain_id),
-            None,
-        )
-        if domain is None:
-            return (_evidence_violation(f"unknown Logic domain {request.domain_id!r}"),)
-        domain_questions = set(domain.question_ids)
-        violations: list[OperationError] = []
-
-        workflow = self._v2_workflow_for(request.run_id, request.result_id, request.domain_id)
-        freezes_scientific_evidence = bool(
-            request.items or request.passages or request.evidence_by_question
-        )
-
-        supplied_question_ids = set(request.evidence_by_question)
-        unknown_question_ids = supplied_question_ids - domain_questions
-        if unknown_question_ids:
-            violations.append(
-                _evidence_violation(
-                    "Evidence mapping includes another domain's signaling questions: "
-                    f"{sorted(unknown_question_ids)}",
-                    recovery=("Map evidence only to this domain's active signaling questions.",),
-                )
-            )
-        if request.items and supplied_question_ids != domain_questions:
-            violations.append(
-                _evidence_violation(
-                    "each domain signaling question requires an explicit evidence mapping",
-                    recovery=("Add an evidence_by_question entry for every active question.",),
-                )
-            )
-        mapped_item_ids = {
-            item.entity_id for items in request.evidence_by_question.values() for item in items
-        }
-        # v2 navigation state is project-local and content-bound. Legacy
-        # in-memory recorders remain inspectable history only.
-        coverage_complete = {
-            question_id: workflow is not None and self._v2_freeze_ready(workflow, domain_questions)
-            for question_id in domain_questions
-        }
-        if freezes_scientific_evidence and not all(coverage_complete.values()):
-            violations.append(
-                _evidence_violation(
-                    "freezing Evidence items requires complete Search coverage for every "
-                    "active signaling question; call search_evidence to complete the "
-                    "mandatory passes first",
-                    recovery=("Call search_evidence until coverage_complete=true for each SQ.",),
-                )
-            )
-        if freezes_scientific_evidence and any(
-            self._visual_coverage_blocked(ledger, request, question_id)
-            for question_id in domain_questions
-        ):
-            violations.append(
-                _evidence_violation(
-                    "issued Visual candidates require an engine-recorded completed inspection "
-                    "before Evidence can freeze",
-                    recovery=("Inspect every issued Visual candidate before freezing.",),
-                )
-            )
-        retained_candidates = self._retained_candidate_ids(submitted_passages)
-        violations.extend(
-            self._validate_review_revisions(
-                request.review_revisions,
-                retained_candidates=retained_candidates,
-                domain_questions=domain_questions,
-            )
-        )
-        if request.coverage_state.value == "incomplete" and not request.coverage_limitations:
-            violations.append(
-                _evidence_violation(
-                    "incomplete evidence coverage requires an explicit limitation",
-                    recovery=("Add at least one coverage_limitations entry.",),
-                )
-            )
-        if (
-            request.coverage_state.value == "complete_with_limitations"
-            and not request.coverage_limitations
-        ):
-            violations.append(
-                _evidence_violation(
-                    "complete-with-limitations coverage requires an explicit limitation",
-                    recovery=("Add at least one coverage_limitations entry.",),
-                )
-            )
-        if request.coverage_state.value == "complete" and request.coverage_limitations:
-            violations.append(
-                _evidence_violation(
-                    "coverage limitations require coverage_state='complete_with_limitations' "
-                    "or 'incomplete'",
-                    recovery=(
-                        "Set coverage_state to complete_with_limitations or incomplete, "
-                        "or drop coverage_limitations.",
-                    ),
-                )
-            )
-        if request.no_information_basis:
-            # These sub-checks are genuinely sequential -- each later one
-            # only makes sense once the earlier ones already hold -- so
-            # this block still contributes at most one violation, exactly
-            # like before. It is otherwise independent of every other
-            # check in this function.
-            if request.coverage_state.value != "complete" or request.coverage_limitations:
-                violations.append(
-                    _evidence_violation(
-                        "no-information answers require complete, unlimited coverage",
-                        recovery=("Set coverage_state='complete' with no limitations.",),
-                    )
-                )
-            elif not all(coverage_complete.values()):
-                violations.append(
-                    _evidence_violation(
-                        "no-information basis requires complete Search coverage receipts",
-                        recovery=("Call search_evidence until coverage_complete=true.",),
-                    )
-                )
-            elif workflow is not None and any(
-                item.kind.value == "retained" for item in workflow.triage_revisions
-            ):
-                violations.append(
-                    _evidence_violation(
-                        "no-information basis is unavailable while retained Evidence "
-                        "candidates remain",
-                        recovery=("Disposition every retained Evidence candidate first.",),
-                    )
-                )
-        if enforce_non_empty and not (
-            request.items
-            or request.passages
-            or request.no_information_basis
-            or request.coverage_state.value == "incomplete"
-        ):
-            violations.append(
-                _evidence_violation(
-                    "Evidence submission must include real passages/items, an explicit "
-                    "no_information_basis with complete Search coverage, or "
-                    "coverage_state='incomplete' with a stated limitation",
-                )
-            )
-        item_ids = tuple(item.entity_id for item in request.items)
-        if len(item_ids) != len(set(item_ids)):
-            violations.append(_evidence_violation("Evidence Bundle items must be unique"))
-        for reference in request.items:
-            try:
-                ledger.artifacts.read(reference.content_hash)
-            except Exception:  # ArtifactStore exposes several typed read failures.
-                violations.append(
-                    _evidence_violation(
-                        f"Evidence item {reference.entity_id!r} is not an immutable artifact",
-                    )
-                )
-        dispositions = request.candidate_dispositions
-        disposition_ids = tuple(item.item_id for item in dispositions)
-        if len(disposition_ids) != len(set(disposition_ids)):
-            violations.append(
-                _evidence_violation("every Evidence candidate requires exactly one disposition")
-            )
-        if dispositions:
-            if not set(disposition_ids).issubset(set(item_ids)):
-                violations.append(
-                    _evidence_violation(
-                        "candidate dispositions must be attributable to submitted Evidence items",
-                    )
-                )
-            if not set(item_ids).issubset(set(disposition_ids)):
-                violations.append(
-                    _evidence_violation(
-                        "every accepted Evidence item must appear in the consideration manifest",
-                    )
-                )
-            if any(
-                item.disposition is ConsiderationDisposition.UNRESOLVED for item in dispositions
-            ):
-                violations.append(
-                    _evidence_violation("material Evidence candidates cannot remain unresolved")
-                )
-        if request.items and mapped_item_ids != set(item_ids):
-            violations.append(
-                _evidence_violation(
-                    "every submitted Evidence item must be attributed to at least one "
-                    "signaling question",
-                )
-            )
-        # conflicts and dispositions bind resolved (frozen) item IDs, which
-        # only exist after passage resolution -- skip on the pre-resolution
-        # pass so a passages+conflicts submission isn't rejected against an
-        # item set that hasn't been populated yet.
-        if enforce_non_empty:
-            for conflict in request.conflicts:
-                if len(conflict) < 2 or not set(conflict).issubset(set(item_ids)):
-                    violations.append(
-                        _evidence_violation(
-                            "source conflicts must bind at least two frozen Evidence items",
-                        )
-                    )
-            conflict_groups = tuple(frozenset(conflict) for conflict in request.conflicts)
-            for disposition in dispositions:
-                if disposition.disposition is ConsiderationDisposition.SUPERSEDED:
-                    assert disposition.superseded_by is not None
-                    supersession_pair = frozenset((disposition.item_id, disposition.superseded_by))
-                    if not any(supersession_pair <= group for group in conflict_groups):
-                        violations.append(
-                            _evidence_violation(
-                                "superseded evidence must link its replacement in a recorded "
-                                "conflict",
-                            )
-                        )
-        return tuple(violations)
-
-    @staticmethod
-    def _retained_candidate_ids(
-        passages: tuple[EvidencePassageInput, ...],
-    ) -> set[tuple[Identifier, Identifier]]:
-        """Compute retained-candidate identity for review-revision binding.
-
-        A passage's ``candidate_id`` override takes precedence over its
-        ``unit_id`` so the review-revision binding and passage-link
-        validation agree on identity. This is distinct from
-        ``_freeze_recorder``'s retained-*unit* bookkeeping, which must stay
-        keyed on ``unit_id`` alone: it marks dispositions against units
-        Search actually returned, a caller-chosen ``candidate_id`` never
-        appears there.
-        """
-        return {
-            (passage.candidate_id or passage.unit_id, question_id)
-            for passage in passages
-            for question_id in passage.question_ids
-        }
-
-    @staticmethod
-    def _validate_review_revisions(
-        reviews: tuple[EvidenceReviewRevisionInput, ...],
-        *,
-        retained_candidates: set[tuple[Identifier, Identifier]],
-        domain_questions: set[Identifier],
-    ) -> tuple[OperationError, ...]:
-        """Collect every semantic-review violation without trusting parser labels.
-
-        Every check below is independent and always evaluated, consistent
-        with #125's every-violation-in-one-response policy for the
-        surrounding submission check.
-        """
-        violations: list[OperationError] = []
-        by_candidate = {(review.candidate_id, review.sq_id): review for review in reviews}
-        if len(by_candidate) != len(reviews):
-            violations.append(
-                _evidence_violation(
-                    "review batch must contain one latest revision per candidate and question"
-                )
-            )
-        reviewed_candidates = set(by_candidate)
-        missing = retained_candidates - reviewed_candidates
-        if missing:
-            detail = "every retained candidate and question requires a substantive review revision"
-            if missing:
-                detail += f"; missing review for retained candidates: {sorted(missing)}"
-            violations.append(_evidence_violation(detail))
-        standalone_pairs = sorted(pair for pair in by_candidate if pair not in retained_candidates)
-        standalone_reviews = [by_candidate[pair] for pair in standalone_pairs]
-        if any(
-            span.trial_attribution
-            not in {
-                TrialAttribution.OTHER,
-                TrialAttribution.NOT_EXPLICIT,
-                TrialAttribution.UNRESOLVED,
-            }
-            or span.disposition
-            in {
-                EvidenceReviewDisposition.SUPPORTING,
-                EvidenceReviewDisposition.CONTRADICTING,
-            }
-            for review in standalone_reviews
-            for span in review.spans
-        ):
-            violations.append(
-                _evidence_violation(
-                    "a standalone review may record only non-substantive other, "
-                    "not-explicit, or unresolved spans; standalone candidates: "
-                    f"{standalone_pairs}"
-                )
-            )
-        if any(
-            span.disposition.value in {"needs_visual_review", "unresolved"}
-            or span.trial_attribution.value == "unresolved"
-            for review in reviews
-            if (review.candidate_id, review.sq_id) in retained_candidates
-            for span in review.spans
-        ):
-            violations.append(
-                _evidence_violation("unresolved or visual-review conditions block Evidence freeze")
-            )
-        if any(review.sq_id not in domain_questions for review in reviews):
-            violations.append(
-                _evidence_violation(
-                    "review revision references a question outside the submitted Domain"
-                )
-            )
-        if any(
-            len({(span.span_start, span.span_end) for span in review.spans}) != len(review.spans)
-            for review in reviews
-        ):
-            violations.append(
-                _evidence_violation(
-                    "review spans must not duplicate exact bounds within a revision"
-                )
-            )
-        return tuple(violations)
-
-    def _resolve_review_revisions(
-        self,
-        ledger: WorkflowLedger,
-        request: SubmitDomainEvidenceRequest,
-        passages: tuple[EvidencePassageInput, ...],
-    ) -> dict[tuple[Identifier, Identifier], tuple[EvidenceReviewRevision, RecordReference]]:
-        """Resolve issued read views, derive span IDs, and commit reviews first."""
-        scope = self._retrieval_scope(
-            ledger, request.run_id, request.work_token, request.result_id, require_question=False
-        )
-        index = EvidenceSearchIndex(self._required_root() / ".rob2" / "evidence.sqlite3")
-        passages_by_pair: dict[tuple[Identifier, Identifier], list[EvidencePassageInput]] = {}
-        units_by_candidate: dict[Identifier, dict[Identifier, CanonicalEvidenceUnit]] = {}
-        for passage in passages:
-            candidate_id = passage.candidate_id or passage.unit_id
-            unit = index.read_unit(passage.unit_id, scope=scope)
-            units_by_candidate.setdefault(candidate_id, {})[unit.unit_id] = unit
-            for question_id in passage.question_ids:
-                passages_by_pair.setdefault((candidate_id, question_id), []).append(passage)
-        prepared: dict[tuple[Identifier, Identifier], EvidenceReviewRevision] = {}
-        for submitted in request.review_revisions:
-            candidate_passages = passages_by_pair.get((submitted.candidate_id, submitted.sq_id), [])
-            candidate_units = units_by_candidate.get(submitted.candidate_id, {})
-            if candidate_passages and not candidate_units:
-                raise ValueError("review revision requires one retained candidate for its sq_id")
-            spans: list[EvidenceReviewSpan] = []
-            for submitted_span in submitted.spans:
-                context = index.resolve_read_view_receipt(
-                    submitted_span.read_view_receipt,
-                    scope=scope,
-                )
-                matching_units = (
-                    [
-                        unit
-                        for unit_id, unit in candidate_units.items()
-                        if any(fragment.unit_id == unit_id for fragment in context.fragments)
-                    ]
-                    if candidate_units
-                    else [
-                        index.read_unit(fragment.unit_id, scope=scope)
-                        for fragment in context.fragments
-                        if fragment.unit_id == submitted.candidate_id
-                    ]
-                )
-                if len(matching_units) != 1:
-                    raise ValueError(
-                        "review span receipt must identify exactly one candidate canonical unit"
-                    )
-                unit = matching_units[0]
-                fragment = next(item for item in context.fragments if item.unit_id == unit.unit_id)
-                if (
-                    fragment is None
-                    or submitted_span.span_start < fragment.span_start
-                    or submitted_span.span_end > fragment.span_end
-                    or fragment.content_hash
-                    != sha256_digest(unit.text[fragment.span_start : fragment.span_end].encode())
-                ):
-                    raise ValueError("review span is not contained in its exact issued read view")
-                span_identity = "|".join(
-                    (
-                        submitted.candidate_id,
-                        unit.unit_id,
-                        unit.parse_id,
-                        unit.source_artifact_hash,
-                        str(submitted_span.span_start),
-                        str(submitted_span.span_end),
-                    )
-                )
-                span_id = f"review-span:{self._digest(span_identity)}"
-                spans.append(
-                    EvidenceReviewSpan(
-                        span_id=span_id,
-                        span_start=submitted_span.span_start,
-                        span_end=submitted_span.span_end,
-                        trial_attribution=submitted_span.trial_attribution,
-                        disposition=submitted_span.disposition,
-                        rationale=submitted_span.rationale,
-                        attribution_rationale=submitted_span.attribution_rationale,
-                        reviewed_context=context,
-                        visual_review_condition=submitted_span.visual_review_condition,
-                        duplicate_of=submitted_span.duplicate_of,
-                    )
-                )
-            review = EvidenceReviewRevision(
-                entity_id=submitted.entity_id,
-                revision_id=submitted.revision_id,
-                actor=submitted.actor,
-                observed_at=submitted.observed_at,
-                supersedes=submitted.supersedes,
-                candidate_id=submitted.candidate_id,
-                result_id=submitted.result_id,
-                domain_id=submitted.domain_id,
-                sq_id=submitted.sq_id,
-                spans=tuple(spans),
-            )
-            prepared[(review.candidate_id, review.sq_id)] = review
-
-        # A retained exact passage needs one and only one review span.  A
-        # review may additionally retain non-substantive spans to document a
-        # candidate disposition, but it cannot smuggle in an unmatched claim.
-        for pair, selected_passages in passages_by_pair.items():
-            review = prepared.get(pair)
-            if review is None:
-                raise ValueError("every retained candidate and question requires a review revision")
-            candidate_id, _ = pair
-            candidate_units = units_by_candidate[candidate_id]
-            selected_bounds: set[tuple[Identifier, int, int]] = set()
-            for passage in selected_passages:
-                unit = candidate_units[passage.unit_id]
-                end = passage.span_end if passage.span_end is not None else len(unit.text)
-                identity = (unit.unit_id, passage.span_start, end)
-                if identity in selected_bounds:
-                    raise ValueError("duplicate retained Evidence passage bounds")
-                selected_bounds.add(identity)
-                matches = [
-                    span
-                    for span in review.spans
-                    if span.span_start == passage.span_start
-                    and span.span_end == end
-                    and any(
-                        fragment.unit_id == unit.unit_id
-                        for fragment in span.reviewed_context.fragments
-                    )
-                ]
-                if len(matches) != 1:
-                    raise ValueError(
-                        "each retained passage requires exactly one matching review span"
-                    )
-                authorizing_span = matches[0]
-                if (
-                    authorizing_span.trial_attribution is not TrialAttribution.ACTIVE
-                    or authorizing_span.disposition
-                    not in {
-                        EvidenceReviewDisposition.SUPPORTING,
-                        EvidenceReviewDisposition.CONTRADICTING,
-                    }
-                ):
-                    raise ValueError(
-                        "textual Evidence requires an ACTIVE supporting or contradicting "
-                        "review span"
-                    )
-            for span in review.spans:
-                if span.disposition not in {
-                    EvidenceReviewDisposition.SUPPORTING,
-                    EvidenceReviewDisposition.CONTRADICTING,
-                }:
-                    continue
-                unit_ids = {fragment.unit_id for fragment in span.reviewed_context.fragments}
-                if not any(
-                    (unit_id, span.span_start, span.span_end) in selected_bounds
-                    for unit_id in unit_ids
-                ):
-                    raise ValueError(
-                        "substantive review span must exactly match a retained passage"
-                    )
-
-        resolved: dict[
-            tuple[Identifier, Identifier], tuple[EvidenceReviewRevision, RecordReference]
-        ] = {}
-        for review in prepared.values():
-            ref = self._commit_frozen_artifact(
-                ledger,
-                scope=request.result_id,
-                operation="operation:evidence-review-revision",
-                operation_key=f"{request.idempotency_key}:review:{review.candidate_id}:{review.sq_id}",
-                entity_id=review.entity_id,
-                revision_id=review.revision_id,
-                artifact=review,
-                actor=review.actor,
-            )
-            resolved[(review.candidate_id, review.sq_id)] = (review, ref)
-        return resolved
-
-    def _visual_coverage_blocked(
-        self,
-        ledger: WorkflowLedger,
-        request: SubmitDomainEvidenceRequest,
-        question_id: Identifier,
-    ) -> bool:
-        """Whether an issued Visual candidate still blocks this SQ's freeze.
-
-        Visual-inspection completion is not yet tracked by the recorder; any
-        issued candidate blocks freeze until it is (unchanged pre-existing
-        behavior, out of #127's scope).
-        """
-        return bool(
-            {
-                candidate.candidate_id
-                for candidate in self._visual_candidates(
-                    ledger, request.run_id, result_id=request.result_id
-                )
-                if candidate.domain_id == request.domain_id and candidate.sq_id == question_id
-            }
-        )
-
-    def _freeze_domain_evidence(
-        self,
-        ledger: WorkflowLedger,
-        request: SubmitDomainEvidenceRequest,
-        submitted_passages: tuple[EvidencePassageInput, ...] = (),
-        resolved_reviews: dict[
-            tuple[Identifier, Identifier], tuple[EvidenceReviewRevision, RecordReference]
-        ]
-        | None = None,
-        materialize_coverage: bool = True,
-    ) -> tuple[
-        tuple[RecordReference, ...],
-        tuple[RecordReference, ...],
-        tuple[RecordReference, ...],
-    ]:
-        """Materialize one immutable Evidence Bundle and manifest per domain SQ."""
-        logic = self._logic_pack()
-        domain = next(item for item in logic.domains if item.id == request.domain_id)
-        result_spec = self._result_spec_reference(ledger, request.run_id, request.result_id)
-        actor = request.actor or ASSESSMENT_AGENT_ACTOR
-        resolved_reviews = resolved_reviews or {}
-        suffix = self._digest(f"{request.run_id}|{request.idempotency_key}|dispositions")
-        disposition_record = EvidenceCandidateDispositionRecord(
-            entity_id=f"evidence-disposition:{suffix}",
-            revision_id=f"revision:evidence-disposition-{suffix}",
-            actor=actor,
-            observed_at=self._now(),
-            dependencies=tuple(
-                Dependency(**item.model_dump(), role="dependency:evidence-item")
-                for item in request.items
-            ),
-            result_id=request.result_id,
-            domain_id=request.domain_id,
-            items=request.items,
-            dispositions=tuple(
-                EvidenceConsideration.model_validate(item.model_dump())
-                for item in request.candidate_dispositions
-            ),
-        )
-        disposition_ref = self._commit_frozen_artifact(
-            ledger,
-            scope=request.result_id,
-            operation="operation:evidence-candidate-dispositions",
-            operation_key=f"{request.idempotency_key}:dispositions",
-            entity_id=f"evidence-disposition:{suffix}",
-            revision_id=f"revision:evidence-disposition-{suffix}",
-            artifact=disposition_record,
-            actor=actor,
-            dependencies=disposition_record.dependencies,
-        )
-        coverage_refs_by_question: dict[Identifier, RecordReference] = {}
-        workflow = self._v2_workflow_for(request.run_id, request.result_id, request.domain_id)
-        if materialize_coverage and workflow is None:
-            raise ValueError("v2 Evidence navigation state is required to freeze Evidence")
-        read_policy = EvidenceReadPolicy()
-        for question_id in domain.question_ids if materialize_coverage else ():
-            assert workflow is not None
-            review_refs = tuple(
-                reference
-                for (candidate_id, sq_id), (_, reference) in resolved_reviews.items()
-                if sq_id == question_id
-            )
-            attempt_ids = {
-                attempt.attempt_id for attempt in workflow.attempts if attempt.sq_id == question_id
-            }
-            page_handles = {
-                page.page_handle for page in workflow.pages if page.attempt_id in attempt_ids
-            }
-            revision_ids = {
-                revision.revision_id
-                for revision in workflow.triage_revisions
-                if revision.attempt_id in attempt_ids and revision.sq_id == question_id
-            }
-            receipt = {
-                "receipt_type": "evidence-navigation-v2",
-                "contract_version": "2.0.0",
-                "run_id": request.run_id,
-                "result_id": request.result_id,
-                "domain_id": request.domain_id,
-                "sq_id": question_id,
-                "workflow_content_hash": workflow.content_hash,
-                "snapshot_hash": workflow.snapshot_hash,
-                "search_policy_id": workflow.search_policy_id,
-                "search_policy_hash": workflow.search_policy_hash,
-                "read_policy_id": read_policy.policy_id,
-                "read_policy_hash": canonical_hash(read_policy),
-                "selected_attempts": [
-                    attempt.model_dump(mode="json")
-                    for attempt in workflow.attempts
-                    if attempt.attempt_id in attempt_ids
-                    and attempt.kind is V2QueryAttemptKind.SELECTED
-                ],
-                "attempts": [
-                    attempt.model_dump(mode="json")
-                    for attempt in workflow.attempts
-                    if attempt.attempt_id in attempt_ids
-                ],
-                "pages": [
-                    page.model_dump(mode="json")
-                    for page in workflow.pages
-                    if page.attempt_id in attempt_ids
-                ],
-                "exposures": [
-                    exposure.model_dump(mode="json")
-                    for exposure in workflow.exposures
-                    if exposure.attempt_id in attempt_ids
-                ],
-                "triage_revisions": [
-                    revision.model_dump(mode="json")
-                    for revision in workflow.triage_revisions
-                    if revision.revision_id in revision_ids
-                ],
-                "triage_submissions": [
-                    submission.model_dump(mode="json")
-                    for submission in workflow.triage_submissions
-                    if set(submission.page_handles).issubset(page_handles)
-                    and set(submission.triage_revision_ids).issubset(revision_ids)
-                ],
-                "content_hash": None,
-            }
-            receipt["content_hash"] = canonical_hash(receipt)
-            coverage_suffix = self._digest(
-                f"{request.run_id}|{request.idempotency_key}|coverage|{question_id}"
-            )
-            coverage_record = EvidenceCoverageReceiptRecord(
-                entity_id=f"search-coverage:{coverage_suffix}",
-                revision_id=f"revision:search-coverage-{coverage_suffix}",
-                actor=actor,
-                observed_at=self._now(),
-                result_id=request.result_id,
-                domain_id=request.domain_id,
-                receipts=(receipt,),
-            )
-            coverage_refs_by_question[question_id] = self._commit_frozen_artifact(
-                ledger,
-                scope=request.result_id,
-                operation="operation:search-coverage-receipt",
-                operation_key=f"{request.idempotency_key}:coverage:{question_id}",
-                entity_id=f"search-coverage:{coverage_suffix}",
-                revision_id=f"revision:search-coverage-{coverage_suffix}",
-                artifact=coverage_record,
-                actor=actor,
-            )
-        bundles: list[RecordReference] = []
-        manifests: list[RecordReference] = []
-        for question_id in domain.question_ids:
-            # Reviews are question-specific.  Recompute inside the bundle
-            # loop rather than leaking the final coverage-loop value.
-            review_refs = tuple(
-                reference
-                for (_, sq_id), (_, reference) in resolved_reviews.items()
-                if sq_id == question_id
-            )
-            slug = question_id.removeprefix("sq:").replace(":", "-")
-            bundle_suffix = self._digest(
-                f"{request.run_id}|{request.idempotency_key}|bundle|{question_id}"
-            )
-            question_items = request.evidence_by_question.get(question_id, request.items)
-            question_item_ids = {item.entity_id for item in question_items}
-            if not question_item_ids.issubset({item.entity_id for item in request.items}):
-                raise ValueError(
-                    f"Evidence for {question_id} must reference the domain submission items"
-                )
-            # A conflict only belongs on a bundle that actually holds every
-            # item it links -- request.conflicts is submission-wide, but
-            # each per-question bundle only carries its own item subset.
-            question_conflicts = tuple(
-                conflict
-                for conflict in request.conflicts
-                if set(conflict).issubset(question_item_ids)
-            )
-            manifest_items = tuple(question_items)
-            manifest_dispositions = tuple(
-                item for item in request.candidate_dispositions if item.item_id in question_item_ids
-            )
-            if manifest_items and not manifest_dispositions:
-                raise ValueError(f"Evidence consideration manifest is incomplete for {question_id}")
-            manifest = EvidenceConsiderationManifest(
-                entity_id=f"evidence-manifest:{request.result_id.removeprefix('result:')}-{slug}",
-                revision_id=f"revision:evidence-manifest-{bundle_suffix}",
-                dependencies=tuple(
-                    Dependency(**item.model_dump(), role="dependency:considered-item")
-                    for item in manifest_items
-                ),
-                actor=actor,
-                observed_at=self._now(),
-                sq_id=question_id,
-                considered_items=manifest_items,
-                dispositions=tuple(
-                    EvidenceConsideration(
-                        item_id=item.item_id,
-                        disposition=item.disposition,
-                        basis=item.basis,
-                        superseded_by=item.superseded_by,
-                    )
-                    for item in manifest_dispositions
-                ),
-            )
-            manifest_ref = self._commit_frozen_artifact(
-                ledger,
-                scope=request.result_id,
-                operation="operation:evidence-consideration-manifest",
-                operation_key=f"{request.idempotency_key}:manifest:{slug}",
-                entity_id=manifest.entity_id,
-                revision_id=manifest.revision_id,
-                artifact=manifest,
-                actor=actor,
-                dependencies=manifest.dependencies,
-            )
-            question_coverage_refs = (
-                (coverage_refs_by_question[question_id],)
-                if question_id in coverage_refs_by_question
-                else ()
-            )
-            dependencies = [
-                Dependency(**result_spec.model_dump(), role="dependency:result-spec"),
-                Dependency(**disposition_ref.model_dump(), role="dependency:evidence-disposition"),
-                Dependency(**manifest_ref.model_dump(), role="dependency:evidence-consideration"),
-                *(
-                    Dependency(**review.model_dump(), role="dependency:evidence-review")
-                    for review in review_refs
-                ),
-                *(
-                    Dependency(**item.model_dump(), role="dependency:evidence-item")
-                    for item in question_items
-                ),
-                *(
-                    Dependency(**receipt.model_dump(), role="dependency:search-coverage")
-                    for receipt in question_coverage_refs
-                ),
-            ]
-            bundle_payload = {
-                "result_spec": result_spec.model_dump(mode="json"),
-                "disposition": disposition_ref.model_dump(mode="json"),
-                "items": [item.model_dump(mode="json") for item in question_items],
-                "sq_id": question_id,
-                "domain_id": request.domain_id,
-                "coverage_state": request.coverage_state.value,
-                "coverage_limitations": request.coverage_limitations,
-                "no_information_basis": request.no_information_basis,
-                "conflicts": question_conflicts,
-                "coverage_receipts": [
-                    receipt.model_dump(mode="json") for receipt in question_coverage_refs
-                ],
-                "consideration_manifest": manifest_ref.model_dump(mode="json"),
-                "review_revisions": [review.model_dump(mode="json") for review in review_refs],
-            }
-            bundle_hash = canonical_hash(bundle_payload)
-            bundle = EvidenceBundle(
-                entity_id=f"bundle:{request.result_id.removeprefix('result:')}-{slug}",
-                revision_id=f"revision:evidence-bundle-{bundle_suffix}",
-                dependencies=tuple(dependencies),
-                actor=actor,
-                observed_at=self._now(),
-                result_spec=result_spec,
-                disposition=disposition_ref,
-                items=tuple(question_items),
-                frozen_content_hash=bundle_hash,
-                sq_id=question_id,
-                domain_id=request.domain_id,
-                coverage_receipts=question_coverage_refs,
-                consideration_manifest=manifest_ref,
-                review_revisions=review_refs,
-                coverage_limitations=request.coverage_limitations,
-                coverage_state=request.coverage_state,
-                no_information_basis=request.no_information_basis,
-                conflicts=question_conflicts,
-            )
-            bundle_ref = self._commit_frozen_artifact(
-                ledger,
-                scope=request.result_id,
-                operation="operation:evidence-bundle-frozen",
-                operation_key=f"{request.idempotency_key}:bundle:{slug}",
-                entity_id=bundle.entity_id,
-                revision_id=bundle.revision_id,
-                artifact=bundle,
-                actor=actor,
-                dependencies=tuple(dependencies),
-            )
-            bundles.append(bundle_ref)
-            manifests.append(manifest_ref)
-        return tuple(bundles), tuple(manifests), tuple(coverage_refs_by_question.values())
-
-    def _has_no_information_basis(
-        self,
-        ledger: WorkflowLedger,
-        request: SubmitDomainAnswersRequest,
-        question_id: Identifier,
-    ) -> bool:
-        """Verify one SQ's frozen receipt rather than trusting another SQ's search."""
-
-        payload = self._latest_domain_evidence_payload(
-            ledger, request.run_id, request.result_id, request.domain_id
-        )
-        return self._question_has_no_information_basis(
-            ledger,
-            request.run_id,
-            request.result_id,
-            request.domain_id,
-            question_id,
-            payload,
-        )
-
-    def _latest_domain_evidence_payload(
-        self,
-        ledger: WorkflowLedger,
-        run_id: Identifier,
-        result_id: Identifier,
-        domain_id: Identifier,
-        *,
-        after_sequence: int = 0,
-    ) -> dict[str, Any] | None:
-        """Return the latest evidence checkpoint for one Result × Domain."""
-
-        latest: dict[str, Any] | None = None
-        for event in self._events_for_run(ledger, run_id):
-            if (
-                event.scope == result_id
-                and event.sequence > after_sequence
-                and event.operation == "operation:submit-domain-evidence"
-            ):
-                payload = self._event_payload(ledger, event)
-                if payload.get("domain_id") == domain_id:
-                    latest = payload
-        return latest
-
-    def _question_has_no_information_basis(
-        self,
-        ledger: WorkflowLedger,
-        run_id: Identifier,
-        result_id: Identifier,
-        domain_id: Identifier,
-        question_id: Identifier,
-        evidence_payload: dict[str, Any] | None,
-    ) -> bool:
-        """Replay a frozen, complete no-information basis for one question."""
-
-        if not evidence_payload or evidence_payload.get("domain_id") != domain_id:
-            return False
-        raw_bundles = evidence_payload.get("evidence_bundles", ())
-        if not isinstance(raw_bundles, (list, tuple)):
-            return False
-        for raw_bundle in raw_bundles:
-            try:
-                bundle_ref = RecordReference.model_validate(raw_bundle)
-                bundle = EvidenceBundle.model_validate_json(
-                    ledger.artifacts.read(bundle_ref.content_hash)
-                )
-            except (KeyError, OSError, TypeError, ValueError, json.JSONDecodeError):
-                continue
-            if (
-                bundle.sq_id != question_id
-                or bundle.domain_id != domain_id
-                or not bundle.no_information_basis
-                or bundle.coverage_state.value != "complete"
-                or bundle.coverage_limitations
-                or bundle.items
-            ):
-                continue
-            for coverage_ref in bundle.coverage_receipts:
-                try:
-                    receipt_record = EvidenceCoverageReceiptRecord.model_validate_json(
-                        ledger.artifacts.read(coverage_ref.content_hash)
-                    )
-                except (KeyError, OSError, TypeError, ValueError, json.JSONDecodeError):
-                    continue
-                for raw_receipt in receipt_record.receipts:
-                    if not isinstance(raw_receipt, dict):
-                        continue
-                    selected = raw_receipt.get("selected_attempts", ())
-                    triage = raw_receipt.get("triage_revisions", ())
-                    selected_passes = {
-                        item.get("pass_kind") for item in selected if isinstance(item, dict)
-                    }
-                    if (
-                        raw_receipt.get("receipt_type") == "evidence-navigation-v2"
-                        and raw_receipt.get("sq_id") == question_id
-                        and selected_passes == {item.value for item in SearchPassKind}
-                        and all(
-                            item.get("kind") != V2TriageKind.RETAINED.value
-                            for item in triage
-                            if isinstance(item, dict)
-                        )
-                    ):
-                        return True
-        return False
-
-    def _evidence_insufficiencies(
-        self,
-        ledger: WorkflowLedger,
-        run_id: Identifier,
-        result_id: Identifier,
-        answers_by_question: dict[Identifier, str],
-        *,
-        domain_id: Identifier | None = None,
-        after_sequence: int = 0,
-    ) -> tuple[EvidenceInsufficiency, ...]:
-        """Check every supplied active answer without writing any checkpoint."""
-
-        insufficiencies: list[EvidenceInsufficiency] = []
-        domain_ids: tuple[Identifier, ...]
-        logic = self._logic_pack()
-        if domain_id is not None:
-            domain_ids = (domain_id,)
-        else:
-            domain_ids = tuple(domain.id for domain in logic.domains)
-        question_domains = {
-            question_id: domain.id
-            for domain in logic.domains
-            for question_id in domain.question_ids
-        }
-        payloads = {
-            current_domain: self._latest_domain_evidence_payload(
-                ledger,
-                run_id,
-                result_id,
-                current_domain,
-                after_sequence=after_sequence,
-            )
-            for current_domain in domain_ids
-        }
-        current_revisions = {
-            revision.entity_id: revision for revision in ledger.current_revisions()
-        }
-        for question_id, answer in sorted(answers_by_question.items()):
-            current_domain = question_domains.get(question_id)
-            if current_domain is None or current_domain not in payloads:
-                continue
-            payload = payloads[current_domain]
-            if answer == "no_information":
-                if not self._question_has_no_information_basis(
-                    ledger,
-                    run_id,
-                    result_id,
-                    current_domain,
-                    question_id,
-                    payload,
-                ):
-                    insufficiencies.append(
-                        EvidenceInsufficiency(
-                            question_id=question_id,
-                            reason=EvidenceInsufficiencyReason.INVALID_NO_INFORMATION_BASIS,
-                            detail=(
-                                "the frozen Search coverage for this question is not a "
-                                "complete, readable, retained-candidate-free basis"
-                            ),
-                        )
-                    )
-                continue
-            raw_bundles = payload.get("evidence_bundles", ()) if payload else ()
-            qualifying = False
-            unresolved = False
-            stale = False
-            try:
-                current_result_spec = self._result_spec_reference(ledger, run_id, result_id)
-            except (KeyError, OSError, TypeError, ValueError):
-                current_result_spec = None
-            current_spec = self._result_spec_for(ledger, run_id, result_id)
-            if isinstance(raw_bundles, (list, tuple)):
-                for raw_bundle in raw_bundles:
-                    try:
-                        bundle_ref = RecordReference.model_validate(raw_bundle)
-                        bundle = EvidenceBundle.model_validate_json(
-                            ledger.artifacts.read(bundle_ref.content_hash)
-                        )
-                        if (
-                            bundle.entity_id != bundle_ref.entity_id
-                            or bundle.revision_id != bundle_ref.revision_id
-                            or canonical_hash(bundle) != bundle_ref.content_hash
-                        ):
-                            raise ValueError("Evidence bundle reference identity does not match")
-                    except (KeyError, OSError, TypeError, ValueError, json.JSONDecodeError):
-                        unresolved = True
-                        continue
-                    if bundle.sq_id != question_id or bundle.domain_id != current_domain:
-                        continue
-                    if (
-                        current_result_spec is not None
-                        and bundle.result_spec != current_result_spec
-                    ):
-                        stale = True
-                        continue
-                    dispositions: dict[Identifier, ConsiderationDisposition] = {}
-                    if bundle.consideration_manifest is not None:
-                        try:
-                            manifest = EvidenceConsiderationManifest.model_validate_json(
-                                ledger.artifacts.read(bundle.consideration_manifest.content_hash)
-                            )
-                            if (
-                                manifest.entity_id != bundle.consideration_manifest.entity_id
-                                or manifest.revision_id != bundle.consideration_manifest.revision_id
-                                or canonical_hash(manifest)
-                                != bundle.consideration_manifest.content_hash
-                                or manifest.sq_id != question_id
-                                or manifest.considered_items != bundle.items
-                            ):
-                                raise ValueError("Evidence manifest is outside bundle scope")
-                            dispositions = {
-                                item.item_id: item.disposition for item in manifest.dispositions
-                            }
-                        except (KeyError, OSError, TypeError, ValueError, json.JSONDecodeError):
-                            unresolved = True
-                            continue
-                    for item_ref in bundle.items:
-                        if dispositions.get(item_ref.entity_id) not in {
-                            ConsiderationDisposition.SUPPORTING,
-                            ConsiderationDisposition.CONTRADICTING,
-                        }:
-                            continue
-                        try:
-                            claim = EvidenceClaim.model_validate_json(
-                                ledger.artifacts.read(item_ref.content_hash)
-                            )
-                            if (
-                                claim.entity_id != item_ref.entity_id
-                                or claim.revision_id != item_ref.revision_id
-                            ):
-                                raise ValueError("Evidence claim reference identity does not match")
-                            review = EvidenceReviewRevision.model_validate_json(
-                                ledger.artifacts.read(claim.authorizing_review.content_hash)
-                            )
-                            review_span = next(
-                                (
-                                    span
-                                    for span in review.spans
-                                    if span.span_id == claim.review_span_id
-                                ),
-                                None,
-                            )
-                            canonical = CanonicalEvidenceUnit.model_validate_json(
-                                ledger.artifacts.read(claim.canonical_unit.content_hash)
-                            )
-                            source = SourceDescriptor.model_validate_json(
-                                ledger.artifacts.read(claim.source.content_hash)
-                            )
-                            if (
-                                current_spec is None
-                                or canonical.source_id != source.source_id
-                                or canonical.source_artifact_hash != source.artifact_hash
-                                or not any(
-                                    trial.trial_id == current_spec.result.trial_id
-                                    and any(
-                                        current_source.source_id == canonical.source_id
-                                        and current_source.artifact_hash
-                                        == canonical.source_artifact_hash
-                                        and any(
-                                            parse.parse_id == canonical.parse_id
-                                            and parse.source_id == canonical.source_id
-                                            and parse.artifact_hash
-                                            == canonical.source_artifact_hash
-                                            for parse in current_source.parse_records
-                                        )
-                                        for current_source in trial.inventory.sources
-                                    )
-                                    for trial in self._latest_proposal(
-                                        ledger, run_id
-                                    ).initialization.trials
-                                )
-                                or review.entity_id != claim.authorizing_review.entity_id
-                                or review.revision_id != claim.authorizing_review.revision_id
-                                or canonical_hash(review) != claim.authorizing_review.content_hash
-                                or claim.authorizing_review not in bundle.review_revisions
-                                or review.result_id != result_id
-                                or review.domain_id != current_domain
-                                or review.sq_id != question_id
-                                or review.candidate_id != claim.candidate_id
-                                or review_span is None
-                                or review_span.span_start != claim.span_start
-                                or review_span.span_end != claim.span_end
-                                or review_span.trial_attribution.value != "active"
-                                or review_span.disposition.value
-                                not in {"supporting", "contradicting"}
-                                or not any(
-                                    fragment.unit_id == canonical.unit_id
-                                    and fragment.source_id == canonical.source_id
-                                    and fragment.source_artifact_hash
-                                    == canonical.source_artifact_hash
-                                    and fragment.parse_id == canonical.parse_id
-                                    and fragment.canonicalization_version
-                                    == canonical.canonicalization_version
-                                    and fragment.unit_content_hash
-                                    == sha256_digest(canonical.text.encode())
-                                    and fragment.span_start <= claim.span_start
-                                    and fragment.span_end >= claim.span_end
-                                    and fragment.content_hash
-                                    == sha256_digest(
-                                        canonical.text[
-                                            fragment.span_start : fragment.span_end
-                                        ].encode()
-                                    )
-                                    for fragment in review_span.reviewed_context.fragments
-                                )
-                                or not any(
-                                    parse.parse_id == canonical.parse_id
-                                    and parse.source_id == canonical.source_id
-                                    and parse.artifact_hash == canonical.source_artifact_hash
-                                    for parse in source.parse_records
-                                )
-                                or claim.span_end > len(canonical.text)
-                                or claim.span_end <= claim.span_start
-                                or claim.quoted_text_hash
-                                != sha256_digest(
-                                    canonical.text[claim.span_start : claim.span_end].encode()
-                                )
-                            ):
-                                raise ValueError(
-                                    "Evidence claim provenance is outside active scope"
-                                )
-                            current_review = current_revisions.get(review.entity_id)
-                            if (
-                                current_review is None
-                                or current_review.revision_id != review.revision_id
-                                or current_review.artifact_hash
-                                != claim.authorizing_review.content_hash
-                            ):
-                                # The claim still identifies and verifies its
-                                # historical review, but that review is no
-                                # longer the ledger's current revision for
-                                # this exact review entity.  This is a stale
-                                # dependency, not malformed provenance.
-                                stale = True
-                                continue
-                        except (KeyError, OSError, TypeError, ValueError, json.JSONDecodeError):
-                            try:
-                                visual_status = self._visual_transcription_status(
-                                    ledger,
-                                    run_id,
-                                    result_id,
-                                    current_domain,
-                                    question_id,
-                                    item_ref,
-                                    current_spec,
-                                )
-                            except (
-                                KeyError,
-                                OSError,
-                                TypeError,
-                                ValueError,
-                                json.JSONDecodeError,
-                            ):
-                                unresolved = True
-                                continue
-                            if visual_status == "stale":
-                                stale = True
-                                continue
-                            if visual_status != "qualifying":
-                                unresolved = True
-                                continue
-                        qualifying = True
-            if not qualifying:
-                reason = (
-                    EvidenceInsufficiencyReason.STALE_EVIDENCE_DEPENDENCY
-                    if stale
-                    else (
-                        EvidenceInsufficiencyReason.UNRESOLVABLE_EVIDENCE
-                        if unresolved
-                        else EvidenceInsufficiencyReason.MISSING_QUALIFYING_EVIDENCE
-                    )
-                )
-                detail = (
-                    "the frozen Evidence Bundle depends on an older ResultSpec revision"
-                    if stale
-                    else (
-                        "a frozen supporting/contradicting item could not be resolved"
-                        if unresolved
-                        else (
-                            "no frozen supporting or contradicting Evidence item is scoped to "
-                            "this question"
-                        )
-                    )
-                )
-                insufficiencies.append(
-                    EvidenceInsufficiency(question_id=question_id, reason=reason, detail=detail)
-                )
-        return tuple(insufficiencies)
-
-    def _visual_transcription_status(
-        self,
-        ledger: WorkflowLedger,
-        run_id: Identifier,
-        result_id: Identifier,
-        domain_id: Identifier,
-        question_id: Identifier,
-        item_ref: RecordReference,
-        current_spec: ResultSpecRevision | None,
-    ) -> Literal["qualifying", "stale", "unresolvable"]:
-        """Revalidate visual-only evidence at the same boundary as text claims."""
-
-        try:
-            transcription = VisualTranscription.model_validate_json(
-                ledger.artifacts.read(item_ref.content_hash)
-            )
-            if (
-                transcription.entity_id != item_ref.entity_id
-                or transcription.revision_id != item_ref.revision_id
-                or canonical_hash(transcription) != item_ref.content_hash
-                or transcription.render_mode != "crop"
-                or not transcription.transcription.strip()
-                or not any(
-                    dependency.role == "dependency:source"
-                    and dependency.entity_id == transcription.source.entity_id
-                    and dependency.revision_id == transcription.source.revision_id
-                    and dependency.content_hash == transcription.source.content_hash
-                    for dependency in transcription.dependencies
-                )
-            ):
-                return "unresolvable"
-            source = SourceDescriptor.model_validate_json(
-                ledger.artifacts.read(transcription.source.content_hash)
-            )
-            if (
-                source.source_id != transcription.source.entity_id
-                or canonical_hash(source) != transcription.source.content_hash
-                or current_spec is None
-            ):
-                return "unresolvable"
-            proposal = self._latest_proposal(ledger, run_id)
-            current_source = (
-                self._sources_by_trial(proposal.initialization)
-                .get(current_spec.result.trial_id, {})
-                .get(source.source_id)
-            )
-            if current_source is None or current_source.artifact_hash != source.artifact_hash:
-                return "stale"
-            if canonical_hash(current_source) != transcription.source.content_hash:
-                return "stale"
-            # The bundle and its complete, question-specific consideration
-            # manifest establish Result/Domain/SQ attribution.  This helper
-            # is called only after those bindings have been revalidated.
-            if not result_id or not domain_id or not question_id:
-                return "unresolvable"
-        except (KeyError, OSError, TypeError, ValueError, json.JSONDecodeError):
-            return "unresolvable"
-        return "qualifying"
-
-    @staticmethod
-    def _format_evidence_insufficiencies(
-        insufficiencies: tuple[EvidenceInsufficiency, ...],
-    ) -> str:
-        return "; ".join(
-            f"{item.question_id}: {item.reason.value} ({item.detail})" for item in insufficiencies
-        )
-
-    def _commit_evidence_insufficient_block(
-        self,
-        ledger: WorkflowLedger,
-        request: SubmitDomainAnswersRequest,
-        insufficiencies: tuple[EvidenceInsufficiency, ...],
-    ) -> None:
-        """Durably mark this Domain's latest evidence as insufficient.
-
-        Not scientific work -- an operational marker so a later continue_run
-        (a fresh derivation from ledger state, possibly in a new process)
-        reroutes back to submit_domain_evidence instead of re-offering the
-        same blocked answer work item (ADR-0008). Append-only: each call is a
-        distinct event, so retrying after a corrected-but-still-insufficient
-        resubmission is visible too.
-        """
-        now = self._now()
-        slug = request.domain_id.removeprefix("domain:")
-        suffix = self._digest(
-            f"{request.run_id}|{request.result_id}|{request.domain_id}|{len(ledger.events())}"
-        )
-        record = _DomainEvidenceBlockedRecord(
-            run_id=request.run_id,
-            result_id=request.result_id,
-            domain_id=request.domain_id,
-            insufficiencies=tuple(
-                f"{item.question_id}:{item.reason.value}" for item in insufficiencies
-            ),
-        )
-        transition = self._transition(
-            scope=request.result_id,
-            operation="operation:domain-evidence-insufficient",
-            operation_key=f"idempotency:evidence-insufficient-{slug}-{suffix}",
-            entity_id=f"evidence-insufficient:{slug}-{suffix}",
-            revision_id=f"revision:evidence-insufficient-{suffix}",
-            artifact=record,
-            checkpoint=f"checkpoint:evidence-insufficient-{slug}",
-            outcome=WorkflowEventOutcome.WORK_REQUIRED,
-            observed_at=now,
-        )
-        lease = self._acquire_lease(ledger, now)
-        ledger.commit(transition, lease, now=now)
-
-    @staticmethod
-    def _latest_domain_evidence_retry_event(
-        events: tuple[WorkflowEvent, ...], result_id: Identifier, domain_id: Identifier
-    ) -> WorkflowEvent | None:
-        """Return the latest block that requires a fresh evidence work item.
-
-        Mirrors _has_domain_checkpoint's sequence-comparison pattern: a block
-        recorded after the latest evidence checkpoint means the next work
-        item must reroute back to submit_domain_evidence.
-        """
-        slug = domain_id.removeprefix("domain:")
-        latest_evidence = max(
-            (
-                event.sequence
-                for event in events
-                if event.operation == "operation:submit-domain-evidence"
-                and event.scope == result_id
-                and event.checkpoint == f"checkpoint:evidence-{slug}"
-            ),
-            default=0,
-        )
-        retry_events = tuple(
-            event
-            for event in events
-            if event.operation == "operation:domain-evidence-insufficient"
-            and event.scope == result_id
-            and event.checkpoint == f"checkpoint:evidence-insufficient-{slug}"
-            and event.sequence > latest_evidence
-        )
-        if not retry_events:
-            return None
-        return max(retry_events, key=lambda event: event.sequence)
-
-    def _evidence_insufficiency_response(
-        self,
-        ledger: WorkflowLedger,
-        request: SubmitDomainAnswersRequest,
-        insufficiencies: tuple[EvidenceInsufficiency, ...],
-        operation: RunOperation,
-    ) -> SubmitDomainAnswersResponse:
-        """Return a noncommitting, actionable response for answer-evidence gaps."""
-
-        projection = self._projection(ledger, request.run_id)
-        return SubmitDomainAnswersResponse(
-            operation_id=self._read_operation_id(operation, request.run_id),
-            ledger_cursor=f"ledger:{len(ledger.events())}",
-            affected_scope=(request.result_id, request.domain_id),
-            condition=WorkflowCondition.RUN_BLOCKED,
-            committed=False,
-            next_action=RunOperation.SUBMIT_DOMAIN_EVIDENCE,
-            run_id=request.run_id,
-            run_state=projection.run_state,
-            result_id=request.result_id,
-            result_state=self._result_state(projection, request.result_id),
-            domain_id=request.domain_id,
-            evidence_insufficiencies=insufficiencies,
-            error=OperationError(
-                code="evidence_insufficient",
-                detail=(
-                    "Active signaling-question answers require qualifying frozen Evidence: "
-                    + self._format_evidence_insufficiencies(insufficiencies)
-                ),
-                recovery=(
-                    "Submit corrected supporting or contradicting Evidence for every listed "
-                    "signaling question.",
-                    "Resume by submitting Domain evidence, then resubmit these answers.",
-                ),
-            ),
-        )
-
-    def _commit_domain_answers(
-        self,
-        ledger: WorkflowLedger,
-        request: SubmitDomainAnswersRequest,
-        domain: Any,
-    ) -> tuple[RecordReference, ...]:
-        logic = self._logic_pack()
-        guidance = self._guidance_pack()
-        evidence_events = [
-            self._event_payload(ledger, event)
-            for event in self._events_for_run(ledger, request.run_id)
-            if event.operation == "operation:submit-domain-evidence"
-            and event.scope == request.result_id
-            and self._event_payload(ledger, event).get("domain_id") == request.domain_id
-        ]
-        if not evidence_events:
-            raise ValueError("domain evidence must be frozen before answers")
-        bundle_by_sq = {}
-        raw_bundle_refs = evidence_events[-1].get("evidence_bundles", ())
-        if not isinstance(raw_bundle_refs, (list, tuple)):
-            raw_bundle_refs = ()
-        for reference in raw_bundle_refs:
-            try:
-                ref = RecordReference.model_validate(reference)
-                payload = json.loads(ledger.artifacts.read(ref.content_hash))
-                bundle_by_sq[payload.get("sq_id")] = ref
-            except (ValueError, TypeError, KeyError, json.JSONDecodeError):
-                continue
-        actor = request.actor or ASSESSMENT_AGENT_ACTOR
-        answer_refs: list[RecordReference] = []
-        for item in request.answers:
-            bundle_ref = bundle_by_sq.get(item.question_id)
-            if bundle_ref is None:
-                raise ValueError(f"no frozen Evidence Bundle exists for {item.question_id}")
-            rules = tuple(
-                rule.id
-                for rule in domain.judgment_rules
-                if item.question_id
-                in {condition.question_id for condition in self._walk_pack_conditions(rule.when)}
-            )
-            suffix = self._digest(
-                f"{request.run_id}|{request.idempotency_key}|answer|{item.question_id}"
-            )
-            answer = SQAnswerRevision(
-                entity_id=(
-                    f"sq-answer:{request.result_id.removeprefix('result:')}-"
-                    f"{item.question_id.removeprefix('sq:').replace(':', '-')}"
-                ),
-                revision_id=f"revision:sq-answer-{suffix}",
-                dependencies=(
-                    Dependency(**bundle_ref.model_dump(), role="dependency:evidence-bundle"),
-                    *(
-                        Dependency(**rule.model_dump(), role="dependency:project-rule")
-                        for rule in request.project_rules
-                    ),
-                ),
-                actor=actor,
-                observed_at=self._now(),
-                sq_id=item.question_id,
-                answer=item.answer,
-                rationale=item.rationale,
-                evidence_bundle=bundle_ref,
-                project_rules=request.project_rules,
-                logic_pack_release_id=logic.release_id,
-                logic_pack_hash=logic.content_hash,
-                guidance_pack_release_id=guidance.release_id,
-                guidance_pack_hash=guidance.content_hash,
-                evidence_policy_id=EvidenceSearchPolicy().policy_id,
-                evidence_policy_hash=canonical_hash(EvidenceSearchPolicy()),
-                decision_rule_ids=rules,
-            )
-            answer_refs.append(
-                self._commit_frozen_artifact(
-                    ledger,
-                    scope=request.result_id,
-                    operation="operation:sq-answer-revision",
-                    operation_key=f"{request.idempotency_key}:answer:{item.question_id}",
-                    entity_id=answer.entity_id,
-                    revision_id=answer.revision_id,
-                    artifact=answer,
-                    actor=actor,
-                    dependencies=answer.dependencies,
-                )
-            )
-        return tuple(answer_refs)
-
     @staticmethod
     def _walk_pack_conditions(condition: Any) -> tuple[Any, ...]:
         return (condition,) + tuple(
@@ -8111,7 +7467,16 @@ class RunEngine:
                 ),
                 default=0,
             )
-            if event.sequence <= invalidated_at:
+            corrected_at = max(
+                (
+                    prior.sequence
+                    for prior in events
+                    if prior.operation == "operation:correct-question-step"
+                    and prior.scope == event.scope
+                ),
+                default=0,
+            )
+            if event.sequence <= max(invalidated_at, corrected_at):
                 continue
             try:
                 record = (
@@ -8459,13 +7824,22 @@ class RunEngine:
                 ),
                 default=0,
             )
+            corrected_at = max(
+                (
+                    event.sequence
+                    for event in events
+                    if event.operation == "operation:correct-question-step"
+                    and event.scope == result_id
+                ),
+                default=0,
+            )
             report_event = next(
                 (
                     event
                     for event in events
                     if event.operation == "operation:result-report-ready"
                     and event.scope == result_id
-                    and event.sequence > invalidated_at
+                    and event.sequence > max(invalidated_at, corrected_at)
                 ),
                 None,
             )
@@ -8615,8 +7989,7 @@ class RunEngine:
             (
                 event.sequence
                 for event in events
-                if event.operation == "operation:correct-domain-answers"
-                and event.scope == result_id
+                if event.operation == "operation:correct-question-step" and event.scope == result_id
             ),
             default=0,
         )
@@ -8638,6 +8011,30 @@ class RunEngine:
         ):
             self._repair_report_publication(ledger, run_id)
             return ()
+        # A question correction can make a previously absent dependent active.
+        # Its former Domain checkpoint remains immutable audit history, but it
+        # is not sufficient to recreate a terminal report while that session
+        # is open for new evidence and an answer.
+        for event in events:
+            if (
+                event.operation != "operation:correct-question-step"
+                or event.scope != result_id
+                or event.sequence < latest_correction
+            ):
+                continue
+            try:
+                corrected = _QuestionCorrectionRecord.model_validate_json(
+                    ledger.artifacts.read(event.output_revision_hashes[0])
+                )
+                session = self._question_session_service(
+                    ledger, run_id, result_id, corrected.domain_id
+                ).load()
+            except (OSError, ValueError):
+                raise RunIntegrityFailure(
+                    "question correction receipt cannot be replayed"
+                ) from None
+            if active_question_frontier(session.ledger).status != "complete_with_answers":
+                return ()
         logic = self._logic_pack()
         required_domains = {domain.id for domain in logic.domains}
         evidence_domains = {
@@ -8735,44 +8132,10 @@ class RunEngine:
         evaluation = LogicEvaluator(logic).evaluate(
             EvaluationRequest(answers=answers, assessor_inputs=assessor_inputs)
         )
-        active_answers = {
-            question_id: answer.value for question_id, answer in evaluation.answers.items()
-        }
-        insufficiencies = self._evidence_insufficiencies(
-            ledger,
-            run_id,
-            result_id,
-            active_answers,
-            after_sequence=invalidated_at,
-        )
-        if insufficiencies:
-            reason = (
-                "Result evidence is insufficient for active signaling questions: "
-                + self._format_evidence_insufficiencies(insufficiencies)
-            )
-            diagnostic = _ResultDiagnosticRecord(
-                run_id=run_id,
-                result_id=result_id,
-                trial_id=result_spec.result.trial_id,
-                reason=reason,
-            )
-            diagnostic = self._materialize_diagnostic_bundle(diagnostic)
-            suffix = self._digest(f"{run_id}|{result_id}|evidence-diagnostic|{reason}")
-            transition = self._transition(
-                scope=result_id,
-                operation="operation:result-diagnostic-ready",
-                operation_key=f"idempotency:evidence-diagnostic-{suffix}",
-                entity_id=f"result-diagnostic:{suffix}",
-                revision_id=f"revision:result-diagnostic-{suffix}",
-                artifact=diagnostic,
-                checkpoint=f"checkpoint:evidence-diagnostic-{suffix}",
-                outcome=WorkflowEventOutcome.TRIAL_PROBLEM,
-                observed_at=self._now(),
-            )
-            lease = self._acquire_lease(ledger, self._now())
-            self._commit_transitions(ledger, (transition,), lease, now=self._now())
-            self._repair_report_publication(ledger, run_id)
-            return ()
+        # Every effective v3 answer is already bound to a reducer-closed,
+        # engine-produced Evidence Bundle. The removed v2 candidate-level
+        # insufficiency scan would duplicate that proof and no longer has an
+        # active contract to evaluate.
         assessment_digest = self._digest(
             canonical_json_bytes(
                 {
@@ -9608,90 +8971,6 @@ class RunEngine:
             tuple(answers[key] for key in sorted(answers)),
         )
 
-    def _commit_answer_correction(
-        self,
-        ledger: WorkflowLedger,
-        request: CorrectDomainAnswersRequest,
-        artifact: _DomainAnswersRecord,
-    ) -> CommitResult:
-        """Commit a correction and reopen its published assessment as one checkpoint.
-
-        The correction itself is the authoritative successor boundary.  If it
-        replaces a published assessment, the same ledger batch reopens the
-        Result's assessment lifecycle so the successor report can be published
-        through the normal verified report/index path.  Frozen Evidence is
-        deliberately not invalidated; this is not a Run reopening because no
-        project input or Preparation attempt changed.
-        """
-
-        self._validate_idempotent_event(
-            ledger,
-            request.idempotency_key,
-            "operation:correct-domain-answers",
-            artifact,
-            run_id=request.run_id,
-        )
-        now = self._now()
-        suffix = self._digest(f"{request.run_id}|{request.idempotency_key}")
-        projection = self._projection(ledger, request.run_id)
-        transitions: list[Transition] = [
-            self._transition(
-                scope=request.result_id,
-                operation="operation:correct-domain-answers",
-                operation_key=request.idempotency_key,
-                entity_id=f"run-submission:{suffix}",
-                revision_id=f"revision:run-submission-{suffix}",
-                artifact=artifact,
-                checkpoint=f"checkpoint:answers-corrected-{request.domain_id.removeprefix('domain:')}",
-                outcome=WorkflowEventOutcome.COMPLETED,
-                observed_at=now,
-            )
-        ]
-        result_state = self._result_state(projection, request.result_id)
-        if result_state is ResultState.REPORT_READY:
-            transitions.append(
-                self._transition(
-                    scope=request.result_id,
-                    operation="operation:result-assessment-corrected",
-                    operation_key=f"idempotency:result-assessment-corrected-{suffix}",
-                    entity_id=f"result-assessment-corrected:{suffix}",
-                    revision_id=f"revision:result-assessment-corrected-{suffix}",
-                    artifact=_ResultAssessmentCorrectedRecord(
-                        run_id=request.run_id,
-                        result_id=request.result_id,
-                        correction_key=request.idempotency_key,
-                    ),
-                    checkpoint="checkpoint:assessment-corrected",
-                    outcome=WorkflowEventOutcome.WORK_REQUIRED,
-                    observed_at=now,
-                )
-            )
-        elif result_state is ResultState.DIAGNOSTIC_READY:
-            # A corrected answer supersedes an evidence-insufficiency
-            # diagnostic.  Reopen the Result before terminal revalidation so
-            # lifecycle replay can append a successor diagnostic or report.
-            transitions.append(
-                self._transition(
-                    scope=request.result_id,
-                    operation="operation:result-reopened",
-                    operation_key=f"idempotency:result-reopened-after-correction-{suffix}",
-                    entity_id=f"result-reopened-after-correction:{suffix}",
-                    revision_id=f"revision:result-reopened-after-correction-{suffix}",
-                    artifact=_ResultReopenedRecord(
-                        run_id=request.run_id,
-                        result_id=request.result_id,
-                        requested_by=request.actor or ASSESSMENT_AGENT_ACTOR,
-                    ),
-                    checkpoint="checkpoint:result-reopened-after-correction",
-                    outcome=WorkflowEventOutcome.WORK_REQUIRED,
-                    observed_at=now,
-                )
-            )
-        committed = ledger.commit_batch(
-            tuple(transitions), self._acquire_lease(ledger, now), now=now
-        )
-        return committed[0]
-
     def _current_domain_answer_payloads(
         self,
         ledger: WorkflowLedger,
@@ -9720,24 +8999,6 @@ class RunEngine:
             if isinstance(domain_id, str):
                 latest[domain_id] = (event.sequence, payload)
         return [payload for _sequence, payload in sorted(latest.values())]
-
-    def _successor_correction_token(
-        self,
-        request: SubmitDomainAnswersRequest,
-        answer_revisions: tuple[RecordReference, ...],
-    ) -> WorkToken:
-        """Issue the one correction authority for this immutable answer checkpoint."""
-
-        revision_identity = canonical_hash(
-            [reference.model_dump(mode="json") for reference in answer_revisions]
-        )
-        return self._work_item(
-            request.run_id,
-            f"{request.result_id}|{request.domain_id}|answer-correction|{revision_identity}",
-            RunOperation.CORRECT_DOMAIN_ANSWERS,
-            result_id=request.result_id,
-            domain_id=request.domain_id,
-        ).work_token
 
     @staticmethod
     def _escape_markdown(value: str) -> str:
@@ -10455,16 +9716,24 @@ class RunEngine:
     ) -> tuple[RecordReference, ...]:
         """Freeze one Final judgment per Domain without losing the algorithmic result."""
 
-        departures: dict[str, FinalJudgmentInput] = {}
+        departures: dict[str, _HistoricalFinalJudgmentInput] = {}
         answer_actors: dict[str, Actor] = {}
         for payload in answer_payloads:
-            submission = SubmitDomainAnswersRequest.model_validate(payload["submission"])
-            answer_actors[submission.domain_id] = submission.actor or ASSESSMENT_AGENT_ACTOR
+            raw_submission = payload.get("submission")
+            if isinstance(raw_submission, dict):
+                domain_id = raw_submission.get("domain_id")
+                raw_actor = raw_submission.get("actor")
+                if isinstance(domain_id, str):
+                    answer_actors[domain_id] = (
+                        Actor.model_validate(raw_actor)
+                        if isinstance(raw_actor, dict)
+                        else ASSESSMENT_AGENT_ACTOR
+                    )
             raw_departures = payload.get("final_judgment_departures", ())
             if not isinstance(raw_departures, (list, tuple)):
                 raise ValueError("final judgment departures must be a structured list")
             for raw_departure in raw_departures:
-                departure = FinalJudgmentInput.model_validate(raw_departure)
+                departure = _HistoricalFinalJudgmentInput.model_validate(raw_departure)
                 if departure.domain_id in departures:
                     raise ValueError(
                         f"each Domain may declare at most one Final judgment departure: "
@@ -10537,7 +9806,7 @@ class RunEngine:
                         for reference in cited
                     ),
                 ),
-                actor=answer_actors[domain.id],
+                actor=answer_actors.get(domain.id, ASSESSMENT_AGENT_ACTOR),
                 observed_at=now,
                 domain_id=domain.id,
                 judgment=final_judgment,
@@ -10556,7 +9825,7 @@ class RunEngine:
                     entity_id=final.entity_id,
                     revision_id=final.revision_id,
                     artifact=final,
-                    actor=answer_actors[domain.id],
+                    actor=answer_actors.get(domain.id, ASSESSMENT_AGENT_ACTOR),
                     dependencies=final.dependencies,
                 )
             )
@@ -10827,6 +10096,15 @@ class RunEngine:
             ),
             None,
         )
+        if current is not None and current.revision_id == result_spec.revision_id:
+            expected_hash = canonical_hash(result_spec)
+            if current.artifact_hash != expected_hash:
+                raise ValueError("current ResultSpec revision has changed immutable content")
+            return RecordReference(
+                entity_id=current.entity_id,
+                revision_id=current.revision_id,
+                content_hash=current.artifact_hash,
+            )
         if result_spec.supersedes is not None and (
             current is None or current.revision_id != result_spec.revision_id
         ):
@@ -11700,30 +10978,189 @@ class RunEngine:
         for result_id in result_ids:
             for domain in logic.domains:
                 domain_id = domain.id
-                retry_event = self._latest_domain_evidence_retry_event(events, result_id, domain_id)
-                if (
-                    not self._has_domain_checkpoint(events, result_id, domain_id, "evidence")
-                    or retry_event is not None
-                ):
-                    work_key = f"{result_id}|{domain_id}|evidence"
-                    if retry_event is not None:
-                        work_key += f"|retry:{retry_event.event_id}"
+                # The active evidence workflow is question-scoped in v3.  A
+                # session is initialized before issuing work so its exact
+                # frontier and materialized context can be part of the token.
+                service = self._question_session_service(ledger, run_id, result_id, domain_id)
+                projection = service.initialize()
+                if projection.frontier.status == "active":
+                    active = projection.active_contexts[0]
                     return self._work_item(
                         run_id,
-                        work_key,
-                        RunOperation.SUBMIT_DOMAIN_EVIDENCE,
+                        f"{result_id}|{domain_id}|question|{active.question_id}|"
+                        f"{projection.session_content_hash}|{active.frontier_entry_hash}",
+                        RunOperation.SUBMIT_QUESTION_STEP,
                         result_id=result_id,
                         domain_id=domain_id,
+                        question_id=active.question_id,
+                        session_content_hash=projection.session_content_hash,
+                        frontier_entry_hash=active.frontier_entry_hash,
+                        context_id=active.context.context_id,
+                        context_hash=active.context.materialization_hash,
                     )
-                if not self._has_domain_checkpoint(events, result_id, domain_id, "answers"):
-                    return self._work_item(
-                        run_id,
-                        f"{result_id}|{domain_id}|answers",
-                        RunOperation.SUBMIT_DOMAIN_ANSWERS,
-                        result_id=result_id,
-                        domain_id=domain_id,
+                # No domain evidence/answer checkpoints are issued until the
+                # immutable session has committed every active answer. A
+                # diagnostic terminal has no answer or overall judgment path.
+                if projection.frontier.status == "diagnostic_terminal":
+                    # Do not advance to later Domains of this Result. The
+                    # diagnostic publication bridge will mark this Result
+                    # terminal; independent Results remain schedulable.
+                    break
+                if not self._has_domain_checkpoint(events, result_id, domain_id, "evidence"):
+                    raise RunIntegrityFailure(
+                        "completed question session lacks its atomic domain evidence checkpoint"
                     )
         return None
+
+    def _question_session_service(
+        self,
+        ledger: WorkflowLedger,
+        run_id: Identifier,
+        result_id: Identifier,
+        domain_id: Identifier,
+    ) -> QuestionEvidenceSessionService:
+        """Load the one authoritative v3 session for a Result × Domain.
+
+        This intentionally has no v2 fallback: the session inventory contains
+        only accepted immutable Source/Parse pairs and the materializer owns
+        all later stage scope selection.
+        """
+
+        result_spec = self._result_spec_for(ledger, run_id, result_id)
+        if result_spec is None:
+            raise ValueError("question evidence work requires a resolved Result")
+        proposal = self._latest_proposal(ledger, run_id)
+        trial = next(
+            (
+                item
+                for item in proposal.initialization.trials
+                if item.trial_id == result_spec.result.trial_id
+            ),
+            None,
+        )
+        if trial is None:
+            raise ValueError("resolved Result has no accepted trial inventory")
+        inventory_sources: list[EvidenceContextInventorySource] = []
+        for source in trial.inventory.sources:
+            # Keep every accepted Source. Non-searchable Sources have no
+            # invented identity and are represented by explicit materialized
+            # limitations in context rather than disappearing from scope.
+            parse = source.parse_records[-1] if source.parse_records else None
+            has_exact_identity = source.artifact_hash is not None and parse is not None
+            inventory_sources.append(
+                EvidenceContextInventorySource(
+                    source_id=source.source_id,
+                    roles=source.roles,
+                    source_artifact_hash=(source.artifact_hash if has_exact_identity else None),
+                    parse_id=(parse.parse_id if has_exact_identity and parse is not None else None),
+                    parse_output_hash=(
+                        parse.output_hash if has_exact_identity and parse is not None else None
+                    ),
+                    availability=source.availability,
+                    processing=source.processing,
+                    criticality=source.criticality,
+                    page_count=(parse.page_count if parse is not None else 0),
+                    indexed_unit_count=0,
+                    unit_orientation=EvidenceContextUnitOrientation.PAGES,
+                    chronology_facts=(
+                        self._source_chronology_facts(
+                            ledger,
+                            run_id,
+                            source.source_id,
+                            source.artifact_hash if has_exact_identity else None,
+                            parse.parse_id if has_exact_identity and parse is not None else None,
+                            parse.output_hash if has_exact_identity and parse is not None else None,
+                        )
+                    ),
+                )
+            )
+        # Reconciliation may preserve Source identities while filesystem order
+        # changes (for example, a content-preserving move).  The v3 context
+        # treats inventory as a Source-ID ordered set, so use that same order
+        # for the session revision key; otherwise an unchanged workflow can
+        # be reopened against freshly-derived stage scope IDs.
+        inventory_sources.sort(key=lambda item: item.source_id)
+        inventory_revision_id = f"inventory-revision:{canonical_hash(tuple(item.model_dump(mode='json') for item in inventory_sources))[7:]}"
+        inventory = EvidenceContextInventory(
+            inventory_id=inventory_revision_id,
+            sources=tuple(inventory_sources),
+        )
+        logic = self._logic_pack()
+        guidance = self._guidance_pack()
+        compilation = compile_guidance_obligations(logic, guidance)
+        obligations = tuple(
+            item
+            for item in compilation.obligations
+            if item.question_id
+            in {
+                question_id
+                for question_id in next(
+                    domain.question_ids for domain in logic.domains if domain.id == domain_id
+                )
+            }
+        )
+        if not obligations:
+            raise ValueError("Guidance has no v3 obligations for the active Logic domain")
+        obligation_revision_id = f"obligation-revision:{canonical_hash(tuple(item.model_dump(mode='json') for item in obligations))[7:]}"
+        seed = new_question_evidence_session(
+            run_id=run_id,
+            result_id=result_id,
+            domain_id=domain_id,
+            logic_pack=logic,
+            guidance_release_id=guidance.release_id,
+            obligations=obligations,
+            obligation_revision_id=obligation_revision_id,
+            inventory_revision_id=inventory_revision_id,
+            inventory=inventory,
+        )
+        root = self._required_root()
+        store = QuestionEvidenceSessionStore(root)
+        # The key excludes history; choose its durable successor when a
+        # session was already initialized rather than treating it as a new
+        # seed. This is also what makes run restart/reconciliation exact.
+        existing = store.load(seed)
+        session = existing or seed
+        return QuestionEvidenceSessionService(
+            session=session,
+            store=store,
+            navigation_store=V3EvidenceNavigationStore(root),
+            search=EvidenceSearchIndex(root / ".rob2" / "evidence.sqlite3"),
+        )
+
+    def _source_chronology_facts(
+        self,
+        ledger: WorkflowLedger,
+        run_id: Identifier,
+        source_id: Identifier,
+        source_artifact_hash: ContentHash | None,
+        parse_id: Identifier | None,
+        parse_output_hash: ContentHash | None,
+    ) -> tuple[V3SourceChronologyFact, ...]:
+        """Latest attributable chronology facts for one exact Source/Parse identity."""
+
+        facts: dict[Any, V3SourceChronologyFact] = {}
+        for event in self._events_for_run(ledger, run_id):
+            if event.operation != "operation:submit-source-chronology-review":
+                continue
+            try:
+                review = _SourceChronologyReviewRecord.model_validate(
+                    self._event_payload(ledger, event)
+                ).submission
+            except ValueError:
+                continue
+            if (
+                review.source_id,
+                review.source_artifact_hash,
+                review.parse_id,
+                review.parse_output_hash,
+            ) != (source_id, source_artifact_hash, parse_id, parse_output_hash):
+                continue
+            facts[review.constraint] = V3SourceChronologyFact(
+                constraint=review.constraint,
+                status=review.status,
+                rationale=review.rationale,
+            )
+        return tuple(facts[key] for key in sorted(facts, key=lambda item: item.value))
 
     def _work_item(
         self,
@@ -11736,6 +11173,12 @@ class RunEngine:
         trial_id: Identifier | None = None,
         source_id: Identifier | None = None,
         parse_id: Identifier | None = None,
+        question_id: Identifier | None = None,
+        session_content_hash: ContentHash | None = None,
+        frontier_entry_hash: ContentHash | None = None,
+        context_id: Identifier | None = None,
+        context_hash: ContentHash | None = None,
+        diagnostic_stop_hash: ContentHash | None = None,
     ) -> WorkItem:
         digest = self._digest(f"{run_id}|{key}|{operation.value}")
         work_item_id = f"work-item:{digest}"
@@ -11753,6 +11196,12 @@ class RunEngine:
             domain_id=domain_id,
             source_id=source_id,
             parse_id=parse_id,
+            question_id=question_id,
+            session_content_hash=session_content_hash,
+            frontier_entry_hash=frontier_entry_hash,
+            context_id=context_id,
+            context_hash=context_hash,
+            diagnostic_stop_hash=diagnostic_stop_hash,
         )
         return WorkItem(
             work_item_id=work_item_id,
@@ -11763,7 +11212,57 @@ class RunEngine:
             trial_id=scoped_trial_id,
             source_id=source_id,
             parse_id=parse_id,
+            question_id=question_id,
+            session_content_hash=session_content_hash,
+            frontier_entry_hash=frontier_entry_hash,
+            context_id=context_id,
+            context_hash=context_hash,
             dependency_fingerprint=token.dependency_fingerprint,
+        )
+
+    def _question_correction_work_item(
+        self,
+        run_id: Identifier,
+        result_id: Identifier,
+        domain_id: Identifier,
+        question_id: Identifier,
+        session_content_hash: ContentHash,
+    ) -> WorkItem:
+        """Mint a correction-only token bound to one current session revision."""
+
+        return self._work_item(
+            run_id,
+            f"{result_id}|{domain_id}|question-correction|{question_id}|{session_content_hash}",
+            RunOperation.CORRECT_QUESTION_STEP,
+            result_id=result_id,
+            domain_id=domain_id,
+            question_id=question_id,
+            session_content_hash=session_content_hash,
+        )
+
+    def _evidence_diagnostic_recovery_work_item(
+        self,
+        run_id: Identifier,
+        result_id: Identifier,
+        domain_id: Identifier,
+        question_id: Identifier,
+        session_content_hash: ContentHash,
+        context_hash: ContentHash,
+        diagnostic_stop_hash: ContentHash,
+    ) -> WorkItem:
+        """Mint authority to revise chronology only for one evidence diagnostic."""
+
+        return self._work_item(
+            run_id,
+            f"{result_id}|{domain_id}|evidence-recovery|{question_id}|"
+            f"{session_content_hash}|{context_hash}|{diagnostic_stop_hash}",
+            RunOperation.SUBMIT_SOURCE_CHRONOLOGY_REVIEW,
+            result_id=result_id,
+            domain_id=domain_id,
+            question_id=question_id,
+            session_content_hash=session_content_hash,
+            context_hash=context_hash,
+            diagnostic_stop_hash=diagnostic_stop_hash,
         )
 
     def _unresolved_trial_id(
@@ -12031,15 +11530,33 @@ class RunEngine:
             for question_id in domain.question_ids
             if question_id not in active_questions
         )
-        source_limit = 20
         available_sources = tuple(trial.inventory.sources) if trial is not None else ()
-        selected_sources = available_sources[:source_limit]
         limitations = tuple(trial.inventory.coverage_limitations) if trial is not None else ()
-        if len(available_sources) > source_limit:
-            limitations += (
-                f"Domain context lists the first {source_limit} sources; "
-                "use the pinned source inventory for the remainder.",
+        session_context: Any | None = None
+        if work_item.question_id is not None:
+            session_projection = self._question_session_service(
+                ledger, run_id, work_item.result_id, work_item.domain_id
+            ).project()
+            session_context = next(
+                (
+                    item
+                    for item in session_projection.active_contexts
+                    if item.question_id == work_item.question_id
+                ),
+                None,
             )
+            if session_context is None:
+                raise ValueError("work token question is no longer on the active session frontier")
+            active_questions = session_projection.frontier.question_ids
+            inactive_questions = tuple(
+                question_id
+                for question_id in domain.question_ids
+                if question_id not in active_questions
+            )
+        # A v3 context is materialized into engine-issued pages. Do not
+        # silently cut the inventory at twenty Sources; the context page IDs
+        # provide bounded progressive disclosure without hiding inventory.
+        selected_sources = available_sources
         # Reusable accepted Evidence is deliberately reference-only.  Reading
         # the full bundle here would turn a bounded context pack into a dossier.
         reusable: list[RecordReference] = []
@@ -12096,6 +11613,25 @@ class RunEngine:
                 "candidate_disposition",
                 "contradiction_pass",
                 "visual_gate",
+            ),
+            "session_content_hash": (
+                work_item.session_content_hash if session_context is not None else None
+            ),
+            "frontier_entry_hash": (
+                session_context.frontier_entry_hash if session_context is not None else None
+            ),
+            "context_id": session_context.context.context_id
+            if session_context is not None
+            else None,
+            "context_hash": (
+                session_context.context.materialization_hash
+                if session_context is not None
+                else None
+            ),
+            "context_page_ids": (
+                tuple(item.page_id for item in session_context.context.pages)
+                if session_context is not None
+                else ()
             ),
         }
         typed_raw = cast(dict[str, Any], raw)
@@ -12338,7 +11874,6 @@ class RunEngine:
             )
         lease = self._acquire_lease(ledger, now)
         self._commit_transitions(ledger, tuple(transitions), lease, now=now)
-        EvidenceNavigationStore(self._required_root()).supersede_run(prepared.run_id)
 
     def _events_for_run(
         self, ledger: WorkflowLedger, run_id: Identifier
@@ -14844,10 +14379,6 @@ class RunEngine:
             )
         lease = self._acquire_lease(ledger, now)
         self._commit_transitions(ledger, tuple(transitions), lease, now=now)
-        if invalidated_result_ids:
-            EvidenceNavigationStore(self._required_root()).supersede_run(
-                run_id, result_ids=invalidated_result_ids
-            )
 
     @staticmethod
     def _remap_initialization_identities(
@@ -15702,22 +15233,3 @@ class RunEngine:
         prefix = readable[:48] or "id"
         digest = hashlib.sha256(raw.encode("utf-8")).hexdigest()[:16]
         return f"{prefix}-{digest}"
-
-
-def _preview_is_self_contained(edge: V2PageExposure) -> bool:
-    """Whether objective search facts permit terminal preview-only irrelevance."""
-
-    return (
-        edge.left_omitted_character_count == 0
-        and edge.right_omitted_character_count == 0
-        and edge.undisplayed_match_count == 0
-        and not edge.warnings
-        and not edge.table_headers
-        and edge.caption is None
-        and not edge.triage_flags.has_reading_order_uncertainty
-        and not edge.triage_flags.has_visual_uncertainty
-        and not edge.triage_flags.has_duplicate_lineage
-        and not edge.triage_flags.is_table_content
-        and not edge.triage_flags.has_context_dependency
-        and not edge.triage_flags.has_possible_contradiction
-    )

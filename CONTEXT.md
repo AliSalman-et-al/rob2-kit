@@ -145,16 +145,48 @@ The complete account of how every accepted item in an Evidence Bundle was consid
 _Avoid_: Context summary, model memory
 
 **Search coverage receipt**:
-An immutable account of the versioned minimum search protocol performed for one signaling question, including the exact ResultSpec, Source inventory, Parses, index, Guidance, rules, and Evidence search policy used; required passes; Source roles and visual regions covered or unavailable; queries, every traversed page and unique returned candidate's lightweight disposition, retained-candidate reviews, conflicts, stopping reason, and operational limits. It establishes procedural search adequacy rather than proving absence; untraversed continuations are incomplete coverage, while truncation, zero hits, or an exhausted ceiling alone cannot establish a No-information basis.
+An immutable account of the versioned minimum search protocol performed for one signaling question, including the exact ResultSpec, Source inventory, Parses, index, Guidance, rules, and Evidence search policy used; required Evidence passes and additive Evidence coverage stages; Source roles and visual regions covered or unavailable; queries, every traversed page and unique returned candidate's lightweight disposition, retained-candidate reviews, conflicts, stopping reason, and operational limits. It establishes procedural search adequacy rather than proving absence; untraversed continuations are incomplete coverage, while truncation, zero hits, or an exhausted ceiling alone cannot establish a No-information basis.
 _Avoid_: Search confidence, retrieval log
+
+**Evidence search obligation**:
+The versioned, signaling-question-and-pass-specific procedural minimum that declares the Evidentiary propositions to test, acceptable Source roles and chronology, and objective conditions requiring another Evidence coverage stage. It is an auditable floor rather than a judgment that the navigation vocabulary was semantically exhaustive or that the reviewed evidence settles the question.
+_Avoid_: Agent confidence, universal full-corpus search, source criticality
+
+**Evidentiary proposition**:
+A question-specific fact or relationship that evidence work must test without presuming its truth, paired with the kinds and timing of Sources capable of informing it. It expresses the scientific need rather than treating a filename, Source role, or retrieved passage as proof.
+_Avoid_: Search term, Source role, evidence conclusion
+
+**Evidentiary source-set rule**:
+The proposition-specific minimum describing which available Sources, versions, or chronology relationships must be represented in procedural search breadth. It may require several materially distinct Sources or allow one Source to satisfy several roles, and is neither a universal all-Source sweep nor a one-per-role shortcut.
+_Avoid_: Search every Source, cheapest representative, Source criticality
+
+**Procedural search breadth**:
+The mechanically verifiable extent of completed evidence work under an Evidence search obligation, including required evidentiary roles, Evidence coverage stages, traversed continuations, and candidate dispositions. It establishes that the declared procedure was followed without claiming that the information need was expressed exhaustively or understood correctly.
+_Avoid_: Semantic evidence sufficiency, exhaustive understanding
+
+**Semantic evidence sufficiency**:
+The assessor's attributable judgment that reviewed evidence and declared uncertainty justify a signaling-question answer or require further searching. It cannot waive an unmet Evidence search obligation and is never inferred solely from traversal, candidate counts, or confidence.
+_Avoid_: Procedural search breadth, coverage complete, agent confidence
 
 **Search query**:
 A structured, attributable expression of a plain-language evidence need with optional exact phrases or lexical terms, search purpose, and Source or page refinements. One generalized search/read contract serves all purposes; purpose selects protocol obligations, ranking, diversification, and coverage accounting but never visibility, while Source, Trial, registry, and Result discovery or revision remain outside evidence navigation.
 _Avoid_: Raw FTS expression, prompt
 
-**Selected search query**:
-The single query currently chosen to satisfy one signaling-question Search pass. The first valid coverage query is selected, and replacement requires explicit supersession; only the selected query must reach full traversal, while superseded attempts remain auditable and every candidate they already displayed still requires a Search result disposition.
-_Avoid_: Latest query wins, every abandoned query must finish, silent replacement
+**Evidence navigation intent**:
+A Guidance-defined evidence need within an Evidence coverage stage, fulfilled through the applicable bounded Search, structural reading, locator follow-up, or Visual-review operation. The engine verifies its procedural completion while the agent remains responsible for expressing, refining, and interpreting its semantic scope.
+_Avoid_: Search query, fixed query count, proof of recall
+
+**Evidence coverage stage**:
+An attributable, source-scoped unit of work within one signaling-question Evidence pass. Completed stages accumulate toward its Evidence search obligation; superseded attempts remain auditable and every candidate they already displayed still requires a Search result disposition.
+_Avoid_: Selected search query, replacement-only widening, silent abandonment
+
+**Evidence coverage stage outcome**:
+The attributable conclusion that an Evidence coverage stage satisfied its obligation, requires escalation, ended after a bounded Source-acquisition failure, or retains unresolved semantic uncertainty. These closed outcomes cannot be replaced by a generic exception or confidence claim.
+_Avoid_: Other, policy exception, stopping confidence
+
+**Evidence escalation trigger**:
+A Guidance-defined objective condition or attributable semantic finding whose true or unresolved state requires another Evidence coverage stage. Every applicable trigger must be dispositioned before an obligation can be satisfied.
+_Avoid_: Agent hunch, automatic full-corpus widening, unrecorded follow-up
 
 **Search result disposition**:
 The explicit, attributable lightweight classification of each unique Evidence candidate actually returned on traversed Search-result pages as irrelevant, retained, or duplicate. Every returned candidate must appear exactly once in a compact exhaustive submission: absence never implies irrelevance; irrelevant may rely on displayed match context only when that context is self-contained and clearly out of scope and uses `wrong_trial`, `wrong_result`, `wrong_question`, `outside_confirmed_scope`, `non_substantive_reference`, `lexical_false_positive`, or reasoned `other`; duplicate requires a retained-candidate target, and any ambiguity requires retention and an Evidence read view rather than preview-only pruning.
@@ -228,6 +260,14 @@ _Avoid_: Mutable answer, model judgment
 One of the five canonical assessor-selectable answers: Yes, Probably yes, Probably no, No, or No information. Not applicable is a branch state assigned by the Logic pack rather than an answer category.
 _Avoid_: Not applicable answer, localized stored value
 
+**Active question frontier**:
+The signaling questions whose prerequisite answers are settled and whose Logic-pack activation conditions currently hold. Evidence work follows this frontier, adding newly activated questions as earlier answers resolve rather than treating every potentially conditional question as simultaneously active.
+_Avoid_: Every Domain question, potentially active question
+
+**Question-frontier progress**:
+The immutable sequence of frozen question evidence and attributable answers that advances an Active question frontier within one Domain work item. The engine recomputes activation after each accepted step, while the final Domain revision remains atomic.
+_Avoid_: Partial Domain judgment, mutable draft answers
+
 **No-information basis**:
 The completed Search coverage receipts showing that every required pass reached its deterministic stopping condition, every returned candidate was dispositioned, every retained candidate was substantively reviewed, all potentially material unresolved or Visual-review conditions were closed, and required Sources and regions were readable and covered. Explicitly rejected bibliography or other-Trial material may contribute reviewed coverage, while missing, unreadable, unsearched, truncated, or policy-limited material produces a limitation or diagnostic outcome rather than establishing this basis.
 _Avoid_: No search hit, tool failure
@@ -291,6 +331,10 @@ _Avoid_: Filter bypass, agent-confidence override, silent reclassification
 **Source criticality**:
 The consequence of a source’s unavailability for a particular Result preparation: required sources must be acquired and sufficiently readable, expected sources receive a bounded acquisition attempt, and optional sources are used when available. Criticality is contextual and distinct from source role or authority, and it is derived from a Source-role candidate's accepted disposition, recomputed whenever that disposition changes rather than fixed at ingestion.
 _Avoid_: Source role, global evidence ranking
+
+**Evidence search priority**:
+The question-specific order in which available Sources should be searched, derived from their evidentiary roles, the signaling question's needs, and projected traversal cost. It controls staged retrieval order without implying Source authority, availability criticality, or permission to omit a role required by the search protocol.
+_Avoid_: Source criticality, source authority, cheapest source
 
 **Result-bearing full-text report**:
 A user-provided, sufficiently readable first-hand full-text Source that contains the selected Result and enough contextual information to establish its semantic identity. Each included Trial-specific Result requires at least one such report before Run definition confirmation; one report may support multiple Results, and supported full-text formats are not limited to PDF. Abstracts, registry records, citations, slide decks, and automatically discovered web records cannot satisfy this requirement. Protocols, SAPs, supplements, registry histories, and additional reports remain optional inputs unless a later Result preparation establishes a more specific criticality.

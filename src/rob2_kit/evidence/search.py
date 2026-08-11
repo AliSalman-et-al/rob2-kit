@@ -617,7 +617,6 @@ class SearchQueryFields(BaseModel):
     )
     source_ids: tuple[Identifier, ...] = Field(
         default=(),
-        max_length=64,
         description="Source IDs issued by get_work_context.",
     )
     pages: tuple[int, ...] = Field(
@@ -1911,7 +1910,7 @@ class EvidenceSearchIndex:
             ).fetchall()
         return frozenset(row["unit_id"] for row in rows)
 
-    def read_batch_v2(
+    def read_batch(
         self,
         request: EvidenceReadBatchRequest,
         *,
@@ -2082,7 +2081,7 @@ class EvidenceSearchIndex:
                             oversized_unit_id,
                             scope=EvidenceScope(source_ids=item.source_ids),
                         )
-                        return self._v2_oversized_section_outcome(
+                        return self._oversized_section_outcome(
                             index=index,
                             item=item,
                             unit=oversized_unit,
@@ -2101,7 +2100,7 @@ class EvidenceSearchIndex:
                     cursor=context_cursor,
                 )
                 if context.oversized:
-                    return self._v2_oversized_section_outcome(
+                    return self._oversized_section_outcome(
                         index=index,
                         item=item,
                         unit=context.unit,
@@ -2342,7 +2341,7 @@ class EvidenceSearchIndex:
             next_actions=("request a fresh evidence search",),
         )
 
-    def _v2_oversized_section_outcome(
+    def _oversized_section_outcome(
         self,
         *,
         index: int,
@@ -2473,13 +2472,13 @@ class EvidenceSearchIndex:
             "scope": scope,
             "outcomes": outcomes,
             "next_index": next_index,
-            "continuation": _v2_placeholder("v2readcur") if next_index else None,
+            "continuation": _placeholder("v2readcur") if next_index else None,
             "serialized_response_bytes": 0,
             "estimated_response_tokens": 0,
             "limiting_bounds": (),
         }
 
-    def search_v2(
+    def search_page(
         self,
         query: SearchQuery,
         *,
@@ -2516,7 +2515,7 @@ class EvidenceSearchIndex:
                 coverage_progress_maximum=_maximum_coverage_progress_payload(),
             )
         offset, reason_required = (
-            self._decode_v2_continuation(
+            self._decode_continuation(
                 continuation,
                 snapshot=snapshot,
                 query_hash=query_hash,
@@ -2552,7 +2551,7 @@ class EvidenceSearchIndex:
             )
 
         rows, scoped_count, excluded_count = self._matches(query, scope=scope)
-        scoped_source_ids = self._v2_scoped_source_ids(query, scope=scope)
+        scoped_source_ids = self._scoped_source_ids(query, scope=scope)
         if self._snapshot() != snapshot:
             raise StaleSearchContinuation(
                 "evidence snapshot changed while preparing the search page",
@@ -2562,7 +2561,7 @@ class EvidenceSearchIndex:
         if offset > len(rows):
             raise StaleSearchContinuation("search continuation position is outside the result set")
         candidates = tuple(
-            self._v2_candidate(
+            self._candidate(
                 row,
                 query=query,
                 snapshot=snapshot,
@@ -2572,7 +2571,7 @@ class EvidenceSearchIndex:
             )
             for row in rows
         )
-        layouts = _pack_v2_candidate_pages(
+        layouts = _pack_candidate_pages(
             candidates,
             snapshot=snapshot,
             query_hash=query_hash,
@@ -2584,7 +2583,7 @@ class EvidenceSearchIndex:
         )
         if not layouts:
             layouts = ((),)
-        pages = _reserved_v2_pages(
+        pages = _reserved_pages(
             layouts,
             snapshot=snapshot,
             query_hash=query_hash,
@@ -2644,24 +2643,25 @@ class EvidenceSearchIndex:
             update={"page_handle": page_handle, "continuation": continuation_value}
         )
 
-    def _v2_scoped_source_ids(
+    def _scoped_source_ids(
         self, query: SearchQuery, *, scope: EvidenceScope | None
     ) -> tuple[Identifier, ...]:
         """Return every source in the query's authorized universe, including zero hits."""
 
         filters: list[str] = []
         parameters: list[object] = []
-        if query.source_ids:
-            filters.append(f"u.source_id IN ({','.join('?' for _ in query.source_ids)})")
-            parameters.extend(query.source_ids)
         if query.pages:
             filters.append(f"u.page IN ({','.join('?' for _ in query.pages)})")
             parameters.extend(query.pages)
         metadata_filters, metadata_parameters = _query_metadata_filters(query, scope)
         filters.extend(metadata_filters)
         parameters.extend(metadata_parameters)
-        where = " AND " + " AND ".join(filters) if filters else ""
         with self._connect() as connection:
+            _install_scoped_source_ids(
+                connection, _effective_scoped_source_ids(query, scope), filters
+            )
+            _install_scoped_parse_ids(connection, scope, filters)
+            where = " AND " + " AND ".join(filters) if filters else ""
             rows = connection.execute(
                 f"SELECT DISTINCT u.source_id FROM evidence_units AS u WHERE 1=1{where} "
                 "ORDER BY u.source_id",
@@ -2669,7 +2669,7 @@ class EvidenceSearchIndex:
             ).fetchall()
         return tuple(row["source_id"] for row in rows)
 
-    def _decode_v2_continuation(
+    def _decode_continuation(
         self,
         continuation: str,
         *,
@@ -2712,7 +2712,7 @@ class EvidenceSearchIndex:
             raise StaleSearchContinuation("search continuation decision state is invalid")
         return offset, reason_required
 
-    def _v2_candidate(
+    def _candidate(
         self,
         row: sqlite3.Row,
         *,
@@ -2726,7 +2726,7 @@ class EvidenceSearchIndex:
         snippet, start, end, spans, undisplayed = _match_centered_snippet(
             unit.text, _query_lexical_patterns(query), policy.snippet_character_target
         )
-        candidate_id = _v2_candidate_id(unit)
+        candidate_id = _candidate_id(unit)
         exposure_id = "exposure:" + canonical_hash(
             {
                 "snapshot": snapshot,
@@ -2809,24 +2809,34 @@ class EvidenceSearchIndex:
         match = _compile_match(query)
         filters: list[str] = []
         parameters: list[object] = [match]
-        if query.source_ids:
-            filters.append(f"u.source_id IN ({','.join('?' for _ in query.source_ids)})")
-            parameters.extend(query.source_ids)
         if query.pages:
             filters.append(f"u.page IN ({','.join('?' for _ in query.pages)})")
             parameters.extend(query.pages)
-        base_filters = list(filters)
-        base_parameters = list(parameters[1:])
         metadata_filters = _query_metadata_filters(query, scope)
         filters.extend(metadata_filters[0])
         parameters.extend(metadata_filters[1])
-        where = " AND " + " AND ".join(filters) if filters else ""
-        # Count lexical candidates before *any* Work-token metadata policy so
-        # excluded-only pages can explain why authored text was withheld,
-        # including units whose Domain/question provenance is missing.
-        lexical_where = " AND " + " AND ".join(base_filters) if base_filters else ""
-        lexical_query_parameters = [match, *base_parameters]
         with self._connect() as connection:
+            _install_source_ids(
+                connection,
+                query.source_ids or None,
+                filters,
+                table_name="_rob2_search_query_sources",
+            )
+            # Count lexical candidates before *any* Work-token metadata policy so
+            # excluded-only pages can explain why authored text was withheld,
+            # including units whose Domain/question provenance is missing.
+            base_filters = list(filters)
+            base_parameters = list(parameters[1:])
+            lexical_where = " AND " + " AND ".join(base_filters) if base_filters else ""
+            lexical_query_parameters = [match, *base_parameters]
+            _install_source_ids(
+                connection,
+                None if scope is None else scope.source_ids or None,
+                filters,
+                table_name="_rob2_search_scope_sources",
+            )
+            _install_scoped_parse_ids(connection, scope, filters)
+            where = " AND " + " AND ".join(filters) if filters else ""
             rows = connection.execute(
                 f"""
                 SELECT f.projection_id, f.unit_id, f.text AS projection_text,
@@ -3203,23 +3213,45 @@ def _estimate_response_tokens(serialized_response_bytes: int) -> int:
 
 
 def _maximum_coverage_progress_payload() -> dict[str, object]:
-    """Return the exhaustive policy reservation for the Search coverage shape.
+    """Return a conservative reservation for the hierarchical v3 progress.
 
-    Seed-family requirements are presently introduced only by the guidance
-    pass.  Keeping the enum-derived pass list here makes a new pass fail the
-    focused dominance test instead of silently shrinking a continuation page.
+    v3 progress is a proposition → pass → stage → intent tree.  Keep a full
+    representative node at every level (with maximum-width identifiers and
+    status strings) so packing reserves the current ``SearchEvidenceResponse``
+    shape without importing the application contracts and creating a cycle.
     """
-    # This intentionally lists the policy-owned seed family and every current
-    # workflow pass; tests compare it with ``SearchPassKind`` so enum growth
-    # requires an explicit reservation decision here.
-    pass_names = ("guidance_seed", "trial_follow_up", "contradiction")
+    identifier = "x" * 96
     return {
-        "sq_id": "question:" + "x" * 64,
-        "required_seed_families": ("seed:allocation",),
-        "completed_seed_families": ("seed:allocation",),
-        "completed_passes": pass_names,
-        "missing_passes": pass_names,
-        "coverage_complete": False,
+        "question_id": "question:" + identifier,
+        "question_ready": False,
+        "propositions": (
+            {
+                "proposition_id": "proposition:" + identifier,
+                "passes": (
+                    {
+                        "pass_id": "pass:" + identifier,
+                        "active": True,
+                        "stages": (
+                            {
+                                "stage_id": "stage:" + identifier,
+                                "active": True,
+                                "outcome": "escalation_required",
+                                "intents": (
+                                    {
+                                        "intent_id": "intent:" + identifier,
+                                        "kind": "search",
+                                        "complete": False,
+                                        "clean": False,
+                                        "blockers": ("stage_outcome_missing",),
+                                    },
+                                ),
+                                "blockers": ("active_escalation_target_stage",),
+                            },
+                        ),
+                    },
+                ),
+            },
+        ),
     }
 
 
@@ -3298,13 +3330,13 @@ def _match_centered_snippet(
     return snippet, start, end, displayed, undisplayed
 
 
-def _v2_placeholder(kind: str) -> str:
+def _placeholder(kind: str) -> str:
     """Match the exact length of a token issued by ``_LookupTokenCodec``."""
 
     return f"{kind}:" + "x" * 22
 
 
-def _v2_candidate_id(unit: CanonicalEvidenceUnit) -> Identifier:
+def _candidate_id(unit: CanonicalEvidenceUnit) -> Identifier:
     """Return the stable candidate identity for one canonical unit."""
 
     return "candidate:" + canonical_hash(
@@ -3317,7 +3349,7 @@ def _v2_candidate_id(unit: CanonicalEvidenceUnit) -> Identifier:
     ).removeprefix("sha256:")
 
 
-def _v2_source_diagnostics(
+def _source_diagnostics(
     candidates: tuple[EvidenceSearchCandidate, ...],
     page_candidates: tuple[EvidenceSearchCandidate, ...],
     scoped_count: int,
@@ -3343,7 +3375,7 @@ def _v2_source_diagnostics(
     )
 
 
-def _v2_page_payload(
+def _page_payload(
     *,
     all_candidates: tuple[EvidenceSearchCandidate, ...],
     page_candidates: tuple[EvidenceSearchCandidate, ...],
@@ -3398,8 +3430,8 @@ def _v2_page_payload(
         "query_hash": query_hash,
         "policy_id": policy.policy_id,
         "policy_hash": canonical_hash(policy),
-        "page_handle": _v2_placeholder("v2page"),
-        "continuation": None if traversal_complete else _v2_placeholder("v2cur"),
+        "page_handle": _placeholder("v2page"),
+        "continuation": None if traversal_complete else _placeholder("v2cur"),
         "candidate_ids": tuple(candidate.candidate_id for candidate in page_candidates),
         "candidates": page_candidates,
         "page_number": page_number,
@@ -3417,7 +3449,7 @@ def _v2_page_payload(
             candidate.estimated_full_unit_bytes for candidate in all_candidates[page_end:]
         ),
         "traversal_complete": traversal_complete,
-        "source_diagnostics": _v2_source_diagnostics(
+        "source_diagnostics": _source_diagnostics(
             all_candidates, page_candidates, scoped_count, scoped_source_ids
         ),
         "traversal_cost": EvidenceSearchTraversalCost(
@@ -3445,7 +3477,7 @@ def _v2_page_payload(
     }
 
 
-def _pack_v2_candidate_pages(
+def _pack_candidate_pages(
     candidates: tuple[EvidenceSearchCandidate, ...],
     *,
     snapshot: ContentHash,
@@ -3522,7 +3554,7 @@ def _stable_page_reservation(
     """Reserve the largest declared policy-3 envelope without live run state."""
     maximum_pages = max(1, len(all_candidates))
     maximum_cumulative_bytes = maximum_pages * policy.oversized_candidate_byte_ceiling
-    payload = _v2_page_payload(
+    payload = _page_payload(
         all_candidates=all_candidates,
         page_candidates=page_candidates,
         page_number=maximum_pages,
@@ -3574,15 +3606,54 @@ def _maximum_search_wire_payload(
         "summary": packing_context.summary,
         "warnings": packing_context.warnings,
         "run_id": packing_context.run_id,
-        "evidence_navigation_contract_version": "2.0.0",
+        "evidence_navigation_contract_version": "3.0.0",
         "page": page.model_facing_payload(),
-        "coverage_progress": packing_context.coverage_progress_maximum,
+        "coverage_progress": compact_coverage_progress(packing_context.coverage_progress_maximum),
         "response_accounting": {
             "estimator_id": "utf8-byte-div4-ceil:v1",
             "scope": "complete_mcp_operation_envelope",
             "serialized_response_bytes": maximum_bytes,
             "estimated_response_tokens": _estimate_response_tokens(maximum_bytes),
         },
+    }
+
+
+def compact_coverage_progress(progress: dict[str, object]) -> dict[str, object]:
+    """Project reducer progress to the small status needed on every Search page.
+
+    The complete proposition/pass/stage tree is available from the current
+    question context and durable session. Repeating it on every bounded page
+    adds cost without adding navigation authority.
+    """
+
+    question_id = progress.get("question_id", progress.get("sq_id"))
+    question_ready = bool(progress.get("question_ready", progress.get("coverage_complete", False)))
+    blocking_stage_ids: list[str] = []
+    propositions = progress.get("propositions", ())
+    if isinstance(propositions, (tuple, list)):
+        for proposition in propositions:
+            if not isinstance(proposition, dict):
+                continue
+            passes = proposition.get("passes", ())
+            if not isinstance(passes, (tuple, list)):
+                continue
+            for evidence_pass in passes:
+                if not isinstance(evidence_pass, dict):
+                    continue
+                stages = evidence_pass.get("stages", ())
+                if not isinstance(stages, (tuple, list)):
+                    continue
+                for stage in stages:
+                    if not isinstance(stage, dict) or not stage.get("active"):
+                        continue
+                    blockers = stage.get("blockers", ())
+                    stage_id = stage.get("stage_id")
+                    if blockers and isinstance(stage_id, str):
+                        blocking_stage_ids.append(stage_id)
+    return {
+        "question_id": question_id,
+        "question_ready": question_ready,
+        "blocking_stage_ids": tuple(sorted(set(blocking_stage_ids))),
     }
 
 
@@ -3605,7 +3676,7 @@ def _finalize_compact_page(page: EvidenceSearchPage) -> EvidenceSearchPage:
     raise OperationalRetrievalFailure("Search page accounting did not stabilize")
 
 
-def _reserved_v2_pages(
+def _reserved_pages(
     layouts: tuple[tuple[EvidenceSearchCandidate, ...], ...],
     *,
     snapshot: ContentHash,
@@ -3645,7 +3716,7 @@ def _reserved_v2_pages(
             if reserved > policy.serialized_byte_ceiling
             else (() if offset == len(candidates) else ("serialized_byte_ceiling",))
         )
-        payload = _v2_page_payload(
+        payload = _page_payload(
             all_candidates=candidates,
             page_candidates=page_candidates,
             page_number=number,
@@ -3802,38 +3873,83 @@ def _query_metadata_filters(
     query: SearchQuery,
     scope: EvidenceScope | None,
 ) -> tuple[list[str], list[object]]:
-    filters: list[str] = []
-    params: list[object] = []
-
-    def add_in(column: str, values: tuple[str, ...]) -> None:
-        if values:
-            filters.append(f"u.{column} IN ({','.join('?' for _ in values)})")
-            params.extend(values)
-
-    def intersect(
-        requested: tuple[Identifier, ...], allowed: tuple[Identifier, ...]
-    ) -> tuple[Identifier, ...]:
-        if requested and allowed:
-            narrowed = tuple(value for value in requested if value in allowed)
-            if not narrowed:
-                filters.append("1 = 0")
-            return narrowed
-        return requested or allowed
-
-    if scope is not None:
-        if scope.source_ids:
-            source_ids = intersect(query.source_ids, scope.source_ids)
-            add_in("source_id", source_ids)
-        elif query.source_ids:
-            add_in("source_id", query.source_ids)
-    elif query.source_ids:
-        add_in("source_id", query.source_ids)
-    if scope is not None and scope.parse_ids:
-        add_in("parse_id", scope.parse_ids)
     # Parser output contributes only structural and provenance fields. Trial,
     # Result, Domain, and signaling-question scope is authorized by WorkTokens
     # and attributable review, never candidate ranking metadata.
-    return filters, params
+    return [], []
+
+
+def _effective_scoped_source_ids(
+    query: SearchQuery, scope: EvidenceScope | None
+) -> tuple[Identifier, ...] | None:
+    """Intersect caller and engine source scopes without SQL parameter expansion."""
+
+    if scope is None or not scope.source_ids:
+        return query.source_ids or None
+    if not query.source_ids:
+        return scope.source_ids
+    allowed = set(scope.source_ids)
+    return tuple(source_id for source_id in query.source_ids if source_id in allowed)
+
+
+def _install_source_ids(
+    connection: sqlite3.Connection,
+    source_ids: tuple[Identifier, ...] | None,
+    filters: list[str],
+    *,
+    table_name: str,
+) -> None:
+    """Apply arbitrary exact Source scope through a connection-local membership table.
+
+    A single ``IN (?, ...)`` list is unsafe here: a materialized obligation can
+    legitimately authorize more Sources than SQLite's runtime variable limit.
+    The table is temporary to this connection and is rebuilt for every query.
+    """
+
+    if source_ids is None:
+        return
+    if not source_ids:
+        filters.append("1 = 0")
+        return
+    connection.execute(
+        f"CREATE TEMP TABLE IF NOT EXISTS {table_name} (source_id TEXT PRIMARY KEY) WITHOUT ROWID"
+    )
+    connection.execute(f"DELETE FROM {table_name}")
+    connection.executemany(
+        f"INSERT INTO {table_name}(source_id) VALUES (?)",
+        ((source_id,) for source_id in source_ids),
+    )
+    filters.append(f"u.source_id IN (SELECT source_id FROM {table_name})")
+
+
+def _install_scoped_source_ids(
+    connection: sqlite3.Connection,
+    source_ids: tuple[Identifier, ...] | None,
+    filters: list[str],
+) -> None:
+    _install_source_ids(
+        connection,
+        source_ids,
+        filters,
+        table_name="_rob2_search_scope_sources",
+    )
+
+
+def _install_scoped_parse_ids(
+    connection: sqlite3.Connection, scope: EvidenceScope | None, filters: list[str]
+) -> None:
+    if scope is None or not scope.parse_ids:
+        return
+    connection.execute(
+        "CREATE TEMP TABLE IF NOT EXISTS _rob2_search_scope_parses "
+        "(parse_id TEXT PRIMARY KEY) WITHOUT ROWID"
+    )
+    connection.execute("DELETE FROM _rob2_search_scope_parses")
+    connection.executemany(
+        "INSERT INTO _rob2_search_scope_parses(parse_id) VALUES (?)",
+        ((parse_id,) for parse_id in scope.parse_ids),
+    )
+    filters.append("u.parse_id IN (SELECT parse_id FROM _rob2_search_scope_parses)")
 
 
 def _unit_in_scope(unit: CanonicalEvidenceUnit, scope: EvidenceScope) -> bool:

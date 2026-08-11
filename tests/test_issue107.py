@@ -46,8 +46,16 @@ def test_two_canonical_skills_are_linted_with_four_direct_references() -> None:
 def test_generated_host_adapters_pin_exactly_the_skill_allowlist_and_hashes() -> None:
     """Host copies are generated from canonical sources and expose no extra skill tools."""
 
-    assert len(SKILL_ALLOWED_TOOL_NAMES) == 15
+    assert len(SKILL_ALLOWED_TOOL_NAMES) == 18
     assert set(SKILL_ALLOWED_TOOL_NAMES) <= set(RUN_OPERATION_NAMES)
+    assert {
+        "submit_evidence_stage_outcome",
+        "materialize_question_evidence_bundle",
+        "submit_question_step",
+        "correct_question_step",
+        "submit_source_chronology_review",
+    } <= set(SKILL_ALLOWED_TOOL_NAMES)
+    assert {"submit_domain_evidence", "submit_domain_answers"}.isdisjoint(SKILL_ALLOWED_TOOL_NAMES)
     lock = load_release_lock(ROOT)
     for host in ("codex", "claude"):
         adapter_root = ROOT / "adapters" / host
@@ -63,6 +71,21 @@ def test_generated_host_adapters_pin_exactly_the_skill_allowlist_and_hashes() ->
             assert (adapter_root / "skills" / name / "SKILL.md").read_bytes() == (
                 ROOT / "skills" / name / "SKILL.md"
             ).read_bytes()
+
+
+def test_assessment_skill_teaches_only_the_question_scoped_v3_evidence_workflow() -> None:
+    assess = (ROOT / "skills" / "rob2-assess" / "SKILL.md").read_text(encoding="utf-8")
+
+    assert "v3 question workflow" in assess
+    assert "materialize_question_evidence_bundle" in assess
+    assert "submit_question_step" in assess
+    assert "submit_evidence_stage_outcome" in assess
+    assert "submit_source_chronology_review" in assess
+    assert "engine owns procedural breadth" in assess.casefold()
+    assert "agent confidence cannot waive a mandatory stage" in assess.casefold()
+    assert "submit_domain_evidence" not in assess
+    assert "submit_domain_answers" not in assess
+    assert "mandatory `guidance_seed`" not in assess
 
 
 def test_skill_lint_rejects_a_fifth_direct_reference(tmp_path: Path) -> None:

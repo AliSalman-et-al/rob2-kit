@@ -10,13 +10,12 @@ from typing import Any, Literal
 
 from pydantic import AliasChoices, ConfigDict, Field, model_validator
 
+from rob2_kit.application.active_question_frontier import QuestionEvidenceBundleBinding
 from rob2_kit.application.lifecycle import ResultState, RunState
-from rob2_kit.domain.assessment import JudgmentLevel, SQAnswerCategory
+from rob2_kit.domain.assessment import SQAnswerCategory
 from rob2_kit.domain.canonical import canonical_hash, canonical_json_bytes
 from rob2_kit.domain.evidence import (
     ConsiderationDisposition,
-    EvidenceCoverageState,
-    EvidenceInsufficiency,
     EvidenceReviewDisposition,
     TrialAttribution,
 )
@@ -52,6 +51,7 @@ from rob2_kit.domain.sources import (
     SourceUse,
 )
 from rob2_kit.evidence.errors import OperationalRetrievalFailure, RetrievalErrorCode
+from rob2_kit.evidence.obligations import ChronologyConstraint
 from rob2_kit.evidence.search import (
     CanonicalEvidenceUnit,
     EvidenceReadBatchPage,
@@ -60,15 +60,16 @@ from rob2_kit.evidence.search import (
     SearchContinuationReason,
     SearchQuery,
     SearchQueryFields,
+    compact_coverage_progress,
 )
 from rob2_kit.evidence.visual import (
     VisualCandidate,
     VisualRenderRequest,
 )
 from rob2_kit.evidence.workflow import (
-    SearchPassKind,
-    V2CandidateTriageRevision,
-    V2QueryAttemptKind,
+    V3CandidateTriageRevision,
+    V3ChronologyStatus,
+    V3EvidenceStageOutcomeSubmission,
 )
 from rob2_kit.ingestion.project import (
     OutcomeTarget,
@@ -80,8 +81,8 @@ from rob2_kit.logic.packs import GuidanceItem
 from rob2_kit.registry import RegistryCandidate
 
 CONTRACT_VERSION = "1.1.0"
-EVIDENCE_NAVIGATION_CONTRACT_VERSION = "2.0.0"
-DOMAIN_EVIDENCE_CONTRACT_VERSION = "2.0.0"
+EVIDENCE_NAVIGATION_CONTRACT_VERSION = "3.0.0"
+DOMAIN_EVIDENCE_CONTRACT_VERSION = "3.0.0"
 
 
 class RunOperation(StrEnum):
@@ -101,10 +102,12 @@ class RunOperation(StrEnum):
     INSPECT_VISUAL_CANDIDATE = "inspect_visual_candidate"
     SUBMIT_SOURCE_ROLE_REVIEW = "submit_source_role_review"
     SUBMIT_RESULT_RESOLUTION = "submit_result_resolution"
-    SUBMIT_DOMAIN_EVIDENCE = "submit_domain_evidence"
     SUBMIT_EVIDENCE_REVIEW = "submit_evidence_review"
-    SUBMIT_DOMAIN_ANSWERS = "submit_domain_answers"
-    CORRECT_DOMAIN_ANSWERS = "correct_domain_answers"
+    SUBMIT_EVIDENCE_STAGE_OUTCOME = "submit_evidence_stage_outcome"
+    MATERIALIZE_QUESTION_EVIDENCE_BUNDLE = "materialize_question_evidence_bundle"
+    SUBMIT_QUESTION_STEP = "submit_question_step"
+    CORRECT_QUESTION_STEP = "correct_question_step"
+    SUBMIT_SOURCE_CHRONOLOGY_REVIEW = "submit_source_chronology_review"
 
 
 RUN_OPERATION_NAMES: tuple[str, ...] = tuple(operation.value for operation in RunOperation)
@@ -240,6 +243,14 @@ class WorkToken(FrozenModel):
     domain_id: Identifier | None = None
     source_id: Identifier | None = None
     parse_id: Identifier | None = None
+    # v3 evidence work is authorized against one immutable question-session
+    # projection, rather than the former domain-wide navigation state.
+    question_id: Identifier | None = None
+    session_content_hash: ContentHash | None = None
+    frontier_entry_hash: ContentHash | None = None
+    context_id: Identifier | None = None
+    context_hash: ContentHash | None = None
+    diagnostic_stop_hash: ContentHash | None = None
 
 
 class WorkItem(FrozenModel):
@@ -252,6 +263,11 @@ class WorkItem(FrozenModel):
     dependency_fingerprint: ContentHash
     source_id: Identifier | None = None
     parse_id: Identifier | None = None
+    question_id: Identifier | None = None
+    session_content_hash: ContentHash | None = None
+    frontier_entry_hash: ContentHash | None = None
+    context_id: Identifier | None = None
+    context_hash: ContentHash | None = None
 
 
 class NextActionArguments(FrozenModel):
@@ -501,6 +517,13 @@ class DomainContextPack(FrozenModel):
         "visual_gate",
     )
     content_hash: ContentHash
+    # These fields make the active v3 session projection explicit to callers
+    # without exposing the private durable session ledger.
+    session_content_hash: ContentHash | None = None
+    frontier_entry_hash: ContentHash | None = None
+    context_id: Identifier | None = None
+    context_hash: ContentHash | None = None
+    context_page_ids: tuple[Identifier, ...] = ()
 
     @property
     def active_questions(self) -> tuple[Identifier, ...]:
@@ -978,9 +1001,9 @@ class SearchQueryEnvelope(SearchQueryFields):
 
 
 class SearchEvidenceRequest(FrozenModel):
-    """v2-only semantic Evidence search and attempt accounting request."""
+    """Question-scoped v3 semantic Evidence search under an issued session token."""
 
-    contract_version: Literal["2.0.0"]
+    contract_version: Literal["3.0.0"]
     run_id: Identifier = Field(description="Run identifier returned by prepare_run.")
     query: SearchQuery = Field(
         description=(
@@ -988,16 +1011,13 @@ class SearchEvidenceRequest(FrozenModel):
         )
     )
     work_token: WorkToken = Field(
-        description=(
-            "Copy the opaque token from the current submit_domain_evidence WorkItem; "
-            "example token:domain-evidence."
-        )
+        description=("Copy the opaque token from the current submit_question_step WorkItem.")
     )
-    result_id: Identifier | None = Field(
-        default=None,
-        description="Optional Result identifier; it must match the active WorkToken scope.",
-        examples=["result:primary"],
-    )
+    result_id: Identifier
+    domain_id: Identifier
+    question_id: Identifier
+    session_content_hash: ContentHash
+    expected_navigation_state_hash: ContentHash
     continuation: str | None = Field(
         default=None,
         min_length=1,
@@ -1005,83 +1025,209 @@ class SearchEvidenceRequest(FrozenModel):
         description="Opaque cursor returned by the preceding page; omit on the first bounded page.",
         examples=["eyJwYXlsb2FkIjoi..."],
     )
-    sq_id: Identifier = Field(
-        description="Signaling-question identifier for the current evidence pass.",
-        examples=["sq:randomization"],
-    )
-    pass_kind: SearchPassKind
-    seed_family: Identifier | None = Field(
-        default=None,
-        description="Stable family identifier required only for guidance_seed passes.",
-    )
-
+    proposition_id: Identifier
+    pass_id: Identifier
+    stage_id: Identifier
+    intent_id: Identifier
     attempt_id: Identifier
-    attempt_kind: Literal[V2QueryAttemptKind.SELECTED, V2QueryAttemptKind.EXPLORATORY]
-    supersedes_attempt_id: Identifier | None = None
+    supersede_attempt_id: Identifier | None = None
     supersession_rationale: str | None = None
     continue_reason: SearchContinuationReason | None = None
     continue_rationale: str | None = None
 
     @model_validator(mode="after")
     def validate_navigation(self) -> SearchEvidenceRequest:
-        guidance = self.pass_kind is SearchPassKind.GUIDANCE_SEED
-        if guidance and self.seed_family is None:
-            raise ValueError("guidance_seed pass_kind requires seed_family")
-        if not guidance and self.seed_family is not None:
-            raise ValueError("seed_family is only valid with guidance_seed pass_kind")
-        if (self.supersedes_attempt_id is None) != (self.supersession_rationale is None):
+        if (self.supersede_attempt_id is None) != (self.supersession_rationale is None):
             raise ValueError("explicit query supersession requires ID and rationale together")
         if self.supersession_rationale is not None and not self.supersession_rationale.strip():
             raise ValueError("supersession rationale cannot be blank")
-        if self.continuation is None and (
-            self.continue_reason is not None or self.continue_rationale is not None
-        ):
-            raise ValueError("continue reason is valid only with an opaque continuation")
-        if self.continue_reason is SearchContinuationReason.OTHER and not (
-            self.continue_rationale and self.continue_rationale.strip()
-        ):
-            raise ValueError("the other continue reason requires a rationale")
-        if self.continue_reason is not SearchContinuationReason.OTHER and self.continue_rationale:
-            raise ValueError("continue rationale is only valid for the other continue reason")
         return self
 
 
 class ReadEvidenceRequest(FrozenModel):
-    """v2-only ordered read batch request."""
+    """Question-scoped bounded read under the exact v3 session projection."""
 
-    contract_version: Literal["2.0.0"]
+    contract_version: Literal["3.0.0"]
     run_id: Identifier = Field(description="Run identifier returned by prepare_run.")
     work_token: WorkToken = Field(
         description=(
-            "Copy the opaque token from the current submit_domain_evidence WorkItem; "
-            "the token binds Trial/Result/Domain scope."
+            "Copy the opaque token from the current submit_question_step WorkItem; "
+            "it binds the exact session, frontier, Result, Domain, and question scope."
         )
     )
-    result_id: Identifier | None = Field(
-        default=None,
-        description="Optional Result identifier; it must match the active WorkToken scope.",
-        examples=["result:primary"],
-    )
+    result_id: Identifier
+    domain_id: Identifier
+    question_id: Identifier
+    session_content_hash: ContentHash
+    expected_navigation_state_hash: ContentHash
     batch: EvidenceReadBatchRequest
 
 
 class SubmitEvidenceReviewRequest(FrozenModel):
-    """Append one idempotent v2 triage partition under Domain-Evidence authority."""
+    """Append one exhaustive v3 triage partition for an issued question page."""
 
-    contract_version: Literal["2.0.0"]
+    contract_version: Literal["3.0.0"]
     run_id: Identifier
     work_token: WorkToken
     idempotency_key: Identifier
     result_id: Identifier
     domain_id: Identifier
+    question_id: Identifier
+    session_content_hash: ContentHash
+    expected_navigation_state_hash: ContentHash
     submission_id: Identifier
     page_handles: tuple[str, ...] = Field(min_length=1)
-    triage_revisions: tuple[V2CandidateTriageRevision, ...]
+    triage_revisions: tuple[V3CandidateTriageRevision, ...]
 
     @model_validator(mode="after")
     def validate_partition(self) -> SubmitEvidenceReviewRequest:
         if len(self.page_handles) != len(set(self.page_handles)):
             raise ValueError("page review partition cannot repeat a page handle")
+        if self.idempotency_key != self.submission_id:
+            raise ValueError("v3 review idempotency_key must equal submission_id")
+        return self
+
+
+class SubmitQuestionStepRequest(FrozenModel):
+    """Commit exactly one active v3 question answer or diagnostic stop."""
+
+    contract_version: Literal["3.0.0"]
+    run_id: Identifier
+    work_token: WorkToken
+    idempotency_key: Identifier
+    result_id: Identifier
+    domain_id: Identifier
+    question_id: Identifier
+    session_content_hash: ContentHash
+    frontier_entry_hash: ContentHash
+    answer: SQAnswerCategory | None = None
+    rationale: str | None = None
+    diagnostic_stop: bool = False
+    evidence_bundle: QuestionEvidenceBundleBinding | None = None
+
+    @model_validator(mode="after")
+    def validate_exclusive_outcome(self) -> SubmitQuestionStepRequest:
+        if (self.answer is None) == (self.diagnostic_stop is False):
+            raise ValueError("submit_question_step requires exactly one answer or diagnostic_stop")
+        if self.answer is not None and not (self.rationale and self.rationale.strip()):
+            raise ValueError("a question answer requires a rationale")
+        if self.diagnostic_stop and self.rationale:
+            raise ValueError("diagnostic_stop cannot carry an answer rationale")
+        if self.answer is not None and self.evidence_bundle is None:
+            raise ValueError(
+                "a question answer requires an engine-verified Evidence Bundle binding"
+            )
+        if self.diagnostic_stop and self.evidence_bundle is not None:
+            raise ValueError("diagnostic_stop cannot carry an Evidence Bundle")
+        return self
+
+
+class CorrectQuestionStepRequest(FrozenModel):
+    """Replace one effective v3 question answer using its issued correction token."""
+
+    contract_version: Literal["3.0.0"]
+    run_id: Identifier
+    work_token: WorkToken
+    idempotency_key: Identifier
+    result_id: Identifier
+    domain_id: Identifier
+    question_id: Identifier
+    session_content_hash: ContentHash
+    prior_step_hash: ContentHash
+    answer: SQAnswerCategory
+    rationale: str = Field(min_length=1)
+    evidence_bundle: QuestionEvidenceBundleBinding
+
+
+class QuestionVisualProvenanceInput(FrozenModel):
+    """Exact current review linkage required to retain a visual-only item."""
+
+    transcription: RecordReference
+    candidate_id: Identifier
+    authorizing_review: RecordReference
+    review_span_id: Identifier
+
+
+class MaterializeQuestionEvidenceBundleRequest(FrozenModel):
+    """Ask the engine to freeze the active question's v3 evidence bundle.
+
+    This accepts only engine-issued scope and revision identities. In
+    particular, callers cannot select supporting/contradicting polarity or a
+    no-information basis; those are replayed from current durable evidence.
+    """
+
+    contract_version: Literal["3.0.0"]
+    run_id: Identifier
+    work_token: WorkToken
+    idempotency_key: Identifier
+    result_id: Identifier
+    domain_id: Identifier
+    question_id: Identifier
+    session_content_hash: ContentHash
+    frontier_entry_hash: ContentHash
+    expected_navigation_state_hash: ContentHash
+    review_revisions: tuple[EvidenceReviewRevisionInput, ...] = ()
+    passages: tuple[EvidencePassageInput, ...] = ()
+    visual_transcriptions: tuple[QuestionVisualProvenanceInput, ...] = ()
+
+    @model_validator(mode="after")
+    def validate_question_evidence_inputs(self) -> MaterializeQuestionEvidenceBundleRequest:
+        if any(
+            review.result_id != self.result_id
+            or review.domain_id != self.domain_id
+            or review.sq_id != self.question_id
+            for review in self.review_revisions
+        ):
+            raise ValueError(
+                "question bundle reviews must bind the active Result, Domain, and question"
+            )
+        if any(passage.question_ids != (self.question_id,) for passage in self.passages):
+            raise ValueError("question bundle passages must bind exactly the active question")
+        if len({(review.candidate_id, review.sq_id) for review in self.review_revisions}) != len(
+            self.review_revisions
+        ):
+            raise ValueError("question bundle has multiple current reviews for one candidate")
+        return self
+
+
+class SubmitSourceChronologyReviewRequest(FrozenModel):
+    """Attributable chronology fact for one immutable Source/Parse revision."""
+
+    contract_version: Literal["3.0.0"]
+    run_id: Identifier
+    work_token: WorkToken
+    idempotency_key: Identifier
+    result_id: Identifier
+    domain_id: Identifier
+    question_id: Identifier
+    source_id: Identifier
+    source_artifact_hash: ContentHash
+    parse_id: Identifier
+    parse_output_hash: ContentHash
+    constraint: ChronologyConstraint
+    status: V3ChronologyStatus
+    rationale: str = Field(min_length=1)
+    evidence_read_receipt: str = Field(min_length=1, max_length=8192)
+
+
+class SubmitEvidenceStageOutcomeRequest(FrozenModel):
+    """Reducer-validated outcome for one exact active v3 evidence stage."""
+
+    contract_version: Literal["3.0.0"]
+    run_id: Identifier
+    work_token: WorkToken
+    idempotency_key: Identifier
+    result_id: Identifier
+    domain_id: Identifier
+    question_id: Identifier
+    session_content_hash: ContentHash
+    expected_navigation_state_hash: ContentHash
+    submission: V3EvidenceStageOutcomeSubmission
+
+    @model_validator(mode="after")
+    def validate_scope(self) -> SubmitEvidenceStageOutcomeRequest:
+        if self.submission.question_id != self.question_id:
+            raise ValueError("stage outcome must bind the active question")
         return self
 
 
@@ -1111,145 +1257,6 @@ class SubmitResultResolutionRequest(FrozenModel):
     result: Result
     estimate: Estimate
     provenance_note: str = Field(min_length=1)
-
-
-class SubmitDomainEvidenceRequest(FrozenModel):
-    contract_version: Literal["2.0.0"]
-    run_id: Identifier
-    work_token: WorkToken
-    idempotency_key: Identifier
-    result_id: Identifier
-    domain_id: Identifier
-    items: tuple[RecordReference, ...] = Field(
-        default=(),
-        description=(
-            "Legacy evidence references. Use this branch only when passages is empty; "
-            "do not combine with evidence_by_question, candidate_dispositions, or conflicts."
-        ),
-    )
-    passages: tuple[EvidencePassageInput, ...] = Field(
-        default=(),
-        description=(
-            "Preferred exact canonical passages. Mutually exclusive with legacy items, "
-            "evidence_by_question, and candidate_dispositions. May be combined with "
-            "conflicts to link a superseded passage's claim to its replacement."
-        ),
-    )
-    coverage_state: EvidenceCoverageState = Field(
-        default=EvidenceCoverageState.COMPLETE,
-        description=("Coverage enum: complete, complete_with_limitations, or incomplete."),
-    )
-    coverage_limitations: tuple[str, ...] = Field(
-        default=(),
-        description=(
-            "Material source/search limitations. The field is named coverage_limitations "
-            "(not limitation); required for incomplete and allowed for complete_with_limitations."
-        ),
-    )
-    no_information_basis: bool = Field(
-        default=False,
-        description=(
-            "Set true only when complete search receipts and readable coverage justify "
-            "no information."
-        ),
-    )
-    conflicts: tuple[tuple[Identifier, ...], ...] = Field(
-        default=(),
-        description=(
-            "Material candidate-ID conflicts. Links a superseded item to its replacement, "
-            "whether from the legacy evidence branch or from a passages-based SUPERSEDED "
-            "disposition."
-        ),
-    )
-    # New evidence-first fields.  They are optional for compatibility with
-    # synthetic tracer submissions that intentionally carry an empty bundle.
-    evidence_by_question: dict[Identifier, tuple[RecordReference, ...]] = Field(
-        default_factory=dict,
-        description=("Legacy question-to-reference mapping; mutually exclusive with passages."),
-    )
-    candidate_dispositions: tuple[EvidenceConsiderationInput, ...] = Field(
-        default=(),
-        description=("Legacy candidate disposition records; mutually exclusive with passages."),
-    )
-    review_revisions: tuple[EvidenceReviewRevisionInput, ...] = Field(
-        default=(),
-        description=(
-            "Append-only substantive candidate review revisions. Each binds Trial attribution, "
-            "exact spans, rationale, and the read-context handles considered; unresolved or "
-            "needs-visual-review spans prevent freeze."
-        ),
-    )
-    project_rules: tuple[RecordReference, ...] = Field(
-        default=(), description="Issued project-rule references that materially guide this bundle."
-    )
-    actor: Actor | None = None
-
-    @model_validator(mode="after")
-    def validate_evidence_inputs(self) -> SubmitDomainEvidenceRequest:
-        if self.passages and (
-            self.items or self.evidence_by_question or self.candidate_dispositions
-        ):
-            raise ValueError(
-                "passages are mutually exclusive with legacy evidence inputs: clear items, "
-                "evidence_by_question, and candidate_dispositions, or submit the "
-                "legacy branch without passages"
-            )
-        review_candidate_ids = tuple(
-            (review.candidate_id, review.sq_id) for review in self.review_revisions
-        )
-        if len(review_candidate_ids) != len(set(review_candidate_ids)):
-            raise ValueError(
-                "review batch may contain only one latest revision per candidate and SQ"
-            )
-        if any(
-            review.result_id != self.result_id or review.domain_id != self.domain_id
-            for review in self.review_revisions
-        ):
-            raise ValueError("review revisions must bind the submitted Result and Domain")
-        return self
-
-
-class SQAnswerInput(FrozenModel):
-    question_id: Identifier = Field(
-        description="Active question ID from domain_context.active_question_ids."
-    )
-    answer: SQAnswerCategory = Field(description="One canonical lowercase answer category.")
-    rationale: str = Field(min_length=1)
-
-
-class FinalJudgmentInput(FrozenModel):
-    """A justified departure from an engine-derived Domain judgment."""
-
-    domain_id: Identifier
-    judgment: JudgmentLevel
-    alternative: JudgmentLevel
-    material_bias_rationale: str = Field(min_length=1)
-    cited_evidence: tuple[RecordReference, ...] = Field(min_length=1)
-
-
-class SubmitDomainAnswersRequest(FrozenModel):
-    contract_version: Literal["1.0.0"]
-    run_id: Identifier
-    work_token: WorkToken
-    idempotency_key: Identifier
-    result_id: Identifier
-    domain_id: Identifier
-    answers: tuple[SQAnswerInput, ...] = Field(min_length=1)
-    assessor_inputs: dict[Identifier, bool] = Field(
-        default_factory=dict,
-        description=(
-            "Structured Logic-pack inputs required for the Overall judgment. "
-            "For example, submit input:combined-concerns only when the "
-            "completed Domain judgments make it applicable."
-        ),
-    )
-    final_judgment_departures: tuple[FinalJudgmentInput, ...] = ()
-    project_rules: tuple[RecordReference, ...] = ()
-    actor: Actor | None = None
-
-
-class CorrectDomainAnswersRequest(SubmitDomainAnswersRequest):
-    """A successor answer submission bound to an engine-issued correction token."""
 
 
 class OperationResponse(FrozenModel):
@@ -1441,35 +1448,25 @@ class ConfirmRunDefinitionResponse(OperationResponse):
     run_definition: ConfirmedRunDefinition | None = None
 
 
-class CoverageProgress(FrozenModel):
-    """Read-only report of accumulated Search coverage for one signaling question.
-
-    The engine tracks the underlying accounting itself; a caller never
-    constructs or resubmits this object, and it is a preview of, not a
-    substitute for, the receipt materialized when Evidence is frozen.
-    """
-
-    sq_id: Identifier
-    required_seed_families: tuple[Identifier, ...]
-    completed_seed_families: tuple[Identifier, ...]
-    completed_passes: tuple[SearchPassKind, ...]
-    missing_passes: tuple[SearchPassKind, ...]
-    coverage_complete: bool
-
-
 class SearchEvidenceResponse(OperationResponse):
     run_id: Identifier
-    evidence_navigation_contract_version: Literal["2.0.0"] = EVIDENCE_NAVIGATION_CONTRACT_VERSION
+    evidence_navigation_contract_version: Literal["3.0.0"] = DOMAIN_EVIDENCE_CONTRACT_VERSION
     page: EvidenceSearchPage
-    coverage_progress: CoverageProgress
+    coverage_progress: dict[str, object]
 
 
-def _v2_compact_payload(response: Any) -> dict[str, Any]:
+def _compact_operation_payload(response: Any) -> dict[str, Any]:
     payload = response.model_dump(mode="json", exclude_none=True)
     page = getattr(response, "page", None)
     if page is not None and hasattr(page, "model_facing_payload") and "page" in payload:
         payload["page"] = page.model_facing_payload()
     payload.pop("next_action", None)
+    if "coverage_progress" in payload:
+        payload["coverage_progress"] = compact_coverage_progress(payload["coverage_progress"])
+    if not payload.get("summary"):
+        payload.pop("summary", None)
+    if not payload.get("warnings"):
+        payload.pop("warnings", None)
     return payload
 
 
@@ -1489,7 +1486,7 @@ def finalize_search_evidence_response(response: SearchEvidenceResponse) -> Searc
             }
         )
         current = current.model_copy(update={"page": page})
-        payload = _v2_compact_payload(current)
+        payload = _compact_operation_payload(current)
         payload["response_accounting"] = {
             "estimator_id": "utf8-byte-div4-ceil:v1",
             "scope": "complete_mcp_operation_envelope",
@@ -1512,7 +1509,7 @@ def finalize_search_evidence_response(response: SearchEvidenceResponse) -> Searc
     raise RuntimeError("Search returned-envelope accounting did not stabilize")
 
 
-def v2_model_facing_operation_payload(response: Any) -> dict[str, Any]:
+def model_facing_operation_payload(response: Any) -> dict[str, Any]:
     """Build the exact compact v2 operation envelope used on the MCP wire.
 
     Search packing calls this same composition function before a response is
@@ -1521,7 +1518,7 @@ def v2_model_facing_operation_payload(response: Any) -> dict[str, Any]:
     attached by the MCP adapter.
     """
 
-    payload = _v2_compact_payload(response)
+    payload = _compact_operation_payload(response)
     bytes_ = tokens = 0
     for _ in range(16):
         payload["response_accounting"] = {
@@ -1540,7 +1537,7 @@ def v2_model_facing_operation_payload(response: Any) -> dict[str, Any]:
 
 class ReadEvidenceResponse(OperationResponse):
     run_id: Identifier
-    evidence_navigation_contract_version: Literal["2.0.0"] = EVIDENCE_NAVIGATION_CONTRACT_VERSION
+    evidence_navigation_contract_version: Literal["3.0.0"] = DOMAIN_EVIDENCE_CONTRACT_VERSION
     page: EvidenceReadBatchPage
 
 
@@ -1591,25 +1588,52 @@ class SubmitResultResolutionResponse(SubmissionResponse):
     result_spec: ResultSpecRevision | None = None
 
 
-class SubmitDomainEvidenceResponse(SubmissionResponse):
-    domain_id: Identifier
-    evidence_bundles: tuple[RecordReference, ...] = ()
-    consideration_manifests: tuple[RecordReference, ...] = ()
-    coverage_receipts: tuple[RecordReference, ...] = ()
-
-
 class SubmitEvidenceReviewResponse(SubmissionResponse):
     domain_id: Identifier
     workflow_state_hash: ContentHash
     outstanding_triage_candidate_ids: tuple[Identifier, ...] = ()
 
 
-class SubmitDomainAnswersResponse(SubmissionResponse):
+class SubmitQuestionStepResponse(SubmissionResponse):
     domain_id: Identifier
-    answer_revisions: tuple[RecordReference, ...] = ()
-    judgments: tuple[RecordReference, ...] = ()
+    question_id: Identifier
+    session_content_hash: ContentHash
+    frontier_entry_hash: ContentHash | None = None
+    diagnostic_terminal: bool = False
     correction_token: WorkToken | None = None
-    evidence_insufficiencies: tuple[EvidenceInsufficiency, ...] = ()
+    evidence_recovery_token: WorkToken | None = None
+
+
+class CorrectQuestionStepResponse(SubmissionResponse):
+    domain_id: Identifier
+    question_id: Identifier
+    session_content_hash: ContentHash
+    frontier_entry_hash: ContentHash | None = None
+    invalidated_question_ids: tuple[Identifier, ...] = ()
+    correction_token: WorkToken | None = None
+
+
+class MaterializeQuestionEvidenceBundleResponse(SubmissionResponse):
+    domain_id: Identifier
+    question_id: Identifier
+    session_content_hash: ContentHash
+    navigation_state_hash: ContentHash
+    evidence_bundle: QuestionEvidenceBundleBinding
+
+
+class SubmitSourceChronologyReviewResponse(SubmissionResponse):
+    domain_id: Identifier
+    question_id: Identifier
+    source_id: Identifier
+    inventory_revision_id: Identifier
+    inventory_revision_hash: ContentHash
+
+
+class SubmitEvidenceStageOutcomeResponse(SubmissionResponse):
+    domain_id: Identifier
+    question_id: Identifier
+    navigation_state_hash: ContentHash
+    progress: dict[str, object]
 
 
 RUN_OPERATION_CONTRACTS: tuple[OperationContract, ...] = (
@@ -1752,40 +1776,39 @@ RUN_OPERATION_CONTRACTS: tuple[OperationContract, ...] = (
         ),
     ),
     OperationContract(
-        operation=RunOperation.SUBMIT_DOMAIN_EVIDENCE,
-        request_type=SubmitDomainEvidenceRequest,
-        response_type=SubmitDomainEvidenceResponse,
-        expected_conditions=(
-            WorkflowCondition.ACCEPTED,
-            WorkflowCondition.RUN_BLOCKED,
-            WorkflowCondition.STALE,
-        ),
-    ),
-    OperationContract(
         operation=RunOperation.SUBMIT_EVIDENCE_REVIEW,
         request_type=SubmitEvidenceReviewRequest,
         response_type=SubmitEvidenceReviewResponse,
         expected_conditions=(WorkflowCondition.ACCEPTED, WorkflowCondition.STALE),
     ),
     OperationContract(
-        operation=RunOperation.SUBMIT_DOMAIN_ANSWERS,
-        request_type=SubmitDomainAnswersRequest,
-        response_type=SubmitDomainAnswersResponse,
-        expected_conditions=(
-            WorkflowCondition.ACCEPTED,
-            WorkflowCondition.RUN_COMPLETE,
-            WorkflowCondition.RUN_BLOCKED,
-            WorkflowCondition.STALE,
-        ),
+        operation=RunOperation.SUBMIT_EVIDENCE_STAGE_OUTCOME,
+        request_type=SubmitEvidenceStageOutcomeRequest,
+        response_type=SubmitEvidenceStageOutcomeResponse,
+        expected_conditions=(WorkflowCondition.ACCEPTED, WorkflowCondition.STALE),
     ),
     OperationContract(
-        operation=RunOperation.CORRECT_DOMAIN_ANSWERS,
-        request_type=CorrectDomainAnswersRequest,
-        response_type=SubmitDomainAnswersResponse,
-        expected_conditions=(
-            WorkflowCondition.ACCEPTED,
-            WorkflowCondition.RUN_BLOCKED,
-            WorkflowCondition.STALE,
-        ),
+        operation=RunOperation.MATERIALIZE_QUESTION_EVIDENCE_BUNDLE,
+        request_type=MaterializeQuestionEvidenceBundleRequest,
+        response_type=MaterializeQuestionEvidenceBundleResponse,
+        expected_conditions=(WorkflowCondition.ACCEPTED, WorkflowCondition.STALE),
+    ),
+    OperationContract(
+        operation=RunOperation.SUBMIT_QUESTION_STEP,
+        request_type=SubmitQuestionStepRequest,
+        response_type=SubmitQuestionStepResponse,
+        expected_conditions=(WorkflowCondition.ACCEPTED, WorkflowCondition.STALE),
+    ),
+    OperationContract(
+        operation=RunOperation.CORRECT_QUESTION_STEP,
+        request_type=CorrectQuestionStepRequest,
+        response_type=CorrectQuestionStepResponse,
+        expected_conditions=(WorkflowCondition.ACCEPTED, WorkflowCondition.STALE),
+    ),
+    OperationContract(
+        operation=RunOperation.SUBMIT_SOURCE_CHRONOLOGY_REVIEW,
+        request_type=SubmitSourceChronologyReviewRequest,
+        response_type=SubmitSourceChronologyReviewResponse,
+        expected_conditions=(WorkflowCondition.ACCEPTED, WorkflowCondition.STALE),
     ),
 )

@@ -45,6 +45,7 @@ _REVISION_MODELS: tuple[type[Revision], ...] = (
     evidence.EvidenceReviewRevision,
     evidence.EvidenceClaim,
     evidence.EvidenceCoverageReceiptRecord,
+    evidence.V3EvidenceCoverageReceiptRecord,
     evidence.DerivedFact,
     evidence.VisualTranscription,
     evidence.EvidenceBundle,

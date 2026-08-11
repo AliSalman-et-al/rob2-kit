@@ -18,15 +18,18 @@ def test_search_schema_has_no_retired_visibility_overrides() -> None:
     assert "include_uncertain" not in properties
 
 
-def test_freeze_schema_is_question_specific_and_receipt_bound() -> None:
-    properties = _tools()["submit_domain_evidence"].parameters["properties"]
-    review = properties["review_revisions"]
-    assert "receipt" in review["description"]
+def test_question_bundle_schema_is_question_specific_and_receipt_bound() -> None:
+    parameters = _tools()["materialize_question_evidence_bundle"].parameters
+    properties = parameters["properties"]
+
+    assert "question_id" in parameters["required"]
+    assert "review_revisions" in properties
     schema = EvidenceReviewRevisionInput.model_json_schema()
     assert "sq_id" in str(schema)
+    assert "read_view_receipt" in str(schema)
     assert "trial_attribution" in str(schema)
 
 
-def test_freeze_contract_requires_1_1_0() -> None:
-    schema = _tools()["submit_domain_evidence"].parameters
-    assert schema["properties"]["contract_version"]["const"] == "2.0.0"
+def test_question_bundle_contract_requires_v3() -> None:
+    schema = _tools()["materialize_question_evidence_bundle"].parameters
+    assert schema["properties"]["contract_version"]["const"] == "3.0.0"

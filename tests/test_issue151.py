@@ -1,834 +1,143 @@
-"""Production regression coverage for receipt-bound reviewed Evidence."""
-
-import json
-from pathlib import Path
+"""Current-review provenance and question isolation regressions (#151, v3)."""
 
 import pytest
+from pydantic import ValidationError
 
-from rob2_kit.application.contracts import (
-    ContinueRunRequest,
-    EvidencePassageInput,
-    SubmitDomainEvidenceRequest,
+from rob2_kit.application.active_question_frontier import evidence_closure_from_workflow
+from rob2_kit.application.evidence_navigation import V3EvidenceNavigationStore
+from rob2_kit.application.question_evidence_bundle import (
+    ResolvedQuestionEvidenceReview,
+    ResolvedQuestionVisualTranscription,
+    materialize_question_evidence_bundle,
 )
-from rob2_kit.application.run_engine import RunEngine
-from rob2_kit.domain.canonical import sha256_digest
+from rob2_kit.application.question_evidence_session import QuestionEvidenceSessionStore
+from rob2_kit.domain.canonical import canonical_hash
 from rob2_kit.domain.evidence import (
-    EvidenceBundle,
-    EvidenceClaim,
+    EvidenceReviewDisposition,
     EvidenceReviewRevision,
+    EvidenceReviewSpan,
+    ReviewedEvidenceContext,
     ReviewedEvidenceFragment,
+    TrialAttribution,
+    VisualTranscription,
 )
-from rob2_kit.evidence.errors import StaleCursor, UnknownCursor
-from rob2_kit.evidence.search import (
-    EvidenceSearchIndex,
-)
-from rob2_kit.ingestion.project import PageExtraction, PageTextItem, ParserResult
-from tests.test_input_reconciliation import (
-    DOMAINS,
-    StructuredPassageParser,
-    _classify_current_sources,
-    _complete_passage_receipts,
-    _config,
-    _location_handle_for,
-    _prepare_confirm,
-    _result,
-    _review_revision,
-)
+from rob2_kit.domain.revisions import Dependency
+from tests.test_issue167_question_bundle import _input, _reference
+from tests.test_question_evidence_session import _closed_workflow, _service_for, _two_peer_state
 
 
-def _freeze(tmp_path: Path):
-    trial = tmp_path / "input" / "issue151"
-    trial.mkdir(parents=True)
-    (trial / "report.pdf").write_bytes(b"primary")
-    engine, run_id = _prepare_confirm(
-        tmp_path,
-        config=_config(_result("result:issue151", "trial:issue151")),
-        parser=StructuredPassageParser(),
-    )
-    _classify_current_sources(engine, run_id)
-    work = engine.continue_run(ContinueRunRequest(run_id=run_id)).work_item
-    assert work
-    unit = EvidenceSearchIndex(tmp_path / ".rob2" / "evidence.sqlite3").read_unit(
-        next(iter(EvidenceSearchIndex(tmp_path / ".rob2" / "evidence.sqlite3").unit_ids()))
-    )
-    sq = DOMAINS["domain:randomization"][0]
-    _complete_passage_receipts(engine, run_id, work, unit_id=unit.unit_id)
-    receipt = _location_handle_for(engine, run_id, work, sq, unit.unit_id)
-    response = engine.submit_domain_evidence(
-        SubmitDomainEvidenceRequest(
-            contract_version="2.0.0",
-            run_id=run_id,
-            work_token=work.work_token,
-            idempotency_key="idempotency:issue151",
-            result_id="result:issue151",
-            domain_id="domain:randomization",
-            passages=(
-                EvidencePassageInput(
-                    unit_id=unit.unit_id,
-                    span_start=0,
-                    span_end=len(unit.text),
-                    claim_type="claim-type:randomization",
-                    candidate_id=unit.unit_id,
-                    question_ids=(sq,),
-                ),
-            ),
-            review_revisions=(
-                _review_revision(
-                    candidate_id=unit.unit_id,
-                    result_id="result:issue151",
-                    domain_id="domain:randomization",
-                    question_id=sq,
-                    location_handle=receipt,
-                    span_start=0,
-                    span_end=len(unit.text),
-                    entity_suffix="issue151",
-                ),
-            ),
-        )
-    )
-    assert response.committed
-    return engine, run_id, response, sq
-
-
-def _setup(tmp_path: Path, *, parser=None, suffix: str = "graph"):
-    trial = tmp_path / "input" / suffix
-    trial.mkdir(parents=True)
-    (trial / "report.pdf").write_bytes(b"primary")
-    engine, run_id = _prepare_confirm(
-        tmp_path,
-        config=_config(_result(f"result:{suffix}", f"trial:{suffix}")),
-        parser=parser or StructuredPassageParser(),
-    )
-    _classify_current_sources(engine, run_id)
-    work = engine.continue_run(ContinueRunRequest(run_id=run_id)).work_item
-    assert work
-    index = EvidenceSearchIndex(tmp_path / ".rob2" / "evidence.sqlite3")
-    unit = index.read_unit(next(iter(index.unit_ids())))
-    _complete_passage_receipts(engine, run_id, work, unit_id=unit.unit_id)
-    return engine, run_id, work, unit
-
-
-def _submit(engine, run_id: str, work, *, suffix: str, passages, reviews, **request_updates):
-    return engine.submit_domain_evidence(
-        SubmitDomainEvidenceRequest(
-            contract_version="2.0.0",
-            run_id=run_id,
-            work_token=work.work_token,
-            idempotency_key=f"idempotency:issue151:{suffix}",
-            result_id=f"result:{suffix}",
-            domain_id="domain:randomization",
-            passages=tuple(passages),
-            review_revisions=tuple(reviews),
-            **request_updates,
-        )
-    )
-
-
-class _TwoQuestionParser:
-    """Real parser fixture with one source-authored candidate for two SQs."""
-
-    name = "issue151-two-question"
-    version = "1"
-
-    def parse(self, data: bytes, *, ocr_enabled: bool, target_pages=None) -> ParserResult:
-        text = data.decode()
-        return ParserResult(
-            pages=(
-                PageExtraction(
-                    page_number=1,
-                    width=612,
-                    height=792,
-                    text=text,
-                    markdown=text,
-                    text_items=(
-                        PageTextItem(
-                            text=text,
-                            x=10,
-                            y=20,
-                            width=200,
-                            height=12,
-                            unit_kind="paragraph",
-                            document_zone="main",
+def test_tampered_current_review_reference_is_rejected_before_bundle_materialization(
+    tmp_path,
+) -> None:
+    input = _input(tmp_path)
+    review = EvidenceReviewRevision(
+        entity_id="evidence-review:issue151",
+        revision_id="revision:evidence-review-issue151",
+        actor=input.actor,
+        observed_at=input.observed_at,
+        candidate_id="candidate:issue151",
+        result_id=input.workflow.result_id,
+        domain_id=input.workflow.domain_id,
+        sq_id=input.workflow.question_id,
+        spans=(
+            EvidenceReviewSpan(
+                span_id="span:issue151",
+                span_start=0,
+                span_end=1,
+                trial_attribution=TrialAttribution.ACTIVE,
+                disposition=EvidenceReviewDisposition.SUPPORTING,
+                rationale="The reviewed span supports this question.",
+                attribution_rationale="The active trial is explicitly identified.",
+                reviewed_context=ReviewedEvidenceContext(
+                    receipt_hash=canonical_hash({"receipt": "issue151"}),
+                    snapshot_hash=canonical_hash({"snapshot": "issue151"}),
+                    requested_mode="detail",
+                    applied_mode="detail",
+                    fragments=(
+                        ReviewedEvidenceFragment(
+                            unit_id="unit:issue151",
+                            source_id="source:issue151",
+                            source_artifact_hash=canonical_hash({"source": "issue151"}),
+                            parse_id="parse:issue151",
+                            canonicalization_version="1",
+                            unit_content_hash=canonical_hash({"unit": "issue151"}),
+                            span_start=0,
+                            span_end=1,
+                            content_hash=canonical_hash({"fragment": "issue151"}),
                         ),
                     ),
                 ),
             ),
-            raw_output=data,
-        )
-
-
-def test_unlabelled_parser_reviewed_active_span_qualifies_for_answer(tmp_path: Path):
-    engine, run_id, response, sq = _freeze(tmp_path)
-    assert response.condition.value == "accepted"
-    assert all(
-        item.question_id != sq or item.reason.value != "unresolvable_evidence"
-        for item in engine._evidence_insufficiencies(
-            engine._bound_ledger(run_id), run_id, "result:issue151", {sq: "yes"}
-        )
-    )
-
-
-def test_question_bundle_contains_only_direct_authorizing_review(tmp_path: Path):
-    engine, run_id, response, sq = _freeze(tmp_path)
-    ledger = engine._bound_ledger(run_id)
-    bundles = [
-        EvidenceBundle.model_validate_json(ledger.artifacts.read(ref.content_hash))
-        for ref in response.evidence_bundles
-    ]
-    bundle = next(item for item in bundles if item.sq_id == sq)
-    claim = EvidenceClaim.model_validate_json(ledger.artifacts.read(bundle.items[0].content_hash))
-    review = EvidenceReviewRevision.model_validate_json(
-        ledger.artifacts.read(claim.authorizing_review.content_hash)
-    )
-    assert (
-        bundle.review_revisions == (claim.authorizing_review,)
-        and review.sq_id == sq
-        and any(span.span_id == claim.review_span_id for span in review.spans)
-    )
-    assert all(not item.review_revisions for item in bundles if item.sq_id != sq)
-
-
-@pytest.mark.parametrize("tamper", ("span", "review_hash"))
-def test_tampered_or_missing_review_span_binding_is_unresolvable(
-    tmp_path: Path, monkeypatch, tamper
-):
-    engine, run_id, response, sq = _freeze(tmp_path)
-    ledger = engine._bound_ledger(run_id)
-    original = ledger.artifacts.read
-    claim_ref = next(
-        ref
-        for ref in next(
-            bundle
-            for bundle in [
-                EvidenceBundle.model_validate_json(ledger.artifacts.read(ref.content_hash))
-                for ref in response.evidence_bundles
-            ]
-            if bundle.sq_id == sq
-        ).items
-    )
-
-    def read(hash):
-        payload = original(hash)
-        if hash == claim_ref.content_hash:
-            data = json.loads(payload)
-            if tamper == "span":
-                data["review_span_id"] = "review-span:missing"
-            else:
-                data["authorizing_review"]["content_hash"] = "sha256:" + "0" * 64
-            return json.dumps(data).encode()
-        return payload
-
-    monkeypatch.setattr(ledger.artifacts, "read", read)
-    failures = engine._evidence_insufficiencies(ledger, run_id, "result:issue151", {sq: "yes"})
-    assert any(
-        item.question_id == sq and item.reason.value == "unresolvable_evidence" for item in failures
-    )
-
-
-def test_superseded_authorizing_review_is_stale_evidence_dependency(tmp_path: Path):
-    engine, run_id, response, sq = _freeze(tmp_path)
-    ledger = engine._bound_ledger(run_id)
-    bundle = next(
-        EvidenceBundle.model_validate_json(ledger.artifacts.read(ref.content_hash))
-        for ref in response.evidence_bundles
-        if EvidenceBundle.model_validate_json(ledger.artifacts.read(ref.content_hash)).sq_id == sq
-    )
-    claim = EvidenceClaim.model_validate_json(ledger.artifacts.read(bundle.items[0].content_hash))
-    review = EvidenceReviewRevision.model_validate_json(
-        ledger.artifacts.read(claim.authorizing_review.content_hash)
-    )
-    replacement = review.model_copy(update={"revision_id": "revision:issue151:review:2"})
-    engine._commit_frozen_artifact(
-        ledger,
-        scope="result:issue151",
-        operation="operation:test-review-supersession",
-        operation_key="test:issue151:review-supersession",
-        entity_id=review.entity_id,
-        revision_id=replacement.revision_id,
-        artifact=replacement,
-        actor=replacement.actor,
-    )
-    failures = engine._evidence_insufficiencies(ledger, run_id, "result:issue151", {sq: "yes"})
-    assert any(
-        item.question_id == sq and item.reason.value == "stale_evidence_dependency"
-        for item in failures
-    )
-
-
-def test_unrelated_newer_review_does_not_stale_authorizing_review(tmp_path: Path):
-    engine, run_id, response, sq = _freeze(tmp_path)
-    ledger = engine._bound_ledger(run_id)
-    bundle = next(
-        EvidenceBundle.model_validate_json(ledger.artifacts.read(ref.content_hash))
-        for ref in response.evidence_bundles
-        if EvidenceBundle.model_validate_json(ledger.artifacts.read(ref.content_hash)).sq_id == sq
-    )
-    claim = EvidenceClaim.model_validate_json(ledger.artifacts.read(bundle.items[0].content_hash))
-    review = EvidenceReviewRevision.model_validate_json(
-        ledger.artifacts.read(claim.authorizing_review.content_hash)
-    )
-    unrelated = review.model_copy(
-        update={
-            "entity_id": "evidence-review:issue151:unrelated",
-            "revision_id": "revision:issue151:unrelated:2",
-            "candidate_id": "candidate:issue151:unrelated",
-        }
-    )
-    engine._commit_frozen_artifact(
-        ledger,
-        scope="result:issue151",
-        operation="operation:test-unrelated-review",
-        operation_key="test:issue151:unrelated-review",
-        entity_id=unrelated.entity_id,
-        revision_id=unrelated.revision_id,
-        artifact=unrelated,
-        actor=unrelated.actor,
-    )
-    failures = engine._evidence_insufficiencies(ledger, run_id, "result:issue151", {sq: "yes"})
-    assert not any(item.question_id == sq for item in failures)
-
-
-def test_one_candidate_question_can_materialize_two_active_exact_spans(tmp_path: Path):
-    engine, run_id, work, unit = _setup(tmp_path, suffix="two-spans")
-    sq = DOMAINS["domain:randomization"][0]
-    receipt = _location_handle_for(engine, run_id, work, sq, unit.unit_id)
-    first_end = 3
-    review = _review_revision(
-        candidate_id=unit.unit_id,
-        result_id="result:two-spans",
-        domain_id="domain:randomization",
-        question_id=sq,
-        location_handle=receipt,
-        span_start=0,
-        span_end=first_end,
-        entity_suffix="two-spans",
-    )
-    review["spans"] = (
-        review["spans"][0],
-        {
-            **review["spans"][0],
-            "span_start": first_end,
-            "span_end": len(unit.text),
-            "rationale": "second exact span",
-        },
-    )
-    response = _submit(
-        engine,
-        run_id,
-        work,
-        suffix="two-spans",
-        passages=(
-            EvidencePassageInput(
-                unit_id=unit.unit_id,
-                span_start=0,
-                span_end=first_end,
-                claim_type="claim-type:randomization",
-                candidate_id=unit.unit_id,
-                question_ids=(sq,),
-            ),
-            EvidencePassageInput(
-                unit_id=unit.unit_id,
-                span_start=first_end,
-                span_end=len(unit.text),
-                claim_type="claim-type:randomization",
-                candidate_id=unit.unit_id,
-                question_ids=(sq,),
-            ),
-        ),
-        reviews=(review,),
-    )
-    ledger = engine._bound_ledger(run_id)
-    bundle = next(
-        EvidenceBundle.model_validate_json(ledger.artifacts.read(ref.content_hash))
-        for ref in response.evidence_bundles
-        if EvidenceBundle.model_validate_json(ledger.artifacts.read(ref.content_hash)).sq_id == sq
-    )
-    claims = [
-        EvidenceClaim.model_validate_json(ledger.artifacts.read(ref.content_hash))
-        for ref in bundle.items
-    ]
-    assert len(claims) == 2
-    assert len({claim.review_span_id for claim in claims}) == 2
-    assert {claim.authorizing_review.content_hash for claim in claims} == {
-        bundle.review_revisions[0].content_hash
-    }
-
-
-def test_same_candidate_for_two_questions_has_isolated_reviews_claims_and_bundles(tmp_path: Path):
-    engine, run_id, work, unit = _setup(
-        tmp_path, parser=_TwoQuestionParser(), suffix="two-questions"
-    )
-    first, second = DOMAINS["domain:randomization"][:2]
-    first_receipt = _location_handle_for(engine, run_id, work, first, unit.unit_id)
-    second_receipt = _location_handle_for(engine, run_id, work, second, unit.unit_id)
-    passage = EvidencePassageInput(
-        unit_id=unit.unit_id,
-        span_start=0,
-        span_end=len(unit.text),
-        claim_type="claim-type:randomization",
-        candidate_id=unit.unit_id,
-        question_ids=(first, second),
-    )
-    response = _submit(
-        engine,
-        run_id,
-        work,
-        suffix="two-questions",
-        passages=(passage,),
-        reviews=(
-            _review_revision(
-                candidate_id=unit.unit_id,
-                result_id="result:two-questions",
-                domain_id="domain:randomization",
-                question_id=first,
-                location_handle=first_receipt,
-                span_start=0,
-                span_end=len(unit.text),
-                entity_suffix="two-questions-first",
-            ),
-            _review_revision(
-                candidate_id=unit.unit_id,
-                result_id="result:two-questions",
-                domain_id="domain:randomization",
-                question_id=second,
-                location_handle=second_receipt,
-                span_start=0,
-                span_end=len(unit.text),
-                entity_suffix="two-questions-second",
-            ),
         ),
     )
-    ledger = engine._bound_ledger(run_id)
-    bundles = [
-        EvidenceBundle.model_validate_json(ledger.artifacts.read(ref.content_hash))
-        for ref in response.evidence_bundles
-    ]
-    selected = {bundle.sq_id: bundle for bundle in bundles if bundle.sq_id in {first, second}}
-    assert set(selected) == {first, second}
-    claims = {
-        sq: EvidenceClaim.model_validate_json(ledger.artifacts.read(bundle.items[0].content_hash))
-        for sq, bundle in selected.items()
-    }
-    assert claims[first].entity_id != claims[second].entity_id
-    assert claims[first].authorizing_review != claims[second].authorizing_review
-    assert selected[first].review_revisions == (claims[first].authorizing_review,)
-    assert selected[second].review_revisions == (claims[second].authorizing_review,)
 
-
-@pytest.mark.parametrize(
-    ("attribution", "review_disposition"),
-    (("other", "contextual"), ("not_explicit", "contextual"), ("unresolved", "unresolved")),
-)
-def test_non_authorizing_review_span_cannot_write_claim_artifacts(
-    tmp_path: Path, attribution: str, review_disposition: str
-):
-    suffix = f"reject-{attribution}"
-    engine, run_id, work, unit = _setup(tmp_path, suffix=suffix)
-    sq = DOMAINS["domain:randomization"][0]
-    receipt = _location_handle_for(engine, run_id, work, sq, unit.unit_id)
-    review = _review_revision(
-        candidate_id=unit.unit_id,
-        result_id=f"result:{suffix}",
-        domain_id="domain:randomization",
-        question_id=sq,
-        location_handle=receipt,
-        span_start=0,
-        span_end=len(unit.text),
-        entity_suffix=suffix,
-        disposition=review_disposition,
-    )
-    review["spans"] = (
-        {**review["spans"][0], "trial_attribution": attribution, "attribution_rationale": None},
-    )
-    before = len(engine._bound_ledger(run_id).events())
-    if attribution == "unresolved":
-        response = _submit(
-            engine,
-            run_id,
-            work,
-            suffix=suffix,
-            passages=(
-                EvidencePassageInput(
-                    unit_id=unit.unit_id,
-                    span_start=0,
-                    span_end=len(unit.text),
-                    claim_type="claim-type:randomization",
-                    candidate_id=unit.unit_id,
-                    question_ids=(sq,),
-                ),
-            ),
-            reviews=(review,),
+    with pytest.raises(ValidationError, match="stale or tampered"):
+        ResolvedQuestionEvidenceReview(
+            review=review,
+            reference=_reference("evidence-review:issue151", "revision:evidence-review-issue151"),
         )
-        assert not response.committed
-    else:
-        with pytest.raises(ValueError, match="ACTIVE supporting or contradicting"):
-            _submit(
-                engine,
-                run_id,
-                work,
-                suffix=suffix,
-                passages=(
-                    EvidencePassageInput(
-                        unit_id=unit.unit_id,
-                        span_start=0,
-                        span_end=len(unit.text),
-                        claim_type="claim-type:randomization",
-                        candidate_id=unit.unit_id,
-                        question_ids=(sq,),
-                    ),
-                ),
-                reviews=(review,),
-            )
-    assert len(engine._bound_ledger(run_id).events()) == before
 
 
-@pytest.mark.parametrize(
-    ("attribution", "disposition"),
-    (
-        ("other", "out_of_scope"),
-        ("not_explicit", "contextual"),
-        ("unresolved", "unresolved"),
-    ),
-)
-def test_non_substantive_standalone_review_persists_without_a_claim(
-    tmp_path: Path, attribution: str, disposition: str
-):
-    engine, run_id, work, unit = _setup(tmp_path, suffix=f"standalone-{attribution}")
-    sq = DOMAINS["domain:randomization"][0]
-    receipt = _location_handle_for(engine, run_id, work, sq, unit.unit_id)
-    review = _review_revision(
-        candidate_id=unit.unit_id,
-        result_id=f"result:standalone-{attribution}",
-        domain_id="domain:randomization",
-        question_id=sq,
-        location_handle=receipt,
-        span_start=0,
-        span_end=len(unit.text),
-        entity_suffix=f"standalone-{attribution}",
-        disposition=disposition,
+def test_tampered_visual_transcription_reference_is_rejected_before_freezing(tmp_path) -> None:
+    input = _input(tmp_path)
+    source = _reference("source:issue151", "revision:source-issue151")
+    transcription = VisualTranscription(
+        entity_id="visual-transcription:issue151",
+        revision_id="revision:visual-transcription-issue151",
+        dependencies=(Dependency(**source.model_dump(), role="dependency:source"),),
+        actor=input.actor,
+        observed_at=input.observed_at,
+        source=source,
+        page=1,
+        region=(0.0, 0.0, 1.0, 1.0),
+        render_mode="crop",
+        dpi=144,
+        transcription="Allocation was concealed.",
     )
-    review["spans"] = (
-        {
-            **review["spans"][0],
-            "trial_attribution": attribution,
-            "attribution_rationale": None,
-        },
-    )
-    response = _submit(
-        engine,
-        run_id,
-        work,
-        suffix=f"standalone-{attribution}",
-        passages=(),
-        reviews=(review,),
-        coverage_state="incomplete",
-        coverage_limitations=("Standalone non-substantive review retained for traceability.",),
-    )
-    assert response.committed
-    ledger = engine._bound_ledger(run_id)
-    bundle = next(
-        EvidenceBundle.model_validate_json(ledger.artifacts.read(ref.content_hash))
-        for ref in response.evidence_bundles
-        if EvidenceBundle.model_validate_json(ledger.artifacts.read(ref.content_hash)).sq_id == sq
-    )
-    assert not bundle.items and len(bundle.review_revisions) == 1
 
-
-def test_substantive_standalone_non_active_review_is_rejected(tmp_path: Path):
-    engine, run_id, work, unit = _setup(tmp_path, suffix="standalone-substantive")
-    sq = DOMAINS["domain:randomization"][0]
-    receipt = _location_handle_for(engine, run_id, work, sq, unit.unit_id)
-    review = _review_revision(
-        candidate_id=unit.unit_id,
-        result_id="result:standalone-substantive",
-        domain_id="domain:randomization",
-        question_id=sq,
-        location_handle=receipt,
-        span_start=0,
-        span_end=len(unit.text),
-        entity_suffix="standalone-substantive",
-    )
-    review["spans"] = (
-        {
-            **review["spans"][0],
-            "trial_attribution": "other",
-            "attribution_rationale": None,
-        },
-    )
-    before = len(engine._bound_ledger(run_id).events())
-    response = _submit(
-        engine,
-        run_id,
-        work,
-        suffix="standalone-substantive",
-        passages=(),
-        reviews=(review,),
-    )
-    assert not response.committed
-    assert len(engine._bound_ledger(run_id).events()) == before
-
-
-def test_duplicate_or_unmatched_substantive_review_span_is_rejected(tmp_path: Path):
-    engine, run_id, work, unit = _setup(tmp_path, suffix="unmatched")
-    sq = DOMAINS["domain:randomization"][0]
-    receipt = _location_handle_for(engine, run_id, work, sq, unit.unit_id)
-    review = _review_revision(
-        candidate_id=unit.unit_id,
-        result_id="result:unmatched",
-        domain_id="domain:randomization",
-        question_id=sq,
-        location_handle=receipt,
-        span_start=0,
-        span_end=3,
-        entity_suffix="unmatched",
-    )
-    review["spans"] = (
-        review["spans"][0],
-        {
-            **review["spans"][0],
-            "span_start": 3,
-            "span_end": len(unit.text),
-            "rationale": "unmatched substantive span",
-        },
-    )
-    before = len(engine._bound_ledger(run_id).events())
-    with pytest.raises(ValueError, match="substantive review span"):
-        _submit(
-            engine,
-            run_id,
-            work,
-            suffix="unmatched",
-            passages=(
-                EvidencePassageInput(
-                    unit_id=unit.unit_id,
-                    span_start=0,
-                    span_end=3,
-                    claim_type="claim-type:randomization",
-                    candidate_id=unit.unit_id,
-                    question_ids=(sq,),
-                ),
+    with pytest.raises(ValidationError, match="stale or tampered"):
+        ResolvedQuestionVisualTranscription(
+            transcription=transcription,
+            reference=_reference(
+                "visual-transcription:issue151", "revision:visual-transcription-issue151"
             ),
-            reviews=(review,),
+            candidate_id="candidate:issue151",
+            authorizing_review=_reference(
+                "evidence-review:issue151", "revision:evidence-review-issue151"
+            ),
+            review_span_id="span:issue151",
         )
-    assert len(engine._bound_ledger(run_id).events()) == before
 
 
-def test_duplicate_substantive_review_bounds_are_rejected_before_writes(tmp_path: Path):
-    engine, run_id, work, unit = _setup(tmp_path, suffix="duplicate")
-    sq = DOMAINS["domain:randomization"][0]
-    receipt = _location_handle_for(engine, run_id, work, sq, unit.unit_id)
-    review = _review_revision(
-        candidate_id=unit.unit_id,
-        result_id="result:duplicate",
-        domain_id="domain:randomization",
-        question_id=sq,
-        location_handle=receipt,
-        span_start=0,
-        span_end=len(unit.text),
-        entity_suffix="duplicate",
-    )
-    review["spans"] = (review["spans"][0], review["spans"][0])
-    before = len(engine._bound_ledger(run_id).events())
-    response = _submit(
-        engine,
-        run_id,
-        work,
-        suffix="duplicate",
-        passages=(
-            EvidencePassageInput(
-                unit_id=unit.unit_id,
-                span_start=0,
-                span_end=len(unit.text),
-                claim_type="claim-type:randomization",
-                candidate_id=unit.unit_id,
-                question_ids=(sq,),
-            ),
-        ),
-        reviews=(review,),
-    )
-    assert not response.committed
-    assert len(engine._bound_ledger(run_id).events()) == before
+def test_question_bundles_remain_isolated_when_peer_questions_share_a_session(tmp_path) -> None:
+    state = _two_peer_state()
+    navigation = V3EvidenceNavigationStore(tmp_path)
+    service = _service_for(state, QuestionEvidenceSessionStore(tmp_path), navigation)
+    projection = service.initialize()
+    first, second = projection.frontier.question_ids
+    first_workflow = _closed_workflow(service, navigation, first)
+    second_workflow = _closed_workflow(service, navigation, second)
+    base = _input(tmp_path / "bundle-input")
 
-
-def test_read_view_receipt_survives_engine_restart_and_direct_index_reopen(tmp_path: Path):
-    engine_a, run_id, work, unit = _setup(tmp_path, suffix="restart")
-    sq = DOMAINS["domain:randomization"][0]
-    receipt = _location_handle_for(engine_a, run_id, work, sq, unit.unit_id)
-    reopened = EvidenceSearchIndex(tmp_path / ".rob2" / "evidence.sqlite3")
-    persisted = reopened.resolve_read_view_receipt(receipt)
-    assert persisted.fragments == (
-        ReviewedEvidenceFragment(
-            unit_id=unit.unit_id,
-            source_id=unit.source_id,
-            source_artifact_hash=unit.source_artifact_hash,
-            parse_id=unit.parse_id,
-            canonicalization_version=unit.canonicalization_version,
-            unit_content_hash=sha256_digest(unit.text.encode()),
-            span_start=0,
-            span_end=len(unit.text),
-            content_hash=sha256_digest(unit.text.encode()),
-        ),
+    first_bundle = materialize_question_evidence_bundle(
+        base.model_copy(
+            update={
+                "session": service.load(),
+                "workflow": first_workflow,
+                "evidence_closure": evidence_closure_from_workflow(first_workflow),
+            }
+        )
     )
-    fragment = persisted.fragments[0]
-    assert (
-        fragment.source_id,
-        fragment.source_artifact_hash,
-        fragment.parse_id,
-        fragment.canonicalization_version,
-        fragment.unit_content_hash,
-    ) == (
-        unit.source_id,
-        unit.source_artifact_hash,
-        unit.parse_id,
-        unit.canonicalization_version,
-        sha256_digest(unit.text.encode()),
-    )
-
-    engine_b = RunEngine(parser=StructuredPassageParser())
-    engine_b._bind(tmp_path)
-    # The test replaces the process but keeps the existing writer lease's
-    # identity; lease recovery itself is deliberately outside receipt scope.
-    engine_b._owner_id = engine_a._owner_id
-    # A fresh engine can issue the same exact view with a different ephemeral
-    # location handle, but the durable receipt must converge on its immutable
-    # displayed-content identity.
-    assert _location_handle_for(engine_b, run_id, work, sq, unit.unit_id) == receipt
-    _complete_passage_receipts(engine_b, run_id, work, unit_id=unit.unit_id)
-    response = _submit(
-        engine_b,
-        run_id,
-        work,
-        suffix="restart",
-        passages=(
-            EvidencePassageInput(
-                unit_id=unit.unit_id,
-                span_start=0,
-                span_end=len(unit.text),
-                claim_type="claim-type:randomization",
-                candidate_id=unit.unit_id,
-                question_ids=(sq,),
-            ),
-        ),
-        reviews=(
-            _review_revision(
-                candidate_id=unit.unit_id,
-                result_id="result:restart",
-                domain_id="domain:randomization",
-                question_id=sq,
-                location_handle=receipt,
-                span_start=0,
-                span_end=len(unit.text),
-                entity_suffix="restart",
-            ),
-        ),
-    )
-    assert response.committed
-    ledger = engine_b._bound_ledger(run_id)
-    bundle = next(
-        EvidenceBundle.model_validate_json(ledger.artifacts.read(ref.content_hash))
-        for ref in response.evidence_bundles
-        if EvidenceBundle.model_validate_json(ledger.artifacts.read(ref.content_hash)).sq_id == sq
-    )
-    claim = EvidenceClaim.model_validate_json(ledger.artifacts.read(bundle.items[0].content_hash))
-    review = EvidenceReviewRevision.model_validate_json(
-        ledger.artifacts.read(claim.authorizing_review.content_hash)
-    )
-    assert review.spans[0].reviewed_context.fragments[0] == fragment
-    assert not any(
-        item.question_id == sq and item.reason.value == "unresolvable_evidence"
-        for item in engine_b._evidence_insufficiencies(
-            ledger, run_id, "result:restart", {sq: "yes"}
+    second_bundle = materialize_question_evidence_bundle(
+        base.model_copy(
+            update={
+                "session": service.load(),
+                "workflow": second_workflow,
+                "evidence_closure": evidence_closure_from_workflow(second_workflow),
+            }
         )
     )
 
-
-def test_stale_or_unknown_persistent_receipt_writes_no_claim_artifacts(tmp_path: Path):
-    engine, run_id, work, unit = _setup(tmp_path, suffix="stale-receipt")
-    sq = DOMAINS["domain:randomization"][0]
-    receipt = _location_handle_for(engine, run_id, work, sq, unit.unit_id)
-    index = EvidenceSearchIndex(tmp_path / ".rob2" / "evidence.sqlite3")
-    index.replace_units((unit.model_copy(update={"text": unit.text + " changed"}),))
-    before = len(engine._bound_ledger(run_id).events())
-    review = _review_revision(
-        candidate_id=unit.unit_id,
-        result_id="result:stale-receipt",
-        domain_id="domain:randomization",
-        question_id=sq,
-        location_handle=receipt,
-        span_start=0,
-        span_end=len(unit.text),
-        entity_suffix="stale-receipt",
-    )
-    with pytest.raises(StaleCursor, match="rerun search and read") as stale:
-        _submit(
-            engine,
-            run_id,
-            work,
-            suffix="stale-receipt",
-            passages=(
-                EvidencePassageInput(
-                    unit_id=unit.unit_id,
-                    span_start=0,
-                    span_end=len(unit.text),
-                    claim_type="claim-type:randomization",
-                    candidate_id=unit.unit_id,
-                    question_ids=(sq,),
-                ),
-            ),
-            reviews=(review,),
-        )
-    assert stale.value.recovery == ("rerun search_evidence", "rerun read_evidence")
-    assert len(engine._bound_ledger(run_id).events()) == before
-
-    unknown_review = _review_revision(
-        candidate_id=unit.unit_id,
-        result_id="result:stale-receipt",
-        domain_id="domain:randomization",
-        question_id=sq,
-        location_handle="read-view:not-issued",
-        span_start=0,
-        span_end=len(unit.text),
-        entity_suffix="unknown-receipt",
-    )
-    with pytest.raises(UnknownCursor, match="read-view receipt"):
-        _submit(
-            engine,
-            run_id,
-            work,
-            suffix="stale-receipt",
-            passages=(
-                EvidencePassageInput(
-                    unit_id=unit.unit_id,
-                    span_start=0,
-                    span_end=len(unit.text),
-                    claim_type="claim-type:randomization",
-                    candidate_id=unit.unit_id,
-                    question_ids=(sq,),
-                ),
-            ),
-            reviews=(unknown_review,),
-        )
-    assert len(engine._bound_ledger(run_id).events()) == before
-
-
-def _receipt_fragments(units, *, start=0, end=None):
-    return tuple(
-        ReviewedEvidenceFragment(
-            unit_id=unit.unit_id,
-            source_id=unit.source_id,
-            source_artifact_hash=unit.source_artifact_hash,
-            parse_id=unit.parse_id,
-            canonicalization_version=unit.canonicalization_version,
-            unit_content_hash=sha256_digest(unit.text.encode()),
-            span_start=start if index == 0 else 0,
-            span_end=(end if index == 0 else len(unit.text)) if end is not None else len(unit.text),
-            content_hash=sha256_digest(
-                unit.text[
-                    start if index == 0 else 0 : (end if index == 0 else len(unit.text))
-                    if end is not None
-                    else len(unit.text)
-                ].encode()
-            ),
-        )
-        for index, unit in enumerate(units)
-    )
+    assert first_bundle.binding.question_id == first
+    assert second_bundle.binding.question_id == second
+    assert first_bundle.binding.bundle_content_hash != second_bundle.binding.bundle_content_hash

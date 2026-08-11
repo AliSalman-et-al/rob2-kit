@@ -46,6 +46,16 @@ from rob2_kit.interfaces.mcp.server import _retrieval_error, create_server
 HASH = "sha256:" + "a" * 64
 
 
+def _v3_question_scope() -> dict[str, str]:
+    return {
+        "result_id": "result:active",
+        "domain_id": "domain:randomization",
+        "question_id": "sq:randomization:sequence",
+        "session_content_hash": HASH,
+        "expected_navigation_state_hash": HASH,
+    }
+
+
 def test_retrieval_error_codes_preserve_scope_and_validation_boundaries() -> None:
     scope_error = _retrieval_error(
         CursorScopeMismatch("read continuation cursor belongs to a different Evidence scope")
@@ -431,7 +441,7 @@ def test_mcp_search_semantic_query_errors_are_structured(monkeypatch) -> None:
         "token": "token:mcp-search",
         "run_id": "run:mcp",
         "work_item_id": "work-item:mcp",
-        "operation": RunOperation.SUBMIT_DOMAIN_EVIDENCE.value,
+        "operation": RunOperation.SUBMIT_QUESTION_STEP.value,
         "dependency_fingerprint": "sha256:" + "0" * 64,
     }
 
@@ -440,9 +450,14 @@ def test_mcp_search_semantic_query_errors_are_structured(monkeypatch) -> None:
             "search_evidence",
             {
                 "run_id": "run:mcp",
-                "sq_id": "sq:randomization",
                 "query": {"terms": ["allocation OR concealment"]},
                 "work_token": token,
+                **_v3_question_scope(),
+                "proposition_id": "proposition:allocation",
+                "pass_id": "pass:direct-report",
+                "stage_id": "stage:direct-report",
+                "intent_id": "intent:allocation",
+                "attempt_id": "attempt:mcp:invalid-query",
             },
         )
 
@@ -469,7 +484,7 @@ def test_mcp_retrieval_operational_failures_are_structured(monkeypatch) -> None:
         "token": "token:mcp-locked",
         "run_id": "run:mcp",
         "work_item_id": "work-item:mcp",
-        "operation": RunOperation.SUBMIT_DOMAIN_EVIDENCE.value,
+        "operation": RunOperation.SUBMIT_QUESTION_STEP.value,
         "dependency_fingerprint": "sha256:" + "0" * 64,
     }
 
@@ -478,13 +493,14 @@ def test_mcp_retrieval_operational_failures_are_structured(monkeypatch) -> None:
             "search_evidence",
             {
                 "run_id": "run:mcp",
-                "sq_id": "sq:randomization",
                 "query": {"terms": ["allocation"]},
                 "work_token": token,
-                "pass_kind": "guidance_seed",
-                "seed_family": "seed:allocation",
+                **_v3_question_scope(),
+                "proposition_id": "proposition:allocation",
+                "pass_id": "pass:direct-report",
+                "stage_id": "stage:direct-report",
+                "intent_id": "intent:allocation",
                 "attempt_id": "attempt:mcp:locked",
-                "attempt_kind": "selected",
             },
         )
 
@@ -532,7 +548,7 @@ def test_mcp_read_evidence_executes_typed_route_deterministically(monkeypatch) -
         "token": "token:mcp-read",
         "run_id": "run:mcp",
         "work_item_id": "work-item:mcp",
-        "operation": RunOperation.SUBMIT_DOMAIN_EVIDENCE.value,
+        "operation": RunOperation.SUBMIT_QUESTION_STEP.value,
         "dependency_fingerprint": "sha256:" + "0" * 64,
     }
 
@@ -542,7 +558,7 @@ def test_mcp_read_evidence_executes_typed_route_deterministically(monkeypatch) -
             {
                 "run_id": "run:mcp",
                 "work_token": token,
-                "result_id": "result:active",
+                **_v3_question_scope(),
                 "batch": {
                     "scope": {
                         "result_id": "result:active",

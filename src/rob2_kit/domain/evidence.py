@@ -231,6 +231,101 @@ class EvidenceCoverageReceiptRecord(Revision):
     receipts: tuple[dict[str, Any], ...] = ()
 
 
+class V3EvidenceCoverageStageReceipt(FrozenModel):
+    """Typed terminal coverage facts for one materialized v3 stage.
+
+    This deliberately does not reuse the legacy ``receipts: tuple[dict, ...]``
+    shape.  A v3 bundle must retain the reducer's scoped outcome rather than
+    claim that an opaque v2 search receipt represents it.
+    """
+
+    proposition_id: Identifier
+    pass_id: Identifier
+    stage_id: Identifier
+    materialized_scope_id: Identifier
+    active: bool
+    outcome: "V3EvidenceCoverageOutcome | None" = None
+    intent_receipt_hashes: tuple[ContentHash, ...] = ()
+    attempt_ids: tuple[Identifier, ...] = ()
+    limitations: tuple["V3EvidenceCoverageLimitation", ...] = ()
+
+    @model_validator(mode="after")
+    def validate_order(self) -> "V3EvidenceCoverageStageReceipt":
+        if self.intent_receipt_hashes != tuple(sorted(self.intent_receipt_hashes)):
+            raise ValueError("v3 coverage receipt hashes must use canonical order")
+        if self.attempt_ids != tuple(sorted(self.attempt_ids)):
+            raise ValueError("v3 coverage attempt IDs must use canonical order")
+        if self.limitations != tuple(sorted(self.limitations, key=lambda item: item.sort_key)):
+            raise ValueError("v3 coverage limitations must use canonical order")
+        return self
+
+
+class V3EvidenceCoverageOutcome(StrEnum):
+    """Closed v3 reducer outcomes retained by a coverage receipt."""
+
+    OBLIGATION_SATISFIED = "obligation_satisfied"
+    ESCALATION_REQUIRED = "escalation_required"
+    SOURCE_UNAVAILABLE_AFTER_ATTEMPT = "source_unavailable_after_attempt"
+    SEMANTIC_UNCERTAINTY_UNRESOLVED = "semantic_uncertainty_unresolved"
+
+
+class V3EvidenceCoverageLimitationKind(StrEnum):
+    SOURCE_UNAVAILABLE = "source_unavailable"
+    MATERIAL_UNRESOLVED = "material_unresolved"
+    CHRONOLOGY_UNRESOLVED = "chronology_unresolved"
+    CROSS_SOURCE_INSUFFICIENT = "cross_source_insufficient"
+
+
+class V3EvidenceCoverageLimitation(FrozenModel):
+    """One typed materialized-scope limitation, never a flattened string."""
+
+    kind: V3EvidenceCoverageLimitationKind
+    target: str = Field(min_length=1)
+    source_ids: tuple[Identifier, ...] = ()
+    rationale: str = Field(min_length=1)
+
+    @model_validator(mode="after")
+    def validate_sources(self) -> "V3EvidenceCoverageLimitation":
+        if self.source_ids != tuple(sorted(self.source_ids)):
+            raise ValueError("v3 coverage limitation Source IDs must use canonical order")
+        if len(self.source_ids) != len(set(self.source_ids)):
+            raise ValueError("v3 coverage limitation cannot repeat Source IDs")
+        return self
+
+    @property
+    def sort_key(self) -> tuple[str, str, tuple[Identifier, ...], str]:
+        return (self.kind.value, self.target, self.source_ids, self.rationale)
+
+
+class V3EvidenceCoverageReceiptRecord(Revision):
+    """Immutable, typed v3 coverage evidence for one signaling question."""
+
+    result_id: Identifier
+    domain_id: Identifier
+    sq_id: Identifier
+    workflow_state_hash: ContentHash
+    question_closure_hash: ContentHash
+    obligation_revision_id: Identifier
+    obligation_hash: ContentHash
+    inventory_snapshot_hash: ContentHash
+    search_policy_id: Identifier
+    search_policy_hash: ContentHash
+    read_policy_id: Identifier
+    read_policy_hash: ContentHash
+    visual_policy_id: Identifier
+    visual_policy_hash: ContentHash
+    stages: tuple[V3EvidenceCoverageStageReceipt, ...] = ()
+
+    @model_validator(mode="after")
+    def validate_stages(self) -> "V3EvidenceCoverageReceiptRecord":
+        keys = tuple((item.proposition_id, item.pass_id, item.stage_id) for item in self.stages)
+        if len(keys) != len(set(keys)):
+            raise ValueError("v3 coverage receipt cannot repeat a stage")
+        if keys != tuple(sorted(keys)):
+            raise ValueError("v3 coverage receipt stages must use canonical order")
+        return self
+
+
 class EvidenceCandidate(Revision):
     dependency_roles = {
         "canonical_unit": "dependency:canonical-unit",
@@ -299,6 +394,7 @@ class EvidenceBundle(Revision):
         "disposition": "dependency:evidence-disposition",
         "items": "dependency:evidence-item",
         "coverage_receipts": "dependency:search-coverage",
+        "v3_coverage_receipt": "dependency:v3-search-coverage",
         "consideration_manifest": "dependency:evidence-consideration",
         "review_revisions": "dependency:evidence-review",
     }
@@ -311,6 +407,7 @@ class EvidenceBundle(Revision):
     sq_id: Identifier | None = None
     domain_id: Identifier | None = None
     coverage_receipts: tuple[RecordReference, ...] = ()
+    v3_coverage_receipt: RecordReference | None = None
     consideration_manifest: RecordReference | None = None
     review_revisions: tuple[RecordReference, ...] = ()
     coverage_state: EvidenceCoverageState = EvidenceCoverageState.COMPLETE
@@ -327,7 +424,9 @@ class EvidenceBundle(Revision):
             self.coverage_state is not EvidenceCoverageState.COMPLETE or self.coverage_limitations
         ):
             raise ValueError("no-information basis requires complete, unlimited coverage")
-        if self.no_information_basis and not self.coverage_receipts:
+        if self.no_information_basis and not (
+            self.coverage_receipts or self.v3_coverage_receipt is not None
+        ):
             raise ValueError("no-information basis requires Search coverage receipts")
         if self.sq_id is not None and self.consideration_manifest is None:
             raise ValueError("question-specific Evidence Bundles require a consideration manifest")

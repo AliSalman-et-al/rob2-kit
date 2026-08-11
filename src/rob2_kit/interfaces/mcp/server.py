@@ -24,15 +24,14 @@ from rob2_kit.application.contracts import (
     Actor,
     ConfirmRunDefinitionRequest,
     ContinueRunRequest,
+    CorrectQuestionStepRequest,
     ErrorClass,
     Estimate,
-    EvidenceConsiderationInput,
-    EvidenceCoverageState,
     EvidencePassageInput,
     EvidenceReviewRevisionInput,
-    FinalJudgmentInput,
     GetWorkContextRequest,
     InspectVisualCandidateRequest,
+    MaterializeQuestionEvidenceBundleRequest,
     NextAction,
     NextActionArguments,
     OperationError,
@@ -41,8 +40,9 @@ from rob2_kit.application.contracts import (
     ProposalDiscoveryCoverageReceipt,
     ProposalDiscoveryDispositionInput,
     ProposalPromotionBatchInput,
+    QuestionEvidenceBundleBinding,
+    QuestionVisualProvenanceInput,
     ReadEvidenceRequest,
-    RecordReference,
     ReportedArmCandidate,
     ReportedEndpointCandidate,
     ReportedRandomizationCandidate,
@@ -54,22 +54,21 @@ from rob2_kit.application.contracts import (
     RunProposalAmbiguity,
     RunProposalSelection,
     SearchEvidenceRequest,
-    SearchPassKind,
     SearchQuery,
     SearchQueryEnvelope,
-    SQAnswerInput,
-    SubmitDomainAnswersRequest,
-    SubmitDomainEvidenceRequest,
     SubmitEvidenceReviewRequest,
+    SubmitEvidenceStageOutcomeRequest,
     SubmitProposalDiscoveryReviewRequest,
+    SubmitQuestionStepRequest,
     SubmitResultMappingReviewRequest,
     SubmitResultResolutionRequest,
     SubmitRunProposalRequest,
+    SubmitSourceChronologyReviewRequest,
     SubmitSourceRoleReviewRequest,
     VisualRenderRequest,
     WorkflowCondition,
     WorkToken,
-    v2_model_facing_operation_payload,
+    model_facing_operation_payload,
 )
 from rob2_kit.application.lifecycle import RunState
 from rob2_kit.application.run_engine import RunEngine, SecondProjectRootError
@@ -82,7 +81,10 @@ from rob2_kit.evidence.search import (
     EvidenceReadBatchRequest,
     SearchContinuationReason,
 )
-from rob2_kit.evidence.workflow import V2CandidateTriageRevision, V2QueryAttemptKind
+from rob2_kit.evidence.workflow import (
+    V3CandidateTriageRevision,
+    V3EvidenceStageOutcomeSubmission,
+)
 from rob2_kit.interfaces.harness import verify_runtime_self_consistency
 from rob2_kit.release import SKILL_ALLOWED_TOOL_NAMES
 
@@ -125,7 +127,7 @@ def register_route_groups(
 
 
 def registered_tool_names() -> tuple[str, ...]:
-    """Return the fixed twelve-tool model-visible inventory in wire order."""
+    """Return the fixed release-owned model-visible inventory in wire order."""
 
     return CANONICAL_TOOL_NAMES
 
@@ -202,13 +204,13 @@ def _dump(response: Any) -> dict[str, Any]:
         # Replace the context's duplicate canonical payload with its stable ID.
         payload["context"].pop("unit", None)
         payload["context"]["unit_id"] = payload["unit"]["unit_id"]
-    if getattr(response, "evidence_navigation_contract_version", None) == "2.0.0":
+    if getattr(response, "evidence_navigation_contract_version", None) == "3.0.0":
         # Search/read pages already carry their engine-authored concrete next
         # actions.  The generic lifecycle continuation duplicates that data
         # for every page and is not a navigation instruction.
         # Search packing uses this exact same composition function, including
         # coverage progress and response accounting, before a page is emitted.
-        payload = v2_model_facing_operation_payload(response)
+        payload = model_facing_operation_payload(response)
     return payload
 
 
@@ -572,46 +574,38 @@ def create_server(
         ],
         work_token: Annotated[
             WorkToken,
-            Field(
-                description="Opaque token copied from the active submit_domain_evidence WorkItem."
-            ),
+            Field(description="Opaque token copied from the active submit_question_step WorkItem."),
         ],
-        sq_id: Annotated[str, Field(min_length=1, description="Active signaling-question scope.")],
-        result_id: Annotated[
-            str | None, Field(min_length=1, description="Optional active Result identifier.")
-        ] = None,
-        attempt_id: Annotated[
-            str, Field(min_length=1, description="Stable v2 search attempt ID.")
-        ] = "",
-        attempt_kind: V2QueryAttemptKind = V2QueryAttemptKind.SELECTED,
+        result_id: str,
+        domain_id: str,
+        question_id: str,
+        session_content_hash: str,
+        expected_navigation_state_hash: str,
+        proposition_id: str,
+        pass_id: str,
+        stage_id: str,
+        intent_id: str,
+        attempt_id: str,
         continuation: Annotated[
             str | None,
-            Field(min_length=1, description="Opaque v2 continuation returned by a prior page."),
+            Field(min_length=1, description="Opaque continuation returned by a prior page."),
         ] = None,
-        pass_kind: SearchPassKind = SearchPassKind.GUIDANCE_SEED,
-        seed_family: Annotated[
-            str | None,
-            Field(
-                description="Stable identifier-shaped guidance seed family, e.g. seed:allocation."
-            ),
-        ] = None,
-        supersedes_attempt_id: str | None = None,
+        supersede_attempt_id: str | None = None,
         supersession_rationale: str | None = None,
         continue_reason: SearchContinuationReason | None = None,
         continue_rationale: str | None = None,
     ) -> CallToolResult:
         """When to use: search evidence for the active Domain question.
 
-        Prerequisite: a current ``submit_domain_evidence`` WorkToken. Safe default:
+        Prerequisite: a current question-scoped evidence WorkToken. Safe default:
         use structured terms and traverse returned pages. Search returns visible,
         non-citable candidates with opaque location handles. Not for: raw
         FTS, caller budgets, semantic eligibility filtering, or widening scope
         beyond the issued Result.
 
-        For example, use query={"terms":["allocation"]}. With
-        pass_kind="guidance_seed", reuse that exact label in the coverage receipt,
-        e.g. seed_family="seed:allocation"; for trial_follow_up or contradiction,
-        omit seed_family.
+        For example, use query={"terms":["allocation"]} with the proposition,
+        pass, stage, intent, attempt, session, and navigation-state identities
+        copied from the current context.
 
         During Domain evidence work, copy ``work_token`` from the active
         ``continue_run`` item. It supplies Trial/Result/Domain scope; never
@@ -625,14 +619,18 @@ def create_server(
                     "work_token": work_token,
                     "query": SearchQuery.model_validate(query.model_dump()),
                     "result_id": result_id,
-                    "contract_version": "2.0.0",
+                    "domain_id": domain_id,
+                    "question_id": question_id,
+                    "session_content_hash": session_content_hash,
+                    "expected_navigation_state_hash": expected_navigation_state_hash,
+                    "contract_version": "3.0.0",
                     "continuation": continuation,
-                    "sq_id": sq_id,
-                    "pass_kind": pass_kind,
-                    "seed_family": seed_family,
+                    "proposition_id": proposition_id,
+                    "pass_id": pass_id,
+                    "stage_id": stage_id,
+                    "intent_id": intent_id,
                     "attempt_id": attempt_id,
-                    "attempt_kind": attempt_kind,
-                    "supersedes_attempt_id": supersedes_attempt_id,
+                    "supersede_attempt_id": supersede_attempt_id,
                     "supersession_rationale": supersession_rationale,
                     "continue_reason": continue_reason,
                     "continue_rationale": continue_rationale,
@@ -662,13 +660,13 @@ def create_server(
         batch: EvidenceReadBatchRequest,
         work_token: Annotated[
             WorkToken,
-            Field(
-                description="Opaque token copied from the active submit_domain_evidence WorkItem."
-            ),
+            Field(description="Opaque token copied from the active submit_question_step WorkItem."),
         ],
-        result_id: Annotated[
-            str | None, Field(min_length=1, description="Optional active Result identifier.")
-        ] = None,
+        result_id: str,
+        domain_id: str,
+        question_id: str,
+        session_content_hash: str,
+        expected_navigation_state_hash: str,
     ) -> CallToolResult:
         """When to use: read one source-preserving candidate returned by scoped search.
 
@@ -685,9 +683,13 @@ def create_server(
                     ReadEvidenceRequest.model_validate(
                         {
                             "run_id": run_id,
-                            "contract_version": "2.0.0",
+                            "contract_version": "3.0.0",
                             "work_token": work_token,
                             "result_id": result_id,
+                            "domain_id": domain_id,
+                            "question_id": question_id,
+                            "session_content_hash": session_content_hash,
+                            "expected_navigation_state_hash": expected_navigation_state_hash,
                             "batch": batch,
                         }
                     )
@@ -714,20 +716,23 @@ def create_server(
         work_token: WorkToken,
         result_id: str,
         domain_id: str,
+        question_id: str,
+        session_content_hash: str,
+        expected_navigation_state_hash: str,
         submission_id: str,
         page_handles: tuple[str, ...],
-        triage_revisions: tuple[V2CandidateTriageRevision, ...],
+        triage_revisions: tuple[V3CandidateTriageRevision, ...],
         idempotency_key: str | None = None,
-        contract_version: Literal["2.0.0"] = "2.0.0",
+        contract_version: Literal["3.0.0"] = "3.0.0",
     ) -> CallToolResult:
         """When to use: record the exact page-level triage audit before Evidence freeze.
 
-        Prerequisite: an active Domain-Evidence WorkToken and complete exposed
-        page handles from v2 search attempts. Safe default: submit one exact
+        Prerequisite: an active question-scoped evidence WorkToken and complete exposed
+        page handles from v3 search attempts. Safe default: submit one exact
         append-only partition, including selected, exploratory, and superseded
         pages, and triage every candidate. Not for: creating a scientific
         passage or silently auto-disposing candidates; use batch reads and
-        submit_domain_evidence after coverage and triage are ready.
+        materialize_question_evidence_bundle after coverage and triage are ready.
         """
         try:
             request = SubmitEvidenceReviewRequest.model_validate(
@@ -735,10 +740,12 @@ def create_server(
                     "contract_version": contract_version,
                     "run_id": run_id,
                     "work_token": work_token,
-                    "idempotency_key": idempotency_key
-                    or _submission_key("evidence-review", submission_id),
+                    "idempotency_key": idempotency_key or submission_id,
                     "result_id": result_id,
                     "domain_id": domain_id,
+                    "question_id": question_id,
+                    "session_content_hash": session_content_hash,
+                    "expected_navigation_state_hash": expected_navigation_state_hash,
                     "submission_id": submission_id,
                     "page_handles": page_handles,
                     "triage_revisions": triage_revisions,
@@ -752,6 +759,286 @@ def create_server(
                 _retrieval_error(
                     invalid_request_from_validation(
                         error, sibling_model=SubmitEvidenceReviewRequest
+                    )
+                )
+            )
+
+    @server.tool(name="submit_evidence_stage_outcome", structured_output=False)
+    def submit_evidence_stage_outcome(
+        run_id: str,
+        work_token: WorkToken,
+        result_id: str,
+        domain_id: str,
+        question_id: str,
+        session_content_hash: str,
+        expected_navigation_state_hash: str,
+        submission: V3EvidenceStageOutcomeSubmission,
+        idempotency_key: str | None = None,
+        contract_version: Literal["3.0.0"] = "3.0.0",
+    ) -> CallToolResult:
+        """When to use: close one exhaustively traversed evidence coverage stage.
+
+        Prerequisite: every active intent is fully paged and every exposed candidate
+        has terminal triage. Safe default: report the observed closed outcome and
+        exact trigger dispositions. Not for: claiming source unavailability without
+        an engine-issued acquisition receipt or bypassing a mandatory later stage.
+        """
+        try:
+            return _wire_result(
+                engine.submit_evidence_stage_outcome(
+                    SubmitEvidenceStageOutcomeRequest.model_validate(
+                        {
+                            "contract_version": contract_version,
+                            "run_id": run_id,
+                            "work_token": work_token,
+                            "idempotency_key": idempotency_key
+                            or _submission_key("evidence-stage-outcome", submission.submission_id),
+                            "result_id": result_id,
+                            "domain_id": domain_id,
+                            "question_id": question_id,
+                            "session_content_hash": session_content_hash,
+                            "expected_navigation_state_hash": expected_navigation_state_hash,
+                            "submission": submission,
+                        }
+                    )
+                )
+            )
+        except (RetrievalFailure, ValidationError) as error:
+            return _wire_result(
+                _retrieval_error(
+                    error
+                    if isinstance(error, RetrievalFailure)
+                    else invalid_request_from_validation(
+                        error, sibling_model=SubmitEvidenceStageOutcomeRequest
+                    )
+                )
+            )
+
+    @server.tool(name="materialize_question_evidence_bundle", structured_output=False)
+    def materialize_question_evidence_bundle(
+        run_id: str,
+        work_token: WorkToken,
+        result_id: str,
+        domain_id: str,
+        question_id: str,
+        session_content_hash: str,
+        frontier_entry_hash: str,
+        expected_navigation_state_hash: str,
+        review_revisions: list[EvidenceReviewRevisionInput] | None = None,
+        passages: list[EvidencePassageInput] | None = None,
+        visual_transcriptions: list[QuestionVisualProvenanceInput] | None = None,
+        idempotency_key: str | None = None,
+        contract_version: Literal["3.0.0"] = "3.0.0",
+    ) -> CallToolResult:
+        """When to use: freeze the reviewed evidence basis for one active question.
+
+        Prerequisite: the question's v3 navigation workflow is closed and every
+        supplied review, passage, and visual provenance identity is current. Safe default:
+        submit only exact engine-issued revisions and read receipts. Not for:
+        selecting polarity, asserting No-information, or freezing search previews.
+        """
+        try:
+            return _wire_result(
+                engine.materialize_question_evidence_bundle(
+                    MaterializeQuestionEvidenceBundleRequest.model_validate(
+                        {
+                            "contract_version": contract_version,
+                            "run_id": run_id,
+                            "work_token": work_token,
+                            "idempotency_key": idempotency_key
+                            or _submission_key("question-evidence-bundle", work_token.token),
+                            "result_id": result_id,
+                            "domain_id": domain_id,
+                            "question_id": question_id,
+                            "session_content_hash": session_content_hash,
+                            "frontier_entry_hash": frontier_entry_hash,
+                            "expected_navigation_state_hash": expected_navigation_state_hash,
+                            "review_revisions": review_revisions or (),
+                            "passages": passages or (),
+                            "visual_transcriptions": visual_transcriptions or (),
+                        }
+                    )
+                )
+            )
+        except (RetrievalFailure, ValidationError) as error:
+            return _wire_result(
+                _retrieval_error(
+                    error
+                    if isinstance(error, RetrievalFailure)
+                    else invalid_request_from_validation(
+                        error, sibling_model=MaterializeQuestionEvidenceBundleRequest
+                    )
+                )
+            )
+
+    @server.tool(name="submit_question_step", structured_output=False)
+    def submit_question_step(
+        run_id: str,
+        work_token: WorkToken,
+        result_id: str,
+        domain_id: str,
+        question_id: str,
+        session_content_hash: str,
+        frontier_entry_hash: str,
+        answer: str | None = None,
+        rationale: str | None = None,
+        diagnostic_stop: bool = False,
+        evidence_bundle: QuestionEvidenceBundleBinding | None = None,
+        idempotency_key: str | None = None,
+        contract_version: Literal["3.0.0"] = "3.0.0",
+    ) -> CallToolResult:
+        """When to use: commit the active question's answer or diagnostic stop.
+
+        Prerequisite: use the current frontier entry and, for an answer, the exact
+        engine-materialized Evidence Bundle. Safe default: submit one active question
+        only. Not for: inventing evidence, answering through a material limitation,
+        or revising a committed answer; use the issued correction workflow.
+        """
+        try:
+            return _wire_result(
+                engine.submit_question_step(
+                    SubmitQuestionStepRequest.model_validate(
+                        {
+                            "contract_version": contract_version,
+                            "run_id": run_id,
+                            "work_token": work_token,
+                            "idempotency_key": idempotency_key
+                            or _submission_key("question-step", work_token.token),
+                            "result_id": result_id,
+                            "domain_id": domain_id,
+                            "question_id": question_id,
+                            "session_content_hash": session_content_hash,
+                            "frontier_entry_hash": frontier_entry_hash,
+                            "answer": answer,
+                            "rationale": rationale,
+                            "diagnostic_stop": diagnostic_stop,
+                            "evidence_bundle": evidence_bundle,
+                        }
+                    )
+                )
+            )
+        except (RetrievalFailure, ValidationError) as error:
+            return _wire_result(
+                _retrieval_error(
+                    error
+                    if isinstance(error, RetrievalFailure)
+                    else invalid_request_from_validation(
+                        error, sibling_model=SubmitQuestionStepRequest
+                    )
+                )
+            )
+
+    @server.tool(name="correct_question_step", structured_output=False)
+    def correct_question_step(
+        run_id: str,
+        work_token: WorkToken,
+        result_id: str,
+        domain_id: str,
+        question_id: str,
+        session_content_hash: str,
+        prior_step_hash: str,
+        answer: str,
+        rationale: str,
+        evidence_bundle: QuestionEvidenceBundleBinding,
+        idempotency_key: str | None = None,
+        contract_version: Literal["3.0.0"] = "3.0.0",
+    ) -> CallToolResult:
+        """When to use: replace one effective answer through an issued correction item.
+
+        Prerequisite: copy the correction WorkToken and exact prior effective step
+        hash, then bind the replacement to the current Evidence Bundle. Safe default:
+        correct only the named question and let the engine invalidate affected later
+        work. Not for: editing history or reusing a stale correction token.
+        """
+        try:
+            return _wire_result(
+                engine.correct_question_step(
+                    CorrectQuestionStepRequest.model_validate(
+                        {
+                            "contract_version": contract_version,
+                            "run_id": run_id,
+                            "work_token": work_token,
+                            "idempotency_key": idempotency_key
+                            or _submission_key("question-correction", work_token.token),
+                            "result_id": result_id,
+                            "domain_id": domain_id,
+                            "question_id": question_id,
+                            "session_content_hash": session_content_hash,
+                            "prior_step_hash": prior_step_hash,
+                            "answer": answer,
+                            "rationale": rationale,
+                            "evidence_bundle": evidence_bundle,
+                        }
+                    )
+                )
+            )
+        except (RetrievalFailure, ValidationError) as error:
+            return _wire_result(
+                _retrieval_error(
+                    error
+                    if isinstance(error, RetrievalFailure)
+                    else invalid_request_from_validation(
+                        error, sibling_model=CorrectQuestionStepRequest
+                    )
+                )
+            )
+
+    @server.tool(name="submit_source_chronology_review", structured_output=False)
+    def submit_source_chronology_review(
+        run_id: str,
+        work_token: WorkToken,
+        result_id: str,
+        domain_id: str,
+        question_id: str,
+        source_id: str,
+        source_artifact_hash: str,
+        parse_id: str,
+        parse_output_hash: str,
+        constraint: str,
+        status: str,
+        rationale: str,
+        evidence_read_receipt: str,
+        idempotency_key: str | None = None,
+        contract_version: Literal["3.0.0"] = "3.0.0",
+    ) -> CallToolResult:
+        """When to use: resolve one source's chronology for a constrained stage.
+
+        Prerequisite: an exact source/parse identity and evidence read receipt from
+        the active question. Safe default: report only attributable dated evidence.
+        Not for: inferring chronology from filenames or unaudited metadata.
+        """
+        try:
+            return _wire_result(
+                engine.submit_source_chronology_review(
+                    SubmitSourceChronologyReviewRequest.model_validate(
+                        {
+                            "contract_version": contract_version,
+                            "run_id": run_id,
+                            "work_token": work_token,
+                            "idempotency_key": idempotency_key
+                            or _submission_key("source-chronology", work_token.token),
+                            "result_id": result_id,
+                            "domain_id": domain_id,
+                            "question_id": question_id,
+                            "source_id": source_id,
+                            "source_artifact_hash": source_artifact_hash,
+                            "parse_id": parse_id,
+                            "parse_output_hash": parse_output_hash,
+                            "constraint": constraint,
+                            "status": status,
+                            "rationale": rationale,
+                            "evidence_read_receipt": evidence_read_receipt,
+                        }
+                    )
+                )
+            )
+        except (RetrievalFailure, ValidationError) as error:
+            return _wire_result(
+                _retrieval_error(
+                    error
+                    if isinstance(error, RetrievalFailure)
+                    else invalid_request_from_validation(
+                        error, sibling_model=SubmitSourceChronologyReviewRequest
                     )
                 )
             )
@@ -845,211 +1132,6 @@ def create_server(
                         "result": result,
                         "estimate": estimate,
                         "provenance_note": provenance_note,
-                        "contract_version": contract_version,
-                    }
-                )
-            )
-        )
-
-    @server.tool(name="submit_domain_evidence")
-    def submit_domain_evidence(
-        run_id: Annotated[
-            str, Field(description="Run ID from the current work context; copy verbatim.")
-        ],
-        work_token: Annotated[
-            WorkToken,
-            Field(
-                description=(
-                    "Fresh token issued for this domain evidence work item; rebind after retry."
-                )
-            ),
-        ],
-        result_id: Annotated[
-            str, Field(description="Result ID issued by get_work_context; copy verbatim.")
-        ],
-        domain_id: Annotated[
-            str, Field(description="Domain ID issued by get_work_context; copy verbatim.")
-        ],
-        contract_version: Annotated[
-            Literal["2.0.0"],
-            Field(description="Exact contract version returned by the installed release."),
-        ],
-        passages: Annotated[
-            list[EvidencePassageInput] | None,
-            Field(
-                description=(
-                    "Exact canonical passages selected for this Domain's Evidence. Mutually "
-                    "exclusive with items, evidence_by_question, and candidate_dispositions."
-                )
-            ),
-        ] = None,
-        items: Annotated[
-            list[RecordReference] | None,
-            Field(
-                description=(
-                    "Visual-transcription-backed Evidence references only; an inspected "
-                    "Visual candidate (table, figure) has no passages equivalent. Requires "
-                    "evidence_by_question and candidate_dispositions; reject textual "
-                    "material here, resubmit it via passages instead."
-                )
-            ),
-        ] = None,
-        evidence_by_question: Annotated[
-            dict[str, list[RecordReference]] | None,
-            Field(
-                description=(
-                    "evidence_by_question maps items above to signaling questions; "
-                    "visual-transcription references only."
-                )
-            ),
-        ] = None,
-        candidate_dispositions: Annotated[
-            list[EvidenceConsiderationInput] | None,
-            Field(description="Per-item disposition for visual-transcription items above."),
-        ] = None,
-        coverage_state: Annotated[
-            EvidenceCoverageState | None,
-            Field(description="Use complete, complete_with_limitations, or incomplete."),
-        ] = None,
-        coverage_limitations: Annotated[
-            list[str] | None,
-            Field(
-                description=(
-                    "Material limitations; exact field name is coverage_limitations, "
-                    "not limitation."
-                )
-            ),
-        ] = None,
-        no_information_basis: Annotated[
-            bool,
-            Field(
-                description=(
-                    "Set true only after search_evidence reports coverage_complete=true for "
-                    "every active question in this Domain and every Source was readable."
-                )
-            ),
-        ] = False,
-        conflicts: Annotated[
-            list[list[str]] | None,
-            Field(
-                description=(
-                    "conflicts links a superseded item to its replacement as candidate-ID groups; "
-                    "required whenever a review revision's span disposition is superseded."
-                )
-            ),
-        ] = None,
-        review_revisions: Annotated[
-            list[EvidenceReviewRevisionInput] | None,
-            Field(
-                description=(
-                    "Question-specific, append-only semantic review revisions. Each span "
-                    "references an issued read-view receipt, attribution, exact bounds, "
-                    "and rationale; "
-                    "unresolved or needs_visual_review spans block freeze."
-                )
-            ),
-        ] = None,
-        project_rules: Annotated[
-            list[RecordReference] | None,
-            Field(description="Issued project-rule references that materially guide this bundle."),
-        ] = None,
-    ) -> dict[str, Any]:
-        """When to use: freeze the reviewed evidence for one active Domain.
-
-        Prerequisite: current Domain context, completed required search coverage,
-        and append-only semantic review of every material candidate. Safe default:
-        submit the issued exact spans and review revisions. Not for: treating a
-        search projection, parser label, or incomplete search as citable Evidence
-        or as no information.
-
-        ``review_revisions`` bind each span's Trial attribution, Result scope, issued
-        read-view receipt, exact source bounds, dispositions, and rationale. They are
-        append-only; correction creates a later revision. A material unresolved or
-        ``needs_visual_review`` span prevents freeze. Other-Trial or reference text
-        may be reviewed and rejected explicitly, but omission is not rejection.
-
-        Use passages using issued ``unit_id``, exact spans, and active
-        ``question_ids``. A passage's disposition accepts only the enum values
-        ``supporting``, ``contradicting``, ``contextual``, ``duplicate``,
-        ``out_of_scope``, ``immaterial``, ``superseded``, and ``unresolved``;
-        ``irrelevant`` is not valid. ``conflicts`` links a superseded passage to
-        its replacement. Rebind every identifier and token from the latest
-        ``get_work_context`` after a retry or dynamic branch.
-
-        ``items``, ``evidence_by_question``, and ``candidate_dispositions`` are
-        accepted only for Visual-transcription-backed material returned by
-        ``inspect_visual_candidate``; a table or figure has no ``passages``
-        equivalent. Any other reference there is rejected -- resubmit textual
-        material using ``passages`` instead.
-
-        Use claim-type IDs. An adequate completed search (call search_evidence until
-        its coverage_progress reports coverage_complete=true) with no evidence stays
-        coverage_state="complete" and may support no_information_basis=true; the
-        engine looks up your accumulated Search coverage itself, so there is no
-        receipt to construct or submit. Use coverage_state="complete_with_limitations"
-        only for a material residual source/search uncertainty, and
-        coverage_state="incomplete" only when required searching or reading could
-        not finish.
-        """
-        return _dump(
-            engine.submit_domain_evidence(
-                SubmitDomainEvidenceRequest.model_validate(
-                    {
-                        "run_id": run_id,
-                        "work_token": work_token,
-                        "idempotency_key": _submission_key("domain-evidence", work_token.token),
-                        "result_id": result_id,
-                        "domain_id": domain_id,
-                        "passages": passages or (),
-                        "items": items or (),
-                        "evidence_by_question": evidence_by_question or {},
-                        "candidate_dispositions": candidate_dispositions or (),
-                        "coverage_state": coverage_state or EvidenceCoverageState.COMPLETE,
-                        "coverage_limitations": coverage_limitations or (),
-                        "no_information_basis": no_information_basis,
-                        "conflicts": conflicts or (),
-                        "review_revisions": review_revisions or (),
-                        "project_rules": project_rules or (),
-                        "contract_version": contract_version,
-                    }
-                )
-            )
-        )
-
-    @server.tool(name="submit_domain_answers")
-    def submit_domain_answers(
-        run_id: str,
-        work_token: WorkToken,
-        result_id: str,
-        domain_id: str,
-        answers: list[SQAnswerInput],
-        contract_version: Literal["1.0.0"],
-        assessor_inputs: dict[str, bool] | None = None,
-        final_judgment_departures: list[FinalJudgmentInput] | None = None,
-        project_rules: list[RecordReference] | None = None,
-    ) -> dict[str, Any]:
-        """When to use: answer every active question after its evidence is frozen.
-
-        Prerequisite: current Domain answer token and bounded evidence context.
-        Safe default: answer active questions only. Not for: answering inactive questions
-        or editing a published report; corrections require an issued correction path.
-
-        Answer every active question in get_work_context with yes, probably_yes,
-        probably_no, no, or no_information.
-        """
-        return _dump(
-            engine.submit_domain_answers(
-                SubmitDomainAnswersRequest.model_validate(
-                    {
-                        "run_id": run_id,
-                        "work_token": work_token,
-                        "idempotency_key": _submission_key("domain-answers", work_token.token),
-                        "result_id": result_id,
-                        "domain_id": domain_id,
-                        "answers": answers,
-                        "assessor_inputs": assessor_inputs or {},
-                        "final_judgment_departures": final_judgment_departures or (),
-                        "project_rules": project_rules or (),
                         "contract_version": contract_version,
                     }
                 )

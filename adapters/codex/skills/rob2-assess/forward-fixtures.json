@@ -3,7 +3,7 @@
     "scenario": "normal",
     "prompt": "Assess risk of bias for the randomized-trial result in this project.",
     "activated_skill": "rob2-assess",
-    "allowed_tools": ["prepare_run", "continue_run", "get_work_context", "search_evidence", "read_evidence", "submit_evidence_review", "submit_domain_evidence", "submit_domain_answers"]
+    "allowed_tools": ["prepare_run", "continue_run", "get_work_context", "search_evidence", "read_evidence", "submit_evidence_review", "submit_evidence_stage_outcome", "materialize_question_evidence_bundle", "submit_question_step", "correct_question_step", "submit_source_chronology_review"]
   },
   {
     "scenario": "resume",

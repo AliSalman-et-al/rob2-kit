@@ -9,6 +9,7 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from rob2_kit.domain.assessment import JudgmentLevel, SQAnswerCategory
 from rob2_kit.domain.canonical import canonical_hash
+from rob2_kit.evidence.obligations import EvidenceSearchObligation, compile_guidance_obligations
 
 
 class ImmutableModel(BaseModel):
@@ -236,6 +237,7 @@ class GuidancePack(ImmutableModel):
     language: str
     compatible_logic_hashes: tuple[str, ...]
     items: tuple[GuidanceItem, ...]
+    obligations: tuple[EvidenceSearchObligation, ...] = Field(min_length=1)
     inventory: tuple[str, ...]
     provenance: tuple[Provenance, ...]
     # Pack-wide interpretation boundaries are disclosed alongside the
@@ -343,3 +345,4 @@ def validate_guidance_compatibility(logic: LogicPack, guidance: GuidancePack) ->
     actual_ids = [item.logic_element_id for item in guidance.items]
     if len(actual_ids) != len(set(actual_ids)) or set(actual_ids) != expected_ids:
         raise ValueError("Guidance inventory must cover each Logic element exactly once")
+    compile_guidance_obligations(logic, guidance)

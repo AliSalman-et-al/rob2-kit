@@ -1,4 +1,4 @@
-"""Project-local durable state for the v2 Evidence navigation boundary."""
+"""Project-local v3 navigation persistence and read-only historical decoding."""
 
 from __future__ import annotations
 
@@ -12,9 +12,10 @@ from pydantic import model_validator
 
 from rob2_kit.domain.canonical import canonical_hash, canonical_json_bytes
 from rob2_kit.domain.revisions import ContentHash, FrozenModel, Identifier
-from rob2_kit.evidence.workflow import V2EvidenceWorkflowState
+from rob2_kit.evidence.workflow import V2EvidenceWorkflowState, V3EvidenceWorkflowState
 
 EVIDENCE_NAVIGATION_STATE_VERSION = "evidence-navigation-state:2.0.0"
+V3_EVIDENCE_NAVIGATION_STATE_VERSION = "evidence-navigation-state:3.0.0"
 
 
 class IncompatibleEvidenceNavigationState(ValueError):
@@ -26,7 +27,7 @@ class ConcurrentEvidenceNavigationUpdate(ValueError):
 
 
 class EvidenceNavigationState(FrozenModel):
-    """Hash-validated v2 audit state bound to one Result x Domain."""
+    """Historical v2 audit state; retained read-only until atomic cutover."""
 
     state_version: str = EVIDENCE_NAVIGATION_STATE_VERSION
     contract_version: str = "2.0.0"
@@ -63,49 +64,92 @@ class EvidenceNavigationState(FrozenModel):
         return self
 
 
-def new_navigation_state(
-    *,
-    run_id: Identifier,
-    workflow: V2EvidenceWorkflowState,
-    read_policy_id: Identifier,
-    read_policy_hash: ContentHash,
-) -> EvidenceNavigationState:
-    # Serialize through the persisted model shape before hashing so nested
-    # enum/model normalization cannot make the constructor's raw payload
-    # differ from the validator's canonical payload.
-    unsigned = EvidenceNavigationState.model_construct(
-        state_version=EVIDENCE_NAVIGATION_STATE_VERSION,
-        contract_version="2.0.0",
-        run_id=run_id,
+class V3EvidenceNavigationState(FrozenModel):
+    """Content-hashed v3 state, intentionally incompatible with v2 JSON."""
+
+    state_version: str = V3_EVIDENCE_NAVIGATION_STATE_VERSION
+    contract_version: str = "3.0.0"
+    run_id: Identifier
+    result_id: Identifier
+    domain_id: Identifier
+    question_id: Identifier
+    workflow: V3EvidenceWorkflowState
+    content_hash: ContentHash
+
+    @model_validator(mode="after")
+    def validate_identity(self) -> V3EvidenceNavigationState:
+        if (self.run_id, self.result_id, self.domain_id, self.question_id) != (
+            self.workflow.run_id,
+            self.workflow.result_id,
+            self.workflow.domain_id,
+            self.workflow.question_id,
+        ):
+            raise ValueError("v3 persisted state does not bind its workflow identities")
+        payload = self.model_dump(mode="json")
+        payload["content_hash"] = None
+        if self.content_hash != canonical_hash(payload):
+            raise ValueError("v3 evidence navigation state content hash does not bind its payload")
+        return self
+
+
+def new_v3_navigation_state(*, workflow: V3EvidenceWorkflowState) -> V3EvidenceNavigationState:
+    unsigned = V3EvidenceNavigationState.model_construct(
+        state_version=V3_EVIDENCE_NAVIGATION_STATE_VERSION,
+        contract_version="3.0.0",
+        run_id=workflow.run_id,
         result_id=workflow.result_id,
         domain_id=workflow.domain_id,
-        snapshot_hash=workflow.snapshot_hash,
-        search_policy_id=workflow.search_policy_id,
-        search_policy_hash=workflow.search_policy_hash,
-        read_policy_id=read_policy_id,
-        read_policy_hash=read_policy_hash,
+        question_id=workflow.question_id,
         workflow=workflow,
         content_hash="",
     )
-    canonical_payload = unsigned.model_dump(mode="json")
-    canonical_payload["content_hash"] = None
-    return EvidenceNavigationState.model_validate(
-        canonical_payload | {"content_hash": canonical_hash(canonical_payload)}
+    payload = unsigned.model_dump(mode="json")
+    payload["content_hash"] = None
+    return V3EvidenceNavigationState.model_validate(
+        payload | {"content_hash": canonical_hash(payload)}
     )
 
 
-class EvidenceNavigationStore:
-    """Atomic JSON persistence with exact path containment on Windows and POSIX."""
+def decode_v2_historical_navigation_state(raw: bytes) -> EvidenceNavigationState:
+    """Explicit read-only decoder for v2 artifacts; it never upgrades them."""
+
+    try:
+        return EvidenceNavigationState.model_validate_json(raw)
+    except ValueError as error:
+        raise IncompatibleEvidenceNavigationState(
+            "historical v2 navigation state is unreadable"
+        ) from error
+
+
+class V3EvidenceNavigationStore:
+    """Atomic persistence for v3; its path namespace prevents in-place v2 reuse."""
 
     def __init__(self, root: Path) -> None:
-        self.root = (root / ".rob2" / "evidence-navigation").resolve()
+        self.root = (root / ".rob2" / "evidence-navigation-v3").resolve()
 
-    def _path(self, run_id: Identifier, result_id: Identifier, domain_id: Identifier) -> Path:
-        safe = "|".join((run_id, result_id, domain_id))
-        filename = canonical_hash({"v": EVIDENCE_NAVIGATION_STATE_VERSION, "key": safe})[7:]
-        path = (self.root / f"{filename}.json").resolve()
+    def _path(
+        self,
+        run_id: Identifier,
+        result_id: Identifier,
+        domain_id: Identifier,
+        question_id: Identifier,
+        obligation_hash: ContentHash,
+        inventory_snapshot_hash: ContentHash,
+    ) -> Path:
+        key = {
+            "run_id": run_id,
+            "result_id": result_id,
+            "domain_id": domain_id,
+            "question_id": question_id,
+            "obligation_hash": obligation_hash,
+            "inventory_snapshot_hash": inventory_snapshot_hash,
+        }
+        path = (
+            self.root
+            / f"{canonical_hash({'v': V3_EVIDENCE_NAVIGATION_STATE_VERSION, 'key': key})[7:]}.json"
+        ).resolve()
         if path.parent != self.root:
-            raise ValueError("evidence navigation state path escaped project storage")
+            raise ValueError("v3 evidence navigation state path escaped project storage")
         return path
 
     def load(
@@ -114,51 +158,42 @@ class EvidenceNavigationStore:
         run_id: Identifier,
         result_id: Identifier,
         domain_id: Identifier,
-        snapshot_hash: ContentHash,
-        search_policy_id: Identifier,
-        search_policy_hash: ContentHash,
-        read_policy_id: Identifier,
-        read_policy_hash: ContentHash,
-    ) -> EvidenceNavigationState | None:
-        path = self._path(run_id, result_id, domain_id)
-        if not path.exists():
-            return None
-        try:
-            state = EvidenceNavigationState.model_validate_json(path.read_bytes())
-        except (OSError, ValueError) as error:
-            raise IncompatibleEvidenceNavigationState(
-                "stored v2 Evidence navigation state is unreadable; supersede Preparation"
-            ) from error
-        actual = (
-            state.run_id,
-            state.result_id,
-            state.domain_id,
-            state.snapshot_hash,
-            state.search_policy_id,
-            state.search_policy_hash,
-            state.read_policy_id,
-            state.read_policy_hash,
-        )
-        expected = (
+        question_id: Identifier,
+        obligation_hash: ContentHash,
+        inventory_snapshot_hash: ContentHash,
+    ) -> V3EvidenceNavigationState | None:
+        path = self._path(
             run_id,
             result_id,
             domain_id,
-            snapshot_hash,
-            search_policy_id,
-            search_policy_hash,
-            read_policy_id,
-            read_policy_hash,
+            question_id,
+            obligation_hash,
+            inventory_snapshot_hash,
         )
-        if actual != expected:
+        if not path.exists():
+            return None
+        try:
+            state = V3EvidenceNavigationState.model_validate_json(path.read_bytes())
+        except (OSError, ValueError) as error:
             raise IncompatibleEvidenceNavigationState(
-                "stored v2 Evidence navigation identities are stale; supersede Preparation"
+                "stored state is not a compatible v3 Evidence navigation state; "
+                "supersede Preparation"
+            ) from error
+        if (
+            state.run_id,
+            state.result_id,
+            state.domain_id,
+            state.question_id,
+            state.workflow.obligation_hash,
+            state.workflow.inventory_snapshot_hash,
+        ) != (run_id, result_id, domain_id, question_id, obligation_hash, inventory_snapshot_hash):
+            raise IncompatibleEvidenceNavigationState(
+                "stored v3 Evidence navigation identities are stale; supersede Preparation"
             )
         return state
 
     @contextmanager
     def _mutation_lock(self, path: Path):
-        """Acquire an ownership-proven short-lived lock without deleting stale locks."""
-
         self.root.mkdir(parents=True, exist_ok=True)
         lock = path.with_suffix(".lock")
         owner = f"{os.getpid()}:{uuid.uuid4().hex}"
@@ -173,7 +208,7 @@ class EvidenceNavigationStore:
             except FileExistsError:
                 if time.monotonic() >= deadline:
                     raise ConcurrentEvidenceNavigationUpdate(
-                        "navigation state is busy; reload and retry the request"
+                        "v3 navigation state is busy; reload and retry"
                     ) from None
                 time.sleep(0.025)
         try:
@@ -186,31 +221,34 @@ class EvidenceNavigationStore:
                 pass
 
     def save(
-        self,
-        state: EvidenceNavigationState,
-        *,
-        expected_content_hash: ContentHash | None = None,
+        self, state: V3EvidenceNavigationState, *, expected_content_hash: ContentHash | None = None
     ) -> None:
-        path = self._path(state.run_id, state.result_id, state.domain_id)
+        path = self._path(
+            state.run_id,
+            state.result_id,
+            state.domain_id,
+            state.question_id,
+            state.workflow.obligation_hash,
+            state.workflow.inventory_snapshot_hash,
+        )
         temporary = path.with_suffix(".json.tmp")
-        if temporary.parent != self.root:
-            raise ValueError("evidence navigation temporary path escaped project storage")
         with self._mutation_lock(path):
-            if expected_content_hash is not None:
+            if expected_content_hash is None:
+                if path.exists():
+                    raise ConcurrentEvidenceNavigationUpdate(
+                        "v3 navigation state already exists; reload before creating state"
+                    )
+            else:
                 try:
-                    existing = EvidenceNavigationState.model_validate_json(path.read_bytes())
+                    prior = V3EvidenceNavigationState.model_validate_json(path.read_bytes())
                 except (OSError, ValueError) as error:
                     raise ConcurrentEvidenceNavigationUpdate(
-                        "navigation state changed or became unreadable; reload and retry"
+                        "v3 navigation state changed or became unreadable; reload and retry"
                     ) from error
-                if existing.content_hash != expected_content_hash:
+                if prior.content_hash != expected_content_hash:
                     raise ConcurrentEvidenceNavigationUpdate(
-                        "navigation state changed; reload and retry the request"
+                        "v3 navigation state changed; reload and retry"
                     )
-            elif path.exists():
-                raise ConcurrentEvidenceNavigationUpdate(
-                    "navigation state already exists; reload before creating state"
-                )
             try:
                 with temporary.open("xb") as handle:
                     handle.write(canonical_json_bytes(state))
@@ -220,31 +258,3 @@ class EvidenceNavigationStore:
             except OSError:
                 temporary.unlink(missing_ok=True)
                 raise
-
-    def supersede_run(
-        self, run_id: Identifier, *, result_ids: tuple[Identifier, ...] | None = None
-    ) -> None:
-        """Retain obsolete navigation artifacts after an audited Preparation supersession."""
-
-        if not self.root.exists():
-            return
-        archive = (self.root / "superseded").resolve()
-        if archive.parent != self.root:
-            raise ValueError("evidence navigation archive path escaped project storage")
-        for path in self.root.glob("*.json"):
-            try:
-                state = EvidenceNavigationState.model_validate_json(path.read_bytes())
-            except (OSError, ValueError):
-                continue
-            if state.run_id != run_id or (
-                result_ids is not None and state.result_id not in result_ids
-            ):
-                continue
-            archive.mkdir(parents=True, exist_ok=True)
-            archived = (archive / f"{path.stem}-{state.content_hash[7:]}.json").resolve()
-            if archived.parent != archive:
-                raise ValueError("evidence navigation archived state path escaped project storage")
-            if archived.exists():
-                path.unlink()
-            else:
-                os.replace(path, archived)

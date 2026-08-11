@@ -5,10 +5,9 @@ from __future__ import annotations
 import pytest
 
 from rob2_kit.application.contracts import (
-    CoverageProgress,
     SearchEvidenceResponse,
     WorkflowCondition,
-    v2_model_facing_operation_payload,
+    model_facing_operation_payload,
 )
 from rob2_kit.domain.canonical import canonical_hash, canonical_json_bytes
 from rob2_kit.evidence.errors import (
@@ -23,7 +22,33 @@ from rob2_kit.evidence.search import (
     SearchContinuationReason,
     SearchQuery,
 )
-from rob2_kit.evidence.workflow import SearchPassKind
+
+
+def _coverage_progress() -> dict[str, object]:
+    return {
+        "question_id": "question:allocation-concealment",
+        "question_ready": False,
+        "propositions": (
+            {
+                "proposition_id": "proposition:allocation-concealment",
+                "passes": (
+                    {
+                        "pass_id": "pass:guidance-seed",
+                        "active": True,
+                        "stages": (
+                            {
+                                "stage_id": "stage:guidance-seed",
+                                "active": True,
+                                "outcome": None,
+                                "intents": (),
+                                "blockers": ("stage_outcome_missing",),
+                            },
+                        ),
+                    },
+                ),
+            },
+        ),
+    }
 
 
 def _unit(number: int, text: str) -> CanonicalEvidenceUnit:
@@ -53,7 +78,7 @@ def test_v2_page_is_lightweight_bound_and_continuable(tmp_path) -> None:
         oversized_candidate_byte_ceiling=3_600,
         high_cost_page_threshold=2,
     )
-    page = index.search_v2(SearchQuery(terms=("allocation",)), policy=policy)
+    page = index.search_page(SearchQuery(terms=("allocation",)), policy=policy)
 
     payload = page.model_dump(mode="json")
     assert "unit" not in payload["candidates"][0]
@@ -77,12 +102,12 @@ def test_v2_page_is_lightweight_bound_and_continuable(tmp_path) -> None:
     assert page.traversal_cost.decision_required is True
 
     with pytest.raises(ValueError, match="reason code"):
-        index.search_v2(
+        index.search_page(
             SearchQuery(terms=("allocation",)),
             continuation=page.continuation,
             policy=policy,
         )
-    second = index.search_v2(
+    second = index.search_page(
         SearchQuery(terms=("allocation",)),
         continuation=page.continuation,
         continue_reason=SearchContinuationReason.COVERAGE_REQUIRES_BREADTH,
@@ -95,24 +120,24 @@ def test_v2_continuations_bind_query_policy_and_snapshot(tmp_path) -> None:
     index = EvidenceSearchIndex(tmp_path / "v2.sqlite3")
     index.replace_units((_unit(1, "Allocation concealment."), _unit(2, "Allocation schedule.")))
     policy = EvidenceSearchPolicy(candidate_ceiling=1)
-    first = index.search_v2(SearchQuery(terms=("allocation",)), policy=policy)
+    first = index.search_page(SearchQuery(terms=("allocation",)), policy=policy)
     assert first.continuation is not None
 
     with pytest.raises(StaleSearchContinuation):
-        index.search_v2(
+        index.search_page(
             SearchQuery(terms=("concealment",)),
             continuation=first.continuation,
             policy=policy,
         )
     with pytest.raises(StaleSearchContinuation, match="earlier Evidence-search policy"):
-        index.search_v2(
+        index.search_page(
             SearchQuery(terms=("allocation",)),
             continuation=first.continuation,
             policy=policy.model_copy(update={"candidate_ceiling": 2}),
         )
     index.replace_units((_unit(1, "Allocation concealment changed."),))
     with pytest.raises(StaleSearchContinuation):
-        index.search_v2(
+        index.search_page(
             SearchQuery(terms=("allocation",)),
             continuation=first.continuation,
             policy=policy,
@@ -126,7 +151,7 @@ def test_v2_source_diagnostics_include_query_wide_zero_hit_sources(tmp_path) -> 
         update={"source_id": "source:nonmatching"}
     )
     index.replace_units((first, second))
-    compact = index.search_v2(SearchQuery(terms=("allocation",))).model_facing_payload()
+    compact = index.search_page(SearchQuery(terms=("allocation",))).model_facing_payload()
     diagnostics = compact["source_diagnostics"]
     assert len(diagnostics) == 2
     assert any(
@@ -141,7 +166,7 @@ def test_v2_duplicate_lineage_target_is_a_candidate_identity_not_a_unit_id(tmp_p
         update={"duplicate_group_id": "duplicate:one"}
     )
     index.replace_units((unit,))
-    candidate = index.search_v2(SearchQuery(terms=("allocation",))).candidates[0]
+    candidate = index.search_page(SearchQuery(terms=("allocation",))).candidates[0]
     assert candidate.retained_duplicate_target_id == candidate.candidate_id
     assert candidate.retained_duplicate_target_id != candidate.canonical_unit_id
 
@@ -157,11 +182,11 @@ def test_v2_search_stabilizes_self_reporting_envelopes_at_digit_boundaries(tmp_p
         oversized_candidate_byte_ceiling=8_000,
         estimated_token_target=2_000,
     )
-    page = index.search_v2(SearchQuery(terms=("allocation",)), policy=policy)
+    page = index.search_page(SearchQuery(terms=("allocation",)), policy=policy)
     pages = [page]
     while pages[-1].continuation is not None:
         pages.append(
-            index.search_v2(
+            index.search_page(
                 SearchQuery(terms=("allocation",)),
                 continuation=pages[-1].continuation,
                 continue_reason=SearchContinuationReason.COVERAGE_REQUIRES_BREADTH,
@@ -191,7 +216,7 @@ def test_v2_search_stabilizes_self_reporting_envelopes_at_digit_boundaries(tmp_p
 
 
 def _exact_mcp_envelope_measure(page) -> tuple[int, int]:
-    payload = v2_model_facing_operation_payload(
+    payload = model_facing_operation_payload(
         SearchEvidenceResponse(
             operation_id="operation:" + "o" * 400,
             ledger_cursor="ledger:" + "l" * 400,
@@ -200,14 +225,7 @@ def _exact_mcp_envelope_measure(page) -> tuple[int, int]:
             committed=False,
             run_id="run:" + "n" * 400,
             page=page,
-            coverage_progress=CoverageProgress(
-                sq_id="sq:" + "q" * 400,
-                required_seed_families=(),
-                completed_seed_families=(),
-                completed_passes=(SearchPassKind.GUIDANCE_SEED,),
-                missing_passes=(),
-                coverage_complete=False,
-            ),
+            coverage_progress=_coverage_progress() | {"question_id": "question:" + "q" * 400},
         )
     )
     accounting = payload["response_accounting"]
@@ -231,14 +249,14 @@ def test_v2_search_packs_independently_of_exact_long_identifier_mcp_envelope(tmp
         estimated_token_target=1_500,
         oversized_candidate_byte_ceiling=10_000,
     )
-    first = index.search_v2(
+    first = index.search_page(
         SearchQuery(terms=("allocation",)),
         policy=policy,
     )
     pages = [first]
     while pages[-1].continuation is not None:
         pages.append(
-            index.search_v2(
+            index.search_page(
                 SearchQuery(terms=("allocation",)),
                 continuation=pages[-1].continuation,
                 continue_reason=SearchContinuationReason.COVERAGE_REQUIRES_BREADTH,
@@ -257,7 +275,7 @@ def test_v2_search_rejects_an_irreducible_exact_envelope(tmp_path) -> None:
         (_unit(1, "Allocation detail").model_copy(update={"source_id": "source:" + "s" * 12_000}),)
     )
     with pytest.raises(OperationalRetrievalFailure, match="absolute response ceiling"):
-        index.search_v2(
+        index.search_page(
             SearchQuery(terms=("allocation",)),
             policy=EvidenceSearchPolicy(
                 serialized_byte_ceiling=7_200,

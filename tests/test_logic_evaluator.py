@@ -100,6 +100,64 @@ def test_branch_state_is_derived_and_active_answers_are_required(
     assert result.question_states["sq:missing:true-value-dependent"] == "not_applicable"
 
 
+def test_partial_answer_activation_is_incremental_and_exposes_dependencies(
+    evaluator: LogicEvaluator,
+) -> None:
+    assert "sq:deviations:context-deviations" not in evaluator.active_question_ids_for_answers({})
+    assert "sq:deviations:context-deviations" in evaluator.active_question_ids_for_answers(
+        {"sq:deviations:participants-aware": SQAnswerCategory.YES}
+    )
+    assert "sq:deviations:context-deviations" not in evaluator.active_question_ids_for_answers(
+        {"sq:deviations:participants-aware": SQAnswerCategory.NO}
+    )
+    dependencies = evaluator.activation_dependencies("sq:deviations:context-deviations")
+    assert dependencies.answer_question_ids == (
+        "sq:deviations:participants-aware",
+        "sq:deviations:personnel-aware",
+    )
+
+
+def test_partial_activation_validates_input_and_prior_domain_context(logic_pack: LogicPack) -> None:
+    payload = logic_pack.model_dump(exclude={"content_hash"})
+    questions = {item["id"]: item for item in payload["questions"]}
+    questions["sq:deviations:context-deviations"]["active_if"] = {
+        "op": "input_equals",
+        "input_id": "input:combined-concerns",
+        "value": True,
+    }
+    questions["sq:deviations:affected-outcome"]["active_if"] = {
+        "op": "domain_all",
+        "judgments": ["low"],
+    }
+    custom_pack = LogicPack.model_validate(payload)
+    evaluator = LogicEvaluator(custom_pack)
+
+    assert "sq:deviations:context-deviations" in evaluator.active_question_ids_for_answers(
+        {}, {"input:combined-concerns": True}
+    )
+    assert "sq:deviations:context-deviations" not in evaluator.active_question_ids_for_answers(
+        {}, {"input:combined-concerns": False}
+    )
+    assert "sq:deviations:affected-outcome" in evaluator.active_question_ids_for_answers(
+        {}, prior_domain_judgments={"domain:randomization": JudgmentLevel.LOW}
+    )
+    assert "sq:deviations:affected-outcome" not in evaluator.active_question_ids_for_answers(
+        {}, prior_domain_judgments={"domain:randomization": JudgmentLevel.HIGH}
+    )
+    assert evaluator.activation_dependencies(
+        "sq:deviations:context-deviations"
+    ).assessor_input_ids == ("input:combined-concerns",)
+    assert evaluator.activation_dependencies("sq:deviations:affected-outcome").domain_ids == tuple(
+        sorted(domain.id for domain in custom_pack.domains)
+    )
+    with pytest.raises(ValueError, match="unknown assessor inputs"):
+        evaluator.active_question_ids_for_answers({}, {"input:unknown": True})
+    with pytest.raises(ValueError, match="unknown Logic domain IDs"):
+        evaluator.active_question_ids_for_answers(
+            {}, prior_domain_judgments={"domain:unknown": JudgmentLevel.LOW}
+        )
+
+
 def test_missing_data_exoneration_rejects_no_information_for_q3_2(
     evaluator: LogicEvaluator,
 ) -> None:

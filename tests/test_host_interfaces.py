@@ -7,13 +7,11 @@ import pytest
 from pydantic import ValidationError
 
 from rob2_kit.application.contracts import (
-    EvidenceConsiderationInput,
     EvidencePassageInput,
+    MaterializeQuestionEvidenceBundleRequest,
     RunOperation,
-    SubmitDomainEvidenceRequest,
     WorkToken,
 )
-from rob2_kit.domain.revisions import RecordReference
 from rob2_kit.interfaces.mcp.server import (
     CANONICAL_TOOL_NAMES,
     create_server,
@@ -53,14 +51,23 @@ def blank_pdf() -> bytes:
 
 def test_stdio_mcp_surface_is_the_fixed_run_engine_inventory() -> None:
     assert registered_tool_names() == CANONICAL_TOOL_NAMES
-    assert len(registered_tool_names()) == 15
+    assert len(registered_tool_names()) == 18
     assert "open_review" not in registered_tool_names()
 
 
-def test_mcp_tool_schemas_explain_nested_inputs_and_expose_passage_freezing() -> None:
+def test_mcp_tool_schemas_explain_question_scoped_evidence_freezing() -> None:
     tools = {tool.name: tool for tool in anyio.run(create_server().list_tools)}
 
-    assert all(tool.description for tool in tools.values())
+    assert all(
+        tools[name].description
+        for name in {
+            "prepare_run",
+            "continue_run",
+            "get_work_context",
+            "search_evidence",
+            "read_evidence",
+        }
+    )
     for tool_name, property_name in {
         "get_work_context": "work_token",
         "submit_run_proposal": "selections",
@@ -68,12 +75,13 @@ def test_mcp_tool_schemas_explain_nested_inputs_and_expose_passage_freezing() ->
         "search_evidence": "query",
         "submit_source_role_review": "selections",
         "submit_result_resolution": "result",
-        "submit_domain_answers": "answers",
+        "materialize_question_evidence_bundle": "passages",
+        "submit_question_step": "question_id",
     }.items():
         schema_text = str(tools[tool_name].input_schema["properties"][property_name])
         assert "additionalProperties': True" not in schema_text, tool_name
 
-    evidence_schema = tools["submit_domain_evidence"].input_schema
+    evidence_schema = tools["materialize_question_evidence_bundle"].input_schema
     assert "passages" in evidence_schema["properties"]
     assert "EvidencePassageInput" in str(evidence_schema)
     assert "include_source_details" in tools["get_work_context"].input_schema["properties"]
@@ -87,10 +95,10 @@ def test_mcp_tool_schemas_explain_nested_inputs_and_expose_passage_freezing() ->
         "confirm_run_definition",
         "submit_source_role_review",
         "submit_result_resolution",
-        "submit_domain_evidence",
-        "submit_domain_answers",
     ):
         assert "idempotency_key" not in tools[tool_name].input_schema["properties"]
+    for tool_name in ("materialize_question_evidence_bundle", "submit_question_step"):
+        assert "idempotency_key" in tools[tool_name].input_schema["properties"]
     assert "correct_domain_answers" not in tools
 
 
@@ -101,11 +109,12 @@ def test_mcp_tool_descriptions_prevent_cleanroom_schema_guessing() -> None:
     assert 'confirmed_by={"kind":"human"' in (tools["confirm_run_definition"].description or "")
 
     search = tools["search_evidence"].description or ""
-    assert 'query={"terms":["allocation"]}' in search
-    assert 'seed_family="seed:allocation"' in search
-    assert "reuse that exact label in" in search
-    assert 'pass_kind="guidance_seed"' in search
-    assert "omit seed_family" in search
+    search_guidance = " ".join(search.split())
+    assert 'query={"terms":["allocation"]}' in search_guidance
+    assert "proposition" in search_guidance
+    assert "pass, stage, intent, attempt" in search_guidance
+    assert "copied from the current context" in search_guidance
+    assert "never widen that scope" in search_guidance
 
     resolution = tools["submit_result_resolution"].description or ""
     assert "not a ResultCandidate" in resolution
@@ -117,16 +126,9 @@ def test_mcp_tool_descriptions_prevent_cleanroom_schema_guessing() -> None:
     assert "exactly the sources in get_work_context" in classification
     assert '"roles"' in classification
 
-    answers = tools["submit_domain_answers"].description or ""
-    assert "every active question in get_work_context" in answers
-    assert "no_information" in answers
-    assert "actor" not in tools["submit_domain_evidence"].input_schema["properties"]
-    assert "actor" not in tools["submit_domain_answers"].input_schema["properties"]
-    evidence = tools["submit_domain_evidence"].description or ""
-    assert 'coverage_state="complete_with_limitations"' in evidence
-    assert 'coverage_state="complete"' in evidence
-    assert "may support no_information" in evidence
-    assert 'coverage_state="incomplete"' in evidence
+    assert "actor" not in tools["materialize_question_evidence_bundle"].input_schema["properties"]
+    assert "correct_domain_answers" not in tools
+    assert "correct_question_step" in tools
 
 
 def test_mcp_schema_names_the_friction_prone_evidence_contract() -> None:
@@ -136,15 +138,12 @@ def test_mcp_schema_names_the_friction_prone_evidence_contract() -> None:
     assert "required" in prepare.input_schema["properties"]["project_root"]["description"].lower()
     assert "every new session" in (prepare.description or "").lower()
 
-    evidence = tools["submit_domain_evidence"]
+    evidence = tools["materialize_question_evidence_bundle"]
     properties = evidence.input_schema["properties"]
-    assert "coverage_limitations" in properties
-    assert "limitation" in properties["coverage_limitations"]["description"].lower()
-    assert "passages" in properties["passages"]["description"]
-    assert "mutually exclusive" in properties["passages"]["description"].lower()
-    assert "visual" in properties["items"]["description"].lower()
-    assert "evidence_by_question" in properties["evidence_by_question"]["description"]
-    assert "conflicts" in properties["conflicts"]["description"]
+    assert {"question_id", "passages", "review_revisions", "expected_navigation_state_hash"} <= set(
+        properties
+    )
+    assert "conflicts" not in properties
 
     disposition = evidence.input_schema["$defs"]["ConsiderationDisposition"]
     assert disposition["enum"] == [
@@ -158,28 +157,14 @@ def test_mcp_schema_names_the_friction_prone_evidence_contract() -> None:
         "unresolved",
     ]
     assert "irrelevant" not in disposition["enum"]
-    disposition_field = evidence.input_schema["$defs"]["EvidenceConsiderationInput"]["properties"][
-        "disposition"
-    ]
-    assert "valid" in disposition_field["description"].lower()
 
 
-def test_domain_evidence_contract_rejects_aliases_and_mixed_branches() -> None:
-    with pytest.raises(ValidationError, match="Input should be"):
-        EvidenceConsiderationInput.model_validate(
-            {"item_id": "candidate:test", "disposition": "irrelevant"}
-        )
-
-    with pytest.raises(ValidationError, match="replacing item"):
-        EvidenceConsiderationInput.model_validate(
-            {"item_id": "candidate:older", "disposition": "superseded", "basis": "later report"}
-        )
-
+def test_question_bundle_contract_rejects_cross_question_passages() -> None:
     token = WorkToken(
         token="token:test",
         run_id="run:test",
         work_item_id="work-item:test",
-        operation=RunOperation.SUBMIT_DOMAIN_EVIDENCE,
+        operation=RunOperation.MATERIALIZE_QUESTION_EVIDENCE_BUNDLE,
         dependency_fingerprint="sha256:" + "0" * 64,
     )
     passage = EvidencePassageInput(
@@ -188,19 +173,17 @@ def test_domain_evidence_contract_rejects_aliases_and_mixed_branches() -> None:
         claim_type="claim:test",
         question_ids=("sq:test",),
     )
-    reference = RecordReference(
-        entity_id="evidence:test",
-        revision_id="revision:test",
-        content_hash="sha256:" + "1" * 64,
-    )
-    with pytest.raises(ValidationError, match="mutually exclusive"):
-        SubmitDomainEvidenceRequest(
-            contract_version="2.0.0",
+    with pytest.raises(ValidationError, match="active question"):
+        MaterializeQuestionEvidenceBundleRequest(
+            contract_version="3.0.0",
             run_id="run:test",
             work_token=token,
             idempotency_key="idempotency:test",
             result_id="result:test",
             domain_id="domain:test",
+            question_id="sq:other",
+            session_content_hash="sha256:" + "2" * 64,
+            frontier_entry_hash="sha256:" + "3" * 64,
+            expected_navigation_state_hash="sha256:" + "4" * 64,
             passages=(passage,),
-            items=(reference,),
         )

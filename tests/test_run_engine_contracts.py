@@ -27,19 +27,21 @@ EXPECTED_OPERATIONS = (
     "inspect_visual_candidate",
     "submit_source_role_review",
     "submit_result_resolution",
-    "submit_domain_evidence",
     "submit_evidence_review",
-    "submit_domain_answers",
-    "correct_domain_answers",
+    "submit_evidence_stage_outcome",
+    "materialize_question_evidence_bundle",
+    "submit_question_step",
+    "correct_question_step",
+    "submit_source_chronology_review",
 )
 
 
-def test_fixed_run_engine_surface_has_twenty_one_to_one_typed_operations() -> None:
+def test_fixed_run_engine_surface_has_one_to_one_typed_operations() -> None:
     assert RUN_OPERATION_NAMES == EXPECTED_OPERATIONS
     assert tuple(contract.operation.value for contract in RUN_OPERATION_CONTRACTS) == (
         EXPECTED_OPERATIONS
     )
-    assert len(set(RUN_OPERATION_NAMES)) == 20
+    assert len(set(RUN_OPERATION_NAMES)) == len(EXPECTED_OPERATIONS)
 
     for contract in RUN_OPERATION_CONTRACTS:
         method = getattr(RunEngine, contract.operation.value)

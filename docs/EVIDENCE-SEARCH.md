@@ -1,122 +1,140 @@
 # Evidence search reference
 
-Use this reference only with an engine-issued Domain-Evidence work item. The
-v2 workflow is bounded and auditable:
+Evidence navigation is question-scoped and obligation-driven:
 
+```text
+engine materializes exact stage scope
+  -> bounded Search traversal
+  -> complete-page triage and reviewed reads
+  -> engine-validated stage outcome
+  -> frozen question Evidence Bundle
+  -> question answer or diagnostic stop
 ```
-selected search attempts -> complete-page triage -> ordered batch read -> review -> freeze
-```
 
-The active WorkToken authorizes the Trial, Result, Domain, and signaling
-question scope. Copy it verbatim. Search candidates are lightweight,
-non-citable navigation projections: they may include tables, captions,
-footnotes, duplicate lineage, bibliography, ambiguous reading order, and
-other-Trial material. Never freeze a candidate, preview, location handle, or
-synthetic reconstruction.
+Use these operations only with the current engine-issued question WorkToken and
+the session, frontier, context, and navigation hashes returned with it. Those
+identities bind the Run, Result, Domain, signaling question, Guidance
+obligation, complete Source inventory, and policy revisions. A stale or altered
+identity fails closed.
 
-## Search v2
+## Staged breadth
 
-The current Search policy is `policy:evidence-search-3.0.0`. It fixes page
-boundaries from the snapshot, query, scope, issuance context, ordered
-candidates, and a canonical packing-context hash. Later ledger events and
-coverage progress do not change an issued continuation. The returned page and
-complete MCP envelope are measured exactly only after that one page has been
-selected; a reservation overrun is an operational failure, never a repack.
-Policy-2 continuations are stale: discard them and restart from the first
-bounded page.
+Guidance defines propositions, purpose-specific passes, additive coverage
+stages, and navigation intents for every signaling question. The first stage
+usually searches the cheapest directly applicable report evidence. Wider
+protocol, SAP, registry, supplement, or later-report roles become active only
+when Guidance makes them mandatory or an attributable escalation trigger
+fires. Domain 5 plan-versus-report questions include mandatory dated plan and
+registry stages where those Sources are available.
 
-Traversal-cost byte and token values are explicitly named `*_upper_bound`;
-the selected-page reservation is separate from the cumulative traversal
-reservations and is enforced after exact returned-envelope measurement.
+The engine owns procedural breadth: complete inventory projection, exact Source
+scope, traversal, triage, stage activation, receipts, and stopping outcomes.
+Treat every issued scope identity as opaque and reuse it exactly in coverage
+and completion calls; never reconstruct it from the visible Source list.
+The agent chooses semantic query terms and judges the meaning of evidence and
+trigger observations. Agent confidence cannot waive a mandatory stage, omit a
+surfaced candidate, or convert a material limitation into No-information.
 
-`search_evidence` accepts a semantic `query`, `sq_id`, mandatory `pass_kind`,
-stable `attempt_id`, and `attempt_kind` (`selected` or `exploratory`). A
-guidance pass also has its exact `seed_family`; reuse it exactly in coverage. A selected attempt is required
-for each `guidance_seed`, `trial_follow_up`, and `contradiction` pass of every
-active SQ. These are distinct queries and must each be traversed to their last
-page. For `trial_follow_up` and `contradiction`, omit `seed_family`.
+Source `criticality` describes the consequence of unavailability. It is not an
+authority or search-priority ranking. Role, evidence purpose, chronology, and
+estimated traversal cost determine stage order.
+
+## Search
+
+`search_evidence` uses contract `3.0.0`. Name the exact proposition, pass,
+stage, intent, attempt, question, session, and expected navigation state from
+the current context. Supply semantic query refinements only; the engine injects
+the stage's ordered Source IDs and Parse identities. Caller-supplied Source IDs
+are rejected.
 
 ```json
 {
+  "contract_version": "3.0.0",
   "run_id": "run:…",
   "work_token": {"token": "work-token:…"},
   "result_id": "result:…",
-  "sq_id": "sq:randomization:sequence",
-  "query": {"terms": ["allocation"]},
-  "pass_kind": "guidance_seed",
-  "seed_family": "seed:allocation",
-  "attempt_id": "attempt:allocation-guidance",
-  "attempt_kind": "selected"
+  "domain_id": "domain:randomization",
+  "question_id": "sq:randomization:sequence",
+  "session_content_hash": "sha256:…",
+  "expected_navigation_state_hash": "sha256:…",
+  "proposition_id": "proposition:…",
+  "pass_id": "pass:…",
+  "stage_id": "stage:…",
+  "intent_id": "intent:…",
+  "attempt_id": "attempt:…",
+  "query": {"terms": ["allocation", "random"]}
 }
 ```
 
-The page exposes `candidates`, opaque `continuation`, page/traversal metadata,
-serialized response bytes, deterministic estimated response tokens, candidate
-counts, source-character counts, limiting bounds, and warnings. Continue only
-with the returned opaque continuation plus a closed `continue_reason` and
-`continue_rationale`; never use a cursor.
+Continue with the returned opaque continuation and the same attempt identity.
+Replacing a selected query requires `supersede_attempt_id` and a nonblank
+`supersession_rationale`. Superseded attempts remain auditable, and every
+candidate they exposed still requires terminal triage.
 
-Refinement is an explicit high-cost choice. Start a replacement attempt with
-`supersedes_attempt_id` and `supersession_rationale`; do not overwrite or
-silently abandon the earlier attempt. Superseded and exploratory attempts stay
-in the audit universe and their exposed pages still require triage.
+Search pages are bounded navigation projections, not citable evidence. They can
+contain ambiguous reading order, tables, captions, bibliography, duplicates,
+or other-Trial material. Never freeze a preview, handle, or reconstruction.
 
-## Page triage and batch reads
+## Reads and triage
 
-For every exposed page, call `submit_evidence_review` before freeze. Submit the
-exact complete `page_handles` partition and append-only triage revisions for
-every candidate on those pages. Repeated submission with the exact same
-idempotency key is safe; changing its content is not. Do not use automatic
-disposition or omit an irrelevant/duplicate/ambiguous candidate.
+`read_evidence` accepts an ordered batch bound to exactly the active question
+and current navigation state. Every location handle must have been exposed in
+that workflow. A successful view preserves canonical Source/Parse lineage,
+bounded text, omissions, warnings, and an opaque `read_view_receipt`.
+Copy each returned `location_handle` and `read_view_receipt` exactly. Never
+reconstruct either value from preview text, Source metadata, or prior pages.
 
-`read_evidence` accepts one ordered batch rather than a single location read:
+`submit_evidence_review` appends one exhaustive partition for exposed pages
+from a single attempt. Its idempotency key is the reducer submission identity.
+Retained candidates require an exact read receipt. Risk-bearing irrelevant,
+unresolved non-self-contained, and non-lineage duplicate decisions also require
+the appropriate receipt. A duplicate target must be an exposed, retained,
+read-backed candidate in the same question; its target receipt is verified
+against that candidate rather than the dismissed occurrence.
 
-```json
-{
-  "run_id": "run:…",
-  "work_token": {"token": "work-token:…"},
-  "result_id": "result:…",
-  "batch": {
-    "scope": {
-      "result_id": "result:…",
-      "domain_id": "domain:randomization",
-      "snapshot_hash": "sha256:…"
-    },
-    "items": [
-      {
-        "location_handle": "loc:…",
-        "question_ids": ["sq:randomization:sequence"]
-      }
-    ]
-  }
-}
-```
+## Outcomes and stopping
 
-Batch outcomes retain input order. A successful view has source/Parse/canonical
-lineage, bounded text, omissions, warnings, limiting bounds, response byte and
-token measurements, and a `read_view_receipt`. Use that receipt for every
-review span. Read views are non-mutating except for opaque-token storage.
+Once every active intent in a stage is exhaustively navigated and triaged,
+`submit_evidence_stage_outcome` records one closed outcome:
 
-## Freeze gate
+- `obligation_satisfied`
+- `escalation_required`
+- `source_unavailable_after_attempt`
+- `scope_limitation_unresolved`
+- `semantic_uncertainty_unresolved`
 
-Before `submit_domain_evidence`, every active SQ must have all mandatory
-selected passes traversed and every candidate exposed by selected,
-superseded, or exploratory attempts triaged with no unresolved item. The
-engine materializes the durable coverage receipt and dependencies from that v2
-state. Complete/no-information/passage scientific freezes fail closed if this
-gate is not satisfied; an explicitly limited incomplete submission follows its
-own declared limitation path and does not pretend to have complete coverage.
-A complete search with no relevant evidence may support `no_information` only
-when this v2 coverage and triage gate is satisfied.
+Escalation names observed closed triggers and activates their exact later
+stages. Source-unavailable closure requires an engine-issued acquisition-attempt
+receipt; an empty Search is not a substitute. Chronology-constrained stages use
+attributable Source/Parse review facts and rematerialize a new inventory/session
+revision when those facts change.
+
+Use `scope_limitation_unresolved` only for an exact engine-materialized
+unreadable, chronology, or cross-source limitation. A nonempty limited scope
+still requires exhaustive traversal and triage. If source unavailability
+coexists with another limitation, the outcome must also bind the exact
+engine-issued acquisition receipt. Chronology diagnostics return a
+recovery token only when an exact changed chronology fact can rematerialize the
+context; unavailable, unreadable, and cross-source diagnostics instead require
+source acquisition, reprocessing, or inventory reconciliation as directed.
+
+A question can be answered only from a closed workflow plus an engine-frozen,
+question-scoped Evidence Bundle. The bundle derives supporting and
+contradicting claim identities from exact current review spans. Clean exhaustive
+coverage with no qualifying evidence may produce an engine-verified basis: no
+relevant evidence may support `no_information` only after the engine verifies
+the exact closed workflow. The caller cannot assert either polarity or
+No-information.
+
+Material source or semantic uncertainty is terminal for scientific answering,
+not answer-ready. The engine records a judgment-free diagnostic stop, publishes
+the Result as diagnostic-ready, and continues unrelated Results. It never
+fabricates a signaling-question answer or Domain judgment.
 `complete_with_limitations` retains a material source or search uncertainty;
-`incomplete` records required searching or inspection that could not finish.
+it is therefore diagnostic-terminal, never a successful evidence basis.
 
-An exact scientific span still requires an issued `read_view_receipt`, bounds,
-attribution, disposition, and rationale. Only the engine can materialize
-frozen Evidence and its dependencies.
+## Historical records
 
-For a duplicate classification without engine-known duplicate lineage, submit
-both the dismissed candidate's `read_view_receipt` and the retained target's
-`retained_target_read_view_receipt`; each must display the exact exposed
-context for the same signaling question. Duplicate target IDs are candidate
-IDs, not canonical unit IDs.
+V2 navigation artifacts remain decodable for audit and release compatibility.
+They are not accepted by active public contracts and no active path writes or
+dual-writes v2 state.

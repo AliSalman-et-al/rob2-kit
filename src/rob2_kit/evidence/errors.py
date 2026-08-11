@@ -56,7 +56,7 @@ _DEFAULT_RECOVERY: dict[RetrievalErrorCode, tuple[str, ...]] = {
     ),
     RetrievalErrorCode.STALE_WORK_TOKEN: (
         "call continue_run",
-        "copy the current submit_domain_evidence WorkToken",
+        "copy the current question-scoped evidence WorkToken",
     ),
     RetrievalErrorCode.REPROCESSING_REQUIRED: (
         "reprocess the current Trial Sources and Parses",

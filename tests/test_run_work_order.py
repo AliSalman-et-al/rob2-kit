@@ -142,7 +142,7 @@ def test_pending_results_can_be_reprioritized_without_changing_confirmed_scope(
     assert response.committed is True
     assert response.result_order == tuple(reversed(result_ids))
     assert next_work is not None
-    assert next_work.operation is RunOperation.SUBMIT_DOMAIN_EVIDENCE
+    assert next_work.operation is RunOperation.SUBMIT_QUESTION_STEP
     assert next_work.result_id == result_ids[1]
     context = engine.get_work_context(
         GetWorkContextRequest(
@@ -164,7 +164,7 @@ def test_pending_results_can_be_reprioritized_without_changing_confirmed_scope(
     assert progress is not None
     assert progress.result_state_counts[ResultState.PENDING.value] == 2
     assert progress.warnings == ()
-    assert progress.next_action is RunOperation.SUBMIT_DOMAIN_EVIDENCE
+    assert progress.next_action is RunOperation.SUBMIT_QUESTION_STEP
 
 
 def test_withdrawn_pending_result_is_diagnostic_and_can_be_reopened(tmp_path: Path) -> None:

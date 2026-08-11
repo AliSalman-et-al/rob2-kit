@@ -15,14 +15,17 @@
     "search_evidence",
     "read_evidence",
     "submit_evidence_review",
+    "submit_evidence_stage_outcome",
+    "materialize_question_evidence_bundle",
+    "submit_question_step",
+    "correct_question_step",
+    "submit_source_chronology_review",
     "inspect_visual_candidate",
     "submit_source_role_review",
-    "submit_result_resolution",
-    "submit_domain_evidence",
-    "submit_domain_answers"
+    "submit_result_resolution"
   ],
   "forward_fixtures_hashes": {
-    "rob2-assess": "sha256:2372904c6f14781405c25f3fcc6e4689e06fed8e348ef2b04b53796415fde356",
+    "rob2-assess": "sha256:1154c38edde5e5f5869ee66f56ec54f832c846ac02af238e45ce0b92f67a366a",
     "rob2-init": "sha256:ef9fc215240d90f8719ad1900fcb7717f789b770d735a384c955d524a3cff013"
   },
   "host": "claude",
@@ -32,7 +35,7 @@
   "package": "rob2-kit",
   "package_version": "0.1.0",
   "skill_hashes": {
-    "rob2-assess": "sha256:f370c57d1d851fc7c0c448f781a6ce299338de21e78e996c035955e645354ab6",
+    "rob2-assess": "sha256:13b717a4f67b27b7adb2e189491ea528c9671e090fbab00fcb7aae0d7a32d45a",
     "rob2-init": "sha256:54f73d6bdb471e5d50318b7112be9085dd67b45b080b146a36bb1603853e700f"
   },
   "skills": [

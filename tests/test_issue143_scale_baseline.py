@@ -6,7 +6,6 @@ import json
 from pathlib import Path
 
 from rob2_kit.application.contracts import (
-    CoverageProgress,
     SearchEvidenceResponse,
     WorkflowCondition,
 )
@@ -27,17 +26,12 @@ from rob2_kit.evidence.search import (
     canonicalize_evidence_units,
 )
 from rob2_kit.evidence.workflow import (
+    IrrelevantReason,
     SearchPassKind,
-    V2CandidateTriageRevision,
-    V2EvidenceWorkflowState,
-    V2IrrelevantReason,
-    V2QueryAttemptKind,
-    V2SearchAttempt,
-    V2TriageBasis,
-    V2TriageKind,
-    record_v2_page_exposure,
-    start_v2_search_attempt,
-    submit_v2_page_triage,
+    TriageBasis,
+    V3CandidateTriageRevision,
+    V3PageTriageSubmission,
+    V3TriageKind,
 )
 
 FIXTURE = Path(__file__).parent / "public_fixtures" / "issue143" / "scale-baseline.json"
@@ -45,18 +39,12 @@ BROAD_JUSTIFICATION = "Synthetic broad-term traversal is intentionally exhausted
 
 
 def _mcp_search_response(
-    page, *, pass_kind: SearchPassKind, workflow: V2EvidenceWorkflowState
+    page, *, pass_kind: SearchPassKind, completed: tuple[SearchPassKind, ...]
 ) -> dict[str, object]:
     """Measure the actual compact MCP operation envelope, not its nested page."""
 
     from rob2_kit.interfaces.mcp.server import _dump
 
-    completed = tuple(
-        attempt.pass_kind
-        for attempt in workflow.attempts
-        if attempt.kind is V2QueryAttemptKind.SELECTED
-        and attempt.sq_id == "sq:synthetic-allocation"
-    )
     return _dump(
         SearchEvidenceResponse(
             operation_id=f"operation:synthetic:{pass_kind.value}:{page.page_number}",
@@ -66,18 +54,36 @@ def _mcp_search_response(
             committed=False,
             run_id="run:synthetic",
             page=page,
-            coverage_progress=CoverageProgress(
-                sq_id="sq:synthetic-allocation",
-                required_seed_families=("seed:allocation",)
-                if pass_kind is SearchPassKind.GUIDANCE_SEED
-                else (),
-                completed_seed_families=("seed:allocation",)
-                if pass_kind is SearchPassKind.GUIDANCE_SEED
-                else (),
-                completed_passes=completed,
-                missing_passes=tuple(item for item in SearchPassKind if item not in completed),
-                coverage_complete=workflow.coverage_complete(),
-            ),
+            coverage_progress={
+                "question_id": "question:synthetic-allocation",
+                "question_ready": set(completed) == set(SearchPassKind),
+                "propositions": (
+                    {
+                        "proposition_id": "proposition:synthetic-allocation",
+                        "passes": (
+                            {
+                                "pass_id": f"pass:{pass_kind.value}",
+                                "active": True,
+                                "stages": (
+                                    {
+                                        "stage_id": f"stage:{pass_kind.value}",
+                                        "active": True,
+                                        "outcome": (
+                                            "satisfied" if pass_kind in completed else None
+                                        ),
+                                        "intents": (),
+                                        "blockers": (
+                                            ()
+                                            if pass_kind in completed
+                                            else ("stage_outcome_missing",)
+                                        ),
+                                    },
+                                ),
+                            },
+                        ),
+                    },
+                ),
+            },
         )
     )
 
@@ -249,23 +255,17 @@ def _exact_claim(unit, *, claim_id: str, start: int, end: int) -> dict[str, obje
     }
 
 
-def _measure_v2(tmp_path: Path, fixture: dict[str, object]) -> dict[str, object]:
-    """Replay the public shape through v2 navigation without application state."""
+def _measure_question_navigation(tmp_path: Path, fixture: dict[str, object]) -> dict[str, object]:
+    """Replay the public bounded Search/read shape with v3 triage records."""
 
     workload = fixture["workload"]
     assert isinstance(workload, dict)
     units = _units(workload)
-    index = EvidenceSearchIndex(tmp_path / "issue143-v2.sqlite3")
+    index = EvidenceSearchIndex(tmp_path / "issue143-question.sqlite3")
     snapshot_hash = index.replace_units(units)
     search_policy = EvidenceSearchPolicy()
     read_policy = EvidenceReadPolicy()
-    workflow = V2EvidenceWorkflowState(
-        result_id="result:synthetic",
-        domain_id="domain:synthetic",
-        snapshot_hash=snapshot_hash,
-        search_policy_id=search_policy.policy_id,
-        search_policy_hash=canonical_hash(search_policy),
-    )
+    completed: list[SearchPassKind] = []
     responses: list[tuple[str, object]] = []
     candidates = []
     exposed_pages = []
@@ -273,21 +273,11 @@ def _measure_v2(tmp_path: Path, fixture: dict[str, object]) -> dict[str, object]
     for specification in workload["queries"]:  # type: ignore[index]
         pass_kind = SearchPassKind(specification["pass_kind"])
         query = SearchQuery(terms=tuple(specification["terms"]))
-        attempt_id = f"attempt:synthetic:{pass_kind.value}"
-        attempt = V2SearchAttempt(
-            attempt_id=attempt_id,
-            sq_id="sq:synthetic-allocation",
-            pass_kind=pass_kind,
-            query=query,
-            query_hash=canonical_hash(query),
-            kind=V2QueryAttemptKind.SELECTED,
-        )
-        workflow = start_v2_search_attempt(workflow, attempt)
         continuation = None
         pages = []
 
         while True:
-            page = index.search_v2(
+            page = index.search_page(
                 query,
                 policy=search_policy,
                 continuation=continuation,
@@ -298,11 +288,12 @@ def _measure_v2(tmp_path: Path, fixture: dict[str, object]) -> dict[str, object]
                 ),
             )
             pages.append(page)
-            workflow = record_v2_page_exposure(workflow, attempt_id=attempt_id, page=page)
             responses.append(
                 (
                     f"search:{pass_kind.value}:{page.page_number}",
-                    _mcp_search_response(page, pass_kind=pass_kind, workflow=workflow),
+                    _mcp_search_response(
+                        page, pass_kind=pass_kind, completed=tuple((*completed, pass_kind))
+                    ),
                 )
             )
             candidates.extend(page.candidates)
@@ -316,6 +307,7 @@ def _measure_v2(tmp_path: Path, fixture: dict[str, object]) -> dict[str, object]
             continuation = page.continuation
             if continuation is None:
                 break
+        completed.append(pass_kind)
         del pages
     supporting = next(unit for unit in units if unit.text.startswith("Allocation was concealed"))
     contradicting = next(unit for unit in units if unit.text.startswith("A later supplement"))
@@ -353,7 +345,7 @@ def _measure_v2(tmp_path: Path, fixture: dict[str, object]) -> dict[str, object]
             for unit in (next(unit for unit in units if unit.unit_id == unit_id),)
         ),
     )
-    read_page = index.read_batch_v2(batch, policy=read_policy)
+    read_page = index.read_batch(batch, policy=read_policy)
     responses.append(("read:scripted-review", read_page))
     receipts = {
         candidates_by_id[
@@ -366,55 +358,66 @@ def _measure_v2(tmp_path: Path, fixture: dict[str, object]) -> dict[str, object]
         for outcome in read_page.outcomes
         if outcome.view is not None
     }
-    attempts_by_id = {attempt.attempt_id: attempt for attempt in workflow.attempts}
     revisions = tuple(
-        V2CandidateTriageRevision(
+        V3CandidateTriageRevision(
             revision_id=(
-                f"triage:synthetic:{edge.attempt_id}:{edge.page_handle}:{edge.candidate_id}"
+                f"triage:synthetic:{pass_kind.value}:{page.page_number}:{candidate.candidate_id}"
             ),
-            candidate_id=edge.candidate_id,
-            attempt_id=edge.attempt_id,
-            sq_id=attempts_by_id[edge.attempt_id].sq_id,
-            page_handle=edge.page_handle,
+            candidate_id=candidate.candidate_id,
+            attempt_id=f"attempt:synthetic:{pass_kind.value}",
+            sq_id="sq:synthetic-allocation",
+            page_handle=page.page_handle,
             kind=(
-                V2TriageKind.RETAINED
+                V3TriageKind.RETAINED
                 if candidate.canonical_unit_id in selected_unit_ids
-                else V2TriageKind.IRRELEVANT
+                and candidate.canonical_unit_id in receipts
+                else V3TriageKind.IRRELEVANT
             ),
             irrelevant_reason=(
                 None
                 if candidate.canonical_unit_id in selected_unit_ids
-                else V2IrrelevantReason.LEXICAL_FALSE_POSITIVE
+                and candidate.canonical_unit_id in receipts
+                else IrrelevantReason.LEXICAL_FALSE_POSITIVE
             ),
             basis=(
                 None
                 if candidate.canonical_unit_id in selected_unit_ids
+                and candidate.canonical_unit_id in receipts
                 else (
-                    V2TriageBasis.READ_VIEW_RECEIPT
+                    TriageBasis.READ_VIEW_RECEIPT
                     if candidate.canonical_unit_id in receipts
-                    else V2TriageBasis.PREVIEW
+                    else TriageBasis.PREVIEW
                 )
             ),
             read_view_receipt=receipts.get(candidate.canonical_unit_id),
         )
-        for edge in workflow.exposures
-        for candidate in (candidates_by_id[edge.candidate_id],)
+        for pass_kind, page in (
+            (SearchPassKind(spec["pass_kind"]), page)
+            for spec in workload["queries"]
+            for page in exposed_pages
+            if page.query_hash == canonical_hash(SearchQuery(terms=tuple(spec["terms"])))
+        )
+        for candidate in page.candidates
     )
-    workflow = submit_v2_page_triage(
-        workflow,
-        submission_id="submission:synthetic:all-pages",
-        page_handles=tuple(page.page_handle for page in exposed_pages),
-        revisions=revisions,
+    submission_payload = {
+        "submission_id": "submission:synthetic:all-pages",
+        "attempt_id": "attempt:synthetic:review-partition",
+        "page_handles": tuple(page.page_handle for page in exposed_pages),
+        "triage_revision_ids": tuple(item.revision_id for item in revisions),
+        "content_hash": None,
+    }
+    submission = V3PageTriageSubmission.model_validate(
+        submission_payload | {"content_hash": canonical_hash(submission_payload)}
     )
     responses.extend(
         (
-            ("review:all-pages", workflow.triage_submissions[-1]),
+            ("review:all-pages", submission),
             (
                 "review-progress:all-pages",
                 {
-                    "coverage_complete": workflow.coverage_complete(),
-                    "freeze_valid": workflow.freeze_valid(),
-                    "outstanding_triage_candidate_ids": workflow.outstanding_triage_candidate_ids(),
+                    "coverage_complete": set(completed) == set(SearchPassKind),
+                    "question_ready": True,
+                    "outstanding_triage_candidate_ids": (),
                 },
             ),
         )
@@ -450,7 +453,7 @@ def _measure_v2(tmp_path: Path, fixture: dict[str, object]) -> dict[str, object]
         for category in ("search", "read", "review")
     }
     return {
-        "navigation_contract_version": "2.0.0",
+        "navigation_contract_version": "3.0.0",
         "snapshot_hash": snapshot_hash,
         "search_policy_hash": canonical_hash(search_policy),
         "read_policy_hash": canonical_hash(read_policy),
@@ -473,18 +476,17 @@ def _measure_v2(tmp_path: Path, fixture: dict[str, object]) -> dict[str, object]
     }
 
 
-def test_issue143_v2_navigation_compaction_meets_the_frozen_benchmark(tmp_path: Path) -> None:
+def test_question_navigation_compaction_meets_the_frozen_benchmark(tmp_path: Path) -> None:
     fixture = _fixture()
     legacy = fixture["baseline"]
     benchmark = fixture["policy_improvement_benchmark"]
     assert isinstance(legacy, dict)
     assert isinstance(benchmark, dict)
-    measured = _measure_v2(tmp_path, fixture)
+    measured = _measure_question_navigation(tmp_path, fixture)
 
     # The full candidate page remains typed and durable.  This is deliberately
     # the compact MCP/model projection plus the ordered batch-read and one
-    # exhaustive review submission—the public v2 workflow a capable agent uses.
-    assert json.loads(canonical_json_bytes(measured)) == fixture["v2_measured"]
+    # exhaustive question-scoped review submission a capable agent uses.
     max_response = max(
         item["serialized_utf8_bytes"]
         for item in measured["per_response_complete_serialized_utf8_bytes"]
@@ -516,3 +518,7 @@ def test_issue143_v2_navigation_compaction_meets_the_frozen_benchmark(tmp_path: 
         measured["scientific_equivalence_evidence"]["exact_claim_hash"]
         == legacy["scientific_equivalence_evidence"]["exact_claim_hash"]
     )
+    frozen = fixture["v3_measured"]
+    assert canonical_hash(measured) == frozen["measurement_hash"]
+    assert measured["estimated_model_facing_tokens"]["total"] == frozen["estimated_tokens"]
+    assert max_response == frozen["maximum_response_bytes"]

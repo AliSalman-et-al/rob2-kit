@@ -547,7 +547,7 @@ def test_canonical_skills_share_progressively_disclosed_harness_references() -> 
     assert "reuse it exactly in coverage" in evidence
     assert "no relevant evidence may support `no_information`" in evidence
     assert "complete_with_limitations` retains a material source or search uncertainty" in evidence
-    assert "omit `seed_family`" in evidence
+    assert "Caller-supplied Source IDs are rejected" in evidence
     assert "every active question returned by `get_work_context`" in questions
     assert "do not attach `evidence_refs`" in questions
     assert "no_information" in questions

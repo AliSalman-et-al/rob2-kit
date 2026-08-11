@@ -35,7 +35,7 @@ def _index(tmp_path):
             ),
         )
     )
-    handle = index.search_v2(SearchQuery(terms=("allocation",))).candidates[0].location_handle
+    handle = index.search_page(SearchQuery(terms=("allocation",))).candidates[0].location_handle
     return index, snapshot, handle
 
 
@@ -51,7 +51,7 @@ def test_v2_batch_packs_ordered_prefix_and_reports_item_conditions(tmp_path) -> 
             EvidenceReadBatchItem(location_handle="loc:not-issued", question_ids=("sq:two",)),
         ),
     )
-    first = index.read_batch_v2(request, policy=policy)
+    first = index.read_batch(request, policy=policy)
     assert len(first.outcomes) == 1
     assert first.outcomes[0].view is not None
     assert first.outcomes[0].view.continuation is not None
@@ -66,7 +66,7 @@ def test_v2_batch_packs_ordered_prefix_and_reports_item_conditions(tmp_path) -> 
     assert reviewed.read_policy_hash == canonical_hash(policy)
     assert first.serialized_response_bytes == len(canonical_json_bytes(first))
     assert first.continuation is not None
-    second = index.read_batch_v2(
+    second = index.read_batch(
         request.model_copy(update={"continuation": first.continuation}), policy=policy
     )
     assert second.outcomes[0].condition is EvidenceReadItemCondition.STALE
@@ -101,7 +101,7 @@ def test_oversized_section_target_terminates_without_restarting_its_context(tmp_
         ),
     )
     policy = EvidenceReadPolicy(per_view_character_target=100)
-    view = index.read_batch_v2(request, policy=policy).outcomes[0].view
+    view = index.read_batch(request, policy=policy).outcomes[0].view
     windows: list[str] = []
     for _ in range(32):
         assert view is not None
@@ -109,7 +109,7 @@ def test_oversized_section_target_terminates_without_restarting_its_context(tmp_
         if view.continuation is None:
             break
         view = (
-            index.read_batch_v2(
+            index.read_batch(
                 request.model_copy(
                     update={
                         "items": (
@@ -145,7 +145,7 @@ def test_v2_context_batch_keeps_distinct_fragments_and_resumes_section(tmp_path)
         for number in range(10)
     )
     snapshot = index.replace_units(units)
-    handle = index.search_v2(SearchQuery(terms=("allocation",))).candidates[0].location_handle
+    handle = index.search_page(SearchQuery(terms=("allocation",))).candidates[0].location_handle
     request = EvidenceReadBatchRequest(
         scope=EvidenceReadBatchScope(
             result_id="result:context", domain_id="domain:context", snapshot_hash=snapshot
@@ -159,7 +159,7 @@ def test_v2_context_batch_keeps_distinct_fragments_and_resumes_section(tmp_path)
         ),
     )
     policy = EvidenceReadPolicy(per_view_character_target=500)
-    first = index.read_batch_v2(request, policy=policy).outcomes[0].view
+    first = index.read_batch(request, policy=policy).outcomes[0].view
     assert first is not None
     assert len(first.fragments) > 1
     assert first.canonical_unit_id is None
@@ -173,7 +173,7 @@ def test_v2_context_batch_keeps_distinct_fragments_and_resumes_section(tmp_path)
     assert first.continuation is not None
     assert first.omitted_fragment_count > 0
     resumed = (
-        index.read_batch_v2(
+        index.read_batch(
             request.model_copy(
                 update={
                     "items": (
@@ -234,7 +234,7 @@ def test_section_continuation_does_not_skip_an_oversized_following_fragment(tmp_
     snapshot = index._snapshot()
     handle = next(
         candidate.location_handle
-        for candidate in index.search_v2(SearchQuery(terms=("allocation",))).candidates
+        for candidate in index.search_page(SearchQuery(terms=("allocation",))).candidates
         if candidate.canonical_unit_id == "unit:target"
     )
     request = EvidenceReadBatchRequest(
@@ -250,7 +250,7 @@ def test_section_continuation_does_not_skip_an_oversized_following_fragment(tmp_
         ),
     )
     policy = EvidenceReadPolicy(per_view_character_target=100)
-    current = index.read_batch_v2(request, policy=policy).outcomes[0].view
+    current = index.read_batch(request, policy=policy).outcomes[0].view
     oversized_windows: list[tuple[int, int, str]] = []
     tail_windows: list[str] = []
     for _ in range(32):
@@ -271,7 +271,7 @@ def test_section_continuation_does_not_skip_an_oversized_following_fragment(tmp_
         if current.continuation is None:
             break
         current = (
-            index.read_batch_v2(
+            index.read_batch(
                 request.model_copy(
                     update={
                         "items": (

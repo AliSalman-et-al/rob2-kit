@@ -47,11 +47,14 @@ SKILL_ALLOWED_TOOL_NAMES = (
     "search_evidence",
     "read_evidence",
     "submit_evidence_review",
+    "submit_evidence_stage_outcome",
+    "materialize_question_evidence_bundle",
+    "submit_question_step",
+    "correct_question_step",
+    "submit_source_chronology_review",
     "inspect_visual_candidate",
     "submit_source_role_review",
     "submit_result_resolution",
-    "submit_domain_evidence",
-    "submit_domain_answers",
 )
 LOCK_FILENAME = "rob2.lock"
 RELEASE_MANIFEST_FILENAME = "release-manifest.json"
@@ -564,8 +567,8 @@ def validate_skill_contract(root: Path) -> None:
     """Validate the release-owned skill, reference, and forward-test contract."""
 
     root = root.resolve()
-    if len(SKILL_ALLOWED_TOOL_NAMES) != 15 or len(set(SKILL_ALLOWED_TOOL_NAMES)) != 15:
-        raise ValueError("skill tool allowlist must contain exactly fifteen unique tools")
+    if len(SKILL_ALLOWED_TOOL_NAMES) != 18 or len(set(SKILL_ALLOWED_TOOL_NAMES)) != 18:
+        raise ValueError("skill tool allowlist must contain exactly eighteen unique tools")
     if any(not isinstance(name, str) or not name for name in SKILL_ALLOWED_TOOL_NAMES):
         raise ValueError("skill tool allowlist is malformed")
     if not set(SKILL_ALLOWED_TOOL_NAMES) <= set(RUN_OPERATION_NAMES):
