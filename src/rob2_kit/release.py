@@ -382,7 +382,7 @@ def verify_host_adapters(root: Path) -> None:
         raise ValueError("mirrored release manifest diverges from rob2.lock")
 
 
-def verify_mcp_launchability(
+def inspect_mcp_tool_inventory(
     project_root: Path,
     command: str,
     args: tuple[str, ...],
@@ -410,7 +410,19 @@ def verify_mcp_launchability(
                     inventory = await session.list_tools()
                 return tuple(tool.name for tool in inventory.tools)
 
-    tools = anyio.run(inspect)
+    return anyio.run(inspect)
+
+
+def verify_mcp_launchability(
+    project_root: Path,
+    command: str,
+    args: tuple[str, ...],
+    *,
+    environment: dict[str, str] | None = None,
+) -> tuple[str, ...]:
+    """Require a launched candidate server to expose this release's tool contract."""
+
+    tools = inspect_mcp_tool_inventory(project_root, command, args, environment=environment)
     if tools != SKILL_ALLOWED_TOOL_NAMES:
         raise ValueError(
             "the launched MCP server does not expose the locked tool surface: "

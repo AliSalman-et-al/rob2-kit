@@ -172,6 +172,10 @@ _Avoid_: Procedural search breadth, coverage complete, agent confidence
 A structured, attributable expression of a plain-language evidence need with optional exact phrases or lexical terms, search purpose, and Source or page refinements. One generalized search/read contract serves all purposes; purpose selects protocol obligations, ranking, diversification, and coverage accounting but never visibility, while Source, Trial, registry, and Result discovery or revision remain outside evidence navigation.
 _Avoid_: Raw FTS expression, prompt
 
+**Search attempt**:
+An attributable execution of one selected Search query within an Evidence coverage stage. Replacing it creates another Search attempt that names its predecessor while the replaced attempt reciprocally names its successor within the same navigation intent; this auditable linear chain may have arbitrary depth, and every candidate already displayed by any attempt still requires disposition.
+_Avoid_: Search query, one-hop replacement, abandoned results
+
 **Evidence navigation intent**:
 A Guidance-defined evidence need within an Evidence coverage stage, fulfilled through the applicable bounded Search, structural reading, locator follow-up, or Visual-review operation. The engine verifies its procedural completion while the agent remains responsible for expressing, refining, and interpreting its semantic scope.
 _Avoid_: Search query, fixed query count, proof of recall

@@ -6,13 +6,14 @@ import pytest
 
 from rob2_kit.application.evidence_navigation import (
     ConcurrentEvidenceNavigationUpdate,
+    EVIDENCE_NAVIGATION_STATE_VERSION,
     IncompatibleEvidenceNavigationState,
     V3EvidenceNavigationStore,
     new_v3_navigation_state,
 )
 from rob2_kit.domain.canonical import canonical_hash
 from rob2_kit.domain.sources import SourceAvailability, SourceProcessing, SourceRole
-from rob2_kit.evidence.obligations import EvidenceSearchObligation
+from rob2_kit.evidence.obligations import EvidenceSearchObligation, SourceSetRule
 from rob2_kit.evidence.search import SearchQuery
 from rob2_kit.evidence.workflow import (
     IrrelevantReason,
@@ -168,6 +169,26 @@ def _state(*, triggered: bool = False) -> V3EvidenceWorkflowState:
 
 def _mixed_unavailable_state(*, include_material_limitation: bool = False):
     state = _state()
+    proposition = state.obligation.propositions[0]
+    evidence_pass = proposition.evidence_passes[0]
+    stage = evidence_pass.coverage_stages[0].model_copy(
+        update={"applicable_source_roles": (SourceRole.PRIMARY_REPORT, SourceRole.SUPPLEMENT)}
+    )
+    evidence_pass = evidence_pass.model_copy(
+        update={"coverage_stages": (stage, *evidence_pass.coverage_stages[1:])}
+    )
+    proposition = proposition.model_copy(
+        update={
+            "accepted_source_roles": (SourceRole.PRIMARY_REPORT, SourceRole.SUPPLEMENT),
+            "evidence_passes": (evidence_pass, *proposition.evidence_passes[1:]),
+        }
+    )
+    obligation = state.obligation.model_copy(
+        update={"propositions": (proposition, *state.obligation.propositions[1:])}
+    )
+    state = state.model_copy(
+        update={"obligation": obligation, "obligation_hash": canonical_hash(obligation)}
+    )
     unavailable = V3AuthorizedSource(
         source_id="source:unavailable",
         roles=(SourceRole.SUPPLEMENT,),
@@ -185,7 +206,7 @@ def _mixed_unavailable_state(*, include_material_limitation: bool = False):
     if include_material_limitation:
         limitations.append(
             V3StageScopeLimitation(
-                role=SourceRole.PRIMARY_REPORT,
+                source_set_rule=SourceSetRule.ALL_APPLICABLE_REVISIONS,
                 kind=V3ScopeLimitationKind.MATERIAL_UNRESOLVED,
                 rationale="Some primary-report material remains unreadable.",
             )
@@ -196,6 +217,7 @@ def _mixed_unavailable_state(*, include_material_limitation: bool = False):
                 SourceRole.PRIMARY_REPORT,
                 SourceRole.SUPPLEMENT,
             ),
+            "source_set_rule": SourceSetRule.ALL_APPLICABLE_REVISIONS,
             "role_limitations": tuple(limitations),
         }
     )
@@ -286,6 +308,30 @@ def test_v3_search_is_bound_to_one_intent_and_supersession_cannot_cross_it() -> 
         rationale="Narrower issued synonym.",
     )
     assert [x.kind for x in state.attempts] == [V3AttemptKind.SUPERSEDED, V3AttemptKind.SELECTED]
+
+
+def test_v3_selected_lineage_rejects_nonreciprocal_successor_edges() -> None:
+    state = _state()
+    query = SearchQuery(terms=("allocation",), source_ids=("source:one",))
+    first = V3SearchAttempt(
+        attempt_id="attempt:a", proposition_id="proposition:test:one", pass_id="pass:seed",
+        stage_id="stage:seed:first", intent_id="intent:first:search", query=query,
+        query_hash=canonical_hash(query), source_scope_hash=canonical_hash(("source:one",)),
+    )
+    state = start_v3_search_attempt(state, first)
+    second_query = SearchQuery(terms=("random",), source_ids=("source:one",))
+    state = supersede_v3_search_attempt(
+        state, old_attempt_id="attempt:a",
+        replacement=first.model_copy(update={"attempt_id": "attempt:b", "query": second_query, "query_hash": canonical_hash(second_query)}),
+        rationale="Use a related term.",
+    )
+    malformed = tuple(
+        item.model_copy(update={"superseded_by_attempt_id": "attempt:a"})
+        if item.attempt_id == "attempt:a" else item
+        for item in state.attempts
+    )
+    with pytest.raises(ValueError, match="successor edge is not reciprocal"):
+        V3EvidenceWorkflowState.model_validate(state.model_dump(mode="python") | {"attempts": malformed})
 
 
 def test_v3_search_rejects_omitted_extra_or_reordered_issued_source_scope() -> None:
@@ -626,10 +672,10 @@ def test_cross_source_limitation_requires_available_scope_traversal_then_termina
     first = state.stage_scopes[0]
     limited = first.model_copy(
         update={
-            "source_set_rule": "cross_source_comparison",
+            "source_set_rule": SourceSetRule.ALL_APPLICABLE_REVISIONS,
             "role_limitations": (
                 V3StageScopeLimitation(
-                    source_set_rule="cross_source_comparison",
+                    source_set_rule=SourceSetRule.ALL_APPLICABLE_REVISIONS,
                     kind=V3ScopeLimitationKind.CROSS_SOURCE_INSUFFICIENT,
                     rationale="Only one applicable source revision exists.",
                 ),
@@ -846,7 +892,7 @@ def test_v3_persistence_archives_prior_inventory_revision_under_its_exact_key(
         store.save(original, expected_content_hash=canonical_hash({"stale": "write"}))
 
 
-def test_v2_payload_cannot_be_loaded_or_reinterpreted_as_v3(tmp_path: Path) -> None:
+def test_unsupported_and_malformed_persisted_state_have_distinct_diagnostics(tmp_path: Path) -> None:
     workflow = _state()
     store = V3EvidenceNavigationStore(tmp_path)
     path = store._path(
@@ -858,9 +904,27 @@ def test_v2_payload_cannot_be_loaded_or_reinterpreted_as_v3(tmp_path: Path) -> N
         workflow.inventory_snapshot_hash,
     )
     path.parent.mkdir(parents=True)
-    path.write_text('{"state_version":"evidence-navigation-state:2.0.0"}', encoding="utf-8")
+    path.write_text(
+        '{"state_version":"evidence-navigation-state:' + '2.0.0"}', encoding="utf-8"
+    )
 
-    with pytest.raises(IncompatibleEvidenceNavigationState, match="compatible v3"):
+    with pytest.raises(
+        IncompatibleEvidenceNavigationState,
+        match="state_version=.*2.0.0.*expected.*3.0.0.*supersede Preparation",
+    ):
+        store.load(
+            run_id=workflow.run_id,
+            result_id=workflow.result_id,
+            domain_id=workflow.domain_id,
+            question_id=workflow.question_id,
+            obligation_hash=workflow.obligation_hash,
+            inventory_snapshot_hash=workflow.inventory_snapshot_hash,
+        )
+    path.write_text(
+        '{"state_version":"' + EVIDENCE_NAVIGATION_STATE_VERSION + '","contract_version":"3.0.0"}',
+        encoding="utf-8",
+    )
+    with pytest.raises(IncompatibleEvidenceNavigationState, match="current-version.*malformed"):
         store.load(
             run_id=workflow.run_id,
             result_id=workflow.result_id,

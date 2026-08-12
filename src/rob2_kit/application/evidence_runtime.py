@@ -1,9 +1,8 @@
 """Private v3 evidence-navigation runtime.
 
 This is intentionally an application seam, rather than a public transport
-contract.  It binds engine-materialized context to the v3 reducer and the
-existing bounded Search implementation while the public v2 boundary remains
-live during cutover preparation.
+contract. It binds engine-materialized context to the v3 reducer and bounded
+Search implementation.
 """
 
 from __future__ import annotations
@@ -21,6 +20,7 @@ from rob2_kit.domain.canonical import canonical_hash
 from rob2_kit.domain.revisions import ContentHash, FrozenModel, Identifier
 from rob2_kit.evidence.obligations import EvidenceNavigationIntent, EvidenceNavigationIntentKind
 from rob2_kit.evidence.search import (
+    EvidenceReadPolicy,
     EvidenceScope,
     EvidenceSearchPage,
     EvidenceSearchPolicy,
@@ -54,6 +54,7 @@ class V3EvidenceSearchDependency(Protocol):
         self,
         query: SearchQuery,
         *,
+        issuance_context: str | None = None,
         continuation: str | None = None,
         scope: EvidenceScope | None = None,
         continue_reason: SearchContinuationReason | None = None,
@@ -124,7 +125,7 @@ class V3EvidenceRuntimeResult(FrozenModel):
 
 
 class V3EvidenceNavigationRuntime:
-    """Persist exactly one materialized v3 workflow without a v2 dual-write.
+    """Persist exactly one materialized v3 workflow.
 
     The supplied ``workflow`` is the engine-owned initial reducer state.  Each
     mutation reloads its durable successor and uses the supplied content hash
@@ -228,6 +229,7 @@ class V3EvidenceNavigationRuntime:
             )
         page = self._search.search_page(
             attempt.query,
+            issuance_context=self._attempt_issuance_context(attempt.attempt_id),
             scope=self._search_scope(stage),
             policy=self._search_policy,
         )
@@ -255,6 +257,7 @@ class V3EvidenceNavigationRuntime:
             raise V3EvidenceRuntimeError("an empty materialized source scope cannot be continued")
         page = self._search.search_page(
             attempt.query,
+            issuance_context=self._attempt_issuance_context(attempt.attempt_id),
             continuation=request.continuation,
             scope=self._search_scope(stage),
             continue_reason=request.continue_reason,
@@ -400,6 +403,14 @@ class V3EvidenceNavigationRuntime:
             raise V3EvidenceContextMismatch(
                 "injected Search policy does not match the engine-owned workflow policy"
             )
+        read_policy = EvidenceReadPolicy()
+        if (
+            self._initial_workflow.read_policy_id,
+            self._initial_workflow.read_policy_hash,
+        ) != (read_policy.policy_id, canonical_hash(read_policy)):
+            raise V3EvidenceContextMismatch(
+                "workflow Read policy is unsupported; supersede Preparation"
+            )
 
     def _validate_workflow(self, workflow: V3EvidenceWorkflowState) -> None:
         context = self._context
@@ -413,6 +424,21 @@ class V3EvidenceNavigationRuntime:
         ):
             raise V3EvidenceContextMismatch(
                 "workflow state does not bind the supplied materialized evidence context"
+            )
+        if (
+            workflow.search_policy_id,
+            workflow.search_policy_hash,
+        ) != (self._search_policy.policy_id, canonical_hash(self._search_policy)):
+            raise V3EvidenceContextMismatch(
+                "workflow Search policy is unsupported; supersede Preparation"
+            )
+        read_policy = EvidenceReadPolicy()
+        if (workflow.read_policy_id, workflow.read_policy_hash) != (
+            read_policy.policy_id,
+            canonical_hash(read_policy),
+        ):
+            raise V3EvidenceContextMismatch(
+                "workflow Read policy is unsupported; supersede Preparation"
             )
 
     def _resolve_search_target(
@@ -491,3 +517,8 @@ class V3EvidenceNavigationRuntime:
                 selected[source_id].parse_id for source_id in stage.scope.authorized_source_ids
             ),
         )
+
+    def _attempt_issuance_context(self, attempt_id: Identifier) -> str:
+        """Namespace index tokens to the exact durable v3 Search attempt."""
+
+        return f"evidence-navigation-v3:{self._initial_workflow.run_id}:{attempt_id}"

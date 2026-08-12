@@ -552,9 +552,9 @@
     }
   },
   "v3_measured": {
-    "measurement_hash": "sha256:0ebc3fca23efdec7a1a7fb2d2e9585a6a8042934f71a5759d209f9c1ea95b2e5",
-    "estimated_tokens": 55320,
-    "maximum_response_bytes": 18904
+    "measurement_hash": "sha256:36235583b3afd08fb8e1ee0aa0e99137a5b0c4643ccb9c283cf3f05d1a5358cf",
+    "estimated_tokens": 55403,
+    "maximum_response_bytes": 19054
   },
   "policy_improvement_benchmark": {
     "benchmark_id": "issue143-policy-improvement-benchmark:1",

@@ -22,6 +22,13 @@ rewritten automatically. To accept a deliberate local change, call
 `accept_golden(..., accept=True)` or run the local helper with `--accept`;
 inspect the semantic diff before committing it.
 
+`traces/evidence-navigation-v3.golden.json` is a compact, exercised v3
+Evidence-navigation replay. Its focused test drives the actual search index,
+runtime, durable reload, exhaustive triage, stage closure, and a three-node
+selected-query supersession chain before comparing the generated record. It
+replaces the retired large installed replay golden; the fixture is not a
+hand-authored stand-in for executable coverage.
+
 ## Bounded blinded-verifier experiment
 
 `tests/public_fixtures/verifier/source-conflict.json` is the public, model-free

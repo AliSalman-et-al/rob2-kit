@@ -32,6 +32,7 @@ class RetrievalErrorCode(StrEnum):
     UNKNOWN_CURSOR = "unknown_cursor"
     SCOPE_MISMATCH = "scope_mismatch"
     STALE_WORK_TOKEN = "stale_work_token"
+    UNSUPPORTED_CONTRACT = "unsupported_contract"
     REPROCESSING_REQUIRED = "reprocessing_required"
     INVALID_REQUEST = "invalid_request"
     OPERATIONAL = "retrieval_operational"
@@ -57,6 +58,10 @@ _DEFAULT_RECOVERY: dict[RetrievalErrorCode, tuple[str, ...]] = {
     RetrievalErrorCode.STALE_WORK_TOKEN: (
         "call continue_run",
         "copy the current question-scoped evidence WorkToken",
+    ),
+    RetrievalErrorCode.UNSUPPORTED_CONTRACT: (
+        "supersede Preparation",
+        "restart Evidence navigation with the current contract",
     ),
     RetrievalErrorCode.REPROCESSING_REQUIRED: (
         "reprocess the current Trial Sources and Parses",
@@ -145,10 +150,10 @@ class StaleCursor(RetrievalFailure):
 
 
 class StaleSearchContinuation(StaleCursor):
-    """A v2 Search continuation or page handle no longer names this view.
+    """A Search continuation or page handle no longer names this view.
 
     This remains a stale-cursor condition at the transport boundary, while
-    giving in-process callers a precise type for the v2 navigation seam.
+    giving in-process callers a precise type for the Evidence-navigation seam.
     """
 
     def __init__(self, message: str, *, field: str | None = "continuation") -> None:
@@ -156,7 +161,7 @@ class StaleSearchContinuation(StaleCursor):
 
 
 class SearchPolicyMismatch(StaleSearchContinuation):
-    """A v2 continuation was issued under a different engine-owned policy."""
+    """A continuation was issued under a different engine-owned policy."""
 
     def __init__(self, message: str = "continuation belongs to a different search policy") -> None:
         super().__init__(message, field="continuation")
@@ -200,6 +205,17 @@ class StaleWorkToken(RetrievalFailure):
     def __init__(self, message: str, *, field: str | None = "work_token") -> None:
         super().__init__(
             code=RetrievalErrorCode.STALE_WORK_TOKEN,
+            field=field,
+            message=message,
+        )
+
+
+class UnsupportedEvidenceNavigationContract(RetrievalFailure):
+    """A retired Evidence-navigation token must never be decoded or resumed."""
+
+    def __init__(self, message: str, *, field: str | None = "continuation") -> None:
+        super().__init__(
+            code=RetrievalErrorCode.UNSUPPORTED_CONTRACT,
             field=field,
             message=message,
         )

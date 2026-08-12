@@ -25,9 +25,9 @@ from rob2_kit.evidence.search import (
     SearchQuery,
     canonicalize_evidence_units,
 )
+from rob2_kit.evidence.obligations import EvidencePassKind
 from rob2_kit.evidence.workflow import (
     IrrelevantReason,
-    SearchPassKind,
     TriageBasis,
     V3CandidateTriageRevision,
     V3PageTriageSubmission,
@@ -39,7 +39,7 @@ BROAD_JUSTIFICATION = "Synthetic broad-term traversal is intentionally exhausted
 
 
 def _mcp_search_response(
-    page, *, pass_kind: SearchPassKind, completed: tuple[SearchPassKind, ...]
+    page, *, pass_kind: EvidencePassKind, completed: tuple[EvidencePassKind, ...]
 ) -> dict[str, object]:
     """Measure the actual compact MCP operation envelope, not its nested page."""
 
@@ -56,7 +56,7 @@ def _mcp_search_response(
             page=page,
             coverage_progress={
                 "question_id": "question:synthetic-allocation",
-                "question_ready": set(completed) == set(SearchPassKind),
+                "question_ready": set(completed) == set(EvidencePassKind),
                 "propositions": (
                     {
                         "proposition_id": "proposition:synthetic-allocation",
@@ -265,13 +265,13 @@ def _measure_question_navigation(tmp_path: Path, fixture: dict[str, object]) -> 
     snapshot_hash = index.replace_units(units)
     search_policy = EvidenceSearchPolicy()
     read_policy = EvidenceReadPolicy()
-    completed: list[SearchPassKind] = []
+    completed: list[EvidencePassKind] = []
     responses: list[tuple[str, object]] = []
     candidates = []
     exposed_pages = []
     handles: dict[str, str] = {}
     for specification in workload["queries"]:  # type: ignore[index]
-        pass_kind = SearchPassKind(specification["pass_kind"])
+        pass_kind = EvidencePassKind(specification["pass_kind"])
         query = SearchQuery(terms=tuple(specification["terms"]))
         continuation = None
         pages = []
@@ -392,7 +392,7 @@ def _measure_question_navigation(tmp_path: Path, fixture: dict[str, object]) -> 
             read_view_receipt=receipts.get(candidate.canonical_unit_id),
         )
         for pass_kind, page in (
-            (SearchPassKind(spec["pass_kind"]), page)
+            (EvidencePassKind(spec["pass_kind"]), page)
             for spec in workload["queries"]
             for page in exposed_pages
             if page.query_hash == canonical_hash(SearchQuery(terms=tuple(spec["terms"])))
@@ -415,7 +415,7 @@ def _measure_question_navigation(tmp_path: Path, fixture: dict[str, object]) -> 
             (
                 "review-progress:all-pages",
                 {
-                    "coverage_complete": set(completed) == set(SearchPassKind),
+                    "coverage_complete": set(completed) == set(EvidencePassKind),
                     "question_ready": True,
                     "outstanding_triage_candidate_ids": (),
                 },

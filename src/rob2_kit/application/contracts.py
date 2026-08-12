@@ -82,7 +82,6 @@ from rob2_kit.registry import RegistryCandidate
 
 CONTRACT_VERSION = "1.1.0"
 EVIDENCE_NAVIGATION_CONTRACT_VERSION = "3.0.0"
-DOMAIN_EVIDENCE_CONTRACT_VERSION = "3.0.0"
 
 
 class RunOperation(StrEnum):
@@ -1450,7 +1449,7 @@ class ConfirmRunDefinitionResponse(OperationResponse):
 
 class SearchEvidenceResponse(OperationResponse):
     run_id: Identifier
-    evidence_navigation_contract_version: Literal["3.0.0"] = DOMAIN_EVIDENCE_CONTRACT_VERSION
+    evidence_navigation_contract_version: Literal["3.0.0"] = EVIDENCE_NAVIGATION_CONTRACT_VERSION
     page: EvidenceSearchPage
     coverage_progress: dict[str, object]
 
@@ -1510,7 +1509,7 @@ def finalize_search_evidence_response(response: SearchEvidenceResponse) -> Searc
 
 
 def model_facing_operation_payload(response: Any) -> dict[str, Any]:
-    """Build the exact compact v2 operation envelope used on the MCP wire.
+    """Build the exact compact operation envelope used on the MCP wire.
 
     Search packing calls this same composition function before a response is
     returned.  Keeping it here prevents a page-local estimate from drifting
@@ -1532,12 +1531,12 @@ def model_facing_operation_payload(response: Any) -> dict[str, Any]:
         if (measured, estimated) == (bytes_, tokens):
             return payload
         bytes_, tokens = measured, estimated
-    raise RuntimeError("v2 MCP operation-envelope accounting did not stabilize")
+    raise RuntimeError("MCP operation-envelope accounting did not stabilize")
 
 
 class ReadEvidenceResponse(OperationResponse):
     run_id: Identifier
-    evidence_navigation_contract_version: Literal["3.0.0"] = DOMAIN_EVIDENCE_CONTRACT_VERSION
+    evidence_navigation_contract_version: Literal["3.0.0"] = EVIDENCE_NAVIGATION_CONTRACT_VERSION
     page: EvidenceReadBatchPage
 
 

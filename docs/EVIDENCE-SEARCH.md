@@ -68,8 +68,10 @@ are rejected.
 
 Continue with the returned opaque continuation and the same attempt identity.
 Replacing a selected query requires `supersede_attempt_id` and a nonblank
-`supersession_rationale`. Superseded attempts remain auditable, and every
-candidate they exposed still requires terminal triage.
+`supersession_rationale`. A selected attempt can be superseded repeatedly;
+the durable lineage is one reciprocal linear chain with exactly one selected
+tail. Superseded attempts remain auditable, and every candidate they exposed
+still requires terminal triage.
 
 Search pages are bounded navigation projections, not citable evidence. They can
 contain ambiguous reading order, tables, captions, bibliography, duplicates,
@@ -135,6 +137,10 @@ it is therefore diagnostic-terminal, never a successful evidence basis.
 
 ## Historical records
 
-V2 navigation artifacts remain decodable for audit and release compatibility.
-They are not accepted by active public contracts and no active path writes or
-dual-writes v2 state.
+Current Evidence navigation accepts only `evidence-navigation-state:3.0.0`,
+the current Search policy, and the current Read policy. Retired v2 state and
+tokens are unsupported-contract failures: supersede Preparation and restart;
+they are not decoded, migrated, or resumed. For v2 audit inspection, use the
+pinned historical decoder-bearing commit
+`6f279e1b8d2de1a76ea5061060a5036c2153c675`; current HEAD deliberately has no
+v2 decoder.

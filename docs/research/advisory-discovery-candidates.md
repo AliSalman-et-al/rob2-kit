@@ -1,5 +1,9 @@
 # Implementing advisory discovery candidates (issue #119)
 
+> Historical note: Evidence-navigation v2 inspection now requires pinned
+> historical code at `6f279e1b8d2de1a76ea5061060a5036c2153c675`; current HEAD
+> intentionally no longer carries a v2 decoder.
+
 ## Scope and method
 
 Issue #119 was already settled through a structured design-interview session.

@@ -35,25 +35,6 @@ from rob2_kit.evidence.search import (
 )
 
 
-class SearchPassKind(StrEnum):
-    GUIDANCE_SEED = "guidance_seed"
-    TRIAL_FOLLOW_UP = "trial_follow_up"
-    CONTRADICTION = "contradiction"
-
-
-class V2QueryAttemptKind(StrEnum):
-    SELECTED = "selected"
-    EXPLORATORY = "exploratory"
-    SUPERSEDED = "superseded"
-
-
-class V2TriageKind(StrEnum):
-    RETAINED = "retained"
-    IRRELEVANT = "irrelevant"
-    DUPLICATE = "duplicate"
-    UNRESOLVED = "unresolved"
-
-
 class TriageBasis(StrEnum):
     """The objectively auditable material supporting a terminal triage decision."""
 
@@ -71,355 +52,8 @@ class IrrelevantReason(StrEnum):
     OTHER = "other"
 
 
-class V2SearchAttempt(FrozenModel):
-    """One attributable query attempt, never overwritten by a replacement."""
-
-    attempt_id: Identifier
-    sq_id: Identifier
-    pass_kind: SearchPassKind
-    query: SearchQuery
-    query_hash: ContentHash
-    kind: V2QueryAttemptKind
-    supersedes_attempt_id: Identifier | None = None
-    superseded_by_attempt_id: Identifier | None = None
-    supersession_rationale: str | None = None
-
-    @model_validator(mode="after")
-    def validate_attempt(self) -> V2SearchAttempt:
-        if self.query_hash != canonical_hash(self.query):
-            raise ValueError("attempt query hash must bind the exact structured query")
-        superseded = self.kind is V2QueryAttemptKind.SUPERSEDED
-        if superseded != (self.superseded_by_attempt_id is not None):
-            raise ValueError("only superseded attempts name their replacement")
-        if superseded and self.supersedes_attempt_id is not None:
-            raise ValueError("a superseded attempt cannot supersede another attempt")
-        if superseded != (self.supersession_rationale is not None):
-            raise ValueError("supersession requires an explicit rationale")
-        if self.supersession_rationale is not None and not self.supersession_rationale.strip():
-            raise ValueError("supersession rationale cannot be blank")
-        return self
-
-
-class V2PageExposure(FrozenModel):
-    """Durable edge from an attempt/page to one candidate identity."""
-
-    attempt_id: Identifier
-    page_handle: str = Field(min_length=1)
-    candidate_id: Identifier
-    canonical_unit_id: Identifier
-    location_handle: str = Field(min_length=1)
-    source_id: Identifier
-    source_artifact_hash: ContentHash
-    parse_id: Identifier
-    canonical_start: int = Field(ge=0)
-    canonical_end: int = Field(gt=0)
-    left_omitted_character_count: int = Field(ge=0)
-    right_omitted_character_count: int = Field(ge=0)
-    undisplayed_match_count: int = Field(ge=0)
-    warnings: tuple[str, ...] = ()
-    triage_flags: EvidenceSearchTriageFlags
-    table_headers: tuple[str, ...] = ()
-    caption: str | None = None
-    duplicate_group_id: Identifier | None = None
-    retained_duplicate_target_id: Identifier | None = None
-    page_number: int = Field(ge=1)
-    total_page_count: int = Field(ge=1)
-    traversal_complete: bool
-
-
-class V2ExposedPage(FrozenModel):
-    """Page-level audit record, retained even when the page has zero candidates."""
-
-    attempt_id: Identifier
-    page_handle: str = Field(min_length=1)
-    candidate_ids: tuple[Identifier, ...] = ()
-    page_number: int = Field(ge=1)
-    total_page_count: int = Field(ge=1)
-    traversal_complete: bool
-
-
-class V2CandidateTriageRevision(FrozenModel):
-    """Append-only classification of one candidate occurrence on one SQ page.
-
-    Candidate IDs identify canonical source material and can therefore recur
-    across selected queries.  A classification is deliberately not global:
-    its attempt, signaling question, and page handle bind the decision to the
-    exact surfaced occurrence that supplied its review context.
-    """
-
-    revision_id: Identifier
-    candidate_id: Identifier
-    attempt_id: Identifier
-    sq_id: Identifier
-    page_handle: str = Field(min_length=1)
-    kind: V2TriageKind
-    irrelevant_reason: IrrelevantReason | None = None
-    retained_target_id: Identifier | None = None
-    rationale: str | None = None
-    basis: TriageBasis | None = None
-    read_view_receipt: str | None = None
-    retained_target_read_view_receipt: str | None = None
-
-    @model_validator(mode="after")
-    def validate_triage(self) -> V2CandidateTriageRevision:
-        if self.kind is V2TriageKind.IRRELEVANT:
-            if self.irrelevant_reason is None:
-                raise ValueError("irrelevant triage requires a closed reason")
-            if self.irrelevant_reason is IrrelevantReason.OTHER and not (
-                self.rationale and self.rationale.strip()
-            ):
-                raise ValueError("the other irrelevant reason requires a rationale")
-            if self.basis is None:
-                raise ValueError(
-                    "irrelevant triage requires an explicit preview or read receipt basis"
-                )
-            if self.basis is TriageBasis.PREVIEW and self.read_view_receipt is not None:
-                raise ValueError("preview triage cannot attach a read-view receipt")
-            if self.basis is TriageBasis.READ_VIEW_RECEIPT and not self.read_view_receipt:
-                raise ValueError("read-based triage requires a read-view receipt")
-        elif self.irrelevant_reason is not None:
-            raise ValueError("irrelevant reasons apply only to irrelevant triage")
-        if self.kind is V2TriageKind.DUPLICATE:
-            if self.retained_target_id is None or self.retained_target_id == self.candidate_id:
-                raise ValueError("duplicate triage requires a distinct retained target")
-        elif (
-            self.retained_target_id is not None
-            or self.retained_target_read_view_receipt is not None
-        ):
-            raise ValueError("retained target and its receipt apply only to duplicate triage")
-        if self.kind is V2TriageKind.UNRESOLVED and not (self.rationale and self.rationale.strip()):
-            raise ValueError("unresolved triage requires a rationale")
-        return self
-
-    @property
-    def disposition_fingerprint(self) -> ContentHash:
-        """Identify the terminal classification, not the supporting read instance.
-
-        A canonical candidate can be exposed for several signaling questions.
-        Each page still needs its own receipt-bound triage revision, but the
-        receipts are necessarily question-specific.  Treating those supporting
-        receipts as conflicting dispositions made an otherwise identical,
-        conservative dismissal impossible to record across those pages.
-        """
-        return canonical_hash(
-            {
-                "candidate_id": self.candidate_id,
-                "kind": self.kind,
-                "irrelevant_reason": self.irrelevant_reason,
-                "retained_target_id": self.retained_target_id,
-                "rationale": self.rationale,
-            }
-        )
-
-
-class V2PageTriageSubmission(FrozenModel):
-    """One exact, all-or-nothing partition over complete exposed pages."""
-
-    submission_id: Identifier
-    page_handles: tuple[str, ...]
-    triage_revision_ids: tuple[Identifier, ...]
-    content_hash: ContentHash
-
-    @model_validator(mode="after")
-    def validate_submission(self) -> V2PageTriageSubmission:
-        if not self.page_handles or len(self.page_handles) != len(set(self.page_handles)):
-            raise ValueError("a triage submission needs unique complete page handles")
-        if len(self.triage_revision_ids) != len(set(self.triage_revision_ids)):
-            raise ValueError("a triage submission cannot repeat revision IDs")
-        payload = self.model_dump(mode="json")
-        payload["content_hash"] = None
-        if self.content_hash != canonical_hash(payload):
-            raise ValueError("triage submission hash must bind its exact partition")
-        return self
-
-
-class V2EvidenceWorkflowState(FrozenModel):
-    """Serializable immutable reducer state for the unexposed v2 workflow."""
-
-    result_id: Identifier
-    domain_id: Identifier
-    snapshot_hash: ContentHash
-    search_policy_id: Identifier
-    search_policy_hash: ContentHash
-    attempts: tuple[V2SearchAttempt, ...] = ()
-    pages: tuple[V2ExposedPage, ...] = ()
-    exposures: tuple[V2PageExposure, ...] = ()
-    triage_revisions: tuple[V2CandidateTriageRevision, ...] = ()
-    triage_submissions: tuple[V2PageTriageSubmission, ...] = ()
-
-    @model_validator(mode="after")
-    def validate_audit_state(self) -> V2EvidenceWorkflowState:
-        attempt_by_id = {attempt.attempt_id: attempt for attempt in self.attempts}
-        if len(attempt_by_id) != len(self.attempts):
-            raise ValueError("search attempt IDs must be unique")
-        if any(page.attempt_id not in attempt_by_id for page in self.pages):
-            raise ValueError("exposed pages must name an issued search attempt")
-        if any(exposure.attempt_id not in attempt_by_id for exposure in self.exposures):
-            raise ValueError("page exposures must name an issued search attempt")
-        if len({page.page_handle for page in self.pages}) != len(self.pages):
-            raise ValueError("exposed page handles must be unique")
-        exposure_keys = {
-            (edge.attempt_id, edge.page_handle, edge.candidate_id) for edge in self.exposures
-        }
-        if len(exposure_keys) != len(self.exposures):
-            raise ValueError("page exposure edges must be unique")
-        pages: dict[tuple[Identifier, str], list[V2PageExposure]] = {}
-        for edge in self.exposures:
-            pages.setdefault((edge.attempt_id, edge.page_handle), []).append(edge)
-        for page_edges in pages.values():
-            identity = (page_edges[0].page_number, page_edges[0].total_page_count)
-            if any((edge.page_number, edge.total_page_count) != identity for edge in page_edges):
-                raise ValueError("one page handle must bind one deterministic page position")
-            if len({edge.candidate_id for edge in page_edges}) != len(page_edges):
-                raise ValueError("one page cannot expose a candidate twice")
-        page_by_handle = {page.page_handle: page for page in self.pages}
-        for handle, page_edges in pages.items():
-            page = page_by_handle.get(handle[1])
-            if (
-                page is None
-                or page.attempt_id != handle[0]
-                or page.candidate_ids != tuple(edge.candidate_id for edge in page_edges)
-            ):
-                raise ValueError("candidate exposure edges must exactly match their exposed page")
-        revisions = {revision.revision_id: revision for revision in self.triage_revisions}
-        if len(revisions) != len(self.triage_revisions):
-            raise ValueError("triage revision IDs must be unique")
-        by_occurrence: dict[tuple[Identifier, Identifier, str, Identifier], ContentHash] = {}
-        exposure_by_occurrence = {
-            (
-                edge.attempt_id,
-                attempt_by_id[edge.attempt_id].sq_id,
-                edge.page_handle,
-                edge.candidate_id,
-            ): edge
-            for edge in self.exposures
-        }
-        for revision in self.triage_revisions:
-            occurrence = (
-                revision.attempt_id,
-                revision.sq_id,
-                revision.page_handle,
-                revision.candidate_id,
-            )
-            if occurrence not in exposure_by_occurrence:
-                raise ValueError("triage revision must bind an exposed SQ page occurrence")
-            prior = by_occurrence.setdefault(occurrence, revision.disposition_fingerprint)
-            if prior != revision.disposition_fingerprint:
-                raise ValueError(
-                    "conflicting triage revisions are not permitted for one occurrence"
-                )
-        submissions = {
-            submission.submission_id: submission for submission in self.triage_submissions
-        }
-        if len(submissions) != len(self.triage_submissions):
-            raise ValueError("triage submission IDs must be unique")
-        used_pages: set[str] = set()
-        for submission in self.triage_submissions:
-            if used_pages.intersection(submission.page_handles):
-                raise ValueError("a page partition may be submitted only once")
-            used_pages.update(submission.page_handles)
-            selected_pages = [page_by_handle.get(handle) for handle in submission.page_handles]
-            if any(page is None for page in selected_pages):
-                raise ValueError("triage submission names an unexposed page")
-            selected = [
-                edge for edge in self.exposures if edge.page_handle in submission.page_handles
-            ]
-            selected_occurrences = {
-                (
-                    edge.attempt_id,
-                    attempt_by_id[edge.attempt_id].sq_id,
-                    edge.page_handle,
-                    edge.candidate_id,
-                )
-                for edge in selected
-            }
-            submitted_occurrences = {
-                (
-                    revisions[item].attempt_id,
-                    revisions[item].sq_id,
-                    revisions[item].page_handle,
-                    revisions[item].candidate_id,
-                )
-                for item in submission.triage_revision_ids
-                if item in revisions
-            }
-            if len(submission.triage_revision_ids) != len(submitted_occurrences):
-                raise ValueError(
-                    "triage submission must reference issued unique occurrence revisions"
-                )
-            if submitted_occurrences != selected_occurrences:
-                raise ValueError(
-                    "triage submissions must classify every candidate occurrence in complete pages"
-                )
-        selected = [
-            attempt for attempt in self.attempts if attempt.kind is V2QueryAttemptKind.SELECTED
-        ]
-        current_keys = {(attempt.sq_id, attempt.pass_kind) for attempt in selected}
-        if len(current_keys) != len(selected):
-            raise ValueError("each signaling-question pass has one current selected attempt")
-        for sq_id in {attempt.sq_id for attempt in selected}:
-            hashes = [attempt.query_hash for attempt in selected if attempt.sq_id == sq_id]
-            if len(hashes) != len(set(hashes)):
-                raise ValueError("selected mandatory queries must be pairwise distinct")
-        return self
-
-    @property
-    def content_hash(self) -> ContentHash:
-        return canonical_hash(self.model_dump(mode="json"))
-
-    def outstanding_triage_candidate_ids(self) -> tuple[Identifier, ...]:
-        classified = {
-            (revision.attempt_id, revision.page_handle, revision.candidate_id)
-            for revision in self.triage_revisions
-        }
-        return tuple(
-            sorted(
-                {
-                    edge.candidate_id
-                    for edge in self.exposures
-                    if (edge.attempt_id, edge.page_handle, edge.candidate_id) not in classified
-                }
-            )
-        )
-
-    def coverage_complete(self) -> bool:
-        selected_attempts = [
-            attempt for attempt in self.attempts if attempt.kind is V2QueryAttemptKind.SELECTED
-        ]
-        if not selected_attempts:
-            return False
-        for sq_id in {attempt.sq_id for attempt in selected_attempts}:
-            if {
-                attempt.pass_kind for attempt in selected_attempts if attempt.sq_id == sq_id
-            } != set(SearchPassKind):
-                return False
-        for attempt in self.attempts:
-            if attempt.kind is not V2QueryAttemptKind.SELECTED:
-                continue
-            pages = [page for page in self.pages if page.attempt_id == attempt.attempt_id]
-            if not pages:
-                return False
-            totals = {page.total_page_count for page in pages}
-            if len(totals) != 1:
-                return False
-            expected = set(range(1, next(iter(totals)) + 1))
-            if {page.page_number for page in pages} != expected:
-                return False
-            if not any(page.traversal_complete for page in pages):
-                return False
-        return True
-
-    def freeze_valid(self) -> bool:
-        if not self.coverage_complete() or self.outstanding_triage_candidate_ids():
-            return False
-        return not any(
-            revision.kind is V2TriageKind.UNRESOLVED for revision in self.triage_revisions
-        )
-
-
 class V3AttemptKind(StrEnum):
     SELECTED = "selected"
-    EXPLORATORY = "exploratory"
     SUPERSEDED = "superseded"
 
 
@@ -594,8 +228,6 @@ class V3SearchAttempt(FrozenModel):
         retired = self.kind is V3AttemptKind.SUPERSEDED
         if retired != (self.superseded_by_attempt_id is not None):
             raise ValueError("only superseded v3 attempts name their replacement")
-        if retired and self.supersedes_attempt_id is not None:
-            raise ValueError("a superseded v3 attempt cannot supersede another attempt")
         if retired != (self.supersession_rationale is not None):
             raise ValueError("v3 supersession requires an attributable rationale")
         if self.supersession_rationale is not None and not self.supersession_rationale.strip():
@@ -951,11 +583,7 @@ class V3EvidenceWorkflowState(FrozenModel):
                 ].authorized_source_ids
             ):
                 raise ValueError("v3 query Source IDs must bind the issued stage Source scope")
-        selected_intents = [
-            item.intent_id for item in self.attempts if item.kind is V3AttemptKind.SELECTED
-        ]
-        if len(selected_intents) != len(set(selected_intents)):
-            raise ValueError("each v3 navigation intent has at most one selected attempt")
+        _validate_v3_selected_lineages(self)
         pages = {item.page_handle: item for item in self.pages}
         if len(pages) != len(self.pages):
             raise ValueError("v3 exposed page handles must be unique")
@@ -1186,6 +814,76 @@ def _v3_scope(
     )
 
 
+def _validate_v3_selected_lineages(state: V3EvidenceWorkflowState) -> None:
+    """Validate each intent as one reciprocal linear selected/superseded chain."""
+
+    attempts = {item.attempt_id: item for item in state.attempts}
+    by_intent: dict[Identifier, list[V3SearchAttempt]] = {}
+    for attempt in state.attempts:
+        by_intent.setdefault(attempt.intent_id, []).append(attempt)
+    for intent_id, lineage in by_intent.items():
+        selected = [item for item in lineage if item.kind is V3AttemptKind.SELECTED]
+        if len(selected) != 1:
+            raise ValueError("each used v3 Search intent must have exactly one selected tail")
+        roots: list[V3SearchAttempt] = []
+        lineage_ids = {item.attempt_id for item in lineage}
+        for item in lineage:
+            identity = (item.proposition_id, item.pass_id, item.stage_id, item.intent_id)
+            if item.supersedes_attempt_id is None:
+                roots.append(item)
+            else:
+                predecessor = attempts.get(item.supersedes_attempt_id)
+                if (
+                    predecessor is None
+                    or predecessor.attempt_id not in lineage_ids
+                    or predecessor.superseded_by_attempt_id != item.attempt_id
+                    or (
+                        predecessor.proposition_id,
+                        predecessor.pass_id,
+                        predecessor.stage_id,
+                        predecessor.intent_id,
+                    )
+                    != identity
+                ):
+                    raise ValueError("v3 selected lineage predecessor edge is not reciprocal")
+            if item.superseded_by_attempt_id is not None:
+                successor = attempts.get(item.superseded_by_attempt_id)
+                if (
+                    successor is None
+                    or successor.attempt_id not in lineage_ids
+                    or successor.supersedes_attempt_id != item.attempt_id
+                    or (
+                        successor.proposition_id,
+                        successor.pass_id,
+                        successor.stage_id,
+                        successor.intent_id,
+                    )
+                    != identity
+                ):
+                    raise ValueError("v3 selected lineage successor edge is not reciprocal")
+        if len(roots) != 1:
+            raise ValueError("v3 selected Search lineage cannot fork, join, or disconnect")
+        visited: set[Identifier] = set()
+        current = roots[0]
+        while True:
+            if current.attempt_id in visited:
+                raise ValueError("v3 selected Search lineage cannot contain a cycle")
+            visited.add(current.attempt_id)
+            if current.superseded_by_attempt_id is None:
+                if current.kind is not V3AttemptKind.SELECTED:
+                    raise ValueError("v3 selected Search lineage tail must be selected")
+                break
+            current = attempts[current.superseded_by_attempt_id]
+        if visited != lineage_ids:
+            raise ValueError("v3 selected Search lineage must be one connected linear chain")
+
+
+def _validated_v3_state(state: V3EvidenceWorkflowState) -> V3EvidenceWorkflowState:
+    """Cross the single deep-validation boundary after every public reducer result."""
+
+    return V3EvidenceWorkflowState.model_validate(state.model_dump(mode="python"))
+
+
 def start_v3_search_attempt(
     state: V3EvidenceWorkflowState, attempt: V3SearchAttempt
 ) -> V3EvidenceWorkflowState:
@@ -1210,7 +908,7 @@ def start_v3_search_attempt(
         raise ValueError("use supersede_v3_search_attempt to preserve audit history")
     if attempt.kind is V3AttemptKind.SELECTED and current:
         raise ValueError("replace a v3 selected query only through explicit supersession")
-    return state.model_copy(update={"attempts": (*state.attempts, attempt)})
+    return _validated_v3_state(state.model_copy(update={"attempts": (*state.attempts, attempt)}))
 
 
 def supersede_v3_search_attempt(
@@ -1223,7 +921,19 @@ def supersede_v3_search_attempt(
     old = next((x for x in state.attempts if x.attempt_id == old_attempt_id), None)
     if old is None or old.kind is not V3AttemptKind.SELECTED:
         raise ValueError("only a current selected v3 attempt may be superseded")
-    if replacement.kind is not V3AttemptKind.SELECTED or replacement.intent_id != old.intent_id:
+    if replacement.attempt_id in {item.attempt_id for item in state.attempts}:
+        raise ValueError("v3 replacement search attempt ID has already been issued")
+    if replacement.kind is not V3AttemptKind.SELECTED or (
+        replacement.proposition_id,
+        replacement.pass_id,
+        replacement.stage_id,
+        replacement.intent_id,
+    ) != (
+        old.proposition_id,
+        old.pass_id,
+        old.stage_id,
+        old.intent_id,
+    ):
         raise ValueError("v3 query supersession may replace only the same navigation intent")
     if not rationale.strip():
         raise ValueError("v3 query supersession requires a rationale")
@@ -1234,15 +944,17 @@ def supersede_v3_search_attempt(
             "supersession_rationale": rationale,
         }
     )
-    base = state.model_copy(
-        update={
-            "attempts": tuple(
-                retired if x.attempt_id == old_attempt_id else x for x in state.attempts
-            )
-        }
-    )
-    return start_v3_search_attempt(
-        base, replacement.model_copy(update={"supersedes_attempt_id": old_attempt_id})
+    successor = replacement.model_copy(update={"supersedes_attempt_id": old_attempt_id})
+    return _validated_v3_state(
+        state.model_copy(
+            update={
+                "attempts": tuple(
+                    retired if item.attempt_id == old_attempt_id else item
+                    for item in state.attempts
+                )
+                + (successor,)
+            }
+        )
     )
 
 
@@ -1320,9 +1032,11 @@ def record_v3_page_exposure(
             or tuple(x for x in state.exposures if x.page_handle == page.page_handle) != proposed
         ):
             raise ValueError("v3 page handle has already been exposed with different content")
-        return state
-    return state.model_copy(
-        update={"pages": (*state.pages, proposed_page), "exposures": (*state.exposures, *proposed)}
+        return _validated_v3_state(state)
+    return _validated_v3_state(
+        state.model_copy(
+            update={"pages": (*state.pages, proposed_page), "exposures": (*state.exposures, *proposed)}
+        )
     )
 
 
@@ -1346,7 +1060,7 @@ def submit_v3_page_triage(
     if existing is not None:
         if existing != proposed:
             raise ValueError("v3 triage submission ID was replayed with different content")
-        return state
+        return _validated_v3_state(state)
     pages = [x for x in state.pages if x.page_handle in page_handles]
     if len(pages) != len(page_handles) or any(x.attempt_id != attempt_id for x in pages):
         raise ValueError("v3 triage must name complete pages of one issued attempt")
@@ -1398,11 +1112,13 @@ def submit_v3_page_triage(
         raise ValueError("v3 triage revision ID has already been issued")
     if any(set(page_handles).intersection(x.page_handles) for x in state.triage_submissions):
         raise ValueError("an exposed v3 page may be triaged only once")
-    return state.model_copy(
-        update={
-            "triage_revisions": (*state.triage_revisions, *revisions),
-            "triage_submissions": (*state.triage_submissions, proposed),
-        }
+    return _validated_v3_state(
+        state.model_copy(
+            update={
+                "triage_revisions": (*state.triage_revisions, *revisions),
+                "triage_submissions": (*state.triage_submissions, proposed),
+            }
+        )
     )
 
 
@@ -1440,8 +1156,10 @@ def record_v3_navigation_completion(
     if old is not None:
         if old != receipt:
             raise ValueError("v3 navigation receipt ID was replayed with different content")
-        return state
-    return state.model_copy(update={"completion_receipts": (*state.completion_receipts, receipt)})
+        return _validated_v3_state(state)
+    return _validated_v3_state(
+        state.model_copy(update={"completion_receipts": (*state.completion_receipts, receipt)})
+    )
 
 
 def _v3_search_attempt_terminal(state: V3EvidenceWorkflowState, attempt: V3SearchAttempt) -> bool:
@@ -1653,8 +1371,10 @@ def record_v3_acquisition_attempt(
     if existing is not None:
         if existing != receipt:
             raise ValueError("v3 acquisition receipt ID was replayed with different content")
-        return state
-    return state.model_copy(update={"acquisition_receipts": (*state.acquisition_receipts, receipt)})
+        return _validated_v3_state(state)
+    return _validated_v3_state(
+        state.model_copy(update={"acquisition_receipts": (*state.acquisition_receipts, receipt)})
+    )
 
 
 def _validate_v3_outcome_acquisition_receipt(
@@ -1740,7 +1460,7 @@ def provision_v3_scope_acquisition_receipts(
                 update={"issued_acquisition_receipt_hashes": tuple(sorted(issued.items()))}
             )
         current = record_v3_acquisition_attempt(current, receipt)
-    return current
+    return _validated_v3_state(current)
 
 
 def v3_stage_is_active(
@@ -1765,7 +1485,7 @@ def submit_evidence_stage_outcome(
     if existing is not None:
         if existing != submission:
             raise ValueError("v3 stage outcome submission ID was replayed with different content")
-        return state
+        return _validated_v3_state(state)
     expected_identity = (
         state.run_id,
         state.result_id,
@@ -1884,7 +1604,9 @@ def submit_evidence_stage_outcome(
                 "semantic_uncertainty_unresolved requires exhaustive traversal "
                 "and unresolved review"
             )
-    return state.model_copy(update={"stage_outcomes": (*state.stage_outcomes, submission)})
+    return _validated_v3_state(
+        state.model_copy(update={"stage_outcomes": (*state.stage_outcomes, submission)})
+    )
 
 
 def v3_coverage_progress(state: V3EvidenceWorkflowState) -> dict[str, object]:

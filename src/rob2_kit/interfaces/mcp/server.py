@@ -153,7 +153,7 @@ def _dump(response: Any) -> dict[str, Any]:
         payload["proposal"] = proposal.compact_payload()
     page = getattr(response, "page", None)
     if page is not None and hasattr(page, "model_facing_payload") and "page" in payload:
-        # V2 discovery pages retain their complete typed shape for workflow
+        # Discovery pages retain their complete typed shape for workflow
         # persistence, while models receive this authoritative compact
         # catalogue.  It deliberately excludes repeated defaults and source
         # diagnostics but keeps all conservative-triage facts and read action.
@@ -729,7 +729,7 @@ def create_server(
 
         Prerequisite: an active question-scoped evidence WorkToken and complete exposed
         page handles from v3 search attempts. Safe default: submit one exact
-        append-only partition, including selected, exploratory, and superseded
+        append-only partition, including selected and superseded
         pages, and triage every candidate. Not for: creating a scientific
         passage or silently auto-disposing candidates; use batch reads and
         materialize_question_evidence_bundle after coverage and triage are ready.

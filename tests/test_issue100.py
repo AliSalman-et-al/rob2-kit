@@ -528,7 +528,7 @@ def test_mcp_read_evidence_executes_typed_route_deterministically(monkeypatch) -
                 run_id=request.run_id,
                 page={
                     "snapshot_hash": HASH,
-                    "policy_id": "policy:evidence-read-2.0.0",
+                    "policy_id": "policy:evidence-read-3.0.0",
                     "policy_hash": HASH,
                     "scope": {
                         "result_id": "result:active",

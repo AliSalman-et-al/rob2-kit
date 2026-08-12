@@ -29,6 +29,7 @@ from rob2_kit.evidence.errors import (
     SearchPolicyMismatch,
     StaleCursor,
     StaleSearchContinuation,
+    UnsupportedEvidenceNavigationContract,
     UnknownCursor,
 )
 
@@ -42,10 +43,13 @@ CONTEXT_UNIT_LIMIT = 6
 CANONICALIZATION_VERSION = "canonicalization:1.3.0"
 RETRIEVAL_SCHEMA_VERSION = "retrieval-schema:1.0.0"
 EVIDENCE_INDEX_SCHEMA_VERSION = "evidence-index-schema:1.0.0"
-EVIDENCE_SEARCH_POLICY_ID = "policy:evidence-search-3.0.0"
-EVIDENCE_READ_POLICY_ID = "policy:evidence-read-2.0.0"
+EVIDENCE_SEARCH_POLICY_ID = "policy:evidence-search-4.0.0"
+EVIDENCE_READ_POLICY_ID = "policy:evidence-read-3.0.0"
 EVIDENCE_SEARCH_ESTIMATOR_ID = "estimator:serialized-utf8-ceil-bytes-div-4:1.0.0"
 EVIDENCE_SEARCH_PACKING_ESTIMATOR_ID = "estimator:evidence-search-stable-packing:1.0.0"
+_LEGACY_EVIDENCE_NAVIGATION_TOKEN_PREFIXES = tuple(
+    "v2" + suffix + ":" for suffix in ("cur", "page", "readcur", "itemread")
+)
 _TOKEN = re.compile(r"^[^\s\"'()*:^{}[\]\\]+$")
 
 
@@ -668,7 +672,7 @@ class EvidenceScope(FrozenModel):
 
 
 class EvidenceSearchPolicy(FrozenModel):
-    """Engine-owned bounds for the v2 lightweight candidate page.
+    """Engine-owned bounds for the lightweight candidate page.
 
     ``serialized_response_bytes`` is measured from ``canonical_json_bytes`` of
     the model-facing compact page projection.  ``estimated_response_tokens`` is consequently
@@ -695,7 +699,7 @@ class EvidenceSearchPolicy(FrozenModel):
 
 
 class EvidenceReadPolicy(FrozenModel):
-    """Engine-owned limits for one v2 ordered read response."""
+    """Engine-owned limits for one ordered read response."""
 
     policy_id: Identifier = EVIDENCE_READ_POLICY_ID
     estimator_id: Identifier = EVIDENCE_SEARCH_ESTIMATOR_ID
@@ -1007,7 +1011,7 @@ class EvidenceSearchTraversalCost(FrozenModel):
 
 
 class SearchPackingContext(FrozenModel):
-    """Canonical, versioned envelope reservation for policy-3.0 packing."""
+    """Canonical, versioned envelope reservation for stable Search packing."""
 
     context_version: Literal["1.0.0"] = "1.0.0"
     operation_id: Identifier
@@ -1041,7 +1045,7 @@ class SearchPackingContext(FrozenModel):
 
 
 class EvidenceSearchPage(FrozenModel):
-    """A deterministic v2 page measured as one complete JSON response."""
+    """A deterministic Search page measured as one complete JSON response."""
 
     snapshot_hash: ContentHash
     query_hash: ContentHash
@@ -1930,17 +1934,17 @@ class EvidenceSearchIndex:
         start = 0
         if request.continuation:
             try:
-                payload = self._resolve_token("v2readcur", request.continuation)
+                payload = self._resolve_token("read-batch", request.continuation)
             except UnknownCursor:
                 raise UnknownCursor(
-                    "invalid v2 read batch continuation", field="continuation"
+                    "invalid read-batch continuation", field="continuation"
                 ) from None
-            if payload.get("snapshot") != snapshot:
-                raise StaleSearchContinuation("read batch continuation belongs to a stale snapshot")
             if payload.get("policy") != canonical_hash(policy):
                 raise SearchPolicyMismatch(
                     "read batch continuation belongs to a different read policy"
                 )
+            if payload.get("snapshot") != snapshot:
+                raise StaleSearchContinuation("read batch continuation belongs to a stale snapshot")
             if payload.get("scope") != canonical_hash(request.scope):
                 raise CursorScopeMismatch("read batch continuation belongs to a different scope")
             if payload.get("request") != request_hash:
@@ -1981,7 +1985,7 @@ class EvidenceSearchIndex:
             break
         if not selected and outcomes:
             raise OperationalRetrievalFailure(
-                "one v2 read outcome exceeds the absolute response ceiling"
+                "one read outcome exceeds the absolute response ceiling"
             )
         next_index = start + len(selected)
         payload = self._read_batch_payload(
@@ -2005,7 +2009,7 @@ class EvidenceSearchIndex:
         payload["estimated_response_tokens"] = tokens
         continuation = (
             self._issue_token(
-                "v2readcur",
+                "read-batch",
                 {
                     "snapshot": snapshot,
                     "policy": canonical_hash(policy),
@@ -2043,14 +2047,17 @@ class EvidenceSearchIndex:
                 ReadContextMode.NEIGHBORS,
                 ReadContextMode.SECTION,
             }:
-                raise InvalidRetrievalRequest("unsupported v2 read mode", field="mode")
+                raise InvalidRetrievalRequest("unsupported read mode", field="mode")
             if item.mode is not ReadContextMode.UNIT:
                 context_cursor: str | None = None
                 if item.continuation is not None:
-                    payload = self._resolve_token("v2itemread", item.continuation)
+                    payload = self._resolve_token("read-item", item.continuation)
+                    if payload.get("policy") != canonical_hash(policy):
+                        raise SearchPolicyMismatch(
+                            "read-item continuation belongs to a different read policy"
+                        )
                     if (
                         payload.get("snapshot") != read.snapshot_hash
-                        or payload.get("policy") != canonical_hash(policy)
                         or payload.get("scope") != canonical_hash(scope)
                         or payload.get("location_handle") != item.location_handle
                         or payload.get("mode") != item.mode.value
@@ -2060,11 +2067,11 @@ class EvidenceSearchIndex:
                         or payload.get("questions") != list(item.question_ids)
                     ):
                         raise StaleCursor(
-                            "v2 item continuation belongs to a different read request"
+                            "read-item continuation belongs to a different read request"
                         )
                     raw_context_cursor = payload.get("context")
                     if not isinstance(raw_context_cursor, str):
-                        raise StaleCursor("v2 context continuation position is invalid")
+                        raise StaleCursor("read-item context continuation position is invalid")
                     context_cursor = raw_context_cursor
                     oversized_unit_id = payload.get("oversized_unit_id")
                     if oversized_unit_id is not None:
@@ -2158,7 +2165,7 @@ class EvidenceSearchIndex:
                 )
                 continuation = (
                     self._issue_token(
-                        "v2itemread",
+                        "read-item",
                         {
                             "snapshot": context.snapshot_hash,
                             "policy": canonical_hash(policy),
@@ -2208,10 +2215,13 @@ class EvidenceSearchIndex:
                     view=view,
                 )
             if item.continuation is not None:
-                payload = self._resolve_token("v2itemread", item.continuation)
+                payload = self._resolve_token("read-item", item.continuation)
+                if payload.get("policy") != canonical_hash(policy):
+                    raise SearchPolicyMismatch(
+                        "read-item continuation belongs to a different read policy"
+                    )
                 if (
                     payload.get("snapshot") != read.snapshot_hash
-                    or payload.get("policy") != canonical_hash(policy)
                     or payload.get("scope") != canonical_hash(scope)
                     or payload.get("location_handle") != item.location_handle
                     or payload.get("mode") != item.mode.value
@@ -2220,12 +2230,12 @@ class EvidenceSearchIndex:
                     or payload.get("parse_id") != unit.parse_id
                     or payload.get("questions") != list(item.question_ids)
                 ):
-                    raise StaleCursor("v2 item continuation belongs to a different read request")
+                    raise StaleCursor("read-item continuation belongs to a different read request")
                 next_start = payload.get("next")
                 if isinstance(next_start, bool) or not isinstance(next_start, int):
-                    raise StaleCursor("v2 item continuation position is invalid")
+                    raise StaleCursor("read-item continuation position is invalid")
                 if not 0 <= next_start < len(unit.text):
-                    raise StaleCursor("v2 item continuation is outside the canonical unit")
+                    raise StaleCursor("read-item continuation is outside the canonical unit")
                 end = min(next_start + policy.per_view_character_target, len(unit.text))
                 read = _EvidenceRead(
                     snapshot_hash=read.snapshot_hash,
@@ -2262,7 +2272,7 @@ class EvidenceSearchIndex:
             )
             continuation = (
                 self._issue_token(
-                    "v2itemread",
+                    "read-item",
                     {
                         "snapshot": read.snapshot_hash,
                         "policy": canonical_hash(policy),
@@ -2424,7 +2434,7 @@ class EvidenceSearchIndex:
         # an empty context would be interpreted as a fresh SECTION read and
         # silently restart traversal from the first neighbor.
         continuation = (
-            self._issue_token("v2itemread", token_payload)
+            self._issue_token("read-item", token_payload)
             if end < len(unit.text) or next_context is not None
             else None
         )
@@ -2472,7 +2482,7 @@ class EvidenceSearchIndex:
             "scope": scope,
             "outcomes": outcomes,
             "next_index": next_index,
-            "continuation": _placeholder("v2readcur") if next_index else None,
+            "continuation": _placeholder("read-batch") if next_index else None,
             "serialized_response_bytes": 0,
             "estimated_response_tokens": 0,
             "limiting_bounds": (),
@@ -2490,7 +2500,7 @@ class EvidenceSearchIndex:
         policy: EvidenceSearchPolicy | None = None,
         packing_context: SearchPackingContext | None = None,
     ) -> EvidenceSearchPage:
-        """Return one engine-bounded v2 navigation page.
+        """Return one engine-bounded navigation page.
 
         The public caller controls only query semantics, authorized scope, and
         an opaque continuation.  ``policy`` exists for engine calibration and
@@ -2605,7 +2615,7 @@ class EvidenceSearchIndex:
         # page.  This exact measurement occurs after, never during, packing.
         page = _finalize_compact_page(page)
         page_handle = self._issue_stable_token(
-            "v2page",
+            "search-page",
             {
                 "snapshot": snapshot,
                 "query": query_hash,
@@ -2619,7 +2629,7 @@ class EvidenceSearchIndex:
         next_offset = offset + len(page.candidates)
         continuation_value = (
             self._issue_stable_token(
-                "v2cur",
+                "search",
                 {
                     "snapshot": snapshot,
                     "query": query_hash,
@@ -2681,20 +2691,20 @@ class EvidenceSearchIndex:
         packing_context: SearchPackingContext,
     ) -> tuple[int, bool]:
         try:
-            payload = self._resolve_token("v2cur", continuation)
+            payload = self._resolve_token("search", continuation)
         except UnknownCursor:
-            raise UnknownCursor("invalid v2 search continuation", field="continuation") from None
+            raise UnknownCursor("invalid search continuation", field="continuation") from None
+        if payload.get("policy") != canonical_hash(policy):
+            raise StaleSearchContinuation(
+                "search continuation belongs to an earlier Evidence-search policy; "
+                "discard the continuation and retry the first bounded page"
+            )
         if payload.get("snapshot") != snapshot:
             raise StaleSearchContinuation("continuation belongs to a different index snapshot")
         if payload.get("query") != query_hash:
             raise StaleSearchContinuation("continuation belongs to a different structured query")
         if payload.get("issuance_context") != issuance_context:
             raise StaleSearchContinuation("continuation belongs to a different search attempt")
-        if payload.get("policy") != canonical_hash(policy):
-            raise StaleSearchContinuation(
-                "search continuation belongs to an earlier Evidence-search policy; "
-                "discard the continuation and retry the first bounded page"
-            )
         if payload.get("scope") != (canonical_hash(scope) if scope is not None else None):
             raise CursorScopeMismatch(
                 "continuation belongs to a different Evidence scope", field="continuation"
@@ -2921,6 +2931,10 @@ class EvidenceSearchIndex:
         return token
 
     def _resolve_token(self, kind: str, token: str) -> dict[str, object]:
+        if token.startswith(_LEGACY_EVIDENCE_NAVIGATION_TOKEN_PREFIXES):
+            raise UnsupportedEvidenceNavigationContract(
+                "retired v2 Evidence-navigation token is unsupported; supersede Preparation"
+            )
         with self._connect() as connection:
             return _LookupTokenCodec.decode(connection, kind, token)
 
@@ -3430,8 +3444,8 @@ def _page_payload(
         "query_hash": query_hash,
         "policy_id": policy.policy_id,
         "policy_hash": canonical_hash(policy),
-        "page_handle": _placeholder("v2page"),
-        "continuation": None if traversal_complete else _placeholder("v2cur"),
+        "page_handle": _placeholder("search-page"),
+        "continuation": None if traversal_complete else _placeholder("search"),
         "candidate_ids": tuple(candidate.candidate_id for candidate in page_candidates),
         "candidates": page_candidates,
         "page_number": page_number,
@@ -3488,7 +3502,7 @@ def _pack_candidate_pages(
     scoped_source_ids: tuple[Identifier, ...],
     packing_context: SearchPackingContext,
 ) -> tuple[tuple[EvidenceSearchCandidate, ...], ...]:
-    """Make policy-3 boundaries with one greedy, stable reservation pass."""
+    """Make stable packing boundaries with one greedy reservation pass."""
     if not candidates:
         return ()
     built: list[tuple[EvidenceSearchCandidate, ...]] = []
@@ -3551,7 +3565,7 @@ def _stable_page_reservation(
     scoped_source_ids: tuple[Identifier, ...],
     packing_context: SearchPackingContext,
 ) -> int:
-    """Reserve the largest declared policy-3 envelope without live run state."""
+    """Reserve the largest declared packing envelope without live run state."""
     maximum_pages = max(1, len(all_candidates))
     maximum_cumulative_bytes = maximum_pages * policy.oversized_candidate_byte_ceiling
     payload = _page_payload(

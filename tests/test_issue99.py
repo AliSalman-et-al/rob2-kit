@@ -240,3 +240,20 @@ def test_built_main_wheel_bootstraps_a_real_project_runtime(tmp_path: Path) -> N
     )
     assert diagnosed.returncode == 0, diagnosed.stderr or diagnosed.stdout
     assert json.loads(diagnosed.stdout)["ok"] is True
+
+    inner_doctor = subprocess.run(
+        [
+            "uv",
+            "run",
+            "--locked",
+            "--project",
+            str(project / ".rob2" / "runtime"),
+            "rob2",
+            "doctor",
+            str(project),
+        ],
+        capture_output=True,
+        text=True,
+    )
+    assert inner_doctor.returncode == 0, inner_doctor.stderr or inner_doctor.stdout
+    assert json.loads(inner_doctor.stdout)["checks"]["host_adapters"]["ok"] is True

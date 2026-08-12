@@ -1,4 +1,4 @@
-"""Observable policy-3 Search packing and returned-envelope contracts."""
+"""Observable stable Search packing and returned-envelope contracts."""
 
 from __future__ import annotations
 
@@ -12,12 +12,20 @@ from rob2_kit.application.contracts import (
 )
 from rob2_kit.application.run_engine import RunEngine
 from rob2_kit.domain.canonical import canonical_hash, canonical_json_bytes
-from rob2_kit.evidence.errors import OperationalRetrievalFailure, StaleSearchContinuation
+from rob2_kit.evidence.errors import (
+    OperationalRetrievalFailure,
+    StaleSearchContinuation,
+    UnsupportedEvidenceNavigationContract,
+)
 from rob2_kit.evidence.search import (
     EVIDENCE_SEARCH_PACKING_ESTIMATOR_ID,
     EVIDENCE_SEARCH_POLICY_ID,
     CanonicalEvidenceUnit,
     CanonicalUnitKind,
+    EvidenceReadBatchItem,
+    EvidenceReadBatchRequest,
+    EvidenceReadBatchScope,
+    EvidenceReadPolicy,
     EvidenceSearchIndex,
     EvidenceSearchPolicy,
     SearchContinuationReason,
@@ -68,9 +76,9 @@ def _coverage(*, ready: bool = False, blocked: bool = True) -> dict[str, object]
     }
 
 
-def test_policy_3_has_a_distinct_stable_packing_estimator() -> None:
+def test_policy_4_has_a_distinct_stable_packing_estimator() -> None:
     policy = EvidenceSearchPolicy()
-    assert policy.policy_id == EVIDENCE_SEARCH_POLICY_ID == "policy:evidence-search-3.0.0"
+    assert policy.policy_id == EVIDENCE_SEARCH_POLICY_ID == "policy:evidence-search-4.0.0"
     assert policy.packing_estimator_id == EVIDENCE_SEARCH_PACKING_ESTIMATOR_ID
 
 
@@ -188,15 +196,15 @@ def test_mixed_page_reservations_sum_exactly_without_averaging(tmp_path) -> None
     )
 
 
-def test_prior_policy_token_decodes_as_stale_cursor_under_policy_3(tmp_path) -> None:
+def test_current_kind_stale_policy_token_decodes_as_stale_cursor(tmp_path) -> None:
     index = EvidenceSearchIndex(tmp_path / "index.sqlite3")
     snapshot = index.replace_units((_unit(1), _unit(2)))
     query = SearchQuery(terms=("allocation",))
     old = EvidenceSearchPolicy(policy_id="policy:evidence-search-2.0.0")
     token = index._issue_stable_token(
-        "v2cur",
+        "search",
         {
-            "snapshot": snapshot,
+            "snapshot": canonical_hash({"stale": "snapshot"}),
             "query": canonical_hash(query),
             "policy": canonical_hash(old),
             "scope": None,
@@ -209,6 +217,43 @@ def test_prior_policy_token_decodes_as_stale_cursor_under_policy_3(tmp_path) -> 
     with pytest.raises(StaleSearchContinuation, match="earlier Evidence-search policy") as error:
         index.search_page(query, continuation=token, policy=EvidenceSearchPolicy())
     assert error.value.code == "stale_cursor"
+
+
+def test_read_batch_policy_precedes_other_stale_token_bindings(tmp_path) -> None:
+    index = EvidenceSearchIndex(tmp_path / "index.sqlite3")
+    snapshot = index.replace_units((_unit(1),))
+    active = EvidenceReadPolicy()
+    prior = EvidenceReadPolicy(policy_id="policy:evidence-read-" + "2.0.0")
+    token = index._issue_token(
+        "read-batch",
+        {
+            "snapshot": canonical_hash({"stale": "snapshot"}),
+            "policy": canonical_hash(prior),
+            "scope": canonical_hash({"stale": "scope"}),
+            "request": canonical_hash({"stale": "request"}),
+            "next_index": 0,
+        },
+    )
+    request = EvidenceReadBatchRequest(
+        scope=EvidenceReadBatchScope(
+            result_id="result:one", domain_id="domain:one", snapshot_hash=snapshot
+        ),
+        items=(EvidenceReadBatchItem(
+            location_handle="loc:unreached", question_ids=("sq:one",), source_ids=("source:one",)
+        ),),
+        continuation=token,
+    )
+    with pytest.raises(StaleSearchContinuation, match="different read policy"):
+        index.read_batch(request, policy=active)
+
+
+@pytest.mark.parametrize("suffix", ("cur", "page", "readcur", "itemread"))
+def test_retired_token_kind_fails_as_an_unsupported_contract(tmp_path, suffix: str) -> None:
+    index = EvidenceSearchIndex(tmp_path / "index.sqlite3")
+    index.replace_units((_unit(1),))
+    with pytest.raises(UnsupportedEvidenceNavigationContract, match="supersede Preparation") as error:
+        index.search_page(SearchQuery(terms=("allocation",)), continuation="v2" + suffix + ":old")
+    assert error.value.code == "unsupported_contract"
 
 
 def test_underestimated_reservation_fails_after_selection_without_repacking(tmp_path) -> None:

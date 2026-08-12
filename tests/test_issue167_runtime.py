@@ -13,10 +13,12 @@ from rob2_kit.application.evidence_context import (
 from rob2_kit.application.evidence_navigation import (
     ConcurrentEvidenceNavigationUpdate,
     V3EvidenceNavigationStore,
+    new_v3_navigation_state,
 )
 from rob2_kit.application.evidence_runtime import (
     UnsupportedV3EvidenceNavigationIntent,
     V3EvidenceNavigationRuntime,
+    V3EvidenceContextMismatch,
     V3EvidencePageTriageRequest,
     V3EvidenceSearchContinuationRequest,
     V3EvidenceSearchRequest,
@@ -38,6 +40,7 @@ from rob2_kit.evidence.search import (
     EvidenceSearchIndex,
     EvidenceSearchPage,
     EvidenceSearchPolicy,
+    EvidenceReadPolicy,
     EvidenceSearchReadAction,
     EvidenceSearchTraversalCost,
     EvidenceSearchTriageFlags,
@@ -77,6 +80,7 @@ class _Search:
         self,
         query: SearchQuery,
         *,
+        issuance_context: str | None = None,
         continuation: str | None = None,
         scope: EvidenceScope | None = None,
         continue_reason: SearchContinuationReason | None = None,
@@ -84,7 +88,7 @@ class _Search:
         policy: EvidenceSearchPolicy | None = None,
     ) -> EvidenceSearchPage:
         assert policy == self.policy
-        self.calls.append((query, scope))
+        self.calls.append((query, scope, issuance_context))
         call_number = len(self.calls)
         page_number = 2 if continuation is not None else 1
         policy_hash = canonical_hash(self.policy)
@@ -296,6 +300,7 @@ def _runtime(
         EvidenceContextInventory(inventory_id="inventory:runtime", sources=inventory_sources),
     )
     policy = EvidenceSearchPolicy()
+    read_policy = EvidenceReadPolicy()
     snapshot_hash = canonical_hash({"snapshot": "runtime"})
     workflow = V3EvidenceWorkflowState(
         run_id="run:runtime",
@@ -310,8 +315,8 @@ def _runtime(
         authorized_inventory=context.authorized_inventory,
         search_policy_id=policy.policy_id,
         search_policy_hash=canonical_hash(policy),
-        read_policy_id="policy:runtime:read",
-        read_policy_hash=canonical_hash({"read": "runtime"}),
+        read_policy_id=read_policy.policy_id,
+        read_policy_hash=canonical_hash(read_policy),
         visual_policy_id="policy:runtime:visual",
         visual_policy_hash=canonical_hash({"visual": "runtime"}),
         stage_scopes=context.stage_scopes,
@@ -828,3 +833,29 @@ def _intent_blockers(workflow: V3EvidenceWorkflowState) -> tuple[str, ...]:
 
 def _stage_blockers(workflow: V3EvidenceWorkflowState) -> tuple[str, ...]:
     return v3_coverage_progress(workflow)["propositions"][0]["passes"][0]["stages"][0]["blockers"]
+
+
+@pytest.mark.parametrize("policy_kind", ("search", "read"))
+def test_runtime_rejects_prior_policy_state_before_search_or_mutation(
+    tmp_path: Path, policy_kind: str
+) -> None:
+    runtime, search, _, _ = _runtime(tmp_path)
+    created = runtime.initialize()
+    workflow = created.workflow
+    if policy_kind == "search":
+        prior = EvidenceSearchPolicy(policy_id="policy:evidence-search-" + "3.0.0")
+        workflow = workflow.model_copy(
+            update={"search_policy_id": prior.policy_id, "search_policy_hash": canonical_hash(prior)}
+        )
+    else:
+        prior = EvidenceReadPolicy(policy_id="policy:evidence-read-" + "2.0.0")
+        workflow = workflow.model_copy(
+            update={"read_policy_id": prior.policy_id, "read_policy_hash": canonical_hash(prior)}
+        )
+    stale = new_v3_navigation_state(workflow=workflow)
+    runtime._store.save(stale, expected_content_hash=created.content_hash)
+    with pytest.raises(V3EvidenceContextMismatch, match="supersede Preparation"):
+        runtime.load()
+    with pytest.raises(V3EvidenceContextMismatch, match="supersede Preparation"):
+        runtime.search_page(_request(stale.content_hash))
+    assert search.calls == []

@@ -12,6 +12,7 @@ from rob2_kit.evidence.errors import (
     StaleCursor,
     StaleSearchContinuation,
     StaleWorkToken,
+    UnsupportedEvidenceNavigationContract,
 )
 from rob2_kit.evidence.obligations import (
     ChronologyConstraint,
@@ -228,6 +229,7 @@ __all__ = [
     "CursorScopeMismatch",
     "ScopeMismatch",
     "StaleWorkToken",
+    "UnsupportedEvidenceNavigationContract",
     "OperationalRetrievalFailure",
     "ReprocessingRequired",
 ]

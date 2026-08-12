@@ -8,6 +8,7 @@ import json
 import os
 import re
 import shutil
+import sqlite3
 import subprocess
 import sys
 import tomllib
@@ -22,6 +23,7 @@ from rob2_kit.release import (
     SKILL_REFERENCE_FILENAMES,
     SUPPORTED_HOSTS,
     ReleaseLock,
+    inspect_mcp_tool_inventory,
     installed_release_fingerprint,
     load_release_lock,
     verify_host_adapters,
@@ -29,6 +31,7 @@ from rob2_kit.release import (
     verify_ownership_identities,
 )
 from rob2_kit.release import release_root as _resolve_release_root
+from rob2_kit.application.evidence_navigation import V3EvidenceNavigationState
 from rob2_kit.storage import ArtifactStore, WorkflowLedger
 from rob2_kit.storage.ledger import IntegrityError, LedgerError, LedgerSchemaRefusal
 
@@ -132,10 +135,13 @@ def upgrade_project(project_root: Path, *, apply: bool = False) -> dict[str, Any
     _validate_metadata_owned_files(root, current)
     _validate_owned_host_configuration(root, current)
     mutex = _acquire_install_mutex(root)
-    snapshot = _snapshot_managed_state(root)
+    snapshot: dict[Path, bytes] | None = None
     journal = root / ".rob2" / "install-journal.json"
     backup: Path | None = None
     candidate_stage: Path | None = None
+    mutation_started = False
+    pending_written = False
+    upgrade_succeeded = False
     try:
         _require_current_generation(root, current)
         candidate_stage = _stage_candidate_generation(root, release_root, current, lock)
@@ -144,8 +150,12 @@ def upgrade_project(project_root: Path, *, apply: bool = False) -> dict[str, Any
             candidate_stage, release_root, candidate_runtime if candidate_runtime.is_dir() else None
         )
         _require_complete_doctor(candidate_stage, "candidate release")
+        snapshot = _snapshot_managed_state(root)
         backup = _write_rollback_backup(root, current)
         candidate_paths = _candidate_owned_source_paths(release_root)
+        # The pending receipt is the first live managed write. Before it, only
+        # the isolated candidate stage and this attempt's private backup exist.
+        mutation_started = True
         _write_pending_upgrade(
             root,
             current,
@@ -153,6 +163,7 @@ def upgrade_project(project_root: Path, *, apply: bool = False) -> dict[str, Any
             tuple(candidate_paths),
             {relative: _content_hash(source) for relative, source in candidate_paths.items()},
         )
+        pending_written = True
         _write_journal(journal, "upgrade_started", (), ())
         _update_pending_candidate_hashes(root)
         # The rollback receipt is durable before any live release bytes move.
@@ -171,29 +182,69 @@ def upgrade_project(project_root: Path, *, apply: bool = False) -> dict[str, Any
             _commit_staged_runtime(root, staged_runtime, backup)
         _apply_candidate_host_configuration(root, current, lock, release_root)
         _install_ownership_manifest(root, release_root, lock)
+        assert snapshot is not None
         _write_journal(journal, "upgrade_complete", _changed_paths(root, snapshot), ())
         _update_pending_candidate_hashes(root)
         _require_complete_doctor(
             root, "candidate release after cutover", allow_pending_lifecycle_probe=True
         )
         _verify_candidate_install(root, release_root)
-        _pending_transaction_path(root).unlink()
         _cleanup_candidate_stage(candidate_stage)
         candidate_stage = None
+        # This is the last fallible success-path cleanup. Keep the receipt
+        # until it has completed so a cleanup failure can still recover.
+        _pending_transaction_path(root).unlink()
+        upgrade_succeeded = True
     except Exception as error:
-        if backup is not None:
-            _recover_interrupted_upgrade(root)
+        if not mutation_started:
+            cleanup_error = _cleanup_failed_pre_mutation_attempt(root, backup, candidate_stage)
+            detail = (
+                f"upgrade failed before transaction preparation: {error}. "
+                "Prior managed state remained unchanged."
+            )
+            if cleanup_error is not None:
+                detail += (
+                    " Candidate-stage cleanup remains; preserve .rob2 before retrying. "
+                    f"Cleanup error: {cleanup_error}"
+                )
+        elif pending_written:
+            outcome = _recover_failed_upgrade_attempt(root, backup, candidate_stage)
+            if outcome.status == "pending":
+                detail = (
+                    f"upgrade failed after a durable transaction receipt: {error}. "
+                    "Recovery remains pending; preserve .rob2 and rerun a lifecycle command. "
+                    f"Recovery error: {outcome.cleanup_error}"
+                )
+            else:
+                detail = (
+                    f"upgrade failed after a durable transaction receipt: {error}. "
+                    "Prior project state was restored."
+                )
+                if outcome.cleanup_error is not None:
+                    detail += f" Recovery cleanup error: {outcome.cleanup_error}"
         else:
-            _restore_managed_state(root, snapshot)
-        _discard_rollback_record_for_backup(root, backup)
-        _clear_pending_upgrade(root, backup)
-        _cleanup_candidate_stage(candidate_stage)
-        _write_journal(journal, "upgrade_rollback_succeeded", _changed_paths(root, snapshot), ())
-        raise HarnessBootstrapError(
-            f"upgrade failed before cutover: {error}. Prior project state was restored."
-        ) from error
+            cleanup_error = _cleanup_failed_pending_write(root, backup, candidate_stage)
+            if cleanup_error is not None:
+                detail = (
+                    f"upgrade failed while writing a transaction receipt: {error}. "
+                    "Incomplete transaction receipt remains; preserve .rob2 and resolve it "
+                    f"before retrying. Cleanup error: {cleanup_error}"
+                )
+            else:
+                detail = (
+                    f"upgrade failed before a durable transaction receipt completed: {error}. "
+                    "No release-owned assets were changed."
+                )
+        raise HarnessBootstrapError(detail) from error
     finally:
-        _release_install_mutex(mutex)
+        try:
+            _release_install_mutex(mutex)
+        except OSError as release_error:
+            if upgrade_succeeded:
+                raise HarnessBootstrapError(
+                    "upgrade completed but the installation mutex could not be released; "
+                    "do not start another lifecycle command until the mutex is resolved"
+                ) from release_error
     return {
         **preview,
         "preview": False,
@@ -338,6 +389,13 @@ class HarnessBootstrapError(ValueError):
             f"{detail} Recovery: preserve the existing configuration, remove or "
             f"reconcile its {_MCP_SERVER_NAME!r} entry, then rerun rob2 bootstrap."
         )
+
+
+class _UpgradeRecoveryOutcome(NamedTuple):
+    """The truthful state of a failed durable upgrade recovery attempt."""
+
+    status: Literal["restored", "pending"]
+    cleanup_error: Exception | None = None
 
 
 def bootstrap_project(project_root: Path, *, mode: RuntimeMode = "locked") -> dict[str, Any]:
@@ -517,16 +575,12 @@ def _server_config(
     lock: ReleaseLock, release_root: Path, host: str = "codex", *, mode: RuntimeMode = "locked"
 ) -> dict[str, Any]:
     runtime = _runtime_assets(release_root)
+    if mode == "locked" and (runtime is not None or _running_from_locked_project_runtime()):
+        return _locked_project_server_config(host)
     if runtime is not None:
-        if mode == "unlocked":
-            project = str(runtime)
-        else:
-            project = _RUNTIME_RELATIVE
-            if host == "claude":
-                project = "${CLAUDE_PROJECT_DIR}/" + _RUNTIME_RELATIVE
         return {
             "command": "uv",
-            "args": ["run", "--locked", "--project", project, "rob2-mcp"],
+            "args": ["run", "--locked", "--project", str(runtime), "rob2-mcp"],
         }
     if _is_bundled_install(release_root):
         if mode == "unlocked":
@@ -550,6 +604,27 @@ def _server_config(
     if not parts or parts[0] != "uvx":
         raise HarnessBootstrapError("The locked MCP launcher is not an isolated uvx command.")
     return {"command": parts[0], "args": parts[1:]}
+
+
+def _locked_project_server_config(host: str) -> dict[str, Any]:
+    """Return the one relative launcher identity for every locked project runtime."""
+
+    project = _RUNTIME_RELATIVE
+    if host == "claude":
+        project = "${CLAUDE_PROJECT_DIR}/" + project
+    return {"command": "uv", "args": ["run", "--locked", "--project", project, "rob2-mcp"]}
+
+
+def _running_from_locked_project_runtime() -> bool:
+    """Recognize the installed inner wheel without confusing an arbitrary wheel install."""
+
+    runtime = Path(sys.prefix).resolve().parent
+    return (
+        runtime.name == "runtime"
+        and runtime.parent.name == ".rob2"
+        and (runtime / "pyproject.toml").is_file()
+        and (runtime / "uv.lock").is_file()
+    )
 
 
 def _is_bundled_install(release_root: Path) -> bool:
@@ -829,14 +904,28 @@ def _validate_wheel(wheel: Path, pin: dict[str, str]) -> None:
 def _write_journal(
     path: Path, status: str, changed: tuple[str, ...], restored: tuple[str, ...]
 ) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
     payload = {
         "schema_version": 1,
         "status": status,
         "changed_paths": changed,
         "restored_paths": restored,
     }
-    path.write_text(json.dumps(payload, sort_keys=True) + "\n", encoding="utf-8")
+    _atomic_write_bytes(path, (json.dumps(payload, sort_keys=True) + "\n").encode())
+
+
+def _atomic_write_bytes(path: Path, content: bytes) -> None:
+    """Replace a lifecycle receipt without exposing a partial JSON payload."""
+
+    path.parent.mkdir(parents=True, exist_ok=True)
+    temporary = path.with_name(f".{path.name}.{uuid.uuid4().hex}.tmp")
+    try:
+        with temporary.open("xb") as handle:
+            handle.write(content)
+            handle.flush()
+            os.fsync(handle.fileno())
+        os.replace(temporary, path)
+    finally:
+        temporary.unlink(missing_ok=True)
 
 
 def _changed_paths(root: Path, snapshot: dict[Path, bytes]) -> tuple[str, ...]:
@@ -1326,20 +1415,50 @@ def _stage_candidate_generation(
                 destination = _project_relative_path(stage, relative)
                 destination.parent.mkdir(parents=True, exist_ok=True)
                 shutil.copyfile(source, destination)
-        ledger = root / ".rob2" / "ledger.sqlite3"
-        if ledger.is_file():
-            candidate_ledger = stage / ".rob2" / "ledger.sqlite3"
-            candidate_ledger.parent.mkdir(parents=True, exist_ok=True)
-            shutil.copyfile(ledger, candidate_ledger)
+        _stage_candidate_durable_state(root, stage)
         _refresh_release_assets(stage, release_root)
         _stage_candidate_runtime(stage, release_root, destination=stage / _RUNTIME_RELATIVE)
         _apply_candidate_host_configuration(stage, manifest, lock, release_root)
         _install_ownership_manifest(stage, release_root, lock)
         _write_journal(stage / ".rob2" / "install-journal.json", "upgrade_complete", (), ())
-    except Exception:
-        _cleanup_candidate_stage(stage)
+    except Exception as error:
+        try:
+            _cleanup_candidate_stage(stage)
+        except Exception as cleanup_error:
+            raise HarnessBootstrapError(
+                "candidate staging failed and its isolated stage remains; preserve .rob2 before "
+                f"retrying. Staging error: {error}. Cleanup error: {cleanup_error}"
+            ) from error
         raise
     return stage
+
+
+def _stage_candidate_durable_state(root: Path, stage: Path) -> None:
+    """Copy the read-only durable-state closure required by candidate doctor."""
+
+    durable_root = root / ".rob2"
+    stage_root = stage / ".rob2"
+    for relative in (
+        Path("artifacts"),
+        Path("evidence-navigation-v3"),
+    ):
+        source = durable_root / relative
+        destination = stage_root / relative
+        if source.is_dir():
+            shutil.copytree(source, destination)
+    for name in ("ledger.sqlite3", "evidence.sqlite3"):
+        source = durable_root / name
+        if source.is_file():
+            _copy_sqlite_snapshot(source, stage_root / name)
+
+
+def _copy_sqlite_snapshot(source: Path, destination: Path) -> None:
+    """Create a transactionally consistent SQLite snapshot, including WAL state."""
+
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    source_uri = f"file:{source.resolve().as_posix()}?mode=ro"
+    with sqlite3.connect(source_uri, uri=True) as reader, sqlite3.connect(destination) as writer:
+        reader.backup(writer)
 
 
 def _refresh_candidate_assets(root: Path, stage: Path, candidate_paths: dict[str, Path]) -> None:
@@ -1370,6 +1489,7 @@ def _require_current_generation(
     # A prior frozen runtime remains independently launchable through its
     # installed Codex entry even when this process is running the next wheel.
     if (root / _RUNTIME_RELATIVE).is_dir():
+        expected_tools = _installed_codex_tool_catalog(root)
         codex = _read_toml(root / ".codex" / "config.toml")
         launcher = codex.get("mcp_servers", {}).get(_MCP_SERVER_NAME)
         if not isinstance(launcher, dict):
@@ -1377,17 +1497,38 @@ def _require_current_generation(
         try:
             arguments = (root, str(launcher["command"]), tuple(launcher["args"]))
             if allow_pending_lifecycle_probe:
-                tools = verify_mcp_launchability(
+                tools = inspect_mcp_tool_inventory(
                     *arguments, environment={"ROB2_LIFECYCLE_DOCTOR": "1"}
                 )
             else:
-                tools = verify_mcp_launchability(*arguments)
+                tools = inspect_mcp_tool_inventory(*arguments)
         except (KeyError, OSError, TimeoutError, ValueError) as error:
             raise HarnessBootstrapError(f"current release MCP doctor failed: {error}") from error
-        if tools != SKILL_ALLOWED_TOOL_NAMES:
+        if tools != expected_tools:
             raise HarnessBootstrapError(
                 "current release MCP doctor found a non-canonical tool catalog"
             )
+
+
+def _installed_codex_tool_catalog(root: Path) -> tuple[str, ...]:
+    """Read the verified current release's ordered MCP catalog from its adapter."""
+
+    path = root / ".rob2" / "adapters" / "codex" / "adapter.json"
+    try:
+        descriptor = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as error:
+        raise HarnessBootstrapError(
+            "current release Codex adapter descriptor is unreadable"
+        ) from error
+    tools = descriptor.get("allowed_tools") if isinstance(descriptor, dict) else None
+    if (
+        not isinstance(tools, list)
+        or not tools
+        or any(not isinstance(tool, str) or not tool for tool in tools)
+        or len(set(tools)) != len(tools)
+    ):
+        raise HarnessBootstrapError("current release Codex adapter has an invalid tool catalog")
+    return tuple(tools)
 
 
 def _require_complete_doctor(
@@ -1524,14 +1665,18 @@ def _write_rollback_backup(root: Path, manifest: dict[str, Any]) -> Path:
     transaction_id = f"transaction:{uuid.uuid4()}"
     relative_backup = Path(_ROLLBACK_ROOT) / transaction_id.removeprefix("transaction:")
     backup = root / relative_backup
-    for relative in _lifecycle_snapshot_paths(root, manifest):
-        source = _project_relative_path(root, relative)
-        destination = backup / relative
-        destination.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copyfile(source, destination)
-    runtime = root / _RUNTIME_RELATIVE
-    if runtime.is_dir():
-        shutil.copytree(runtime, backup / "runtime-tree")
+    try:
+        for relative in _lifecycle_snapshot_paths(root, manifest):
+            source = _project_relative_path(root, relative)
+            destination = backup / relative
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(source, destination)
+        runtime = root / _RUNTIME_RELATIVE
+        if runtime.is_dir():
+            shutil.copytree(runtime, backup / "runtime-tree")
+    except Exception:
+        shutil.rmtree(backup, ignore_errors=True)
+        raise
     return backup
 
 
@@ -1624,14 +1769,15 @@ def _begin_recoverable_lifecycle(root: Path, manifest: dict[str, Any]) -> Path:
     return backup
 
 
-def _recover_interrupted_upgrade(root: Path) -> None:
+def _recover_interrupted_upgrade(root: Path, *, write_journal: bool = True) -> None:
     """Deterministically restore a pre-cutover generation after interruption."""
 
     path = _pending_transaction_path(root)
     if not path.exists():
         return
     try:
-        pending = json.loads(path.read_text(encoding="utf-8"))
+        pending_bytes = path.read_bytes()
+        pending = json.loads(pending_bytes)
         if (
             not isinstance(pending, dict)
             or pending.get("schema_version") != 1
@@ -1685,9 +1831,80 @@ def _recover_interrupted_upgrade(root: Path) -> None:
             destination = _project_relative_path(root, relative)
             destination.parent.mkdir(parents=True, exist_ok=True)
             shutil.copyfile(source, destination)
-    path.unlink()
     _cleanup_runtime_stages(root)
-    _write_journal(root / ".rob2" / "install-journal.json", "upgrade_rollback_succeeded", (), ())
+    # Do not consume the durable receipt until every fallible restoration step
+    # has completed. An interruption above leaves it available for retry.
+    path.unlink()
+    if write_journal:
+        try:
+            _write_journal(root / ".rob2" / "install-journal.json", "upgrade_rollback_succeeded", (), ())
+        except Exception:
+            # The atomic journal replacement left the previous receipt intact.
+            # Recreate the pending transaction so the already-restored state
+            # remains explicitly retryable instead of becoming ambiguous.
+            _atomic_write_bytes(path, pending_bytes)
+            raise
+
+
+def _cleanup_failed_pre_mutation_attempt(
+    root: Path, backup: Path | None, candidate_stage: Path | None
+) -> Exception | None:
+    """Discard only this attempt's private work without touching managed bytes."""
+
+    cleanup_error: Exception | None = None
+    if backup is not None:
+        try:
+            shutil.rmtree(backup)
+        except Exception as error:
+            cleanup_error = error
+    try:
+        _cleanup_candidate_stage(candidate_stage)
+    except Exception as error:
+        cleanup_error = cleanup_error or error
+    return cleanup_error
+
+
+def _cleanup_failed_pending_write(
+    root: Path, backup: Path | None, candidate_stage: Path | None
+) -> Exception | None:
+    """Remove an incomplete first transaction receipt without restoring a snapshot."""
+
+    try:
+        _pending_transaction_path(root).unlink()
+    except FileNotFoundError:
+        pass
+    except Exception as cleanup_error:
+        # The private backup is referenced by the receipt until that receipt is
+        # gone. Deleting it here would turn a recoverable failed write into an
+        # unrecoverable one.
+        try:
+            _cleanup_candidate_stage(candidate_stage)
+        except Exception:
+            pass
+        return cleanup_error
+    return _cleanup_failed_pre_mutation_attempt(root, backup, candidate_stage)
+
+
+def _recover_failed_upgrade_attempt(
+    root: Path,
+    backup: Path | None,
+    candidate_stage: Path | None,
+) -> _UpgradeRecoveryOutcome:
+    """Recover a durable transaction without allowing cleanup to mask its cause."""
+
+    try:
+        _recover_interrupted_upgrade(root)
+    except Exception as recovery_error:
+        # Keep the durable pending receipt and private backup available for the
+        # next lifecycle invocation instead of obscuring the original failure.
+        return _UpgradeRecoveryOutcome("pending", recovery_error)
+    try:
+        _discard_rollback_record_for_backup(root, backup)
+        _clear_pending_upgrade(root, backup)
+        _cleanup_candidate_stage(candidate_stage)
+    except Exception as cleanup_error:
+        return _UpgradeRecoveryOutcome("restored", cleanup_error)
+    return _UpgradeRecoveryOutcome("restored")
 
 
 def _clear_pending_upgrade(root: Path, backup: Path | None) -> None:
@@ -2426,42 +2643,56 @@ def _check_install_journal(root: Path) -> dict[str, Any]:
 def _check_project_state(root: Path) -> dict[str, Any]:
     ledger_path = root / ".rob2" / "ledger.sqlite3"
     if not ledger_path.exists():
-        return {
+        state = {
             "ok": True,
             "state": "not_initialized",
             "recovery": ("Use rob2-init to prepare and confirm a Run when ready.",),
         }
-    try:
-        receipt = WorkflowLedger(
-            ledger_path,
-            ArtifactStore(root / ".rob2" / "artifacts"),
-        ).preflight()
-    except LedgerSchemaRefusal as error:
-        return {
-            "ok": False,
-            "state": "incompatible",
-            "expected_schema_version": error.expected_version,
-            "found_schema_version": error.found_version,
-            "recovery": (
-                "Preserve .rob2 before changing it.",
-                "Use a release that explicitly migrates this schema or archive the state "
-                "and start a new Run.",
-            ),
+    else:
+        try:
+            receipt = WorkflowLedger(
+                ledger_path,
+                ArtifactStore(root / ".rob2" / "artifacts"),
+            ).preflight()
+        except LedgerSchemaRefusal as error:
+            return {
+                "ok": False,
+                "state": "incompatible",
+                "expected_schema_version": error.expected_version,
+                "found_schema_version": error.found_version,
+                "recovery": (
+                    "Preserve .rob2 before changing it.",
+                    "Use a release that explicitly migrates this schema or archive the state "
+                    "and start a new Run.",
+                ),
+            }
+        except IntegrityError as error:
+            return _failed(
+                str(error),
+                "Preserve .rob2 and repair the reported integrity failure before any "
+                "release lifecycle action.",
+            )
+        except ValueError as error:
+            return _failed(
+                str(error), "Preserve .rob2, archive it, and start a new compatible Run."
+            )
+        state = {
+            "ok": receipt.ok,
+            "state": "compatible",
+            "schema_version": receipt.schema_version,
+            "recovery": (),
         }
-    except IntegrityError as error:
-        return _failed(
-            str(error),
-            "Preserve .rob2 and repair the reported integrity failure before any "
-            "release lifecycle action.",
-        )
-    except ValueError as error:
-        return _failed(str(error), "Preserve .rob2, archive it, and start a new compatible Run.")
-    return {
-        "ok": receipt.ok,
-        "state": "compatible",
-        "schema_version": receipt.schema_version,
-        "recovery": (),
-    }
+    navigation_root = root / ".rob2" / "evidence-navigation-v3"
+    if navigation_root.is_dir():
+        for path in sorted(navigation_root.glob("*.json")):
+            try:
+                V3EvidenceNavigationState.model_validate_json(path.read_bytes())
+            except (OSError, ValueError) as error:
+                return _failed(
+                    f"active v3 Evidence-navigation state {path.name} is incompatible: {error}",
+                    "Preserve .rob2 and supersede Preparation before any release lifecycle action.",
+                )
+    return state
 
 
 def _same_tree(left: Path, right: Path) -> bool:

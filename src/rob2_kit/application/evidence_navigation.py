@@ -1,7 +1,8 @@
-"""Project-local v3 navigation persistence and read-only historical decoding."""
+"""Project-local persistence for the active v3 Evidence-navigation state."""
 
 from __future__ import annotations
 
+import json
 import os
 import time
 import uuid
@@ -10,12 +11,12 @@ from pathlib import Path
 
 from pydantic import model_validator
 
+from rob2_kit.application.contracts import EVIDENCE_NAVIGATION_CONTRACT_VERSION
 from rob2_kit.domain.canonical import canonical_hash, canonical_json_bytes
 from rob2_kit.domain.revisions import ContentHash, FrozenModel, Identifier
-from rob2_kit.evidence.workflow import V2EvidenceWorkflowState, V3EvidenceWorkflowState
+from rob2_kit.evidence.workflow import V3EvidenceWorkflowState
 
-EVIDENCE_NAVIGATION_STATE_VERSION = "evidence-navigation-state:2.0.0"
-V3_EVIDENCE_NAVIGATION_STATE_VERSION = "evidence-navigation-state:3.0.0"
+EVIDENCE_NAVIGATION_STATE_VERSION = "evidence-navigation-state:3.0.0"
 
 
 class IncompatibleEvidenceNavigationState(ValueError):
@@ -26,49 +27,11 @@ class ConcurrentEvidenceNavigationUpdate(ValueError):
     """A competing writer changed the state before this mutation could commit."""
 
 
-class EvidenceNavigationState(FrozenModel):
-    """Historical v2 audit state; retained read-only until atomic cutover."""
-
-    state_version: str = EVIDENCE_NAVIGATION_STATE_VERSION
-    contract_version: str = "2.0.0"
-    run_id: Identifier
-    result_id: Identifier
-    domain_id: Identifier
-    snapshot_hash: ContentHash
-    search_policy_id: Identifier
-    search_policy_hash: ContentHash
-    read_policy_id: Identifier
-    read_policy_hash: ContentHash
-    workflow: V2EvidenceWorkflowState
-    content_hash: ContentHash
-
-    @model_validator(mode="after")
-    def validate_identity(self) -> EvidenceNavigationState:
-        if (self.workflow.result_id, self.workflow.domain_id, self.workflow.snapshot_hash) != (
-            self.result_id,
-            self.domain_id,
-            self.snapshot_hash,
-        ):
-            raise ValueError(
-                "workflow state does not bind the persisted Result, Domain, and snapshot"
-            )
-        if (
-            self.workflow.search_policy_id,
-            self.workflow.search_policy_hash,
-        ) != (self.search_policy_id, self.search_policy_hash):
-            raise ValueError("workflow state does not bind the persisted search policy")
-        payload = self.model_dump(mode="json")
-        payload["content_hash"] = None
-        if self.content_hash != canonical_hash(payload):
-            raise ValueError("evidence navigation state content hash does not bind its payload")
-        return self
-
-
 class V3EvidenceNavigationState(FrozenModel):
     """Content-hashed v3 state, intentionally incompatible with v2 JSON."""
 
-    state_version: str = V3_EVIDENCE_NAVIGATION_STATE_VERSION
-    contract_version: str = "3.0.0"
+    state_version: str = EVIDENCE_NAVIGATION_STATE_VERSION
+    contract_version: str = EVIDENCE_NAVIGATION_CONTRACT_VERSION
     run_id: Identifier
     result_id: Identifier
     domain_id: Identifier
@@ -78,6 +41,10 @@ class V3EvidenceNavigationState(FrozenModel):
 
     @model_validator(mode="after")
     def validate_identity(self) -> V3EvidenceNavigationState:
+        if self.state_version != EVIDENCE_NAVIGATION_STATE_VERSION:
+            raise ValueError("unsupported Evidence-navigation state version; supersede Preparation")
+        if self.contract_version != EVIDENCE_NAVIGATION_CONTRACT_VERSION:
+            raise ValueError("unsupported Evidence-navigation contract; supersede Preparation")
         if (self.run_id, self.result_id, self.domain_id, self.question_id) != (
             self.workflow.run_id,
             self.workflow.result_id,
@@ -94,8 +61,8 @@ class V3EvidenceNavigationState(FrozenModel):
 
 def new_v3_navigation_state(*, workflow: V3EvidenceWorkflowState) -> V3EvidenceNavigationState:
     unsigned = V3EvidenceNavigationState.model_construct(
-        state_version=V3_EVIDENCE_NAVIGATION_STATE_VERSION,
-        contract_version="3.0.0",
+        state_version=EVIDENCE_NAVIGATION_STATE_VERSION,
+        contract_version=EVIDENCE_NAVIGATION_CONTRACT_VERSION,
         run_id=workflow.run_id,
         result_id=workflow.result_id,
         domain_id=workflow.domain_id,
@@ -108,17 +75,6 @@ def new_v3_navigation_state(*, workflow: V3EvidenceWorkflowState) -> V3EvidenceN
     return V3EvidenceNavigationState.model_validate(
         payload | {"content_hash": canonical_hash(payload)}
     )
-
-
-def decode_v2_historical_navigation_state(raw: bytes) -> EvidenceNavigationState:
-    """Explicit read-only decoder for v2 artifacts; it never upgrades them."""
-
-    try:
-        return EvidenceNavigationState.model_validate_json(raw)
-    except ValueError as error:
-        raise IncompatibleEvidenceNavigationState(
-            "historical v2 navigation state is unreadable"
-        ) from error
 
 
 class V3EvidenceNavigationStore:
@@ -146,7 +102,7 @@ class V3EvidenceNavigationStore:
         }
         path = (
             self.root
-            / f"{canonical_hash({'v': V3_EVIDENCE_NAVIGATION_STATE_VERSION, 'key': key})[7:]}.json"
+            / f"{canonical_hash({'v': EVIDENCE_NAVIGATION_STATE_VERSION, 'key': key})[7:]}.json"
         ).resolve()
         if path.parent != self.root:
             raise ValueError("v3 evidence navigation state path escaped project storage")
@@ -173,11 +129,31 @@ class V3EvidenceNavigationStore:
         if not path.exists():
             return None
         try:
-            state = V3EvidenceNavigationState.model_validate_json(path.read_bytes())
-        except (OSError, ValueError) as error:
+            raw = json.loads(path.read_bytes())
+        except (OSError, ValueError, UnicodeDecodeError) as error:
             raise IncompatibleEvidenceNavigationState(
-                "stored state is not a compatible v3 Evidence navigation state; "
+                "stored Evidence-navigation state is malformed for the current contract"
+            ) from error
+        if not isinstance(raw, dict):
+            raise IncompatibleEvidenceNavigationState(
+                "stored Evidence-navigation state is malformed for the current contract"
+            )
+        if raw.get("state_version") != EVIDENCE_NAVIGATION_STATE_VERSION or raw.get(
+            "contract_version"
+        ) != EVIDENCE_NAVIGATION_CONTRACT_VERSION:
+            raise IncompatibleEvidenceNavigationState(
+                "stored Evidence-navigation identity is unsupported "
+                f"(state_version={raw.get('state_version')!r}, "
+                f"contract_version={raw.get('contract_version')!r}; expected "
+                f"state_version={EVIDENCE_NAVIGATION_STATE_VERSION!r}, "
+                f"contract_version={EVIDENCE_NAVIGATION_CONTRACT_VERSION!r}); "
                 "supersede Preparation"
+            )
+        try:
+            state = V3EvidenceNavigationState.model_validate(raw)
+        except ValueError as error:
+            raise IncompatibleEvidenceNavigationState(
+                "stored current-version Evidence-navigation state is malformed"
             ) from error
         if (
             state.run_id,
