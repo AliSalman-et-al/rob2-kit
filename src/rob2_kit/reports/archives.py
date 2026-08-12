@@ -20,7 +20,6 @@ from rob2_kit.domain import assessment, evidence, projects, releases, results, s
 from rob2_kit.domain.canonical import canonical_json_bytes
 from rob2_kit.domain.revisions import ContentHash, Identifier, Revision, SchemaVersion
 from rob2_kit.evidence.search import CanonicalEvidenceUnit
-from rob2_kit.evidence.workflow import SearchCoverageReceipt
 from rob2_kit.logic.packs import parse_pack_yaml
 from rob2_kit.reports._deterministic_zip import write_deterministic_zip
 from rob2_kit.storage.artifacts import ArtifactNotFoundError
@@ -39,15 +38,14 @@ _REVISION_MODELS: tuple[type[Revision], ...] = (
     assessment.SQAnswerRevision,
     assessment.DecisionTrace,
     assessment.AlgorithmicJudgmentRevision,
-    assessment.JudgmentOverride,
-    assessment.ReviewFinding,
-    assessment.DomainReviewDisposition,
-    assessment.ReviewerProfileRevision,
+    assessment.FinalJudgmentRevision,
     assessment.AssessmentRevision,
-    assessment.AssessmentSignOff,
-    assessment.SignOffWithdrawal,
     evidence.EvidenceCandidate,
+    evidence.EvidenceCandidateDispositionRecord,
+    evidence.EvidenceReviewRevision,
     evidence.EvidenceClaim,
+    evidence.EvidenceCoverageReceiptRecord,
+    evidence.V3EvidenceCoverageReceiptRecord,
     evidence.DerivedFact,
     evidence.VisualTranscription,
     evidence.EvidenceBundle,
@@ -65,7 +63,6 @@ _REVISION_MODELS: tuple[type[Revision], ...] = (
 _RECORD_MODELS: tuple[type[BaseModel], ...] = (
     *_REVISION_MODELS,
     CanonicalEvidenceUnit,
-    SearchCoverageReceipt,
     sources.SourceDescriptor,
 )
 _ANY_REVISION = _REVISION_MODELS
@@ -73,36 +70,30 @@ _EVIDENCE_ITEMS = (
     evidence.EvidenceClaim,
     evidence.DerivedFact,
     evidence.VisualTranscription,
-    SearchCoverageReceipt,
 )
 _EXPECTED_DEPENDENCY_MODELS: dict[str, tuple[type[BaseModel], ...]] = {
-    "dependency:affected-record": _ANY_REVISION,
     "dependency:algorithmic-judgment": (assessment.AlgorithmicJudgmentRevision,),
+    "dependency:final-judgment": (assessment.FinalJudgmentRevision,),
     "dependency:assessment": (assessment.AssessmentRevision,),
-    "dependency:assessment-sign-off": (assessment.AssessmentSignOff,),
     "dependency:canonical-unit": (CanonicalEvidenceUnit,),
     "dependency:compatible-release": (releases.PackRelease,),
     "dependency:considered-item": _EVIDENCE_ITEMS,
     "dependency:context-item": _RECORD_MODELS,
     "dependency:decision-trace": (assessment.DecisionTrace,),
-    "dependency:domain-review-disposition": (assessment.DomainReviewDisposition,),
     "dependency:derived-fact-input": (
         evidence.EvidenceClaim,
         evidence.DerivedFact,
     ),
     "dependency:evidence-bundle": (evidence.EvidenceBundle,),
+    "dependency:evidence-review": (evidence.EvidenceReviewRevision,),
     "dependency:evidence-item": _EVIDENCE_ITEMS,
     "dependency:guidance-release": (releases.PackRelease,),
-    "dependency:judgment-override": (assessment.JudgmentOverride,),
     "dependency:logic-release": (releases.PackRelease,),
     "dependency:outcome-target": (projects.OutcomeTarget,),
     "dependency:policy-release": (releases.PolicyRelease,),
     "dependency:project-rule": (releases.ProjectRule,),
     "dependency:release-item": _RECORD_MODELS,
     "dependency:result-spec": (results.ResultSpecRevision,),
-    "dependency:review-finding": (assessment.ReviewFinding,),
-    "dependency:review-policy": (releases.PolicyRelease,),
-    "dependency:reviewer-profile": (assessment.ReviewerProfileRevision,),
     "dependency:source": (sources.SourceComponent, sources.SourceDescriptor),
     "dependency:source-inventory": (sources.SourceInventoryRevision,),
     "dependency:sq-answer": (assessment.SQAnswerRevision,),
@@ -156,7 +147,6 @@ class ArchiveManifest(BaseModel):
 
     archive_format: Literal["rob2-verification-archive"]
     archive_kind: ArchiveKind
-    active_sign_off_revision_ids: tuple[Identifier, ...] = ()
     assessment_revision_id: Identifier
     artifacts: tuple[ArchiveArtifact, ...]
     events: ArchiveEvents
@@ -180,38 +170,13 @@ class ArchiveBuilder:
     ) -> bytes:
         self.ledger.preflight()
         events = self.ledger.events()
-        current_revision_ids = {
-            revision.revision_id for revision in self.ledger.current_revisions()
-        }
-        sign_off_revision_ids = tuple(
-            sorted(
-                event.revision_id
-                for event in events
-                if event.revision_id in current_revision_ids
-                and any(
-                    dependency.role == "dependency:assessment"
-                    and dependency.revision_id == assessment_revision_id
-                    for dependency in event.dependencies
-                )
-            )
-        )
         closure, source_revisions = _dependency_closure(events, assessment_revision_id)
-        for sign_off_revision_id in sign_off_revision_ids:
-            sign_off_closure, sign_off_sources = _dependency_closure(
-                events, sign_off_revision_id
-            )
-            closure.update(sign_off_closure)
-            source_revisions.update(sign_off_sources)
         selected = tuple(event for event in events if event.revision_id in closure)
         by_revision = {event.revision_id: event for event in selected}
         if assessment_revision_id not in by_revision:
             raise ValueError(f"assessment revision {assessment_revision_id!r} was not found")
         if kind == "complete":
-            roles = {
-                dependency.role
-                for event in selected
-                for dependency in event.dependencies
-            }
+            roles = {dependency.role for event in selected for dependency in event.dependencies}
             if not any("policy" in role for role in roles):
                 raise ArchiveVerificationError(
                     "complete archive has no policy revision in its dependency closure"
@@ -246,13 +211,10 @@ class ArchiveBuilder:
                     "archive_path": None if omitted else archive_path,
                     "content_hash": content_hash,
                     "dependencies": [
-                        dependency.model_dump(mode="json")
-                        for dependency in event.dependencies
+                        dependency.model_dump(mode="json") for dependency in event.dependencies
                     ],
                     "entity_id": event.entity_id,
-                    "media_type": _media_type(
-                        None if omitted else members[archive_path]
-                    ),
+                    "media_type": _media_type(None if omitted else members[archive_path]),
                     "omitted": omitted,
                     "revision_id": revision_id,
                 }
@@ -270,14 +232,11 @@ class ArchiveBuilder:
                 }
             )
 
-        event_payload = canonical_json_bytes(
-            [event.model_dump(mode="json") for event in events]
-        )
+        event_payload = canonical_json_bytes([event.model_dump(mode="json") for event in events])
         members["ledger/events.json"] = event_payload
         manifest = ArchiveManifest(
             archive_format="rob2-verification-archive",
             archive_kind=kind,
-            active_sign_off_revision_ids=sign_off_revision_ids,
             assessment_revision_id=assessment_revision_id,
             artifacts=tuple(ArchiveArtifact.model_validate(item) for item in artifacts),
             events=ArchiveEvents(
@@ -301,9 +260,7 @@ def verify_archive(archive: bytes | bytearray | memoryview) -> VerificationRecei
                 raise ArchiveVerificationError("manifest.json is missing")
             manifest = _validate_manifest(json.loads(bundle.read("manifest.json")))
             checked_artifacts = 0
-            artifacts = {
-                artifact.revision_id: artifact for artifact in manifest.artifacts
-            }
+            artifacts = {artifact.revision_id: artifact for artifact in manifest.artifacts}
             if len(artifacts) != len(manifest.artifacts):
                 raise ArchiveVerificationError("manifest has duplicate artifact revisions")
             for revision_id, artifact in artifacts.items():
@@ -428,9 +385,7 @@ def _validate_manifest(manifest: object) -> ArchiveManifest:
         raise ArchiveVerificationError(f"manifest schema is invalid: {error}") from error
     if value.format_version != "1.0.0":
         raise ArchiveVerificationError("archive format version is unsupported")
-    if value.archive_kind == "reference" and value.limitations != (
-        _REFERENCE_LIMITATION,
-    ):
+    if value.archive_kind == "reference" and value.limitations != (_REFERENCE_LIMITATION,):
         raise ArchiveVerificationError("reference archive limitation is missing")
     if value.archive_kind == "complete" and value.limitations:
         raise ArchiveVerificationError("complete archive has unexpected limitations")
@@ -446,16 +401,9 @@ def _verify_archive_completeness(
     if root is None or not isinstance(
         records.get(manifest.assessment_revision_id), assessment.AssessmentRevision
     ):
-        raise ArchiveVerificationError(
-            "canonical Assessment revision is missing from the archive"
-        )
+        raise ArchiveVerificationError("canonical Assessment revision is missing from the archive")
     reachable: set[str] = set()
-    for revision_id in manifest.active_sign_off_revision_ids:
-        if revision_id not in artifacts:
-            raise ArchiveVerificationError(
-                f"active sign-off {revision_id} is missing from the archive"
-            )
-    pending = [root.revision_id, *manifest.active_sign_off_revision_ids]
+    pending = [root.revision_id]
     while pending:
         revision_id = pending.pop()
         if revision_id in reachable:
@@ -470,9 +418,7 @@ def _verify_archive_completeness(
         )
     if manifest.archive_kind == "complete":
         if any(artifact.omitted for artifact in artifacts.values()):
-            raise ArchiveVerificationError(
-                "complete archive omits a transitive artifact"
-            )
+            raise ArchiveVerificationError("complete archive omits a transitive artifact")
         pin_paths = {pin.archive_path for pin in manifest.pins}
         if not any(path.startswith("pins/schemas/") for path in pin_paths):
             raise ArchiveVerificationError("complete archive has no pinned schemas")
@@ -501,16 +447,12 @@ def _validate_revision_artifacts(
     incoming_roles: dict[str, set[str]] = {}
     for parent in artifacts:
         for dependency in parent.dependencies:
-            incoming_roles.setdefault(dependency.revision_id, set()).add(
-                dependency.role
-            )
+            incoming_roles.setdefault(dependency.revision_id, set()).add(dependency.role)
     for artifact in artifacts:
         if artifact.omitted or artifact.revision_id in source_revisions:
             continue
         if artifact.archive_path is None:
-            raise ArchiveVerificationError(
-                f"{artifact.revision_id} has no archived record"
-            )
+            raise ArchiveVerificationError(f"{artifact.revision_id} has no archived record")
         content = bundle.read(artifact.archive_path)
         matches: list[BaseModel] = []
         for model in _RECORD_MODELS:
@@ -519,8 +461,7 @@ def _validate_revision_artifacts(
             except PydanticValidationError:
                 continue
             if isinstance(record, Revision) and (
-                record.entity_id != artifact.entity_id
-                or record.revision_id != artifact.revision_id
+                record.entity_id != artifact.entity_id or record.revision_id != artifact.revision_id
             ):
                 continue
             matches.append(record)
@@ -532,12 +473,9 @@ def _validate_revision_artifacts(
             expected_models = _EXPECTED_DEPENDENCY_MODELS.get(role)
             if expected_models is None:
                 continue
-            if not any(
-                isinstance(record, expected_models) for record in matches
-            ):
+            if not any(isinstance(record, expected_models) for record in matches):
                 raise ArchiveVerificationError(
-                    f"{artifact.revision_id} does not match the schema required by "
-                    f"{role}"
+                    f"{artifact.revision_id} does not match the schema required by {role}"
                 )
         records[artifact.revision_id] = matches[0]
     return records
@@ -561,8 +499,7 @@ def _validate_pinned_schemas_and_packs(pins: Mapping[str, bytes]) -> None:
         pack_paths = sorted(
             path
             for path in pins
-            if path.startswith(f"pins/packs/{kind}/")
-            and path.endswith((".yaml", ".yml", ".json"))
+            if path.startswith(f"pins/packs/{kind}/") and path.endswith((".yaml", ".yml", ".json"))
         )
         if pack_paths and schema_path not in schemas:
             raise ArchiveVerificationError(f"{kind} pack schema pin is missing")
@@ -584,17 +521,13 @@ def _cross_check_events(
     for revision_id, artifact in artifacts.items():
         event = by_revision.get(revision_id)
         if event is None:
-            raise ArchiveVerificationError(
-                f"{revision_id} has no corresponding ledger event"
-            )
+            raise ArchiveVerificationError(f"{revision_id} has no corresponding ledger event")
         if (
             event.entity_id != artifact.entity_id
             or event.output_revision_hashes != (artifact.content_hash,)
             or event.dependencies != artifact.dependencies
         ):
-            raise ArchiveVerificationError(
-                f"{revision_id} does not match its ledger event"
-            )
+            raise ArchiveVerificationError(f"{revision_id} does not match its ledger event")
 
 
 def _verify_member(
@@ -617,15 +550,11 @@ def _verify_event_order(events: list[WorkflowEvent]) -> None:
         if event.sequence <= previous_sequence:
             raise ArchiveVerificationError("ledger event order is invalid")
         if event.previous_event_hash != previous_hash:
-            raise ArchiveVerificationError(
-                f"ledger event {event.event_id} has a broken hash chain"
-            )
+            raise ArchiveVerificationError(f"ledger event {event.event_id} has a broken hash chain")
         event_data = workflow_event_hash_payload(event)
         claimed_hash = event.event_hash
         if _hash_event(event_data) != claimed_hash:
-            raise ArchiveVerificationError(
-                f"ledger event {event.event_id} has a hash mismatch"
-            )
+            raise ArchiveVerificationError(f"ledger event {event.event_id} has a hash mismatch")
         previous_sequence = event.sequence
         previous_hash = event.event_hash
 

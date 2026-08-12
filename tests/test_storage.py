@@ -3,11 +3,13 @@ from __future__ import annotations
 import json
 import sqlite3
 from datetime import UTC, datetime, timedelta
+from decimal import Decimal
 from pathlib import Path
 
 import pytest
 from pydantic import ValidationError
 
+from rob2_kit.domain.results import Comparison, Estimate, Result, ResultSpecRevision
 from rob2_kit.domain.revisions import Actor, ActorKind
 from rob2_kit.storage import (
     ArtifactCorruptionError,
@@ -22,6 +24,7 @@ from rob2_kit.storage import (
     WorkflowLedger,
     dependency_fingerprint,
 )
+from rob2_kit.storage.ledger import ArtifactVerificationCache
 
 NOW = datetime(2026, 7, 29, 12, tzinfo=UTC)
 ACTOR = Actor(kind=ActorKind.SYSTEM, actor_id="actor:test", display_name="Test system")
@@ -67,6 +70,33 @@ def acquire(ledger: WorkflowLedger, owner: str = "process:writer") -> LeaseToken
     return ledger.acquire_lease(owner, NOW, timedelta(minutes=5))
 
 
+def embedded_result_spec(observed_at: datetime) -> ResultSpecRevision:
+    return ResultSpecRevision(
+        entity_id="result-spec:trial-a-mortality",
+        revision_id="revision:result-spec-shared",
+        actor=ACTOR,
+        observed_at=observed_at,
+        result=Result(
+            result_id="result:trial-a-mortality",
+            trial_id="trial:a",
+            randomization_id="randomization:a",
+            comparison=Comparison(
+                experimental_arm_id="arm:experimental", comparator_arm_id="arm:control"
+            ),
+            effect_of_interest="assignment",
+            outcome_construct="mortality",
+            measurement_instrument="all-cause",
+            time_point="30 days",
+            analysis_population="intention-to-treat",
+            analysis_model="risk ratio",
+            effect_measure="risk_ratio",
+            source_locator="report:primary/table:2",
+        ),
+        estimate=Estimate(value=Decimal("0.82")),
+        provenance_note="primary report",
+    )
+
+
 def test_artifacts_are_addressed_by_exact_bytes_and_deduplicated(store: ArtifactStore) -> None:
     first = store.put(b"same bytes", "text/plain")
     second = store.put(b"same bytes", "application/octet-stream")
@@ -92,6 +122,20 @@ def test_json_artifacts_are_canonicalized_before_hashing(store: ArtifactStore) -
 
     assert spaced.content_hash == reordered.content_hash
     assert store.read(spaced.content_hash) == '{"a":"é","z":1}'.encode()
+
+
+def test_cached_event_snapshot_refreshes_after_commit(ledger: WorkflowLedger) -> None:
+    lease = acquire(ledger)
+    ledger.commit(transition("first"), lease, now=NOW)
+    first = ledger.events()
+
+    ledger.commit(transition("second", entity="entity:second"), lease, now=NOW)
+
+    assert tuple(event.revision_id for event in first) == ("revision:first",)
+    assert tuple(event.revision_id for event in ledger.events()) == (
+        "revision:first",
+        "revision:second",
+    )
 
 
 def test_failed_transaction_exposes_no_event_revision_or_reachable_artifact(
@@ -176,18 +220,106 @@ def test_interruption_after_commit_resumes_from_durable_checkpoint(
     assert reopened.events()[0].event_id == result.event_id
 
 
-def test_duplicate_operation_returns_original_commit_without_new_event(
+def test_identical_duplicate_operation_returns_original_commit_without_new_event(
     ledger: WorkflowLedger,
 ) -> None:
     lease = acquire(ledger)
     original = ledger.commit(transition("one", operation_key="operation-key:same"), lease, now=NOW)
-    duplicate = ledger.commit(
-        transition("other", operation_key="operation-key:same"), lease, now=NOW
-    )
+    duplicate = ledger.commit(transition("one", operation_key="operation-key:same"), lease, now=NOW)
 
     assert duplicate == original.model_copy(update={"duplicate": True})
     assert len(ledger.events()) == 1
     assert ledger.current_revisions()[0].revision_id == "revision:one"
+
+
+def test_duplicate_operation_key_with_different_transition_is_an_integrity_failure(
+    ledger: WorkflowLedger,
+) -> None:
+    lease = acquire(ledger)
+    ledger.commit(transition("one", operation_key="operation-key:same"), lease, now=NOW)
+
+    with pytest.raises(RunIntegrityFailure, match="operation key"):
+        ledger.commit(transition("other", operation_key="operation-key:same"), lease, now=NOW)
+
+    assert len(ledger.events()) == 1
+
+
+def test_preflight_rejects_nested_result_spec_revision_identity_collision(
+    ledger: WorkflowLedger,
+) -> None:
+    first = embedded_result_spec(NOW)
+    second = embedded_result_spec(NOW + timedelta(seconds=1))
+    lease = acquire(ledger)
+    ledger.commit(
+        transition(
+            "first-envelope",
+            entity="proposal:first",
+            artifact=json.dumps({"result_spec": first.model_dump(mode="json")}).encode(),
+        ),
+        lease,
+        now=NOW,
+    )
+    ledger.commit(
+        transition(
+            "second-envelope",
+            entity="proposal:second",
+            artifact=json.dumps({"result_spec": second.model_dump(mode="json")}).encode(),
+        ),
+        lease,
+        now=NOW,
+    )
+
+    with pytest.raises(IntegrityError, match="ResultSpec revision identity"):
+        ledger.preflight()
+
+
+def test_preflight_compares_new_result_spec_artifacts_against_cached_identities(
+    tmp_path: Path,
+) -> None:
+    verification_cache = ArtifactVerificationCache()
+    artifacts = ArtifactStore(tmp_path / "artifacts")
+    first = WorkflowLedger(
+        tmp_path / "ledger.sqlite3",
+        artifacts,
+        verification_cache=verification_cache,
+    )
+    first.commit(
+        transition(
+            "cached-envelope",
+            entity="proposal:cached",
+            artifact=json.dumps(
+                {"result_spec": embedded_result_spec(NOW).model_dump(mode="json")}
+            ).encode(),
+        ),
+        acquire(first),
+        now=NOW,
+    )
+    assert first.preflight().ok is True
+    assert verification_cache.result_spec_identities
+
+    second = WorkflowLedger(
+        first.path,
+        artifacts,
+        verification_cache=verification_cache,
+    )
+    second.commit(
+        transition(
+            "new-envelope",
+            entity="proposal:new",
+            artifact=json.dumps(
+                {
+                    "result_spec": embedded_result_spec(NOW + timedelta(seconds=1)).model_dump(
+                        mode="json"
+                    )
+                }
+            ).encode(),
+        ),
+        acquire(second),
+        now=NOW,
+    )
+
+    with pytest.raises(IntegrityError, match="ResultSpec revision identity"):
+        second.preflight()
 
 
 def test_revising_a_current_entity_requires_explicit_supersession(
@@ -397,6 +529,59 @@ def test_integrity_preflight_detects_corrupted_current_projection(
 
     with pytest.raises(RunIntegrityFailure, match="projection"):
         ledger.preflight()
+
+
+def test_preflight_skips_reading_artifacts_already_verified_via_shared_cache(
+    tmp_path: Path,
+) -> None:
+    verification_cache = ArtifactVerificationCache()
+    artifacts = ArtifactStore(tmp_path / "artifacts")
+    read_calls: list[str] = []
+    original_read = artifacts.read
+
+    def counting_read(content_hash: str) -> bytes:
+        read_calls.append(content_hash)
+        return original_read(content_hash)
+
+    artifacts.read = counting_read  # type: ignore[method-assign]
+
+    first = WorkflowLedger(
+        tmp_path / "ledger.sqlite3",
+        artifacts,
+        verification_cache=verification_cache,
+    )
+    first.commit(transition("one"), acquire(first), now=NOW)
+    assert first.preflight().ok is True
+    assert len(read_calls) == 1
+
+    # A fresh WorkflowLedger instance over the same path, sharing the same
+    # caches (as RunEngine does across calls), must not re-read bytes it has
+    # already verified and typed-walked.
+    second = WorkflowLedger(
+        tmp_path / "ledger.sqlite3",
+        artifacts,
+        verification_cache=verification_cache,
+    )
+    assert second.preflight().ok is True
+    assert len(read_calls) == 1
+
+
+def test_preflight_does_not_redetect_tampering_of_already_verified_artifact(
+    tmp_path: Path,
+) -> None:
+    """#130 accepts cached artifact bytes for the process lifetime."""
+
+    verified: set[str] = set()
+    artifacts = ArtifactStore(tmp_path / "artifacts")
+    ledger = WorkflowLedger(
+        tmp_path / "ledger.sqlite3", artifacts, verified_artifact_hashes=verified
+    )
+    result = ledger.commit(transition("one"), acquire(ledger), now=NOW)
+    assert ledger.preflight().ok is True
+
+    ledger.artifacts.path_for(result.artifact_hash).write_bytes(b"tampered")
+
+    assert ledger.preflight().ok is True
 
 
 def test_replay_and_jsonl_export_are_deterministic_projections(

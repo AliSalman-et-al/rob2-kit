@@ -12,15 +12,26 @@ from rob2_kit.domain.assessment import (
     AssessmentRevision,
     DecisionTrace,
 )
+from rob2_kit.domain.evidence import (
+    EvidenceReviewDisposition,
+    EvidenceReviewRevision,
+    EvidenceReviewSpan,
+    ReviewedEvidenceContext,
+    ReviewedEvidenceFragment,
+    TrialAttribution,
+)
+from rob2_kit.domain.canonical import sha256_digest
 from rob2_kit.domain.releases import PolicyRelease
 from rob2_kit.domain.results import Comparison, Estimate, Result, ResultSpecRevision
 from rob2_kit.domain.revisions import Dependency, RecordReference
 from rob2_kit.domain.sources import SourceInventoryRevision
 from rob2_kit.reports.archives import (
+    ArchiveArtifact,
     ArchiveBuilder,
     ArchiveVerificationError,
     verify_archive,
 )
+from rob2_kit.reports import archives
 from rob2_kit.storage.artifacts import ArtifactStore
 from rob2_kit.storage.ledger import (
     DependencyInput,
@@ -35,6 +46,71 @@ NOW = datetime(2026, 7, 29, 12, tzinfo=UTC)
 REPOSITORY_ROOT = Path(__file__).parents[1]
 
 
+def test_archive_recognizes_typed_evidence_review_dependencies() -> None:
+    """Issue 151 review provenance remains independently verifiable offline."""
+
+    review = EvidenceReviewRevision(
+        entity_id="evidence-review:archive",
+        revision_id="revision:evidence-review-archive-1",
+        actor=actor(),
+        observed_at=NOW,
+        candidate_id="candidate:archive",
+        result_id="result:archive",
+        domain_id="domain:archive",
+        sq_id="sq:archive",
+        spans=(
+            EvidenceReviewSpan(
+                span_id="review-span:archive",
+                span_start=0,
+                span_end=9,
+                trial_attribution=TrialAttribution.ACTIVE,
+                disposition=EvidenceReviewDisposition.SUPPORTING,
+                rationale="The exact source span was reviewed.",
+                attribution_rationale="The bounded context identifies the active result.",
+                reviewed_context=ReviewedEvidenceContext(
+                    receipt_hash="sha256:" + ("a" * 64),
+                    snapshot_hash="sha256:" + ("b" * 64),
+                    requested_mode="unit",
+                    applied_mode="unit",
+                    fragments=(
+                        ReviewedEvidenceFragment(
+                            unit_id="unit:archive",
+                            source_id="source:archive",
+                            source_artifact_hash="sha256:" + ("c" * 64),
+                            parse_id="parse:archive",
+                            canonicalization_version="canonicalization:1.0.0",
+                            unit_content_hash="sha256:" + ("d" * 64),
+                            span_start=0,
+                            span_end=9,
+                            content_hash=sha256_digest(b"archive span"),
+                        ),
+                    ),
+                ),
+            ),
+        ),
+    )
+    content = review.model_dump_json().encode()
+    artifact = ArchiveArtifact(
+        archive_path="records/review.json",
+        content_hash=sha256_digest(content),
+        dependencies=(),
+        entity_id=review.entity_id,
+        media_type="application/json",
+        omitted=False,
+        revision_id=review.revision_id,
+    )
+    buffer = io.BytesIO()
+    with ZipFile(buffer, "w", ZIP_DEFLATED) as bundle:
+        bundle.writestr(artifact.archive_path, content)
+    with ZipFile(io.BytesIO(buffer.getvalue())) as bundle:
+        validated = archives._validate_revision_artifacts(bundle, (artifact,))
+
+    assert isinstance(validated[review.revision_id], EvidenceReviewRevision)
+    assert archives._EXPECTED_DEPENDENCY_MODELS["dependency:evidence-review"] == (
+        EvidenceReviewRevision,
+    )
+
+
 def verification_pins() -> dict[str, bytes]:
     return {
         path.relative_to(REPOSITORY_ROOT).as_posix(): path.read_bytes()
@@ -45,10 +121,9 @@ def verification_pins() -> dict[str, bytes]:
 
 
 def archive_ledger(tmp_path: Path) -> WorkflowLedger:
-    ledger = WorkflowLedger(
-        tmp_path / "workflow.sqlite3", ArtifactStore(tmp_path / "artifacts")
-    )
+    ledger = WorkflowLedger(tmp_path / "workflow.sqlite3", ArtifactStore(tmp_path / "artifacts"))
     lease = ledger.acquire_lease("process:archive-test", NOW, timedelta(minutes=5))
+
     def commit(
         record: object,
         dependencies: tuple[DependencyInput, ...] = (),
@@ -134,10 +209,7 @@ def archive_ledger(tmp_path: Path) -> WorkflowLedger:
     )
     inventory_hash = commit(
         inventory,
-        tuple(
-            DependencyInput.model_validate(item.model_dump())
-            for item in inventory_dependencies
-        ),
+        tuple(DependencyInput.model_validate(item.model_dump()) for item in inventory_dependencies),
     )
     trace = DecisionTrace(
         entity_id="decision-trace:one",
@@ -155,9 +227,7 @@ def archive_ledger(tmp_path: Path) -> WorkflowLedger:
         revision_id=trace.revision_id,
         content_hash=trace_hash,
     )
-    trace_dependency = Dependency(
-        **trace_reference.model_dump(), role="dependency:decision-trace"
-    )
+    trace_dependency = Dependency(**trace_reference.model_dump(), role="dependency:decision-trace")
     judgment = AlgorithmicJudgmentRevision(
         entity_id="judgment:one",
         revision_id="revision:judgment-1",
@@ -178,8 +248,8 @@ def archive_ledger(tmp_path: Path) -> WorkflowLedger:
         revision_id="revision:policy-1",
         actor=actor(),
         observed_at=NOW,
-        kind="review_policy",
-        family_id="policy:review",
+        kind="evidence_search_policy",
+        family_id="policy:evidence-search",
         release_id="1.0.0",
         canonical_content_hash="sha256:" + ("b" * 64),
         required_schema_version="1.0.0",
@@ -203,16 +273,12 @@ def archive_ledger(tmp_path: Path) -> WorkflowLedger:
     )
     assessment_dependencies = (
         Dependency(**result_reference.model_dump(), role="dependency:result-spec"),
-        Dependency(
-            **inventory_reference.model_dump(), role="dependency:source-inventory"
-        ),
+        Dependency(**inventory_reference.model_dump(), role="dependency:source-inventory"),
         Dependency(
             **judgment_reference.model_dump(),
             role="dependency:algorithmic-judgment",
         ),
-        Dependency(
-            **policy_reference.model_dump(), role="dependency:review-policy"
-        ),
+        Dependency(**policy_reference.model_dump(), role="dependency:policy-release"),
     )
     assessment = AssessmentRevision(
         entity_id="assessment:one",
@@ -225,13 +291,11 @@ def archive_ledger(tmp_path: Path) -> WorkflowLedger:
         evidence_bundles=(),
         answers=(),
         judgments=(judgment_reference,),
-        review_findings=(),
     )
     commit(
         assessment,
         tuple(
-            DependencyInput.model_validate(item.model_dump())
-            for item in assessment_dependencies
+            DependencyInput.model_validate(item.model_dump()) for item in assessment_dependencies
         ),
     )
     return ledger
@@ -255,7 +319,7 @@ def test_complete_archive_verifies_without_live_project(tmp_path: Path) -> None:
     assert receipt.ok is True
     assert receipt.archive_kind == "complete"
     assert receipt.source_integrity_independently_verifiable is True
-    assert receipt.checked_artifacts == 11
+    assert receipt.checked_artifacts == 12
     assert archive == repeated
 
 
@@ -310,14 +374,10 @@ def test_verifier_rejects_dependency_hash_inconsistent_with_manifest(
     members = {name: source.read(name) for name in source.namelist()}
     manifest = json.loads(members["manifest.json"])
     assessment = next(
-        item
-        for item in manifest["artifacts"]
-        if item["revision_id"] == "revision:assessment-1"
+        item for item in manifest["artifacts"] if item["revision_id"] == "revision:assessment-1"
     )
     assessment["dependencies"][1]["content_hash"] = "sha256:" + ("f" * 64)
-    members["manifest.json"] = json.dumps(
-        manifest, sort_keys=True, separators=(",", ":")
-    ).encode()
+    members["manifest.json"] = json.dumps(manifest, sort_keys=True, separators=(",", ":")).encode()
 
     with pytest.raises(ArchiveVerificationError, match="pinned identity and hash"):
         verify_archive(_zip_members(members))
@@ -334,12 +394,8 @@ def test_verifier_validates_pinned_json_schemas(tmp_path: Path) -> None:
     members[schema_path] = b'{"type":"not-a-json-schema-type"}'
     manifest = json.loads(members["manifest.json"])
     pin = next(item for item in manifest["pins"] if item["archive_path"] == schema_path)
-    pin["content_hash"] = (
-        "sha256:" + hashlib.sha256(members[schema_path]).hexdigest()
-    )
-    members["manifest.json"] = json.dumps(
-        manifest, sort_keys=True, separators=(",", ":")
-    ).encode()
+    pin["content_hash"] = "sha256:" + hashlib.sha256(members[schema_path]).hexdigest()
+    members["manifest.json"] = json.dumps(manifest, sort_keys=True, separators=(",", ":")).encode()
 
     with pytest.raises(ArchiveVerificationError, match="valid JSON Schema"):
         verify_archive(_zip_members(members))
@@ -387,9 +443,7 @@ def test_verifier_independently_requires_complete_archive_pins(tmp_path: Path) -
     manifest = json.loads(members["manifest.json"])
     pin_paths = {pin["archive_path"] for pin in manifest["pins"]}
     manifest["pins"] = []
-    members["manifest.json"] = json.dumps(
-        manifest, sort_keys=True, separators=(",", ":")
-    ).encode()
+    members["manifest.json"] = json.dumps(manifest, sort_keys=True, separators=(",", ":")).encode()
     for path in pin_paths:
         del members[path]
 

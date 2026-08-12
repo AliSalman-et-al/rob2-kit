@@ -19,7 +19,6 @@ class PackKind(StrEnum):
 
 
 class PolicyKind(StrEnum):
-    REVIEW_POLICY = "review_policy"
     EVIDENCE_SEARCH_POLICY = "evidence_search_policy"
     RECOVERY_POLICY = "recovery_policy"
     PARSER_QUALITY_POLICY = "parser_quality_policy"

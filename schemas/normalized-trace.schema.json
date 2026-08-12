@@ -1,0 +1,61 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://rob2-kit.local/schemas/normalized-trace.schema.json",
+  "title": "rob2-kit host-neutral normalized replay trace",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "scenario", "prompt_family", "host", "calls", "final", "signals"],
+  "properties": {
+    "schema_version": {"type": "integer", "const": 1},
+    "scenario": {"type": "string", "minLength": 1},
+    "prompt_family": {"type": "string", "minLength": 1},
+    "host": {"type": "string", "minLength": 1},
+    "adapter": {"type": ["string", "null"]},
+    "model": {"type": ["string", "null"]},
+    "release": {"type": ["string", "null"]},
+    "execution_contract": {"type": ["string", "null"]},
+    "capabilities": {"type": "array", "items": {"type": "string"}},
+    "skill_activation": {"type": "array", "items": {"type": "string"}},
+    "calls": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["sequence", "name", "arguments", "response_class", "workflow_events"],
+        "properties": {
+          "sequence": {"type": "integer", "minimum": 1},
+          "name": {"type": "string", "minLength": 1},
+          "arguments": {"type": "object"},
+          "response_class": {"type": "string"},
+          "run_state": {"type": ["string", "null"]},
+          "next_action": {"type": ["string", "null"]},
+          "workflow_events": {"type": "array", "items": {"type": "string"}},
+          "checkpoint": {"type": ["string", "null"]}
+        }
+      }
+    },
+    "final": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "run_state": {"type": ["string", "null"]},
+        "next_action": {"type": ["string", "null"]},
+        "identities": {"type": "object"},
+        "integrity": {"type": "object"}
+      }
+    },
+    "signals": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["call_count", "repair_count"],
+      "properties": {
+        "call_count": {"type": "integer", "minimum": 0},
+        "repair_count": {"type": "integer", "minimum": 0},
+        "duration_ms": {"type": ["number", "null"], "minimum": 0},
+        "input_tokens": {"type": ["integer", "null"], "minimum": 0},
+        "output_tokens": {"type": ["integer", "null"], "minimum": 0},
+        "usage": {"type": "object"}
+      }
+    }
+  }
+}

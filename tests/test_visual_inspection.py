@@ -184,8 +184,8 @@ def test_ambiguous_region_is_limited_coverage_and_cannot_support_no_information(
 
 def test_render_provenance_must_match_candidate() -> None:
     item = candidate("provenance")
-    render = VisualInspectionPolicy().initial_request(item).model_copy(
-        update={"page": item.page + 1}
+    render = (
+        VisualInspectionPolicy().initial_request(item).model_copy(update={"page": item.page + 1})
     )
     with pytest.raises(ValueError, match="provenance"):
         submit_visual_inspection(

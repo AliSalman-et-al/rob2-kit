@@ -1,99 +1,27 @@
-import hashlib
-import json
-import sys
-from datetime import UTC, datetime, timedelta
-from pathlib import Path
+"""Public host boundaries for the single typed RunEngine workflow."""
+
+from __future__ import annotations
 
 import anyio
 import pytest
-import yaml
-from mcp import ClientSession, StdioServerParameters
-from mcp.client.stdio import stdio_client
-from typer.testing import CliRunner
+from pydantic import ValidationError
 
-from rob2_kit.application.gateway import STATIC_TOOL_NAMES, ApplicationGateway
-from rob2_kit.domain.assessment import (
-    AlgorithmicJudgmentRevision,
-    AssessmentRevision,
-    AssessmentSignOff,
-    DecisionTrace,
-    JudgmentOverride,
-    ReviewerProfileRevision,
+from rob2_kit.application.contracts import (
+    EvidencePassageInput,
+    MaterializeQuestionEvidenceBundleRequest,
+    RunOperation,
+    WorkToken,
 )
-from rob2_kit.domain.releases import PolicyRelease
-from rob2_kit.domain.results import Comparison, Estimate, Result, ResultSpecRevision
-from rob2_kit.domain.revisions import Dependency, RecordReference
-from rob2_kit.domain.sources import SourceInventoryRevision
-from rob2_kit.interfaces.cli.app import app
-from rob2_kit.interfaces.mcp.server import registered_tool_names
-from rob2_kit.release import build_host_adapters, verify_host_adapters
-from rob2_kit.review.workspace import project_workspace
-from rob2_kit.storage.artifacts import ArtifactStore
-from rob2_kit.storage.ledger import (
-    DependencyInput,
-    Transition,
-    WorkflowEventOutcome,
-    WorkflowLedger,
-    dependency_fingerprint,
+from rob2_kit.interfaces.mcp.server import (
+    CANONICAL_TOOL_NAMES,
+    create_server,
+    registered_tool_names,
 )
-from tests.test_ingestion import StubParser, page
-from tests.test_review_service import case, reviewer
-from tests.test_visual_inspection import candidate
-
-
-def result_resolution_submission() -> dict[str, object]:
-    return {
-        "result": {
-            "result_id": "result:trial-a",
-            "trial_id": "trial:trial-a",
-            "randomization_id": "randomization:trial-a",
-            "comparison": {
-                "experimental_arm_id": "arm:treatment",
-                "comparator_arm_id": "arm:control",
-            },
-            "effect_of_interest": "assignment",
-            "outcome_construct": "Mortality",
-            "measurement_instrument": "Vital status",
-            "time_point": "30 days",
-            "analysis_population": "Intention to treat",
-            "analysis_model": "Risk ratio",
-            "effect_measure": "RR",
-            "source_locator": "source:trial-a-1#result",
-        },
-        "estimate": {"value": "0.8"},
-        "provenance_note": "Resolved from the primary report.",
-    }
-
-
-def low_risk_sq_answers() -> dict[str, object]:
-    values = {
-        "sq:randomization:sequence": "yes",
-        "sq:randomization:concealment": "yes",
-        "sq:randomization:baseline-imbalance": "no",
-        "sq:deviations:participants-aware": "no",
-        "sq:deviations:personnel-aware": "no",
-        "sq:deviations:appropriate-analysis": "yes",
-        "sq:missing:data-available": "yes",
-        "sq:measurement:method-inappropriate": "no",
-        "sq:measurement:differential": "no",
-        "sq:measurement:assessor-aware": "no",
-        "sq:selection:prespecified-analysis": "yes",
-        "sq:selection:multiple-measurements": "no",
-        "sq:selection:multiple-analyses": "no",
-    }
-    return {
-        "answers": [
-            {
-                "question_id": question_id,
-                "answer": answer,
-                "rationale": "Supported by the frozen evidence bundle.",
-            }
-            for question_id, answer in values.items()
-        ]
-    }
 
 
 def blank_pdf() -> bytes:
+    """Return the small valid PDF fixture shared by stdio workflow tests."""
+
     stream = b"BT /F1 12 Tf 10 36 Td (Trial report) Tj ET"
     objects = (
         b"<< /Type /Catalog /Pages 2 0 R >>",
@@ -102,11 +30,7 @@ def blank_pdf() -> bytes:
             b"<< /Type /Page /Parent 2 0 R /MediaBox [0 0 72 72] "
             b"/Resources << /Font << /F1 5 0 R >> >> /Contents 4 0 R >>"
         ),
-        (
-            f"<< /Length {len(stream)} >>\nstream\n".encode()
-            + stream
-            + b"\nendstream"
-        ),
+        f"<< /Length {len(stream)} >>\nstream\n".encode() + stream + b"\nendstream",
         b"<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>",
     )
     data = bytearray(b"%PDF-1.4\n")
@@ -120,990 +44,146 @@ def blank_pdf() -> bytes:
     for offset in offsets:
         data.extend(f"{offset:010d} 00000 n \n".encode())
     data.extend(
-        (
-            f"trailer\n<< /Size {len(objects) + 1} /Root 1 0 R >>\n"
-            f"startxref\n{xref}\n%%EOF\n"
-        ).encode()
+        f"trailer\n<< /Size {len(objects) + 1} /Root 1 0 R >>\nstartxref\n{xref}\n%%EOF\n".encode()
     )
     return bytes(data)
 
 
-def test_initialization_is_host_neutral_and_issues_bounded_identifiers(
-    tmp_path: Path,
-) -> None:
-    with pytest.raises(PermissionError, match="authorization"):
-        ApplicationGateway().initialize_project(tmp_path, authorized=False)
-    assert not (tmp_path / ".rob2").exists()
-    direct = ApplicationGateway().initialize_project(tmp_path, authorized=True)
-    result = CliRunner().invoke(app, ["init", str(tmp_path), "--json"])
-
-    assert result.exit_code == 0
-    cli = json.loads(result.stdout)
-    assert cli == direct.model_dump(mode="json")
-    assert cli["status"] == "trial_problem"
-    assert cli["committed"] is True
-    assert cli["payload"]["project_id"].startswith("project:")
-    assert cli["payload"]["work_item"] is None
+def test_stdio_mcp_surface_is_the_fixed_run_engine_inventory() -> None:
+    assert registered_tool_names() == CANONICAL_TOOL_NAMES
+    assert len(registered_tool_names()) == 18
+    assert "open_review" not in registered_tool_names()
 
 
-def test_static_mcp_surface_matches_specification() -> None:
-    assert registered_tool_names() == STATIC_TOOL_NAMES
+def test_mcp_tool_schemas_explain_question_scoped_evidence_freezing() -> None:
+    tools = {tool.name: tool for tool in anyio.run(create_server().list_tools)}
 
-
-def test_real_stdio_mcp_matches_application_initialization(tmp_path: Path) -> None:
-    direct_root = tmp_path / "direct"
-    host_roots = {
-        "codex": tmp_path / "codex",
-        "claude": tmp_path / "claude",
-    }
-    for root in (direct_root, *host_roots.values()):
-        (root / "input" / "trial-a").mkdir(parents=True)
-        (root / "input" / "trial-a" / "report.pdf").write_bytes(blank_pdf())
-    direct = ApplicationGateway().initialize_project(direct_root, authorized=True)
-    direct_work = direct.payload["work_item"]
-    direct_mutation = ApplicationGateway().call(
-        "submit_source_classification",
-        direct.payload["project_id"],
-        arguments={
-            "classifications": [
-                {
-                    "source_id": "source:trial-a-1",
-                    "roles": ["primary_report"],
-                }
-            ]
-        },
-        mutation_context={
-            "idempotency_key": "idempotency:cross-host",
-            "work_item_id": direct_work["work_item_id"],
-            "contract_version": "1.0.0",
-            "expected_dependency_fingerprint": direct_work[
-                "dependency_fingerprint"
-            ],
-        },
-    )
-
-    async def invoke(host: str) -> tuple[dict[str, object], dict[str, object]]:
-        descriptor = json.loads(
-            (
-                Path(__file__).resolve().parents[1]
-                / "adapters"
-                / host
-                / "adapter.json"
-            ).read_text()
-        )
-        assert descriptor["integration"] == "mcp"
-        assert descriptor["launcher"].endswith("rob2-mcp")
-        parameters = StdioServerParameters(
-            command=sys.executable,
-            args=["-m", "rob2_kit.interfaces.mcp.server"],
-            cwd=Path.cwd(),
-        )
-        async with stdio_client(parameters) as (read, write):
-            async with ClientSession(read, write) as session:
-                await session.initialize()
-                tools = await session.list_tools()
-                mutation = next(
-                    item
-                    for item in tools.tools
-                    if item.name == "submit_source_classification"
-                )
-                assert "mutation_context" in mutation.input_schema["required"]
-                result = await session.call_tool(
-                    "initialize_project",
-                    {
-                        "project_root": str(host_roots[host]),
-                        "authorized": True,
-                    },
-                )
-                assert result.structured_content is not None
-                work_item = result.structured_content["payload"]["work_item"]
-                mutation_result = await session.call_tool(
-                    "submit_source_classification",
-                    {
-                        "project_id": result.structured_content["payload"][
-                            "project_id"
-                        ],
-                        "arguments": {
-                            "classifications": [
-                                {
-                                    "source_id": "source:trial-a-1",
-                                    "roles": ["primary_report"],
-                                }
-                            ]
-                        },
-                        "mutation_context": {
-                            "idempotency_key": "idempotency:cross-host",
-                            "work_item_id": work_item["work_item_id"],
-                            "contract_version": "1.0.0",
-                            "expected_dependency_fingerprint": work_item[
-                                "dependency_fingerprint"
-                            ],
-                        },
-                    },
-                )
-                assert mutation_result.structured_content is not None
-                return result.structured_content, mutation_result.structured_content
-
-    codex_init, codex_mutation = anyio.run(invoke, "codex")
-    claude_init, claude_mutation = anyio.run(invoke, "claude")
-
-    assert codex_init["status"] == direct.status
-    assert codex_init["ledger_cursor"] == direct.ledger_cursor
-    assert codex_init["committed"] == direct.committed
-    normalized_direct = direct_mutation.model_dump(
-        mode="json",
-        exclude={"operation_id", "ledger_cursor", "affected_scope"},
-    )
-    for mutation in (codex_mutation, claude_mutation):
-        normalized = {
-            key: value
-            for key, value in mutation.items()
-            if key not in {"operation_id", "ledger_cursor", "affected_scope"}
+    assert all(
+        tools[name].description
+        for name in {
+            "prepare_run",
+            "continue_run",
+            "get_work_context",
+            "search_evidence",
+            "read_evidence",
         }
-        assert normalized == normalized_direct
-    consequences = []
-    for root in (direct_root, *host_roots.values()):
-        ledger = ledger_for(root)
-        event = ledger.events()[1]
-        consequences.append(
-            (
-                event.operation,
-                event.checkpoint,
-                event.outcome,
-                ledger.artifacts.read(event.output_revision_hashes[0]),
-            )
-        )
-    assert consequences[0] == consequences[1] == consequences[2]
-
-
-def test_fresh_process_can_resume_and_status_is_ledger_derived(tmp_path: Path) -> None:
-    initialized = ApplicationGateway().initialize_project(tmp_path, authorized=True)
-    fresh = ApplicationGateway()
-    project_id = fresh.resume_project(tmp_path)
-
-    status = fresh.call("project_status", project_id)
-
-    assert project_id == initialized.payload["project_id"]
-    assert status.status == "trial_problem"
-    assert status.payload == {"event_count": 1}
-
-
-def test_restarted_mcp_gateway_resolves_engine_issued_project_id(tmp_path: Path) -> None:
-    initialized = ApplicationGateway().initialize_project(tmp_path, authorized=True)
-
-    status = ApplicationGateway().call(
-        "project_status", initialized.payload["project_id"]
     )
+    for tool_name, property_name in {
+        "get_work_context": "work_token",
+        "submit_run_proposal": "selections",
+        "confirm_run_definition": "confirmed_by",
+        "search_evidence": "query",
+        "submit_source_role_review": "selections",
+        "submit_result_resolution": "result",
+        "materialize_question_evidence_bundle": "passages",
+        "submit_question_step": "question_id",
+    }.items():
+        schema_text = str(tools[tool_name].input_schema["properties"][property_name])
+        assert "additionalProperties': True" not in schema_text, tool_name
 
-    assert status.status == "trial_problem"
-
-
-def test_source_reads_use_persisted_ingestion_output(tmp_path: Path) -> None:
-    (tmp_path / "input" / "Trial A").mkdir(parents=True)
-    gateway = ApplicationGateway()
-    initialized = gateway.initialize_project(tmp_path, authorized=True)
-
-    sources = gateway.call(
-        "list_sources",
-        initialized.payload["project_id"],
-        arguments={"trial_id": "trial:trial-a"},
+    evidence_schema = tools["materialize_question_evidence_bundle"].input_schema
+    assert "passages" in evidence_schema["properties"]
+    assert "EvidencePassageInput" in str(evidence_schema)
+    assert "include_source_details" in tools["get_work_context"].input_schema["properties"]
+    assert "proposal_discovery_pass" in tools["get_work_context"].input_schema["properties"]
+    assert (
+        "proposal_discovery_read_continuation"
+        in tools["get_work_context"].input_schema["properties"]
     )
+    for tool_name in (
+        "submit_run_proposal",
+        "confirm_run_definition",
+        "submit_source_role_review",
+        "submit_result_resolution",
+    ):
+        assert "idempotency_key" not in tools[tool_name].input_schema["properties"]
+    for tool_name in ("materialize_question_evidence_bundle", "submit_question_step"):
+        assert "idempotency_key" in tools[tool_name].input_schema["properties"]
+    assert "correct_domain_answers" not in tools
 
-    assert sources.status == "completed"
-    assert sources.payload["sources"][0]["availability"] == "unavailable"
+
+def test_mcp_tool_descriptions_prevent_cleanroom_schema_guessing() -> None:
+    tools = {tool.name: tool for tool in anyio.run(create_server().list_tools)}
+
+    assert "authorized=true" in (tools["prepare_run"].description or "")
+    assert 'confirmed_by={"kind":"human"' in (tools["confirm_run_definition"].description or "")
+
+    search = tools["search_evidence"].description or ""
+    search_guidance = " ".join(search.split())
+    assert 'query={"terms":["allocation"]}' in search_guidance
+    assert "proposition" in search_guidance
+    assert "pass, stage, intent, attempt" in search_guidance
+    assert "copied from the current context" in search_guidance
+    assert "never widen that scope" in search_guidance
+
+    resolution = tools["submit_result_resolution"].description or ""
+    assert "not a ResultCandidate" in resolution
+    assert "experimental_arm_id" in resolution
+    assert 'estimate={"value":' in resolution
+    assert "work_token.result_id" in resolution
+
+    classification = tools["submit_source_role_review"].description or ""
+    assert "exactly the sources in get_work_context" in classification
+    assert '"roles"' in classification
+
+    assert "actor" not in tools["materialize_question_evidence_bundle"].input_schema["properties"]
+    assert "correct_domain_answers" not in tools
+    assert "correct_question_step" in tools
 
 
-def test_review_queue_reconstructs_the_durable_review_service(tmp_path: Path) -> None:
-    gateway = ApplicationGateway()
-    initialized = gateway.initialize_project(tmp_path, authorized=True)
-    ledger = WorkflowLedger(
-        tmp_path / ".rob2" / "ledger.sqlite3",
-        ArtifactStore(tmp_path / ".rob2" / "artifacts"),
+def test_mcp_schema_names_the_friction_prone_evidence_contract() -> None:
+    tools = {tool.name: tool for tool in anyio.run(create_server().list_tools)}
+
+    prepare = tools["prepare_run"]
+    assert "required" in prepare.input_schema["properties"]["project_root"]["description"].lower()
+    assert "every new session" in (prepare.description or "").lower()
+
+    evidence = tools["materialize_question_evidence_bundle"]
+    properties = evidence.input_schema["properties"]
+    assert {"question_id", "passages", "review_revisions", "expected_navigation_state_hash"} <= set(
+        properties
     )
-    now = datetime.now(UTC)
-    lease = ledger.acquire_lease(
-        "owner:preparation",
-        now,
-        timedelta(minutes=1),
-        owner_is_dead=lambda _owner: True,
-    )
-    ledger.commit(
-        Transition(
-            scope="preparation:trial-1",
-            operation="preparation:complete",
-            operation_key="idempotency:preparation-complete",
-            actor=reviewer(),
-            observed_at=now,
-            entity_id="preparation-attempt:trial-1",
-            revision_id="revision:preparation-trial-1",
-            artifact=b'{"outcome":"draft_ready"}',
-            artifact_media_type="application/json",
-            expected_dependency_fingerprint=dependency_fingerprint(()),
-            checkpoint="checkpoint:preparation-outcome",
-            outcome=WorkflowEventOutcome.PREPARATION_OUTCOME_REACHED,
-        ),
-        lease,
-        now=now,
-    )
-    gateway.register_review_case(tmp_path, case())
+    assert "conflicts" not in properties
 
-    result = ApplicationGateway().call(
-        "review_queue", initialized.payload["project_id"]
-    )
-
-    assert result.status == "completed"
-    assert any(item["action_id"] == "review-action:finding-1" for item in result.payload["queue"])
-
-
-def test_mutation_rejects_non_engine_work_item_and_is_idempotent(tmp_path: Path) -> None:
-    trial = tmp_path / "input" / "trial-a"
-    trial.mkdir(parents=True)
-    (trial / "report.pdf").write_bytes(b"report")
-    gateway = ApplicationGateway(
-        parser=StubParser({"report": (page(1, "Trial report"),)})
-    )
-    initialized = gateway.initialize_project(tmp_path, authorized=True)
-    work_item = initialized.payload["work_item"]
-    context = {
-        "idempotency_key": "idempotency:one",
-        "work_item_id": work_item["work_item_id"],
-        "contract_version": initialized.payload["contract_version"],
-        "expected_dependency_fingerprint": work_item["dependency_fingerprint"],
-    }
-
-    first = gateway.call(
-        "submit_source_classification",
-        initialized.payload["project_id"],
-        arguments={
-            "classifications": [
-                {
-                    "source_id": "source:trial-a-1",
-                    "roles": ["primary_report"],
-                }
-            ],
-        },
-        mutation_context=context,
-    )
-    repeated = gateway.call(
-        "submit_source_classification",
-        initialized.payload["project_id"],
-        arguments={
-            "classifications": [
-                {
-                    "source_id": "source:trial-a-1",
-                    "roles": ["primary_report"],
-                }
-            ],
-        },
-        mutation_context=context,
-    )
-    with pytest.raises(ValueError, match="different payload"):
-        gateway.call(
-            "submit_source_classification",
-            initialized.payload["project_id"],
-            arguments={
-                "classifications": [
-                    {
-                        "source_id": "source:trial-a-1",
-                        "roles": ["secondary_report"],
-                    }
-                ],
-            },
-            mutation_context=context,
-        )
-
-    assert repeated == first
-    assert first.committed is True
-    assert first.ledger_cursor == "ledger:2"
-
-
-def test_preparation_work_items_enforce_order_and_reach_review(tmp_path: Path) -> None:
-    trial = tmp_path / "input" / "trial-a"
-    trial.mkdir(parents=True)
-    (trial / "report.pdf").write_bytes(b"report")
-    gateway = ApplicationGateway(
-        parser=StubParser({"report": (page(1, "Trial report"),)})
-    )
-    initialized = gateway.initialize_project(tmp_path, authorized=True)
-    project_id = initialized.payload["project_id"]
-    search = gateway.call(
-        "search_evidence",
-        project_id,
-        arguments={"query": {"terms": ["trial"]}},
-    )
-    unit_id = search.payload["hits"][0]["unit"]["unit_id"]
-    candidate_id = search.payload["hits"][0]["candidate_id"]
-    context = gateway.call(
-        "read_evidence_context",
-        project_id,
-        arguments={"unit_id": unit_id},
-    )
-    visual = candidate("analysis-population")
-    visual_data = visual.model_dump(mode="json")
-    visual_data.pop("candidate_id")
-    visual_data["source_id"] = search.payload["hits"][0]["unit"]["source_id"]
-    visual_data["source_artifact_hash"] = search.payload["hits"][0]["unit"][
-        "source_artifact_hash"
+    disposition = evidence.input_schema["$defs"]["ConsiderationDisposition"]
+    assert disposition["enum"] == [
+        "supporting",
+        "contradicting",
+        "contextual",
+        "duplicate",
+        "out_of_scope",
+        "immaterial",
+        "superseded",
+        "unresolved",
     ]
-    submissions = (
-        (
-            "submit_source_classification",
-            {
-                "classifications": [
-                    {
-                        "source_id": "source:trial-a-1",
-                        "roles": ["primary_report"],
-                    }
-                ]
-            },
-        ),
-        ("submit_result_resolution", result_resolution_submission()),
-        (
-            "submit_evidence_dispositions",
-            {
-                "dispositions": [
-                    {"candidate_id": candidate_id, "kind": "immaterial"}
-                ],
-                "visual_candidates": [visual_data],
-            },
-        ),
-        (
-            "submit_visual_transcription",
-            {"transcription": {"text": "42 participants"}},
-        ),
-        (
-            "freeze_evidence_bundle",
-            {"items": [], "frozen_content_hash": "sha256:" + ("a" * 64)},
-        ),
-        ("submit_sq_answers", low_risk_sq_answers()),
-    )
+    assert "irrelevant" not in disposition["enum"]
 
-    for index, (tool_name, arguments) in enumerate(submissions):
-        next_work = gateway.call("get_next_work", project_id)
-        work_item = next_work.payload["work_item"]
-        assert work_item["permitted_tool"] == tool_name
-        if tool_name == "submit_sq_answers":
-            assert work_item["sq_context"][0]["sq_id"].startswith("sq:")
-            assert work_item["sq_context"][0]["guidance"]
-            invalid_answers = low_risk_sq_answers()
-            invalid_answers["answers"].append(
-                {
-                    "question_id": "sq:deviations:affected-outcome",
-                    "answer": "yes",
-                    "rationale": "This question is inactive for the preceding answers.",
-                }
-            )
-            with pytest.raises(
-                ValueError,
-                match="answers supplied for not_applicable questions",
-            ):
-                gateway.call(
-                    tool_name,
-                    project_id,
-                    arguments=invalid_answers,
-                    mutation_context={
-                        "idempotency_key": "idempotency:invalid-sq-answers",
-                        "work_item_id": work_item["work_item_id"],
-                        "contract_version": "1.0.0",
-                        "expected_dependency_fingerprint": work_item[
-                            "dependency_fingerprint"
-                        ],
-                    },
-                )
-            assert gateway.call(
-                "get_next_work", project_id
-            ).payload["work_item"] == work_item
-        if tool_name == "submit_visual_transcription":
-            visual_page = gateway.call("inspect_visual_candidate", project_id)
-            arguments["transcription"]["candidate_id"] = visual_page.payload[
-                "candidates"
-            ][0]["candidate_id"]
-        if index == 0:
-            with pytest.raises(ValueError, match="not permitted"):
-                gateway.call(
-                    "submit_result_resolution",
-                    project_id,
-                    arguments=result_resolution_submission(),
-                    mutation_context={
-                        "idempotency_key": "idempotency:wrong-order",
-                        "work_item_id": work_item["work_item_id"],
-                        "contract_version": "1.0.0",
-                        "expected_dependency_fingerprint": work_item[
-                            "dependency_fingerprint"
-                        ],
-                    },
-                )
-        gateway.call(
-            tool_name,
-            project_id,
-            arguments=arguments,
-            mutation_context={
-                "idempotency_key": f"idempotency:step-{index}",
-                "work_item_id": work_item["work_item_id"],
-                "contract_version": "1.0.0",
-                "expected_dependency_fingerprint": work_item[
-                    "dependency_fingerprint"
-                ],
-            },
+
+def test_question_bundle_contract_rejects_cross_question_passages() -> None:
+    token = WorkToken(
+        token="token:test",
+        run_id="run:test",
+        work_item_id="work-item:test",
+        operation=RunOperation.MATERIALIZE_QUESTION_EVIDENCE_BUNDLE,
+        dependency_fingerprint="sha256:" + "0" * 64,
+    )
+    passage = EvidencePassageInput(
+        unit_id="unit:test",
+        span_start=0,
+        claim_type="claim:test",
+        question_ids=("sq:test",),
+    )
+    with pytest.raises(ValidationError, match="active question"):
+        MaterializeQuestionEvidenceBundleRequest(
+            contract_version="3.0.0",
+            run_id="run:test",
+            work_token=token,
+            idempotency_key="idempotency:test",
+            result_id="result:test",
+            domain_id="domain:test",
+            question_id="sq:other",
+            session_content_hash="sha256:" + "2" * 64,
+            frontier_entry_hash="sha256:" + "3" * 64,
+            expected_navigation_state_hash="sha256:" + "4" * 64,
+            passages=(passage,),
         )
-
-    completed = gateway.call("continue_preparation", project_id)
-    queue = ApplicationGateway().call("review_queue", project_id)
-    pending = ApplicationGateway().call(
-        "wait_for_review",
-        project_id,
-        arguments={"inactivity_timeout_seconds": 0},
-    )
-    resumed_pending = ApplicationGateway().call(
-        "wait_for_review",
-        project_id,
-        arguments={"inactivity_timeout_seconds": 0},
-    )
-    visual_page = ApplicationGateway().call(
-        "inspect_visual_candidate", project_id
-    )
-    durable_status = ApplicationGateway().call("project_status", project_id)
-    assessment_event = next(
-        event
-        for event in ledger_for(tmp_path).events()
-        if event.operation == "operation:derive-assessment-record"
-    )
-    assessment = AssessmentRevision.model_validate_json(
-        ledger_for(tmp_path).artifacts.read(
-            assessment_event.output_revision_hashes[0]
-        )
-    )
-
-    assert context.payload["unit"]["text"] == "Trial report"
-    assert completed.status == "preparation_outcome_reached"
-    assert completed.payload["batch_status"] == {"preparation:trial-a": "draft_ready"}
-    assert len(queue.payload["queue"]) == 5
-    assert pending.status == resumed_pending.status == "review_pending"
-    assert durable_status.status == "review_pending"
-    assert pending.ledger_cursor == resumed_pending.ledger_cursor == "ledger:21"
-    assert len(assessment.judgments) == 5
-    workspace = project_workspace(
-        ledger_for(tmp_path),
-        connection_state="not connected—review saved",
-    )
-    assert workspace is not None
-    assert workspace.results[0].judgment == "Overall judgment: Low"
-    assert visual_page.payload["candidates"][0]["candidate_id"].startswith("visual:")
-    assert visual_page.payload["render_requests"][0]["dpi"] == 144
-
-
-def test_declared_result_skips_resolution_and_uses_result_scoped_preparation(
-    tmp_path: Path,
-) -> None:
-    trial = tmp_path / "input" / "trial-a"
-    trial.mkdir(parents=True)
-    (trial / "report.pdf").write_bytes(b"report")
-    declared = result_resolution_submission()
-    declared["result"]["result_id"] = "result:trial-a-mortality-30d"
-    (tmp_path / "rob2.yaml").write_text(
-        yaml.safe_dump(
-            {
-                "schema_version": 1,
-                "results": [declared],
-            }
-        ),
-        encoding="utf-8",
-    )
-    gateway = ApplicationGateway(
-        parser=StubParser({"report": (page(1, "Trial report"),)})
-    )
-    initialized = gateway.initialize_project(tmp_path, authorized=True)
-    project_id = initialized.payload["project_id"]
-    first_work = initialized.payload["work_item"]
-
-    assert first_work["result_id"] == "result:trial-a-mortality-30d"
-    assert first_work["scope"] == "preparation:trial-a-mortality-30d"
-    assert first_work["permitted_tool"] == "submit_source_classification"
-
-    gateway.call(
-        "submit_source_classification",
-        project_id,
-        arguments={
-            "classifications": [
-                {"source_id": "source:trial-a-1", "roles": ["primary_report"]}
-            ]
-        },
-        mutation_context={
-            "idempotency_key": "idempotency:declared-classification",
-            "work_item_id": first_work["work_item_id"],
-            "contract_version": "1.0.0",
-            "expected_dependency_fingerprint": first_work["dependency_fingerprint"],
-        },
-    )
-    next_work = gateway.call("continue_preparation", project_id).payload["work_item"]
-
-    assert next_work["permitted_tool"] == "submit_evidence_dispositions"
-    assert next_work["issued_identifiers"] == {}
-
-
-def test_declared_result_for_failed_trial_remains_terminal_without_a_plan(
-    tmp_path: Path,
-) -> None:
-    (tmp_path / "input" / "trial-a").mkdir(parents=True)
-    declared = result_resolution_submission()
-    declared["result"]["result_id"] = "result:trial-a-mortality-30d"
-    (tmp_path / "rob2.yaml").write_text(
-        yaml.safe_dump({"schema_version": 1, "results": [declared]}),
-        encoding="utf-8",
-    )
-
-    initialized = ApplicationGateway().initialize_project(tmp_path, authorized=True)
-
-    assert initialized.status == "trial_problem"
-    assert initialized.payload["work_item"] is None
-
-
-def ledger_for(root: Path) -> WorkflowLedger:
-    return WorkflowLedger(
-        root / ".rob2" / "ledger.sqlite3",
-        ArtifactStore(root / ".rob2" / "artifacts"),
-    )
-
-
-def test_source_classification_accounts_for_every_issued_source(
-    tmp_path: Path,
-) -> None:
-    trial = tmp_path / "input" / "trial-a"
-    trial.mkdir(parents=True)
-    (trial / "report.pdf").write_bytes(b"report")
-    (trial / "protocol.pdf").write_bytes(b"protocol")
-    gateway = ApplicationGateway(
-        parser=StubParser(
-            {
-                "report": (page(1, "Trial report"),),
-                "protocol": (page(1, "Trial protocol"),),
-            }
-        )
-    )
-    initialized = gateway.initialize_project(tmp_path, authorized=True)
-    work_item = initialized.payload["work_item"]
-    mutation_context = {
-        "idempotency_key": "idempotency:all-sources",
-        "work_item_id": work_item["work_item_id"],
-        "contract_version": "1.0.0",
-        "expected_dependency_fingerprint": work_item[
-            "dependency_fingerprint"
-        ],
-    }
-
-    with pytest.raises(ValueError, match="every issued trial source"):
-        gateway.call(
-            "submit_source_classification",
-            initialized.payload["project_id"],
-            arguments={
-                "classifications": [
-                    {
-                        "source_id": "source:trial-a-1",
-                        "roles": ["primary_report"],
-                    }
-                ]
-            },
-            mutation_context=mutation_context,
-        )
-
-
-def test_visual_step_is_deterministically_skipped_without_candidates(
-    tmp_path: Path,
-) -> None:
-    trial = tmp_path / "input" / "trial-a"
-    trial.mkdir(parents=True)
-    (trial / "report.pdf").write_bytes(b"report")
-    gateway = ApplicationGateway(
-        parser=StubParser({"report": (page(1, "Trial report"),)})
-    )
-    initialized = gateway.initialize_project(tmp_path, authorized=True)
-    project_id = initialized.payload["project_id"]
-    candidate_id = gateway.call(
-        "search_evidence",
-        project_id,
-        arguments={"query": {"terms": ["trial"]}},
-    ).payload["hits"][0]["candidate_id"]
-    submissions = (
-        (
-            "submit_source_classification",
-            {
-                "classifications": [
-                    {
-                        "source_id": "source:trial-a-1",
-                        "roles": ["primary_report"],
-                    }
-                ]
-            },
-        ),
-        ("submit_result_resolution", result_resolution_submission()),
-        (
-            "submit_evidence_dispositions",
-            {
-                "dispositions": [
-                    {"candidate_id": candidate_id, "kind": "immaterial"}
-                ]
-            },
-        ),
-    )
-    for index, (tool_name, arguments) in enumerate(submissions):
-        work_item = gateway.call("get_next_work", project_id).payload["work_item"]
-        gateway.call(
-            tool_name,
-            project_id,
-            arguments=arguments,
-            mutation_context={
-                "idempotency_key": f"idempotency:no-visual-{index}",
-                "work_item_id": work_item["work_item_id"],
-                "contract_version": "1.0.0",
-                "expected_dependency_fingerprint": work_item[
-                    "dependency_fingerprint"
-                ],
-            },
-        )
-
-    next_work = gateway.call("get_next_work", project_id)
-
-    assert next_work.payload["work_item"]["permitted_tool"] == "freeze_evidence_bundle"
-    assert any(
-        event.operation == "operation:submit-visual-transcription"
-        and json.loads(ledger_for(tmp_path).artifacts.read(
-            event.output_revision_hashes[0]
-        ))["status"] == "not_required"
-        for event in ledger_for(tmp_path).events()
-    )
-
-
-def test_generated_adapters_share_canonical_skill_and_exact_launcher(
-    tmp_path: Path,
-) -> None:
-    canonical = tmp_path / "skills" / "rob2-assess" / "SKILL.md"
-    canonical.parent.mkdir(parents=True)
-    canonical.write_text("---\nname: rob2-assess\n---\nUse bounded tools.\n", encoding="utf-8")
-    (canonical.parent / "activation-fixtures.json").write_text(
-        '{"activates":["Assess with RoB 2"],"does_not_activate":["Human sign-off"]}\n',
-        encoding="utf-8",
-    )
-    logic = tmp_path / "packs" / "logic" / "rob2-parallel-assignment-2019.1.yaml"
-    guidance = (
-        tmp_path
-        / "packs"
-        / "guidance"
-        / "rob2-parallel-assignment-en-2019.1.yaml"
-    )
-    logic.parent.mkdir(parents=True)
-    guidance.parent.mkdir(parents=True)
-    logic.write_text("pack: logic\n", encoding="utf-8")
-    guidance.write_text("pack: guidance\n", encoding="utf-8")
-
-    manifest = build_host_adapters(tmp_path, package_version="0.1.0")
-
-    expected_hash = "sha256:" + hashlib.sha256(canonical.read_bytes()).hexdigest()
-    assert manifest.canonical_skill_hash == expected_hash
-    assert manifest.launcher == "uv run --locked --project . rob2-mcp"
-    assert manifest.release_status == "draft_only_preview"
-    assert manifest.sign_off_authority == "human_only"
-    assert manifest.launcher_working_directory == "repository_root"
-    assert (tmp_path / "adapters" / "codex" / "SKILL.md").read_bytes() == canonical.read_bytes()
-    assert (tmp_path / "adapters" / "claude" / "SKILL.md").read_bytes() == canonical.read_bytes()
-    codex = json.loads((tmp_path / "adapters" / "codex" / "adapter.json").read_text())
-    claude = json.loads((tmp_path / "adapters" / "claude" / "adapter.json").read_text())
-    assert codex["skill_hash"] == claude["skill_hash"] == expected_hash
-    assert codex["trigger_description"] == claude["trigger_description"]
-    assert codex["launcher_working_directory"] == "repository_root"
-    assert claude["launcher_working_directory"] == "repository_root"
-    assert (tmp_path / "adapters" / "codex" / "activation-fixtures.json").read_bytes() == (
-        tmp_path / "adapters" / "claude" / "activation-fixtures.json"
-    ).read_bytes()
-    verify_host_adapters(tmp_path)
-    codex["host"] = "hand-edited"
-    (tmp_path / "adapters" / "codex" / "adapter.json").write_text(
-        json.dumps(codex),
-        encoding="utf-8",
-    )
-    with pytest.raises(ValueError, match="generation template"):
-        verify_host_adapters(tmp_path)
-
-
-def test_checked_in_host_adapters_match_canonical_generation() -> None:
-    verify_host_adapters(Path(__file__).resolve().parents[1])
-
-
-def test_cli_report_export_archive_and_offline_verify(tmp_path: Path) -> None:
-    gateway = ApplicationGateway()
-    gateway.initialize_project(tmp_path, authorized=True)
-    ledger = WorkflowLedger(
-        tmp_path / ".rob2" / "ledger.sqlite3",
-        ArtifactStore(tmp_path / ".rob2" / "artifacts"),
-    )
-    now = datetime.now(UTC)
-    lease = ledger.acquire_lease(
-        "owner:report-test",
-        now,
-        timedelta(minutes=1),
-        owner_is_dead=lambda _owner: True,
-    )
-    def commit(record: object, dependencies: tuple[DependencyInput, ...] = ()) -> str:
-        revision_id = getattr(record, "revision_id")
-        committed = ledger.commit(
-            Transition(
-                scope="assessment:cli",
-                operation="operation:freeze-record",
-                operation_key=f"idempotency:{revision_id.removeprefix('revision:')}",
-                actor=reviewer(),
-                observed_at=now,
-                entity_id=getattr(record, "entity_id"),
-                revision_id=revision_id,
-                artifact=getattr(record, "model_dump_json")().encode(),
-                artifact_media_type="application/json",
-                dependencies=dependencies,
-                expected_dependency_fingerprint=dependency_fingerprint(dependencies),
-                checkpoint="checkpoint:assessment",
-                outcome=WorkflowEventOutcome.REVIEW_PENDING,
-            ),
-            lease,
-            now=now,
-        )
-        return committed.artifact_hash
-
-    common = {"actor": reviewer(), "observed_at": now}
-    result_spec = ResultSpecRevision(
-        entity_id="result-spec:cli",
-        revision_id="revision:result-spec-cli",
-        result=Result(
-            result_id="result:cli",
-            trial_id="trial:cli",
-            randomization_id="randomization:cli",
-            comparison=Comparison(
-                experimental_arm_id="arm:treatment",
-                comparator_arm_id="arm:control",
-            ),
-            effect_of_interest="assignment",
-            outcome_construct="Mortality",
-            measurement_instrument="Vital status",
-            time_point="30 days",
-            analysis_population="Intention to treat",
-            analysis_model="Risk ratio",
-            effect_measure="RR",
-            source_locator="source:cli#result",
-        ),
-        estimate=Estimate(value="0.8"),
-        provenance_note="Test fixture",
-        **common,
-    )
-    result_hash = commit(result_spec)
-    result_reference = RecordReference(
-        entity_id=result_spec.entity_id,
-        revision_id=result_spec.revision_id,
-        content_hash=result_hash,
-    )
-    source_dependency = Dependency(
-        **result_reference.model_dump(),
-        role="dependency:result-spec",
-    )
-    source_inventory = SourceInventoryRevision(
-        entity_id="source-inventory:cli",
-        revision_id="revision:source-inventory-cli",
-        dependencies=(source_dependency,),
-        result_spec=result_reference,
-        sources=(),
-        **common,
-    )
-    source_hash = commit(
-        source_inventory,
-        (DependencyInput.model_validate(source_dependency.model_dump()),),
-    )
-    trace = DecisionTrace(
-        entity_id="decision-trace:cli",
-        revision_id="revision:decision-trace-cli",
-        active_question_ids=("sq:1.1",),
-        inactive_question_ids=(),
-        matched_rule_ids=("rule:low",),
-        resulting_judgment="low",
-        **common,
-    )
-    trace_hash = commit(trace)
-    trace_reference = RecordReference(
-        entity_id=trace.entity_id,
-        revision_id=trace.revision_id,
-        content_hash=trace_hash,
-    )
-    trace_dependency = Dependency(
-        **trace_reference.model_dump(),
-        role="dependency:decision-trace",
-    )
-    judgment = AlgorithmicJudgmentRevision(
-        entity_id="judgment:cli-domain-1",
-        revision_id="revision:judgment-cli-domain-1",
-        dependencies=(trace_dependency,),
-        domain_id="domain:1",
-        judgment="low",
-        answer_revisions=(),
-        decision_trace=trace_reference,
-        **common,
-    )
-    judgment_hash = commit(
-        judgment,
-        (DependencyInput.model_validate(trace_dependency.model_dump()),),
-    )
-    policy = PolicyRelease(
-        entity_id="policy-release:cli",
-        revision_id="revision:policy-cli",
-        kind="review_policy",
-        family_id="policy:review",
-        release_id="1.0.0",
-        canonical_content_hash="sha256:" + ("b" * 64),
-        required_schema_version="1.0.0",
-        inventory=(),
-        **common,
-    )
-    policy_hash = commit(policy)
-    policy_reference = RecordReference(
-        entity_id=policy.entity_id,
-        revision_id=policy.revision_id,
-        content_hash=policy_hash,
-    )
-    judgment_reference = RecordReference(
-        entity_id=judgment.entity_id,
-        revision_id=judgment.revision_id,
-        content_hash=judgment_hash,
-    )
-    override_dependencies = (
-        Dependency(
-            **judgment_reference.model_dump(),
-            role="dependency:algorithmic-judgment",
-        ),
-        Dependency(
-            **policy_reference.model_dump(), role="dependency:review-policy"
-        ),
-    )
-    override = JudgmentOverride(
-        entity_id="judgment-override:cli",
-        revision_id="revision:judgment-override-cli",
-        dependencies=override_dependencies,
-        judgment_revision=judgment_reference,
-        replacement="high",
-        rationale="Reviewer identified a material concern.",
-        policy_authority=policy_reference,
-        **common,
-    )
-    override_hash = commit(
-        override,
-        tuple(
-            DependencyInput.model_validate(dependency.model_dump())
-            for dependency in override_dependencies
-        ),
-    )
-    source_reference = RecordReference(
-        entity_id=source_inventory.entity_id,
-        revision_id=source_inventory.revision_id,
-        content_hash=source_hash,
-    )
-    override_reference = RecordReference(
-        entity_id=override.entity_id,
-        revision_id=override.revision_id,
-        content_hash=override_hash,
-    )
-    assessment_dependencies = (
-        Dependency(
-            **result_reference.model_dump(), role="dependency:result-spec"
-        ),
-        Dependency(
-            **source_reference.model_dump(), role="dependency:source-inventory"
-        ),
-        Dependency(
-            **judgment_reference.model_dump(),
-            role="dependency:algorithmic-judgment",
-        ),
-        Dependency(
-            **override_reference.model_dump(),
-            role="dependency:judgment-override",
-        ),
-    )
-    assessment = AssessmentRevision(
-        entity_id="assessment:cli",
-        revision_id="revision:assessment-cli",
-        dependencies=assessment_dependencies,
-        result_spec=result_reference,
-        source_inventory=source_reference,
-        evidence_bundles=(),
-        answers=(),
-        judgments=(judgment_reference,),
-        judgment_overrides=(override_reference,),
-        review_findings=(),
-        **common,
-    )
-    assessment_hash = commit(
-        assessment,
-        tuple(
-            DependencyInput.model_validate(dependency.model_dump())
-            for dependency in assessment_dependencies
-        ),
-    )
-    reviewer_profile = ReviewerProfileRevision(
-        entity_id="reviewer-profile:cli",
-        revision_id="revision:reviewer-profile-cli",
-        display_name="Test reviewer",
-        **common,
-    )
-    reviewer_hash = commit(reviewer_profile)
-    reviewer_reference = RecordReference(
-        entity_id=reviewer_profile.entity_id,
-        revision_id=reviewer_profile.revision_id,
-        content_hash=reviewer_hash,
-    )
-    assessment_reference = RecordReference(
-        entity_id=assessment.entity_id,
-        revision_id=assessment.revision_id,
-        content_hash=assessment_hash,
-    )
-    sign_off_dependencies = (
-        Dependency(
-            **assessment_reference.model_dump(),
-            role="dependency:assessment",
-        ),
-        Dependency(
-            **reviewer_reference.model_dump(),
-            role="dependency:reviewer-profile",
-        ),
-    )
-    sign_off = AssessmentSignOff(
-        entity_id="assessment-sign-off:cli",
-        revision_id="revision:assessment-sign-off-cli",
-        dependencies=sign_off_dependencies,
-        assessment=assessment_reference,
-        reviewer_profile=reviewer_reference,
-        **common,
-    )
-    commit(
-        sign_off,
-        tuple(
-            DependencyInput.model_validate(dependency.model_dump())
-            for dependency in sign_off_dependencies
-        ),
-    )
-
-    report = CliRunner().invoke(app, ["report", str(tmp_path)])
-    export = CliRunner().invoke(app, ["export", str(tmp_path)])
-    archive = CliRunner().invoke(
-        app,
-        ["archive", str(tmp_path), "--kind", "reference"],
-    )
-    archive_path = tmp_path / "output" / "revision_assessment-cli.reference.rob2.zip"
-    verified = CliRunner().invoke(app, ["verify", str(archive_path)])
-
-    assert report.exit_code == export.exit_code == archive.exit_code == verified.exit_code == 0
-    assert (tmp_path / "output" / "revision_assessment-cli.html").exists()
-    assert (tmp_path / "output" / "revision_assessment-cli.md").exists()
-    assert (tmp_path / "output" / "revision_assessment-cli.json").exists()
-    assert (tmp_path / "output" / "revision_assessment-cli.robvis.csv").exists()
-    assert (tmp_path / "output" / "revision_assessment-cli.xlsx").exists()
-    assert archive_path.exists()
-    assert "High" in (
-        tmp_path / "output" / "revision_assessment-cli.robvis.csv"
-    ).read_text(encoding="utf-8-sig")
-    assert "Signed off" in (
-        tmp_path / "output" / "revision_assessment-cli.html"
-    ).read_text()
-    assert json.loads(verified.stdout)["message"] == (
-        "source integrity not independently verifiable"
-    )

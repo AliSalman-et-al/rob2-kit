@@ -1,9 +1,0 @@
-{
-  "activates": [
-    "Assess risk of bias with RoB 2",
-    "Resume this RoB 2 assessment"
-  ],
-  "does_not_activate": [
-    "Perform the human sign-off"
-  ]
-}

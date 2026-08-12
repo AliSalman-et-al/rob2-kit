@@ -60,11 +60,11 @@ Then ask Codex:
 
 > Use rob2-kit to prepare the requested Result in the newly created evaluation
 > run. Do not inspect `eval/reference/catalog/provisional-labels/` until the
-> Assessment is complete. Open the companion workspace in the built-in browser
-> when available.
+> Assessment is complete. Open the generated static report bundle when it is
+> available.
 
-Each evaluation should use a fresh run so ledger state, review receipts, and
-browser sessions from earlier tests cannot influence it.
+Each evaluation should use a fresh run so ledger state and report artifacts
+from earlier tests cannot influence it.
 
 ## Compare after completion
 

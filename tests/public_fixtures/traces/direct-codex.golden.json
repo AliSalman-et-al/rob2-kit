@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "scenario": "direct-30-day-mortality",
+  "prompt_family": "direct",
+  "host": "codex",
+  "adapter": "codex-project-local",
+  "model": "local-replay",
+  "release": "release:public-fixtures-v1",
+  "execution_contract": "contract:replay-v1",
+  "capabilities": ["status", "continuation", "evidence-search"],
+  "skill_activation": ["rob2-assess"],
+  "calls": [
+    {"sequence": 1, "name": "prepare_run", "arguments": {"project_root": "<path-1>"}, "response_class": "success", "run_state": "awaiting_confirmation", "next_action": "confirm_run_definition", "workflow_events": ["operation:run-proposed"], "checkpoint": "checkpoint:proposal"},
+    {"sequence": 2, "name": "confirm_run_definition", "arguments": {"run_id": "<run-1>", "proposal_token": "<token-1>"}, "response_class": "accepted", "run_state": "assessing", "next_action": "get_work_context", "workflow_events": ["operation:run-confirmed"], "checkpoint": "checkpoint:source-inventory"},
+    {"sequence": 3, "name": "get_work_context", "arguments": {"run_id": "<run-1>", "work_token": "<work-token-1>"}, "response_class": "success", "run_state": "assessing", "next_action": "search_evidence", "workflow_events": [], "checkpoint": "checkpoint:randomization"}
+  ],
+  "final": {"run_state": "assessing", "next_action": "search_evidence", "identities": {"result_id": "result:aurora-mortality-30d", "run_id": "<run-1>", "trial_id": "trial:aurora"}, "integrity": {"ledger": "<artifact-1>", "verified": true}},
+  "signals": {"call_count": 3, "duration_ms": 1200, "input_tokens": 80, "output_tokens": 120, "repair_count": 0, "usage": {"mode": "replay"}}
+}

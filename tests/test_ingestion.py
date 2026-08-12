@@ -1,6 +1,9 @@
 from __future__ import annotations
 
+import subprocess
+import sys
 from dataclasses import dataclass, field
+from datetime import UTC, datetime
 from io import BytesIO
 from pathlib import Path
 from zipfile import ZIP_DEFLATED, ZipFile
@@ -9,6 +12,7 @@ import pytest
 import yaml
 
 from rob2_kit.application.preparation import TrialFailureReason
+from rob2_kit.domain.results import derive_result_spec_revision_id
 from rob2_kit.domain.revisions import Actor, ActorKind
 from rob2_kit.domain.sources import (
     CoverageState,
@@ -27,6 +31,7 @@ from rob2_kit.ingestion import (
     initialize_project,
     read_bounded_zip,
 )
+from rob2_kit.ingestion.project import OutcomeTarget
 
 ACTOR = Actor(kind=ActorKind.SYSTEM, actor_id="actor:test", display_name="Test system")
 
@@ -235,6 +240,66 @@ def test_project_configuration_declares_multiple_exact_results_per_trial(
     assert initialized.result_specs[0].result.source_locator == "report.pdf p. 8 table 2"
 
 
+def test_declared_result_spec_revision_identity_binds_actor_and_observation_time(
+    tmp_path: Path,
+) -> None:
+    trial = tmp_path / "input" / "trial-a"
+    trial.mkdir(parents=True)
+    (trial / "report.pdf").write_bytes(b"report")
+    (tmp_path / "rob2.yaml").write_text(
+        yaml.safe_dump(
+            {
+                "schema_version": 1,
+                "results": [
+                    {
+                        "result": {
+                            "result_id": "result:trial-a-mortality",
+                            "trial_id": "trial:trial-a",
+                            "randomization_id": "randomization:trial-a",
+                            "comparison": {
+                                "experimental_arm_id": "arm:treatment",
+                                "comparator_arm_id": "arm:control",
+                            },
+                            "effect_of_interest": "assignment",
+                            "outcome_construct": "Mortality",
+                            "measurement_instrument": "Vital status",
+                            "time_point": "30 days",
+                            "analysis_population": "Intention to treat",
+                            "analysis_model": "Risk ratio, unadjusted",
+                            "effect_measure": "RR",
+                            "source_locator": "report.pdf p. 8 table 2",
+                        },
+                        "estimate": {"value": "0.82"},
+                        "provenance_note": "Protocol-defined primary result.",
+                    }
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+    parser = StubParser({"report": (page(1, "Report"),)})
+
+    first = initialize_project(
+        tmp_path,
+        actor=ACTOR,
+        parser=parser,
+        now=lambda: datetime(2026, 8, 9, 12, tzinfo=UTC),
+    )
+    second = initialize_project(
+        tmp_path,
+        actor=ACTOR,
+        parser=parser,
+        now=lambda: datetime(2026, 8, 9, 12, 1, tzinfo=UTC),
+    )
+
+    assert first.result_specs[0].entity_id == second.result_specs[0].entity_id
+    assert first.result_specs[0].revision_id != second.result_specs[0].revision_id
+    for declared in (*first.result_specs, *second.result_specs):
+        assert declared.revision_id == derive_result_spec_revision_id(
+            declared.model_dump(mode="json", exclude={"revision_id"})
+        )
+
+
 def test_multiple_primary_candidates_are_nonblocking_and_trial_yaml_disambiguates(
     tmp_path: Path,
 ) -> None:
@@ -255,7 +320,7 @@ def test_multiple_primary_candidates_are_nonblocking_and_trial_yaml_disambiguate
         )
         == 1
     )
-    assert any(finding.kind == "primary_report_ambiguous" for finding in ambiguous.review_findings)
+    assert any(finding.kind == "primary_report_ambiguous" for finding in ambiguous.diagnostics)
 
     (trial / "trial.yaml").write_text(
         "schema_version: 1\ndocuments:\n  - path: b.pdf\n    role: primary_report\n",
@@ -269,9 +334,7 @@ def test_multiple_primary_candidates_are_nonblocking_and_trial_yaml_disambiguate
         if source.criticality is SourceCriticality.REQUIRED
     )
     assert primary.title == "b.pdf"
-    assert not any(
-        finding.kind == "primary_report_ambiguous" for finding in explicit.review_findings
-    )
+    assert not any(finding.kind == "primary_report_ambiguous" for finding in explicit.diagnostics)
 
 
 def test_liteparse_coverage_uses_one_targeted_recovery_and_preserves_diagnostics(
@@ -477,7 +540,7 @@ def test_required_primary_failure_is_trial_failed_but_optional_failure_is_nonfat
     )
     assert broken.processing is SourceProcessing.FAILED
     assert any(
-        finding.kind == "optional_source_processing_failed" for finding in optional.review_findings
+        finding.kind == "optional_source_processing_failed" for finding in optional.diagnostics
     )
 
 
@@ -543,3 +606,38 @@ def test_liteparse_adapter_pins_ocr_complexity_and_target_page_options(
     ]
     assert parsed.pages[0].page_number == 3
     assert parsed.pages[0].reasons == ("no-text", "unknown-signal")
+
+
+def test_ingestion_models_import_without_pydantic_shadow_warnings() -> None:
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-W",
+            "error",
+            "-c",
+            "import rob2_kit.ingestion.project",
+        ],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert result.returncode == 0, result.stderr
+
+
+def test_outcome_target_preserves_construct_input_and_wire_aliases() -> None:
+    common = {"target_id": "outcome-target:mortality", "label": "Mortality"}
+
+    legacy = OutcomeTarget(construct="mortality", **common)
+    named = OutcomeTarget(outcome_construct="mortality", **common)
+
+    assert legacy == named
+    assert legacy.model_dump() == {
+        "target_id": "outcome-target:mortality",
+        "label": "Mortality",
+        "construct": "mortality",
+        "time_point": None,
+        "accepted_effect_measures": (),
+        "accepted_instruments": (),
+        "effect_of_interest": None,
+    }

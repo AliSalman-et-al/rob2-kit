@@ -1,0 +1,14 @@
+{
+  "dossier_id": "dossier:synthetic-trial",
+  "evidence": [
+    {"id": "evidence:randomization-sequence", "domain": "randomization", "source": "source:aurora-report", "text": "Participants were assigned by a computer-generated sequence using variable blocks."},
+    {"id": "evidence:allocation-concealment", "domain": "randomization", "source": "source:aurora-report", "text": "The independent service released the next allocation after eligibility was recorded."},
+    {"id": "evidence:deviations-awareness", "domain": "deviations", "source": "source:aurora-report", "text": "Participants and treating clinicians could see the assigned intervention."},
+    {"id": "evidence:deviations-analysis", "domain": "deviations", "source": "source:aurora-sap", "text": "The primary analysis includes every randomised participant."},
+    {"id": "evidence:missing-data", "domain": "missing", "source": "source:aurora-supplement", "text": "Complete registry follow-up was obtained for the five withdrawals."},
+    {"id": "evidence:measurement-blinding", "domain": "measurement", "source": "source:aurora-report", "text": "The outcome assessor was unaware of allocation."},
+    {"id": "evidence:measurement-method", "domain": "measurement", "source": "source:aurora-supplement", "text": "A blinded adjudicator classified vital status using the protocol definition."},
+    {"id": "evidence:selection-prespecification", "domain": "selection", "source": "source:aurora-protocol", "text": "The primary estimand is the effect of assignment to intervention A on all-cause mortality at 30 days."},
+    {"id": "evidence:selection-timepoint", "domain": "selection", "source": "source:aurora-sap", "text": "The primary time point is 30 days. A 12-month estimate is exploratory."}
+  ]
+}

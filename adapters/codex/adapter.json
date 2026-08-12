@@ -1,10 +1,46 @@
 {
+  "activation_fixtures_hashes": {
+    "rob2-assess": "sha256:f0f67312e0cd5ede2126c071729af55b468ad403d1dd01981c46ee0b54dc49d1",
+    "rob2-init": "sha256:e1942c9a8e59e2785b98c7a69612326330e4b5f99a0a523d1188bd739f2654fb"
+  },
   "adapter_version": "1",
+  "allowed_tools": [
+    "prepare_run",
+    "continue_run",
+    "get_work_context",
+    "submit_run_proposal",
+    "submit_proposal_discovery_review",
+    "submit_result_mapping_review",
+    "confirm_run_definition",
+    "search_evidence",
+    "read_evidence",
+    "submit_evidence_review",
+    "submit_evidence_stage_outcome",
+    "materialize_question_evidence_bundle",
+    "submit_question_step",
+    "correct_question_step",
+    "submit_source_chronology_review",
+    "inspect_visual_candidate",
+    "submit_source_role_review",
+    "submit_result_resolution"
+  ],
+  "forward_fixtures_hashes": {
+    "rob2-assess": "sha256:1154c38edde5e5f5869ee66f56ec54f832c846ac02af238e45ce0b92f67a366a",
+    "rob2-init": "sha256:ef9fc215240d90f8719ad1900fcb7717f789b770d735a384c955d524a3cff013"
+  },
   "host": "codex",
   "integration": "mcp",
-  "launcher": "uv run --locked --project . rob2-mcp",
-  "launcher_working_directory": "repository_root",
-  "skill": "rob2-assess",
-  "skill_hash": "sha256:23f8567f219d3afa1186af0d732ec0e386309fa20092f56628444818f354a007",
-  "trigger_description": "Prepare an evidence-grounded RoB 2 assessment and hand it to a human reviewer."
+  "launcher": "uvx --python 3.13 --from rob2-kit==0.1.0 rob2-mcp",
+  "launcher_working_directory": "project_root",
+  "package": "rob2-kit",
+  "package_version": "0.1.0",
+  "skill_hashes": {
+    "rob2-assess": "sha256:13b717a4f67b27b7adb2e189491ea528c9671e090fbab00fcb7aae0d7a32d45a",
+    "rob2-init": "sha256:54f73d6bdb471e5d50318b7112be9085dd67b45b080b146a36bb1603853e700f"
+  },
+  "skills": [
+    "rob2-init",
+    "rob2-assess"
+  ],
+  "trigger_description": "Prepare an evidence-grounded RoB 2 assessment and materialize a static report."
 }

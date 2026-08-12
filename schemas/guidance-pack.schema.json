@@ -1,5 +1,343 @@
 {
   "$defs": {
+    "ChronologyConstraint": {
+      "enum": [
+        "before_randomization",
+        "before_unblinded_outcome_data",
+        "before_result_reporting",
+        "after_randomization"
+      ],
+      "title": "ChronologyConstraint",
+      "type": "string"
+    },
+    "EvidenceCoverageStage": {
+      "additionalProperties": false,
+      "description": "An ordered additive source scope; runtime work records its outcome later.",
+      "properties": {
+        "activation": {
+          "$ref": "#/$defs/EvidenceStageActivation",
+          "default": "mandatory"
+        },
+        "activation_trigger_ids": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 12,
+          "title": "Activation Trigger Ids",
+          "type": "array"
+        },
+        "applicable_source_roles": {
+          "items": {
+            "$ref": "#/$defs/SourceRole"
+          },
+          "maxItems": 12,
+          "minItems": 1,
+          "title": "Applicable Source Roles",
+          "type": "array"
+        },
+        "chronology_constraints": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/ChronologyConstraint"
+          },
+          "maxItems": 4,
+          "title": "Chronology Constraints",
+          "type": "array"
+        },
+        "id": {
+          "pattern": "^stage:[a-z0-9:-]+$",
+          "title": "Id",
+          "type": "string"
+        },
+        "navigation_intents": {
+          "items": {
+            "$ref": "#/$defs/EvidenceNavigationIntent"
+          },
+          "maxItems": 12,
+          "minItems": 1,
+          "title": "Navigation Intents",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "applicable_source_roles",
+        "navigation_intents"
+      ],
+      "title": "EvidenceCoverageStage",
+      "type": "object"
+    },
+    "EvidenceEscalationCondition": {
+      "enum": [
+        "no_direct_evidence",
+        "conflicting_evidence",
+        "chronology_unresolved",
+        "source_role_unavailable",
+        "structural_ambiguity"
+      ],
+      "title": "EvidenceEscalationCondition",
+      "type": "string"
+    },
+    "EvidenceEscalationTrigger": {
+      "additionalProperties": false,
+      "description": "A closed finding that activates a later stage; it is not a stage outcome.",
+      "properties": {
+        "condition": {
+          "$ref": "#/$defs/EvidenceEscalationCondition"
+        },
+        "id": {
+          "pattern": "^trigger:[a-z0-9:-]+$",
+          "title": "Id",
+          "type": "string"
+        },
+        "source_stage_id": {
+          "pattern": "^stage:[a-z0-9:-]+$",
+          "title": "Source Stage Id",
+          "type": "string"
+        },
+        "target_stage_id": {
+          "pattern": "^stage:[a-z0-9:-]+$",
+          "title": "Target Stage Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "condition",
+        "source_stage_id",
+        "target_stage_id"
+      ],
+      "title": "EvidenceEscalationTrigger",
+      "type": "object"
+    },
+    "EvidenceNavigationIntent": {
+      "additionalProperties": false,
+      "description": "One purpose for a later evidence-navigation operation, never a source cap.",
+      "properties": {
+        "depends_on_intent_ids": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 8,
+          "title": "Depends On Intent Ids",
+          "type": "array"
+        },
+        "id": {
+          "pattern": "^intent:[a-z0-9:-]+$",
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "$ref": "#/$defs/EvidenceNavigationIntentKind"
+        },
+        "structural_targets": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 12,
+          "title": "Structural Targets",
+          "type": "array"
+        },
+        "terms": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 12,
+          "title": "Terms",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "kind"
+      ],
+      "title": "EvidenceNavigationIntent",
+      "type": "object"
+    },
+    "EvidenceNavigationIntentKind": {
+      "enum": [
+        "search",
+        "structural_read",
+        "locator_follow_up",
+        "visual_review"
+      ],
+      "title": "EvidenceNavigationIntentKind",
+      "type": "string"
+    },
+    "EvidencePass": {
+      "additionalProperties": false,
+      "description": "A named pass through one proposition's explicitly staged source scopes.",
+      "properties": {
+        "activation": {
+          "$ref": "#/$defs/EvidencePassActivation",
+          "default": "mandatory"
+        },
+        "activation_trigger_ids": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 12,
+          "title": "Activation Trigger Ids",
+          "type": "array"
+        },
+        "coverage_stages": {
+          "items": {
+            "$ref": "#/$defs/EvidenceCoverageStage"
+          },
+          "maxItems": 12,
+          "minItems": 1,
+          "title": "Coverage Stages",
+          "type": "array"
+        },
+        "guidance_condition": {
+          "default": "",
+          "title": "Guidance Condition",
+          "type": "string"
+        },
+        "id": {
+          "pattern": "^pass:[a-z0-9:-]+$",
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "$ref": "#/$defs/EvidencePassKind"
+        }
+      },
+      "required": [
+        "id",
+        "kind",
+        "coverage_stages"
+      ],
+      "title": "EvidencePass",
+      "type": "object"
+    },
+    "EvidencePassActivation": {
+      "enum": [
+        "mandatory",
+        "guidance_declared",
+        "triggered"
+      ],
+      "title": "EvidencePassActivation",
+      "type": "string"
+    },
+    "EvidencePassKind": {
+      "enum": [
+        "guidance_seed",
+        "trial_follow_up",
+        "contradiction"
+      ],
+      "title": "EvidencePassKind",
+      "type": "string"
+    },
+    "EvidenceSearchObligation": {
+      "additionalProperties": false,
+      "description": "The complete finite plan required before one signaling question activates.",
+      "properties": {
+        "escalation_triggers": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/EvidenceEscalationTrigger"
+          },
+          "maxItems": 48,
+          "title": "Escalation Triggers",
+          "type": "array"
+        },
+        "propositions": {
+          "items": {
+            "$ref": "#/$defs/EvidentiaryProposition"
+          },
+          "maxItems": 8,
+          "minItems": 1,
+          "title": "Propositions",
+          "type": "array"
+        },
+        "question_id": {
+          "pattern": "^sq:[a-z0-9:-]+$",
+          "title": "Question Id",
+          "type": "string"
+        },
+        "schema_version": {
+          "pattern": "^1\\.0\\.0$",
+          "title": "Schema Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "schema_version",
+        "question_id",
+        "propositions"
+      ],
+      "title": "EvidenceSearchObligation",
+      "type": "object"
+    },
+    "EvidenceStageActivation": {
+      "enum": [
+        "mandatory",
+        "triggered"
+      ],
+      "title": "EvidenceStageActivation",
+      "type": "string"
+    },
+    "EvidentiaryProposition": {
+      "additionalProperties": false,
+      "description": "A question-specific claim with finite acceptable roles and staged passes.",
+      "properties": {
+        "accepted_source_roles": {
+          "items": {
+            "$ref": "#/$defs/SourceRole"
+          },
+          "maxItems": 12,
+          "minItems": 1,
+          "title": "Accepted Source Roles",
+          "type": "array"
+        },
+        "chronology_constraints": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/ChronologyConstraint"
+          },
+          "maxItems": 4,
+          "title": "Chronology Constraints",
+          "type": "array"
+        },
+        "evidence_passes": {
+          "items": {
+            "$ref": "#/$defs/EvidencePass"
+          },
+          "maxItems": 24,
+          "minItems": 1,
+          "title": "Evidence Passes",
+          "type": "array"
+        },
+        "id": {
+          "pattern": "^proposition:[a-z0-9:-]+$",
+          "title": "Id",
+          "type": "string"
+        },
+        "source_set_rule": {
+          "$ref": "#/$defs/SourceSetRule",
+          "default": "all_applicable_revisions"
+        },
+        "statement": {
+          "minLength": 1,
+          "title": "Statement",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "statement",
+        "accepted_source_roles",
+        "evidence_passes"
+      ],
+      "title": "EvidentiaryProposition",
+      "type": "object"
+    },
     "GuidanceItem": {
       "additionalProperties": false,
       "properties": {
@@ -14,14 +352,62 @@
         "content_origin": {
           "enum": [
             "official",
+            "copied",
+            "adapted",
+            "maintainer_authored",
             "rob2_kit"
           ],
           "title": "Content Origin",
           "type": "string"
         },
+        "counter_evidence": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Counter Evidence",
+          "type": "array"
+        },
+        "evidence_targets": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Evidence Targets",
+          "type": "array"
+        },
+        "inference_boundaries": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Inference Boundaries",
+          "type": "array"
+        },
         "logic_element_id": {
           "title": "Logic Element Id",
           "type": "string"
+        },
+        "no_information_rule": {
+          "default": "",
+          "title": "No Information Rule",
+          "type": "string"
+        },
+        "provenance_refs": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Provenance Refs",
+          "type": "array"
+        },
+        "recurring_traps": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Recurring Traps",
+          "type": "array"
         },
         "text": {
           "minLength": 1,
@@ -40,7 +426,29 @@
     },
     "Provenance": {
       "additionalProperties": false,
+      "description": "A durable citation for material included in a pack release.\n\n``kind`` distinguishes the legal/scientific origin of a citation.  A\nrelease can therefore contain official wording alongside copied or\nadapted material without collapsing the provenance into one free-text\nnote.  Existing pack sources may omit ``id`` and ``kind`` while migrating\nto the richer release format; loaded objects still receive deterministic\ndefaults.",
       "properties": {
+        "attribution": {
+          "default": "",
+          "title": "Attribution",
+          "type": "string"
+        },
+        "id": {
+          "default": "",
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "default": "official",
+          "enum": [
+            "official",
+            "copied",
+            "adapted",
+            "maintainer_authored"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
         "license": {
           "minLength": 1,
           "title": "License",
@@ -70,6 +478,33 @@
       ],
       "title": "Provenance",
       "type": "object"
+    },
+    "SourceRole": {
+      "enum": [
+        "primary_report",
+        "secondary_report",
+        "supplement",
+        "protocol",
+        "statistical_analysis_plan",
+        "registry_current",
+        "registry_history",
+        "clinical_study_report",
+        "regulatory_document",
+        "author_correspondence",
+        "other",
+        "unclassified_supporting"
+      ],
+      "title": "SourceRole",
+      "type": "string"
+    },
+    "SourceSetRule": {
+      "enum": [
+        "all_applicable_revisions",
+        "each_declared_role_when_available",
+        "cross_source_comparison"
+      ],
+      "title": "SourceSetRule",
+      "type": "string"
     }
   },
   "additionalProperties": false,
@@ -94,9 +529,33 @@
       "title": "Content Hash",
       "type": "string"
     },
+    "counter_evidence": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "title": "Counter Evidence",
+      "type": "array"
+    },
+    "evidence_targets": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "title": "Evidence Targets",
+      "type": "array"
+    },
     "family_id": {
       "title": "Family Id",
       "type": "string"
+    },
+    "inference_boundaries": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "title": "Inference Boundaries",
+      "type": "array"
     },
     "inventory": {
       "items": {
@@ -116,11 +575,32 @@
       "title": "Language",
       "type": "string"
     },
+    "no_information_rule": {
+      "default": "",
+      "title": "No Information Rule",
+      "type": "string"
+    },
+    "obligations": {
+      "items": {
+        "$ref": "#/$defs/EvidenceSearchObligation"
+      },
+      "minItems": 1,
+      "title": "Obligations",
+      "type": "array"
+    },
     "provenance": {
       "items": {
         "$ref": "#/$defs/Provenance"
       },
       "title": "Provenance",
+      "type": "array"
+    },
+    "recurring_traps": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "title": "Recurring Traps",
       "type": "array"
     },
     "release_id": {
@@ -147,6 +627,7 @@
     "language",
     "compatible_logic_hashes",
     "items",
+    "obligations",
     "inventory",
     "provenance"
   ],

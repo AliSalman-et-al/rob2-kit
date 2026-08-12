@@ -1,139 +1,93 @@
-"""Typer CLI over the host-neutral application gateway."""
+"""Project-local Harness bootstrap and diagnostics CLI."""
 
 from __future__ import annotations
 
 import json
+from collections.abc import Callable
 from pathlib import Path
+from typing import Any
 
 import typer
 
-from rob2_kit.application.gateway import ApplicationGateway
-from rob2_kit.reports.archives import verify_archive
+from rob2_kit.interfaces.harness import (
+    bootstrap_project,
+    doctor_project,
+    rollback_project,
+    uninstall_project,
+    upgrade_project,
+)
 
 app = typer.Typer(no_args_is_help=True)
 
-
-@app.command()
-def init(
-    project_root: Path = typer.Argument(Path(".")),
-    authorize: bool = typer.Option(False, "--authorize"),
-    json_output: bool = typer.Option(False, "--json"),
-) -> None:
-    result = ApplicationGateway().initialize_project(project_root, authorized=authorize)
-    _emit(result.model_dump(mode="json"), json_output)
+_LifecycleOperation = Callable[..., dict[str, Any]]
 
 
-def _project_call(project_root: Path, tool_name: str, as_json: bool) -> None:
-    gateway = ApplicationGateway()
-    project_id = gateway.resume_project(project_root)
-    result = gateway.call(tool_name, project_id)
-    _emit(result.model_dump(mode="json"), as_json)
-
-
-@app.command()
-def doctor(project_root: Path = typer.Argument(Path("."))) -> None:
-    result = ApplicationGateway().expert_command(project_root, "doctor")
+def _run_lifecycle(operation: _LifecycleOperation, project_root: Path, apply: bool) -> None:
+    try:
+        result = operation(project_root, apply=apply)
+    except ValueError as error:
+        raise typer.BadParameter(str(error)) from error
     typer.echo(json.dumps(result, sort_keys=True))
 
 
-@app.command()
-def status(
+@app.command("bootstrap")
+def bootstrap(
     project_root: Path = typer.Argument(Path(".")),
-    json_output: bool = typer.Option(False, "--json"),
+    unlocked: bool = typer.Option(
+        False,
+        "--unlocked",
+        help=(
+            "Wire directly to the shared release runtime instead of installing a "
+            "project-local .rob2/runtime copy. From a source checkout, wires "
+            "directly to that checkout instead of the published-registry "
+            "launcher -- the supported way to bootstrap against local, "
+            "unpublished rob2-kit source."
+        ),
+    ),
 ) -> None:
-    _project_call(project_root, "project_status", json_output)
+    """Install the locked Codex and Claude project-local Harness adapters."""
+
+    try:
+        result = bootstrap_project(project_root, mode="unlocked" if unlocked else "locked")
+    except ValueError as error:
+        raise typer.BadParameter(str(error)) from error
+    typer.echo(json.dumps(result, sort_keys=True))
 
 
-@app.command(name="continue")
-def continue_(
+@app.command("doctor")
+def doctor(project_root: Path = typer.Argument(Path("."))) -> None:
+    result = doctor_project(project_root)
+    typer.echo(json.dumps(result, sort_keys=True))
+
+
+@app.command("upgrade")
+def upgrade(
     project_root: Path = typer.Argument(Path(".")),
-    json_output: bool = typer.Option(False, "--json"),
+    apply: bool = typer.Option(False, "--apply", help="Apply the previewed transaction."),
 ) -> None:
-    _project_call(project_root, "continue_preparation", json_output)
+    """Preview, then explicitly apply a transactional locked-release upgrade."""
+
+    _run_lifecycle(upgrade_project, project_root, apply)
 
 
-@app.command()
-def review(
+@app.command("rollback")
+def rollback(
     project_root: Path = typer.Argument(Path(".")),
-    json_output: bool = typer.Option(False, "--json"),
+    apply: bool = typer.Option(False, "--apply", help="Apply the previewed rollback."),
 ) -> None:
-    _project_call(project_root, "open_review", json_output)
+    """Preview, then restore the last complete release transaction."""
+
+    _run_lifecycle(rollback_project, project_root, apply)
 
 
-@app.command()
-def report(project_root: Path = typer.Argument(Path("."))) -> None:
-    _expert(project_root, "report")
-
-
-@app.command()
-def export(project_root: Path = typer.Argument(Path("."))) -> None:
-    _expert(project_root, "export")
-
-
-@app.command()
-def archive(
+@app.command("uninstall")
+def uninstall(
     project_root: Path = typer.Argument(Path(".")),
-    kind: str = typer.Option("complete", "--kind"),
+    apply: bool = typer.Option(False, "--apply", help="Apply the previewed uninstall."),
 ) -> None:
-    _archive(project_root, kind)
+    """Preview, then remove only manifest-owned generated files."""
 
-
-@app.command()
-def verify(target: Path = typer.Argument(Path("."))) -> None:
-    if target.is_file():
-        receipt = verify_archive(target.read_bytes())
-        typer.echo(json.dumps(receipt.model_dump(mode="json"), sort_keys=True))
-    else:
-        _expert(target, "verify")
-
-
-@app.command()
-def events(project_root: Path = typer.Argument(Path("."))) -> None:
-    _expert(project_root, "events")
-
-
-@app.command()
-def repair(project_root: Path = typer.Argument(Path("."))) -> None:
-    _expert(project_root, "repair")
-
-
-@app.command()
-def mcp() -> None:
-    from rob2_kit.interfaces.mcp.server import main as run_mcp
-
-    run_mcp()
-
-
-def _emit(value: dict[str, object], as_json: bool) -> None:
-    if as_json:
-        typer.echo(json.dumps(value, sort_keys=True))
-    else:
-        typer.echo(f"{value['status']}: {value['ledger_cursor']}")
-
-
-def _expert(project_root: Path, command: str) -> None:
-    typer.echo(
-        json.dumps(
-            ApplicationGateway().expert_command(project_root, command),
-            sort_keys=True,
-        )
-    )
-
-
-def _archive(
-    project_root: Path,
-    kind: str,
-) -> None:
-    typer.echo(
-        json.dumps(
-            ApplicationGateway().expert_command(
-                project_root,
-                "archive",
-                archive_kind=kind,
-            ),
-            sort_keys=True,
-        )
-    )
+    _run_lifecycle(uninstall_project, project_root, apply)
 
 
 def main() -> None:

@@ -84,6 +84,37 @@ class CoverageState(StrEnum):
     INTENTIONALLY_BLANK = "intentionally_blank"
 
 
+class ParserQualityPolicy(FrozenModel):
+    """Pinned interpretation of LiteParse complexity observations.
+
+    LiteParse reason strings are observations, not confidence scores.  The
+    policy owns the small set of reason codes that may influence routing;
+    codes outside that set remain diagnostics and never acquire an implicit
+    meaning from a later parser release.
+    """
+
+    policy_release: Identifier = "policy:parser-quality-1.0.0"
+    recovery_reasons: tuple[str, ...] = ("no-text", "scanned")
+    limited_reasons: tuple[str, ...] = ("garbled",)
+    blank_reasons: tuple[str, ...] = (
+        "blank",
+        "intentionally-blank",
+        "intentionally_blank",
+    )
+    visual_reasons: tuple[str, ...] = ("parse-render-discrepancy",)
+
+    @property
+    def known_reasons(self) -> frozenset[str]:
+        return frozenset(
+            (
+                *self.recovery_reasons,
+                *self.limited_reasons,
+                *self.blank_reasons,
+                *self.visual_reasons,
+            )
+        )
+
+
 class ClassificationProvenance(FrozenModel):
     authority: str = Field(min_length=1)
     cues: tuple[str, ...] = ()
@@ -108,6 +139,20 @@ class PageCoverage(FrozenModel):
     state: CoverageState
     diagnostics: tuple[str, ...] = ()
     recovery_attempted: bool = False
+    # Coverage is derived from the OCR-off parse and, when present, one
+    # bounded recovery parse.  These bindings make the before/after decision
+    # auditable without treating the map as an opaque source-level score.
+    parse_id: Identifier | None = None
+    recovery_parse_id: Identifier | None = None
+    artifact_hash: ContentHash | None = None
+    configuration_hash: ContentHash | None = None
+    before_state: CoverageState | None = None
+
+    @property
+    def page_number(self) -> int:
+        """Return the stable one-based page identity used by LiteParse."""
+
+        return self.page_index + 1
 
 
 class ParseRecord(FrozenModel):
@@ -119,9 +164,18 @@ class ParseRecord(FrozenModel):
     configuration_hash: ContentHash
     canonicalization_version: str = Field(min_length=1)
     output_hash: ContentHash
+    output_artifact_hash: ContentHash | None = None
+    page_artifact_hash: ContentHash | None = None
     ocr_enabled: bool
     target_pages: tuple[int, ...] | None = None
     quality_observations: tuple[str, ...] = ()
+    # A compact, deterministic projection of every parser option requested for
+    # this record.  ``configuration_hash`` remains the canonical binding;
+    # carrying the projection makes diagnostics useful without re-running the
+    # parser or guessing defaults from its version.
+    configuration: tuple[tuple[str, str], ...] = ()
+    page_count: int = Field(default=0, ge=0)
+    page_numbers: tuple[int, ...] = ()
 
 
 class SourceComponentAnnotation(FrozenModel):

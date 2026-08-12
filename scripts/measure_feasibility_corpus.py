@@ -27,7 +27,7 @@ PROBES = {
     "randomization": '"random allocation" OR random* OR allocat*',
     "allocation_concealment": '"allocation concealment" OR conceal* OR envelope*',
     "baseline": '"baseline characteristics" OR baseline',
-    "deviations_blinding": 'blind* OR mask* OR deviation* OR crossover',
+    "deviations_blinding": "blind* OR mask* OR deviation* OR crossover",
     "analysis_population": '"intention to treat" OR "intention-to-treat" OR '
     '"full analysis set" OR "per-protocol"',
     "missing_outcomes": '"lost to follow-up" OR withdraw* OR missing OR censor*',
@@ -48,9 +48,7 @@ def percentile(values: Sequence[int | float], probability: float) -> float:
     upper = math.ceil(index)
     if lower == upper:
         return float(ordered[lower])
-    return float(
-        ordered[lower] * (upper - index) + ordered[upper] * (index - lower)
-    )
+    return float(ordered[lower] * (upper - index) + ordered[upper] * (index - lower))
 
 
 def distribution(values: Sequence[int | float]) -> dict[str, float]:
@@ -81,12 +79,8 @@ def canonical_units(markdown: str, fallback_text: str) -> list[str]:
 
 def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "--corpus-root", type=Path, default=Path("eval/reference")
-    )
-    parser.add_argument(
-        "--output", type=Path, default=Path("tmp/feasibility-calibration.json")
-    )
+    parser.add_argument("--corpus-root", type=Path, default=Path("eval/reference"))
+    parser.add_argument("--output", type=Path, default=Path("tmp/feasibility-calibration.json"))
     parser.add_argument(
         "--ocr-primary",
         action="store_true",
@@ -153,9 +147,7 @@ def main() -> None:
                 if complexity.needs_ocr:
                     needs_ocr_pages.append(page.page_num)
                     needs_ocr_lengths_by_role[role].append(text_length)
-                    needs_ocr_reason_sets[
-                        "+".join(sorted(complexity.reasons)) or "(none)"
-                    ] += 1
+                    needs_ocr_reason_sets["+".join(sorted(complexity.reasons)) or "(none)"] += 1
                 if complexity.is_garbled:
                     garbled_pages.append(page.page_num)
                 complexity_reasons.update(complexity.reasons)
@@ -214,9 +206,7 @@ def main() -> None:
                     "pages": needs_ocr_pages,
                     "seconds": round(time.perf_counter() - ocr_started, 3),
                     "characters_before": sum(before_by_page.values()),
-                    "characters_after": sum(
-                        len(page.text.strip()) for page in ocr_result.pages
-                    ),
+                    "characters_after": sum(len(page.text.strip()) for page in ocr_result.pages),
                     "pages_still_flagged": [
                         page.page_num
                         for page in ocr_result.pages
@@ -244,13 +234,9 @@ def main() -> None:
             "hits": sum(row[2] for row in rows),
             "trials_with_hits": len({row[0] for row in rows}),
             "primary_hits": sum(row[2] for row in rows if row[1] == "primary_report"),
-            "supporting_hits": sum(
-                row[2] for row in rows if row[1] == "supporting_source"
-            ),
+            "supporting_hits": sum(row[2] for row in rows if row[1] == "supporting_source"),
             "hits_per_trial": distribution(list(hits_by_trial.values())),
-            "primary_hits_per_trial": distribution(
-                list(primary_hits_by_trial.values())
-            ),
+            "primary_hits_per_trial": distribution(list(primary_hits_by_trial.values())),
         }
 
     role_counts = Counter(document["role"] for document in documents)
@@ -273,17 +259,14 @@ def main() -> None:
         "runtime_seconds": round(time.perf_counter() - start_all, 3),
         "page_text_characters": distribution(page_lengths),
         "page_text_characters_by_role": {
-            role: distribution(lengths)
-            for role, lengths in page_lengths_by_role.items()
+            role: distribution(lengths) for role, lengths in page_lengths_by_role.items()
         },
         "needs_ocr": {
             "pages_by_role": {
-                role: len(lengths)
-                for role, lengths in needs_ocr_lengths_by_role.items()
+                role: len(lengths) for role, lengths in needs_ocr_lengths_by_role.items()
             },
             "text_characters_by_role": {
-                role: distribution(lengths)
-                for role, lengths in needs_ocr_lengths_by_role.items()
+                role: distribution(lengths) for role, lengths in needs_ocr_lengths_by_role.items()
             },
             "reason_sets": dict(needs_ocr_reason_sets.most_common()),
         },

@@ -1,0 +1,1 @@
+{"overlay_id":"layout-dependent-table","table":{"headers":["30 days","12 months"],"rows":[["18/240","31/240"]]},"expected":"read header-aware table row"}

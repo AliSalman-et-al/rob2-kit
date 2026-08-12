@@ -197,7 +197,29 @@
     },
     "Provenance": {
       "additionalProperties": false,
+      "description": "A durable citation for material included in a pack release.\n\n``kind`` distinguishes the legal/scientific origin of a citation.  A\nrelease can therefore contain official wording alongside copied or\nadapted material without collapsing the provenance into one free-text\nnote.  Existing pack sources may omit ``id`` and ``kind`` while migrating\nto the richer release format; loaded objects still receive deterministic\ndefaults.",
       "properties": {
+        "attribution": {
+          "default": "",
+          "title": "Attribution",
+          "type": "string"
+        },
+        "id": {
+          "default": "",
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "default": "official",
+          "enum": [
+            "official",
+            "copied",
+            "adapted",
+            "maintainer_authored"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
         "license": {
           "minLength": 1,
           "title": "License",
@@ -241,6 +263,20 @@
             }
           ],
           "default": null
+        },
+        "allowed_answers": {
+          "default": [
+            "yes",
+            "probably_yes",
+            "probably_no",
+            "no",
+            "no_information"
+          ],
+          "items": {
+            "$ref": "#/$defs/SQAnswerCategory"
+          },
+          "title": "Allowed Answers",
+          "type": "array"
         },
         "id": {
           "pattern": "^sq:[a-z0-9:-]+$",

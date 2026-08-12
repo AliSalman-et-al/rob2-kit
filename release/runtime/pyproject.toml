@@ -1,0 +1,11 @@
+[project]
+name = "rob2-kit-project-runtime"
+version = "0.1.0"
+requires-python = ">=3.13"
+dependencies = ["rob2-kit==0.1.0"]
+
+[tool.uv]
+package = false
+
+[tool.uv.sources]
+rob2-kit = { path = "rob2_kit-0.1.0-py3-none-any.whl" }

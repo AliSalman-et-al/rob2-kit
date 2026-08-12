@@ -1,10 +1,10 @@
-"""Answer, judgment, review, and assessment contracts."""
+"""Answer, judgment, and immutable assessment contracts."""
 
 from enum import StrEnum
 
-from pydantic import Field
+from pydantic import Field, model_validator
 
-from rob2_kit.domain.revisions import Identifier, RecordReference, Revision
+from rob2_kit.domain.revisions import ContentHash, Identifier, RecordReference, Revision
 
 
 class SQAnswerCategory(StrEnum):
@@ -31,6 +31,15 @@ class SQAnswerRevision(Revision):
     rationale: str = Field(min_length=1)
     evidence_bundle: RecordReference
     project_rules: tuple[RecordReference, ...] = ()
+    # Exact release/policy provenance is carried on every answer.  They are
+    # hashes rather than mutable pack objects so replay remains host-neutral.
+    logic_pack_release_id: str | None = None
+    logic_pack_hash: ContentHash | None = None
+    guidance_pack_release_id: str | None = None
+    guidance_pack_hash: ContentHash | None = None
+    evidence_policy_id: str | None = None
+    evidence_policy_hash: ContentHash | None = None
+    decision_rule_ids: tuple[Identifier, ...] = ()
 
 
 class DecisionTrace(Revision):
@@ -38,6 +47,10 @@ class DecisionTrace(Revision):
     inactive_question_ids: tuple[Identifier, ...]
     matched_rule_ids: tuple[Identifier, ...]
     resulting_judgment: JudgmentLevel
+    domain_id: Identifier | None = None
+    evaluated_rule_ids: tuple[Identifier, ...] = ()
+    logic_pack_release_id: str | None = None
+    logic_pack_hash: ContentHash | None = None
 
 
 class AlgorithmicJudgmentRevision(Revision):
@@ -49,50 +62,50 @@ class AlgorithmicJudgmentRevision(Revision):
     judgment: JudgmentLevel
     answer_revisions: tuple[RecordReference, ...]
     decision_trace: RecordReference
+    logic_pack_release_id: str | None = None
+    logic_pack_hash: ContentHash | None = None
+    overall_policy_id: Identifier | None = None
+    overall_policy_hash: ContentHash | None = None
 
 
-class JudgmentOverride(Revision):
+class FinalJudgmentRevision(Revision):
+    """An assessor-attributed Domain judgment preserving the proposed result."""
+
     dependency_roles = {
-        "judgment_revision": "dependency:algorithmic-judgment",
-        "policy_authority": "dependency:review-policy",
-    }
-    judgment_revision: RecordReference
-    replacement: JudgmentLevel
-    rationale: str = Field(min_length=1)
-    policy_authority: RecordReference
-
-
-class ReviewFinding(Revision):
-    dependency_roles = {"affected_records": "dependency:affected-record"}
-    finding_type: Identifier
-    severity: Identifier
-    summary: str = Field(min_length=1)
-    affected_records: tuple[RecordReference, ...]
-
-
-class DomainReviewDispositionKind(StrEnum):
-    ACCEPT = "accept"
-    CORRECT = "correct"
-    OVERRIDE = "override"
-    DEFER = "defer"
-
-
-class DomainReviewDisposition(Revision):
-    dependency_roles = {
-        "assessment": "dependency:assessment",
-        "reviewer_profile": "dependency:reviewer-profile",
+        "algorithmic_judgment": "dependency:algorithmic-judgment",
+        "cited_evidence": "dependency:evidence-item",
     }
     domain_id: Identifier
-    disposition: DomainReviewDispositionKind
-    assessment: RecordReference
-    reviewer_profile: RecordReference
-    rationale: str | None = None
+    judgment: JudgmentLevel
+    algorithmic_judgment: RecordReference
+    departure: bool = False
+    alternative: JudgmentLevel | None = None
+    material_bias_rationale: str | None = Field(default=None, min_length=1)
+    cited_evidence: tuple[RecordReference, ...] = ()
 
-
-class ReviewerProfileRevision(Revision):
-    display_name: str = Field(min_length=1)
-    affiliation: str | None = None
-    external_identifiers: tuple[str, ...] = ()
+    @model_validator(mode="after")
+    def validate_departure(self) -> "FinalJudgmentRevision":
+        departure_fields = (
+            self.alternative,
+            self.material_bias_rationale,
+            self.cited_evidence,
+        )
+        if self.departure and (
+            self.alternative is None
+            or self.material_bias_rationale is None
+            or not self.cited_evidence
+        ):
+            raise ValueError(
+                "a Final judgment departure requires an alternative, material-bias rationale, "
+                "and cited Evidence"
+            )
+        if self.departure and self.judgment == self.alternative:
+            raise ValueError("a Final judgment departure must differ from its alternative")
+        if not self.departure and any(departure_fields):
+            raise ValueError("an accepted Algorithmic judgment cannot carry departure fields")
+        if self.departure and not self.material_bias_rationale.strip():
+            raise ValueError("a Final judgment departure requires a material-bias rationale")
+        return self
 
 
 class AssessmentRevision(Revision):
@@ -102,42 +115,12 @@ class AssessmentRevision(Revision):
         "evidence_bundles": "dependency:evidence-bundle",
         "answers": "dependency:sq-answer",
         "judgments": "dependency:algorithmic-judgment",
-        "judgment_overrides": "dependency:judgment-override",
-        "review_findings": "dependency:review-finding",
+        "final_judgments": "dependency:final-judgment",
     }
     result_spec: RecordReference
     source_inventory: RecordReference
     evidence_bundles: tuple[RecordReference, ...]
     answers: tuple[RecordReference, ...]
     judgments: tuple[RecordReference, ...]
-    judgment_overrides: tuple[RecordReference, ...] = ()
-    review_findings: tuple[RecordReference, ...] = ()
-
-
-class AssessmentSignOff(Revision):
-    dependency_roles = {
-        "assessment": "dependency:assessment",
-        "reviewer_profile": "dependency:reviewer-profile",
-        "domain_dispositions": "dependency:domain-review-disposition",
-        "review_policy": "dependency:review-policy",
-    }
-    assessment: RecordReference
-    reviewer_profile: RecordReference
-    domain_dispositions: tuple[RecordReference, ...] = ()
-    review_policy: RecordReference | None = None
-    attestation: str = (
-        "I reviewed this exact Result Assessment under the stated Review policy and "
-        "approve its recorded answers, final judgments, overrides, and acknowledged "
-        "limitations as the current assessment."
-    )
-    assurance: str = "local_human_attribution"
-
-
-class SignOffWithdrawal(Revision):
-    dependency_roles = {
-        "sign_off": "dependency:assessment-sign-off",
-        "reviewer_profile": "dependency:reviewer-profile",
-    }
-    sign_off: RecordReference
-    reviewer_profile: RecordReference
-    reason: str = Field(min_length=1)
+    final_judgments: tuple[RecordReference, ...] = ()
+    assessor_inputs: dict[Identifier, bool] = {}

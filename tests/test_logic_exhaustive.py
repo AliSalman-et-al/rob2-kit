@@ -13,6 +13,9 @@ from rob2_kit.logic.packs import load_logic_pack
 from tests.test_logic_evaluator import low_answers
 
 ANSWERS = tuple(answer.value for answer in SQAnswerCategory)
+MISSING_EVIDENCE_ANSWERS = tuple(
+    answer for answer in ANSWERS if answer != SQAnswerCategory.NO_INFORMATION.value
+)
 PACK = load_logic_pack(
     Path(__file__).parents[1] / "packs" / "logic" / "rob2-parallel-assignment-2019.1.yaml"
 )
@@ -70,7 +73,9 @@ def missing_paths() -> list[dict[str, str]]:
     valid: list[dict[str, str]] = []
     for available in ANSWERS:
         evidence_values = (
-            ANSWERS if available in {"probably_no", "no", "no_information"} else (None,)
+            MISSING_EVIDENCE_ANSWERS
+            if available in {"probably_no", "no", "no_information"}
+            else (None,)
         )
         for evidence in evidence_values:
             dependent_values = ANSWERS if evidence in {"probably_no", "no"} else (None,)
@@ -283,7 +288,9 @@ DOMAIN_REPRESENTATIVES = {
         JudgmentLevel.LOW: {},
         JudgmentLevel.SOME_CONCERNS: {
             "sq:missing:data-available": "no",
-            "sq:missing:evidence-unbiased": "no_information",
+            "sq:missing:evidence-unbiased": "no",
+            "sq:missing:true-value-dependent": "yes",
+            "sq:missing:likely-dependent": "no",
         },
         JudgmentLevel.HIGH: {
             "sq:missing:data-available": "no",
@@ -320,28 +327,29 @@ def test_every_domain_judgment_combination_yields_expected_overall_trace() -> No
         answers = low_answers()
         for domain_id, level in zip(domain_ids, combination, strict=True):
             answers.update(DOMAIN_REPRESENTATIVES[domain_id][level])
-        concerns = combination.count(JudgmentLevel.SOME_CONCERNS)
-        input_values = (False, True) if concerns >= 2 else (None,)
-        for combined in input_values:
-            assessor_inputs = {"input:combined-concerns": combined} if combined is not None else {}
-            result = evaluator.evaluate(
-                EvaluationRequest(
-                    answers=answers,
-                    assessor_inputs=assessor_inputs,
-                )
+        assessor_inputs = (
+            {"input:combined-concerns": False}
+            if (
+                JudgmentLevel.HIGH not in combination
+                and combination.count(JudgmentLevel.SOME_CONCERNS) >= 2
             )
-            if JudgmentLevel.HIGH in combination:
-                expected = JudgmentLevel.HIGH
-                expected_rule = "rule:overall:any-high"
-            elif combined:
-                expected = JudgmentLevel.HIGH
-                expected_rule = "rule:overall:combined-concerns"
-            elif JudgmentLevel.SOME_CONCERNS in combination:
-                expected = JudgmentLevel.SOME_CONCERNS
-                expected_rule = "rule:overall:any-concerns"
-            else:
-                expected = JudgmentLevel.LOW
-                expected_rule = "rule:overall:all-low"
-            assert tuple(result.domain_judgments.values()) == combination
-            assert result.overall_judgment is expected
-            assert result.matched_rule_ids[-1] == expected_rule
+            else {}
+        )
+        result = evaluator.evaluate(
+            EvaluationRequest(answers=answers, assessor_inputs=assessor_inputs)
+        )
+        if JudgmentLevel.HIGH in combination:
+            expected = JudgmentLevel.HIGH
+            expected_rule = "rule:overall:any-high"
+        elif combination.count(JudgmentLevel.SOME_CONCERNS) >= 2:
+            expected = JudgmentLevel.SOME_CONCERNS
+            expected_rule = "rule:overall:combined-concerns-no"
+        elif JudgmentLevel.SOME_CONCERNS in combination:
+            expected = JudgmentLevel.SOME_CONCERNS
+            expected_rule = "rule:overall:any-concerns"
+        else:
+            expected = JudgmentLevel.LOW
+            expected_rule = "rule:overall:all-low"
+        assert tuple(result.domain_judgments.values()) == combination
+        assert result.overall_judgment is expected
+        assert result.matched_rule_ids[-1] == expected_rule

@@ -15,6 +15,8 @@ from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
+from rob2_kit.domain.canonical import canonical_hash
+from rob2_kit.domain.results import ResultSpecRevision
 from rob2_kit.domain.revisions import (
     SCHEMA_VERSION as RECORD_SCHEMA_VERSION,
 )
@@ -25,6 +27,7 @@ from rob2_kit.domain.revisions import (
     SchemaVersion,
 )
 from rob2_kit.storage.artifacts import (
+    Artifact,
     ArtifactCorruptionError,
     ArtifactNotFoundError,
     ArtifactStore,
@@ -55,6 +58,32 @@ class IntegrityError(RunIntegrityFailure):
     """Raised when deterministic preflight cannot trust the ledger."""
 
 
+class LedgerSchemaRefusal(IntegrityError):
+    """Raised when a ledger belongs to an incompatible pre-release schema.
+
+    The state is deliberately not migrated, rewritten, or dual-written.  The
+    recovery text is part of the exception so an application boundary can
+    return it as a normal, actionable integrity condition.
+    """
+
+    def __init__(
+        self,
+        *,
+        expected_version: int,
+        found_version: str,
+        ledger_path: Path,
+    ) -> None:
+        self.expected_version = expected_version
+        self.found_version = found_version
+        self.ledger_path = Path(ledger_path)
+        super().__init__(
+            f"unsupported ledger schema version {found_version!r}; "
+            f"this release requires schema version {expected_version}. "
+            "Preserve the existing .rob2 state, run doctor for diagnostics, "
+            "and start a new Run after archiving or removing the incompatible state."
+        )
+
+
 class LedgerModel(BaseModel):
     model_config = ConfigDict(frozen=True, extra="forbid")
 
@@ -69,7 +98,6 @@ class DependencyInput(LedgerModel):
 class WorkflowEventOutcome(StrEnum):
     COMPLETED = "completed"
     WORK_REQUIRED = "work_required"
-    REVIEW_PENDING = "review_pending"
     PREPARATION_OUTCOME_REACHED = "preparation_outcome_reached"
     RETRYABLE_INTERRUPTION = "retryable_interruption"
     TRIAL_PROBLEM = "trial_problem"
@@ -165,6 +193,16 @@ class IntegrityReceipt(LedgerModel):
     schema_version: int
 
 
+class ArtifactVerificationCache:
+    """One process-lifetime cache for verified immutable ledger data."""
+
+    def __init__(self) -> None:
+        self.verified_hashes: set[str] = set()
+        self.result_spec_identities: dict[str, tuple[tuple[str, str, str], ...]] = {}
+        self.json_payloads: dict[str, Any] = {}
+        self.event_snapshots: dict[Path, tuple[tuple[int, str], tuple[WorkflowEvent, ...]]] = {}
+
+
 class ReplayProjection(LedgerModel):
     current_revisions: tuple[RevisionProjection, ...]
     checkpoints: tuple[Checkpoint, ...]
@@ -190,10 +228,37 @@ def dependency_fingerprint(dependencies: tuple[DependencyInput, ...]) -> str:
 class WorkflowLedger:
     """Command/query boundary over one SQLite workflow ledger."""
 
-    def __init__(self, path: Path, artifacts: ArtifactStore) -> None:
+    def __init__(
+        self,
+        path: Path,
+        artifacts: ArtifactStore,
+        *,
+        now: Callable[[], datetime] | None = None,
+        event_identifiers: Callable[[str, str, int], tuple[str, str]] | None = None,
+        verified_artifact_hashes: set[str] | None = None,
+        verification_cache: ArtifactVerificationCache | None = None,
+    ) -> None:
         self.path = Path(path)
         self.path.parent.mkdir(parents=True, exist_ok=True)
         self.artifacts = artifacts
+        self._now = now or (lambda: datetime.now(UTC))
+        self._event_identifiers = event_identifiers
+        # Owned by the caller when it wants verification to persist across
+        # ledger instances (e.g. RunEngine, which rebuilds WorkflowLedger on
+        # every call); a fresh set here preserves always-full-reverify
+        # behavior for direct construction.
+        if verification_cache is not None and verified_artifact_hashes is not None:
+            raise ValueError("provide verification_cache instead of verified_artifact_hashes")
+        self._verification_cache = verification_cache or ArtifactVerificationCache()
+        if verified_artifact_hashes is not None:
+            # Legacy callers can still supply an initially empty set. A
+            # non-empty orphaned set cannot safely prove identities were
+            # parsed, so reject it rather than rereading or trusting it.
+            if verified_artifact_hashes:
+                raise ValueError(
+                    "non-empty verified_artifact_hashes requires ArtifactVerificationCache"
+                )
+            self._verification_cache.verified_hashes = verified_artifact_hashes
         self._initialize()
 
     def acquire_lease(
@@ -272,7 +337,7 @@ class WorkflowLedger:
         operation_keys = [transition.operation_key for transition in transitions]
         if len(operation_keys) != len(set(operation_keys)):
             raise ValueError("operation keys must be unique within a commit batch")
-        commit_time = now or datetime.now(UTC)
+        commit_time = now or self._now()
         artifacts = tuple(
             self.artifacts.put(transition.artifact, transition.artifact_media_type)
             for transition in transitions
@@ -289,6 +354,11 @@ class WorkflowLedger:
             if any(duplicate is not None for duplicate in duplicates):
                 if not all(duplicate is not None for duplicate in duplicates):
                     raise StaleWriterError("commit batch is only partially present")
+                for transition, artifact in zip(transitions, artifacts, strict=True):
+                    if not self._duplicate_operation_matches(connection, transition, artifact):
+                        raise RunIntegrityFailure(
+                            "operation key was already committed with a different transition"
+                        )
                 return tuple(
                     CommitResult.model_validate_json(duplicate["result_json"]).model_copy(
                         update={"duplicate": True}
@@ -311,8 +381,12 @@ class WorkflowLedger:
                 ).fetchone()
                 sequence = 1 if previous is None else previous["sequence"] + 1
                 previous_hash = GENESIS_HASH if previous is None else previous["event_hash"]
-                operation_id = f"operation:{uuid.uuid4()}"
-                event_id = f"event:{uuid.uuid4()}"
+                if self._event_identifiers is None:
+                    operation_id, event_id = _event_identifiers(transition, sequence)
+                else:
+                    operation_id, event_id = self._event_identifiers(
+                        transition.operation_key, transition.revision_id, sequence
+                    )
                 event_data = self._event_data(
                     transition,
                     sequence=sequence,
@@ -356,9 +430,7 @@ class WorkflowLedger:
                         event_hash,
                     ),
                 )
-                earliest = self._apply_supersession(
-                    connection, transition.supersedes_revision_id
-                )
+                earliest = self._apply_supersession(connection, transition.supersedes_revision_id)
                 connection.execute(
                     """
                     INSERT INTO revisions(
@@ -441,14 +513,41 @@ class WorkflowLedger:
                     (transition.operation_key, result.model_dump_json()),
                 )
                 results.append(result)
+        self._verification_cache.event_snapshots.pop(self.path.resolve(), None)
         return tuple(results)
 
     def events(self) -> tuple[WorkflowEvent, ...]:
         with self._connection() as connection:
-            return tuple(
+            row = connection.execute(
+                "SELECT sequence, event_hash FROM workflow_events ORDER BY sequence DESC LIMIT 1"
+            ).fetchone()
+            cursor = (0, GENESIS_HASH) if row is None else (row["sequence"], row["event_hash"])
+            cached = self._verification_cache.event_snapshots.get(self.path.resolve())
+            if cached is not None and cached[0] == cursor:
+                return cached[1]
+            events = tuple(
                 self._row_to_event(row)
                 for row in connection.execute("SELECT * FROM workflow_events ORDER BY sequence")
             )
+        self._verification_cache.event_snapshots[self.path.resolve()] = (cursor, events)
+        return events
+
+    def verified_event_snapshot(self) -> tuple[tuple[int, str], tuple[WorkflowEvent, ...]]:
+        """Return the event snapshot established by preflight or the latest read."""
+        cached = self._verification_cache.event_snapshots.get(self.path.resolve())
+        if cached is not None:
+            return cached
+        self.events()
+        return self._verification_cache.event_snapshots[self.path.resolve()]
+
+    def artifact_json(self, content_hash: str) -> Any:
+        """Read one immutable JSON artifact, reusing its verified parsed value."""
+        cached = self._verification_cache.json_payloads.get(content_hash)
+        if cached is not None:
+            return cached
+        payload = json.loads(self.artifacts.read(content_hash))
+        self._verification_cache.json_payloads[content_hash] = payload
+        return payload
 
     def current_revisions(self) -> tuple[RevisionProjection, ...]:
         return self._revision_query(active=True)
@@ -526,6 +625,7 @@ class WorkflowLedger:
         path.write_text("".join(f"{line}\n" for line in lines), encoding="utf-8")
 
     def _initialize(self) -> None:
+        self._refuse_incompatible_existing_schema()
         with self._connection() as connection:
             connection.executescript(
                 f"""
@@ -611,6 +711,52 @@ class WorkflowLedger:
                 );
                 """
             )
+
+    def _refuse_incompatible_existing_schema(self) -> None:
+        """Refuse known old state before ``CREATE TABLE IF NOT EXISTS`` runs."""
+
+        if not self.path.is_file() or self.path.stat().st_size == 0:
+            return
+        try:
+            with sqlite3.connect(self.path) as connection:
+                tables = {
+                    row[0]
+                    for row in connection.execute(
+                        "SELECT name FROM sqlite_master WHERE type = 'table'"
+                    )
+                }
+                if not tables:
+                    return
+                if "metadata" not in tables:
+                    raise LedgerSchemaRefusal(
+                        expected_version=SCHEMA_VERSION,
+                        found_version="missing",
+                        ledger_path=self.path,
+                    )
+                row = connection.execute(
+                    "SELECT value FROM metadata WHERE key = 'schema_version'"
+                ).fetchone()
+                if row is None:
+                    raise LedgerSchemaRefusal(
+                        expected_version=SCHEMA_VERSION,
+                        found_version="missing",
+                        ledger_path=self.path,
+                    )
+                found = str(row[0])
+                if found != str(SCHEMA_VERSION):
+                    raise LedgerSchemaRefusal(
+                        expected_version=SCHEMA_VERSION,
+                        found_version=found,
+                        ledger_path=self.path,
+                    )
+        except LedgerSchemaRefusal:
+            raise
+        except sqlite3.DatabaseError as error:
+            raise LedgerSchemaRefusal(
+                expected_version=SCHEMA_VERSION,
+                found_version="unreadable",
+                ledger_path=self.path,
+            ) from error
 
     def _apply_supersession(
         self, connection: sqlite3.Connection, superseded: str | None
@@ -712,16 +858,34 @@ class WorkflowLedger:
         quick_check = connection.execute("PRAGMA quick_check").fetchone()[0]
         if quick_check != "ok":
             raise IntegrityError(f"SQLite integrity check failed: {quick_check}")
-        version = int(
-            connection.execute(
-                "SELECT value FROM metadata WHERE key = 'schema_version'"
-            ).fetchone()[0]
-        )
+        schema_row = connection.execute(
+            "SELECT value FROM metadata WHERE key = 'schema_version'"
+        ).fetchone()
+        if schema_row is None:
+            raise LedgerSchemaRefusal(
+                expected_version=SCHEMA_VERSION,
+                found_version="missing",
+                ledger_path=self.path,
+            )
+        found_version = str(schema_row[0])
+        try:
+            version = int(found_version)
+        except ValueError as error:
+            raise LedgerSchemaRefusal(
+                expected_version=SCHEMA_VERSION,
+                found_version=found_version,
+                ledger_path=self.path,
+            ) from error
         if version != SCHEMA_VERSION:
-            raise IntegrityError(f"unsupported schema version {version}")
+            raise LedgerSchemaRefusal(
+                expected_version=SCHEMA_VERSION,
+                found_version=found_version,
+                ledger_path=self.path,
+            )
         previous_hash = GENESIS_HASH
         expected_sequence = 1
         event_count = 0
+        verified_events: list[WorkflowEvent] = []
         for row in connection.execute("SELECT * FROM workflow_events ORDER BY sequence"):
             if row["sequence"] != expected_sequence:
                 raise IntegrityError("event order is not contiguous")
@@ -751,6 +915,7 @@ class WorkflowLedger:
             if row["event_hash"] != expected_hash:
                 raise IntegrityError(f"event hash is corrupted at sequence {expected_sequence}")
             event = self._row_to_event(row)
+            verified_events.append(event)
             if event.record_schema_version != RECORD_SCHEMA_VERSION:
                 raise IntegrityError(
                     f"unsupported record schema version {event.record_schema_version}"
@@ -818,12 +983,29 @@ class WorkflowLedger:
         }
         if referenced_hashes != reachable_hashes:
             raise IntegrityError("reachable artifact projection does not match revision references")
+        json_artifact_hashes = {
+            row["artifact_hash"]
+            for row in connection.execute(
+                "SELECT artifact_hash FROM revisions WHERE media_type = 'application/json'"
+            )
+        }
         for content_hash in sorted(referenced_hashes):
-            try:
-                self.artifacts.read(content_hash)
-            except (ArtifactCorruptionError, ArtifactNotFoundError) as error:
-                raise IntegrityError(str(error)) from error
+            if content_hash not in self._verification_cache.verified_hashes:
+                try:
+                    content = self.artifacts.read(content_hash)
+                except (ArtifactCorruptionError, ArtifactNotFoundError) as error:
+                    raise IntegrityError(str(error)) from error
+                if content_hash in json_artifact_hashes:
+                    try:
+                        self._cache_result_spec_identities(content_hash, content)
+                    except (UnicodeDecodeError, json.JSONDecodeError) as error:
+                        raise IntegrityError("JSON revision artifact is unreadable") from error
+                # JSON artifacts are not marked verified until their ResultSpec
+                # identities have been parsed and cached.  The paired cache
+                # entries make a cached byte verification an identity proof.
+                self._verification_cache.verified_hashes.add(content_hash)
             artifact_count += 1
+        self._verify_result_spec_revision_identity(connection)
         active_dependencies = connection.execute(
             """
             SELECT dependency.revision_id
@@ -854,10 +1036,7 @@ class WorkflowLedger:
                 raise IntegrityError("writer lease expiry must use UTC")
             if lease["fencing_token"] < 1:
                 raise IntegrityError("writer lease fencing token is invalid")
-        events = tuple(
-            self._row_to_event(row)
-            for row in connection.execute("SELECT * FROM workflow_events ORDER BY sequence")
-        )
+        events = tuple(verified_events)
         replayed = self._replay_events(events)
         persisted_revisions = tuple(
             RevisionProjection.model_validate(dict(row))
@@ -884,11 +1063,44 @@ class WorkflowLedger:
             raise IntegrityError("current revision projection does not match event replay")
         if replayed.checkpoints != persisted_checkpoints:
             raise IntegrityError("checkpoint projection does not match event replay")
+        self._verification_cache.event_snapshots[self.path.resolve()] = (
+            (event_count, previous_hash),
+            events,
+        )
         return IntegrityReceipt(
             ok=True,
             event_count=event_count,
             artifact_count=artifact_count,
             schema_version=version,
+        )
+
+    def _verify_result_spec_revision_identity(self, connection: sqlite3.Connection) -> None:
+        """Reject any nested ResultSpec identity bound to more than one content hash."""
+        seen: dict[tuple[str, str], str] = {}
+        rows = connection.execute(
+            "SELECT DISTINCT artifact_hash FROM revisions WHERE media_type = 'application/json'"
+        )
+        for row in rows:
+            artifact_hash = row["artifact_hash"]
+            identities = self._verification_cache.result_spec_identities.get(artifact_hash)
+            if identities is None:
+                raise IntegrityError(
+                    "verified JSON artifact lacks parsed ResultSpec identity cache entry"
+                )
+            for entity_id, revision_id, content_hash in identities:
+                identity = (entity_id, revision_id)
+                existing = seen.setdefault(identity, content_hash)
+                if existing != content_hash:
+                    raise IntegrityError(
+                        "ResultSpec revision identity is bound to different canonical content"
+                    )
+
+    def _cache_result_spec_identities(self, artifact_hash: str, content: bytes) -> None:
+        payload = json.loads(content)
+        self._verification_cache.json_payloads[artifact_hash] = payload
+        self._verification_cache.result_spec_identities[artifact_hash] = tuple(
+            (spec.entity_id, spec.revision_id, canonical_hash(spec))
+            for spec in _nested_result_spec_revisions(payload)
         )
 
     def _event_data(
@@ -961,6 +1173,69 @@ class WorkflowLedger:
             "supersedes_revision_id": transition.supersedes_revision_id,
         }
 
+    def _duplicate_operation_matches(
+        self,
+        connection: sqlite3.Connection,
+        transition: Transition,
+        artifact: Artifact,
+    ) -> bool:
+        """Return whether an operation-key replay supplies the exact transition."""
+        row = connection.execute(
+            """
+            SELECT workflow_events.*, revisions.media_type
+            FROM workflow_events
+            JOIN revisions USING(revision_id)
+            WHERE workflow_events.operation_key = ?
+            """,
+            (transition.operation_key,),
+        ).fetchone()
+        if row is None:
+            return False
+        stored = {
+            "record_schema_version": json.loads(row["transition_json"])["record_schema_version"],
+            "scope": row["scope"],
+            "operation": row["operation"],
+            "operation_key": row["operation_key"],
+            "actor": json.loads(row["actor_json"]),
+            "observed_at": row["observed_at"],
+            "entity_id": row["entity_id"],
+            "revision_id": row["revision_id"],
+            "artifact_hash": json.loads(row["output_hashes_json"])[0],
+            "artifact_media_type": row["media_type"],
+            "dependencies": json.loads(row["transition_json"])["dependencies"],
+            "expected_dependency_fingerprint": dependency_fingerprint(
+                tuple(
+                    DependencyInput.model_validate(item)
+                    for item in json.loads(row["transition_json"])["dependencies"]
+                )
+            ),
+            "checkpoint": json.loads(row["transition_json"])["checkpoint"],
+            "outcome": row["outcome"],
+            "causation_id": row["causation_id"],
+            "correlation_id": row["correlation_id"],
+            "supersedes_revision_id": json.loads(row["transition_json"])["supersedes_revision_id"],
+        }
+        submitted = {
+            "record_schema_version": transition.record_schema_version,
+            "scope": transition.scope,
+            "operation": transition.operation,
+            "operation_key": transition.operation_key,
+            "actor": transition.actor.model_dump(mode="json"),
+            "observed_at": transition.observed_at.isoformat(),
+            "entity_id": transition.entity_id,
+            "revision_id": transition.revision_id,
+            "artifact_hash": artifact.content_hash,
+            "artifact_media_type": transition.artifact_media_type,
+            "dependencies": [item.model_dump(mode="json") for item in transition.dependencies],
+            "expected_dependency_fingerprint": transition.expected_dependency_fingerprint,
+            "checkpoint": transition.checkpoint,
+            "outcome": transition.outcome,
+            "causation_id": transition.causation_id,
+            "correlation_id": transition.correlation_id,
+            "supersedes_revision_id": transition.supersedes_revision_id,
+        }
+        return stored == submitted
+
     def _revision_query(self, *, active: bool) -> tuple[RevisionProjection, ...]:
         with self._connection() as connection:
             join = "JOIN" if active else "LEFT JOIN"
@@ -1010,9 +1285,27 @@ class WorkflowLedger:
                 connection.commit()
 
 
+def _event_identifiers(_transition: Transition, _sequence: int) -> tuple[str, str]:
+    return f"operation:{uuid.uuid4()}", f"event:{uuid.uuid4()}"
+
+
 def _hash_json(value: object) -> str:
     payload = json.dumps(value, sort_keys=True, separators=(",", ":")).encode()
     return f"sha256:{hashlib.sha256(payload).hexdigest()}"
+
+
+def _nested_result_spec_revisions(value: Any) -> Iterator[ResultSpecRevision]:
+    """Typed-walk JSON values for direct or envelope-nested ResultSpecs."""
+    if isinstance(value, dict):
+        try:
+            yield ResultSpecRevision.model_validate(value)
+        except (TypeError, ValueError):
+            pass
+        for nested in value.values():
+            yield from _nested_result_spec_revisions(nested)
+    elif isinstance(value, list):
+        for nested in value:
+            yield from _nested_result_spec_revisions(nested)
 
 
 def workflow_event_hash_payload(event: WorkflowEvent) -> dict[str, Any]:
@@ -1031,9 +1324,7 @@ def workflow_event_hash_payload(event: WorkflowEvent) -> dict[str, Any]:
         "entity_id": event.entity_id,
         "revision_id": event.revision_id,
         "record_schema_version": event.record_schema_version,
-        "dependencies": [
-            dependency.model_dump(mode="json") for dependency in event.dependencies
-        ],
+        "dependencies": [dependency.model_dump(mode="json") for dependency in event.dependencies],
         "checkpoint": event.checkpoint,
         "supersedes_revision_id": event.supersedes_revision_id,
         "input_revision_hashes": list(event.input_revision_hashes),

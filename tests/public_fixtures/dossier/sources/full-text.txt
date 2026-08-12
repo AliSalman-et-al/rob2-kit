@@ -1,0 +1,7 @@
+AURORA is a public synthetic, individually randomised, parallel-group Trial of intervention A versus usual care.
+
+Participants were assigned by a computer-generated sequence using variable blocks. The independent service released the next allocation after eligibility was recorded. The primary result is all-cause mortality at 30 days in the intention-to-treat population: 18/240 versus 24/238.
+
+Participants and treating clinicians could see the assigned intervention. The outcome assessor used the prespecified vital-status definition and was unaware of allocation. Five participants withdrew before day 30; the report states that vital status was obtained for all five through the registry.
+
+The protocol specified mortality at 30 days as the primary result. The report also gives an exploratory 12-month estimate. The 30-day estimate is the result-bearing analysis for this dossier.

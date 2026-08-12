@@ -16,3 +16,7 @@ eval/runs/
 
 # Local calibration and rendering artifacts
 tmp/
+
+# AI Agents
+.claude/
+.codex/

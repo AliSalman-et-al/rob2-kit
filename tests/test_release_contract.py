@@ -1,0 +1,231 @@
+import hashlib
+import json
+import shutil
+from pathlib import Path
+
+import pytest
+
+import rob2_kit.release as release
+from rob2_kit.release import (
+    ParserPin,
+    build_host_adapters,
+    installed_release_fingerprint,
+    load_release_lock,
+    release_root,
+    verify_host_adapters,
+    verify_ownership_identities,
+)
+
+ROOT = Path(__file__).resolve().parents[1]
+EXPECTED_SKILLS = {"rob2-init", "rob2-assess"}
+EXPECTED_HOSTS = {"codex", "claude"}
+
+
+def sha256_file(path: Path) -> str:
+    canonical = path.read_text(encoding="utf-8").replace("\r\n", "\n").encode()
+    return "sha256:" + hashlib.sha256(canonical).hexdigest()
+
+
+def test_checked_in_release_lock_pins_the_two_skills_and_both_harnesses() -> None:
+    lock = load_release_lock(ROOT)
+
+    assert lock.package == "rob2-kit"
+    assert lock.package_version == "0.1.0"
+    assert lock.python_version == "3.13"
+    assert lock.parser.name == "liteparse"
+    assert lock.parser.distribution == "liteparse"
+    assert set(lock.skills) == EXPECTED_SKILLS
+    assert set(lock.adapters) == EXPECTED_HOSTS
+
+    for skill_name in EXPECTED_SKILLS:
+        skill_root = ROOT / "skills" / skill_name
+        assert lock.skills[skill_name].content_hash == sha256_file(skill_root / "SKILL.md")
+        assert lock.skills[skill_name].activation_fixtures_hash == sha256_file(
+            skill_root / "activation-fixtures.json"
+        )
+
+    for host in EXPECTED_HOSTS:
+        adapter = lock.adapters[host]
+        assert set(adapter.skill_hashes) == EXPECTED_SKILLS
+        assert adapter.skill_hashes == {
+            skill_name: lock.skills[skill_name].content_hash for skill_name in EXPECTED_SKILLS
+        }
+
+    verify_host_adapters(ROOT)
+
+
+def test_generated_adapters_materialize_both_skill_trees_and_detect_drift(
+    tmp_path: Path,
+) -> None:
+    shutil.copytree(ROOT / "skills", tmp_path / "skills")
+    shutil.copytree(ROOT / "docs", tmp_path / "docs")
+    shutil.copytree(ROOT / "packs", tmp_path / "packs")
+    shutil.copy(ROOT / "uv.lock", tmp_path / "uv.lock")
+
+    manifest = build_host_adapters(tmp_path, package_version="0.1.0")
+
+    assert set(manifest.skills) == EXPECTED_SKILLS
+    for host in EXPECTED_HOSTS:
+        for skill_name in EXPECTED_SKILLS:
+            generated = tmp_path / "adapters" / host / "skills" / skill_name
+            assert (generated / "SKILL.md").is_file()
+            assert (generated / "activation-fixtures.json").is_file()
+    verify_host_adapters(tmp_path)
+
+    generated_skill = tmp_path / "adapters" / "codex" / "skills" / "rob2-init" / "SKILL.md"
+    generated_skill.write_text(
+        generated_skill.read_text(encoding="utf-8") + "drift\n", encoding="utf-8"
+    )
+    with pytest.raises(ValueError, match="codex.*rob2-init|skill"):
+        verify_host_adapters(tmp_path)
+
+
+def test_release_verification_is_stable_across_text_line_endings(tmp_path: Path) -> None:
+    shutil.copytree(ROOT / "skills", tmp_path / "skills")
+    shutil.copytree(ROOT / "docs", tmp_path / "docs")
+    shutil.copytree(ROOT / "packs", tmp_path / "packs")
+    shutil.copy(ROOT / "uv.lock", tmp_path / "uv.lock")
+    build_host_adapters(tmp_path, package_version="0.1.0")
+
+    text_assets = [
+        tmp_path / "skills" / "rob2-init" / "SKILL.md",
+        tmp_path / "adapters" / "codex" / "skills" / "rob2-init" / "SKILL.md",
+        tmp_path / "uv.lock",
+    ]
+    for path in text_assets:
+        text = path.read_text(encoding="utf-8").replace("\r\n", "\n")
+        path.write_bytes(text.replace("\n", "\r\n").encode())
+
+    verify_host_adapters(tmp_path)
+
+
+def test_release_lock_rejects_an_extra_canonical_skill(tmp_path: Path) -> None:
+    shutil.copytree(ROOT / "skills", tmp_path / "skills")
+    shutil.copytree(ROOT / "docs", tmp_path / "docs")
+    shutil.copytree(ROOT / "packs", tmp_path / "packs")
+    shutil.copy(ROOT / "uv.lock", tmp_path / "uv.lock")
+    build_host_adapters(tmp_path, package_version="0.1.0")
+
+    extra = tmp_path / "skills" / "legacy-review"
+    extra.mkdir()
+    (extra / "SKILL.md").write_text("---\nname: legacy-review\n---\n", encoding="utf-8")
+    (extra / "activation-fixtures.json").write_text("{}\n", encoding="utf-8")
+
+    with pytest.raises(ValueError, match="canonical skills|exactly"):
+        verify_host_adapters(tmp_path)
+
+
+def test_release_lock_rejects_an_adapter_version_claim(tmp_path: Path) -> None:
+    shutil.copytree(ROOT / "skills", tmp_path / "skills")
+    shutil.copytree(ROOT / "docs", tmp_path / "docs")
+    shutil.copytree(ROOT / "packs", tmp_path / "packs")
+    shutil.copy(ROOT / "uv.lock", tmp_path / "uv.lock")
+    build_host_adapters(tmp_path, package_version="0.1.0")
+
+    lock_path = tmp_path / "rob2.lock"
+    raw = json.loads(lock_path.read_text(encoding="utf-8"))
+    raw["adapters"]["codex"]["version"] = "2"
+    lock_path.write_text(json.dumps(raw), encoding="utf-8")
+
+    with pytest.raises(ValueError, match="adapter version"):
+        verify_host_adapters(tmp_path)
+
+
+def test_lock_file_is_json_with_no_legacy_single_skill_hash() -> None:
+    raw = json.loads((ROOT / "rob2.lock").read_text(encoding="utf-8"))
+
+    assert set(raw["skills"]) == EXPECTED_SKILLS
+    assert "canonical_skill_hash" not in raw
+    assert "skill_hash" not in raw
+
+
+def test_release_root_resolves_the_source_checkout() -> None:
+    assert release_root() == ROOT
+
+
+def test_installed_release_fingerprint_matches_the_checked_in_release_lock() -> None:
+    lock = load_release_lock(ROOT)
+
+    fingerprint = installed_release_fingerprint(ROOT, lock)
+
+    assert fingerprint["engine_version"] == lock.package_version
+    assert fingerprint["logic_pack_hash"] == lock.logic_pack_hash
+    assert fingerprint["guidance_pack_hash"] == lock.guidance_pack_hash
+    assert fingerprint["release_status"] == lock.release_status
+    assert fingerprint["dependency_lock_hash"] == lock.dependency_lock_hash
+    assert fingerprint["skill_hashes"] == {
+        name: pin.content_hash for name, pin in lock.skills.items()
+    }
+    assert fingerprint["adapter_hashes"] == {
+        host: pin.content_hash for host, pin in lock.adapters.items()
+    }
+    assert fingerprint["schema_hashes"]
+    assert set(fingerprint["schema_hashes"]) == {
+        path.name for path in (ROOT / "schemas").glob("*.json")
+    }
+
+
+def test_release_fingerprint_uses_the_declared_parser_and_locked_runtime_version(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Parser identity follows the release declaration, not a hard-coded package."""
+
+    runtime = tmp_path / "release" / "runtime"
+    runtime.mkdir(parents=True)
+    (runtime / "uv.lock").write_text(
+        'version = 1\n\n[[package]]\nname = "parser-dist"\nversion = "7.4.0"\n',
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(release.importlib.metadata, "version", lambda _name: "9.9.9")
+    lock = load_release_lock(ROOT).model_copy(
+        update={"parser": ParserPin(name="document-parser", distribution="parser-dist")}
+    )
+
+    fingerprint = installed_release_fingerprint(tmp_path, lock)
+
+    assert fingerprint["parser_name"] == "document-parser"
+    assert fingerprint["parser_version"] == "7.4.0"
+
+
+def _manifest_from_fingerprint(fingerprint: dict[str, object]) -> dict[str, object]:
+    return {
+        "identities": {
+            "engine": {"version": fingerprint["engine_version"]},
+            "schema": {"version": "1", "hashes": fingerprint["schema_hashes"]},
+            "parser": {
+                "name": fingerprint["parser_name"],
+                "version": fingerprint["parser_version"],
+            },
+            "packs": {
+                "logic": {"hash": fingerprint["logic_pack_hash"]},
+                "guidance": {"hash": fingerprint["guidance_pack_hash"]},
+            },
+            "skills": {
+                name: {"hash": content_hash}
+                for name, content_hash in fingerprint["skill_hashes"].items()
+            },
+            "adapters": {
+                host: {"hash": content_hash}
+                for host, content_hash in fingerprint["adapter_hashes"].items()
+            },
+            "policies": {"release_status": fingerprint["release_status"]},
+        }
+    }
+
+
+def test_verify_ownership_identities_accepts_a_manifest_matching_the_installed_release() -> None:
+    lock = load_release_lock(ROOT)
+    fingerprint = installed_release_fingerprint(ROOT, lock)
+    manifest = _manifest_from_fingerprint(fingerprint)
+
+    verify_ownership_identities(manifest, ROOT, lock)
+
+
+def test_verify_ownership_identities_rejects_a_drifted_skill_hash() -> None:
+    lock = load_release_lock(ROOT)
+    fingerprint = installed_release_fingerprint(ROOT, lock)
+    manifest = _manifest_from_fingerprint(fingerprint)
+    manifest["identities"]["skills"]["rob2-assess"]["hash"] = "sha256:" + "0" * 64
+
+    with pytest.raises(ValueError, match="skill identity"):
+        verify_ownership_identities(manifest, ROOT, lock)

@@ -1,0 +1,14 @@
+[
+  {
+    "scenario": "setup",
+    "prompt": "Set up this project for a RoB 2 assessment and show me the proposed scope.",
+    "activated_skill": "rob2-init",
+    "allowed_tools": ["prepare_run", "get_work_context", "submit_source_role_review", "submit_result_resolution", "submit_run_proposal"]
+  },
+  {
+    "scenario": "proposal_correction",
+    "prompt": "Change the proposed outcome time point before I confirm this RoB 2 run.",
+    "activated_skill": "rob2-init",
+    "allowed_tools": ["prepare_run", "get_work_context", "submit_run_proposal", "confirm_run_definition"]
+  }
+]

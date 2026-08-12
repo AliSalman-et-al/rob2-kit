@@ -1,8 +1,8 @@
 # Declaring exact Results
 
-The Companion Ready view can show exact Trial × Result identities before
-autonomous Preparation when the project root contains a `rob2.yaml` file with
-pre-resolved ResultSpec inputs.
+The Run proposal can carry exact Trial × Result identities before autonomous
+Preparation when the project root contains a `rob2.yaml` file with pre-resolved
+ResultSpec inputs.
 
 ```yaml
 schema_version: 1
@@ -36,11 +36,16 @@ results:
 
 Each declared Result must reference a Trial issued from its `input/` folder and
 must have a unique `result_id`. Every declared Result receives an independent
-Preparation scope, Evidence Bundle, Assessment, and Review case. Multiple
+Preparation scope, Evidence Bundle, Assessment, and static report. Multiple
 Results may therefore share one Trial and secured Source inventory without
 sharing Result-specific judgments.
 
-Projects without declared `results` remain compatible with the agent-driven
-Result-resolution workflow. In that mode the Ready view explicitly reports
-that exact Result identity is pending and Preparation resolves the single
-engine-issued Result before outcome-dependent work begins.
+Projects without declared `results` use proposal discovery after Source-role
+resolution. An attributable review extracts provenance-bound Reported endpoint,
+Randomization, and Arm candidates from eligible result-bearing full-text
+reports; human promotion establishes Outcome-target and Trial-design identity,
+and a later semantic mapping review proposes Trial-specific Result candidates.
+A complete accepted mapping may materialize its ResultSpec revision when the
+proposal is confirmed. An incomplete mapping explicitly reports pending Result
+identity and proceeds through structured Result resolution before
+outcome-dependent work begins.

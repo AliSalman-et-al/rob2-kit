@@ -82,11 +82,18 @@ def test_materialized_run_excludes_provisional_labels(tmp_path: Path) -> None:
     )
 
     run_manifest = yaml.safe_load((run_root / "eval-run.yaml").read_text())
-    trial_manifest = yaml.safe_load(
-        (run_root / "input" / "TRIAL-A" / "trial.yaml").read_text()
-    )
+    trial_manifest = yaml.safe_load((run_root / "input" / "TRIAL-A" / "trial.yaml").read_text())
+    project_manifest = yaml.safe_load((run_root / "rob2.yaml").read_text())
     assert run_manifest["reference_labels_included"] is False
     assert trial_manifest["outcome_target"] == "Progression-Free Survival"
+    assert project_manifest["outcome_targets"] == [
+        {
+            "id": "progression-free-survival",
+            "label": "Progression-Free Survival",
+            "construct": "Progression-Free Survival",
+            "effect_of_interest": "assignment",
+        }
+    ]
     assert trial_manifest["documents"] == [
         {"path": "report.pdf", "roles": ["primary_report"]},
         {"path": "supplements/protocol.pdf", "roles": ["protocol"]},
@@ -96,6 +103,25 @@ def test_materialized_run_excludes_provisional_labels(tmp_path: Path) -> None:
         for path in run_root.rglob("*")
         if path.is_file()
     )
+
+
+def test_materialized_run_prints_the_supported_harness_initialization(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    eval_root = private_workspace(tmp_path)
+
+    create_run(
+        eval_root,
+        trial_value="trial-a",
+        outcome_value="progression free survival",
+        host="codex",
+        run_id="codex-trial-a-pfs",
+    )
+
+    output = capsys.readouterr().out
+    assert "rob2 init" not in output
+    assert "rob2 bootstrap" in output
+    assert "rob2-init" in output
 
 
 def test_reference_label_is_a_separate_explicit_action(
