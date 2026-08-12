@@ -9,6 +9,7 @@ import os
 import re
 import shutil
 import sys
+import tomllib
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Literal, TextIO, cast
@@ -78,6 +79,15 @@ class AdapterPin(BaseModel):
     skill_hashes: dict[str, str]
 
 
+class ParserPin(BaseModel):
+    """Parser identity declared by the release, independent of its implementation package."""
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    name: str = Field(min_length=1)
+    distribution: str = Field(min_length=1)
+
+
 @dataclass(frozen=True)
 class CanonicalSkillAssets:
     skill: Path
@@ -99,6 +109,7 @@ class ReleaseLock(BaseModel):
     launcher: str = Field(min_length=1)
     launcher_working_directory: Literal["project_root"]
     dependency_lock_hash: str = Field(pattern=r"^sha256:[0-9a-f]{64}$")
+    parser: ParserPin
     skills: dict[str, SkillPin]
     adapters: dict[str, AdapterPin]
     logic_pack: str = Field(min_length=1)
@@ -162,6 +173,7 @@ def build_host_adapters(root: Path, *, package_version: str) -> ReleaseLock:
         launcher=launcher,
         launcher_working_directory="project_root",
         dependency_lock_hash=_dependency_lock_hash(root),
+        parser=ParserPin(name="liteparse", distribution="liteparse"),
         skills=skill_pins,
         adapters=adapters,
         logic_pack="rob2-parallel-assignment-2019.1",
@@ -210,8 +222,8 @@ def installed_release_fingerprint(root: Path, lock: ReleaseLock) -> dict[str, ob
     return {
         "engine_version": lock.package_version,
         "schema_hashes": schema_hashes,
-        "parser_name": "liteparse",
-        "parser_version": _distribution_version("liteparse"),
+        "parser_name": lock.parser.name,
+        "parser_version": _locked_distribution_version(root, lock.parser.distribution),
         "logic_pack_hash": lock.logic_pack_hash,
         "guidance_pack_hash": lock.guidance_pack_hash,
         "skill_hashes": {name: pin.content_hash for name, pin in lock.skills.items()},
@@ -272,6 +284,31 @@ def _distribution_version(name: str) -> str:
         return importlib.metadata.version(name)
     except importlib.metadata.PackageNotFoundError:
         return "unavailable"
+
+
+def _locked_distribution_version(root: Path, name: str) -> str:
+    """Read dependency identity from the release lock used by its runtime.
+
+    Bootstrap can run from an environment whose resolver selected a newer
+    compatible dependency than the embedded runtime. Release identity must be
+    independent of that invoking environment or the runtime will reject the
+    ownership manifest that bootstrap just wrote.
+    """
+
+    candidates = (root / "release" / "runtime" / "uv.lock", root / "uv.lock")
+    for path in candidates:
+        if not path.is_file():
+            continue
+        try:
+            packages = tomllib.loads(path.read_text(encoding="utf-8")).get("package", ())
+        except (OSError, tomllib.TOMLDecodeError):
+            continue
+        for package in packages:
+            if isinstance(package, dict) and package.get("name") == name:
+                version = package.get("version")
+                if isinstance(version, str) and version:
+                    return version
+    return _distribution_version(name)
 
 
 def load_release_lock(root: Path) -> ReleaseLock:

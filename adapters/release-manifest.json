@@ -27,6 +27,10 @@
   "logic_pack_hash": "sha256:d4c630ae08f93006954f3f535e98fc5aaa2e13ca3976483bdeb677809f58886f",
   "package": "rob2-kit",
   "package_version": "0.1.0",
+  "parser": {
+    "distribution": "liteparse",
+    "name": "liteparse"
+  },
   "python_version": "3.13",
   "release_status": "draft_only_preview",
   "skills": {

@@ -5,7 +5,9 @@ from pathlib import Path
 
 import pytest
 
+import rob2_kit.release as release
 from rob2_kit.release import (
+    ParserPin,
     build_host_adapters,
     installed_release_fingerprint,
     load_release_lock,
@@ -30,6 +32,8 @@ def test_checked_in_release_lock_pins_the_two_skills_and_both_harnesses() -> Non
     assert lock.package == "rob2-kit"
     assert lock.package_version == "0.1.0"
     assert lock.python_version == "3.13"
+    assert lock.parser.name == "liteparse"
+    assert lock.parser.distribution == "liteparse"
     assert set(lock.skills) == EXPECTED_SKILLS
     assert set(lock.adapters) == EXPECTED_HOSTS
 
@@ -159,6 +163,28 @@ def test_installed_release_fingerprint_matches_the_checked_in_release_lock() -> 
     assert set(fingerprint["schema_hashes"]) == {
         path.name for path in (ROOT / "schemas").glob("*.json")
     }
+
+
+def test_release_fingerprint_uses_the_declared_parser_and_locked_runtime_version(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Parser identity follows the release declaration, not a hard-coded package."""
+
+    runtime = tmp_path / "release" / "runtime"
+    runtime.mkdir(parents=True)
+    (runtime / "uv.lock").write_text(
+        'version = 1\n\n[[package]]\nname = "parser-dist"\nversion = "7.4.0"\n',
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(release.importlib.metadata, "version", lambda _name: "9.9.9")
+    lock = load_release_lock(ROOT).model_copy(
+        update={"parser": ParserPin(name="document-parser", distribution="parser-dist")}
+    )
+
+    fingerprint = installed_release_fingerprint(tmp_path, lock)
+
+    assert fingerprint["parser_name"] == "document-parser"
+    assert fingerprint["parser_version"] == "7.4.0"
 
 
 def _manifest_from_fingerprint(fingerprint: dict[str, object]) -> dict[str, object]:
