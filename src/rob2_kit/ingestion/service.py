@@ -19,6 +19,7 @@ from pathlib import Path
 
 import pymupdf
 
+from rob2_kit.assessment import LocalSourceRecord
 from rob2_kit.sources import (
     ExpectedCondition,
     IngestBatchResult,
@@ -32,6 +33,7 @@ from rob2_kit.sources import (
     _under,
     extraction_warnings,
     list_sources,
+    local_source_id,
     sha256_bytes,
 )
 
@@ -40,10 +42,14 @@ from rob2_kit.sources import (
 class _PreparedSource:
     source: Source
     data: bytes
+    input_path: str
+    occurrence: int
 
 
 _REGISTRY_MANIFEST = "registry-sources.json"
 _REGISTRY_SCHEMA = "rob2-kit.registry-sources.v1"
+_LOCAL_MANIFEST = "local-sources.json"
+_LOCAL_SCHEMA = "rob2-kit.local-sources.v1"
 
 
 def ingest_batch(workspace: str | Path, trial_inputs: tuple[TrialInput, ...]) -> IngestBatchResult:
@@ -303,7 +309,14 @@ def _prepare_all(root: Path, trial: TrialInput) -> tuple[_PreparedSource, ...]:
     for source_input, data, media_type, pages, fingerprint in raw:
         occurrence = occurrences[fingerprint]
         occurrences[fingerprint] += 1
-        source_id = "source_" + hashlib.sha256(f"{fingerprint}\0{occurrence}".encode()).hexdigest()
+        source_id = local_source_id(
+            trial.id,
+            source_input.role,
+            source_input.path,
+            source_input.label,
+            sha256_bytes(data),
+            occurrence,
+        )
         suffix = {"application/pdf": ".pdf", "text/plain": ".txt", "application/json": ".json"}[
             media_type
         ]
@@ -322,6 +335,8 @@ def _prepare_all(root: Path, trial: TrialInput) -> tuple[_PreparedSource, ...]:
                     captured_path=relative.as_posix(),
                 ),
                 data,
+                Path(source_input.path).as_posix(),
+                occurrence,
             )
         )
     return tuple(prepared)
@@ -362,6 +377,7 @@ def _publish_trial(root: Path, trial_id: str, prepared: tuple[_PreparedSource, .
         _verify_under(staging_root, staging)
         for item in prepared:
             _write_capture(staging / Path(item.source.captured_path).name, item.data)
+        _write_capture(staging / _LOCAL_MANIFEST, _local_manifest_bytes(prepared))
         _verify_under(staging_root, staging)
         _verify_under(sources_root, destination.parent)
         if destination.exists():
@@ -425,6 +441,77 @@ def _verify_existing(directory: Path, prepared: tuple[_PreparedSource, ...]) -> 
         raise ValueError("existing trial capture is incomplete or conflicts")
 
 
+def _local_manifest_bytes(prepared: tuple[_PreparedSource, ...]) -> bytes:
+    return json.dumps(
+        {
+            "schema": _LOCAL_SCHEMA,
+            "sources": [
+                LocalSourceRecord(
+                    source=item.source, input_path=item.input_path, occurrence=item.occurrence
+                ).model_dump(mode="json")
+                for item in sorted(prepared, key=lambda item: item.source.id)
+            ],
+        },
+        sort_keys=True,
+        separators=(",", ":"),
+    ).encode()
+
+
+def local_source_records(workspace: str | Path, trial_id: str) -> tuple[LocalSourceRecord, ...]:
+    """Return the exact validated local captured Source inventory for one Trial."""
+    root = Path(workspace).resolve(strict=True)
+    directory = root / ".rob2-kit" / "sources" / trial_id
+    if not directory.is_dir() or _is_link_or_reparse(directory):
+        raise ValueError("trial capture is unavailable")
+    manifest = directory / _LOCAL_MANIFEST
+    try:
+        payload = json.loads(manifest.read_bytes())
+        if not isinstance(payload, dict) or payload.get("schema") != _LOCAL_SCHEMA:
+            raise ValueError
+        rows = payload.get("sources")
+        if not isinstance(rows, list):
+            raise ValueError
+        records = tuple(LocalSourceRecord.model_validate(row) for row in rows)
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError, ValueError) as error:
+        raise ValueError("local source manifest is invalid") from error
+    sources = tuple(record.source for record in records)
+    if len({source.id for source in sources}) != len(sources):
+        raise ValueError("local source manifest has duplicate Sources")
+    from rob2_kit.search import _source_bytes
+
+    for record in records:
+        source = record.source
+        data = _source_bytes(root, source)
+        expected_id = local_source_id(
+            trial_id,
+            source.role,
+            record.input_path,
+            source.label,
+            sha256_bytes(data),
+            record.occurrence,
+        )
+        if (
+            source.trial_id != trial_id
+            or source.id != expected_id
+            or sha256_bytes(data) != source.sha256
+        ):
+            raise ValueError("local source manifest does not bind captured bytes")
+    expected = {Path(source.captured_path).name for source in sources} | {_LOCAL_MANIFEST}
+    entries = {entry.name for entry in directory.iterdir()}
+    registry = _registry_manifest_sources(root, directory, allow_missing=True)
+    allowed = expected | {Path(source.captured_path).name for source in registry}
+    if registry:
+        allowed.add(_REGISTRY_MANIFEST)
+    if entries - allowed:
+        raise ValueError("trial capture contains unknown entries")
+    return records
+
+
+def local_sources(workspace: str | Path, trial_id: str) -> tuple[Source, ...]:
+    """Return the exact validated local captured Source inventory for one Trial."""
+    return tuple(record.source for record in local_source_records(workspace, trial_id))
+
+
 def _published_matches(directory: Path, prepared: tuple[_PreparedSource, ...]) -> bool:
     expected = {Path(item.source.captured_path).name: item.data for item in prepared}
     try:
@@ -442,8 +529,12 @@ def _published_matches(directory: Path, prepared: tuple[_PreparedSource, ...]) -
                 and entries[name].read_bytes() == data
                 for name, data in expected.items()
             )
-            and extras == registry_names | ({_REGISTRY_MANIFEST} if registry_sources else set())
-            and (not extras or bool(registry_sources))
+            and entries[_LOCAL_MANIFEST].read_bytes() == _local_manifest_bytes(prepared)
+            and extras
+            == registry_names
+            | {_LOCAL_MANIFEST}
+            | ({_REGISTRY_MANIFEST} if registry_sources else set())
+            and _LOCAL_MANIFEST in entries
         )
     except OSError:
         return False

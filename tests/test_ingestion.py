@@ -1,12 +1,13 @@
 from __future__ import annotations
 
+import json
 import os
 from pathlib import Path
 
 import pymupdf
 import pytest
 
-from rob2_kit.ingestion import ingest_batch
+from rob2_kit.ingestion.service import ingest_batch, local_sources
 from rob2_kit.sources import SourceInput, TrialInput
 
 
@@ -270,3 +271,26 @@ def test_pdf_content_not_extension_and_blank_page_warning(tmp_path: Path):
     )
     assert source.media_type == "application/pdf"
     assert source.extraction_warnings == ("page_1_has_no_extractable_text",)
+
+
+def test_local_manifest_provenance_tampering_is_rejected(tmp_path: Path):
+    _pdf(tmp_path / "main.pdf")
+    ingest_batch(
+        tmp_path,
+        (
+            TrialInput(
+                id="trial",
+                label="Trial",
+                sources=(SourceInput(role="main_article", path="main.pdf", label="Main"),),
+            ),
+        ),
+    )
+    manifest = tmp_path / ".rob2-kit" / "sources" / "trial" / "local-sources.json"
+    original = manifest.read_text()
+    for key, value in (("input_path", "other.pdf"), ("occurrence", 2)):
+        payload = json.loads(original)
+        payload["sources"][0][key] = value
+        manifest.write_text(json.dumps(payload))
+        with pytest.raises(ValueError, match="local source manifest"):
+            local_sources(tmp_path, "trial")
+    manifest.write_text(original)

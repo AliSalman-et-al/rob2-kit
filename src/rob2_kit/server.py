@@ -7,6 +7,9 @@ from typing import Literal
 from fastmcp import FastMCP
 from pydantic import BaseModel, ConfigDict
 
+from rob2_kit.assessment import Proposal
+from rob2_kit.batch import ApproveBatchResult, SaveProposalResult, approve_batch, save_proposal
+from rob2_kit.batch import current_batch as load_current_batch
 from rob2_kit.registry import RegistryNotCaptured, read_captured_registry
 
 
@@ -24,7 +27,25 @@ mcp = FastMCP("rob2-kit")
 @mcp.resource("rob2://current-batch")
 def current_batch() -> str:
     """Return the active batch, if one exists."""
-    return CurrentBatch().model_dump_json()
+    workspace = os.environ.get("ROB2_WORKSPACE")
+    return (
+        CurrentBatch().model_dump_json()
+        if not workspace
+        else load_current_batch(workspace).model_dump_json()
+    )
+
+
+@mcp.tool(name="save_proposal")
+def save_batch_proposal(proposal: Proposal) -> SaveProposalResult:
+    """Save a replaceable complete batch proposal."""
+    workspace = os.environ["ROB2_WORKSPACE"]
+    return save_proposal(workspace, proposal)
+
+
+@mcp.tool(name="approve_batch")
+def approve_batch_proposal() -> ApproveBatchResult:
+    """Atomically approve the one complete current proposal."""
+    return approve_batch(os.environ["ROB2_WORKSPACE"])
 
 
 @mcp.resource("rob2://registry/{trial_id}")

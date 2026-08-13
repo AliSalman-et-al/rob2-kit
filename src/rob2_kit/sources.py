@@ -85,6 +85,15 @@ def sha256_bytes(data: bytes) -> str:
     return "sha256:" + hashlib.sha256(data).hexdigest()
 
 
+def local_source_id(
+    trial_id: str, role: SourceRole, input_path: str, label: str, bytes_hash: str, occurrence: int
+) -> str:
+    """Stable captured-Source identity; occurrence distinguishes exact declarations."""
+    normalized = Path(input_path).as_posix()
+    material = "\0".join((trial_id, str(role), normalized, label, bytes_hash, str(occurrence)))
+    return "source_" + hashlib.sha256(material.encode()).hexdigest()
+
+
 def source_sort_key(source: Source) -> tuple[int, str, str]:
     return (SOURCE_PRIORITY.index(source.role), source.label.casefold(), source.id)
 
