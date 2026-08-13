@@ -1,0 +1,1 @@
+{"protocolSection":{"identificationModule":{"nctId":"NCT00000001","officialTitle":"Example randomized trial"},"designModule":{"designInfo":{"allocation":"RANDOMIZED"},"enrollmentInfo":{"count":10}},"armsInterventionsModule":{"armGroups":[{"interventionNames":["Drug A"]}]}}}

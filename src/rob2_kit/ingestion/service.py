@@ -8,6 +8,7 @@ concurrent filesystem mutation safe without a broader ownership mechanism.
 from __future__ import annotations
 
 import hashlib
+import json
 import os
 import shutil
 import stat
@@ -41,6 +42,10 @@ class _PreparedSource:
     data: bytes
 
 
+_REGISTRY_MANIFEST = "registry-sources.json"
+_REGISTRY_SCHEMA = "rob2-kit.registry-sources.v1"
+
+
 def ingest_batch(workspace: str | Path, trial_inputs: tuple[TrialInput, ...]) -> IngestBatchResult:
     root = Path(workspace).resolve(strict=True)
     if not root.is_dir() or not trial_inputs:
@@ -48,6 +53,208 @@ def ingest_batch(workspace: str | Path, trial_inputs: tuple[TrialInput, ...]) ->
     if len({trial.id for trial in trial_inputs}) != len(trial_inputs):
         raise ValueError("TrialInput ids must be unique")
     return IngestBatchResult(trials=tuple(_ingest_trial(root, trial) for trial in trial_inputs))
+
+
+def capture_source_bytes(
+    workspace: str | Path,
+    trial_id: str,
+    role: SourceRole,
+    label: str,
+    data: bytes,
+) -> Source:
+    """Append one generated immutable Source to an already captured Trial."""
+    root = Path(workspace).resolve(strict=True)
+    sources_root = _safe_dir(root, (".rob2-kit", "sources"))
+    destination = sources_root / trial_id
+    _verify_under(sources_root, destination)
+    if not destination.is_dir() or _is_link_or_reparse(destination):
+        raise ValueError("trial has no safe captured source directory")
+    media_type = _media_type(Path("record.json"), data)
+    if media_type != "application/json":
+        raise ValueError("generated registry source must be JSON")
+    try:
+        pages = _extract_pages(data, media_type)
+    except (UnicodeDecodeError, ValueError) as error:
+        raise ValueError("generated registry source is invalid JSON") from error
+    if role is not SourceRole.REGISTRY:
+        raise ValueError("generated source capture supports registry records only")
+    source = _registry_source(trial_id, label, data, media_type, pages)
+    target = destination / Path(source.captured_path).name
+    _verify_under(sources_root, destination)
+    manifest = destination / _REGISTRY_MANIFEST
+    if manifest.exists() or manifest.is_symlink():
+        if _registry_manifest_sources(root, destination)[0] != source:
+            raise ValueError("existing registry source conflicts")
+        return source
+    if target.exists():
+        raise ValueError("registry source exists without a manifest")
+    staging_root = _safe_dir(root, (".rob2-kit", "capture-staging"))
+    staging = Path(tempfile.mkdtemp(prefix="source-", dir=staging_root))
+    staged = staging / target.name
+    staged_manifest = staging / _REGISTRY_MANIFEST
+    published = False
+    try:
+        _write_capture(staged, data)
+        _write_capture(staged_manifest, _registry_manifest_bytes(source))
+        _verify_under(staging_root, staged)
+        _verify_under(staging_root, staged_manifest)
+        _verify_under(sources_root, destination)
+        os.rename(staged, target)
+        published = True
+        _verify_under(sources_root, target)
+        _publish_registry_manifest(staged_manifest, manifest)
+    except Exception:
+        if published:
+            _remove_published_registry_source(target, source, data)
+        raise
+    finally:
+        if staging.exists():
+            _remove_verified(staging, staging_root)
+    return source
+
+
+def registry_source(workspace: str | Path, trial_id: str) -> Source | None:
+    """Return the one captured registry Source for a Trial, if present and valid."""
+    root = Path(workspace).resolve(strict=True)
+    directory = root / ".rob2-kit" / "sources" / trial_id
+    if not directory.exists():
+        return None
+    _verify_under(root / ".rob2-kit" / "sources", directory)
+    if not (directory / _REGISTRY_MANIFEST).exists() and _has_registry_orphan(directory):
+        raise ValueError("registry source manifest is missing")
+    sources = _registry_manifest_sources(root, directory, allow_missing=True)
+    if not sources:
+        return None
+    if len(sources) != 1:
+        raise ValueError("multiple registry sources are not supported")
+    return sources[0]
+
+
+def _registry_manifest_bytes(source: Source) -> bytes:
+    payload = {
+        "schema": _REGISTRY_SCHEMA,
+        "sources": [source.model_dump(mode="json")],
+    }
+    return json.dumps(payload, sort_keys=True, separators=(",", ":")).encode()
+
+
+def _publish_registry_manifest(staged: Path, manifest: Path) -> None:
+    os.replace(staged, manifest)
+
+
+def _remove_published_registry_source(target: Path, source: Source, data: bytes) -> None:
+    if (
+        _is_link_or_reparse(target)
+        or not target.is_file()
+        or target.read_bytes() != data
+        or _registry_source(
+            source.trial_id,
+            source.label,
+            data,
+            source.media_type,
+            _extract_pages(data, source.media_type),
+        )
+        != source
+    ):
+        raise ValueError("published registry source changed before rollback")
+    target.unlink()
+
+
+def _registry_manifest_sources(
+    root: Path, directory: Path, *, allow_missing: bool = False
+) -> tuple[Source, ...]:
+    manifest = directory / _REGISTRY_MANIFEST
+    if not manifest.exists():
+        if allow_missing:
+            return ()
+        raise ValueError("registry source manifest is missing")
+    _verify_under(root / ".rob2-kit" / "sources", manifest)
+    try:
+        payload = json.loads(manifest.read_bytes())
+        if not isinstance(payload, dict) or payload.get("schema") != _REGISTRY_SCHEMA:
+            raise ValueError
+        rows = payload.get("sources")
+        if not isinstance(rows, list):
+            raise ValueError
+        sources = tuple(Source.model_validate(row) for row in rows)
+    except (UnicodeDecodeError, json.JSONDecodeError, ValueError) as error:
+        raise ValueError("registry source manifest is invalid") from error
+    if len(sources) != 1:
+        raise ValueError("registry source manifest must contain exactly one Source")
+    source = sources[0]
+    try:
+        path = _captured_registry_path(root, source)
+        data = path.read_bytes()
+        expected = _registry_source(
+            directory.name,
+            source.label,
+            data,
+            _media_type(path, data),
+            _extract_pages(data, source.media_type),
+        )
+    except (OSError, UnicodeDecodeError, ValueError, json.JSONDecodeError) as error:
+        raise ValueError("registry source manifest does not bind captured bytes") from error
+    if source != expected:
+        raise ValueError("registry source manifest does not bind captured bytes")
+    return sources
+
+
+def _has_registry_orphan(directory: Path) -> bool:
+    """Recognize an unmanifested generated provider record without rejecting local JSON Sources."""
+    for entry in directory.glob("source_*.json"):
+        try:
+            if _is_link_or_reparse(entry):
+                return True
+            payload = json.loads(entry.read_bytes())
+        except (OSError, UnicodeDecodeError, json.JSONDecodeError):
+            continue
+        if isinstance(payload, dict) and isinstance(payload.get("protocolSection"), dict):
+            return True
+    return False
+
+
+def _registry_source(
+    trial_id: str, label: str, data: bytes, media_type: str, pages: tuple[str, ...]
+) -> Source:
+    if (
+        label != "ClinicalTrials.gov registry record"
+        or media_type != "application/json"
+        or len(pages) != 1
+    ):
+        raise ValueError("registry Source invariants are invalid")
+    digest = sha256_bytes(data)
+    source_id = (
+        "source_"
+        + hashlib.sha256(
+            f"{trial_id}\0{SourceRole.REGISTRY}\0{label}\0{digest}".encode()
+        ).hexdigest()
+    )
+    return Source(
+        id=source_id,
+        trial_id=trial_id,
+        role=SourceRole.REGISTRY,
+        label=label,
+        sha256=digest,
+        media_type="application/json",
+        page_count=1,
+        extraction_warnings=(),
+        captured_path=(Path(".rob2-kit") / "sources" / trial_id / f"{source_id}.json").as_posix(),
+    )
+
+
+def _captured_registry_path(root: Path, source: Source) -> Path:
+    expected = Path(".rob2-kit") / "sources" / source.trial_id / f"{source.id}.json"
+    if Path(source.captured_path).as_posix() != expected.as_posix():
+        raise ValueError("registry Source path is invalid")
+    path = _under(root, source.captured_path)
+    current = root
+    for part in expected.parts:
+        current /= part
+        if _is_link_or_reparse(current):
+            raise ValueError("registry Source path is redirected")
+    if path.parent != (root / ".rob2-kit" / "sources" / source.trial_id).resolve(strict=True):
+        raise ValueError("registry Source path escapes its Trial directory")
+    return path
 
 
 def _ingest_trial(root: Path, trial: TrialInput) -> IngestedTrial:
@@ -222,11 +429,21 @@ def _published_matches(directory: Path, prepared: tuple[_PreparedSource, ...]) -
     expected = {Path(item.source.captured_path).name: item.data for item in prepared}
     try:
         entries = {entry.name: entry for entry in directory.iterdir()}
-        return set(entries) == set(expected) and all(
-            not _is_link_or_reparse(entries[name])
-            and entries[name].is_file()
-            and entries[name].read_bytes() == data
-            for name, data in expected.items()
+        extras = set(entries) - set(expected)
+        registry_sources = _registry_manifest_sources(
+            directory.parent.parent.parent, directory, allow_missing=True
+        )
+        registry_names = {Path(source.captured_path).name for source in registry_sources}
+        return (
+            set(expected).issubset(entries)
+            and all(
+                not _is_link_or_reparse(entries[name])
+                and entries[name].is_file()
+                and entries[name].read_bytes() == data
+                for name, data in expected.items()
+            )
+            and extras == registry_names | ({_REGISTRY_MANIFEST} if registry_sources else set())
+            and (not extras or bool(registry_sources))
         )
     except OSError:
         return False
