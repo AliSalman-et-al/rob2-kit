@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import sqlite3
 from pathlib import Path
 from typing import Annotated, Literal
 
@@ -176,6 +177,27 @@ def current_batch(
                 approved=state,
                 problems=tuple(dict.fromkeys(problems)),
             )
+    return state
+
+
+def current_batch_in_transaction(
+    workspace: str | Path,
+    connection: sqlite3.Connection,
+    *,
+    pack_identities: tuple[PackIdentity, ...] | None = None,
+) -> BatchState:
+    """Read and validate the active batch using the caller's locked snapshot."""
+    row = connection.execute("SELECT payload FROM records WHERE name='active_batch'").fetchone()
+    if row is None:
+        return NoActiveBatch()
+    state = _stored_state(bytes(row[0]))
+    if isinstance(state, ApprovedBatch):
+        problems = _problems(workspace, state.proposal)
+        current = _packs() if pack_identities is None else pack_identities
+        if current != state.pack_identities:
+            problems = problems + (Problem(code="pack_stale", detail="pack identity changed"),)
+        if problems:
+            return StaleBatch(approved=state, problems=tuple(dict.fromkeys(problems)))
     return state
 
 

@@ -1,4 +1,5 @@
 import asyncio
+import json
 from pathlib import Path
 from typing import Any
 
@@ -123,7 +124,10 @@ def test_registry_resource_reads_captured_record_and_reports_missing(
             captured = await client.read_resource("rob2://registry/trial")
             missing = await client.read_resource("rob2://registry/missing")
         assert any(str(item.uri) == "rob2://current-batch" for item in resources)
-        assert [str(item.uriTemplate) for item in templates] == ["rob2://registry/{trial_id}"]
+        assert [str(item.uriTemplate) for item in templates] == [
+            "rob2://domain-guidance/{domain_id}",
+            "rob2://registry/{trial_id}",
+        ]
         return captured[0].text, missing[0].text
 
     captured, missing = asyncio.run(read())
@@ -162,11 +166,15 @@ def test_batch_tools_are_discoverable() -> None:
     async def discover() -> dict[str, dict[str, Any]]:
         async with Client(mcp) as client:
             tools = await client.list_tools()
-        assert [tool.name for tool in tools] == ["save_proposal", "approve_batch"]
+        assert [tool.name for tool in tools] == [
+            "save_proposal",
+            "approve_batch",
+            "save_domain_judgment",
+        ]
         return {tool.name: tool.outputSchema for tool in tools}
 
     schemas = asyncio.run(discover())
-    for schema in schemas.values():
+    for schema in (schemas["save_proposal"], schemas["approve_batch"]):
         assert "oneOf" in schema["properties"]["state"]
         assert {
             variant["properties"]["status"]["const"]
@@ -181,6 +189,33 @@ def test_batch_tools_are_discoverable() -> None:
             "approved",
             "stale",
         }
+
+
+def test_domain_checkpoint_tool_and_guidance_are_explicit() -> None:
+    async def discover() -> tuple[dict[str, Any], str]:
+        async with Client(mcp) as client:
+            tools = await client.list_tools()
+            guidance = await client.read_resource("rob2://domain-guidance/domain:randomization")
+        tool = next(tool for tool in tools if tool.name == "save_domain_judgment")
+        return tool.inputSchema, guidance[0].text
+
+    schema, guidance = asyncio.run(discover())
+    assert set(schema["required"]) == {
+        "trial_id",
+        "result_id",
+        "domain_id",
+        "active_answers",
+        "inactive_questions",
+        "final_judgment",
+        "override",
+        "limitations",
+        "actor",
+        "observed_at",
+    }
+    payload = json.loads(guidance)
+    assert payload["domain"]["id"] == "domain:randomization"
+    assert payload["questions"] and payload["scientific_pack"]["content_hash"].startswith("sha256:")
+    assert payload["policy_pack"]["content_hash"].startswith("sha256:")
 
 
 def test_batch_tools_return_typed_structured_conditions(tmp_path: Path, monkeypatch) -> None:

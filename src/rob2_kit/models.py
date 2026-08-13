@@ -5,6 +5,7 @@ from __future__ import annotations
 import hashlib
 import json
 from collections.abc import Mapping
+from datetime import UTC, datetime
 from enum import StrEnum
 
 from pydantic import BaseModel, ConfigDict, Field
@@ -33,11 +34,15 @@ def canonical_json_bytes(value: object) -> bytes:
 
     def json_value(item: object) -> object:
         if isinstance(item, BaseModel):
-            return json_value(item.model_dump(mode="json", exclude_none=True))
+            return json_value(item.model_dump(mode="python", exclude_none=True))
         if isinstance(item, Mapping):
             return {str(key): json_value(value) for key, value in item.items()}
         if isinstance(item, (tuple, list)):
             return [json_value(value) for value in item]
+        if isinstance(item, datetime):
+            if item.tzinfo is None or item.utcoffset() is None:
+                raise ValueError("canonical timestamps must be timezone-aware")
+            return item.astimezone(UTC).isoformat().replace("+00:00", "Z")
         return item
 
     return json.dumps(
