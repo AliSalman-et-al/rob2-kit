@@ -11,7 +11,6 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from rob2_kit.assessment import Proposal
 from rob2_kit.batch import ApproveBatchResult, SaveProposalResult, approve_batch, save_proposal
-from rob2_kit.batch import current_batch as load_current_batch
 from rob2_kit.batch_summary import (
     BatchCondition,
     BatchConflict,
@@ -27,7 +26,9 @@ from rob2_kit.judgment_models import ActiveAnswer, InactiveQuestion, Override
 from rob2_kit.judgments import SaveDomainJudgmentResult, save_domain_judgment
 from rob2_kit.models import Judgment
 from rob2_kit.packs import MAINTAINER_POLICY_PACK, SCIENTIFIC_PACK
+from rob2_kit.recovery import DiscardCondition, Discarded, discard_active_batch, recovery_progress
 from rob2_kit.registry import RegistryNotCaptured, read_captured_registry
+from rob2_kit.storage import WorkspaceLock
 
 
 class CurrentBatch(BaseModel):
@@ -77,12 +78,16 @@ mcp = FastMCP("rob2-kit")
 
 @mcp.resource("rob2://current-batch")
 def current_batch() -> str:
-    """Return the active batch, if one exists."""
+    """Return active approval plus durable, derived restart progress."""
     workspace = os.environ.get("ROB2_WORKSPACE")
     return (
         CurrentBatch().model_dump_json()
         if not workspace
-        else load_current_batch(workspace).model_dump_json()
+        else json.dumps(
+            recovery_progress(workspace).model_dump(mode="json"),
+            sort_keys=True,
+            separators=(",", ":"),
+        )
     )
 
 
@@ -168,6 +173,12 @@ def finalize_one_batch(
     return finalize_batch(os.environ["ROB2_WORKSPACE"], actor, observed_at)
 
 
+@mcp.tool(name="discard_active_batch")
+def discard_one_active_batch() -> Discarded | DiscardCondition:
+    """Recoverably discard only an unfinished active batch's runtime state."""
+    return discard_active_batch(os.environ["ROB2_WORKSPACE"])
+
+
 @mcp.resource("rob2://domain-guidance/{domain_id}")
 def domain_guidance(domain_id: str) -> str:
     """Return pinned Domain questions and the separate maintainer-policy identity."""
@@ -208,4 +219,9 @@ def registry_record(trial_id: str) -> str:
 
 def main() -> None:
     """Run the stdio MCP server."""
-    mcp.run()
+    workspace = os.environ.get("ROB2_WORKSPACE")
+    if workspace is None:
+        mcp.run()
+        return
+    with WorkspaceLock(workspace):
+        mcp.run()

@@ -179,6 +179,15 @@ def export_trial(workspace: str | Path, trial_id: str, result_id: str) -> Path:
     root = Path(workspace).resolve(strict=True)
     data = _snapshot_bytes(root, trial_id, result_id)
     snapshot = _verified(AssessmentSnapshot.model_validate_json(data))
+    return export_verified_snapshot(root, data, snapshot)
+
+
+def export_verified_snapshot(root: Path, data: bytes, snapshot: AssessmentSnapshot) -> Path:
+    """Publish a bundle after a caller has verified frozen approval identities."""
+    root = root.resolve(strict=True)
+    if _verified(AssessmentSnapshot.model_validate_json(data)) != snapshot:
+        raise ValueError("snapshot bytes do not match verified snapshot")
+    trial_id = snapshot.trial.id
     parent = root / ".rob2-kit" / "assessments"
     parent.mkdir(parents=True, exist_ok=True)
     backup = _safe_child(parent, f".{trial_id}-backup")

@@ -172,6 +172,7 @@ def test_batch_tools_are_discoverable() -> None:
             "save_domain_judgment",
             "finish_trial",
             "finalize_batch",
+            "discard_active_batch",
         ]
         return {tool.name: tool.outputSchema for tool in tools}
 

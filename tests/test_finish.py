@@ -127,12 +127,10 @@ def test_finish_trial_mcp_schema_is_typed() -> None:
         return dict(next(tool for tool in tools if tool.name == "finish_trial").inputSchema)
 
     value = asyncio.run(schema())
-    assert set(value["required"]) == {
-        "trial_id",
-        "final_judgment",
-        "override",
-        "combined_concerns",
-        "limitations",
-        "actor",
-        "observed_at",
+    assert value["required"] == ["request"]
+    request = value["properties"]["request"]
+    assert {variant["properties"]["mode"].get("const") for variant in request["oneOf"]} == {
+        "assessment",
+        "needs_input",
+        "failed",
     }
