@@ -3,7 +3,10 @@
 from __future__ import annotations
 
 import json
+import os
 import re
+import stat
+import uuid
 from collections.abc import Callable, Mapping
 from enum import StrEnum
 from pathlib import Path
@@ -71,6 +74,93 @@ class RegistryNotCaptured(_Strict):
 
 
 CapturedRegistry = CapturedRegistryRecord | RegistryNotCaptured
+
+
+class RegistryCandidateRecord(_Strict):
+    trial_id: str
+    match: RegistryMatch
+    captured_source: Source | None = None
+
+
+def _candidate_path(workspace: str | Path, trial_id: str) -> Path:
+    if re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_-]*", trial_id) is None:
+        raise ValueError("invalid trial identifier")
+    root = Path(workspace).resolve(strict=True)
+    if root.is_symlink() or _reparse(root):
+        raise ValueError("workspace is redirected")
+    internal = root / ".rob2-kit"
+    if internal.exists() and (internal.is_symlink() or _reparse(internal)):
+        raise ValueError("internal workspace directory is redirected")
+    parent = internal / "registry-candidates"
+    if parent.exists() and (parent.is_symlink() or _reparse(parent)):
+        raise ValueError("registry candidate directory is redirected")
+    if not parent.is_relative_to(root):
+        raise ValueError("registry candidate path escapes workspace")
+    return parent / f"{trial_id}.json"
+
+
+def _reparse(path: Path) -> bool:
+    return bool(
+        getattr(os.lstat(path), "st_file_attributes", 0)
+        & getattr(stat, "FILE_ATTRIBUTE_REPARSE_POINT", 0x400)
+    )
+
+
+def _candidate_bytes(record: RegistryCandidateRecord) -> bytes:
+    return json.dumps(
+        record.model_dump(mode="json"), sort_keys=True, separators=(",", ":"), ensure_ascii=False
+    ).encode()
+
+
+def record_registry_match(
+    workspace: str | Path, trial_id: str, match: RegistryMatch
+) -> RegistryCandidateRecord:
+    captured = (
+        capture_registry_source(str(workspace), trial_id, match)
+        if match.status is RegistryStatus.MATCHED
+        else None
+    )
+    record = RegistryCandidateRecord(trial_id=trial_id, match=match, captured_source=captured)
+    path = _candidate_path(workspace, trial_id)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    if path.parent.is_symlink() or _reparse(path.parent):
+        raise ValueError("registry candidate directory is redirected")
+    payload = _candidate_bytes(record)
+    if path.exists():
+        if path.is_symlink() or _reparse(path):
+            raise ValueError("registry candidate path is redirected")
+        if path.read_bytes() == payload:
+            return record
+        raise ValueError("registry candidate conflicts with existing attempt")
+    temporary = path.with_name(f".{path.name}.{uuid.uuid4().hex}.tmp")
+    try:
+        with temporary.open("xb") as handle:
+            handle.write(payload)
+            handle.flush()
+            os.fsync(handle.fileno())
+        try:
+            os.link(temporary, path)
+        except FileExistsError:
+            if path.read_bytes() == payload:
+                return record
+            raise ValueError("registry candidate conflicts with existing attempt")
+    finally:
+        if temporary.exists():
+            temporary.unlink()
+    return record
+
+
+def read_registry_match(workspace: str | Path, trial_id: str) -> RegistryCandidateRecord | None:
+    path = _candidate_path(workspace, trial_id)
+    if not path.exists():
+        return None
+    if path.is_symlink() or _reparse(path):
+        raise ValueError("registry candidate path is redirected")
+    raw = path.read_bytes()
+    record = RegistryCandidateRecord.model_validate_json(raw)
+    if _candidate_bytes(record) != raw or record.trial_id != trial_id:
+        raise ValueError("registry candidate is not canonical or does not bind Trial")
+    return record
 
 
 NCT = re.compile(r"\bNCT\d{8}\b", re.IGNORECASE)

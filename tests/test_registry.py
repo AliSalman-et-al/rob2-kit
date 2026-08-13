@@ -13,6 +13,7 @@ import pytest
 from rob2_kit.ingestion import ingest_batch
 from rob2_kit.registry import (
     CapturedRegistryRecord,
+    RegistryMatch,
     RegistryNotCaptured,
     RegistryStatus,
     TrialFacts,
@@ -21,6 +22,8 @@ from rob2_kit.registry import (
     match_registry,
     nct_candidates,
     read_captured_registry,
+    read_registry_match,
+    record_registry_match,
 )
 from rob2_kit.search import search_sources
 from rob2_kit.sources import SourceInput, TrialInput, read_pages, sha256_bytes
@@ -51,6 +54,48 @@ def _pdf(path: Path) -> None:
     document.new_page()
     document.save(path)
     document.close()
+
+
+def test_candidate_store_is_side_effect_free_canonical_and_conflict_safe(tmp_path: Path) -> None:
+    assert read_registry_match(tmp_path, "trial") is None
+    assert not (tmp_path / ".rob2-kit").exists()
+    match = RegistryMatch(status="not_found", reasons=("none",))
+    first = record_registry_match(tmp_path, "trial", match)
+    assert read_registry_match(tmp_path, "trial") == first
+    assert record_registry_match(tmp_path, "trial", match) == first
+    with pytest.raises(ValueError, match="conflicts"):
+        record_registry_match(tmp_path, "trial", RegistryMatch(status="unavailable"))
+    path = tmp_path / ".rob2-kit" / "registry-candidates" / "trial.json"
+    path.write_text(
+        '{"match":{"status":"not_found","reasons":["none"],"candidates":[],"provider_json":null},"trial_id":"other","captured_source":null}'
+    )
+    with pytest.raises(ValueError, match="canonical or does not bind"):
+        read_registry_match(tmp_path, "trial")
+    with pytest.raises(ValueError, match="invalid trial"):
+        read_registry_match(tmp_path, "../escape")
+
+
+def test_candidate_store_rejects_redirected_paths(tmp_path: Path) -> None:
+    target = tmp_path / "outside"
+    target.mkdir()
+    internal = tmp_path / ".rob2-kit"
+    internal.mkdir()
+    try:
+        (internal / "registry-candidates").symlink_to(target, target_is_directory=True)
+    except OSError:
+        pytest.skip("symlink creation unavailable")
+    with pytest.raises(ValueError, match="redirected"):
+        record_registry_match(tmp_path, "trial", RegistryMatch(status="not_found"))
+
+
+def test_candidate_publication_failure_cleans_unique_temporary(tmp_path: Path, monkeypatch) -> None:
+    import rob2_kit.registry as registry
+
+    monkeypatch.setattr(registry.os, "link", lambda *_: (_ for _ in ()).throw(OSError("fail")))
+    with pytest.raises(OSError, match="fail"):
+        record_registry_match(tmp_path, "trial", RegistryMatch(status="not_found"))
+    parent = tmp_path / ".rob2-kit" / "registry-candidates"
+    assert not list(parent.glob(".trial.json.*.tmp")) and not (parent / "trial.json").exists()
 
 
 def test_supplied_identifier_requires_returned_identity_and_no_fact_contradiction() -> None:

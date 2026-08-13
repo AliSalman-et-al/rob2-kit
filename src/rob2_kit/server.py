@@ -4,8 +4,10 @@ import json
 import os
 import re
 from datetime import datetime
+from pathlib import Path
 from typing import Annotated, Literal
 
+import httpx
 from fastmcp import FastMCP
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -22,12 +24,34 @@ from rob2_kit.batch_summary import (
     terminalize_problem,
 )
 from rob2_kit.finish import FinishTrialResult, finish_trial
+from rob2_kit.ingestion import ingest_batch
+from rob2_kit.ingestion.service import local_sources, registry_source
 from rob2_kit.judgment_models import ActiveAnswer, InactiveQuestion, Override
 from rob2_kit.judgments import SaveDomainJudgmentResult, save_domain_judgment
 from rob2_kit.models import Judgment
 from rob2_kit.packs import MAINTAINER_POLICY_PACK, SCIENTIFIC_PACK
 from rob2_kit.recovery import DiscardCondition, Discarded, discard_active_batch, recovery_progress
-from rob2_kit.registry import RegistryNotCaptured, read_captured_registry
+from rob2_kit.registry import (
+    RegistryCandidateRecord,
+    RegistryNotCaptured,
+    TrialFacts,
+    http_request,
+    match_registry,
+    read_captured_registry,
+    read_registry_match,
+    record_registry_match,
+)
+from rob2_kit.rendering import RenderCondition, RenderedPage, render_page
+from rob2_kit.search import SearchHit, _source_bytes, search_sources
+from rob2_kit.sources import (
+    IngestBatchResult,
+    ReadPagesResult,
+    Source,
+    TrialInput,
+    _extract_pages,
+    list_sources,
+    read_pages,
+)
 from rob2_kit.storage import WorkspaceLock
 
 
@@ -37,6 +61,55 @@ class CurrentBatch(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
 
     active_batch: Literal[None] = None
+
+
+class SourceRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid", frozen=True)
+    trial_id: str
+    source_id: str
+
+
+class ReadPagesRequest(SourceRequest):
+    page_numbers: tuple[int, ...] = Field(min_length=1)
+
+
+class SearchRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid", frozen=True)
+    trial_id: str
+    source_ids: tuple[str, ...] = Field(min_length=1)
+    query: str
+    offset: int = Field(default=0, ge=0)
+    limit: int = Field(default=20, ge=1, le=100)
+
+
+class RenderRequest(SourceRequest):
+    page_number: int = Field(ge=1)
+    region: tuple[float, float, float, float] | None = None
+
+
+class ListSourcesResult(BaseModel):
+    model_config = ConfigDict(extra="forbid", frozen=True)
+    trial_id: str
+    sources: tuple[Source, ...]
+
+
+class RegistryRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid", frozen=True)
+    trial_id: str
+    supplied_nct: str | None = None
+    facts: TrialFacts | None = None
+
+
+class IngestRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid", frozen=True)
+    trial_inputs: tuple[TrialInput, ...] = Field(min_length=1)
+    registry_requests: tuple[RegistryRequest, ...] = ()
+
+
+class IngestRegistryResult(BaseModel):
+    model_config = ConfigDict(extra="forbid", frozen=True)
+    ingestion: IngestBatchResult
+    registry_matches: tuple[RegistryCandidateRecord, ...]
 
 
 class AssessmentFinishRequest(BaseModel):
@@ -76,6 +149,20 @@ FinishTrialRequest = Annotated[
 mcp = FastMCP("rob2-kit")
 
 
+def _sources(workspace: str, trial_id: str) -> tuple[Source, ...]:
+    """Read the exact validated local plus optional captured registry inventory."""
+    local = local_sources(workspace, trial_id)
+    registry = registry_source(workspace, trial_id)
+    return list_sources(local + (() if registry is None else (registry,)))
+
+
+def _source(workspace: str, trial_id: str, source_id: str) -> Source:
+    source = next((item for item in _sources(workspace, trial_id) if item.id == source_id), None)
+    if source is None:
+        raise ValueError("source is not in the Trial's authoritative inventory")
+    return source
+
+
 @mcp.resource("rob2://current-batch")
 def current_batch() -> str:
     """Return active approval plus durable, derived restart progress."""
@@ -96,6 +183,69 @@ def save_batch_proposal(proposal: Proposal) -> SaveProposalResult:
     """Save a replaceable complete batch proposal."""
     workspace = os.environ["ROB2_WORKSPACE"]
     return save_proposal(workspace, proposal)
+
+
+@mcp.tool(name="ingest_batch")
+def ingest_one_batch(request: IngestRequest) -> IngestRegistryResult:
+    """Capture local inputs then deterministically attempt one registry match per Trial."""
+    workspace = os.environ["ROB2_WORKSPACE"]
+    result = ingest_batch(workspace, request.trial_inputs)
+    supplied = {item.trial_id: item for item in request.registry_requests}
+    if len(supplied) != len(request.registry_requests) or set(supplied) - {
+        item.id for item in request.trial_inputs
+    }:
+        raise ValueError("registry requests must be unique requested Trials")
+    matches = []
+    with httpx.Client(timeout=httpx.Timeout(10.0, connect=3.0)) as client:
+        request_provider = http_request(client)
+        for trial_input, captured in zip(request.trial_inputs, result.trials, strict=True):
+            registry = supplied.get(trial_input.id)
+            main = next(
+                source for source in captured.sources if source.role.value == "main_article"
+            )
+            text = "\n".join(_extract_pages(_source_bytes(Path(workspace), main), main.media_type))
+            facts = TrialFacts() if registry is None or registry.facts is None else registry.facts
+            match = match_registry(
+                facts,
+                request_provider,
+                supplied_nct=None if registry is None else registry.supplied_nct,
+                main_article_text=text,
+            )
+            matches.append(record_registry_match(workspace, trial_input.id, match))
+    return IngestRegistryResult(ingestion=result, registry_matches=tuple(matches))
+
+
+@mcp.tool(name="list_sources")
+def list_trial_sources(trial_id: str) -> ListSourcesResult:
+    """List the exact validated immutable Source inventory for one Trial."""
+    workspace = os.environ["ROB2_WORKSPACE"]
+    return ListSourcesResult(trial_id=trial_id, sources=_sources(workspace, trial_id))
+
+
+@mcp.tool(name="read_pages")
+def read_source_pages(request: ReadPagesRequest) -> ReadPagesResult:
+    """Read exact page text from one inventory Source."""
+    workspace = os.environ["ROB2_WORKSPACE"]
+    source = _source(workspace, request.trial_id, request.source_id)
+    return read_pages(workspace, source, request.page_numbers)
+
+
+@mcp.tool(name="search_sources")
+def search_trial_sources(request: SearchRequest) -> tuple[SearchHit, ...]:
+    """Search an explicit subset of the Trial's authoritative immutable Sources."""
+    workspace = os.environ["ROB2_WORKSPACE"]
+    sources = tuple(_source(workspace, request.trial_id, item) for item in request.source_ids)
+    return search_sources(
+        workspace, request.trial_id, sources, request.query, request.offset, request.limit
+    )
+
+
+@mcp.tool(name="render_page")
+def render_source_page(request: RenderRequest) -> RenderedPage | RenderCondition:
+    """Render an exact captured PDF page; image bytes are structured base64 by MCP."""
+    workspace = os.environ["ROB2_WORKSPACE"]
+    source = _source(workspace, request.trial_id, request.source_id)
+    return render_page(workspace, source, request.page_number, request.region)
 
 
 @mcp.tool(name="approve_batch")
@@ -214,7 +364,15 @@ def registry_record(trial_id: str) -> str:
     workspace = os.environ.get("ROB2_WORKSPACE")
     if not workspace:
         return RegistryNotCaptured(trial_id=trial_id, status="not_captured").model_dump_json()
-    return read_captured_registry(workspace, trial_id).model_dump_json()
+    candidate = read_registry_match(workspace, trial_id)
+    return json.dumps(
+        {
+            "candidate": None if candidate is None else candidate.model_dump(mode="json"),
+            "captured": read_captured_registry(workspace, trial_id).model_dump(mode="json"),
+        },
+        sort_keys=True,
+        separators=(",", ":"),
+    )
 
 
 def main() -> None:
