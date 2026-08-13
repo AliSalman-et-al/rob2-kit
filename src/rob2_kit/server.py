@@ -4,14 +4,24 @@ import json
 import os
 import re
 from datetime import datetime
-from typing import Literal
+from typing import Annotated, Literal
 
 from fastmcp import FastMCP
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 from rob2_kit.assessment import Proposal
 from rob2_kit.batch import ApproveBatchResult, SaveProposalResult, approve_batch, save_proposal
 from rob2_kit.batch import current_batch as load_current_batch
+from rob2_kit.batch_summary import (
+    BatchCondition,
+    BatchConflict,
+    BatchSaved,
+    Problem,
+    TerminalConflict,
+    TerminalSaved,
+    finalize_batch,
+    terminalize_problem,
+)
 from rob2_kit.finish import FinishTrialResult, finish_trial
 from rob2_kit.judgment_models import ActiveAnswer, InactiveQuestion, Override
 from rob2_kit.judgments import SaveDomainJudgmentResult, save_domain_judgment
@@ -26,6 +36,40 @@ class CurrentBatch(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
 
     active_batch: Literal[None] = None
+
+
+class AssessmentFinishRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid", frozen=True)
+    mode: Literal["assessment"]
+    trial_id: str
+    final_judgment: Judgment | None
+    override: Override | None
+    combined_concerns: bool | None
+    limitations: tuple[str, ...]
+    actor: str
+    observed_at: datetime
+
+
+class ProblemFinishRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid", frozen=True)
+    trial_id: str
+    problems: tuple[Problem, ...] = Field(min_length=1)
+    actor: str
+    observed_at: datetime
+
+
+class NeedsInputFinishRequest(ProblemFinishRequest):
+    mode: Literal["needs_input"]
+
+
+class FailedFinishRequest(ProblemFinishRequest):
+    mode: Literal["failed"]
+
+
+FinishTrialRequest = Annotated[
+    AssessmentFinishRequest | NeedsInputFinishRequest | FailedFinishRequest,
+    Field(discriminator="mode"),
+]
 
 
 mcp = FastMCP("rob2-kit")
@@ -86,25 +130,42 @@ def save_one_domain_judgment(
 
 @mcp.tool(name="finish_trial")
 def finish_one_trial(
-    trial_id: str,
-    final_judgment: Judgment | None,
-    override: Override | None,
-    combined_concerns: bool | None,
-    limitations: tuple[str, ...],
+    request: FinishTrialRequest,
+) -> FinishTrialResult | TerminalSaved | TerminalConflict | BatchCondition:
+    """Atomically record one assessment, needs-input, or failed Trial terminal outcome."""
+    return finish_trial_request(os.environ["ROB2_WORKSPACE"], request)
+
+
+def finish_trial_request(
+    workspace: str, request: FinishTrialRequest
+) -> FinishTrialResult | TerminalSaved | TerminalConflict | BatchCondition:
+    """Dispatch the single public terminal-outcome envelope to its internal service."""
+    if isinstance(request, AssessmentFinishRequest):
+        return finish_trial(
+            workspace,
+            request.trial_id,
+            request.final_judgment,
+            request.override,
+            request.combined_concerns,
+            request.limitations,
+            request.actor,
+            request.observed_at,
+        )
+    if any(
+        item.actor != request.actor or item.observed_at != request.observed_at
+        for item in request.problems
+    ):
+        raise ValueError("problem actor and timestamp must match the terminal request")
+    return terminalize_problem(workspace, request.trial_id, request.mode, request.problems)
+
+
+@mcp.tool(name="finalize_batch")
+def finalize_one_batch(
     actor: str,
     observed_at: datetime,
-) -> FinishTrialResult:
-    """Atomically finish one Trial after all five Domain checkpoints are valid."""
-    return finish_trial(
-        os.environ["ROB2_WORKSPACE"],
-        trial_id,
-        final_judgment,
-        override,
-        combined_concerns,
-        limitations,
-        actor,
-        observed_at,
-    )
+) -> BatchSaved | BatchConflict | BatchCondition:
+    """Atomically summarize the terminal outcome of every requested Trial."""
+    return finalize_batch(os.environ["ROB2_WORKSPACE"], actor, observed_at)
 
 
 @mcp.resource("rob2://domain-guidance/{domain_id}")

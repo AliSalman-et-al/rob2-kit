@@ -63,7 +63,14 @@ class FinishSaved(StrictModel):
 
 class FinishConflict(StrictModel):
     status: Literal["conflict"] = "conflict"
-    snapshot: AssessmentSnapshot
+    snapshot: AssessmentSnapshot | None = None
+    terminal_hash: str | None = None
+
+    @model_validator(mode="after")
+    def has_existing_terminal(self) -> FinishConflict:
+        if (self.snapshot is None) == (self.terminal_hash is None):
+            raise ValueError("conflict requires exactly one existing terminal")
+        return self
 
 
 class FinishCondition(StrictModel):
@@ -108,6 +115,30 @@ def finish_trial(
         )
         if trial is None or result is None:
             raise ValueError("unknown approved Trial")
+        terminal_key = f"terminal_trial:{state.frozen_hash}:{trial_id}"
+        existing_terminal = connection.execute(
+            "SELECT payload FROM records WHERE name=?", (terminal_key,)
+        ).fetchone()
+        if existing_terminal is not None:
+            try:
+                from rob2_kit.batch_summary import (
+                    AssessmentTerminal,
+                    ProblemTerminal,
+                    verified_terminal,
+                )
+
+                verified_terminal(ProblemTerminal.model_validate_json(bytes(existing_terminal[0])))
+            except ValueError:
+                try:
+                    AssessmentTerminal.model_validate_json(bytes(existing_terminal[0]))
+                except ValueError as error:
+                    raise ValueError("invalid existing Trial terminal") from error
+            else:
+                return FinishConflict(
+                    terminal_hash=verified_terminal(
+                        ProblemTerminal.model_validate_json(bytes(existing_terminal[0]))
+                    ).terminal_hash
+                )
         prefix = f"domain_judgment:{state.frozen_hash}:{trial_id}:{result.id}:"
         rows = connection.execute(
             "SELECT name,payload FROM records WHERE name LIKE ?", (prefix + "%",)
@@ -188,7 +219,7 @@ def finish_trial(
         connection.execute(
             "INSERT INTO records(name,payload) VALUES(?,?)",
             (
-                f"terminal_trial:{state.frozen_hash}:{trial_id}",
+                terminal_key,
                 canonical_json_bytes({"snapshot_hash": snapshot.snapshot_hash}),
             ),
         )
