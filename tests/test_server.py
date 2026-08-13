@@ -170,6 +170,7 @@ def test_batch_tools_are_discoverable() -> None:
             "save_proposal",
             "approve_batch",
             "save_domain_judgment",
+            "finish_trial",
         ]
         return {tool.name: tool.outputSchema for tool in tools}
 

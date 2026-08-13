@@ -12,6 +12,7 @@ from pydantic import BaseModel, ConfigDict
 from rob2_kit.assessment import Proposal
 from rob2_kit.batch import ApproveBatchResult, SaveProposalResult, approve_batch, save_proposal
 from rob2_kit.batch import current_batch as load_current_batch
+from rob2_kit.finish import FinishTrialResult, finish_trial
 from rob2_kit.judgment_models import ActiveAnswer, InactiveQuestion, Override
 from rob2_kit.judgments import SaveDomainJudgmentResult, save_domain_judgment
 from rob2_kit.models import Judgment
@@ -77,6 +78,29 @@ def save_one_domain_judgment(
         inactive_questions,
         final_judgment,
         override,
+        limitations,
+        actor,
+        observed_at,
+    )
+
+
+@mcp.tool(name="finish_trial")
+def finish_one_trial(
+    trial_id: str,
+    final_judgment: Judgment | None,
+    override: Override | None,
+    combined_concerns: bool | None,
+    limitations: tuple[str, ...],
+    actor: str,
+    observed_at: datetime,
+) -> FinishTrialResult:
+    """Atomically finish one Trial after all five Domain checkpoints are valid."""
+    return finish_trial(
+        os.environ["ROB2_WORKSPACE"],
+        trial_id,
+        final_judgment,
+        override,
+        combined_concerns,
         limitations,
         actor,
         observed_at,
