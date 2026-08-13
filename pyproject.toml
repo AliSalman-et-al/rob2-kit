@@ -4,7 +4,7 @@ version = "0.1.0"
 description = "Model-free MCP boundary for RoB 2 assessment"
 readme = "README.md"
 requires-python = ">=3.11"
-dependencies = ["fastmcp==3.2.4"]
+dependencies = ["fastmcp==3.2.4", "pymupdf==1.27.1"]
 
 [project.scripts]
 rob2-mcp = "rob2_kit.server:main"
