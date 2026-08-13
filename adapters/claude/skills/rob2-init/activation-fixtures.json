@@ -1,9 +1,0 @@
-{
-  "activates": [
-    "Initialize a rob2-kit assessment project",
-    "Confirm the exact Trial and Result scope"
-  ],
-  "does_not_activate": [
-    "Answer signaling questions"
-  ]
-}

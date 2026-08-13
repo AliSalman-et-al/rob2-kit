@@ -1,6 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="800" height="500">
-  <defs><filter id="blur"><feGaussianBlur stdDeviation="7"/></filter></defs>
-  <rect width="100%" height="100%" fill="white"/>
-  <text x="40" y="80" font-size="28">Analysis population</text>
-  <text x="40" y="180" font-size="18" filter="url(#blur)">Illegible denominator 4? / 5?</text>
-</svg>

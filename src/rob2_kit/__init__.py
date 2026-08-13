@@ -1,5 +1,3 @@
-"""Host-neutral contracts for RoB 2 Kit."""
+"""The model-free RoB 2 FastMCP package."""
 
-from rob2_kit.domain.revisions import SCHEMA_VERSION
-
-__all__ = ["SCHEMA_VERSION"]
+__version__ = "0.1.0"

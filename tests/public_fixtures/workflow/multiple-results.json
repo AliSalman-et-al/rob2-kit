@@ -1,7 +1,0 @@
-{
-  "results": [
-    {"id":"result:mortality-30d","randomization":"randomization:a","report":"primary","instrument":"all-cause","measure":"risk_ratio","time_point":"30 days"},
-    {"id":"result:qol-6m","randomization":"randomization:a","report":"supplement","instrument":"EQ-5D","measure":"mean_difference","time_point":"6 months"},
-    {"id":"result:response-12w","randomization":"randomization:b","report":"registry","instrument":"RECIST","measure":"odds_ratio","time_point":"12 weeks"}
-  ]
-}

@@ -1,5 +1,0 @@
-# Hyphen-rejoin always strips, with no dictionary check for genuine compounds
-
-Issue #140: two-column PDF line-wrap hyphenation (`"balanced be-"` + `"tween"`) fragments Canonical evidence units down to near-word level, because `_mergeable_fragments` (`search.py:302`) refuses to merge fragments unless whitespace sits on one side of the boundary — a trailing hyphen with no leading space on the next fragment never qualifies. The fix adds a hyphen exception to the merge rule and strips the hyphen when rejoining.
-
-We considered restricting the rejoin to cases where the merged word isn't a real hyphenated compound (e.g. keep `"well-being"` intact, only strip `"be-tween"`), which would require a wordlist or heuristic. We rejected this: it adds meaningful implementation complexity to a fix the project intentionally scoped as small and low-risk (see issue #140's triage comment), and a small number of genuine compounds being incorrectly de-hyphenated (`"well-being"` → `"wellbeing"`) is an acceptable cost. Any line-wrap trailing hyphen at a geometrically-consecutive boundary is unconditionally rejoined and stripped.

@@ -1,45 +1,19 @@
 # rob2-kit
 
-> **Lean v1.** RoB 2 Kit runs one typed MCP workflow and materializes local,
-> read-only static evidence reports.
+The greenfield RoB 2 Kit is a model-free FastMCP server. Codex or Claude Code is
+the only model loop; this initial skeleton exposes an empty current-batch resource
+and packages the portable workflow instructions for both hosts.
 
-Install the locked project-local Codex and Claude Code adapters, then verify the
-exact execution contract:
-
-```powershell
-uv run --locked --project . rob2 bootstrap .
-uv run --locked --project . rob2 doctor .
-```
-
-## Release lifecycle
-
-Every lifecycle mutation is previewed first. Review the JSON receipt, then rerun
-the same command with `--apply`; do not use `--apply` until the preview reports
-compatible durable state.
+Install the wheel, register `rob2-mcp` as a stdio MCP server in the host, and copy
+the two directories under `rob2_kit/skills` from the installed distribution into
+that host's skill directory. The installed `rob2_kit/hosts` metadata names the two
+hosts and the common skill location. No generated skill copies are shipped.
 
 ```powershell
-uv run --locked --project . rob2 upgrade .
-uv run --locked --project . rob2 upgrade --apply .
-uv run --locked --project . rob2 rollback .
-uv run --locked --project . rob2 rollback --apply .
-uv run --locked --project . rob2 uninstall .
-uv run --locked --project . rob2 uninstall --apply .
+python -m build
+python -m pip install dist/rob2_kit-0.1.0-py3-none-any.whl
+rob2-mcp
 ```
 
-An upgrade records one rollback point after its candidate passes verification.
-Rollback and uninstall refuse changed generated artifacts rather than removing
-ambiguous user content. If a command reports interrupted-transaction recovery
-or incompatible durable state, preserve `.rob2` and follow the receipt's
-recovery guidance before retrying.
-
-Start the stdio MCP entry point from the repository root:
-
-```powershell
-uv run --locked --project . rob2-mcp
-```
-
-To declare exact Trial × Result identities before preparation begins, see
-[declaring exact Results](docs/RESULT-DECLARATIONS.md).
-
-For the install-to-report path, examples, safe recovery, and local evaluation,
-see the [natural-language user journey](docs/USER-JOURNEY.md).
+`rob2://current-batch` currently returns `{"active_batch": null}`. Scientific
+workflow, persistence, and RoB 2 logic are intentionally deferred to later issues.

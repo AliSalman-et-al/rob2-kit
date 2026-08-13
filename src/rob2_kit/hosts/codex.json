@@ -1,0 +1,6 @@
+{
+  "host": "codex",
+  "mcp_command": "rob2-mcp",
+  "skill_directory": "rob2_kit/skills",
+  "skills": ["rob2-workflow", "rob2-signalling"]
+}

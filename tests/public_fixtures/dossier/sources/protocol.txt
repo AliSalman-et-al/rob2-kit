@@ -1,3 +1,0 @@
-AURORA protocol, version 1.0, 01 February 2024.
-
-The primary estimand is the effect of assignment to intervention A on all-cause mortality at 30 days. Randomisation occurs after eligibility and baseline assessment. The primary analysis includes every randomised participant.
