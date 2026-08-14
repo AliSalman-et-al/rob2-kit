@@ -24,11 +24,12 @@ uv build --wheel --out-dir dist
 uv run python docs/release/verify.py --wheel dist/rob2_kit-0.1.0-py3-none-any.whl
 ```
 
-The candidate is released only from a clean commit that includes this manifest.
-The implementation/base commits recorded in it identify the pre-manifest product
-lineage; the release tag is the final candidate identity. CI fetches that history
-to validate the ancestry contract, then exercises Python 3.11--3.13 on Ubuntu,
-Windows, and macOS.
+RC2 is invalidated by safety commit `a394e853ddb3ea86a47599b56ab797b59b6df7bc`.
+RC3 is released only from a clean commit that includes this manifest. The
+implementation/base commits recorded in it identify the safety-fixed pre-manifest
+lineage; the annotated `greenfield-v0.1.0-rc3` tag is the final candidate
+identity. CI fetches that history to validate the ancestry contract, then
+exercises Python 3.11--3.13 on Ubuntu, Windows, and macOS.
 
 Issue #193 is waived only for this release gate: accepted Claude Code real-host
 evidence plus the raw-MCP checks here are sufficient. Codex CLI 0.147.0 on

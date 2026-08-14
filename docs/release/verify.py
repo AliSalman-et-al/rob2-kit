@@ -124,8 +124,9 @@ def _manifest(path: Path = MANIFEST_PATH) -> dict[str, Any]:
         "candidate",
     )
     if candidate["branch"] != "greenfield/epic-182" or candidate["release_freeze"] != (
-        "The release tag must be created from a clean checkout after this manifest is committed; "
-        "this implementation commit is the frozen pre-manifest product base."
+        "RC2 is invalidated by safety commit a394e853ddb3ea86a47599b56ab797b59b6df7bc; "
+        "the greenfield-v0.1.0-rc3 tag must be created from a clean checkout after this "
+        "manifest is committed."
     ):
         _fail("candidate contract differs")
     if not all(isinstance(candidate[key], str) for key in ("base_commit", "implementation_commit")):
@@ -252,7 +253,7 @@ def _candidate_history(manifest: dict[str, Any]) -> None:
         check=False,
     )
     if result.returncode:
-        raise ValueError("candidate base is not an ancestor of the implementation commit")
+        raise ValueError("candidate base is not an ancestor of the safety commit")
 
 
 def _project_pins(manifest: dict[str, Any]) -> None:
