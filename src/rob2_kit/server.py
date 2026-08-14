@@ -18,6 +18,7 @@ from rob2_kit.batch_summary import (
     BatchCondition,
     BatchConflict,
     BatchSaved,
+    FinalizedBatch,
     Problem,
     TerminalConflict,
     TerminalSaved,
@@ -49,6 +50,7 @@ from rob2_kit.registry import (
     record_registry_match,
 )
 from rob2_kit.rendering import RenderCondition, RenderedPage, render_page
+from rob2_kit.reports import batch_artifact_receipt, export_batch
 from rob2_kit.search import SearchHit, _source_bytes, search_sources
 from rob2_kit.sources import (
     IngestedTrial,
@@ -59,7 +61,7 @@ from rob2_kit.sources import (
     list_sources,
     read_pages,
 )
-from rob2_kit.storage import WorkspaceLock
+from rob2_kit.storage import WorkspaceLock, workspace_mutation_lock
 
 
 class CurrentBatch(BaseModel):
@@ -385,9 +387,18 @@ def finish_trial_request(
 def finalize_one_batch(
     actor: str,
     observed_at: datetime,
-) -> BatchSaved | BatchConflict | BatchCondition:
-    """Atomically summarize the terminal outcome of every requested Trial."""
-    return finalize_batch(os.environ["ROB2_WORKSPACE"], actor, observed_at)
+) -> FinalizedBatch | BatchConflict | BatchCondition:
+    """Commit the batch summary, materialize its standalone bundle, and verify it."""
+    workspace = os.environ["ROB2_WORKSPACE"]
+    with workspace_mutation_lock(workspace):
+        finalized = finalize_batch(workspace, actor, observed_at)
+        if not isinstance(finalized, BatchSaved):
+            return finalized
+        target = export_batch(workspace, finalized.summary.approved_batch_hash)
+        return FinalizedBatch(
+            summary=finalized.summary,
+            receipt=batch_artifact_receipt(Path(workspace), target, finalized.summary),
+        )
 
 
 @mcp.tool(

@@ -1,8 +1,9 @@
-"""Terminal Trial outcomes and the immutable summary of an approved batch."""
+"""Terminal Trial outcomes, approved summaries, and public artifact receipts."""
 
 from __future__ import annotations
 
 from datetime import datetime
+from pathlib import PurePosixPath
 from typing import Annotated, Literal
 
 from pydantic import Field, field_validator, model_validator
@@ -12,6 +13,8 @@ from rob2_kit.batch import ApprovedBatch, PackIdentity, StaleBatch, current_batc
 from rob2_kit.finish import AssessmentSnapshot, _verified
 from rob2_kit.models import Judgment, StrictModel, canonical_json_bytes, sha256
 from rob2_kit.storage import transaction
+
+ContentHash = Annotated[str, Field(pattern=r"^sha256:[0-9a-f]{64}$")]
 
 
 def _utc(value: datetime) -> datetime:
@@ -153,6 +156,43 @@ class TerminalConflict(StrictModel):
 class BatchSaved(StrictModel):
     status: Literal["saved"] = "saved"
     summary: BatchSummary
+
+
+class ArtifactReceipt(StrictModel):
+    """The verified, portable identity of one materialized batch bundle."""
+
+    algorithm: Literal["sha256(sorted-relative-path-nul-bytes-nul)"] = (
+        "sha256(sorted-relative-path-nul-bytes-nul)"
+    )
+    bundle_path: Annotated[str, Field(min_length=1)]
+    bundle_hash: ContentHash
+    file_count: Annotated[int, Field(ge=1)]
+    summary_hash: ContentHash
+    index_hash: ContentHash
+
+    @field_validator("bundle_path")
+    @classmethod
+    def is_workspace_relative(cls, value: str) -> str:
+        path = PurePosixPath(value)
+        if (
+            not path.parts
+            or value == "."
+            or path.as_posix() != value
+            or path.is_absolute()
+            or ".." in path.parts
+            or "\\" in value
+            or ":" in value
+        ):
+            raise ValueError("artifact path must be workspace-relative")
+        return value
+
+
+class FinalizedBatch(StrictModel):
+    """Public finalize result: a committed summary and its verified bundle."""
+
+    status: Literal["saved"] = "saved"
+    summary: BatchSummary
+    receipt: ArtifactReceipt
 
 
 class BatchConflict(StrictModel):

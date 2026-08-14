@@ -10,7 +10,7 @@
     "branch": "greenfield/epic-182",
     "base_commit": "6d2013f1e125bc38f3bf1e5c4109b9f15676c50d",
     "implementation_commit": "a394e853ddb3ea86a47599b56ab797b59b6df7bc",
-    "release_freeze": "RC3 is invalidated because its wheel verifier did not bind packaged Python modules; the greenfield-v0.1.0-rc4 tag may be created only after final review and remote CI pass from a clean checkout containing this manifest."
+    "release_freeze": "RC4 is invalidated by the portable skill workflow redesign. Owner-directed Claude Sonnet Low scientific evaluation is deferred until after this RC5 code/CI freeze; it is not completed evidence and is not a prerequisite to creating the greenfield-v0.1.0-rc5 candidate tag. That tag still requires final review and remote 3x3 CI from a clean checkout containing this manifest."
   },
   "dependencies": {
     "fastmcp": "3.2.4",
@@ -43,8 +43,8 @@
     }
   },
   "skills": [
-    {"name": "rob2-workflow", "content_sha256": "sha256:e87f8298bbf609b5992afb7a8ad77dbe5b6d141faa17efb8cbe1c58725d3fee1"},
-    {"name": "rob2-signalling", "content_sha256": "sha256:047a87eeb21cc35ea3c60d432cd462591a1b38fc517ee26b7cca45499f1c362b"}
+    {"name": "rob2-workflow", "content_sha256": "sha256:23ced846f642cfa3db3999ee0769893556f36e92d9adea7327f152670d2c130b"},
+    {"name": "rob2-signalling", "content_sha256": "sha256:2c79ccc091c802dc69054f720581f836acbc5e05fac8b9507f99e555656446cb"}
   ],
   "mcp_contract": {
     "tools": ["save_proposal", "ingest_batch", "list_sources", "read_pages", "search_sources", "render_page", "approve_batch", "save_domain_judgment", "finish_trial", "finalize_batch", "discard_active_batch"],
@@ -70,6 +70,6 @@
       "src/rob2_kit/hosts/*.json",
       "src/rob2_kit/skills/*/SKILL.md"
     ],
-    "content_sha256": "sha256:1c32ff440642ff45206cd118aba873b717e372f96e79e5b8419f28fdc2689535"
+    "content_sha256": "sha256:1752b5a6b7da0bacbc8e71fa1f7d257da373f228d2fbb38c4b3d5ab90e325cac"
   }
 }

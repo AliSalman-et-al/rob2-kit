@@ -275,9 +275,11 @@ def _manifest(path: Path = MANIFEST_PATH) -> dict[str, Any]:
         "candidate",
     )
     if candidate["branch"] != "greenfield/epic-182" or candidate["release_freeze"] != (
-        "RC3 is invalidated because its wheel verifier did not bind packaged Python modules; "
-        "the greenfield-v0.1.0-rc4 tag may be created only after final review and remote CI "
-        "pass from a clean checkout containing this manifest."
+        "RC4 is invalidated by the portable skill workflow redesign. Owner-directed Claude "
+        "Sonnet Low scientific evaluation is deferred until after this RC5 code/CI freeze; "
+        "it is not completed evidence and is not a prerequisite to creating the "
+        "greenfield-v0.1.0-rc5 candidate tag. That tag still requires final review and "
+        "remote 3x3 CI from a clean checkout containing this manifest."
     ):
         _fail("candidate contract differs")
     if not all(isinstance(candidate[key], str) for key in ("base_commit", "implementation_commit")):

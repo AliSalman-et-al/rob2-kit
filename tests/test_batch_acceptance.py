@@ -29,7 +29,7 @@ from rob2_kit.batch_summary import (
 from rob2_kit.finish import FinishConflict, finish_trial
 from rob2_kit.ingestion import ingest_batch
 from rob2_kit.packs import SCIENTIFIC_PACK
-from rob2_kit.reports import export_batch
+from rob2_kit.reports import batch_artifact_receipt, export_batch
 from rob2_kit.server import (
     FailedFinishRequest,
     NeedsInputFinishRequest,
@@ -196,6 +196,94 @@ def test_three_trial_terminal_summary_and_internal_export_acceptance(tmp_path: P
         for item in restarted.rglob("*")
         if item.is_file()
     }
+
+
+def test_public_finalize_materializes_a_deterministic_artifact_receipt(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """The public finalizer, not a separate export call, completes handoff."""
+    import rob2_kit.server as server
+
+    workspace, sources = _three_trial_workspace(tmp_path)
+    for domain in SCIENTIFIC_PACK.domains:
+        _save(workspace, sources[0], domain.id, trial_id="A", result_id="result-A")
+    assert finish_trial(workspace, "A", None, None, None, (), "finisher", NOW).status == "saved"
+    for trial_id, category in (("B", "needs_input"), ("C", "failed")):
+        result = finish_trial_request(
+            str(workspace),
+            NeedsInputFinishRequest(
+                mode="needs_input",
+                trial_id=trial_id,
+                problems=(_problem(trial_id, category),),
+                actor="terminal",
+                observed_at=NOW,
+            )
+            if category == "needs_input"
+            else FailedFinishRequest(
+                mode="failed",
+                trial_id=trial_id,
+                problems=(_problem(trial_id, category),),
+                actor="terminal",
+                observed_at=NOW,
+            ),
+        )
+        assert result.status == "saved"
+    monkeypatch.setenv("ROB2_WORKSPACE", str(workspace))
+
+    first = server.finalize_one_batch("finalizer", NOW)
+    assert first.status == "saved"
+    assert first.receipt.bundle_path.startswith(".rob2-kit/batches/")
+    assert not Path(first.receipt.bundle_path).is_absolute()
+    target = workspace / first.receipt.bundle_path
+    assert (target / "batch-summary.json").is_file()
+    assert (target / "trials" / "A" / "assessment.json").is_file()
+    assert first.receipt.file_count == len([item for item in target.rglob("*") if item.is_file()])
+    assert first.receipt.summary_hash == first.summary.summary_hash
+    assert first.receipt.index_hash
+
+    second = server.finalize_one_batch("finalizer", NOW)
+    assert second == first
+    report = target / "trials" / "A" / "report.html"
+    report.write_bytes(report.read_bytes() + b"tampered")
+    with pytest.raises(ValueError, match="cannot be verified"):
+        batch_artifact_receipt(workspace, target, first.summary)
+
+
+def test_public_finalize_recovers_export_after_summary_is_committed(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    import rob2_kit.server as server
+
+    workspace, _sources = _three_trial_workspace(tmp_path)
+    for trial_id in ("A", "B", "C"):
+        assert (
+            finish_trial_request(
+                str(workspace),
+                NeedsInputFinishRequest(
+                    mode="needs_input",
+                    trial_id=trial_id,
+                    problems=(_problem(trial_id, "needs_input"),),
+                    actor="terminal",
+                    observed_at=NOW,
+                ),
+            ).status
+            == "saved"
+        )
+    monkeypatch.setenv("ROB2_WORKSPACE", str(workspace))
+    original_export = server.export_batch
+
+    def fail_after_commit(*_args, **_kwargs):
+        raise OSError("injected export failure")
+
+    monkeypatch.setattr(server, "export_batch", fail_after_commit)
+    with pytest.raises(OSError, match="injected export failure"):
+        server.finalize_one_batch("finalizer", NOW)
+    assert isinstance(finalize_batch(workspace, "finalizer", NOW), BatchSaved)
+
+    monkeypatch.setattr(server, "export_batch", original_export)
+    recovered = server.finalize_one_batch("finalizer", NOW)
+    assert recovered.status == "saved"
+    assert (workspace / recovered.receipt.bundle_path / "batch-summary.json").is_file()
 
 
 def test_batch_export_promotion_failure_restores_previous_bundle(

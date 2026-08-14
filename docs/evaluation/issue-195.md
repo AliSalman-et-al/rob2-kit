@@ -122,3 +122,89 @@ outputs. A privacy-safe hash summary was retained in ignored evaluation storage.
 The requested recursive removal was rejected by the execution policy, so the
 validated temporary target remains retained privately; no protected path was
 deleted.
+
+## RC4 isolated re-evaluation — incomplete; do not cut over
+
+Candidate: `greenfield-v0.1.0-rc4`, annotated tag peeled to
+`71e681259c22b1a94c1401baab177d1ebdd42272`.
+
+A fresh full-history temporary checkout passed the hardened source and wheel
+verifier before the host run. The fresh wheel SHA-256 was
+`bb6534c965072bdf6d507539b8ca3937a82d0216fca7d9daa58b1f2d180a5750`.
+The candidate test suite passed (190 tests; one expected duplicate-archive
+fixture warning). The initial shallow checkout was stopped before wheel creation:
+the verifier correctly rejects it because the manifest's required ancestry is
+unavailable.
+
+Claude Code 2.1.226, Sonnet, medium, used a single strict MCP configuration
+whose command resolved to the fresh-wheel executable and whose
+`ROB2_WORKSPACE` exactly matched the single-run root. Its allowlist contained
+the ten non-destructive MCP workflow tools and `ReadMcpResource`; it excluded
+`discard_active_batch`. The zero-source handshake completed in 39.129 seconds at
+USD 0.3017264, read the current-batch resource, and made one permitted
+`list_sources` probe. The release verifier independently passed the complete
+11-tool, 3-resource, 2-skill contract.
+
+The first scientific invocation was externally terminated at 124.037 seconds.
+That timeout was an evaluator-imposed process bound, not a Claude/MCP failure;
+it emitted no receipt and left no workflow state or output. A one-time retry was
+therefore allowed after verifying the same fresh run had zero state/output files.
+It used Claude's `--max-budget-usd 12` and a 20-minute wall-clock cap. The retry
+finished normally in 158.243 seconds at USD 0.5509289 (17 turns, zero permission
+denials, empty stderr), with no workflow state or output written.
+
+The retry confirmed a safe integration blocker rather than a disconnection:
+the model could read the no-active current-batch resource and call the allowed
+MCP tools, but the prompt supplied a manifest path while prohibiting filesystem
+reads and did not supply the manifest's concrete primary-PDF path. The MCP API
+cannot resolve that local manifest before ingestion. It correctly rejected a
+manifest-as-PDF probe, did not guess a source path, and could not record a
+`needs_input` terminal before approval. No evidence content or provisional label
+was read, no proposal/batch/trial was created, and discard was not callable.
+
+No further retry is authorized: the corrective action would be to supply the
+concrete already-authorized primary-input path (or permit a bounded local manifest
+read) in a new fresh run. The remaining two blinded trials, all frozen-artifact
+checks and label comparison, and public mixed-terminal/restart scenarios remain
+unperformed.
+
+**RC4 recommendation: REJECT / DO NOT CUT OVER; #196 remains blocked.** This is
+an operationally incomplete evaluation, not scientific evidence against a trial.
+
+## RC4 host-performance investigation
+
+One corrected blinded run reached a finalized assessment. Its private receipt
+reported 97 turns, 1,047.874 seconds, and USD 5.4231043; the durable store
+advanced during the session and contained nine records after finalization. The
+receipt reported five completed checkpoints and a terminal assessment. Its sole
+permission denial was a denied host-shell attempt to inspect a cached tool
+result; it was not an MCP workflow tool or the destructive discard operation.
+
+A prompt-only bounded A/B used the same model/effort with a 45-turn, USD 3,
+and 12-minute cap. It stopped after 48 reported turns, 722.113 seconds, and USD
+2.87833765 with an approved batch but no checkpoint or terminal. It could not
+discover canonical signalling-question identifiers: the prompt requested generic
+resource discovery, but only the parameterized guidance-resource reader was
+available. A cheap zero-source probe established the smallest seam correction:
+an explicit known domain-guidance URI returns the canonical identifiers within
+three turns, 6.370 seconds, and USD 0.0825989. No provisional reference label
+was accessed in either activity.
+
+The attempted final A/B was invalid and is excluded from scientific comparison.
+It exited in 67.215 seconds at USD 0.37789635 without an assessment after the
+host attached to an inherited workspace rather than the intended fresh one.
+Its supplied one-server configuration itself parsed correctly, referenced an
+existing installed executable, and declared the intended workspace; the host
+initialization reported one MCP server but did not attest its workspace. This
+is therefore a host-launch isolation failure, not evidence about trial quality.
+
+Future evaluation launchers must fail closed before a scientific prompt: use a
+fresh working directory and a unique nonce MCP server name, load only an explicit
+strict configuration and restricted setting sources, parse the initialization
+event to require that unique server and only its expected tool prefix, then make
+a zero-source resource/inventory probe that attests the intended empty workspace.
+The streaming monitor must retain a redacted event ledger (time, event type,
+tool name, status only), poll durable state metadata, and abort before ingestion
+on any identity mismatch. Once identity is established, use all five explicit
+domain-guidance URIs at phase zero; keep the bounded evidence plan and preserve
+the five-checkpoint, contradiction, source-priority, and terminal/export guards.
