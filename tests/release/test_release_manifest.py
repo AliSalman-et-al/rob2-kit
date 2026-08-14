@@ -36,7 +36,7 @@ def _wheel(path: Path, manifest: dict[str, Any], mode: str = "valid") -> None:
             if mode == "tampered_skill" and skill["name"] == "rob2-workflow":
                 raw += b"tampered"
             if mode == "crlf_skills":
-                raw = raw.replace(b"\n", b"\r\n")
+                raw = raw.replace(b"\r\n", b"\n").replace(b"\r", b"\n").replace(b"\n", b"\r\n")
             wheel.writestr(f"rob2_kit/skills/{skill['name']}/SKILL.md", raw)
         for filename, host in (("codex.json", "codex"), ("claude-code.json", "claude-code")):
             if mode == "missing_host" and filename == "claude-code.json":
