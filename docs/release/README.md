@@ -11,6 +11,24 @@ It includes `pyproject.toml`, `uv.lock`, every
 manifest and verifier are deliberately excluded, so the contract can be checked
 without a self-referential hash.
 
+When a wheel is supplied, the verifier permits exactly the source-contract
+`rob2_kit/**/*.py` modules, two host JSONs, two skill files, and the four declared
+`.dist-info` members (`METADATA`, `WHEEL`, `entry_points.txt`, and `RECORD`). It
+compares every module's canonical UTF-8 text bytes to the same source contract.
+Every other member, including native code, bytecode, `.pth`, `.data`, or arbitrary
+assets, fails. Archive names must also be unambiguous on Windows: duplicate or
+case-aliased names, reserved device names, trailing dots or spaces, and alternate
+data streams are rejected.
+Host JSON rejects duplicate keys at every nesting level before its exact semantic
+comparison. `WHEEL` must byte-match its frozen UTF-8 LF serialization: exactly
+the four hatchling headers, in order, with no body or envelope. `METADATA` must
+byte-match its frozen UTF-8 LF serialization: the ordered package headers and
+three frozen `Requires-Dist` headers, one LF blank separator, then the canonical
+UTF-8 text bytes of the root `README.md`. This rejects extra bytes, envelopes,
+CRLF, reordered headers, and malformed pre-body lines. `entry_points.txt` accepts UTF-8 LF or CRLF only (normalized to LF)
+and is limited to the exact case-sensitive three-line
+`[console_scripts]\nrob2-mcp = rob2_kit.server:main\n` declaration.
+
 Run from a clean checkout after restoring the locked environment:
 
 ```powershell
@@ -24,12 +42,13 @@ uv build --wheel --out-dir dist
 uv run python docs/release/verify.py --wheel dist/rob2_kit-0.1.0-py3-none-any.whl
 ```
 
-RC2 is invalidated by safety commit `a394e853ddb3ea86a47599b56ab797b59b6df7bc`.
-RC3 is released only from a clean commit that includes this manifest. The
-implementation/base commits recorded in it identify the safety-fixed pre-manifest
-lineage; the annotated `greenfield-v0.1.0-rc3` tag is the final candidate
-identity. CI fetches that history to validate the ancestry contract, then
-exercises Python 3.11--3.13 on Ubuntu, Windows, and macOS.
+RC2 was invalidated by safety commit `a394e853ddb3ea86a47599b56ab797b59b6df7bc`.
+RC3 is invalidated because its verifier did not bind the wheel's Python modules to
+the frozen source contract. RC4 may be tagged only after final review and remote
+CI pass from a clean commit that includes this verifier. The implementation/base
+commits identify the safety-fixed pre-manifest lineage; CI fetches that history to
+validate the ancestry contract, then exercises Python 3.11--3.13 on Ubuntu,
+Windows, and macOS.
 
 Issue #193 is waived only for this release gate: accepted Claude Code real-host
 evidence plus the raw-MCP checks here are sufficient. Codex CLI 0.147.0 on

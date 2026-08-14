@@ -10,7 +10,7 @@
     "branch": "greenfield/epic-182",
     "base_commit": "6d2013f1e125bc38f3bf1e5c4109b9f15676c50d",
     "implementation_commit": "a394e853ddb3ea86a47599b56ab797b59b6df7bc",
-    "release_freeze": "RC2 is invalidated by safety commit a394e853ddb3ea86a47599b56ab797b59b6df7bc; the greenfield-v0.1.0-rc3 tag must be created from a clean checkout after this manifest is committed."
+    "release_freeze": "RC3 is invalidated because its wheel verifier did not bind packaged Python modules; the greenfield-v0.1.0-rc4 tag may be created only after final review and remote CI pass from a clean checkout containing this manifest."
   },
   "dependencies": {
     "fastmcp": "3.2.4",

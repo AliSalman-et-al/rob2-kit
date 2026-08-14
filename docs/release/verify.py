@@ -4,13 +4,15 @@ from __future__ import annotations
 
 import argparse
 import asyncio
+import base64
+import csv
 import hashlib
+import io
 import json
 import re
 import subprocess
 import tomllib
 import zipfile
-from email.parser import BytesParser
 from importlib.resources import files
 from pathlib import Path
 from typing import Any, cast
@@ -35,6 +37,15 @@ SOURCE_PATHS = [
     "src/rob2_kit/hosts/*.json",
     "src/rob2_kit/skills/*/SKILL.md",
 ]
+WINDOWS_RESERVED_BASENAMES = {
+    "con",
+    "prn",
+    "aux",
+    "nul",
+    *(f"com{number}" for number in range(1, 10)),
+    *(f"lpt{number}" for number in range(1, 10)),
+}
+RECORD_HASH = re.compile(r"sha256=[A-Za-z0-9_-]{43}\Z")
 
 
 def _fail(message: str) -> None:
@@ -68,7 +79,7 @@ def _sha256_text(value: bytes) -> str:
     return _sha256_bytes(_canonical_text_bytes(value))
 
 
-def _source_contract_hash(root: Path, patterns: list[str]) -> str:
+def _source_contract_files(root: Path, patterns: list[str]) -> list[tuple[Path, str]]:
     paths: list[Path] = []
     for pattern in patterns:
         matches = sorted(path for path in root.glob(pattern) if path.is_file())
@@ -78,16 +89,156 @@ def _source_contract_hash(root: Path, patterns: list[str]) -> str:
     relative = [path.relative_to(root).as_posix() for path in paths]
     if len(set(relative)) != len(relative):
         _fail("source contract patterns overlap")
+    return sorted(zip(paths, relative, strict=True), key=lambda item: item[1])
+
+
+def _source_contract_hash(root: Path, patterns: list[str]) -> str:
     digest = hashlib.sha256()
-    for path, name in sorted(zip(paths, relative, strict=True), key=lambda item: item[1]):
+    for path, name in _source_contract_files(root, patterns):
         digest.update(name.encode("utf-8"))
         digest.update(b"\0")
         digest.update(_canonical_text_bytes(path.read_bytes()))
     return "sha256:" + digest.hexdigest()
 
 
+def _source_modules(manifest: dict[str, Any]) -> dict[str, bytes]:
+    """Return the canonical Python payload declared by the frozen source contract."""
+
+    modules = {
+        name.removeprefix("src/"): _canonical_text_bytes(path.read_bytes())
+        for path, name in _source_contract_files(ROOT, manifest["source_contract"]["paths"])
+        if name.startswith("src/rob2_kit/") and name.endswith(".py")
+    }
+    if not modules:
+        _fail("source contract does not declare Python modules")
+    return modules
+
+
+def _archive_entries(wheel: zipfile.ZipFile) -> list[tuple[zipfile.ZipInfo, str]]:
+    """Reject names whose ZIP interpretation could differ across installers."""
+
+    entries = wheel.infolist()
+    raw_names = [entry.filename for entry in entries]
+    if len(raw_names) != len(set(raw_names)):
+        _fail("wheel archive contains duplicate member names")
+    if len(raw_names) != len({name.casefold() for name in raw_names}):
+        _fail("wheel archive contains case-folding member name collisions")
+    normalized: list[tuple[zipfile.ZipInfo, str]] = []
+    for entry in entries:
+        name = entry.filename
+        if "\\" in name or name.startswith("/"):
+            _fail(f"wheel archive path is ambiguous: {name!r}")
+        parts = name.split("/")
+        if not name or any(
+            part in {"", ".", ".."}
+            or part.endswith((".", " "))
+            or ":" in part
+            or part.split(".", 1)[0].casefold() in WINDOWS_RESERVED_BASENAMES
+            for part in parts
+        ):
+            _fail(f"wheel archive path is unsafe: {name!r}")
+        normalized.append((entry, "/".join(parts)))
+    return normalized
+
+
+def _json_without_duplicate_keys(value: str | bytes, name: str) -> dict[str, Any]:
+    def object_pairs(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
+        result: dict[str, Any] = {}
+        for key, item in pairs:
+            if key in result:
+                _fail(f"{name} contains a duplicate JSON key: {key!r}")
+            result[key] = item
+        return result
+
+    try:
+        parsed = json.loads(value, object_pairs_hook=object_pairs)
+    except (UnicodeDecodeError, json.JSONDecodeError) as error:
+        _fail(f"{name} is invalid JSON: {error}")
+    if not isinstance(parsed, dict):
+        _fail(f"{name} must be a JSON object")
+    return cast(dict[str, Any], parsed)
+
+
+def _verify_wheel_metadata(
+    wheel: zipfile.ZipFile, entries: dict[str, zipfile.ZipInfo], distribution: str
+) -> None:
+    if wheel.read(entries[f"{distribution}/WHEEL"]) != (
+        b"Wheel-Version: 1.0\n"
+        b"Generator: hatchling 1.27.0\n"
+        b"Root-Is-Purelib: true\n"
+        b"Tag: py3-none-any\n"
+    ):
+        _fail("wheel WHEEL bytes differ from the frozen contract")
+
+    try:
+        entry_points = wheel.read(entries[f"{distribution}/entry_points.txt"]).decode("utf-8")
+    except UnicodeDecodeError as error:
+        _fail(f"wheel entry_points.txt is invalid: {error}")
+    normalized_entry_points = entry_points.replace("\r\n", "\n")
+    if "\r" in normalized_entry_points or any(
+        separator in normalized_entry_points
+        for separator in ("\v", "\f", "\x1c", "\x1d", "\x1e", "\x85", "\u2028", "\u2029")
+    ):
+        _fail("wheel entry_points.txt contains a non-LF line separator")
+    if normalized_entry_points != "[console_scripts]\nrob2-mcp = rob2_kit.server:main\n":
+        _fail("wheel entry_points.txt differs from the frozen contract")
+
+
+def _expected_metadata_bytes(manifest: dict[str, Any]) -> bytes:
+    package = manifest["package"]
+    headers = [
+        "Metadata-Version: 2.4",
+        f"Name: {package['name']}",
+        f"Version: {package['version']}",
+        "Summary: Model-free MCP boundary for RoB 2 assessment",
+        "Requires-Python: >=3.11",
+        *(
+            f"Requires-Dist: {name}=={version}"
+            for name, version in manifest["dependencies"].items()
+        ),
+        "Description-Content-Type: text/markdown",
+    ]
+    return (
+        "\n".join(headers).encode("utf-8")
+        + b"\n\n"
+        + _canonical_text_bytes((ROOT / "README.md").read_bytes())
+    )
+
+
+def _verify_record(
+    wheel: zipfile.ZipFile, entries: dict[str, zipfile.ZipInfo], record_name: str
+) -> None:
+    try:
+        rows = list(
+            csv.reader(io.StringIO(wheel.read(entries[record_name]).decode("utf-8")), strict=True)
+        )
+    except (UnicodeDecodeError, csv.Error) as error:
+        _fail(f"wheel RECORD is invalid: {error}")
+    record: dict[str, tuple[str, str]] = {}
+    for row in rows:
+        if len(row) != 3 or row[0] in record:
+            _fail("wheel RECORD contains malformed or duplicate rows")
+        record[row[0]] = (row[1], row[2])
+    if set(record) != set(entries):
+        _fail("wheel RECORD member set differs from the archive")
+    if record[record_name] != ("", ""):
+        _fail("wheel RECORD self row must have an empty hash and size")
+    for name, entry in entries.items():
+        if name == record_name:
+            continue
+        digest, size = record[name]
+        value = wheel.read(entry)
+        expected = "sha256=" + base64.urlsafe_b64encode(hashlib.sha256(value).digest()).rstrip(
+            b"="
+        ).decode("ascii")
+        if not RECORD_HASH.fullmatch(digest) or digest != expected:
+            _fail(f"wheel RECORD hash differs: {name}")
+        if not re.fullmatch(r"[0-9]+", size) or size != str(len(value)):
+            _fail(f"wheel RECORD size differs: {name}")
+
+
 def _manifest(path: Path = MANIFEST_PATH) -> dict[str, Any]:
-    value = json.loads(path.read_text(encoding="utf-8"))
+    value = _json_without_duplicate_keys(path.read_bytes(), "release manifest")
     _exact(
         value,
         {
@@ -124,9 +275,9 @@ def _manifest(path: Path = MANIFEST_PATH) -> dict[str, Any]:
         "candidate",
     )
     if candidate["branch"] != "greenfield/epic-182" or candidate["release_freeze"] != (
-        "RC2 is invalidated by safety commit a394e853ddb3ea86a47599b56ab797b59b6df7bc; "
-        "the greenfield-v0.1.0-rc3 tag must be created from a clean checkout after this "
-        "manifest is committed."
+        "RC3 is invalidated because its wheel verifier did not bind packaged Python modules; "
+        "the greenfield-v0.1.0-rc4 tag may be created only after final review and remote CI "
+        "pass from a clean checkout containing this manifest."
     ):
         _fail("candidate contract differs")
     if not all(isinstance(candidate[key], str) for key in ("base_commit", "implementation_commit")):
@@ -274,6 +425,8 @@ def _project_pins(manifest: dict[str, Any]) -> None:
         raise ValueError("pyproject build pins differ from release manifest")
     if pinned(project["dependency-groups"]["dev"]) != manifest["development_dependencies"]:
         raise ValueError("pyproject development pins differ from release manifest")
+    if project["project"].get("requires-python") != ">=3.11":
+        raise ValueError("pyproject Requires-Python differs from the frozen contract")
 
 
 def _workflow_matrix(manifest: dict[str, Any]) -> None:
@@ -336,21 +489,26 @@ def _verify_wheel(path: Path, manifest: dict[str, Any]) -> None:
     package = manifest["package"]
     distribution = f"{package['name'].replace('-', '_')}-{package['version']}.dist-info"
     with zipfile.ZipFile(path) as wheel:
-        names = set(wheel.namelist())
+        entries = {name: entry for entry, name in _archive_entries(wheel)}
+        names = set(entries)
         metadata_name = f"{distribution}/METADATA"
-        required = {metadata_name, "rob2_kit/hosts/codex.json", "rob2_kit/hosts/claude-code.json"}
-        required.update(f"rob2_kit/skills/{skill['name']}/SKILL.md" for skill in manifest["skills"])
-        if not required <= names:
-            raise ValueError("wheel is missing a required package, host, or skill asset")
-        metadata = BytesParser().parsebytes(wheel.read(metadata_name))
-        if metadata["Name"] != package["name"] or metadata["Version"] != package["version"]:
-            raise ValueError("wheel package metadata differs from release manifest")
-        actual_dependencies = set(metadata.get_all("Requires-Dist", []))
-        expected_dependencies = {
-            f"{name}=={version}" for name, version in manifest["dependencies"].items()
-        }
-        if actual_dependencies != expected_dependencies:
-            raise ValueError("wheel runtime dependency set differs from release manifest")
+        expected_modules = _source_modules(manifest)
+        expected_names = set(expected_modules)
+        expected_names.update({"rob2_kit/hosts/codex.json", "rob2_kit/hosts/claude-code.json"})
+        expected_names.update(
+            f"rob2_kit/skills/{skill['name']}/SKILL.md" for skill in manifest["skills"]
+        )
+        expected_names.update(
+            f"{distribution}/{filename}"
+            for filename in ("METADATA", "WHEEL", "entry_points.txt", "RECORD")
+        )
+        if names != expected_names:
+            missing = sorted(expected_names - names)
+            extra = sorted(names - expected_names)
+            _fail(f"wheel member set differs (missing={missing}, extra={extra})")
+        metadata_bytes = wheel.read(metadata_name)
+        if metadata_bytes != _expected_metadata_bytes(manifest):
+            _fail("wheel METADATA bytes differ from the frozen contract")
         skill_names = {skill["name"] for skill in manifest["skills"]}
         packaged_skills = {
             name.split("/")[2]
@@ -375,7 +533,9 @@ def _verify_wheel(path: Path, manifest: dict[str, Any]) -> None:
         if packaged_hosts != set(expected_hosts):
             raise ValueError("wheel host asset set differs from release manifest")
         for filename, host in expected_hosts.items():
-            host_data = json.loads(wheel.read(f"rob2_kit/hosts/{filename}"))
+            host_data = _json_without_duplicate_keys(
+                wheel.read(f"rob2_kit/hosts/{filename}"), f"wheel host asset {filename}"
+            )
             if host_data != {
                 "host": host,
                 "mcp_command": "rob2-mcp",
@@ -383,6 +543,11 @@ def _verify_wheel(path: Path, manifest: dict[str, Any]) -> None:
                 "skills": [skill["name"] for skill in manifest["skills"]],
             }:
                 raise ValueError(f"wheel host asset differs: {filename}")
+        for name, expected in expected_modules.items():
+            if _canonical_text_bytes(wheel.read(entries[name])) != expected:
+                _fail(f"wheel Python module canonical bytes differ: {name}")
+        _verify_wheel_metadata(wheel, entries, distribution)
+        _verify_record(wheel, entries, f"{distribution}/RECORD")
 
 
 def _verify_schema_identities(manifest: dict[str, Any]) -> None:
