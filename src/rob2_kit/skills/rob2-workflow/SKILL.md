@@ -66,12 +66,14 @@ Only then call `approve_batch`; retain its frozen hash and pack identities.
 
 For each nonterminal Trial, invoke signalling with the approved Trial, ResultSpec,
 and only that Trial's approved Sources. Work Domains in order. A Domain advances
-only after `save_domain_judgment` confirms its saved checkpoint; recover a
-condition from current-batch and resume at the saved boundary. To correct an
-unfrozen Domain, first read its active checkpoint hash from the saved response or
-recovery, then submit the complete replacement with that exact
-`expected_previous_hash`; a conflict means reconcile the returned active revision
-before another attempt.
+only after `save_domain_judgment` commits its reviewed checkpoint. Send its
+complete payload with `phase: validate`, review the returned receipt and whole
+payload, then send the identical payload with `phase: commit`, the exact receipt,
+and its four-item scientific preflight. Recover a condition from current-batch
+and resume at the saved boundary. To correct an unfrozen Domain, validate the
+complete replacement with the exact active checkpoint hash as
+`expected_previous_hash`, then commit its matching receipt; reconcile a conflict
+before another validation.
 
 Completion: the Trial has five confirmed saved Domain checkpoints, or a typed
 terminal problem makes further assessment impossible.

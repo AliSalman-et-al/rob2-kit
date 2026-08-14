@@ -600,23 +600,99 @@ def test_domain_checkpoint_tool_and_guidance_are_explicit() -> None:
         return tool.inputSchema, guidance[0].text
 
     schema, guidance = asyncio.run(discover())
-    assert set(schema["required"]) == {
-        "trial_id",
-        "result_id",
-        "domain_id",
-        "active_answers",
-        "inactive_questions",
-        "final_judgment",
-        "override",
-        "limitations",
-        "actor",
-        "observed_at",
+    assert schema["required"] == ["request"]
+    request = schema["properties"]["request"]
+    assert len(request["oneOf"]) == 2
+    assert {branch["properties"]["phase"]["const"] for branch in request["oneOf"]} == {
+        "validate",
+        "commit",
     }
     payload = json.loads(guidance)
     assert payload["domain"]["id"] == "domain:randomization"
     assert payload["questions"] and payload["scientific_pack"]["content_hash"].startswith("sha256:")
     assert payload["policy_pack"]["content_hash"].startswith("sha256:")
-    assert "expected_previous_hash" in schema["properties"]
+    assert all("expected_previous_hash" in branch["properties"] for branch in request["oneOf"])
+
+
+def test_mcp_domain_judgment_validates_then_commits_the_same_canonical_payload(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from rob2_kit.batch import approve_batch, save_proposal
+
+    proposal = _proposal(tmp_path)
+    assert save_proposal(tmp_path, proposal).state.status == "proposal"
+    assert approve_batch(tmp_path).state.status == "approved"
+    source = proposal.sources[0]
+    ref = {
+        "source_id": source.id,
+        "source_sha256": source.sha256,
+        "page_number": 1,
+        "start": 0,
+        "end": 6,
+        "quote": "anchor",
+    }
+    use = {"relationship": "supporting", "claim": "reported", "rationale": "direct", "refs": [ref]}
+    payload = {
+        "trial_id": "trial",
+        "result_id": "result",
+        "domain_id": "domain:randomization",
+        "active_answers": [
+            {
+                "question_id": "sq:randomization:sequence",
+                "answer": "yes",
+                "rationale": "direct",
+                "evidence_uses": [use],
+            },
+            {
+                "question_id": "sq:randomization:concealment",
+                "answer": "yes",
+                "rationale": "direct",
+                "evidence_uses": [use],
+            },
+            {
+                "question_id": "sq:randomization:baseline-imbalance",
+                "answer": "no",
+                "rationale": "direct",
+                "evidence_uses": [use],
+            },
+        ],
+        "inactive_questions": [],
+        "final_judgment": None,
+        "override": None,
+        "limitations": [],
+        "actor": "reviewer",
+        "observed_at": "2026-08-13T00:00:00Z",
+    }
+    monkeypatch.setenv("ROB2_WORKSPACE", str(tmp_path))
+
+    async def call() -> tuple[dict[str, Any], dict[str, Any]]:
+        async with Client(mcp) as client:
+            validated = await client.call_tool(
+                "save_domain_judgment", {"request": {**payload, "phase": "validate"}}
+            )
+            validation = validated.structured_content["result"]
+            committed = await client.call_tool(
+                "save_domain_judgment",
+                {
+                    "request": {
+                        **payload,
+                        "phase": "commit",
+                        "validation_receipt": validation["receipt"],
+                        "scientific_preflight": {
+                            "payload_final": True,
+                            "citations_checked_against_pages": True,
+                            "contradictions_addressed": True,
+                            "activation_and_partition_reviewed": True,
+                        },
+                    }
+                },
+            )
+        return validation, committed.structured_content["result"]
+
+    validation, committed = asyncio.run(call())
+    assert validation["status"] == "validated"
+    assert committed["status"] == "saved"
+    assert validation["judgment"]["checkpoint_hash"] == committed["judgment"]["checkpoint_hash"]
 
 
 def test_batch_tools_return_typed_structured_conditions(tmp_path: Path, monkeypatch) -> None:

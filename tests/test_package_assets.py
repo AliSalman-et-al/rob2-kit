@@ -26,8 +26,8 @@ def test_packaged_skills_guard_the_human_acceptance_boundaries() -> None:
     assert "standalone host-authored HTML" in workflow
     assert "available only for an explicit researcher instruction" in workflow
     assert "all five guidance resources" in signalling
-    assert "versioned working save, verify this checklist" in signalling
-    assert "debug or test payload" in signalling
+    assert "complete draft and verify this checklist before validation" in signalling
     assert "inspect the tool schema rather than probing with a save" in signalling
     assert "`expected_previous_hash`" in workflow
-    assert "Preflight the entire payload" in signalling
+    assert "`phase: validate`" in signalling
+    assert "review_then_commit" in signalling

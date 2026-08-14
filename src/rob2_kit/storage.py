@@ -132,6 +132,25 @@ def transaction(workspace: str | Path) -> Iterator[sqlite3.Connection]:
             connection.close()
 
 
+@contextmanager
+def read_only_transaction(workspace: str | Path) -> Iterator[sqlite3.Connection | None]:
+    """Open existing ledger bytes read-only without creating workspace state or locks."""
+    root = Path(workspace).resolve(strict=True)
+    internal = root / ".rob2-kit"
+    path = internal / "active-batch.sqlite3"
+    if not path.exists():
+        yield None
+        return
+    if internal.is_symlink() or _reparse(internal) or path.is_symlink() or _reparse(path):
+        raise ValueError("active batch database is redirected")
+    connection = sqlite3.connect(f"{path.as_uri()}?mode=ro", uri=True, isolation_level=None)
+    try:
+        connection.execute("PRAGMA query_only=ON")
+        yield connection
+    finally:
+        connection.close()
+
+
 def load_state(workspace: str | Path) -> bytes | None:
     path = database_path(workspace)
     if not path.exists():

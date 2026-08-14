@@ -83,12 +83,11 @@ transcription.
 ## 5. Checkpoint
 
 Partition every Domain exactly: active questions carry answers, rationales, and
-cited evidence uses; inactive questions are explicitly declared. Before the
-versioned working save, verify this checklist. Preflight the entire payload,
-including every rationale, evidence use, citation, and limitation:
+cited evidence uses; inactive questions are explicitly declared. Build the
+complete draft and verify this checklist before validation:
 
 - The active and inactive IDs are the exact Domain/question partition from guidance.
-- Every rationale and limitation is specific, non-placeholder, and not a debug or test payload.
+- Every rationale and limitation is specific and final.
 - Each citation is attributable, supports its claim, and has no unaddressed contradiction.
 - Evidence stays within the approved Trial/ResultSpec inventory; no unrestricted evidence claim is used.
 - The payload is complete; inspect the tool schema rather than probing with a save.
@@ -96,21 +95,19 @@ including every rationale, evidence use, citation, and limitation:
 Use pack rules to obtain the deterministic proposed judgment. A different final
 judgment carries an override with concise justification, actor, and UTC time.
 
-Inspect the tool schema, then call `save_domain_judgment` with the approved
-Trial/result, actor, UTC observation time, and limitations. A first save supplies
-`expected_previous_hash: null`; a correction before `finish_trial` supplies the
-exact active checkpoint hash. Interpret `saved` as the persisted or idempotently
-replayed active revision, `revised` as a newly appended active revision, and
-`conflict` as the returned active revision to reconcile; use `remaining_domains`
-to select the next Domain. Completion: the response is saved or revised and its
-remaining Domains identify the next boundary. On an
-invalid checkpoint or material ambiguity, stop and report the condition; do not
-discard the batch as recovery.
-
-For an uncertain correction response, retry the exact original payload, including
-its original `expected_previous_hash`: the server recognizes that verified
-predecessor only for replay of the current active revision. Do not substitute an
-older hash.
+Inspect the tool schema. First call `save_domain_judgment` with `phase: validate`
+and the complete draft. Interpret a typed problem or conflict, resolve it, and
+validate again. When validation returns `next_action: review_then_commit`, review
+the whole identical payload and receipt, then call with `phase: commit`, that
+receipt, and the explicit scientific preflight: payload final; citations checked
+against cited pages; contradictions addressed; activation and partition reviewed.
+The preflight records deliberate review; it does not authenticate an assessor or
+establish scientific truth. A first draft supplies `expected_previous_hash: null`;
+a correction before `finish_trial` supplies the exact active checkpoint hash.
+Interpret `saved` as persisted or idempotently replayed and `revised` as an
+appended active revision. Use `remaining_domains` to select the next Domain.
+Completion: commit returns saved or revised. An uncertain commit response may be
+retried only with its exact complete commit payload and matching receipt.
 
 The working checkpoint is replaceable only before `finish_trial`; every saved
 revision is an append-only audit entry, and `finish_trial` freezes the active

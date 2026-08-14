@@ -28,8 +28,16 @@ from rob2_kit.batch_summary import (
 from rob2_kit.finish import FinishTrialResult, finish_trial
 from rob2_kit.ingestion import ingest_batch
 from rob2_kit.ingestion.service import local_sources, registry_source
-from rob2_kit.judgment_models import ActiveAnswer, InactiveQuestion, Override
-from rob2_kit.judgments import SaveDomainJudgmentResult, save_domain_judgment
+from rob2_kit.judgment_models import Override
+from rob2_kit.judgments import (
+    DomainJudgmentPayload,
+    SaveDomainJudgmentResult,
+    ScientificPreflight,
+    ValidateDomainJudgmentResult,
+    ValidationReceipt,
+    commit_domain_judgment,
+    validate_domain_judgment,
+)
 from rob2_kit.models import Judgment
 from rob2_kit.packs import MAINTAINER_POLICY_PACK, SCIENTIFIC_PACK
 from rob2_kit.recovery import (
@@ -190,7 +198,30 @@ FinishTrialRequest = Annotated[
 ]
 
 
+class ValidateDomainJudgmentRequest(DomainJudgmentPayload):
+    phase: Literal["validate"]
+
+
+class CommitDomainJudgmentRequest(DomainJudgmentPayload):
+    phase: Literal["commit"]
+    validation_receipt: ValidationReceipt | None = None
+    scientific_preflight: ScientificPreflight | None = None
+
+
+SaveDomainJudgmentRequest = Annotated[
+    ValidateDomainJudgmentRequest | CommitDomainJudgmentRequest,
+    Field(discriminator="phase"),
+]
+
+
 mcp = FastMCP("rob2-kit")
+
+
+def _domain_judgment_payload(request: DomainJudgmentPayload) -> DomainJudgmentPayload:
+    """Erase transport-only phase, receipt, and preflight fields before payload hashing."""
+    return DomainJudgmentPayload.model_validate(
+        {name: getattr(request, name) for name in DomainJudgmentPayload.model_fields}
+    )
 
 
 def _sources(workspace: str, trial_id: str) -> tuple[Source, ...]:
@@ -325,32 +356,15 @@ def approve_batch_proposal() -> ApproveBatchResult:
 
 @mcp.tool(name="save_domain_judgment")
 def save_one_domain_judgment(
-    trial_id: str,
-    result_id: str,
-    domain_id: str,
-    active_answers: tuple[ActiveAnswer, ...],
-    inactive_questions: tuple[InactiveQuestion, ...],
-    final_judgment: Judgment | None,
-    override: Override | None,
-    limitations: tuple[str, ...],
-    actor: str,
-    observed_at: datetime,
-    expected_previous_hash: str | None = None,
-) -> SaveDomainJudgmentResult:
-    """Save one evidence-grounded Domain checkpoint with optimistic revision control."""
-    return save_domain_judgment(
-        os.environ["ROB2_WORKSPACE"],
-        trial_id,
-        result_id,
-        domain_id,
-        active_answers,
-        inactive_questions,
-        final_judgment,
-        override,
-        limitations,
-        actor,
-        observed_at,
-        expected_previous_hash,
+    request: SaveDomainJudgmentRequest,
+) -> ValidateDomainJudgmentResult | SaveDomainJudgmentResult:
+    """Validate a complete evidence-grounded draft, then commit that exact reviewed receipt."""
+    workspace = os.environ["ROB2_WORKSPACE"]
+    payload = _domain_judgment_payload(request)
+    if isinstance(request, ValidateDomainJudgmentRequest):
+        return validate_domain_judgment(workspace, payload)
+    return commit_domain_judgment(
+        workspace, payload, request.validation_receipt, request.scientific_preflight
     )
 
 

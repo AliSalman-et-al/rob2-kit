@@ -160,6 +160,34 @@ def _packs() -> tuple[PackIdentity, ...]:
     )
 
 
+def frozen_batch_hash(proposal: Proposal, packs: tuple[PackIdentity, ...]) -> str:
+    """The one identity binding an approved proposal to its exact pack identities."""
+    return sha256({"proposal": proposal, "packs": packs})
+
+
+def _approved_problems(
+    workspace: str | Path, state: ApprovedBatch, pack_identities: tuple[PackIdentity, ...] | None
+) -> tuple[Problem, ...]:
+    problems = _problems(workspace, state.proposal)
+    current = _packs() if pack_identities is None else pack_identities
+    if current != state.pack_identities:
+        problems += (Problem(code="pack_stale", detail="pack identity changed"),)
+    if state.frozen_hash != frozen_batch_hash(state.proposal, state.pack_identities):
+        problems += (
+            Problem(code="frozen_identity_corrupt", detail="approved batch hash mismatch"),
+        )
+    return tuple(dict.fromkeys(problems))
+
+
+def _validated_approved_state(
+    workspace: str | Path,
+    state: ApprovedBatch,
+    pack_identities: tuple[PackIdentity, ...] | None = None,
+) -> ApprovedBatch | StaleBatch:
+    problems = _approved_problems(workspace, state, pack_identities)
+    return state if not problems else StaleBatch(approved=state, problems=problems)
+
+
 def current_batch(
     workspace: str | Path, *, pack_identities: tuple[PackIdentity, ...] | None = None
 ) -> BatchState:
@@ -168,15 +196,7 @@ def current_batch(
         return NoActiveBatch()
     state = _stored_state(data)
     if isinstance(state, ApprovedBatch):
-        problems = _problems(workspace, state.proposal)
-        current = _packs() if pack_identities is None else pack_identities
-        if current != state.pack_identities:
-            problems = problems + (Problem(code="pack_stale", detail="pack identity changed"),)
-        if problems:
-            return StaleBatch(
-                approved=state,
-                problems=tuple(dict.fromkeys(problems)),
-            )
+        return _validated_approved_state(workspace, state, pack_identities)
     return state
 
 
@@ -192,12 +212,7 @@ def current_batch_in_transaction(
         return NoActiveBatch()
     state = _stored_state(bytes(row[0]))
     if isinstance(state, ApprovedBatch):
-        problems = _problems(workspace, state.proposal)
-        current = _packs() if pack_identities is None else pack_identities
-        if current != state.pack_identities:
-            problems = problems + (Problem(code="pack_stale", detail="pack identity changed"),)
-        if problems:
-            return StaleBatch(approved=state, problems=tuple(dict.fromkeys(problems)))
+        return _validated_approved_state(workspace, state, pack_identities)
     return state
 
 
@@ -209,7 +224,10 @@ def save_proposal(workspace: str | Path, proposal: Proposal) -> SaveProposalResu
             return SaveProposalResult(
                 state=StaleBatch(
                     approved=stored,
-                    problems=(Problem(code="batch_already_approved", detail="proposal is frozen"),),
+                    problems=(
+                        _approved_problems(workspace, stored, None)
+                        or (Problem(code="batch_already_approved", detail="proposal is frozen"),)
+                    ),
                 )
             )
         result = ProposedBatch(draft=proposal, problems=_problems(workspace, proposal))
@@ -228,7 +246,7 @@ def approve_batch(workspace: str | Path) -> ApproveBatchResult:
             return ApproveBatchResult(state=NoActiveBatch())
         state = _stored_state(bytes(row[0]))
         if not isinstance(state, ProposedBatch):
-            return ApproveBatchResult(state=state)
+            return ApproveBatchResult(state=_validated_approved_state(workspace, state))
         problems = _problems(workspace, state.draft)
         if problems:
             result = ProposedBatch(draft=state.draft, problems=problems)
@@ -241,7 +259,7 @@ def approve_batch(workspace: str | Path) -> ApproveBatchResult:
         approved = ApprovedBatch(
             proposal=state.draft,
             pack_identities=packs,
-            frozen_hash=sha256({"proposal": state.draft, "packs": packs}),
+            frozen_hash=frozen_batch_hash(state.draft, packs),
         )
         connection.execute(
             "UPDATE records SET payload=? WHERE name='active_batch'",

@@ -2,11 +2,12 @@
 
 from __future__ import annotations
 
+from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
 from typing import Literal
 
-from pydantic import Field, model_validator
+from pydantic import Field, ValidationError, model_validator
 
 from rob2_kit.batch import (
     ApprovedBatch,
@@ -27,7 +28,7 @@ from rob2_kit.packs import MAINTAINER_POLICY_PACK, SCIENTIFIC_PACK
 from rob2_kit.rendering import RenderedPage, render_page
 from rob2_kit.search import _source_bytes
 from rob2_kit.sources import Source, _extract_pages
-from rob2_kit.storage import transaction
+from rob2_kit.storage import read_only_transaction, transaction
 
 
 class _ActiveJudgmentResult(StrictModel):
@@ -61,7 +62,77 @@ class JudgmentCondition(StrictModel):
     detail: str
 
 
+class JudgmentValidationError(ValueError):
+    def __init__(self, code: str, detail: str) -> None:
+        super().__init__(detail)
+        self.code = code
+        self.detail = detail
+
+
 SaveDomainJudgmentResult = JudgmentSaved | JudgmentRevised | JudgmentConflict | JudgmentCondition
+
+
+class DomainJudgmentPayload(StrictModel):
+    """The complete payload that is first checked, then committed unchanged."""
+
+    trial_id: str
+    result_id: str
+    domain_id: str
+    active_answers: tuple[ActiveAnswer, ...]
+    inactive_questions: tuple[InactiveQuestion, ...]
+    final_judgment: Judgment | None
+    override: Override | None
+    limitations: tuple[str, ...]
+    actor: str
+    observed_at: datetime
+    expected_previous_hash: str | None = None
+
+
+class ValidationReceipt(StrictModel):
+    """Deterministic proof that this exact payload passed the read-only gate."""
+
+    approved_batch_hash: str
+    trial_id: str
+    result_id: str
+    domain_id: str
+    payload_hash: str
+    expected_previous_hash: str | None
+    observed_active_revision: int | None = None
+    observed_active_hash: str | None = None
+    proposed_status: Literal["saved", "revised"]
+    proposed_judgment_hash: str
+    remaining_domains: tuple[str, ...]
+    pack_identities_hash: str
+    receipt_hash: str
+    commit_token: str
+
+
+class JudgmentValidated(StrictModel):
+    status: Literal["validated"] = "validated"
+    judgment: DomainJudgment
+    receipt: ValidationReceipt
+    next_action: Literal["review_then_commit"] = "review_then_commit"
+
+
+class ScientificPreflight(StrictModel):
+    """A deliberate review assertion, not a claim of scientific truth or identity."""
+
+    payload_final: bool
+    citations_checked_against_pages: bool
+    contradictions_addressed: bool
+    activation_and_partition_reviewed: bool
+
+
+ValidateDomainJudgmentResult = JudgmentValidated | JudgmentConflict | JudgmentCondition
+
+
+@dataclass(frozen=True)
+class _Evaluation:
+    judgment: DomainJudgment
+    existing: DomainJudgment | None
+    active_revision: int | None
+    active_hash: str | None
+    remaining_domains: tuple[str, ...]
 
 
 class JudgmentRevision(StrictModel):
@@ -206,7 +277,9 @@ def _verified_checkpoint(judgment: DomainJudgment) -> DomainJudgment:
 def _result_spec(approved: ApprovedBatch, trial_id: str, result_id: str):
     spec = next((item for item in approved.proposal.result_specs if item.id == result_id), None)
     if spec is None or spec.trial.id != trial_id:
-        raise ValueError("ResultSpec does not belong to trial")
+        raise JudgmentValidationError(
+            "result_identity_invalid", "ResultSpec does not belong to trial"
+        )
     return spec
 
 
@@ -214,7 +287,9 @@ def _source(approved: ApprovedBatch, trial_id: str, result_id: str, source_id: s
     spec = _result_spec(approved, trial_id, result_id)
     source = next((item for item in approved.proposal.sources if item.id == source_id), None)
     if source is None or source.trial_id != spec.trial.id:
-        raise ValueError("evidence Source is not in ResultSpec trial approved inventory")
+        raise JudgmentValidationError(
+            "evidence_invalid", "evidence Source is outside approved inventory"
+        )
     return source
 
 
@@ -227,11 +302,15 @@ def _validate_evidence(
 ) -> None:
     source = _source(approved, trial_id, result_id, ref.source_id)
     if source.sha256 != ref.source_sha256:
-        raise ValueError("evidence Source hash does not match approved inventory")
+        raise JudgmentValidationError(
+            "evidence_invalid", "evidence Source hash does not match approved inventory"
+        )
     root = Path(workspace).resolve(strict=True)
     pages = _extract_pages(_source_bytes(root, source), source.media_type)
     if ref.page_number > len(pages):
-        raise ValueError("evidence page is outside captured Source")
+        raise JudgmentValidationError(
+            "evidence_invalid", "evidence page is outside captured Source"
+        )
     page = pages[ref.page_number - 1]
     if ref.kind == "text":
         if (
@@ -239,10 +318,14 @@ def _validate_evidence(
             or ref.end - ref.start != len(ref.quote)
             or page[ref.start : ref.end] != ref.quote
         ):
-            raise ValueError("text evidence coordinates do not match captured Source")
+            raise JudgmentValidationError(
+                "evidence_invalid", "text evidence coordinates do not match captured Source"
+            )
         return
     if ref.transcription not in page:
-        raise ValueError("visual transcription is not attributable to captured Source page")
+        raise JudgmentValidationError(
+            "evidence_invalid", "visual transcription is not attributable to captured Source page"
+        )
     rendered = render_page(
         workspace,
         source,
@@ -250,7 +333,9 @@ def _validate_evidence(
         None if ref.origin.value == "rendered_page" else ref.region,
     )
     if not isinstance(rendered, RenderedPage) or rendered.sha256 != ref.image_sha256:
-        raise ValueError("visual evidence does not match captured render")
+        raise JudgmentValidationError(
+            "evidence_invalid", "visual evidence does not match captured render"
+        )
 
 
 def build_domain_judgment(
@@ -270,24 +355,30 @@ def build_domain_judgment(
     _result_spec(approved, trial_id, result_id)
     domain = next((item for item in SCIENTIFIC_PACK.domains if item.id == domain_id), None)
     if domain is None:
-        raise ValueError("unknown domain")
+        raise JudgmentValidationError("domain_unknown", "unknown domain")
     mapping = {item.question_id: item.answer for item in active_answers}
     if len(mapping) != len(active_answers):
-        raise ValueError("active answers must be unique")
+        raise JudgmentValidationError("question_partition_invalid", "active answers must be unique")
     active = set(active_questions(mapping)) & set(domain.question_ids)
     inactive = {item.question_id for item in inactive_questions}
     if set(mapping) != active or inactive != set(domain.question_ids) - active:
-        raise ValueError("active and inactive questions must exactly partition the Domain")
+        raise JudgmentValidationError(
+            "question_partition_invalid", "questions must exactly partition the Domain"
+        )
     evaluation = evaluate_domain(domain_id, mapping)
     final = evaluation.judgment if final_judgment is None else final_judgment
     if (final != evaluation.judgment) != (override is not None):
-        raise ValueError("override is required exactly when final judgment differs")
+        raise JudgmentValidationError(
+            "override_invalid", "override is required exactly when final judgment differs"
+        )
     packs = {item.id: item for item in approved.pack_identities}
     try:
         scientific_pack = packs[SCIENTIFIC_PACK.id]
         policy_pack = packs[MAINTAINER_POLICY_PACK.id]
     except KeyError as error:
-        raise ValueError("approved batch has incomplete pack identities") from error
+        raise JudgmentValidationError(
+            "pack_identities_invalid", "approved batch has incomplete pack identities"
+        ) from error
     payload = {
         "approved_batch_hash": approved.frozen_hash,
         "trial_id": trial_id,
@@ -309,21 +400,171 @@ def build_domain_judgment(
     return incomplete.model_copy(update={"checkpoint_hash": sha256(checkpoint_content(incomplete))})
 
 
-def save_domain_judgment(
+def _receipt(
+    state: ApprovedBatch,
+    payload: DomainJudgmentPayload,
+    judgment: DomainJudgment,
+    active_revision: int | None,
+    active_hash: str | None,
+    proposed_status: Literal["saved", "revised"],
+    remaining: tuple[str, ...],
+) -> ValidationReceipt:
+    content = {
+        "approved_batch_hash": state.frozen_hash,
+        "trial_id": payload.trial_id,
+        "result_id": payload.result_id,
+        "domain_id": payload.domain_id,
+        "payload_hash": sha256(payload),
+        "expected_previous_hash": payload.expected_previous_hash,
+        "observed_active_revision": active_revision,
+        "observed_active_hash": active_hash,
+        "proposed_status": proposed_status,
+        "proposed_judgment_hash": judgment.checkpoint_hash,
+        "remaining_domains": remaining,
+        "pack_identities_hash": sha256(state.pack_identities),
+    }
+    receipt_hash = sha256(content)
+    return ValidationReceipt(
+        **content,
+        receipt_hash=receipt_hash,
+        commit_token=sha256({"purpose": "domain_judgment_commit", "receipt_hash": receipt_hash}),
+    )
+
+
+def _evaluate(
+    workspace: str | Path, connection, state: ApprovedBatch, payload: DomainJudgmentPayload
+) -> _Evaluation | JudgmentCondition | JudgmentConflict:
+    if connection.execute(
+        "SELECT 1 FROM records WHERE name=?",
+        (f"terminal_trial:{state.frozen_hash}:{payload.trial_id}",),
+    ).fetchone():
+        return JudgmentCondition(
+            code="trial_terminal", detail="terminal Trials cannot accept revised Domain judgments"
+        )
+    judgment = build_domain_judgment(
+        state,
+        payload.trial_id,
+        payload.result_id,
+        payload.domain_id,
+        payload.active_answers,
+        payload.inactive_questions,
+        payload.final_judgment,
+        payload.override,
+        payload.limitations,
+        payload.actor,
+        payload.observed_at,
+    )
+    for answer in payload.active_answers:
+        for use in answer.evidence_uses:
+            for ref in use.refs:
+                _validate_evidence(workspace, state, payload.trial_id, payload.result_id, ref)
+    key = judgment_key(state.frozen_hash, payload.trial_id, payload.result_id, payload.domain_id)
+    row = connection.execute("SELECT payload FROM records WHERE name=?", (key,)).fetchone()
+    remaining = remaining_domains(state, payload.trial_id, payload.result_id, connection)
+    if row is None:
+        if payload.expected_previous_hash is not None:
+            return JudgmentCondition(
+                code="checkpoint_absent",
+                detail="a first Domain judgment must not specify expected_previous_hash",
+            )
+        return _Evaluation(
+            judgment,
+            None,
+            None,
+            None,
+            tuple(item for item in remaining if item != payload.domain_id),
+        )
+    try:
+        existing = _verified_checkpoint(DomainJudgment.model_validate_json(bytes(row[0])))
+    except (ValidationError, ValueError) as error:
+        return JudgmentCondition(code="revision_history_corrupt", detail=str(error))
+    try:
+        revision, predecessor = verify_revision_history(
+            workspace,
+            connection,
+            state,
+            payload.trial_id,
+            payload.result_id,
+            payload.domain_id,
+            existing,
+        )
+    except (TypeError, ValueError) as error:
+        return JudgmentCondition(code="revision_history_corrupt", detail=str(error))
+    if existing == judgment and (
+        payload.expected_previous_hash == existing.checkpoint_hash
+        or payload.expected_previous_hash == predecessor
+        or payload.expected_previous_hash is None
+        and revision == 1
+    ):
+        return _Evaluation(judgment, existing, revision, existing.checkpoint_hash, remaining)
+    if payload.expected_previous_hash != existing.checkpoint_hash:
+        return JudgmentConflict(
+            judgment=existing,
+            active_revision=revision,
+            active_hash=existing.checkpoint_hash,
+            remaining_domains=remaining,
+        )
+    return _Evaluation(judgment, existing, revision, existing.checkpoint_hash, remaining)
+
+
+def validate_domain_judgment(
+    workspace: str | Path, payload: DomainJudgmentPayload
+) -> ValidateDomainJudgmentResult:
+    """Run all deterministic checks without writing a checkpoint or revision history."""
+    with read_only_transaction(workspace) as connection:
+        if connection is None:
+            return JudgmentCondition(
+                code="batch_not_approved", detail="an approved nonstale batch is required"
+            )
+        state = current_batch_in_transaction(workspace, connection)
+        if not isinstance(state, ApprovedBatch):
+            return JudgmentCondition(
+                code="batch_stale" if isinstance(state, StaleBatch) else "batch_not_approved",
+                detail="an approved nonstale batch is required",
+            )
+        try:
+            evaluated = _evaluate(workspace, connection, state, payload)
+        except JudgmentValidationError as error:
+            return JudgmentCondition(code=error.code, detail=error.detail)
+        except ValidationError as error:
+            return JudgmentCondition(code="judgment_invalid", detail=str(error))
+        if isinstance(evaluated, JudgmentCondition | JudgmentConflict):
+            return evaluated
+        judgment = evaluated.judgment
+        existing = evaluated.existing
+        revision = evaluated.active_revision
+        active_hash = evaluated.active_hash
+        remaining = evaluated.remaining_domains
+        status: Literal["saved", "revised"] = (
+            "saved" if existing is None or existing == judgment else "revised"
+        )
+        return JudgmentValidated(
+            judgment=judgment,
+            receipt=_receipt(state, payload, judgment, revision, active_hash, status, remaining),
+        )
+
+
+def commit_domain_judgment(
     workspace: str | Path,
-    trial_id: str,
-    result_id: str,
-    domain_id: str,
-    active_answers: tuple[ActiveAnswer, ...],
-    inactive_questions: tuple[InactiveQuestion, ...],
-    final_judgment: Judgment | None,
-    override: Override | None,
-    limitations: tuple[str, ...],
-    actor: str,
-    observed_at: datetime,
-    expected_previous_hash: str | None = None,
+    payload: DomainJudgmentPayload,
+    receipt: ValidationReceipt | None,
+    preflight: ScientificPreflight | None,
 ) -> SaveDomainJudgmentResult:
-    """Atomically save revision one or replace the active revision with exact CAS."""
+    """Commit only a whole-payload review that still matches its validation receipt."""
+    if receipt is None:
+        return JudgmentCondition(
+            code="validation_receipt_required", detail="commit requires a validation receipt"
+        )
+    if preflight is None:
+        return JudgmentCondition(
+            code="scientific_preflight_required",
+            detail="commit requires all preflight attestations",
+        )
+    if not all(preflight.model_dump().values()):
+        return JudgmentCondition(
+            code="scientific_preflight_invalid",
+            detail="all scientific preflight attestations must be true",
+        )
     with transaction(workspace) as connection:
         state = current_batch_in_transaction(workspace, connection)
         if not isinstance(state, ApprovedBatch):
@@ -331,37 +572,56 @@ def save_domain_judgment(
                 code="batch_stale" if isinstance(state, StaleBatch) else "batch_not_approved",
                 detail="an approved nonstale batch is required",
             )
-        terminal_key = f"terminal_trial:{state.frozen_hash}:{trial_id}"
-        if connection.execute("SELECT 1 FROM records WHERE name=?", (terminal_key,)).fetchone():
-            return JudgmentCondition(
-                code="trial_terminal",
-                detail="terminal Trials cannot accept revised Domain judgments",
-            )
-        judgment = build_domain_judgment(
-            state,
-            trial_id,
-            result_id,
-            domain_id,
-            active_answers,
-            inactive_questions,
-            final_judgment,
-            override,
-            limitations,
-            actor,
-            observed_at,
+        try:
+            evaluated = _evaluate(workspace, connection, state, payload)
+        except JudgmentValidationError as error:
+            return JudgmentCondition(code=error.code, detail=error.detail)
+        except ValidationError as error:
+            return JudgmentCondition(code="judgment_invalid", detail=str(error))
+        if isinstance(evaluated, JudgmentCondition | JudgmentConflict):
+            return evaluated
+        judgment = evaluated.judgment
+        existing = evaluated.existing
+        revision = evaluated.active_revision
+        active_hash = evaluated.active_hash
+        remaining = evaluated.remaining_domains
+        status: Literal["saved", "revised"] = (
+            "saved" if existing is None or existing == judgment else "revised"
         )
-        for answer in active_answers:
-            for use in answer.evidence_uses:
-                for ref in use.refs:
-                    _validate_evidence(workspace, state, trial_id, result_id, ref)
-        key = judgment_key(state.frozen_hash, trial_id, result_id, domain_id)
-        row = connection.execute("SELECT payload FROM records WHERE name=?", (key,)).fetchone()
-        if row is None:
-            if expected_previous_hash is not None:
-                return JudgmentCondition(
-                    code="checkpoint_absent",
-                    detail="a first Domain judgment must not specify expected_previous_hash",
+        expected_receipt = _receipt(
+            state, payload, judgment, revision, active_hash, status, remaining
+        )
+        replay_receipt = None
+        if existing == judgment:
+            if payload.expected_previous_hash is None and revision == 1:
+                replay_receipt = _receipt(
+                    state,
+                    payload,
+                    judgment,
+                    None,
+                    None,
+                    "saved",
+                    remaining,
                 )
+            elif payload.expected_previous_hash is not None and revision is not None:
+                replay_receipt = _receipt(
+                    state,
+                    payload,
+                    judgment,
+                    revision - 1,
+                    payload.expected_previous_hash,
+                    "revised",
+                    remaining,
+                )
+        if receipt not in (expected_receipt, replay_receipt):
+            return JudgmentCondition(
+                code="validation_receipt_mismatch",
+                detail="receipt, token, payload, active state, or pack identities no longer match",
+            )
+        key = judgment_key(
+            state.frozen_hash, payload.trial_id, payload.result_id, payload.domain_id
+        )
+        if existing is None:
             connection.execute(
                 "INSERT INTO records(name,payload) VALUES(?,?)",
                 (key, canonical_json_bytes(judgment)),
@@ -390,37 +650,17 @@ def save_domain_judgment(
                 judgment=judgment,
                 active_revision=1,
                 active_hash=judgment.checkpoint_hash,
-                remaining_domains=remaining_domains(state, trial_id, result_id, connection),
-            )
-        existing = _verified_checkpoint(DomainJudgment.model_validate_json(bytes(row[0])))
-        try:
-            active_revision, active_predecessor_hash = verify_revision_history(
-                workspace, connection, state, trial_id, result_id, domain_id, existing
-            )
-        except (TypeError, ValueError) as error:
-            return JudgmentCondition(code="revision_history_corrupt", detail=str(error))
-        remaining = remaining_domains(state, trial_id, result_id, connection)
-        if existing == judgment and (
-            expected_previous_hash == existing.checkpoint_hash
-            or expected_previous_hash == active_predecessor_hash
-            or expected_previous_hash is None
-            and active_revision == 1
-        ):
-            return JudgmentSaved(
-                judgment=existing,
-                active_revision=active_revision,
-                active_hash=existing.checkpoint_hash,
                 remaining_domains=remaining,
             )
-        if expected_previous_hash != existing.checkpoint_hash:
-            return JudgmentConflict(
+        if existing == judgment:
+            return JudgmentSaved(
                 judgment=existing,
-                active_revision=active_revision,
+                active_revision=revision or 1,
                 active_hash=existing.checkpoint_hash,
                 remaining_domains=remaining,
             )
         if (
-            active_revision == 1
+            revision == 1
             and connection.execute(
                 "SELECT 1 FROM records WHERE name=?", (revision_index_key(key),)
             ).fetchone()
@@ -448,7 +688,7 @@ def save_domain_judgment(
                     ),
                 ),
             )
-        next_revision = active_revision + 1
+        next_revision = (revision or 0) + 1
         connection.execute(
             "INSERT INTO records(name,payload) VALUES(?,?)",
             (

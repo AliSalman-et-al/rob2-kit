@@ -43,8 +43,8 @@
     }
   },
   "skills": [
-    {"name": "rob2-workflow", "content_sha256": "sha256:720354b4815d07507e7245885b9df06dd5f1ee7d4be43ab7d63d63b6a544f33d"},
-    {"name": "rob2-signalling", "content_sha256": "sha256:d2085309f854c28a08efc01c6179e5821db3bb56bd539fb4870a23c21069f4e9"}
+    {"name": "rob2-workflow", "content_sha256": "sha256:68716b408114049dd8eec383efbe4829b789e4cb1d214a6d0d6022ebf5c48cbf"},
+    {"name": "rob2-signalling", "content_sha256": "sha256:119deffcabc05b9b000eef6088559058b20794b2027d07bfa30c91c86c8c81c2"}
   ],
   "mcp_contract": {
     "tools": ["save_proposal", "ingest_batch", "list_sources", "read_pages", "search_sources", "render_page", "approve_batch", "save_domain_judgment", "finish_trial", "finalize_batch", "discard_active_batch"],
@@ -70,6 +70,6 @@
       "src/rob2_kit/hosts/*.json",
       "src/rob2_kit/skills/*/SKILL.md"
     ],
-    "content_sha256": "sha256:a1858d6007df8ee333dc00a6f771e3f4c78d135a9d8b2e80aec26fbe5d7c92c1"
+    "content_sha256": "sha256:ddcce0a119a1f69711ec9c0b6de6e184cdcf568f877a57b5623b198fade54005"
   }
 }

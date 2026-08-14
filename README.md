@@ -40,8 +40,8 @@ rob2-mcp
 ```
 
 The minimal workflow is: save one complete proposal, ingest its trial inputs,
-approve the batch, inspect each Trial's Sources and registry record, save its five
-Domain checkpoints, finish the Trial, then finalize the batch.
+approve the batch, inspect each Trial's Sources and registry record, validate and
+commit each of its five Domain checkpoints, finish the Trial, then finalize the batch.
 
 For the frozen release checks, see [the release contract](docs/release/README.md).
 Claude Code has accepted real-host evidence. Codex CLI 0.147.0 on Windows remains
