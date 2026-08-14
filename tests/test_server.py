@@ -21,6 +21,7 @@ from rob2_kit.assessment import (
     Trial,
 )
 from rob2_kit.batch import ApproveBatchResult, ApprovedBatch, SaveProposalResult, current_batch
+from rob2_kit.batch_summary import FinalizedBatch
 from rob2_kit.ingestion import ingest_batch
 from rob2_kit.server import mcp
 from rob2_kit.sources import SourceInput, SourceRole, TrialInput
@@ -221,6 +222,28 @@ def test_batch_tools_are_discoverable() -> None:
         "idempotentHint": False,
         "openWorldHint": None,
     }
+    finalized = FinalizedBatch.model_json_schema()
+    assert finalized["required"] == ["summary", "receipt"]
+    receipt = finalized["$defs"]["ArtifactReceipt"]
+    assert receipt["required"] == [
+        "bundle_path",
+        "bundle_hash",
+        "file_count",
+        "summary_hash",
+        "index_hash",
+    ]
+    assert set(receipt["properties"]) == {
+        "algorithm",
+        "bundle_path",
+        "bundle_hash",
+        "file_count",
+        "summary_hash",
+        "index_hash",
+    }
+    assert all(
+        receipt["properties"][name]["pattern"] == "^sha256:[0-9a-f]{64}$"
+        for name in ("bundle_hash", "summary_hash", "index_hash")
+    )
     request_schema = discard.inputSchema["properties"]["request"]
     assert request_schema["required"] == [
         "expected_frozen_hash",
