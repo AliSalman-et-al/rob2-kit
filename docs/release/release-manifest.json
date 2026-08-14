@@ -1,0 +1,75 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schema_version": 1,
+  "package": {
+    "name": "rob2-kit",
+    "version": "0.1.0",
+    "wheel_tag": "py3-none-any"
+  },
+  "candidate": {
+    "branch": "greenfield/epic-182",
+    "base_commit": "6d2013f1e125bc38f3bf1e5c4109b9f15676c50d",
+    "implementation_commit": "a87baa731d2a20fe95a394dde890bc3bd5c803af",
+    "release_freeze": "The release tag must be created from a clean checkout after this manifest is committed; this implementation commit is the frozen pre-manifest product base."
+  },
+  "dependencies": {
+    "fastmcp": "3.2.4",
+    "httpx": "0.28.1",
+    "pymupdf": "1.27.1"
+  },
+  "build_dependencies": {"hatchling": "1.27.0"},
+  "development_dependencies": {"pytest": "9.1.1", "ruff": "0.16.3", "ty": "0.0.71"},
+  "dependencies_lock_sha256": "sha256:b854d17ed615266d5c2c80c6205a65c26b681471ba510661ef7db1695f82f2a0",
+  "supported_platforms": {
+    "python": ["3.11", "3.12", "3.13"],
+    "os": ["ubuntu-latest", "windows-latest", "macos-latest"]
+  },
+  "canonical_schemas": {
+    "assessment_snapshot": {"id": "rob2.assessment_snapshot", "version": 1},
+    "batch_summary": {"id": "rob2.batch_summary", "version": 1},
+    "problem_terminal": {"id": "rob2.problem_terminal", "version": 1},
+    "registry_sources": {"id": "rob2-kit.registry-sources.v1", "version": 1}
+  },
+  "packs": {
+    "scientific": {
+      "id": "rob2.parallel.assignment",
+      "version": "2019.1",
+      "content_hash": "sha256:42acdc84ee422ea142cf661d22d1075ec0ef376f37e401080d3f728ae31e5267"
+    },
+    "policy": {
+      "id": "rob2-kit.retrieval-policy",
+      "version": "1.0.0",
+      "content_hash": "sha256:45baf929bc557ec14b2a44584bee1b418198ef6fd743d47a37d8dfcebd9fd697"
+    }
+  },
+  "skills": [
+    {"name": "rob2-workflow", "content_sha256": "sha256:5f4e560f5e44729dfb8e07ba1d4b3345aaa3fbeb9bf0f891e423c6ffe03c9af4"},
+    {"name": "rob2-signalling", "content_sha256": "sha256:047a87eeb21cc35ea3c60d432cd462591a1b38fc517ee26b7cca45499f1c362b"}
+  ],
+  "mcp_contract": {
+    "tools": ["save_proposal", "ingest_batch", "list_sources", "read_pages", "search_sources", "render_page", "approve_batch", "save_domain_judgment", "finish_trial", "finalize_batch", "discard_active_batch"],
+    "resources": ["rob2://current-batch", "rob2://domain-guidance/{domain_id}", "rob2://registry/{trial_id}"]
+  },
+  "host_acceptance": {
+    "claude_code": "accepted real-host proof; see docs/acceptance/issue-193.md",
+    "raw_mcp": "deterministic verification required by this manifest verifier",
+    "codex_windows_0.147.0": "unaccepted known limitation; not a passed host acceptance"
+  },
+  "execution_contract": {
+    "server": "rob2_kit.server:main",
+    "workspace_environment": "ROB2_WORKSPACE",
+    "lockfile": "uv.lock",
+    "model_loop": "installed Codex or Claude Code host only"
+  },
+  "source_contract": {
+    "algorithm": "sha256(path-nul-content; lexical-posix-path-order)",
+    "paths": [
+      "pyproject.toml",
+      "uv.lock",
+      "src/rob2_kit/**/*.py",
+      "src/rob2_kit/hosts/*.json",
+      "src/rob2_kit/skills/*/SKILL.md"
+    ],
+    "content_sha256": "sha256:c8a981e4c6b2f3770a1ad3c2f4b24a38710a52cd77615989d411b597b7cd3926"
+  }
+}

@@ -6,16 +6,25 @@ on:
 
 jobs:
   verify:
-    runs-on: ubuntu-latest
+    name: Python ${{ matrix.python-version }} on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        python-version: ["3.11", "3.12", "3.13"]
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.13"
+          python-version: "${{ matrix.python-version }}"
       - uses: astral-sh/setup-uv@v6
       - run: uv sync --locked --all-groups
-      - run: uv run ruff format --check src tests
-      - run: uv run ruff check src tests
-      - run: uv run ty check src tests
+      - run: uv run ruff format --check src tests docs/release
+      - run: uv run ruff check src tests docs/release
+      - run: uv run ty check src tests docs/release
       - run: uv run pytest
-      - run: uv build
+      - run: uv build --wheel --out-dir .release-dist
+      - run: uv run python docs/release/verify.py --wheel .release-dist/rob2_kit-0.1.0-py3-none-any.whl

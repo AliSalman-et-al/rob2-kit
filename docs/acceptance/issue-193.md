@@ -1,6 +1,13 @@
 # Issue #193 installed-host acceptance evidence
 
-Status: partial (2026-08-14).
+Status: waived for #194 release-candidate gating (2026-08-14).
+
+The owner explicitly accepts the successful real-host Claude Code acceptance plus
+the deterministic/raw-MCP verification as sufficient host proof for this release
+candidate. This waiver does not reclassify the Windows Codex result as accepted:
+Codex CLI 0.147.0 on Windows remains an unaccepted known limitation, documented
+below. It is a release limitation rather than a runtime compatibility change or
+an assertion that Codex has passed installed-host acceptance.
 
 The production wheel was built from `95d626ab5267dcf7935f3bae269811f5f3a6ea4b`
 and installed into an isolated virtual environment.  Its installed package contained
@@ -88,11 +95,11 @@ is corroborating external evidence only; it does not establish an identical root
 cause here.
 
 This result is additional evidence for #193's installed-host acceptance record,
-not completion of #193.  Issues #194--#196 remain gated because their acceptance
-requires Codex to complete MCP initialization and discover the installed server;
-that prerequisite still fails.  WSL and Docker were unavailable locally, and
-their installation was not authorized, so no alternative host path was used.  No
-runtime change or compatibility shim is proposed by this record.
+not completion of #193. The owner waiver at the top advances #194 despite this
+Codex limitation; it does not waive later work or mark Codex accepted. WSL and
+Docker were unavailable locally, and their installation was not authorized, so no
+alternative host path was used. No runtime change or compatibility shim is
+proposed by this record.
 
 ## Credential-free Codex Luna Medium reproduction
 
