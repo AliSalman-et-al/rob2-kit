@@ -34,8 +34,9 @@ resources for current-batch progress, pinned Domain guidance, and captured regis
 records. The portable skills are `rob2-workflow` and `rob2-signalling`; they
 instruct both supported hosts without creating a second model loop.
 
-The frozen release is `greenfield-v0.1.0-rc1` at `3b92ff5`. Its machine-readable
-contract and verification steps are in [docs/release](docs/release/README.md).
-Claude Code has accepted real-host evidence. Codex CLI 0.147.0 on Windows is an
-unaccepted known MCP limitation, recorded in
+The current frozen candidate identity is the annotated release-candidate tag
+recorded by the Git and release process. Its machine-readable contract and
+verification steps are in [docs/release](docs/release/README.md). Claude Code has
+accepted real-host evidence. Codex CLI 0.147.0 on Windows is an unaccepted known
+MCP limitation, recorded in
 [issue #193 acceptance evidence](docs/acceptance/issue-193.md).
