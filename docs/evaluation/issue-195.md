@@ -36,6 +36,7 @@ Claude Code was started with a strict one-shot MCP configuration pointing at the
 | Claude project-skill + strict-MCP allowlisted handshake | blocked | Installed-wheel skills were copied to the project `.claude/skills` directory. An initial `--tools` restriction was incorrect for MCP permissions and exposed only a file-read tool; the corrected `--allowedTools` probe still exposed no `rob2-kit` tool. |
 | Claude native project-MCP handshake | blocked | Claude's project-scoped MCP command generated a local `.mcp.json` with the installed executable and workspace environment, but its health remained `Pending approval`; the subsequent `dontAsk` session exposed only PubMed/file-read tools and could not call `list_sources`. |
 | Claude local single-server approval handshake | blocked | Local Claude settings enabled only `rob2-kit` through `enabledMcpjsonServers`, but health remained `Pending approval`; the final `--allowedTools` probe still exposed no `rob2-kit` tool. |
+| Claude always-load + explicit-settings handshake | blocked | The project server declared `alwaysLoad`; explicit settings enabled only `rob2-kit`, and tool search was disabled. Health remained `Pending approval` and the actual `list_sources` probe still had no such tool. |
 | Claude strict-MCP blinded CHAARTED PFS | blocked before ingestion | Three fresh attempts reported no `rob2-kit` tools in the assessment session. No source content was assessed and no provisional label was accessed. |
 | Claude blinded STAMPEDE PFS | not started | Blocked by the same host seam. |
 | Claude blinded TITAN PFS | not started | Blocked by the same host seam. |
@@ -61,11 +62,16 @@ As a final supported project-only mechanism, the temporary project added
 reported `Pending approval`, and the bounded `--allowedTools` probe exposed no
 `rob2-kit` tool. No further host retries were performed.
 
-Recorded bounded host diagnostics consumed USD 1.5451978 and 213.2 seconds in
-aggregate. The final local-approval probe consumed 18.6 seconds and USD
-0.1211485; none reached source ingestion. Claude reported ordinary service-tier
-usage and no usage-exhaustion signal. These are host diagnostics, not assessment
-costs.
+The final configuration declared `alwaysLoad` for the project server, supplied
+the same single-server approval through explicit Claude settings, and disabled
+tool search so tools would load eagerly. It too remained `Pending approval` and
+could not execute the no-source `list_sources` probe. No further host retries
+were performed.
+
+Recorded bounded host diagnostics consumed USD 1.9913558 and 218.7 seconds in
+aggregate. The final eager-load probe consumed 5.5 seconds and USD 0.446158;
+none reached source ingestion. Claude reported ordinary service-tier usage and
+no usage-exhaustion signal. These are host diagnostics, not assessment costs.
 
 ## Validation and recommendation
 
