@@ -13,12 +13,14 @@ whole-batch approval. It contains **Trials**, each with approved immutable
 ClinicalTrials.gov registry attempt or a typed condition.
 
 The host locates evidence using lexical search, exact page reading, and selective
-PDF rendering. A **Domain checkpoint** is an immutable, evidence-grounded record
-for one Trial and result: it binds active answers, inactive questions, attributable
-text or visual evidence, rationale, reviewing actor, and UTC observation time.
-The server validates checkpoints and derives Domain and overall judgments through
-the pinned deterministic RoB 2 logic; hosts do not invent evidence or save hidden
-reasoning.
+PDF rendering. A **Domain judgment** is a versioned, evidence-grounded working
+record for one Trial and result: before `finish_trial`, its active revision may be
+replaced by an exact-hash correction while prior revisions remain append-only audit
+entries. It binds active answers, inactive questions, attributable text or visual
+evidence, rationale, reviewing actor, and UTC observation time. `finish_trial`
+freezes the active revisions into an immutable AssessmentSnapshot. The server
+validates judgments and derives Domain and overall judgments through the pinned
+deterministic RoB 2 logic; hosts do not invent evidence or save hidden reasoning.
 
 Each Trial is terminal exactly once: `assessed`, `needs_input`, or `failed`.
 Assessment requires all five Domain checkpoints. Batch finalization records the

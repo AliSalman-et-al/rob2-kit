@@ -20,7 +20,12 @@ before every ordinary mutation.
 Completion: the batch is identified as absent, proposal, approved, or stale and
 the next unsaved action is known.
 
-- **Absent.** Gather the intake below, then ingest.
+- **Absent.** Inspect `inputs/<trial>` in the workspace. Identify its main article
+  and adjacent protocol, SAP, supplement, and secondary-report files. Use
+  workspace-relative paths in `ingest_batch`, with the main article as
+  `main_article` and each other Source assigned its actual role. Infer only what
+  the main article makes clear; stop for one concise researcher clarification on
+  a material Trial, comparison, result, or Source-role ambiguity.
 - **Proposal.** Inspect its sources and ResultSpecs; repair the complete proposal
   through `save_proposal`, then obtain researcher approval before `approve_batch`.
 - **Approved.** Resume each Trial from its saved checkpoints or terminal marker.
@@ -39,10 +44,12 @@ re-narrating evidence or deliberation.
 
 ## 2. Intake and proposal
 
-Record the requested outcome target, each Trial identity, and every explicit
-source path with its intended role. Call `ingest_batch`; retain its ingestion and
-registry conditions, captured source identities, hashes, and any local condition.
-Use `list_sources` to inspect the accepted immutable inventory by Trial.
+Record the requested outcome target, each Trial identity, and every discovered
+Source path with its intended role. Before a mutation, inspect the published tool
+schema or resource when a field is unknown; never use a save call to probe schema.
+Call `ingest_batch`; retain its ingestion and registry conditions, captured source
+identities, hashes, and any local condition. Use `list_sources` to inspect the
+accepted immutable inventory by Trial.
 
 With signalling evidence, form one complete proposal: exactly one Trial and one
 fully specified `ResultSpec` per intake Trial, approved sources, and an anchor
@@ -51,8 +58,8 @@ ResultSpec makes the effect, arms/comparison, outcome definition, measurement,
 time point, population, analysis method/choices, effect measure, and applicable
 values/denominators explicit.
 
-Completion: `save_proposal` returns a complete proposal with every issue resolved,
-and the researcher has seen the whole batch proposal and explicitly approved it.
+Completion: `save_proposal` returns a complete proposal with every issue resolved.
+Show the whole batch proposal to the researcher and wait for explicit approval.
 Only then call `approve_batch`; retain its frozen hash and pack identities.
 
 ## 3. Trial sequence
@@ -60,7 +67,11 @@ Only then call `approve_batch`; retain its frozen hash and pack identities.
 For each nonterminal Trial, invoke signalling with the approved Trial, ResultSpec,
 and only that Trial's approved Sources. Work Domains in order. A Domain advances
 only after `save_domain_judgment` confirms its saved checkpoint; recover a
-condition from current-batch and resume at the saved boundary.
+condition from current-batch and resume at the saved boundary. To correct an
+unfrozen Domain, first read its active checkpoint hash from the saved response or
+recovery, then submit the complete replacement with that exact
+`expected_previous_hash`; a conflict means reconcile the returned active revision
+before another attempt.
 
 Completion: the Trial has five confirmed saved Domain checkpoints, or a typed
 terminal problem makes further assessment impossible.
@@ -70,7 +81,10 @@ For a postapproval unrecoverable scientific problem, call `finish_trial` once
 with the matching typed `needs_input` or `failed` problem envelope for that Trial.
 This isolates the affected Trial: continue the remaining nonterminal Trials. A
 preapproval input blocker returns to the researcher instead of producing a
-terminal outcome.
+terminal outcome. After every Trial has a terminal outcome, call `finalize_batch`.
+An assessed `finish_trial` result directs `next_action: finalize_batch`; do not
+stop there or present a standalone host-authored HTML. Report only the canonical
+receipt-backed bundle returned by `finalize_batch`; never create or substitute it.
 
 ## 4. Batch handoff
 
@@ -81,7 +95,10 @@ Hand off its typed receipt: workspace-relative bundle path, deterministic bundle
 hash, file count, summary hash, and index hash, plus compact Trial
 terminal statuses. Never claim an artifact for a conflicting summary.
 
-Completion: the finalized artifact/hash is verified and reported once.
+Completion: `finalize_batch` returns `FinalizedBatch.receipt`, and the canonical
+HTML bundle named by that receipt is verified before it is reported. If a saved
+checkpoint is invalid, stop and report the condition; discard requires an explicit
+researcher instruction.
 
 ## 5. Destructive boundary
 

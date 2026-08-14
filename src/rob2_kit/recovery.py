@@ -27,7 +27,12 @@ from rob2_kit.batch_summary import (
 )
 from rob2_kit.finish import AssessmentSnapshot, _verified
 from rob2_kit.judgment_models import DomainJudgment
-from rob2_kit.judgments import _validate_evidence, _verified_checkpoint, build_domain_judgment
+from rob2_kit.judgments import (
+    _validate_evidence,
+    _verified_checkpoint,
+    build_domain_judgment,
+    verify_revision_history,
+)
 from rob2_kit.models import StrictModel, sha256
 from rob2_kit.packs import SCIENTIFIC_PACK
 from rob2_kit.reports import (
@@ -69,12 +74,21 @@ class DiscardActiveBatchRequest(StrictModel):
         return value
 
 
+class ActiveDomainCheckpoint(StrictModel):
+    """The exact compare-and-swap receipt for one resumable Domain."""
+
+    domain_id: str
+    active_revision: int = Field(ge=1)
+    active_hash: str
+
+
 class TrialProgress(StrictModel):
     trial_id: str
     status: Literal["pending", "assessed", "needs_input", "failed"]
     completed_domains: tuple[str, ...]
     pending_domains: tuple[str, ...]
     export_status: Literal["not_exported", "exported"]
+    active_domain_checkpoints: tuple[ActiveDomainCheckpoint, ...] = ()
 
 
 class RecoveryProgress(StrictModel):
@@ -111,7 +125,13 @@ def _result(state: ApprovedBatch, trial_id: str):
 
 
 def _checkpoint(
-    root: Path, state: ApprovedBatch, trial_id: str, result_id: str, domain_id: str, raw: bytes
+    root: Path,
+    state: ApprovedBatch,
+    trial_id: str,
+    result_id: str,
+    domain_id: str,
+    raw: bytes,
+    connection=None,
 ):
     judgment = _verified_checkpoint(DomainJudgment.model_validate_json(raw))
     if (
@@ -123,6 +143,17 @@ def _checkpoint(
         or judgment.policy_pack not in state.pack_identities
     ):
         raise ValueError("checkpoint does not bind the approved batch")
+    revision = 1
+    if connection is not None:
+        revision, _predecessor_hash = verify_revision_history(
+            root,
+            connection,
+            state,
+            trial_id,
+            result_id,
+            domain_id,
+            judgment,
+        )
     for answer in judgment.active_answers:
         for use in answer.evidence_uses:
             for ref in use.refs:
@@ -142,7 +173,7 @@ def _checkpoint(
     )
     if rebuilt != judgment:
         raise ValueError("checkpoint logic does not match saved content")
-    return judgment
+    return judgment, revision
 
 
 def _snapshot(
@@ -230,8 +261,8 @@ def _preserve_frozen_assessments(root: Path, state: ApprovedBatch) -> None:
                 ).fetchone()
                 if row is None:
                     raise ValueError("assessment terminal has incomplete checkpoints")
-                checkpoints[domain_id] = _checkpoint(
-                    root, state, trial.id, result.id, domain_id, bytes(row[0])
+                checkpoints[domain_id], _revision = _checkpoint(
+                    root, state, trial.id, result.id, domain_id, bytes(row[0]), connection
                 )
             row = connection.execute(
                 "SELECT payload FROM records WHERE name=?",
@@ -267,6 +298,7 @@ def recovery_progress(workspace: str | Path) -> RecoveryProgress:
                 return _corrupt("approved batch frozen hash is invalid")
             domains = tuple(item.id for item in SCIENTIFIC_PACK.domains)
             checkpoints: dict[str, dict[str, DomainJudgment]] = {}
+            revisions: dict[str, dict[str, int]] = {}
             terminals: dict[str, object] = {}
             snapshots: dict[str, AssessmentSnapshot] = {}
             snapshot_data: dict[str, bytes] = {}
@@ -274,6 +306,7 @@ def recovery_progress(workspace: str | Path) -> RecoveryProgress:
                 trial = next(item for item in state.proposal.trials if item.id == requested.id)
                 result = _result(state, trial.id)
                 completed: dict[str, DomainJudgment] = {}
+                completed_revisions: dict[str, int] = {}
                 for domain_id in domains:
                     row = connection.execute(
                         "SELECT payload FROM records WHERE name=?",
@@ -282,10 +315,11 @@ def recovery_progress(workspace: str | Path) -> RecoveryProgress:
                         ),
                     ).fetchone()
                     if row is not None:
-                        completed[domain_id] = _checkpoint(
-                            root, state, trial.id, result.id, domain_id, bytes(row[0])
+                        completed[domain_id], completed_revisions[domain_id] = _checkpoint(
+                            root, state, trial.id, result.id, domain_id, bytes(row[0]), connection
                         )
                 checkpoints[trial.id] = completed
+                revisions[trial.id] = completed_revisions
                 terminal_row = connection.execute(
                     "SELECT payload FROM records WHERE name=?",
                     (f"terminal_trial:{state.frozen_hash}:{trial.id}",),
@@ -364,6 +398,14 @@ def recovery_progress(workspace: str | Path) -> RecoveryProgress:
                 export_status="exported"
                 if exported or batch_exported and status == "assessed"
                 else "not_exported",
+                active_domain_checkpoints=tuple(
+                    ActiveDomainCheckpoint(
+                        domain_id=domain_id,
+                        active_revision=revisions[trial.id][domain_id],
+                        active_hash=checkpoints[trial.id][domain_id].checkpoint_hash,
+                    )
+                    for domain_id in completed_ids
+                ),
             )
         )
     return RecoveryProgress(

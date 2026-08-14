@@ -1,5 +1,6 @@
 from datetime import UTC, datetime
 from pathlib import Path
+from threading import Barrier, Thread
 
 import pymupdf
 import pytest
@@ -27,8 +28,11 @@ from rob2_kit.judgment_models import (
 )
 from rob2_kit.judgments import (
     JudgmentConflict,
+    JudgmentRevised,
     JudgmentSaved,
     checkpoint_content,
+    judgment_key,
+    revision_key,
     save_domain_judgment,
 )
 from rob2_kit.logic.evaluator import active_questions
@@ -161,6 +165,7 @@ def _save(
     limitations: tuple[str, ...] = (),
     actor: str = "reviewer",
     observed_at: datetime = OBSERVED,
+    expected_previous_hash: str | None = None,
 ):
     active, inactive = _answers(domain_id, source)
     return save_domain_judgment(
@@ -175,6 +180,7 @@ def _save(
         limitations,
         actor,
         observed_at,
+        expected_previous_hash,
     )
 
 
@@ -292,3 +298,156 @@ def test_persisted_checkpoint_hash_round_trips_and_tampering_fails_closed(tmp_pa
                 "UPDATE records SET payload=? WHERE name=?",
                 (canonical_json_bytes(saved.judgment), key),
             )
+
+
+def test_correction_uses_exact_hash_and_preserves_append_only_history(tmp_path: Path) -> None:
+    workspace, source = approved_workspace(tmp_path)
+    first = _save(workspace, source)
+    assert isinstance(first, JudgmentSaved)
+    corrected = _save(
+        workspace,
+        source,
+        limitations=("The report did not describe allocation concealment.",),
+        expected_previous_hash=first.judgment.checkpoint_hash,
+    )
+    assert isinstance(corrected, JudgmentRevised)
+    assert corrected.active_revision == 2
+    assert corrected.remaining_domains == tuple(item.id for item in SCIENTIFIC_PACK.domains[1:])
+    stale = _save(
+        workspace,
+        source,
+        limitations=("A competing correction.",),
+        expected_previous_hash=first.judgment.checkpoint_hash,
+    )
+    assert isinstance(stale, JudgmentConflict)
+    assert stale.judgment == corrected.judgment and stale.active_revision == 2
+    active_key = (
+        f"domain_judgment:{corrected.judgment.approved_batch_hash}:t:r:domain:randomization"
+    )
+    with transaction(workspace) as connection:
+        history = connection.execute(
+            "SELECT name FROM records WHERE name IN (?,?) ORDER BY name",
+            (revision_key(active_key, 1), revision_key(active_key, 2)),
+        ).fetchall()
+    assert {name for (name,) in history} == {
+        revision_key(active_key, 1),
+        revision_key(active_key, 2),
+    }
+    from rob2_kit.recovery import recovery_progress
+
+    assert recovery_progress(workspace).status == "approved"
+
+
+def test_identical_checkpoint_replays_are_saved_without_new_audit_revision(tmp_path: Path) -> None:
+    workspace, source = approved_workspace(tmp_path)
+    first = _save(workspace, source)
+    assert isinstance(first, JudgmentSaved) and first.active_revision == 1
+    replay_without_cas = _save(workspace, source)
+    replay_with_cas = _save(workspace, source, expected_previous_hash=first.active_hash)
+    assert isinstance(replay_without_cas, JudgmentSaved)
+    assert isinstance(replay_with_cas, JudgmentSaved)
+    assert replay_without_cas.active_hash == replay_with_cas.active_hash == first.active_hash
+    key = judgment_key(first.judgment.approved_batch_hash, "t", "r", first.judgment.domain_id)
+    with transaction(workspace) as connection:
+        assert (
+            connection.execute(
+                "SELECT COUNT(*) FROM records WHERE name=?", (revision_key(key, 1),)
+            ).fetchone()[0]
+            == 1
+        )
+        assert (
+            connection.execute(
+                "SELECT COUNT(*) FROM records WHERE name=?", (revision_key(key, 2),)
+            ).fetchone()[0]
+            == 0
+        )
+
+
+def test_lost_response_correction_replays_with_verified_predecessor_hash(tmp_path: Path) -> None:
+    workspace, source = approved_workspace(tmp_path)
+    first = _save(workspace, source)
+    corrected = _save(
+        workspace,
+        source,
+        limitations=("Correction that lost its response.",),
+        expected_previous_hash=first.active_hash,
+    )
+    assert isinstance(corrected, JudgmentRevised) and corrected.active_revision == 2
+    replay = _save(
+        workspace,
+        source,
+        limitations=("Correction that lost its response.",),
+        expected_previous_hash=first.active_hash,
+    )
+    assert isinstance(replay, JudgmentSaved)
+    assert replay.active_revision == 2 and replay.active_hash == corrected.active_hash
+    from rob2_kit.recovery import recovery_progress
+
+    assert recovery_progress(workspace).status == "approved"
+    restarted_replay = _save(
+        workspace,
+        source,
+        limitations=("Correction that lost its response.",),
+        expected_previous_hash=first.active_hash,
+    )
+    assert isinstance(restarted_replay, JudgmentSaved)
+    conflict = _save(
+        workspace,
+        source,
+        limitations=("Correction that lost its response.",),
+        expected_previous_hash="sha256:" + "0" * 64,
+    )
+    assert isinstance(conflict, JudgmentConflict)
+    key = judgment_key(first.judgment.approved_batch_hash, "t", "r", first.judgment.domain_id)
+    with transaction(workspace) as connection:
+        assert (
+            connection.execute(
+                "SELECT COUNT(*) FROM records WHERE name=?", (revision_key(key, 3),)
+            ).fetchone()[0]
+            == 0
+        )
+
+
+def test_absent_checkpoint_rejects_non_null_compare_and_swap_hash(tmp_path: Path) -> None:
+    workspace, source = approved_workspace(tmp_path)
+    result = _save(workspace, source, expected_previous_hash="sha256:" + "0" * 64)
+    assert result.status == "condition" and result.code == "checkpoint_absent"
+
+
+def test_concurrent_corrections_leave_one_active_revision(tmp_path: Path) -> None:
+    workspace, source = approved_workspace(tmp_path)
+    first = _save(workspace, source)
+    assert isinstance(first, JudgmentSaved)
+    start = Barrier(2)
+    results: list[JudgmentRevised | JudgmentConflict] = []
+
+    def correct(limitation: str) -> None:
+        start.wait()
+        result = _save(
+            workspace,
+            source,
+            limitations=(limitation,),
+            expected_previous_hash=first.judgment.checkpoint_hash,
+        )
+        assert isinstance(result, JudgmentRevised | JudgmentConflict)
+        results.append(result)
+
+    threads = [
+        Thread(target=correct, args=("Correction one.",)),
+        Thread(target=correct, args=("Correction two.",)),
+    ]
+    for thread in threads:
+        thread.start()
+    for thread in threads:
+        thread.join(timeout=10)
+        assert not thread.is_alive()
+    assert sum(isinstance(result, JudgmentRevised) for result in results) == 1
+    assert sum(isinstance(result, JudgmentConflict) for result in results) == 1
+    assert all(result.active_revision == 2 for result in results)
+
+
+def test_revision_key_is_collision_safe_for_composite_identifiers() -> None:
+    left = judgment_key("sha256:" + "a" * 64, "trial_a", "result_b", "domain:c")
+    right = judgment_key("sha256:" + "a" * 64, "trial", "a:result_b", "domain:c")
+    percent = judgment_key("sha256:" + "a" * 64, "trial_%", "result", "domain:c")
+    assert len({revision_key(left, 1), revision_key(right, 1), revision_key(percent, 1)}) == 3

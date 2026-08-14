@@ -11,7 +11,13 @@ from pydantic import Field, field_validator, model_validator
 from rob2_kit.assessment import ResultSpec, Trial
 from rob2_kit.batch import ApprovedBatch, PackIdentity, StaleBatch, current_batch_in_transaction
 from rob2_kit.judgment_models import DomainJudgment, Override
-from rob2_kit.judgments import _validate_evidence, _verified_checkpoint, build_domain_judgment
+from rob2_kit.judgments import (
+    _validate_evidence,
+    _verified_checkpoint,
+    build_domain_judgment,
+    judgment_key,
+    verify_revision_history,
+)
 from rob2_kit.logic.evaluator import evaluate_overall
 from rob2_kit.models import Judgment, OverallEvaluation, StrictModel, canonical_json_bytes, sha256
 from rob2_kit.packs import SCIENTIFIC_PACK
@@ -59,6 +65,7 @@ class AssessmentSnapshot(StrictModel):
 class FinishSaved(StrictModel):
     status: Literal["saved"] = "saved"
     snapshot: AssessmentSnapshot
+    next_action: Literal["finalize_batch"] = "finalize_batch"
 
 
 class FinishConflict(StrictModel):
@@ -139,18 +146,31 @@ def finish_trial(
                         ProblemTerminal.model_validate_json(bytes(existing_terminal[0]))
                     ).terminal_hash
                 )
-        prefix = f"domain_judgment:{state.frozen_hash}:{trial_id}:{result.id}:"
-        rows = connection.execute(
-            "SELECT name,payload FROM records WHERE name LIKE ?", (prefix + "%",)
-        ).fetchall()
         expected = {item.id for item in SCIENTIFIC_PACK.domains}
         judgments = []
-        for _, data in rows:
+        for domain_id in expected:
+            row = connection.execute(
+                "SELECT payload FROM records WHERE name=?",
+                (judgment_key(state.frozen_hash, trial_id, result.id, domain_id),),
+            ).fetchone()
+            if row is None:
+                continue
+            data = row[0]
             checkpoint = _verified_checkpoint(DomainJudgment.model_validate_json(bytes(data)))
+            verify_revision_history(
+                workspace,
+                connection,
+                state,
+                trial_id,
+                result.id,
+                domain_id,
+                checkpoint,
+            )
             if (
                 checkpoint.approved_batch_hash != state.frozen_hash
                 or checkpoint.trial_id != trial_id
                 or checkpoint.result_id != result.id
+                or checkpoint.domain_id != domain_id
                 or checkpoint.scientific_pack not in state.pack_identities
                 or checkpoint.policy_pack not in state.pack_identities
             ):

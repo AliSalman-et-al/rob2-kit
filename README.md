@@ -7,10 +7,13 @@ the deterministic workflow, structured records, and evidence services.
 It ingests local trial material, attempts matched ClinicalTrials.gov registry
 capture, and exposes immutable Sources for lexical search, page-text reading, and
 selective PDF rendering. A complete batch proposal must be saved and approved
-before assessment. Evidence-grounded, immutable Domain checkpoints feed the
-deterministic RoB 2 decision logic. Each Trial ends exactly once as an assessment,
-`needs_input`, or `failed`; finalization produces durable recovery state and
-verified trial and batch HTML reports.
+before assessment. Evidence-grounded Domain judgments are versioned working
+records: before `finish_trial`, an exact active-hash correction replaces the active
+revision while earlier revisions remain append-only audit entries. `finish_trial`
+freezes active revisions into an immutable assessment snapshot for deterministic
+RoB 2 logic. Each Trial ends exactly once as an assessment, `needs_input`, or
+`failed`; finalization produces durable recovery state and verified trial and batch
+HTML reports.
 
 ## Public MCP contract
 

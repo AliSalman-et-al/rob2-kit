@@ -616,6 +616,7 @@ def test_domain_checkpoint_tool_and_guidance_are_explicit() -> None:
     assert payload["domain"]["id"] == "domain:randomization"
     assert payload["questions"] and payload["scientific_pack"]["content_hash"].startswith("sha256:")
     assert payload["policy_pack"]["content_hash"].startswith("sha256:")
+    assert "expected_previous_hash" in schema["properties"]
 
 
 def test_batch_tools_return_typed_structured_conditions(tmp_path: Path, monkeypatch) -> None:

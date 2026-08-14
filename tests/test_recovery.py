@@ -1,3 +1,4 @@
+import json
 import sqlite3
 import subprocess
 import sys
@@ -5,13 +6,15 @@ import threading
 from datetime import UTC, datetime
 from pathlib import Path
 
+import pytest
 from test_judgments import _save, approved_workspace
 
 from rob2_kit.batch import ApprovedBatch, Problem, StaleBatch, current_batch
 from rob2_kit.finish import finish_trial
 from rob2_kit.judgment_models import DomainJudgment
-from rob2_kit.judgments import checkpoint_content
+from rob2_kit.judgments import checkpoint_content, judgment_key, revision_index_key, revision_key
 from rob2_kit.models import Judgment, canonical_json_bytes, sha256
+from rob2_kit.packs import SCIENTIFIC_PACK
 from rob2_kit.recovery import DiscardActiveBatchRequest, discard_active_batch, recovery_progress
 from rob2_kit.reports import export_trial
 from rob2_kit.storage import WorkspaceLock, WorkspaceLockedError, save_state
@@ -39,6 +42,101 @@ def test_progress_is_derived_from_approved_durable_records(tmp_path: Path) -> No
     assert initial.status == "approved"
     assert initial.trials[0].status == "pending"
     assert len(initial.trials[0].pending_domains) == 5
+
+
+def test_restart_progress_supplies_cas_receipt_for_correction(tmp_path: Path) -> None:
+    workspace, source = approved_workspace(tmp_path)
+    saved = _save(workspace, source)
+    progress = recovery_progress(workspace)
+    receipt = progress.trials[0].active_domain_checkpoints[0]
+    assert receipt.domain_id == saved.judgment.domain_id
+    assert receipt.active_revision == 1 and receipt.active_hash == saved.active_hash
+    revised = _save(
+        workspace,
+        source,
+        limitations=("Clarified after restart.",),
+        expected_previous_hash=receipt.active_hash,
+    )
+    assert revised.status == "revised" and revised.active_revision == 2
+
+
+def test_legacy_active_checkpoint_needs_no_migration_before_correction(tmp_path: Path) -> None:
+    workspace, source = approved_workspace(tmp_path)
+    saved = _save(workspace, source)
+    key = judgment_key(saved.judgment.approved_batch_hash, "t", "r", saved.judgment.domain_id)
+    with sqlite3.connect(workspace / ".rob2-kit" / "active-batch.sqlite3") as connection:
+        connection.execute(
+            "DELETE FROM records WHERE name IN (?,?)",
+            (revision_key(key, 1), revision_index_key(key)),
+        )
+    receipt = recovery_progress(workspace).trials[0].active_domain_checkpoints[0]
+    assert receipt.active_revision == 1 and receipt.active_hash == saved.active_hash
+    assert (
+        _save(
+            workspace,
+            source,
+            limitations=("Legacy correction.",),
+            expected_previous_hash=receipt.active_hash,
+        ).status
+        == "revised"
+    )
+
+
+def test_missing_revision_index_is_corrupt_not_legacy(tmp_path: Path) -> None:
+    workspace, source = approved_workspace(tmp_path)
+    saved = _save(workspace, source)
+    revised = _save(
+        workspace,
+        source,
+        limitations=("Creates revision two.",),
+        expected_previous_hash=saved.active_hash,
+    )
+    key = judgment_key(revised.judgment.approved_batch_hash, "t", "r", revised.judgment.domain_id)
+    with sqlite3.connect(workspace / ".rob2-kit" / "active-batch.sqlite3") as connection:
+        raw = connection.execute(
+            "SELECT payload FROM records WHERE name=?", (revision_key(key, 1),)
+        ).fetchone()[0]
+        entry = json.loads(bytes(raw))
+        entry["active_key"] = "forged"
+        connection.execute(
+            "UPDATE records SET payload=? WHERE name=?",
+            (canonical_json_bytes(entry), revision_key(key, 1)),
+        )
+        connection.execute("DELETE FROM records WHERE name=?", (revision_index_key(key),))
+    assert recovery_progress(workspace).status == "stale"
+    condition = _save(workspace, source, expected_previous_hash=revised.active_hash)
+    assert condition.status == "condition" and condition.code == "revision_history_corrupt"
+    for domain in SCIENTIFIC_PACK.domains[1:]:
+        _save(workspace, source, domain.id)
+    with pytest.raises(ValueError, match="revision"):
+        finish_trial(
+            workspace, "t", None, None, None, (), "actor", datetime(2026, 8, 14, tzinfo=UTC)
+        )
+
+
+def test_revision_payload_number_must_match_its_fixed_width_name(tmp_path: Path) -> None:
+    workspace, source = approved_workspace(tmp_path)
+    saved = _save(workspace, source)
+    revised = _save(
+        workspace,
+        source,
+        limitations=("Creates revision two.",),
+        expected_previous_hash=saved.active_hash,
+    )
+    key = judgment_key(revised.judgment.approved_batch_hash, "t", "r", revised.judgment.domain_id)
+    with sqlite3.connect(workspace / ".rob2-kit" / "active-batch.sqlite3") as connection:
+        raw = connection.execute(
+            "SELECT payload FROM records WHERE name=?", (revision_key(key, 1),)
+        ).fetchone()[0]
+        entry = json.loads(bytes(raw))
+        entry["revision"] = 2
+        connection.execute(
+            "UPDATE records SET payload=? WHERE name=?",
+            (canonical_json_bytes(entry), revision_key(key, 1)),
+        )
+    assert recovery_progress(workspace).status == "stale"
+    condition = _save(workspace, source, expected_previous_hash=revised.active_hash)
+    assert condition.status == "condition" and condition.code == "revision_history_corrupt"
 
 
 def test_discard_removes_only_unfinished_runtime_database(tmp_path: Path) -> None:
@@ -127,6 +225,42 @@ def test_recovery_rejects_self_hashed_checkpoint_with_changed_logic(tmp_path: Pa
     progress = recovery_progress(workspace)
     assert progress.status == "stale"
     assert progress.problems[0].code == "corrupt_active_batch"
+
+
+def test_tampered_audit_identity_fails_save_recovery_and_finish(tmp_path: Path) -> None:
+    workspace, source = approved_workspace(tmp_path)
+    saved = _save(workspace, source)
+    revised = _save(
+        workspace,
+        source,
+        limitations=("Correction establishes history.",),
+        expected_previous_hash=saved.active_hash,
+    )
+    key = judgment_key(revised.judgment.approved_batch_hash, "t", "r", revised.judgment.domain_id)
+    with sqlite3.connect(workspace / ".rob2-kit" / "active-batch.sqlite3") as connection:
+        raw = connection.execute(
+            "SELECT payload FROM records WHERE name=?", (revision_key(key, 1),)
+        ).fetchone()[0]
+        entry = json.loads(bytes(raw))
+        entry["judgment"]["trial_id"] = "other"
+        altered = DomainJudgment.model_validate(entry["judgment"])
+        altered = altered.model_copy(
+            update={"checkpoint_hash": sha256(checkpoint_content(altered))}
+        )
+        entry["judgment"] = altered.model_dump(mode="json")
+        connection.execute(
+            "UPDATE records SET payload=? WHERE name=?",
+            (canonical_json_bytes(entry), revision_key(key, 1)),
+        )
+    condition = _save(workspace, source, expected_previous_hash=revised.active_hash)
+    assert condition.status == "condition" and condition.code == "revision_history_corrupt"
+    assert recovery_progress(workspace).status == "stale"
+    for domain in SCIENTIFIC_PACK.domains[1:]:
+        _save(workspace, source, domain.id)
+    with pytest.raises(ValueError, match="revision"):
+        finish_trial(
+            workspace, "t", None, None, None, (), "actor", datetime(2026, 8, 14, tzinfo=UTC)
+        )
 
 
 def test_discard_preserves_exporter_residues(tmp_path: Path) -> None:

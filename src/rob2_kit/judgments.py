@@ -1,10 +1,12 @@
-"""Immutable, evidence-bound checkpoints for one RoB 2 domain."""
+"""Versioned working Domain judgments and immutable audit history for one RoB 2 domain."""
 
 from __future__ import annotations
 
 from datetime import datetime
 from pathlib import Path
 from typing import Literal
+
+from pydantic import Field, model_validator
 
 from rob2_kit.batch import (
     ApprovedBatch,
@@ -28,14 +30,29 @@ from rob2_kit.sources import Source, _extract_pages
 from rob2_kit.storage import transaction
 
 
-class JudgmentSaved(StrictModel):
+class _ActiveJudgmentResult(StrictModel):
+    judgment: DomainJudgment
+    active_revision: int = Field(ge=1)
+    active_hash: str
+    remaining_domains: tuple[str, ...]
+
+    @model_validator(mode="after")
+    def active_hash_matches_judgment(self):
+        if self.active_hash != self.judgment.checkpoint_hash:
+            raise ValueError("active hash must match the returned judgment")
+        return self
+
+
+class JudgmentSaved(_ActiveJudgmentResult):
     status: Literal["saved"] = "saved"
-    judgment: DomainJudgment
 
 
-class JudgmentConflict(StrictModel):
+class JudgmentRevised(_ActiveJudgmentResult):
+    status: Literal["revised"] = "revised"
+
+
+class JudgmentConflict(_ActiveJudgmentResult):
     status: Literal["conflict"] = "conflict"
-    judgment: DomainJudgment
 
 
 class JudgmentCondition(StrictModel):
@@ -44,7 +61,135 @@ class JudgmentCondition(StrictModel):
     detail: str
 
 
-SaveDomainJudgmentResult = JudgmentSaved | JudgmentConflict | JudgmentCondition
+SaveDomainJudgmentResult = JudgmentSaved | JudgmentRevised | JudgmentConflict | JudgmentCondition
+
+
+class JudgmentRevision(StrictModel):
+    """One append-only audit entry; the unversioned checkpoint key is the active revision."""
+
+    active_key: str
+    revision: int = Field(ge=1)
+    previous_hash: str | None = None
+    judgment: DomainJudgment
+
+
+class JudgmentRevisionIndex(StrictModel):
+    active_key: str
+    active_revision: int = Field(ge=1)
+    active_hash: str
+
+
+def judgment_key(batch_hash: str, trial_id: str, result_id: str, domain_id: str) -> str:
+    return f"domain_judgment:{batch_hash}:{trial_id}:{result_id}:{domain_id}"
+
+
+def _revision_id(active_key: str) -> str:
+    return sha256({"active_key": active_key}).removeprefix("sha256:")
+
+
+def revision_key(active_key: str, revision: int) -> str:
+    if not 1 <= revision < 10**20:
+        raise ValueError("revision is outside the fixed-width key range")
+    return f"domain_judgment_revision:{_revision_id(active_key)}:{revision:020d}"
+
+
+def revision_index_key(active_key: str) -> str:
+    return f"domain_judgment_revision_index:{_revision_id(active_key)}"
+
+
+def remaining_domains(
+    state: ApprovedBatch, trial_id: str, result_id: str, connection
+) -> tuple[str, ...]:
+    """Return the exact ordered set still unsaved for this Trial's ResultSpec."""
+    return tuple(
+        domain.id
+        for domain in SCIENTIFIC_PACK.domains
+        if connection.execute(
+            "SELECT 1 FROM records WHERE name=?",
+            (judgment_key(state.frozen_hash, trial_id, result_id, domain.id),),
+        ).fetchone()
+        is None
+    )
+
+
+def verify_revision_history(
+    workspace: str | Path,
+    connection,
+    state: ApprovedBatch,
+    trial_id: str,
+    result_id: str,
+    domain_id: str,
+    active: DomainJudgment,
+) -> tuple[int, str | None]:
+    """Verify audit revisions; an index-less record is legacy only when no audit entry binds it."""
+    active_key = judgment_key(state.frozen_hash, trial_id, result_id, domain_id)
+    entries: dict[int, JudgmentRevision] = {}
+    revision_namespace = f"domain_judgment_revision:{_revision_id(active_key)}:"
+    for name, payload in connection.execute(
+        "SELECT name,payload FROM records WHERE name GLOB ?",
+        (revision_namespace + "[0-9]" * 20,),
+    ):
+        try:
+            entry = JudgmentRevision.model_validate_json(bytes(payload))
+        except (TypeError, ValueError) as error:
+            raise ValueError("invalid Domain judgment revision record") from error
+        if (
+            entry.active_key != active_key
+            or name != revision_key(active_key, entry.revision)
+            or entry.revision in entries
+        ):
+            raise ValueError("invalid Domain judgment revision record")
+        entries[entry.revision] = entry
+    row = connection.execute(
+        "SELECT payload FROM records WHERE name=?", (revision_index_key(active_key),)
+    ).fetchone()
+    if row is None:
+        if entries:
+            raise ValueError("Domain judgment revision history is missing its index")
+        return 1, None
+    index = JudgmentRevisionIndex.model_validate_json(bytes(row[0]))
+    if index.active_key != active_key or index.active_hash != active.checkpoint_hash:
+        raise ValueError("Domain judgment revision index does not bind the active checkpoint")
+    previous: DomainJudgment | None = None
+    if set(entries) != set(range(1, index.active_revision + 1)):
+        raise ValueError("Domain judgment revision history is not contiguous")
+    for revision in range(1, index.active_revision + 1):
+        entry = entries[revision]
+        if entry.previous_hash != (None if previous is None else previous.checkpoint_hash):
+            raise ValueError("Domain judgment revision history has an invalid predecessor")
+        judgment = _verified_checkpoint(entry.judgment)
+        if (
+            judgment.approved_batch_hash != state.frozen_hash
+            or judgment.trial_id != trial_id
+            or judgment.result_id != result_id
+            or judgment.domain_id != domain_id
+            or judgment.scientific_pack not in state.pack_identities
+            or judgment.policy_pack not in state.pack_identities
+        ):
+            raise ValueError("Domain judgment revision does not bind the approved batch")
+        rebuilt = build_domain_judgment(
+            state,
+            trial_id,
+            result_id,
+            domain_id,
+            judgment.active_answers,
+            judgment.inactive_questions,
+            judgment.final_judgment,
+            judgment.override,
+            judgment.limitations,
+            judgment.actor,
+            judgment.observed_at,
+        )
+        if rebuilt != judgment:
+            raise ValueError("Domain judgment revision logic does not match saved content")
+        for answer in judgment.active_answers:
+            for use in answer.evidence_uses:
+                for ref in use.refs:
+                    _validate_evidence(workspace, state, trial_id, result_id, ref)
+        previous = judgment
+    if previous != active:
+        raise ValueError("active Domain judgment does not match revision history")
+    return index.active_revision, entries[index.active_revision].previous_hash
 
 
 def checkpoint_content(judgment: DomainJudgment) -> dict[str, object]:
@@ -176,14 +321,21 @@ def save_domain_judgment(
     limitations: tuple[str, ...],
     actor: str,
     observed_at: datetime,
+    expected_previous_hash: str | None = None,
 ) -> SaveDomainJudgmentResult:
-    """Validate and atomically save an immutable domain checkpoint."""
+    """Atomically save revision one or replace the active revision with exact CAS."""
     with transaction(workspace) as connection:
         state = current_batch_in_transaction(workspace, connection)
         if not isinstance(state, ApprovedBatch):
             return JudgmentCondition(
                 code="batch_stale" if isinstance(state, StaleBatch) else "batch_not_approved",
                 detail="an approved nonstale batch is required",
+            )
+        terminal_key = f"terminal_trial:{state.frozen_hash}:{trial_id}"
+        if connection.execute("SELECT 1 FROM records WHERE name=?", (terminal_key,)).fetchone():
+            return JudgmentCondition(
+                code="trial_terminal",
+                detail="terminal Trials cannot accept revised Domain judgments",
             )
         judgment = build_domain_judgment(
             state,
@@ -202,17 +354,134 @@ def save_domain_judgment(
             for use in answer.evidence_uses:
                 for ref in use.refs:
                     _validate_evidence(workspace, state, trial_id, result_id, ref)
-        key = f"domain_judgment:{state.frozen_hash}:{trial_id}:{result_id}:{domain_id}"
+        key = judgment_key(state.frozen_hash, trial_id, result_id, domain_id)
         row = connection.execute("SELECT payload FROM records WHERE name=?", (key,)).fetchone()
         if row is None:
+            if expected_previous_hash is not None:
+                return JudgmentCondition(
+                    code="checkpoint_absent",
+                    detail="a first Domain judgment must not specify expected_previous_hash",
+                )
             connection.execute(
                 "INSERT INTO records(name,payload) VALUES(?,?)",
                 (key, canonical_json_bytes(judgment)),
             )
-            return JudgmentSaved(judgment=judgment)
+            connection.execute(
+                "INSERT INTO records(name,payload) VALUES(?,?)",
+                (
+                    revision_key(key, 1),
+                    canonical_json_bytes(
+                        JudgmentRevision(active_key=key, revision=1, judgment=judgment)
+                    ),
+                ),
+            )
+            connection.execute(
+                "INSERT INTO records(name,payload) VALUES(?,?)",
+                (
+                    revision_index_key(key),
+                    canonical_json_bytes(
+                        JudgmentRevisionIndex(
+                            active_key=key, active_revision=1, active_hash=judgment.checkpoint_hash
+                        )
+                    ),
+                ),
+            )
+            return JudgmentSaved(
+                judgment=judgment,
+                active_revision=1,
+                active_hash=judgment.checkpoint_hash,
+                remaining_domains=remaining_domains(state, trial_id, result_id, connection),
+            )
         existing = _verified_checkpoint(DomainJudgment.model_validate_json(bytes(row[0])))
-        return (
-            JudgmentSaved(judgment=existing)
-            if existing == judgment
-            else JudgmentConflict(judgment=existing)
+        try:
+            active_revision, active_predecessor_hash = verify_revision_history(
+                workspace, connection, state, trial_id, result_id, domain_id, existing
+            )
+        except (TypeError, ValueError) as error:
+            return JudgmentCondition(code="revision_history_corrupt", detail=str(error))
+        remaining = remaining_domains(state, trial_id, result_id, connection)
+        if existing == judgment and (
+            expected_previous_hash == existing.checkpoint_hash
+            or expected_previous_hash == active_predecessor_hash
+            or expected_previous_hash is None
+            and active_revision == 1
+        ):
+            return JudgmentSaved(
+                judgment=existing,
+                active_revision=active_revision,
+                active_hash=existing.checkpoint_hash,
+                remaining_domains=remaining,
+            )
+        if expected_previous_hash != existing.checkpoint_hash:
+            return JudgmentConflict(
+                judgment=existing,
+                active_revision=active_revision,
+                active_hash=existing.checkpoint_hash,
+                remaining_domains=remaining,
+            )
+        if (
+            active_revision == 1
+            and connection.execute(
+                "SELECT 1 FROM records WHERE name=?", (revision_index_key(key),)
+            ).fetchone()
+            is None
+        ):
+            connection.execute(
+                "INSERT INTO records(name,payload) VALUES(?,?)",
+                (
+                    revision_key(key, 1),
+                    canonical_json_bytes(
+                        JudgmentRevision(active_key=key, revision=1, judgment=existing)
+                    ),
+                ),
+            )
+            connection.execute(
+                "INSERT INTO records(name,payload) VALUES(?,?)",
+                (
+                    revision_index_key(key),
+                    canonical_json_bytes(
+                        JudgmentRevisionIndex(
+                            active_key=key,
+                            active_revision=1,
+                            active_hash=existing.checkpoint_hash,
+                        )
+                    ),
+                ),
+            )
+        next_revision = active_revision + 1
+        connection.execute(
+            "INSERT INTO records(name,payload) VALUES(?,?)",
+            (
+                revision_key(key, next_revision),
+                canonical_json_bytes(
+                    JudgmentRevision(
+                        active_key=key,
+                        revision=next_revision,
+                        previous_hash=existing.checkpoint_hash,
+                        judgment=judgment,
+                    )
+                ),
+            ),
+        )
+        connection.execute(
+            "UPDATE records SET payload=? WHERE name=?", (canonical_json_bytes(judgment), key)
+        )
+        connection.execute(
+            "UPDATE records SET payload=? WHERE name=?",
+            (
+                canonical_json_bytes(
+                    JudgmentRevisionIndex(
+                        active_key=key,
+                        active_revision=next_revision,
+                        active_hash=judgment.checkpoint_hash,
+                    )
+                ),
+                revision_index_key(key),
+            ),
+        )
+        return JudgmentRevised(
+            judgment=judgment,
+            active_revision=next_revision,
+            active_hash=judgment.checkpoint_hash,
+            remaining_domains=remaining,
         )

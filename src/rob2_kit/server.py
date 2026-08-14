@@ -335,8 +335,9 @@ def save_one_domain_judgment(
     limitations: tuple[str, ...],
     actor: str,
     observed_at: datetime,
+    expected_previous_hash: str | None = None,
 ) -> SaveDomainJudgmentResult:
-    """Insert one evidence-grounded, immutable Domain checkpoint."""
+    """Save one evidence-grounded Domain checkpoint with optimistic revision control."""
     return save_domain_judgment(
         os.environ["ROB2_WORKSPACE"],
         trial_id,
@@ -349,6 +350,7 @@ def save_one_domain_judgment(
         limitations,
         actor,
         observed_at,
+        expected_previous_hash,
     )
 
 
