@@ -171,7 +171,38 @@ unperformed.
 **RC4 recommendation: REJECT / DO NOT CUT OVER; #196 remains blocked.** This is
 an operationally incomplete evaluation, not scientific evidence against a trial.
 
-## RC4 host-performance investigation
+## RC5 Claude Sonnet Low CHAARTED restart evaluation
+
+### Evaluation result
+
+`greenfield-v0.1.0-rc5` (tag object `bbedf4ef03e96e4d3802d70a7fbb452e042ce667`,
+peeled commit `7c4231ca50bb18c9cf63b6addeb99fcf87e8bbe3`) was built in a
+fresh full-history detached checkout. Source and fresh-wheel verification passed.
+The wheel SHA-256 was `d271d0ff7528a4726386f5df2a1a8f7f05fc167083165af4475835cd8c96bc0b`.
+
+A fresh, nonce-scoped Claude Code 2.1.226 / Sonnet / low workspace passed a
+zero-source attestation before blinded CHAARTED intake. The host completed a
+blinded terminal assessment after a durable restart. The first context saved
+checkpoints; an intentional crash-style restart was made after a confirmed
+durable checkpoint boundary, and a new context resumed the exact workspace to
+finish and finalize. No destructive workflow tool was available or invoked.
+
+The finalized artifact independently passed the installed receipt verifier:
+six files, SHA-256 bundle hash
+`bc5fda1e045f170a1dc6d20dc8b7e14da659c6354d158f6b00ff894c7b31803c`,
+summary hash `eadd4937fe7fd1c047715442605b446cd9e840750b7eccf7b13bab0f298e9ed1`,
+and index hash `090027a44ae8eeed940843a948d8c7924188c0075e44ae8da61965fa86762bf1`.
+This record intentionally excludes source material, labels, and private paths.
+
+The subsequent isolated STAMPEDE transport diagnostic was stopped before source
+access when a fresh foreground host invocation failed the nonce-MCP identity
+check. This is a fail-closed host integration blocker; it produced no STAMPEDE
+proposal, approval, checkpoint, terminal outcome, or artifact.
+
+Owner-approved evaluation scope is CHAARTED and STAMPEDE only; TITAN is not run
+as part of this acceptance record.
+
+### Older RC5 performance investigation
 
 One corrected blinded run reached a finalized assessment. Its private receipt
 reported 97 turns, 1,047.874 seconds, and USD 5.4231043; the durable store
@@ -208,3 +239,44 @@ tool name, status only), poll durable state metadata, and abort before ingestion
 on any identity mismatch. Once identity is established, use all five explicit
 domain-guidance URIs at phase zero; keep the bounded evidence plan and preserve
 the five-checkpoint, contradiction, source-priority, and terminal/export guards.
+
+## Private launcher hardening follow-up
+
+The private #195 launcher now gives every Claude context a new nonce-scoped
+project CWD while retaining the isolated `ROB2_WORKSPACE` as the only durable
+workflow location. Each project has exactly one nonce MCP configuration and
+fresh, non-appending debug, stderr, and redacted-event logs. The launcher records
+metadata-only initialization server names and MCP tool prefixes before applying
+its fail-closed identity check, and records whether a process exited, hit the
+outer bound, or stalled.
+
+A required STAMPEDE zero-source attestation uses a launcher-only nonexistent
+trial identifier. It must fail closed before a source tool executes; this is a
+transport/isolation check only and is not an assessment. Scope remains
+CHAARTED and STAMPEDE only; TITAN remains out of scope.
+
+## Final owner-scoped CHAARTED acceptance (a6fcc79)
+
+The owner superseded the earlier multi-trial scope: this final acceptance is
+CHAARTED overall survival only. A fresh full-history detached checkout at
+`a6fcc7981b48e73eca528726debdb1d17be3b24e` built and passed source and wheel
+release verification. The wheel used for the fresh workspace had SHA-256
+`28f3bc764317643b518ba8ef86a568ce51211a8e619295c6f5c0700e8f627995`.
+
+Operationally, the fresh human-style run succeeded: five frozen domain
+checkpoints, an assessed terminal state, and a `FinalizedBatch` receipt. The
+independently recomputed canonical bundle hash was
+`728e0b9ed13bd04f10141c0086166e044e23aa8f945cc03b4759ccb28ddb8a5c`; the
+canonical HTML report hash was
+`95bcbf4d0bdacc28aaf8af76a1e1224a0ff59f2c2067129edda0530b83372bd8`.
+
+The owner-authorized CHAARTED overall-survival provisional-reference comparison
+agreed exactly: D1--D5 and the overall judgement were all Low. The frozen
+assessment was not altered for this comparison. No rationale or citation
+discrepancy requiring an evaluation note was identified.
+
+This acceptance nevertheless failed the performance criterion: USD $12.813,
+31.15 minutes wall time, and 153 turns. The recorded friction was source/anchor
+repair before proposal approval, a first-domain validation condition repaired
+without a durable write, and rate-limit warnings without a denial. No runtime
+code was changed.
