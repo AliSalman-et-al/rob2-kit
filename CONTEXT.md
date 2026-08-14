@@ -36,9 +36,11 @@ resources for current-batch progress, pinned Domain guidance, and captured regis
 records. The portable skills are `rob2-workflow` and `rob2-signalling`; they
 instruct both supported hosts without creating a second model loop.
 
-The current frozen candidate identity is the annotated release-candidate tag
-recorded by the Git and release process. Its machine-readable contract and
-verification steps are in [docs/release](docs/release/README.md). Claude Code has
-accepted real-host evidence. Codex CLI 0.147.0 on Windows is an unaccepted known
-MCP limitation, recorded in
+The RC6 candidate tag is created only from the clean exact final commit after the
+release-manifest commit, final review, and remote 3x3 CI. Its machine-readable
+contract and verification steps are in [docs/release](docs/release/README.md).
+The owner-scoped Claude Code Sonnet Low CHAARTED overall-survival evaluation
+completed operationally and scientifically; its performance failure is tracked by
+#197 and is non-blocking for #196. Codex CLI 0.147.0 on Windows is an unaccepted
+known MCP limitation, recorded in
 [issue #193 acceptance evidence](docs/acceptance/issue-193.md).

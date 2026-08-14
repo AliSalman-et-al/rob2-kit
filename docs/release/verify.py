@@ -274,13 +274,20 @@ def _manifest(path: Path = MANIFEST_PATH) -> dict[str, Any]:
         {"branch", "base_commit", "implementation_commit", "release_freeze"},
         "candidate",
     )
-    if candidate["branch"] != "greenfield/epic-182" or candidate["release_freeze"] != (
-        "RC4 is invalidated by the portable skill workflow redesign. Owner-directed Claude "
-        "Sonnet Low scientific evaluation is deferred until after this RC5 code/CI freeze; "
-        "it is not completed evidence and is not a prerequisite to creating the "
-        "greenfield-v0.1.0-rc5 candidate tag. That tag still requires final review and "
-        "remote 3x3 CI from a clean checkout containing this manifest."
-    ):
+    if candidate != {
+        "branch": "greenfield/epic-182",
+        "base_commit": "6d2013f1e125bc38f3bf1e5c4109b9f15676c50d",
+        "implementation_commit": "a6fcc7981b48e73eca528726debdb1d17be3b24e",
+        "release_freeze": (
+            "RC4 is invalidated by the portable skill workflow redesign. RC5 is invalidated by "
+            "versioned pre-finish judgment corrections and receipt-bound two-phase validation. "
+            "The owner-scoped Claude Code Sonnet Low CHAARTED overall-survival evaluation "
+            "completed operationally and scientifically. Its performance failure is tracked by "
+            "#197 and is non-blocking for #196. The greenfield-v0.1.0-rc6 candidate tag may be "
+            "created only from the clean exact final commit after this manifest commit, final "
+            "review, and remote 3x3 CI."
+        ),
+    }:
         _fail("candidate contract differs")
     if not all(isinstance(candidate[key], str) for key in ("base_commit", "implementation_commit")):
         _fail("candidate values must be strings")
@@ -406,7 +413,7 @@ def _candidate_history(manifest: dict[str, Any]) -> None:
         check=False,
     )
     if result.returncode:
-        raise ValueError("candidate base is not an ancestor of the safety commit")
+        raise ValueError("candidate base is not an ancestor of the implementation commit")
 
 
 def _project_pins(manifest: dict[str, Any]) -> None:

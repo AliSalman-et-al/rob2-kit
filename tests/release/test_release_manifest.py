@@ -320,6 +320,16 @@ def test_manifest_rejects_unexpected_nested_value(tmp_path: Path) -> None:
         verifier._manifest(path)
 
 
+def test_manifest_rejects_candidate_lineage_drift(tmp_path: Path) -> None:
+    verifier = _verifier()
+    manifest = deepcopy(verifier._manifest())
+    manifest["candidate"]["implementation_commit"] = "0" * 40
+    path = tmp_path / "manifest.json"
+    path.write_text(json.dumps(manifest), encoding="utf-8")
+    with pytest.raises(ValueError, match="candidate contract differs"):
+        verifier._manifest(path)
+
+
 @pytest.mark.parametrize(
     "contents",
     [
