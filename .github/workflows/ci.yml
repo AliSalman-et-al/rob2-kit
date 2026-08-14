@@ -13,6 +13,8 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
         python-version: ["3.11", "3.12", "3.13"]
+    env:
+      UV_PYTHON: ${{ matrix.python-version }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -21,10 +23,14 @@ jobs:
         with:
           python-version: "${{ matrix.python-version }}"
       - uses: astral-sh/setup-uv@v6
-      - run: uv sync --locked --all-groups
-      - run: uv run ruff format --check src tests docs/release
-      - run: uv run ruff check src tests docs/release
-      - run: uv run ty check src tests docs/release
-      - run: uv run pytest
+      - run: uv sync --locked --all-groups --python "${{ matrix.python-version }}"
+      - run: uv run --no-sync python --version
+      - run: uv run --no-sync python -c "import os, sys; expected=tuple(map(int, os.environ['EXPECTED_PYTHON'].split('.'))); assert sys.version_info[:2] == expected, (sys.version, expected)"
+        env:
+          EXPECTED_PYTHON: ${{ matrix.python-version }}
+      - run: uv run --no-sync ruff format --check src tests docs/release
+      - run: uv run --no-sync ruff check src tests docs/release
+      - run: uv run --no-sync ty check src tests docs/release
+      - run: uv run --no-sync pytest
       - run: uv build --wheel --out-dir .release-dist
-      - run: uv run python docs/release/verify.py --wheel .release-dist/rob2_kit-0.1.0-py3-none-any.whl
+      - run: uv run --no-sync python docs/release/verify.py --wheel .release-dist/rob2_kit-0.1.0-py3-none-any.whl

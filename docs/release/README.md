@@ -4,7 +4,9 @@
 verifier reads the installed package assets and production FastMCP object; it does
 not duplicate RoB 2 logic, data models, or report behavior. Its non-self-
 referential source contract hashes, in lexical POSIX-path order, each path followed
-by a NUL byte and its raw bytes. It includes `pyproject.toml`, `uv.lock`, every
+by a NUL byte and its canonical UTF-8 text bytes. Canonical text bytes replace
+CRLF and CR line endings with LF; binary files are never normalized or included.
+It includes `pyproject.toml`, `uv.lock`, every
 `src/rob2_kit/**/*.py`, both host JSON files, and both portable skill files. The
 manifest and verifier are deliberately excluded, so the contract can be checked
 without a self-referential hash.

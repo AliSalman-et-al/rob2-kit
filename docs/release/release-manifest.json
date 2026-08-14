@@ -62,7 +62,7 @@
     "model_loop": "installed Codex or Claude Code host only"
   },
   "source_contract": {
-    "algorithm": "sha256(path-nul-content; lexical-posix-path-order)",
+    "algorithm": "sha256(path-nul-canonical-utf8-text; lexical-posix-path-order)",
     "paths": [
       "pyproject.toml",
       "uv.lock",

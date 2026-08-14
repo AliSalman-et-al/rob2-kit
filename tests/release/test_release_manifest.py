@@ -35,6 +35,8 @@ def _wheel(path: Path, manifest: dict[str, Any], mode: str = "valid") -> None:
             raw = content.read_bytes()
             if mode == "tampered_skill" and skill["name"] == "rob2-workflow":
                 raw += b"tampered"
+            if mode == "crlf_skills":
+                raw = raw.replace(b"\n", b"\r\n")
             wheel.writestr(f"rob2_kit/skills/{skill['name']}/SKILL.md", raw)
         for filename, host in (("codex.json", "codex"), ("claude-code.json", "claude-code")):
             if mode == "missing_host" and filename == "claude-code.json":
@@ -59,6 +61,23 @@ def test_release_manifest_verifies_production_contract() -> None:
     _verifier().verify()
 
 
+def test_text_hashes_are_line_ending_invariant(tmp_path: Path) -> None:
+    verifier = _verifier()
+    assert verifier._sha256_text(b"one\ntwo\n") == verifier._sha256_text(b"one\r\ntwo\r\n")
+    assert verifier._sha256_text(b"one\ntwo\n") == verifier._sha256_text(b"one\rtwo\r")
+    with pytest.raises(UnicodeDecodeError):
+        verifier._canonical_text_bytes(bytes([0xFF]))
+    lf = tmp_path / "lf"
+    crlf = tmp_path / "crlf"
+    lf.mkdir()
+    crlf.mkdir()
+    (lf / "asset.txt").write_bytes(b"one\ntwo\n")
+    (crlf / "asset.txt").write_bytes(b"one\r\ntwo\r\n")
+    assert verifier._source_contract_hash(lf, ["asset.txt"]) == verifier._source_contract_hash(
+        crlf, ["asset.txt"]
+    )
+
+
 def test_manifest_rejects_unexpected_nested_value(tmp_path: Path) -> None:
     verifier = _verifier()
     manifest = deepcopy(verifier._manifest())
@@ -81,6 +100,14 @@ def test_wheel_contract_accepts_complete_wheel(tmp_path: Path) -> None:
     wheel = tmp_path / "candidate.whl"
     manifest = verifier._manifest()
     _wheel(wheel, manifest)
+    verifier._verify_wheel(wheel, manifest)
+
+
+def test_wheel_contract_accepts_crlf_skill_assets(tmp_path: Path) -> None:
+    verifier = _verifier()
+    wheel = tmp_path / "candidate.whl"
+    manifest = verifier._manifest()
+    _wheel(wheel, manifest, "crlf_skills")
     verifier._verify_wheel(wheel, manifest)
 
 

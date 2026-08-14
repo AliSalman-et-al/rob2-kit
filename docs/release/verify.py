@@ -57,6 +57,17 @@ def _sha256_bytes(value: bytes) -> str:
     return "sha256:" + hashlib.sha256(value).hexdigest()
 
 
+def _canonical_text_bytes(value: bytes) -> bytes:
+    """Normalize only declared UTF-8 text release inputs before hashing."""
+
+    value.decode("utf-8")
+    return value.replace(b"\r\n", b"\n").replace(b"\r", b"\n")
+
+
+def _sha256_text(value: bytes) -> str:
+    return _sha256_bytes(_canonical_text_bytes(value))
+
+
 def _source_contract_hash(root: Path, patterns: list[str]) -> str:
     paths: list[Path] = []
     for pattern in patterns:
@@ -71,7 +82,7 @@ def _source_contract_hash(root: Path, patterns: list[str]) -> str:
     for path, name in sorted(zip(paths, relative, strict=True), key=lambda item: item[1]):
         digest.update(name.encode("utf-8"))
         digest.update(b"\0")
-        digest.update(path.read_bytes())
+        digest.update(_canonical_text_bytes(path.read_bytes()))
     return "sha256:" + digest.hexdigest()
 
 
@@ -209,7 +220,7 @@ def _manifest(path: Path = MANIFEST_PATH) -> dict[str, Any]:
         value["source_contract"], {"algorithm", "paths", "content_sha256"}, "source contract"
     )
     if (
-        source["algorithm"] != "sha256(path-nul-content; lexical-posix-path-order)"
+        source["algorithm"] != "sha256(path-nul-canonical-utf8-text; lexical-posix-path-order)"
         or not isinstance(source["content_sha256"], str)
         or not SHA256.fullmatch(source["content_sha256"])
     ):
@@ -280,6 +291,10 @@ def _workflow_matrix(manifest: dict[str, Any]) -> None:
         raise ValueError("CI does not fetch the frozen candidate ancestry")
     if "verify.py --wheel .release-dist/rob2_kit-0.1.0-py3-none-any.whl" not in workflow:
         raise ValueError("CI does not verify the exact built wheel")
+    if 'uv sync --locked --all-groups --python "${{ matrix.python-version }}"' not in workflow:
+        raise ValueError("CI sync does not use the declared Python")
+    if "uv run --no-sync python --version" not in workflow or "EXPECTED_PYTHON" not in workflow:
+        raise ValueError("CI does not assert the selected interpreter")
 
 
 async def _verify_mcp(manifest: dict[str, Any]) -> None:
@@ -333,7 +348,7 @@ def _verify_wheel(path: Path, manifest: dict[str, Any]) -> None:
             raise ValueError("wheel portable skill set differs from release manifest")
         for skill in manifest["skills"]:
             raw = wheel.read(f"rob2_kit/skills/{skill['name']}/SKILL.md")
-            if _sha256_bytes(raw) != skill["content_sha256"]:
+            if _sha256_text(raw) != skill["content_sha256"]:
                 raise ValueError(f"wheel skill hash differs: {skill['name']}")
         expected_hosts = {
             "codex.json": "codex",
@@ -382,7 +397,7 @@ def _verify_schema_identities(manifest: dict[str, Any]) -> None:
 def verify(wheel: Path | None = None, manifest_path: Path = MANIFEST_PATH) -> None:
     manifest = _manifest(manifest_path)
     _candidate_history(manifest)
-    if _sha256_bytes((ROOT / "uv.lock").read_bytes()) != manifest["dependencies_lock_sha256"]:
+    if _sha256_text((ROOT / "uv.lock").read_bytes()) != manifest["dependencies_lock_sha256"]:
         raise ValueError("uv.lock hash differs from release manifest")
     if (
         _source_contract_hash(ROOT, manifest["source_contract"]["paths"])
@@ -394,7 +409,7 @@ def verify(wheel: Path | None = None, manifest_path: Path = MANIFEST_PATH) -> No
     assets = files("rob2_kit")
     for skill in manifest["skills"]:
         if (
-            _sha256_bytes(assets.joinpath("skills", skill["name"], "SKILL.md").read_bytes())
+            _sha256_text(assets.joinpath("skills", skill["name"], "SKILL.md").read_bytes())
             != skill["content_sha256"]
         ):
             raise ValueError(f"portable skill hash differs: {skill['name']}")
