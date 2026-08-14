@@ -35,6 +35,7 @@ Claude Code was started with a strict one-shot MCP configuration pointing at the
 | --- | --- | --- |
 | Claude project-skill + strict-MCP allowlisted handshake | blocked | Installed-wheel skills were copied to the project `.claude/skills` directory. An initial `--tools` restriction was incorrect for MCP permissions and exposed only a file-read tool; the corrected `--allowedTools` probe still exposed no `rob2-kit` tool. |
 | Claude native project-MCP handshake | blocked | Claude's project-scoped MCP command generated a local `.mcp.json` with the installed executable and workspace environment, but its health remained `Pending approval`; the subsequent `dontAsk` session exposed only PubMed/file-read tools and could not call `list_sources`. |
+| Claude local single-server approval handshake | blocked | Local Claude settings enabled only `rob2-kit` through `enabledMcpjsonServers`, but health remained `Pending approval`; the final `--allowedTools` probe still exposed no `rob2-kit` tool. |
 | Claude strict-MCP blinded CHAARTED PFS | blocked before ingestion | Three fresh attempts reported no `rob2-kit` tools in the assessment session. No source content was assessed and no provisional label was accessed. |
 | Claude blinded STAMPEDE PFS | not started | Blocked by the same host seam. |
 | Claude blinded TITAN PFS | not started | Blocked by the same host seam. |
@@ -55,9 +56,14 @@ The final corrected one-shot configuration used the official MCP permission form
 tool. These conditions prevented the requested cheap real tool call before any
 private source was opened.
 
-Recorded bounded host diagnostics consumed USD 1.4240493 and 194.6 seconds in
-aggregate. The final corrected strict-MCP probe consumed 14.2 seconds and USD
-0.2016291; none reached source ingestion. Claude reported ordinary service-tier
+As a final supported project-only mechanism, the temporary project added
+`enabledMcpjsonServers` for `rob2-kit` in its local Claude settings. Health still
+reported `Pending approval`, and the bounded `--allowedTools` probe exposed no
+`rob2-kit` tool. No further host retries were performed.
+
+Recorded bounded host diagnostics consumed USD 1.5451978 and 213.2 seconds in
+aggregate. The final local-approval probe consumed 18.6 seconds and USD
+0.1211485; none reached source ingestion. Claude reported ordinary service-tier
 usage and no usage-exhaustion signal. These are host diagnostics, not assessment
 costs.
 
