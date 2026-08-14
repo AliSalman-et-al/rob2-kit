@@ -1,4 +1,12 @@
-# Issue #195 release evaluation — blocked; do not cut over
+# Issue #195 release evaluation — accepted under the owner-scoped final run
+
+The owner accepted the final CHAARTED-only release evaluation recorded at the
+end of this document and authorized issue #196 cutover. Earlier blocked and
+rejected candidates remain below as chronological evidence. The accepted run's
+efficiency failure is tracked separately in issue #197 and does not block the
+authorized cutover.
+
+## Historical RC2 blocked evaluation
 
 Candidate: `greenfield-v0.1.0-rc2`, annotated tag peeled to commit
 `4d8daeea0bb60429b2f3380ef67529875e02007e`.
