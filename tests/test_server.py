@@ -20,7 +20,7 @@ from rob2_kit.assessment import (
     ResultSpec,
     Trial,
 )
-from rob2_kit.batch import ApproveBatchResult, SaveProposalResult
+from rob2_kit.batch import ApproveBatchResult, ApprovedBatch, SaveProposalResult, current_batch
 from rob2_kit.ingestion import ingest_batch
 from rob2_kit.server import mcp
 from rob2_kit.sources import SourceInput, SourceRole, TrialInput
@@ -177,7 +177,7 @@ def test_registry_resource_reports_existing_trial_without_capture(
 
 
 def test_batch_tools_are_discoverable() -> None:
-    async def discover() -> dict[str, dict[str, Any]]:
+    async def discover() -> dict[str, Any]:
         async with Client(mcp) as client:
             tools = await client.list_tools()
         assert [tool.name for tool in tools] == [
@@ -193,9 +193,10 @@ def test_batch_tools_are_discoverable() -> None:
             "finalize_batch",
             "discard_active_batch",
         ]
-        return {tool.name: tool.outputSchema for tool in tools}
+        return {tool.name: tool for tool in tools}
 
-    schemas = asyncio.run(discover())
+    tools = asyncio.run(discover())
+    schemas = {name: tool.outputSchema for name, tool in tools.items()}
     for schema in (schemas["save_proposal"], schemas["approve_batch"]):
         assert "oneOf" in schema["properties"]["state"]
         assert {
@@ -211,6 +212,81 @@ def test_batch_tools_are_discoverable() -> None:
             "approved",
             "stale",
         }
+    discard = tools["discard_active_batch"]
+    assert discard.annotations is not None
+    assert discard.annotations.model_dump() == {
+        "title": None,
+        "readOnlyHint": False,
+        "destructiveHint": True,
+        "idempotentHint": False,
+        "openWorldHint": None,
+    }
+    request_schema = discard.inputSchema["properties"]["request"]
+    assert request_schema["required"] == [
+        "expected_frozen_hash",
+        "confirmation",
+        "actor",
+        "observed_at",
+        "reason",
+    ]
+    assert request_schema["properties"]["confirmation"]["const"] == (
+        "I_UNDERSTAND_THIS_DISCARDS_THE_ACTIVE_BATCH"
+    )
+
+
+def test_discard_requires_a_complete_exact_request_without_mutating_state(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    proposal = _proposal(tmp_path)
+    from rob2_kit.batch import approve_batch, save_proposal
+
+    assert save_proposal(tmp_path, proposal).state.status == "proposal"
+    approved = approve_batch(tmp_path).state
+    assert isinstance(approved, ApprovedBatch)
+    monkeypatch.setenv("ROB2_WORKSPACE", str(tmp_path))
+
+    request = {
+        "expected_frozen_hash": approved.frozen_hash,
+        "confirmation": "I_UNDERSTAND_THIS_DISCARDS_THE_ACTIVE_BATCH",
+        "actor": "researcher",
+        "observed_at": "2026-08-14T00:00:00Z",
+        "reason": "The researcher explicitly requested this discard.",
+    }
+
+    async def call() -> tuple[Any, Any, Any, Any, Any]:
+        async with Client(mcp) as client:
+            missing = await client.call_tool("discard_active_batch", raise_on_error=False)
+            wrong_literal = await client.call_tool(
+                "discard_active_batch",
+                {"request": {**request, "confirmation": "yes"}},
+                raise_on_error=False,
+            )
+            invalid_time = await client.call_tool(
+                "discard_active_batch",
+                {"request": {**request, "observed_at": "2026-08-14T00:00:00+01:00"}},
+                raise_on_error=False,
+            )
+            blank_reason = await client.call_tool(
+                "discard_active_batch",
+                {"request": {**request, "reason": "   "}},
+                raise_on_error=False,
+            )
+            stale = await client.call_tool(
+                "discard_active_batch",
+                {"request": {**request, "expected_frozen_hash": "sha256:" + "0" * 64}},
+            )
+        return missing, wrong_literal, invalid_time, blank_reason, stale
+
+    missing, wrong_literal, invalid_time, blank_reason, stale = asyncio.run(call())
+    assert all(result.is_error for result in (missing, wrong_literal, invalid_time, blank_reason))
+    assert stale.structured_content == {
+        "result": {
+            "status": "condition",
+            "code": "discard_identity_mismatch",
+            "detail": "expected_frozen_hash does not identify the current frozen batch",
+        }
+    }
+    assert current_batch(tmp_path) == approved
 
 
 def test_mcp_registry_ingest_matches_and_persists_candidate(tmp_path: Path, monkeypatch) -> None:

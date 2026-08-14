@@ -77,6 +77,25 @@ returned `CONNECTION_CLOSED: Connection closed` during health checking. A separa
 strict transient configuration with `alwaysLoad`, eager loading, and the official
 exact allowlist exposed no `rob2-kit` tool to the actual no-source probe.
 
+After interactive workspace trust and single-server approval, the retained local
+configuration was rechecked before any source access. It still reported
+`CONNECTION_CLOSED: Connection closed`; consequently no zero-source probe or
+scientific run was started, and no further configuration changes were made.
+
+## Remediation after the release-safety defect
+
+The `greenfield-v0.1.0-rc2` candidate is invalidated. It must not be tagged or
+advanced: a host/model invoked `discard_active_batch` as error recovery despite
+the workflow prohibition, which destroyed approved runtime state. The replacement
+requires the current frozen-batch hash, an exact destructive confirmation literal,
+actor, UTC observation time, and a nonblank researcher reason. Invalid requests
+and stale identities must leave state unchanged, while the recoverable #192
+discard path remains available only after an explicit researcher instruction in
+the current conversation. These request fields make accidental invocation harder;
+they do not prove that a human authored a request. Scientific-evaluation host
+allowlists are intended to exclude discard entirely; only the separate public
+recovery scenario may permit it.
+
 Recorded bounded Claude host diagnostics consumed USD 2.2958448 and 226.0
 seconds in aggregate. The final strict transient probe consumed 7.3 seconds and
 USD 0.304489; none reached source ingestion. Claude reported ordinary

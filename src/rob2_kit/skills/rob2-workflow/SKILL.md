@@ -12,3 +12,11 @@ terminal artifacts. Finish each Trial exactly once through `finish_trial`: use i
 `assessment` envelope after all five checkpoints, or its `needs_input` / `failed`
 envelope with typed problems. Then call `finalize_batch`. Do not invent evidence or
 persist hidden reasoning in the host.
+
+`discard_active_batch` is destructive and is never error recovery. Call it only
+after an explicit researcher instruction in the current conversation, with the
+current frozen-batch hash, the exact confirmation literal, an attributable actor,
+a UTC observation time, and the researcher's nonempty reason. These fields bind
+the request to the displayed batch and make the destructive action explicit; they
+do not prove who authored it. On a tool, coordinate, or judgment error, resume or
+retry within the returned bounds, or return `needs_input`; never discard to recover.

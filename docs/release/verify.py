@@ -197,6 +197,8 @@ def _manifest(path: Path = MANIFEST_PATH) -> dict[str, Any]:
         items = _strings(contract[name], f"MCP {name}")
         if not items or len(set(items)) != len(items):
             _fail(f"MCP {name} must be unique and non-empty")
+    if len(contract["tools"]) != 11 or len(contract["resources"]) != 3:
+        _fail("MCP contract must expose exactly eleven tools and three resources")
     acceptance = _exact(
         value["host_acceptance"],
         {"claude_code", "raw_mcp", "codex_windows_0.147.0"},
@@ -301,7 +303,8 @@ async def _verify_mcp(manifest: dict[str, Any]) -> None:
     contract = manifest["mcp_contract"]
     current, guidance, registry = contract["resources"]
     async with Client(mcp) as client:
-        tools = [tool.name for tool in await client.list_tools()]
+        discovered_tools = await client.list_tools()
+        tools = [tool.name for tool in discovered_tools]
         resources = [str(resource.uri) for resource in await client.list_resources()]
         templates = [str(item.uriTemplate) for item in await client.list_resource_templates()]
         current_value = await client.read_resource(current)
@@ -311,6 +314,15 @@ async def _verify_mcp(manifest: dict[str, Any]) -> None:
         registry_value = await client.read_resource(registry.replace("{trial_id}", "release-check"))
     if tools != contract["tools"] or resources != [current] or templates != [guidance, registry]:
         raise ValueError("production MCP inventory differs from release manifest")
+    discard = next(tool for tool in discovered_tools if tool.name == "discard_active_batch")
+    if discard.annotations is None or discard.annotations.model_dump() != {
+        "title": None,
+        "readOnlyHint": False,
+        "destructiveHint": True,
+        "idempotentHint": False,
+        "openWorldHint": None,
+    }:
+        raise ValueError("discard tool does not advertise destructive intent")
     if (
         current_value[0].text != '{"active_batch":null}'
         or not guidance_value[0].text

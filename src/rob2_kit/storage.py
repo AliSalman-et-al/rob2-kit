@@ -9,6 +9,10 @@ import sys
 from collections.abc import Iterator
 from contextlib import contextmanager
 from pathlib import Path
+from threading import Lock, RLock
+
+_MUTATION_LOCKS: dict[str, RLock] = {}
+_MUTATION_LOCKS_GUARD = Lock()
 
 
 class WorkspaceLockedError(RuntimeError):
@@ -73,6 +77,22 @@ class WorkspaceLock:
         self._handle = None
 
 
+@contextmanager
+def workspace_mutation_lock(workspace: str | Path) -> Iterator[None]:
+    """Serialize mutations in this process for one resolved workspace.
+
+    ``WorkspaceLock`` remains the cross-process server boundary. This reentrant
+    lock closes gaps between separate SQLite transactions and filesystem moves.
+    The process-lifetime map is bounded by the workspaces a server process uses.
+    """
+
+    key = str(Path(workspace).resolve(strict=True))
+    with _MUTATION_LOCKS_GUARD:
+        lock = _MUTATION_LOCKS.setdefault(key, RLock())
+    with lock:
+        yield
+
+
 def _reparse(path: Path) -> bool:
     attributes = getattr(os.lstat(path), "st_file_attributes", 0)
     return bool(attributes & getattr(stat, "FILE_ATTRIBUTE_REPARSE_POINT", 0x400))
@@ -92,23 +112,24 @@ def database_path(workspace: str | Path) -> Path:
 
 @contextmanager
 def transaction(workspace: str | Path) -> Iterator[sqlite3.Connection]:
-    path = database_path(workspace)
-    connection = sqlite3.connect(path, isolation_level=None, timeout=10)
-    begun = False
-    try:
-        connection.execute(
-            "CREATE TABLE IF NOT EXISTS records (name TEXT PRIMARY KEY, payload BLOB NOT NULL)"
-        )
-        connection.execute("BEGIN IMMEDIATE")
-        begun = True
-        yield connection
-        connection.execute("COMMIT")
-    except BaseException:
-        if begun:
-            connection.execute("ROLLBACK")
-        raise
-    finally:
-        connection.close()
+    with workspace_mutation_lock(workspace):
+        path = database_path(workspace)
+        connection = sqlite3.connect(path, isolation_level=None, timeout=10)
+        begun = False
+        try:
+            connection.execute(
+                "CREATE TABLE IF NOT EXISTS records (name TEXT PRIMARY KEY, payload BLOB NOT NULL)"
+            )
+            connection.execute("BEGIN IMMEDIATE")
+            begun = True
+            yield connection
+            connection.execute("COMMIT")
+        except BaseException:
+            if begun:
+                connection.execute("ROLLBACK")
+            raise
+        finally:
+            connection.close()
 
 
 def load_state(workspace: str | Path) -> bytes | None:

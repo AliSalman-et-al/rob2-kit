@@ -4,8 +4,11 @@ from __future__ import annotations
 
 import shutil
 import uuid
+from datetime import datetime
 from pathlib import Path
 from typing import Literal
+
+from pydantic import Field, field_validator
 
 from rob2_kit.batch import (
     ApprovedBatch,
@@ -33,7 +36,37 @@ from rob2_kit.reports import (
     export_trial,
     export_verified_snapshot,
 )
-from rob2_kit.storage import _reparse, transaction
+from rob2_kit.storage import _reparse, transaction, workspace_mutation_lock
+
+
+class DiscardActiveBatchRequest(StrictModel):
+    """An explicit, batch-bound request to remove unfinished runtime state.
+
+    This is an intent signal, not evidence that a person supplied the request.
+    Hosts must enforce the researcher-instruction policy before exposing it.
+    """
+
+    expected_frozen_hash: str = Field(pattern=r"^sha256:[0-9a-f]{64}$")
+    confirmation: Literal["I_UNDERSTAND_THIS_DISCARDS_THE_ACTIVE_BATCH"]
+    actor: str = Field(min_length=1)
+    observed_at: datetime
+    reason: str = Field(min_length=1)
+
+    @field_validator("actor", "reason")
+    @classmethod
+    def nonblank(cls, value: str) -> str:
+        value = value.strip()
+        if not value:
+            raise ValueError("must not be blank")
+        return value
+
+    @field_validator("observed_at")
+    @classmethod
+    def utc(cls, value: datetime) -> datetime:
+        offset = value.utcoffset()
+        if value.tzinfo is None or offset is None or offset.total_seconds() != 0:
+            raise ValueError("observed_at must be UTC")
+        return value
 
 
 class TrialProgress(StrictModel):
@@ -341,82 +374,120 @@ def recovery_progress(workspace: str | Path) -> RecoveryProgress:
     )
 
 
-def discard_active_batch(workspace: str | Path) -> Discarded | DiscardCondition:
+def discard_active_batch(
+    workspace: str | Path, request: DiscardActiveBatchRequest
+) -> Discarded | DiscardCondition:
+    """Recoverably discard only the exact unfinished frozen batch requested."""
+
     root = Path(workspace).resolve(strict=True)
     internal = root / ".rob2-kit"
     try:
-        with transaction(root) as connection:
-            state = current_batch_in_transaction(root, connection)
-            if isinstance(state, NoActiveBatch):
-                return DiscardCondition(code="no_active_batch", detail="there is no active batch")
-            frozen = state.approved if isinstance(state, StaleBatch) else state
-            if isinstance(frozen, ApprovedBatch):
-                row = connection.execute(
-                    "SELECT 1 FROM records WHERE name=?", (f"batch_summary:{frozen.frozen_hash}",)
-                ).fetchone()
-                if row is not None:
-                    return DiscardCondition(
-                        code="batch_finalized",
-                        detail="committed batch summaries cannot be discarded",
-                    )
+        with workspace_mutation_lock(root):
+            target = _discard_target(root, request)
+            if isinstance(target, DiscardCondition):
+                return target
+            frozen, state = target
+            progress = recovery_progress(root)
+            if any(item.code == "corrupt_active_batch" for item in progress.problems):
+                return DiscardCondition(
+                    code="corrupt_active_batch", detail=progress.problems[0].detail
+                )
+            try:
+                _preserve_frozen_assessments(root, frozen)
+            except (OSError, ValueError, KeyError) as error:
+                return DiscardCondition(code="corrupt_active_batch", detail=str(error))
+            if isinstance(state, ApprovedBatch):
+                for item in progress.trials:
+                    if item.status == "assessed":
+                        try:
+                            export_trial(root, item.trial_id, _result(state, item.trial_id).id)
+                        except (OSError, ValueError) as error:
+                            return DiscardCondition(code="corrupt_active_batch", detail=str(error))
+            revalidated = _discard_target(root, request)
+            if isinstance(revalidated, DiscardCondition):
+                return revalidated
+            if internal.is_symlink() or _reparse(internal):
+                return DiscardCondition(
+                    code="corrupt_active_batch", detail="internal workspace directory is redirected"
+                )
+            # Published assessment and batch trees (including stages and backups) belong
+            # to the exporters. Discard owns only the active SQLite runtime files.
+            targets = [
+                internal / name
+                for name in (
+                    "active-batch.sqlite3",
+                    "active-batch.sqlite3-wal",
+                    "active-batch.sqlite3-shm",
+                )
+                if (internal / name).exists()
+            ]
+            try:
+                for target in targets:
+                    if target.is_symlink() or _reparse(target):
+                        raise ValueError("discard target is redirected")
+                trash = internal / f".discard-trash-{uuid.uuid4().hex}"
+                trash.mkdir()
+                if trash.is_symlink() or _reparse(trash):
+                    raise ValueError("discard trash is redirected")
+            except (OSError, ValueError) as error:
+                return DiscardCondition(code="corrupt_active_batch", detail=str(error))
+            moved: list[tuple[Path, Path]] = []
+            try:
+                for index, target in enumerate(targets):
+                    destination = trash / str(index)
+                    target.replace(destination)
+                    moved.append((target, destination))
+            except OSError as error:
+                for target, destination in reversed(moved):
+                    if destination.exists() and not target.exists():
+                        destination.replace(target)
+                shutil.rmtree(trash, ignore_errors=True)
+                return DiscardCondition(code="discard_move_failed", detail=str(error))
+            removed = tuple(target.relative_to(root).as_posix() for target, _ in moved)
+            try:
+                shutil.rmtree(trash)
+            except OSError as error:
+                location = trash.relative_to(root).as_posix()
+                detail = (
+                    "runtime state removed; recoverable trash retained " + f"at {location}: {error}"
+                )
+                return DiscardCondition(
+                    code="discard_trash_retained",
+                    detail=detail,
+                )
+            return Discarded(removed=removed)
     except (OSError, ValueError, KeyError) as error:
         return DiscardCondition(code="corrupt_active_batch", detail=str(error))
-    progress = recovery_progress(root)
-    if any(item.code == "corrupt_active_batch" for item in progress.problems):
-        return DiscardCondition(code="corrupt_active_batch", detail=progress.problems[0].detail)
-    frozen = state.approved if isinstance(state, StaleBatch) else state
-    if isinstance(frozen, ApprovedBatch):
-        try:
-            _preserve_frozen_assessments(root, frozen)
-        except (OSError, ValueError, KeyError) as error:
-            return DiscardCondition(code="corrupt_active_batch", detail=str(error))
-    if isinstance(state, ApprovedBatch):
-        for item in progress.trials:
-            if item.status == "assessed":
-                try:
-                    export_trial(root, item.trial_id, _result(state, item.trial_id).id)
-                except (OSError, ValueError) as error:
-                    return DiscardCondition(code="corrupt_active_batch", detail=str(error))
-    if internal.is_symlink() or _reparse(internal):
-        return DiscardCondition(
-            code="corrupt_active_batch", detail="internal workspace directory is redirected"
-        )
-    # Published assessment and batch trees (including stages and backups) belong
-    # to the exporters.  Discard owns only the active SQLite runtime files.
-    targets = [
-        internal / name
-        for name in ("active-batch.sqlite3", "active-batch.sqlite3-wal", "active-batch.sqlite3-shm")
-        if (internal / name).exists()
-    ]
-    try:
-        for target in targets:
-            if target.is_symlink() or _reparse(target):
-                raise ValueError("discard target is redirected")
-        trash = internal / f".discard-trash-{uuid.uuid4().hex}"
-        trash.mkdir()
-        if trash.is_symlink() or _reparse(trash):
-            raise ValueError("discard trash is redirected")
-    except (OSError, ValueError) as error:
-        return DiscardCondition(code="corrupt_active_batch", detail=str(error))
-    moved: list[tuple[Path, Path]] = []
-    try:
-        for index, target in enumerate(targets):
-            destination = trash / str(index)
-            target.replace(destination)
-            moved.append((target, destination))
-    except OSError as error:
-        for target, destination in reversed(moved):
-            if destination.exists() and not target.exists():
-                destination.replace(target)
-        shutil.rmtree(trash, ignore_errors=True)
-        return DiscardCondition(code="discard_move_failed", detail=str(error))
-    removed = tuple(target.relative_to(root).as_posix() for target, _ in moved)
-    try:
-        shutil.rmtree(trash)
-    except OSError as error:
-        location = trash.relative_to(root).as_posix()
-        return DiscardCondition(
-            code="discard_trash_retained",
-            detail=f"runtime state removed; recoverable trash retained at {location}: {error}",
-        )
-    return Discarded(removed=removed)
+
+
+def _discard_target(
+    root: Path, request: DiscardActiveBatchRequest
+) -> tuple[ApprovedBatch, ApprovedBatch | StaleBatch] | DiscardCondition:
+    """Read and validate the discard target in a closed SQLite transaction."""
+
+    with transaction(root) as connection:
+        state = current_batch_in_transaction(root, connection)
+        if isinstance(state, NoActiveBatch):
+            return DiscardCondition(code="no_active_batch", detail="there is no active batch")
+        frozen = state.approved if isinstance(state, StaleBatch) else state
+        if not isinstance(frozen, ApprovedBatch):
+            return DiscardCondition(
+                code="active_batch_not_frozen",
+                detail="only a current frozen batch can be explicitly discarded",
+            )
+        if request.expected_frozen_hash != frozen.frozen_hash:
+            return DiscardCondition(
+                code="discard_identity_mismatch",
+                detail="expected_frozen_hash does not identify the current frozen batch",
+            )
+        row = connection.execute(
+            "SELECT 1 FROM records WHERE name=?", (f"batch_summary:{frozen.frozen_hash}",)
+        ).fetchone()
+        if row is not None:
+            return DiscardCondition(
+                code="batch_finalized",
+                detail="committed batch summaries cannot be discarded",
+            )
+        if not isinstance(state, (ApprovedBatch, StaleBatch)):
+            raise AssertionError("frozen active batch has an unexpected state")
+        return frozen, state

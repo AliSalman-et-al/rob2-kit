@@ -1,6 +1,7 @@
 import sqlite3
 import subprocess
 import sys
+import threading
 from datetime import UTC, datetime
 from pathlib import Path
 
@@ -10,10 +11,26 @@ from rob2_kit.batch import ApprovedBatch, Problem, StaleBatch, current_batch
 from rob2_kit.finish import finish_trial
 from rob2_kit.judgment_models import DomainJudgment
 from rob2_kit.judgments import checkpoint_content
-from rob2_kit.models import Judgment, sha256
-from rob2_kit.recovery import discard_active_batch, recovery_progress
+from rob2_kit.models import Judgment, canonical_json_bytes, sha256
+from rob2_kit.recovery import DiscardActiveBatchRequest, discard_active_batch, recovery_progress
 from rob2_kit.reports import export_trial
-from rob2_kit.storage import WorkspaceLock, WorkspaceLockedError
+from rob2_kit.storage import WorkspaceLock, WorkspaceLockedError, save_state
+
+
+def _discard(workspace: Path, *, expected_frozen_hash: str | None = None):
+    state = current_batch(workspace)
+    frozen = state.approved if isinstance(state, StaleBatch) else state
+    assert isinstance(frozen, ApprovedBatch)
+    return discard_active_batch(
+        workspace,
+        DiscardActiveBatchRequest(
+            expected_frozen_hash=expected_frozen_hash or frozen.frozen_hash,
+            confirmation="I_UNDERSTAND_THIS_DISCARDS_THE_ACTIVE_BATCH",
+            actor="researcher",
+            observed_at=datetime(2026, 8, 14, tzinfo=UTC),
+            reason="The researcher explicitly requested this discard.",
+        ),
+    )
 
 
 def test_progress_is_derived_from_approved_durable_records(tmp_path: Path) -> None:
@@ -28,10 +45,66 @@ def test_discard_removes_only_unfinished_runtime_database(tmp_path: Path) -> Non
     workspace, _ = approved_workspace(tmp_path)
     (workspace / "outputs").mkdir()
     (workspace / "outputs" / "done.txt").write_text("done")
-    result = discard_active_batch(workspace)
+    result = _discard(workspace)
     assert result.status == "discarded"
     assert (workspace / "outputs" / "done.txt").read_text() == "done"
     assert recovery_progress(workspace).status == "no_active"
+
+
+def test_discard_holds_workspace_mutation_lock_until_runtime_files_are_removed(
+    tmp_path: Path, monkeypatch
+) -> None:
+    workspace, _ = approved_workspace(tmp_path)
+    approved = current_batch(workspace)
+    assert isinstance(approved, ApprovedBatch)
+    replacement_proposal = approved.proposal.model_copy(
+        update={
+            "request": approved.proposal.request.model_copy(
+                update={
+                    "outcome_target": approved.proposal.request.outcome_target.model_copy(
+                        update={"label": "Replacement"}
+                    )
+                }
+            )
+        }
+    )
+    replacement = approved.model_copy(
+        update={
+            "proposal": replacement_proposal,
+            "frozen_hash": sha256(
+                {"proposal": replacement_proposal, "packs": approved.pack_identities}
+            ),
+        }
+    )
+    attempted = threading.Event()
+    release_competitor = threading.Event()
+    replaced = threading.Event()
+
+    def replace_with_b() -> None:
+        release_competitor.wait(timeout=5)
+        attempted.set()
+        save_state(workspace, canonical_json_bytes(replacement))
+        replaced.set()
+
+    thread = threading.Thread(target=replace_with_b)
+    thread.start()
+    import rob2_kit.recovery as recovery
+
+    def old_race_hook(root: Path, state: ApprovedBatch) -> None:
+        release_competitor.set()
+        assert attempted.wait(timeout=5)
+        assert not replaced.wait(timeout=0.2)
+
+    monkeypatch.setattr(recovery, "_preserve_frozen_assessments", old_race_hook)
+    try:
+        assert _discard(workspace).status == "discarded"
+        thread.join(timeout=5)
+        assert not thread.is_alive()
+    finally:
+        release_competitor.set()
+        thread.join(timeout=5)
+    assert replaced.is_set()
+    assert current_batch(workspace) == replacement
 
 
 def test_recovery_rejects_self_hashed_checkpoint_with_changed_logic(tmp_path: Path) -> None:
@@ -61,7 +134,7 @@ def test_discard_preserves_exporter_residues(tmp_path: Path) -> None:
     residue = workspace / ".rob2-kit" / "assessments" / ".trial-backup"
     residue.mkdir(parents=True)
     (residue / "keep.txt").write_text("published")
-    assert discard_active_batch(workspace).status == "discarded"
+    assert _discard(workspace).status == "discarded"
     assert (residue / "keep.txt").read_text() == "published"
 
 
@@ -87,7 +160,7 @@ def test_discard_recovers_completed_assessment_backup_before_removing_database(
     backup = target.parent / ".t-backup"
     target.replace(backup)
     assert not target.exists() and backup.exists()
-    assert discard_active_batch(workspace).status == "discarded"
+    assert _discard(workspace).status == "discarded"
     assert target.is_dir() and not backup.exists()
 
 
@@ -127,7 +200,7 @@ def test_discard_move_failure_restores_every_runtime_file(tmp_path: Path, monkey
 
     monkeypatch.setattr(Path, "replace", fail_second)
     try:
-        result = discard_active_batch(workspace)
+        result = _discard(workspace)
         assert result.status == "condition" and result.code == "discard_move_failed"
         assert before[files[0].name] == files[0].read_bytes()
         assert before[files[1].name] == files[1].read_bytes()
@@ -146,7 +219,7 @@ def test_expected_source_or_pack_staleness_remains_discardable(tmp_path: Path, m
     (workspace / source.captured_path).write_bytes(b"changed")
     stale = recovery_progress(workspace)
     assert stale.status == "stale" and stale.problems[0].code != "corrupt_active_batch"
-    assert discard_active_batch(workspace).status == "discarded"
+    assert _discard(workspace).status == "discarded"
     assert recovery_progress(workspace).status == "no_active"
     assert (workspace / "outputs" / "done").read_text() == "keep"
 
@@ -167,7 +240,7 @@ def test_expected_source_or_pack_staleness_remains_discardable(tmp_path: Path, m
 
     monkeypatch.setattr(recovery, "current_batch_in_transaction", pack_stale)
     assert recovery_progress(other).problems[0].code == "pack_identity_changed"
-    assert discard_active_batch(other).status == "discarded"
+    assert _discard(other).status == "discarded"
 
 
 def test_stale_frozen_assessment_is_materialized_before_discard(
@@ -200,7 +273,7 @@ def test_stale_frozen_assessment_is_materialized_before_discard(
         )
 
     monkeypatch.setattr(recovery, "current_batch_in_transaction", pack_stale)
-    assert discard_active_batch(workspace).status == "discarded"
+    assert _discard(workspace).status == "discarded"
     target = workspace / ".rob2-kit" / "assessments" / "t"
     assert (target / "assessment.json").is_file() and (target / "report.html").is_file()
     monkeypatch.undo()

@@ -9,6 +9,7 @@ from typing import Annotated, Literal
 
 import httpx
 from fastmcp import FastMCP
+from mcp.types import ToolAnnotations
 from pydantic import BaseModel, ConfigDict, Field
 
 from rob2_kit.assessment import Proposal
@@ -30,7 +31,13 @@ from rob2_kit.judgment_models import ActiveAnswer, InactiveQuestion, Override
 from rob2_kit.judgments import SaveDomainJudgmentResult, save_domain_judgment
 from rob2_kit.models import Judgment
 from rob2_kit.packs import MAINTAINER_POLICY_PACK, SCIENTIFIC_PACK
-from rob2_kit.recovery import DiscardCondition, Discarded, discard_active_batch, recovery_progress
+from rob2_kit.recovery import (
+    DiscardActiveBatchRequest,
+    DiscardCondition,
+    Discarded,
+    discard_active_batch,
+    recovery_progress,
+)
 from rob2_kit.registry import (
     RegistryCandidateRecord,
     RegistryNotCaptured,
@@ -383,10 +390,19 @@ def finalize_one_batch(
     return finalize_batch(os.environ["ROB2_WORKSPACE"], actor, observed_at)
 
 
-@mcp.tool(name="discard_active_batch")
-def discard_one_active_batch() -> Discarded | DiscardCondition:
-    """Recoverably discard only an unfinished active batch's runtime state."""
-    return discard_active_batch(os.environ["ROB2_WORKSPACE"])
+@mcp.tool(
+    name="discard_active_batch",
+    annotations=ToolAnnotations(
+        readOnlyHint=False,
+        destructiveHint=True,
+        idempotentHint=False,
+    ),
+)
+def discard_one_active_batch(
+    request: DiscardActiveBatchRequest,
+) -> Discarded | DiscardCondition:
+    """DESTRUCTIVE: discard only the explicitly identified unfinished frozen batch."""
+    return discard_active_batch(os.environ["ROB2_WORKSPACE"], request)
 
 
 @mcp.resource("rob2://domain-guidance/{domain_id}")
