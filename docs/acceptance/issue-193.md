@@ -75,6 +75,13 @@ The non-secret Codex configuration SHA-256 was the same before and after the run
 `7091F3948E89BFF76BFD9222315A93C6935E3B71044E291B5985565804156202`.
 No product processes remained afterward, and the repository was clean.
 
+The candidate identity was exactly Git commit
+`49f92219f2b5517bb26a3cff3c0b9a8253fd0f6e`; the installed product wheel was
+built from that checkout. The temporary stdout/stderr transcript and result file
+were not retained, so no artifact SHA-256 can be asserted retrospectively. The
+commands below retain both and print their SHA-256 values, without copying,
+reading, or naming authentication material.
+
 This aligns with the reported Windows Python-stdio symptom in
 [openai/codex#29247](https://github.com/openai/codex/issues/29247).  That report
 is corroborating external evidence only; it does not establish an identical root
@@ -87,13 +94,33 @@ that prerequisite still fails.  WSL and Docker were unavailable locally, and
 their installation was not authorized, so no alternative host path was used.  No
 runtime change or compatibility shim is proposed by this record.
 
-## Reproduction commands
+## Credential-free Codex Luna Medium reproduction
 
-Substitute `%ACCEPT_ROOT%` for the fresh temporary root:
+Set `$acceptRoot` to a newly created empty directory and run these commands from
+the pinned checkout. The transient overlay is the complete non-secret MCP
+configuration: its only environment value is the fresh workspace. No credentials
+are copied or read. The command takes a byte-exact, uniquely named backup of the
+non-secret Codex configuration and restores it in `finally` before comparing its
+before/after SHA-256 values.
 
 ```powershell
-uv build --wheel --out-dir %ACCEPT_ROOT%\\wheel
-uv venv %ACCEPT_ROOT%\\venv
-uv pip install --python %ACCEPT_ROOT%\\venv\\Scripts\\python.exe %ACCEPT_ROOT%\\wheel\\rob2_kit-0.1.0-py3-none-any.whl
-claude -p --strict-mcp-config --mcp-config %ACCEPT_ROOT%\\claude-project\\mcp.json --plugin-dir %ACCEPT_ROOT%\\claude-project\\plugin --permission-mode dontAsk --max-budget-usd 1 --output-format json "Discover the configured rob2 MCP inventory and call rob2://current-batch."
+$acceptRoot = 'C:\\Temp\\rob2-acceptance-193'
+git rev-parse HEAD
+git rev-parse --verify 49f92219f2b5517bb26a3cff3c0b9a8253fd0f6e
+New-Item -ItemType Directory -Force "$acceptRoot\wheel", "$acceptRoot\workspace", "$acceptRoot\codex" | Out-Null
+uv build --wheel --out-dir "$acceptRoot\wheel"
+uv venv "$acceptRoot\venv"
+uv pip install --python "$acceptRoot\venv\Scripts\python.exe" "$acceptRoot\wheel\rob2_kit-0.1.0-py3-none-any.whl"
+$configPath = Join-Path $env:USERPROFILE '.codex\config.toml'
+$configBackup = Join-Path $acceptRoot "codex\config.toml.$((New-Guid).Guid).backup"
+Copy-Item -LiteralPath $configPath -Destination $configBackup -ErrorAction Stop
+$configBeforeHash = (Get-FileHash -LiteralPath $configBackup -Algorithm SHA256).Hash
+try {
+    codex exec --ignore-user-config --ephemeral --skip-git-repo-check --cd "$acceptRoot\workspace" --model gpt-5.6-luna -c model_reasoning_effort='medium' -c "mcp_servers.rob2.command='$acceptRoot\venv\Scripts\rob2-mcp.exe'" -c "mcp_servers.rob2.env.ROB2_WORKSPACE='$acceptRoot\workspace'" --json "List the configured rob2 MCP tools and resources, then call rob2://current-batch." 1> "$acceptRoot\codex\result.jsonl" 2> "$acceptRoot\codex\stderr.txt"
+} finally {
+    Copy-Item -LiteralPath $configBackup -Destination $configPath -Force -ErrorAction Stop
+    $configAfterHash = (Get-FileHash -LiteralPath $configPath -Algorithm SHA256).Hash
+    if ($configBeforeHash -ne $configAfterHash) { throw 'Codex configuration restoration hash differs' }
+}
+Get-FileHash -Algorithm SHA256 "$acceptRoot\codex\result.jsonl", "$acceptRoot\codex\stderr.txt"
 ```

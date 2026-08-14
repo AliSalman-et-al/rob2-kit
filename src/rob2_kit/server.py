@@ -44,7 +44,7 @@ from rob2_kit.registry import (
 from rob2_kit.rendering import RenderCondition, RenderedPage, render_page
 from rob2_kit.search import SearchHit, _source_bytes, search_sources
 from rob2_kit.sources import (
-    IngestBatchResult,
+    IngestedTrial,
     ReadPagesResult,
     Source,
     TrialInput,
@@ -106,10 +106,45 @@ class IngestRequest(BaseModel):
     registry_requests: tuple[RegistryRequest, ...] = ()
 
 
+class RegistryNotAttempted(BaseModel):
+    """Registry matching is inapplicable when local ingestion has a condition."""
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    status: Literal["not_attempted"]
+    trial_id: str
+    reason: Literal["local_ingestion_condition"]
+
+
+class LocalIngestionCondition(BaseModel):
+    """One local ingestion condition and its explicitly inapplicable registry attempt."""
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    status: Literal["local_condition"]
+    trial: IngestedTrial
+    registry: RegistryNotAttempted
+
+
+class RegistryAttempt(BaseModel):
+    """One successful local ingestion and its persisted categorical registry attempt."""
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    status: Literal["registry_attempted"]
+    trial: IngestedTrial
+    registry: RegistryCandidateRecord
+
+
+IngestionRegistryTrial = Annotated[
+    LocalIngestionCondition | RegistryAttempt, Field(discriminator="status")
+]
+
+
 class IngestRegistryResult(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
-    ingestion: IngestBatchResult
-    registry_matches: tuple[RegistryCandidateRecord, ...]
+
+    trials: tuple[IngestionRegistryTrial, ...]
 
 
 class AssessmentFinishRequest(BaseModel):
@@ -187,7 +222,7 @@ def save_batch_proposal(proposal: Proposal) -> SaveProposalResult:
 
 @mcp.tool(name="ingest_batch")
 def ingest_one_batch(request: IngestRequest) -> IngestRegistryResult:
-    """Capture local inputs then deterministically attempt one registry match per Trial."""
+    """Capture local inputs and pair every Trial with a registry attempt or condition."""
     workspace = os.environ["ROB2_WORKSPACE"]
     result = ingest_batch(workspace, request.trial_inputs)
     supplied = {item.trial_id: item for item in request.registry_requests}
@@ -195,24 +230,49 @@ def ingest_one_batch(request: IngestRequest) -> IngestRegistryResult:
         item.id for item in request.trial_inputs
     }:
         raise ValueError("registry requests must be unique requested Trials")
-    matches = []
-    with httpx.Client(timeout=httpx.Timeout(10.0, connect=3.0)) as client:
-        request_provider = http_request(client)
-        for trial_input, captured in zip(request.trial_inputs, result.trials, strict=True):
-            registry = supplied.get(trial_input.id)
-            main = next(
-                source for source in captured.sources if source.role.value == "main_article"
+    records: dict[str, RegistryCandidateRecord] = {}
+    successful = tuple(captured for captured in result.trials if captured.condition is None)
+    if successful:
+        with httpx.Client(timeout=httpx.Timeout(10.0, connect=3.0)) as client:
+            request_provider = http_request(client)
+            for captured in successful:
+                main = next(
+                    source for source in captured.sources if source.role.value == "main_article"
+                )
+                registry = supplied.get(captured.trial_id)
+                text = "\n".join(
+                    _extract_pages(_source_bytes(Path(workspace), main), main.media_type)
+                )
+                facts = (
+                    TrialFacts() if registry is None or registry.facts is None else registry.facts
+                )
+                match = match_registry(
+                    facts,
+                    request_provider,
+                    supplied_nct=None if registry is None else registry.supplied_nct,
+                    main_article_text=text,
+                )
+                records[captured.trial_id] = record_registry_match(
+                    workspace, captured.trial_id, match
+                )
+    return IngestRegistryResult(
+        trials=tuple(
+            LocalIngestionCondition(
+                status="local_condition",
+                trial=captured,
+                registry=RegistryNotAttempted(
+                    status="not_attempted",
+                    trial_id=captured.trial_id,
+                    reason="local_ingestion_condition",
+                ),
             )
-            text = "\n".join(_extract_pages(_source_bytes(Path(workspace), main), main.media_type))
-            facts = TrialFacts() if registry is None or registry.facts is None else registry.facts
-            match = match_registry(
-                facts,
-                request_provider,
-                supplied_nct=None if registry is None else registry.supplied_nct,
-                main_article_text=text,
+            if captured.condition is not None
+            else RegistryAttempt(
+                status="registry_attempted", trial=captured, registry=records[captured.trial_id]
             )
-            matches.append(record_registry_match(workspace, trial_input.id, match))
-    return IngestRegistryResult(ingestion=result, registry_matches=tuple(matches))
+            for captured in result.trials
+        )
+    )
 
 
 @mcp.tool(name="list_sources")

@@ -134,8 +134,16 @@ def test_registry_resource_reads_captured_record_and_reports_missing(
         return captured[0].text, missing[0].text
 
     captured, missing = asyncio.run(read())
-    assert '"status":"captured"' in captured
-    assert '"status":"not_captured"' in missing
+    captured_payload = json.loads(captured)
+    missing_payload = json.loads(missing)
+    assert captured_payload["candidate"] is None
+    assert captured_payload["captured"]["trial_id"] == "trial"
+    assert captured_payload["captured"]["status"] == "captured"
+    assert captured_payload["captured"]["source"]["trial_id"] == "trial"
+    assert missing_payload == {
+        "candidate": None,
+        "captured": {"status": "not_captured", "trial_id": "missing"},
+    }
 
 
 def test_registry_resource_reports_existing_trial_without_capture(
@@ -162,9 +170,10 @@ def test_registry_resource_reports_existing_trial_without_capture(
             result = await client.read_resource("rob2://registry/trial")
         return result[0].text
 
-    assert asyncio.run(read()) == (
-        '{"candidate":null,"captured":{"status":"not_captured","trial_id":"trial"}}'
-    )
+    assert json.loads(asyncio.run(read())) == {
+        "candidate": None,
+        "captured": {"status": "not_captured", "trial_id": "trial"},
+    }
 
 
 def test_batch_tools_are_discoverable() -> None:
@@ -259,9 +268,83 @@ def test_mcp_registry_ingest_matches_and_persists_candidate(tmp_path: Path, monk
         return result.structured_content, resource[0].text
 
     result, resource = asyncio.run(call())
-    assert result["registry_matches"][0]["match"]["status"] == "matched"
-    assert result["registry_matches"][0]["captured_source"]["role"] == "registry"
-    assert '"status":"matched"' in resource and '"status":"captured"' in resource
+    trial = result["trials"][0]
+    assert trial["status"] == "registry_attempted"
+    assert trial["trial"]["trial_id"] == "trial"
+    assert trial["trial"]["condition"] is None
+    assert trial["registry"]["trial_id"] == "trial"
+    assert trial["registry"]["match"]["status"] == "matched"
+    assert trial["registry"]["captured_source"]["role"] == "registry"
+    resource_payload = json.loads(resource)
+    assert resource_payload["candidate"] == trial["registry"]
+    assert resource_payload["captured"]["trial_id"] == "trial"
+    assert resource_payload["captured"]["status"] == "captured"
+
+
+@pytest.mark.parametrize(
+    ("sources", "expected_code"),
+    [
+        ([], "main_article_required"),
+        (
+            [
+                {"role": "main_article", "path": "main.pdf", "label": "Main one"},
+                {"role": "main_article", "path": "main.pdf", "label": "Main two"},
+            ],
+            "main_article_ambiguous",
+        ),
+        (
+            [{"role": "main_article", "path": "main.txt", "label": "Main"}],
+            "main_article_must_be_pdf",
+        ),
+    ],
+)
+def test_mcp_ingest_local_conditions_do_not_attempt_registry(
+    tmp_path: Path, monkeypatch, sources: list[dict[str, str]], expected_code: str
+) -> None:
+    (tmp_path / "main.txt").write_text("not a PDF")
+    _pdf(tmp_path / "main.pdf")
+    monkeypatch.setenv("ROB2_WORKSPACE", str(tmp_path))
+    import rob2_kit.server as server
+
+    monkeypatch.setattr(
+        server.httpx,
+        "Client",
+        lambda **_: pytest.fail("registry client must not be created for local conditions"),
+    )
+    request = {
+        "trial_inputs": [{"id": "trial", "label": "Trial", "sources": sources}],
+        "registry_requests": [{"trial_id": "trial", "facts": _registry_facts()}],
+    }
+
+    async def call() -> dict[str, Any]:
+        async with Client(mcp) as client:
+            return (await client.call_tool("ingest_batch", {"request": request})).structured_content
+
+    assert asyncio.run(call()) == {
+        "trials": [
+            {
+                "status": "local_condition",
+                "trial": {
+                    "trial_id": "trial",
+                    "sources": [],
+                    "condition": {
+                        "code": expected_code,
+                        "trial_id": "trial",
+                        "detail": (
+                            "exactly one source with role main_article is required"
+                            if expected_code != "main_article_must_be_pdf"
+                            else "the designated main_article must contain a valid PDF"
+                        ),
+                    },
+                },
+                "registry": {
+                    "status": "not_attempted",
+                    "trial_id": "trial",
+                    "reason": "local_ingestion_condition",
+                },
+            }
+        ]
+    }
 
 
 @pytest.mark.parametrize(
@@ -312,10 +395,25 @@ def test_mcp_registry_nonmatched_outcomes_are_categorical_and_nonblocking(
         return result.structured_content, resource[0].text
 
     result, resource = asyncio.run(call())
-    assert result["ingestion"]["trials"][0]["sources"]
-    assert result["registry_matches"][0]["match"]["status"] == kind
-    assert result["registry_matches"][0]["captured_source"] is None
-    assert f'"status":"{kind}"' in resource and '"status":"not_captured"' in resource
+    trial = result["trials"][0]
+    assert trial["status"] == "registry_attempted"
+    assert trial["trial"]["trial_id"] == "trial"
+    assert trial["trial"]["sources"]
+    assert trial["trial"]["condition"] is None
+    assert set(trial["registry"]) == {"trial_id", "match", "captured_source"}
+    assert trial["registry"]["trial_id"] == "trial"
+    assert trial["registry"]["match"]["status"] == kind
+    assert set(trial["registry"]["match"]) == {
+        "status",
+        "candidates",
+        "reasons",
+        "provider_json",
+    }
+    assert trial["registry"]["captured_source"] is None
+    assert json.loads(resource) == {
+        "candidate": trial["registry"],
+        "captured": {"status": "not_captured", "trial_id": "trial"},
+    }
 
 
 def test_mcp_registry_uses_article_nct_without_supplied_identifier(
@@ -346,7 +444,7 @@ def test_mcp_registry_uses_article_nct_without_supplied_identifier(
                 )
             ).structured_content
 
-    assert asyncio.run(call())["registry_matches"][0]["match"]["status"] == "matched"
+    assert asyncio.run(call())["trials"][0]["registry"]["match"]["status"] == "matched"
     assert any(url.endswith("/NCT00000001") for url in requested)
 
 
