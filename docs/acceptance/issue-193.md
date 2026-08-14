@@ -55,6 +55,38 @@ reporting, not a server-discovery failure.
 No mixed-outcome workflow, resume, registry-unavailable, contradiction, or page
 rendering acceptance is claimed because Codex cannot enter the server at all.
 
+## Independent Codex reproduction (Luna Medium)
+
+An independent credential-free reproduction at candidate HEAD `49f9221`
+(`49f92219f2b5517bb26a3cff3c0b9a8253fd0f6e`) used Codex CLI `0.147.0`, model
+`gpt-5.6-luna`, and medium reasoning.  It used a clean temporary wheel, virtual
+environment, and workspace.  The packaged skills discovered from the wheel were
+the canonical `rob2-workflow` and `rob2-signalling`; temporary working-copy names
+used while preparing the reproduction are not discovery evidence.
+
+Codex again failed before tool or resource discovery with the exact error:
+
+```
+MCP startup failed: handshaking with MCP server failed: connection closed: initialize response
+```
+
+The reproduction session ID was `019ffde8-45aa-7c30-9e7f-a97295e88d02`.
+The non-secret Codex configuration SHA-256 was the same before and after the run:
+`7091F3948E89BFF76BFD9222315A93C6935E3B71044E291B5985565804156202`.
+No product processes remained afterward, and the repository was clean.
+
+This aligns with the reported Windows Python-stdio symptom in
+[openai/codex#29247](https://github.com/openai/codex/issues/29247).  That report
+is corroborating external evidence only; it does not establish an identical root
+cause here.
+
+This result is additional evidence for #193's installed-host acceptance record,
+not completion of #193.  Issues #194--#196 remain gated because their acceptance
+requires Codex to complete MCP initialization and discover the installed server;
+that prerequisite still fails.  WSL and Docker were unavailable locally, and
+their installation was not authorized, so no alternative host path was used.  No
+runtime change or compatibility shim is proposed by this record.
+
 ## Reproduction commands
 
 Substitute `%ACCEPT_ROOT%` for the fresh temporary root:
