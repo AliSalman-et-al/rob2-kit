@@ -36,11 +36,15 @@ recoverably discarded; committed report artifacts remain protected.
 
 ## MCP and host boundary
 
-The public server shape is eleven tools for proposal, ingestion, Source access,
-approval, Domain judgment, Trial completion, finalization, and recovery; and three
-resources for current-batch progress, pinned Domain guidance, and captured registry
-records. The portable skills are `rob2-workflow` and `rob2-signalling`; they
-instruct both supported hosts without creating a second model loop.
+The public server shape is exactly twelve tools, in order: `ingest_batch`,
+`list_sources`, `retrieve_evidence`, `render_page`, `save_proposal`,
+`approve_batch`, `validate_domain_judgment`, `commit_domain_judgment`,
+`finish_trial`, `finalize_batch`, `read_record`, and `discard_active_batch`.
+Its resources are compact `rob2://current-batch`, immutable
+`rob2://detail/{kind}/{identity}`, and captured
+`rob2://registry/{trial_id}`. The portable skills are `rob2-workflow` and
+`rob2-signalling`; they instruct both supported hosts without creating a second
+model loop.
 
 A **Canonical record** is the complete authoritative workflow or scientific
 record retained by the server and protected by its identity and integrity rules.
@@ -182,11 +186,6 @@ search and Source scope, including normalized terms and matching-page counts. It
 may explain why the requested expression produced no hits, but never proposes
 scientific vocabulary or claims that Evidence is absent.
 
-The RC6 candidate tag is created only from the clean exact final commit after the
+The v0.2.0 candidate is created only from the clean exact final commit after the
 release-manifest commit, final review, and remote 3x3 CI. Its machine-readable
 contract and verification steps are in [docs/release](docs/release/README.md).
-The owner-scoped Claude Code Sonnet Low CHAARTED overall-survival evaluation
-completed operationally and scientifically; its performance failure is tracked by
-#197 and is non-blocking for #196. Codex CLI 0.147.0 on Windows is an unaccepted
-known MCP limitation, recorded in
-[issue #193 acceptance evidence](docs/acceptance/issue-193.md).

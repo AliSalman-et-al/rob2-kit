@@ -19,15 +19,18 @@ def test_packaged_skills_guard_the_human_acceptance_boundaries() -> None:
     workflow = package.joinpath("skills", "rob2-workflow", "SKILL.md").read_text()
     signalling = package.joinpath("skills", "rob2-signalling", "SKILL.md").read_text()
 
-    assert "Inspect `inputs/<trial>`" in workflow
-    assert "wait for explicit approval" in workflow
-    assert "After every Trial has a terminal outcome, call `finalize_batch`" in workflow
-    assert "`FinalizedBatch.receipt`" in workflow
-    assert "standalone host-authored HTML" in workflow
-    assert "available only for an explicit researcher instruction" in workflow
-    assert "all five guidance resources" in signalling
-    assert "complete draft and verify this checklist before validation" in signalling
-    assert "inspect the tool schema rather than probing with a save" in signalling
-    assert "`expected_previous_hash`" in workflow
-    assert "`phase: validate`" in signalling
-    assert "review_then_commit" in signalling
+    assert "current-batch" in workflow
+    assert "After approval" in workflow
+    assert "finalize_batch" in workflow
+    assert "artifact" in workflow
+    assert "researcher-only" in workflow
+    assert workflow.index("`retrieve_evidence`") < workflow.index("`save_proposal`")
+    assert workflow.index("`save_proposal`") < workflow.index("`read_record`")
+    assert workflow.index("`read_record`") < workflow.index("`approve_batch`")
+    assert "Packet-guided" in signalling
+    assert "deliberate text selections" in signalling
+    assert "strict Domain draft" in signalling
+    assert "every independent repair" in signalling
+    assert "synthesis" in signalling
+    assert signalling.index("`retrieve_evidence`") < signalling.index("save the\nProposal")
+    assert signalling.index("save the\nProposal") < signalling.index("`approve_batch`")

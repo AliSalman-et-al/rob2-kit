@@ -14,12 +14,21 @@ import shutil
 import stat
 import tempfile
 from collections import Counter
+from collections.abc import Mapping
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Any, cast
 
 import pymupdf
 
-from rob2_kit.assessment import LocalSourceRecord
+from rob2_kit.assessment import (
+    CapturedBatch,
+    CapturedRegistryOutcome,
+    CapturedTrial,
+    LocalSourceRecord,
+    captured_batch_hash,
+)
+from rob2_kit.models import canonical_json_bytes, sha256
 from rob2_kit.sources import (
     ExpectedCondition,
     IngestBatchResult,
@@ -36,12 +45,23 @@ from rob2_kit.sources import (
     local_source_id,
     sha256_bytes,
 )
+from rob2_kit.storage import ensure_contract_version, read_only_transaction, transaction
+from rob2_kit.telemetry import NO_OP_EVENT_SINK, EventSinkLike
+from rob2_kit.text_projection import (
+    TextProjectionIdentity,
+    VerifiedProjection,
+    canonical_projection_identity,
+    materialize_projection,
+    projection_identity,
+    verified_pages,
+)
 
 
 @dataclass(frozen=True)
 class _PreparedSource:
     source: Source
     data: bytes
+    pages: tuple[str, ...]
     input_path: str
     occurrence: int
 
@@ -53,12 +73,191 @@ _LOCAL_SCHEMA = "rob2-kit.local-sources.v1"
 
 
 def ingest_batch(workspace: str | Path, trial_inputs: tuple[TrialInput, ...]) -> IngestBatchResult:
+    ensure_contract_version(workspace)
+    with read_only_transaction(workspace) as connection:
+        if connection is not None and (
+            connection.execute(
+                "SELECT 1 FROM runtime_meta WHERE name='active_proposal_version'"
+            ).fetchone()
+            or connection.execute(
+                "SELECT 1 FROM records WHERE name='active_batch' OR name LIKE 'terminal_trial:%' "
+                "OR name LIKE 'batch_summary:%' LIMIT 1"
+            ).fetchone()
+        ):
+            raise ValueError("captured intake is frozen after Proposal creation")
     root = Path(workspace).resolve(strict=True)
     if not root.is_dir() or not trial_inputs:
         raise ValueError("workspace must be a directory and include at least one TrialInput")
     if len({trial.id for trial in trial_inputs}) != len(trial_inputs):
         raise ValueError("TrialInput ids must be unique")
     return IngestBatchResult(trials=tuple(_ingest_trial(root, trial) for trial in trial_inputs))
+
+
+def publish_captured_batch(
+    workspace: str | Path,
+    trial_inputs: tuple[TrialInput, ...],
+    result: IngestBatchResult,
+    registry_outcomes: Mapping[str, object],
+    *,
+    event_sink: EventSinkLike = NO_OP_EVENT_SINK,
+) -> CapturedBatch:
+    """Freeze one complete intake after local and registry work has finished."""
+
+    ensure_contract_version(workspace)
+    with read_only_transaction(workspace) as connection:
+        if connection is not None and (
+            connection.execute(
+                "SELECT 1 FROM runtime_meta WHERE name='active_proposal_version'"
+            ).fetchone()
+            or connection.execute(
+                "SELECT 1 FROM records WHERE name='active_batch' OR name LIKE 'terminal_trial:%' "
+                "OR name LIKE 'batch_summary:%' LIMIT 1"
+            ).fetchone()
+        ):
+            raise ValueError("Captured Batch is frozen after Proposal creation")
+    if len(result.trials) != len(trial_inputs):
+        raise ValueError("ingestion result does not cover every Trial declaration")
+    captured_trials: list[CapturedTrial] = []
+    for declaration, captured in zip(trial_inputs, result.trials, strict=True):
+        registry_record = None
+        registry_source_record = None
+        if captured.trial_id != declaration.id:
+            raise ValueError("ingestion result Trial order does not match declarations")
+        if captured.condition is not None:
+            registry = CapturedRegistryOutcome(
+                trial_id=declaration.id,
+                status="not_attempted",
+            )
+            sources: tuple[Source, ...] = ()
+        else:
+            sources = tuple(captured.sources)
+            registry_record = registry_outcomes.get(declaration.id)
+            if registry_record is None:
+                raise ValueError("registry outcomes are incomplete")
+            registry = _registry_outcome(declaration.id, registry_record)
+            registry_source_record = registry_record.__getattribute__("captured_source")
+            if registry_source_record is not None:
+                sources += (registry_source_record,)
+            sources = list_sources(sources)
+        local_pages = {
+            source.id: pages
+            for source, pages in zip(captured.sources, captured.projection_pages, strict=True)
+        }
+        if registry_source_record is not None:
+            local_pages[registry_source_record.id] = tuple(
+                cast(Any, registry_record).projection_pages
+            )
+        projections = []
+        for source in sources:
+            pages = local_pages.get(source.id)
+            if not pages:
+                raise ValueError("fresh Source projection pages are unavailable")
+            expected_identity = projection_identity(source, pages)
+            verified_pages(
+                workspace,
+                source,
+                expected_identity,
+                event_sink=event_sink,
+            )
+            projections.append(expected_identity)
+        captured_trials.append(
+            CapturedTrial(
+                trial_input=declaration,
+                sources=sources,
+                source_inventory_hash=sha256(sources),
+                projections=tuple(projections),
+                registry=registry,
+            )
+        )
+    draft = CapturedBatch(trial_inputs=trial_inputs, trials=tuple(captured_trials), content_hash="")
+    captured = draft.model_copy(update={"content_hash": captured_batch_hash(draft)})
+    payload = canonical_json_bytes(captured)
+    key = f"captured_batch:{captured.content_hash}"
+    with transaction(workspace) as connection:
+        if (
+            connection.execute(
+                "SELECT 1 FROM runtime_meta WHERE name='active_proposal_version'"
+            ).fetchone()
+            or connection.execute(
+                "SELECT 1 FROM records WHERE name='active_batch' OR name LIKE 'terminal_trial:%' "
+                "OR name LIKE 'batch_summary:%' LIMIT 1"
+            ).fetchone()
+        ):
+            raise ValueError("Captured Batch is frozen after Proposal creation")
+        head = connection.execute(
+            "SELECT payload FROM runtime_meta WHERE name='captured_batch_hash'"
+        ).fetchone()
+        if head is not None:
+            current_hash = bytes(head[0]).decode()
+            if current_hash != captured.content_hash:
+                raise ValueError("completed Captured Batch is immutable until explicit discard")
+            current = connection.execute(
+                "SELECT payload FROM records WHERE name=?",
+                (f"captured_batch:{current_hash}",),
+            ).fetchone()
+            if current is None or bytes(current[0]) != payload:
+                raise ValueError("Captured Batch head is corrupt")
+            return captured
+        existing = connection.execute("SELECT payload FROM records WHERE name=?", (key,)).fetchone()
+        if existing is not None and bytes(existing[0]) != payload:
+            raise ValueError("Captured Batch identity conflicts with stored bytes")
+        if existing is None:
+            connection.execute("INSERT INTO records(name,payload) VALUES(?,?)", (key, payload))
+        detail_key = f"detail:batch:{captured.content_hash}"
+        detail = connection.execute(
+            "SELECT payload FROM records WHERE name=?", (detail_key,)
+        ).fetchone()
+        if detail is not None and bytes(detail[0]) != payload:
+            raise ValueError("Captured Batch Detail identity conflicts with stored bytes")
+        if detail is None:
+            connection.execute(
+                "INSERT INTO records(name,payload) VALUES(?,?)", (detail_key, payload)
+            )
+        connection.execute(
+            "INSERT INTO runtime_meta(name,payload) VALUES('captured_batch_hash',?) "
+            "ON CONFLICT(name) DO UPDATE SET payload=excluded.payload",
+            (captured.content_hash.encode(),),
+        )
+    return captured
+
+
+def _registry_outcome(trial_id: str, record: object) -> CapturedRegistryOutcome:
+    typed_record = cast(Any, record)
+    match = typed_record.match
+    status = match.status.value
+    captured_source = typed_record.captured_source
+    return CapturedRegistryOutcome(
+        trial_id=trial_id,
+        status=status,
+        record_hash=sha256(typed_record.model_dump(mode="json")),
+        captured_source_sha256=None if captured_source is None else captured_source.sha256,
+    )
+
+
+def read_captured_batch(workspace: str | Path) -> CapturedBatch | None:
+    """Read and verify the immutable Captured Batch head, if intake completed."""
+
+    with read_only_transaction(workspace) as connection:
+        if connection is None:
+            return None
+        try:
+            pointer = connection.execute(
+                "SELECT payload FROM runtime_meta WHERE name='captured_batch_hash'"
+            ).fetchone()
+        except Exception as error:
+            raise ValueError("Captured Batch identity is unavailable") from error
+        if pointer is None:
+            return None
+        content_hash = bytes(pointer[0]).decode()
+        row = connection.execute(
+            "SELECT payload FROM records WHERE name=?", (f"captured_batch:{content_hash}",)
+        ).fetchone()
+        if row is None:
+            raise ValueError("Captured Batch record is unavailable")
+        captured = CapturedBatch.model_validate_json(bytes(row[0]))
+        if captured.content_hash != content_hash or captured_batch_hash(captured) != content_hash:
+            raise ValueError("Captured Batch identity is corrupt")
+        return captured
 
 
 def capture_source_bytes(
@@ -69,6 +268,7 @@ def capture_source_bytes(
     data: bytes,
 ) -> Source:
     """Append one generated immutable Source to an already captured Trial."""
+    ensure_contract_version(workspace)
     root = Path(workspace).resolve(strict=True)
     sources_root = _safe_dir(root, (".rob2-kit", "sources"))
     destination = sources_root / trial_id
@@ -89,7 +289,15 @@ def capture_source_bytes(
     _verify_under(sources_root, destination)
     manifest = destination / _REGISTRY_MANIFEST
     if manifest.exists() or manifest.is_symlink():
-        if _registry_manifest_sources(root, destination)[0] != source:
+        try:
+            existing_source = _registry_manifest_sources(
+                root,
+                destination,
+                expected_identity=projection_identity(source, pages),
+            )[0]
+        except ValueError as error:
+            raise ValueError("existing registry source conflicts") from error
+        if existing_source != source:
             raise ValueError("existing registry source conflicts")
         return source
     if target.exists():
@@ -101,7 +309,10 @@ def capture_source_bytes(
     published = False
     try:
         _write_capture(staged, data)
-        _write_capture(staged_manifest, _registry_manifest_bytes(source))
+        _write_capture(
+            staged_manifest,
+            _registry_manifest_bytes(source, projection_identity(source, pages)),
+        )
         _verify_under(staging_root, staged)
         _verify_under(staging_root, staged_manifest)
         _verify_under(sources_root, destination)
@@ -111,11 +322,12 @@ def capture_source_bytes(
         _publish_registry_manifest(staged_manifest, manifest)
     except Exception:
         if published:
-            _remove_published_registry_source(target, source, data)
+            _remove_published_registry_source(target, source, data, pages)
         raise
     finally:
         if staging.exists():
             _remove_verified(staging, staging_root)
+    materialize_projection(root, source, pages)
     return source
 
 
@@ -136,10 +348,11 @@ def registry_source(workspace: str | Path, trial_id: str) -> Source | None:
     return sources[0]
 
 
-def _registry_manifest_bytes(source: Source) -> bytes:
+def _registry_manifest_bytes(source: Source, identity: TextProjectionIdentity) -> bytes:
     payload = {
         "schema": _REGISTRY_SCHEMA,
         "sources": [source.model_dump(mode="json")],
+        "projections": [identity.model_dump(mode="json")],
     }
     return json.dumps(payload, sort_keys=True, separators=(",", ":")).encode()
 
@@ -148,7 +361,9 @@ def _publish_registry_manifest(staged: Path, manifest: Path) -> None:
     os.replace(staged, manifest)
 
 
-def _remove_published_registry_source(target: Path, source: Source, data: bytes) -> None:
+def _remove_published_registry_source(
+    target: Path, source: Source, data: bytes, pages: tuple[str, ...]
+) -> None:
     if (
         _is_link_or_reparse(target)
         or not target.is_file()
@@ -158,7 +373,7 @@ def _remove_published_registry_source(target: Path, source: Source, data: bytes)
             source.label,
             data,
             source.media_type,
-            _extract_pages(data, source.media_type),
+            pages,
         )
         != source
     ):
@@ -167,7 +382,11 @@ def _remove_published_registry_source(target: Path, source: Source, data: bytes)
 
 
 def _registry_manifest_sources(
-    root: Path, directory: Path, *, allow_missing: bool = False
+    root: Path,
+    directory: Path,
+    *,
+    allow_missing: bool = False,
+    expected_identity=None,
 ) -> tuple[Source, ...]:
     manifest = directory / _REGISTRY_MANIFEST
     if not manifest.exists():
@@ -183,6 +402,10 @@ def _registry_manifest_sources(
         if not isinstance(rows, list):
             raise ValueError
         sources = tuple(Source.model_validate(row) for row in rows)
+        projection_rows = payload.get("projections")
+        if not isinstance(projection_rows, list) or len(projection_rows) != 1:
+            raise ValueError
+        manifest_identity = TextProjectionIdentity.model_validate(projection_rows[0])
     except (UnicodeDecodeError, json.JSONDecodeError, ValueError) as error:
         raise ValueError("registry source manifest is invalid") from error
     if len(sources) != 1:
@@ -191,12 +414,20 @@ def _registry_manifest_sources(
     try:
         path = _captured_registry_path(root, source)
         data = path.read_bytes()
+        identity = manifest_identity if expected_identity is None else expected_identity
+        captured_batch = read_captured_batch(root)
+        canonical_identity = (
+            identity if captured_batch is None else canonical_projection_identity(root, source)
+        )
+        if canonical_identity != identity:
+            raise ValueError("registry projection identity differs from Captured Batch")
+        pages = VerifiedProjection(root).pages(source, identity)
         expected = _registry_source(
             directory.name,
             source.label,
             data,
             _media_type(path, data),
-            _extract_pages(data, source.media_type),
+            pages,
         )
     except (OSError, UnicodeDecodeError, ValueError, json.JSONDecodeError) as error:
         raise ValueError("registry source manifest does not bind captured bytes") from error
@@ -281,13 +512,17 @@ def _ingest_trial(root: Path, trial: TrialInput) -> IngestedTrial:
     try:
         if _media_type(main_path, main_data) != "application/pdf":
             raise ValueError
-        _extract_pages(main_data, "application/pdf")
+        main_pages = _extract_pages(main_data, "application/pdf")
     except (ValueError, pymupdf.FileDataError):
         return _main_article_pdf_condition(trial.id)
-    prepared = _prepare_all(root, trial)
+    prepared = _prepare_all(root, trial, main_pages=main_pages)
     _publish_trial(root, trial.id, prepared)
+    ordered = list_sources([item.source for item in prepared])
+    pages_by_id = {item.source.id: item.pages for item in prepared}
     return IngestedTrial(
-        trial_id=trial.id, sources=list_sources([item.source for item in prepared])
+        trial_id=trial.id,
+        sources=ordered,
+        projection_pages=tuple(pages_by_id[source.id] for source in ordered),
     )
 
 
@@ -302,8 +537,18 @@ def _main_article_pdf_condition(trial_id: str) -> IngestedTrial:
     )
 
 
-def _prepare_all(root: Path, trial: TrialInput) -> tuple[_PreparedSource, ...]:
-    raw = tuple(_read_source(root, trial.id, item) for item in trial.sources)
+def _prepare_all(
+    root: Path, trial: TrialInput, *, main_pages: tuple[str, ...] | None = None
+) -> tuple[_PreparedSource, ...]:
+    raw = tuple(
+        _read_source(
+            root,
+            trial.id,
+            item,
+            pages_override=main_pages if item.role is SourceRole.MAIN_ARTICLE else None,
+        )
+        for item in trial.sources
+    )
     occurrences: Counter[str] = Counter()
     prepared: list[_PreparedSource] = []
     for source_input, data, media_type, pages, fingerprint in raw:
@@ -335,6 +580,7 @@ def _prepare_all(root: Path, trial: TrialInput) -> tuple[_PreparedSource, ...]:
                     captured_path=relative.as_posix(),
                 ),
                 data,
+                pages,
                 Path(source_input.path).as_posix(),
                 occurrence,
             )
@@ -343,7 +589,11 @@ def _prepare_all(root: Path, trial: TrialInput) -> tuple[_PreparedSource, ...]:
 
 
 def _read_source(
-    root: Path, trial_id: str, item: SourceInput
+    root: Path,
+    trial_id: str,
+    item: SourceInput,
+    *,
+    pages_override: tuple[str, ...] | None = None,
 ) -> tuple[SourceInput, bytes, str, tuple[str, ...], str]:
     path = _under(root, item.path)
     if not path.is_file():
@@ -352,10 +602,13 @@ def _read_source(
     media_type = _media_type(path, data)
     if media_type not in {"application/pdf", "text/plain", "application/json"}:
         raise ValueError(f"unsupported source media type: {item.path}")
-    try:
-        pages = _extract_pages(data, media_type)
-    except (UnicodeDecodeError, ValueError, pymupdf.FileDataError) as error:
-        raise ValueError(f"unable to extract source: {item.path}") from error
+    if pages_override is None:
+        try:
+            pages = _extract_pages(data, media_type)
+        except (UnicodeDecodeError, ValueError, pymupdf.FileDataError) as error:
+            raise ValueError(f"unable to extract source: {item.path}") from error
+    else:
+        pages = pages_override
     normalized = Path(item.path).as_posix()
     fingerprint = hashlib.sha256(
         "\0".join((trial_id, str(item.role), normalized, item.label, sha256_bytes(data))).encode()
@@ -370,6 +623,7 @@ def _publish_trial(root: Path, trial_id: str, prepared: tuple[_PreparedSource, .
     _verify_under(sources_root, destination.parent)
     if destination.exists():
         _verify_existing(destination, prepared)
+        _materialize_prepared(root, prepared)
         return
     staging = Path(tempfile.mkdtemp(prefix="trial-", dir=staging_root))
     published = False
@@ -382,6 +636,7 @@ def _publish_trial(root: Path, trial_id: str, prepared: tuple[_PreparedSource, .
         _verify_under(sources_root, destination.parent)
         if destination.exists():
             _verify_existing(destination, prepared)
+            _materialize_prepared(root, prepared)
             return
         os.replace(staging, destination)
         published = True
@@ -393,6 +648,12 @@ def _publish_trial(root: Path, trial_id: str, prepared: tuple[_PreparedSource, .
         if published and destination.exists() and _published_matches(destination, prepared):
             _remove_verified(destination, sources_root)
         raise
+    _materialize_prepared(root, prepared)
+
+
+def _materialize_prepared(root: Path, prepared: tuple[_PreparedSource, ...]) -> None:
+    for item in prepared:
+        materialize_projection(root, item.source, item.pages)
 
 
 def _safe_dir(root: Path, parts: tuple[str, ...]) -> Path:
@@ -477,11 +738,11 @@ def local_source_records(workspace: str | Path, trial_id: str) -> tuple[LocalSou
     sources = tuple(record.source for record in records)
     if len({source.id for source in sources}) != len(sources):
         raise ValueError("local source manifest has duplicate Sources")
-    from rob2_kit.search import _source_bytes
+    from rob2_kit.sources import verified_source_bytes
 
     for record in records:
         source = record.source
-        data = _source_bytes(root, source)
+        data = verified_source_bytes(root, source)
         expected_id = local_source_id(
             trial_id,
             source.role,

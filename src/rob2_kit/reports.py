@@ -20,10 +20,12 @@ from pathlib import Path
 from rob2_kit.batch_summary import ArtifactReceipt, BatchSummary, verified_summary
 from rob2_kit.finish import AssessmentSnapshot, _verified
 from rob2_kit.judgment_models import TextEvidenceRef, VisualEvidenceRef
+from rob2_kit.models import canonical_json_bytes
+from rob2_kit.projection_verify import reproduce_projection_identity
 from rob2_kit.rendering import RenderedPage, render_page
-from rob2_kit.search import _source_bytes
-from rob2_kit.sources import Source, _extract_pages, sha256_bytes
+from rob2_kit.sources import Source, sha256_bytes, verified_source_bytes
 from rob2_kit.storage import _reparse, transaction, workspace_mutation_lock
+from rob2_kit.text_projection import VerifiedProjection, canonical_projection_identity
 
 
 def _redirected(path: Path) -> bool:
@@ -65,12 +67,14 @@ def _complete_bundle(path: Path, data: bytes, snapshot: AssessmentSnapshot) -> b
             return False
         assessment = path / "assessment.json"
         report = path / "report.html"
+        projections = path / "projections.json"
         sources = path / "sources"
         assets = path / "assets"
         if (
-            any(_redirected(item) for item in (assessment, report, sources, assets))
+            any(_redirected(item) for item in (assessment, report, projections, sources, assets))
             or not assessment.is_file()
             or not report.is_file()
+            or not projections.is_file()
             or not sources.is_dir()
             or not assets.is_dir()
             or assessment.read_bytes() != data
@@ -84,6 +88,10 @@ def _complete_bundle(path: Path, data: bytes, snapshot: AssessmentSnapshot) -> b
                 or sha256_bytes(copied.read_bytes()) != source.sha256
             ):
                 return False
+        if projections.read_bytes() != _projection_bytes(
+            path.parents[2], snapshot.sources, VerifiedProjection(path.parents[2])
+        ):
+            return False
         return True
     except OSError:
         return False
@@ -118,29 +126,53 @@ def _recover(
 
 def _snapshot_bytes(workspace: Path, trial_id: str, result_id: str) -> bytes:
     with transaction(workspace) as connection:
-        rows = connection.execute(
-            "SELECT payload FROM records WHERE name LIKE ?", (f"assessment_snapshot:%:{trial_id}",)
-        ).fetchall()
-    matches = [
-        bytes(row[0])
-        for row in rows
-        if AssessmentSnapshot.model_validate_json(bytes(row[0])).result_spec.id == result_id
-    ]
+        rows = connection.execute("SELECT name,payload FROM records").fetchall()
+    matches = []
+    for name, payload in rows:
+        if not str(name).startswith("assessment_snapshot:"):
+            continue
+        snapshot = AssessmentSnapshot.model_validate_json(bytes(payload))
+        if snapshot.trial.id == trial_id and snapshot.result_spec.id == result_id:
+            matches.append(bytes(payload))
     if len(matches) != 1:
         raise ValueError("exact committed Trial ResultSpec snapshot is required")
     _verified(AssessmentSnapshot.model_validate_json(matches[0]))
     return matches[0]
 
 
-def _text_ref(root: Path, sources: dict[str, Source], ref: TextEvidenceRef) -> str:
+def _text_ref(
+    root: Path,
+    sources: dict[str, Source],
+    ref: TextEvidenceRef,
+    projection: VerifiedProjection,
+) -> str:
     source = sources[ref.source_id]
-    page = _extract_pages(_source_bytes(root, source), source.media_type)[ref.page_number - 1]
+    page = projection.pages(source, canonical_projection_identity(root, source))[
+        ref.page_number - 1
+    ]
     if source.sha256 != ref.source_sha256 or page[ref.start : ref.end] != ref.quote:
         raise ValueError("text citation no longer matches committed captured source")
     before, after = page[max(0, ref.start - 120) : ref.start], page[ref.end : ref.end + 120]
     return (
         f"<code>{html.escape(ref.source_id)} p.{ref.page_number} [{ref.start}:{ref.end}]</code> "
         f"<span>{html.escape(before)}<mark>{html.escape(ref.quote)}</mark>{html.escape(after)}</span>"
+    )
+
+
+def _projection_bytes(
+    root: Path, sources: tuple[Source, ...], projection: VerifiedProjection
+) -> bytes:
+    identities = []
+    for source in sources:
+        identity = canonical_projection_identity(root, source)
+        pages = projection.pages(source, identity)
+        if reproduce_projection_identity(
+            source.model_dump(mode="json"), pages
+        ) != identity.model_dump(mode="json"):
+            raise ValueError("independent Text projection reproduction failed")
+        identities.append(identity.model_dump(mode="json"))
+    return canonical_json_bytes(
+        {"schema": "rob2-kit.text-projection-identities.v1", "projections": identities}
     )
 
 
@@ -161,8 +193,14 @@ def _visual_ref(
     )
 
 
-def _report(root: Path, snapshot: AssessmentSnapshot, stage: Path) -> bytes:
+def _report(
+    root: Path,
+    snapshot: AssessmentSnapshot,
+    stage: Path,
+    projection: VerifiedProjection | None = None,
+) -> bytes:
     sources = {source.id: source for source in snapshot.sources}
+    projection = projection or VerifiedProjection(root)
     assets = stage / "assets"
     assets.mkdir()
     domains = []
@@ -174,7 +212,7 @@ def _report(root: Path, snapshot: AssessmentSnapshot, stage: Path) -> bytes:
                 refs = []
                 for ref in use.refs:
                     refs.append(
-                        _text_ref(root, sources, ref)
+                        _text_ref(root, sources, ref, projection)
                         if ref.kind == "text"
                         else _visual_ref(root, assets, sources, ref)
                     )
@@ -232,16 +270,20 @@ def export_verified_snapshot(root: Path, data: bytes, snapshot: AssessmentSnapsh
     stage = Path(tempfile.mkdtemp(prefix=f".{trial_id}-stage-", dir=parent))
     try:
         (stage / "assessment.json").write_bytes(data)
+        projection = VerifiedProjection(root)
+        (stage / "projections.json").write_bytes(
+            _projection_bytes(root, snapshot.sources, projection)
+        )
         source_dir = stage / "sources"
         source_dir.mkdir()
         for source in snapshot.sources:
-            source_data = _source_bytes(root, source)
+            source_data = verified_source_bytes(root, source)
             if sha256_bytes(source_data) != source.sha256:
                 raise ValueError("source copy does not match committed source hash")
             (source_dir / f"{source.id}{Path(source.captured_path).suffix}").write_bytes(
                 source_data
             )
-        (stage / "report.html").write_bytes(_report(root, snapshot, stage))
+        (stage / "report.html").write_bytes(_report(root, snapshot, stage, projection))
         if target.exists():
             if backup.exists():
                 raise ValueError("assessment backup already exists")
@@ -339,26 +381,36 @@ def _batch_bundle_complete(root: Path, path: Path, data: bytes, summary: BatchSu
             snapshot = _verified(AssessmentSnapshot.model_validate_json(snapshot_data))
             if snapshot.snapshot_hash != entry.snapshot_hash:
                 return False
+            projection = VerifiedProjection(root)
             expected.update(
                 {
                     trial_dir,
                     trial_dir / "assessment.json",
                     trial_dir / "report.html",
+                    trial_dir / "projections.json",
                     trial_dir / "sources",
                     trial_dir / "assets",
                 }
             )
             assessment_path = trial_path / "assessment.json"
             report_path = trial_path / "report.html"
+            projections_path = trial_path / "projections.json"
             sources_path = trial_path / "sources"
             assets_path = trial_path / "assets"
             if any(
                 _redirected(item)
-                for item in (assessment_path, report_path, sources_path, assets_path)
+                for item in (
+                    assessment_path,
+                    report_path,
+                    projections_path,
+                    sources_path,
+                    assets_path,
+                )
             ) or not all(
                 (
                     assessment_path.is_file(),
                     report_path.is_file(),
+                    projections_path.is_file(),
                     sources_path.is_dir(),
                     assets_path.is_dir(),
                 )
@@ -366,8 +418,12 @@ def _batch_bundle_complete(root: Path, path: Path, data: bytes, summary: BatchSu
                 return False
             if assessment_path.read_bytes() != snapshot_data:
                 return False
+            if projections_path.read_bytes() != _projection_bytes(
+                root, snapshot.sources, projection
+            ):
+                return False
             with tempfile.TemporaryDirectory() as directory:
-                if report_path.read_bytes() != _report(root, snapshot, Path(directory)):
+                if report_path.read_bytes() != _report(root, snapshot, Path(directory), projection):
                     return False
             if f'href="trials/{entry.trial.id}/report.html"' not in index:
                 return False
@@ -412,6 +468,8 @@ def batch_artifact_receipt(root: Path, target: Path, summary: BatchSummary) -> A
     by a NUL byte, then its exact bytes and a NUL byte.  This binds both names and
     contents without depending on filesystem traversal order.
     """
+    from rob2_kit.batch_summary import AssessmentTerminal, ProblemTerminal, verified_terminal
+
     root = root.resolve(strict=True)
     if _redirected(root):
         raise ValueError("workspace root is redirected")
@@ -431,6 +489,26 @@ def batch_artifact_receipt(root: Path, target: Path, summary: BatchSummary) -> A
         resolved_target.relative_to(root)
     except ValueError as error:
         raise ValueError("batch artifact path escapes workspace") from error
+    with transaction(root) as connection:
+        for entry in summary.entries:
+            row = connection.execute(
+                "SELECT payload FROM records WHERE name=?",
+                (f"terminal_trial:{summary.approved_batch_hash}:{entry.trial.id}",),
+            ).fetchone()
+            if row is None:
+                raise ValueError("batch artifact terminal basis is unavailable")
+            raw = bytes(row[0])
+            if entry.status == "assessed":
+                marker = AssessmentTerminal.model_validate_json(raw)
+                if marker.snapshot_hash != entry.snapshot_hash:
+                    raise ValueError("batch artifact assessment status is not cross-bound")
+            else:
+                terminal = verified_terminal(ProblemTerminal.model_validate_json(raw))
+                if (
+                    terminal.category != entry.status
+                    or terminal.terminal_hash != entry.terminal_hash
+                ):
+                    raise ValueError("batch artifact problem status is not cross-bound")
     data = (target / "batch-summary.json").read_bytes()
     committed = verified_summary(BatchSummary.model_validate_json(data))
     if committed != summary or not _batch_bundle_complete(root, target, data, summary):
@@ -515,16 +593,22 @@ def _export_batch(root: Path, approved_batch_hash: str) -> Path:
             destination.parent.mkdir(exist_ok=True)
             destination.mkdir()
             (destination / "assessment.json").write_bytes(snapshot_data)
+            projection = VerifiedProjection(root)
+            (destination / "projections.json").write_bytes(
+                _projection_bytes(root, snapshot.sources, projection)
+            )
             sources = destination / "sources"
             sources.mkdir()
             for source in snapshot.sources:
-                source_data = _source_bytes(root, source)
+                source_data = verified_source_bytes(root, source)
                 if sha256_bytes(source_data) != source.sha256:
                     raise ValueError("source copy does not match committed source hash")
                 (sources / f"{source.id}{Path(source.captured_path).suffix}").write_bytes(
                     source_data
                 )
-            (destination / "report.html").write_bytes(_report(root, snapshot, destination))
+            (destination / "report.html").write_bytes(
+                _report(root, snapshot, destination, projection)
+            )
         (stage / "index.html").write_text(_batch_index(summary), encoding="utf-8")
         if not complete(stage):
             raise ValueError("staged batch bundle cannot be verified")

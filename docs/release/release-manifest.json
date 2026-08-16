@@ -3,14 +3,14 @@
   "schema_version": 1,
   "package": {
     "name": "rob2-kit",
-    "version": "0.1.0",
+    "version": "0.2.0",
     "wheel_tag": "py3-none-any"
   },
   "candidate": {
     "branch": "greenfield/epic-182",
-    "base_commit": "6d2013f1e125bc38f3bf1e5c4109b9f15676c50d",
-    "implementation_commit": "a6fcc7981b48e73eca528726debdb1d17be3b24e",
-    "release_freeze": "RC4 is invalidated by the portable skill workflow redesign. RC5 is invalidated by versioned pre-finish judgment corrections and receipt-bound two-phase validation. The owner-scoped Claude Code Sonnet Low CHAARTED overall-survival evaluation completed operationally and scientifically. Its performance failure is tracked by #197 and is non-blocking for #196. The greenfield-v0.1.0-rc6 candidate tag may be created only from the clean exact final commit after this manifest commit, final review, and remote 3x3 CI."
+    "base_commit": "f7af8de63f5200799e50f1f90c0143809a9bf425",
+    "implementation_commit": "0f1e2dfc8226820ce0087132469333eac8508028",
+    "release_freeze": "The v0.2.0 v2 MCP cutover candidate may be tagged only from the clean exact final commit after this manifest commit, final review, and remote CI."
   },
   "dependencies": {
     "fastmcp": "3.2.4",
@@ -19,15 +19,15 @@
   },
   "build_dependencies": {"hatchling": "1.27.0"},
   "development_dependencies": {"pytest": "9.1.1", "ruff": "0.16.3", "ty": "0.0.71"},
-  "dependencies_lock_sha256": "sha256:b854d17ed615266d5c2c80c6205a65c26b681471ba510661ef7db1695f82f2a0",
+  "dependencies_lock_sha256": "sha256:2959ef5d9a0c9a94a8092ff330d3d3e57613ded69c5087edbaa5bcb6719c6aea",
   "supported_platforms": {
     "python": ["3.11", "3.12", "3.13"],
     "os": ["ubuntu-latest", "windows-latest", "macos-latest"]
   },
   "canonical_schemas": {
-    "assessment_snapshot": {"id": "rob2.assessment_snapshot", "version": 1},
-    "batch_summary": {"id": "rob2.batch_summary", "version": 1},
-    "problem_terminal": {"id": "rob2.problem_terminal", "version": 1},
+    "assessment_snapshot": {"id": "rob2.assessment_snapshot", "version": 2},
+    "batch_summary": {"id": "rob2.batch_summary", "version": 2},
+    "problem_terminal": {"id": "rob2.problem_terminal", "version": 2},
     "registry_sources": {"id": "rob2-kit.registry-sources.v1", "version": 1}
   },
   "packs": {
@@ -43,12 +43,12 @@
     }
   },
   "skills": [
-    {"name": "rob2-workflow", "content_sha256": "sha256:68716b408114049dd8eec383efbe4829b789e4cb1d214a6d0d6022ebf5c48cbf"},
-    {"name": "rob2-signalling", "content_sha256": "sha256:119deffcabc05b9b000eef6088559058b20794b2027d07bfa30c91c86c8c81c2"}
+    {"name": "rob2-workflow", "content_sha256": "sha256:782050570fa18668d977e1b36f9ebb630eaee5d793d3c58de3c3b75e0b526d19"},
+    {"name": "rob2-signalling", "content_sha256": "sha256:c5ad9a70d50ac1b260cc9e28bcc166fdb024eb7cfa91721b5d3a4c6521b0fe8f"}
   ],
   "mcp_contract": {
-    "tools": ["save_proposal", "ingest_batch", "list_sources", "read_pages", "search_sources", "render_page", "approve_batch", "save_domain_judgment", "finish_trial", "finalize_batch", "discard_active_batch"],
-    "resources": ["rob2://current-batch", "rob2://domain-guidance/{domain_id}", "rob2://registry/{trial_id}"]
+    "tools": ["ingest_batch", "list_sources", "retrieve_evidence", "render_page", "save_proposal", "approve_batch", "validate_domain_judgment", "commit_domain_judgment", "finish_trial", "finalize_batch", "read_record", "discard_active_batch"],
+    "resources": ["rob2://current-batch", "rob2://detail/{kind}/{identity}", "rob2://registry/{trial_id}"]
   },
   "host_acceptance": {
     "claude_code": "accepted real-host proof; see docs/acceptance/issue-193.md",
@@ -70,6 +70,6 @@
       "src/rob2_kit/hosts/*.json",
       "src/rob2_kit/skills/*/SKILL.md"
     ],
-    "content_sha256": "sha256:ddcce0a119a1f69711ec9c0b6de6e184cdcf568f877a57b5623b198fade54005"
+    "content_sha256": "sha256:3b7dddf3e36c9d8f3b5c4336c02146d4d44ac6937fbe65e4dd7151edf2356ab0"
   }
 }

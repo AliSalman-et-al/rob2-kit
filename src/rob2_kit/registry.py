@@ -9,19 +9,24 @@ import stat
 import uuid
 from collections.abc import Callable, Mapping
 from enum import StrEnum
+from functools import wraps
 from pathlib import Path
 from typing import Literal
 from urllib.parse import urlencode
 
 import httpx
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 from rob2_kit.ingestion.service import (
-    _captured_registry_path,
     capture_source_bytes,
     registry_source,
 )
 from rob2_kit.sources import Source, SourceRole
+from rob2_kit.storage import (
+    ensure_contract_version,
+    read_only_transaction,
+    workspace_mutation_lock,
+)
 
 
 class _Strict(BaseModel):
@@ -80,6 +85,7 @@ class RegistryCandidateRecord(_Strict):
     trial_id: str
     match: RegistryMatch
     captured_source: Source | None = None
+    projection_pages: tuple[str, ...] = Field(default=(), exclude=True)
 
 
 def _candidate_path(workspace: str | Path, trial_id: str) -> Path:
@@ -112,15 +118,51 @@ def _candidate_bytes(record: RegistryCandidateRecord) -> bytes:
     ).encode()
 
 
+def _locked_registry_capture(function):
+    @wraps(function)
+    def locked(workspace, trial_id, match):
+        with workspace_mutation_lock(workspace):
+            return function(workspace, trial_id, match)
+
+    return locked
+
+
+@_locked_registry_capture
 def record_registry_match(
     workspace: str | Path, trial_id: str, match: RegistryMatch
 ) -> RegistryCandidateRecord:
+    ensure_contract_version(workspace)
+    with read_only_transaction(workspace) as connection:
+        if connection is not None and (
+            connection.execute(
+                "SELECT 1 FROM runtime_meta WHERE name='active_proposal_version'"
+            ).fetchone()
+            or connection.execute(
+                "SELECT 1 FROM records WHERE name='active_batch' OR name LIKE 'terminal_trial:%' "
+                "OR name LIKE 'batch_summary:%' LIMIT 1"
+            ).fetchone()
+        ):
+            raise ValueError("registry capture is frozen after Proposal creation")
+    prior = read_registry_match(workspace, trial_id)
+    if prior is not None:
+        if prior.match == match:
+            return prior
+        raise ValueError("registry candidate conflicts with existing attempt")
     captured = (
         capture_registry_source(str(workspace), trial_id, match)
         if match.status is RegistryStatus.MATCHED
         else None
     )
-    record = RegistryCandidateRecord(trial_id=trial_id, match=match, captured_source=captured)
+    record = RegistryCandidateRecord(
+        trial_id=trial_id,
+        match=match,
+        captured_source=captured,
+        projection_pages=(
+            ()
+            if captured is None or match.provider_json is None
+            else (match.provider_json.decode("utf-8"),)
+        ),
+    )
     path = _candidate_path(workspace, trial_id)
     path.parent.mkdir(parents=True, exist_ok=True)
     if path.parent.is_symlink() or _reparse(path.parent):
@@ -274,13 +316,12 @@ def read_captured_registry(workspace: str, trial_id: str) -> CapturedRegistry:
     if source is None:
         return RegistryNotCaptured(trial_id=trial_id, status="not_captured")
     root = Path(workspace).resolve(strict=True)
-    path = _captured_registry_path(root, source)
-    data = path.read_bytes()
-    from rob2_kit.sources import sha256_bytes
+    manifest = root / ".rob2-kit" / "sources" / trial_id / "registry-sources.json"
+    payload = json.loads(manifest.read_bytes())
+    from rob2_kit.text_projection import TextProjectionIdentity, VerifiedProjection
 
-    if source.sha256 != sha256_bytes(data):
-        raise ValueError("captured registry Source bytes have changed")
-    text = data.decode("utf-8")
+    identity = TextProjectionIdentity.model_validate(payload["projections"][0])
+    text = VerifiedProjection(root).pages(source, identity)[0]
     if not isinstance(json.loads(text), dict):
         raise ValueError("captured registry record is not an object")
     return CapturedRegistryRecord(

@@ -46,6 +46,7 @@ WINDOWS_RESERVED_BASENAMES = {
     *(f"lpt{number}" for number in range(1, 10)),
 }
 RECORD_HASH = re.compile(r"sha256=[A-Za-z0-9_-]{43}\Z")
+TEXT_PROJECTION_RECIPE = "rob2-kit.extract-pages.v1"
 
 
 def _fail(message: str) -> None:
@@ -77,6 +78,43 @@ def _canonical_text_bytes(value: bytes) -> bytes:
 
 def _sha256_text(value: bytes) -> str:
     return _sha256_bytes(_canonical_text_bytes(value))
+
+
+def reproduce_projection_identity(
+    source_sha256: str, media_type: str, pages: tuple[str, ...]
+) -> dict[str, object]:
+    """Independently reproduce a frozen Text projection identity.
+
+    This deliberately mirrors the wire calculation without importing the
+    production projection module, so an installed verifier can check an
+    exported identity against independently supplied page text.
+    """
+
+    if not pages:
+        raise ValueError("a Text projection must contain at least one page")
+    page_hashes = [_sha256_bytes(page.encode("utf-8")) for page in pages]
+    projection_hash = _sha256_bytes(
+        json.dumps(
+            {
+                "media_type": media_type,
+                "page_hashes": page_hashes,
+                "recipe": TEXT_PROJECTION_RECIPE,
+                "source_sha256": source_sha256,
+            },
+            sort_keys=True,
+            separators=(",", ":"),
+            ensure_ascii=False,
+        ).encode("utf-8")
+    )
+    return {
+        "schema_version": "rob2-kit.text-projection.v1",
+        "recipe": TEXT_PROJECTION_RECIPE,
+        "source_sha256": source_sha256,
+        "media_type": media_type,
+        "page_hashes": page_hashes,
+        "projection_hash": projection_hash,
+        "page_count": len(pages),
+    }
 
 
 def _source_contract_files(root: Path, patterns: list[str]) -> list[tuple[Path, str]]:
@@ -276,16 +314,11 @@ def _manifest(path: Path = MANIFEST_PATH) -> dict[str, Any]:
     )
     if candidate != {
         "branch": "greenfield/epic-182",
-        "base_commit": "6d2013f1e125bc38f3bf1e5c4109b9f15676c50d",
-        "implementation_commit": "a6fcc7981b48e73eca528726debdb1d17be3b24e",
+        "base_commit": "f7af8de63f5200799e50f1f90c0143809a9bf425",
+        "implementation_commit": "0f1e2dfc8226820ce0087132469333eac8508028",
         "release_freeze": (
-            "RC4 is invalidated by the portable skill workflow redesign. RC5 is invalidated by "
-            "versioned pre-finish judgment corrections and receipt-bound two-phase validation. "
-            "The owner-scoped Claude Code Sonnet Low CHAARTED overall-survival evaluation "
-            "completed operationally and scientifically. Its performance failure is tracked by "
-            "#197 and is non-blocking for #196. The greenfield-v0.1.0-rc6 candidate tag may be "
-            "created only from the clean exact final commit after this manifest commit, final "
-            "review, and remote 3x3 CI."
+            "The v0.2.0 v2 MCP cutover candidate may be tagged only from the clean exact final "
+            "commit after this manifest commit, final review, and remote CI."
         ),
     }:
         _fail("candidate contract differs")
@@ -358,8 +391,8 @@ def _manifest(path: Path = MANIFEST_PATH) -> dict[str, Any]:
         items = _strings(contract[name], f"MCP {name}")
         if not items or len(set(items)) != len(items):
             _fail(f"MCP {name} must be unique and non-empty")
-    if len(contract["tools"]) != 11 or len(contract["resources"]) != 3:
-        _fail("MCP contract must expose exactly eleven tools and three resources")
+    if len(contract["tools"]) != 12 or len(contract["resources"]) != 3:
+        _fail("MCP contract must expose exactly twelve tools and three resources")
     acceptance = _exact(
         value["host_acceptance"],
         {"claude_code", "raw_mcp", "codex_windows_0.147.0"},
@@ -454,7 +487,7 @@ def _workflow_matrix(manifest: dict[str, Any]) -> None:
         raise ValueError("CI setup-python does not use the declared matrix")
     if "fetch-depth: 0" not in workflow:
         raise ValueError("CI does not fetch the frozen candidate ancestry")
-    if "verify.py --wheel .release-dist/rob2_kit-0.1.0-py3-none-any.whl" not in workflow:
+    if "verify.py --wheel .release-dist/rob2_kit-0.2.0-py3-none-any.whl" not in workflow:
         raise ValueError("CI does not verify the exact built wheel")
     if 'uv sync --locked --all-groups --python "${{ matrix.python-version }}"' not in workflow:
         raise ValueError("CI sync does not use the declared Python")
@@ -464,18 +497,15 @@ def _workflow_matrix(manifest: dict[str, Any]) -> None:
 
 async def _verify_mcp(manifest: dict[str, Any]) -> None:
     contract = manifest["mcp_contract"]
-    current, guidance, registry = contract["resources"]
+    current, detail, registry = contract["resources"]
     async with Client(mcp) as client:
         discovered_tools = await client.list_tools()
         tools = [tool.name for tool in discovered_tools]
         resources = [str(resource.uri) for resource in await client.list_resources()]
         templates = [str(item.uriTemplate) for item in await client.list_resource_templates()]
         current_value = await client.read_resource(current)
-        guidance_value = await client.read_resource(
-            guidance.replace("{domain_id}", "domain:randomization")
-        )
         registry_value = await client.read_resource(registry.replace("{trial_id}", "release-check"))
-    if tools != contract["tools"] or resources != [current] or templates != [guidance, registry]:
+    if tools != contract["tools"] or resources != [current] or templates != [detail, registry]:
         raise ValueError("production MCP inventory differs from release manifest")
     discard = next(tool for tool in discovered_tools if tool.name == "discard_active_batch")
     if discard.annotations is None or discard.annotations.model_dump() != {
@@ -483,12 +513,11 @@ async def _verify_mcp(manifest: dict[str, Any]) -> None:
         "readOnlyHint": False,
         "destructiveHint": True,
         "idempotentHint": False,
-        "openWorldHint": None,
+        "openWorldHint": False,
     }:
         raise ValueError("discard tool does not advertise destructive intent")
     if (
-        current_value[0].text != '{"active_batch":null}'
-        or not guidance_value[0].text
+        current_value[0].text != '{"phase":"empty","next_action":"ingest"}'
         or not registry_value[0].text
     ):
         raise ValueError("production MCP resources are not readable")

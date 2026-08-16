@@ -33,4 +33,4 @@ jobs:
       - run: uv run --no-sync ty check src tests docs/release
       - run: uv run --no-sync pytest
       - run: uv build --wheel --out-dir .release-dist
-      - run: uv run --no-sync python docs/release/verify.py --wheel .release-dist/rob2_kit-0.1.0-py3-none-any.whl
+      - run: uv run --no-sync python docs/release/verify.py --wheel .release-dist/rob2_kit-0.2.0-py3-none-any.whl

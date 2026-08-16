@@ -13,6 +13,12 @@ from threading import Lock, RLock
 
 _MUTATION_LOCKS: dict[str, RLock] = {}
 _MUTATION_LOCKS_GUARD = Lock()
+RUNTIME_CONTRACT_VERSION = 2
+_RUNTIME_CONTRACT_KEY = "runtime_contract_version"
+
+
+class ContractVersionError(RuntimeError):
+    """The workspace is absent a supported v2 runtime contract identity."""
 
 
 class WorkspaceLockedError(RuntimeError):
@@ -113,15 +119,25 @@ def database_path(workspace: str | Path) -> Path:
 @contextmanager
 def transaction(workspace: str | Path) -> Iterator[sqlite3.Connection]:
     with workspace_mutation_lock(workspace):
-        path = database_path(workspace)
+        root = Path(workspace).resolve(strict=True)
+        path = root / ".rob2-kit" / "active-batch.sqlite3"
+        fresh = not path.exists()
+        if not fresh:
+            require_contract_version(root)
+        path = database_path(root)
         connection = sqlite3.connect(path, isolation_level=None, timeout=10)
         begun = False
         try:
             connection.execute(
                 "CREATE TABLE IF NOT EXISTS records (name TEXT PRIMARY KEY, payload BLOB NOT NULL)"
             )
+            connection.execute(
+                "CREATE TABLE IF NOT EXISTS runtime_meta ("
+                "name TEXT PRIMARY KEY, payload BLOB NOT NULL)"
+            )
             connection.execute("BEGIN IMMEDIATE")
             begun = True
+            _ensure_contract_in_transaction(connection, allow_bootstrap=fresh)
             yield connection
             connection.execute("COMMIT")
         except BaseException:
@@ -155,7 +171,7 @@ def load_state(workspace: str | Path) -> bytes | None:
     path = database_path(workspace)
     if not path.exists():
         return None
-    connection = sqlite3.connect(path)
+    connection = sqlite3.connect(f"{path.as_uri()}?mode=ro", uri=True, isolation_level=None)
     try:
         row = connection.execute("SELECT payload FROM records WHERE name='active_batch'").fetchone()
     finally:
@@ -170,3 +186,54 @@ def save_state(workspace: str | Path, payload: bytes) -> None:
             "ON CONFLICT(name) DO UPDATE SET payload=excluded.payload",
             (payload,),
         )
+
+
+def ensure_contract_version(workspace: str | Path) -> None:
+    """Bootstrap a fresh workspace or reject legacy/unsupported runtime state."""
+
+    with transaction(workspace):
+        pass
+
+
+def require_contract_version(workspace: str | Path) -> None:
+    """Check the explicit runtime marker without changing existing state."""
+
+    root = Path(workspace).resolve(strict=True)
+    path = root / ".rob2-kit" / "active-batch.sqlite3"
+    if not path.exists():
+        return
+    if (root / ".rob2-kit").is_symlink() or _reparse(root / ".rob2-kit"):
+        raise ContractVersionError("contract_version_unsupported")
+    connection = sqlite3.connect(path)
+    try:
+        try:
+            row = connection.execute(
+                "SELECT payload FROM runtime_meta WHERE name=?", (_RUNTIME_CONTRACT_KEY,)
+            ).fetchone()
+        except sqlite3.OperationalError as error:
+            raise ContractVersionError("contract_version_unsupported") from error
+    finally:
+        connection.close()
+    if row is None or bytes(row[0]) != str(RUNTIME_CONTRACT_VERSION).encode():
+        raise ContractVersionError("contract_version_unsupported")
+
+
+def _ensure_contract_in_transaction(
+    connection: sqlite3.Connection, *, allow_bootstrap: bool
+) -> None:
+    row = connection.execute(
+        "SELECT payload FROM runtime_meta WHERE name=?", (_RUNTIME_CONTRACT_KEY,)
+    ).fetchone()
+    if row is not None:
+        if bytes(row[0]) != str(RUNTIME_CONTRACT_VERSION).encode():
+            raise ContractVersionError("contract_version_unsupported")
+        return
+    if not allow_bootstrap:
+        raise ContractVersionError("contract_version_unsupported")
+    existing = connection.execute("SELECT 1 FROM records LIMIT 1").fetchone()
+    if existing is not None:
+        raise ContractVersionError("contract_version_unsupported")
+    connection.execute(
+        "INSERT INTO runtime_meta(name,payload) VALUES(?,?)",
+        (_RUNTIME_CONTRACT_KEY, str(RUNTIME_CONTRACT_VERSION).encode()),
+    )

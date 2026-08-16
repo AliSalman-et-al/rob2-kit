@@ -25,8 +25,7 @@ from rob2_kit.registry import (
     read_registry_match,
     record_registry_match,
 )
-from rob2_kit.search import search_sources
-from rob2_kit.sources import SourceInput, TrialInput, read_pages, sha256_bytes
+from rob2_kit.sources import SourceInput, TrialInput, sha256_bytes
 
 _FIXTURES = Path(__file__).parent / "fixtures" / "registry"
 _TITLE = "Example randomized trial"
@@ -260,8 +259,6 @@ def test_registry_capture_retry_isolation_and_reingest_preserves_generated_sourc
     assert first.sha256 == sha256_bytes(match.provider_json or b"")
     assert Path(first.captured_path).stem == first.id
     assert Path(second.captured_path).stem == second.id
-    assert read_pages(tmp_path, first, (1,)).pages[0].text == (match.provider_json or b"").decode()
-    assert search_sources(tmp_path, "one", (first,), "Example", 0, 10)
 
 
 def test_reingest_fails_closed_for_registry_manifest_or_extra_corruption(tmp_path: Path) -> None:
@@ -317,7 +314,7 @@ def test_registry_read_rejects_forged_manifest_path_and_changed_bytes(tmp_path: 
         )
     )
     (tmp_path / source.captured_path).write_bytes(b"{}")
-    with pytest.raises(ValueError, match="captured bytes"):
+    with pytest.raises(ValueError, match="registry source manifest"):
         read_captured_registry(str(tmp_path), "one")
 
 

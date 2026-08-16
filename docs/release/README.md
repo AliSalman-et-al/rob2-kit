@@ -45,22 +45,15 @@ uv run ruff check src tests docs/release
 uv run ty check src tests docs/release
 uv run pytest
 uv build --wheel --out-dir dist
-uv run python docs/release/verify.py --wheel dist/rob2_kit-0.1.0-py3-none-any.whl
+uv run python docs/release/verify.py --wheel dist/rob2_kit-0.2.0-py3-none-any.whl
 ```
 
-RC2 was invalidated by safety commit `a394e853ddb3ea86a47599b56ab797b59b6df7bc`.
-RC3 is invalidated because its verifier did not bind the wheel's Python modules to
-the frozen source contract. RC4 is invalidated by the portable skill workflow
-redesign. RC5 is invalidated by versioned pre-finish judgment corrections and
-receipt-bound two-phase validation. The owner-scoped Claude Code Sonnet Low
-CHAARTED overall-survival evaluation completed operationally and scientifically;
-its privacy-safe evidence is in `docs/evaluation/issue-195.md`. The failed
-performance target is tracked by #197 and is non-blocking for the owner-authorized
-#196 cutover. `greenfield-v0.1.0-rc6` may be tagged only from the clean exact final
-commit after this manifest commit, final review, and remote 3x3 CI. The
-implementation/base commits identify the frozen implementation lineage; CI fetches
-that history to validate the ancestry contract, then exercises Python 3.11--3.13
-on Ubuntu, Windows, and macOS.
+Earlier 0.1.0 release candidates were invalidated by safety, wheel-integrity,
+portable-skill, and receipt-bound workflow changes. The v0.2.0 candidate is the
+single public v2 cutover: it may be tagged only from the clean exact final commit
+after this manifest commit, final review, and remote 3x3 CI. The implementation
+and base commits identify the frozen lineage; CI fetches that history to validate
+ancestry, then exercises Python 3.11--3.13 on Ubuntu, Windows, and macOS.
 
 Issue #193 is waived only for this release gate: accepted Claude Code real-host
 evidence plus the raw-MCP checks here are sufficient. Codex CLI 0.147.0 on
