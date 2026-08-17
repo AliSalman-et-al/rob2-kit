@@ -17,9 +17,7 @@ def reproduce_projection_identity(
 
     if not pages:
         raise ValueError("a Text projection must contain at least one page")
-    page_hashes = tuple(
-        "sha256:" + hashlib.sha256(page.encode("utf-8")).hexdigest() for page in pages
-    )
+    page_hashes = ["sha256:" + hashlib.sha256(page.encode("utf-8")).hexdigest() for page in pages]
     content = {
         "recipe": "rob2-kit.extract-pages.v1",
         "source_sha256": source["sha256"],

@@ -70,6 +70,6 @@
       "src/rob2_kit/hosts/*.json",
       "src/rob2_kit/skills/*/SKILL.md"
     ],
-    "content_sha256": "sha256:3b7dddf3e36c9d8f3b5c4336c02146d4d44ac6937fbe65e4dd7151edf2356ab0"
+    "content_sha256": "sha256:962dfc52f3115b991895063aae587d4987fcbd43d8c4c4f6c2fd79440843a976"
   }
 }
