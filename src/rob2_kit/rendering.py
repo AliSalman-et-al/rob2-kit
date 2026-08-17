@@ -8,8 +8,7 @@ from pathlib import Path
 import pymupdf
 from pydantic import BaseModel, ConfigDict, Field
 
-from rob2_kit.search import _source_bytes
-from rob2_kit.sources import Source
+from rob2_kit.sources import Source, verified_source_bytes
 
 
 class _Result(BaseModel):
@@ -50,7 +49,7 @@ def render_page(
         or region[1] >= region[3]
     ):
         raise ValueError("region must be a nonempty normalized rectangle")
-    data = _source_bytes(Path(workspace).resolve(strict=True), source)
+    data = verified_source_bytes(Path(workspace).resolve(strict=True), source)
     if source.media_type != "application/pdf":
         return RenderCondition(
             source_id=source.id,

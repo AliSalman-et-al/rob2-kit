@@ -1,111 +1,70 @@
 ---
 name: rob2-workflow
-description: Manage an RoB 2 batch through the rob2-kit MCP server.
+description: Manage a v2 RoB 2 batch through the rob2-kit MCP server.
 ---
 
-# RoB 2 workflow
+# rob2-kit workflow
 
-rob2-kit is the durable, fail-closed assessment boundary. Keep scientific
-reasoning in the model loop and persist only structured, attributable records.
-Use `rob2-signalling` for proposal evidence and each Domain checkpoint.
+Keep scientific reasoning in the host model loop. The server is the durable,
+fail-closed boundary for captured Sources, verified projections, packets,
+checkpoints, terminals, and artifacts.
 
-## 1. Orientation and recovery
+## Orientation and intake
 
-Read `rob2://current-batch` once when entering a live context, then again only
-after restart or context loss, an uncertain mutation response, or a returned
-state conflict. Use its frozen batch, saved checkpoints, and terminal markers as
-the current truth; continue at the first durable boundary. Do not orient again
-before every ordinary mutation.
+Read `rob2://current-batch` once at context entry and again after restart,
+context loss, or an uncertain mutation. It is a compact projection, not a
+canonical record. Follow its exact packet and Detail references.
 
-Completion: the batch is identified as absent, proposal, approved, or stale and
-the next unsaved action is known.
+For an empty or intake state, identify each Trial's main article and related
+protocol, SAP, supplement, and report. Call `ingest_batch` with workspace-
+relative paths and explicit Source roles. Preserve its compact conditions and
+captured identities. Use `list_sources` for the authoritative inventory, then
+use `retrieve_evidence` to deliberately select one captured-scope text anchor
+handle for each Trial before constructing the Proposal.
 
-- **Absent.** Inspect `inputs/<trial>` in the workspace. Identify its main article
-  and adjacent protocol, SAP, supplement, and secondary-report files. Use
-  workspace-relative paths in `ingest_batch`, with the main article as
-  `main_article` and each other Source assigned its actual role. Infer only what
-  the main article makes clear; stop for one concise researcher clarification on
-  a material Trial, comparison, result, or Source-role ambiguity.
-- **Proposal.** Inspect its sources and ResultSpecs; repair the complete proposal
-  through `save_proposal`, then obtain researcher approval before `approve_batch`.
-- **Approved.** Resume each Trial from its saved checkpoints or terminal marker.
-- **Stale or a returned condition.** Resume mechanically actionable incomplete
-  or saved-bound work autonomously. Route preapproval input blockers to the
-  researcher. A stale frozen batch never supplies a new basis for assessment.
+Save a minimal `Proposal` draft with `save_proposal`; it contains one complete
+Result draft per captured Trial and one text Evidence handle anchor. Repair all
+returned RFC 6901 defects. Call `read_record` on the returned Proposal Detail
+and deliberately review its exact hash with the researcher, then call
+`approve_batch` with that reviewed hash. Do not substitute current state for a
+stale identity.
 
-For an uncertain response, retry only a supported content-idempotent mutation
-with its exact original payload, including its UTC timestamp. A semantic action
-has one terminal outcome, but its exact `finish_trial` or `finalize_batch` call
-may be retried; a reconstructed timestamp can create a conflict. Do not auto-retry
-`discard_active_batch`: reconcile current state and require renewed explicit
-researcher direction whenever its effect is uncertain. Keep compact receipts
-(request payload, returned state/hash, and next boundary), rather than
-re-narrating evidence or deliberation.
+After approval, the approved work packet is the sole post-approval context
+boundary. A host may discard preapproval conversation and resume from its
+packet, but it must not recreate Source text, hashes, coordinates, or workflow
+identity from memory.
 
-## 2. Intake and proposal
+## Domain and Trial progression
 
-Record the requested outcome target, each Trial identity, and every discovered
-Source path with its intended role. Before a mutation, inspect the published tool
-schema or resource when a field is unknown; never use a save call to probe schema.
-Call `ingest_batch`; retain its ingestion and registry conditions, captured source
-identities, hashes, and any local condition. Use `list_sources` to inspect the
-accepted immutable inventory by Trial.
+Use the recommended packet. Retrieve Evidence in adaptive batches with
+`retrieve_evidence`; only deliberate text or visual selection mints a
+scope-bound immutable handle. Render selectively with `render_page`.
 
-With signalling evidence, form one complete proposal: exactly one Trial and one
-fully specified `ResultSpec` per intake Trial, approved sources, and an anchor
-whose source, hash, page, bounds, and quote bind the selected result. The
-ResultSpec makes the effect, arms/comparison, outcome definition, measurement,
-time point, population, analysis method/choices, effect measure, and applicable
-values/denominators explicit.
+For each Domain, call `validate_domain_judgment` with the strict draft. Review
+all independent repairs, then review the returned candidate Detail and exact
+receipt. Call `commit_domain_judgment` only with the unchanged draft,
+receipt-bound candidate hash, expected predecessor, and review acknowledgment.
+Corrections repeat validation against the displayed active hash; they never
+rewrite a prior revision.
 
-Completion: `save_proposal` returns a complete proposal with every issue resolved.
-Show the whole batch proposal to the researcher and wait for explicit approval.
-Only then call `approve_batch`; retain its frozen hash and pack identities.
+After five active Domain checkpoints, review the exact synthesis packet. Call
+`finish_trial` with the synthesis hash acknowledgment for an assessed Trial, or
+with a compact typed problem draft for `needs_input` or `failed`. The server
+derives final judgments, packs, timestamps, and terminal records. Responses are
+compact references only.
 
-## 3. Trial sequence
+When every Trial is terminal, call `finalize_batch` with the actor. Verify and
+report only its Summary reference, ordered compact outcomes, and artifact
+receipt. Never invent an artifact or present a full terminal in a mutation
+response. Use `read_record` for deliberate whole-record review.
 
-For each nonterminal Trial, invoke signalling with the approved Trial, ResultSpec,
-and only that Trial's approved Sources. Work Domains in order. A Domain advances
-only after `save_domain_judgment` commits its reviewed checkpoint. Send its
-complete payload with `phase: validate`, review the returned receipt and whole
-payload, then send the identical payload with `phase: commit`, the exact receipt,
-and its four-item scientific preflight. Recover a condition from current-batch
-and resume at the saved boundary. To correct an unfrozen Domain, validate the
-complete replacement with the exact active checkpoint hash as
-`expected_previous_hash`, then commit its matching receipt; reconcile a conflict
-before another validation.
+Retry only an operation with its exact original payload. Reconcile conflicts
+from the current projection and verified references; never broaden or replay a
+stale operation.
 
-Completion: the Trial has five confirmed saved Domain checkpoints, or a typed
-terminal problem makes further assessment impossible.
+## Destructive boundary
 
-After five checkpoints, call `finish_trial` once with its `assessment` envelope.
-For a postapproval unrecoverable scientific problem, call `finish_trial` once
-with the matching typed `needs_input` or `failed` problem envelope for that Trial.
-This isolates the affected Trial: continue the remaining nonterminal Trials. A
-preapproval input blocker returns to the researcher instead of producing a
-terminal outcome. After every Trial has a terminal outcome, call `finalize_batch`.
-An assessed `finish_trial` result directs `next_action: finalize_batch`; do not
-stop there or present a standalone host-authored HTML. Report only the canonical
-receipt-backed bundle returned by `finalize_batch`; never create or substitute it.
-
-## 4. Batch handoff
-
-When every Trial has exactly one terminal outcome, call `finalize_batch` with the
-actor and UTC observation time. On an uncertain result, retry the exact payload;
-the tool rematerializes a committed identical summary if a prior export failed.
-Hand off its typed receipt: workspace-relative bundle path, deterministic bundle
-hash, file count, summary hash, and index hash, plus compact Trial
-terminal statuses. Never claim an artifact for a conflicting summary.
-
-Completion: `finalize_batch` returns `FinalizedBatch.receipt`, and the canonical
-HTML bundle named by that receipt is verified before it is reported. If a saved
-checkpoint is invalid, stop and report the condition; discard requires an explicit
-researcher instruction.
-
-## 5. Destructive boundary
-
-`discard_active_batch` is available only for an explicit researcher instruction
-in the current conversation. Bind that instruction to the displayed current frozen
-batch hash, exact confirmation literal, attributable actor, UTC observation time,
-and nonempty reason. Recovery uses orientation, exact retry, and typed conditions;
-it never uses discard.
+`discard_active_batch` is researcher-only. Require a fresh explicit instruction,
+the displayed frozen identity, exact confirmation literal, actor, UTC time, and
+reason. It preserves exported bundles and recoverable residues. Never invoke it
+to recover from an uncertain ordinary mutation.

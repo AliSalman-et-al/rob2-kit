@@ -229,7 +229,7 @@ def _wheel(path: Path, manifest: dict[str, Any], mode: WheelMode = "valid") -> N
                 continue
             raw = module.read_bytes()
             if mode == "tampered_module" and name == "rob2_kit/__init__.py":
-                raw = raw.replace(b'__version__ = "0.1.0"', b'__version__ = "9.9.9"')
+                raw = raw.replace(b'__version__ = "0.2.0"', b'__version__ = "9.9.9"')
             if mode == "crlf_module" and name == "rob2_kit/__init__.py":
                 raw = raw.replace(b"\r\n", b"\n").replace(b"\r", b"\n").replace(b"\n", b"\r\n")
             write(name, raw)

@@ -8,6 +8,7 @@ import httpx
 import pymupdf
 import pytest
 from fastmcp import Client
+from mcp.types import ResourceLink
 
 from rob2_kit.assessment import (
     Arm,
@@ -20,7 +21,7 @@ from rob2_kit.assessment import (
     ResultSpec,
     Trial,
 )
-from rob2_kit.batch import ApproveBatchResult, ApprovedBatch, SaveProposalResult, current_batch
+from rob2_kit.batch import ApprovedBatch, current_batch
 from rob2_kit.batch_summary import FinalizedBatch
 from rob2_kit.ingestion import ingest_batch
 from rob2_kit.server import mcp
@@ -83,7 +84,7 @@ def test_current_batch_is_discoverable_and_empty() -> None:
         async with Client(mcp) as client:
             resources = await client.list_resources()
             contents = await client.read_resource("rob2://current-batch")
-        assert contents[0].text == '{"active_batch":null}'
+        assert contents[0].text == '{"phase":"empty","next_action":"ingest"}'
         return [str(resource.uri) for resource in resources]
 
     resources = asyncio.run(discover())
@@ -129,7 +130,7 @@ def test_registry_resource_reads_captured_record_and_reports_missing(
             missing = await client.read_resource("rob2://registry/missing")
         assert any(str(item.uri) == "rob2://current-batch" for item in resources)
         assert [str(item.uriTemplate) for item in templates] == [
-            "rob2://domain-guidance/{domain_id}",
+            "rob2://detail/{kind}/{identity}",
             "rob2://registry/{trial_id}",
         ]
         return captured[0].text, missing[0].text
@@ -182,37 +183,50 @@ def test_batch_tools_are_discoverable() -> None:
         async with Client(mcp) as client:
             tools = await client.list_tools()
         assert [tool.name for tool in tools] == [
-            "save_proposal",
             "ingest_batch",
             "list_sources",
-            "read_pages",
-            "search_sources",
+            "retrieve_evidence",
             "render_page",
+            "save_proposal",
             "approve_batch",
-            "save_domain_judgment",
+            "validate_domain_judgment",
+            "commit_domain_judgment",
             "finish_trial",
             "finalize_batch",
+            "read_record",
             "discard_active_batch",
         ]
         return {tool.name: tool for tool in tools}
 
     tools = asyncio.run(discover())
-    schemas = {name: tool.outputSchema for name, tool in tools.items()}
-    for schema in (schemas["save_proposal"], schemas["approve_batch"]):
-        assert "oneOf" in schema["properties"]["state"]
-        assert {
-            variant["properties"]["status"]["const"]
-            for variant in schema["properties"]["state"]["oneOf"]
-        } == {"no_active", "proposal", "approved", "stale"}
-    for result in (SaveProposalResult, ApproveBatchResult):
-        state_schema = result.model_json_schema()["properties"]["state"]
-        assert state_schema["discriminator"]["propertyName"] == "status"
-        assert set(state_schema["discriminator"]["mapping"]) == {
-            "no_active",
-            "proposal",
-            "approved",
-            "stale",
-        }
+    expected_annotations = {
+        "ingest_batch": (False, False, True, True),
+        "list_sources": (True, False, True, False),
+        "retrieve_evidence": (True, False, True, False),
+        "render_page": (True, False, True, False),
+        "save_proposal": (False, False, True, False),
+        "approve_batch": (False, False, True, False),
+        "validate_domain_judgment": (False, False, True, False),
+        "commit_domain_judgment": (False, False, True, False),
+        "finish_trial": (False, False, True, False),
+        "finalize_batch": (False, False, True, False),
+        "read_record": (True, False, True, False),
+        "discard_active_batch": (False, True, False, False),
+    }
+    for name, expected in expected_annotations.items():
+        annotation = tools[name].annotations
+        assert annotation is not None
+        assert (
+            annotation.readOnlyHint,
+            annotation.destructiveHint,
+            annotation.idempotentHint,
+            annotation.openWorldHint,
+        ) == expected
+    schemas = {name: tool.inputSchema for name, tool in tools.items()}
+    assert schemas["save_proposal"]["required"] == ["draft"]
+    assert schemas["approve_batch"]["required"] == ["request"]
+    assert schemas["validate_domain_judgment"]["required"] == ["operation"]
+    assert schemas["commit_domain_judgment"]["required"] == ["operation"]
     discard = tools["discard_active_batch"]
     assert discard.annotations is not None
     assert discard.annotations.model_dump() == {
@@ -220,7 +234,7 @@ def test_batch_tools_are_discoverable() -> None:
         "readOnlyHint": False,
         "destructiveHint": True,
         "idempotentHint": False,
-        "openWorldHint": None,
+        "openWorldHint": False,
     }
     finalized = FinalizedBatch.model_json_schema()
     assert finalized["required"] == ["summary", "receipt"]
@@ -260,11 +274,11 @@ def test_batch_tools_are_discoverable() -> None:
 def test_discard_requires_a_complete_exact_request_without_mutating_state(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    proposal = _proposal(tmp_path)
-    from rob2_kit.batch import approve_batch, save_proposal
+    from v2_helpers import approved_workspace
 
-    assert save_proposal(tmp_path, proposal).state.status == "proposal"
-    approved = approve_batch(tmp_path).state
+    approved_workspace(tmp_path)
+
+    approved = current_batch(tmp_path)
     assert isinstance(approved, ApprovedBatch)
     monkeypatch.setenv("ROB2_WORKSPACE", str(tmp_path))
 
@@ -368,14 +382,16 @@ def test_mcp_registry_ingest_matches_and_persists_candidate(tmp_path: Path, monk
 
     result, resource = asyncio.run(call())
     trial = result["trials"][0]
-    assert trial["status"] == "registry_attempted"
-    assert trial["trial"]["trial_id"] == "trial"
-    assert trial["trial"]["condition"] is None
-    assert trial["registry"]["trial_id"] == "trial"
-    assert trial["registry"]["match"]["status"] == "matched"
-    assert trial["registry"]["captured_source"]["role"] == "registry"
+    assert trial == {
+        "trial_id": "trial",
+        "status": "captured",
+        "source_count": 2,
+        "projection_count": 2,
+        "registry_status": "matched",
+        "condition_code": None,
+    }
     resource_payload = json.loads(resource)
-    assert resource_payload["candidate"] == trial["registry"]
+    assert resource_payload["candidate"]["match"]["status"] == "matched"
     assert resource_payload["captured"]["trial_id"] == "trial"
     assert resource_payload["captured"]["status"] == "captured"
 
@@ -419,31 +435,19 @@ def test_mcp_ingest_local_conditions_do_not_attempt_registry(
         async with Client(mcp) as client:
             return (await client.call_tool("ingest_batch", {"request": request})).structured_content
 
-    assert asyncio.run(call()) == {
-        "trials": [
-            {
-                "status": "local_condition",
-                "trial": {
-                    "trial_id": "trial",
-                    "sources": [],
-                    "condition": {
-                        "code": expected_code,
-                        "trial_id": "trial",
-                        "detail": (
-                            "exactly one source with role main_article is required"
-                            if expected_code != "main_article_must_be_pdf"
-                            else "the designated main_article must contain a valid PDF"
-                        ),
-                    },
-                },
-                "registry": {
-                    "status": "not_attempted",
-                    "trial_id": "trial",
-                    "reason": "local_ingestion_condition",
-                },
-            }
-        ]
-    }
+    result = asyncio.run(call())
+    assert result["next_action"] == "save_proposal"
+    assert result["captured_batch_ref"]["kind"] == "batch"
+    assert result["trials"] == [
+        {
+            "trial_id": "trial",
+            "status": "condition",
+            "source_count": 0,
+            "projection_count": 0,
+            "registry_status": "not_attempted",
+            "condition_code": expected_code,
+        }
+    ]
 
 
 @pytest.mark.parametrize(
@@ -495,24 +499,49 @@ def test_mcp_registry_nonmatched_outcomes_are_categorical_and_nonblocking(
 
     result, resource = asyncio.run(call())
     trial = result["trials"][0]
-    assert trial["status"] == "registry_attempted"
-    assert trial["trial"]["trial_id"] == "trial"
-    assert trial["trial"]["sources"]
-    assert trial["trial"]["condition"] is None
-    assert set(trial["registry"]) == {"trial_id", "match", "captured_source"}
-    assert trial["registry"]["trial_id"] == "trial"
-    assert trial["registry"]["match"]["status"] == kind
-    assert set(trial["registry"]["match"]) == {
-        "status",
-        "candidates",
-        "reasons",
-        "provider_json",
-    }
-    assert trial["registry"]["captured_source"] is None
-    assert json.loads(resource) == {
-        "candidate": trial["registry"],
-        "captured": {"status": "not_captured", "trial_id": "trial"},
-    }
+    assert trial["status"] == "captured"
+    assert trial["trial_id"] == "trial"
+    assert trial["source_count"] == 1
+    assert trial["registry_status"] == kind
+    resource_value = json.loads(resource)
+    assert resource_value["candidate"]["match"]["status"] == kind
+    assert resource_value["captured"] == {"status": "not_captured", "trial_id": "trial"}
+
+
+def test_public_ingest_extracts_each_textual_source_once_for_registry_matching(
+    tmp_path: Path, monkeypatch
+) -> None:
+    _registry_pdf(tmp_path / "main.pdf", "no identifier")
+    import rob2_kit.ingestion.service as service
+    import rob2_kit.server as server
+
+    calls = 0
+    original_extract = service._extract_pages
+
+    def counted(data: bytes, media_type: str) -> tuple[str, ...]:
+        nonlocal calls
+        calls += 1
+        return original_extract(data, media_type)
+
+    original_client = httpx.Client
+    monkeypatch.setattr(service, "_extract_pages", counted)
+    monkeypatch.setattr(
+        server.httpx,
+        "Client",
+        lambda **_: original_client(
+            transport=httpx.MockTransport(lambda request: httpx.Response(404))
+        ),
+    )
+    monkeypatch.setenv("ROB2_WORKSPACE", str(tmp_path))
+
+    async def call() -> None:
+        async with Client(mcp) as client:
+            await client.call_tool(
+                "ingest_batch", {"request": _registry_ingest_request(_registry_facts())}
+            )
+
+    asyncio.run(call())
+    assert calls == 1
 
 
 def test_mcp_registry_uses_article_nct_without_supplied_identifier(
@@ -543,7 +572,7 @@ def test_mcp_registry_uses_article_nct_without_supplied_identifier(
                 )
             ).structured_content
 
-    assert asyncio.run(call())["trials"][0]["registry"]["match"]["status"] == "matched"
+    assert asyncio.run(call())["trials"][0]["registry_status"] == "matched"
     assert any(url.endswith("/NCT00000001") for url in requested)
 
 
@@ -591,149 +620,138 @@ def _registry_pdf(path: Path, text: str) -> None:
     document.close()
 
 
-def test_domain_checkpoint_tool_and_guidance_are_explicit() -> None:
-    async def discover() -> tuple[dict[str, Any], str]:
+def test_v2_public_surface_rejects_legacy_names_and_uses_strict_drafts() -> None:
+    async def discover() -> tuple[list[str], list[str], dict[str, Any]]:
         async with Client(mcp) as client:
             tools = await client.list_tools()
-            guidance = await client.read_resource("rob2://domain-guidance/domain:randomization")
-        tool = next(tool for tool in tools if tool.name == "save_domain_judgment")
-        return tool.inputSchema, guidance[0].text
+            resources = await client.list_resources()
+            templates = await client.list_resource_templates()
+        return (
+            [tool.name for tool in tools],
+            [str(item.uri) for item in resources] + [str(item.uriTemplate) for item in templates],
+            {tool.name: tool.inputSchema for tool in tools},
+        )
 
-    schema, guidance = asyncio.run(discover())
-    assert schema["required"] == ["request"]
-    request = schema["properties"]["request"]
-    assert len(request["oneOf"]) == 2
-    assert {branch["properties"]["phase"]["const"] for branch in request["oneOf"]} == {
-        "validate",
-        "commit",
-    }
-    payload = json.loads(guidance)
-    assert payload["domain"]["id"] == "domain:randomization"
-    assert payload["questions"] and payload["scientific_pack"]["content_hash"].startswith("sha256:")
-    assert payload["policy_pack"]["content_hash"].startswith("sha256:")
-    assert all("expected_previous_hash" in branch["properties"] for branch in request["oneOf"])
+    tools, resources, schemas = asyncio.run(discover())
+    assert tools == [
+        "ingest_batch",
+        "list_sources",
+        "retrieve_evidence",
+        "render_page",
+        "save_proposal",
+        "approve_batch",
+        "validate_domain_judgment",
+        "commit_domain_judgment",
+        "finish_trial",
+        "finalize_batch",
+        "read_record",
+        "discard_active_batch",
+    ]
+    assert resources == [
+        "rob2://current-batch",
+        "rob2://detail/{kind}/{identity}",
+        "rob2://registry/{trial_id}",
+    ]
+    assert schemas["save_proposal"]["additionalProperties"] is False
+    assert schemas["save_proposal"]["required"] == ["draft"]
+    assert schemas["approve_batch"]["required"] == ["request"]
+    assert schemas["validate_domain_judgment"]["required"] == ["operation"]
+    assert schemas["commit_domain_judgment"]["required"] == ["operation"]
 
 
-def test_mcp_domain_judgment_validates_then_commits_the_same_canonical_payload(
+def test_public_raw_drafts_aggregate_nested_repairs_without_writes(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    from rob2_kit.batch import approve_batch, save_proposal
-
-    proposal = _proposal(tmp_path)
-    assert save_proposal(tmp_path, proposal).state.status == "proposal"
-    assert approve_batch(tmp_path).state.status == "approved"
-    source = proposal.sources[0]
-    ref = {
-        "source_id": source.id,
-        "source_sha256": source.sha256,
-        "page_number": 1,
-        "start": 0,
-        "end": 6,
-        "quote": "anchor",
-    }
-    use = {"relationship": "supporting", "claim": "reported", "rationale": "direct", "refs": [ref]}
-    payload = {
-        "trial_id": "trial",
-        "result_id": "result",
-        "domain_id": "domain:randomization",
-        "active_answers": [
-            {
-                "question_id": "sq:randomization:sequence",
-                "answer": "yes",
-                "rationale": "direct",
-                "evidence_uses": [use],
-            },
-            {
-                "question_id": "sq:randomization:concealment",
-                "answer": "yes",
-                "rationale": "direct",
-                "evidence_uses": [use],
-            },
-            {
-                "question_id": "sq:randomization:baseline-imbalance",
-                "answer": "no",
-                "rationale": "direct",
-                "evidence_uses": [use],
-            },
-        ],
-        "inactive_questions": [],
-        "final_judgment": None,
-        "override": None,
-        "limitations": [],
-        "actor": "reviewer",
-        "observed_at": "2026-08-13T00:00:00Z",
-    }
     monkeypatch.setenv("ROB2_WORKSPACE", str(tmp_path))
 
     async def call() -> tuple[dict[str, Any], dict[str, Any]]:
         async with Client(mcp) as client:
-            validated = await client.call_tool(
-                "save_domain_judgment", {"request": {**payload, "phase": "validate"}}
-            )
-            validation = validated.structured_content["result"]
-            committed = await client.call_tool(
-                "save_domain_judgment",
+            proposal = await client.call_tool(
+                "save_proposal",
                 {
-                    "request": {
-                        **payload,
-                        "phase": "commit",
-                        "validation_receipt": validation["receipt"],
-                        "scientific_preflight": {
-                            "payload_final": True,
-                            "citations_checked_against_pages": True,
-                            "contradictions_addressed": True,
-                            "activation_and_partition_reviewed": True,
+                    "draft": {
+                        "outcome_target": {"id": 1, "extra": True},
+                        "results": "wrong",
+                        "extra": True,
+                    }
+                },
+            )
+            domain = await client.call_tool(
+                "validate_domain_judgment",
+                {
+                    "operation": {
+                        "approved_batch_hash": "sha256:" + "0" * 64,
+                        "trial_id": "trial",
+                        "result_id": "result",
+                        "domain_id": "domain:randomization",
+                        "actor": "reviewer",
+                        "draft": {
+                            "active_answers": "wrong",
+                            "limitations": [1],
+                            "extra": True,
                         },
                     }
                 },
             )
-        return validation, committed.structured_content["result"]
+        return proposal.structured_content, domain.structured_content
 
-    validation, committed = asyncio.run(call())
-    assert validation["status"] == "validated"
-    assert committed["status"] == "saved"
-    assert validation["judgment"]["checkpoint_hash"] == committed["judgment"]["checkpoint_hash"]
+    proposal, domain = asyncio.run(call())
+    assert proposal["status"] == "repair"
+    assert len(proposal["repairs"]) >= 3
+    assert domain["status"] == "condition"
+    assert domain["code"] == "batch_not_approved"
+    assert not (tmp_path / ".rob2-kit" / "active-batch.sqlite3").exists()
 
 
-def test_batch_tools_return_typed_structured_conditions(tmp_path: Path, monkeypatch) -> None:
+def test_finish_unknown_trial_returns_typed_identity_condition(tmp_path: Path, monkeypatch) -> None:
+    from v2_helpers import approved_workspace
+
+    approved_workspace(tmp_path)
+    approved = current_batch(tmp_path)
+    assert isinstance(approved, ApprovedBatch)
     monkeypatch.setenv("ROB2_WORKSPACE", str(tmp_path))
-    proposal = _proposal(tmp_path)
-    invalid_anchor = proposal.result_specs[0].anchor.model_copy(update={"end": 1, "quote": "x"})
-    incomplete = proposal.model_copy(
-        update={
-            "result_specs": (
-                proposal.result_specs[0].model_copy(update={"anchor": invalid_anchor}),
-            )
-        }
-    )
 
-    async def call() -> tuple[dict[str, Any], dict[str, Any], dict[str, Any], dict[str, Any]]:
+    async def call() -> dict[str, Any]:
         async with Client(mcp) as client:
-            no_proposal = await client.call_tool("approve_batch")
-            saved = await client.call_tool(
-                "save_proposal", {"proposal": incomplete.model_dump(mode="json")}
+            result = await client.call_tool(
+                "finish_trial",
+                {
+                    "operation": {
+                        "mode": "needs_input",
+                        "approved_batch_hash": approved.frozen_hash,
+                        "trial_id": "unknown",
+                        "actor": "finisher",
+                        "problems": [{"code": "missing", "detail": "Missing input."}],
+                    }
+                },
             )
-            incomplete_approval = await client.call_tool("approve_batch")
-            saved_complete = await client.call_tool(
-                "save_proposal", {"proposal": proposal.model_dump(mode="json")}
-            )
-            assert saved_complete.structured_content["state"]["status"] == "proposal"
-            approved = await client.call_tool("approve_batch")
-            assert approved.structured_content["state"]["status"] == "approved"
-            already_approved = await client.call_tool(
-                "save_proposal", {"proposal": proposal.model_dump(mode="json")}
-            )
-        return (
-            no_proposal.structured_content,
-            saved.structured_content,
-            incomplete_approval.structured_content,
-            already_approved.structured_content,
-        )
+        return result.structured_content
 
-    no_proposal, saved, incomplete_approval, already_approved = asyncio.run(call())
-    assert no_proposal["state"]["status"] == "no_active"
-    assert saved["state"]["status"] == "proposal"
-    assert saved["state"]["problems"][0]["code"] == "anchor_invalid"
-    assert incomplete_approval["state"]["status"] == "proposal"
-    assert already_approved["state"]["status"] == "stale"
-    assert already_approved["state"]["problems"][0]["code"] == "batch_already_approved"
+    result = asyncio.run(call())
+    assert result["status"] == "condition"
+    assert result["code"] == "result_identity_invalid"
+
+
+def test_compact_ingest_emits_actual_resource_link(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setenv("ROB2_WORKSPACE", str(tmp_path))
+
+    async def call():
+        async with Client(mcp) as client:
+            return await client.call_tool(
+                "ingest_batch",
+                {
+                    "request": {
+                        "trial_inputs": [{"id": "trial", "label": "Trial", "sources": []}],
+                        "registry_requests": [],
+                    }
+                },
+            )
+
+    result = asyncio.run(call())
+    assert result.structured_content["trials"][0]["status"] == "condition"
+    assert "captured_path" not in json.dumps(result.structured_content)
+    links = [item for item in result.content if isinstance(item, ResourceLink)]
+    assert len(links) == 1
+    assert str(links[0].uri).startswith("rob2://detail/batch/sha256:")

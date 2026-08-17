@@ -7,8 +7,14 @@ from pathlib import Path
 import pymupdf
 import pytest
 
-from rob2_kit.ingestion.service import ingest_batch, local_sources
-from rob2_kit.sources import SourceInput, TrialInput
+from rob2_kit.ingestion.service import (
+    capture_source_bytes,
+    ingest_batch,
+    local_sources,
+    publish_captured_batch,
+)
+from rob2_kit.registry import RegistryCandidateRecord, RegistryMatch, RegistryStatus
+from rob2_kit.sources import SourceInput, SourceRole, TrialInput
 
 
 def _pdf(path: Path, text: str = "page") -> None:
@@ -17,6 +23,72 @@ def _pdf(path: Path, text: str = "page") -> None:
     page.insert_text((72, 72), text)
     document.save(path)
     document.close()
+
+
+def test_registry_is_canonicalized_with_complete_authoritative_source_order(
+    tmp_path: Path,
+) -> None:
+    _pdf(tmp_path / "main.pdf")
+    _pdf(tmp_path / "protocol.pdf")
+    _pdf(tmp_path / "sap.pdf")
+    declaration = TrialInput(
+        id="trial",
+        label="Trial",
+        sources=(
+            SourceInput(role="sap", path="sap.pdf", label="Z SAP"),
+            SourceInput(role="protocol", path="protocol.pdf", label="A Protocol"),
+            SourceInput(role="main_article", path="main.pdf", label="Main"),
+        ),
+    )
+    ingested = ingest_batch(tmp_path, (declaration,))
+    registry_bytes = b'{"nctId":"NCT00000001"}'
+    registry = capture_source_bytes(
+        tmp_path,
+        "trial",
+        SourceRole.REGISTRY,
+        "ClinicalTrials.gov registry record",
+        registry_bytes,
+    )
+    captured = publish_captured_batch(
+        tmp_path,
+        (declaration,),
+        ingested,
+        {
+            "trial": RegistryCandidateRecord(
+                trial_id="trial",
+                match=RegistryMatch(status=RegistryStatus.MATCHED, provider_json=registry_bytes),
+                captured_source=registry,
+                projection_pages=(registry_bytes.decode(),),
+            )
+        },
+    )
+    sources = captured.trials[0].sources
+    assert tuple(source.role for source in sources) == (
+        SourceRole.MAIN_ARTICLE,
+        SourceRole.REGISTRY,
+        SourceRole.PROTOCOL,
+        SourceRole.SAP,
+    )
+    assert (
+        publish_captured_batch(
+            tmp_path,
+            (declaration,),
+            ingested,
+            {
+                "trial": RegistryCandidateRecord(
+                    trial_id="trial",
+                    match=RegistryMatch(
+                        status=RegistryStatus.MATCHED, provider_json=registry_bytes
+                    ),
+                    captured_source=registry,
+                    projection_pages=(registry_bytes.decode(),),
+                )
+            },
+        )
+        .trials[0]
+        .sources
+        == sources
+    )
 
 
 def test_main_article_expected_conditions(tmp_path: Path):

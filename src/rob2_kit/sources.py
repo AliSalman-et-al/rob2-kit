@@ -62,23 +62,12 @@ class ExpectedCondition(_StrictModel):
 class IngestedTrial(_StrictModel):
     trial_id: str
     sources: tuple[Source, ...] = ()
+    projection_pages: tuple[tuple[str, ...], ...] = Field(default=(), exclude=True)
     condition: ExpectedCondition | None = None
 
 
 class IngestBatchResult(_StrictModel):
     trials: tuple[IngestedTrial, ...]
-
-
-class PageText(_StrictModel):
-    page_number: Annotated[int, Field(ge=1)]
-    text: str
-    start: Annotated[int, Field(ge=0)]
-    end: Annotated[int, Field(ge=0)]
-
-
-class ReadPagesResult(_StrictModel):
-    source_id: str
-    pages: tuple[PageText, ...]
 
 
 def sha256_bytes(data: bytes) -> str:
@@ -103,27 +92,19 @@ def list_sources(sources: tuple[Source, ...] | list[Source]) -> tuple[Source, ..
     return tuple(sorted(sources, key=source_sort_key))
 
 
-def read_pages(
-    workspace: str | Path, source: Source, page_numbers: tuple[int, ...]
-) -> ReadPagesResult:
-    """Read exact page-local text from an immutable captured Source."""
-    root = Path(workspace).resolve(strict=True)
-    captured = _under(root, source.captured_path)
-    data = captured.read_bytes()
-    if sha256_bytes(data) != source.sha256:
-        raise ValueError("captured source bytes have changed")
-    if not page_numbers:
-        raise ValueError("at least one one-based page number is required")
-    if len(set(page_numbers)) != len(page_numbers):
-        raise ValueError("page numbers must be unique")
-    texts = _extract_pages(data, source.media_type)
-    pages: list[PageText] = []
-    for page_number in page_numbers:
-        if page_number < 1 or page_number > len(texts):
-            raise ValueError(f"page number outside source: {page_number}")
-        text = texts[page_number - 1]
-        pages.append(PageText(page_number=page_number, text=text, start=0, end=len(text)))
-    return ReadPagesResult(source_id=source.id, pages=tuple(pages))
+def verified_source_bytes(root: Path, source: Source) -> bytes:
+    """Read one captured Source after verifying its path, hash, and media type."""
+    relative = Path(source.captured_path)
+    expected = Path(".rob2-kit") / "sources" / source.trial_id
+    if relative.parent != expected or relative.name.split(".")[0] != source.id:
+        raise ValueError("Source captured path is not its Trial capture path")
+    path = (root / relative).resolve(strict=True)
+    if not path.is_relative_to(root) or not path.is_file():
+        raise ValueError("Source captured path escapes workspace")
+    data = path.read_bytes()
+    if sha256_bytes(data) != source.sha256 or _media_type(path, data) != source.media_type:
+        raise ValueError("Source metadata is stale")
+    return data
 
 
 def _under(workspace: Path, requested: str) -> Path:

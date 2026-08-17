@@ -3,15 +3,17 @@
 from __future__ import annotations
 
 from datetime import datetime
-from pathlib import PurePosixPath
+from pathlib import Path, PurePosixPath
 from typing import Annotated, Literal
 
 from pydantic import Field, field_validator, model_validator
 
 from rob2_kit.assessment import OutcomeTarget, ResultSpec, Trial
 from rob2_kit.batch import ApprovedBatch, PackIdentity, StaleBatch, current_batch_in_transaction
+from rob2_kit.detail import DetailReference, detail_reference
 from rob2_kit.finish import AssessmentSnapshot, _verified
 from rob2_kit.models import Judgment, StrictModel, canonical_json_bytes, sha256
+from rob2_kit.packs import SCIENTIFIC_PACK
 from rob2_kit.storage import transaction
 
 ContentHash = Annotated[str, Field(pattern=r"^sha256:[0-9a-f]{64}$")]
@@ -45,7 +47,7 @@ class Problem(StrictModel):
 
 class ProblemTerminal(StrictModel):
     schema_id: Literal["rob2.problem_terminal"] = "rob2.problem_terminal"
-    schema_version: Literal[1] = 1
+    schema_version: Literal[2] = 2
     approved_batch_hash: str
     trial: Trial
     result_spec: ResultSpec
@@ -55,6 +57,8 @@ class ProblemTerminal(StrictModel):
     actor: Annotated[str, Field(min_length=1)]
     observed_at: datetime
     terminal_hash: str
+    operation_hash: str | None = None
+    synthesis_hash: str | None = None
 
     _observed_at_utc = field_validator("observed_at")(_utc)
     _actor_nonblank = field_validator("actor")(_actor)
@@ -118,7 +122,7 @@ class Counts(StrictModel):
 
 class BatchSummary(StrictModel):
     schema_id: Literal["rob2.batch_summary"] = "rob2.batch_summary"
-    schema_version: Literal[1] = 1
+    schema_version: Literal[2] = 2
     approved_batch_hash: str
     outcome_target: OutcomeTarget
     entries: tuple[SummaryEntry, ...] = Field(min_length=1)
@@ -206,6 +210,35 @@ class BatchCondition(StrictModel):
     detail: str
 
 
+class TerminalOutcome(StrictModel):
+    """Compact handoff identity for one finalized Trial."""
+
+    trial_id: str
+    status: Literal["assessed", "needs_input", "failed"]
+    terminal_ref: DetailReference
+    snapshot_ref: DetailReference | None = None
+
+
+class FinalizationSuccess(StrictModel):
+    """Compact v2 finalization receipt; the Summary remains a Detail record."""
+
+    status: Literal["committed"] = "committed"
+    approved_batch_hash: str
+    summary_ref: DetailReference
+    receipt: ArtifactReceipt
+    outcomes: tuple[TerminalOutcome, ...] = Field(min_length=1)
+    assessed: int = Field(ge=0)
+    needs_input: int = Field(ge=0)
+    failed: int = Field(ge=0)
+    next_action: Literal["complete"] = "complete"
+
+
+class FinalizationCondition(StrictModel):
+    status: Literal["condition"] = "condition"
+    code: str
+    detail: str
+
+
 def terminal_content(terminal: ProblemTerminal) -> dict[str, object]:
     return terminal.model_dump(mode="python", exclude={"terminal_hash"})
 
@@ -249,6 +282,30 @@ def terminalize_problem(workspace, trial_id: str, category, problems: tuple[Prob
             raise ValueError("unknown approved Trial")
         if not problems:
             raise ValueError("at least one problem is required")
+        from rob2_kit.finish import _synthesis_packet
+        from rob2_kit.judgments import judgment_key
+        from rob2_kit.text_projection import VerifiedProjection
+
+        complete = all(
+            connection.execute(
+                "SELECT 1 FROM records WHERE name=?",
+                (judgment_key(state.frozen_hash, trial.id, result.id, domain.id),),
+            ).fetchone()
+            is not None
+            for domain in SCIENTIFIC_PACK.domains
+        )
+        synthesis = (
+            _synthesis_packet(
+                workspace,
+                connection,
+                state,
+                trial.id,
+                result.id,
+                VerifiedProjection(workspace),
+            )
+            if complete
+            else None
+        )
         incomplete = ProblemTerminal(
             approved_batch_hash=state.frozen_hash,
             trial=trial,
@@ -258,6 +315,7 @@ def terminalize_problem(workspace, trial_id: str, category, problems: tuple[Prob
             pack_identities=state.pack_identities,
             actor=problems[0].actor,
             observed_at=problems[0].observed_at,
+            synthesis_hash=None if synthesis is None else synthesis.packet_hash,
             terminal_hash="pending",
         )
         terminal = incomplete.model_copy(
@@ -266,9 +324,14 @@ def terminalize_problem(workspace, trial_id: str, category, problems: tuple[Prob
         key = f"terminal_trial:{state.frozen_hash}:{trial_id}"
         row = connection.execute("SELECT payload FROM records WHERE name=?", (key,)).fetchone()
         if row is None:
+            payload = canonical_json_bytes(terminal)
             connection.execute(
                 "INSERT INTO records(name,payload) VALUES(?,?)",
-                (key, canonical_json_bytes(terminal)),
+                (key, payload),
+            )
+            connection.execute(
+                "INSERT INTO records(name,payload) VALUES(?,?)",
+                (f"detail:terminal:{terminal.terminal_hash}", payload),
             )
             return TerminalSaved(terminal=terminal)
         try:
@@ -390,3 +453,136 @@ def finalize_batch(workspace, actor: str, observed_at: datetime):
         return (
             BatchSaved(summary=existing) if existing == summary else BatchConflict(summary=existing)
         )
+
+
+def _finalization_success(workspace: str | Path, summary: BatchSummary) -> FinalizationSuccess:
+    """Materialize and verify the portable handoff for one exact Summary."""
+
+    from rob2_kit.reports import batch_artifact_receipt, export_batch
+
+    with transaction(workspace) as connection:
+        payload = canonical_json_bytes(summary)
+        key = f"detail:batch:{summary.summary_hash}"
+        row = connection.execute("SELECT payload FROM records WHERE name=?", (key,)).fetchone()
+        if row is not None and bytes(row[0]) != payload:
+            raise ValueError("batch Summary Detail record is corrupt")
+        if row is None:
+            connection.execute("INSERT INTO records(name,payload) VALUES(?,?)", (key, payload))
+        for entry in summary.entries:
+            terminal_key = f"terminal_trial:{summary.approved_batch_hash}:{entry.trial.id}"
+            terminal_row = connection.execute(
+                "SELECT payload FROM records WHERE name=?", (terminal_key,)
+            ).fetchone()
+            if terminal_row is None:
+                raise ValueError("finalized Trial terminal is unavailable")
+            if entry.status == "assessed":
+                snapshot_row = connection.execute(
+                    "SELECT payload FROM records WHERE name=?",
+                    (f"assessment_snapshot:{summary.approved_batch_hash}:{entry.trial.id}",),
+                ).fetchone()
+                if snapshot_row is None:
+                    raise ValueError("finalized assessment snapshot is unavailable")
+                snapshot = _verified(AssessmentSnapshot.model_validate_json(bytes(snapshot_row[0])))
+                marker = AssessmentTerminal.model_validate_json(bytes(terminal_row[0]))
+                if (
+                    marker.snapshot_hash != snapshot.snapshot_hash
+                    or entry.snapshot_hash != snapshot.snapshot_hash
+                ):
+                    raise ValueError("finalized assessment terminal is not cross-bound")
+                terminal_payload = bytes(snapshot_row[0])
+                trial_detail_key = f"detail:trial:{snapshot.snapshot_hash}"
+                existing_trial = connection.execute(
+                    "SELECT payload FROM records WHERE name=?", (trial_detail_key,)
+                ).fetchone()
+                if existing_trial is not None and bytes(existing_trial[0]) != terminal_payload:
+                    raise ValueError("assessment Trial Detail record is corrupt")
+                if existing_trial is None:
+                    connection.execute(
+                        "INSERT INTO records(name,payload) VALUES(?,?)",
+                        (trial_detail_key, terminal_payload),
+                    )
+            else:
+                terminal = verified_terminal(
+                    ProblemTerminal.model_validate_json(bytes(terminal_row[0]))
+                )
+                if (
+                    terminal.terminal_hash != entry.terminal_hash
+                    or terminal.category != entry.status
+                ):
+                    raise ValueError("finalized problem terminal is not cross-bound")
+                terminal_payload = bytes(terminal_row[0])
+            terminal_identity = (
+                entry.snapshot_hash if entry.status == "assessed" else entry.terminal_hash
+            )
+            terminal_detail_key = f"detail:terminal:{terminal_identity}"
+            existing_terminal = connection.execute(
+                "SELECT payload FROM records WHERE name=?", (terminal_detail_key,)
+            ).fetchone()
+            if existing_terminal is not None and bytes(existing_terminal[0]) != terminal_payload:
+                raise ValueError("terminal Detail record is corrupt")
+            if existing_terminal is None:
+                connection.execute(
+                    "INSERT INTO records(name,payload) VALUES(?,?)",
+                    (terminal_detail_key, terminal_payload),
+                )
+    target = export_batch(workspace, summary.approved_batch_hash)
+    receipt = batch_artifact_receipt(Path(workspace).resolve(strict=True), target, summary)
+    outcomes = tuple(
+        TerminalOutcome(
+            trial_id=entry.trial.id,
+            status=entry.status,
+            terminal_ref=detail_reference(
+                "terminal",
+                entry.snapshot_hash if entry.status == "assessed" else entry.terminal_hash,
+            ),
+            snapshot_ref=(
+                detail_reference("trial", entry.snapshot_hash)
+                if entry.status == "assessed"
+                else None
+            ),
+        )
+        for entry in summary.entries
+    )
+    return FinalizationSuccess(
+        approved_batch_hash=summary.approved_batch_hash,
+        summary_ref=detail_reference("batch", summary.summary_hash),
+        receipt=receipt,
+        outcomes=outcomes,
+        assessed=summary.counts.assessed,
+        needs_input=summary.counts.needs_input,
+        failed=summary.counts.failed,
+    )
+
+
+def finalize_batch_v2(
+    workspace: str | Path, actor: str
+) -> FinalizationSuccess | FinalizationCondition:
+    """Finalize using server time and return only compact verified identities."""
+
+    from datetime import UTC
+
+    try:
+        with transaction(workspace) as connection:
+            state, condition = _approved_or_condition(workspace, connection)
+            if condition is not None:
+                return FinalizationCondition(code=condition.code, detail=condition.detail)
+            assert isinstance(state, ApprovedBatch)
+            key = f"batch_summary:{state.frozen_hash}"
+            row = connection.execute("SELECT payload FROM records WHERE name=?", (key,)).fetchone()
+            summary = (
+                None
+                if row is None
+                else verified_summary(BatchSummary.model_validate_json(bytes(row[0])))
+            )
+        if summary is None:
+            saved = finalize_batch(workspace, actor, datetime.now(UTC))
+            if not isinstance(saved, BatchSaved):
+                if isinstance(saved, BatchConflict):
+                    summary = saved.summary
+                else:
+                    return FinalizationCondition(code=saved.code, detail=saved.detail)
+            else:
+                summary = saved.summary
+        return _finalization_success(workspace, summary)
+    except (OSError, ValueError, KeyError) as error:
+        return FinalizationCondition(code="artifact_unavailable", detail=str(error))

@@ -1,114 +1,68 @@
 ---
 name: rob2-signalling
-description: Apply evidence discipline while answering RoB 2 signalling questions.
+description: Apply packet-guided evidence discipline to RoB 2 signalling.
 ---
 
-# RoB 2 signalling
+# rob2-kit signalling
 
-Use rob2-kit's packs as the authoritative question and decision rules. Keep one
-evidence matrix per Trial and ResultSpec; evidence never crosses Trial boundaries.
+Use the pinned scientific and policy packs as authoritative rules. Keep one
+evidence matrix per Trial and Result; Evidence never crosses Trial scopes.
 
-## 1. Guidance orientation
+Before approval, follow the workflow sequence exactly: ingest and list Sources,
+use `retrieve_evidence` for deliberate captured-scope anchor selection, save the
+Proposal, read and review its immutable Proposal Detail, and only then approve
+the reviewed hash with `approve_batch`. Preapproval handles are not postapproval
+Domain Evidence.
 
-Read these exact resources once per live context:
+## Packet-guided work
 
-- `rob2://domain-guidance/domain:randomization`
-- `rob2://domain-guidance/domain:deviations`
-- `rob2://domain-guidance/domain:missing`
-- `rob2://domain-guidance/domain:measurement`
-- `rob2://domain-guidance/domain:selection`
+Start from the approved work packet and its exact guidance, activation graph,
+Source inventory, prior Domain digests, and correction basis. Do not reproduce
+pack wording from memory. Preserve the packet identity and active checkpoint
+hash in the working context.
 
-Read them again after restart or context loss, pack mismatch, or unresolved skill
-activation. They supply the official question wording, activation logic, and
-judgment mappings; use their identifiers rather than reproducing rules from
-memory.
+Use `retrieve_evidence` for adaptive batched lexical searches, exact pages,
+windows, and deliberate text selections. Search modes never silently broaden,
+stem, add synonyms, or establish scientific absence. Use `render_page` only for
+figures, tables, flow diagrams, spatial notes, or discrepancies. A visual
+selection must bind its transcription to the verified render hash and region.
 
-Completion: all five guidance resources and their applicable rules are in the
-live working context, and their shared scientific and policy identities agree.
+## Scientific matrix
 
-## 2. Proposal evidence
+Build an activation-aware matrix for the 22 signalling questions. Re-evaluate
+activation after upstream answers. For every active answer, preserve a specific
+rationale and Evidence uses marked supporting, contradicting, or contextual.
+Record limitations, contradictions, source priority, and unresolved questions.
+Do not claim sufficiency merely because a search returned zero hits.
 
-For each intake Trial, use `list_sources` and orient first on the designated main
-article and matched registry. Read the complete designated main article for
-orientation, then revisit only pages that add information; use its source
-identity, hash, exact page, bounds, and quote to anchor the proposed ResultSpec.
-Do not infer a Source role or unrestricted evidence claim: assign only the role
-the inventory supports, and stop for researcher input when a material ambiguity
-cannot be resolved from approved Sources.
-Registry/protocol/SAP
-and supplements supply prespecification and supporting detail, with supplements a
-lower-priority path except for prespecification.
+Stop when the material uncertainty, contradiction, source-priority, and
+stopping checks are resolved or explicitly limited. Do not use arbitrary query,
+page, or reread caps; transport pagination only shapes the next retrieval.
 
-Resolve the effect, randomization, arms/comparison, outcome definition,
-measurement, time point, population, analysis method/choices, effect measure,
-and values/denominators. Present the complete batch proposal for researcher
-confirmation before approval.
+## Validate, review, commit
 
-Completion: every Trial has proposal evidence sufficient for one complete,
-anchored ResultSpec, and whole-batch confirmation is ready for workflow.
+Construct the strict Domain draft with only active answers, rationales, handle
+IDs, limitations, and an optional explicit override. Call
+`validate_domain_judgment`, inspect every independent repair in deterministic
+order, and correct the draft mechanically. Dependent cascades do not hide
+unaffected defects.
 
-## 3. Evidence matrix
+For a valid result, read the candidate Detail and review the exact checkpoint
+identity, active/inactive partition, Evidence coordinates, judgment, override,
+and limitations. Then acknowledge that exact candidate through
+`commit_domain_judgment`. The acknowledgment records deliberate review, not
+scientific truth. A correction repeats the same process with the exact active
+predecessor hash.
 
-For the approved Trial and ResultSpec, create a provisional activation-aware
-matrix covering all 22 signalling questions. Each entry records its question ID,
-active/inactive state, answer when active, exact coordinates, evidence uses
-(`supporting`, `contradicting`, or `contextual`), rationale, and unresolved
-questions. Re-evaluate activation as upstream answers resolve. Begin Domain 5
-prespecification retrieval early from registry, protocol, SAP, or supplement.
+After all five Domains, review the exact Trial synthesis packet and acknowledge
+its hash through `finish_trial`. Any changed answer, Evidence handle,
+limitation, override, or concern requires a fresh synthesis review.
 
-Use `search_sources`, `read_pages`, and direct calls in an information-gain loop;
-there is no arbitrary query or reread cap. Search or reread only when it can add
-information, including a new source, citation precision, recovered truncation, or
-a contradiction/priority check. Search or read when it can test a concrete
-uncertainty, contradiction, synonym, endpoint definition, population, time point,
-or source role. Widen or reformulate that concrete query when the current source
-cannot resolve it. Reuse live context and compact receipts.
+## Integrity and communication
 
-Completion: identified material uncertainties are resolved or documented, and
-evidence sufficiency, contradiction, and source-priority checks are complete.
-Stop then, not only when no conceivable further query remains. Pagination and
-transport bounds only shape the next request; they never establish scientific
-sufficiency.
-
-## 4. Visual evidence
-
-Render selectively for a CONSORT flow, table or figure, spatial footnote,
-extraction discrepancy, blank page, or vector-only page. Bind each visual use to
-the rendered page or region, normalized region, render hash, and a transcription
-visible on that captured page.
-
-Completion: each visual claim has a reproducible rendered origin and its
-transcription.
-
-## 5. Checkpoint
-
-Partition every Domain exactly: active questions carry answers, rationales, and
-cited evidence uses; inactive questions are explicitly declared. Build the
-complete draft and verify this checklist before validation:
-
-- The active and inactive IDs are the exact Domain/question partition from guidance.
-- Every rationale and limitation is specific and final.
-- Each citation is attributable, supports its claim, and has no unaddressed contradiction.
-- Evidence stays within the approved Trial/ResultSpec inventory; no unrestricted evidence claim is used.
-- The payload is complete; inspect the tool schema rather than probing with a save.
-
-Use pack rules to obtain the deterministic proposed judgment. A different final
-judgment carries an override with concise justification, actor, and UTC time.
-
-Inspect the tool schema. First call `save_domain_judgment` with `phase: validate`
-and the complete draft. Interpret a typed problem or conflict, resolve it, and
-validate again. When validation returns `next_action: review_then_commit`, review
-the whole identical payload and receipt, then call with `phase: commit`, that
-receipt, and the explicit scientific preflight: payload final; citations checked
-against cited pages; contradictions addressed; activation and partition reviewed.
-The preflight records deliberate review; it does not authenticate an assessor or
-establish scientific truth. A first draft supplies `expected_previous_hash: null`;
-a correction before `finish_trial` supplies the exact active checkpoint hash.
-Interpret `saved` as persisted or idempotently replayed and `revised` as an
-appended active revision. Use `remaining_domains` to select the next Domain.
-Completion: commit returns saved or revised. An uncertain commit response may be
-retried only with its exact complete commit payload and matching receipt.
-
-The working checkpoint is replaceable only before `finish_trial`; every saved
-revision is an append-only audit entry, and `finish_trial` freezes the active
-revisions into the immutable assessment snapshot.
+Evidence uses must remain within the approved Trial/Result inventory. Do not
+send private paths, hidden reasoning, or free-form scientific claims into
+telemetry or compact workflow receipts. Use `read_record` only for deliberate
+identity-bound review, and cite the exact Source/page/coordinate in the host's
+scientific reasoning. Report conditions and next actions without inventing
+server conclusions.

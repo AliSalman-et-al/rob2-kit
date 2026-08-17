@@ -2,7 +2,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 import pytest
-from test_judgments import approved_workspace
+from v2_helpers import approved_workspace
 
 from rob2_kit.batch_summary import (
     ArtifactReceipt,

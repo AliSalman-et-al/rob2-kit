@@ -10,11 +10,11 @@ class _Timestamp(StrictModel):
     observed_at: datetime
 
 
-def test_evidence_text_is_stripped_and_visual_requires_full_page_region() -> None:
+def test_evidence_text_is_preserved_and_visual_requires_full_page_region() -> None:
     ref = TextEvidenceRef(
         source_id=" s ", source_sha256=" h ", page_number=1, start=0, end=1, quote=" q "
     )
-    assert (ref.source_id, ref.quote) == ("s", "q")
+    assert (ref.source_id, ref.quote) == (" s ", " q ")
     with pytest.raises(ValueError, match="full normalized"):
         VisualEvidenceRef(
             source_id="s",
@@ -27,11 +27,11 @@ def test_evidence_text_is_stripped_and_visual_requires_full_page_region() -> Non
         )
 
 
-def test_override_requires_utc_and_strips_actor() -> None:
+def test_override_requires_utc_and_preserves_actor() -> None:
     override = Override(
         justification=" reason ", actor=" reviewer ", observed_at=datetime(2026, 8, 13, tzinfo=UTC)
     )
-    assert (override.justification, override.actor) == ("reason", "reviewer")
+    assert (override.justification, override.actor) == (" reason ", " reviewer ")
     with pytest.raises(ValueError, match="UTC"):
         Override(justification="reason", actor="reviewer", observed_at=datetime(2026, 8, 13))
 

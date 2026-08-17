@@ -5,11 +5,92 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 import pytest
-from test_judgments import approved_workspace
+from v2_helpers import approved_workspace, completed_workspace
 
+from rob2_kit.batch import ApprovedBatch, current_batch
 from rob2_kit.batch_summary import Problem, finalize_batch, terminalize_problem
-from rob2_kit.reports import _bundle_hash, batch_artifact_receipt, export_batch
+from rob2_kit.finish import (
+    AssessmentFinishOperation,
+    AssessmentFinishSuccess,
+    AssessmentSnapshot,
+    finish_assessment_v2,
+    snapshot_content,
+)
+from rob2_kit.models import canonical_json_bytes, sha256
+from rob2_kit.recovery import current_batch_projection
+from rob2_kit.reports import (
+    _bundle_hash,
+    _snapshot_bytes,
+    batch_artifact_receipt,
+    export_batch,
+    export_trial,
+)
 from rob2_kit.storage import transaction
+
+
+def test_snapshot_selection_treats_trial_ids_as_exact_not_sql_patterns(tmp_path: Path) -> None:
+    workspace, _ = completed_workspace(tmp_path)
+    approved = current_batch(workspace)
+    assert isinstance(approved, ApprovedBatch)
+    progress = current_batch_projection(workspace).trials[0]
+    assert progress.synthesis_ref is not None
+    finished = finish_assessment_v2(
+        workspace,
+        AssessmentFinishOperation(
+            approved_batch_hash=approved.frozen_hash,
+            trial_id="t",
+            result_id="r",
+            reviewed_synthesis_hash=progress.synthesis_ref.identity,
+            actor="finisher",
+        ),
+    )
+    assert isinstance(finished, AssessmentFinishSuccess)
+    with transaction(workspace) as connection:
+        row = connection.execute(
+            "SELECT payload FROM records WHERE name LIKE 'assessment_snapshot:%'",
+        ).fetchone()
+        assert row is not None
+        original = AssessmentSnapshot.model_validate_json(bytes(row[0]))
+        connection.execute("DELETE FROM records WHERE name LIKE 'assessment_snapshot:%'")
+        for trial_id in ("a_b", "axb"):
+            trial = original.trial.model_copy(update={"id": trial_id})
+            result = original.result_spec.model_copy(update={"trial": trial})
+            draft = original.model_copy(
+                update={"trial": trial, "result_spec": result, "snapshot_hash": "pending"}
+            )
+            snapshot = draft.model_copy(update={"snapshot_hash": sha256(snapshot_content(draft))})
+            connection.execute(
+                "INSERT INTO records(name,payload) VALUES(?,?)",
+                (
+                    f"assessment_snapshot:{approved.frozen_hash}:{trial_id}",
+                    canonical_json_bytes(snapshot),
+                ),
+            )
+    selected = AssessmentSnapshot.model_validate_json(_snapshot_bytes(workspace, "a_b", "r"))
+    assert selected.trial.id == "a_b"
+
+
+def test_assessed_trial_export_reproduces_text_projection_identity(tmp_path: Path) -> None:
+    workspace, _ = completed_workspace(tmp_path)
+    approved = current_batch(workspace)
+    assert isinstance(approved, ApprovedBatch)
+    progress = current_batch_projection(workspace).trials[0]
+    assert progress.synthesis_ref is not None
+    finished = finish_assessment_v2(
+        workspace,
+        AssessmentFinishOperation(
+            approved_batch_hash=approved.frozen_hash,
+            trial_id="t",
+            result_id="r",
+            reviewed_synthesis_hash=progress.synthesis_ref.identity,
+            actor="finisher",
+        ),
+    )
+    assert isinstance(finished, AssessmentFinishSuccess)
+
+    target = export_trial(workspace, "t", "r")
+
+    assert (target / "projections.json").is_file()
 
 
 def test_problem_only_batch_index_is_stable_and_escaped(tmp_path: Path) -> None:
