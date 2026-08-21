@@ -43,9 +43,14 @@ def _host_command(host: Host, model: str | None, config: Path, project: Path) ->
             "unsupported-host-isolation: installed Codex CLI cannot disable built-in shell/filesystem tools"
         )
     else:
+        from .interfaces.mcp.server import PUBLIC_TOOL_NAMES
+
+        allowed_tools = ",".join(f"mcp__rob2-kit__{name}" for name in PUBLIC_TOOL_NAMES)
         command = [
             "claude", "--print", "--mcp-config", str(config), "--strict-mcp-config",
-            "--tools", "", "--no-session-persistence", "--setting-sources", "project",
+            "--tools", allowed_tools, "--allowedTools", allowed_tools,
+            "--permission-mode", "dontAsk", "--no-session-persistence",
+            "--setting-sources", "project",
         ]
     if model:
         command.extend(["--model", model])
