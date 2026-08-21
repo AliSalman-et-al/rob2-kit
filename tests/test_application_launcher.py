@@ -49,7 +49,11 @@ def test_launcher_isolates_config_and_appends_verified_pause(monkeypatch, tmp_pa
     ]
     assert "--strict-mcp-config" in observed["command"]
     assert "--tools" in observed["command"]
-    assert observed["command"][observed["command"].index("--tools") + 1] == ""
+    allowed = observed["command"][observed["command"].index("--tools") + 1]
+    assert allowed.startswith("mcp__rob2-kit__preflight_sources,")
+    assert allowed.endswith("mcp__rob2-kit__read_record")
+    assert observed["command"][observed["command"].index("--allowedTools") + 1] == allowed
+    assert observed["command"][observed["command"].index("--permission-mode") + 1] == "dontAsk"
     assert "--safe-mode" not in observed["command"]
     assert not Path(observed["cwd"]).exists()
     assert "private-prompt" not in result.output
@@ -87,10 +91,11 @@ def test_live_claude_isolated_smoke(tmp_path: Path) -> None:
         tmp_path,
         "claude-code",
         None,
-        "Use the installed rob2-workflow skill instructions. Reply exactly ROB2_LIVE_OK. "
-        "Do not use tools, reveal workspace paths, or add any other text.",
+        "Call preflight_sources once with root alias dossier, relative path '.', and trial ID "
+        "handshake. Then reply exactly ROB2_LIVE_OK without revealing workspace paths.",
     )
     assert "ROB2_LIVE_OK" in result.output
+    assert '"phase":"intake"' in result.output
     assert workspace_marker not in result.output
     assert workspace_marker not in result.error
     assert "Verified rob2-kit status" in result.output

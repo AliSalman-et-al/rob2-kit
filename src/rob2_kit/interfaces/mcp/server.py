@@ -62,6 +62,24 @@ from rob2_kit.models import sha256
 from rob2_kit.rendering import RenderCondition, read_render, render_page
 from rob2_kit.storage import read_only_transaction
 
+PUBLIC_TOOL_NAMES = (
+    "preflight_sources",
+    "inspect_candidate_sources",
+    "save_intake_plan",
+    "capture_batch",
+    "list_sources",
+    "retrieve_evidence",
+    "render_page",
+    "save_proposal",
+    "approve_batch",
+    "validate_domain_judgment",
+    "commit_domain_judgment",
+    "prepare_trial_finish",
+    "finish_trial",
+    "finalize_batch",
+    "read_record",
+)
+
 mcp = FastMCP("rob2-kit")
 _READ_ONLY = ToolAnnotations(readOnlyHint=True, destructiveHint=False, idempotentHint=True)
 _MUTATION = ToolAnnotations(readOnlyHint=False, destructiveHint=False, idempotentHint=False)
