@@ -322,7 +322,6 @@ def test_stdio_public_assessed_workflow_commits_all_five_domains(tmp_path: Path)
                     "source_table_meaning": clarity,
                     "choice_among_eligible_results": clarity,
                 },
-                "compatibility": {"status": "compatible", "reasons": []},
             }
             proposal = dict(
                 (

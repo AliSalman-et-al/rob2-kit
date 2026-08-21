@@ -173,15 +173,13 @@ def test_application_assessed_bundle_is_independently_verified_and_rejects_missi
         ClarityItem,
         ComparativeEffect,
         ComparisonGroup,
-        Compatibility,
-        CompatibilityFinding,
         EvidenceSet,
         OutcomeMeasurementCoverage,
         PopulationAccount,
         ProposalInput,
         ProposalRepairReceipt,
         Quantity,
-        ResultCard,
+        ResultCardInput,
         ResultTarget,
         acknowledge_proposal,
         approve_batch,
@@ -250,7 +248,7 @@ def test_application_assessed_bundle_is_independently_verified_and_rejects_missi
             )
         }
     )
-    card = ResultCard(
+    card = ResultCardInput(
         trial_id="chaarted",
         target=ResultTarget(
             outcome_definition="time to biochemical, symptomatic, or radiographic progression",
@@ -290,7 +288,6 @@ def test_application_assessed_bundle_is_independently_verified_and_rejects_missi
             reported_context=(evidence,), population_basis=(evidence,),
         ),
         clarity=specified,
-        compatibility=CompatibilityFinding(status=Compatibility.COMPATIBLE),
     )
     proposal = save_proposal(tmp_path, ProposalInput(outcome_statement="Progression-free survival", results=(card,)))
     assert not isinstance(proposal, ProposalRepairReceipt)
