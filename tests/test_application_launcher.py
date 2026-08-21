@@ -35,6 +35,8 @@ def test_launcher_isolates_config_and_appends_verified_pause(monkeypatch, tmp_pa
         )
         observed["command"] = command
         assert "private-prompt" in kwargs["input"]
+        assert "Verified rob2-kit entry status" in kwargs["input"]
+        assert '"phase":"empty"' in kwargs["input"]
         return subprocess.CompletedProcess(command, 0, "model prose", "")
 
     monkeypatch.setattr(subprocess, "run", fake_run)
@@ -91,8 +93,8 @@ def test_live_claude_isolated_smoke(tmp_path: Path) -> None:
         tmp_path,
         "claude-code",
         None,
-        "Call preflight_sources once with root alias dossier, relative path '.', and trial ID "
-        "handshake. Then reply exactly ROB2_LIVE_OK without revealing workspace paths.",
+        "/rob2-workflow Call preflight_sources once with authorized root '.', alias dossier, "
+        "and Trial ID handshake. Then reply exactly ROB2_LIVE_OK without revealing workspace paths.",
     )
     assert "ROB2_LIVE_OK" in result.output
     assert '"phase":"intake"' in result.output
