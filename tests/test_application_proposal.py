@@ -283,6 +283,54 @@ def test_save_proposal_repairs_review_required_derivation_before_persisting(tmp_
     assert read_json(tmp_path, "proposal_review.json") is None
 
 
+@pytest.mark.parametrize("denominator_basis", (None, " "))
+def test_save_proposal_repairs_comparative_effect_without_denominator_bases(
+    tmp_path, denominator_basis: str | None
+) -> None:
+    card = _card().model_dump(mode="json")
+    card["reported"] = {
+        "form": "comparative_effect",
+        "effect_measure": "risk ratio",
+        "effect": {
+            "statistic": "risk ratio",
+            "unit": "ratio",
+            "group_or_category": "docetaxel versus control",
+            "value": "0.5",
+        },
+        "quantities": [
+            {
+                "statistic": "risk",
+                "unit": "proportion",
+                "group_or_category": "docetaxel",
+                "value": "0.2",
+            },
+            {
+                "statistic": "risk",
+                "unit": "proportion",
+                "group_or_category": "control",
+                "value": "0.4",
+            },
+        ],
+        "comparison_groups": ["docetaxel", "control"],
+    }
+    if denominator_basis is not None:
+        reported = card["reported"]
+        assert isinstance(reported, dict)
+        reported["effect"]["denominator_basis"] = denominator_basis
+        for quantity in reported["quantities"]:
+            quantity["denominator_basis"] = denominator_basis
+
+    repair = save_proposal(
+        tmp_path, {"outcome_statement": "Overall survival", "results": [card]}
+    )
+
+    assert isinstance(repair, ProposalRepairReceipt)
+    assert any(
+        item.pointer.startswith("/results/0/reported") and "denominator basis" in item.detail
+        for item in repair.repairs
+    )
+
+
 def test_preapproval_needs_input_is_acknowledged_and_applied_once(tmp_path) -> None:
     (tmp_path / "article.txt").write_text("No outcome was reported.", encoding="utf-8")
     preflight = preflight_sources(

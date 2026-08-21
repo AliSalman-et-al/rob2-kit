@@ -374,7 +374,9 @@ def test_application_assessed_bundle_is_independently_verified_and_rejects_missi
             outcome_definition="time to biochemical, symptomatic, or radiographic progression",
             measurement="median time to progression",
             time_point_or_window="follow-up analysis",
-            effect_of_interest="hazard ratio",
+            effect_of_interest=(
+                "effect on time to biochemical, symptomatic, or radiographic progression"
+            ),
             comparison_groups=(
                 ComparisonGroup(id="docetaxel", label="ADT plus docetaxel"),
                 ComparisonGroup(id="adt", label="ADT alone"),
@@ -387,15 +389,16 @@ def test_application_assessed_bundle_is_independently_verified_and_rejects_missi
             effect_measure="hazard ratio",
             effect=Quantity(
                 statistic="hazard ratio",
-                unit="time-to-event analysis",
-                group_or_category="ADT plus docetaxel versus ADT alone",
+                unit="ratio",
+                group_or_category="docetaxel versus adt",
                 value="0.61 (95% CI 0.51 to 0.72; P<0.001)",
+                denominator_basis="time-to-event analysis",
             ),
             quantities=(
                 Quantity(
-                    statistic="median", unit="months", group_or_category="docetaxel", value="20.2"
+                    statistic="median", unit="months", group_or_category="docetaxel", value="20.2", denominator_basis="randomized arm"
                 ),
-                Quantity(statistic="median", unit="months", group_or_category="adt", value="11.7"),
+                Quantity(statistic="median", unit="months", group_or_category="adt", value="11.7", denominator_basis="randomized arm"),
             ),
             comparison_groups=("docetaxel", "adt"),
         ),
@@ -407,8 +410,7 @@ def test_application_assessed_bundle_is_independently_verified_and_rejects_missi
             ),
         ),
         source_table_meaning=(
-            "comparative time-to-event efficacy result; ADT plus docetaxel median 20.2 months; "
-            "ADT alone median 11.7 months"
+            "Secondary endpoint: time to biochemical, symptomatic, or radiographic progression"
         ),
         evidence=EvidenceSet(
             target_basis=(evidence,),

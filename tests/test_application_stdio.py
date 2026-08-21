@@ -275,7 +275,9 @@ def test_stdio_public_assessed_workflow_commits_all_five_domains(tmp_path: Path)
                     ),
                     "measurement": "median time to progression",
                     "time_point_or_window": "follow-up analysis",
-                    "effect_of_interest": "hazard ratio",
+                    "effect_of_interest": (
+                        "effect on time to biochemical, symptomatic, or radiographic progression"
+                    ),
                     "comparison_groups": [
                         {"id": "docetaxel", "label": "ADT plus docetaxel"},
                         {"id": "adt", "label": "ADT alone"},
@@ -288,9 +290,10 @@ def test_stdio_public_assessed_workflow_commits_all_five_domains(tmp_path: Path)
                     "effect_measure": "hazard ratio",
                     "effect": {
                         "statistic": "hazard ratio",
-                        "unit": "time-to-event analysis",
-                        "group_or_category": "ADT plus docetaxel versus ADT alone",
+                        "unit": "ratio",
+                        "group_or_category": "docetaxel versus adt",
                         "value": "0.61 (95% CI 0.51 to 0.72; P<0.001)",
+                        "denominator_basis": "time-to-event analysis",
                     },
                     "quantities": [
                         {
@@ -298,12 +301,14 @@ def test_stdio_public_assessed_workflow_commits_all_five_domains(tmp_path: Path)
                             "unit": "months",
                             "group_or_category": "docetaxel",
                             "value": "20.2",
+                            "denominator_basis": "randomized arm",
                         },
                         {
                             "statistic": "median",
                             "unit": "months",
                             "group_or_category": "adt",
                             "value": "11.7",
+                            "denominator_basis": "randomized arm",
                         },
                     ],
                     "comparison_groups": ["docetaxel", "adt"],
@@ -316,8 +321,8 @@ def test_stdio_public_assessed_workflow_commits_all_five_domains(tmp_path: Path)
                     ],
                 },
                 "source_table_meaning": (
-                    "comparative time-to-event efficacy result; ADT plus docetaxel median "
-                    "20.2 months; ADT alone median 11.7 months"
+                    "Secondary endpoint: time to biochemical, symptomatic, or radiographic "
+                    "progression"
                 ),
                 "evidence": {
                     "target_basis": [evidence_ref],
