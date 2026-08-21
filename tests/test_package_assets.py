@@ -27,6 +27,8 @@ def test_packaged_skills_guard_the_human_acceptance_boundaries() -> None:
         assert f"`{name}`" in workflow or f"`{name}`" in signalling
     assert "work_packet" in workflow and "work_packet" in signalling
     assert "typed continuation" in workflow
+    assert "proposal_approval_ready" in workflow
+    assert "do not reinterpret or reopen it" in workflow
     assert "Repair every returned defect" in signalling
     retired = ("ingest_batch", "discard_active_batch", "expected_predecessor", "actor", "UTC time")
     for name in retired:
