@@ -7,6 +7,7 @@ and the server only checks their explicit, closed fields.
 
 from __future__ import annotations
 
+import re
 from datetime import UTC, datetime
 from enum import StrEnum
 from pathlib import Path
@@ -103,6 +104,7 @@ class ComparativeEffect(_Closed):
     form: Literal["comparative_effect"]
     effect_measure: str = Field(min_length=1)
     effect: Quantity
+    quantities: tuple[Quantity, ...] = Field(min_length=2)
     comparison_groups: tuple[str, str]
 
 
@@ -229,8 +231,15 @@ class ResultCard(ResultCardInput):
             return value
         projected = dict(value)
         for key in (
-            "form", "effect_measure", "effect", "comparison_groups", "quantities",
-            "group_id", "categories", "reason", "explanation",
+            "form",
+            "effect_measure",
+            "effect",
+            "comparison_groups",
+            "quantities",
+            "group_id",
+            "categories",
+            "reason",
+            "explanation",
         ):
             projected.pop(key, None)
         return projected
@@ -442,6 +451,25 @@ def _validate_evidence(workspace: str | Path, card: ResultCardInput) -> None:
         evidence = resolve_evidence(workspace, reference)
         if evidence.trial_id != card.trial_id:
             raise ValueError("Result Evidence must bind its Trial")
+    reported_evidence = [
+        resolve_evidence(workspace, reference) for reference in card.evidence.reported_values
+    ]
+    reported_text = "\n".join(item.quote or "" for item in reported_evidence).casefold()
+    quantities: tuple[Quantity, ...]
+    if isinstance(card.reported, ComparativeEffect):
+        quantities = (card.reported.effect, *card.reported.quantities)
+    elif isinstance(card.reported, GroupBoundValues):
+        quantities = card.reported.quantities
+    elif isinstance(card.reported, SingleGroupCategoryProfile):
+        quantities = card.reported.categories
+    else:
+        quantities = ()
+    for quantity in quantities:
+        tokens = re.findall(r"\d+(?:\.\d+)?", str(quantity.value))
+        if tokens and any(token.casefold() not in reported_text for token in tokens):
+            raise ValueError(
+                f"reported value {quantity.value!s} is not present in reported-values Evidence"
+            )
 
 
 def _repair_pointer(location: tuple[int | str, ...]) -> str:
@@ -496,7 +524,19 @@ def save_proposal(
         card = result_by_trial.get(trial_id)
         if card is None:
             continue
-        _validate_evidence(workspace, card)
+        try:
+            _validate_evidence(workspace, card)
+        except ValueError as error:
+            return ProposalRepairReceipt(
+                repairs=(
+                    ProposalRepair(
+                        pointer=f"/results/{len(reviewed)}/evidence/reported_values",
+                        code="invalid",
+                        detail=str(error),
+                    ),
+                ),
+                next_action=SaveProposalContinuation(captured_batch=captured_ref),
+            )
         found = _compatibility(card)
         reviewed.append(
             ResultCard.model_validate(
@@ -629,8 +669,7 @@ def acknowledge_proposal(
     }
     ack_identity = identity(payload)
     acknowledgment = ReviewAcknowledgmentReference(
-        kind="review_ack",
-        identity=ack_identity, uri=record_uri("review_ack", ack_identity)
+        kind="review_ack", identity=ack_identity, uri=record_uri("review_ack", ack_identity)
     )
     state = read_json(workspace, "state.json") or {}
     state.update(
@@ -714,14 +753,17 @@ def approve_batch(workspace: str | Path, request: ApprovalRequest) -> ApprovalRe
             "review_satisfied"
         ):
             raise PermissionError("approval requires the exact Proposal Review acknowledgment")
-        if verify_acknowledgment(
-            workspace,
-            "proposal_ack.json",
-            request.acknowledgment,
-            record=review.reference,
-            purpose="proposal",
-            authority=ReviewAuthority.RESEARCHER,
-        ) is None:
+        if (
+            verify_acknowledgment(
+                workspace,
+                "proposal_ack.json",
+                request.acknowledgment,
+                record=review.reference,
+                purpose="proposal",
+                authority=ReviewAuthority.RESEARCHER,
+            )
+            is None
+        ):
             raise ValueError("Proposal acknowledgment is stale or corrupt")
         raw_transition = read_json(
             workspace, f"transition-{request.transition.identity.removeprefix('sha256:')}.json"

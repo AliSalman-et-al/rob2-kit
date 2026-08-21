@@ -7,6 +7,7 @@ import shutil
 # ruff: noqa: E501
 from pathlib import Path
 
+import pymupdf
 import pytest
 
 from rob2_kit.application._state import identity, read_json, write_jsons
@@ -91,38 +92,136 @@ def test_application_adverse_events_bundle_is_independently_verified(tmp_path: P
     from rob2_kit.evaluation.manifest import CHAARTED_MANIFEST
     from rob2_kit.evaluation.verifier import verify_artifact
 
-    (tmp_path / "article.txt").write_text("docetaxel Grade 3 4 5", encoding="utf-8")
+    ae_report = "docetaxel Grade 3 65 (16.7%) Grade 4 49 (12.6%) Grade 5 1 (0.3%)"
+    (tmp_path / "article.txt").write_text(ae_report, encoding="utf-8")
     preflight = preflight_sources(
         tmp_path,
-        PreflightRequest(roots=(AuthorizedSourceRoot(alias="trial", path=".", trial_id="chaarted"),)),
+        PreflightRequest(
+            roots=(AuthorizedSourceRoot(alias="trial", path=".", trial_id="chaarted"),)
+        ),
     )
     plan = save_intake_plan(
         tmp_path,
         preflight.reference,
-        (IntakePlanEntry(candidate_identity=preflight.candidates[0].identity, role="main_article", disposition=SourceDisposition.INCLUDE, criticality=SourceCriticality.REQUIRED),),
+        (
+            IntakePlanEntry(
+                candidate_identity=preflight.candidates[0].identity,
+                role="main_article",
+                disposition=SourceDisposition.INCLUDE,
+                criticality=SourceCriticality.REQUIRED,
+            ),
+        ),
     )
-    capture_batch(tmp_path, CaptureRequest(plan=plan.plan, acknowledgment=acknowledge_intake(tmp_path, plan.plan, ReviewAuthority.HOST)))
-    evidence = retrieve_evidence(tmp_path, EvidenceRetrievalRequest(trial_id="chaarted", manual_selections=(ManualSelectionRequest(kind="manual_selection", source_alias="s1", page=1, start=0, end=9, quote="docetaxel"),))).evidence[0]
+    capture_batch(
+        tmp_path,
+        CaptureRequest(
+            plan=plan.plan,
+            acknowledgment=acknowledge_intake(tmp_path, plan.plan, ReviewAuthority.HOST),
+        ),
+    )
+    evidence = retrieve_evidence(
+        tmp_path,
+        EvidenceRetrievalRequest(
+            trial_id="chaarted",
+            manual_selections=(
+                ManualSelectionRequest(
+                    kind="manual_selection",
+                    source_alias="s1",
+                    page=1,
+                    start=0,
+                    end=len(ae_report),
+                    quote=ae_report,
+                ),
+            ),
+        ),
+    ).evidence[0]
     original = _card()
-    card = original.model_copy(update={
-        "evidence": EvidenceSet(target_basis=(evidence,), reported_values=(evidence,), reported_context=(evidence,), population_basis=(evidence,)),
-        "target": ResultTarget(outcome_definition="adverse events during the docetaxel-containing regimen", measurement="CTCAE severity grade", time_point_or_window="during docetaxel-containing regimen follow-up", effect_of_interest="adverse-event profile", comparison_groups=(ComparisonGroup(id="docetaxel", label="ADT plus docetaxel"), ComparisonGroup(id="adt", label="ADT alone")), intended_analysis_population="390 patients receiving the docetaxel-containing regimen with follow-up data", intended_effect_measure="adverse-event profile"),
-        "reported": original.reported.model_copy(update={"group_id": "ADT plus docetaxel", "categories": (Quantity(statistic="count", unit="390 docetaxel-cohort patients with follow-up", group_or_category="Grade 3 any event", value="65 (16.7%)"), Quantity(statistic="count", unit="390 docetaxel-cohort patients with follow-up", group_or_category="Grade 4 any event", value="49 (12.6%)"), Quantity(statistic="count", unit="390 docetaxel-cohort patients with follow-up", group_or_category="Grade 5 any event", value="1 (0.3%)"))}),
-        "population": PopulationAccount(analyzed_population="390 patients receiving the docetaxel-containing regimen with follow-up data", outcome_measurement_coverage=(OutcomeMeasurementCoverage(group_id="docetaxel", status="measured"), OutcomeMeasurementCoverage(group_id="adt", status="not_measured", explanation="ADT-alone comparator unavailable"))),
-    })
+    card = original.model_copy(
+        update={
+            "evidence": EvidenceSet(
+                target_basis=(evidence,),
+                reported_values=(evidence,),
+                reported_context=(evidence,),
+                population_basis=(evidence,),
+            ),
+            "target": ResultTarget(
+                outcome_definition="adverse events during the docetaxel-containing regimen",
+                measurement="CTCAE severity grade",
+                time_point_or_window="during docetaxel-containing regimen follow-up",
+                effect_of_interest="adverse-event profile",
+                comparison_groups=(
+                    ComparisonGroup(id="docetaxel", label="ADT plus docetaxel"),
+                    ComparisonGroup(id="adt", label="ADT alone"),
+                ),
+                intended_analysis_population="390 patients receiving the docetaxel-containing regimen with follow-up data",
+                intended_effect_measure="adverse-event profile",
+            ),
+            "reported": original.reported.model_copy(
+                update={
+                    "group_id": "ADT plus docetaxel",
+                    "categories": (
+                        Quantity(
+                            statistic="count",
+                            unit="390 docetaxel-cohort patients with follow-up",
+                            group_or_category="Grade 3 any event",
+                            value="65 (16.7%)",
+                        ),
+                        Quantity(
+                            statistic="count",
+                            unit="390 docetaxel-cohort patients with follow-up",
+                            group_or_category="Grade 4 any event",
+                            value="49 (12.6%)",
+                        ),
+                        Quantity(
+                            statistic="count",
+                            unit="390 docetaxel-cohort patients with follow-up",
+                            group_or_category="Grade 5 any event",
+                            value="1 (0.3%)",
+                        ),
+                    ),
+                }
+            ),
+            "population": PopulationAccount(
+                analyzed_population="390 patients receiving the docetaxel-containing regimen with follow-up data",
+                outcome_measurement_coverage=(
+                    OutcomeMeasurementCoverage(group_id="docetaxel", status="measured"),
+                    OutcomeMeasurementCoverage(
+                        group_id="adt",
+                        status="not_measured",
+                        explanation="ADT-alone comparator unavailable",
+                    ),
+                ),
+            ),
+        }
+    )
     incompatible = save_proposal(
         tmp_path, ProposalInput(outcome_statement="Adverse events", results=(card,))
     )
     assert isinstance(incompatible, ProposalRepairReceipt)
     assert read_json(tmp_path, "proposal_review.json") is None
-    review = save_proposal(tmp_path, ProposalInput(outcome_statement="Adverse events", results=(card,), needs_input=(PreapprovalNeedsInput(trial_id="chaarted", reason=NeedsInputReason.COMPARATOR_UNAVAILABLE, missing_facts=("ADT-alone comparator unavailable",)),)))
+    review = save_proposal(
+        tmp_path,
+        ProposalInput(
+            outcome_statement="Adverse events",
+            results=(card,),
+            needs_input=(
+                PreapprovalNeedsInput(
+                    trial_id="chaarted",
+                    reason=NeedsInputReason.COMPARATOR_UNAVAILABLE,
+                    missing_facts=("ADT-alone comparator unavailable",),
+                ),
+            ),
+        ),
+    )
     assert not isinstance(review, ProposalRepairReceipt)
     ack = acknowledge_proposal(tmp_path, review.review, caller="server:interactive")
     assert review.transition is not None
     approve_batch(tmp_path, ApprovalRequest(transition=review.transition, acknowledgment=ack))
     finalized = finalize_batch(tmp_path)
     assert finalized.outcome == "success"
-    verified = verify_artifact(tmp_path / finalized.artifact.bundle_path, CHAARTED_MANIFEST, "adverse_events")
+    verified = verify_artifact(
+        tmp_path / finalized.artifact.bundle_path, CHAARTED_MANIFEST, "adverse_events"
+    )
     assert verified.ok, verified.failures
 
     bundle = tmp_path / finalized.artifact.bundle_path
@@ -210,7 +309,14 @@ def test_application_assessed_bundle_is_independently_verified_and_rejects_missi
         "hazard ratio 0.61 (95% CI 0.51 to 0.72; P<0.001). "
         "comparative time-to-event efficacy result."
     )
-    (tmp_path / "article.txt").write_text(source, encoding="utf-8")
+    document = pymupdf.open()
+    page = document.new_page()
+    page.insert_textbox(pymupdf.Rect(36, 36, page.rect.width - 36, page.rect.height - 36), source)
+    document.save(tmp_path / "article.pdf")
+    document.close()
+    document = pymupdf.open(tmp_path / "article.pdf")
+    source_page = document[0].get_text()
+    document.close()
     preflight = preflight_sources(
         tmp_path,
         PreflightRequest(
@@ -237,8 +343,12 @@ def test_application_assessed_bundle_is_independently_verified_and_rejects_missi
             trial_id="chaarted",
             manual_selections=(
                 ManualSelectionRequest(
-                    kind="manual_selection", source_alias="s1", page=1,
-                    start=0, end=len(source), quote=source,
+                    kind="manual_selection",
+                    source_alias="s1",
+                    page=1,
+                    start=0,
+                    end=len(source_page),
+                    quote=source_page,
                 ),
             ),
         ),
@@ -247,8 +357,13 @@ def test_application_assessed_bundle_is_independently_verified_and_rejects_missi
         **{
             name: ClarityItem(state="specified")
             for name in (
-                "outcome_definition", "measurement", "time_point", "analysis_population",
-                "comparison_groups", "effect_measure", "source_table_meaning",
+                "outcome_definition",
+                "measurement",
+                "time_point",
+                "analysis_population",
+                "comparison_groups",
+                "effect_measure",
+                "source_table_meaning",
                 "choice_among_eligible_results",
             )
         }
@@ -271,9 +386,16 @@ def test_application_assessed_bundle_is_independently_verified_and_rejects_missi
             form="comparative_effect",
             effect_measure="hazard ratio",
             effect=Quantity(
-                statistic="hazard ratio", unit="time-to-event analysis",
+                statistic="hazard ratio",
+                unit="time-to-event analysis",
                 group_or_category="ADT plus docetaxel versus ADT alone",
                 value="0.61 (95% CI 0.51 to 0.72; P<0.001)",
+            ),
+            quantities=(
+                Quantity(
+                    statistic="median", unit="months", group_or_category="docetaxel", value="20.2"
+                ),
+                Quantity(statistic="median", unit="months", group_or_category="adt", value="11.7"),
             ),
             comparison_groups=("docetaxel", "adt"),
         ),
@@ -289,12 +411,16 @@ def test_application_assessed_bundle_is_independently_verified_and_rejects_missi
             "ADT alone median 11.7 months"
         ),
         evidence=EvidenceSet(
-            target_basis=(evidence,), reported_values=(evidence,),
-            reported_context=(evidence,), population_basis=(evidence,),
+            target_basis=(evidence,),
+            reported_values=(evidence,),
+            reported_context=(evidence,),
+            population_basis=(evidence,),
         ),
         clarity=specified,
     )
-    proposal = save_proposal(tmp_path, ProposalInput(outcome_statement="Progression-free survival", results=(card,)))
+    proposal = save_proposal(
+        tmp_path, ProposalInput(outcome_statement="Progression-free survival", results=(card,))
+    )
     assert not isinstance(proposal, ProposalRepairReceipt)
     assert proposal.transition is not None
     proposal_ack = acknowledge_proposal(tmp_path, proposal.review, caller="server:interactive")
@@ -333,11 +459,12 @@ def test_application_assessed_bundle_is_independently_verified_and_rejects_missi
         draft = DomainDraftInput(
             active_answers=tuple(
                 DomainAnswerInput(
-                    question_id=question_id, answer=answer,
+                    question_id=question_id,
+                    answer=answer,
                     rationale="The captured trial report supports this deterministic answer.",
                     evidence_uses=(
                         DomainEvidenceUseInput(
-                                relationship=EvidenceRelationship.SUPPORTING,
+                            relationship=EvidenceRelationship.SUPPORTING,
                             claim="The captured trial report is the basis for this answer.",
                             rationale="The exact evidence record is in the trial scope.",
                             evidence=(evidence,),
@@ -354,10 +481,14 @@ def test_application_assessed_bundle_is_independently_verified_and_rejects_missi
         commit_domain_judgment(tmp_path, validated.transition)
 
     prepared = prepare_trial_finish(
-        tmp_path, approved.approved_batch, TrialFinishCandidate(disposition=TrialDisposition.ASSESSED)
+        tmp_path,
+        approved.approved_batch,
+        TrialFinishCandidate(disposition=TrialDisposition.ASSESSED),
     )
     assert prepared.transition is not None and prepared.synthesis is not None
-    finish_ack = acknowledge_trial_finish(tmp_path, prepared.transition, caller="server:interactive")
+    finish_ack = acknowledge_trial_finish(
+        tmp_path, prepared.transition, caller="server:interactive"
+    )
     finished = finish_trial(
         tmp_path,
         TrialFinishRequest(transition=prepared.transition, acknowledgment=finish_ack),
@@ -382,22 +513,37 @@ def test_application_assessed_bundle_is_independently_verified_and_rejects_missi
     observation = json.loads(observation_path.read_text(encoding="utf-8"))
     observation["scientific_pack"] = "sha256:" + "0" * 64
     candidate_fields = (
-        "kind", "packet", "trial_id", "result_id", "domain_id", "draft", "proposed_judgment",
-        "inactive_questions", "evidence_bindings", "scientific_pack", "policy_pack",
+        "kind",
+        "packet",
+        "trial_id",
+        "result_id",
+        "domain_id",
+        "draft",
+        "proposed_judgment",
+        "inactive_questions",
+        "evidence_bindings",
+        "scientific_pack",
+        "policy_pack",
     )
-    observation["identity"] = "sha256:" + hashlib.sha256(
-        json.dumps(
-            {key: observation[key] for key in candidate_fields}, sort_keys=True, separators=(",", ":")
-        ).encode()
-    ).hexdigest()
+    observation["identity"] = (
+        "sha256:"
+        + hashlib.sha256(
+            json.dumps(
+                {key: observation[key] for key in candidate_fields},
+                sort_keys=True,
+                separators=(",", ":"),
+            ).encode()
+        ).hexdigest()
+    )
     observation_path.write_text(json.dumps(observation, sort_keys=True), encoding="utf-8")
     _rehash_manifest(wrong_pack)
     rejected = verify_artifact(wrong_pack, CHAARTED_MANIFEST, "pfs")
     assert not rejected.ok
     assert any("pack" in failure for failure in rejected.failures)
 
-    for record in next((bundle / "records").glob("domain-observation-*.json")), next(
-        (bundle / "records").glob("assessment-snapshot-*.json")
+    for record in (
+        next((bundle / "records").glob("domain-observation-*.json")),
+        next((bundle / "records").glob("assessment-snapshot-*.json")),
     ):
         tampered = tmp_path / f"missing-{record.name}"
         shutil.copytree(bundle, tampered)
@@ -415,21 +561,40 @@ def test_application_assessed_bundle_is_independently_verified_and_rejects_missi
     payload = {
         key: snapshot[key]
         for key in (
-            "synthesis", "checkpoint_hashes", "proposed_overall", "final_judgment", "caller", "observed_at"
+            "synthesis",
+            "checkpoint_hashes",
+            "proposed_overall",
+            "final_judgment",
+            "caller",
+            "observed_at",
         )
     }
-    snapshot["identity"] = "sha256:" + hashlib.sha256(
-        json.dumps(payload, sort_keys=True, separators=(",", ":")).encode()
-    ).hexdigest()
+    snapshot["identity"] = (
+        "sha256:"
+        + hashlib.sha256(
+            json.dumps(payload, sort_keys=True, separators=(",", ":")).encode()
+        ).hexdigest()
+    )
     snapshot["snapshot_hash"] = snapshot["identity"]
-    snapshot_path.write_text(json.dumps(snapshot, sort_keys=True, separators=(",", ":")), encoding="utf-8")
+    snapshot_path.write_text(
+        json.dumps(snapshot, sort_keys=True, separators=(",", ":")), encoding="utf-8"
+    )
     _rehash_manifest(tampered)
     assert not verify_artifact(tampered, CHAARTED_MANIFEST, "pfs").ok
 
 
 def test_finalize_requires_all_terminal_dispositions(tmp_path: Path) -> None:
     approved = identity({"approved": True})
-    write_jsons(tmp_path, {"state.json": {"phase": "assessment", "approved_batch_identity": approved, "trial_dispositions": {"trial": "pending"}}})
+    write_jsons(
+        tmp_path,
+        {
+            "state.json": {
+                "phase": "assessment",
+                "approved_batch_identity": approved,
+                "trial_dispositions": {"trial": "pending"},
+            }
+        },
+    )
     result = finalize_batch(tmp_path)
     assert result.outcome == "condition"
     assert "did not occur" in result.detail
@@ -438,7 +603,35 @@ def test_finalize_requires_all_terminal_dispositions(tmp_path: Path) -> None:
 def test_finalize_is_idempotent_and_artifact_verification_fails_closed(tmp_path: Path) -> None:
     approved = identity({"approved": True})
     outcome_identity = identity({"trial": "trial", "disposition": "needs_input"})
-    write_jsons(tmp_path, {"captured_batch.json": {"kind": "captured_batch", "identity": identity({"captured": True}), "sources": []}, "state.json": {"phase": "ready_to_finalize", "approved_batch_identity": approved, "trial_dispositions": {"trial": "needs_input"}}, "trial-outcome-trial.json": {"kind": "trial_outcome", "identity": outcome_identity, "trial_id": "trial", "disposition": "needs_input", "rationale": "missing result", "synthesis": {"kind": "approved_batch", "identity": approved, "uri": f"rob2://detail/approved_batch/{approved}"}, "snapshot": None, "observed_at": "2026-01-01T00:00:00Z"}})
+    write_jsons(
+        tmp_path,
+        {
+            "captured_batch.json": {
+                "kind": "captured_batch",
+                "identity": identity({"captured": True}),
+                "sources": [],
+            },
+            "state.json": {
+                "phase": "ready_to_finalize",
+                "approved_batch_identity": approved,
+                "trial_dispositions": {"trial": "needs_input"},
+            },
+            "trial-outcome-trial.json": {
+                "kind": "trial_outcome",
+                "identity": outcome_identity,
+                "trial_id": "trial",
+                "disposition": "needs_input",
+                "rationale": "missing result",
+                "synthesis": {
+                    "kind": "approved_batch",
+                    "identity": approved,
+                    "uri": f"rob2://detail/approved_batch/{approved}",
+                },
+                "snapshot": None,
+                "observed_at": "2026-01-01T00:00:00Z",
+            },
+        },
+    )
     first = finalize_batch(tmp_path)
     assert first.outcome == "success"
     second = finalize_batch(tmp_path)
@@ -457,15 +650,54 @@ def test_finalize_is_idempotent_and_artifact_verification_fails_closed(tmp_path:
 def test_finalization_result_rejects_every_saved_receipt_field(tmp_path: Path, field: str) -> None:
     approved = identity({"approved": True})
     outcome_identity = identity({"trial": "trial", "disposition": "needs_input"})
-    write_jsons(tmp_path, {"captured_batch.json": {"kind": "captured_batch", "identity": identity({"captured": True}), "sources": []}, "state.json": {"phase": "ready_to_finalize", "approved_batch_identity": approved, "trial_dispositions": {"trial": "needs_input"}}, "trial-outcome-trial.json": {"kind": "trial_outcome", "identity": outcome_identity, "trial_id": "trial", "disposition": "needs_input", "synthesis": {"kind": "approved_batch", "identity": approved, "uri": f"rob2://detail/approved_batch/{approved}"}, "snapshot": None, "observed_at": "2026-01-01T00:00:00Z"}})
+    write_jsons(
+        tmp_path,
+        {
+            "captured_batch.json": {
+                "kind": "captured_batch",
+                "identity": identity({"captured": True}),
+                "sources": [],
+            },
+            "state.json": {
+                "phase": "ready_to_finalize",
+                "approved_batch_identity": approved,
+                "trial_dispositions": {"trial": "needs_input"},
+            },
+            "trial-outcome-trial.json": {
+                "kind": "trial_outcome",
+                "identity": outcome_identity,
+                "trial_id": "trial",
+                "disposition": "needs_input",
+                "synthesis": {
+                    "kind": "approved_batch",
+                    "identity": approved,
+                    "uri": f"rob2://detail/approved_batch/{approved}",
+                },
+                "snapshot": None,
+                "observed_at": "2026-01-01T00:00:00Z",
+            },
+        },
+    )
     saved = finalize_batch(tmp_path)
     assert saved.outcome == "success"
     if field == "counts":
-        changed = saved.model_copy(update={"counts": FinalizationCounts(total=9, pending=0, assessed=0, needs_input=9, failed=0)})
+        changed = saved.model_copy(
+            update={
+                "counts": FinalizationCounts(
+                    total=9, pending=0, assessed=0, needs_input=9, failed=0
+                )
+            }
+        )
     elif field == "presentation":
-        changed = saved.model_copy(update={"presentation": saved.presentation.model_copy(update={"summary": "forged"})})
+        changed = saved.model_copy(
+            update={"presentation": saved.presentation.model_copy(update={"summary": "forged"})}
+        )
     elif field == "summary":
-        changed = saved.model_copy(update={"summary": saved.summary.model_copy(update={"identity": "sha256:" + "0" * 64})})
+        changed = saved.model_copy(
+            update={"summary": saved.summary.model_copy(update={"identity": "sha256:" + "0" * 64})}
+        )
     else:
-        changed = saved.model_copy(update={"artifact": saved.artifact.model_copy(update={"file_count": 99})})
+        changed = saved.model_copy(
+            update={"artifact": saved.artifact.model_copy(update={"file_count": 99})}
+        )
     assert verify_finalization_result(tmp_path, changed) is None

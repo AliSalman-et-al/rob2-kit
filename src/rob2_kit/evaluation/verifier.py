@@ -9,6 +9,8 @@ from hashlib import sha256
 from pathlib import Path
 from typing import Any
 
+import pymupdf
+
 from rob2_kit.packs import MAINTAINER_POLICY_PACK, SCIENTIFIC_PACK
 
 from .manifest import ObjectiveFactManifest, check_reported_facts
@@ -307,7 +309,10 @@ def _sources_and_evidence(bundle: _Bundle, proposal: dict[str, Any]) -> dict[str
         else None
     )
     ack_payload = (
-        {key: intake_ack.get(key) for key in ("record", "authority", "purpose", "caller", "observed_at")}
+        {
+            key: intake_ack.get(key)
+            for key in ("record", "authority", "purpose", "caller", "observed_at")
+        }
         if intake_ack is not None
         else None
     )
@@ -335,38 +340,91 @@ def _sources_and_evidence(bundle: _Bundle, proposal: dict[str, Any]) -> dict[str
         bundle.failures.append("captured Intake plan and acknowledgment chain is invalid")
     if _ref(proposal.get("captured_batch"), "captured_batch") != captured.get("identity"):
         bundle.failures.append("Proposal does not bind the exact captured Batch")
-    sources: dict[str, tuple[str, bytes]] = {}
+    sources: dict[str, tuple[str, bytes, tuple[str, ...], str]] = {}
     for source in captured.get("sources", []):
         if not isinstance(source, dict):
             bundle.failures.append("captured Source record is invalid")
             continue
-        source_id, trial, source_hash = (
-            source.get("candidate_identity"), source.get("trial_id"), source.get("sha256")
+        source_id, trial, source_hash, recorded_media_type = (
+            source.get("candidate_identity"),
+            source.get("trial_id"),
+            source.get("sha256"),
+            source.get("media_type"),
         )
         path = bundle.root / "sources" / str(trial) / str(source_id)
-        if not isinstance(source_id, str) or not isinstance(trial, str) or not isinstance(source_hash, str):
+        if (
+            not isinstance(source_id, str)
+            or not isinstance(trial, str)
+            or not isinstance(source_hash, str)
+        ):
             bundle.failures.append("captured Source identity is invalid")
         elif not path.is_file() or _bytes_hash(path.read_bytes()) != source_hash:
             bundle.failures.append("captured Source bytes are unavailable or corrupt")
         else:
-            sources[source_id] = (trial, path.read_bytes())
+            data = path.read_bytes()
+            media_type = recorded_media_type or (
+                "application/pdf" if data.startswith(b"%PDF-") else "text/plain"
+            )
+            try:
+                if media_type == "application/pdf" or data.startswith(b"%PDF-"):
+                    document = pymupdf.open(stream=data, filetype="pdf")
+                    try:
+                        pages = tuple(page.get_text() for page in document)
+                    finally:
+                        document.close()
+                else:
+                    pages = (data.decode("utf-8"),)
+            except (UnicodeDecodeError, ValueError, pymupdf.FileDataError):
+                pages = ()
+            page_hashes = tuple(_bytes_hash(page.encode()) for page in pages)
+            projection_hash = _canonical(
+                {
+                    "recipe": "rob2-kit.extract-pages.v1",
+                    "source_sha256": source_hash,
+                    "media_type": media_type,
+                    "page_hashes": page_hashes,
+                }
+            )
+            sources[source_id] = (trial, data, pages, projection_hash)
     evidence: dict[str, dict[str, Any]] = {}
     for row in bundle.records.values():
         if row.get("kind") != "text":
             continue
-        fields = ("kind", "trial_id", "snapshot", "source_id", "source_sha256", "projection_hash", "page", "start", "end", "quote", "quote_sha256")
+        fields = (
+            "kind",
+            "trial_id",
+            "snapshot",
+            "source_id",
+            "source_sha256",
+            "projection_hash",
+            "page",
+            "start",
+            "end",
+            "quote",
+            "quote_sha256",
+        )
         if _canonical({key: row.get(key) for key in fields}) != row.get("identity"):
             bundle.failures.append("Evidence identity is invalid")
             continue
         source = sources.get(row.get("source_id"))
         quote = row.get("quote")
+        page = row.get("page")
+        source_page = (
+            source[2][page - 1]
+            if source is not None and isinstance(page, int) and 1 <= page <= len(source[2])
+            else None
+        )
         if (
-            source is None or row.get("trial_id") != source[0]
+            source is None
+            or row.get("trial_id") != source[0]
             or row.get("source_sha256") != _bytes_hash(source[1])
+            or row.get("projection_hash") != source[3]
             or not isinstance(quote, str)
             or row.get("quote_sha256") != _bytes_hash(quote.encode())
-            or not isinstance(row.get("start"), int) or not isinstance(row.get("end"), int)
-            or source[1].decode("utf-8", errors="replace")[row["start"]:row["end"]] != quote
+            or not isinstance(row.get("start"), int)
+            or not isinstance(row.get("end"), int)
+            or source_page is None
+            or source_page[row["start"] : row["end"]] != quote
         ):
             bundle.failures.append("Evidence provenance or exact quote binding is invalid")
         else:
@@ -448,13 +506,29 @@ def _assessed(
         packet = bundle.records.get(packet_id or "")
         if (
             packet is None
-            or _canonical({key: packet.get(key) for key in (
-                "kind", "approved_batch", "trial_id", "result_id", "domain_id",
-                "active_question_ids", "allowed_question_ids", "stable_aliases",
-                "prior_domain_hashes", "scientific_pack", "policy_pack",
-            )}) != packet_id
+            or _canonical(
+                {
+                    key: packet.get(key)
+                    for key in (
+                        "kind",
+                        "approved_batch",
+                        "trial_id",
+                        "result_id",
+                        "domain_id",
+                        "active_question_ids",
+                        "allowed_question_ids",
+                        "stable_aliases",
+                        "prior_domain_hashes",
+                        "scientific_pack",
+                        "policy_pack",
+                    )
+                }
+            )
+            != packet_id
             or packet.get("approved_batch", {}).get("identity") != approved.get("identity")
-            or any(packet.get(key) != row.get(key) for key in ("trial_id", "result_id", "domain_id"))
+            or any(
+                packet.get(key) != row.get(key) for key in ("trial_id", "result_id", "domain_id")
+            )
             or packet.get("scientific_pack") != SCIENTIFIC_PACK.content_hash
             or packet.get("policy_pack") != MAINTAINER_POLICY_PACK.content_hash
             or packet.get("scientific_pack") != row.get("scientific_pack")
@@ -474,7 +548,9 @@ def _assessed(
                 or record.get("trial_id") != row.get("trial_id")
                 or reference.get("identity") != evidence_id
             ):
-                bundle.failures.append("Domain evidence binding is missing, unrelated, or unprovenanced")
+                bundle.failures.append(
+                    "Domain evidence binding is missing, unrelated, or unprovenanced"
+                )
         domain = str(row.get("domain_id"))
         if domain in domains:
             bundle.failures.append("duplicate active Domain checkpoint")
@@ -515,12 +591,24 @@ def _assessed(
     elif snapshot.get("proposed_overall") != overall or snapshot.get("final_judgment") != overall:
         bundle.failures.append("AssessmentSnapshot deterministic overall is invalid")
     else:
-        fields = ("synthesis", "checkpoint_hashes", "proposed_overall", "final_judgment", "caller", "observed_at")
+        fields = (
+            "synthesis",
+            "checkpoint_hashes",
+            "proposed_overall",
+            "final_judgment",
+            "caller",
+            "observed_at",
+        )
         if _canonical({key: snapshot.get(key) for key in fields}) != snapshot.get("identity"):
             bundle.failures.append("AssessmentSnapshot identity is invalid")
         synthesis_fields = (
-            "approved_batch", "trial_id", "result_id", "checkpoint_hashes",
-            "checkpoint_judgments", "proposed_overall", "combined_concerns",
+            "approved_batch",
+            "trial_id",
+            "result_id",
+            "checkpoint_hashes",
+            "checkpoint_judgments",
+            "proposed_overall",
+            "combined_concerns",
         )
         if (
             synthesis is None
@@ -537,12 +625,23 @@ def _assessed(
         ):
             bundle.failures.append("synthesis/checkpoint identity chain is invalid")
         terminal_fields = (
-            "synthesis", "trial_id", "disposition", "reason", "failure_cause", "missing_facts",
-            "available_evidence", "retained_checkpoints", "caller", "observed_at", "snapshot", "transition",
+            "synthesis",
+            "trial_id",
+            "disposition",
+            "reason",
+            "failure_cause",
+            "missing_facts",
+            "available_evidence",
+            "retained_checkpoints",
+            "caller",
+            "observed_at",
+            "snapshot",
+            "transition",
         )
         if (
             terminal.get("kind") != "trial_terminal"
-            or _canonical({key: terminal.get(key) for key in terminal_fields}) != terminal.get("identity")
+            or _canonical({key: terminal.get(key) for key in terminal_fields})
+            != terminal.get("identity")
             or assessed[0].get("outcome", {}).get("identity") != terminal.get("identity")
         ):
             bundle.failures.append("assessed terminal identity is invalid")
