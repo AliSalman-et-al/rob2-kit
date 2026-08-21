@@ -37,6 +37,8 @@ def test_launcher_isolates_config_and_appends_verified_pause(monkeypatch, tmp_pa
         assert "private-prompt" in kwargs["input"]
         assert "Verified rob2-kit entry status" in kwargs["input"]
         assert '"phase":"empty"' in kwargs["input"]
+        assert kwargs["encoding"] == "utf-8"
+        assert kwargs["errors"] == "replace"
         return subprocess.CompletedProcess(command, 0, "model prose", "")
 
     monkeypatch.setattr(subprocess, "run", fake_run)
