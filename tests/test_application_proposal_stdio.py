@@ -35,5 +35,6 @@ def test_proposal_tools_expose_only_root_model_inputs() -> None:
     assert isinstance(proposal, dict)
     proposal = proposal["properties"]["proposal"]
     results = proposal["properties"]["results"]["items"]
+    assert "compatibility" not in results["properties"]
     reported_forms = results["properties"]["reported"]["oneOf"]
     assert all("form" in item["required"] for item in reported_forms)

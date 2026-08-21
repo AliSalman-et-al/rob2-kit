@@ -208,7 +208,7 @@ class CompatibilityFinding(_Closed):
     reasons: tuple[str, ...] = ()
 
 
-class ResultCard(_Closed):
+class ResultCardInput(_Closed):
     trial_id: str
     target: ResultTarget
     reported: ReportedResult
@@ -217,6 +217,9 @@ class ResultCard(_Closed):
     source_table_meaning: str = Field(min_length=1)
     evidence: EvidenceSet
     clarity: ClarityDeclaration
+
+
+class ResultCard(ResultCardInput):
     compatibility: CompatibilityFinding
 
     @model_validator(mode="before")
@@ -267,7 +270,7 @@ class PreapprovalNeedsInput(_Closed):
 
 class ProposalInput(_Closed):
     outcome_statement: str = Field(min_length=1)
-    results: tuple[ResultCard, ...] = ()
+    results: tuple[ResultCardInput, ...] = ()
     needs_input: tuple[PreapprovalNeedsInput, ...] = ()
 
 
@@ -384,7 +387,7 @@ def _trial_ids(captured: dict[str, object]) -> tuple[str, ...]:
     return tuple(sorted({str(item["trial_id"]) for item in rows if isinstance(item, dict)}))
 
 
-def _compatibility(card: ResultCard) -> CompatibilityFinding:
+def _compatibility(card: ResultCardInput) -> CompatibilityFinding:
     target_ids = tuple(group.id for group in card.target.comparison_groups)
     if isinstance(card.reported, SingleGroupCategoryProfile):
         return CompatibilityFinding(
@@ -428,7 +431,7 @@ def _compatibility(card: ResultCard) -> CompatibilityFinding:
     )
 
 
-def _validate_evidence(workspace: str | Path, card: ResultCard) -> None:
+def _validate_evidence(workspace: str | Path, card: ResultCardInput) -> None:
     refs = (
         *card.evidence.target_basis,
         *card.evidence.reported_values,
@@ -495,9 +498,11 @@ def save_proposal(
             continue
         _validate_evidence(workspace, card)
         found = _compatibility(card)
-        if card.compatibility != found:
-            raise ValueError("Result compatibility is server-derived and must not be forged")
-        reviewed.append(card)
+        reviewed.append(
+            ResultCard.model_validate(
+                {**card.model_dump(mode="json"), "compatibility": found.model_dump(mode="json")}
+            )
+        )
     for disposition in proposal.needs_input:
         for reference in disposition.evidence:
             if resolve_evidence(workspace, reference).trial_id != disposition.trial_id:
@@ -841,6 +846,7 @@ __all__ = [
     "Quantity",
     "ReportedResult",
     "ResultCard",
+    "ResultCardInput",
     "ResultClarification",
     "ResultTarget",
     "SingleGroupCategoryProfile",

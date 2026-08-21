@@ -25,7 +25,6 @@ from rob2_kit.application.proposal import (
     ClarityItem,
     ComparisonGroup,
     Compatibility,
-    CompatibilityFinding,
     EvidenceSet,
     NeedsInputReason,
     OutcomeMeasurementCoverage,
@@ -34,7 +33,7 @@ from rob2_kit.application.proposal import (
     ProposalInput,
     ProposalRepairReceipt,
     Quantity,
-    ResultCard,
+    ResultCardInput,
     ResultTarget,
     SingleGroupCategoryProfile,
     _compatibility,
@@ -90,9 +89,9 @@ def test_corrupt_proposal_ack_cannot_unlock_approval(pending_proposal, mutation:
     assert transition is not None and not transition.get("consumed", False)
 
 
-def _card() -> ResultCard:
+def _card() -> ResultCardInput:
     evidence = EvidenceReference(kind="evidence", identity="sha256:" + "0" * 64)
-    return ResultCard(
+    return ResultCardInput(
         trial_id="chaarted",
         target=ResultTarget(
             outcome_definition="Grade 3 or worse toxicity",
@@ -151,9 +150,6 @@ def _card() -> ResultCard:
                     "choice_among_eligible_results",
                 )
             }
-        ),
-        compatibility=CompatibilityFinding(
-            status="incompatible", reasons=("single_group_category_profile_has_no_comparator",)
         ),
     )
 
