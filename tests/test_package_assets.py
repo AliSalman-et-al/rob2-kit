@@ -43,6 +43,18 @@ def test_packaged_skills_guard_the_human_acceptance_boundaries() -> None:
     )
     assert "use that exact full text in `ProposalInput.outcome_statement`" in workflow
     assert "use the exact suffix as `target.outcome_definition`" in workflow
+    assert (
+        "Choose stable comparison group IDs once and reuse them exactly in "
+        "`target.comparison_groups`, `reported.comparison_groups` or group bindings, "
+        "and `population.outcome_measurement_coverage`"
+        in workflow
+    )
+    assert (
+        "when the source reports the requested outcome for both target comparison groups, "
+        "include a `measured` entry for both target comparison groups only when Evidence "
+        "supports outcome measurement; otherwise use the appropriate `needs_input` disposition"
+        in workflow
+    )
     assert "Repair every returned defect" in signalling
     retired = ("ingest_batch", "discard_active_batch", "expected_predecessor", "actor", "UTC time")
     for name in retired:

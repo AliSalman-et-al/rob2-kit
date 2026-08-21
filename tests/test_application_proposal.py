@@ -439,6 +439,129 @@ def test_save_proposal_aggregates_contract_and_source_repairs(tmp_path) -> None:
     assert sum("reported value" in item.detail for item in repair.repairs) == 2
 
 
+def test_comparison_coverage_repair_identifies_group_ids_and_current_coverage(tmp_path) -> None:
+    card = _comparative_card(tmp_path)
+    reported = card.reported
+    assert isinstance(reported, ComparativeEffect)
+    card = card.model_copy(
+        update={
+            "reported": reported.model_copy(
+                update={"comparison_groups": ("control", "placebo")}
+            ),
+            "population": PopulationAccount(
+                analyzed_population="randomized participants",
+                outcome_measurement_coverage=(
+                    OutcomeMeasurementCoverage(
+                        group_id="docetaxel", status="not_measured", explanation="not reported"
+                    ),
+                ),
+            ),
+        }
+    )
+
+    repair = save_proposal(
+        tmp_path, ProposalInput(outcome_statement="Overall survival", results=(card,))
+    )
+
+    assert isinstance(repair, ProposalRepairReceipt)
+    details = {item.pointer: item.detail for item in repair.repairs}
+    assert details == {
+        "/results/0/reported/comparison_groups": (
+            "server-derived compatibility: comparison_coverage_incomplete; "
+            "target comparison group IDs (ordered): ('docetaxel', 'control'); "
+            "reported comparison group IDs: ('control', 'placebo'); "
+            "align reported IDs to target IDs only when Evidence supports the target bindings; "
+            "otherwise correct target.comparison_groups or use the appropriate needs_input "
+            "disposition"
+        ),
+        "/results/0/population/outcome_measurement_coverage": (
+            "server-derived compatibility: comparison_coverage_incomplete; "
+            "missing/non-measured target IDs and current statuses: "
+            "(('docetaxel', 'not_measured'), ('control', 'missing')); "
+            "set each target group to measured only when Evidence supports outcome measurement, "
+            "otherwise use the appropriate needs_input disposition"
+        ),
+    }
+
+
+@pytest.mark.parametrize(
+    ("reported_groups", "coverage", "expected_pointer"),
+    (
+        (
+            ("control", "placebo"),
+            ("measured", "measured"),
+            "/results/0/reported/comparison_groups",
+        ),
+        (
+            ("docetaxel", "control"),
+            ("not_measured", None),
+            "/results/0/population/outcome_measurement_coverage",
+        ),
+    ),
+)
+def test_comparison_coverage_repairs_only_report_the_affected_pointer(
+    tmp_path, reported_groups, coverage, expected_pointer
+) -> None:
+    card = _comparative_card(tmp_path)
+    reported = card.reported
+    assert isinstance(reported, ComparativeEffect)
+    updates = {"reported": reported.model_copy(update={"comparison_groups": reported_groups})}
+    if coverage[0] is None:
+        updates["population"] = PopulationAccount(
+            analyzed_population="randomized participants"
+        )
+    else:
+        updates["population"] = PopulationAccount(
+            analyzed_population="randomized participants",
+            outcome_measurement_coverage=tuple(
+                OutcomeMeasurementCoverage(
+                    group_id=group,
+                    status=status,
+                    explanation=None if status == "measured" else "not reported",
+                )
+                for group, status in zip(("docetaxel", "control"), coverage, strict=True)
+                if status is not None
+            ),
+        )
+    card = card.model_copy(update=updates)
+    repair = save_proposal(
+        tmp_path, ProposalInput(outcome_statement="Overall survival", results=(card,))
+    )
+    assert isinstance(repair, ProposalRepairReceipt)
+    assert {item.pointer for item in repair.repairs} == {expected_pointer}
+
+
+def test_effect_measure_repair_identifies_target_and_reported_values(tmp_path) -> None:
+    card = _comparative_card(tmp_path)
+    reported = card.reported
+    assert isinstance(reported, ComparativeEffect)
+    card = card.model_copy(
+        update={"reported": reported.model_copy(update={"effect_measure": "odds ratio"})}
+    )
+
+    repair = save_proposal(
+        tmp_path, ProposalInput(outcome_statement="Overall survival", results=(card,))
+    )
+
+    assert isinstance(repair, ProposalRepairReceipt)
+    assert {
+        (item.pointer, item.detail)
+        for item in repair.repairs
+        if item.pointer == "/results/0/reported/effect_measure"
+    } == {
+        (
+            "/results/0/reported/effect_measure",
+            "server-derived compatibility: effect_measure_mismatch; "
+            "target intended effect measure: 'risk ratio'; "
+            "reported effect measure: 'odds ratio'; "
+            "make reported.effect_measure exactly match target.intended_effect_measure only "
+            "when that is the source-reported measure for the requested outcome; otherwise "
+            "correct the target or use the appropriate needs_input disposition, preserving "
+            "Evidence",
+        )
+    }
+
+
 def test_contract_repairs_report_exact_outcome_values_and_closed_source_forms(tmp_path) -> None:
     card = _comparative_card(
         tmp_path,

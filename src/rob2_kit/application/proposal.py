@@ -627,7 +627,9 @@ def _card_contract_repairs(
     return tuple(repairs)
 
 
-def _compatibility_repairs(index: int, finding: CompatibilityFinding) -> tuple[ProposalRepair, ...]:
+def _compatibility_repairs(
+    index: int, finding: CompatibilityFinding, card: ResultCardInput
+) -> tuple[ProposalRepair, ...]:
     pointer_by_reason = {
         "comparison_coverage_incomplete": "population/outcome_measurement_coverage",
         "effect_measure_mismatch": "reported/effect_measure",
@@ -636,13 +638,79 @@ def _compatibility_repairs(index: int, finding: CompatibilityFinding) -> tuple[P
         "derivation_not_estimable": "derived",
         "clarity_declared_uncertain": "clarity",
     }
-    return tuple(
-        ProposalRepair(
-            pointer=f"/results/{index}/{pointer_by_reason.get(reason, 'reported')}",
-            code="invalid",
-            detail=f"server-derived compatibility: {reason}",
+
+    target_ids = tuple(group.id for group in card.target.comparison_groups)
+    reported_groups = (
+        ()
+        if isinstance(card.reported, (SingleGroupCategoryProfile, UnavailableResult))
+        else card.reported.comparison_groups
+    )
+    coverage = {
+        item.group_id: item.status.value
+        for item in card.population.outcome_measurement_coverage
+    }
+    incomplete_coverage = tuple(
+        (group_id, coverage.get(group_id, "missing"))
+        for group_id in target_ids
+        if coverage.get(group_id) != CoverageStatus.MEASURED.value
+    )
+
+    def details(reason: str) -> tuple[tuple[str, str], ...]:
+        if reason == "comparison_coverage_incomplete":
+            repairs: list[tuple[str, str]] = []
+            if set(reported_groups) != set(target_ids):
+                repairs.append(
+                    (
+                        "reported/comparison_groups",
+                        (
+                            "server-derived compatibility: comparison_coverage_incomplete; "
+                            f"target comparison group IDs (ordered): {target_ids!r}; "
+                            f"reported comparison group IDs: {reported_groups!r}; "
+                            "align reported IDs to target IDs only when Evidence supports the "
+                            "target bindings; otherwise correct target.comparison_groups or use "
+                            "the appropriate needs_input disposition"
+                        ),
+                    )
+                )
+            if incomplete_coverage:
+                repairs.append(
+                    (
+                        "population/outcome_measurement_coverage",
+                        (
+                            "server-derived compatibility: comparison_coverage_incomplete; "
+                            "missing/non-measured target IDs and current statuses: "
+                            f"{incomplete_coverage!r}; "
+                            "set each target group to measured only when Evidence supports "
+                            "outcome measurement, otherwise use the appropriate needs_input "
+                            "disposition"
+                        ),
+                    )
+                )
+            return tuple(repairs)
+        if reason == "effect_measure_mismatch":
+            assert isinstance(card.reported, ComparativeEffect)
+            return (
+                (
+                    "reported/effect_measure",
+                    (
+                        "server-derived compatibility: effect_measure_mismatch; "
+                        f"target intended effect measure: {card.target.intended_effect_measure!r}; "
+                        f"reported effect measure: {card.reported.effect_measure!r}; "
+                        "make reported.effect_measure exactly match "
+                        "target.intended_effect_measure only when that is the source-reported "
+                        "measure for the requested outcome; otherwise correct the target or use "
+                        "the appropriate needs_input disposition, preserving Evidence"
+                    ),
+                ),
+            )
+        return (
+            (pointer_by_reason.get(reason, "reported"), f"server-derived compatibility: {reason}"),
         )
+
+    return tuple(
+        ProposalRepair(pointer=f"/results/{index}/{pointer}", code="invalid", detail=detail)
         for reason in finding.reasons
+        for pointer, detail in details(reason)
     )
 
 
@@ -715,7 +783,7 @@ def save_proposal(
         )
         found = _compatibility(card)
         compatibility_repairs = (
-            _compatibility_repairs(input_index, found)
+            _compatibility_repairs(input_index, found, card)
             if found.status is not Compatibility.COMPATIBLE and trial_id not in input_by_trial
             else ()
         )
