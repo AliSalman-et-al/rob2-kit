@@ -13,7 +13,8 @@ from threading import Lock, RLock
 
 _MUTATION_LOCKS: dict[str, RLock] = {}
 _MUTATION_LOCKS_GUARD = Lock()
-RUNTIME_CONTRACT_VERSION = 2
+# The application/intake contract is an incompatible clean cutover from v0.2.
+RUNTIME_CONTRACT_VERSION = 3
 _RUNTIME_CONTRACT_KEY = "runtime_contract_version"
 
 
@@ -159,6 +160,7 @@ def read_only_transaction(workspace: str | Path) -> Iterator[sqlite3.Connection 
         return
     if internal.is_symlink() or _reparse(internal) or path.is_symlink() or _reparse(path):
         raise ValueError("active batch database is redirected")
+    require_contract_version(root)
     connection = sqlite3.connect(f"{path.as_uri()}?mode=ro", uri=True, isolation_level=None)
     try:
         connection.execute("PRAGMA query_only=ON")

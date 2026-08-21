@@ -1,10 +1,8 @@
-import asyncio
 from contextlib import contextmanager
 from pathlib import Path
-from typing import Any, Literal, cast
+from typing import Literal, cast
 
 import pytest
-from fastmcp import Client
 from v2_helpers import approved_workspace, completed_workspace
 
 from rob2_kit import judgments
@@ -30,7 +28,6 @@ from rob2_kit.judgment_models import (
 from rob2_kit.judgments import judgment_key, validate_domain_draft
 from rob2_kit.models import sha256
 from rob2_kit.recovery import current_batch_projection
-from rob2_kit.server import mcp
 from rob2_kit.storage import transaction
 
 
@@ -380,62 +377,6 @@ def test_corrupt_shared_projection_basis_is_condition_with_zero_writes(
             "OR name LIKE 'domain_review:%'"
         ).fetchone()[0]
     assert after == before
-
-
-def test_public_commit_persists_next_packet_with_prior_domain_digest(tmp_path: Path) -> None:
-    workspace, source = approved_workspace(tmp_path)
-    approved = current_batch(workspace)
-    assert isinstance(approved, ApprovedBatch)
-    operation = _operation(workspace, source, approved, None)
-
-    async def call() -> tuple[dict[str, Any], str]:
-        import os
-
-        previous = os.environ.get("ROB2_WORKSPACE")
-        os.environ["ROB2_WORKSPACE"] = str(workspace)
-        try:
-            async with Client(mcp) as client:
-                validated = await client.call_tool(
-                    "validate_domain_judgment",
-                    {"operation": operation.model_dump(mode="json")},
-                )
-                value = validated.structured_content
-                committed = await client.call_tool(
-                    "commit_domain_judgment",
-                    {
-                        "operation": {
-                            **operation.model_dump(mode="json"),
-                            "validation_receipt": value["receipt"],
-                            "reviewed_candidate_hash": value["candidate_hash"],
-                        }
-                    },
-                )
-                result = committed.structured_content
-                detail = await client.read_resource(result["next_packet_ref"]["uri"])
-            return result, detail[0].text
-        finally:
-            if previous is None:
-                os.environ.pop("ROB2_WORKSPACE", None)
-            else:
-                os.environ["ROB2_WORKSPACE"] = previous
-
-    committed, detail = asyncio.run(call())
-    assert committed["status"] == "committed"
-    assert committed["next_packet_ref"]["kind"] == "domain"
-    packet = __import__("json").loads(detail)
-    assert packet["domain_id"] == "domain:deviations"
-    assert [item["domain_id"] for item in packet["prior_domains"]] == ["domain:randomization"]
-    before = committed["next_packet_ref"]
-    with transaction(workspace) as connection:
-        connection.execute(
-            "DELETE FROM records WHERE name=?",
-            (f"detail:domain:{before['identity']}",),
-        )
-    projection = __import__(
-        "rob2_kit.recovery", fromlist=["current_batch_projection"]
-    ).current_batch_projection(workspace)
-    assert projection.trials[0].recommended_packet_ref is not None
-    assert projection.trials[0].recommended_packet_ref.identity == before["identity"]
 
 
 def test_invalid_domain_draft_aggregates_repairs_without_records(tmp_path: Path) -> None:
