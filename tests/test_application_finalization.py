@@ -9,7 +9,7 @@ from pathlib import Path
 
 import pytest
 
-from rob2_kit.application._state import identity, write_jsons
+from rob2_kit.application._state import identity, read_json, write_jsons
 from rob2_kit.application.finalization import (
     FinalizationCounts,
     finalize_batch,
@@ -110,6 +110,11 @@ def test_application_adverse_events_bundle_is_independently_verified(tmp_path: P
         "reported": original.reported.model_copy(update={"group_id": "ADT plus docetaxel", "categories": (Quantity(statistic="count", unit="390 docetaxel-cohort patients with follow-up", group_or_category="Grade 3 any event", value="65 (16.7%)"), Quantity(statistic="count", unit="390 docetaxel-cohort patients with follow-up", group_or_category="Grade 4 any event", value="49 (12.6%)"), Quantity(statistic="count", unit="390 docetaxel-cohort patients with follow-up", group_or_category="Grade 5 any event", value="1 (0.3%)"))}),
         "population": PopulationAccount(analyzed_population="390 patients receiving the docetaxel-containing regimen with follow-up data", outcome_measurement_coverage=(OutcomeMeasurementCoverage(group_id="docetaxel", status="measured"), OutcomeMeasurementCoverage(group_id="adt", status="not_measured", explanation="ADT-alone comparator unavailable"))),
     })
+    incompatible = save_proposal(
+        tmp_path, ProposalInput(outcome_statement="Adverse events", results=(card,))
+    )
+    assert isinstance(incompatible, ProposalRepairReceipt)
+    assert read_json(tmp_path, "proposal_review.json") is None
     review = save_proposal(tmp_path, ProposalInput(outcome_statement="Adverse events", results=(card,), needs_input=(PreapprovalNeedsInput(trial_id="chaarted", reason=NeedsInputReason.COMPARATOR_UNAVAILABLE, missing_facts=("ADT-alone comparator unavailable",)),)))
     assert not isinstance(review, ProposalRepairReceipt)
     ack = acknowledge_proposal(tmp_path, review.review, caller="server:interactive")
