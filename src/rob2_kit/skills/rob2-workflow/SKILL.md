@@ -20,7 +20,7 @@ Continue through scientific uncertainty and typed repairs. Stop only when author
 
 ## Assessment, recovery, and completion
 
-For an assessment continuation, hand the exact `work_packet` reference to `rob2-signalling`. Resume here when it returns a synthesis reference or a condition. Review an assessed Trial synthesis through `rob2 review`, then call `finish_trial` with the exact Transition and acknowledgment.
+For an assessment continuation, immediately execute the `rob2-signalling` steps yourself with the exact `work_packet` reference. `rob2-signalling` is an installed instruction set, not a CLI, tool, subprocess, or separate agent. Never ask the researcher how to invoke it. Resume this workflow when the signalling loop returns a synthesis reference or condition. Review an assessed Trial synthesis through `rob2 review`, then call `finish_trial` with the exact Transition and acknowledgment.
 
 On a condition or conflict, read current status and follow its continuation; do not replay a prior payload or reconstruct records. When every Trial is terminal, call `finalize_batch`. Report only the returned summary, ordered outcomes, and artifact receipt. A finalized result is complete only when the authoritative status verifies it.
 
