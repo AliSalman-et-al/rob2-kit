@@ -64,7 +64,10 @@ class RepairOutcome(StrEnum):
 
 
 class McpOperation(StrEnum):
-    INGEST_BATCH = "ingest_batch"
+    PREFLIGHT_SOURCES = "preflight_sources"
+    INSPECT_CANDIDATE_SOURCES = "inspect_candidate_sources"
+    SAVE_INTAKE_PLAN = "save_intake_plan"
+    CAPTURE_BATCH = "capture_batch"
     LIST_SOURCES = "list_sources"
     RETRIEVE_EVIDENCE = "retrieve_evidence"
     RENDER_PAGE = "render_page"
@@ -72,18 +75,17 @@ class McpOperation(StrEnum):
     APPROVE_BATCH = "approve_batch"
     VALIDATE_DOMAIN_JUDGMENT = "validate_domain_judgment"
     COMMIT_DOMAIN_JUDGMENT = "commit_domain_judgment"
+    PREPARE_TRIAL_FINISH = "prepare_trial_finish"
     FINISH_TRIAL = "finish_trial"
     FINALIZE_BATCH = "finalize_batch"
-    DISCARD_ACTIVE_BATCH = "discard_active_batch"
-    CURRENT_BATCH = "current_batch"
     READ_RECORD = "read_record"
-    REGISTRY_RECORD = "registry_record"
 
 
 class McpOutcome(StrEnum):
-    SUCCEEDED = "succeeded"
+    SUCCESS = "success"
+    REPAIR = "repair"
     CONDITION = "condition"
-    FAILED = "failed"
+    CONFLICT = "conflict"
 
 
 class DurationOperation(StrEnum):
@@ -125,7 +127,10 @@ class SerializedBytesBoundary(StrEnum):
 
 
 class SerializedBytesOperation(StrEnum):
-    INGEST_BATCH = "ingest_batch"
+    PREFLIGHT_SOURCES = "preflight_sources"
+    INSPECT_CANDIDATE_SOURCES = "inspect_candidate_sources"
+    SAVE_INTAKE_PLAN = "save_intake_plan"
+    CAPTURE_BATCH = "capture_batch"
     LIST_SOURCES = "list_sources"
     RETRIEVE_EVIDENCE = "retrieve_evidence"
     RENDER_PAGE = "render_page"
@@ -133,12 +138,10 @@ class SerializedBytesOperation(StrEnum):
     APPROVE_BATCH = "approve_batch"
     VALIDATE_DOMAIN_JUDGMENT = "validate_domain_judgment"
     COMMIT_DOMAIN_JUDGMENT = "commit_domain_judgment"
+    PREPARE_TRIAL_FINISH = "prepare_trial_finish"
     FINISH_TRIAL = "finish_trial"
     FINALIZE_BATCH = "finalize_batch"
-    DISCARD_ACTIVE_BATCH = "discard_active_batch"
-    CURRENT_BATCH = "current_batch"
     READ_RECORD = "read_record"
-    REGISTRY_RECORD = "registry_record"
     EXPORT = "export"
 
 

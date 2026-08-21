@@ -1,70 +1,25 @@
 ---
 name: rob2-workflow
-description: Manage a v2 RoB 2 batch through the rob2-kit MCP server.
+description: Run a RoB 2 batch through the typed rob2-kit MCP workflow, including researcher review and finalization.
 ---
 
-# rob2-kit workflow
+# RoB 2 workflow
 
-Keep scientific reasoning in the host model loop. The server is the durable,
-fail-closed boundary for captured Sources, verified projections, packets,
-checkpoints, terminals, and artifacts.
+Use `rob2://current-batch` at entry, after a restart, and after an uncertain mutation. Its authoritative status, conditions, review requirement, and typed continuation choose the next operation. Preserve every returned reference unchanged; the generated public contract is the schema source of truth.
 
-## Orientation and intake
+## Intake to approval
 
-Read `rob2://current-batch` once at context entry and again after restart,
-context loss, or an uncertain mutation. It is a compact projection, not a
-canonical record. Follow its exact packet and Detail references.
+1. `preflight_sources` the authorized roots; use `inspect_candidate_sources` for a candidate condition or inspection. Complete when the returned preflight reference is current.
+2. `save_intake_plan`, obtain the required intake acknowledgment through the CLI review path, then `capture_batch`. Complete when status offers Proposal work.
+3. `list_sources`, `retrieve_evidence`, and selectively `render_page` to make deliberate scoped Evidence. Complete when each Proposal fact has its exact Evidence reference.
+4. `save_proposal`, then deliberately read its returned Detail with `read_record`. The researcher reviews it only through `rob2 review`; use the returned acknowledgment and Transition with `approve_batch`. Complete when status supplies the approved Batch/work continuation or terminal preparation.
 
-For an empty or intake state, identify each Trial's main article and related
-protocol, SAP, supplement, and report. Call `ingest_batch` with workspace-
-relative paths and explicit Source roles. Preserve its compact conditions and
-captured identities. Use `list_sources` for the authoritative inventory, then
-use `retrieve_evidence` to deliberately select one captured-scope text anchor
-handle for each Trial before constructing the Proposal.
+`needs_input` and `failed` terminals are researcher decisions: prepare them with `prepare_trial_finish`, acknowledge through `rob2 review`, and complete with `finish_trial`. They may preserve partial Domain checkpoints. CLI review and CLI discard are the only human-review/destructive boundaries; MCP has no discard operation.
 
-Save a minimal `Proposal` draft with `save_proposal`; it contains one complete
-Result draft per captured Trial and one text Evidence handle anchor. Repair all
-returned RFC 6901 defects. Call `read_record` on the returned Proposal Detail
-and deliberately review its exact hash with the researcher, then call
-`approve_batch` with that reviewed hash. Do not substitute current state for a
-stale identity.
+## Assessment, recovery, and completion
 
-After approval, the approved work packet is the sole post-approval context
-boundary. A host may discard preapproval conversation and resume from its
-packet, but it must not recreate Source text, hashes, coordinates, or workflow
-identity from memory.
+For an assessment continuation, hand the exact `work_packet` reference to `rob2-signalling`. Resume here when it returns a synthesis reference or a condition. Review an assessed Trial synthesis through `rob2 review`, then call `finish_trial` with the exact Transition and acknowledgment.
 
-## Domain and Trial progression
+On a condition or conflict, read current status and follow its continuation; do not replay a prior payload or reconstruct records. When every Trial is terminal, call `finalize_batch`. Report only the returned summary, ordered outcomes, and artifact receipt. A finalized result is complete only when the authoritative status verifies it.
 
-Use the recommended packet. Retrieve Evidence in adaptive batches with
-`retrieve_evidence`; only deliberate text or visual selection mints a
-scope-bound immutable handle. Render selectively with `render_page`.
-
-For each Domain, call `validate_domain_judgment` with the strict draft. Review
-all independent repairs, then review the returned candidate Detail and exact
-receipt. Call `commit_domain_judgment` only with the unchanged draft,
-receipt-bound candidate hash, expected predecessor, and review acknowledgment.
-Corrections repeat validation against the displayed active hash; they never
-rewrite a prior revision.
-
-After five active Domain checkpoints, review the exact synthesis packet. Call
-`finish_trial` with the synthesis hash acknowledgment for an assessed Trial, or
-with a compact typed problem draft for `needs_input` or `failed`. The server
-derives final judgments, packs, timestamps, and terminal records. Responses are
-compact references only.
-
-When every Trial is terminal, call `finalize_batch` with the actor. Verify and
-report only its Summary reference, ordered compact outcomes, and artifact
-receipt. Never invent an artifact or present a full terminal in a mutation
-response. Use `read_record` for deliberate whole-record review.
-
-Retry only an operation with its exact original payload. Reconcile conflicts
-from the current projection and verified references; never broaden or replay a
-stale operation.
-
-## Destructive boundary
-
-`discard_active_batch` is researcher-only. Require a fresh explicit instruction,
-the displayed frozen identity, exact confirmation literal, actor, UTC time, and
-reason. It preserves exported bundles and recoverable residues. Never invoke it
-to recover from an uncertain ordinary mutation.
+The available MCP tools are exactly: `preflight_sources`, `inspect_candidate_sources`, `save_intake_plan`, `capture_batch`, `list_sources`, `retrieve_evidence`, `render_page`, `save_proposal`, `approve_batch`, `validate_domain_judgment`, `commit_domain_judgment`, `prepare_trial_finish`, `finish_trial`, `finalize_batch`, and `read_record`.

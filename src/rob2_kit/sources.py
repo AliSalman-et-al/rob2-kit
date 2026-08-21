@@ -96,7 +96,16 @@ def verified_source_bytes(root: Path, source: Source) -> bytes:
     """Read one captured Source after verifying its path, hash, and media type."""
     relative = Path(source.captured_path)
     expected = Path(".rob2-kit") / "sources" / source.trial_id
-    if relative.parent != expected or relative.name.split(".")[0] != source.id:
+    v3_prefix = Path(".rob2-kit") / "sources-v3"
+    if relative.parts[:2] == v3_prefix.parts:
+        if (
+            len(relative.parts) != 5
+            or relative.parts[2].startswith("sha256:")
+            or relative.parts[3] != source.trial_id
+            or relative.parts[4] != source.id
+        ):
+            raise ValueError("Source captured path is not its application capture path")
+    elif relative.parent != expected or relative.name.split(".")[0] != source.id:
         raise ValueError("Source captured path is not its Trial capture path")
     path = (root / relative).resolve(strict=True)
     if not path.is_relative_to(root) or not path.is_file():

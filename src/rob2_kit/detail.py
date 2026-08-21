@@ -11,23 +11,40 @@ import sqlite3
 from pathlib import Path
 from typing import Any, Literal, cast
 
-from pydantic import Field
+from pydantic import Field, model_validator
 
 from rob2_kit.models import StrictModel
 
 
 class DetailReference(StrictModel):
     kind: Literal[
-        "batch", "proposal", "trial", "result", "domain", "judgment", "synthesis", "terminal"
+        "batch",
+        "proposal",
+        "trial",
+        "result",
+        "domain",
+        "judgment",
+        "synthesis",
+        "terminal",
+        "proposal_review",
+        "approved_batch",
+        "review_ack",
+        "work_packet",
     ]
     identity: str = Field(pattern=r"^sha256:[0-9a-f]{64}$")
     uri: str = Field(
-        pattern=r"^rob2://detail/(batch|proposal|trial|result|domain|judgment|synthesis|terminal)/sha256:[0-9a-f]{64}$"
+        pattern=r"^rob2://detail/(batch|proposal|trial|result|domain|judgment|synthesis|terminal|proposal_review|approved_batch|review_ack|work_packet)/sha256:[0-9a-f]{64}$"
     )
+
+    @model_validator(mode="after")
+    def uri_matches_kind_and_identity(self) -> DetailReference:
+        if self.uri != f"rob2://detail/{self.kind}/{self.identity}":
+            raise ValueError("detail URI does not match kind and identity")
+        return self
 
 
 _URI = re.compile(
-    r"^rob2://detail/(?P<kind>batch|proposal|trial|result|domain|judgment|synthesis|terminal)/(?P<identity>sha256:[0-9a-f]{64})$"
+    r"^rob2://detail/(?P<kind>batch|proposal|trial|result|domain|judgment|synthesis|terminal|proposal_review|approved_batch|review_ack|work_packet)/(?P<identity>sha256:[0-9a-f]{64})$"
 )
 
 
@@ -45,6 +62,10 @@ def detail_reference(kind: str, identity: str) -> DetailReference:
                 "judgment",
                 "synthesis",
                 "terminal",
+                "proposal_review",
+                "approved_batch",
+                "review_ack",
+                "work_packet",
             ],
             kind,
         ),
@@ -86,6 +107,14 @@ def _record_names(reference: DetailReference) -> tuple[str, ...]:
     identity = reference.identity
     if reference.kind == "proposal":
         return (f"proposal_version:{identity}",)
+    if reference.kind == "proposal_review":
+        return (f"application:proposal_review-{identity.removeprefix('sha256:')}.json",)
+    if reference.kind == "approved_batch":
+        return ("application:approved_batch.json",)
+    if reference.kind == "review_ack":
+        return ("application:proposal_ack.json", "application:review_ack.json")
+    if reference.kind == "work_packet":
+        return (f"application:domain-packet-{identity.removeprefix('sha256:')}.json",)
     return (f"detail:{reference.kind}:{identity}",)
 
 
@@ -95,6 +124,41 @@ def _verified_payload(reference: DetailReference, payload: bytes) -> dict[str, o
     from pydantic import ValidationError
 
     try:
+        if reference.kind in {"proposal_review", "approved_batch", "review_ack", "work_packet"}:
+            import json
+
+            decoded = json.loads(payload.decode("utf-8"))
+            if not isinstance(decoded, dict) or decoded.get("identity") != reference.identity:
+                raise ValueError("application Detail identity mismatch")
+            from rob2_kit.application._state import identity as application_identity
+
+            if reference.kind == "proposal_review":
+                from rob2_kit.application.proposal import ProposalReview
+
+                review = ProposalReview.model_validate(decoded)
+                content = review.model_dump(
+                    mode="json", exclude={"identity", "review", "transition", "kind"}
+                )
+                if application_identity(content) != reference.identity:
+                    raise ValueError("Proposal Review Detail identity mismatch")
+            elif reference.kind == "approved_batch":
+                content = {
+                    key: value for key, value in decoded.items() if key not in {"kind", "identity"}
+                }
+                if application_identity(content) != reference.identity:
+                    raise ValueError("approved Batch Detail identity mismatch")
+            elif reference.kind == "work_packet":
+                content = {key: value for key, value in decoded.items() if key != "identity"}
+                if (
+                    decoded.get("kind") != "work_packet"
+                    or application_identity(content) != reference.identity
+                ):
+                    raise ValueError("work packet Detail identity mismatch")
+            else:
+                content = {key: value for key, value in decoded.items() if key != "identity"}
+                if application_identity(content) != reference.identity:
+                    raise ValueError("review acknowledgment Detail identity mismatch")
+            return decoded
         if reference.kind == "proposal":
             from rob2_kit.batch import ProposalVersion, _version_identity
 
