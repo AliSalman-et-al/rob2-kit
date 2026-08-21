@@ -185,6 +185,13 @@ def current_status(workspace: str | Path) -> VerifiedCurrentStatus:
         _record(RecordKind.CAPTURED_BATCH, state.get("captured_identity")),
         _record(RecordKind.APPROVED_BATCH, state.get("approved_batch_identity")),
     )
+    work_packet = _record(
+        RecordKind.APPROVED_WORK_PACKET, state.get("work_packet_identity")
+    )
+    if work_packet is not None and read_json(
+        workspace, f"domain-packet-{work_packet.identity.removeprefix('sha256:')}.json"
+    ) is None:
+        work_packet = None
     if phase is WorkflowPhase.INTAKE:
         if preflight is None or read_json(workspace, "preflight.json") is None:
             return _status(
@@ -463,7 +470,7 @@ def current_status(workspace: str | Path) -> VerifiedCurrentStatus:
             "Assessment in progress",
             "The approved Batch has pending Trial Domain work.",
             review=review,
-            continuation=ValidateDomainJudgmentContinuation(packet=approved),
+            continuation=ValidateDomainJudgmentContinuation(packet=work_packet or approved),
             trials=trials,
             domains=domains,
         )

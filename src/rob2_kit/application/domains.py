@@ -188,13 +188,15 @@ def prepare_domain_packet(
         "policy_pack": MAINTAINER_POLICY_PACK.content_hash,
     }
     packet_identity = identity(payload)
+    state["work_packet_identity"] = packet_identity
     write_jsons(
         workspace,
         {
             f"domain-packet-{packet_identity.removeprefix('sha256:')}.json": {
                 **payload,
                 "identity": packet_identity,
-            }
+            },
+            "state.json": state,
         },
     )
     return RecordReference(
