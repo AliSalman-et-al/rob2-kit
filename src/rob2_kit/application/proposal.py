@@ -107,6 +107,18 @@ class ComparativeEffect(_Closed):
     quantities: tuple[Quantity, ...] = Field(min_length=2)
     comparison_groups: tuple[str, str]
 
+    @model_validator(mode="after")
+    def denominator_bases_are_labeled(self) -> ComparativeEffect:
+        if not self.effect.denominator_basis or not self.effect.denominator_basis.strip() or any(
+            not quantity.denominator_basis or not quantity.denominator_basis.strip()
+            for quantity in self.quantities
+        ):
+            raise ValueError(
+                "comparative effects require a denominator basis for the effect and every "
+                "group quantity"
+            )
+        return self
+
 
 class GroupBoundValues(_Closed):
     form: Literal["group_bound_values"]
