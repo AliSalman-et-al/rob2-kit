@@ -34,3 +34,9 @@ uv run python -m rob2_kit.evaluation <finalized-artifact-directory> --outcome ad
 These commands verify only retained artifacts; they do not launch Haiku or read
 private inputs. The launcher records the resulting JSON in the privacy-safe
 manifest after the host process has stopped.
+
+Use this researcher prompt for all three runs, substituting only `{outcome}`:
+
+```text
+/rob2-workflow Assess the CHAARTED trial for RoB 2 for the outcome "{outcome}". The authorized source root is "." with alias "chaarted" and Trial ID "CHAARTED". Use this exact outcome target. Continue until Verified rob2-kit status requires researcher review or the Batch is finalized.
+```

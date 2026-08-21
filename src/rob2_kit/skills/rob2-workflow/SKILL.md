@@ -7,6 +7,8 @@ description: Run a RoB 2 batch through the typed rob2-kit MCP workflow, includin
 
 Use the launcher's `Verified rob2-kit entry status` at entry and after a restart. After an uncertain mutation, use the returned typed continuation. The authoritative status, conditions, and review requirement choose the next operation. Preserve every returned reference unchanged; the generated public contract is the schema source of truth.
 
+Continue through scientific uncertainty and typed repairs. Stop only when authoritative status requires `researcher` review; model uncertainty alone is not a review boundary. Use the exact outcome target supplied in the researcher prompt without asking to substitute a primary or differently named outcome.
+
 ## Intake to approval
 
 1. When entry status is `empty`, call `preflight_sources` with the authorized root, alias, and Trial ID supplied in the researcher prompt. Do not ask for values already supplied. Use `inspect_candidate_sources` for a candidate condition or inspection. Complete when the returned preflight reference is current.
