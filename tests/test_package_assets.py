@@ -56,6 +56,20 @@ def test_packaged_skills_guard_the_human_acceptance_boundaries() -> None:
         in workflow
     )
     assert "Repair every returned defect" in signalling
+    assert "assessment_in_progress" in workflow
+    assert "immediate instruction to continue in this same run" in workflow
+    assert (
+        "After each `commit_domain_judgment`, consume its returned `next work_packet` immediately"
+        in workflow
+    )
+    assert "Reuse persisted Evidence whenever it supports a later Domain" in workflow
+    assert (
+        "specific missing signalling fact, never by rescanning the full corpus per Domain"
+        in workflow
+    )
+    assert "Repeat immediately for each active Domain" in signalling
+    assert "packet returned by `commit_domain_judgment` must be consumed at once" in signalling
+    assert "Reuse persisted Evidence from the packet and prior records" in signalling
     retired = ("ingest_batch", "discard_active_batch", "expected_predecessor", "actor", "UTC time")
     for name in retired:
         assert name not in workflow
