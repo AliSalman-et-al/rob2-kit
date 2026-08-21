@@ -4,6 +4,11 @@ import pytest
 
 from rob2_kit.application._state import read_json
 from rob2_kit.application.contracts import EvidenceReference, ReviewAuthority
+from rob2_kit.application.evidence import (
+    EvidenceRetrievalRequest,
+    ManualSelectionRequest,
+    retrieve_evidence,
+)
 from rob2_kit.application.finalization import finalize_batch
 from rob2_kit.application.intake import (
     CaptureRequest,
@@ -26,6 +31,7 @@ from rob2_kit.application.proposal import (
     ComparisonGroup,
     Compatibility,
     EvidenceSet,
+    GroupBoundValues,
     NeedsInputReason,
     OutcomeMeasurementCoverage,
     PopulationAccount,
@@ -159,6 +165,122 @@ def test_chaarted_single_group_grade_profile_cannot_be_comparative() -> None:
     finding = _compatibility(card)
     assert finding.status is Compatibility.INCOMPATIBLE
     assert finding.reasons == ("single_group_category_profile_has_no_comparator",)
+
+
+def _captured_evidence(tmp_path):
+    source = "Grade 3 2 Grade 4 1 Grade 5 1 median 5 and 3"
+    (tmp_path / "article.txt").write_text(source, encoding="utf-8")
+    preflight = preflight_sources(
+        tmp_path,
+        PreflightRequest(
+            roots=(AuthorizedSourceRoot(alias="trial", path=".", trial_id="chaarted"),)
+        ),
+    )
+    plan = save_intake_plan(
+        tmp_path,
+        preflight.reference,
+        (
+            IntakePlanEntry(
+                candidate_identity=preflight.candidates[0].identity,
+                role="main_article",
+                disposition=SourceDisposition.INCLUDE,
+                criticality=SourceCriticality.REQUIRED,
+            ),
+        ),
+    )
+    capture_batch(
+        tmp_path,
+        CaptureRequest(
+            plan=plan.plan,
+            acknowledgment=acknowledge_intake(tmp_path, plan.plan, ReviewAuthority.HOST),
+        ),
+    )
+    evidence = retrieve_evidence(
+        tmp_path,
+        EvidenceRetrievalRequest(
+            trial_id="chaarted",
+            manual_selections=(
+                ManualSelectionRequest(
+                    kind="manual_selection",
+                    source_alias="s1",
+                    page=1,
+                    start=0,
+                    end=len(source),
+                    quote=source,
+                ),
+            ),
+        ),
+    ).evidence[0]
+    return EvidenceSet(
+        target_basis=(evidence,),
+        reported_values=(evidence,),
+        reported_context=(evidence,),
+        population_basis=(evidence,),
+    )
+
+
+def test_save_proposal_repairs_incompatible_result_before_persisting(tmp_path) -> None:
+    card = _card().model_copy(
+        update={"trial_id": "chaarted", "evidence": _captured_evidence(tmp_path)}
+    )
+
+    repair = save_proposal(
+        tmp_path, ProposalInput(outcome_statement="Adverse events", results=(card,))
+    )
+
+    assert isinstance(repair, ProposalRepairReceipt)
+    assert {(item.pointer, item.detail) for item in repair.repairs} == {
+        (
+            "/results/0/reported",
+            "server-derived compatibility: single_group_category_profile_has_no_comparator",
+        )
+    }
+    assert read_json(tmp_path, "proposal_review.json") is None
+
+
+def test_save_proposal_repairs_review_required_derivation_before_persisting(tmp_path) -> None:
+    evidence = _captured_evidence(tmp_path)
+    card = _card().model_copy(
+        update={
+            "trial_id": "chaarted",
+            "evidence": evidence,
+            "reported": GroupBoundValues(
+                form="group_bound_values",
+                quantities=(
+                    Quantity(
+                        statistic="median",
+                        unit="months",
+                        group_or_category="docetaxel",
+                        value=5,
+                    ),
+                    Quantity(
+                        statistic="median",
+                        unit="months",
+                        group_or_category="control",
+                        value=3,
+                    ),
+                ),
+                comparison_groups=("docetaxel", "control"),
+            ),
+            "population": PopulationAccount(
+                analyzed_population="randomized participants",
+                outcome_measurement_coverage=(
+                    OutcomeMeasurementCoverage(group_id="docetaxel", status="measured"),
+                    OutcomeMeasurementCoverage(group_id="control", status="measured"),
+                ),
+            ),
+        }
+    )
+
+    repair = save_proposal(
+        tmp_path, ProposalInput(outcome_statement="Overall survival", results=(card,))
+    )
+
+    assert isinstance(repair, ProposalRepairReceipt)
+    assert {(item.pointer, item.detail) for item in repair.repairs} == {
+        ("/results/0/derived", "server-derived compatibility: derivation_required")
+    }
+    assert read_json(tmp_path, "proposal_review.json") is None
 
 
 def test_preapproval_needs_input_is_acknowledged_and_applied_once(tmp_path) -> None:

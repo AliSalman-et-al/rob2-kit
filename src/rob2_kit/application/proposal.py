@@ -547,17 +547,20 @@ def save_proposal(
         for reference in disposition.evidence:
             if resolve_evidence(workspace, reference).trial_id != disposition.trial_id:
                 raise ValueError("needs-input Evidence must bind its Trial")
-    incompatible = [
+    unresolved = [
         (index, card)
         for index, card in enumerate(reviewed)
-        if card.compatibility.status is Compatibility.INCOMPATIBLE
+        if card.compatibility.status is not Compatibility.COMPATIBLE
         and card.trial_id not in input_by_trial
     ]
-    if incompatible:
+    if unresolved:
         pointer_by_reason = {
             "comparison_coverage_incomplete": "population/outcome_measurement_coverage",
             "effect_measure_mismatch": "reported/effect_measure",
             "reported_values_require_derivation": "derived",
+            "derivation_required": "derived",
+            "derivation_not_estimable": "derived",
+            "clarity_declared_uncertain": "clarity",
         }
         repairs = tuple(
             ProposalRepair(
@@ -565,7 +568,7 @@ def save_proposal(
                 code="invalid",
                 detail=f"server-derived compatibility: {reason}",
             )
-            for index, card in incompatible
+            for index, card in unresolved
             for reason in card.compatibility.reasons
         )
         return ProposalRepairReceipt(

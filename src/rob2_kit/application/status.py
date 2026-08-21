@@ -332,6 +332,43 @@ def current_status(workspace: str | Path) -> VerifiedCurrentStatus:
                     "proposal review identity or transition is missing or corrupt",
                 ),
             )
+        from .proposal import Compatibility, _current_review
+
+        try:
+            verified_proposal = _current_review(workspace)
+        except (TypeError, ValueError):
+            return _status(
+                phase,
+                "proposal_corrupt",
+                "Proposal review unavailable",
+                "The stored Proposal Review cannot be verified.",
+                review=ReviewAuthorityRequirement(required=ReviewAuthority.NONE),
+                trials=trials,
+                domains=domains,
+                conditions=_condition(
+                    "proposal_corrupt", "stored Proposal Review failed integrity verification"
+                ),
+            )
+        needs_input_trials = {item.trial_id for item in verified_proposal.needs_input}
+        if any(
+            item.compatibility.status is not Compatibility.COMPATIBLE
+            and item.trial_id not in needs_input_trials
+            for item in verified_proposal.results
+        ):
+            return _status(
+                phase,
+                "proposal_compatibility_unresolved",
+                "Proposal repair required",
+                "The stored Proposal Review contains a non-compatible Result without a matching preapproval needs-input disposition.",
+                review=ReviewAuthorityRequirement(required=ReviewAuthority.NONE, satisfied=True),
+                continuation=SaveProposalContinuation(captured_batch=captured),
+                trials=trials,
+                domains=domains,
+                conditions=_condition(
+                    "proposal_compatibility_unresolved",
+                    "repair the Proposal Result or provide a matching preapproval needs-input disposition",
+                ),
+            )
         ack = _ack(workspace, "proposal_ack.json", state.get("ack_identity"), proposal_ref)
         if ack is None:
             return _status(
