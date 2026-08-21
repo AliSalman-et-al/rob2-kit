@@ -42,6 +42,13 @@ def test_restart_status_fails_closed_for_unresolved_legacy_proposal(tmp_path: Pa
     card = _card().model_copy(
         update={
             "trial_id": "chaarted",
+            "target": _card().target.model_copy(
+                update={
+                    "outcome_definition": "Adverse events",
+                    "effect_of_interest": "effect on Adverse events",
+                }
+            ),
+            "source_table_meaning": "Reported outcome: Adverse events",
             "evidence": evidence,
         }
     )

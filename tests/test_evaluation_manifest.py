@@ -32,6 +32,10 @@ def _structured_pfs(*, effect_value: object = "0.61 (95% CI 0.51 to 0.72; P<0.00
         "population": {"analyzed_population": "790 randomized patients (g1: 397, g2: 393)"},
         "form": "comparative_effect",
         "effect_measure": "Hazard ratio",
+        "reported_text": (
+            "time to biochemical, symptomatic, or radiographic progression; 20.2 months; "
+            "11.7 months; 0.61 (95% CI 0.51 to 0.72; P<0.001)"
+        ),
         "effect": {
             "statistic": "Hazard ratio",
             "unit": "ratio",
@@ -62,7 +66,14 @@ def _structured_pfs(*, effect_value: object = "0.61 (95% CI 0.51 to 0.72; P<0.00
     }
     result["reported"] = {
         key: result[key]
-        for key in ("form", "effect_measure", "effect", "quantities", "comparison_groups")
+        for key in (
+            "form",
+            "effect_measure",
+            "reported_text",
+            "effect",
+            "quantities",
+            "comparison_groups",
+        )
     }
     return result
 
@@ -86,6 +97,9 @@ def _structured_overall_survival():
         "population": {"analyzed_population": "790 randomized patients (g1: 397, g2: 393)"},
         "form": "comparative_effect",
         "effect_measure": "Hazard ratio",
+        "reported_text": (
+            "overall survival; 57.6 months; 44.0 months; 0.61 (95% CI 0.47 to 0.80; P<0.001)"
+        ),
         "effect": {
             "statistic": "Hazard ratio",
             "unit": "ratio",
@@ -114,7 +128,14 @@ def _structured_overall_survival():
     }
     result["reported"] = {
         key: result[key]
-        for key in ("form", "effect_measure", "effect", "quantities", "comparison_groups")
+        for key in (
+            "form",
+            "effect_measure",
+            "reported_text",
+            "effect",
+            "quantities",
+            "comparison_groups",
+        )
     }
     return result
 
@@ -152,6 +173,20 @@ def test_pfs_accepts_cbdf2f8_shape_with_complete_hr_value():
         "hazard ratio, 0.61; 95% CI, 0.51 to 0.72; P<0.001",
     ):
         assert check_reported_facts(outcome, _structured_pfs(effect_value=value)) == ()
+
+
+def test_pfs_rejects_reported_text_with_conflicting_p_value():
+    outcome = CHAARTED_MANIFEST.outcome("pfs")
+    result = _structured_pfs()
+    result["reported_text"] = (
+        "time to biochemical, symptomatic, or radiographic progression; 20.2 months; "
+        "11.7 months; 0.61 (95% CI 0.51 to 0.72; P<=0.001)"
+    )
+    _sync_reported(result)
+
+    assert "missing complete source-reported comparative statement" in check_reported_facts(
+        outcome, result
+    )
 
 
 def test_pfs_rejects_hr_components_assigned_to_the_wrong_roles():
@@ -275,9 +310,7 @@ def test_overall_survival_accepts_complete_structure_and_rejects_negated_facts()
     assert isinstance(effect, dict)
     effect["value"] = "0.61 (95% CI 0.47 to 0.80; P<=0.001)"
     _sync_reported(operator_mismatch)
-    assert any(
-        "95% CI" in failure for failure in check_reported_facts(outcome, operator_mismatch)
-    )
+    assert any("95% CI" in failure for failure in check_reported_facts(outcome, operator_mismatch))
 
     for analyzed_population in ("not randomized patients", "non randomized patients"):
         result = _structured_overall_survival()
@@ -364,7 +397,14 @@ def test_assessed_outcomes_reject_effect_prefixes_suffixes_and_negation():
 def _sync_reported(result: dict[str, object]) -> None:
     result["reported"] = {
         key: result[key]
-        for key in ("form", "effect_measure", "effect", "quantities", "comparison_groups")
+        for key in (
+            "form",
+            "effect_measure",
+            "reported_text",
+            "effect",
+            "quantities",
+            "comparison_groups",
+        )
     }
 
 
@@ -437,9 +477,7 @@ def test_assessed_outcomes_reject_unrelated_effect_metadata():
             assert isinstance(effect, dict)
             effect[field] = value
             _sync_reported(result)
-            assert any(
-                "0.61" in failure for failure in check_reported_facts(outcome, result)
-            )
+            assert any("0.61" in failure for failure in check_reported_facts(outcome, result))
 
 
 def test_assessed_outcomes_accept_digit_and_uppercase_group_ids():
@@ -490,9 +528,7 @@ def test_assessed_outcomes_reject_extra_or_negated_group_quantities():
         quantities[0]["statistic"] = "not median"
         quantities[0]["value"] = f"not {quantities[0]['value']}"
         _sync_reported(negated)
-        assert any(
-            expected_value in failure for failure in check_reported_facts(outcome, negated)
-        )
+        assert any(expected_value in failure for failure in check_reported_facts(outcome, negated))
 
 
 def test_assessed_outcomes_reject_cross_outcome_effect_interests():
@@ -537,9 +573,7 @@ def test_assessed_outcomes_reject_extra_quantity_keys():
         assert isinstance(quantities, list)
         quantities[0]["extra"] = "contradiction"
         _sync_reported(median_extra)
-        assert any(
-            "months" in failure for failure in check_reported_facts(outcome, median_extra)
-        )
+        assert any("months" in failure for failure in check_reported_facts(outcome, median_extra))
 
 
 def test_adverse_event_oracle_rejects_comparison_and_randomized_count_claims():
@@ -558,6 +592,16 @@ def test_adverse_event_oracle_rejects_comparison_and_randomized_count_claims():
 
 def _adverse_event_profile() -> dict[str, object]:
     return {
+        "target": {
+            "outcome_definition": "adverse events during the docetaxel-containing regimen",
+            "measurement": "CTCAE severity grade",
+            "time_point_or_window": "during docetaxel-containing regimen follow-up",
+        },
+        "population": {
+            "analyzed_population": (
+                "390 patients receiving the docetaxel-containing regimen with follow-up data"
+            )
+        },
         "form": "single_group_category_profile",
         "group_id": "docetaxel cohort",
         "categories": [
@@ -565,8 +609,22 @@ def _adverse_event_profile() -> dict[str, object]:
             {"label": "Grade 4", "value": "49 (12.6%)"},
             {"label": "Grade 5", "value": "1 (0.3%)"},
         ],
+        "source_table_meaning": (
+            "Reported outcome: adverse events during the docetaxel-containing regimen"
+        ),
         "comparator_coverage": "unavailable",
     }
+
+
+def test_adverse_event_oracle_requires_outcome_bound_source_table_meaning():
+    outcome = CHAARTED_MANIFEST.outcome("adverse_events")
+    assert check_reported_facts(outcome, _adverse_event_profile()) == ()
+
+    legacy = _adverse_event_profile()
+    legacy["source_table_meaning"] = outcome.source_table_meaning
+    assert "source-table meaning must name the adverse-event outcome" in check_reported_facts(
+        outcome, legacy
+    )
 
 
 def test_adverse_event_oracle_rejects_each_missing_grade():

@@ -148,13 +148,18 @@ def test_application_adverse_events_bundle_is_independently_verified(tmp_path: P
                 outcome_definition="adverse events during the docetaxel-containing regimen",
                 measurement="CTCAE severity grade",
                 time_point_or_window="during docetaxel-containing regimen follow-up",
-                effect_of_interest="adverse-event profile",
+                effect_of_interest=(
+                    "effect on adverse events during the docetaxel-containing regimen"
+                ),
                 comparison_groups=(
                     ComparisonGroup(id="docetaxel", label="ADT plus docetaxel"),
                     ComparisonGroup(id="adt", label="ADT alone"),
                 ),
                 intended_analysis_population="390 patients receiving the docetaxel-containing regimen with follow-up data",
                 intended_effect_measure="adverse-event profile",
+            ),
+            "source_table_meaning": (
+                "Reported outcome: adverse events during the docetaxel-containing regimen"
             ),
             "reported": original.reported.model_copy(
                 update={
@@ -195,14 +200,22 @@ def test_application_adverse_events_bundle_is_independently_verified(tmp_path: P
         }
     )
     incompatible = save_proposal(
-        tmp_path, ProposalInput(outcome_statement="Adverse events", results=(card,))
+            tmp_path,
+            ProposalInput(
+                outcome_statement=(
+                    "effect on adverse events during the docetaxel-containing regimen"
+                ),
+                results=(card,),
+            ),
     )
     assert isinstance(incompatible, ProposalRepairReceipt)
     assert read_json(tmp_path, "proposal_review.json") is None
     review = save_proposal(
         tmp_path,
         ProposalInput(
-            outcome_statement="Adverse events",
+            outcome_statement=(
+                "effect on adverse events during the docetaxel-containing regimen"
+            ),
             results=(card,),
             needs_input=(
                 PreapprovalNeedsInput(
@@ -387,6 +400,7 @@ def test_application_assessed_bundle_is_independently_verified_and_rejects_missi
         reported=ComparativeEffect(
             form="comparative_effect",
             effect_measure="hazard ratio",
+            reported_text=source,
             effect=Quantity(
                 statistic="hazard ratio",
                 unit="ratio",
@@ -421,7 +435,13 @@ def test_application_assessed_bundle_is_independently_verified_and_rejects_missi
         clarity=specified,
     )
     proposal = save_proposal(
-        tmp_path, ProposalInput(outcome_statement="Progression-free survival", results=(card,))
+        tmp_path,
+        ProposalInput(
+            outcome_statement=(
+                "effect on time to biochemical, symptomatic, or radiographic progression"
+            ),
+            results=(card,),
+        ),
     )
     assert not isinstance(proposal, ProposalRepairReceipt)
     assert proposal.transition is not None
