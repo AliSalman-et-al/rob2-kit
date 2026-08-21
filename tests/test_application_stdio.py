@@ -122,9 +122,7 @@ def test_stdio_clean_intake_auto_ack_and_conditional_review_survive_restart(tmp_
                     "role": (
                         "main_article" if item["relative_path"] == "main.txt" else "supplement"
                     ),
-                    "disposition": (
-                        "include" if item["relative_path"] == "main.txt" else "omit"
-                    ),
+                    "disposition": ("include" if item["relative_path"] == "main.txt" else "omit"),
                     "criticality": (
                         "required" if item["relative_path"] == "main.txt" else "optional"
                     ),
@@ -149,6 +147,7 @@ def test_stdio_clean_intake_auto_ack_and_conditional_review_survive_restart(tmp_
     saved = asyncio.run(needs_researcher())
     assert "acknowledgment" not in saved
     assert saved["conditions"]
+
     # A fresh stdio process sees the same unresolved researcher requirement.
     async def restarted() -> dict[str, object]:
         async with Client(transport()) as client:
@@ -293,6 +292,20 @@ def test_stdio_public_assessed_workflow_commits_all_five_domains(tmp_path: Path)
                         "group_or_category": "ADT plus docetaxel versus ADT alone",
                         "value": "0.61 (95% CI 0.51 to 0.72; P<0.001)",
                     },
+                    "quantities": [
+                        {
+                            "statistic": "median",
+                            "unit": "months",
+                            "group_or_category": "docetaxel",
+                            "value": "20.2",
+                        },
+                        {
+                            "statistic": "median",
+                            "unit": "months",
+                            "group_or_category": "adt",
+                            "value": "11.7",
+                        },
+                    ],
                     "comparison_groups": ["docetaxel", "adt"],
                 },
                 "population": {

@@ -29,7 +29,7 @@
 {"name":"save_proposal",
 "read_only":false,
 "open_world":false,
-"schema_sha256":"sha256:7ed55f66a90691ed8777f449d266afdc3e85507e98a6153178accc4acbc1114f"},
+"schema_sha256":"sha256:26227ac002fb83c14795962ea20d6e090b057954877e19121a94d31860f25b3f"},
 {"name":"approve_batch",
 "read_only":false,
 "open_world":false,
