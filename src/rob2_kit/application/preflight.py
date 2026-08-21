@@ -395,7 +395,7 @@ def preflight_sources(
 
 def inspect_candidate_sources(
     workspace: str | Path,
-    candidate: CandidateSource,
+    candidate: CandidateSource | str,
     *,
     query: str | None = None,
     page: int | None = None,
@@ -408,6 +408,7 @@ def inspect_candidate_sources(
         verified = None
     if verified is None:
         raise ValueError("active preflight is unavailable or corrupt")
+    candidate_identity = candidate.identity if isinstance(candidate, CandidateSource) else candidate
     stored = (
         None
         if preflight is None
@@ -415,7 +416,7 @@ def inspect_candidate_sources(
             (
                 CandidateSource.model_validate(item)
                 for item in preflight.get("candidates", ())
-                if item.get("identity") == candidate.identity
+                if item.get("identity") == candidate_identity
             ),
             None,
         )

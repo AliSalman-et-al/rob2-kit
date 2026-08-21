@@ -108,6 +108,10 @@ def _content(value: Any) -> ToolResult:
     )
 
 
+def _candidate_summary(candidate: CandidateSource) -> dict[str, Any]:
+    return candidate.model_dump(mode="json", exclude={"pages"})
+
+
 @mcp.resource("rob2://current-batch")
 def current_batch() -> str:
     return status_json(_workspace())
@@ -328,16 +332,31 @@ def preflight(
     result = preflight_sources(
         _workspace(), PreflightRequest(roots=roots, expected_head=expected_head)
     )
-    return _content(
-        {**result.model_dump(mode="json"), "reference": result.reference.model_dump(mode="json")}
-    )
+    return _content({
+        "kind": result.kind,
+        "identity": result.identity,
+        "roots": result.roots,
+        "candidates": [_candidate_summary(item) for item in result.candidates],
+        "conditions": result.conditions,
+        "registry_attempts": result.registry_attempts,
+        "registry_outcomes": result.registry_outcomes,
+        "reference": result.reference.model_dump(mode="json"),
+    })
 
 
 @mcp.tool(name="inspect_candidate_sources", annotations=_READ_ONLY)
 def inspect(
-    candidate: CandidateSource, query: str | None = None, page: int | None = None
+    candidate_identity: str, query: str | None = None, page: int | None = None
 ) -> ToolResult:
-    return _content(inspect_candidate_sources(_workspace(), candidate, query=query, page=page))
+    result = inspect_candidate_sources(
+        _workspace(), candidate_identity, query=query, page=page
+    )
+    return _content({
+        "candidate": _candidate_summary(result.candidate),
+        "page": result.page,
+        "text": result.text,
+        "hits": result.hits,
+    })
 
 
 @mcp.tool(name="save_intake_plan", annotations=_MUTATION)

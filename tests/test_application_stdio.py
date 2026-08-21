@@ -64,6 +64,14 @@ def test_stdio_clean_intake_auto_ack_and_conditional_review_survive_restart(tmp_
             )
             preflight_value = dict(preflight.structured_content or {})
             candidate = preflight_value["candidates"][0]
+            assert "pages" not in candidate
+            inspected = await client.call_tool(
+                "inspect_candidate_sources",
+                {"candidate_identity": candidate["identity"], "page": 1},
+            )
+            inspection = dict(inspected.structured_content or {})
+            assert inspection["text"] == "main"
+            assert "pages" not in inspection["candidate"]
             plan = await client.call_tool(
                 "save_intake_plan",
                 {
