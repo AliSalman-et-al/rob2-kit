@@ -32,6 +32,17 @@ def test_packaged_skills_guard_the_human_acceptance_boundaries() -> None:
     assert "denominator bases" in workflow
     assert "reported_text" in workflow
     assert "defined as" in workflow
+    assert (
+        "Search-hit identities and render identities are navigation handles, not Evidence"
+        in workflow
+    )
+    assert (
+        "only the Evidence identity returned by `retrieve_evidence` after an exact normal, "
+        "manual, or visual selection may be used in `save_proposal`"
+        in workflow
+    )
+    assert "use that exact full text in `ProposalInput.outcome_statement`" in workflow
+    assert "use the exact suffix as `target.outcome_definition`" in workflow
     assert "Repair every returned defect" in signalling
     retired = ("ingest_batch", "discard_active_batch", "expected_predecessor", "actor", "UTC time")
     for name in retired:

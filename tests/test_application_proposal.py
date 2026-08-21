@@ -439,6 +439,123 @@ def test_save_proposal_aggregates_contract_and_source_repairs(tmp_path) -> None:
     assert sum("reported value" in item.detail for item in repair.repairs) == 2
 
 
+def test_contract_repairs_report_exact_outcome_values_and_closed_source_forms(tmp_path) -> None:
+    card = _comparative_card(
+        tmp_path,
+        source_table_meaning="unrelated endpoint",
+        target=ResultTarget(
+            outcome_definition="wrong definition",
+            measurement="survival status",
+            time_point_or_window="follow-up",
+            effect_of_interest="wrong effect",
+            comparison_groups=(
+                ComparisonGroup(id="docetaxel", label="docetaxel"),
+                ComparisonGroup(id="control", label="control"),
+            ),
+            intended_analysis_population="randomized participants",
+            intended_effect_measure="risk ratio",
+        ),
+    )
+
+    repair = save_proposal(
+        tmp_path,
+        ProposalInput(
+            outcome_statement="Overall survival, defined as death from any cause",
+            results=(card,),
+        ),
+    )
+
+    assert isinstance(repair, ProposalRepairReceipt)
+    details = {item.pointer: item.detail for item in repair.repairs}
+    assert details["/results/0/target/outcome_definition"] == (
+        "target outcome definition must be exactly 'death from any cause'"
+    )
+    assert details["/results/0/target/effect_of_interest"] == (
+        "effect of interest must be exactly 'effect on death from any cause'"
+    )
+    assert details["/results/0/source_table_meaning"] == (
+        "source-table meaning must be one of: 'death from any cause', "
+        "'Primary endpoint: death from any cause', "
+        "'Secondary endpoint: death from any cause', "
+        "'Reported outcome: death from any cause', "
+        "'Outcome: death from any cause'"
+    )
+
+
+@pytest.mark.parametrize(
+    "role", ("target_basis", "reported_values", "reported_context", "population_basis")
+)
+def test_proposal_repair_mints_evidence_from_unpersisted_reference(tmp_path, role: str) -> None:
+    card = _comparative_card(tmp_path)
+    missing = EvidenceReference(kind="evidence", identity="sha256:" + "f" * 64)
+    evidence = card.evidence.model_copy(update={role: (missing,)})
+    card = card.model_copy(update={"evidence": evidence})
+
+    repair = save_proposal(
+        tmp_path, ProposalInput(outcome_statement="Overall survival", results=(card,))
+    )
+
+    assert isinstance(repair, ProposalRepairReceipt)
+    assert any(
+        item.pointer == f"/results/0/evidence/{role}"
+        and "sha256:" + "f" * 64 in item.detail
+        and "not persisted Evidence" in item.detail
+        and "retrieve_evidence" in item.detail
+        and "exact normal, manual, or visual selection" in item.detail
+        and "returned Evidence identity" in item.detail
+        for item in repair.repairs
+    )
+
+
+def test_proposal_repair_preserves_corrupt_evidence_detail(tmp_path) -> None:
+    card = _comparative_card(tmp_path)
+    evidence = card.evidence.target_basis[0]
+    raw = read_json(tmp_path, f"evidence-{evidence.identity.removeprefix('sha256:')}.json")
+    assert raw is not None
+    raw["quote"] = "tampered"
+    from rob2_kit.application._state import write_jsons
+
+    write_jsons(tmp_path, {f"evidence-{evidence.identity.removeprefix('sha256:')}.json": raw})
+
+    repair = save_proposal(
+        tmp_path, ProposalInput(outcome_statement="Overall survival", results=(card,))
+    )
+
+    assert isinstance(repair, ProposalRepairReceipt)
+    matching = [
+        item for item in repair.repairs if item.pointer == "/results/0/evidence/target_basis"
+    ]
+    assert matching
+    assert any("Evidence identity is corrupt" in item.detail for item in matching)
+    assert all("not persisted Evidence" not in item.detail for item in matching)
+
+
+def test_needs_input_unavailable_evidence_uses_indexed_minting_repair(tmp_path) -> None:
+    _comparative_card(tmp_path)
+    missing = EvidenceReference(kind="evidence", identity="sha256:" + "e" * 64)
+    proposal = ProposalInput(
+        outcome_statement="Overall survival",
+        needs_input=(
+            PreapprovalNeedsInput(
+                trial_id="chaarted",
+                reason=NeedsInputReason.OUTCOME_NOT_REPORTED,
+                missing_facts=("an outcome result",),
+                evidence=(missing,),
+            ),
+        ),
+    )
+
+    repair = save_proposal(tmp_path, proposal)
+
+    assert isinstance(repair, ProposalRepairReceipt)
+    assert any(
+        item.pointer == "/needs_input/0/evidence/0"
+        and "not persisted Evidence" in item.detail
+        and "retrieve_evidence" in item.detail
+        for item in repair.repairs
+    )
+
+
 @pytest.mark.parametrize(
     ("field", "value", "pointer"),
     (

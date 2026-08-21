@@ -40,7 +40,7 @@ from .contracts import (
     TransitionReference,
     ValidateDomainJudgmentContinuation,
 )
-from .evidence import resolve_evidence
+from .evidence import EvidenceRecord, resolve_evidence
 
 _NUMERIC_LEXEME = re.compile(
     r"(?<![\w.])[+-]?(?:\d+\.\d*|\.\d+|\d+)(?:[eE][+-]?\d+)?(?![\w.])"
@@ -469,19 +469,47 @@ def _compatibility(card: ResultCardInput) -> CompatibilityFinding:
 def _validate_evidence(
     workspace: str | Path, card: ResultCardInput
 ) -> tuple[ProposalRepair, ...]:
-    refs = (
-        *card.evidence.target_basis,
-        *card.evidence.reported_values,
-        *card.evidence.reported_context,
-        *card.evidence.population_basis,
+    role_refs = (
+        ("target_basis", card.evidence.target_basis),
+        ("reported_values", card.evidence.reported_values),
+        ("reported_context", card.evidence.reported_context),
+        ("population_basis", card.evidence.population_basis),
     )
-    for reference in refs:
-        evidence = resolve_evidence(workspace, reference)
-        if evidence.trial_id != card.trial_id:
-            raise ValueError("Result Evidence must bind its Trial")
-    reported_evidence = [
-        resolve_evidence(workspace, reference) for reference in card.evidence.reported_values
-    ]
+    resolved_by_role: dict[str, list[EvidenceRecord]] = {}
+    resolution_repairs: list[ProposalRepair] = []
+    for role, references in role_refs:
+        resolved: list[EvidenceRecord] = []
+        for reference in references:
+            try:
+                evidence = resolve_evidence(workspace, reference)
+            except ValueError as error:
+                detail = (
+                    _evidence_minting_repair_detail(reference)
+                    if str(error) == "Evidence is unavailable"
+                    else str(error)
+                )
+                resolution_repairs.append(
+                    ProposalRepair(
+                        pointer=f"/evidence/{role}",
+                        code="invalid",
+                        detail=detail,
+                    )
+                )
+                continue
+            if evidence.trial_id != card.trial_id:
+                resolution_repairs.append(
+                    ProposalRepair(
+                        pointer=f"/evidence/{role}",
+                        code="invalid",
+                        detail="Result Evidence must bind its Trial",
+                    )
+                )
+                continue
+            resolved.append(evidence)
+        resolved_by_role[role] = resolved
+    if resolution_repairs:
+        return tuple(resolution_repairs)
+    reported_evidence = resolved_by_role["reported_values"]
     reported_values_text = " ".join(
         " ".join((item.quote or "").split()) for item in reported_evidence
     )
@@ -542,37 +570,47 @@ def _declared_outcome_definition(statement: str) -> str:
     return value
 
 
+def _evidence_minting_repair_detail(reference: EvidenceReference) -> str:
+    return (
+        f"Evidence reference {reference.identity} is not persisted Evidence; call "
+        "retrieve_evidence with an exact normal, manual, or visual selection, then use "
+        "the returned Evidence identity."
+    )
+
+
 def _card_contract_repairs(
     card: ResultCardInput, outcome_statement: str
 ) -> tuple[ProposalRepair, ...]:
     expected = _declared_outcome_definition(outcome_statement)
     normalized_expected = " ".join(expected.casefold().split())
     source = " ".join(card.source_table_meaning.casefold().split())
-    allowed_source = {
-        normalized_expected,
-        f"primary endpoint: {normalized_expected}",
-        f"secondary endpoint: {normalized_expected}",
-        f"reported outcome: {normalized_expected}",
-        f"outcome: {normalized_expected}",
-    }
+    source_forms = (
+        expected,
+        f"Primary endpoint: {expected}",
+        f"Secondary endpoint: {expected}",
+        f"Reported outcome: {expected}",
+        f"Outcome: {expected}",
+    )
+    allowed_source = {" ".join(form.casefold().split()) for form in source_forms}
+    expected_effect = f"effect on {expected}"
     repairs: list[ProposalRepair] = []
     if " ".join(card.target.outcome_definition.casefold().split()) != normalized_expected:
         repairs.append(
             ProposalRepair(
                 pointer="/target/outcome_definition",
                 code="invalid",
-                detail="target outcome definition must match Proposal outcome statement",
+                detail=f"target outcome definition must be exactly {expected!r}",
             )
         )
     if (
         " ".join(card.target.effect_of_interest.casefold().split())
-        != f"effect on {normalized_expected}"
+        != " ".join(expected_effect.casefold().split())
     ):
         repairs.append(
             ProposalRepair(
                 pointer="/target/effect_of_interest",
                 code="invalid",
-                detail="effect of interest must match Proposal outcome definition",
+                detail=f"effect of interest must be exactly {expected_effect!r}",
             )
         )
     if source not in allowed_source:
@@ -580,7 +618,10 @@ def _card_contract_repairs(
             ProposalRepair(
                 pointer="/source_table_meaning",
                 code="invalid",
-                detail="source-table meaning must name the Proposal outcome definition",
+                detail=(
+                    "source-table meaning must be one of: "
+                    + ", ".join(repr(form) for form in source_forms)
+                ),
             )
         )
     return tuple(repairs)
@@ -667,16 +708,7 @@ def save_proposal(
             item.model_copy(update={"pointer": f"/results/{input_index}{item.pointer}"})
             for item in contract_repairs
         )
-        try:
-            evidence_repairs = _validate_evidence(workspace, card)
-        except ValueError as error:
-            evidence_repairs = (
-                ProposalRepair(
-                    pointer="/evidence/reported_values",
-                    code="invalid",
-                    detail=str(error),
-                ),
-            )
+        evidence_repairs = _validate_evidence(workspace, card)
         repairs.extend(
             item.model_copy(update={"pointer": f"/results/{input_index}{item.pointer}"})
             for item in evidence_repairs
@@ -701,9 +733,25 @@ def save_proposal(
                 ),
             )
         )
-    for disposition in proposal.needs_input:
-        for reference in disposition.evidence:
-            if resolve_evidence(workspace, reference).trial_id != disposition.trial_id:
+    for disposition_index, disposition in enumerate(proposal.needs_input):
+        for evidence_index, reference in enumerate(disposition.evidence):
+            try:
+                evidence = resolve_evidence(workspace, reference)
+            except ValueError as error:
+                detail = (
+                    _evidence_minting_repair_detail(reference)
+                    if str(error) == "Evidence is unavailable"
+                    else str(error)
+                )
+                repairs.append(
+                    ProposalRepair(
+                        pointer=f"/needs_input/{disposition_index}/evidence/{evidence_index}",
+                        code="invalid",
+                        detail=detail,
+                    )
+                )
+                continue
+            if evidence.trial_id != disposition.trial_id:
                 raise ValueError("needs-input Evidence must bind its Trial")
     if repairs:
         unique: dict[tuple[str, str, str], ProposalRepair] = {}
