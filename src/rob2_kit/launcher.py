@@ -135,11 +135,17 @@ def launch_assessment(
     postflight_error: str | None = None
     try:
         command = _host_command(host, model, config, project)
+        entry_status = current_status(root)
+        model_prompt = (
+            prompt.rstrip()
+            + "\n\nVerified rob2-kit entry status\n"
+            + entry_status.model_dump_json(exclude_none=True, exclude_defaults=True)
+        )
         completed = subprocess.run(
             command,
             cwd=project,
             env=environment,
-            input=prompt,
+            input=model_prompt,
             text=True,
             capture_output=True,
             check=False,

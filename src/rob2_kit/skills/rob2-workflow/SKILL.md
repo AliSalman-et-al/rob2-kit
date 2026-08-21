@@ -5,11 +5,11 @@ description: Run a RoB 2 batch through the typed rob2-kit MCP workflow, includin
 
 # RoB 2 workflow
 
-Use `rob2://current-batch` at entry, after a restart, and after an uncertain mutation. Its authoritative status, conditions, review requirement, and typed continuation choose the next operation. Preserve every returned reference unchanged; the generated public contract is the schema source of truth.
+Use the launcher's `Verified rob2-kit entry status` at entry and after a restart. After an uncertain mutation, use the returned typed continuation. The authoritative status, conditions, and review requirement choose the next operation. Preserve every returned reference unchanged; the generated public contract is the schema source of truth.
 
 ## Intake to approval
 
-1. `preflight_sources` the authorized roots; use `inspect_candidate_sources` for a candidate condition or inspection. Complete when the returned preflight reference is current.
+1. When entry status is `empty`, call `preflight_sources` with the authorized root, alias, and Trial ID supplied in the researcher prompt. Do not ask for values already supplied. Use `inspect_candidate_sources` for a candidate condition or inspection. Complete when the returned preflight reference is current.
 2. `save_intake_plan`, obtain the required intake acknowledgment through the CLI review path, then `capture_batch`. Complete when status offers Proposal work.
 3. `list_sources`, `retrieve_evidence`, and selectively `render_page` to make deliberate scoped Evidence. Complete when each Proposal fact has its exact Evidence reference.
 4. `save_proposal`, then deliberately read its returned Detail with `read_record`. The researcher reviews it only through `rob2 review`; use the returned acknowledgment and Transition with `approve_batch`. Complete when status supplies the approved Batch/work continuation or terminal preparation.
