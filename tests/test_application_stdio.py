@@ -288,6 +288,7 @@ def test_stdio_public_assessed_workflow_commits_all_five_domains(tmp_path: Path)
                 "reported": {
                     "form": "comparative_effect",
                     "effect_measure": "hazard ratio",
+                    "reported_text": source,
                     "effect": {
                         "statistic": "hazard ratio",
                         "unit": "ratio",
@@ -347,7 +348,10 @@ def test_stdio_public_assessed_workflow_commits_all_five_domains(tmp_path: Path)
                         "save_proposal",
                         {
                             "proposal": {
-                                "outcome_statement": "Progression-free survival",
+                                "outcome_statement": (
+                                    "effect on time to biochemical, symptomatic, or radiographic "
+                                    "progression"
+                                ),
                                 "results": [card],
                             }
                         },

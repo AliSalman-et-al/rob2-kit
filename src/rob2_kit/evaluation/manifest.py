@@ -149,7 +149,14 @@ def check_reported_facts(outcome: OutcomeFacts, reported: Mapping[str, object]) 
     population = _mapping(reported.get("population"))
     projection = {
         key: reported.get(key)
-        for key in ("form", "effect_measure", "effect", "quantities", "comparison_groups")
+        for key in (
+            "form",
+            "effect_measure",
+            "reported_text",
+            "effect",
+            "quantities",
+            "comparison_groups",
+        )
     }
     if dict(_mapping(reported.get("reported"))) != projection:
         failures.append(
@@ -190,6 +197,8 @@ def check_reported_facts(outcome: OutcomeFacts, reported: Mapping[str, object]) 
         outcome.effect_measure
     ):
         failures.append(f"missing objective effect measure: {outcome.effect_measure}")
+    if not _has_reported_text(reported.get("reported_text"), outcome):
+        failures.append("missing complete source-reported comparative statement")
     quantities = reported.get("quantities")
     if not isinstance(quantities, (list, tuple)) or len(quantities) != 2:
         failures.append("assessed outcomes must retain exactly two ordered group quantities")
@@ -247,8 +256,23 @@ def _has_effect_of_interest(value: object, outcome_definition: str) -> bool:
     return _normalized(value) == f"effect on {_normalized(outcome_definition)}"
 
 
+def _has_reported_text(value: object, outcome: OutcomeFacts) -> bool:
+    text = _normalized(value)
+    numbers = re.findall(r"\d+(?:\.\d+)?", text)
+    expected_numbers = re.findall(
+        r"\d+(?:\.\d+)?", " ".join(quantity.value for quantity in outcome.quantities)
+    )
+    expected_effect = _effect_components(outcome.quantities[-1].value)
+    return (
+        isinstance(value, str)
+        and _normalized(outcome.outcome_definition) in text
+        and all(number in numbers for number in expected_numbers)
+        and _effect_components(text, embedded=True) == expected_effect
+    )
+
+
 def _matches_source_table_meaning(
-    value: object, outcome_definition: str, declared_meaning: str
+    value: object, outcome_definition: str, declared_meaning: str | None = None
 ) -> bool:
     normalized_value = _normalized(value)
     normalized_outcome = _normalized(outcome_definition)
@@ -262,14 +286,16 @@ def _matches_source_table_meaning(
         )
     ):
         return False
-    return normalized_value in {
+    allowed = {
         normalized_outcome,
-        _normalized(declared_meaning),
         f"primary endpoint: {normalized_outcome}",
         f"secondary endpoint: {normalized_outcome}",
         f"reported outcome: {normalized_outcome}",
         f"outcome: {normalized_outcome}",
     }
+    if declared_meaning is not None:
+        allowed.add(_normalized(declared_meaning))
+    return normalized_value in allowed
 
 
 def _matches_time_point(value: object, expected: str) -> bool:
@@ -303,11 +329,7 @@ def _target_group_ids(value: object) -> tuple[str, str] | None:
 
 
 def _has_reported_groups(value: object, expected: tuple[str, str] | None) -> bool:
-    return (
-        expected is not None
-        and isinstance(value, (list, tuple))
-        and tuple(value) == expected
-    )
+    return expected is not None and isinstance(value, (list, tuple)) and tuple(value) == expected
 
 
 def _has_effect_metadata(
@@ -338,13 +360,10 @@ def _matches_quantity(quantity: object, expected: Quantity, group_id: str) -> bo
     reported = _mapping(quantity)
     return (
         _has_exact_quantity_keys(reported)
-        and
-        _normalized(reported.get("statistic")) in {"median", "median time"}
+        and _normalized(reported.get("statistic")) in {"median", "median time"}
         and _normalized(reported.get("unit")) == _normalized(expected_unit)
         and _normalized(reported.get("group_or_category")) == _normalized(group_id)
-        and _matches_denominator(
-            reported.get("denominator_basis"), expected.denominator_basis
-        )
+        and _matches_denominator(reported.get("denominator_basis"), expected.denominator_basis)
         and _same_number(reported.get("value"), expected_value)
     )
 
@@ -377,24 +396,27 @@ def _has_complete_effect(value: object, expected: str) -> bool:
     )
 
 
-def _effect_components(value: object) -> dict[str, str] | None:
+def _effect_components(value: object, *, embedded: bool = False) -> dict[str, str] | None:
     if not isinstance(value, str):
         return None
     normalized = value.casefold()
-    matched = re.fullmatch(
+    matcher = re.search if embedded else re.fullmatch
+    matched = matcher(
         r"(?P<point>\d+(?:\.\d+)?)\s*\(\s*"
         r"(?P<confidence_level>\d+(?:\.\d+)?)\s*%\s*"
         r"(?:ci|confidence interval)\s*[,;:]?\s*"
-        r"(?P<lower>\d+(?:\.\d+)?)\s+to\s+(?P<upper>\d+(?:\.\d+)?)\s*"
+        r"(?P<lower>\d+(?:\.\d+)?)(?:\s+to\s+|-)"
+        r"(?P<upper>\d+(?:\.\d+)?)\s*"
         r";\s*p\s*(?P<p_operator><=|<)\s*(?P<p_value>\d+(?:\.\d+)?)\s*\)",
         normalized,
     )
     if matched is None:
-        matched = re.fullmatch(
+        matched = matcher(
             r"(?:hazard ratio,\s*)?(?P<point>\d+(?:\.\d+)?)\s*;\s*"
             r"(?P<confidence_level>\d+(?:\.\d+)?)\s*%\s*"
-            r"(?:ci|confidence interval)\s*,\s*"
-            r"(?P<lower>\d+(?:\.\d+)?)\s+to\s+(?P<upper>\d+(?:\.\d+)?)\s*"
+            r"(?:ci|confidence interval)\s*[,;:]\s*"
+            r"(?P<lower>\d+(?:\.\d+)?)(?:\s+to\s+|-)"
+            r"(?P<upper>\d+(?:\.\d+)?)\s*"
             r";\s*p\s*(?P<p_operator><=|<)\s*(?P<p_value>\d+(?:\.\d+)?)",
             normalized,
         )
@@ -413,10 +435,13 @@ def _check_adverse_event_facts(
         outcome.measurement,
         outcome.time_point,
         outcome.intended_population,
-        outcome.source_table_meaning,
     ):
         if required.casefold() not in text:
             failures.append(f"missing objective fact: {required}")
+    if not _matches_source_table_meaning(
+        reported.get("source_table_meaning"), outcome.outcome_definition
+    ):
+        failures.append("source-table meaning must name the adverse-event outcome")
     for quantity in outcome.quantities:
         if quantity.value.casefold() not in text:
             failures.append(f"missing objective quantity: {quantity.value}")

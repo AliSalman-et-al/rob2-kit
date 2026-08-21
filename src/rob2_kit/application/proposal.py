@@ -42,9 +42,17 @@ from .contracts import (
 )
 from .evidence import resolve_evidence
 
+_NUMERIC_LEXEME = re.compile(
+    r"(?<![\w.])[+-]?(?:\d+\.\d*|\.\d+|\d+)(?:[eE][+-]?\d+)?(?![\w.])"
+)
+
 
 class _Closed(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
+
+
+def _numeric_lexemes(value: object) -> tuple[str, ...]:
+    return tuple(_NUMERIC_LEXEME.findall(str(value)))
 
 
 class Quantity(_Closed):
@@ -103,15 +111,20 @@ class PopulationAccount(_Closed):
 class ComparativeEffect(_Closed):
     form: Literal["comparative_effect"]
     effect_measure: str = Field(min_length=1)
+    reported_text: str = Field(min_length=1)
     effect: Quantity
     quantities: tuple[Quantity, ...] = Field(min_length=2)
     comparison_groups: tuple[str, str]
 
     @model_validator(mode="after")
     def denominator_bases_are_labeled(self) -> ComparativeEffect:
-        if not self.effect.denominator_basis or not self.effect.denominator_basis.strip() or any(
-            not quantity.denominator_basis or not quantity.denominator_basis.strip()
-            for quantity in self.quantities
+        if (
+            not self.effect.denominator_basis
+            or not self.effect.denominator_basis.strip()
+            or any(
+                not quantity.denominator_basis or not quantity.denominator_basis.strip()
+                for quantity in self.quantities
+            )
         ):
             raise ValueError(
                 "comparative effects require a denominator basis for the effect and every "
@@ -245,6 +258,7 @@ class ResultCard(ResultCardInput):
         for key in (
             "form",
             "effect_measure",
+            "reported_text",
             "effect",
             "comparison_groups",
             "quantities",
@@ -452,7 +466,9 @@ def _compatibility(card: ResultCardInput) -> CompatibilityFinding:
     )
 
 
-def _validate_evidence(workspace: str | Path, card: ResultCardInput) -> None:
+def _validate_evidence(
+    workspace: str | Path, card: ResultCardInput
+) -> tuple[ProposalRepair, ...]:
     refs = (
         *card.evidence.target_basis,
         *card.evidence.reported_values,
@@ -466,7 +482,29 @@ def _validate_evidence(workspace: str | Path, card: ResultCardInput) -> None:
     reported_evidence = [
         resolve_evidence(workspace, reference) for reference in card.evidence.reported_values
     ]
-    reported_text = "\n".join(item.quote or "" for item in reported_evidence).casefold()
+    reported_values_text = " ".join(
+        " ".join((item.quote or "").split()) for item in reported_evidence
+    )
+    repairs: list[ProposalRepair] = []
+    if isinstance(card.reported, ComparativeEffect):
+        statement = " ".join(card.reported.reported_text.split())
+        if not statement:
+            repairs.append(
+                ProposalRepair(
+                    pointer="/reported/reported_text",
+                    code="invalid",
+                    detail="reported_text must not be empty",
+                )
+            )
+        quotes = (" ".join((item.quote or "").split()) for item in reported_evidence)
+        if statement and not any(statement in quote for quote in quotes):
+            repairs.append(
+                ProposalRepair(
+                    pointer="/reported/reported_text",
+                    code="invalid",
+                    detail="reported_text is not contiguous in reported-values Evidence",
+                )
+            )
     quantities: tuple[Quantity, ...]
     if isinstance(card.reported, ComparativeEffect):
         quantities = (card.reported.effect, *card.reported.quantities)
@@ -477,11 +515,94 @@ def _validate_evidence(workspace: str | Path, card: ResultCardInput) -> None:
     else:
         quantities = ()
     for quantity in quantities:
-        tokens = re.findall(r"\d+(?:\.\d+)?", str(quantity.value))
-        if tokens and any(token.casefold() not in reported_text for token in tokens):
-            raise ValueError(
-                f"reported value {quantity.value!s} is not present in reported-values Evidence"
+        tokens = _numeric_lexemes(quantity.value)
+        text = statement if isinstance(card.reported, ComparativeEffect) else reported_values_text
+        reported_tokens = set(_numeric_lexemes(text))
+        if tokens and any(token not in reported_tokens for token in tokens):
+            repairs.append(
+                ProposalRepair(
+                    pointer="/evidence/reported_values",
+                    code="invalid",
+                    detail=(
+                        f"reported value {quantity.value!s} is not present in "
+                        "reported-values Evidence"
+                    ),
+                )
             )
+    return tuple(repairs)
+
+
+def _declared_outcome_definition(statement: str) -> str:
+    value = statement.strip()
+    if value.casefold().startswith("effect on "):
+        value = value[10:].strip()
+    marker = ", defined as "
+    if marker in value.casefold():
+        return value[value.casefold().index(marker) + len(marker) :].strip()
+    return value
+
+
+def _card_contract_repairs(
+    card: ResultCardInput, outcome_statement: str
+) -> tuple[ProposalRepair, ...]:
+    expected = _declared_outcome_definition(outcome_statement)
+    normalized_expected = " ".join(expected.casefold().split())
+    source = " ".join(card.source_table_meaning.casefold().split())
+    allowed_source = {
+        normalized_expected,
+        f"primary endpoint: {normalized_expected}",
+        f"secondary endpoint: {normalized_expected}",
+        f"reported outcome: {normalized_expected}",
+        f"outcome: {normalized_expected}",
+    }
+    repairs: list[ProposalRepair] = []
+    if " ".join(card.target.outcome_definition.casefold().split()) != normalized_expected:
+        repairs.append(
+            ProposalRepair(
+                pointer="/target/outcome_definition",
+                code="invalid",
+                detail="target outcome definition must match Proposal outcome statement",
+            )
+        )
+    if (
+        " ".join(card.target.effect_of_interest.casefold().split())
+        != f"effect on {normalized_expected}"
+    ):
+        repairs.append(
+            ProposalRepair(
+                pointer="/target/effect_of_interest",
+                code="invalid",
+                detail="effect of interest must match Proposal outcome definition",
+            )
+        )
+    if source not in allowed_source:
+        repairs.append(
+            ProposalRepair(
+                pointer="/source_table_meaning",
+                code="invalid",
+                detail="source-table meaning must name the Proposal outcome definition",
+            )
+        )
+    return tuple(repairs)
+
+
+def _compatibility_repairs(index: int, finding: CompatibilityFinding) -> tuple[ProposalRepair, ...]:
+    pointer_by_reason = {
+        "comparison_coverage_incomplete": "population/outcome_measurement_coverage",
+        "effect_measure_mismatch": "reported/effect_measure",
+        "reported_values_require_derivation": "derived",
+        "derivation_required": "derived",
+        "derivation_not_estimable": "derived",
+        "clarity_declared_uncertain": "clarity",
+    }
+    return tuple(
+        ProposalRepair(
+            pointer=f"/results/{index}/{pointer_by_reason.get(reason, 'reported')}",
+            code="invalid",
+            detail=f"server-derived compatibility: {reason}",
+        )
+        for reason in finding.reasons
+    )
 
 
 def _repair_pointer(location: tuple[int | str, ...]) -> str:
@@ -531,66 +652,71 @@ def save_proposal(
         raise ValueError("Proposal contains duplicate Trial dispositions")
     if set(result_by_trial) | set(input_by_trial) != set(trial_ids):
         raise ValueError("Proposal requires exactly one disposition for every captured Trial")
-    reviewed: list[ResultCard] = []
+    reviewed: list[tuple[int, ResultCard]] = []
+    repairs: list[ProposalRepair] = []
+    result_index_by_trial = {
+        item.trial_id: index for index, item in enumerate(proposal.results)
+    }
     for trial_id in trial_ids:
         card = result_by_trial.get(trial_id)
         if card is None:
             continue
+        input_index = result_index_by_trial[trial_id]
+        contract_repairs = _card_contract_repairs(card, proposal.outcome_statement)
+        repairs.extend(
+            item.model_copy(update={"pointer": f"/results/{input_index}{item.pointer}"})
+            for item in contract_repairs
+        )
         try:
-            _validate_evidence(workspace, card)
+            evidence_repairs = _validate_evidence(workspace, card)
         except ValueError as error:
-            return ProposalRepairReceipt(
-                repairs=(
-                    ProposalRepair(
-                        pointer=f"/results/{len(reviewed)}/evidence/reported_values",
-                        code="invalid",
-                        detail=str(error),
-                    ),
+            evidence_repairs = (
+                ProposalRepair(
+                    pointer="/evidence/reported_values",
+                    code="invalid",
+                    detail=str(error),
                 ),
-                next_action=SaveProposalContinuation(captured_batch=captured_ref),
             )
+        repairs.extend(
+            item.model_copy(update={"pointer": f"/results/{input_index}{item.pointer}"})
+            for item in evidence_repairs
+        )
         found = _compatibility(card)
+        compatibility_repairs = (
+            _compatibility_repairs(input_index, found)
+            if found.status is not Compatibility.COMPATIBLE and trial_id not in input_by_trial
+            else ()
+        )
+        repairs.extend(compatibility_repairs)
+        if contract_repairs or evidence_repairs or compatibility_repairs:
+            continue
         reviewed.append(
-            ResultCard.model_validate(
-                {**card.model_dump(mode="json"), "compatibility": found.model_dump(mode="json")}
+            (
+                input_index,
+                ResultCard.model_validate(
+                    {
+                        **card.model_dump(mode="json"),
+                        "compatibility": found.model_dump(mode="json"),
+                    }
+                ),
             )
         )
     for disposition in proposal.needs_input:
         for reference in disposition.evidence:
             if resolve_evidence(workspace, reference).trial_id != disposition.trial_id:
                 raise ValueError("needs-input Evidence must bind its Trial")
-    unresolved = [
-        (index, card)
-        for index, card in enumerate(reviewed)
-        if card.compatibility.status is not Compatibility.COMPATIBLE
-        and card.trial_id not in input_by_trial
-    ]
-    if unresolved:
-        pointer_by_reason = {
-            "comparison_coverage_incomplete": "population/outcome_measurement_coverage",
-            "effect_measure_mismatch": "reported/effect_measure",
-            "reported_values_require_derivation": "derived",
-            "derivation_required": "derived",
-            "derivation_not_estimable": "derived",
-            "clarity_declared_uncertain": "clarity",
-        }
-        repairs = tuple(
-            ProposalRepair(
-                pointer=f"/results/{index}/{pointer_by_reason.get(reason, 'reported')}",
-                code="invalid",
-                detail=f"server-derived compatibility: {reason}",
-            )
-            for index, card in unresolved
-            for reason in card.compatibility.reasons
-        )
+    if repairs:
+        unique: dict[tuple[str, str, str], ProposalRepair] = {}
+        for item in repairs:
+            unique.setdefault((item.pointer, item.code, item.detail), item)
         return ProposalRepairReceipt(
-            repairs=repairs,
+            repairs=tuple(unique.values()),
             next_action=SaveProposalContinuation(captured_batch=captured_ref),
         )
     base = {
         "captured_batch": captured_ref.model_dump(mode="json"),
         "outcome_statement": proposal.outcome_statement,
-        "results": [item.model_dump(mode="json") for item in reviewed],
+        "results": [item.model_dump(mode="json") for _, item in reviewed],
         "needs_input": [
             input_by_trial[item].model_dump(mode="json") for item in sorted(input_by_trial)
         ],
@@ -604,7 +730,7 @@ def save_proposal(
         identity=review_identity,
         captured_batch=captured_ref,
         outcome_statement=proposal.outcome_statement,
-        results=tuple(reviewed),
+        results=tuple(item for _, item in reviewed),
         needs_input=tuple(input_by_trial[item] for item in sorted(input_by_trial)),
         review=ReviewAuthorityRequirement(required=ReviewAuthority.RESEARCHER),
         transition=transition,
