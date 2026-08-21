@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import os
 import subprocess
+import sys
 from pathlib import Path
 from typing import Any
 
@@ -47,6 +48,12 @@ def test_launcher_isolates_config_and_appends_verified_pause(monkeypatch, tmp_pa
     assert "Verified rob2-kit status" in result.output
     assert "No active Batch" in result.output
     assert observed["config"]["mcpServers"]["rob2-kit"]["env"]["ROB2_WORKSPACE"] == str(tmp_path.resolve())
+    assert observed["config"]["mcpServers"]["rob2-kit"]["command"] == sys.executable
+    assert observed["config"]["mcpServers"]["rob2-kit"]["args"] == [
+        "-m",
+        "rob2_kit.interfaces.cli.app",
+        "mcp",
+    ]
     assert observed["skills"] == [
         ".claude/skills/rob2-signalling/SKILL.md",
         ".claude/skills/rob2-workflow/SKILL.md",
