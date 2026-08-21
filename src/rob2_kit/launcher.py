@@ -147,13 +147,15 @@ def launch_assessment(
             env=environment,
             input=model_prompt,
             text=True,
+            encoding="utf-8",
+            errors="replace",
             capture_output=True,
             check=False,
             shell=False,
         )
         process_return = completed.returncode
-        stdout = completed.stdout
-        stderr = completed.stderr
+        stdout = completed.stdout or ""
+        stderr = completed.stderr or ""
     except UnsupportedHostIsolation as error:
         stderr = str(error)
         process_return = EXIT_POSTFLIGHT_FAILURE
