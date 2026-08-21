@@ -7,6 +7,7 @@ import json
 import os
 import shutil
 import subprocess
+import sys
 import tempfile
 from dataclasses import dataclass
 from pathlib import Path
@@ -61,8 +62,8 @@ def _config(workspace: Path, path: Path) -> None:
     payload = {
         "mcpServers": {
             "rob2-kit": {
-                "command": "rob2",
-                "args": ["mcp"],
+                "command": sys.executable,
+                "args": ["-m", "rob2_kit.interfaces.cli.app", "mcp"],
                 "env": {"ROB2_WORKSPACE": str(workspace)},
             }
         }
