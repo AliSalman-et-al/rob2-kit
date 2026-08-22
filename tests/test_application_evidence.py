@@ -14,6 +14,7 @@ from rob2_kit.application.evidence import (
     SearchContinuation,
     SearchRequest,
     VisualSelectionRequest,
+    _spans,
     list_sources,
     resolve_evidence,
     retrieve_evidence,
@@ -30,11 +31,16 @@ from rob2_kit.application.intake import (
 from rob2_kit.application.preflight import AuthorizedSourceRoot, PreflightRequest, preflight_sources
 
 
-def _workspace(tmp_path: Path) -> None:
+def _workspace(
+    tmp_path: Path,
+    first_page_text: str = "Alpha beta gamma. Alpha appears again.",
+    include_second_paragraph: bool = True,
+) -> None:
     document = pymupdf.open()
     page = document.new_page()
-    page.insert_text((72, 72), "Alpha beta gamma. Alpha appears again.")
-    page.insert_text((72, 110), "A second paragraph.")
+    page.insert_text((72, 72), first_page_text)
+    if include_second_paragraph:
+        page.insert_text((72, 110), "A second paragraph.")
     page = document.new_page()
     page.insert_text((72, 72), "Alpha on another page.")
     document.save(tmp_path / "main.pdf")
@@ -154,6 +160,103 @@ def test_normal_selection_requires_an_unambiguous_extent(tmp_path: Path) -> None
     )
     assert condition.evidence == ()
     assert any(item.code == "ambiguous" for item in condition.conditions)
+
+
+def test_exact_phrase_projects_whitespace_hyphenation_and_original_spans() -> None:
+    text = "Alpha \n\t beta. Radio-\ngraphic study. long-term study. word- next. Alpha beta."
+
+    whitespace = _spans(text, "alpha beta", LexicalMode.EXACT_PHRASE)
+    assert [(span.start, span.end, span.text) for span in whitespace] == [
+        (0, 13, "Alpha \n\t beta"),
+        (66, 76, "Alpha beta"),
+    ]
+    hyphenated = _spans(text, "radiographic study", LexicalMode.EXACT_PHRASE)
+    assert [(span.start, span.end, span.text) for span in hyphenated] == [
+        (15, 35, "Radio-\ngraphic study")
+    ]
+    assert _spans(text, "long term", LexicalMode.EXACT_PHRASE) == ()
+    assert _spans(text, "word next", LexicalMode.EXACT_PHRASE) == ()
+    assert _spans(text, "wordnext", LexicalMode.EXACT_PHRASE) == ()
+    assert [span.text for span in _spans(text, "alpha", LexicalMode.ANY_TERMS)] == [
+        "Alpha",
+        "Alpha",
+    ]
+    assert [(span.start, span.end, span.text) for span in _spans(
+        "Straße plan", "strasse plan", LexicalMode.EXACT_PHRASE
+    )] == [(0, 11, "Straße plan")]
+    assert [(span.start, span.end, span.text) for span in _spans(
+        "ß", "s", LexicalMode.EXACT_PHRASE
+    )] == [(0, 1, "ß")]
+    assert [(span.start, span.end, span.text) for span in _spans(
+        "ßs", "s", LexicalMode.EXACT_PHRASE
+    )] == [(0, 1, "ß"), (1, 2, "s")]
+    assert [(span.start, span.end, span.text) for span in _spans(
+        "Radio-\r\ngraphic", "radiographic", LexicalMode.EXACT_PHRASE
+    )] == [(0, 15, "Radio-\r\ngraphic")]
+
+
+def test_normal_selection_from_projected_phrase_mints_exact_evidence(tmp_path: Path) -> None:
+    _workspace(tmp_path, "Radio-\ngraphic findings.")
+    searched = retrieve_evidence(
+        tmp_path,
+        EvidenceRetrievalRequest(
+            trial_id="trial",
+            searches=(
+                SearchRequest(
+                    kind="search",
+                    query="radiographic findings",
+                    mode=LexicalMode.EXACT_PHRASE,
+                ),
+            ),
+        ),
+    )
+    assert len(searched.hits) == 1
+    span = searched.hits[0].spans[0]
+    selected = retrieve_evidence(
+        tmp_path,
+        EvidenceRetrievalRequest(
+            trial_id="trial",
+            normal_selections=(
+                NormalSelectionRequest(
+                    kind="normal_selection", hit=searched.hits[0].identity, extent="match"
+                ),
+            ),
+        ),
+    )
+    assert len(selected.evidence) == 1
+    evidence = resolve_evidence(tmp_path, selected.evidence[0])
+    assert evidence.quote == "Radio-\ngraphic findings"
+    assert evidence.quote == searched.hits[0].preview[span.start : span.end]
+
+
+def test_normal_selection_from_casefold_expansion_is_not_ambiguous(tmp_path: Path) -> None:
+    _workspace(tmp_path, "ß", include_second_paragraph=False)
+    searched = retrieve_evidence(
+        tmp_path,
+        EvidenceRetrievalRequest(
+            trial_id="trial",
+            searches=(
+                SearchRequest(kind="search", query="s", mode=LexicalMode.EXACT_PHRASE),
+            ),
+        ),
+    )
+    assert len(searched.hits) == 1
+    assert [(span.start, span.end, span.text) for span in searched.hits[0].spans] == [
+        (0, 1, "ß")
+    ]
+    selected = retrieve_evidence(
+        tmp_path,
+        EvidenceRetrievalRequest(
+            trial_id="trial",
+            normal_selections=(
+                NormalSelectionRequest(
+                    kind="normal_selection", hit=searched.hits[0].identity, extent="match"
+                ),
+            ),
+        ),
+    )
+    assert len(selected.evidence) == 1
+    assert resolve_evidence(tmp_path, selected.evidence[0]).quote == "ß"
 
 
 def test_forged_researcher_fields_are_not_an_evidence_input(tmp_path: Path) -> None:

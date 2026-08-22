@@ -334,20 +334,58 @@ def _terms(query: str) -> tuple[str, ...]:
     return terms
 
 
+def _phrase_projection(text: str) -> tuple[str, tuple[int, ...], tuple[int, ...]]:
+    """Normalize searchable text while retaining coordinates in the frozen page text."""
+    characters: list[str] = []
+    starts: list[int] = []
+    ends: list[int] = []
+    index = 0
+    while index < len(text):
+        if text[index] == "-" and index + 1 < len(text) and text[index + 1].isspace():
+            whitespace_end = index + 1
+            while whitespace_end < len(text) and text[whitespace_end].isspace():
+                whitespace_end += 1
+            if "\r" in text[index + 1 : whitespace_end] or "\n" in text[index + 1 : whitespace_end]:
+                index = whitespace_end
+                continue
+        if text[index].isspace():
+            start = index
+            while index < len(text) and text[index].isspace():
+                index += 1
+            characters.append(" ")
+            starts.append(start)
+            ends.append(index)
+            continue
+        folded = text[index].casefold()
+        characters.extend(folded)
+        starts.extend([index] * len(folded))
+        ends.extend([index + 1] * len(folded))
+        index += 1
+    return "".join(characters), tuple(starts), tuple(ends)
+
+
 def _spans(text: str, query: str, mode: LexicalMode) -> tuple[HitSpan, ...]:
     terms = _terms(query)
-    folded = text.casefold()
     spans: list[HitSpan] = []
     if mode is LexicalMode.EXACT_PHRASE:
+        folded, starts, ends = _phrase_projection(text)
         start = 0
+        last_original_end = 0
         phrase = " ".join(terms)
         while (found := folded.find(phrase, start)) >= 0:
-            spans.append(
-                HitSpan(
-                    start=found, end=found + len(phrase), text=text[found : found + len(phrase)]
+            end = found + len(phrase)
+            original_start = starts[found]
+            original_end = ends[end - 1]
+            if original_start >= last_original_end:
+                spans.append(
+                    HitSpan(
+                        start=original_start,
+                        end=original_end,
+                        text=text[original_start:original_end],
+                    )
                 )
-            )
-            start = found + max(1, len(phrase))
+                last_original_end = original_end
+            start = end
     else:
         token_matches = unicode61_tokens(text)
         values = {token for _start, _end, token in token_matches}
