@@ -173,7 +173,7 @@ def _captured_evidence(
     source: str = "Grade 3 2 Grade 4 1 Grade 5 1 median 5 and 3",
     reported_ranges: tuple[tuple[int, int], ...] | None = None,
 ):
-    (tmp_path / "article.txt").write_text(source, encoding="utf-8")
+    (tmp_path / "article.txt").write_text(source, encoding="utf-8", newline="")
     preflight = preflight_sources(
         tmp_path,
         PreflightRequest(
@@ -326,6 +326,72 @@ def test_comparative_reported_text_accepts_whitespace_normalization(tmp_path) ->
     assert not isinstance(receipt, ProposalRepairReceipt)
 
 
+@pytest.mark.parametrize(
+    "source, reported_text",
+    (
+        ("Risk ratio 0.5; risks 0.2 and 0.4", "  Risk ratio 0.5; risks 0.2 and 0.4  "),
+        ("  Risk ratio 0.5; risks 0.2 and 0.4  ", "Risk ratio 0.5; risks 0.2 and 0.4"),
+    ),
+)
+def test_comparative_reported_text_ignores_boundary_whitespace(
+    tmp_path, source: str, reported_text: str
+) -> None:
+    card = _comparative_card(tmp_path, source=source, reported_text=reported_text)
+
+    receipt = save_proposal(
+        tmp_path, ProposalInput(outcome_statement="Overall survival", results=(card,))
+    )
+
+    assert not isinstance(receipt, ProposalRepairReceipt)
+
+
+@pytest.mark.parametrize(
+    "source",
+    (
+        "Risk ratio 0.5; 95% CI 0.2 to 0.4; P<0.001 combina-\ntion analysis",
+        "Risk ratio 0.5; 95% CI 0.2 to 0.4; P<0.001 combina-\r\ntion analysis",
+    ),
+)
+def test_comparative_reported_text_accepts_pdf_layout_projection(tmp_path, source: str) -> None:
+    card = _comparative_card(
+        tmp_path,
+        source=source,
+        reported_text="Risk ratio 0.5; 95% CI 0.2 to 0.4; P<0.001 combination analysis",
+    )
+
+    receipt = save_proposal(
+        tmp_path, ProposalInput(outcome_statement="Overall survival", results=(card,))
+    )
+
+    assert not isinstance(receipt, ProposalRepairReceipt)
+
+
+@pytest.mark.parametrize(
+    "source, reported_text",
+    (
+        ("Risk ratio 0.5; long-term risks 0.2 and 0.4", "Risk ratio 0.5; longterm risks 0.2 and 0.4"),
+        ("Risk ratio 0.5; risks 0.2 and 0.4", "risk ratio 0.5; risks 0.2 and 0.4"),
+        ("Risk ratio 0.5; 95% CI 0.2 to 0.4", "Risk ratio 0.5; 95% CI 0.2-0.4"),
+        ("Risk ratio 0.5; risks 0.2 and 0.4", "Risk ratio 0.5; risks 0.2 or 0.4"),
+    ),
+)
+def test_comparative_reported_text_preserves_source_lexemes(
+    tmp_path, source: str, reported_text: str
+) -> None:
+    card = _comparative_card(tmp_path, source=source, reported_text=reported_text)
+
+    repair = save_proposal(
+        tmp_path, ProposalInput(outcome_statement="Overall survival", results=(card,))
+    )
+
+    assert isinstance(repair, ProposalRepairReceipt)
+    reported_repair = next(
+        item for item in repair.repairs if item.pointer == "/results/0/reported/reported_text"
+    )
+    assert "single cited reported-values Evidence record" in reported_repair.detail
+    assert "preserving case, wording, punctuation, CI, and P-value" in reported_repair.detail
+
+
 def test_comparative_reported_text_cannot_split_values_across_quotes(tmp_path) -> None:
     source = "Risk ratio 0.5; risks 0.2 and 0.4"
     first_quote_end = source.index(" and")
@@ -343,6 +409,28 @@ def test_comparative_reported_text_cannot_split_values_across_quotes(tmp_path) -
     assert isinstance(repair, ProposalRepairReceipt)
     assert any(
         item.pointer == "/results/0/evidence/reported_values" and "0.4" in item.detail
+        for item in repair.repairs
+    )
+
+
+def test_comparative_reported_text_cannot_assemble_a_passage_across_quotes(tmp_path) -> None:
+    source = "Risk ratio 0.5; risks 0.2 and 0.4"
+    first_quote_end = source.index(" and")
+    card = _comparative_card(
+        tmp_path,
+        source=source,
+        reported_text=source,
+        reported_ranges=((0, first_quote_end), (first_quote_end, len(source))),
+    )
+
+    repair = save_proposal(
+        tmp_path, ProposalInput(outcome_statement="Overall survival", results=(card,))
+    )
+
+    assert isinstance(repair, ProposalRepairReceipt)
+    assert any(
+        item.pointer == "/results/0/reported/reported_text"
+        and "single cited reported-values Evidence record" in item.detail
         for item in repair.repairs
     )
 

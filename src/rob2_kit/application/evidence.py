@@ -334,8 +334,14 @@ def _terms(query: str) -> tuple[str, ...]:
     return terms
 
 
-def _phrase_projection(text: str) -> tuple[str, tuple[int, ...], tuple[int, ...]]:
-    """Normalize searchable text while retaining coordinates in the frozen page text."""
+def source_layout_projection(
+    text: str, *, casefold: bool = False
+) -> tuple[str, tuple[int, ...], tuple[int, ...]]:
+    """Collapse PDF layout while retaining coordinates in the original text.
+
+    A hyphen followed by a line break is PDF line-end layout, not source wording.
+    Other punctuation and hyphens remain exact.  ``casefold`` is solely for search.
+    """
     characters: list[str] = []
     starts: list[int] = []
     ends: list[int] = []
@@ -356,10 +362,10 @@ def _phrase_projection(text: str) -> tuple[str, tuple[int, ...], tuple[int, ...]
             starts.append(start)
             ends.append(index)
             continue
-        folded = text[index].casefold()
-        characters.extend(folded)
-        starts.extend([index] * len(folded))
-        ends.extend([index + 1] * len(folded))
+        value = text[index].casefold() if casefold else text[index]
+        characters.extend(value)
+        starts.extend([index] * len(value))
+        ends.extend([index + 1] * len(value))
         index += 1
     return "".join(characters), tuple(starts), tuple(ends)
 
@@ -368,7 +374,7 @@ def _spans(text: str, query: str, mode: LexicalMode) -> tuple[HitSpan, ...]:
     terms = _terms(query)
     spans: list[HitSpan] = []
     if mode is LexicalMode.EXACT_PHRASE:
-        folded, starts, ends = _phrase_projection(text)
+        folded, starts, ends = source_layout_projection(text, casefold=True)
         start = 0
         last_original_end = 0
         phrase = " ".join(terms)
