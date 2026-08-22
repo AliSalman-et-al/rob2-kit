@@ -548,9 +548,7 @@ def _validate_evidence(
                 source_layout_projection(declared_label, casefold=True)[0].strip(),
                 source_layout_projection(declared_outcome, casefold=True)[0].strip(),
             )
-            projected_statement_folded = source_layout_projection(
-                statement, casefold=True
-            )[0]
+            projected_statement_folded = source_layout_projection(statement, casefold=True)[0]
             if not any(term and term in projected_statement_folded for term in declared_terms):
                 repairs.append(
                     ProposalRepair(

@@ -76,10 +76,7 @@ def test_restart_reference_binds_the_review_dossier():
 
 
 def test_matrix_requires_unique_identities_and_equal_source_hashes():
-    runs = tuple(
-        _run(outcome)
-        for outcome in ("pfs", "overall_survival", "adverse_events")
-    )
+    runs = tuple(_run(outcome) for outcome in ("pfs", "overall_survival", "adverse_events"))
     assert not verify_run_matrix(runs)
     duplicate = (runs[0], runs[0], runs[2])
     assert any("unique workspace_id" in failure for failure in verify_run_matrix(duplicate))

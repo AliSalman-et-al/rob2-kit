@@ -60,9 +60,7 @@ def render_page(
         or region[1] >= region[3]
     ):
         raise ValueError("region must be a nonempty normalized rectangle")
-    normalized_region = (
-        None if region is None else tuple(float(value) for value in region)
-    )
+    normalized_region = None if region is None else tuple(float(value) for value in region)
     data = verified_source_bytes(Path(workspace).resolve(strict=True), source)
     if source.media_type != "application/pdf":
         return RenderCondition(
@@ -201,8 +199,7 @@ def read_render(workspace: str | Path, identity: str) -> tuple[RenderedPage, byt
         len(image) < 26
         or image[:8] != b"\x89PNG\r\n\x1a\n"
         or image[12:16] != b"IHDR"
-        or struct.unpack(">II", image[16:24])
-        != (rendered.pixel_width, rendered.pixel_height)
+        or struct.unpack(">II", image[16:24]) != (rendered.pixel_width, rendered.pixel_height)
         or image[24] != 8
         or image[25] != 2
     ):

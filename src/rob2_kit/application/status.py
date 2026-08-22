@@ -282,7 +282,9 @@ def current_status(workspace: str | Path) -> VerifiedCurrentStatus:
                 continuation=PreflightSourcesContinuation(),
                 trials=trials,
                 domains=domains,
-                conditions=_condition("intake_plan_corrupt", "stored Intake plan identity mismatch"),
+                conditions=_condition(
+                    "intake_plan_corrupt", "stored Intake plan identity mismatch"
+                ),
             )
         ack = _ack(
             workspace,
@@ -492,10 +494,18 @@ def current_status(workspace: str | Path) -> VerifiedCurrentStatus:
                         transition_record.get("synthesis", {}).get("identity"),
                     )
                 )
-                candidate_raw = None if transition_record is None else transition_record.get("candidate")
+                candidate_raw = (
+                    None if transition_record is None else transition_record.get("candidate")
+                )
                 candidate_record = synthesis
-                if isinstance(candidate_raw, dict) and candidate_raw.get("disposition") != "assessed" and synthesis is not None:
-                    candidate_identity = identity({"synthesis": synthesis.model_dump(mode="json"), "candidate": candidate_raw})
+                if (
+                    isinstance(candidate_raw, dict)
+                    and candidate_raw.get("disposition") != "assessed"
+                    and synthesis is not None
+                ):
+                    candidate_identity = identity(
+                        {"synthesis": synthesis.model_dump(mode="json"), "candidate": candidate_raw}
+                    )
                     candidate_record = _record(RecordKind.TRIAL_OUTCOME, candidate_identity)
             except ValueError:
                 transition, synthesis, candidate_record = None, None, None
@@ -530,9 +540,7 @@ def current_status(workspace: str | Path) -> VerifiedCurrentStatus:
                         satisfied=True,
                         acknowledgment=ack,
                     ),
-                    continuation=FinishTrialContinuation(
-                        transition=transition, acknowledgment=ack
-                    ),
+                    continuation=FinishTrialContinuation(transition=transition, acknowledgment=ack),
                     trials=trials,
                     domains=domains,
                 )
@@ -590,14 +598,16 @@ def current_status(workspace: str | Path) -> VerifiedCurrentStatus:
             if isinstance(result_identity, str)
             else None
         )
-        if isinstance(finalization, dict) and isinstance(finalization.get("presentation"), dict) and result is not None:
+        if (
+            isinstance(finalization, dict)
+            and isinstance(finalization.get("presentation"), dict)
+            and result is not None
+        ):
             from .finalization import FinalizationResult, verify_finalization_result
 
             try:
                 artifact_verified = (
-                    verify_finalization_result(
-                        workspace, FinalizationResult.model_validate(result)
-                    )
+                    verify_finalization_result(workspace, FinalizationResult.model_validate(result))
                     is not None
                 )
             except (OSError, ValueError, TypeError):

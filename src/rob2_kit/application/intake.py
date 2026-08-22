@@ -100,7 +100,12 @@ def _plan_payload(plan: IntakePlan) -> dict[str, object]:
 def verify_intake_plan(raw: object) -> IntakePlan:
     """Validate the closed stored shape and its content-addressed identity."""
     if not isinstance(raw, dict) or set(raw) != {
-        "kind", "identity", "preflight", "entries", "blockers", "conditions"
+        "kind",
+        "identity",
+        "preflight",
+        "entries",
+        "blockers",
+        "conditions",
     }:
         raise ValueError("stored Intake plan has an invalid shape")
     plan = IntakePlan.model_validate(raw)
@@ -192,8 +197,10 @@ def save_intake_plan(
             conditions.append(f"omission:{entry.candidate_identity}")
     ordered_entries = tuple(sorted(entries, key=lambda item: item.candidate_identity))
     payload = {
-        "preflight": preflight.model_dump(mode="json"), "entries": [item.model_dump(mode="json") for item in ordered_entries],
-        "blockers": sorted(set(blockers)), "conditions": sorted(set(conditions)),
+        "preflight": preflight.model_dump(mode="json"),
+        "entries": [item.model_dump(mode="json") for item in ordered_entries],
+        "blockers": sorted(set(blockers)),
+        "conditions": sorted(set(conditions)),
     }
     plan = IntakePlan(
         identity=identity(payload),
@@ -227,8 +234,7 @@ def save_intake_plan(
         }
         ack_identity = identity(ack_payload)
         acknowledgment = ReviewAcknowledgmentReference(
-            kind="review_ack",
-            identity=ack_identity, uri=record_uri("review_ack", ack_identity)
+            kind="review_ack", identity=ack_identity, uri=record_uri("review_ack", ack_identity)
         )
         records["review_ack.json"] = {**acknowledgment.model_dump(mode="json"), **ack_payload}
         state.update(
@@ -294,8 +300,7 @@ def acknowledge_intake(
     }
     ack_identity = identity(ack_payload)
     ack = ReviewAcknowledgmentReference(
-        kind="review_ack",
-        identity=ack_identity, uri=record_uri("review_ack", ack_identity)
+        kind="review_ack", identity=ack_identity, uri=record_uri("review_ack", ack_identity)
     )
     state = read_json(workspace, "state.json") or {}
     state.update(
@@ -413,16 +418,32 @@ def _captured_replay_is_exact(workspace: str | Path, captured_identity: object) 
     if not isinstance(captured_identity, str):
         return False
     raw = read_json(workspace, "captured_batch.json")
-    if not isinstance(raw, dict) or set(raw) != {"kind", "identity", "plan", "acknowledgment", "sources"}:
+    if not isinstance(raw, dict) or set(raw) != {
+        "kind",
+        "identity",
+        "plan",
+        "acknowledgment",
+        "sources",
+    }:
         return False
     if raw.get("kind") != "captured_batch" or raw.get("identity") != captured_identity:
         return False
     payload = {key: raw[key] for key in ("plan", "acknowledgment", "sources")}
     if identity(payload) != captured_identity or not isinstance(raw["sources"], list):
         return False
-    root = Path(workspace).resolve(strict=True) / ".rob2-kit" / "sources-v3" / captured_identity.removeprefix("sha256:")
+    root = (
+        Path(workspace).resolve(strict=True)
+        / ".rob2-kit"
+        / "sources-v3"
+        / captured_identity.removeprefix("sha256:")
+    )
     for source in raw["sources"]:
-        if not isinstance(source, dict) or set(source) != {"candidate_identity", "trial_id", "sha256", "role"}:
+        if not isinstance(source, dict) or set(source) != {
+            "candidate_identity",
+            "trial_id",
+            "sha256",
+            "role",
+        }:
             return False
         if not all(isinstance(source[key], str) for key in source):
             return False
@@ -445,14 +466,18 @@ def _capture_batch_locked(workspace: str | Path, request: CaptureRequest) -> Cap
     plan = verify_intake_plan(read_json(workspace, "intake_plan.json"))
     if request.plan.identity != plan.identity:
         raise ValueError("capture plan is stale")
-    if state.get("ack_identity") != request.acknowledgment.identity or verify_acknowledgment(
-        workspace,
-        "review_ack.json",
-        request.acknowledgment,
-        record=plan.reference,
-        purpose="intake",
-        authority=intake_required_authority(plan),
-    ) is None:
+    if (
+        state.get("ack_identity") != request.acknowledgment.identity
+        or verify_acknowledgment(
+            workspace,
+            "review_ack.json",
+            request.acknowledgment,
+            record=plan.reference,
+            purpose="intake",
+            authority=intake_required_authority(plan),
+        )
+        is None
+    ):
         raise ValueError("capture acknowledgment is stale")
     if state.get("captured_identity") and state.get("plan_identity") == plan.identity:
         if not _captured_replay_is_exact(workspace, state.get("captured_identity")):

@@ -360,6 +360,8 @@ def handle_from_id(handle_id: str) -> EvidenceHandle:
         return _HANDLE_CACHE[handle_id]
     except KeyError as error:
         raise ValueError("Evidence handle is unavailable or expired") from error
+
+
 def authoritative_sources(workspace: str | Path, trial_id: str) -> tuple[Source, ...]:
     local = local_sources(workspace, trial_id)
     registry = registry_source(workspace, trial_id)

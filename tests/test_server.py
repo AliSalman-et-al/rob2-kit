@@ -99,9 +99,7 @@ def test_read_record_evidence_uses_authoritative_resolution(tmp_path: Path, monk
     valid = read_record(reference)
     assert dict(valid.structured_content or {})["identity"] == reference.identity
 
-    tampered = read_json(
-        tmp_path, f"evidence-{reference.identity.removeprefix('sha256:')}.json"
-    )
+    tampered = read_json(tmp_path, f"evidence-{reference.identity.removeprefix('sha256:')}.json")
     assert tampered is not None
     tampered["source_sha256"] = "sha256:" + "f" * 64
     fields = (
@@ -132,9 +130,7 @@ def test_read_record_evidence_uses_authoritative_resolution(tmp_path: Path, monk
 
     async def read_unsupported_detail() -> object:
         async with Client(mcp) as client:
-            return await client.read_resource(
-                f"rob2://detail/evidence/{tampered['identity']}"
-            )
+            return await client.read_resource(f"rob2://detail/evidence/{tampered['identity']}")
 
     with pytest.raises(Exception, match="Evidence detail URI is unsupported"):
         asyncio.run(read_unsupported_detail())
