@@ -1,0 +1,105 @@
+name: Type-fix hardening branch
+
+on:
+  push:
+    branches:
+      - refactor/optimize-rob2-kit-performance
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - uses: astral-sh/setup-uv@v6
+      - run: uv sync --locked --all-groups --python "3.11"
+      - name: Apply compatibility narrowing edits
+        shell: python
+        run: |
+          from pathlib import Path
+
+          server = Path("src/rob2_kit/interfaces/mcp/server.py")
+          text = server.read_text(encoding="utf-8")
+          text = text.replace(
+              '        registry = ensure_registry_snapshot(_workspace(), result)\n        return _content(',
+              '        registry = ensure_registry_snapshot(_workspace(), result)\n        registry_conditions = registry.get("conditions", ())\n        return _content(',
+          )
+          text = text.replace(
+              '                "conditions": [\n                    *result.conditions,\n                    *list(registry.get("conditions", ())),\n                ],',
+              '                "conditions": [\n                    *result.conditions,\n                    *(\n                        list(registry_conditions)\n                        if isinstance(registry_conditions, (list, tuple))\n                        else []\n                    ),\n                ],',
+          )
+          text = text.replace(
+              'def read_record(record: dict[str, Any] | str) -> ToolResult:\n    try:\n        resolved = _resolve(record)',
+              'def read_record(\n    record: dict[str, Any] | str | RecordReference | EvidenceReference,\n) -> ToolResult:\n    try:\n        resolved = (\n            record.model_dump(mode="json")\n            if isinstance(record, (RecordReference, EvidenceReference))\n            else _resolve(record)\n        )',
+          )
+          server.write_text(text, encoding="utf-8")
+
+          tests = Path("tests/test_dogfood_hardening.py")
+          text = tests.read_text(encoding="utf-8")
+          text = text.replace(
+              'import json\n',
+              'import json\nfrom typing import Any, cast\n',
+          )
+          text = text.replace(
+              '    rendered = annotate_handles(tmp_path, reference)\n    assert rendered["identity"]',
+              '    rendered = annotate_handles(tmp_path, reference)\n    assert isinstance(rendered, dict)\n    assert rendered["identity"]',
+          )
+          text = text.replace(
+              '        "Assessment completed successfully.\\nScientific note remains.", _status()\n',
+              '        "Assessment completed successfully.\\nScientific note remains.",\n        cast(Any, _status()),\n',
+          )
+          old = '''    kwargs = {
+        "approved_identity": "sha256:" + "e" * 64,
+        "summary": {"identity": "sha256:" + "f" * 64},
+        "records": {},
+        "root_record_ids": [],
+        "sources": {"article.txt": b"article"},
+        "renders": {},
+        "report_html": "<p>report</p>",
+    }
+    first = write_archive(tmp_path, **kwargs)
+    second = write_archive(tmp_path, **kwargs)
+'''
+          new = '''    first = write_archive(
+        tmp_path,
+        approved_identity="sha256:" + "e" * 64,
+        summary={"identity": "sha256:" + "f" * 64},
+        records={},
+        root_record_ids=[],
+        sources={"article.txt": b"article"},
+        renders={},
+        report_html="<p>report</p>",
+    )
+    second = write_archive(
+        tmp_path,
+        approved_identity="sha256:" + "e" * 64,
+        summary={"identity": "sha256:" + "f" * 64},
+        records={},
+        root_record_ids=[],
+        sources={"article.txt": b"article"},
+        renders={},
+        report_html="<p>report</p>",
+    )
+'''
+          if old not in text:
+              raise SystemExit("archive test patch target not found")
+          tests.write_text(text.replace(old, new), encoding="utf-8")
+      - run: uv run --no-sync ruff format src tests docs/release
+      - run: uv run --no-sync ruff check --fix src tests docs/release
+      - name: Commit exact formatter output
+        shell: bash
+        run: |
+          if git diff --quiet; then
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src tests docs/release
+          git commit -m "Complete compatibility type narrowing"
+          git push
