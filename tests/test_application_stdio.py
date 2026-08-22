@@ -292,7 +292,7 @@ def test_stdio_public_assessed_workflow_commits_all_five_domains(tmp_path: Path)
                     "effect": {
                         "statistic": "hazard ratio",
                         "unit": "ratio",
-                        "group_or_category": "docetaxel versus adt",
+                        "group_or_category": "docetaxel vs adt",
                         "value": "0.61 (95% CI 0.51 to 0.72; P<0.001)",
                         "denominator_basis": "time-to-event analysis",
                     },

@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import json
+import struct
 from dataclasses import dataclass
 from hashlib import sha256
 from pathlib import Path
@@ -225,6 +226,14 @@ def _domain_oracle(candidate: dict[str, Any]) -> str | None:
     return None
 
 
+def _overall_judgment(judgments: list[str]) -> str:
+    if "high" in judgments:
+        return "high"
+    if "some_concerns" in judgments:
+        return "some_concerns"
+    return "low"
+
+
 def _summary(bundle: _Bundle) -> dict[str, Any] | None:
     try:
         value = json.loads((bundle.root / "summary.json").read_text(encoding="utf-8"))
@@ -280,7 +289,7 @@ def _proposal(bundle: _Bundle, key: str, objective: ObjectiveFactManifest) -> di
 
 
 def _sources_and_evidence(bundle: _Bundle, proposal: dict[str, Any]) -> dict[str, dict[str, Any]]:
-    """Bind captured source bytes and every retained text quote independently."""
+    """Bind captured source bytes and every retained Evidence record independently."""
     captured = bundle.names.get("captured_batch.json")
     if captured is None:
         bundle.failures.append("captured Batch is unavailable")
@@ -388,6 +397,9 @@ def _sources_and_evidence(bundle: _Bundle, proposal: dict[str, Any]) -> dict[str
             sources[source_id] = (trial, data, pages, projection_hash)
     evidence: dict[str, dict[str, Any]] = {}
     for row in bundle.records.values():
+        if row.get("kind") == "visual":
+            _validate_visual_evidence(bundle, sources, row, evidence)
+            continue
         if row.get("kind") != "text":
             continue
         fields = (
@@ -430,6 +442,142 @@ def _sources_and_evidence(bundle: _Bundle, proposal: dict[str, Any]) -> dict[str
         else:
             evidence[str(row.get("identity"))] = row
     return evidence
+
+
+def _validate_visual_evidence(
+    bundle: _Bundle,
+    sources: dict[str, tuple[str, bytes, tuple[str, ...], str]],
+    row: dict[str, Any],
+    evidence: dict[str, dict[str, Any]],
+) -> None:
+    fields = (
+        "kind", "trial_id", "snapshot", "source_id", "source_sha256", "projection_hash",
+        "page", "region", "render", "transcription",
+    )
+    if _canonical({key: row.get(key) for key in fields}) != row.get("identity"):
+        bundle.failures.append("visual Evidence identity is invalid")
+        return
+    source = sources.get(row.get("source_id"))
+    page = row.get("page")
+    region = row.get("region")
+    render = row.get("render")
+    render_id = render.get("identity") if isinstance(render, dict) else None
+    if (
+        source is None
+        or row.get("trial_id") != source[0]
+        or row.get("source_sha256") != _bytes_hash(source[1])
+        or row.get("projection_hash") != source[3]
+        or not isinstance(page, int)
+        or not 1 <= page <= len(source[2])
+        or not isinstance(row.get("snapshot"), str)
+        or not isinstance(row.get("transcription"), str)
+        or not row["transcription"].strip()
+        or not isinstance(render, dict)
+        or not isinstance(render_id, str)
+        or not isinstance(render.get("uri"), str)
+        or render["uri"] != f"rob2://render/{render_id}"
+        or not _valid_region(region)
+        or row.get("snapshot") != _captured_snapshot(bundle, sources, row.get("trial_id"))
+    ):
+        bundle.failures.append("visual Evidence provenance is invalid")
+        return
+    token = render_id.removeprefix("sha256:")
+    image_path = bundle.root / "renders" / f"{token}.png"
+    try:
+        metadata = bundle.names[f"render-{token}.json"]
+        image = image_path.read_bytes()
+    except (KeyError, OSError):
+        bundle.failures.append("visual Evidence render record or PNG is unavailable")
+        return
+    render_payload = {
+        "source_id": metadata.get("source_id"), "source_sha256": metadata.get("source_hash"),
+        "page": metadata.get("page_number"), "region": metadata.get("region"),
+        "recipe": metadata.get("recipe"), "width": metadata.get("width"),
+        "height": metadata.get("height"), "pixel_width": metadata.get("pixel_width"),
+        "pixel_height": metadata.get("pixel_height"), "media_type": metadata.get("media_type"),
+        "png_sha256": metadata.get("sha256"),
+    }
+    if (
+        _canonical(render_payload) != render_id
+        or metadata.get("render_identity") != render_id
+        or metadata.get("source_id") != row.get("source_id")
+        or metadata.get("source_hash") != row.get("source_sha256")
+        or metadata.get("page_number") != page
+        or metadata.get("region") != region
+        or metadata.get("sha256") != _bytes_hash(image)
+        or metadata.get("recipe") != "png-rgb-72dpi-full-144dpi-region-v1"
+        or metadata.get("media_type") != "image/png"
+        or len(image) < 26
+        or image[:8] != b"\x89PNG\r\n\x1a\n"
+        or image[12:16] != b"IHDR"
+        or struct.unpack(">II", image[16:24])
+        != (metadata.get("pixel_width"), metadata.get("pixel_height"))
+    ):
+        bundle.failures.append("visual Evidence render binding is invalid")
+        return
+    evidence[str(row.get("identity"))] = row
+
+
+def _captured_snapshot(
+    bundle: _Bundle,
+    sources: dict[str, tuple[str, bytes, tuple[str, ...], str]],
+    trial_id: object,
+) -> str | None:
+    captured = bundle.names.get("captured_batch.json")
+    if captured is None or not isinstance(trial_id, str):
+        return None
+    preflight = bundle.names.get("preflight.json")
+    candidates = {
+        row.get("identity"): row
+        for row in (preflight or {}).get("candidates", [])
+        if isinstance(row, dict) and isinstance(row.get("identity"), str)
+    }
+    source_rows = [
+        row
+        for row in captured.get("sources", [])
+        if (
+            isinstance(row, dict)
+            and row.get("trial_id") == trial_id
+            and isinstance(row.get("candidate_identity"), str)
+            and isinstance(row.get("role"), str)
+            and isinstance(candidates.get(row["candidate_identity"]), dict)
+        )
+    ]
+    if not source_rows:
+        return None
+    ordered = sorted(
+        source_rows,
+        key=lambda row: (
+            int(row["role"] != "main_article"),
+            Path(str(candidates[row["candidate_identity"]].get("relative_path", ""))).name.casefold(),
+            row["candidate_identity"],
+        ),
+    )
+    ids = tuple(row["candidate_identity"] for row in ordered)
+    if any(source_id not in sources for source_id in ids):
+        return None
+    return _canonical(
+        {
+            "trial_id": trial_id,
+            "scope_kind": "captured_batch",
+            "scope_hash": captured.get("identity"),
+            "source_ids": ids,
+            "source_hashes": tuple(_bytes_hash(sources[source_id][1]) for source_id in ids),
+            "projection_hashes": tuple(sources[source_id][3] for source_id in ids),
+            "tokenizer": "unicode61_casefold_no_diacritics_v1",
+            "ordering": "authoritative_source_role_label_id_page_v1",
+        }
+    )
+
+
+def _valid_region(value: object) -> bool:
+    return value is None or (
+        isinstance(value, (list, tuple))
+        and len(value) == 4
+        and all(isinstance(item, (int, float)) and not isinstance(item, bool) for item in value)
+        and 0 <= value[0] < value[2] <= 1
+        and 0 <= value[1] < value[3] <= 1
+    )
 
 
 def _assessed(
@@ -489,6 +637,9 @@ def _assessed(
         )
         if _canonical({key: row.get(key) for key in fields}) != row.get("identity"):
             bundle.failures.append("Domain candidate identity is invalid")
+            continue
+        if not isinstance(row.get("evidence_bindings"), list) or not row["evidence_bindings"]:
+            bundle.failures.append("Domain candidate must have nonempty evidence bindings")
             continue
         if (
             row.get("scientific_pack") != SCIENTIFIC_PACK.content_hash
@@ -566,13 +717,7 @@ def _assessed(
         bundle.failures.append("assessed Trial does not have exactly five Domain checkpoints")
         return
     judgments = [str(row.get("proposed_judgment")) for row in domains.values()]
-    overall = (
-        "high"
-        if "high" in judgments or judgments.count("some_concerns") >= 2
-        else "some_concerns"
-        if "some_concerns" in judgments
-        else "low"
-    )
+    overall = _overall_judgment(judgments)
     assessed = [row for row in summary["trials"] if row.get("disposition") == "assessed"]
     if len(assessed) != 1:
         bundle.failures.append("release assessed outcome must have assessed count one")

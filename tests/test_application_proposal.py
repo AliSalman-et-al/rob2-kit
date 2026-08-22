@@ -233,7 +233,7 @@ def _comparative_result(reported_text: str) -> ComparativeEffect:
         effect=Quantity(
             statistic="risk ratio",
             unit="ratio",
-            group_or_category="docetaxel versus control",
+            group_or_category="docetaxel vs control",
             value="0.5",
             denominator_basis="randomized arm",
         ),
@@ -293,6 +293,91 @@ def _comparative_card(
         }
     )
     return card.model_copy(update=updates)
+
+
+def test_hazard_ratio_structure_requires_ordered_bindings_and_complete_qualifiers(tmp_path) -> None:
+    source = "Hazard ratio 0.61 (95% CI 0.51 to 0.72; P<0.001); medians 20.2 and 11.7."
+    card = _comparative_card(tmp_path, source=source)
+    reported = card.reported
+    assert isinstance(reported, ComparativeEffect)
+    card = card.model_copy(
+        update={
+            "target": card.target.model_copy(update={"intended_effect_measure": "hazard ratio"}),
+            "reported": reported.model_copy(
+                update={
+                    "effect_measure": "hazard ratio",
+                    "effect": Quantity(
+                        statistic="hazard ratio",
+                        unit="ratio",
+                        group_or_category="control vs docetaxel",
+                        value=0.61,
+                        denominator_basis="randomized arm",
+                    ),
+                    "quantities": (reported.quantities[1], reported.quantities[0]),
+                }
+            ),
+        }
+    )
+    repair = save_proposal(
+        tmp_path, ProposalInput(outcome_statement="Overall survival", results=(card,))
+    )
+    assert isinstance(repair, ProposalRepairReceipt)
+    pointers = {item.pointer for item in repair.repairs}
+    assert "/results/0/reported/quantities" in pointers
+    assert "/results/0/reported/effect/group_or_category" in pointers
+    assert "/results/0/reported/effect/denominator_basis" in pointers
+    assert "/results/0/reported/effect/value" in pointers
+
+
+@pytest.mark.parametrize(
+    "source",
+    (
+        "The median time was 20.2 and 11.7 months (hazard ratio in the combination group, "
+        "0.61; 95% CI, 0.51 to 0.72; P<0.001).",
+        "The median time was 20.2 and 11.7 months (hazard ratio for the combination group, "
+        "0.61; 95% CI, 0.51 to 0.72;\nP<0.001).",
+    ),
+)
+def test_hazard_ratio_float_is_repaired_for_retained_source_qualifiers(tmp_path, source: str) -> None:
+    card = _comparative_card(tmp_path, source=source)
+    reported = card.reported
+    assert isinstance(reported, ComparativeEffect)
+    card = card.model_copy(
+        update={
+            "target": card.target.model_copy(update={"intended_effect_measure": "hazard ratio"}),
+            "reported": reported.model_copy(
+                update={
+                    "effect_measure": "hazard ratio",
+                    "effect": Quantity(
+                        statistic="hazard ratio",
+                        unit="ratio",
+                        group_or_category="docetaxel vs control",
+                        value=0.61,
+                        denominator_basis="time-to-event analysis",
+                    ),
+                }
+            ),
+        }
+    )
+    repair = save_proposal(
+        tmp_path, ProposalInput(outcome_statement="Overall survival", results=(card,))
+    )
+    assert isinstance(repair, ProposalRepairReceipt)
+    assert any(item.pointer == "/results/0/reported/effect/value" for item in repair.repairs)
+
+
+def test_comparative_order_rejects_reversed_reported_groups(tmp_path) -> None:
+    card = _comparative_card(tmp_path)
+    reported = card.reported
+    assert isinstance(reported, ComparativeEffect)
+    card = card.model_copy(
+        update={"reported": reported.model_copy(update={"comparison_groups": ("control", "docetaxel")})}
+    )
+    repair = save_proposal(
+        tmp_path, ProposalInput(outcome_statement="Overall survival", results=(card,))
+    )
+    assert isinstance(repair, ProposalRepairReceipt)
+    assert any(item.pointer == "/results/0/reported/comparison_groups" for item in repair.repairs)
 
 
 @pytest.mark.parametrize(

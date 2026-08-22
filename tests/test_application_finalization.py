@@ -268,7 +268,9 @@ def test_application_assessed_bundle_is_independently_verified_and_rejects_missi
     from rob2_kit.application.evidence import (
         EvidenceRetrievalRequest,
         ManualSelectionRequest,
+        VisualSelectionRequest,
         retrieve_evidence,
+        source_records,
     )
     from rob2_kit.application.intake import (
         CaptureRequest,
@@ -314,6 +316,7 @@ def test_application_assessed_bundle_is_independently_verified_and_rejects_missi
     from rob2_kit.judgment_models import EvidenceRelationship
     from rob2_kit.models import Answer
     from rob2_kit.packs import SCIENTIFIC_PACK
+    from rob2_kit.rendering import RenderedPage, render_page
 
     source = (
         "PFS evidence: time to biochemical, symptomatic, or radiographic progression; "
@@ -327,6 +330,10 @@ def test_application_assessed_bundle_is_independently_verified_and_rejects_missi
     page.insert_textbox(pymupdf.Rect(36, 36, page.rect.width - 36, page.rect.height - 36), source)
     document.save(tmp_path / "article.pdf")
     document.close()
+    appendix = pymupdf.open()
+    appendix.new_page().insert_text((72, 72), "Supplementary source for the same captured trial.")
+    appendix.save(tmp_path / "appendix.pdf")
+    appendix.close()
     document = pymupdf.open(tmp_path / "article.pdf")
     source_page = document[0].get_text()
     document.close()
@@ -340,11 +347,16 @@ def test_application_assessed_bundle_is_independently_verified_and_rejects_missi
         tmp_path,
         preflight.reference,
         (
-            IntakePlanEntry(
-                candidate_identity=preflight.candidates[0].identity,
-                role="main_article",
-                disposition=SourceDisposition.INCLUDE,
-                criticality=SourceCriticality.REQUIRED,
+            *(
+                IntakePlanEntry(
+                    candidate_identity=candidate.identity,
+                    role="main_article"
+                    if candidate.relative_path == "article.pdf"
+                    else "supplement",
+                    disposition=SourceDisposition.INCLUDE,
+                    criticality=SourceCriticality.REQUIRED,
+                )
+                for candidate in preflight.candidates
             ),
         ),
     )
@@ -362,6 +374,24 @@ def test_application_assessed_bundle_is_independently_verified_and_rejects_missi
                     start=0,
                     end=len(source_page),
                     quote=source_page,
+                ),
+            ),
+        ),
+    ).evidence[0]
+    rendered = render_page(tmp_path, source_records(tmp_path, "chaarted")[0], 1)
+    assert isinstance(rendered, RenderedPage)
+    visual_evidence = retrieve_evidence(
+        tmp_path,
+        EvidenceRetrievalRequest(
+            trial_id="chaarted",
+            visual_selections=(
+                VisualSelectionRequest(
+                    kind="visual_selection",
+                    render={
+                        "identity": rendered.render_identity,
+                        "uri": f"rob2://render/{rendered.render_identity}",
+                    },
+                    transcription="The rendered source page contains the reported result.",
                 ),
             ),
         ),
@@ -404,7 +434,7 @@ def test_application_assessed_bundle_is_independently_verified_and_rejects_missi
             effect=Quantity(
                 statistic="hazard ratio",
                 unit="ratio",
-                group_or_category="docetaxel versus adt",
+                group_or_category="docetaxel vs adt",
                 value="0.61 (95% CI 0.51 to 0.72; P<0.001)",
                 denominator_basis="time-to-event analysis",
             ),
@@ -489,7 +519,7 @@ def test_application_assessed_bundle_is_independently_verified_and_rejects_missi
                             relationship=EvidenceRelationship.SUPPORTING,
                             claim="The captured trial report is the basis for this answer.",
                             rationale="The exact evidence record is in the trial scope.",
-                            evidence=(evidence,),
+                            evidence=(visual_evidence,),
                         ),
                     ),
                 )
@@ -523,9 +553,119 @@ def test_application_assessed_bundle_is_independently_verified_and_rejects_missi
     verified = verify_artifact(bundle, CHAARTED_MANIFEST, "pfs")
     assert verified.ok, verified.failures
 
+    visual_records = [
+        path
+        for path in (bundle / "records").glob("evidence-*.json")
+        if json.loads(path.read_text(encoding="utf-8")).get("kind") == "visual"
+    ]
+    assert len(visual_records) == 1
+    visual_record = visual_records[0]
+    for field, value in (
+        ("transcription", "tampered transcription"),
+        ("source_id", "wrong-source"),
+        ("page", 2),
+        ("region", [0.0, 0.0, 0.5, 0.5]),
+    ):
+        tampered = tmp_path / f"visual-{field}"
+        shutil.copytree(bundle, tampered)
+        path = tampered / "records" / visual_record.name
+        record = json.loads(path.read_text(encoding="utf-8"))
+        record[field] = value
+        path.write_text(json.dumps(record, sort_keys=True), encoding="utf-8")
+        _rehash_manifest(tampered)
+        assert not verify_artifact(tampered, CHAARTED_MANIFEST, "pfs").ok
+    from rob2_kit.evaluation.verifier import _Bundle, _captured_snapshot
+
+    verifier_bundle = _Bundle(bundle, [])
+    verifier_bundle.load()
+    captured = verifier_bundle.names["captured_batch.json"]
+    preflight_record = verifier_bundle.names["preflight.json"]
+    candidates = {item["identity"]: item for item in preflight_record["candidates"]}
+    rows = [item for item in captured["sources"] if item["trial_id"] == "chaarted"]
+    sources: dict[str, tuple[str, bytes, tuple[str, ...], str]] = {
+        str(item["candidate_identity"]): (
+            "chaarted",
+            str(item["candidate_identity"]).encode(),
+            ("fixture page",),
+            f"projection-{index}",
+        )
+        for index, item in enumerate(rows)
+    }
+    ordered = sorted(
+        rows,
+        key=lambda item: (
+            int(item["role"] != "main_article"),
+            Path(candidates[item["candidate_identity"]]["relative_path"]).name.casefold(),
+            item["candidate_identity"],
+        ),
+    )
+    def snapshot_for(order):
+        return identity(
+            {
+                "trial_id": "chaarted",
+                "scope_kind": "captured_batch",
+                "scope_hash": captured["identity"],
+                "source_ids": tuple(item["candidate_identity"] for item in order),
+                "source_hashes": tuple(
+                    "sha256:" + hashlib.sha256(item["candidate_identity"].encode()).hexdigest()
+                    for item in order
+                ),
+                "projection_hashes": tuple(
+                    sources[item["candidate_identity"]][3] for item in order
+                ),
+                "tokenizer": "unicode61_casefold_no_diacritics_v1",
+                "ordering": "authoritative_source_role_label_id_page_v1",
+            }
+        )
+    assert _captured_snapshot(verifier_bundle, sources, "chaarted") == snapshot_for(ordered)
+    assert _captured_snapshot(verifier_bundle, sources, "chaarted") != snapshot_for(
+        tuple(reversed(ordered))
+    )
+    tampered = tmp_path / "visual-reordered-snapshot"
+    shutil.copytree(bundle, tampered)
+    path = tampered / "records" / visual_record.name
+    record = json.loads(path.read_text(encoding="utf-8"))
+    record["snapshot"] = "sha256:" + "0" * 64
+    record["identity"] = identity({key: value for key, value in record.items() if key != "identity"})
+    path.write_text(json.dumps(record, sort_keys=True), encoding="utf-8")
+    _rehash_manifest(tampered)
+    rejected = verify_artifact(tampered, CHAARTED_MANIFEST, "pfs")
+    assert any("visual Evidence provenance" in failure for failure in rejected.failures)
+    for path in (
+        next((bundle / "renders").glob("*.png")),
+        next((bundle / "records").glob("render-*.json")),
+    ):
+        tampered = tmp_path / f"missing-{path.name}"
+        shutil.copytree(bundle, tampered)
+        (tampered / path.parent.name / path.name).unlink()
+        assert not verify_artifact(tampered, CHAARTED_MANIFEST, "pfs").ok
+    render_record = next((bundle / "records").glob("render-*.json"))
+    for field, value in (
+        ("recipe", "wrong-recipe"),
+        ("media_type", "image/jpeg"),
+    ):
+        tampered = tmp_path / f"render-{field}"
+        shutil.copytree(bundle, tampered)
+        path = tampered / "records" / render_record.name
+        record = json.loads(path.read_text(encoding="utf-8"))
+        record[field] = value
+        path.write_text(json.dumps(record, sort_keys=True), encoding="utf-8")
+        _rehash_manifest(tampered)
+        assert not verify_artifact(tampered, CHAARTED_MANIFEST, "pfs").ok
+    render_png = next((bundle / "renders").glob("*.png"))
+    for name, offset in (("header", 1), ("dimensions", 16)):
+        tampered = tmp_path / f"render-{name}"
+        shutil.copytree(bundle, tampered)
+        path = tampered / "renders" / render_png.name
+        image = bytearray(path.read_bytes())
+        image[offset] ^= 1
+        path.write_bytes(image)
+        _rehash_manifest(tampered)
+        assert not verify_artifact(tampered, CHAARTED_MANIFEST, "pfs").ok
+
     missing_evidence = tmp_path / "rehashed-missing-evidence"
     shutil.copytree(bundle, missing_evidence)
-    next((missing_evidence / "records").glob("evidence-*.json")).unlink()
+    (missing_evidence / "records" / visual_record.name).unlink()
     _rehash_manifest(missing_evidence)
     assert not verify_artifact(missing_evidence, CHAARTED_MANIFEST, "pfs").ok
 
@@ -547,6 +687,29 @@ def test_application_assessed_bundle_is_independently_verified_and_rejects_missi
         "scientific_pack",
         "policy_pack",
     )
+    missing_bindings = tmp_path / "rehashed-empty-domain-evidence"
+    shutil.copytree(bundle, missing_bindings)
+    empty_observation_path = next(
+        (missing_bindings / "records").glob("domain-observation-*.json")
+    )
+    empty_observation = json.loads(empty_observation_path.read_text(encoding="utf-8"))
+    empty_observation["evidence_bindings"] = []
+    empty_observation["identity"] = (
+        "sha256:"
+        + hashlib.sha256(
+            json.dumps(
+                {key: empty_observation[key] for key in candidate_fields},
+                sort_keys=True,
+                separators=(",", ":"),
+            ).encode()
+        ).hexdigest()
+    )
+    empty_observation_path.write_text(
+        json.dumps(empty_observation, sort_keys=True), encoding="utf-8"
+    )
+    _rehash_manifest(missing_bindings)
+    rejected = verify_artifact(missing_bindings, CHAARTED_MANIFEST, "pfs")
+    assert any("nonempty evidence bindings" in failure for failure in rejected.failures)
     observation["identity"] = (
         "sha256:"
         + hashlib.sha256(
