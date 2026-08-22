@@ -54,7 +54,7 @@ def submit_proposal(workspace: str | Path, raw: Mapping[str, Any]) -> object:
         draft = create_draft(workspace, dict(raw))
         return {
             "outcome": "repair",
-            "draft_id": draft.identity,
+            "draft_id": draft.draft_id,
             "repairs": [
                 {
                     "pointer": f"/results/{index}/provenance",
@@ -70,7 +70,7 @@ def submit_proposal(workspace: str | Path, raw: Mapping[str, Any]) -> object:
             "next_action": {
                 "operation": "save_proposal",
                 "draft_operation": "patch",
-                "draft_id": draft.identity,
+                "draft_id": draft.draft_id,
             },
         }
     return _legacy.submit_proposal(workspace, raw)
