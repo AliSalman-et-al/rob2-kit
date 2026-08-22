@@ -6,6 +6,8 @@ from __future__ import annotations
 import hashlib
 from pathlib import Path
 
+from rob2_kit.packs import SCIENTIFIC_PACK
+
 from ._state import identity, read_json, record_uri
 from .acknowledgments import verify_acknowledgment
 from .contracts import (
@@ -16,6 +18,7 @@ from .contracts import (
     FinalizeBatchContinuation,
     FinishTrialContinuation,
     PreflightSourcesContinuation,
+    PrepareTrialFinishContinuation,
     RecordKind,
     RecordReference,
     ResearcherReviewContinuation,
@@ -185,13 +188,57 @@ def current_status(workspace: str | Path) -> VerifiedCurrentStatus:
         _record(RecordKind.CAPTURED_BATCH, state.get("captured_identity")),
         _record(RecordKind.APPROVED_BATCH, state.get("approved_batch_identity")),
     )
-    work_packet = _record(
-        RecordKind.APPROVED_WORK_PACKET, state.get("work_packet_identity")
-    )
-    if work_packet is not None and read_json(
-        workspace, f"domain-packet-{work_packet.identity.removeprefix('sha256:')}.json"
-    ) is None:
-        work_packet = None
+    packet_identity = state.get("work_packet_identity")
+    work_packet = _record(RecordKind.APPROVED_WORK_PACKET, packet_identity)
+    packet_error: str | None = None
+    packet_data: dict[str, object] | None = None
+    if (
+        "work_packet_identity" not in state
+        and isinstance(state.get("domains"), dict)
+        and state["domains"]
+    ):
+        packet_error = (
+            "state.json has Domain checkpoints but no current Domain work packet identity"
+        )
+    elif "work_packet_identity" in state:
+        if work_packet is None:
+            packet_error = "state.json names an invalid Domain work packet identity"
+        else:
+            try:
+                raw_packet = read_json(
+                    workspace,
+                    f"domain-packet-{work_packet.identity.removeprefix('sha256:')}.json",
+                )
+                from .domains import parse_application_work_packet
+
+                if raw_packet is None:
+                    packet_error = (
+                        f"the current Domain work packet {work_packet.identity} is missing"
+                    )
+                else:
+                    parsed_packet = parse_application_work_packet(raw_packet)
+                    if parsed_packet.identity != work_packet.identity:
+                        packet_error = (
+                            f"the current Domain work packet {work_packet.identity} is stale"
+                        )
+                    else:
+                        packet_data = parsed_packet.model_dump(mode="json")
+            except (OSError, TypeError, ValueError) as error:
+                packet_error = (
+                    f"the current Domain work packet {work_packet.identity} failed verification: "
+                    f"{error}"
+                )
+    if packet_error is not None:
+        return _status(
+            phase,
+            "work_packet_unavailable",
+            "Domain work packet unavailable",
+            "The current Domain work packet cannot be verified; assessment is halted.",
+            review=review,
+            trials=trials,
+            domains=domains,
+            conditions=_condition("work_packet_unavailable", packet_error),
+        )
     if phase is WorkflowPhase.INTAKE:
         if preflight is None or read_json(workspace, "preflight.json") is None:
             return _status(
@@ -501,6 +548,30 @@ def current_status(workspace: str | Path) -> VerifiedCurrentStatus:
                 trials=trials,
                 domains=domains,
             )
+        if work_packet is not None and packet_data is not None:
+            completed_domains = state.get("domains")
+            trial_id = packet_data.get("trial_id")
+            result_id = packet_data.get("result_id")
+            expected_domains = tuple(domain.id for domain in SCIENTIFIC_PACK.domains)
+            if (
+                isinstance(completed_domains, dict)
+                and isinstance(trial_id, str)
+                and isinstance(result_id, str)
+                and all(
+                    f"{trial_id}:{result_id}:{domain}" in completed_domains
+                    for domain in expected_domains
+                )
+            ):
+                return _status(
+                    phase,
+                    "trial_finish_required",
+                    "Trial finish required",
+                    "Every Domain for the pending Trial has been committed.",
+                    review=review,
+                    continuation=PrepareTrialFinishContinuation(packet=work_packet),
+                    trials=trials,
+                    domains=domains,
+                )
         return _status(
             phase,
             "assessment_in_progress",

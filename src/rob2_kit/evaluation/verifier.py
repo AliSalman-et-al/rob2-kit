@@ -4,6 +4,8 @@
 from __future__ import annotations
 
 import json
+import math
+import re
 import struct
 from dataclasses import dataclass
 from hashlib import sha256
@@ -67,17 +69,28 @@ def _canonical(value: object) -> str:
     return "sha256:" + sha256(encoded.encode()).hexdigest()
 
 
+def _has_exact_record_keys(record: dict[str, Any], fields: tuple[str, ...]) -> bool:
+    return set(record) == {"identity", *fields}
+
+
 def _bytes_hash(value: bytes) -> str:
     return "sha256:" + sha256(value).hexdigest()
 
 
-def _ref(value: object, kind: str | None = None) -> str | None:
-    if not isinstance(value, dict) or not isinstance(value.get("identity"), str):
+def _is_hash(value: object) -> bool:
+    return isinstance(value, str) and re.fullmatch(r"sha256:[0-9a-f]{64}", value) is not None
+
+
+def _ref(value: object, kind: str) -> str | None:
+    if not isinstance(value, dict) or set(value) != {"kind", "identity", "uri"}:
         return None
-    if kind is not None and value.get("kind") != kind:
+    serialized_kind = value.get("kind")
+    if not isinstance(serialized_kind, str) or serialized_kind != kind:
         return None
-    identity, uri = value["identity"], value.get("uri")
-    if not identity.startswith("sha256:") or not isinstance(uri, str) or not uri.endswith(identity):
+    identity, uri = value["identity"], value["uri"]
+    if not isinstance(identity, str) or re.fullmatch(r"sha256:[0-9a-f]{64}", identity) is None:
+        return None
+    if uri != f"rob2://detail/{serialized_kind}/{identity}":
         return None
     return identity
 
@@ -89,10 +102,25 @@ def _ref_record(kind: str, identity: object) -> dict[str, str] | None:
 
 
 def _evidence_ref(value: object) -> str | None:
-    if not isinstance(value, dict):
+    if not isinstance(value, dict) or set(value) != {"kind", "identity"}:
         return None
     identity = value.get("identity")
-    return identity if isinstance(identity, str) and identity.startswith("sha256:") else None
+    return (
+        identity
+        if value.get("kind") == "evidence"
+        and isinstance(identity, str)
+        and re.fullmatch(r"sha256:[0-9a-f]{64}", identity) is not None
+        else None
+    )
+
+
+def _render_ref(value: object) -> str | None:
+    if not isinstance(value, dict) or set(value) != {"identity", "uri"}:
+        return None
+    identity, uri = value.get("identity"), value.get("uri")
+    if not isinstance(identity, str) or re.fullmatch(r"sha256:[0-9a-f]{64}", identity) is None:
+        return None
+    return identity if uri == f"rob2://render/{identity}" else None
 
 
 @dataclass(frozen=True)
@@ -152,16 +180,133 @@ class _Bundle:
                 self.records[identity] = record
 
 
+_ANSWER_CODES = {
+    "Y": "yes",
+    "PY": "probably_yes",
+    "PN": "probably_no",
+    "N": "no",
+    "NI": "no_information",
+}
+
+
+def _active_questions_from_pack(answers: dict[str, Any]) -> tuple[str, ...] | None:
+    """Interpret the serialized SCIENTIFIC_PACK activation expressions.
+
+    The release verifier deliberately has its own small interpreter.  The
+    expressions use the numbered questions from the RoB 2 guidance (for
+    example, ``2.1 or 2.2 is Y/PY/NI``); question order and activation text
+    come from the pack rather than from the production evaluator.
+    """
+    questions = SCIENTIFIC_PACK.questions
+    question_ids = {question.id for question in questions}
+    if len(question_ids) != len(questions):
+        return None
+    if set(answers) - question_ids:
+        return None
+    if any(
+        not isinstance(value, str)
+        or value not in {answer.value for answer in question.allowed_answers}
+        for question in questions
+        for value in ([answers[question.id]] if question.id in answers else [])
+    ):
+        return None
+
+    question_numbers: dict[str, dict[str, str]] = {}
+    for domain in SCIENTIFIC_PACK.domains:
+        if len(set(domain.question_ids)) != len(domain.question_ids):
+            return None
+        if any(question_id not in question_ids for question_id in domain.question_ids):
+            return None
+        sections = {
+            match.group(1)
+            for question in questions
+            if question.domain_id == domain.id
+            and question.active_when is not None
+            for match in [re.match(r"^(\d+)\.\d+", question.active_when)]
+            if match is not None
+        }
+        if len(sections) > 1:
+            return None
+        section = next(iter(sections), None)
+        question_numbers[domain.id] = {
+            f"{section}.{index}": question_id
+            for index, question_id in enumerate(domain.question_ids, start=1)
+            if section is not None
+        }
+
+    active: list[str] = []
+    condition_pattern = re.compile(
+        r"^(?P<references>\d+\.\d+(?:\s+(?:or|and)\s+\d+\.\d+)*)\s+"
+        r"(?P<quantifier>is|are)\s+(?P<values>[A-Z]+(?:/[A-Z]+)*)$"
+    )
+    for question in questions:
+        expression = question.active_when
+        if expression is None:
+            active.append(question.id)
+            continue
+        if not isinstance(expression, str):
+            return None
+        match = condition_pattern.fullmatch(expression.strip())
+        if match is None:
+            return None
+        references = re.findall(r"\d+\.\d+", match.group("references"))
+        operators = re.findall(r"\b(or|and)\b", match.group("references"))
+        quantifier = match.group("quantifier")
+        if (
+            not references
+            or (quantifier == "is" and any(operator != "or" for operator in operators))
+            or (quantifier == "are" and any(operator != "and" for operator in operators))
+            or (quantifier == "is" and len(references) > 1 and not operators)
+            or (quantifier == "are" and len(references) < 2)
+        ):
+            return None
+        number_map = question_numbers.get(question.domain_id)
+        if number_map is None or any(reference not in number_map for reference in references):
+            return None
+        values = match.group("values").split("/")
+        if not values or any(value not in _ANSWER_CODES for value in values):
+            return None
+        allowed = {_ANSWER_CODES[value] for value in values}
+        observed = [answers.get(number_map[reference]) for reference in references]
+        if quantifier == "is":
+            condition = any(value in allowed for value in observed)
+        else:
+            condition = all(value in allowed for value in observed)
+        if condition:
+            active.append(question.id)
+    return tuple(active)
+
+
 def _domain_oracle(candidate: dict[str, Any]) -> str | None:
     """Independent RoB 2 rules for the canonical answer vocabulary."""
     draft = candidate.get("draft")
     rows = draft.get("active_answers") if isinstance(draft, dict) else None
     if not isinstance(rows, list):
         return None
-    answers = {row.get("question_id"): row.get("answer") for row in rows if isinstance(row, dict)}
+    if not all(isinstance(row, dict) for row in rows):
+        return None
+    question_ids = [row.get("question_id") for row in rows]
+    if (
+        not all(isinstance(question_id, str) for question_id in question_ids)
+        or len(set(question_ids)) != len(question_ids)
+    ):
+        return None
+    domain = candidate.get("domain_id")
+    domain_questions = next(
+        (domain_record.question_ids for domain_record in SCIENTIFIC_PACK.domains if domain_record.id == domain),
+        None,
+    )
+    if domain_questions is None:
+        return None
+    answers = {str(row["question_id"]): row.get("answer") for row in rows}
+    expected_all = _active_questions_from_pack(answers)
+    if expected_all is None:
+        return None
+    expected = tuple(question_id for question_id in expected_all if question_id in domain_questions)
+    if tuple(question_ids) != expected:
+        return None
     yes, no = {"yes", "probably_yes"}, {"no", "probably_no"}
     no_u = no | {"no_information"}
-    domain = candidate.get("domain_id")
     if domain == "domain:randomization":
         c, b = (
             answers.get("sq:randomization:concealment"),
@@ -288,16 +433,18 @@ def _proposal(bundle: _Bundle, key: str, objective: ObjectiveFactManifest) -> di
     return value
 
 
-def _sources_and_evidence(bundle: _Bundle, proposal: dict[str, Any]) -> dict[str, dict[str, Any]]:
+def _sources_and_evidence(
+    bundle: _Bundle, proposal: dict[str, Any]
+) -> tuple[dict[str, dict[str, Any]], dict[str, tuple[str, bytes, tuple[str, ...], str]]]:
     """Bind captured source bytes and every retained Evidence record independently."""
     captured = bundle.names.get("captured_batch.json")
     if captured is None:
         bundle.failures.append("captured Batch is unavailable")
-        return {}
+        return {}, {}
     payload = {key: captured.get(key) for key in ("plan", "acknowledgment", "sources")}
     if captured.get("kind") != "captured_batch" or _canonical(payload) != captured.get("identity"):
         bundle.failures.append("captured Batch identity is invalid")
-        return {}
+        return {}, {}
     plan_value = captured.get("plan")
     plan_id = (
         plan_value
@@ -415,33 +562,48 @@ def _sources_and_evidence(bundle: _Bundle, proposal: dict[str, Any]) -> dict[str
             "quote",
             "quote_sha256",
         )
-        if _canonical({key: row.get(key) for key in fields}) != row.get("identity"):
+        if not _has_exact_record_keys(row, fields) or _canonical(
+            {key: row.get(key) for key in fields}
+        ) != row.get("identity"):
             bundle.failures.append("Evidence identity is invalid")
             continue
+        if row.get("snapshot") != _captured_snapshot(bundle, sources, row.get("trial_id")):
+            bundle.failures.append("Evidence snapshot binding is invalid")
+            continue
         source = sources.get(row.get("source_id"))
-        quote = row.get("quote")
         page = row.get("page")
-        source_page = (
-            source[2][page - 1]
-            if source is not None and isinstance(page, int) and 1 <= page <= len(source[2])
-            else None
-        )
         if (
             source is None
             or row.get("trial_id") != source[0]
             or row.get("source_sha256") != _bytes_hash(source[1])
             or row.get("projection_hash") != source[3]
+            or not isinstance(page, int)
+            or isinstance(page, bool)
+            or not 1 <= page <= len(source[2])
+        ):
+            bundle.failures.append("Evidence provenance or exact quote binding is invalid")
+            continue
+        source_page = source[2][page - 1]
+        quote = row.get("quote")
+        start, end = row.get("start"), row.get("end")
+        if (
+            not isinstance(start, int)
+            or isinstance(start, bool)
+            or not isinstance(end, int)
+            or isinstance(end, bool)
             or not isinstance(quote, str)
+            or not quote
+            or not 0 <= start < end <= len(source_page)
+        ):
+            bundle.failures.append("Evidence provenance or exact quote binding is invalid")
+        elif (
+            source_page[start:end] != quote
             or row.get("quote_sha256") != _bytes_hash(quote.encode())
-            or not isinstance(row.get("start"), int)
-            or not isinstance(row.get("end"), int)
-            or source_page is None
-            or source_page[row["start"] : row["end"]] != quote
         ):
             bundle.failures.append("Evidence provenance or exact quote binding is invalid")
         else:
             evidence[str(row.get("identity"))] = row
-    return evidence
+    return evidence, sources
 
 
 def _validate_visual_evidence(
@@ -451,31 +613,39 @@ def _validate_visual_evidence(
     evidence: dict[str, dict[str, Any]],
 ) -> None:
     fields = (
-        "kind", "trial_id", "snapshot", "source_id", "source_sha256", "projection_hash",
-        "page", "region", "render", "transcription",
+        "kind",
+        "trial_id",
+        "snapshot",
+        "source_id",
+        "source_sha256",
+        "projection_hash",
+        "page",
+        "region",
+        "render",
+        "transcription",
     )
-    if _canonical({key: row.get(key) for key in fields}) != row.get("identity"):
+    if not _has_exact_record_keys(row, fields) or _canonical(
+        {key: row.get(key) for key in fields}
+    ) != row.get("identity"):
         bundle.failures.append("visual Evidence identity is invalid")
         return
     source = sources.get(row.get("source_id"))
     page = row.get("page")
     region = row.get("region")
     render = row.get("render")
-    render_id = render.get("identity") if isinstance(render, dict) else None
+    render_id = _render_ref(render)
     if (
         source is None
         or row.get("trial_id") != source[0]
         or row.get("source_sha256") != _bytes_hash(source[1])
         or row.get("projection_hash") != source[3]
         or not isinstance(page, int)
+        or isinstance(page, bool)
         or not 1 <= page <= len(source[2])
         or not isinstance(row.get("snapshot"), str)
         or not isinstance(row.get("transcription"), str)
         or not row["transcription"].strip()
-        or not isinstance(render, dict)
         or not isinstance(render_id, str)
-        or not isinstance(render.get("uri"), str)
-        or render["uri"] != f"rob2://render/{render_id}"
         or not _valid_region(region)
         or row.get("snapshot") != _captured_snapshot(bundle, sources, row.get("trial_id"))
     ):
@@ -490,11 +660,16 @@ def _validate_visual_evidence(
         bundle.failures.append("visual Evidence render record or PNG is unavailable")
         return
     render_payload = {
-        "source_id": metadata.get("source_id"), "source_sha256": metadata.get("source_hash"),
-        "page": metadata.get("page_number"), "region": metadata.get("region"),
-        "recipe": metadata.get("recipe"), "width": metadata.get("width"),
-        "height": metadata.get("height"), "pixel_width": metadata.get("pixel_width"),
-        "pixel_height": metadata.get("pixel_height"), "media_type": metadata.get("media_type"),
+        "source_id": metadata.get("source_id"),
+        "source_sha256": metadata.get("source_hash"),
+        "page": metadata.get("page_number"),
+        "region": metadata.get("region"),
+        "recipe": metadata.get("recipe"),
+        "width": metadata.get("width"),
+        "height": metadata.get("height"),
+        "pixel_width": metadata.get("pixel_width"),
+        "pixel_height": metadata.get("pixel_height"),
+        "media_type": metadata.get("media_type"),
         "png_sha256": metadata.get("sha256"),
     }
     if (
@@ -549,7 +724,9 @@ def _captured_snapshot(
         source_rows,
         key=lambda row: (
             int(row["role"] != "main_article"),
-            Path(str(candidates[row["candidate_identity"]].get("relative_path", ""))).name.casefold(),
+            Path(
+                str(candidates[row["candidate_identity"]].get("relative_path", ""))
+            ).name.casefold(),
             row["candidate_identity"],
         ),
     )
@@ -574,10 +751,144 @@ def _valid_region(value: object) -> bool:
     return value is None or (
         isinstance(value, (list, tuple))
         and len(value) == 4
-        and all(isinstance(item, (int, float)) and not isinstance(item, bool) for item in value)
+        and all(
+            isinstance(item, (int, float))
+            and not isinstance(item, bool)
+            and math.isfinite(item)
+            for item in value
+        )
         and 0 <= value[0] < value[2] <= 1
         and 0 <= value[1] < value[3] <= 1
     )
+
+
+def _verify_packet_catalog(
+    bundle: _Bundle,
+    packet: dict[str, Any],
+    evidence: dict[str, dict[str, Any]],
+    sources: dict[str, tuple[str, bytes, tuple[str, ...], str]],
+    trial_id: object,
+) -> None:
+    catalog = packet.get("reusable_evidence")
+    if not isinstance(catalog, dict) or set(catalog) != {"basis", "entries", "has_more", "next_after"} or not isinstance(trial_id, str):
+        bundle.failures.append("Domain work packet reusable Evidence catalog is invalid")
+        return
+    entries = catalog.get("entries")
+    if (
+        not isinstance(catalog.get("basis"), str)
+        or not re.fullmatch(r"sha256:[0-9a-f]{64}", catalog["basis"])
+        or not isinstance(entries, list)
+        or len(entries) > 32
+        or not isinstance(catalog.get("has_more"), bool)
+        or (catalog["has_more"] != (catalog.get("next_after") is not None))
+    ):
+        bundle.failures.append("Domain work packet reusable Evidence catalog is invalid")
+        return
+    captured = bundle.names.get("captured_batch.json")
+    candidates = {
+        row.get("identity"): row
+        for row in (bundle.names.get("preflight.json") or {}).get("candidates", [])
+        if isinstance(row, dict)
+    }
+    ordered_sources = sorted(
+        (
+            row
+            for row in (captured or {}).get("sources", [])
+            if isinstance(row, dict) and row.get("trial_id") == trial_id
+        ),
+        key=lambda row: (
+            int(row.get("role") != "main_article"),
+            Path(
+                str(candidates.get(row.get("candidate_identity"), {}).get("relative_path", ""))
+            ).name.casefold(),
+            str(row.get("candidate_identity")),
+        ),
+    )
+    source_aliases = {
+        row.get("candidate_identity"): f"s{index}"
+        for index, row in enumerate(ordered_sources, 1)
+    }
+    expected_aliases = [f"s{index}" for index in range(1, len(ordered_sources) + 1)]
+    if packet.get("stable_aliases") != expected_aliases:
+        bundle.failures.append("Domain work packet stable aliases are invalid")
+    actual: list[str] = []
+    for entry in entries:
+        if not isinstance(entry, dict):
+            bundle.failures.append("Domain work packet reusable Evidence catalog is invalid")
+            continue
+        reference = entry.get("evidence")
+        evidence_id = _evidence_ref(reference)
+        if (
+            not isinstance(reference, dict)
+            or set(reference) != {"kind", "identity"}
+            or reference.get("kind") != "evidence"
+            or not isinstance(evidence_id, str)
+            or len(evidence_id) != 71
+            or any(character not in "0123456789abcdef" for character in evidence_id[7:])
+        ):
+            bundle.failures.append("Domain work packet reusable Evidence reference is invalid")
+            continue
+        record = evidence.get(evidence_id or "")
+        if (
+            record is None
+            or record.get("trial_id") != trial_id
+            or entry.get("kind") != record.get("kind")
+            or not isinstance(entry.get("source_id"), str)
+            or not entry.get("source_id")
+            or entry.get("source_id") != record.get("source_id")
+            or not isinstance(entry.get("source_alias"), str)
+            or not 1 <= len(entry.get("source_alias")) <= 16
+            or entry.get("source_alias") != source_aliases.get(record.get("source_id"))
+            or not isinstance(entry.get("page"), int)
+            or isinstance(entry.get("page"), bool)
+            or entry.get("page") < 1
+            or entry.get("page") != record.get("page")
+        ):
+            bundle.failures.append("Domain work packet reusable Evidence catalog is unbound")
+            continue
+        if entry.get("kind") == "text":
+            valid = {"kind", "evidence", "source_id", "source_alias", "page", "start", "end", "preview", "truncated"}
+            matches = (
+                isinstance(entry.get("start"), int)
+                and not isinstance(entry.get("start"), bool)
+                and entry.get("start") >= 0
+                and isinstance(entry.get("end"), int)
+                and not isinstance(entry.get("end"), bool)
+                and entry.get("end") > entry.get("start")
+                and isinstance(entry.get("preview"), str)
+                and bool(entry.get("preview"))
+                and len(entry.get("preview")) <= 160
+                and isinstance(entry.get("truncated"), bool)
+                and entry.get("start") == record.get("start")
+                and entry.get("end") == record.get("end")
+                and entry.get("preview") == record.get("quote", "")[:160]
+                and entry.get("truncated") is (len(record.get("quote", "")) > 160)
+            )
+        elif entry.get("kind") == "visual":
+            valid = {"kind", "evidence", "source_id", "source_alias", "page", "region", "preview", "truncated"}
+            matches = (
+                _valid_region(entry.get("region"))
+                and isinstance(entry.get("preview"), str)
+                and bool(entry.get("preview"))
+                and len(entry.get("preview")) <= 160
+                and isinstance(entry.get("truncated"), bool)
+                and entry.get("region") == record.get("region")
+                and entry.get("preview") == record.get("transcription", "")[:160]
+                and entry.get("truncated") is (len(record.get("transcription", "")) > 160)
+            )
+        else:
+            valid, matches = set(), False
+        if set(entry) != valid or not matches:
+            bundle.failures.append("Domain work packet reusable Evidence catalog is tampered")
+            continue
+        actual.append(evidence_id or "")
+    if actual != sorted(actual) or len(actual) != len(set(actual)):
+        bundle.failures.append(
+            "Domain work packet reusable Evidence catalog is unsorted or duplicate"
+        )
+    next_after = catalog.get("next_after")
+    if next_after is not None and (not actual or _evidence_ref(next_after) != actual[-1]):
+        bundle.failures.append("Domain work packet reusable Evidence catalog continuation is invalid")
 
 
 def _assessed(
@@ -585,6 +896,7 @@ def _assessed(
     summary: dict[str, Any],
     proposal: dict[str, Any],
     evidence: dict[str, dict[str, Any]],
+    sources: dict[str, tuple[str, bytes, tuple[str, ...], str]],
 ) -> None:
     approved = bundle.names.get("approved_batch.json")
     if approved is None:
@@ -620,6 +932,23 @@ def _assessed(
         for row in bundle.records.values()
         if row.get("kind") == "domain_candidate" and "active_hash" in row
     ]
+    domain_order = tuple(domain.id for domain in SCIENTIFIC_PACK.domains)
+    domain_questions = {domain.id: list(domain.question_ids) for domain in SCIENTIFIC_PACK.domains}
+    retained_hashes: dict[str, str] = {}
+    for row in rows:
+        domain = row.get("domain_id")
+        active_hash = row.get("active_hash")
+        if (
+            isinstance(domain, str)
+            and domain in domain_questions
+            and domain not in retained_hashes
+            and isinstance(row.get("identity"), str)
+            and isinstance(row.get("active_revision"), int)
+            and _is_hash(active_hash)
+            and _canonical({"candidate": row["identity"], "revision": row["active_revision"]})
+            == active_hash
+        ):
+            retained_hashes[domain] = active_hash
     domains: dict[str, dict[str, Any]] = {}
     for row in rows:
         fields = (
@@ -655,28 +984,28 @@ def _assessed(
         packet_ref = row.get("packet")
         packet_id = _ref(packet_ref, "work_packet")
         packet = bundle.records.get(packet_id or "")
+        packet_fields = (
+            "kind",
+            "approved_batch",
+            "trial_id",
+            "result_id",
+            "domain_id",
+            "active_question_ids",
+            "allowed_question_ids",
+            "stable_aliases",
+            "reusable_evidence",
+            "prior_domain_hashes",
+            "scientific_pack",
+            "policy_pack",
+        )
         if (
             packet is None
+            or not _has_exact_record_keys(packet, packet_fields)
             or _canonical(
-                {
-                    key: packet.get(key)
-                    for key in (
-                        "kind",
-                        "approved_batch",
-                        "trial_id",
-                        "result_id",
-                        "domain_id",
-                        "active_question_ids",
-                        "allowed_question_ids",
-                        "stable_aliases",
-                        "prior_domain_hashes",
-                        "scientific_pack",
-                        "policy_pack",
-                    )
-                }
+                {key: packet.get(key) for key in packet_fields}
             )
             != packet_id
-            or packet.get("approved_batch", {}).get("identity") != approved.get("identity")
+            or _ref(packet.get("approved_batch"), "approved_batch") != approved.get("identity")
             or any(
                 packet.get(key) != row.get(key) for key in ("trial_id", "result_id", "domain_id")
             )
@@ -686,6 +1015,37 @@ def _assessed(
             or packet.get("policy_pack") != row.get("policy_pack")
         ):
             bundle.failures.append("Domain work packet, Batch binding, or pack basis is invalid")
+        domain = row.get("domain_id")
+        if not isinstance(domain, str) or domain not in domain_questions:
+            bundle.failures.append("Domain checkpoint is outside the SCIENTIFIC_PACK")
+        else:
+            expected_questions = domain_questions[domain]
+            if (
+                not isinstance(packet, dict)
+                or not isinstance(packet.get("active_question_ids"), list)
+                or not isinstance(packet.get("allowed_question_ids"), list)
+                or packet.get("active_question_ids") != expected_questions
+                or packet.get("allowed_question_ids") != expected_questions
+            ):
+                bundle.failures.append("Domain work packet question scope is invalid")
+            prior = packet.get("prior_domain_hashes") if isinstance(packet, dict) else None
+            prior_valid = (
+                isinstance(prior, list)
+                and all(
+                    isinstance(item, list)
+                    and len(item) == 2
+                    and isinstance(item[0], str)
+                    and _is_hash(item[1])
+                    for item in prior
+                )
+            )
+            expected_prior = [
+                [earlier, retained_hashes.get(earlier)]
+                for earlier in domain_order[: domain_order.index(domain)]
+            ]
+            if not prior_valid or prior != expected_prior:
+                bundle.failures.append("Domain work packet prior checkpoint chain is invalid")
+        _verify_packet_catalog(bundle, packet or {}, evidence, sources, row.get("trial_id"))
         for binding in row.get("evidence_bindings", []):
             reference = binding.get("evidence") if isinstance(binding, dict) else None
             evidence_id = _evidence_ref(reference)
@@ -872,9 +1232,9 @@ def verify_artifact(
     summary, proposal = _summary(bundle), _proposal(bundle, outcome_key, objective)
     expected = objective.outcome(outcome_key).expected_terminal
     if summary is not None and proposal is not None:
-        evidence = _sources_and_evidence(bundle, proposal)
+        evidence, sources = _sources_and_evidence(bundle, proposal)
         if expected == "assessed":
-            _assessed(bundle, summary, proposal, evidence)
+            _assessed(bundle, summary, proposal, evidence, sources)
         elif summary.get("counts") != {
             "total": 1,
             "pending": 0,

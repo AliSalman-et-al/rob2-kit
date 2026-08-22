@@ -40,7 +40,7 @@ from .contracts import (
     TransitionReference,
     ValidateDomainJudgmentContinuation,
 )
-from .evidence import EvidenceRecord, resolve_evidence, source_layout_projection
+from .evidence import EvidenceRecord, TextEvidenceRecord, resolve_evidence, source_layout_projection
 
 _NUMERIC_LEXEME = re.compile(
     r"(?<![\w.])[+-]?(?:\d+\.\d*|\.\d+|\d+)(?:[eE][+-]?\d+)?(?![\w.])"
@@ -520,8 +520,19 @@ def _validate_evidence(
     if resolution_repairs:
         return tuple(resolution_repairs)
     reported_evidence = resolved_by_role["reported_values"]
+    text_reported_evidence = [
+        item for item in reported_evidence if isinstance(item, TextEvidenceRecord)
+    ]
+    if len(text_reported_evidence) != len(reported_evidence):
+        return (
+            ProposalRepair(
+                pointer="/evidence/reported_values",
+                code="invalid",
+                detail="reported-values Evidence must be text Evidence with an exact source quote",
+            ),
+        )
     reported_values_text = " ".join(
-        source_layout_projection(item.quote or "")[0] for item in reported_evidence
+        source_layout_projection(item.quote)[0] for item in text_reported_evidence
     )
     repairs: list[ProposalRepair] = []
     if isinstance(card.reported, ComparativeEffect):
@@ -535,7 +546,7 @@ def _validate_evidence(
                 )
             )
         quotes = tuple(
-            source_layout_projection(item.quote or "")[0].strip() for item in reported_evidence
+            source_layout_projection(item.quote)[0].strip() for item in text_reported_evidence
         )
         if statement.strip() and not any(statement in quote for quote in quotes):
             identities = ", ".join(item.identity for item in reported_evidence)

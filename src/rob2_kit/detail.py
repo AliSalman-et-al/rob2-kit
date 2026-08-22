@@ -148,12 +148,9 @@ def _verified_payload(reference: DetailReference, payload: bytes) -> dict[str, o
                 if application_identity(content) != reference.identity:
                     raise ValueError("approved Batch Detail identity mismatch")
             elif reference.kind == "work_packet":
-                content = {key: value for key, value in decoded.items() if key != "identity"}
-                if (
-                    decoded.get("kind") != "work_packet"
-                    or application_identity(content) != reference.identity
-                ):
-                    raise ValueError("work packet Detail identity mismatch")
+                from rob2_kit.application.domains import parse_application_work_packet
+
+                parse_application_work_packet(decoded)
             else:
                 content = {key: value for key, value in decoded.items() if key != "identity"}
                 if application_identity(content) != reference.identity:

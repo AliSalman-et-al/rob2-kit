@@ -159,6 +159,9 @@ def _work_packet(
         )
         if raw is None or raw.get("identity") != reference.identity:
             raise ValueError("work packet is unavailable or corrupt")
+        from .domains import parse_application_work_packet
+
+        raw = parse_application_work_packet(raw).model_dump(mode="json")
         approved = RecordReference.model_validate(raw.get("approved_batch"))
         return raw, approved
     if reference.kind is not RecordKind.APPROVED_BATCH:
