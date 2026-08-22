@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from typing import Any, cast
 
 from . import launcher_legacy as _legacy
 from .application.status import current_status
@@ -43,7 +44,7 @@ def launch_assessment(
     if not separator:
         model_output = result.output
     model_output = model_output.rstrip("\n")
-    sanitized = sanitize_model_output(model_output, status)
+    sanitized = sanitize_model_output(model_output, cast(Any, status))
     block = marker + actionable_json(status)
     output = (
         sanitized.text
