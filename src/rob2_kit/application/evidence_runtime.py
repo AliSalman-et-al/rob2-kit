@@ -4,13 +4,14 @@ from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
 from pathlib import Path
-from typing import Any, Literal
+from typing import Any, Literal, TypeVar
 
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
 from rob2_kit.sources import _extract_pages, verified_source_bytes
 
 from ._state import write_json
+from .contracts import EvidenceReference
 from .evidence import (
     EvidenceCatalogRequest,
     EvidenceRetrievalRequest,
@@ -54,7 +55,10 @@ class TableSelectionRequest(QuoteSelectionRequest):
     footnotes: tuple[str, ...] = ()
 
 
-def _models(model: type[BaseModel], values: object) -> tuple[BaseModel, ...]:
+_ModelT = TypeVar("_ModelT", bound=BaseModel)
+
+
+def _models(model: type[_ModelT], values: object) -> tuple[_ModelT, ...]:
     if values is None:
         return ()
     if not isinstance(values, Sequence) or isinstance(values, str | bytes | bytearray):
@@ -161,6 +165,12 @@ def _dump_response(result: BaseModel | None) -> dict[str, object]:
     return result.model_dump(mode="json", exclude_none=True)
 
 
+def _sequence(value: object) -> list[object]:
+    if isinstance(value, Sequence) and not isinstance(value, str | bytes | bytearray):
+        return list(value)
+    return []
+
+
 def retrieve_agent_evidence(
     workspace: str | Path, raw: Mapping[str, Any]
 ) -> dict[str, object] | TransportRepairReceipt:
@@ -179,10 +189,12 @@ def retrieve_agent_evidence(
         manual = _models(ManualSelectionRequest, raw.get("manual_selections"))
         visual = _models(VisualSelectionRequest, raw.get("visual_selections"))
         quote_selections = tuple(
-            QuoteSelectionRequest.model_validate(value) for value in raw.get("quote_selections", ())
+            QuoteSelectionRequest.model_validate(value)
+            for value in _sequence(raw.get("quote_selections"))
         )
         table_selections = tuple(
-            TableSelectionRequest.model_validate(value) for value in raw.get("table_selections", ())
+            TableSelectionRequest.model_validate(value)
+            for value in _sequence(raw.get("table_selections"))
         )
         catalog_raw = raw.get("catalog")
         catalog = (
@@ -221,7 +233,7 @@ def retrieve_agent_evidence(
 
     selections: tuple[QuoteSelectionRequest, ...] = (*quote_selections, *table_selections)
     convenience_conditions: list[dict[str, object]] = []
-    selected_refs: list[object] = []
+    selected_refs: list[EvidenceReference] = []
     table_records: list[dict[str, object]] = []
     snapshot = ""
     if selections:
@@ -272,26 +284,21 @@ def retrieve_agent_evidence(
     payload = _dump_response(base_result)
     if not payload.get("snapshot"):
         payload["snapshot"] = snapshot
-    payload.setdefault("evidence", [])
+    existing_evidence = _sequence(payload.get("evidence"))
     payload["evidence"] = [
-        *list(payload["evidence"]),
+        *existing_evidence,
         *[reference.model_dump(mode="json") for reference in selected_refs],
     ]
-    payload.setdefault("conditions", [])
-    payload["conditions"] = [
-        *list(payload["conditions"]),
-        *convenience_conditions,
-    ]
+    existing_conditions = _sequence(payload.get("conditions"))
+    payload["conditions"] = [*existing_conditions, *convenience_conditions]
     records: list[dict[str, object]] = []
-    for raw_ref in payload["evidence"]:
+    for raw_ref in _sequence(payload.get("evidence")):
         try:
-            from .contracts import EvidenceReference
-
             reference = EvidenceReference.model_validate(raw_ref)
             records.append(resolve_evidence(workspace, reference).model_dump(mode="json"))
         except (TypeError, ValueError):
             continue
     payload["records"] = records
     payload["table_bindings"] = table_records
-    payload["outcome"] = "success" if not payload["conditions"] else "condition"
+    payload["outcome"] = "success" if not _sequence(payload.get("conditions")) else "condition"
     return payload
