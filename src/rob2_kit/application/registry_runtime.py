@@ -7,11 +7,14 @@ import json
 import re
 import urllib.error
 import urllib.request
+from collections.abc import Mapping, Sequence
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
+
+from pydantic import BaseModel
 
 from rob2_kit.sources import Source, SourceRole, _extract_pages, sha256_bytes
-from rob2_kit.text_projection import projection_identity
+from rob2_kit.text_projection import TextProjectionIdentity, projection_identity
 
 from ._state import identity, read_json, write_json
 
@@ -19,12 +22,18 @@ _NCT = re.compile(r"\bNCT\d{8}\b", re.IGNORECASE)
 _HOOK_INSTALLED = False
 
 
-def _root_paths(workspace: Path, preflight: dict[str, Any]) -> dict[str, Path]:
+def _sequence(value: object) -> Sequence[object]:
+    if isinstance(value, Sequence) and not isinstance(value, str | bytes | bytearray):
+        return value
+    return ()
+
+
+def _root_paths(workspace: Path, preflight: Mapping[str, object]) -> dict[str, Path]:
     result: dict[str, Path] = {}
-    for root in preflight.get("roots", ()):
-        if not isinstance(root, dict):
+    for raw_root in _sequence(preflight.get("roots")):
+        if not isinstance(raw_root, Mapping):
             continue
-        alias, path = root.get("alias"), root.get("path")
+        alias, path = raw_root.get("alias"), raw_root.get("path")
         if isinstance(alias, str) and isinstance(path, str):
             candidate = (workspace / path).resolve()
             if candidate.is_relative_to(workspace):
@@ -32,12 +41,18 @@ def _root_paths(workspace: Path, preflight: dict[str, Any]) -> dict[str, Path]:
     return result
 
 
-def _trial_text(workspace: Path, preflight: dict[str, Any], trial_id: str) -> str:
+def _trial_text(
+    workspace: Path, preflight: Mapping[str, object], trial_id: str
+) -> str:
     roots = _root_paths(workspace, preflight)
     chunks: list[str] = [trial_id]
-    for candidate in preflight.get("candidates", ()):
-        if not isinstance(candidate, dict) or candidate.get("trial_id") != trial_id:
+    for raw_candidate in _sequence(preflight.get("candidates")):
+        if (
+            not isinstance(raw_candidate, Mapping)
+            or raw_candidate.get("trial_id") != trial_id
+        ):
             continue
+        candidate = dict(raw_candidate)
         chunks.append(json.dumps(candidate, sort_keys=True, default=str))
         alias, relative, media = (
             candidate.get("root_alias"),
@@ -46,20 +61,22 @@ def _trial_text(workspace: Path, preflight: dict[str, Any], trial_id: str) -> st
         )
         if not all(isinstance(item, str) for item in (alias, relative, media)):
             continue
-        root = roots.get(str(alias))
+        root = roots.get(cast(str, alias))
         if root is None:
             continue
-        path = (root / str(relative)).resolve()
+        path = (root / cast(str, relative)).resolve()
         if not path.is_relative_to(workspace) or not path.is_file() or path.is_symlink():
             continue
         try:
-            chunks.extend(_extract_pages(path.read_bytes(), str(media)))
+            chunks.extend(_extract_pages(path.read_bytes(), cast(str, media)))
         except (OSError, UnicodeDecodeError, ValueError):
             continue
     return "\n".join(chunks)
 
 
-def _nct_ids(workspace: Path, preflight: dict[str, Any], trial_id: str) -> tuple[str, ...]:
+def _nct_ids(
+    workspace: Path, preflight: Mapping[str, object], trial_id: str
+) -> tuple[str, ...]:
     return tuple(
         sorted(
             {
@@ -81,18 +98,40 @@ def _fetch(nct_id: str) -> bytes:
     return json.dumps(parsed, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode()
 
 
+def _preflight_value(
+    workspace: str | Path, value: object | None
+) -> dict[str, object] | None:
+    if isinstance(value, BaseModel):
+        return value.model_dump(mode="json")
+    if isinstance(value, Mapping):
+        return dict(value)
+    raw = read_json(workspace, "preflight.json")
+    return raw if isinstance(raw, dict) else None
+
+
+def _outcomes(preflight: Mapping[str, object]) -> dict[str, object]:
+    raw = preflight.get("registry_outcomes", ())
+    if isinstance(raw, Mapping):
+        return {str(key): value for key, value in raw.items()}
+    if isinstance(raw, Sequence) and not isinstance(raw, str | bytes | bytearray):
+        result: dict[str, object] = {}
+        for item in raw:
+            if (
+                isinstance(item, Sequence)
+                and not isinstance(item, str | bytes | bytearray)
+                and len(item) == 2
+            ):
+                result[str(item[0])] = item[1]
+        return result
+    return {}
+
+
 def ensure_registry_snapshot(
     workspace: str | Path, preflight_value: object | None = None
 ) -> dict[str, object]:
     root = Path(workspace).resolve(strict=True)
-    preflight = (
-        preflight_value.model_dump(mode="json")
-        if hasattr(preflight_value, "model_dump")
-        else preflight_value
-        if isinstance(preflight_value, dict)
-        else read_json(workspace, "preflight.json")
-    )
-    if not isinstance(preflight, dict):
+    preflight = _preflight_value(workspace, preflight_value)
+    if preflight is None:
         return {
             "outcome": "condition",
             "sources": [],
@@ -103,15 +142,13 @@ def ensure_registry_snapshot(
                 }
             ],
         }
-    outcomes = dict(preflight.get("registry_outcomes", ()))
-    trials = sorted(
-        {
-            str(item.get("trial_id"))
-            for item in preflight.get("candidates", ())
-            if isinstance(item, dict) and item.get("trial_id")
-        }
-        | {str(item) for item in outcomes}
-    )
+    outcomes = _outcomes(preflight)
+    trial_ids = {
+        str(item.get("trial_id"))
+        for item in _sequence(preflight.get("candidates"))
+        if isinstance(item, Mapping) and item.get("trial_id")
+    }
+    trials = sorted(trial_ids | set(outcomes))
     materialized: list[dict[str, object]] = []
     conditions: list[dict[str, object]] = []
     for trial_id in trials:
@@ -131,10 +168,15 @@ def ensure_registry_snapshot(
             conditions.append(
                 {
                     "trial_id": trial_id,
-                    "code": "registry_identifier_unavailable"
-                    if not nct_ids
-                    else "registry_identifier_ambiguous",
-                    "detail": "registry matched but the Trial dossier did not identify exactly one NCT record",
+                    "code": (
+                        "registry_identifier_unavailable"
+                        if not nct_ids
+                        else "registry_identifier_ambiguous"
+                    ),
+                    "detail": (
+                        "registry matched but the Trial dossier did not identify "
+                        "exactly one NCT record"
+                    ),
                     "matched_nct_ids": list(nct_ids),
                 }
             )
@@ -153,13 +195,14 @@ def ensure_registry_snapshot(
             raise ValueError("registry source directory is redirected")
         data_hash = sha256_bytes(data)
         source_id = (
-            "registry_" + hashlib.sha256(f"{trial_id}\0{nct_id}\0{data_hash}".encode()).hexdigest()
+            "registry_"
+            + hashlib.sha256(f"{trial_id}\0{nct_id}\0{data_hash}".encode()).hexdigest()
         )
         path = directory / f"{nct_id}.json"
         if path.exists() and path.read_bytes() != data:
             raise ValueError("registry path is bound to different bytes")
         path.write_bytes(data)
-        payload = {
+        payload: dict[str, object] = {
             "kind": "registry_source",
             "trial_id": trial_id,
             "nct_id": nct_id,
@@ -226,11 +269,10 @@ def install_registry_source_hook() -> None:
     from . import evidence
 
     original = evidence._source_basis
-    if getattr(original, "_registry_source_hook", False):
-        _HOOK_INSTALLED = True
-        return
 
-    def source_basis(workspace: str | Path, trial_id: str):
+    def source_basis(
+        workspace: str | Path, trial_id: str
+    ) -> tuple[tuple[Source, ...], tuple[TextProjectionIdentity, ...]]:
         sources, projections = original(workspace, trial_id)
         registry = registry_source(workspace, trial_id)
         if registry is None or any(item.id == registry.id for item in sources):
@@ -257,8 +299,7 @@ def install_registry_source_hook() -> None:
         )
         return tuple(item[0] for item in combined), tuple(item[1] for item in combined)
 
-    source_basis._registry_source_hook = True
-    evidence._source_basis = source_basis
+    cast(Any, evidence)._source_basis = source_basis
     _HOOK_INSTALLED = True
 
 
