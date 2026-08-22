@@ -447,12 +447,72 @@ def test_comparative_reported_text_requires_exact_normalized_quote(
     assert matching and detail in matching[0].detail
 
 
-def test_comparative_reported_text_must_name_declared_outcome(tmp_path) -> None:
+@pytest.mark.parametrize(
+    ("outcome_statement", "reported_outcome"),
+    (
+        (
+            "Effect on overall survival, defined as time to death from any cause",
+            "Overall survival",
+        ),
+        (
+            "Effect on overall survival, DEFINED AS time to death from any cause",
+            "Time to death from any cause",
+        ),
+        (
+            "Effect on ß-overall survival, defined as time to death from any cause",
+            "ß-overall survival",
+        ),
+    ),
+)
+def test_comparative_reported_text_may_name_declared_outcome(
+    tmp_path, outcome_statement: str, reported_outcome: str
+) -> None:
+    card = _comparative_card(
+        tmp_path,
+        source=f"{reported_outcome}: Risk ratio 0.5; risks 0.2 and 0.4",
+        reported_text=f"{reported_outcome}: Risk ratio 0.5; risks 0.2 and 0.4",
+    )
+    card = card.model_copy(
+        update={
+            "target": card.target.model_copy(
+                update={
+                    "outcome_definition": "time to death from any cause",
+                    "effect_of_interest": "effect on time to death from any cause",
+                }
+            )
+        }
+    )
+    receipt = save_proposal(
+        tmp_path,
+        ProposalInput(
+            outcome_statement=outcome_statement,
+            results=(card,),
+        ),
+    )
+    assert not isinstance(receipt, ProposalRepairReceipt)
+
+
+def test_comparative_reported_text_rejects_unrelated_explicit_outcome(tmp_path) -> None:
     definition = "time to biochemical, symptomatic, or radiographic progression"
     card = _comparative_card(
         tmp_path,
         source="Time to clinical progression: Risk ratio 0.5; risks 0.2 and 0.4",
         reported_text="Time to clinical progression: Risk ratio 0.5; risks 0.2 and 0.4",
+    ).model_copy(
+        update={
+            "target": ResultTarget(
+                outcome_definition=definition,
+                measurement="progression status",
+                time_point_or_window="follow-up",
+                effect_of_interest=f"effect on {definition}",
+                comparison_groups=(
+                    ComparisonGroup(id="docetaxel", label="docetaxel"),
+                    ComparisonGroup(id="control", label="control"),
+                ),
+                intended_effect_measure="risk ratio",
+                intended_analysis_population="randomized participants",
+            )
+        }
     )
     repair = save_proposal(
         tmp_path,
@@ -462,11 +522,7 @@ def test_comparative_reported_text_must_name_declared_outcome(tmp_path) -> None:
         ),
     )
     assert isinstance(repair, ProposalRepairReceipt)
-    assert any(
-        item.pointer == "/results/0/reported/reported_text"
-        and "exact declared outcome definition" in item.detail
-        for item in repair.repairs
-    )
+    assert any(item.pointer == "/results/0/reported/reported_text" for item in repair.repairs)
 
 
 def test_comparative_reported_text_accepts_whitespace_normalization(tmp_path) -> None:

@@ -542,23 +542,26 @@ def _validate_evidence(
                 )
             )
         declared_outcome = source_layout_projection(card.target.outcome_definition)[0].strip()
-        projected_statement = source_layout_projection(statement)[0]
-        explicit_target = outcome_statement is not None and ", defined as " in outcome_statement
-        if (
-            explicit_target
-            and declared_outcome
-            and declared_outcome.casefold() not in projected_statement.casefold()
-        ):
-            repairs.append(
-                ProposalRepair(
-                    pointer="/reported/reported_text",
-                    code="invalid",
-                    detail=(
-                        "reported_text must name the exact declared outcome definition "
-                        f"{card.target.outcome_definition!r}"
-                    ),
-                )
+        declared_label, _, explicit_target = _declared_outcome_parts(outcome_statement or "")
+        if explicit_target and declared_outcome:
+            declared_terms = (
+                source_layout_projection(declared_label, casefold=True)[0].strip(),
+                source_layout_projection(declared_outcome, casefold=True)[0].strip(),
             )
+            projected_statement_folded = source_layout_projection(
+                statement, casefold=True
+            )[0]
+            if not any(term and term in projected_statement_folded for term in declared_terms):
+                repairs.append(
+                    ProposalRepair(
+                        pointer="/reported/reported_text",
+                        code="invalid",
+                        detail=(
+                            "reported_text must name the declared outcome label or definition "
+                            f"({declared_label!r} or {card.target.outcome_definition!r})"
+                        ),
+                    )
+                )
         quotes = tuple(
             source_layout_projection(item.quote)[0].strip() for item in text_reported_evidence
         )
@@ -622,14 +625,19 @@ def _comparative_structure_repairs(card: ResultCardInput) -> tuple[ProposalRepai
     return tuple(repairs)
 
 
-def _declared_outcome_definition(statement: str) -> str:
+def _declared_outcome_parts(statement: str) -> tuple[str, str, bool]:
     value = statement.strip()
     if value.casefold().startswith("effect on "):
         value = value[10:].strip()
     marker = ", defined as "
-    if marker in value.casefold():
-        return value[value.casefold().index(marker) + len(marker) :].strip()
-    return value
+    for index in range(len(value) - len(marker) + 1):
+        if value[index : index + len(marker)].casefold() == marker:
+            return value[:index].strip(), value[index + len(marker) :].strip(), True
+    return value, value, False
+
+
+def _declared_outcome_definition(statement: str) -> str:
+    return _declared_outcome_parts(statement)[1]
 
 
 def _evidence_minting_repair_detail(reference: EvidenceReference) -> str:
