@@ -11,21 +11,12 @@ from pathlib import Path
 from typing import Any
 
 from rob2_kit.sources import Source, SourceRole, _extract_pages, sha256_bytes
+from rob2_kit.text_projection import projection_identity
 
 from ._state import identity, read_json, write_json
 
 _NCT = re.compile(r"\bNCT\d{8}\b", re.IGNORECASE)
-
-
-def _walk_strings(value: object):
-    if isinstance(value, str):
-        yield value
-    elif isinstance(value, dict):
-        for child in value.values():
-            yield from _walk_strings(child)
-    elif isinstance(value, (list, tuple)):
-        for child in value:
-            yield from _walk_strings(child)
+_HOOK_INSTALLED = False
 
 
 def _root_paths(workspace: Path, preflight: dict[str, Any]) -> dict[str, Path]:
@@ -41,12 +32,13 @@ def _root_paths(workspace: Path, preflight: dict[str, Any]) -> dict[str, Path]:
     return result
 
 
-def _candidate_text(workspace: Path, preflight: dict[str, Any]) -> str:
+def _trial_text(workspace: Path, preflight: dict[str, Any], trial_id: str) -> str:
     roots = _root_paths(workspace, preflight)
-    chunks: list[str] = []
+    chunks: list[str] = [trial_id]
     for candidate in preflight.get("candidates", ()):
-        if not isinstance(candidate, dict):
+        if not isinstance(candidate, dict) or candidate.get("trial_id") != trial_id:
             continue
+        chunks.append(json.dumps(candidate, sort_keys=True, default=str))
         alias, relative, media = (
             candidate.get("root_alias"),
             candidate.get("relative_path"),
@@ -54,22 +46,21 @@ def _candidate_text(workspace: Path, preflight: dict[str, Any]) -> str:
         )
         if not all(isinstance(item, str) for item in (alias, relative, media)):
             continue
-        root = roots.get(alias)
+        root = roots.get(str(alias))
         if root is None:
             continue
-        path = (root / relative).resolve()
-        if not path.is_relative_to(workspace) or not path.is_file():
+        path = (root / str(relative)).resolve()
+        if not path.is_relative_to(workspace) or not path.is_file() or path.is_symlink():
             continue
         try:
-            chunks.extend(_extract_pages(path.read_bytes(), media))
+            chunks.extend(_extract_pages(path.read_bytes(), str(media)))
         except (OSError, UnicodeDecodeError, ValueError):
             continue
     return "\n".join(chunks)
 
 
-def _nct_ids(workspace: Path, preflight: dict[str, Any]) -> tuple[str, ...]:
-    values = "\n".join(_walk_strings(preflight)) + "\n" + _candidate_text(workspace, preflight)
-    return tuple(sorted({match.group().upper() for match in _NCT.finditer(values)}))
+def _nct_ids(workspace: Path, preflight: dict[str, Any], trial_id: str) -> tuple[str, ...]:
+    return tuple(sorted({match.group().upper() for match in _NCT.finditer(_trial_text(workspace, preflight, trial_id))}))
 
 
 def _fetch(nct_id: str) -> bytes:
@@ -83,90 +74,53 @@ def _fetch(nct_id: str) -> bytes:
     return json.dumps(parsed, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode()
 
 
-def ensure_registry_snapshot(
-    workspace: str | Path, preflight_value: object | None = None
-) -> dict[str, object]:
+def ensure_registry_snapshot(workspace: str | Path, preflight_value: object | None = None) -> dict[str, object]:
     root = Path(workspace).resolve(strict=True)
-    preflight = (
-        preflight_value.model_dump(mode="json")
-        if hasattr(preflight_value, "model_dump")
-        else preflight_value
-        if isinstance(preflight_value, dict)
-        else read_json(workspace, "preflight.json")
-    )
+    preflight = preflight_value.model_dump(mode="json") if hasattr(preflight_value, "model_dump") else preflight_value if isinstance(preflight_value, dict) else read_json(workspace, "preflight.json")
     if not isinstance(preflight, dict):
-        return {"outcome": "condition", "code": "preflight_unavailable"}
+        return {"outcome": "condition", "sources": [], "conditions": [{"code": "preflight_unavailable", "detail": "registry materialization requires source preflight"}]}
     outcomes = dict(preflight.get("registry_outcomes", ()))
-    trials = sorted(
-        {
-            str(item.get("trial_id"))
-            for item in preflight.get("candidates", ())
-            if isinstance(item, dict) and item.get("trial_id")
-        }
-        | set(str(item) for item in outcomes)
-    )
-    nct_ids = _nct_ids(root, preflight)
+    trials = sorted({str(item.get("trial_id")) for item in preflight.get("candidates", ()) if isinstance(item, dict) and item.get("trial_id")} | {str(item) for item in outcomes})
     materialized: list[dict[str, object]] = []
     conditions: list[dict[str, object]] = []
     for trial_id in trials:
         if outcomes.get(trial_id) != "matched":
             continue
+        nct_ids = _nct_ids(root, preflight, trial_id)
         current = read_json(workspace, f"registry-source-{trial_id}.json")
-        if isinstance(current, dict):
-            materialized.append(current)
-            continue
-        if not nct_ids:
-            conditions.append(
-                {
-                    "trial_id": trial_id,
-                    "code": "registry_identifier_unavailable",
-                    "detail": "registry matched but no NCT identifier was found in the dossier",
-                }
-            )
+        if isinstance(current, dict) and (not nct_ids or current.get("nct_id") in nct_ids):
+            try:
+                registry_source(workspace, trial_id)
+            except (OSError, TypeError, ValueError):
+                current = None
+            else:
+                materialized.append(current)
+                continue
+        if len(nct_ids) != 1:
+            conditions.append({"trial_id": trial_id, "code": "registry_identifier_unavailable" if not nct_ids else "registry_identifier_ambiguous", "detail": "registry matched but the Trial dossier did not identify exactly one NCT record", "matched_nct_ids": list(nct_ids)})
             continue
         nct_id = nct_ids[0]
         try:
             data = _fetch(nct_id)
         except (OSError, ValueError, json.JSONDecodeError, urllib.error.URLError) as error:
-            conditions.append(
-                {
-                    "trial_id": trial_id,
-                    "code": "registry_fetch_failed",
-                    "detail": str(error),
-                }
-            )
+            conditions.append({"trial_id": trial_id, "code": "registry_fetch_failed", "detail": str(error)})
             continue
         directory = root / ".rob2-kit" / "registry" / trial_id
         directory.mkdir(parents=True, exist_ok=True)
         if directory.is_symlink():
             raise ValueError("registry source directory is redirected")
         data_hash = sha256_bytes(data)
-        source_id = "registry_" + hashlib.sha256(
-            f"{trial_id}\0{nct_id}\0{data_hash}".encode()
-        ).hexdigest()
+        source_id = "registry_" + hashlib.sha256(f"{trial_id}\0{nct_id}\0{data_hash}".encode()).hexdigest()
         path = directory / f"{nct_id}.json"
         if path.exists() and path.read_bytes() != data:
             raise ValueError("registry path is bound to different bytes")
         path.write_bytes(data)
-        payload = {
-            "kind": "registry_source",
-            "trial_id": trial_id,
-            "nct_id": nct_id,
-            "matched_nct_ids": list(nct_ids),
-            "source_id": source_id,
-            "sha256": data_hash,
-            "media_type": "application/json",
-            "page_count": 1,
-            "captured_path": path.relative_to(root).as_posix(),
-        }
+        payload = {"kind": "registry_source", "trial_id": trial_id, "nct_id": nct_id, "matched_nct_ids": list(nct_ids), "source_id": source_id, "sha256": data_hash, "media_type": "application/json", "page_count": 1, "captured_path": path.relative_to(root).as_posix()}
         payload["identity"] = identity(payload)
         write_json(workspace, f"registry-source-{trial_id}.json", payload)
         materialized.append(payload)
-    return {
-        "outcome": "success" if not conditions else "condition",
-        "sources": materialized,
-        "conditions": conditions,
-    }
+    install_registry_source_hook()
+    return {"outcome": "success" if not conditions else "condition", "sources": materialized, "conditions": conditions}
 
 
 def registry_source(workspace: str | Path, trial_id: str) -> Source | None:
@@ -183,17 +137,7 @@ def registry_source(workspace: str | Path, trial_id: str) -> Source | None:
     payload = {key: raw[key] for key in raw if key != "identity"}
     if identity(payload) != raw.get("identity"):
         raise ValueError("registry source metadata is corrupt")
-    return Source(
-        id=str(raw["source_id"]),
-        trial_id=trial_id,
-        role=SourceRole.REGISTRY,
-        label=f"ClinicalTrials.gov {raw['nct_id']}",
-        sha256=str(raw["sha256"]),
-        media_type="application/json",
-        page_count=1,
-        extraction_warnings=(),
-        captured_path=str(raw["captured_path"]),
-    )
+    return Source(id=str(raw["source_id"]), trial_id=trial_id, role=SourceRole.REGISTRY, label=f"ClinicalTrials.gov {raw['nct_id']}", sha256=str(raw["sha256"]), media_type="application/json", page_count=1, extraction_warnings=(), captured_path=str(raw["captured_path"]))
 
 
 def registry_record(workspace: str | Path, trial_id: str) -> dict[str, object]:
@@ -201,8 +145,34 @@ def registry_record(workspace: str | Path, trial_id: str) -> dict[str, object]:
     if source is None:
         raise ValueError("registry record is unavailable")
     root = Path(workspace).resolve(strict=True)
-    data = (root / source.captured_path).read_bytes()
-    return {
-        "source": source.model_dump(mode="json"),
-        "record": json.loads(data),
-    }
+    return {"source": source.model_dump(mode="json"), "record": json.loads((root / source.captured_path).read_bytes())}
+
+
+def install_registry_source_hook() -> None:
+    global _HOOK_INSTALLED
+    if _HOOK_INSTALLED:
+        return
+    from . import evidence
+    original = evidence._source_basis
+    if getattr(original, "_registry_source_hook", False):
+        _HOOK_INSTALLED = True
+        return
+    def source_basis(workspace: str | Path, trial_id: str):
+        sources, projections = original(workspace, trial_id)
+        registry = registry_source(workspace, trial_id)
+        if registry is None or any(item.id == registry.id for item in sources):
+            return sources, projections
+        root = Path(workspace).resolve(strict=True)
+        path = root / registry.captured_path
+        if not path.is_file() or path.is_symlink():
+            raise ValueError("registry source bytes are unavailable")
+        pages = _extract_pages(path.read_bytes(), registry.media_type)
+        combined = [*zip(sources, projections, strict=True), (registry, projection_identity(registry, pages))]
+        combined.sort(key=lambda pair: (0 if pair[0].role is SourceRole.MAIN_ARTICLE else 1 if pair[0].role is SourceRole.REGISTRY else 2, pair[0].label.casefold(), pair[0].id))
+        return tuple(item[0] for item in combined), tuple(item[1] for item in combined)
+    source_basis._registry_source_hook = True
+    evidence._source_basis = source_basis
+    _HOOK_INSTALLED = True
+
+
+__all__ = ["ensure_registry_snapshot", "install_registry_source_hook", "registry_record", "registry_source"]

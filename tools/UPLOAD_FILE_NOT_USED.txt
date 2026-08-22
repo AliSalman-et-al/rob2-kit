@@ -1,1 +1,0 @@
-The connector lacks a direct local-file upload primitive; this file will be removed before completion.

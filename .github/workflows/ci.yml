@@ -28,6 +28,12 @@ jobs:
       - run: uv run --no-sync python -c "import os, sys; expected=tuple(map(int, os.environ['EXPECTED_PYTHON'].split('.'))); assert sys.version_info[:2] == expected, (sys.version, expected)"
         env:
           EXPECTED_PYTHON: ${{ matrix.python-version }}
+      - run: uv run --no-sync python -m rob2_kit.contract_manifest --output docs/release/public-contract.json
+      - uses: actions/upload-artifact@v4
+        if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.11'
+        with:
+          name: generated-public-contract
+          path: docs/release/public-contract.json
       - run: uv run --no-sync ruff format --check src tests docs/release
       - run: uv run --no-sync ruff check src tests docs/release
       - run: uv run --no-sync ty check src tests docs/release
