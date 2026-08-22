@@ -60,9 +60,22 @@ def pending_proposal(tmp_path):
     plan = save_intake_plan(
         tmp_path,
         preflight.reference,
-        (IntakePlanEntry(candidate_identity=preflight.candidates[0].identity, role="main_article", disposition=SourceDisposition.INCLUDE, criticality=SourceCriticality.REQUIRED),),
+        (
+            IntakePlanEntry(
+                candidate_identity=preflight.candidates[0].identity,
+                role="main_article",
+                disposition=SourceDisposition.INCLUDE,
+                criticality=SourceCriticality.REQUIRED,
+            ),
+        ),
     )
-    capture_batch(tmp_path, CaptureRequest(plan=plan.plan, acknowledgment=acknowledge_intake(tmp_path, plan.plan, ReviewAuthority.HOST)))
+    capture_batch(
+        tmp_path,
+        CaptureRequest(
+            plan=plan.plan,
+            acknowledgment=acknowledge_intake(tmp_path, plan.plan, ReviewAuthority.HOST),
+        ),
+    )
     evidence = retrieve_evidence(
         tmp_path,
         EvidenceRetrievalRequest(
@@ -99,7 +112,10 @@ def pending_proposal(tmp_path):
     return tmp_path, saved, ack
 
 
-@pytest.mark.parametrize("mutation", ("authority", "purpose", "kind", "identity", "uri", "caller", "observed_at", "state_identity"))
+@pytest.mark.parametrize(
+    "mutation",
+    ("authority", "purpose", "kind", "identity", "uri", "caller", "observed_at", "state_identity"),
+)
 def test_corrupt_proposal_ack_cannot_unlock_approval(pending_proposal, mutation: str) -> None:
     workspace, saved, acknowledgment = pending_proposal
     if mutation == "state_identity":
@@ -116,12 +132,18 @@ def test_corrupt_proposal_ack_cannot_unlock_approval(pending_proposal, mutation:
         from rob2_kit.application._state import write_jsons
 
         write_jsons(workspace, {"proposal_ack.json": payload})
-    status = __import__("rob2_kit.application.status", fromlist=["current_status"]).current_status(workspace)
+    status = __import__("rob2_kit.application.status", fromlist=["current_status"]).current_status(
+        workspace
+    )
     assert status.presentation.code != "proposal_approval_ready"
     with pytest.raises((PermissionError, ValueError)):
-        approve_batch(workspace, ApprovalRequest(transition=saved.transition, acknowledgment=acknowledgment))
+        approve_batch(
+            workspace, ApprovalRequest(transition=saved.transition, acknowledgment=acknowledgment)
+        )
     assert read_json(workspace, "approved_batch.json") is None
-    transition = read_json(workspace, f"transition-{saved.transition.identity.removeprefix('sha256:')}.json")
+    transition = read_json(
+        workspace, f"transition-{saved.transition.identity.removeprefix('sha256:')}.json"
+    )
     assert transition is not None and not transition.get("consumed", False)
 
 
@@ -416,7 +438,9 @@ def test_comparative_order_rejects_reversed_reported_groups(tmp_path) -> None:
     reported = card.reported
     assert isinstance(reported, ComparativeEffect)
     card = card.model_copy(
-        update={"reported": reported.model_copy(update={"comparison_groups": ("control", "docetaxel")})}
+        update={
+            "reported": reported.model_copy(update={"comparison_groups": ("control", "docetaxel")})
+        }
     )
     repair = save_proposal(
         tmp_path, ProposalInput(outcome_statement="Overall survival", results=(card,))
@@ -579,7 +603,10 @@ def test_comparative_reported_text_accepts_pdf_layout_projection(tmp_path, sourc
 @pytest.mark.parametrize(
     "source, reported_text",
     (
-        ("Risk ratio 0.5; long-term risks 0.2 and 0.4", "Risk ratio 0.5; longterm risks 0.2 and 0.4"),
+        (
+            "Risk ratio 0.5; long-term risks 0.2 and 0.4",
+            "Risk ratio 0.5; longterm risks 0.2 and 0.4",
+        ),
         ("Risk ratio 0.5; risks 0.2 and 0.4", "risk ratio 0.5; risks 0.2 and 0.4"),
         ("Risk ratio 0.5; 95% CI 0.2 to 0.4", "Risk ratio 0.5; 95% CI 0.2-0.4"),
         ("Risk ratio 0.5; risks 0.2 and 0.4", "Risk ratio 0.5; risks 0.2 or 0.4"),
@@ -660,7 +687,11 @@ def test_comparative_reported_text_accepts_complete_numeric_lexemes(tmp_path, va
     reported = card.reported
     assert isinstance(reported, ComparativeEffect)
     card = card.model_copy(
-        update={"reported": reported.model_copy(update={"effect": reported.effect.model_copy(update={"value": value})})}
+        update={
+            "reported": reported.model_copy(
+                update={"effect": reported.effect.model_copy(update={"value": value})}
+            )
+        }
     )
 
     receipt = save_proposal(
@@ -676,7 +707,11 @@ def test_comparative_reported_text_does_not_use_signed_numeric_matching(tmp_path
     reported = card.reported
     assert isinstance(reported, ComparativeEffect)
     card = card.model_copy(
-        update={"reported": reported.model_copy(update={"effect": reported.effect.model_copy(update={"value": "-.5"})})}
+        update={
+            "reported": reported.model_copy(
+                update={"effect": reported.effect.model_copy(update={"value": "-.5"})}
+            )
+        }
     )
 
     receipt = save_proposal(
@@ -728,9 +763,7 @@ def test_comparison_coverage_repair_identifies_group_ids_and_current_coverage(tm
     assert isinstance(reported, ComparativeEffect)
     card = card.model_copy(
         update={
-            "reported": reported.model_copy(
-                update={"comparison_groups": ("control", "placebo")}
-            ),
+            "reported": reported.model_copy(update={"comparison_groups": ("control", "placebo")}),
             "population": PopulationAccount(
                 analyzed_population="randomized participants",
                 outcome_measurement_coverage=(
@@ -790,9 +823,7 @@ def test_comparison_coverage_repairs_only_report_the_affected_pointer(
     assert isinstance(reported, ComparativeEffect)
     updates = {"reported": reported.model_copy(update={"comparison_groups": reported_groups})}
     if coverage[0] is None:
-        updates["population"] = PopulationAccount(
-            analyzed_population="randomized participants"
-        )
+        updates["population"] = PopulationAccount(analyzed_population="randomized participants")
     else:
         updates["population"] = PopulationAccount(
             analyzed_population="randomized participants",
@@ -1048,16 +1079,21 @@ def test_needs_input_wrong_trial_evidence_is_a_typed_repair(tmp_path) -> None:
     )
 
     assert isinstance(receipt, ProposalRepairReceipt)
-    assert {
-        item.pointer for item in receipt.repairs if "must bind its Trial" in item.detail
-    } == {"/needs_input/0/evidence/0", "/needs_input/1/evidence/0"}
+    assert {item.pointer for item in receipt.repairs if "must bind its Trial" in item.detail} == {
+        "/needs_input/0/evidence/0",
+        "/needs_input/1/evidence/0",
+    }
 
 
 @pytest.mark.parametrize(
     ("field", "value", "pointer"),
     (
         ("outcome_definition", "Overall mortality", "/results/0/target/outcome_definition"),
-        ("effect_of_interest", "effect on Overall mortality", "/results/0/target/effect_of_interest"),
+        (
+            "effect_of_interest",
+            "effect on Overall mortality",
+            "/results/0/target/effect_of_interest",
+        ),
     ),
 )
 def test_comparative_contract_repairs_reject_mismatched_target_fields(
@@ -1324,9 +1360,7 @@ def test_save_proposal_repairs_comparative_effect_without_denominator_bases(
         for quantity in reported["quantities"]:
             quantity["denominator_basis"] = denominator_basis
 
-    repair = save_proposal(
-        tmp_path, {"outcome_statement": "Overall survival", "results": [card]}
-    )
+    repair = save_proposal(tmp_path, {"outcome_statement": "Overall survival", "results": [card]})
 
     assert isinstance(repair, ProposalRepairReceipt)
     assert any(

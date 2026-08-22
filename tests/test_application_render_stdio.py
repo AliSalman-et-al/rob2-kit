@@ -128,9 +128,7 @@ def test_render_mcp_image_and_resource_are_the_same_persistent_png(tmp_path: Pat
             return base64.b64decode(resource[0].blob)
 
     assert asyncio.run(restart()) == image
-    render_path = (
-        tmp_path / ".rob2-kit" / "renders" / f"{identity.removeprefix('sha256:')}.png"
-    )
+    render_path = tmp_path / ".rob2-kit" / "renders" / f"{identity.removeprefix('sha256:')}.png"
     render_path.unlink()
     try:
         read_render(tmp_path, identity)

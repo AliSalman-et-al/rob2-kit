@@ -39,7 +39,14 @@ def verify_acknowledgment(
         return None
     try:
         if set(raw) != {
-            "kind", "identity", "uri", "record", "authority", "purpose", "caller", "observed_at"
+            "kind",
+            "identity",
+            "uri",
+            "record",
+            "authority",
+            "purpose",
+            "caller",
+            "observed_at",
         }:
             return None
         stored = StoredReviewAcknowledgment.model_validate(raw)
@@ -47,8 +54,7 @@ def verify_acknowledgment(
     except (TypeError, ValueError):
         return None
     payload = {
-        key: raw.get(key)
-        for key in ("record", "authority", "purpose", "caller", "observed_at")
+        key: raw.get(key) for key in ("record", "authority", "purpose", "caller", "observed_at")
     }
     if (
         stored.kind != "review_ack"

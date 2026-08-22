@@ -29,9 +29,7 @@ def test_capture_replays_and_reports_changed_bytes(tmp_path: Path) -> None:
     (tmp_path / "article.txt").write_text("article", encoding="utf-8")
     preflight = preflight_sources(
         tmp_path,
-        PreflightRequest(
-            roots=(AuthorizedSourceRoot(alias="trial", path=".", trial_id="trial"),)
-        ),
+        PreflightRequest(roots=(AuthorizedSourceRoot(alias="trial", path=".", trial_id="trial"),)),
     )
     plan = save_intake_plan(
         tmp_path,
@@ -47,15 +45,11 @@ def test_capture_replays_and_reports_changed_bytes(tmp_path: Path) -> None:
     )
     acknowledgment = acknowledge_intake(tmp_path, plan.plan, ReviewAuthority.HOST)
     (tmp_path / "article.txt").write_text("changed", encoding="utf-8")
-    drift = capture_batch(
-        tmp_path, CaptureRequest(plan=plan.plan, acknowledgment=acknowledgment)
-    )
+    drift = capture_batch(tmp_path, CaptureRequest(plan=plan.plan, acknowledgment=acknowledgment))
     assert "changed_bytes:trial:article.txt" in drift.conditions
     preflight = preflight_sources(
         tmp_path,
-        PreflightRequest(
-            roots=(AuthorizedSourceRoot(alias="trial", path=".", trial_id="trial"),)
-        ),
+        PreflightRequest(roots=(AuthorizedSourceRoot(alias="trial", path=".", trial_id="trial"),)),
     )
     plan = save_intake_plan(
         tmp_path,
@@ -70,12 +64,13 @@ def test_capture_replays_and_reports_changed_bytes(tmp_path: Path) -> None:
         ),
     )
     acknowledgment = acknowledge_intake(tmp_path, plan.plan, ReviewAuthority.HOST)
-    first = capture_batch(
-        tmp_path, CaptureRequest(plan=plan.plan, acknowledgment=acknowledgment)
+    first = capture_batch(tmp_path, CaptureRequest(plan=plan.plan, acknowledgment=acknowledgment))
+    assert (
+        capture_batch(
+            tmp_path, CaptureRequest(plan=plan.plan, acknowledgment=acknowledgment)
+        ).captured_batch
+        == first.captured_batch
     )
-    assert capture_batch(
-        tmp_path, CaptureRequest(plan=plan.plan, acknowledgment=acknowledgment)
-    ).captured_batch == first.captured_batch
 
 
 def _ready_capture(tmp_path: Path):
@@ -87,7 +82,14 @@ def _ready_capture(tmp_path: Path):
     plan = save_intake_plan(
         tmp_path,
         preflight.reference,
-        (IntakePlanEntry(candidate_identity=preflight.candidates[0].identity, role="main_article", disposition=SourceDisposition.INCLUDE, criticality=SourceCriticality.REQUIRED),),
+        (
+            IntakePlanEntry(
+                candidate_identity=preflight.candidates[0].identity,
+                role="main_article",
+                disposition=SourceDisposition.INCLUDE,
+                criticality=SourceCriticality.REQUIRED,
+            ),
+        ),
     )
     ack = acknowledge_intake(tmp_path, plan.plan, ReviewAuthority.HOST)
     return plan, ack
@@ -98,14 +100,23 @@ def _ready_capture(tmp_path: Path):
     (
         ("purpose", "proposal"),
         ("authority", "researcher"),
-        ("record", {"kind": "proposal_review", "identity": "sha256:" + "0" * 64, "uri": "rob2://detail/proposal_review/sha256:" + "0" * 64}),
+        (
+            "record",
+            {
+                "kind": "proposal_review",
+                "identity": "sha256:" + "0" * 64,
+                "uri": "rob2://detail/proposal_review/sha256:" + "0" * 64,
+            },
+        ),
         ("caller", "host"),
         ("observed_at", "not-a-time"),
         ("identity", "sha256:" + "0" * 64),
         ("uri", "rob2://detail/review_ack/sha256:" + "0" * 64),
     ),
 )
-def test_capture_rejects_corrupt_intake_ack_before_publication(tmp_path: Path, field: str, value: object) -> None:
+def test_capture_rejects_corrupt_intake_ack_before_publication(
+    tmp_path: Path, field: str, value: object
+) -> None:
     plan, ack = _ready_capture(tmp_path)
     raw = read_json(tmp_path, "review_ack.json")
     assert raw is not None
@@ -132,9 +143,19 @@ def test_restart_retains_exact_intake_capture_authority(tmp_path: Path, conditio
             IntakePlanEntry(
                 candidate_identity=candidate.identity,
                 role="main_article" if candidate.relative_path == "main.txt" else "supplement",
-                disposition=(SourceDisposition.OMIT if conditional and candidate.relative_path == "supplement.txt" else SourceDisposition.INCLUDE),
-                criticality=(SourceCriticality.OPTIONAL if candidate.relative_path == "supplement.txt" else SourceCriticality.REQUIRED),
-                omission_reason=("not needed" if candidate.relative_path == "supplement.txt" else None),
+                disposition=(
+                    SourceDisposition.OMIT
+                    if conditional and candidate.relative_path == "supplement.txt"
+                    else SourceDisposition.INCLUDE
+                ),
+                criticality=(
+                    SourceCriticality.OPTIONAL
+                    if candidate.relative_path == "supplement.txt"
+                    else SourceCriticality.REQUIRED
+                ),
+                omission_reason=(
+                    "not needed" if candidate.relative_path == "supplement.txt" else None
+                ),
             )
         )
     plan = save_intake_plan(tmp_path, preflight.reference, tuple(entries))
@@ -146,7 +167,9 @@ def test_restart_retains_exact_intake_capture_authority(tmp_path: Path, conditio
     assert restarted.review.required is authority
     assert restarted.review.satisfied
     assert restarted.continuation is not None
-    captured = capture_batch(tmp_path, CaptureRequest(plan=plan.plan, acknowledgment=acknowledgment))
+    captured = capture_batch(
+        tmp_path, CaptureRequest(plan=plan.plan, acknowledgment=acknowledgment)
+    )
     assert captured.outcome.value == "success"
 
 

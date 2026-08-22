@@ -102,7 +102,13 @@ class SourcePreflight(_Closed):
 def verify_source_preflight(raw: object) -> SourcePreflight:
     """Validate the full closed catalog and its canonical identity."""
     if not isinstance(raw, dict) or set(raw) != {
-        "kind", "identity", "roots", "candidates", "conditions", "registry_attempts", "registry_outcomes"
+        "kind",
+        "identity",
+        "roots",
+        "candidates",
+        "conditions",
+        "registry_attempts",
+        "registry_outcomes",
     }:
         raise ValueError("stored source preflight has an invalid shape")
     preflight = SourcePreflight.model_validate(raw)

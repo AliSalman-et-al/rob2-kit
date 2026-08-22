@@ -282,9 +282,7 @@ def _check_single_group(
         for expected in outcome.quantities:
             if _normalized(expected.group_or_category) not in present:
                 category = " ".join(expected.group_or_category.split()[:2])
-                failures.append(
-                    f"adverse events must retain the {category} category"
-                )
+                failures.append(f"adverse events must retain the {category} category")
     return failures
 
 
@@ -303,8 +301,10 @@ def _same_mapping_projection(card: Mapping[str, object], reported: Mapping[str, 
         "single_group_category_profile": {"form", "group_id", "categories"},
         "unavailable": {"form", "reason", "explanation"},
     }.get(reported.get("form"))
-    return keys is not None and set(reported) == keys and all(
-        card.get(key) == reported.get(key) for key in keys
+    return (
+        keys is not None
+        and set(reported) == keys
+        and all(card.get(key) == reported.get(key) for key in keys)
     )
 
 
@@ -382,11 +382,7 @@ def _number_tokens(value: str) -> tuple[tuple[int, int, str], ...]:
     while index < len(value):
         if not (
             value[index].isdigit()
-            or (
-                value[index] == "."
-                and index + 1 < len(value)
-                and value[index + 1].isdigit()
-            )
+            or (value[index] == "." and index + 1 < len(value) and value[index + 1].isdigit())
         ):
             index += 1
             continue

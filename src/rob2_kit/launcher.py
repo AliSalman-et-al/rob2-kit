@@ -48,10 +48,20 @@ def _host_command(host: Host, model: str | None, config: Path, project: Path) ->
 
         allowed_tools = ",".join(f"mcp__rob2-kit__{name}" for name in PUBLIC_TOOL_NAMES)
         command = [
-            "claude", "--print", "--mcp-config", str(config), "--strict-mcp-config",
-            "--tools", allowed_tools, "--allowedTools", allowed_tools,
-            "--permission-mode", "dontAsk", "--no-session-persistence",
-            "--setting-sources", "project",
+            "claude",
+            "--print",
+            "--mcp-config",
+            str(config),
+            "--strict-mcp-config",
+            "--tools",
+            allowed_tools,
+            "--allowedTools",
+            allowed_tools,
+            "--permission-mode",
+            "dontAsk",
+            "--no-session-persistence",
+            "--setting-sources",
+            "project",
         ]
     if model:
         command.extend(["--model", model])
@@ -75,16 +85,22 @@ def _install_skills(project: Path) -> None:
     source = Path(__file__).parent / "skills"
     destination = project / ".claude" / "skills"
     if not source.is_dir():
-        raise UnsupportedHostIsolation("unsupported-host-isolation: packaged rob2 skills are unavailable")
+        raise UnsupportedHostIsolation(
+            "unsupported-host-isolation: packaged rob2 skills are unavailable"
+        )
     destination.mkdir(parents=True, exist_ok=True)
     for skill in ("rob2-workflow", "rob2-signalling"):
         source_skill = source / skill
         if not source_skill.is_dir():
-            raise UnsupportedHostIsolation(f"unsupported-host-isolation: packaged skill {skill} is unavailable")
+            raise UnsupportedHostIsolation(
+                f"unsupported-host-isolation: packaged skill {skill} is unavailable"
+            )
         shutil.copytree(source_skill, destination / skill)
 
 
-def _postflight(workspace: Path, status: VerifiedCurrentStatus | None, error: str | None) -> tuple[Path, str]:
+def _postflight(
+    workspace: Path, status: VerifiedCurrentStatus | None, error: str | None
+) -> tuple[Path, str]:
     state_dir = workspace / ".rob2-kit"
     state_dir.mkdir(parents=True, exist_ok=True)
     payload = {
@@ -94,9 +110,13 @@ def _postflight(workspace: Path, status: VerifiedCurrentStatus | None, error: st
     path = state_dir / "postflight-status.json"
     path.write_text(json.dumps(payload, sort_keys=True, separators=(",", ":")), encoding="utf-8")
     if status is None:
-        block = "Verified rob2-kit status\n" + json.dumps(payload, sort_keys=True, separators=(",", ":"))
+        block = "Verified rob2-kit status\n" + json.dumps(
+            payload, sort_keys=True, separators=(",", ":")
+        )
     else:
-        block = "Verified rob2-kit status\n" + status.model_dump_json(exclude_none=True, exclude_defaults=True)
+        block = "Verified rob2-kit status\n" + status.model_dump_json(
+            exclude_none=True, exclude_defaults=True
+        )
     return path, block
 
 
@@ -124,7 +144,9 @@ def launch_assessment(
         _install_skills(project)
     except UnsupportedHostIsolation as error:
         shutil.rmtree(project, ignore_errors=True)
-        return LaunchResult(EXIT_POSTFLIGHT_FAILURE, "", str(error), root / ".rob2-kit" / "postflight-status.json")
+        return LaunchResult(
+            EXIT_POSTFLIGHT_FAILURE, "", str(error), root / ".rob2-kit" / "postflight-status.json"
+        )
     environment = os.environ.copy()
     if executable_env:
         environment.update(executable_env)
@@ -177,9 +199,14 @@ def launch_assessment(
             process_return = EXIT_POSTFLIGHT_FAILURE
         elif process_return == 0:
             if getattr(status, "phase", None) == "finalized":
-                finalization_identity = (read_json(root, "state.json") or {}).get("finalization_identity")
+                finalization_identity = (read_json(root, "state.json") or {}).get(
+                    "finalization_identity"
+                )
                 finalization = (
-                    read_json(root, f"finalization-{str(finalization_identity).removeprefix('sha256:')}.json")
+                    read_json(
+                        root,
+                        f"finalization-{str(finalization_identity).removeprefix('sha256:')}.json",
+                    )
                     if isinstance(finalization_identity, str)
                     else None
                 )
@@ -198,4 +225,9 @@ def launch_assessment(
                 process_return = EXIT_PAUSED
         elif process_return != EXIT_POSTFLIGHT_FAILURE:
             process_return = EXIT_HOST_FAILURE
-    return LaunchResult(process_return, stdout + ("\n" if stdout and not stdout.endswith("\n") else "") + block + "\n", stderr, status_path)
+    return LaunchResult(
+        process_return,
+        stdout + ("\n" if stdout and not stdout.endswith("\n") else "") + block + "\n",
+        stderr,
+        status_path,
+    )

@@ -240,9 +240,7 @@ def _write_coherent_ae_bundle(
     }.items():
         (records / name).write_text(json.dumps(value, sort_keys=True), encoding="utf-8")
     (root / "summary.json").write_text(json.dumps(summary, sort_keys=True), encoding="utf-8")
-    (root / "report.html").write_text(
-        f"<html>{presentation['summary']}</html>", encoding="utf-8"
-    )
+    (root / "report.html").write_text(f"<html>{presentation['summary']}</html>", encoding="utf-8")
     files = []
     for path in sorted(path for path in root.rglob("*") if path.is_file()):
         files.append(

@@ -403,8 +403,7 @@ def acknowledge_trial_finish(
     }
     ack_identity = identity(payload)
     ack = ReviewAcknowledgmentReference(
-        kind="review_ack",
-        identity=ack_identity, uri=record_uri("review_ack", ack_identity)
+        kind="review_ack", identity=ack_identity, uri=record_uri("review_ack", ack_identity)
     )
     write_jsons(
         workspace,
@@ -477,14 +476,17 @@ def finish_trial(
                 ),
             )
         )
-        if verify_acknowledgment(
-            workspace,
-            f"trial-finish-ack-{request.acknowledgment.identity.removeprefix('sha256:')}.json",
-            request.acknowledgment,
-            record=reviewed,
-            purpose="trial_finish",
-            authority=ReviewAuthority.RESEARCHER,
-        ) is None:
+        if (
+            verify_acknowledgment(
+                workspace,
+                f"trial-finish-ack-{request.acknowledgment.identity.removeprefix('sha256:')}.json",
+                request.acknowledgment,
+                record=reviewed,
+                purpose="trial_finish",
+                authority=ReviewAuthority.RESEARCHER,
+            )
+            is None
+        ):
             raise ValueError("exact review acknowledgment is unavailable or corrupt")
         raw = read_json(
             workspace, f"synthesis-{synthesis_ref.identity.removeprefix('sha256:')}.json"
@@ -570,7 +572,9 @@ def finish_trial(
                 None if candidate.failure_cause is None else candidate.failure_cause.value
             ),
             "missing_facts": candidate.missing_facts,
-            "available_evidence": [item.model_dump(mode="json") for item in candidate.available_evidence],
+            "available_evidence": [
+                item.model_dump(mode="json") for item in candidate.available_evidence
+            ],
             "retained_checkpoints": [
                 item.model_dump(mode="json") for item in candidate.retained_checkpoints
             ],
@@ -587,11 +591,17 @@ def finish_trial(
             **state,
             "trial_dispositions": trial_dispositions,
         }
-        for key in ("synthesis_identity", "trial_finish_transition", "trial_finish_candidate", "trial_finish_ack_identity"):
+        for key in (
+            "synthesis_identity",
+            "trial_finish_transition",
+            "trial_finish_candidate",
+            "trial_finish_ack_identity",
+        ):
             next_state.pop(key, None)
         writes = {
             f"trial-outcome-{synthesis.trial_id}.json": {
-                "kind": "trial_terminal", "identity": outcome_identity,
+                "kind": "trial_terminal",
+                "identity": outcome_identity,
                 **outcome_payload,
             },
             "state.json": next_state,
