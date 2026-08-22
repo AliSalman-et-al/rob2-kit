@@ -26,14 +26,14 @@ implementation gap in this evaluator.
 For each completed isolated run, the #247 launcher invokes:
 
 ```powershell
-uv run python -m rob2_kit.evaluation <finalized-artifact-directory> --outcome pfs
-uv run python -m rob2_kit.evaluation <finalized-artifact-directory> --outcome overall_survival
-uv run python -m rob2_kit.evaluation <finalized-artifact-directory> --outcome adverse_events
+uv run python -m rob2_kit.evaluation <finalized-artifact-directory> --outcome pfs --trace <external-trace.json>
+uv run python -m rob2_kit.evaluation <finalized-artifact-directory> --outcome overall_survival --trace <external-trace.json>
+uv run python -m rob2_kit.evaluation <finalized-artifact-directory> --outcome adverse_events --trace <external-trace.json>
 ```
 
-These commands verify only retained artifacts; they do not launch Haiku or read
-private inputs. The launcher records the resulting JSON in the privacy-safe
-manifest after the host process has stopped.
+These commands verify retained artifacts and the external privacy-safe complete
+trace; they do not launch Haiku or read private inputs. The launcher records the
+resulting JSON in the privacy-safe manifest after the host process has stopped.
 
 Use this researcher prompt for all three runs, substituting only `{outcome}`:
 

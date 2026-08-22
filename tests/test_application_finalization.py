@@ -17,6 +17,94 @@ from rob2_kit.application.finalization import (
     verify_finalization,
     verify_finalization_result,
 )
+from rob2_kit.evaluation.trace import TraceEvent
+from rob2_kit.reports import application_finalization_report
+
+
+def test_application_report_uses_persisted_records_and_escapes_content() -> None:
+    report = application_finalization_report(
+        {
+            "identity": "sha256:summary",
+            "approved_batch": {"identity": "sha256:batch"},
+            "presentation": {
+                "code": "finalized_all_assessed",
+                "headline": "Complete",
+                "summary": "<safe>",
+            },
+            "trials": [
+                {
+                    "trial_id": "trial",
+                    "disposition": "assessed",
+                    "snapshot": {"identity": "sha256:snapshot"},
+                }
+            ],
+        },
+        [
+            {"kind": "approved_batch", "identity": "sha256:batch", "review": "sha256:proposal"},
+            {
+                "kind": "proposal_review",
+                "identity": "sha256:proposal",
+                "results": [
+                    {
+                        "trial_id": "trial",
+                        "target": {
+                            "outcome_definition": "survival <script>",
+                            "measurement": "time to event",
+                            "time_point_or_window": "follow-up",
+                            "intended_analysis_population": "randomized participants",
+                        },
+                        "reported": {
+                            "reported_text": "Median survival was <reported>.",
+                            "quantities": [
+                                {
+                                    "group_or_category": "treatment",
+                                    "value": "20.2",
+                                    "unit": "months",
+                                }
+                            ],
+                        },
+                        "evidence": {"reported_values": [{"identity": "sha256:proposal-evidence"}]},
+                    }
+                ],
+            },
+            {
+                "kind": "assessment_snapshot",
+                "identity": "sha256:snapshot",
+                "trial_id": "trial",
+                "checkpoint_hashes": [["domain:randomization", "sha256:checkpoint"]],
+            },
+            {
+                "kind": "domain_candidate",
+                "active_hash": "sha256:checkpoint",
+                "trial_id": "trial",
+                "domain_id": "domain:randomization",
+                "proposed_judgment": "low",
+                "evidence_bindings": [
+                    {
+                        "evidence": {"identity": "sha256:evidence"},
+                        "source_id": "<source>",
+                        "page": 1,
+                    }
+                ],
+            },
+            {
+                "kind": "domain_candidate",
+                "active_hash": "sha256:superseded",
+                "trial_id": "trial",
+                "domain_id": "domain:randomization",
+                "proposed_judgment": "high",
+                "evidence_bindings": [],
+            },
+        ],
+    )
+    assert "sha256:summary" in report
+    assert "finalized_all_assessed" in report
+    assert "domain:randomization" in report
+    assert "sha256:superseded" not in report
+    assert "sha256:evidence" in report
+    assert "sha256:proposal-evidence" in report and "20.2 months" in report
+    assert "&lt;script&gt;" in report and "&lt;reported&gt;" in report
+    assert "&lt;safe&gt;" in report and "&lt;source&gt;" in report
 
 
 def _rehash_manifest(bundle: Path) -> None:
@@ -90,9 +178,7 @@ def _rebind_packet_and_observation(bundle: Path, packet_path: Path) -> None:
         "scientific_pack",
         "policy_pack",
     )
-    observation["identity"] = identity(
-        {key: observation[key] for key in observation_fields}
-    )
+    observation["identity"] = identity({key: observation[key] for key in observation_fields})
     observation_path.write_text(json.dumps(observation, sort_keys=True), encoding="utf-8")
 
 
@@ -132,10 +218,7 @@ def _rebind_text_evidence_coordinates(
         changed = False
         for entry in packet.get("reusable_evidence", {}).get("entries", []):
             reference = entry.get("evidence") if isinstance(entry, dict) else None
-            if (
-                isinstance(reference, dict)
-                and reference.get("identity") == previous_identity
-            ):
+            if isinstance(reference, dict) and reference.get("identity") == previous_identity:
                 entry["evidence"] = {
                     "kind": "evidence",
                     "identity": text_record["identity"],
@@ -192,9 +275,18 @@ def test_application_adverse_events_bundle_is_independently_verified(tmp_path: P
         save_proposal,
     )
     from rob2_kit.evaluation.manifest import CHAARTED_MANIFEST
+    from rob2_kit.evaluation.trace import TraceEvent
     from rob2_kit.evaluation.verifier import verify_artifact
 
-    ae_report = "docetaxel Grade 3 65 (16.7%) Grade 4 49 (12.6%) Grade 5 1 (0.3%)"
+    ae_report = (
+        "Adverse events during the docetaxel-containing regimen; CTCAE severity grade during "
+        "docetaxel-containing regimen follow-up; 390 patients receiving the docetaxel-containing "
+        "regimen with follow-up data. Comparison groups: ADT plus docetaxel and ADT alone. "
+        "The reported adverse-event profile for the ADT plus docetaxel group was Grade 3 any "
+        "event count 65 (16.7%) participants, Grade 4 any event count 49 (12.6%) participants, "
+        "and Grade 5 any event count 1 (0.3%) participants; each denominator was 390 "
+        "docetaxel-cohort patients with follow-up."
+    )
     (tmp_path / "article.txt").write_text(ae_report, encoding="utf-8")
     preflight = preflight_sources(
         tmp_path,
@@ -257,33 +349,34 @@ def test_application_adverse_events_bundle_is_independently_verified(tmp_path: P
                     ComparisonGroup(id="docetaxel", label="ADT plus docetaxel"),
                     ComparisonGroup(id="adt", label="ADT alone"),
                 ),
-                intended_analysis_population="390 patients receiving the docetaxel-containing regimen with follow-up data",
                 intended_effect_measure="adverse-event profile",
+                intended_analysis_population="390 patients receiving the docetaxel-containing regimen with follow-up data",
             ),
-            "source_table_meaning": (
-                "Reported outcome: adverse events during the docetaxel-containing regimen"
-            ),
+            "source_table_meaning": "adverse events during the docetaxel-containing regimen",
             "reported": original.reported.model_copy(
                 update={
-                    "group_id": "ADT plus docetaxel",
+                    "group_id": "docetaxel",
                     "categories": (
                         Quantity(
                             statistic="count",
-                            unit="390 docetaxel-cohort patients with follow-up",
+                            unit="participants",
                             group_or_category="Grade 3 any event",
                             value="65 (16.7%)",
+                            denominator_basis="390 docetaxel-cohort patients with follow-up",
                         ),
                         Quantity(
                             statistic="count",
-                            unit="390 docetaxel-cohort patients with follow-up",
+                            unit="participants",
                             group_or_category="Grade 4 any event",
                             value="49 (12.6%)",
+                            denominator_basis="390 docetaxel-cohort patients with follow-up",
                         ),
                         Quantity(
                             statistic="count",
-                            unit="390 docetaxel-cohort patients with follow-up",
+                            unit="participants",
                             group_or_category="Grade 5 any event",
                             value="1 (0.3%)",
+                            denominator_basis="390 docetaxel-cohort patients with follow-up",
                         ),
                     ),
                 }
@@ -320,6 +413,7 @@ def test_application_adverse_events_bundle_is_independently_verified(tmp_path: P
                     trial_id="chaarted",
                     reason=NeedsInputReason.COMPARATOR_UNAVAILABLE,
                     missing_facts=("ADT-alone comparator unavailable",),
+                    evidence=(evidence,),
                 ),
             ),
         ),
@@ -330,10 +424,22 @@ def test_application_adverse_events_bundle_is_independently_verified(tmp_path: P
     approve_batch(tmp_path, ApprovalRequest(transition=review.transition, acknowledgment=ack))
     finalized = finalize_batch(tmp_path)
     assert finalized.outcome == "success"
+    trace = (
+        TraceEvent("operation", "clarify_adverse_events", "completed"),
+        TraceEvent("operation", "preapproval_terminal", "acknowledged"),
+    )
     verified = verify_artifact(
-        tmp_path / finalized.artifact.bundle_path, CHAARTED_MANIFEST, "adverse_events"
+        tmp_path / finalized.artifact.bundle_path,
+        CHAARTED_MANIFEST,
+        "adverse_events",
+        trace=trace,
     )
     assert verified.ok, verified.failures
+    missing_clarification = verify_artifact(
+        tmp_path / finalized.artifact.bundle_path, CHAARTED_MANIFEST, "adverse_events"
+    )
+    assert not missing_clarification.ok
+    assert "nonempty complete trace is required" in missing_clarification.failures
 
     bundle = tmp_path / finalized.artifact.bundle_path
     for name in (
@@ -394,6 +500,7 @@ def test_application_assessed_bundle_is_independently_verified_and_rejects_missi
         ClarityItem,
         ComparativeEffect,
         ComparisonGroup,
+        EffectPrecision,
         EvidenceSet,
         OutcomeMeasurementCoverage,
         PopulationAccount,
@@ -422,11 +529,11 @@ def test_application_assessed_bundle_is_independently_verified_and_rejects_missi
     from rob2_kit.rendering import RenderedPage, render_page
 
     source = (
-        "PFS evidence: time to biochemical, symptomatic, or radiographic progression; "
-        "median time to progression; follow-up analysis; randomized patients; "
-        "ADT plus docetaxel 20.2 months; ADT alone 11.7 months; "
-        "hazard ratio 0.61 (95% CI 0.51 to 0.72; P<0.001). "
-        "comparative time-to-event efficacy result."
+        "Secondary endpoint: time to biochemical, symptomatic, or radiographic progression. "
+        "Median time to progression at follow-up analysis in randomized patients: ADT plus "
+        "docetaxel median 20.2 months (randomized arm); ADT alone median 11.7 months "
+        "(randomized arm); hazard ratio 0.61 (95% CI 0.51 to 0.72; P<0.001), with denominator "
+        "basis time-to-event analysis. Comparative time-to-event efficacy result."
     )
     document = pymupdf.open()
     page = document.new_page()
@@ -527,8 +634,8 @@ def test_application_assessed_bundle_is_independently_verified_and_rejects_missi
                 ComparisonGroup(id="docetaxel", label="ADT plus docetaxel"),
                 ComparisonGroup(id="adt", label="ADT alone"),
             ),
-            intended_analysis_population="randomized patients",
             intended_effect_measure="hazard ratio",
+            intended_analysis_population="randomized patients",
         ),
         reported=ComparativeEffect(
             form="comparative_effect",
@@ -538,7 +645,7 @@ def test_application_assessed_bundle_is_independently_verified_and_rejects_missi
                 statistic="hazard ratio",
                 unit="ratio",
                 group_or_category="docetaxel vs adt",
-                value="0.61 (95% CI 0.51 to 0.72; P<0.001)",
+                value="0.61",
                 denominator_basis="time-to-event analysis",
             ),
             quantities=(
@@ -558,6 +665,10 @@ def test_application_assessed_bundle_is_independently_verified_and_rejects_missi
                 ),
             ),
             comparison_groups=("docetaxel", "adt"),
+            precision=EffectPrecision(
+                confidence_interval={"level": "95", "lower": "0.51", "upper": "0.72"},
+                p_value={"operator": "<", "value": "0.001"},
+            ),
         ),
         population=PopulationAccount(
             analyzed_population="randomized patients",
@@ -676,7 +787,9 @@ def test_application_assessed_bundle_is_independently_verified_and_rejects_missi
     assert isinstance(committed.next_action, PrepareTrialFinishContinuation)
     assert restarted.continuation.packet == committed.next_action.packet
     prepared = prepare_trial_finish(
-        tmp_path, restarted.continuation.packet, TrialFinishCandidate(disposition=TrialDisposition.ASSESSED)
+        tmp_path,
+        restarted.continuation.packet,
+        TrialFinishCandidate(disposition=TrialDisposition.ASSESSED),
     )
     assert prepared.transition is not None and prepared.synthesis is not None
     finish_ack = acknowledge_trial_finish(
@@ -691,7 +804,12 @@ def test_application_assessed_bundle_is_independently_verified_and_rejects_missi
     finalized = finalize_batch(tmp_path)
     assert finalized.outcome == "success"
     bundle = tmp_path / finalized.artifact.bundle_path
-    verified = verify_artifact(bundle, CHAARTED_MANIFEST, "pfs")
+    verified = verify_artifact(
+        bundle,
+        CHAARTED_MANIFEST,
+        "pfs",
+        trace=(TraceEvent("operation", "finalize_batch", "completed"),),
+    )
     assert verified.ok, verified.failures
 
     question_scope_tampered = tmp_path / "rehashed-domain-packet-question-scope"
@@ -699,8 +817,7 @@ def test_application_assessed_bundle_is_independently_verified_and_rejects_missi
     question_packet_path = next(
         path
         for path in (question_scope_tampered / "records").glob("domain-packet-*.json")
-        if json.loads(path.read_text(encoding="utf-8")).get("domain_id")
-        == "domain:randomization"
+        if json.loads(path.read_text(encoding="utf-8")).get("domain_id") == "domain:randomization"
     )
     question_packet = json.loads(question_packet_path.read_text(encoding="utf-8"))
     question_packet["active_question_ids"] = list(question_packet["active_question_ids"][:-1])
@@ -716,8 +833,7 @@ def test_application_assessed_bundle_is_independently_verified_and_rejects_missi
     prior_packet_path = next(
         path
         for path in (prior_chain_tampered / "records").glob("domain-packet-*.json")
-        if json.loads(path.read_text(encoding="utf-8")).get("domain_id")
-        == "domain:deviations"
+        if json.loads(path.read_text(encoding="utf-8")).get("domain_id") == "domain:deviations"
     )
     prior_packet = json.loads(prior_packet_path.read_text(encoding="utf-8"))
     prior_packet["prior_domain_hashes"] = []
@@ -838,22 +954,15 @@ def test_application_assessed_bundle_is_independently_verified_and_rejects_missi
         "quote",
         "quote_sha256",
     )
-    text_snapshot["identity"] = identity(
-        {key: text_snapshot[key] for key in text_fields}
-    )
-    text_snapshot_path.write_text(
-        json.dumps(text_snapshot, sort_keys=True), encoding="utf-8"
-    )
+    text_snapshot["identity"] = identity({key: text_snapshot[key] for key in text_fields})
+    text_snapshot_path.write_text(json.dumps(text_snapshot, sort_keys=True), encoding="utf-8")
     updated_packets = 0
     for packet_path in (snapshot_tampered / "records").glob("domain-packet-*.json"):
         packet = json.loads(packet_path.read_text(encoding="utf-8"))
         changed = False
         for entry in packet.get("reusable_evidence", {}).get("entries", []):
             reference = entry.get("evidence") if isinstance(entry, dict) else None
-            if (
-                isinstance(reference, dict)
-                and reference.get("identity") == previous_text_identity
-            ):
+            if isinstance(reference, dict) and reference.get("identity") == previous_text_identity:
                 entry["evidence"] = {
                     "kind": "evidence",
                     "identity": text_snapshot["identity"],
@@ -888,9 +997,7 @@ def test_application_assessed_bundle_is_independently_verified_and_rejects_missi
         assert not rejected.ok
     malformed_reference = tmp_path / "domain-packet-malformed-reference"
     shutil.copytree(bundle, malformed_reference)
-    malformed_packet_path = next(
-        (malformed_reference / "records").glob("domain-packet-*.json")
-    )
+    malformed_packet_path = next((malformed_reference / "records").glob("domain-packet-*.json"))
     malformed_packet = json.loads(malformed_packet_path.read_text(encoding="utf-8"))
     original_reference = malformed_packet["reusable_evidence"]["entries"][0]["evidence"]
     malformed_packet["reusable_evidence"]["entries"][0]["evidence"] = {
@@ -898,9 +1005,7 @@ def test_application_assessed_bundle_is_independently_verified_and_rejects_missi
         "identity": original_reference["identity"],
         "unexpected": True,
     }
-    malformed_packet_path.write_text(
-        json.dumps(malformed_packet, sort_keys=True), encoding="utf-8"
-    )
+    malformed_packet_path.write_text(json.dumps(malformed_packet, sort_keys=True), encoding="utf-8")
     _rebind_packet_and_observation(malformed_reference, malformed_packet_path)
     _rehash_manifest(malformed_reference)
     rejected = verify_artifact(malformed_reference, CHAARTED_MANIFEST, "pfs")
@@ -929,9 +1034,7 @@ def test_application_assessed_bundle_is_independently_verified_and_rejects_missi
         "scientific_pack",
         "policy_pack",
     )
-    binding_record["identity"] = identity(
-        {key: binding_record[key] for key in observation_fields}
-    )
+    binding_record["identity"] = identity({key: binding_record[key] for key in observation_fields})
     binding_path.write_text(json.dumps(binding_record, sort_keys=True), encoding="utf-8")
     _rehash_manifest(malformed_binding)
     rejected = verify_artifact(malformed_binding, CHAARTED_MANIFEST, "pfs")
@@ -958,9 +1061,7 @@ def test_application_assessed_bundle_is_independently_verified_and_rejects_missi
     boolean_catalog_packet_path = next(
         (boolean_catalog_page / "records").glob("domain-packet-*.json")
     )
-    boolean_catalog_packet = json.loads(
-        boolean_catalog_packet_path.read_text(encoding="utf-8")
-    )
+    boolean_catalog_packet = json.loads(boolean_catalog_packet_path.read_text(encoding="utf-8"))
     visual_entry = next(
         entry
         for entry in boolean_catalog_packet["reusable_evidence"]["entries"]
@@ -981,9 +1082,7 @@ def test_application_assessed_bundle_is_independently_verified_and_rejects_missi
     ):
         swapped_catalog = tmp_path / name
         shutil.copytree(bundle, swapped_catalog)
-        swapped_packet_path = next(
-            (swapped_catalog / "records").glob("domain-packet-*.json")
-        )
+        swapped_packet_path = next((swapped_catalog / "records").glob("domain-packet-*.json"))
         swapped_packet = json.loads(swapped_packet_path.read_text(encoding="utf-8"))
         swapped_entry = next(
             entry
@@ -998,9 +1097,7 @@ def test_application_assessed_bundle_is_independently_verified_and_rejects_missi
             swapped_entry.pop("start")
             swapped_entry.pop("end")
             swapped_entry["region"] = None
-        swapped_packet_path.write_text(
-            json.dumps(swapped_packet, sort_keys=True), encoding="utf-8"
-        )
+        swapped_packet_path.write_text(json.dumps(swapped_packet, sort_keys=True), encoding="utf-8")
         _rebind_packet_and_observation(swapped_catalog, swapped_packet_path)
         _rehash_manifest(swapped_catalog)
         rejected = verify_artifact(swapped_catalog, CHAARTED_MANIFEST, "pfs")
@@ -1012,9 +1109,7 @@ def test_application_assessed_bundle_is_independently_verified_and_rejects_missi
     invalid_catalog_packet_path = next(
         (invalid_catalog_page / "records").glob("domain-packet-*.json")
     )
-    invalid_catalog_packet = json.loads(
-        invalid_catalog_packet_path.read_text(encoding="utf-8")
-    )
+    invalid_catalog_packet = json.loads(invalid_catalog_packet_path.read_text(encoding="utf-8"))
     catalog = invalid_catalog_packet["reusable_evidence"]
     original_entries = catalog["entries"]
     catalog["entries"] = [{"kind": "invalid"}]
@@ -1035,15 +1130,11 @@ def test_application_assessed_bundle_is_independently_verified_and_rejects_missi
 
     reordered_aliases = tmp_path / "domain-packet-reordered-aliases"
     shutil.copytree(bundle, reordered_aliases)
-    reordered_packet_path = next(
-        (reordered_aliases / "records").glob("domain-packet-*.json")
-    )
+    reordered_packet_path = next((reordered_aliases / "records").glob("domain-packet-*.json"))
     reordered_packet = json.loads(reordered_packet_path.read_text(encoding="utf-8"))
     assert len(reordered_packet["stable_aliases"]) > 1
     reordered_packet["stable_aliases"] = list(reversed(reordered_packet["stable_aliases"]))
-    reordered_packet_path.write_text(
-        json.dumps(reordered_packet, sort_keys=True), encoding="utf-8"
-    )
+    reordered_packet_path.write_text(json.dumps(reordered_packet, sort_keys=True), encoding="utf-8")
     _rebind_packet_and_observation(reordered_aliases, reordered_packet_path)
     _rehash_manifest(reordered_aliases)
     rejected = verify_artifact(reordered_aliases, CHAARTED_MANIFEST, "pfs")

@@ -1,4 +1,4 @@
-"""Versioned scientific facts for the blinded CHAARTED release gate."""
+"""Versioned scientific facts for the blinded release gate."""
 
 from __future__ import annotations
 
@@ -6,22 +6,32 @@ import json
 import re
 from collections.abc import Mapping
 from dataclasses import asdict, dataclass
+from decimal import Decimal, InvalidOperation
 from hashlib import sha256
-from typing import Literal
+from typing import Literal, cast
 
 
 def _digest(value: object) -> str:
-    return (
-        "sha256:"
-        + sha256(json.dumps(value, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
-    )
+    encoded = json.dumps(value, sort_keys=True, separators=(",", ":")).encode()
+    return "sha256:" + sha256(encoded).hexdigest()
 
 
 @dataclass(frozen=True)
 class Quantity:
-    label: str
+    statistic: str
+    unit: str
+    group_or_category: str
     value: str
     denominator_basis: str
+
+
+@dataclass(frozen=True)
+class EffectPrecision:
+    confidence_level: str
+    lower: str
+    upper: str
+    p_operator: Literal["=", "<", "<=", ">", ">="]
+    p_value: str
 
 
 @dataclass(frozen=True)
@@ -34,10 +44,10 @@ class OutcomeFacts:
     groups: tuple[str, str]
     intended_population: str
     effect_measure: str | None
+    effect_precision: EffectPrecision | None
     quantities: tuple[Quantity, ...]
     source_table_meaning: str
     required_evidence_context: tuple[str, ...]
-    # Judgment labels are intentionally absent: defensible RoB 2 labels are not oracle facts.
 
 
 @dataclass(frozen=True)
@@ -54,177 +64,248 @@ class ObjectiveFactManifest:
         for item in self.outcomes:
             if item.key == key:
                 return item
-        raise ValueError(f"unknown CHAARTED outcome: {key}")
+        raise ValueError(f"unknown outcome: {key}")
 
 
 _GROUPS = ("ADT plus docetaxel", "ADT alone")
-_CONTEXT = ("outcome target", "reported values", "table meaning", "population basis")
+_CONTEXT = ("target_basis", "reported_values", "reported_context", "population_basis")
 
 CHAARTED_MANIFEST = ObjectiveFactManifest(
     schema_version="chaarted-objective-facts/v1",
     trial="E3805 CHAARTED",
     outcomes=(
         OutcomeFacts(
-            key="pfs",
-            expected_terminal="assessed",
-            outcome_definition="time to biochemical, symptomatic, or radiographic progression",
-            measurement="median time to progression",
-            time_point="follow-up analysis",
-            groups=_GROUPS,
-            intended_population="randomized patients",
-            effect_measure="hazard ratio",
-            quantities=(
-                Quantity("ADT plus docetaxel median", "20.2 months", "randomized arm"),
-                Quantity("ADT alone median", "11.7 months", "randomized arm"),
-                Quantity(
-                    "hazard ratio", "0.61 (95% CI 0.51 to 0.72; P<0.001)", "time-to-event analysis"
-                ),
+            "pfs",
+            "assessed",
+            "time to biochemical, symptomatic, or radiographic progression",
+            "median time to progression",
+            "follow-up analysis",
+            _GROUPS,
+            "randomized patients",
+            "hazard ratio",
+            EffectPrecision("95", "0.51", "0.72", "<", "0.001"),
+            (
+                Quantity("median", "months", "ADT plus docetaxel", "20.2", "randomized arm"),
+                Quantity("median", "months", "ADT alone", "11.7", "randomized arm"),
+                Quantity("hazard ratio", "ratio", "comparison", "0.61", "time-to-event analysis"),
             ),
-            source_table_meaning="comparative time-to-event efficacy result",
-            required_evidence_context=_CONTEXT,
+            "comparative time-to-event efficacy result",
+            _CONTEXT,
         ),
         OutcomeFacts(
-            key="overall_survival",
-            expected_terminal="assessed",
-            outcome_definition="overall survival",
-            measurement="median survival",
-            time_point="follow-up analysis",
-            groups=_GROUPS,
-            intended_population="randomized patients",
-            effect_measure="hazard ratio",
-            quantities=(
-                Quantity("ADT plus docetaxel median", "57.6 months", "randomized arm"),
-                Quantity("ADT alone median", "44.0 months", "randomized arm"),
-                Quantity(
-                    "hazard ratio", "0.61 (95% CI 0.47 to 0.80; P<0.001)", "time-to-event analysis"
-                ),
+            "overall_survival",
+            "assessed",
+            "overall survival",
+            "median survival",
+            "follow-up analysis",
+            _GROUPS,
+            "randomized patients",
+            "hazard ratio",
+            EffectPrecision("95", "0.47", "0.80", "<", "0.001"),
+            (
+                Quantity("median", "months", "ADT plus docetaxel", "57.6", "randomized arm"),
+                Quantity("median", "months", "ADT alone", "44.0", "randomized arm"),
+                Quantity("hazard ratio", "ratio", "comparison", "0.61", "time-to-event analysis"),
             ),
-            source_table_meaning="comparative time-to-event efficacy result",
-            required_evidence_context=_CONTEXT,
+            "comparative time-to-event efficacy result",
+            _CONTEXT,
         ),
         OutcomeFacts(
-            key="adverse_events",
-            expected_terminal="needs_input",
-            outcome_definition="adverse events during the docetaxel-containing regimen",
-            measurement="CTCAE severity grade",
-            time_point="during docetaxel-containing regimen follow-up",
-            groups=_GROUPS,
-            intended_population=(
-                "390 patients receiving the docetaxel-containing regimen with follow-up data"
-            ),
-            effect_measure=None,
-            quantities=(
+            "adverse_events",
+            "needs_input",
+            "adverse events during the docetaxel-containing regimen",
+            "CTCAE severity grade",
+            "during docetaxel-containing regimen follow-up",
+            _GROUPS,
+            "390 patients receiving the docetaxel-containing regimen with follow-up data",
+            None,
+            None,
+            (
                 Quantity(
+                    "count",
+                    "participants",
                     "Grade 3 any event",
                     "65 (16.7%)",
                     "390 docetaxel-cohort patients with follow-up",
                 ),
                 Quantity(
+                    "count",
+                    "participants",
                     "Grade 4 any event",
                     "49 (12.6%)",
                     "390 docetaxel-cohort patients with follow-up",
                 ),
                 Quantity(
-                    "Grade 5 any event", "1 (0.3%)", "390 docetaxel-cohort patients with follow-up"
+                    "count",
+                    "participants",
+                    "Grade 5 any event",
+                    "1 (0.3%)",
+                    "390 docetaxel-cohort patients with follow-up",
                 ),
             ),
-            source_table_meaning=(
-                "single-group docetaxel-cohort Grade 3/4/5 category profile; "
-                "no ADT-alone comparator coverage"
-            ),
-            required_evidence_context=_CONTEXT,
+            "adverse events during the docetaxel-containing regimen",
+            _CONTEXT,
         ),
     ),
 )
 
 
-def check_reported_facts(outcome: OutcomeFacts, reported: Mapping[str, object]) -> tuple[str, ...]:
-    """Return objective fact failures without judging any RoB 2 domain label."""
+def check_reported_facts(outcome: OutcomeFacts, card: Mapping[str, object]) -> tuple[str, ...]:
+    """Check closed scientific fields by role; text provenance is checked by verifier."""
 
-    if outcome.key == "adverse_events":
-        return _check_adverse_event_facts(outcome, reported)
-
+    target, population = (_mapping(card.get(name)) for name in ("target", "population"))
+    reported = _mapping(card.get("reported")) or card
     failures: list[str] = []
-    target = _mapping(reported.get("target"))
-    population = _mapping(reported.get("population"))
-    projection = {
-        key: reported.get(key)
-        for key in (
+    if "reported" not in card and outcome.expected_terminal == "assessed":
+        failures.append("reported projection differs from its nested reported form")
+    elif "reported" in card and not _same_mapping_projection(card, reported):
+        failures.append("reported projection differs from its nested reported form")
+    for field, expected in (
+        ("outcome_definition", outcome.outcome_definition),
+        ("measurement", outcome.measurement),
+        ("time_point_or_window", outcome.time_point),
+        ("intended_analysis_population", outcome.intended_population),
+    ):
+        if _normalized(target.get(field)) != _normalized(expected):
+            failures.append(f"missing objective fact: {expected}")
+    if _normalized(population.get("analyzed_population")) != _normalized(
+        outcome.intended_population
+    ):
+        failures.append(f"missing objective fact: {outcome.intended_population}")
+    if outcome.expected_terminal == "assessed" and not _source_table_meaning(
+        card.get("source_table_meaning"), outcome
+    ):
+        failures.append("source-table meaning is invalid")
+    if outcome.expected_terminal == "needs_input" and _normalized(
+        card.get("source_table_meaning")
+    ) != _normalized(outcome.source_table_meaning):
+        failures.append("source-table meaning does not exactly bind the adverse-event outcome")
+    if not _target_groups(target.get("comparison_groups"), outcome.groups):
+        failures.append("target comparison groups are invalid")
+    group_ids = _group_ids(target.get("comparison_groups"))
+    if group_ids is None:
+        failures.append("distinct valid target group IDs are invalid")
+    if outcome.expected_terminal == "assessed":
+        failures.extend(_check_assessed(outcome, target, population, reported, group_ids))
+    else:
+        failures.extend(_check_single_group(outcome, target, population, reported))
+    return tuple(failures)
+
+
+def _source_table_meaning(value: object, outcome: OutcomeFacts) -> bool:
+    normalized = _normalized(value)
+    if normalized == _normalized(outcome.source_table_meaning):
+        return True
+    expected = _normalized(outcome.outcome_definition)
+    return expected in normalized and not any(
+        f"{prefix} {expected}" in normalized for prefix in ("not", "no", "without", "unrelated to")
+    )
+
+
+def _check_assessed(
+    outcome: OutcomeFacts,
+    target: Mapping[str, object],
+    population: Mapping[str, object],
+    reported: Mapping[str, object],
+    group_ids: tuple[str, str] | None,
+) -> list[str]:
+    failures: list[str] = []
+    if not _assessed_coverage(population.get("outcome_measurement_coverage"), group_ids):
+        failures.append("assessed outcome measurement coverage is invalid")
+    if reported.get("form") != "comparative_effect":
+        failures.append("assessed outcomes must be comparative effects")
+    if _normalized(target.get("effect_of_interest")) != _normalized(
+        f"effect on {outcome.outcome_definition}"
+    ):
+        failures.append("effect of interest is invalid")
+    if _normalized(target.get("intended_effect_measure")) != _normalized(outcome.effect_measure):
+        failures.append("intended effect measure is invalid")
+    if _normalized(reported.get("effect_measure")) != _normalized(outcome.effect_measure):
+        failures.append("reported effect measure is invalid")
+    reported_text = reported.get("reported_text")
+    if not isinstance(reported_text, str) or not reported_text.strip():
+        failures.append("reported source statement is missing")
+    elif _normalized(outcome.outcome_definition) not in _normalized(reported_text):
+        failures.append("missing complete source-reported comparative statement")
+    elif not _source_values_match(reported_text, outcome.quantities):
+        failures.append("reported source statement omits an objective quantity")
+    elif not _source_precision_matches(reported_text, outcome.effect_precision):
+        failures.append("reported source precision does not bind structured CI/P roles")
+    comparison_groups = reported.get("comparison_groups")
+    if not isinstance(comparison_groups, (list, tuple)) or tuple(comparison_groups) != group_ids:
+        failures.append("reported comparison groups must bind ordered target comparison groups")
+    quantities = reported.get("quantities")
+    if not isinstance(quantities, (list, tuple)) or len(quantities) != 2:
+        failures.append("assessed outcomes require exactly two ordered group quantities")
+    elif group_ids is not None:
+        for actual, expected, group_id in zip(
+            quantities, outcome.quantities[:2], group_ids, strict=True
+        ):
+            if not _quantity_matches(actual, expected, group_id):
+                failures.append(f"missing objective quantity: {expected.value}")
+    effect = _mapping(reported.get("effect"))
+    expected_effect = outcome.quantities[2]
+    effect_role = f"{group_ids[0]} vs {group_ids[1]}" if group_ids else ""
+    if not _quantity_matches(effect, expected_effect, effect_role):
+        failures.append(f"missing objective quantity: {expected_effect.value}")
+    if not _precision_matches(reported.get("precision"), outcome.effect_precision):
+        failures.append("missing objective quantity: 0.61 (reported effect precision is invalid)")
+    return failures
+
+
+def _check_single_group(
+    outcome: OutcomeFacts,
+    target: Mapping[str, object],
+    population: Mapping[str, object],
+    reported: Mapping[str, object],
+) -> list[str]:
+    failures: list[str] = []
+    if reported.get("form") != "single_group_category_profile":
+        failures.append("adverse events must be a single-group category profile")
+    groups = target.get("comparison_groups")
+    first = _mapping(groups[0]) if isinstance(groups, (list, tuple)) and groups else {}
+    if _normalized(reported.get("group_id")) != _normalized(first.get("id")):
+        failures.append("single-group profile does not bind the single docetaxel cohort")
+    if not _single_group_coverage(population.get("outcome_measurement_coverage"), groups):
+        failures.append("single-group comparator coverage is invalid")
+    if reported.get("effect_measure") is not None or reported.get("derived") is not None:
+        failures.append("single-group profile must not assert a comparative effect")
+    categories = reported.get("categories")
+    if not isinstance(categories, (list, tuple)) or len(categories) != len(outcome.quantities):
+        failures.append("single-group category rows are incomplete")
+    else:
+        for actual, expected in zip(categories, outcome.quantities, strict=True):
+            if not _quantity_matches(actual, expected, expected.group_or_category):
+                failures.append(f"missing objective category row: {expected.group_or_category}")
+    if isinstance(categories, (list, tuple)):
+        present = {_normalized(_mapping(item).get("group_or_category")) for item in categories}
+        for expected in outcome.quantities:
+            if _normalized(expected.group_or_category) not in present:
+                category = " ".join(expected.group_or_category.split()[:2])
+                failures.append(
+                    f"adverse events must retain the {category} category"
+                )
+    return failures
+
+
+def _same_mapping_projection(card: Mapping[str, object], reported: Mapping[str, object]) -> bool:
+    keys = {
+        "comparative_effect": {
             "form",
             "effect_measure",
             "reported_text",
             "effect",
             "quantities",
             "comparison_groups",
-        )
-    }
-    if dict(_mapping(reported.get("reported"))) != projection:
-        failures.append(
-            "assessed outcome reported projection differs from its nested reported form"
-        )
-    if _normalized(target.get("outcome_definition")) != _normalized(outcome.outcome_definition):
-        failures.append(f"missing objective fact: {outcome.outcome_definition}")
-    if not _matches_measurement(target.get("measurement"), outcome):
-        failures.append(f"missing objective fact: {outcome.measurement}")
-    if not _matches_time_point(target.get("time_point_or_window"), outcome):
-        failures.append(f"missing objective fact: {outcome.time_point}")
-    if outcome.effect_measure and _normalized(target.get("intended_effect_measure")) != _normalized(
-        outcome.effect_measure
-    ):
-        failures.append(f"missing intended effect measure: {outcome.effect_measure}")
-    if not _has_explicit_randomized_population(target.get("intended_analysis_population")):
-        failures.append("missing explicit randomized intended analysis population")
-    if not _has_effect_of_interest(target.get("effect_of_interest"), outcome.outcome_definition):
-        failures.append("missing explicit effect of interest")
-    if not _matches_population(population.get("analyzed_population"), outcome.intended_population):
-        failures.append(f"missing objective fact: {outcome.intended_population}")
-    if not _matches_source_table_meaning(
-        reported.get("source_table_meaning"),
-        outcome.outcome_definition,
-        outcome.source_table_meaning,
-    ):
-        failures.append(f"missing source-table meaning: {outcome.outcome_definition}")
-    if reported.get("form") != "comparative_effect":
-        failures.append("assessed outcomes must be comparative effects")
-    if not _has_target_groups(target.get("comparison_groups"), outcome.groups):
-        failures.append("assessed outcomes must retain the expected comparison groups")
-    target_group_ids = _target_group_ids(target.get("comparison_groups"))
-    if target_group_ids is None:
-        failures.append("assessed outcomes must retain distinct valid target group IDs")
-    if not _has_reported_groups(reported.get("comparison_groups"), target_group_ids):
-        failures.append("assessed outcomes must bind the ordered target comparison groups")
-    if outcome.effect_measure and _normalized(reported.get("effect_measure")) != _normalized(
-        outcome.effect_measure
-    ):
-        failures.append(f"missing objective effect measure: {outcome.effect_measure}")
-    if not _has_reported_text(reported.get("reported_text"), outcome):
-        failures.append("missing complete source-reported comparative statement")
-    quantities = reported.get("quantities")
-    if not isinstance(quantities, (list, tuple)) or len(quantities) != 2:
-        failures.append("assessed outcomes must retain exactly two ordered group quantities")
-    else:
-        for index, expected_quantity in enumerate(outcome.quantities[:2]):
-            group_id = target_group_ids[index] if target_group_ids else ""
-            if not _matches_quantity(quantities[index], expected_quantity, group_id, outcome):
-                failures.append(f"missing objective quantity: {expected_quantity.value}")
-    effect = _mapping(reported.get("effect"))
-    effect_quantity = outcome.quantities[2]
-    valid_effect_shape = _has_exact_quantity_keys(effect)
-    valid_effect_metadata = _has_effect_metadata(
-        effect, outcome.effect_measure, target_group_ids, effect_quantity.denominator_basis
+            "precision",
+        },
+        "group_bound_values": {"form", "quantities", "comparison_groups"},
+        "single_group_category_profile": {"form", "group_id", "categories"},
+        "unavailable": {"form", "reason", "explanation"},
+    }.get(reported.get("form"))
+    return keys is not None and set(reported) == keys and all(
+        card.get(key) == reported.get(key) for key in keys
     )
-    valid_effect = _has_complete_effect(effect.get("value"), effect_quantity.value)
-    valid_effect_denominator = _matches_denominator(
-        effect.get("denominator_basis"), effect_quantity.denominator_basis
-    )
-    if (
-        not valid_effect_shape
-        or not valid_effect_metadata
-        or not valid_effect
-        or not valid_effect_denominator
-    ):
-        failures.append(f"missing objective quantity: {effect_quantity.value}")
-    return tuple(failures)
 
 
 def _mapping(value: object) -> Mapping[str, object]:
@@ -232,295 +313,221 @@ def _mapping(value: object) -> Mapping[str, object]:
 
 
 def _normalized(value: object) -> str:
-    return " ".join(value.casefold().split()) if isinstance(value, str) else ""
-
-
-def _matches_population(value: object, expected: str) -> bool:
-    normalized_expected = _normalized(expected)
-    if normalized_expected != "randomized patients":
-        return _normalized(value) == normalized_expected
-    return _is_randomized_population(value)
-
-
-def _has_explicit_randomized_population(value: object) -> bool:
-    return _is_randomized_population(value)
-
-
-def _is_randomized_population(value: object) -> bool:
-    normalized = _normalized(value)
-    return bool(
-        re.fullmatch(
-            r"(?:(?:total )?790 )?randomi[sz]ed (?:patients?|participants?|men)"
-            r"(?: \(g1: 397, g2: 393\))?"
-            r"(?: with (?:metastatic hormone-sensitive|hormone-sensitive metastatic) "
-            r"prostate cancer)?",
-            normalized,
-        )
-    )
-
-
-def _has_effect_of_interest(value: object, outcome_definition: str) -> bool:
-    return _normalized(value) == f"effect on {_normalized(outcome_definition)}"
-
-
-def _has_reported_text(value: object, outcome: OutcomeFacts) -> bool:
-    text = _normalized(value)
-    numbers = re.findall(r"\d+(?:\.\d+)?", text)
-    expected_numbers = re.findall(
-        r"\d+(?:\.\d+)?", " ".join(quantity.value for quantity in outcome.quantities)
-    )
-    expected_effect = _effect_components(outcome.quantities[-1].value)
     return (
-        isinstance(value, str)
-        and _reported_text_names_outcome(text, outcome)
-        and all(number in numbers for number in expected_numbers)
-        and _effect_components(text, embedded=True) == expected_effect
+        " ".join(str(value).casefold().replace("+", " plus ").replace("–", "-").split())
+        if isinstance(value, str)
+        else ""
     )
 
 
-def _reported_text_names_outcome(text: str, outcome: OutcomeFacts) -> bool:
-    expected = _normalized(outcome.outcome_definition)
-    if expected in text:
-        return True
-    if outcome.key != "pfs":
-        return False
-    return bool(
-        re.search(
-            r"(?:biochemical\s*,\s*symptomatic\s*,?\s*or\s*radiographic\s*"
-            r"progression|development\s+of\s+castration-resistant\s+prostate\s+cancer\s*"
-            r"\(\s*biochemical\s*,\s*symptomatic\s*,?\s*or\s*radiographic\s*\))",
-            text,
-        )
+def _target_groups(value: object, expected: tuple[str, str]) -> bool:
+    return (
+        isinstance(value, (list, tuple))
+        and len(value) == 2
+        and tuple(_normalized(_mapping(item).get("label")) for item in value)
+        == tuple(_normalized(item) for item in expected)
     )
 
 
-def _matches_source_table_meaning(
-    value: object, outcome_definition: str, declared_meaning: str | None = None
-) -> bool:
-    normalized_value = _normalized(value)
-    normalized_outcome = _normalized(outcome_definition)
-    if any(
-        phrase in normalized_value
-        for phrase in (
-            f"not {normalized_outcome}",
-            f"no {normalized_outcome}",
-            f"without {normalized_outcome}",
-            f"unrelated to {normalized_outcome}",
-        )
-    ):
-        return False
-    allowed = {
-        normalized_outcome,
-        f"primary endpoint: {normalized_outcome}",
-        f"secondary endpoint: {normalized_outcome}",
-        f"reported outcome: {normalized_outcome}",
-        f"outcome: {normalized_outcome}",
-    }
-    if declared_meaning is not None:
-        allowed.add(_normalized(declared_meaning))
-    return normalized_value in allowed
-
-
-def _matches_measurement(value: object, outcome: OutcomeFacts) -> bool:
-    normalized = _normalized(value)
-    if normalized == _normalized(outcome.measurement):
-        return True
-    if outcome.key == "pfs":
-        return bool(
-            re.fullmatch(
-                r"median time to (?:biochemical, symptomatic, or radiographic )?"
-                r"(?:progression|event or censoring)",
-                normalized,
-            )
-        )
-    return normalized in {"median survival", "median survival time", "median time to survival"}
-
-
-def _matches_time_point(value: object, outcome: OutcomeFacts) -> bool:
-    normalized = _normalized(value)
-    if normalized == _normalized(outcome.time_point):
-        return True
-    if outcome.time_point != "follow-up analysis":
-        return False
-    if normalized == "during study follow-up":
-        return True
-    event = (
-        r"(?:biochemical, symptomatic, or radiographic )?(?:progression|event or censoring)"
-        if outcome.key == "pfs"
-        else r"(?:death|censoring|study end)"
-    )
-    return bool(re.fullmatch(rf"from randomi[sz]ation (?:until|to) {event}", normalized))
-
-
-def _has_target_groups(value: object, expected: tuple[str, str]) -> bool:
-    if not isinstance(value, (list, tuple)) or len(value) != 2:
-        return False
-    labels = tuple(_normalized(_mapping(group).get("label")) for group in value)
-    return labels == tuple(_normalized(label) for label in expected)
-
-
-def _target_group_ids(value: object) -> tuple[str, str] | None:
+def _group_ids(value: object) -> tuple[str, str] | None:
     if not isinstance(value, (list, tuple)) or len(value) != 2:
         return None
-    first = _mapping(value[0]).get("id")
-    second = _mapping(value[1]).get("id")
+    ids = tuple(_mapping(item).get("id") for item in value)
     if (
-        not isinstance(first, str)
-        or re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_-]*", first) is None
-        or not isinstance(second, str)
-        or re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_-]*", second) is None
-        or first == second
+        not all(
+            isinstance(item, str) and re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_-]*", item)
+            for item in ids
+        )
+        or ids[0] == ids[1]
     ):
         return None
-    return first, second
+    return cast(tuple[str, str], ids)
 
 
-def _has_reported_groups(value: object, expected: tuple[str, str] | None) -> bool:
-    return expected is not None and isinstance(value, (list, tuple)) and tuple(value) == expected
-
-
-def _has_effect_metadata(
-    effect: Mapping[str, object],
-    effect_measure: str | None,
-    group_ids: tuple[str, str] | None,
-    denominator_basis: str,
-) -> bool:
-    if effect_measure is None or group_ids is None:
-        return False
-    first, second = group_ids
-    group = _normalized(effect.get("group_or_category"))
-    normalized_first, normalized_second = _normalized(first), _normalized(second)
+def _quantity_matches(value: object, expected: Quantity, role: str) -> bool:
+    actual = _mapping(value)
     return (
-        _normalized(effect.get("statistic")) == _normalized(effect_measure)
-        and _normalized(effect.get("unit")) == "ratio"
-        and group == f"{normalized_first} vs {normalized_second}"
-        and _matches_denominator(effect.get("denominator_basis"), denominator_basis)
+        set(actual) == {"statistic", "unit", "group_or_category", "value", "denominator_basis"}
+        and _normalized(actual.get("statistic")) == _normalized(expected.statistic)
+        and _normalized(actual.get("unit")) == _normalized(expected.unit)
+        and _normalized(actual.get("group_or_category")) == _normalized(role)
+        and _same_quantity_value(actual.get("value"), expected.value)
+        and _normalized(actual.get("denominator_basis")) == _normalized(expected.denominator_basis)
     )
 
 
-def _matches_quantity(
-    quantity: object, expected: Quantity, group_id: str, outcome: OutcomeFacts
-) -> bool:
-    expected_value, expected_unit = expected.value.rsplit(" ", maxsplit=1)
-    reported = _mapping(quantity)
+def _precision_matches(value: object, expected: EffectPrecision | None) -> bool:
+    if expected is None:
+        return value is None
+    precision = _mapping(value)
+    interval, p_value = (
+        _mapping(precision.get("confidence_interval")),
+        _mapping(precision.get("p_value")),
+    )
     return (
-        _has_exact_quantity_keys(reported)
-        and _matches_median_statistic(reported.get("statistic"), outcome)
-        and _normalized(reported.get("unit")) == _normalized(expected_unit)
-        and _normalized(reported.get("group_or_category")) == _normalized(group_id)
-        and _matches_denominator(reported.get("denominator_basis"), expected.denominator_basis)
-        and _same_number(reported.get("value"), expected_value)
+        set(precision) == {"confidence_interval", "p_value"}
+        and set(interval) == {"level", "lower", "upper"}
+        and set(p_value) == {"operator", "value"}
+        and _same_number(interval.get("level"), expected.confidence_level)
+        and _same_number(interval.get("lower"), expected.lower)
+        and _same_number(interval.get("upper"), expected.upper)
+        and p_value.get("operator") == expected.p_operator
+        and _same_number(p_value.get("value"), expected.p_value)
     )
 
 
-def _matches_median_statistic(value: object, outcome: OutcomeFacts) -> bool:
-    statistic = _normalized(value)
-    if statistic in {"median", "median time"}:
-        return True
-    if outcome.key == "pfs":
-        return bool(
-            re.fullmatch(
-                r"median time to (?:biochemical, symptomatic, or radiographic )?"
-                r"(?:progression|event or censoring)",
-                statistic,
+def _number_tokens(value: str) -> tuple[tuple[int, int, str], ...]:
+    tokens: list[tuple[int, int, str]] = []
+    index = 0
+    while index < len(value):
+        if not (
+            value[index].isdigit()
+            or (
+                value[index] == "."
+                and index + 1 < len(value)
+                and value[index + 1].isdigit()
             )
-        )
-    return statistic in {"median survival", "median survival time", "median time to survival"}
+        ):
+            index += 1
+            continue
+        start = index
+        if start and value[start - 1] in "+-" and (start == 1 or not value[start - 2].isalnum()):
+            start -= 1
+        index = start + 1
+        while index < len(value) and value[index] in "0123456789.eE+-":
+            index += 1
+        token = value[start:index]
+        try:
+            Decimal(token)
+        except InvalidOperation:
+            index = max(index, start + 1)
+        else:
+            tokens.append((start, index, token))
+    return tuple(tokens)
 
 
-def _has_exact_quantity_keys(value: Mapping[str, object]) -> bool:
-    return set(value) == {"statistic", "unit", "group_or_category", "value", "denominator_basis"}
+def _source_p_value_matches(value: str, operator: str, expected_value: str) -> bool:
+    for index, character in enumerate(value):
+        if character != "p" or (index and value[index - 1].isalnum()):
+            continue
+        cursor = index + 1
+        while cursor < len(value) and value[cursor].isspace():
+            cursor += 1
+        if not value.startswith(operator, cursor):
+            continue
+        cursor += len(operator)
+        if operator in {"<", ">"} and cursor < len(value) and value[cursor] == "=":
+            continue
+        while cursor < len(value) and value[cursor].isspace():
+            cursor += 1
+        candidates = _number_tokens(value[cursor:])
+        if not candidates or candidates[0][0] != 0:
+            continue
+        end = cursor + candidates[0][1]
+        if end < len(value) and (value[end].isalnum() or value[end] == "."):
+            continue
+        if _same_number(candidates[0][2], expected_value):
+            return True
+    return False
 
 
-def _matches_denominator(value: object, expected: str) -> bool:
-    normalized = _normalized(value)
-    return normalized == _normalized(expected)
+def _source_precision_matches(value: object, expected: EffectPrecision | None) -> bool:
+    if expected is None:
+        return True
+    if not isinstance(value, str):
+        return False
+    text = _normalized(value)
+    marker = next(
+        (
+            index
+            for index in range(len(text) - 1)
+            if text[index : index + 2] == "ci"
+            and (index == 0 or not text[index - 1].isalnum())
+            and (index + 2 == len(text) or not text[index + 2].isalnum())
+        ),
+        -1,
+    )
+    if marker < 0:
+        return False
+    numbers = _number_tokens(text)
+    level = next(
+        (
+            token
+            for token in numbers
+            if token[1] <= marker
+            and "%" in text[token[1] : marker]
+            and _same_number(token[2], expected.confidence_level)
+        ),
+        None,
+    )
+    if level is None:
+        return False
+    after = [token for token in numbers if token[0] >= marker + 2]
+    pair = next(
+        (
+            (lower, upper)
+            for lower, upper in zip(after, after[1:])
+            if "to" in text[lower[1] : upper[0]]
+            and _same_number(lower[2], expected.lower)
+            and _same_number(upper[2], expected.upper)
+        ),
+        None,
+    )
+    if pair is None:
+        return False
+    return _source_p_value_matches(text, expected.p_operator, expected.p_value)
+
+
+def _source_values_match(value: str, expected: tuple[Quantity, ...]) -> bool:
+    tokens = tuple(token for _start, _end, token in _number_tokens(_normalized(value)))
+    return all(
+        any(_same_number(token, quantity.value) for token in tokens) for quantity in expected
+    )
+
+
+def _single_group_coverage(value: object, groups: object) -> bool:
+    if (
+        not isinstance(value, (list, tuple))
+        or len(value) != 2
+        or not isinstance(groups, (list, tuple))
+        or len(groups) != 2
+    ):
+        return False
+    rows = {_mapping(row).get("group_id"): _mapping(row).get("status") for row in value}
+    ids = (_mapping(groups[0]).get("id"), _mapping(groups[1]).get("id"))
+    return rows == {ids[0]: "measured", ids[1]: "not_measured"}
+
+
+def _assessed_coverage(value: object, group_ids: tuple[str, str] | None) -> bool:
+    if group_ids is None or not isinstance(value, (list, tuple)) or len(value) != 2:
+        return False
+    rows: list[Mapping[str, object]] = []
+    for item in value:
+        row = _mapping(item)
+        if (
+            set(row) != {"group_id", "status", "explanation"}
+            or not isinstance(row.get("group_id"), str)
+            or row.get("status") != "measured"
+            or (row.get("explanation") is not None and not isinstance(row.get("explanation"), str))
+        ):
+            return False
+        rows.append(row)
+    ids = [row["group_id"] for row in rows]
+    return len(set(ids)) == 2 and set(ids) == set(group_ids)
 
 
 def _same_number(value: object, expected: str) -> bool:
-    return (
-        isinstance(value, (int, float, str))
-        and not isinstance(value, bool)
-        and str(value) == expected
-    )
-
-
-def _has_complete_effect(value: object, expected: str) -> bool:
-    expected_components = _effect_components(expected)
-    actual_components = _effect_components(value)
-    if expected_components is None or actual_components is None:
+    if isinstance(value, bool) or not isinstance(value, (Decimal, int, float, str)):
         return False
-    return all(
-        actual_components[name] == expected_components[name]
-        for name in ("point", "confidence_level", "lower", "upper", "p_operator", "p_value")
-    )
+    try:
+        return Decimal(str(value)) == Decimal(expected)
+    except InvalidOperation:
+        return False
 
 
-def _effect_components(value: object, *, embedded: bool = False) -> dict[str, str] | None:
-    if not isinstance(value, str):
-        return None
-    normalized = value.casefold()
-    matcher = re.search if embedded else re.fullmatch
-    matched = matcher(
-        r"(?P<point>\d+(?:\.\d+)?)\s*\(\s*"
-        r"(?P<confidence_level>\d+(?:\.\d+)?)\s*%\s*"
-        r"(?:ci|confidence interval)\s*[,;:]?\s*"
-        r"(?P<lower>\d+(?:\.\d+)?)(?:\s+to\s+|-)"
-        r"(?P<upper>\d+(?:\.\d+)?)\s*"
-        r";\s*p\s*(?P<p_operator><=|<)\s*(?P<p_value>\d+(?:\.\d+)?)\s*\)",
-        normalized,
-    )
-    if matched is None:
-        matched = matcher(
-            r"(?:hazard ratio(?:\s+(?:in|for)\s+[^,;]+)?,\s*)?"
-            r"(?P<point>\d+(?:\.\d+)?)\s*;\s*"
-            r"(?P<confidence_level>\d+(?:\.\d+)?)\s*%\s*"
-            r"(?:ci|confidence interval)\s*[,;:]\s*"
-            r"(?P<lower>\d+(?:\.\d+)?)(?:\s+to\s+|-)"
-            r"(?P<upper>\d+(?:\.\d+)?)\s*"
-            r";\s*p\s*(?P<p_operator><=|<)\s*(?P<p_value>\d+(?:\.\d+)?)",
-            normalized,
-        )
-    return matched.groupdict() if matched else None
-
-
-def _check_adverse_event_facts(
-    outcome: OutcomeFacts, reported: Mapping[str, object]
-) -> tuple[str, ...]:
-    """Keep the adverse-event release gate deliberately strict."""
-
-    failures: list[str] = []
-    text = json.dumps(reported, sort_keys=True).casefold()
-    for required in (
-        outcome.outcome_definition,
-        outcome.measurement,
-        outcome.time_point,
-        outcome.intended_population,
-    ):
-        if required.casefold() not in text:
-            failures.append(f"missing objective fact: {required}")
-    if not _matches_source_table_meaning(
-        reported.get("source_table_meaning"), outcome.outcome_definition
-    ):
-        failures.append("source-table meaning must name the adverse-event outcome")
-    for quantity in outcome.quantities:
-        if quantity.value.casefold() not in text:
-            failures.append(f"missing objective quantity: {quantity.value}")
-    if reported.get("form") != "single_group_category_profile":
-        failures.append("adverse events must be a single-group category profile")
-    group = str(reported.get("group_id", "")).casefold()
-    if "docetaxel" not in group or any(token in group for token in (" versus ", " vs ", "/")):
-        failures.append("adverse events must identify the single docetaxel cohort")
-    categories = json.dumps(reported.get("categories", ()), sort_keys=True).casefold()
-    for grade in ("grade 3", "grade 4", "grade 5"):
-        if grade not in categories:
-            failures.append(f"adverse events must retain the {grade} category")
-    if reported.get("effect_measure") or reported.get("derived") or "risk ratio" in text:
-        failures.append("adverse events must not assert a comparative effect or derivation")
-    if "comparator" not in text or not any(
-        word in text for word in ("unavailable", "missing", "not measured")
-    ):
-        failures.append("adverse events must disclose missing comparator coverage")
-    if re.search(r"(?:65|49).{0,48}randomi[sz]ed|randomi[sz]ed.{0,48}(?:65|49)", text):
-        failures.append("65 and 49 must not be represented as randomized-arm counts")
-    return tuple(failures)
+def _same_quantity_value(value: object, expected: str) -> bool:
+    try:
+        Decimal(expected)
+    except InvalidOperation:
+        return _normalized(value) == _normalized(expected)
+    return _same_number(value, expected)

@@ -62,6 +62,7 @@ def test_restart_status_fails_closed_for_unresolved_legacy_proposal(tmp_path: Pa
                     trial_id="chaarted",
                     reason=NeedsInputReason.COMPARATOR_UNAVAILABLE,
                     missing_facts=("ADT-alone comparator unavailable",),
+                    evidence=(evidence.target_basis[0],),
                 ),
             ),
         ),

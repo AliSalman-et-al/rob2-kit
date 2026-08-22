@@ -11,6 +11,7 @@ from typing import cast
 from fastmcp import Client
 from fastmcp.client.transports import StdioTransport
 
+from rob2_kit.evaluation.trace import TraceEvent
 from rob2_kit.interfaces.mcp.server import mcp
 
 
@@ -163,11 +164,11 @@ def test_stdio_public_assessed_workflow_commits_all_five_domains(tmp_path: Path)
     """Run a complete assessed Batch through the published MCP boundary."""
 
     source = (
-        "PFS evidence: time to biochemical, symptomatic, or radiographic progression; "
-        "median time to progression; follow-up analysis; randomized patients; "
-        "ADT plus docetaxel 20.2 months; ADT alone 11.7 months; "
-        "hazard ratio 0.61 (95% CI 0.51 to 0.72; P<0.001). "
-        "comparative time-to-event efficacy result."
+        "Secondary endpoint: time to biochemical, symptomatic, or radiographic progression. "
+        "Median time to progression at follow-up analysis in randomized patients: ADT plus "
+        "docetaxel median 20.2 months (randomized arm); ADT alone median 11.7 months "
+        "(randomized arm); hazard ratio 0.61 (95% CI 0.51 to 0.72; P<0.001), with denominator "
+        "basis time-to-event analysis. Comparative time-to-event efficacy result."
     )
     (tmp_path / "article.txt").write_text(source, encoding="utf-8")
     environment = os.environ.copy()
@@ -282,8 +283,8 @@ def test_stdio_public_assessed_workflow_commits_all_five_domains(tmp_path: Path)
                         {"id": "docetaxel", "label": "ADT plus docetaxel"},
                         {"id": "adt", "label": "ADT alone"},
                     ],
-                    "intended_analysis_population": "randomized patients",
                     "intended_effect_measure": "hazard ratio",
+                    "intended_analysis_population": "randomized patients",
                 },
                 "reported": {
                     "form": "comparative_effect",
@@ -293,7 +294,7 @@ def test_stdio_public_assessed_workflow_commits_all_five_domains(tmp_path: Path)
                         "statistic": "hazard ratio",
                         "unit": "ratio",
                         "group_or_category": "docetaxel vs adt",
-                        "value": "0.61 (95% CI 0.51 to 0.72; P<0.001)",
+                        "value": "0.61",
                         "denominator_basis": "time-to-event analysis",
                     },
                     "quantities": [
@@ -313,6 +314,10 @@ def test_stdio_public_assessed_workflow_commits_all_five_domains(tmp_path: Path)
                         },
                     ],
                     "comparison_groups": ["docetaxel", "adt"],
+                    "precision": {
+                        "confidence_interval": {"level": "95", "lower": "0.51", "upper": "0.72"},
+                        "p_value": {"operator": "<", "value": "0.001"},
+                    },
                 },
                 "population": {
                     "analyzed_population": "randomized patients",
@@ -497,5 +502,10 @@ def test_stdio_public_assessed_workflow_commits_all_five_domains(tmp_path: Path)
     from rob2_kit.evaluation.manifest import CHAARTED_MANIFEST
     from rob2_kit.evaluation.verifier import verify_artifact
 
-    verified = verify_artifact(tmp_path / bundle_path, CHAARTED_MANIFEST, "pfs")
+    verified = verify_artifact(
+        tmp_path / bundle_path,
+        CHAARTED_MANIFEST,
+        "pfs",
+        trace=(TraceEvent("operation", "finalize_batch", "completed"),),
+    )
     assert verified.ok, verified.failures

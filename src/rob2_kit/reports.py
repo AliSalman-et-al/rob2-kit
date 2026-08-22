@@ -16,6 +16,7 @@ import re
 import shutil
 import tempfile
 from pathlib import Path
+from typing import Any
 
 from rob2_kit.batch_summary import ArtifactReceipt, BatchSummary, verified_summary
 from rob2_kit.finish import AssessmentSnapshot, _verified
@@ -41,6 +42,212 @@ def _bundle_hash(files: list[tuple[str, bytes]]) -> str:
         digest.update(data)
         digest.update(b"\0")
     return "sha256:" + digest.hexdigest()
+
+
+def application_finalization_report(summary: dict[str, Any], records: list[dict[str, Any]]) -> str:
+    """Render the portable application bundle from its persisted record basis."""
+
+    terminals = [
+        record
+        for record in records
+        if record.get("kind") == "trial_terminal" and isinstance(record.get("trial_id"), str)
+    ]
+    snapshot_hashes = {
+        (str(record.get("trial_id")), str(record.get("identity"))): {
+            str(item[1])
+            for item in record.get("checkpoint_hashes", [])
+            if isinstance(item, (list, tuple)) and len(item) == 2
+        }
+        for record in records
+        if record.get("kind") == "assessment_snapshot" and isinstance(record.get("trial_id"), str)
+    }
+    approved_id = (
+        summary.get("approved_batch", {}).get("identity")
+        if isinstance(summary.get("approved_batch"), dict)
+        else None
+    )
+    approved = next(
+        (
+            record
+            for record in records
+            if record.get("kind") == "approved_batch" and record.get("identity") == approved_id
+        ),
+        {},
+    )
+    proposal_id = approved.get("review")
+    proposal = next(
+        (
+            record
+            for record in records
+            if record.get("kind") == "proposal_review"
+            and isinstance(proposal_id, str)
+            and record.get("identity") == proposal_id
+        ),
+        {},
+    )
+    proposal_results = {
+        str(result.get("trial_id")): result
+        for result in proposal.get("results", [])
+        if isinstance(result, dict) and isinstance(result.get("trial_id"), str)
+    }
+    sections: list[str] = []
+    for trial in summary.get("trials", []):
+        if not isinstance(trial, dict):
+            continue
+        trial_id = str(trial.get("trial_id", ""))
+        disposition = str(trial.get("disposition", ""))
+        outcome_ref = trial.get("outcome")
+        outcome_id = outcome_ref.get("identity") if isinstance(outcome_ref, dict) else None
+        terminal = next(
+            (
+                record
+                for record in terminals
+                if record.get("trial_id") == trial_id
+                and (outcome_id is None or record.get("identity") == outcome_id)
+            ),
+            {},
+        )
+        details = [f"<p>Disposition: <b>{html.escape(disposition)}</b></p>"]
+        result = proposal_results.get(trial_id)
+        if result is not None:
+            target = result.get("target", {})
+            reported = result.get("reported", {})
+            if isinstance(target, dict) and isinstance(reported, dict):
+                details.append(
+                    "<h3>Outcome</h3>"
+                    f"<p><b>{html.escape(str(target.get('outcome_definition', '')))}</b><br>"
+                    f"Measurement: {html.escape(str(target.get('measurement', '')))}<br>"
+                    f"Time: {html.escape(str(target.get('time_point_or_window', '')))}<br>"
+                    "Analysis population: "
+                    f"{html.escape(str(target.get('intended_analysis_population', '')))}<br>"
+                    "</p>"
+                )
+                reported_text = reported.get("reported_text")
+                if isinstance(reported_text, str):
+                    details.append(f"<blockquote>{html.escape(reported_text)}</blockquote>")
+                effect = reported.get("effect")
+                if isinstance(effect, dict):
+                    details.append(
+                        "<p>Reported effect: "
+                        f"{html.escape(str(effect.get('statistic', '')))}; "
+                        f"{html.escape(str(effect.get('group_or_category', '')))}; "
+                        f"{html.escape(str(effect.get('value', '')))} "
+                        f"{html.escape(str(effect.get('unit', '')))}; "
+                        f"denominator: {html.escape(str(effect.get('denominator_basis', '')))}"
+                        "</p>"
+                    )
+                precision = reported.get("precision")
+                if isinstance(precision, dict):
+                    interval = precision.get("confidence_interval", {})
+                    p_value = precision.get("p_value", {})
+                    if isinstance(interval, dict) or isinstance(p_value, dict):
+                        interval = interval if isinstance(interval, dict) else {}
+                        p_value = p_value if isinstance(p_value, dict) else {}
+                        details.append(
+                            "<p>Reported precision: "
+                            f"CI {html.escape(str(interval.get('level', '')))}%; "
+                            f"{html.escape(str(interval.get('lower', '')))} to "
+                            f"{html.escape(str(interval.get('upper', '')))}; "
+                            f"P{html.escape(str(p_value.get('operator', '')))}"
+                            f"{html.escape(str(p_value.get('value', '')))}</p>"
+                        )
+                quantities = reported.get("quantities", reported.get("categories", []))
+                if isinstance(quantities, list):
+                    values = [
+                        f"{item.get('statistic', '')}; "
+                        f"{item.get('group_or_category', '')}: "
+                        f"{item.get('value', '')} {item.get('unit', '')}; "
+                        f"denominator: {item.get('denominator_basis', '')}".strip()
+                        for item in quantities
+                        if isinstance(item, dict)
+                    ]
+                    if values:
+                        details.append(f"<p>Reported values: {html.escape('; '.join(values))}</p>")
+            evidence = result.get("evidence", {})
+            if isinstance(evidence, dict):
+                evidence_ids = sorted(
+                    {
+                        str(reference.get("identity"))
+                        for references in evidence.values()
+                        if isinstance(references, list)
+                        for reference in references
+                        if isinstance(reference, dict) and reference.get("identity")
+                    }
+                )
+                if evidence_ids:
+                    details.append(
+                        f"<p>Proposal evidence: {html.escape(', '.join(evidence_ids))}</p>"
+                    )
+        if disposition == "assessed":
+            snapshot = trial.get("snapshot")
+            snapshot_id = snapshot.get("identity") if isinstance(snapshot, dict) else ""
+            details.append(
+                f"<p>Assessment snapshot: <code>{html.escape(str(snapshot_id))}</code></p>"
+            )
+            active_hashes = snapshot_hashes.get((trial_id, str(snapshot_id)), set())
+            checkpoints = [
+                record
+                for record in records
+                if record.get("kind") == "domain_candidate"
+                and record.get("trial_id") == trial_id
+                and record.get("active_hash") in active_hashes
+            ]
+            for checkpoint in sorted(
+                (item for item in checkpoints if item.get("trial_id") == trial_id),
+                key=lambda item: str(item.get("domain_id")),
+            ):
+                evidence = []
+                for binding in checkpoint.get("evidence_bindings", []):
+                    if not isinstance(binding, dict):
+                        continue
+                    reference = binding.get("evidence")
+                    evidence_id = reference.get("identity") if isinstance(reference, dict) else ""
+                    provenance = " ".join(
+                        str(binding.get(key, "")) for key in ("source_id", "page")
+                    ).strip()
+                    evidence.append(
+                        f"<code>{html.escape(str(evidence_id))}</code> {html.escape(provenance)}"
+                    )
+                details.append(
+                    f"<p><b>{html.escape(str(checkpoint.get('domain_id', '')))}</b>: "
+                    f"{html.escape(str(checkpoint.get('proposed_judgment', '')))}; "
+                    f"evidence: {'; '.join(evidence) or 'none'}</p>"
+                )
+        else:
+            missing = terminal.get("missing_facts", [])
+            evidence = terminal.get("evidence", [])
+            details.append(f"<p>Reason: {html.escape(str(terminal.get('reason', '')))}</p>")
+            details.append(
+                f"<p>Missing facts: {html.escape(', '.join(map(str, missing)) if isinstance(missing, list) else '')}</p>"
+            )
+            evidence_ids = [
+                str(item.get("identity", "")) for item in evidence if isinstance(item, dict)
+            ]
+            details.append(f"<p>Evidence: {html.escape(', '.join(evidence_ids))}</p>")
+            acknowledgment = terminal.get("acknowledgment", {})
+            if isinstance(acknowledgment, dict):
+                details.append(
+                    "<p>Researcher acknowledgment: "
+                    f"{html.escape(str(acknowledgment.get('identity', '')))}</p>"
+                )
+        sections.append(f"<section><h2>{html.escape(trial_id)}</h2>{''.join(details)}</section>")
+    presentation = summary.get("presentation", {})
+    headline = presentation.get("headline", "") if isinstance(presentation, dict) else ""
+    message = presentation.get("summary", "") if isinstance(presentation, dict) else ""
+    code = presentation.get("code", "") if isinstance(presentation, dict) else ""
+    approved = summary.get("approved_batch", {})
+    approved_id = approved.get("identity", "") if isinstance(approved, dict) else ""
+    return (
+        "<!doctype html><meta charset=utf-8><title>RoB 2 batch report</title>"
+        "<style>body{font:16px sans-serif;max-width:960px;margin:auto}code{overflow-wrap:anywhere}</style>"
+        f"<h1>{html.escape(str(headline))}</h1><p>{html.escape(str(message))}</p>"
+        f"<p>Presentation code: <code>{html.escape(str(code))}</code></p>"
+        f"<p>Summary identity/hash: <code>{html.escape(str(summary.get('identity', '')))}</code><br>"
+        f"Approved batch identity: <code>{html.escape(str(approved_id))}</code><br>"
+        f"Proposal review identity: <code>{html.escape(str(proposal_id or ''))}</code><br>"
+        "Artifact integrity: <code>manifest.json</code> binds the exact report and bundle files.</p>"
+        + "".join(sections)
+    )
 
 
 def _receipt_files(target: Path) -> list[tuple[str, bytes]]:

@@ -9,6 +9,7 @@ from rob2_kit.evaluation.verifier import (
     _Bundle,
     _overall_judgment,
     _sources_and_evidence,
+    _verify_report_semantics,
     verify_artifact,
 )
 
@@ -294,3 +295,72 @@ def test_verifier_rejects_coherently_rehashed_presentation_and_report(tmp_path: 
     result = verify_artifact(tmp_path, CHAARTED_MANIFEST, "adverse_events")
     assert not result.ok
     assert any("summary" in failure.casefold() for failure in result.failures)
+
+
+def test_report_fact_in_wrong_trial_section_is_rejected() -> None:
+    failures: list[str] = []
+    bundle = _Bundle(Path("."), failures)
+    bundle.names["approved_batch.json"] = {
+        "identity": "approved-id",
+        "review": "proposal-id",
+    }
+    bundle.records["proposal-id"] = {
+        "kind": "proposal_review",
+        "identity": "proposal-id",
+        "results": [
+            {
+                "trial_id": "trial-a",
+                "target": {
+                    "outcome_definition": "outcome A",
+                    "measurement": "measurement A",
+                    "time_point_or_window": "time A",
+                    "intended_analysis_population": "population A",
+                },
+                "reported": {"reported_text": "reported source A"},
+            },
+            {
+                "trial_id": "trial-b",
+                "target": {
+                    "outcome_definition": "outcome B",
+                    "measurement": "measurement B",
+                    "time_point_or_window": "time B",
+                    "intended_analysis_population": "population B",
+                },
+                "reported": {"reported_text": "reported source B"},
+            },
+        ],
+    }
+    for trial_id in ("trial-a", "trial-b"):
+        bundle.records[f"terminal-{trial_id}"] = {
+            "kind": "trial_terminal",
+            "trial_id": trial_id,
+            "reason": "comparator_unavailable",
+            "missing_facts": ["comparator coverage"],
+        }
+    summary = {
+        "identity": "summary-id",
+        "presentation": {"code": "finalized_zero_assessed"},
+        "approved_batch": {"identity": "approved-id"},
+        "trials": [
+            {"trial_id": "trial-a", "disposition": "needs_input"},
+            {"trial_id": "trial-b", "disposition": "needs_input"},
+        ],
+    }
+    report = (
+        "summary-id approved-id proposal-id finalized_zero_assessed"
+        "<section><h2>trial-a</h2>"
+        "<p>Disposition: needs_input</p>"
+        "outcome B measurement B time B population B reported source B"
+        "comparator_unavailable comparator coverage"
+        "</section>"
+        "<section><h2>trial-b</h2>"
+        "<p>Disposition: needs_input</p>"
+        "outcome A measurement A time A population A reported source A"
+        "comparator_unavailable comparator coverage"
+        "</section>"
+    )
+
+    _verify_report_semantics(bundle, summary, report)
+
+    assert failures.count("report omits target outcome_definition") == 2
+    assert failures.count("report omits reported source text") == 2
