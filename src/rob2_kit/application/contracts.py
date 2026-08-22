@@ -1,6 +1,6 @@
 """Closed transport contracts shared by the CLI and MCP adapters.
 
-These models deliberately contain no FastMCP types.  References are locators,
+These models deliberately contain no FastMCP types. References are locators,
 not capabilities: resolving one always performs an independent integrity and
 authority check.
 """
@@ -10,7 +10,7 @@ from __future__ import annotations
 from enum import StrEnum
 from typing import Annotated, Literal
 
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, model_serializer, model_validator
 
 
 class _Closed(BaseModel):
@@ -219,3 +219,31 @@ class VerifiedCurrentStatus(_Closed):
     review: ReviewAuthorityRequirement
     continuation: Continuation | None = None
     presentation: AuthoritativePresentation
+
+    @model_serializer(mode="wrap")
+    def actionable_wire_format(self, serializer):
+        """Never let compact serialization erase an executable union discriminator.
+
+        Callers commonly request ``exclude_defaults=True`` to keep launcher payloads small.
+        Pydantic would otherwise remove the default-valued ``operation`` and ``authority``
+        fields that distinguish continuation variants, leaving agents to guess the next tool.
+        Reinsert those two protocol fields after normal serialization. Once a review has been
+        consumed and the Batch is terminal or ready to finalize, expose no actionable review;
+        the immutable acknowledgment remains available in its provenance record.
+        """
+
+        value = serializer(self)
+        if self.continuation is not None:
+            continuation = dict(value.get("continuation", {}))
+            continuation["operation"] = self.continuation.operation
+            continuation["authority"] = self.continuation.authority.value
+            value["continuation"] = continuation
+        if (
+            self.phase in {WorkflowPhase.READY_TO_FINALIZE, WorkflowPhase.FINALIZED}
+            and self.review.satisfied
+        ):
+            value["review"] = {
+                "required": ReviewAuthority.NONE.value,
+                "satisfied": True,
+            }
+        return value
