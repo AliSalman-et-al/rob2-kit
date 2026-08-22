@@ -182,23 +182,8 @@ class _Bundle:
                 self.records[identity] = record
 
 
-_ANSWER_CODES = {
-    "Y": "yes",
-    "PY": "probably_yes",
-    "PN": "probably_no",
-    "N": "no",
-    "NI": "no_information",
-}
-
-
 def _active_questions_from_pack(answers: dict[str, Any]) -> tuple[str, ...] | None:
-    """Interpret the serialized SCIENTIFIC_PACK activation expressions.
-
-    The release verifier deliberately has its own small interpreter.  The
-    expressions use the numbered questions from the RoB 2 guidance (for
-    example, ``2.1 or 2.2 is Y/PY/NI``); question order and activation text
-    come from the pack rather than from the production evaluator.
-    """
+    """Interpret typed activation rules without calling the product evaluator."""
     questions = SCIENTIFIC_PACK.questions
     question_ids = {question.id for question in questions}
     if len(question_ids) != len(questions):
@@ -213,66 +198,20 @@ def _active_questions_from_pack(answers: dict[str, Any]) -> tuple[str, ...] | No
     ):
         return None
 
-    question_numbers: dict[str, dict[str, str]] = {}
-    for domain in SCIENTIFIC_PACK.domains:
-        if len(set(domain.question_ids)) != len(domain.question_ids):
-            return None
-        if any(question_id not in question_ids for question_id in domain.question_ids):
-            return None
-        sections = {
-            match.group(1)
-            for question in questions
-            if question.domain_id == domain.id and question.active_when is not None
-            for match in [re.match(r"^(\d+)\.\d+", question.active_when)]
-            if match is not None
-        }
-        if len(sections) > 1:
-            return None
-        section = next(iter(sections), None)
-        question_numbers[domain.id] = {
-            f"{section}.{index}": question_id
-            for index, question_id in enumerate(domain.question_ids, start=1)
-            if section is not None
-        }
-
     active: list[str] = []
-    condition_pattern = re.compile(
-        r"^(?P<references>\d+\.\d+(?:\s+(?:or|and)\s+\d+\.\d+)*)\s+"
-        r"(?P<quantifier>is|are)\s+(?P<values>[A-Z]+(?:/[A-Z]+)*)$"
-    )
     for question in questions:
-        expression = question.active_when
-        if expression is None:
+        activation = question.activation
+        if activation.kind == "always":
             active.append(question.id)
             continue
-        if not isinstance(expression, str):
+        if any(predicate.question_id not in question_ids for predicate in activation.predicates):
             return None
-        match = condition_pattern.fullmatch(expression.strip())
-        if match is None:
-            return None
-        references = re.findall(r"\d+\.\d+", match.group("references"))
-        operators = re.findall(r"\b(or|and)\b", match.group("references"))
-        quantifier = match.group("quantifier")
-        if (
-            not references
-            or (quantifier == "is" and any(operator != "or" for operator in operators))
-            or (quantifier == "are" and any(operator != "and" for operator in operators))
-            or (quantifier == "is" and len(references) > 1 and not operators)
-            or (quantifier == "are" and len(references) < 2)
-        ):
-            return None
-        number_map = question_numbers.get(question.domain_id)
-        if number_map is None or any(reference not in number_map for reference in references):
-            return None
-        values = match.group("values").split("/")
-        if not values or any(value not in _ANSWER_CODES for value in values):
-            return None
-        allowed = {_ANSWER_CODES[value] for value in values}
-        observed = [answers.get(number_map[reference]) for reference in references]
-        if quantifier == "is":
-            condition = any(value in allowed for value in observed)
-        else:
-            condition = all(value in allowed for value in observed)
+        matches = [
+            answers.get(predicate.question_id)
+            in {answer.value for answer in predicate.accepted_answers}
+            for predicate in activation.predicates
+        ]
+        condition = any(matches) if activation.mode == "any" else all(matches)
         if condition:
             active.append(question.id)
     return tuple(active)
@@ -472,7 +411,8 @@ def _closed_needs_input(value: object) -> bool:
         and set(value) == {"trial_id", "reason", "missing_facts", "evidence"}
         and isinstance(value.get("trial_id"), str)
         and isinstance(value.get("reason"), str)
-        and value["reason"] in {
+        and value["reason"]
+        in {
             "outcome_not_reported",
             "outcome_not_measured",
             "comparator_unavailable",
@@ -495,10 +435,7 @@ def _closed_review(value: object) -> bool:
         isinstance(value.get("required"), str)
         and value["required"] in {"none", "host", "researcher"}
         and isinstance(value.get("satisfied"), bool)
-        and (
-            acknowledgment is None
-            or _ref(acknowledgment, "review_ack") is not None
-        )
+        and (acknowledgment is None or _ref(acknowledgment, "review_ack") is not None)
     )
 
 
@@ -535,28 +472,43 @@ def _closed_result(value: object) -> bool:
     target = value.get("target")
     population = value.get("population")
     evidence = value.get("evidence")
-    if not isinstance(target, dict) or set(target) != {
-        "outcome_definition",
-        "measurement",
-        "time_point_or_window",
-        "effect_of_interest",
-        "comparison_groups",
-        "intended_analysis_population",
-        "intended_effect_measure",
-    } or not _closed_target(target):
+    if (
+        not isinstance(target, dict)
+        or set(target)
+        != {
+            "outcome_definition",
+            "measurement",
+            "time_point_or_window",
+            "effect_of_interest",
+            "comparison_groups",
+            "intended_analysis_population",
+            "intended_effect_measure",
+        }
+        or not _closed_target(target)
+    ):
         return False
-    if not isinstance(population, dict) or set(population) != {
-        "randomized_enrollment",
-        "outcome_measurement_coverage",
-        "analyzed_population",
-    } or not _closed_population(population):
+    if (
+        not isinstance(population, dict)
+        or set(population)
+        != {
+            "randomized_enrollment",
+            "outcome_measurement_coverage",
+            "analyzed_population",
+        }
+        or not _closed_population(population)
+    ):
         return False
-    if not isinstance(evidence, dict) or set(evidence) != {
-        "target_basis",
-        "reported_values",
-        "reported_context",
-        "population_basis",
-    } or not _closed_evidence(evidence):
+    if (
+        not isinstance(evidence, dict)
+        or set(evidence)
+        != {
+            "target_basis",
+            "reported_values",
+            "reported_context",
+            "population_basis",
+        }
+        or not _closed_evidence(evidence)
+    ):
         return False
     return (
         _closed_reported(reported)
@@ -564,29 +516,33 @@ def _closed_result(value: object) -> bool:
         and _closed_clarity(value.get("clarity"))
         and _closed_compatibility(value.get("compatibility"))
         and all(
-        isinstance(references, list)
-        and references
-        and all(_evidence_ref(item) for item in references)
-        for references in evidence.values()
+            isinstance(references, list)
+            and references
+            and all(_evidence_ref(item) for item in references)
+            for references in evidence.values()
         )
     )
 
 
 def _reported_fields(form: object) -> set[str] | None:
-    return {
-        "comparative_effect": {
-            "form",
-            "effect_measure",
-            "reported_text",
-            "effect",
-            "quantities",
-            "comparison_groups",
-            "precision",
-        },
-        "group_bound_values": {"form", "quantities", "comparison_groups"},
-        "single_group_category_profile": {"form", "group_id", "categories"},
-        "unavailable": {"form", "reason", "explanation"},
-    }.get(form) if isinstance(form, str) else None
+    return (
+        {
+            "comparative_effect": {
+                "form",
+                "effect_measure",
+                "reported_text",
+                "effect",
+                "quantities",
+                "comparison_groups",
+                "precision",
+            },
+            "group_bound_values": {"form", "quantities", "comparison_groups"},
+            "single_group_category_profile": {"form", "group_id", "categories"},
+            "unavailable": {"form", "reason", "explanation"},
+        }.get(form)
+        if isinstance(form, str)
+        else None
+    )
 
 
 def _closed_quantity(value: object) -> bool:
@@ -737,12 +693,16 @@ def _closed_clarity(value: object) -> bool:
         "source_table_meaning",
         "choice_among_eligible_results",
     }
-    return isinstance(value, dict) and set(value) == fields and all(
-        isinstance(item, dict)
-        and set(item) == {"state", "explanation"}
-        and item.get("state") in {"specified", "unclear", "unavailable"}
-        and (item.get("explanation") is None or isinstance(item.get("explanation"), str))
-        for item in value.values()
+    return (
+        isinstance(value, dict)
+        and set(value) == fields
+        and all(
+            isinstance(item, dict)
+            and set(item) == {"state", "explanation"}
+            and item.get("state") in {"specified", "unclear", "unavailable"}
+            and (item.get("explanation") is None or isinstance(item.get("explanation"), str))
+            for item in value.values()
+        )
     )
 
 
@@ -1681,6 +1641,7 @@ def _assessed(
             "domain_id",
             "active_question_ids",
             "allowed_question_ids",
+            "question_guidance",
             "stable_aliases",
             "reusable_evidence",
             "prior_domain_hashes",
@@ -1706,12 +1667,23 @@ def _assessed(
             bundle.failures.append("Domain checkpoint is outside the SCIENTIFIC_PACK")
         else:
             expected_questions = domain_questions[domain]
+            expected_guidance = [
+                {
+                    "id": question.id,
+                    "wording": question.wording,
+                    "allowed_answers": [answer.value for answer in question.allowed_answers],
+                    "activation": question.activation.model_dump(mode="json"),
+                }
+                for question in SCIENTIFIC_PACK.questions
+                if question.domain_id == domain
+            ]
             if (
                 not isinstance(packet, dict)
                 or not isinstance(packet.get("active_question_ids"), list)
                 or not isinstance(packet.get("allowed_question_ids"), list)
                 or packet.get("active_question_ids") != expected_questions
                 or packet.get("allowed_question_ids") != expected_questions
+                or packet.get("question_guidance") != expected_guidance
             ):
                 bundle.failures.append("Domain work packet question scope is invalid")
             prior = packet.get("prior_domain_hashes") if isinstance(packet, dict) else None
@@ -1946,9 +1918,7 @@ def verify_artifact(
         failures.extend(check_trace(trace))
         if outcome_key == "adverse_events":
             failures.extend(
-                check_required_operations(
-                    trace, (("clarify_adverse_events", "completed"),)
-                )
+                check_required_operations(trace, (("clarify_adverse_events", "completed"),))
             )
     else:
         failures.append("nonempty complete trace is required")

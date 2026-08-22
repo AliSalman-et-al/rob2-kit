@@ -21,6 +21,40 @@ from rob2_kit.evaluation.trace import TraceEvent
 from rob2_kit.reports import application_finalization_report
 
 
+@pytest.mark.parametrize("level", ["95%", "95"])
+def test_application_report_formats_confidence_level_once(level: str) -> None:
+    report = application_finalization_report(
+        {
+            "approved_batch": {"identity": "sha256:batch"},
+            "trials": [{"trial_id": "trial", "disposition": "assessed"}],
+        },
+        [
+            {"kind": "approved_batch", "identity": "sha256:batch", "review": "sha256:proposal"},
+            {
+                "kind": "proposal_review",
+                "identity": "sha256:proposal",
+                "results": [
+                    {
+                        "trial_id": "trial",
+                        "reported": {
+                            "precision": {
+                                "confidence_interval": {
+                                    "level": level,
+                                    "lower": "0.50",
+                                    "upper": "0.80",
+                                }
+                            }
+                        },
+                    }
+                ],
+            },
+        ],
+    )
+
+    assert "Reported precision: CI 95%; 0.50 to 0.80; P" in report
+    assert "95%%" not in report
+
+
 def test_application_report_uses_persisted_records_and_escapes_content() -> None:
     report = application_finalization_report(
         {
@@ -330,6 +364,7 @@ def _rebind_packet_and_observation(bundle: Path, packet_path: Path) -> None:
         "domain_id",
         "active_question_ids",
         "allowed_question_ids",
+        "question_guidance",
         "stable_aliases",
         "reusable_evidence",
         "prior_domain_hashes",
@@ -1012,6 +1047,20 @@ def test_application_assessed_bundle_is_independently_verified_and_rejects_missi
     rejected = verify_artifact(question_scope_tampered, CHAARTED_MANIFEST, "pfs")
     assert not rejected.ok
     assert any("question scope" in failure for failure in rejected.failures)
+
+    guidance_tampered = tmp_path / "rehashed-domain-packet-guidance"
+    shutil.copytree(bundle, guidance_tampered)
+    guidance_packet_path = next(
+        path
+        for path in (guidance_tampered / "records").glob("domain-packet-*.json")
+        if json.loads(path.read_text(encoding="utf-8")).get("domain_id") == "domain:randomization"
+    )
+    guidance_packet = json.loads(guidance_packet_path.read_text(encoding="utf-8"))
+    guidance_packet["question_guidance"] = list(guidance_packet["question_guidance"][:-1])
+    guidance_packet_path.write_text(json.dumps(guidance_packet, sort_keys=True), encoding="utf-8")
+    _rebind_packet_and_observation(guidance_tampered, guidance_packet_path)
+    _rehash_manifest(guidance_tampered)
+    assert not verify_artifact(guidance_tampered, CHAARTED_MANIFEST, "pfs").ok
 
     prior_chain_tampered = tmp_path / "rehashed-domain-packet-prior-chain"
     shutil.copytree(bundle, prior_chain_tampered)

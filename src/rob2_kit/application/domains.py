@@ -11,7 +11,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from rob2_kit.judgment_models import EvidenceRelationship
 from rob2_kit.logic.evaluator import active_questions, evaluate_domain
-from rob2_kit.models import Answer, Judgment
+from rob2_kit.models import Activation, Answer, Judgment
 from rob2_kit.packs import MAINTAINER_POLICY_PACK, SCIENTIFIC_PACK
 from rob2_kit.storage import workspace_mutation_lock
 
@@ -40,8 +40,16 @@ class _Closed(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
 
 
+class ApplicationQuestionGuidance(_Closed):
+    id: str = Field(min_length=1, strict=True)
+    wording: str = Field(min_length=1, strict=True)
+    allowed_answers: tuple[Answer, ...]
+    activation: Activation
+
+
 class ApplicationWorkPacket(_Closed):
     """The closed, content-addressed packet handed to a Domain worker."""
+
     kind: Literal["work_packet"]
     identity: str = Field(pattern=r"^sha256:[0-9a-f]{64}$", strict=True)
     approved_batch: RecordReference
@@ -50,6 +58,7 @@ class ApplicationWorkPacket(_Closed):
     domain_id: str = Field(min_length=1, strict=True)
     active_question_ids: tuple[str, ...]
     allowed_question_ids: tuple[str, ...]
+    question_guidance: tuple[ApplicationQuestionGuidance, ...]
     stable_aliases: tuple[str, ...]
     reusable_evidence: EvidenceCatalogSlice
     prior_domain_hashes: tuple[tuple[str, str], ...]
@@ -193,6 +202,16 @@ def _build_domain_packet(
         "allowed_question_ids": tuple(
             q.id for q in SCIENTIFIC_PACK.questions if q.domain_id == domain_id
         ),
+        "question_guidance": tuple(
+            {
+                "id": q.id,
+                "wording": q.wording,
+                "allowed_answers": tuple(answer.value for answer in q.allowed_answers),
+                "activation": q.activation.model_dump(mode="json"),
+            }
+            for q in SCIENTIFIC_PACK.questions
+            if q.domain_id == domain_id
+        ),
         "stable_aliases": aliases,
         "reusable_evidence": reusable_evidence_catalog(
             workspace, trial_id, source_aliases
@@ -220,9 +239,7 @@ def _packet_record(workspace: str | Path, packet: RecordReference) -> dict[str, 
         or (isinstance(domains, dict) and domains)
         or (domains is not None and domains != {})
     ):
-        raise ValueError(
-            "Approved Batch bootstrap is only valid before Domain work has started"
-        )
+        raise ValueError("Approved Batch bootstrap is only valid before Domain work has started")
     raw = read_json(workspace, "approved_batch.json")
     if raw is None or raw.get("identity") != packet.identity:
         raise ValueError("Approved Batch reference is stale")
@@ -572,9 +589,7 @@ def commit_domain_judgment(
             next_packet = RecordReference(
                 kind=RecordKind.APPROVED_WORK_PACKET,
                 identity=next_packet_record.identity,
-                uri=record_uri(
-                    RecordKind.APPROVED_WORK_PACKET.value, next_packet_record.identity
-                ),
+                uri=record_uri(RecordKind.APPROVED_WORK_PACKET.value, next_packet_record.identity),
             )
             state_for_write["work_packet_identity"] = next_packet_record.identity
             next_action: Continuation = ValidateDomainJudgmentContinuation(packet=next_packet)
@@ -620,9 +635,9 @@ def commit_domain_judgment(
             "state.json": state_for_write,
         }
         if next_packet_record is not None:
-            writes[
-                f"domain-packet-{next_packet_record.identity.removeprefix('sha256:')}.json"
-            ] = next_packet_record.model_dump(mode="json")
+            writes[f"domain-packet-{next_packet_record.identity.removeprefix('sha256:')}.json"] = (
+                next_packet_record.model_dump(mode="json")
+            )
         write_jsons(workspace, writes)
         return receipt
 

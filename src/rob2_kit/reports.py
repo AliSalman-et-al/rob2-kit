@@ -100,9 +100,9 @@ def _report_evidence_use(
         "residual": "residual",
     }.get(relationship, "other")
     content = [
-        f"<article class=\"evidence {relationship_class}\">",
+        f'<article class="evidence {relationship_class}">',
         f"<h4>{_report_escape(relationship)}</h4>",
-        f"<p class=\"claim\"><strong>Claim:</strong> {_report_escape(use.get('claim', ''))}</p>",
+        f'<p class="claim"><strong>Claim:</strong> {_report_escape(use.get("claim", ""))}</p>',
         "<details><summary>Evidence-use rationale</summary>"
         f"<p>{_report_escape(use.get('rationale', ''))}</p></details>",
     ]
@@ -118,7 +118,7 @@ def _report_evidence_use(
         binding = bindings_by_identity.get(identity)
         if binding is None:
             content.append(
-                f"<p class=\"unresolved-evidence\"><strong>Evidence identity:</strong> "
+                f'<p class="unresolved-evidence"><strong>Evidence identity:</strong> '
                 f"<code>{_report_escape(identity)}</code> (binding unavailable)</p>"
             )
             continue
@@ -126,7 +126,7 @@ def _report_evidence_use(
         if not isinstance(quote, str):
             quote = binding.get("transcription")
         if isinstance(quote, str):
-            content.append(f"<blockquote>\"{_report_escape(quote)}\"</blockquote>")
+            content.append(f'<blockquote>"{_report_escape(quote)}"</blockquote>')
         provenance: list[str] = []
         if binding.get("source_id") is not None:
             provenance.append(f"Source: {binding.get('source_id')}")
@@ -135,26 +135,22 @@ def _report_evidence_use(
         if binding.get("start") is not None and binding.get("end") is not None:
             provenance.append(f"extent [{binding.get('start')}:{binding.get('end')}]")
         if provenance:
-            content.append(
-                f"<p class=\"provenance\">{_report_escape('; '.join(provenance))}</p>"
-            )
-        content.append(f"<p class=\"evidence-identity\"><code>{_report_escape(identity)}</code></p>")
+            content.append(f'<p class="provenance">{_report_escape("; ".join(provenance))}</p>')
+        content.append(f'<p class="evidence-identity"><code>{_report_escape(identity)}</code></p>')
     content.append("</article>")
     return "".join(content)
 
 
-def _report_domain(
-    checkpoint: dict[str, Any], trial_number: int, number: int
-) -> tuple[str, str]:
+def _report_domain(checkpoint: dict[str, Any], trial_number: int, number: int) -> tuple[str, str]:
     domain_id = str(checkpoint.get("domain_id", ""))
     anchor = f"domain-{trial_number}-{number}"
     proposed = str(checkpoint.get("proposed_judgment", ""))
     judgment = _report_judgment_class(proposed)
     bindings_by_identity = _report_evidence_bindings(checkpoint)
     nav = (
-        f"<li><a href=\"#{anchor}\"><span class=\"domain-number\">{number}</span>"
-        f"<span>{_report_escape(domain_id)}</span><span class=\"judgment judgment-{judgment}\">"
-        f"{_report_escape(proposed)}</span><small class=\"domain-evidence\">Evidence: "
+        f'<li><a href="#{anchor}"><span class="domain-number">{number}</span>'
+        f'<span>{_report_escape(domain_id)}</span><span class="judgment judgment-{judgment}">'
+        f'{_report_escape(proposed)}</span><small class="domain-evidence">Evidence: '
         f"{_report_escape(', '.join(bindings_by_identity) or 'none')}</small></a></li>"
     )
     draft = checkpoint.get("draft", {})
@@ -164,38 +160,35 @@ def _report_domain(
     answers = draft.get("active_answers", [])
     answers = answers if isinstance(answers, list) else []
     content = [
-        f"<article class=\"domain\" id=\"{anchor}\" aria-labelledby=\"{anchor}-heading\">",
-        f"<p class=\"judgment judgment-{judgment}\"><strong>Proposed judgment: "
+        f'<article class="domain" id="{anchor}" aria-labelledby="{anchor}-heading">',
+        f'<p class="judgment judgment-{judgment}"><strong>Proposed judgment: '
         f"{_report_escape(proposed)}</strong></p>",
-        f"<h2 id=\"{anchor}-heading\">{_report_escape(domain_id)}</h2>",
+        f'<h2 id="{anchor}-heading">{_report_escape(domain_id)}</h2>',
     ]
     if isinstance(inactive, list) and inactive:
         content.append(
-            f"<p class=\"domain-meta\"><strong>Inactive questions:</strong> "
+            f'<p class="domain-meta"><strong>Inactive questions:</strong> '
             f"{_report_escape(_report_values_text(inactive))}</p>"
         )
     if isinstance(limitations, list) and limitations:
         content.append(
-            f"<p class=\"domain-meta\"><strong>Limitations:</strong> "
+            f'<p class="domain-meta"><strong>Limitations:</strong> '
             f"{_report_escape(_report_values_text(limitations))}</p>"
         )
+    content.append(f'<p class="domain-meta"><strong>Active questions:</strong> {len(answers)}</p>')
     content.append(
-        f"<p class=\"domain-meta\"><strong>Active questions:</strong> {len(answers)}</p>"
-    )
-    content.append(
-        f"<div class=\"questions\" aria-label=\"Signaling questions for "
-        f"{_report_escape(domain_id)}\">"
+        f'<div class="questions" aria-label="Signaling questions for {_report_escape(domain_id)}">'
     )
     for answer in answers:
         if not isinstance(answer, dict):
             continue
         question_content = [
-            "<div class=\"question\">",
+            '<div class="question">',
             f"<h3>Signaling question <code>{_report_escape(answer.get('question_id', ''))}</code></h3>",
             f"<p><strong>Answer:</strong> {_report_escape(answer.get('answer', ''))}</p>",
             "<details><summary>Answer rationale</summary>"
             f"<p>{_report_escape(answer.get('rationale', ''))}</p></details>",
-            "<div class=\"evidence-list\" aria-label=\"Evidence uses\">",
+            '<div class="evidence-list" aria-label="Evidence uses">',
         ]
         uses = answer.get("evidence_uses", [])
         if isinstance(uses, list):
@@ -221,11 +214,7 @@ def _report_ordered_checkpoints(
         active_hash = record.get("active_hash")
         if isinstance(domain_id, str) and isinstance(active_hash, str):
             candidates.setdefault((domain_id, active_hash), []).append(record)
-    return [
-        candidates[key][0]
-        for key in checkpoint_order
-        if len(candidates.get(key, ())) == 1
-    ]
+    return [candidates[key][0] for key in checkpoint_order if len(candidates.get(key, ())) == 1]
 
 
 def application_finalization_report(summary: dict[str, Any], records: list[dict[str, Any]]) -> str:
@@ -343,9 +332,12 @@ def application_finalization_report(summary: dict[str, Any], records: list[dict[
                 if isinstance(interval, dict) or isinstance(p_value, dict):
                     interval = interval if isinstance(interval, dict) else {}
                     p_value = p_value if isinstance(p_value, dict) else {}
+                    confidence_level = str(interval.get("level", "")).strip()
+                    if confidence_level and not confidence_level.endswith("%"):
+                        confidence_level += "%"
                     precision_detail = (
                         "<p>Reported precision: "
-                        f"CI {escaped(interval.get('level', ''))}%; "
+                        f"CI {escaped(confidence_level)}; "
                         f"{escaped(interval.get('lower', ''))} to "
                         f"{escaped(interval.get('upper', ''))}; "
                         f"P{escaped(p_value.get('operator', ''))}"
@@ -436,39 +428,42 @@ def application_finalization_report(summary: dict[str, Any], records: list[dict[
         effect = reported.get("effect")
         estimate = "Not reported"
         if isinstance(effect, dict):
-            estimate = (
-                f"{effect.get('value', '')} {effect.get('unit', '')}".strip()
-                or str(effect.get("statistic", ""))
+            estimate = f"{effect.get('value', '')} {effect.get('unit', '')}".strip() or str(
+                effect.get("statistic", "")
             )
         elif isinstance(reported_text, str) and reported_text:
             estimate = "Reported result"
         result_hero = (
-            "<div class=\"result-hero\">"
-            "<div><p class=\"eyebrow\">Reported outcome</p>"
-            f"<h2>{escaped(outcome_definition or 'Result')}</h2>"
-            f"<p>Measurement: {escaped(measurement)}; time point: {escaped(time_point)}.</p>"
-            + (
-                f"<blockquote class=\"result-quote\">{escaped(reported_text)}</blockquote>"
-                if isinstance(reported_text, str)
-                else ""
+            (
+                '<div class="result-hero">'
+                '<div><p class="eyebrow">Reported outcome</p>'
+                f"<h2>{escaped(outcome_definition or 'Result')}</h2>"
+                f"<p>Measurement: {escaped(measurement)}; time point: {escaped(time_point)}.</p>"
+                + (
+                    f'<blockquote class="result-quote">{escaped(reported_text)}</blockquote>'
+                    if isinstance(reported_text, str)
+                    else ""
+                )
+                + (
+                    f'<details class="record-details"><summary>Record details</summary>'
+                    f"{''.join(record_details)}</details>"
+                    if record_details
+                    else ""
+                )
+                + "</div>"
+                f'<aside class="estimate-card" aria-label="Reported result estimate">'
+                f'<span class="eyebrow">{escaped(target.get("intended_effect_measure", "Estimate"))}</span>'
+                f"<strong>{escaped(estimate)}</strong>"
+                + (
+                    f"<small>{escaped(effect.get('denominator_basis', ''))}</small>"
+                    if isinstance(effect, dict) and effect.get("denominator_basis")
+                    else ""
+                )
+                + "</aside></div>"
             )
-            + (
-                f"<details class=\"record-details\"><summary>Record details</summary>"
-                f"{''.join(record_details)}</details>"
-                if record_details
-                else ""
-            )
-            + "</div>"
-            f"<aside class=\"estimate-card\" aria-label=\"Reported result estimate\">"
-            f"<span class=\"eyebrow\">{escaped(target.get('intended_effect_measure', 'Estimate'))}</span>"
-            f"<strong>{escaped(estimate)}</strong>"
-            + (
-                f"<small>{escaped(effect.get('denominator_basis', ''))}</small>"
-                if isinstance(effect, dict) and effect.get("denominator_basis")
-                else ""
-            )
-            + "</aside></div>"
-        ) if disposition == "assessed" else ""
+            if disposition == "assessed"
+            else ""
+        )
         identity_items = [f"<div><dt>Trial</dt><dd>{escaped(trial_id)}</dd></div>"]
         if disposition == "assessed":
             identity_items.extend(
@@ -494,10 +489,10 @@ def application_finalization_report(summary: dict[str, Any], records: list[dict[
             )
         else:
             identity_items.append(f"<div><dt>Disposition</dt><dd>{escaped(disposition)}</dd></div>")
-        identity_grid = f"<dl class=\"identity-grid\">{''.join(identity_items)}</dl>"
+        identity_grid = f'<dl class="identity-grid">{"".join(identity_items)}</dl>'
         trial_header = (
-            "<header class=\"report-header trial-header\">"
-            f"<p class=\"eyebrow\">Trial record</p>{identity_grid}</header>"
+            '<header class="report-header trial-header">'
+            f'<p class="eyebrow">Trial record</p>{identity_grid}</header>'
         )
         if disposition == "assessed":
             snapshot_record = next(
@@ -517,7 +512,7 @@ def application_finalization_report(summary: dict[str, Any], records: list[dict[
                 overall = overall.get("judgment", "")
             overall_text = str(overall)
             domain_rail = [
-                "<nav class=\"domain-rail\" aria-label=\"Domain navigation\"><h2>Domains</h2><ol>"
+                '<nav class="domain-rail" aria-label="Domain navigation"><h2>Domains</h2><ol>'
             ]
             domain_sections: list[str] = []
             for number, checkpoint in enumerate(checkpoints, 1):
@@ -526,23 +521,23 @@ def application_finalization_report(summary: dict[str, Any], records: list[dict[
                 domain_sections.append(domain)
             domain_rail.append("</ol></nav>")
             audit = (
-                "<div class=\"audit-summary\">"
+                '<div class="audit-summary">'
                 "<span><strong>Overall risk-of-bias judgment:</strong> "
-                f"<span class=\"judgment judgment-{judgment_class(overall_text)}\">"
+                f'<span class="judgment judgment-{judgment_class(overall_text)}">'
                 f"{escaped(overall_text or 'not recorded')}</span></span>"
-                f"<span class=\"summary-count\">{len(checkpoints)} domains assessed</span>"
+                f'<span class="summary-count">{len(checkpoints)} domains assessed</span>'
                 "</div>"
             )
             assessed_content = (
                 audit
-                + "<div class=\"report-layout\">"
+                + '<div class="report-layout">'
                 + "".join(domain_rail)
                 + f"<div>{''.join(domain_sections)}</div></div>"
             )
         else:
-            assessed_content = f"<div class=\"diagnostic\">{''.join(details)}</div>"
+            assessed_content = f'<div class="diagnostic">{"".join(details)}</div>'
         sections.append(
-            f"<section><h2>{escaped(trial_id)}</h2><div class=\"trial-report\" data-trial-id=\"{escaped(trial_id)}\">"
+            f'<section><h2>{escaped(trial_id)}</h2><div class="trial-report" data-trial-id="{escaped(trial_id)}">'
             + trial_header
             + result_hero
             + assessed_content
@@ -572,14 +567,14 @@ code{overflow-wrap:anywhere}a{color:#064c87}a:focus-visible,summary:focus-visibl
 </style>
 """
     return (
-        "<!doctype html><html lang=\"en\"><head><meta charset=\"utf-8\">"
-        "<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">"
+        '<!doctype html><html lang="en"><head><meta charset="utf-8">'
+        '<meta name="viewport" content="width=device-width,initial-scale=1">'
         "<title>RoB 2 batch report</title>"
         + style
         + "</head><body><main>"
-        + "<header class=\"report-header\"><h1>RoB 2 batch report</h1>"
+        + '<header class="report-header"><h1>RoB 2 batch report</h1>'
         + f"<p>{escaped(headline)}</p><p>{escaped(message)}</p>"
-        + "<dl class=\"identity-grid\">"
+        + '<dl class="identity-grid">'
         + f"<div><dt>Presentation code</dt><dd><code>{escaped(code)}</code></dd></div>"
         + f"<div><dt>Summary identity</dt><dd><code>{escaped(summary.get('identity', ''))}</code></dd></div>"
         + f"<div><dt>Approved batch</dt><dd><code>{escaped(approved_summary_id)}</code></dd></div>"

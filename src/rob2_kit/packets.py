@@ -23,7 +23,7 @@ from rob2_kit.judgment_models import (
 )
 from rob2_kit.judgments import _verified_checkpoint, build_domain_judgment
 from rob2_kit.logic.evaluator import active_questions
-from rob2_kit.models import Answer, Judgment, StrictModel, sha256
+from rob2_kit.models import Activation, Answer, Judgment, StrictModel, sha256
 from rob2_kit.packs import MAINTAINER_POLICY_PACK, SCIENTIFIC_PACK
 from rob2_kit.retrieval import handle_from_id
 from rob2_kit.sources import Source, SourceRole
@@ -72,12 +72,12 @@ class GuidanceQuestion(StrictModel):
     question_id: str
     wording: str
     allowed_answers: tuple[Answer, ...]
-    active_when: str | None = None
+    activation: Activation
 
 
 class ActivationRule(StrictModel):
     question_id: str
-    expression: str | None = None
+    activation: Activation
 
 
 class PackIdentityDigest(StrictModel):
@@ -444,7 +444,7 @@ def _guidance(domain_id: str) -> GuidancePacket:
             question_id=question.id,
             wording=question.wording,
             allowed_answers=question.allowed_answers,
-            active_when=question.active_when,
+            activation=question.activation,
         )
         for question in SCIENTIFIC_PACK.questions
         if question.id in domain.question_ids
@@ -453,7 +453,7 @@ def _guidance(domain_id: str) -> GuidancePacket:
         domain_id=domain_id,
         questions=questions,
         activation_graph=tuple(
-            ActivationRule(question_id=item.question_id, expression=item.active_when)
+            ActivationRule(question_id=item.question_id, activation=item.activation)
             for item in questions
         ),
         packs=_pack_digest_from_current(),
