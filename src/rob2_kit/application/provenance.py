@@ -16,6 +16,7 @@ normalize = _legacy.normalize
 value_is_present = _legacy.value_is_present
 validate_field_bindings = _legacy.validate_field_bindings
 validate_table_semantics = _legacy.validate_table_semantics
+_reported_atoms = _legacy._reported_atoms
 
 
 def _category_for_cell(card: Mapping[str, object], path: str) -> str:
