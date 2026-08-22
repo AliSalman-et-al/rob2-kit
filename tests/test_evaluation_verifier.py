@@ -5,7 +5,18 @@ from pathlib import Path
 import pytest
 
 from rob2_kit.evaluation.manifest import CHAARTED_MANIFEST
-from rob2_kit.evaluation.verifier import _Bundle, _sources_and_evidence, verify_artifact
+from rob2_kit.evaluation.verifier import (
+    _Bundle,
+    _overall_judgment,
+    _sources_and_evidence,
+    verify_artifact,
+)
+
+
+def test_independent_overall_policy_matches_product_without_combined_concerns() -> None:
+    assert _overall_judgment(["some_concerns", "some_concerns", "low"]) == "some_concerns"
+    assert _overall_judgment(["low", "high", "some_concerns"]) == "high"
+    assert _overall_judgment(["low", "low"]) == "low"
 
 
 def _write_artifact(root: Path) -> None:

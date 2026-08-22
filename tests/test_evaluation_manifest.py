@@ -39,7 +39,7 @@ def _structured_pfs(*, effect_value: object = "0.61 (95% CI 0.51 to 0.72; P<0.00
         "effect": {
             "statistic": "Hazard ratio",
             "unit": "ratio",
-            "group_or_category": "g1 versus g2",
+            "group_or_category": "g1 vs g2",
             "value": effect_value,
             "denominator_basis": "time-to-event analysis",
         },
@@ -103,7 +103,7 @@ def _structured_overall_survival():
         "effect": {
             "statistic": "Hazard ratio",
             "unit": "ratio",
-            "group_or_category": "g1 versus g2",
+            "group_or_category": "g1 vs g2",
             "value": "0.61 (95% CI 0.47 to 0.80; P<0.001)",
             "denominator_basis": "time-to-event analysis",
         },
@@ -175,6 +175,20 @@ def test_pfs_accepts_cbdf2f8_shape_with_complete_hr_value():
         assert check_reported_facts(outcome, _structured_pfs(effect_value=value)) == ()
 
 
+def test_pfs_accepts_retained_castration_resistant_disease_source_framing():
+    outcome = CHAARTED_MANIFEST.outcome("pfs")
+    result = _structured_pfs(
+        effect_value="hazard ratio in the combination group, 0.61; 95% CI, 0.51 to 0.72; P<0.001"
+    )
+    result["reported_text"] = (
+        "development of castration-resistant prostate cancer (biochemical, symptomatic, or "
+        "radiographic); median times 20.2 months and 11.7 months; hazard ratio in the "
+        "combination group, 0.61; 95% CI, 0.51 to 0.72; P<0.001"
+    )
+    _sync_reported(result)
+    assert check_reported_facts(outcome, result) == ()
+
+
 def test_pfs_rejects_reported_text_with_conflicting_p_value():
     outcome = CHAARTED_MANIFEST.outcome("pfs")
     result = _structured_pfs()
@@ -212,11 +226,45 @@ def test_pfs_rejects_nonrandomized_or_unrelated_populations():
         "not randomized patients",
         "non randomized patients",
         "all randomized patients",
+        "789 randomized patients",
+        "790 randomized patients with unrelated cohort detail",
     ):
         result = _structured_pfs()
         result["population"] = {"analyzed_population": analyzed_population}
         failures = check_reported_facts(outcome, result)
         assert any("randomized patients" in failure for failure in failures)
+
+    for population in (
+        "790 randomized participants",
+        "randomized men with hormone-sensitive metastatic prostate cancer",
+    ):
+        result = _structured_pfs()
+        result["population"] = {"analyzed_population": population}
+        assert not check_reported_facts(outcome, result)
+
+
+def test_randomized_population_parenthetical_form_is_closed_for_target_and_analysis():
+    outcome = CHAARTED_MANIFEST.outcome("pfs")
+    positive = _structured_pfs()
+    arm_count_population = "790 randomized patients (g1: 397, g2: 393)"
+    positive["target"]["intended_analysis_population"] = arm_count_population
+    positive["population"] = {"analyzed_population": arm_count_population}
+    assert check_reported_facts(outcome, positive) == ()
+
+    for field, value in (
+        ("target", "790 randomized patients (unrelated cohort)"),
+        ("population", "790 randomized patients (unrelated cohort)"),
+        ("target", "randomized patients (999 arbitrary cohort)"),
+        ("population", "randomized patients (999 arbitrary cohort)"),
+    ):
+        result = _structured_pfs()
+        if field == "target":
+            result["target"]["intended_analysis_population"] = value
+            expected = "intended analysis population"
+        else:
+            result["population"] = {"analyzed_population": value}
+            expected = "randomized patients"
+        assert any(expected in failure for failure in check_reported_facts(outcome, result))
 
 
 def test_pfs_rejects_swapped_or_unbound_median_groups():

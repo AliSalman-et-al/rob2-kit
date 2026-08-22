@@ -45,6 +45,16 @@ from .evidence import EvidenceRecord, resolve_evidence, source_layout_projection
 _NUMERIC_LEXEME = re.compile(
     r"(?<![\w.])[+-]?(?:\d+\.\d*|\.\d+|\d+)(?:[eE][+-]?\d+)?(?![\w.])"
 )
+_EFFECT_QUALIFIERS = re.compile(
+    r"(?:hazard ratio(?:\s+(?:in|for)\s+[^,;]+)?,\s*)?"
+    r"(?P<point>\d+(?:\.\d+)?)\s*(?:\(\s*|;\s*)"
+    r"(?P<confidence_level>\d+(?:\.\d+)?)\s*%\s*"
+    r"(?:ci|confidence interval)\s*[,;:]?\s*"
+    r"(?P<lower>\d+(?:\.\d+)?)(?:\s+to\s+|-)"
+    r"(?P<upper>\d+(?:\.\d+)?)\s*;\s*"
+    r"p\s*(?P<p_operator><=|<)\s*(?P<p_value>\d+(?:\.\d+)?)\s*\)?",
+    re.IGNORECASE,
+)
 
 
 class _Closed(BaseModel):
@@ -435,7 +445,7 @@ def _compatibility(card: ResultCardInput) -> CompatibilityFinding:
         )
     reported_groups = card.reported.comparison_groups
     coverage = {item.group_id: item.status for item in card.population.outcome_measurement_coverage}
-    if set(reported_groups) != set(target_ids) or any(
+    if reported_groups != target_ids or any(
         coverage.get(item) is not CoverageStatus.MEASURED for item in target_ids
     ):
         return CompatibilityFinding(
@@ -566,6 +576,92 @@ def _validate_evidence(
                     ),
                 )
             )
+    return tuple(repairs)
+
+
+def _comparative_structure_repairs(card: ResultCardInput) -> tuple[ProposalRepair, ...]:
+    if not isinstance(card.reported, ComparativeEffect):
+        return ()
+    group_ids = tuple(group.id for group in card.target.comparison_groups)
+    expected_effect_group = f"{group_ids[0]} vs {group_ids[1]}"
+    repairs: list[ProposalRepair] = []
+    if tuple(quantity.group_or_category for quantity in card.reported.quantities) != group_ids:
+        repairs.append(
+            ProposalRepair(
+                pointer="/reported/quantities",
+                code="invalid",
+                detail=(
+                    "reported.quantities must contain exactly two ordered quantities bound to "
+                    f"target comparison group IDs {group_ids!r}"
+                ),
+            )
+        )
+    if card.reported.comparison_groups != group_ids:
+        repairs.append(
+            ProposalRepair(
+                pointer="/reported/comparison_groups",
+                code="invalid",
+                detail=(
+                    "reported.comparison_groups must exactly equal ordered target comparison "
+                    f"group IDs {group_ids!r}"
+                ),
+            )
+        )
+    if card.reported.effect.group_or_category != expected_effect_group:
+        repairs.append(
+            ProposalRepair(
+                pointer="/reported/effect/group_or_category",
+                code="invalid",
+                detail=(
+                    "reported.effect.group_or_category must be exactly "
+                    f"{expected_effect_group!r} using the target comparison group IDs"
+                ),
+            )
+        )
+    if card.reported.effect_measure.casefold() == "hazard ratio":
+        if card.reported.effect.denominator_basis != "time-to-event analysis":
+            repairs.append(
+                ProposalRepair(
+                    pointer="/reported/effect/denominator_basis",
+                    code="invalid",
+                    detail=(
+                        "hazard-ratio reported.effect.denominator_basis must be exactly "
+                        "'time-to-event analysis'"
+                    ),
+                )
+            )
+        for index, quantity in enumerate(card.reported.quantities):
+            if quantity.denominator_basis != "randomized arm":
+                repairs.append(
+                    ProposalRepair(
+                        pointer=f"/reported/quantities/{index}/denominator_basis",
+                        code="invalid",
+                        detail=(
+                            "hazard-ratio group median denominator_basis must be exactly "
+                            "'randomized arm' when the host asserts that source-backed basis"
+                        ),
+                    )
+                )
+        reported_text = source_layout_projection(card.reported.reported_text)[0]
+        reported_match = _EFFECT_QUALIFIERS.search(reported_text)
+        if reported_match is not None:
+            value_match = (
+                _EFFECT_QUALIFIERS.fullmatch(card.reported.effect.value)
+                if isinstance(card.reported.effect.value, str)
+                else None
+            )
+            if value_match is None or value_match.groupdict() != reported_match.groupdict():
+                repairs.append(
+                    ProposalRepair(
+                        pointer="/reported/effect/value",
+                        code="invalid",
+                        detail=(
+                            "reported.effect.value must be a complete string preserving the "
+                            "source-reported point estimate, confidence level and bounds, and "
+                            "P operator and value; a float-only point estimate is incomplete"
+                        ),
+                    )
+                )
     return tuple(repairs)
 
 
@@ -785,6 +881,11 @@ def save_proposal(
             item.model_copy(update={"pointer": f"/results/{input_index}{item.pointer}"})
             for item in contract_repairs
         )
+        structural_repairs = _comparative_structure_repairs(card)
+        repairs.extend(
+            item.model_copy(update={"pointer": f"/results/{input_index}{item.pointer}"})
+            for item in structural_repairs
+        )
         evidence_repairs = _validate_evidence(workspace, card)
         repairs.extend(
             item.model_copy(update={"pointer": f"/results/{input_index}{item.pointer}"})
@@ -797,7 +898,7 @@ def save_proposal(
             else ()
         )
         repairs.extend(compatibility_repairs)
-        if contract_repairs or evidence_repairs or compatibility_repairs:
+        if contract_repairs or structural_repairs or evidence_repairs or compatibility_repairs:
             continue
         reviewed.append(
             (

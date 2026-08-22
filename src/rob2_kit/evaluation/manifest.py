@@ -164,9 +164,9 @@ def check_reported_facts(outcome: OutcomeFacts, reported: Mapping[str, object]) 
         )
     if _normalized(target.get("outcome_definition")) != _normalized(outcome.outcome_definition):
         failures.append(f"missing objective fact: {outcome.outcome_definition}")
-    if _normalized(target.get("measurement")) != _normalized(outcome.measurement):
+    if not _matches_measurement(target.get("measurement"), outcome):
         failures.append(f"missing objective fact: {outcome.measurement}")
-    if not _matches_time_point(target.get("time_point_or_window"), outcome.time_point):
+    if not _matches_time_point(target.get("time_point_or_window"), outcome):
         failures.append(f"missing objective fact: {outcome.time_point}")
     if outcome.effect_measure and _normalized(target.get("intended_effect_measure")) != _normalized(
         outcome.effect_measure
@@ -205,7 +205,7 @@ def check_reported_facts(outcome: OutcomeFacts, reported: Mapping[str, object]) 
     else:
         for index, expected_quantity in enumerate(outcome.quantities[:2]):
             group_id = target_group_ids[index] if target_group_ids else ""
-            if not _matches_quantity(quantities[index], expected_quantity, group_id):
+            if not _matches_quantity(quantities[index], expected_quantity, group_id, outcome):
                 failures.append(f"missing objective quantity: {expected_quantity.value}")
     effect = _mapping(reported.get("effect"))
     effect_quantity = outcome.quantities[2]
@@ -239,17 +239,24 @@ def _matches_population(value: object, expected: str) -> bool:
     normalized_expected = _normalized(expected)
     if normalized_expected != "randomized patients":
         return _normalized(value) == normalized_expected
-    return _normalized(value) in {
-        "randomized patients",
-        "790 randomized patients (g1: 397, g2: 393)",
-    }
+    return _is_randomized_population(value)
 
 
 def _has_explicit_randomized_population(value: object) -> bool:
-    return _normalized(value) in {
-        "randomized patients",
-        "randomized men with metastatic hormone-sensitive prostate cancer",
-    }
+    return _is_randomized_population(value)
+
+
+def _is_randomized_population(value: object) -> bool:
+    normalized = _normalized(value)
+    return bool(
+        re.fullmatch(
+            r"(?:(?:total )?790 )?randomi[sz]ed (?:patients?|participants?|men)"
+            r"(?: \(g1: 397, g2: 393\))?"
+            r"(?: with (?:metastatic hormone-sensitive|hormone-sensitive metastatic) "
+            r"prostate cancer)?",
+            normalized,
+        )
+    )
 
 
 def _has_effect_of_interest(value: object, outcome_definition: str) -> bool:
@@ -265,9 +272,25 @@ def _has_reported_text(value: object, outcome: OutcomeFacts) -> bool:
     expected_effect = _effect_components(outcome.quantities[-1].value)
     return (
         isinstance(value, str)
-        and _normalized(outcome.outcome_definition) in text
+        and _reported_text_names_outcome(text, outcome)
         and all(number in numbers for number in expected_numbers)
         and _effect_components(text, embedded=True) == expected_effect
+    )
+
+
+def _reported_text_names_outcome(text: str, outcome: OutcomeFacts) -> bool:
+    expected = _normalized(outcome.outcome_definition)
+    if expected in text:
+        return True
+    if outcome.key != "pfs":
+        return False
+    return bool(
+        re.search(
+            r"(?:biochemical\s*,\s*symptomatic\s*,?\s*or\s*radiographic\s*"
+            r"progression|development\s+of\s+castration-resistant\s+prostate\s+cancer\s*"
+            r"\(\s*biochemical\s*,\s*symptomatic\s*,?\s*or\s*radiographic\s*\))",
+            text,
+        )
     )
 
 
@@ -298,11 +321,35 @@ def _matches_source_table_meaning(
     return normalized_value in allowed
 
 
-def _matches_time_point(value: object, expected: str) -> bool:
+def _matches_measurement(value: object, outcome: OutcomeFacts) -> bool:
     normalized = _normalized(value)
-    return normalized == _normalized(expected) or (
-        expected == "follow-up analysis" and normalized == "during study follow-up"
+    if normalized == _normalized(outcome.measurement):
+        return True
+    if outcome.key == "pfs":
+        return bool(
+            re.fullmatch(
+                r"median time to (?:biochemical, symptomatic, or radiographic )?"
+                r"(?:progression|event or censoring)",
+                normalized,
+            )
+        )
+    return normalized in {"median survival", "median survival time", "median time to survival"}
+
+
+def _matches_time_point(value: object, outcome: OutcomeFacts) -> bool:
+    normalized = _normalized(value)
+    if normalized == _normalized(outcome.time_point):
+        return True
+    if outcome.time_point != "follow-up analysis":
+        return False
+    if normalized == "during study follow-up":
+        return True
+    event = (
+        r"(?:biochemical, symptomatic, or radiographic )?(?:progression|event or censoring)"
+        if outcome.key == "pfs"
+        else r"(?:death|censoring|study end)"
     )
+    return bool(re.fullmatch(rf"from randomi[sz]ation (?:until|to) {event}", normalized))
 
 
 def _has_target_groups(value: object, expected: tuple[str, str]) -> bool:
@@ -346,26 +393,39 @@ def _has_effect_metadata(
     return (
         _normalized(effect.get("statistic")) == _normalized(effect_measure)
         and _normalized(effect.get("unit")) == "ratio"
-        and group
-        in {
-            f"{normalized_first} vs {normalized_second}",
-            f"{normalized_first} versus {normalized_second}",
-        }
+        and group == f"{normalized_first} vs {normalized_second}"
         and _matches_denominator(effect.get("denominator_basis"), denominator_basis)
     )
 
 
-def _matches_quantity(quantity: object, expected: Quantity, group_id: str) -> bool:
+def _matches_quantity(
+    quantity: object, expected: Quantity, group_id: str, outcome: OutcomeFacts
+) -> bool:
     expected_value, expected_unit = expected.value.rsplit(" ", maxsplit=1)
     reported = _mapping(quantity)
     return (
         _has_exact_quantity_keys(reported)
-        and _normalized(reported.get("statistic")) in {"median", "median time"}
+        and _matches_median_statistic(reported.get("statistic"), outcome)
         and _normalized(reported.get("unit")) == _normalized(expected_unit)
         and _normalized(reported.get("group_or_category")) == _normalized(group_id)
         and _matches_denominator(reported.get("denominator_basis"), expected.denominator_basis)
         and _same_number(reported.get("value"), expected_value)
     )
+
+
+def _matches_median_statistic(value: object, outcome: OutcomeFacts) -> bool:
+    statistic = _normalized(value)
+    if statistic in {"median", "median time"}:
+        return True
+    if outcome.key == "pfs":
+        return bool(
+            re.fullmatch(
+                r"median time to (?:biochemical, symptomatic, or radiographic )?"
+                r"(?:progression|event or censoring)",
+                statistic,
+            )
+        )
+    return statistic in {"median survival", "median survival time", "median time to survival"}
 
 
 def _has_exact_quantity_keys(value: Mapping[str, object]) -> bool:
@@ -412,7 +472,8 @@ def _effect_components(value: object, *, embedded: bool = False) -> dict[str, st
     )
     if matched is None:
         matched = matcher(
-            r"(?:hazard ratio,\s*)?(?P<point>\d+(?:\.\d+)?)\s*;\s*"
+            r"(?:hazard ratio(?:\s+(?:in|for)\s+[^,;]+)?,\s*)?"
+            r"(?P<point>\d+(?:\.\d+)?)\s*;\s*"
             r"(?P<confidence_level>\d+(?:\.\d+)?)\s*%\s*"
             r"(?:ci|confidence interval)\s*[,;:]\s*"
             r"(?P<lower>\d+(?:\.\d+)?)(?:\s+to\s+|-)"
