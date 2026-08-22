@@ -21,10 +21,15 @@ _reported_atoms = _legacy._reported_atoms
 
 def _category_for_cell(card: Mapping[str, object], path: str) -> str:
     parts = path.strip("/").split("/")
-    if len(parts) < 4 or parts[-1] != "value" or parts[-3] not in {
-        "categories",
-        "quantities",
-    }:
+    if (
+        len(parts) < 4
+        or parts[-1] != "value"
+        or parts[-3]
+        not in {
+            "categories",
+            "quantities",
+        }
+    ):
         return ""
     sibling = "/" + "/".join((*parts[:-1], "group_or_category"))
     try:
@@ -40,9 +45,7 @@ def validate_complete_reported_provenance(
 ) -> tuple[ProvenanceDefect, ...]:
     """Require exact endpoint identity and prevent table-axis broadening."""
 
-    defects = list(
-        _legacy.validate_complete_reported_provenance(card, declaration, resolver)
-    )
+    defects = list(_legacy.validate_complete_reported_provenance(card, declaration, resolver))
     if declaration.relationship_to_requested not in {"exact", "operationalization"}:
         defects.append(
             ProvenanceDefect(
@@ -71,8 +74,7 @@ def validate_complete_reported_provenance(
                         pointer=cell.path,
                         code="unsupported_cumulative_category",
                         detail=(
-                            "a source grade/category was broadened into a "
-                            "cumulative threshold"
+                            "a source grade/category was broadened into a cumulative threshold"
                         ),
                     )
                 )

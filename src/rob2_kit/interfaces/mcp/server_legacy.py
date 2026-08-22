@@ -210,37 +210,51 @@ def _verified_detail(kind: str, requested_identity: str, value: object) -> bool:
         from rob2_kit.application._state import identity
 
         if kind == "approved_batch":
-            return value.get("kind") == kind and identity(
-                {key: item for key, item in value.items() if key not in {"kind", "identity"}}
-            ) == requested_identity
+            return (
+                value.get("kind") == kind
+                and identity(
+                    {key: item for key, item in value.items() if key not in {"kind", "identity"}}
+                )
+                == requested_identity
+            )
         if kind == "proposal_review":
             fields = ("captured_batch", "outcome_statement", "results", "needs_input")
-            return value.get("kind") == kind and identity(
-                {key: value.get(key) for key in fields}
-            ) == requested_identity
+            return (
+                value.get("kind") == kind
+                and identity({key: value.get(key) for key in fields}) == requested_identity
+            )
         if kind == "work_packet":
             from rob2_kit.application.domains import parse_application_work_packet
 
             return parse_application_work_packet(value).identity == requested_identity
         if kind == "trial_synthesis":
             fields = (
-                "approved_batch", "trial_id", "result_id", "checkpoint_hashes",
-                "checkpoint_judgments", "proposed_overall",
+                "approved_batch",
+                "trial_id",
+                "result_id",
+                "checkpoint_hashes",
+                "checkpoint_judgments",
+                "proposed_overall",
             )
             payload = {key: value.get(key) for key in fields} | {"combined_concerns": False}
             return value.get("kind") == kind and identity(payload) == requested_identity
         if kind in {"domain_candidate", "domain_checkpoint"}:
             fields = (
-                "kind", "packet", "trial_id", "result_id", "domain_id", "draft",
-                "proposed_judgment", "inactive_questions", "evidence_bindings",
-                "scientific_pack", "policy_pack",
+                "kind",
+                "packet",
+                "trial_id",
+                "result_id",
+                "domain_id",
+                "draft",
+                "proposed_judgment",
+                "inactive_questions",
+                "evidence_bindings",
+                "scientific_pack",
+                "policy_pack",
             )
-            candidate_identity = identity(
-                {key: value.get(key) for key in fields}
-            )
-            if (
-                value.get("kind") != "domain_candidate"
-                or candidate_identity != value.get("identity")
+            candidate_identity = identity({key: value.get(key) for key in fields})
+            if value.get("kind") != "domain_candidate" or candidate_identity != value.get(
+                "identity"
             ):
                 return False
             return (
@@ -253,9 +267,10 @@ def _verified_detail(kind: str, requested_identity: str, value: object) -> bool:
             )
         if kind == "batch_summary":
             fields = ("approved_batch", "counts", "trials", "presentation")
-            return value.get("kind") == "finalization" and identity(
-                {key: value.get(key) for key in fields}
-            ) == requested_identity
+            return (
+                value.get("kind") == "finalization"
+                and identity({key: value.get(key) for key in fields}) == requested_identity
+            )
         if kind == "assessment_snapshot":
             from rob2_kit.application.trials import AssessmentSnapshot
 
@@ -278,7 +293,8 @@ def _verified_detail(kind: str, requested_identity: str, value: object) -> bool:
                 payload = {"synthesis": value.get("synthesis"), "candidate": value.get("candidate")}
             elif "acknowledgment" in value and "synthesis" not in value:
                 payload = {
-                    "trial_id": value.get("trial_id"), "disposition": value.get("disposition"),
+                    "trial_id": value.get("trial_id"),
+                    "disposition": value.get("disposition"),
                     "reason": value.get("reason"),
                     "missing_facts": value.get("missing_facts"),
                     "evidence": value.get("evidence"),
@@ -288,9 +304,18 @@ def _verified_detail(kind: str, requested_identity: str, value: object) -> bool:
                 payload = {
                     key: value.get(key)
                     for key in (
-                        "synthesis", "trial_id", "disposition", "reason", "failure_cause",
-                        "missing_facts", "available_evidence", "retained_checkpoints", "caller",
-                        "observed_at", "snapshot", "transition",
+                        "synthesis",
+                        "trial_id",
+                        "disposition",
+                        "reason",
+                        "failure_cause",
+                        "missing_facts",
+                        "available_evidence",
+                        "retained_checkpoints",
+                        "caller",
+                        "observed_at",
+                        "snapshot",
+                        "transition",
                     )
                 }
             return value.get("kind") == kind and identity(payload) == requested_identity
@@ -301,9 +326,13 @@ def _verified_detail(kind: str, requested_identity: str, value: object) -> bool:
                 and identity(payload) == requested_identity
             )
         if kind == "diagnostic":
-            return value.get("kind") == kind and identity(
-                {key: item for key, item in value.items() if key not in {"kind", "identity"}}
-            ) == requested_identity
+            return (
+                value.get("kind") == kind
+                and identity(
+                    {key: item for key, item in value.items() if key not in {"kind", "identity"}}
+                )
+                == requested_identity
+            )
     except (KeyError, TypeError, ValueError):
         return False
     return False
@@ -337,31 +366,33 @@ def preflight(
     result = preflight_sources(
         _workspace(), PreflightRequest(roots=roots, expected_head=expected_head)
     )
-    return _content({
-        "kind": result.kind,
-        "identity": result.identity,
-        "roots": result.roots,
-        "candidates": [_candidate_summary(item) for item in result.candidates],
-        "conditions": result.conditions,
-        "registry_attempts": result.registry_attempts,
-        "registry_outcomes": result.registry_outcomes,
-        "reference": result.reference.model_dump(mode="json"),
-    })
+    return _content(
+        {
+            "kind": result.kind,
+            "identity": result.identity,
+            "roots": result.roots,
+            "candidates": [_candidate_summary(item) for item in result.candidates],
+            "conditions": result.conditions,
+            "registry_attempts": result.registry_attempts,
+            "registry_outcomes": result.registry_outcomes,
+            "reference": result.reference.model_dump(mode="json"),
+        }
+    )
 
 
 @mcp.tool(name="inspect_candidate_sources", annotations=_READ_ONLY)
 def inspect(
     candidate_identity: str, query: str | None = None, page: int | None = None
 ) -> ToolResult:
-    result = inspect_candidate_sources(
-        _workspace(), candidate_identity, query=query, page=page
+    result = inspect_candidate_sources(_workspace(), candidate_identity, query=query, page=page)
+    return _content(
+        {
+            "candidate": _candidate_summary(result.candidate),
+            "page": result.page,
+            "text": result.text,
+            "hits": result.hits,
+        }
     )
-    return _content({
-        "candidate": _candidate_summary(result.candidate),
-        "page": result.page,
-        "text": result.text,
-        "hits": result.hits,
-    })
 
 
 @mcp.tool(name="save_intake_plan", annotations=_MUTATION)
@@ -476,9 +507,7 @@ def commit_domain(transition: TransitionReference) -> ToolResult:
 
 @mcp.tool(name="prepare_trial_finish", annotations=_MUTATION)
 def prepare_trial(packet: RecordReference, candidate: TrialFinishCandidate) -> ToolResult:
-    return _content(
-        prepare_trial_finish(_workspace(), packet, candidate, caller="server:mcp")
-    )
+    return _content(prepare_trial_finish(_workspace(), packet, candidate, caller="server:mcp"))
 
 
 @mcp.tool(name="finish_trial", annotations=_MUTATION)

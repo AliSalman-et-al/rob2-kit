@@ -32,9 +32,9 @@ def _sha(data: bytes) -> str:
 
 
 def _json(data: object) -> bytes:
-    return json.dumps(
-        data, sort_keys=True, separators=(",", ":"), ensure_ascii=False
-    ).encode("utf-8")
+    return json.dumps(data, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode(
+        "utf-8"
+    )
 
 
 def _references(value: object) -> set[str]:
@@ -50,9 +50,7 @@ def _references(value: object) -> set[str]:
             found.add(identity_value)
         for child in value.values():
             found.update(_references(child))
-    elif isinstance(value, Sequence) and not isinstance(
-        value, str | bytes | bytearray
-    ):
+    elif isinstance(value, Sequence) and not isinstance(value, str | bytes | bytearray):
         for child in value:
             found.update(_references(child))
     return found
@@ -114,9 +112,7 @@ def write_archive(
         "report.html": report_html.encode("utf-8"),
     }
     for record_identity, record in sorted(closure.items()):
-        entries[f"records/{record_identity.removeprefix('sha256:')}.json"] = _json(
-            record
-        )
+        entries[f"records/{record_identity.removeprefix('sha256:')}.json"] = _json(record)
     for source_name, data in sorted(sources.items()):
         entries[f"sources/{source_name}"] = data
     for render_name, data in sorted(renders.items()):
@@ -132,9 +128,7 @@ def write_archive(
         "files": file_rows,
     }
     manifest_hash = identity(manifest_base)
-    entries["manifest.json"] = _json(
-        {**manifest_base, "manifest_hash": manifest_hash}
-    )
+    entries["manifest.json"] = _json({**manifest_base, "manifest_hash": manifest_hash})
     temporary = path.with_suffix(".tmp")
     if temporary.exists():
         temporary.unlink()

@@ -33,9 +33,7 @@ class _Closed(BaseModel):
 
 
 class TransportRepair(_Closed):
-    pointer: str = Field(
-        default="", pattern=r"^(?:|/(?:[^~/]|~[01])+(?:/(?:[^~/]|~[01])+)*)$"
-    )
+    pointer: str = Field(default="", pattern=r"^(?:|/(?:[^~/]|~[01])+(?:/(?:[^~/]|~[01])+)*)$")
     code: str = Field(min_length=1)
     detail: str = Field(min_length=1)
     expected: object | None = None
@@ -138,8 +136,7 @@ def _assign_handle(
     used = {
         int(handle[len(reference.prefix) :])
         for handle in handles
-        if handle.startswith(reference.prefix)
-        and handle[len(reference.prefix) :].isdigit()
+        if handle.startswith(reference.prefix) and handle[len(reference.prefix) :].isdigit()
     }
     number = 1
     while number in used:
@@ -172,9 +169,7 @@ def annotate_handles(workspace: str | Path, value: object) -> object:
                     result["handle"] = handle
                     changed = True
             return result
-        if isinstance(item, Sequence) and not isinstance(
-            item, str | bytes | bytearray
-        ):
+        if isinstance(item, Sequence) and not isinstance(item, str | bytes | bytearray):
             return [visit(child) for child in item]
         return item
 
@@ -197,16 +192,12 @@ def resolve_handles(workspace: str | Path, value: object) -> object:
                 if stored is None:
                     raise ValueError(f"unknown or stale wire handle: {handle}")
                 supplied = {
-                    str(key): visit(child)
-                    for key, child in item.items()
-                    if key != "handle"
+                    str(key): visit(child) for key, child in item.items() if key != "handle"
                 }
                 if supplied:
                     for key, expected in stored.items():
                         if key in supplied and supplied[key] != expected:
-                            raise ValueError(
-                                f"wire handle {handle} conflicts with supplied {key}"
-                            )
+                            raise ValueError(f"wire handle {handle} conflicts with supplied {key}")
                     return {**stored, **supplied}
                 return dict(stored)
             return {str(key): visit(child) for key, child in item.items()}
@@ -215,9 +206,7 @@ def resolve_handles(workspace: str | Path, value: object) -> object:
             if stored is None:
                 raise ValueError(f"unknown or stale wire handle: {item}")
             return dict(stored)
-        if isinstance(item, Sequence) and not isinstance(
-            item, str | bytes | bytearray
-        ):
+        if isinstance(item, Sequence) and not isinstance(item, str | bytes | bytearray):
             return [visit(child) for child in item]
         return item
 
@@ -225,18 +214,12 @@ def resolve_handles(workspace: str | Path, value: object) -> object:
 
 
 def _pointer(location: tuple[int | str, ...]) -> str:
-    return "/" + "/".join(
-        str(part).replace("~", "~0").replace("/", "~1") for part in location
-    )
+    return "/" + "/".join(str(part).replace("~", "~0").replace("/", "~1") for part in location)
 
 
-def validation_repairs(
-    error: ValidationError, *, prefix: str = ""
-) -> TransportRepairReceipt:
+def validation_repairs(error: ValidationError, *, prefix: str = "") -> TransportRepairReceipt:
     repairs: list[TransportRepair] = []
-    for item in error.errors(
-        include_url=False, include_context=True, include_input=True
-    ):
+    for item in error.errors(include_url=False, include_context=True, include_input=True):
         kind = str(item["type"])
         code = (
             "missing"
@@ -248,9 +231,7 @@ def validation_repairs(
             else "invalid"
         )
         location = tuple(
-            part
-            for part in item["loc"]
-            if part not in {"function-after", "tagged-union"}
+            part for part in item["loc"] if part not in {"function-after", "tagged-union"}
         )
         repairs.append(
             TransportRepair(
@@ -261,9 +242,7 @@ def validation_repairs(
             )
         )
     unique = {(item.pointer, item.code, item.detail): item for item in repairs}
-    return TransportRepairReceipt(
-        repairs=tuple(unique[key] for key in sorted(unique))
-    )
+    return TransportRepairReceipt(repairs=tuple(unique[key] for key in sorted(unique)))
 
 
 def sanitize_model_output(text: str, status: StatusLike) -> SanitizedModelOutput:
@@ -285,6 +264,4 @@ def sanitize_model_output(text: str, status: StatusLike) -> SanitizedModelOutput
             contradictions.append(line.strip())
             continue
         kept.append(line)
-    return SanitizedModelOutput(
-        text="\n".join(kept).strip(), contradictions=tuple(contradictions)
-    )
+    return SanitizedModelOutput(text="\n".join(kept).strip(), contradictions=tuple(contradictions))

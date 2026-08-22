@@ -85,8 +85,7 @@ def validate_answer(
     defects: list[AdmissibilityDefect] = []
     source_text = "\n".join(_use_text(use) for use in evidence_uses)
     inference_text = "\n".join(
-        str(use.get("inference") or use.get("rationale") or "")
-        for use in evidence_uses
+        str(use.get("inference") or use.get("rationale") or "") for use in evidence_uses
     )
     if answer in _AFFIRMATIVE and question_id in _RULES:
         patterns = _RULES[question_id]
@@ -106,10 +105,7 @@ def validate_answer(
         not source_text.strip()
         or (
             _PROXY.search(inference_text)
-            and not any(
-                pattern.search(source_text)
-                for pattern in _RULES.get(question_id, ())
-            )
+            and not any(pattern.search(source_text) for pattern in _RULES.get(question_id, ()))
         )
     ):
         defects.append(
@@ -158,16 +154,12 @@ def validate_answer(
                 )
             )
     first = _first_sentence(rationale).casefold()
-    if answer in _AFFIRMATIVE and re.match(
-        r"^(?:no|not|there (?:was|is) no)\b", first
-    ):
+    if answer in _AFFIRMATIVE and re.match(r"^(?:no|not|there (?:was|is) no)\b", first):
         defects.append(
             AdmissibilityDefect(
                 pointer=pointer,
                 code="polarity_mismatch",
-                detail=(
-                    "answer token and first rationale sentence have opposite polarity"
-                ),
+                detail=("answer token and first rationale sentence have opposite polarity"),
             )
         )
     if answer in _NEGATIVE and re.match(
@@ -177,9 +169,7 @@ def validate_answer(
             AdmissibilityDefect(
                 pointer=pointer,
                 code="polarity_mismatch",
-                detail=(
-                    "answer token and first rationale sentence have opposite polarity"
-                ),
+                detail=("answer token and first rationale sentence have opposite polarity"),
             )
         )
     unique = {(item.pointer, item.code, item.detail): item for item in defects}
@@ -197,9 +187,7 @@ def validate_domain_answers(
         rationale = str(answer.get("rationale", ""))
         uses: list[dict[str, object]] = []
         raw_uses = answer.get("evidence_uses", ())
-        if isinstance(raw_uses, Sequence) and not isinstance(
-            raw_uses, str | bytes | bytearray
-        ):
+        if isinstance(raw_uses, Sequence) and not isinstance(raw_uses, str | bytes | bytearray):
             for use in raw_uses:
                 if not isinstance(use, Mapping):
                     continue
@@ -210,13 +198,10 @@ def validate_domain_answers(
                     evidence, str | bytes | bytearray
                 ):
                     for reference in evidence:
-                        if (
-                            isinstance(reference, Mapping)
-                            and isinstance(reference.get("identity"), str)
+                        if isinstance(reference, Mapping) and isinstance(
+                            reference.get("identity"), str
                         ):
-                            text = evidence_text_by_identity.get(
-                                str(reference["identity"])
-                            )
+                            text = evidence_text_by_identity.get(str(reference["identity"]))
                             if text:
                                 texts.append(text)
                 rendered["evidence_text"] = "\n".join(texts)

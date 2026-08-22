@@ -47,7 +47,9 @@ def test_launcher_isolates_config_and_appends_verified_pause(monkeypatch, tmp_pa
     assert result.exit_code == EXIT_PAUSED
     assert "Verified rob2-kit status" in result.output
     assert "No active Batch" in result.output
-    assert observed["config"]["mcpServers"]["rob2-kit"]["env"]["ROB2_WORKSPACE"] == str(tmp_path.resolve())
+    assert observed["config"]["mcpServers"]["rob2-kit"]["env"]["ROB2_WORKSPACE"] == str(
+        tmp_path.resolve()
+    )
     assert observed["config"]["mcpServers"]["rob2-kit"]["command"] == sys.executable
     assert observed["config"]["mcpServers"]["rob2-kit"]["args"] == [
         "-m",
@@ -72,13 +74,19 @@ def test_launcher_isolates_config_and_appends_verified_pause(monkeypatch, tmp_pa
 
 def test_launcher_finally_postflight_and_exit_classes(monkeypatch, tmp_path: Path) -> None:
     write_jsons(tmp_path, {"state.json": {"phase": "finalized", "trial_dispositions": {}}})
-    monkeypatch.setattr(subprocess, "run", lambda command, **kwargs: subprocess.CompletedProcess(command, 0, "", ""))
+    monkeypatch.setattr(
+        subprocess, "run", lambda command, **kwargs: subprocess.CompletedProcess(command, 0, "", "")
+    )
     result = launch_assessment(tmp_path, "claude-code", None, "finish")
     assert result.exit_code == EXIT_POSTFLIGHT_FAILURE
     postflight = json.loads(result.status_path.read_text(encoding="utf-8"))
     assert postflight["status"]["phase"] == "finalized"
 
-    monkeypatch.setattr(subprocess, "run", lambda command, **kwargs: subprocess.CompletedProcess(command, 7, "", "host failed"))
+    monkeypatch.setattr(
+        subprocess,
+        "run",
+        lambda command, **kwargs: subprocess.CompletedProcess(command, 7, "", "host failed"),
+    )
     failed = launch_assessment(tmp_path, "claude-code", None, "finish")
     assert failed.exit_code == EXIT_HOST_FAILURE
     assert "Verified rob2-kit status" in failed.output

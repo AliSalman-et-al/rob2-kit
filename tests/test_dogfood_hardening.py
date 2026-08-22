@@ -32,14 +32,8 @@ from rob2_kit.interfaces.mcp.server import PUBLIC_TOOL_NAMES
 def _status(phase: WorkflowPhase = WorkflowPhase.EMPTY) -> VerifiedCurrentStatus:
     return VerifiedCurrentStatus(
         phase=phase,
-        review=ReviewAuthorityRequirement(
-            required=ReviewAuthority.NONE, satisfied=True
-        ),
-        continuation=(
-            PreflightSourcesContinuation()
-            if phase is WorkflowPhase.EMPTY
-            else None
-        ),
+        review=ReviewAuthorityRequirement(required=ReviewAuthority.NONE, satisfied=True),
+        continuation=(PreflightSourcesContinuation() if phase is WorkflowPhase.EMPTY else None),
         presentation=AuthoritativePresentation(
             code=phase.value, headline=phase.value, summary=phase.value
         ),
@@ -47,9 +41,7 @@ def _status(phase: WorkflowPhase = WorkflowPhase.EMPTY) -> VerifiedCurrentStatus
 
 
 def test_continuation_discriminator_survives_default_exclusion() -> None:
-    payload = json.loads(
-        _status().model_dump_json(exclude_none=True, exclude_defaults=True)
-    )
+    payload = json.loads(_status().model_dump_json(exclude_none=True, exclude_defaults=True))
     assert payload["continuation"]["operation"] == "preflight_sources"
     assert payload["continuation"]["authority"] == "host"
 
@@ -79,8 +71,7 @@ def test_allocation_concealment_rejects_reputation_proxy() -> None:
         [
             {
                 "source_fact": (
-                    "Patients were enrolled by ECOG-ACRIN and baseline groups "
-                    "were well-balanced."
+                    "Patients were enrolled by ECOG-ACRIN and baseline groups were well-balanced."
                 ),
                 "inference": "ECOG-ACRIN trials standardly use central allocation.",
             }
@@ -141,9 +132,7 @@ def test_related_endpoint_requires_clarification() -> None:
         declaration,
         lambda _reference: "time to clinical progression",
     )
-    assert "endpoint_mismatch_requires_clarification" in {
-        item.code for item in defects
-    }
+    assert "endpoint_mismatch_requires_clarification" in {item.code for item in defects}
 
 
 def test_table_axis_rejects_grade_three_as_grade_three_or_higher() -> None:
@@ -194,9 +183,7 @@ def test_table_axis_rejects_grade_three_as_grade_three_or_higher() -> None:
         "Adverse Events 390 patients Any event Grade 3 65 (16.7%) "
         "Grade 4 49 (12.6%) Grade 5 1 (0.3%)"
     )
-    defects = validate_complete_reported_provenance(
-        card, declaration, lambda _reference: source
-    )
+    defects = validate_complete_reported_provenance(card, declaration, lambda _reference: source)
     assert "unsupported_cumulative_category" in {item.code for item in defects}
 
 

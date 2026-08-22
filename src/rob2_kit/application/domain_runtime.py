@@ -70,7 +70,9 @@ def _answer_rows(raw: Mapping[str, Any]) -> list[dict[str, object]]:
     return rows
 
 
-def _evidence_texts(workspace: str | Path, answers: Sequence[Mapping[str, object]]) -> dict[str, str]:
+def _evidence_texts(
+    workspace: str | Path, answers: Sequence[Mapping[str, object]]
+) -> dict[str, str]:
     result: dict[str, str] = {}
     for answer in answers:
         uses = answer.get("evidence_uses", ())
@@ -111,8 +113,14 @@ def _core_answer(row: Mapping[str, object]) -> dict[str, object]:
             raise TypeError("each evidence use must be an object")
         source_fact = use.get("source_fact")
         inference = use.get("inference")
-        claim = source_fact if isinstance(source_fact, str) and source_fact.strip() else use.get("claim")
-        rationale = inference if isinstance(inference, str) and inference.strip() else use.get("rationale")
+        claim = (
+            source_fact
+            if isinstance(source_fact, str) and source_fact.strip()
+            else use.get("claim")
+        )
+        rationale = (
+            inference if isinstance(inference, str) and inference.strip() else use.get("rationale")
+        )
         uses.append(
             {
                 "relationship": use.get("relationship"),
@@ -166,9 +174,7 @@ def validate_domain_runtime(
     }
     try:
         active = tuple(
-            question_id
-            for question_id in active_questions(answer_tokens)
-            if question_id in allowed
+            question_id for question_id in active_questions(answer_tokens) if question_id in allowed
         )
     except ValueError as error:
         return {
@@ -196,9 +202,7 @@ def validate_domain_runtime(
     missing = [question_id for question_id in active if question_id not in answers]
     if missing:
         _save(workspace, packet, state)
-        by_id = {
-            str(item["id"]): item for item in guidance if isinstance(item, dict)
-        }
+        by_id = {str(item["id"]): item for item in guidance if isinstance(item, dict)}
         return {
             "outcome": "condition",
             "code": "answer_question_wave",

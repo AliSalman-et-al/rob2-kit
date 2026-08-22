@@ -114,8 +114,7 @@ class IsolatedRun:
         if tuple(name for name, _digest in dossier) != tuple(sorted(RESTART_DOSSIER_FILES)):
             raise ValueError("restart dossier must contain the exact four workflow records")
         if not all(
-            isinstance(value, str) and value.startswith("sha256:")
-            for _name, value in dossier
+            isinstance(value, str) and value.startswith("sha256:") for _name, value in dossier
         ) or not all((proposal_review, review_authority_required, transition, continuation)):
             raise ValueError("restart dossier is missing required review authority or continuation")
         nonce = uuid4().hex
@@ -192,8 +191,7 @@ class AttemptLedger:
         if len(prior) >= 2 or (
             prior
             and not all(
-                row.get("external_interruption") is True
-                and row.get("before_behavior") is True
+                row.get("external_interruption") is True and row.get("before_behavior") is True
                 for row in prior
             )
         ):

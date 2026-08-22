@@ -30,20 +30,14 @@ def annotate_handles(workspace: str | Path, value: object) -> object:
         if isinstance(item, Mapping):
             result = {str(key): visit(child) for key, child in item.items()}
             source_id, alias = result.get("source_id"), result.get("alias")
-            if (
-                isinstance(source_id, str)
-                and isinstance(alias, str)
-                and "handle" not in result
-            ):
+            if isinstance(source_id, str) and isinstance(alias, str) and "handle" not in result:
                 handle = _legacy._assign_handle(
                     _legacy._Reference("src", {"source_id": source_id}), handles
                 )
                 result["handle"] = handle
                 changed = True
             return result
-        if isinstance(item, Sequence) and not isinstance(
-            item, str | bytes | bytearray
-        ):
+        if isinstance(item, Sequence) and not isinstance(item, str | bytes | bytearray):
             return [visit(child) for child in item]
         return item
 

@@ -159,15 +159,25 @@ class EvidenceRetrievalRequest(_Closed):
         ):
             raise ValueError("retrieval request must contain an operation")
         if (
-            len(self.searches) + len(self.continuations) + len(self.page_reads)
-            + len(self.normal_selections) + len(self.manual_selections)
-            + len(self.visual_selections) + int(self.catalog is not None)
+            len(self.searches)
+            + len(self.continuations)
+            + len(self.page_reads)
+            + len(self.normal_selections)
+            + len(self.manual_selections)
+            + len(self.visual_selections)
+            + int(self.catalog is not None)
             > 8
         ):
             raise ValueError("retrieval request may contain at most 8 operations")
         if self.catalog is not None and any(
-            (self.searches, self.continuations, self.page_reads, self.normal_selections,
-             self.manual_selections, self.visual_selections)
+            (
+                self.searches,
+                self.continuations,
+                self.page_reads,
+                self.normal_selections,
+                self.manual_selections,
+                self.visual_selections,
+            )
         ):
             raise ValueError("catalog retrieval is exclusive of other operations")
         return self
@@ -253,13 +263,18 @@ class VisualEvidenceRecord(_Closed):
     def normalized_region(cls, value: object):
         if value is None:
             return value
-        if not isinstance(value, (list, tuple)) or len(value) != 4 or any(
-            isinstance(item, bool) or not isinstance(item, (int, float)) for item in value
+        if (
+            not isinstance(value, (list, tuple))
+            or len(value) != 4
+            or any(isinstance(item, bool) or not isinstance(item, (int, float)) for item in value)
         ):
             raise ValueError("region must contain four finite numbers")
         x0, y0, x1, y1 = (float(item) for item in value)
         import math
-        if not all(math.isfinite(item) for item in (x0, y0, x1, y1)) or not (0 <= x0 < x1 <= 1 and 0 <= y0 < y1 <= 1):
+
+        if not all(math.isfinite(item) for item in (x0, y0, x1, y1)) or not (
+            0 <= x0 < x1 <= 1 and 0 <= y0 < y1 <= 1
+        ):
             raise ValueError("region must be normalized and ordered")
         return (x0, y0, x1, y1)
 
@@ -325,15 +340,23 @@ class EvidenceCatalogSlice(_Closed):
             raise ValueError("catalog entries must be sorted and unique")
         if self.has_more != (self.next_after is not None):
             raise ValueError("catalog continuation does not match has_more")
-        if self.next_after is not None and (not identities or self.next_after.identity != identities[-1]):
+        if self.next_after is not None and (
+            not identities or self.next_after.identity != identities[-1]
+        ):
             raise ValueError("catalog continuation must be the final entry")
         return self
 
 
 class EvidenceCondition(_Closed):
     code: Literal[
-        "no_hits", "ambiguous", "invalid_cursor", "source_out_of_scope", "page_out_of_range",
-        "visual_render_required", "render_unavailable", "stale_catalog"
+        "no_hits",
+        "ambiguous",
+        "invalid_cursor",
+        "source_out_of_scope",
+        "page_out_of_range",
+        "visual_render_required",
+        "render_unavailable",
+        "stale_catalog",
     ]
     detail: str
     next_action: str
@@ -381,7 +404,9 @@ def _source_basis(
     preflight = read_json(workspace, "preflight.json")
     if captured is None or preflight is None:
         sources = authoritative_sources(workspace, trial_id)
-        return sources, tuple(canonical_projection_identity(workspace, source) for source in sources)
+        return sources, tuple(
+            canonical_projection_identity(workspace, source) for source in sources
+        )
     candidate_rows = {
         str(item["identity"]): item
         for item in preflight.get("candidates", ())
@@ -428,7 +453,16 @@ def _source_basis(
         )
         built.append(source)
         projections.append(projection_identity(source, pages))
-    ordered = tuple(sorted(zip(built, projections, strict=True), key=lambda pair: (int(pair[0].role is not SourceRole.MAIN_ARTICLE), pair[0].label.casefold(), pair[0].id)))
+    ordered = tuple(
+        sorted(
+            zip(built, projections, strict=True),
+            key=lambda pair: (
+                int(pair[0].role is not SourceRole.MAIN_ARTICLE),
+                pair[0].label.casefold(),
+                pair[0].id,
+            ),
+        )
+    )
     return tuple(item[0] for item in ordered), tuple(item[1] for item in ordered)
 
 
@@ -548,8 +582,7 @@ def _spans(text: str, query: str, mode: LexicalMode) -> tuple[HitSpan, ...]:
         values = {token for _start, _end, token in token_matches}
         for start, end, value in token_matches:
             matched = (
-                all(term in values for term in terms)
-                and value in terms
+                all(term in values for term in terms) and value in terms
                 if mode is LexicalMode.ALL_TERMS
                 else any(value.startswith(term) for term in terms)
                 if mode is LexicalMode.PREFIX_TERMS
@@ -569,9 +602,9 @@ def _search_rows(
     *,
     offset: int = 0,
 ) -> tuple[tuple[Hit, ...], Cursor | None]:
-    selected = set(search.source_aliases) if search.source_aliases else {
-        alias.alias for alias in aliases
-    }
+    selected = (
+        set(search.source_aliases) if search.source_aliases else {alias.alias for alias in aliases}
+    )
     invalid = selected - set(by_alias)
     if invalid:
         raise KeyError(",".join(sorted(invalid)))
@@ -631,9 +664,7 @@ def _search_rows(
             snapshot=context.snapshot.snapshot_hash,
             query=search.query,
             mode=search.mode,
-            source_aliases=tuple(
-                alias.alias for alias in aliases if alias.alias in selected
-            ),
+            source_aliases=tuple(alias.alias for alias in aliases if alias.alias in selected),
             offset=offset + search.limit,
             limit=search.limit,
             projection_hashes=context.snapshot.projection_hashes,
@@ -659,22 +690,30 @@ def retrieve_evidence(
     if request.catalog is not None:
         try:
             catalog = reusable_evidence_catalog(
-                workspace, request.trial_id, aliases, basis=request.catalog.basis, after=request.catalog.after
+                workspace,
+                request.trial_id,
+                aliases,
+                basis=request.catalog.basis,
+                after=request.catalog.after,
             )
         except ValueError as error:
             if str(error) != "stale_catalog":
                 raise
             return EvidenceRetrievalResponse(
                 snapshot=context.snapshot.snapshot_hash,
-                conditions=(EvidenceCondition(code="stale_catalog", detail="catalog changed; restart from the first page", next_action="restart_catalog"),),
+                conditions=(
+                    EvidenceCondition(
+                        code="stale_catalog",
+                        detail="catalog changed; restart from the first page",
+                        next_action="restart_catalog",
+                    ),
+                ),
             )
         return EvidenceRetrievalResponse(snapshot=context.snapshot.snapshot_hash, catalog=catalog)
     for search in request.searches:
         offset = 0
         if search.cursor is not None:
-            raw = read_json(
-                workspace, f"cursor-{search.cursor.removeprefix('sha256:')}.json"
-            )
+            raw = read_json(workspace, f"cursor-{search.cursor.removeprefix('sha256:')}.json")
             try:
                 cursor = Cursor.model_validate(raw) if raw is not None else None
             except ValueError:
@@ -724,9 +763,7 @@ def retrieve_evidence(
         if cursor is not None:
             continuations.append(cursor)
     for continuation in request.continuations:
-        raw = read_json(
-            workspace, f"cursor-{continuation.cursor.removeprefix('sha256:')}.json"
-        )
+        raw = read_json(workspace, f"cursor-{continuation.cursor.removeprefix('sha256:')}.json")
         if raw is None:
             conditions.append(
                 EvidenceCondition(
@@ -852,9 +889,13 @@ def retrieve_evidence(
         if hit.page > len(context.pages[source.id]) or not hit.spans:
             conditions.append(
                 EvidenceCondition(
-                    code="page_out_of_range" if hit.page > len(context.pages[source.id]) else "invalid_cursor",
+                    code="page_out_of_range"
+                    if hit.page > len(context.pages[source.id])
+                    else "invalid_cursor",
                     detail="Hit extent is unavailable",
-                    next_action="read_exact_page" if hit.page > len(context.pages[source.id]) else "search_again",
+                    next_action="read_exact_page"
+                    if hit.page > len(context.pages[source.id])
+                    else "search_again",
                 )
             )
             continue
@@ -1036,14 +1077,19 @@ def resolve_evidence(workspace: str | Path, reference: EvidenceReference) -> Evi
         record = parse_evidence_record(raw)
     except ValueError as error:
         raise ValueError("Evidence identity is corrupt") from error
-    if record.identity != reference.identity or identity(record.model_dump(mode="json", exclude={"identity"})) != reference.identity:
+    if (
+        record.identity != reference.identity
+        or identity(record.model_dump(mode="json", exclude={"identity"})) != reference.identity
+    ):
         raise ValueError("Evidence identity is corrupt")
     if record.kind == "text":
         sources, projections = _source_basis(workspace, record.trial_id)
         source = next((item for item in sources if item.id == record.source_id), None)
         if source is None or source.sha256 != record.source_sha256:
             raise ValueError("Evidence Source is outside its scope")
-        projection = projections[next(index for index, item in enumerate(sources) if item.id == source.id)]
+        projection = projections[
+            next(index for index, item in enumerate(sources) if item.id == source.id)
+        ]
         if projection.projection_hash != record.projection_hash:
             raise ValueError("Evidence projection is stale")
         context, _aliases, _by_alias = _context(workspace, record.trial_id)
@@ -1110,9 +1156,13 @@ def reusable_evidence_catalog(
 ) -> EvidenceCatalogSlice:
     """Return one fixed, content-addressed keyset page of reusable Evidence."""
     with read_only_transaction(workspace) as connection:
-        rows = () if connection is None else connection.execute(
-            "SELECT name FROM records WHERE name LIKE 'application:evidence-%.json'"
-        ).fetchall()
+        rows = (
+            ()
+            if connection is None
+            else connection.execute(
+                "SELECT name FROM records WHERE name LIKE 'application:evidence-%.json'"
+            ).fetchall()
+        )
     by_source = {alias.source_id: alias.alias for alias in aliases}
     records: list[tuple[EvidenceReference, EvidenceRecord, str]] = []
     for (name,) in rows:
@@ -1127,12 +1177,16 @@ def reusable_evidence_catalog(
             raise ValueError("retained Evidence Source is outside the Trial scope")
         records.append((reference, record, source_alias))
     records.sort(key=lambda row: row[0].identity)
-    computed_basis = identity({
-        "trial_id": trial_id,
-        "snapshot": _context(workspace, trial_id)[0].snapshot.snapshot_hash,
-        "sources": [(alias.source_id, alias.sha256, alias.projection_hash) for alias in aliases],
-        "evidence": [reference.identity for reference, _record, _alias in records],
-    })
+    computed_basis = identity(
+        {
+            "trial_id": trial_id,
+            "snapshot": _context(workspace, trial_id)[0].snapshot.snapshot_hash,
+            "sources": [
+                (alias.source_id, alias.sha256, alias.projection_hash) for alias in aliases
+            ],
+            "evidence": [reference.identity for reference, _record, _alias in records],
+        }
+    )
     if basis is not None and basis != computed_basis:
         raise ValueError("stale_catalog")
     start_index = 0
@@ -1146,20 +1200,35 @@ def reusable_evidence_catalog(
     for reference, record, source_alias in page:
         if isinstance(record, TextEvidenceRecord):
             content = record.quote
-            entries.append(TextEvidenceCatalogEntry(
-                evidence=reference, source_id=record.source_id, source_alias=source_alias,
-                page=record.page, start=record.start, end=record.end,
-                preview=content[:160], truncated=len(content) > 160,
-            ))
+            entries.append(
+                TextEvidenceCatalogEntry(
+                    evidence=reference,
+                    source_id=record.source_id,
+                    source_alias=source_alias,
+                    page=record.page,
+                    start=record.start,
+                    end=record.end,
+                    preview=content[:160],
+                    truncated=len(content) > 160,
+                )
+            )
         else:
             content = record.transcription
-            entries.append(VisualEvidenceCatalogEntry(
-                evidence=reference, source_id=record.source_id, source_alias=source_alias,
-                page=record.page, region=record.region,
-                preview=content[:160], truncated=len(content) > 160,
-            ))
+            entries.append(
+                VisualEvidenceCatalogEntry(
+                    evidence=reference,
+                    source_id=record.source_id,
+                    source_alias=source_alias,
+                    page=record.page,
+                    region=record.region,
+                    preview=content[:160],
+                    truncated=len(content) > 160,
+                )
+            )
     has_more = start_index + len(page) < len(records)
     return EvidenceCatalogSlice(
-        basis=computed_basis, entries=tuple(entries), has_more=has_more,
+        basis=computed_basis,
+        entries=tuple(entries),
+        has_more=has_more,
         next_after=entries[-1].evidence if has_more else None,
     )

@@ -25,10 +25,21 @@ def _load_contract() -> dict[str, Any]:
     if set(value) != {"tools", "resources", "resource_templates", "skill_pointers", "examples"}:
         raise ValueError("public contract shape differs")
     expected_order = [
-        "preflight_sources", "inspect_candidate_sources", "save_intake_plan", "capture_batch",
-        "list_sources", "retrieve_evidence", "render_page", "save_proposal", "approve_batch",
-        "validate_domain_judgment", "commit_domain_judgment", "prepare_trial_finish",
-        "finish_trial", "finalize_batch", "read_record",
+        "preflight_sources",
+        "inspect_candidate_sources",
+        "save_intake_plan",
+        "capture_batch",
+        "list_sources",
+        "retrieve_evidence",
+        "render_page",
+        "save_proposal",
+        "approve_batch",
+        "validate_domain_judgment",
+        "commit_domain_judgment",
+        "prepare_trial_finish",
+        "finish_trial",
+        "finalize_batch",
+        "read_record",
     ]
     if [item["name"] for item in value["tools"]] != expected_order:
         raise ValueError("public tool order differs")

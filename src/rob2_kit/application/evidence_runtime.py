@@ -179,18 +179,14 @@ def retrieve_agent_evidence(
         manual = _models(ManualSelectionRequest, raw.get("manual_selections"))
         visual = _models(VisualSelectionRequest, raw.get("visual_selections"))
         quote_selections = tuple(
-            QuoteSelectionRequest.model_validate(value)
-            for value in raw.get("quote_selections", ())
+            QuoteSelectionRequest.model_validate(value) for value in raw.get("quote_selections", ())
         )
         table_selections = tuple(
-            TableSelectionRequest.model_validate(value)
-            for value in raw.get("table_selections", ())
+            TableSelectionRequest.model_validate(value) for value in raw.get("table_selections", ())
         )
         catalog_raw = raw.get("catalog")
         catalog = (
-            None
-            if catalog_raw is None
-            else EvidenceCatalogRequest.model_validate(catalog_raw)
+            None if catalog_raw is None else EvidenceCatalogRequest.model_validate(catalog_raw)
         )
     except (KeyError, TypeError, ValidationError) as error:
         if isinstance(error, ValidationError):
@@ -241,9 +237,7 @@ def retrieve_agent_evidence(
         if manuals:
             selected = retrieve_evidence(
                 workspace,
-                EvidenceRetrievalRequest(
-                    trial_id=trial_id, manual_selections=tuple(manuals)
-                ),
+                EvidenceRetrievalRequest(trial_id=trial_id, manual_selections=tuple(manuals)),
             )
             snapshot = selected.snapshot
             selected_refs.extend(selected.evidence)

@@ -151,9 +151,7 @@ def _copy_app_records(workspace: Path, target: Path, names: list[str]) -> None:
         if not isinstance(parsed, dict):
             raise ValueError("application ledger record is corrupt")
         logical = str(name).removeprefix("application:")
-        if logical.startswith("domain-observation-") and isinstance(
-            parsed.get("identity"), str
-        ):
+        if logical.startswith("domain-observation-") and isinstance(parsed.get("identity"), str):
             active_checkpoint_ids.add(parsed["identity"])
         parsed_rows.append((logical, bytes(payload), parsed))
 
@@ -535,10 +533,16 @@ def verify_finalization_result(
             total=len(summary.trials),
             pending=sum(item.disposition is TrialDisposition.PENDING for item in summary.trials),
             assessed=sum(item.disposition is TrialDisposition.ASSESSED for item in summary.trials),
-            needs_input=sum(item.disposition is TrialDisposition.NEEDS_INPUT for item in summary.trials),
+            needs_input=sum(
+                item.disposition is TrialDisposition.NEEDS_INPUT for item in summary.trials
+            ),
             failed=sum(item.disposition is TrialDisposition.FAILED for item in summary.trials),
         )
-        if counts != summary.counts or counts.pending or summary.presentation != presentation_for_counts(counts):
+        if (
+            counts != summary.counts
+            or counts.pending
+            or summary.presentation != presentation_for_counts(counts)
+        ):
             return None
         verified = _verify_bundle(target, summary)
         if verified is None:

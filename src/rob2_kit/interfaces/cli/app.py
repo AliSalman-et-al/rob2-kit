@@ -30,8 +30,7 @@ def _finalize(workspace: str | Path) -> int:
     compact = ArchiveArtifact.model_validate(payload["compact_archive"])
     return (
         0
-        if verify_finalization_result(workspace, canonical)
-        and verify_archive(workspace, compact)
+        if verify_finalization_result(workspace, canonical) and verify_archive(workspace, compact)
         else 1
     )
 

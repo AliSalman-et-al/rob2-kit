@@ -17,9 +17,7 @@ class _Closed(BaseModel):
 
 class DraftPatch(_Closed):
     op: Literal["add", "replace", "remove", "test"]
-    path: str = Field(
-        pattern=r"^(?:|/(?:[^~/]|~[01])+(?:/(?:[^~/]|~[01])+)*)$"
-    )
+    path: str = Field(pattern=r"^(?:|/(?:[^~/]|~[01])+(?:/(?:[^~/]|~[01])+)*)$")
     value: object | None = None
 
     @model_validator(mode="after")
@@ -63,18 +61,13 @@ def _file(draft_id: str) -> str:
 def _decode(pointer: str) -> list[str]:
     if pointer == "":
         return []
-    return [
-        part.replace("~1", "/").replace("~0", "~")
-        for part in pointer[1:].split("/")
-    ]
+    return [part.replace("~1", "/").replace("~0", "~") for part in pointer[1:].split("/")]
 
 
 def _parent(document: object, pointer: str) -> tuple[object, str]:
     parts = _decode(pointer)
     if not parts:
-        raise ValueError(
-            "root replacement is not supported; create a new draft instead"
-        )
+        raise ValueError("root replacement is not supported; create a new draft instead")
     current = document
     for part in parts[:-1]:
         if isinstance(current, dict):
@@ -134,18 +127,14 @@ def apply_patches(
     return result
 
 
-def create_draft(
-    workspace: str | Path, proposal: dict[str, object]
-) -> ProposalDraftReceipt:
+def create_draft(workspace: str | Path, proposal: dict[str, object]) -> ProposalDraftReceipt:
     draft_id = identity({"proposal": proposal})
     write_json(
         workspace,
         _file(draft_id),
         {"kind": "proposal_draft", "identity": draft_id, "proposal": proposal},
     )
-    return ProposalDraftReceipt(
-        draft_id=draft_id, proposal=proposal, applied_patches=0
-    )
+    return ProposalDraftReceipt(draft_id=draft_id, proposal=proposal, applied_patches=0)
 
 
 def read_draft(workspace: str | Path, draft_id: str) -> ProposalDraftReceipt:
@@ -159,9 +148,7 @@ def read_draft(workspace: str | Path, draft_id: str) -> ProposalDraftReceipt:
     proposal = raw["proposal"]
     if identity({"proposal": proposal}) != draft_id:
         raise ValueError("Proposal draft identity is corrupt")
-    return ProposalDraftReceipt(
-        draft_id=draft_id, proposal=proposal, applied_patches=0
-    )
+    return ProposalDraftReceipt(draft_id=draft_id, proposal=proposal, applied_patches=0)
 
 
 def patch_draft(

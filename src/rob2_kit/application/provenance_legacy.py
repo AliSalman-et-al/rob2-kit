@@ -17,9 +17,7 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from .contracts import EvidenceReference
 
-_NUMBER = re.compile(
-    r"(?<![A-Za-z0-9])(?:[<>]=?\s*)?[-+]?\d+(?:\.\d+)?%?(?![A-Za-z0-9])"
-)
+_NUMBER = re.compile(r"(?<![A-Za-z0-9])(?:[<>]=?\s*)?[-+]?\d+(?:\.\d+)?%?(?![A-Za-z0-9])")
 
 
 class _Closed(BaseModel):
@@ -27,9 +25,7 @@ class _Closed(BaseModel):
 
 
 class FieldEvidenceBinding(_Closed):
-    path: str = Field(
-        pattern=r"^/(?:[^~/]|~[01])+(?:/(?:[^~/]|~[01])+)*$"
-    )
+    path: str = Field(pattern=r"^/(?:[^~/]|~[01])+(?:/(?:[^~/]|~[01])+)*$")
     evidence: tuple[EvidenceReference, ...] = Field(min_length=1)
     required_terms: tuple[str, ...] = ()
     required_values: tuple[str | int | float, ...] = ()
@@ -41,9 +37,7 @@ class FieldEvidenceBinding(_Closed):
 
 
 class TableCellBinding(_Closed):
-    path: str = Field(
-        pattern=r"^/(?:[^~/]|~[01])+(?:/(?:[^~/]|~[01])+)*$"
-    )
+    path: str = Field(pattern=r"^/(?:[^~/]|~[01])+(?:/(?:[^~/]|~[01])+)*$")
     evidence: EvidenceReference
     row_label: str = Field(min_length=1)
     column_label: str = Field(min_length=1)
@@ -68,13 +62,8 @@ class TableAxisMap(_Closed):
     @model_validator(mode="after")
     def cells_bind_declared_axes(self) -> TableAxisMap:
         rows, columns = set(self.row_labels), set(self.column_labels)
-        if any(
-            row not in rows or column not in columns
-            for row, column in self.required_cells
-        ):
-            raise ValueError(
-                "required table cells must use declared row and column labels"
-            )
+        if any(row not in rows or column not in columns for row, column in self.required_cells):
+            raise ValueError("required table cells must use declared row and column labels")
         if set(self.cumulative_columns) - columns:
             raise ValueError("cumulative columns must be declared table columns")
         return self
@@ -152,18 +141,14 @@ def _at_pointer(value: Mapping[str, object], pointer: str) -> object:
             if key not in current:
                 raise KeyError(pointer)
             current = current[key]
-        elif isinstance(current, Sequence) and not isinstance(
-            current, str | bytes | bytearray
-        ):
+        elif isinstance(current, Sequence) and not isinstance(current, str | bytes | bytearray):
             current = current[int(key)]
         else:
             raise KeyError(pointer)
     return current
 
 
-def _texts(
-    binding: FieldEvidenceBinding, resolver: EvidenceTextResolver
-) -> tuple[str, ...]:
+def _texts(binding: FieldEvidenceBinding, resolver: EvidenceTextResolver) -> tuple[str, ...]:
     return tuple(resolver(reference) for reference in binding.evidence)
 
 
@@ -203,10 +188,7 @@ def validate_field_bindings(
                     ProvenanceDefect(
                         pointer=binding.path,
                         code="value_not_in_evidence",
-                        detail=(
-                            f"structured value {expected!r} is absent from its "
-                            "bound Evidence"
-                        ),
+                        detail=(f"structured value {expected!r} is absent from its bound Evidence"),
                     )
                 )
         terms = (
@@ -229,10 +211,7 @@ def validate_field_bindings(
                     ProvenanceDefect(
                         pointer=binding.path,
                         code="label_not_in_evidence",
-                        detail=(
-                            f"source label {term!r} is absent from its bound "
-                            "Evidence"
-                        ),
+                        detail=(f"source label {term!r} is absent from its bound Evidence"),
                     )
                 )
     return tuple(defects)
@@ -249,9 +228,7 @@ def _reported_atoms(card: Mapping[str, object]) -> tuple[tuple[str, object], ...
             if effect.get(key) is not None:
                 atoms.append((f"/reported/effect/{key}", effect[key]))
     quantities = reported.get("quantities")
-    if isinstance(quantities, Sequence) and not isinstance(
-        quantities, str | bytes | bytearray
-    ):
+    if isinstance(quantities, Sequence) and not isinstance(quantities, str | bytes | bytearray):
         for index, quantity in enumerate(quantities):
             if not isinstance(quantity, Mapping):
                 continue
@@ -270,18 +247,14 @@ def _reported_atoms(card: Mapping[str, object]) -> tuple[tuple[str, object], ...
         if isinstance(interval, Mapping):
             for key in ("level", "lower", "upper"):
                 if interval.get(key) is not None:
-                    atoms.append(
-                        (f"/reported/precision/confidence_interval/{key}", interval[key])
-                    )
+                    atoms.append((f"/reported/precision/confidence_interval/{key}", interval[key]))
         p_value = precision.get("p_value")
         if isinstance(p_value, Mapping):
             for key in ("operator", "value"):
                 if p_value.get(key) is not None:
                     atoms.append((f"/reported/precision/p_value/{key}", p_value[key]))
     categories = reported.get("categories")
-    if isinstance(categories, Sequence) and not isinstance(
-        categories, str | bytes | bytearray
-    ):
+    if isinstance(categories, Sequence) and not isinstance(categories, str | bytes | bytearray):
         for index, category in enumerate(categories):
             if not isinstance(category, Mapping):
                 continue
@@ -310,10 +283,7 @@ def validate_complete_reported_provenance(
                 ProvenanceDefect(
                     pointer=pointer,
                     code="missing_field_evidence",
-                    detail=(
-                        "every structured reported atom requires an explicit "
-                        "Evidence binding"
-                    ),
+                    detail=("every structured reported atom requires an explicit Evidence binding"),
                 )
             )
     outcome_text = normalize(declaration.source_reported_outcome)
@@ -330,8 +300,7 @@ def validate_complete_reported_provenance(
                 pointer="/provenance/source_reported_outcome",
                 code="endpoint_not_in_evidence",
                 detail=(
-                    "the source-reported endpoint label or definition is absent "
-                    "from bound Evidence"
+                    "the source-reported endpoint label or definition is absent from bound Evidence"
                 ),
             )
         )
@@ -368,9 +337,7 @@ def validate_table_semantics(
                     ProvenanceDefect(
                         pointer=cell.path,
                         code="table_axis_not_in_evidence",
-                        detail=(
-                            f"table label {label!r} is absent from the cell Evidence"
-                        ),
+                        detail=(f"table label {label!r} is absent from the cell Evidence"),
                     )
                 )
         if not value_is_present(evidence_text, cell.value):
@@ -378,9 +345,7 @@ def validate_table_semantics(
                 ProvenanceDefect(
                     pointer=cell.path,
                     code="table_value_not_in_evidence",
-                    detail=(
-                        f"table value {cell.value!r} is absent from the cell Evidence"
-                    ),
+                    detail=(f"table value {cell.value!r} is absent from the cell Evidence"),
                 )
             )
         try:
@@ -397,9 +362,8 @@ def validate_table_semantics(
         source_column = normalize(cell.column_label)
         cumulative_words = ("or higher", "or worse", "+", "at least")
         if any(word in structured for word in cumulative_words):
-            explicitly_cumulative = (
-                cell.column_label in table.cumulative_columns
-                or any(word in source_column for word in cumulative_words)
+            explicitly_cumulative = cell.column_label in table.cumulative_columns or any(
+                word in source_column for word in cumulative_words
             )
             if not explicitly_cumulative:
                 defects.append(
@@ -407,8 +371,7 @@ def validate_table_semantics(
                         pointer=cell.path,
                         code="unsupported_cumulative_category",
                         detail=(
-                            "a source grade/category was broadened into a "
-                            "cumulative threshold"
+                            "a source grade/category was broadened into a cumulative threshold"
                         ),
                     )
                 )

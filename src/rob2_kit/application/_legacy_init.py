@@ -131,24 +131,37 @@ def __getattr__(name: str) -> Any:
 
         return getattr(evidence, name)
     if name in {
-        "DomainDraftInput", "DomainAnswerInput", "DomainEvidenceUseInput",
-        "DomainOverrideInput", "DomainValidationRequest", "validate_domain_judgment",
-        "commit_domain_judgment", "prepare_domain_packet",
+        "DomainDraftInput",
+        "DomainAnswerInput",
+        "DomainEvidenceUseInput",
+        "DomainOverrideInput",
+        "DomainValidationRequest",
+        "validate_domain_judgment",
+        "commit_domain_judgment",
+        "prepare_domain_packet",
     }:
         from . import domains
 
         return getattr(domains, name)
     if name in {
-        "prepare_trial_finish", "finish_trial", "acknowledge_trial_finish",
-        "TrialFinishCandidate", "TrialFinishRequest", "TrialFinishResult",
-        "TrialPrepareResult", "TrialSynthesis",
+        "prepare_trial_finish",
+        "finish_trial",
+        "acknowledge_trial_finish",
+        "TrialFinishCandidate",
+        "TrialFinishRequest",
+        "TrialFinishResult",
+        "TrialPrepareResult",
+        "TrialSynthesis",
     }:
         from . import trials
 
         return getattr(trials, name)
     if name in {
-        "FinalizationCounts", "FinalizationCondition", "FinalizationResult",
-        "finalize_batch", "verify_finalization",
+        "FinalizationCounts",
+        "FinalizationCondition",
+        "FinalizationResult",
+        "finalize_batch",
+        "verify_finalization",
     }:
         from . import finalization
 

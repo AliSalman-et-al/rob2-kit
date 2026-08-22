@@ -150,9 +150,7 @@ def read_review_provenance(
     return raw
 
 
-def submit_proposal(
-    workspace: str | Path, raw: Mapping[str, Any]
-) -> object:
+def submit_proposal(workspace: str | Path, raw: Mapping[str, Any]) -> object:
     if "draft_operation" in raw:
         try:
             command = ProposalDraftCommand.model_validate(raw)
@@ -207,9 +205,7 @@ def submit_proposal(
         try:
             declaration = ProvenanceDeclaration.model_validate(raw_declaration)
         except ValidationError as error:
-            receipt = validation_repairs(
-                error, prefix=f"/results/{trial_index}/provenance"
-            )
+            receipt = validation_repairs(error, prefix=f"/results/{trial_index}/provenance")
             defects.extend(item.model_dump(mode="json") for item in receipt.repairs)
             continue
         card_ids = _card_evidence_ids(card)

@@ -11,10 +11,9 @@ def test_discard_is_cli_only_and_requires_fresh_exact_confirmation(monkeypatch, 
     monkeypatch.setattr(
         app,
         "current_batch_projection",
-        lambda workspace: SimpleNamespace(
-            approved_batch_ref=SimpleNamespace(identity=identity)
-        ),
+        lambda workspace: SimpleNamespace(approved_batch_ref=SimpleNamespace(identity=identity)),
     )
+
     def fake_discard(workspace, request):
         captured["request"] = request
         return SimpleNamespace(status="discarded", model_dump_json=lambda: '{"status":"discarded"}')

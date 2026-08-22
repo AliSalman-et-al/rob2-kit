@@ -30,7 +30,12 @@ def _json_files(root: Path) -> dict[str, dict[str, object]]:
 
 def _runtime_records(workspace: Path) -> dict[str, dict[str, object]]:
     records: dict[str, dict[str, object]] = {}
-    for pattern in ("proposal-provenance-*.json", "domain-scientific-*.json", "registry-source-*.json", "table-evidence-*.json"):
+    for pattern in (
+        "proposal-provenance-*.json",
+        "domain-scientific-*.json",
+        "registry-source-*.json",
+        "table-evidence-*.json",
+    ):
         for path in workspace.glob(pattern):
             try:
                 value = json.loads(path.read_text(encoding="utf-8"))
@@ -56,7 +61,12 @@ def _root_ids(summary: dict[str, object], records: dict[str, dict[str, object]])
                 if isinstance(value, dict) and isinstance(value.get("identity"), str):
                     roots.append(str(value["identity"]))
     for record in records.values():
-        if record.get("kind") in {"proposal_provenance", "domain_scientific_draft", "registry_source", "table_cell_evidence"} and isinstance(record.get("identity"), str):
+        if record.get("kind") in {
+            "proposal_provenance",
+            "domain_scientific_draft",
+            "registry_source",
+            "table_cell_evidence",
+        } and isinstance(record.get("identity"), str):
             roots.append(str(record["identity"]))
     return roots
 
@@ -85,13 +95,21 @@ def finalize_with_archive(workspace: str | Path) -> object:
     records = {**_json_files(bundle / "records"), **_runtime_records(root)}
     roots = _root_ids(summary, records)
     selected = record_closure(records, roots)
-    closure_text = "\n".join(json.dumps(value, sort_keys=True, separators=(",", ":")) for value in selected.values())
+    closure_text = "\n".join(
+        json.dumps(value, sort_keys=True, separators=(",", ":")) for value in selected.values()
+    )
     render_ids = set(_RENDER.findall(closure_text))
     renders: dict[str, bytes] = {}
     render_root = bundle / "renders"
     if render_root.is_dir():
         for path in render_root.iterdir():
-            if path.is_file() and not path.is_symlink() and any(identifier.removeprefix("sha256:") in path.name for identifier in render_ids):
+            if (
+                path.is_file()
+                and not path.is_symlink()
+                and any(
+                    identifier.removeprefix("sha256:") in path.name for identifier in render_ids
+                )
+            ):
                 renders[path.name] = path.read_bytes()
     sources: dict[str, bytes] = _registry_sources(root)
     seen_hashes = {hashlib.sha256(value).hexdigest() for value in sources.values()}
@@ -110,10 +128,27 @@ def finalize_with_archive(workspace: str | Path) -> object:
     approved = summary.get("approved_batch")
     if not isinstance(approved, dict) or not isinstance(approved.get("identity"), str):
         raise ValueError("finalization summary lacks approved Batch identity")
-    artifact = write_archive(workspace, approved_identity=str(approved["identity"]), summary=summary, records=records, root_record_ids=roots, sources=sources, renders=renders, report_html=report_html)
+    artifact = write_archive(
+        workspace,
+        approved_identity=str(approved["identity"]),
+        summary=summary,
+        records=records,
+        root_record_ids=roots,
+        sources=sources,
+        renders=renders,
+        report_html=report_html,
+    )
     if not verify_archive(workspace, artifact):
         raise ValueError("compact finalization archive failed verification")
-    write_json(workspace, f"compact-archive-{result.summary.identity.removeprefix('sha256:')}.json", {"kind": "compact_archive", "summary": result.summary.model_dump(mode="json"), "artifact": artifact.model_dump(mode="json")})
+    write_json(
+        workspace,
+        f"compact-archive-{result.summary.identity.removeprefix('sha256:')}.json",
+        {
+            "kind": "compact_archive",
+            "summary": result.summary.model_dump(mode="json"),
+            "artifact": artifact.model_dump(mode="json"),
+        },
+    )
     payload = result.model_dump(mode="json", exclude_none=True)
     payload["compact_archive"] = artifact.model_dump(mode="json")
     payload["artifact_preference"] = "compact_archive"

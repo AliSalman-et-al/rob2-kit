@@ -121,9 +121,7 @@ def _repair(error: Exception, *, pointer: str = "") -> ToolResult:
     return _content(
         {
             "outcome": "repair",
-            "repairs": [
-                {"pointer": pointer, "code": "invalid", "detail": str(error)}
-            ],
+            "repairs": [{"pointer": pointer, "code": "invalid", "detail": str(error)}],
         }
     )
 
@@ -203,15 +201,12 @@ def preflight(
         registry = ensure_registry_snapshot(_workspace(), result)
         return _content(
             {
-                "outcome": (
-                    "success" if registry.get("outcome") == "success" else "condition"
-                ),
+                "outcome": ("success" if registry.get("outcome") == "success" else "condition"),
                 "kind": result.kind,
                 "identity": result.identity,
                 "roots": result.roots,
                 "candidates": [
-                    item.model_dump(mode="json", exclude={"pages"})
-                    for item in result.candidates
+                    item.model_dump(mode="json", exclude={"pages"}) for item in result.candidates
                 ],
                 "conditions": [
                     *result.conditions,
@@ -232,15 +227,11 @@ def inspect(
     candidate_identity: str, query: str | None = None, page: int | None = None
 ) -> ToolResult:
     try:
-        result = inspect_candidate_sources(
-            _workspace(), candidate_identity, query=query, page=page
-        )
+        result = inspect_candidate_sources(_workspace(), candidate_identity, query=query, page=page)
         return _content(
             {
                 "outcome": "success",
-                "candidate": result.candidate.model_dump(
-                    mode="json", exclude={"pages"}
-                ),
+                "candidate": result.candidate.model_dump(mode="json", exclude={"pages"}),
                 "page": result.page,
                 "text": result.text,
                 "hits": result.hits,
@@ -251,16 +242,12 @@ def inspect(
 
 
 @mcp.tool(name="save_intake_plan", annotations=_MUTATION)
-def save_plan(
-    preflight: dict[str, Any] | str, entries: list[dict[str, Any]]
-) -> ToolResult:
+def save_plan(preflight: dict[str, Any] | str, entries: list[dict[str, Any]]) -> ToolResult:
     try:
         reference = RecordReference.model_validate(_resolve(preflight))
         typed_entries = tuple(IntakePlanEntry.model_validate(item) for item in entries)
         return _content(
-            save_intake_plan(
-                _workspace(), reference, typed_entries, host_caller="host:mcp"
-            )
+            save_intake_plan(_workspace(), reference, typed_entries, host_caller="host:mcp")
         )
     except (TypeError, ValueError, ValidationError) as error:
         return _repair(error)
@@ -274,9 +261,7 @@ def capture(
     try:
         request = CaptureRequest(
             plan=RecordReference.model_validate(_resolve(plan)),
-            acknowledgment=ReviewAcknowledgmentReference.model_validate(
-                _resolve(acknowledgment)
-            ),
+            acknowledgment=ReviewAcknowledgmentReference.model_validate(_resolve(acknowledgment)),
         )
         result = capture_batch(_workspace(), request)
         ensure_registry_snapshot(_workspace())
@@ -289,9 +274,7 @@ def capture(
 def list_trial_sources(trial_id: str) -> ToolResult:
     try:
         ensure_registry_snapshot(_workspace())
-        return _content(
-            {"outcome": "success", "sources": list_sources(_workspace(), trial_id)}
-        )
+        return _content({"outcome": "success", "sources": list_sources(_workspace(), trial_id)})
     except (OSError, TypeError, ValueError, ValidationError) as error:
         return _repair(error)
 
@@ -352,9 +335,7 @@ def render_source_page(
         )
         if source is None:
             raise ValueError("source is outside the Trial inventory")
-        delivery = render_cached(
-            _workspace(), source, page, region, force_inline=force_inline
-        )
+        delivery = render_cached(_workspace(), source, page, region, force_inline=force_inline)
         if delivery.condition is not None:
             return _content(delivery.condition)
         rendered = delivery.rendered
@@ -418,9 +399,7 @@ def approve(
 ) -> ToolResult:
     try:
         return _content(
-            approve_proposal(
-                _workspace(), _resolve(transition), _resolve(acknowledgment)
-            )
+            approve_proposal(_workspace(), _resolve(transition), _resolve(acknowledgment))
         )
     except (OSError, TypeError, ValueError, ValidationError) as error:
         return _repair(error)
@@ -435,9 +414,7 @@ def validate_domain(
         resolved_draft = _resolve(draft)
         if not isinstance(resolved_draft, Mapping):
             raise TypeError("Domain draft must be an object")
-        return _content(
-            validate_domain_runtime(_workspace(), _resolve(packet), resolved_draft)
-        )
+        return _content(validate_domain_runtime(_workspace(), _resolve(packet), resolved_draft))
     except (OSError, TypeError, ValueError, ValidationError) as error:
         return _repair(error)
 
@@ -452,9 +429,9 @@ def commit_domain(transition: dict[str, Any] | str) -> ToolResult:
             _workspace(),
             f"domain-scientific-{candidate.identity.removeprefix('sha256:')}.json",
         )
-        if not isinstance(scientific, dict) or scientific.get(
-            "candidate"
-        ) != candidate.model_dump(mode="json"):
+        if not isinstance(scientific, dict) or scientific.get("candidate") != candidate.model_dump(
+            mode="json"
+        ):
             return _content(
                 {
                     "outcome": "condition",
@@ -466,17 +443,13 @@ def commit_domain(transition: dict[str, Any] | str) -> ToolResult:
                     "next_action": "validate_domain_judgment",
                 }
             )
-        return _content(
-            commit_domain_judgment(_workspace(), reference, caller="server:mcp")
-        )
+        return _content(commit_domain_judgment(_workspace(), reference, caller="server:mcp"))
     except (OSError, TypeError, ValueError, ValidationError) as error:
         return _repair(error)
 
 
 @mcp.tool(name="prepare_trial_finish", annotations=_MUTATION)
-def prepare_trial(
-    packet: dict[str, Any] | str, candidate: dict[str, Any]
-) -> ToolResult:
+def prepare_trial(packet: dict[str, Any] | str, candidate: dict[str, Any]) -> ToolResult:
     try:
         if "retained_checkpoints" in candidate:
             return _content(
@@ -519,9 +492,7 @@ def finish(
     try:
         request = TrialFinishRequest(
             transition=TransitionReference.model_validate(_resolve(transition)),
-            acknowledgment=ReviewAcknowledgmentReference.model_validate(
-                _resolve(acknowledgment)
-            ),
+            acknowledgment=ReviewAcknowledgmentReference.model_validate(_resolve(acknowledgment)),
         )
         return _content(finish_trial(_workspace(), request, caller="server:mcp"))
     except (OSError, TypeError, ValueError, ValidationError) as error:
@@ -544,9 +515,7 @@ def read_record(record: dict[str, Any] | str) -> ToolResult:
             raise TypeError("record must be a reference object or short handle")
         if resolved.get("kind") == "evidence":
             return _content(
-                resolve_evidence(
-                    _workspace(), EvidenceReference.model_validate(resolved)
-                )
+                resolve_evidence(_workspace(), EvidenceReference.model_validate(resolved))
             )
         reference = RecordReference.model_validate(resolved)
         return _content(_proposal_detail(reference))

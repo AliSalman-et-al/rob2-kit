@@ -22,9 +22,7 @@ def _missing_provenance(raw: Mapping[str, Any]) -> tuple[tuple[int, str], ...]:
     if not isinstance(proposal, Mapping) or not isinstance(top_level, Mapping):
         return ()
     results = proposal.get("results", ())
-    if not isinstance(results, Sequence) or isinstance(
-        results, str | bytes | bytearray
-    ):
+    if not isinstance(results, Sequence) or isinstance(results, str | bytes | bytearray):
         return ()
     missing: list[tuple[int, str]] = []
     for index, item in enumerate(results):
