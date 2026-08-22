@@ -402,7 +402,9 @@ def test_stdio_public_assessed_workflow_commits_all_five_domains(tmp_path: Path)
                     "sq:selection:multiple-analyses": "no",
                 },
             }
-            packet = approved["approved_batch"]
+            first_continuation = dict(approved["next_action"])
+            assert first_continuation["operation"] == "validate_domain_judgment"
+            packet = first_continuation["packet"]
             domain_ids = tuple(answer_paths)
             for index, domain_id in enumerate(domain_ids, 1):
                 draft = {

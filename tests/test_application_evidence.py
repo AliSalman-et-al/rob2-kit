@@ -5,14 +5,21 @@ from pathlib import Path
 import pymupdf
 import pytest
 
-from rob2_kit.application.contracts import ReviewAuthority
+from rob2_kit.application._state import identity, read_json, write_json
+from rob2_kit.application.contracts import EvidenceReference, RenderReference, ReviewAuthority
 from rob2_kit.application.evidence import (
+    EvidenceCatalogRequest,
     EvidenceRetrievalRequest,
     LexicalMode,
     ManualSelectionRequest,
     NormalSelectionRequest,
+    PageReadRequest,
     SearchContinuation,
     SearchRequest,
+    TextEvidenceCatalogEntry,
+    TextEvidenceRecord,
+    VisualEvidenceCatalogEntry,
+    VisualEvidenceRecord,
     VisualSelectionRequest,
     _spans,
     list_sources,
@@ -35,10 +42,11 @@ def _workspace(
     tmp_path: Path,
     first_page_text: str = "Alpha beta gamma. Alpha appears again.",
     include_second_paragraph: bool = True,
+    font_size: float = 11,
 ) -> None:
     document = pymupdf.open()
     page = document.new_page()
-    page.insert_text((72, 72), first_page_text)
+    page.insert_text((72, 72), first_page_text, fontsize=font_size)
     if include_second_paragraph:
         page.insert_text((72, 110), "A second paragraph.")
     page = document.new_page()
@@ -77,9 +85,7 @@ def test_navigation_cursor_and_evidence_survive_a_new_call(tmp_path: Path) -> No
         EvidenceRetrievalRequest(
             trial_id="trial",
             searches=(
-                SearchRequest(
-                    kind="search", query="alpha", mode=LexicalMode.ANY_TERMS, limit=1
-                ),
+                SearchRequest(kind="search", query="alpha", mode=LexicalMode.ANY_TERMS, limit=1),
             ),
         ),
     )
@@ -90,9 +96,7 @@ def test_navigation_cursor_and_evidence_survive_a_new_call(tmp_path: Path) -> No
         tmp_path,
         EvidenceRetrievalRequest(
             trial_id="trial",
-            continuations=(
-                SearchContinuation(kind="continuation", cursor=continuation),
-            ),
+            continuations=(SearchContinuation(kind="continuation", cursor=continuation),),
         ),
     )
     assert second.hits and second.hits[0].snapshot == first.snapshot
@@ -104,13 +108,19 @@ def test_navigation_cursor_and_evidence_survive_a_new_call(tmp_path: Path) -> No
             manual_selections=(
                 ManualSelectionRequest(
                     kind="manual_selection",
-                    source_alias="s1", page=1, start=0, end=5, quote="Alpha"
+                    source_alias="s1",
+                    page=1,
+                    start=0,
+                    end=5,
+                    quote="Alpha",
                 ),
             ),
         ),
     )
     assert len(manual.evidence) == 1
-    assert resolve_evidence(tmp_path, manual.evidence[0]).quote == "Alpha"
+    resolved_manual = resolve_evidence(tmp_path, manual.evidence[0])
+    assert isinstance(resolved_manual, TextEvidenceRecord)
+    assert resolved_manual.quote == "Alpha"
 
     from rob2_kit.application.contracts import RenderReference
     from rob2_kit.application.evidence import source_records
@@ -135,7 +145,100 @@ def test_navigation_cursor_and_evidence_survive_a_new_call(tmp_path: Path) -> No
         ),
     )
     assert len(visual.evidence) == 1
-    assert resolve_evidence(tmp_path, visual.evidence[0]).region == (0.0, 0.0, 0.5, 0.5)
+    resolved_visual = resolve_evidence(tmp_path, visual.evidence[0])
+    assert isinstance(resolved_visual, VisualEvidenceRecord)
+    assert resolved_visual.region == (0.0, 0.0, 0.5, 0.5)
+    catalog = retrieve_evidence(
+        tmp_path,
+        EvidenceRetrievalRequest(trial_id="trial", catalog=EvidenceCatalogRequest(kind="catalog")),
+    )
+    assert catalog.catalog is not None
+    visual_entry = next(
+        item for item in catalog.catalog.entries if item.evidence == visual.evidence[0]
+    )
+    assert isinstance(visual_entry, VisualEvidenceCatalogEntry)
+    assert visual_entry.preview == "the visual region"
+
+
+def test_visual_evidence_rejects_a_rehashed_render_source_hash_mismatch(tmp_path: Path) -> None:
+    _workspace(tmp_path)
+    from rob2_kit.application.evidence import source_records
+    from rob2_kit.rendering import RenderedPage, render_page
+
+    rendered = render_page(tmp_path, source_records(tmp_path, "trial")[0], 1, (0, 0, 0.5, 0.5))
+    assert isinstance(rendered, RenderedPage)
+    response = retrieve_evidence(
+        tmp_path,
+        EvidenceRetrievalRequest(
+            trial_id="trial",
+            visual_selections=(
+                VisualSelectionRequest(
+                    kind="visual_selection",
+                    render=RenderReference(
+                        identity=rendered.render_identity,
+                        uri=f"rob2://render/{rendered.render_identity}",
+                    ),
+                    transcription="the visual region",
+                ),
+            ),
+        ),
+    )
+    reference = response.evidence[0]
+    raw = read_json(tmp_path, f"evidence-{reference.identity.removeprefix('sha256:')}.json")
+    assert raw is not None
+    raw["source_sha256"] = "sha256:" + "f" * 64
+    raw["identity"] = identity({key: value for key, value in raw.items() if key != "identity"})
+    write_json(tmp_path, f"evidence-{raw['identity'].removeprefix('sha256:')}.json", raw)
+
+    with pytest.raises(ValueError, match="visual Evidence render source hash is outside its scope"):
+        resolve_evidence(tmp_path, EvidenceReference(kind="evidence", identity=raw["identity"]))
+
+
+def test_visual_transcription_rejects_whitespace_only_at_runtime_boundaries() -> None:
+    render_identity = "sha256:" + "a" * 64
+    render = RenderReference(
+        identity=render_identity,
+        uri=f"rob2://render/{render_identity}",
+    )
+    with pytest.raises(ValueError, match="non-whitespace"):
+        VisualSelectionRequest(
+            kind="visual_selection",
+            render=render,
+            transcription=" \n\t",
+        )
+    with pytest.raises(ValueError, match="non-whitespace"):
+        VisualEvidenceRecord(
+            kind="visual",
+            identity="sha256:" + "a" * 64,
+            trial_id="trial",
+            snapshot="sha256:" + "a" * 64,
+            source_id="source",
+            source_sha256="sha256:" + "a" * 64,
+            projection_hash="sha256:" + "a" * 64,
+            page=1,
+            render=render,
+            transcription=" \n\t",
+        )
+    entry = VisualEvidenceCatalogEntry(
+        evidence=EvidenceReference(kind="evidence", identity=render_identity),
+        source_id="source",
+        source_alias="s1",
+        page=1,
+        region=None,
+        preview=" ",
+        truncated=False,
+    )
+    assert entry.preview == " "
+
+
+def test_search_rejects_duplicate_source_aliases() -> None:
+    with pytest.raises(ValueError, match="source aliases must be unique"):
+        SearchRequest(
+            kind="search",
+            query="alpha",
+            mode=LexicalMode.ANY_TERMS,
+            source_aliases=("s1", "s1"),
+        )
 
 
 def test_normal_selection_requires_an_unambiguous_extent(tmp_path: Path) -> None:
@@ -181,18 +284,20 @@ def test_exact_phrase_projects_whitespace_hyphenation_and_original_spans() -> No
         "Alpha",
         "Alpha",
     ]
-    assert [(span.start, span.end, span.text) for span in _spans(
-        "Straße plan", "strasse plan", LexicalMode.EXACT_PHRASE
-    )] == [(0, 11, "Straße plan")]
-    assert [(span.start, span.end, span.text) for span in _spans(
-        "ß", "s", LexicalMode.EXACT_PHRASE
-    )] == [(0, 1, "ß")]
-    assert [(span.start, span.end, span.text) for span in _spans(
-        "ßs", "s", LexicalMode.EXACT_PHRASE
-    )] == [(0, 1, "ß"), (1, 2, "s")]
-    assert [(span.start, span.end, span.text) for span in _spans(
-        "Radio-\r\ngraphic", "radiographic", LexicalMode.EXACT_PHRASE
-    )] == [(0, 15, "Radio-\r\ngraphic")]
+    assert [
+        (span.start, span.end, span.text)
+        for span in _spans("Straße plan", "strasse plan", LexicalMode.EXACT_PHRASE)
+    ] == [(0, 11, "Straße plan")]
+    assert [
+        (span.start, span.end, span.text) for span in _spans("ß", "s", LexicalMode.EXACT_PHRASE)
+    ] == [(0, 1, "ß")]
+    assert [
+        (span.start, span.end, span.text) for span in _spans("ßs", "s", LexicalMode.EXACT_PHRASE)
+    ] == [(0, 1, "ß"), (1, 2, "s")]
+    assert [
+        (span.start, span.end, span.text)
+        for span in _spans("Radio-\r\ngraphic", "radiographic", LexicalMode.EXACT_PHRASE)
+    ] == [(0, 15, "Radio-\r\ngraphic")]
 
 
 def test_normal_selection_from_projected_phrase_mints_exact_evidence(tmp_path: Path) -> None:
@@ -225,6 +330,7 @@ def test_normal_selection_from_projected_phrase_mints_exact_evidence(tmp_path: P
     )
     assert len(selected.evidence) == 1
     evidence = resolve_evidence(tmp_path, selected.evidence[0])
+    assert isinstance(evidence, TextEvidenceRecord)
     assert evidence.quote == "Radio-\ngraphic findings"
     assert evidence.quote == searched.hits[0].preview[span.start : span.end]
 
@@ -235,15 +341,11 @@ def test_normal_selection_from_casefold_expansion_is_not_ambiguous(tmp_path: Pat
         tmp_path,
         EvidenceRetrievalRequest(
             trial_id="trial",
-            searches=(
-                SearchRequest(kind="search", query="s", mode=LexicalMode.EXACT_PHRASE),
-            ),
+            searches=(SearchRequest(kind="search", query="s", mode=LexicalMode.EXACT_PHRASE),),
         ),
     )
     assert len(searched.hits) == 1
-    assert [(span.start, span.end, span.text) for span in searched.hits[0].spans] == [
-        (0, 1, "ß")
-    ]
+    assert [(span.start, span.end, span.text) for span in searched.hits[0].spans] == [(0, 1, "ß")]
     selected = retrieve_evidence(
         tmp_path,
         EvidenceRetrievalRequest(
@@ -256,7 +358,9 @@ def test_normal_selection_from_casefold_expansion_is_not_ambiguous(tmp_path: Pat
         ),
     )
     assert len(selected.evidence) == 1
-    assert resolve_evidence(tmp_path, selected.evidence[0]).quote == "ß"
+    resolved = resolve_evidence(tmp_path, selected.evidence[0])
+    assert isinstance(resolved, TextEvidenceRecord)
+    assert resolved.quote == "ß"
 
 
 def test_forged_researcher_fields_are_not_an_evidence_input(tmp_path: Path) -> None:
@@ -265,3 +369,162 @@ def test_forged_researcher_fields_are_not_an_evidence_input(tmp_path: Path) -> N
         SearchRequest.model_validate(
             {"query": "alpha", "mode": LexicalMode.ANY_TERMS, "authority": "researcher"}
         )
+
+
+def test_catalog_is_restart_safe_and_retrieval_is_bounded(tmp_path: Path) -> None:
+    _workspace(tmp_path)
+    minted = retrieve_evidence(
+        tmp_path,
+        EvidenceRetrievalRequest(
+            trial_id="trial",
+            manual_selections=(
+                ManualSelectionRequest(
+                    kind="manual_selection",
+                    source_alias="s1",
+                    page=1,
+                    start=0,
+                    end=5,
+                    quote="Alpha",
+                ),
+            ),
+        ),
+    )
+    response = retrieve_evidence(
+        tmp_path,
+        EvidenceRetrievalRequest(trial_id="trial", catalog=EvidenceCatalogRequest(kind="catalog")),
+    )
+    assert "sources" not in response.model_dump()
+    assert response.catalog is not None
+    assert response.catalog.entries[0].evidence == minted.evidence[0]
+    assert isinstance(response.catalog.entries[0], TextEvidenceCatalogEntry)
+    assert response.catalog.entries[0].preview == "Alpha"
+    assert SearchRequest(kind="search", query="alpha", mode=LexicalMode.ANY_TERMS).limit == 5
+    with pytest.raises(ValueError, match="at most 8"):
+        EvidenceRetrievalRequest(
+            trial_id="trial",
+            searches=tuple(
+                SearchRequest(kind="search", query="alpha", mode=LexicalMode.ANY_TERMS)
+                for _ in range(8)
+            ),
+            catalog=EvidenceCatalogRequest(kind="catalog"),
+        )
+    with pytest.raises(ValueError):
+        SearchRequest(kind="search", query="alpha", mode=LexicalMode.ANY_TERMS, limit=21)
+    write_json(
+        tmp_path,
+        f"evidence-{minted.evidence[0].identity.removeprefix('sha256:')}.json",
+        {"identity": minted.evidence[0].identity},
+    )
+    with pytest.raises(ValueError):
+        retrieve_evidence(
+            tmp_path,
+            EvidenceRetrievalRequest(
+                trial_id="trial", catalog=EvidenceCatalogRequest(kind="catalog")
+            ),
+        )
+
+
+def test_catalog_pages_are_bounded_content_addressed_and_restart_safe(tmp_path: Path) -> None:
+    _workspace(
+        tmp_path,
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789" * 8,
+        include_second_paragraph=False,
+        font_size=4,
+    )
+    page = (
+        retrieve_evidence(
+            tmp_path,
+            EvidenceRetrievalRequest(
+                trial_id="trial",
+                page_reads=(PageReadRequest(kind="page_read", source_alias="s1", page=1),),
+            ),
+        )
+        .page_reads[0]
+        .text
+    )
+    minted = []
+    for offset in range(33):
+        minted.extend(
+            retrieve_evidence(
+                tmp_path,
+                EvidenceRetrievalRequest(
+                    trial_id="trial",
+                    manual_selections=(
+                        ManualSelectionRequest(
+                            kind="manual_selection",
+                            source_alias="s1",
+                            page=1,
+                            start=offset,
+                            end=offset + 1,
+                            quote=page[offset : offset + 1],
+                        ),
+                    ),
+                ),
+            ).evidence
+        )
+    long_end = min(len(page), 180)
+    assert long_end > 160
+    long_evidence = retrieve_evidence(
+        tmp_path,
+        EvidenceRetrievalRequest(
+            trial_id="trial",
+            manual_selections=(
+                ManualSelectionRequest(
+                    kind="manual_selection",
+                    source_alias="s1",
+                    page=1,
+                    start=0,
+                    end=long_end,
+                    quote=page[:long_end],
+                ),
+            ),
+        ),
+    ).evidence[0]
+    first = retrieve_evidence(
+        tmp_path,
+        EvidenceRetrievalRequest(trial_id="trial", catalog=EvidenceCatalogRequest(kind="catalog")),
+    ).catalog
+    assert first is not None and len(first.entries) == 32 and first.has_more
+    assert first.next_after == first.entries[-1].evidence
+    assert all(len(entry.preview) <= 160 for entry in first.entries)
+    assert page[:long_end] not in first.model_dump_json()
+    assert len(first.model_dump_json()) < 16_000
+    second = retrieve_evidence(
+        tmp_path,
+        EvidenceRetrievalRequest(
+            trial_id="trial",
+            catalog=EvidenceCatalogRequest(
+                kind="catalog", basis=first.basis, after=first.next_after
+            ),
+        ),
+    ).catalog
+    assert second is not None and not second.has_more
+    assert [entry.evidence.identity for entry in (*first.entries, *second.entries)] == sorted(
+        item.identity for item in (*minted, long_evidence)
+    )
+    retrieve_evidence(
+        tmp_path,
+        EvidenceRetrievalRequest(
+            trial_id="trial",
+            manual_selections=(
+                ManualSelectionRequest(
+                    kind="manual_selection",
+                    source_alias="s1",
+                    page=1,
+                    start=34,
+                    end=35,
+                    quote=page[34:35],
+                ),
+            ),
+        ),
+    )
+    stale = retrieve_evidence(
+        tmp_path,
+        EvidenceRetrievalRequest(
+            trial_id="trial",
+            catalog=EvidenceCatalogRequest(
+                kind="catalog", basis=first.basis, after=first.next_after
+            ),
+        ),
+    )
+    assert stale.catalog is None and stale.conditions[0].code == "stale_catalog"

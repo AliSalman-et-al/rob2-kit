@@ -4,9 +4,17 @@ import asyncio
 import json
 from pathlib import Path
 
+import pytest
 from fastmcp import Client
 
-from rob2_kit.interfaces.mcp.server import mcp
+from rob2_kit.application._state import identity, read_json, write_json
+from rob2_kit.application.contracts import EvidenceReference
+from rob2_kit.application.evidence import (
+    EvidenceRetrievalRequest,
+    ManualSelectionRequest,
+    retrieve_evidence,
+)
+from rob2_kit.interfaces.mcp.server import detail_resource, mcp, read_record
 
 
 def test_public_catalog_is_exact_and_annotated() -> None:
@@ -64,3 +72,69 @@ def test_current_batch_is_a_typed_json_resource(tmp_path: Path, monkeypatch) -> 
             return (await client.read_resource("rob2://current-batch"))[0].text
 
     assert json.loads(asyncio.run(read()))["phase"] == "empty"
+
+
+def test_read_record_evidence_uses_authoritative_resolution(tmp_path: Path, monkeypatch) -> None:
+    monkeypatch.setenv("ROB2_WORKSPACE", str(tmp_path))
+    from test_application_evidence import _workspace as prepare_workspace
+
+    prepare_workspace(tmp_path)
+    reference = retrieve_evidence(
+        tmp_path,
+        EvidenceRetrievalRequest(
+            trial_id="trial",
+            manual_selections=(
+                ManualSelectionRequest(
+                    kind="manual_selection",
+                    source_alias="s1",
+                    page=1,
+                    start=0,
+                    end=5,
+                    quote="Alpha",
+                ),
+            ),
+        ),
+    ).evidence[0]
+
+    valid = read_record(reference)
+    assert dict(valid.structured_content or {})["identity"] == reference.identity
+
+    tampered = read_json(
+        tmp_path, f"evidence-{reference.identity.removeprefix('sha256:')}.json"
+    )
+    assert tampered is not None
+    tampered["source_sha256"] = "sha256:" + "f" * 64
+    fields = (
+        "kind",
+        "trial_id",
+        "snapshot",
+        "source_id",
+        "source_sha256",
+        "projection_hash",
+        "page",
+        "start",
+        "end",
+        "quote",
+        "quote_sha256",
+    )
+    tampered["identity"] = identity({key: tampered[key] for key in fields})
+    write_json(
+        tmp_path,
+        f"evidence-{tampered['identity'].removeprefix('sha256:')}.json",
+        tampered,
+    )
+
+    with pytest.raises(ValueError, match="Evidence Source is outside its scope"):
+        read_record(EvidenceReference(kind="evidence", identity=tampered["identity"]))
+
+    with pytest.raises(ValueError, match="Evidence detail URI is unsupported"):
+        detail_resource("evidence", tampered["identity"])
+
+    async def read_unsupported_detail() -> object:
+        async with Client(mcp) as client:
+            return await client.read_resource(
+                f"rob2://detail/evidence/{tampered['identity']}"
+            )
+
+    with pytest.raises(Exception, match="Evidence detail URI is unsupported"):
+        asyncio.run(read_unsupported_detail())

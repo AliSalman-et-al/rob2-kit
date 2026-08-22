@@ -27,12 +27,45 @@ from .contracts import (
     TransitionReference,
     ValidateDomainJudgmentContinuation,
 )
-from .evidence import list_sources, resolve_evidence
+from .evidence import (
+    EvidenceCatalogSlice,
+    list_sources,
+    resolve_evidence,
+    reusable_evidence_catalog,
+)
 from .transitions import issue_transition, read_transition
 
 
 class _Closed(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
+
+
+class ApplicationWorkPacket(_Closed):
+    """The closed, content-addressed packet handed to a Domain worker."""
+    kind: Literal["work_packet"]
+    identity: str = Field(pattern=r"^sha256:[0-9a-f]{64}$", strict=True)
+    approved_batch: RecordReference
+    trial_id: str = Field(min_length=1, strict=True)
+    result_id: str = Field(min_length=1, strict=True)
+    domain_id: str = Field(min_length=1, strict=True)
+    active_question_ids: tuple[str, ...]
+    allowed_question_ids: tuple[str, ...]
+    stable_aliases: tuple[str, ...]
+    reusable_evidence: EvidenceCatalogSlice
+    prior_domain_hashes: tuple[tuple[str, str], ...]
+    scientific_pack: str = Field(pattern=r"^sha256:[0-9a-f]{64}$", strict=True)
+    policy_pack: str = Field(pattern=r"^sha256:[0-9a-f]{64}$", strict=True)
+
+
+def _packet_payload(value: ApplicationWorkPacket) -> dict[str, object]:
+    return value.model_dump(mode="json", exclude={"identity"})
+
+
+def parse_application_work_packet(value: object) -> ApplicationWorkPacket:
+    packet = ApplicationWorkPacket.model_validate(value)
+    if identity(_packet_payload(packet)) != packet.identity:
+        raise ValueError("Domain work packet identity is corrupt")
+    return packet
 
 
 class DomainEvidenceUseInput(_Closed):
@@ -100,51 +133,39 @@ def _domain_ids() -> tuple[str, ...]:
     return tuple(domain.id for domain in SCIENTIFIC_PACK.domains)
 
 
-def _packet_record(workspace: str | Path, packet: RecordReference) -> dict[str, object]:
-    """Resolve a server-issued packet; an Approved Batch is accepted for its first Domain."""
-    if packet.kind is RecordKind.APPROVED_WORK_PACKET:
-        raw = read_json(workspace, f"domain-packet-{packet.identity.removeprefix('sha256:')}.json")
-        if raw is None or raw.get("identity") != packet.identity:
-            raise ValueError("Domain work packet is unavailable or corrupt")
-        return raw
-    if packet.kind is not RecordKind.APPROVED_BATCH:
-        raise ValueError("Domain work requires the server-issued work packet")
-    raw = read_json(workspace, "approved_batch.json")
-    if raw is None or raw.get("identity") != packet.identity:
-        raise ValueError("Approved Batch reference is stale")
-    rows = cast(list[list[object]], raw.get("dispositions", []))
-    pending = sorted(str(row[0]) for row in rows if len(row) >= 2 and row[1] == "pending")
-    if not pending:
-        raise ValueError("Approved Batch has no pending Trial")
-    domain_id = _domain_ids()[0]
-    return {
-        "kind": "work_packet",
-        "approved_batch": packet.model_dump(mode="json"),
-        "trial_id": pending[0],
-        "result_id": "result",
-        "domain_id": domain_id,
-        "active_question_ids": tuple(
-            q.id for q in SCIENTIFIC_PACK.questions if q.domain_id == domain_id
-        ),
-        "allowed_question_ids": tuple(
-            q.id for q in SCIENTIFIC_PACK.questions if q.domain_id == domain_id
-        ),
-        "stable_aliases": (),
-        "prior_domain_hashes": (),
-        "scientific_pack": SCIENTIFIC_PACK.content_hash,
-        "policy_pack": MAINTAINER_POLICY_PACK.content_hash,
-    }
+def _current_prior_domain_hashes(
+    state: dict[str, Any], trial_id: str, result_id: str, domain_id: str
+) -> tuple[tuple[str, str], ...]:
+    """Return every earlier Domain's current checkpoint in pack order."""
+    domain_ids = _domain_ids()
+    try:
+        prior_domains = domain_ids[: domain_ids.index(domain_id)]
+    except ValueError as error:
+        raise ValueError("unknown Domain") from error
+    if not prior_domains:
+        return ()
+    domains = state.get("domains")
+    if not isinstance(domains, dict):
+        raise ValueError("concurrent_domain_conflict")
+    rows: list[tuple[str, str]] = []
+    for prior_domain in prior_domains:
+        values = domains.get(f"{trial_id}:{result_id}:{prior_domain}")
+        if not isinstance(values, list) or not values or not isinstance(values[-1], str):
+            raise ValueError("concurrent_domain_conflict")
+        rows.append((prior_domain, values[-1]))
+    return tuple(rows)
 
 
-def prepare_domain_packet(
+def _build_domain_packet(
     workspace: str | Path,
     approved_batch: RecordReference,
     *,
     trial_id: str,
     domain_id: str,
     result_id: str = "result",
-) -> RecordReference:
-    """Create a deterministic per-Domain packet from the approved Batch."""
+    state: dict[str, Any] | None = None,
+) -> ApplicationWorkPacket:
+    """Build and validate a Domain packet without changing workspace state."""
     if approved_batch.kind is not RecordKind.APPROVED_BATCH:
         raise ValueError("a work packet starts at an Approved Batch")
     approved_raw = read_json(workspace, "approved_batch.json")
@@ -156,20 +177,10 @@ def prepare_domain_packet(
         raise ValueError("Trial is not pending in the Approved Batch")
     if domain_id not in _domain_ids():
         raise ValueError("unknown Domain")
-    state = read_json(workspace, "state.json") or {}
-    domains = state.get("domains", {})
-    prior = (
-        tuple(
-            sorted(
-                (key.rsplit(":", 1)[-1], str(value[-1]))
-                for key, value in domains.items()
-                if key.startswith(f"{trial_id}:{result_id}:") and isinstance(value, list) and value
-            )
-        )
-        if isinstance(domains, dict)
-        else ()
-    )
-    aliases = tuple(source.alias for source in list_sources(workspace, trial_id))
+    current_state = state if state is not None else (read_json(workspace, "state.json") or {})
+    prior = _current_prior_domain_hashes(current_state, trial_id, result_id, domain_id)
+    source_aliases = list_sources(workspace, trial_id)
+    aliases = tuple(source.alias for source in source_aliases)
     payload = {
         "kind": "work_packet",
         "approved_batch": approved_batch.model_dump(mode="json"),
@@ -183,26 +194,82 @@ def prepare_domain_packet(
             q.id for q in SCIENTIFIC_PACK.questions if q.domain_id == domain_id
         ),
         "stable_aliases": aliases,
+        "reusable_evidence": reusable_evidence_catalog(
+            workspace, trial_id, source_aliases
+        ).model_dump(mode="json"),
         "prior_domain_hashes": prior,
         "scientific_pack": SCIENTIFIC_PACK.content_hash,
         "policy_pack": MAINTAINER_POLICY_PACK.content_hash,
     }
-    packet_identity = identity(payload)
-    state["work_packet_identity"] = packet_identity
+    return ApplicationWorkPacket(identity=identity(payload), **payload)
+
+
+def _packet_record(workspace: str | Path, packet: RecordReference) -> dict[str, object]:
+    """Resolve a server-issued packet; an Approved Batch is accepted for its first Domain."""
+    if packet.kind is RecordKind.APPROVED_WORK_PACKET:
+        raw = read_json(workspace, f"domain-packet-{packet.identity.removeprefix('sha256:')}.json")
+        if raw is None or raw.get("identity") != packet.identity:
+            raise ValueError("Domain work packet is unavailable or corrupt")
+        return parse_application_work_packet(raw).model_dump(mode="json")
+    if packet.kind is not RecordKind.APPROVED_BATCH:
+        raise ValueError("Domain work requires the server-issued work packet")
+    state = read_json(workspace, "state.json") or {}
+    domains = state.get("domains")
+    if (
+        "work_packet_identity" in state
+        or (isinstance(domains, dict) and domains)
+        or (domains is not None and domains != {})
+    ):
+        raise ValueError(
+            "Approved Batch bootstrap is only valid before Domain work has started"
+        )
+    raw = read_json(workspace, "approved_batch.json")
+    if raw is None or raw.get("identity") != packet.identity:
+        raise ValueError("Approved Batch reference is stale")
+    rows = cast(list[list[object]], raw.get("dispositions", []))
+    pending = sorted(str(row[0]) for row in rows if len(row) >= 2 and row[1] == "pending")
+    if not pending:
+        raise ValueError("Approved Batch has no pending Trial")
+    return _build_domain_packet(
+        workspace,
+        packet,
+        trial_id=pending[0],
+        domain_id=_domain_ids()[0],
+    ).model_dump(mode="json")
+
+
+def prepare_domain_packet(
+    workspace: str | Path,
+    approved_batch: RecordReference,
+    *,
+    trial_id: str,
+    domain_id: str,
+    result_id: str = "result",
+) -> RecordReference:
+    """Create a deterministic per-Domain packet from the approved Batch."""
+    state = read_json(workspace, "state.json") or {}
+    packet_record = _build_domain_packet(
+        workspace,
+        approved_batch,
+        trial_id=trial_id,
+        domain_id=domain_id,
+        result_id=result_id,
+        state=state,
+    )
+    state["work_packet_identity"] = packet_record.identity
     write_jsons(
         workspace,
         {
-            f"domain-packet-{packet_identity.removeprefix('sha256:')}.json": {
-                **payload,
-                "identity": packet_identity,
+            f"domain-packet-{packet_record.identity.removeprefix('sha256:')}.json": {
+                **packet_record.model_dump(mode="json"),
             },
             "state.json": state,
         },
     )
     return RecordReference(
         kind=RecordKind.APPROVED_WORK_PACKET,
-        identity=packet_identity,
-        uri=record_uri(RecordKind.APPROVED_WORK_PACKET.value, packet_identity),
+        identity=packet_record.identity,
+        uri=record_uri(RecordKind.APPROVED_WORK_PACKET.value, packet_record.identity),
     )
 
 
@@ -267,9 +334,13 @@ def _candidate(
                     )
                 )
     try:
-        active = set(active_questions(answers)) & known
+        active_ids = tuple(
+            question_id for question_id in active_questions(answers) if question_id in known
+        )
+        active = set(active_ids)
     except ValueError as error:
         repairs.append(DomainRepair(pointer="/active_answers", code="invalid", detail=str(error)))
+        active_ids = ()
         active = set()
     if set(answers) != active:
         repairs.append(
@@ -277,6 +348,14 @@ def _candidate(
                 pointer="/active_answers",
                 code="mismatch",
                 detail=f"active questions must be exactly {sorted(active)}",
+            )
+        )
+    elif tuple(item.question_id for item in draft.active_answers) != active_ids:
+        repairs.append(
+            DomainRepair(
+                pointer="/active_answers",
+                code="order",
+                detail=(f"active answers must follow packet/scientific-pack order: {active_ids!r}"),
             )
         )
     if repairs:
@@ -425,24 +504,50 @@ def commit_domain_judgment(
         if identity(candidate_payload) != candidate_ref.identity:
             raise ValueError("transition_consumed_mismatch")
         state = read_json(workspace, "state.json") or {}
+        packet_payload = raw.get("packet")
+        packet = RecordReference.model_validate(packet_payload)
+        if packet.kind is RecordKind.APPROVED_WORK_PACKET:
+            # A validated packet is usable only while it remains the current
+            # packet.  Checking this before the prior-checkpoint comparison
+            # prevents an old packet from being treated as a concurrent basis.
+            if state.get("work_packet_identity") != packet.identity:
+                raise ValueError("concurrent_domain_conflict")
+        elif packet.kind is RecordKind.APPROVED_BATCH:
+            # Bootstrap candidates are valid only before any Domain work has
+            # started.  A candidate validated from the Batch must not race a
+            # later packet materialization or checkpoint commit.
+            state_domains = state.get("domains")
+            if (
+                "work_packet_identity" in state
+                or (isinstance(state_domains, dict) and state_domains)
+                or (state_domains is not None and state_domains != {})
+            ):
+                raise ValueError("concurrent_domain_conflict")
         domains = dict(state.get("domains", {}))
         key = f"{raw['trial_id']}:{raw['result_id']}:{raw['domain_id']}"
         prior = domains.get(key, ())
-        packet_payload = raw.get("packet")
+        packet_model: ApplicationWorkPacket | None = None
         if (
             isinstance(packet_payload, dict)
             and packet_payload.get("kind") == RecordKind.APPROVED_WORK_PACKET.value
         ):
+            packet_reference = RecordReference.model_validate(packet_payload)
             packet_record = read_json(
                 workspace,
-                f"domain-packet-{str(packet_payload.get('identity', '')).removeprefix('sha256:')}.json",
+                f"domain-packet-{packet_reference.identity.removeprefix('sha256:')}.json",
             )
             if packet_record is None:
                 raise ValueError("Domain work packet is unavailable")
-            prior_rows = dict(packet_record.get("prior_domain_hashes", ()))
-            expected = prior_rows.get(str(raw["domain_id"]))
-            current = str(prior[-1]) if isinstance(prior, list) and prior else None
-            if expected != current:
+            packet_model = parse_application_work_packet(packet_record)
+            if packet_model.identity != packet_reference.identity:
+                raise ValueError("Domain work packet reference is stale")
+            current_prior = _current_prior_domain_hashes(
+                state,
+                str(raw["trial_id"]),
+                str(raw["result_id"]),
+                str(raw["domain_id"]),
+            )
+            if tuple(packet_model.prior_domain_hashes) != current_prior:
                 raise ValueError("concurrent_domain_conflict")
         revision = len(prior) + 1
         active_hash = identity({"candidate": candidate_ref.identity, "revision": revision})
@@ -452,6 +557,29 @@ def commit_domain_judgment(
             for item in _domain_ids()
             if f"{raw['trial_id']}:{raw['result_id']}:{item}" not in domains
         )
+        state_for_write = {**state, "domains": domains, "phase": "assessment"}
+        next_packet_record: ApplicationWorkPacket | None = None
+        if remaining:
+            approved_batch = packet_model.approved_batch if packet_model is not None else packet
+            next_packet_record = _build_domain_packet(
+                workspace,
+                approved_batch,
+                trial_id=str(raw["trial_id"]),
+                domain_id=remaining[0],
+                result_id=str(raw["result_id"]),
+                state=state_for_write,
+            )
+            next_packet = RecordReference(
+                kind=RecordKind.APPROVED_WORK_PACKET,
+                identity=next_packet_record.identity,
+                uri=record_uri(
+                    RecordKind.APPROVED_WORK_PACKET.value, next_packet_record.identity
+                ),
+            )
+            state_for_write["work_packet_identity"] = next_packet_record.identity
+            next_action: Continuation = ValidateDomainJudgmentContinuation(packet=next_packet)
+        else:
+            next_action = PrepareTrialFinishContinuation(packet=packet)
         observed_at = datetime.now(UTC)
         acknowledgment_identity = identity(
             {
@@ -463,18 +591,16 @@ def commit_domain_judgment(
         )
         acknowledgment = ReviewAcknowledgmentReference(
             kind="review_ack",
-            identity=acknowledgment_identity, uri=record_uri("review_ack", acknowledgment_identity)
+            identity=acknowledgment_identity,
+            uri=record_uri("review_ack", acknowledgment_identity),
         )
-        packet = RecordReference.model_validate(raw["packet"])
         receipt = DomainCommitResult(
             candidate=candidate_ref,
             active_revision=revision,
             active_hash=active_hash,
             acknowledgment=acknowledgment,
             remaining_domains=remaining,
-            next_action=ValidateDomainJudgmentContinuation(packet=packet)
-            if remaining
-            else PrepareTrialFinishContinuation(packet=packet),
+            next_action=next_action,
         )
         raw_transition["consumed"] = True
         observation = {
@@ -485,40 +611,19 @@ def commit_domain_judgment(
             "acknowledgment": acknowledgment.model_dump(mode="json"),
             "observed_at": observed_at.isoformat(),
         }
-        write_jsons(
-            workspace,
-            {
-                f"domain-observation-{active_hash.removeprefix('sha256:')}.json": observation,
-                f"domain-commit-{transition.identity.removeprefix('sha256:')}.json": receipt.model_dump(
-                    mode="json"
-                ),
-                f"transition-{transition.identity.removeprefix('sha256:')}.json": raw_transition,
-                "state.json": {**state, "domains": domains, "phase": "assessment"},
-            },
-        )
-        if remaining:
-            next_packet = prepare_domain_packet(
-                workspace,
-                RecordReference(
-                    kind=RecordKind.APPROVED_BATCH,
-                    identity=str(state["approved_batch_identity"]),
-                    uri=record_uri(RecordKind.APPROVED_BATCH.value, str(state["approved_batch_identity"])),
-                ),
-                trial_id=str(raw["trial_id"]),
-                domain_id=remaining[0],
-                result_id=str(raw["result_id"]),
-            )
-            receipt = receipt.model_copy(
-                update={"next_action": ValidateDomainJudgmentContinuation(packet=next_packet)}
-            )
-            write_jsons(
-                workspace,
-                {
-                    f"domain-commit-{transition.identity.removeprefix('sha256:')}.json": receipt.model_dump(
-                        mode="json"
-                    )
-                },
-            )
+        writes = {
+            f"domain-observation-{active_hash.removeprefix('sha256:')}.json": observation,
+            f"domain-commit-{transition.identity.removeprefix('sha256:')}.json": receipt.model_dump(
+                mode="json"
+            ),
+            f"transition-{transition.identity.removeprefix('sha256:')}.json": raw_transition,
+            "state.json": state_for_write,
+        }
+        if next_packet_record is not None:
+            writes[
+                f"domain-packet-{next_packet_record.identity.removeprefix('sha256:')}.json"
+            ] = next_packet_record.model_dump(mode="json")
+        write_jsons(workspace, writes)
         return receipt
 
 

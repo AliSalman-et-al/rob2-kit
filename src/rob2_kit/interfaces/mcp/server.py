@@ -27,6 +27,7 @@ from rob2_kit.application import (
 )
 from rob2_kit.application._state import read_json
 from rob2_kit.application.contracts import (
+    EvidenceReference,
     RecordReference,
     ReviewAcknowledgmentReference,
     TransitionReference,
@@ -38,6 +39,7 @@ from rob2_kit.application.domains import (
     validate_domain_judgment,
 )
 from rob2_kit.application.evidence import (
+    EvidenceCatalogRequest,
     EvidenceRetrievalRequest,
     ManualSelectionRequest,
     NormalSelectionRequest,
@@ -46,6 +48,7 @@ from rob2_kit.application.evidence import (
     SearchRequest,
     VisualSelectionRequest,
     list_sources,
+    resolve_evidence,
     retrieve_evidence,
     source_records,
 )
@@ -118,6 +121,8 @@ def current_batch() -> str:
 
 
 def _detail(kind: str, identity: str) -> dict[str, object]:
+    if kind == "evidence":
+        raise ValueError("Evidence detail URI is unsupported")
     names = {
         "source_preflight": "preflight.json",
         "intake_plan": "intake_plan.json",
@@ -214,9 +219,9 @@ def _verified_detail(kind: str, requested_identity: str, value: object) -> bool:
                 {key: value.get(key) for key in fields}
             ) == requested_identity
         if kind == "work_packet":
-            return value.get("kind") == kind and identity(
-                {key: item for key, item in value.items() if key != "identity"}
-            ) == requested_identity
+            from rob2_kit.application.domains import parse_application_work_packet
+
+            return parse_application_work_packet(value).identity == requested_identity
         if kind == "trial_synthesis":
             fields = (
                 "approved_batch", "trial_id", "result_id", "checkpoint_hashes",
@@ -389,6 +394,7 @@ def retrieve(
     normal_selections: tuple[NormalSelectionRequest, ...] = (),
     manual_selections: tuple[ManualSelectionRequest, ...] = (),
     visual_selections: tuple[VisualSelectionRequest, ...] = (),
+    catalog: EvidenceCatalogRequest | None = None,
 ) -> ToolResult:
     request = EvidenceRetrievalRequest(
         trial_id=trial_id,
@@ -398,6 +404,7 @@ def retrieve(
         normal_selections=normal_selections,
         manual_selections=manual_selections,
         visual_selections=visual_selections,
+        catalog=catalog,
     )
     return _content(retrieve_evidence(_workspace(), request))
 
@@ -493,8 +500,10 @@ def finalize() -> ToolResult:
 
 
 @mcp.tool(name="read_record", annotations=_READ_ONLY)
-def read_record(record: RecordReference) -> ToolResult:
+def read_record(record: RecordReference | EvidenceReference) -> ToolResult:
     # Validate the complete caller-owned reference before resolving it.
+    if isinstance(record, EvidenceReference):
+        return _content(resolve_evidence(_workspace(), record))
     return _content(_detail(record.kind.value, record.identity))
 
 

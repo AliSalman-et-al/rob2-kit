@@ -46,6 +46,108 @@ def _rehash_manifest(bundle: Path) -> None:
     )
 
 
+def _rebind_packet_and_observation(bundle: Path, packet_path: Path) -> None:
+    packet = json.loads(packet_path.read_text(encoding="utf-8"))
+    previous_identity = packet["identity"]
+    packet_fields = (
+        "kind",
+        "approved_batch",
+        "trial_id",
+        "result_id",
+        "domain_id",
+        "active_question_ids",
+        "allowed_question_ids",
+        "stable_aliases",
+        "reusable_evidence",
+        "prior_domain_hashes",
+        "scientific_pack",
+        "policy_pack",
+    )
+    packet["identity"] = identity({key: packet[key] for key in packet_fields})
+    packet_path.write_text(json.dumps(packet, sort_keys=True), encoding="utf-8")
+    observation_path = next(
+        path
+        for path in (bundle / "records").glob("domain-observation-*.json")
+        if json.loads(path.read_text(encoding="utf-8")).get("packet", {}).get("identity")
+        == previous_identity
+    )
+    observation = json.loads(observation_path.read_text(encoding="utf-8"))
+    observation["packet"] = {
+        "kind": "work_packet",
+        "identity": packet["identity"],
+        "uri": f"rob2://detail/work_packet/{packet['identity']}",
+    }
+    observation_fields = (
+        "kind",
+        "packet",
+        "trial_id",
+        "result_id",
+        "domain_id",
+        "draft",
+        "proposed_judgment",
+        "inactive_questions",
+        "evidence_bindings",
+        "scientific_pack",
+        "policy_pack",
+    )
+    observation["identity"] = identity(
+        {key: observation[key] for key in observation_fields}
+    )
+    observation_path.write_text(json.dumps(observation, sort_keys=True), encoding="utf-8")
+
+
+def _rebind_text_evidence_coordinates(
+    bundle: Path,
+    text_path: Path,
+    *,
+    start: object,
+    end: object,
+    quote: str | None = None,
+) -> None:
+    text_record = json.loads(text_path.read_text(encoding="utf-8"))
+    previous_identity = text_record["identity"]
+    text_record["start"] = start
+    text_record["end"] = end
+    if quote is not None:
+        text_record["quote"] = quote
+        text_record["quote_sha256"] = "sha256:" + hashlib.sha256(quote.encode()).hexdigest()
+    text_fields = (
+        "kind",
+        "trial_id",
+        "snapshot",
+        "source_id",
+        "source_sha256",
+        "projection_hash",
+        "page",
+        "start",
+        "end",
+        "quote",
+        "quote_sha256",
+    )
+    text_record["identity"] = identity({key: text_record[key] for key in text_fields})
+    text_path.write_text(json.dumps(text_record, sort_keys=True), encoding="utf-8")
+    updated_packets = 0
+    for packet_path in (bundle / "records").glob("domain-packet-*.json"):
+        packet = json.loads(packet_path.read_text(encoding="utf-8"))
+        changed = False
+        for entry in packet.get("reusable_evidence", {}).get("entries", []):
+            reference = entry.get("evidence") if isinstance(entry, dict) else None
+            if (
+                isinstance(reference, dict)
+                and reference.get("identity") == previous_identity
+            ):
+                entry["evidence"] = {
+                    "kind": "evidence",
+                    "identity": text_record["identity"],
+                }
+                changed = True
+        if changed:
+            packet_path.write_text(json.dumps(packet, sort_keys=True), encoding="utf-8")
+            _rebind_packet_and_observation(bundle, packet_path)
+            updated_packets += 1
+    assert updated_packets > 0
+
+
 def test_application_adverse_events_bundle_is_independently_verified(tmp_path: Path) -> None:
     """The evaluator must accept a complete AE application workflow bundle."""
 
@@ -200,22 +302,18 @@ def test_application_adverse_events_bundle_is_independently_verified(tmp_path: P
         }
     )
     incompatible = save_proposal(
-            tmp_path,
-            ProposalInput(
-                outcome_statement=(
-                    "effect on adverse events during the docetaxel-containing regimen"
-                ),
-                results=(card,),
-            ),
+        tmp_path,
+        ProposalInput(
+            outcome_statement=("effect on adverse events during the docetaxel-containing regimen"),
+            results=(card,),
+        ),
     )
     assert isinstance(incompatible, ProposalRepairReceipt)
     assert read_json(tmp_path, "proposal_review.json") is None
     review = save_proposal(
         tmp_path,
         ProposalInput(
-            outcome_statement=(
-                "effect on adverse events during the docetaxel-containing regimen"
-            ),
+            outcome_statement=("effect on adverse events during the docetaxel-containing regimen"),
             results=(card,),
             needs_input=(
                 PreapprovalNeedsInput(
@@ -255,7 +353,11 @@ def test_application_assessed_bundle_is_independently_verified_and_rejects_missi
 ) -> None:
     """Exercise the complete assessed application path without manufacturing records."""
 
-    from rob2_kit.application.contracts import ReviewAuthority, TrialDisposition
+    from rob2_kit.application.contracts import (
+        PrepareTrialFinishContinuation,
+        ReviewAuthority,
+        TrialDisposition,
+    )
     from rob2_kit.application.domains import (
         DomainAnswerInput,
         DomainDraftInput,
@@ -304,6 +406,7 @@ def test_application_assessed_bundle_is_independently_verified_and_rejects_missi
         approve_batch,
         save_proposal,
     )
+    from rob2_kit.application.status import current_status
     from rob2_kit.application.trials import (
         TrialFinishCandidate,
         TrialFinishRequest,
@@ -440,9 +543,19 @@ def test_application_assessed_bundle_is_independently_verified_and_rejects_missi
             ),
             quantities=(
                 Quantity(
-                    statistic="median", unit="months", group_or_category="docetaxel", value="20.2", denominator_basis="randomized arm"
+                    statistic="median",
+                    unit="months",
+                    group_or_category="docetaxel",
+                    value="20.2",
+                    denominator_basis="randomized arm",
                 ),
-                Quantity(statistic="median", unit="months", group_or_category="adt", value="11.7", denominator_basis="randomized arm"),
+                Quantity(
+                    statistic="median",
+                    unit="months",
+                    group_or_category="adt",
+                    value="11.7",
+                    denominator_basis="randomized arm",
+                ),
             ),
             comparison_groups=("docetaxel", "adt"),
         ),
@@ -479,6 +592,28 @@ def test_application_assessed_bundle_is_independently_verified_and_rejects_missi
     approved = approve_batch(
         tmp_path, ApprovalRequest(transition=proposal.transition, acknowledgment=proposal_ack)
     )
+    first_packet = prepare_domain_packet(
+        tmp_path,
+        approved.approved_batch,
+        trial_id="chaarted",
+        domain_id="domain:randomization",
+    )
+    retrieve_evidence(
+        tmp_path,
+        EvidenceRetrievalRequest(
+            trial_id="chaarted",
+            manual_selections=(
+                ManualSelectionRequest(
+                    kind="manual_selection",
+                    source_alias="s1",
+                    page=1,
+                    start=0,
+                    end=8,
+                    quote=source_page[:8],
+                ),
+            ),
+        ),
+    )
 
     answer_paths = {
         "domain:randomization": {
@@ -505,8 +640,12 @@ def test_application_assessed_bundle_is_independently_verified_and_rejects_missi
         },
     }
     for domain in SCIENTIFIC_PACK.domains:
-        packet = prepare_domain_packet(
-            tmp_path, approved.approved_batch, trial_id="chaarted", domain_id=domain.id
+        packet = (
+            first_packet
+            if domain.id == "domain:randomization"
+            else prepare_domain_packet(
+                tmp_path, approved.approved_batch, trial_id="chaarted", domain_id=domain.id
+            )
         )
         draft = DomainDraftInput(
             active_answers=tuple(
@@ -530,12 +669,14 @@ def test_application_assessed_bundle_is_independently_verified_and_rejects_missi
             tmp_path, DomainValidationRequest(packet=packet, draft=draft)
         )
         assert validated.outcome == "success"
-        commit_domain_judgment(tmp_path, validated.transition)
+        committed = commit_domain_judgment(tmp_path, validated.transition)
 
+    restarted = current_status(tmp_path)
+    assert isinstance(restarted.continuation, PrepareTrialFinishContinuation)
+    assert isinstance(committed.next_action, PrepareTrialFinishContinuation)
+    assert restarted.continuation.packet == committed.next_action.packet
     prepared = prepare_trial_finish(
-        tmp_path,
-        approved.approved_batch,
-        TrialFinishCandidate(disposition=TrialDisposition.ASSESSED),
+        tmp_path, restarted.continuation.packet, TrialFinishCandidate(disposition=TrialDisposition.ASSESSED)
     )
     assert prepared.transition is not None and prepared.synthesis is not None
     finish_ack = acknowledge_trial_finish(
@@ -552,6 +693,40 @@ def test_application_assessed_bundle_is_independently_verified_and_rejects_missi
     bundle = tmp_path / finalized.artifact.bundle_path
     verified = verify_artifact(bundle, CHAARTED_MANIFEST, "pfs")
     assert verified.ok, verified.failures
+
+    question_scope_tampered = tmp_path / "rehashed-domain-packet-question-scope"
+    shutil.copytree(bundle, question_scope_tampered)
+    question_packet_path = next(
+        path
+        for path in (question_scope_tampered / "records").glob("domain-packet-*.json")
+        if json.loads(path.read_text(encoding="utf-8")).get("domain_id")
+        == "domain:randomization"
+    )
+    question_packet = json.loads(question_packet_path.read_text(encoding="utf-8"))
+    question_packet["active_question_ids"] = list(question_packet["active_question_ids"][:-1])
+    question_packet_path.write_text(json.dumps(question_packet, sort_keys=True), encoding="utf-8")
+    _rebind_packet_and_observation(question_scope_tampered, question_packet_path)
+    _rehash_manifest(question_scope_tampered)
+    rejected = verify_artifact(question_scope_tampered, CHAARTED_MANIFEST, "pfs")
+    assert not rejected.ok
+    assert any("question scope" in failure for failure in rejected.failures)
+
+    prior_chain_tampered = tmp_path / "rehashed-domain-packet-prior-chain"
+    shutil.copytree(bundle, prior_chain_tampered)
+    prior_packet_path = next(
+        path
+        for path in (prior_chain_tampered / "records").glob("domain-packet-*.json")
+        if json.loads(path.read_text(encoding="utf-8")).get("domain_id")
+        == "domain:deviations"
+    )
+    prior_packet = json.loads(prior_packet_path.read_text(encoding="utf-8"))
+    prior_packet["prior_domain_hashes"] = []
+    prior_packet_path.write_text(json.dumps(prior_packet, sort_keys=True), encoding="utf-8")
+    _rebind_packet_and_observation(prior_chain_tampered, prior_packet_path)
+    _rehash_manifest(prior_chain_tampered)
+    rejected = verify_artifact(prior_chain_tampered, CHAARTED_MANIFEST, "pfs")
+    assert not rejected.ok
+    assert any("prior checkpoint chain" in failure for failure in rejected.failures)
 
     visual_records = [
         path
@@ -574,6 +749,305 @@ def test_application_assessed_bundle_is_independently_verified_and_rejects_missi
         path.write_text(json.dumps(record, sort_keys=True), encoding="utf-8")
         _rehash_manifest(tampered)
         assert not verify_artifact(tampered, CHAARTED_MANIFEST, "pfs").ok
+    malformed_render = tmp_path / "rehashed-malformed-visual-render-reference"
+    shutil.copytree(bundle, malformed_render)
+    malformed_render_path = malformed_render / "records" / visual_record.name
+    malformed_render_record = json.loads(malformed_render_path.read_text(encoding="utf-8"))
+    malformed_render_record["render"] = {
+        **malformed_render_record["render"],
+        "unexpected": True,
+    }
+    visual_fields = (
+        "kind",
+        "trial_id",
+        "snapshot",
+        "source_id",
+        "source_sha256",
+        "projection_hash",
+        "page",
+        "region",
+        "render",
+        "transcription",
+    )
+    malformed_render_record["identity"] = identity(
+        {key: malformed_render_record[key] for key in visual_fields}
+    )
+    malformed_render_path.write_text(
+        json.dumps(malformed_render_record, sort_keys=True), encoding="utf-8"
+    )
+    _rehash_manifest(malformed_render)
+    rejected = verify_artifact(malformed_render, CHAARTED_MANIFEST, "pfs")
+    assert any("visual Evidence provenance" in failure for failure in rejected.failures)
+
+    boolean_visual_page = tmp_path / "rehashed-boolean-visual-evidence-page"
+    shutil.copytree(bundle, boolean_visual_page)
+    boolean_visual_path = boolean_visual_page / "records" / visual_record.name
+    boolean_visual_record = json.loads(boolean_visual_path.read_text(encoding="utf-8"))
+    boolean_visual_record["page"] = True
+    boolean_visual_record["identity"] = identity(
+        {key: boolean_visual_record[key] for key in visual_fields}
+    )
+    boolean_visual_path.write_text(
+        json.dumps(boolean_visual_record, sort_keys=True), encoding="utf-8"
+    )
+    _rehash_manifest(boolean_visual_page)
+    rejected = verify_artifact(boolean_visual_page, CHAARTED_MANIFEST, "pfs")
+    assert any("visual Evidence provenance" in failure for failure in rejected.failures)
+    text_record = next(
+        path
+        for path in (bundle / "records").glob("evidence-*.json")
+        if json.loads(path.read_text(encoding="utf-8")).get("kind") == "text"
+    )
+    for name, record_path in (
+        ("text-extra-key", text_record),
+        ("visual-extra-key", visual_record),
+    ):
+        tampered = tmp_path / name
+        shutil.copytree(bundle, tampered)
+        path = tampered / "records" / record_path.name
+        record = json.loads(path.read_text(encoding="utf-8"))
+        record["unexpected"] = True
+        path.write_text(json.dumps(record, sort_keys=True), encoding="utf-8")
+        _rehash_manifest(tampered)
+        assert not verify_artifact(tampered, CHAARTED_MANIFEST, "pfs").ok
+    packet_record = next((bundle / "records").glob("domain-packet-*.json"))
+    tampered = tmp_path / "domain-packet-extra-key"
+    shutil.copytree(bundle, tampered)
+    path = tampered / "records" / packet_record.name
+    record = json.loads(path.read_text(encoding="utf-8"))
+    record["unexpected"] = True
+    path.write_text(json.dumps(record, sort_keys=True), encoding="utf-8")
+    _rehash_manifest(tampered)
+    assert not verify_artifact(tampered, CHAARTED_MANIFEST, "pfs").ok
+    snapshot_tampered = tmp_path / "text-evidence-snapshot"
+    shutil.copytree(bundle, snapshot_tampered)
+    text_snapshot_path = snapshot_tampered / "records" / text_record.name
+    text_snapshot = json.loads(text_snapshot_path.read_text(encoding="utf-8"))
+    previous_text_identity = text_snapshot["identity"]
+    text_snapshot["snapshot"] = "sha256:" + "0" * 64
+    text_fields = (
+        "kind",
+        "trial_id",
+        "snapshot",
+        "source_id",
+        "source_sha256",
+        "projection_hash",
+        "page",
+        "start",
+        "end",
+        "quote",
+        "quote_sha256",
+    )
+    text_snapshot["identity"] = identity(
+        {key: text_snapshot[key] for key in text_fields}
+    )
+    text_snapshot_path.write_text(
+        json.dumps(text_snapshot, sort_keys=True), encoding="utf-8"
+    )
+    updated_packets = 0
+    for packet_path in (snapshot_tampered / "records").glob("domain-packet-*.json"):
+        packet = json.loads(packet_path.read_text(encoding="utf-8"))
+        changed = False
+        for entry in packet.get("reusable_evidence", {}).get("entries", []):
+            reference = entry.get("evidence") if isinstance(entry, dict) else None
+            if (
+                isinstance(reference, dict)
+                and reference.get("identity") == previous_text_identity
+            ):
+                entry["evidence"] = {
+                    "kind": "evidence",
+                    "identity": text_snapshot["identity"],
+                }
+                changed = True
+        if not changed:
+            continue
+        packet_path.write_text(json.dumps(packet, sort_keys=True), encoding="utf-8")
+        _rebind_packet_and_observation(snapshot_tampered, packet_path)
+        updated_packets += 1
+    assert updated_packets > 0
+    _rehash_manifest(snapshot_tampered)
+    rejected = verify_artifact(snapshot_tampered, CHAARTED_MANIFEST, "pfs")
+    assert not rejected.ok
+    assert any("Evidence snapshot binding is invalid" in failure for failure in rejected.failures)
+    for name, start, end, quote in (
+        ("text-evidence-negative-span", -1, 1, None),
+        ("text-evidence-empty-span", 0, 0, ""),
+    ):
+        coordinates_tampered = tmp_path / name
+        shutil.copytree(bundle, coordinates_tampered)
+        coordinates_path = coordinates_tampered / "records" / text_record.name
+        _rebind_text_evidence_coordinates(
+            coordinates_tampered,
+            coordinates_path,
+            start=start,
+            end=end,
+            quote=quote,
+        )
+        _rehash_manifest(coordinates_tampered)
+        rejected = verify_artifact(coordinates_tampered, CHAARTED_MANIFEST, "pfs")
+        assert not rejected.ok
+    malformed_reference = tmp_path / "domain-packet-malformed-reference"
+    shutil.copytree(bundle, malformed_reference)
+    malformed_packet_path = next(
+        (malformed_reference / "records").glob("domain-packet-*.json")
+    )
+    malformed_packet = json.loads(malformed_packet_path.read_text(encoding="utf-8"))
+    original_reference = malformed_packet["reusable_evidence"]["entries"][0]["evidence"]
+    malformed_packet["reusable_evidence"]["entries"][0]["evidence"] = {
+        "kind": "wrong-kind",
+        "identity": original_reference["identity"],
+        "unexpected": True,
+    }
+    malformed_packet_path.write_text(
+        json.dumps(malformed_packet, sort_keys=True), encoding="utf-8"
+    )
+    _rebind_packet_and_observation(malformed_reference, malformed_packet_path)
+    _rehash_manifest(malformed_reference)
+    rejected = verify_artifact(malformed_reference, CHAARTED_MANIFEST, "pfs")
+    assert any("Evidence reference is invalid" in failure for failure in rejected.failures)
+
+    malformed_binding = tmp_path / "rehashed-malformed-domain-evidence-binding-reference"
+    shutil.copytree(bundle, malformed_binding)
+    binding_path = next((malformed_binding / "records").glob("domain-observation-*.json"))
+    binding_record = json.loads(binding_path.read_text(encoding="utf-8"))
+    original_binding = binding_record["evidence_bindings"][0]["evidence"]
+    binding_record["evidence_bindings"][0]["evidence"] = {
+        "kind": "evidence",
+        "identity": original_binding["identity"],
+        "uri": "rob2://detail/evidence/" + original_binding["identity"],
+    }
+    observation_fields = (
+        "kind",
+        "packet",
+        "trial_id",
+        "result_id",
+        "domain_id",
+        "draft",
+        "proposed_judgment",
+        "inactive_questions",
+        "evidence_bindings",
+        "scientific_pack",
+        "policy_pack",
+    )
+    binding_record["identity"] = identity(
+        {key: binding_record[key] for key in observation_fields}
+    )
+    binding_path.write_text(json.dumps(binding_record, sort_keys=True), encoding="utf-8")
+    _rehash_manifest(malformed_binding)
+    rejected = verify_artifact(malformed_binding, CHAARTED_MANIFEST, "pfs")
+    assert any("Domain evidence binding" in failure for failure in rejected.failures)
+
+    malformed_approved_reference = tmp_path / "rehashed-malformed-packet-approved-batch-reference"
+    shutil.copytree(bundle, malformed_approved_reference)
+    approved_packet_path = next(
+        (malformed_approved_reference / "records").glob("domain-packet-*.json")
+    )
+    approved_packet = json.loads(approved_packet_path.read_text(encoding="utf-8"))
+    approved_packet["approved_batch"] = {
+        **approved_packet["approved_batch"],
+        "unexpected": True,
+    }
+    approved_packet_path.write_text(json.dumps(approved_packet, sort_keys=True), encoding="utf-8")
+    _rebind_packet_and_observation(malformed_approved_reference, approved_packet_path)
+    _rehash_manifest(malformed_approved_reference)
+    rejected = verify_artifact(malformed_approved_reference, CHAARTED_MANIFEST, "pfs")
+    assert any("work packet" in failure.lower() for failure in rejected.failures)
+
+    boolean_catalog_page = tmp_path / "rehashed-boolean-visual-catalog-page"
+    shutil.copytree(bundle, boolean_catalog_page)
+    boolean_catalog_packet_path = next(
+        (boolean_catalog_page / "records").glob("domain-packet-*.json")
+    )
+    boolean_catalog_packet = json.loads(
+        boolean_catalog_packet_path.read_text(encoding="utf-8")
+    )
+    visual_entry = next(
+        entry
+        for entry in boolean_catalog_packet["reusable_evidence"]["entries"]
+        if entry.get("kind") == "visual"
+    )
+    visual_entry["page"] = True
+    boolean_catalog_packet_path.write_text(
+        json.dumps(boolean_catalog_packet, sort_keys=True), encoding="utf-8"
+    )
+    _rebind_packet_and_observation(boolean_catalog_page, boolean_catalog_packet_path)
+    _rehash_manifest(boolean_catalog_page)
+    rejected = verify_artifact(boolean_catalog_page, CHAARTED_MANIFEST, "pfs")
+    assert any("reusable Evidence catalog is unbound" in failure for failure in rejected.failures)
+
+    for name, original_kind, swapped_kind in (
+        ("rehashed-visual-catalog-as-text", "visual", "text"),
+        ("rehashed-text-catalog-as-visual", "text", "visual"),
+    ):
+        swapped_catalog = tmp_path / name
+        shutil.copytree(bundle, swapped_catalog)
+        swapped_packet_path = next(
+            (swapped_catalog / "records").glob("domain-packet-*.json")
+        )
+        swapped_packet = json.loads(swapped_packet_path.read_text(encoding="utf-8"))
+        swapped_entry = next(
+            entry
+            for entry in swapped_packet["reusable_evidence"]["entries"]
+            if entry.get("kind") == original_kind
+        )
+        swapped_entry["kind"] = swapped_kind
+        if original_kind == "visual":
+            swapped_entry.pop("region")
+            swapped_entry.update({"start": None, "end": None})
+        else:
+            swapped_entry.pop("start")
+            swapped_entry.pop("end")
+            swapped_entry["region"] = None
+        swapped_packet_path.write_text(
+            json.dumps(swapped_packet, sort_keys=True), encoding="utf-8"
+        )
+        _rebind_packet_and_observation(swapped_catalog, swapped_packet_path)
+        _rehash_manifest(swapped_catalog)
+        rejected = verify_artifact(swapped_catalog, CHAARTED_MANIFEST, "pfs")
+        assert not rejected.ok
+        assert any("reusable Evidence catalog" in failure for failure in rejected.failures)
+
+    invalid_catalog_page = tmp_path / "rehashed-invalid-catalog-continuation"
+    shutil.copytree(bundle, invalid_catalog_page)
+    invalid_catalog_packet_path = next(
+        (invalid_catalog_page / "records").glob("domain-packet-*.json")
+    )
+    invalid_catalog_packet = json.loads(
+        invalid_catalog_packet_path.read_text(encoding="utf-8")
+    )
+    catalog = invalid_catalog_packet["reusable_evidence"]
+    original_entries = catalog["entries"]
+    catalog["entries"] = [{"kind": "invalid"}]
+    catalog["has_more"] = True
+    catalog["next_after"] = next(
+        entry["evidence"]
+        for entry in original_entries
+        if isinstance(entry, dict) and "evidence" in entry
+    )
+    invalid_catalog_packet_path.write_text(
+        json.dumps(invalid_catalog_packet, sort_keys=True), encoding="utf-8"
+    )
+    _rebind_packet_and_observation(invalid_catalog_page, invalid_catalog_packet_path)
+    _rehash_manifest(invalid_catalog_page)
+    rejected = verify_artifact(invalid_catalog_page, CHAARTED_MANIFEST, "pfs")
+    assert not rejected.ok
+    assert any("reusable Evidence catalog" in failure for failure in rejected.failures)
+
+    reordered_aliases = tmp_path / "domain-packet-reordered-aliases"
+    shutil.copytree(bundle, reordered_aliases)
+    reordered_packet_path = next(
+        (reordered_aliases / "records").glob("domain-packet-*.json")
+    )
+    reordered_packet = json.loads(reordered_packet_path.read_text(encoding="utf-8"))
+    assert len(reordered_packet["stable_aliases"]) > 1
+    reordered_packet["stable_aliases"] = list(reversed(reordered_packet["stable_aliases"]))
+    reordered_packet_path.write_text(
+        json.dumps(reordered_packet, sort_keys=True), encoding="utf-8"
+    )
+    _rebind_packet_and_observation(reordered_aliases, reordered_packet_path)
+    _rehash_manifest(reordered_aliases)
+    rejected = verify_artifact(reordered_aliases, CHAARTED_MANIFEST, "pfs")
+    assert any("stable aliases are invalid" in failure for failure in rejected.failures)
     from rob2_kit.evaluation.verifier import _Bundle, _captured_snapshot
 
     verifier_bundle = _Bundle(bundle, [])
@@ -599,6 +1073,7 @@ def test_application_assessed_bundle_is_independently_verified_and_rejects_missi
             item["candidate_identity"],
         ),
     )
+
     def snapshot_for(order):
         return identity(
             {
@@ -617,6 +1092,7 @@ def test_application_assessed_bundle_is_independently_verified_and_rejects_missi
                 "ordering": "authoritative_source_role_label_id_page_v1",
             }
         )
+
     assert _captured_snapshot(verifier_bundle, sources, "chaarted") == snapshot_for(ordered)
     assert _captured_snapshot(verifier_bundle, sources, "chaarted") != snapshot_for(
         tuple(reversed(ordered))
@@ -626,7 +1102,9 @@ def test_application_assessed_bundle_is_independently_verified_and_rejects_missi
     path = tampered / "records" / visual_record.name
     record = json.loads(path.read_text(encoding="utf-8"))
     record["snapshot"] = "sha256:" + "0" * 64
-    record["identity"] = identity({key: value for key, value in record.items() if key != "identity"})
+    record["identity"] = identity(
+        {key: value for key, value in record.items() if key != "identity"}
+    )
     path.write_text(json.dumps(record, sort_keys=True), encoding="utf-8")
     _rehash_manifest(tampered)
     rejected = verify_artifact(tampered, CHAARTED_MANIFEST, "pfs")
@@ -689,9 +1167,7 @@ def test_application_assessed_bundle_is_independently_verified_and_rejects_missi
     )
     missing_bindings = tmp_path / "rehashed-empty-domain-evidence"
     shutil.copytree(bundle, missing_bindings)
-    empty_observation_path = next(
-        (missing_bindings / "records").glob("domain-observation-*.json")
-    )
+    empty_observation_path = next((missing_bindings / "records").glob("domain-observation-*.json"))
     empty_observation = json.loads(empty_observation_path.read_text(encoding="utf-8"))
     empty_observation["evidence_bindings"] = []
     empty_observation["identity"] = (

@@ -7,9 +7,17 @@ import hashlib
 import re
 from enum import StrEnum
 from pathlib import Path
-from typing import Literal
+from typing import Annotated, Literal, TypeAlias
 
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import (
+    AfterValidator,
+    BaseModel,
+    ConfigDict,
+    Field,
+    TypeAdapter,
+    field_validator,
+    model_validator,
+)
 
 from rob2_kit.retrieval import (
     RetrievalSnapshot,
@@ -17,6 +25,7 @@ from rob2_kit.retrieval import (
     build_retrieval_snapshot,
 )
 from rob2_kit.sources import Source, SourceRole, _extract_pages, sha256_bytes
+from rob2_kit.storage import read_only_transaction
 from rob2_kit.text_projection import (
     TextProjectionIdentity,
     canonical_projection_identity,
@@ -30,6 +39,15 @@ from .contracts import EvidenceReference, RenderReference
 
 class _Closed(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
+
+
+def _require_nonblank(value: str) -> str:
+    if not value.strip():
+        raise ValueError("transcription must contain non-whitespace text")
+    return value
+
+
+NonBlankTranscription = Annotated[str, Field(min_length=1), AfterValidator(_require_nonblank)]
 
 
 class LexicalMode(StrEnum):
@@ -56,8 +74,14 @@ class SearchRequest(_Closed):
     query: str = Field(min_length=1)
     mode: LexicalMode
     source_aliases: tuple[str, ...] = ()
-    limit: int = Field(default=20, ge=1, le=100)
+    limit: int = Field(default=5, ge=1, le=20)
     cursor: str | None = Field(default=None, pattern=r"^sha256:[0-9a-f]{64}$")
+
+    @model_validator(mode="after")
+    def source_aliases_are_unique(self) -> SearchRequest:
+        if len(self.source_aliases) != len(set(self.source_aliases)):
+            raise ValueError("source aliases must be unique")
+        return self
 
 
 class SearchContinuation(_Closed):
@@ -95,7 +119,19 @@ class ManualSelectionRequest(_Closed):
 class VisualSelectionRequest(_Closed):
     kind: Literal["visual_selection"]
     render: RenderReference
-    transcription: str = Field(min_length=1)
+    transcription: NonBlankTranscription
+
+
+class EvidenceCatalogRequest(_Closed):
+    kind: Literal["catalog"]
+    basis: str | None = Field(default=None, pattern=r"^sha256:[0-9a-f]{64}$")
+    after: EvidenceReference | None = None
+
+    @model_validator(mode="after")
+    def pagination_is_paired(self) -> EvidenceCatalogRequest:
+        if (self.basis is None) != (self.after is None):
+            raise ValueError("catalog basis and after must be supplied together")
+        return self
 
 
 class EvidenceRetrievalRequest(_Closed):
@@ -106,6 +142,7 @@ class EvidenceRetrievalRequest(_Closed):
     normal_selections: tuple[NormalSelectionRequest, ...] = ()
     manual_selections: tuple[ManualSelectionRequest, ...] = ()
     visual_selections: tuple[VisualSelectionRequest, ...] = ()
+    catalog: EvidenceCatalogRequest | None = None
 
     @model_validator(mode="after")
     def has_work(self) -> EvidenceRetrievalRequest:
@@ -117,9 +154,22 @@ class EvidenceRetrievalRequest(_Closed):
                 self.normal_selections,
                 self.manual_selections,
                 self.visual_selections,
+                self.catalog,
             )
         ):
             raise ValueError("retrieval request must contain an operation")
+        if (
+            len(self.searches) + len(self.continuations) + len(self.page_reads)
+            + len(self.normal_selections) + len(self.manual_selections)
+            + len(self.visual_selections) + int(self.catalog is not None)
+            > 8
+        ):
+            raise ValueError("retrieval request may contain at most 8 operations")
+        if self.catalog is not None and any(
+            (self.searches, self.continuations, self.page_reads, self.normal_selections,
+             self.manual_selections, self.visual_selections)
+        ):
+            raise ValueError("catalog retrieval is exclusive of other operations")
         return self
 
 
@@ -151,7 +201,7 @@ class Cursor(_Closed):
     mode: LexicalMode
     source_aliases: tuple[str, ...]
     offset: int = Field(ge=0)
-    limit: int = Field(ge=1, le=100)
+    limit: int = Field(ge=1, le=20)
     projection_hashes: tuple[str, ...]
 
 
@@ -161,28 +211,129 @@ class PageRead(_Closed):
     text: str
 
 
-class EvidenceRecord(_Closed):
-    kind: Literal["text", "visual"]
-    identity: str
-    trial_id: str
-    snapshot: str
-    source_id: str | None = None
-    source_sha256: str | None = None
-    projection_hash: str | None = None
-    page: int | None = None
-    start: int | None = None
-    end: int | None = None
+_HASH = r"^sha256:[0-9a-f]{64}$"
+
+
+class TextEvidenceRecord(_Closed):
+    kind: Literal["text"]
+    identity: str = Field(pattern=_HASH, strict=True)
+    trial_id: str = Field(min_length=1, strict=True)
+    snapshot: str = Field(pattern=_HASH, strict=True)
+    source_id: str = Field(min_length=1, strict=True)
+    source_sha256: str = Field(pattern=_HASH, strict=True)
+    projection_hash: str = Field(pattern=_HASH, strict=True)
+    page: int = Field(ge=1, strict=True)
+    start: int = Field(ge=0, strict=True)
+    end: int = Field(gt=0, strict=True)
+    quote: str = Field(min_length=1, strict=True)
+    quote_sha256: str = Field(pattern=_HASH, strict=True)
+
+    @model_validator(mode="after")
+    def quote_extent_is_exact(self) -> TextEvidenceRecord:
+        if self.end <= self.start or self.end - self.start != len(self.quote):
+            raise ValueError("Evidence extent must bind the exact Unicode quote")
+        return self
+
+
+class VisualEvidenceRecord(_Closed):
+    kind: Literal["visual"]
+    identity: str = Field(pattern=_HASH, strict=True)
+    trial_id: str = Field(min_length=1, strict=True)
+    snapshot: str = Field(pattern=_HASH, strict=True)
+    source_id: str = Field(min_length=1, strict=True)
+    source_sha256: str = Field(pattern=_HASH, strict=True)
+    projection_hash: str = Field(pattern=_HASH, strict=True)
+    page: int = Field(ge=1, strict=True)
     region: tuple[float, float, float, float] | None = None
-    quote: str | None = None
-    quote_sha256: str | None = None
-    render: RenderReference | None = None
-    transcription: str | None = None
+    render: RenderReference
+    transcription: NonBlankTranscription
+
+    @field_validator("region", mode="before")
+    @classmethod
+    def normalized_region(cls, value: object):
+        if value is None:
+            return value
+        if not isinstance(value, (list, tuple)) or len(value) != 4 or any(
+            isinstance(item, bool) or not isinstance(item, (int, float)) for item in value
+        ):
+            raise ValueError("region must contain four finite numbers")
+        x0, y0, x1, y1 = (float(item) for item in value)
+        import math
+        if not all(math.isfinite(item) for item in (x0, y0, x1, y1)) or not (0 <= x0 < x1 <= 1 and 0 <= y0 < y1 <= 1):
+            raise ValueError("region must be normalized and ordered")
+        return (x0, y0, x1, y1)
+
+
+EvidenceRecord: TypeAlias = TextEvidenceRecord | VisualEvidenceRecord
+_EVIDENCE_RECORD = TypeAdapter(Annotated[EvidenceRecord, Field(discriminator="kind")])
+
+
+def parse_evidence_record(value: object) -> EvidenceRecord:
+    """Parse the one canonical, closed Evidence union at every trust boundary."""
+    return _EVIDENCE_RECORD.validate_python(value)
+
+
+class TextEvidenceCatalogEntry(_Closed):
+    kind: Literal["text"] = "text"
+    evidence: EvidenceReference
+    source_id: str = Field(min_length=1, strict=True)
+    source_alias: str = Field(min_length=1, max_length=16, strict=True)
+    page: int = Field(ge=1, strict=True)
+    start: int = Field(ge=0, strict=True)
+    end: int = Field(gt=0, strict=True)
+    preview: str = Field(min_length=1, max_length=160, strict=True)
+    truncated: bool = Field(strict=True)
+
+    @model_validator(mode="after")
+    def coordinates_are_ordered(self) -> TextEvidenceCatalogEntry:
+        if self.end <= self.start:
+            raise ValueError("catalog text coordinates must be ordered")
+        return self
+
+
+class VisualEvidenceCatalogEntry(_Closed):
+    kind: Literal["visual"] = "visual"
+    evidence: EvidenceReference
+    source_id: str = Field(min_length=1, strict=True)
+    source_alias: str = Field(min_length=1, max_length=16, strict=True)
+    page: int = Field(ge=1, strict=True)
+    region: tuple[float, float, float, float] | None
+    preview: str = Field(min_length=1, max_length=160, strict=True)
+    truncated: bool = Field(strict=True)
+
+    @field_validator("region", mode="before")
+    @classmethod
+    def normalized_region(cls, value: object):
+        return VisualEvidenceRecord.normalized_region(value)
+
+
+EvidenceCatalogEntry = Annotated[
+    TextEvidenceCatalogEntry | VisualEvidenceCatalogEntry, Field(discriminator="kind")
+]
+
+
+class EvidenceCatalogSlice(_Closed):
+    basis: str = Field(pattern=_HASH, strict=True)
+    entries: tuple[EvidenceCatalogEntry, ...] = Field(max_length=32)
+    has_more: bool = Field(strict=True)
+    next_after: EvidenceReference | None = None
+
+    @model_validator(mode="after")
+    def page_is_keyset_ordered(self) -> EvidenceCatalogSlice:
+        identities = [entry.evidence.identity for entry in self.entries]
+        if identities != sorted(identities) or len(identities) != len(set(identities)):
+            raise ValueError("catalog entries must be sorted and unique")
+        if self.has_more != (self.next_after is not None):
+            raise ValueError("catalog continuation does not match has_more")
+        if self.next_after is not None and (not identities or self.next_after.identity != identities[-1]):
+            raise ValueError("catalog continuation must be the final entry")
+        return self
 
 
 class EvidenceCondition(_Closed):
     code: Literal[
         "no_hits", "ambiguous", "invalid_cursor", "source_out_of_scope", "page_out_of_range",
-        "visual_render_required", "render_unavailable"
+        "visual_render_required", "render_unavailable", "stale_catalog"
     ]
     detail: str
     next_action: str
@@ -190,11 +341,11 @@ class EvidenceCondition(_Closed):
 
 class EvidenceRetrievalResponse(_Closed):
     snapshot: str
-    sources: tuple[SourceAlias, ...]
     hits: tuple[Hit, ...] = ()
     continuations: tuple[Cursor, ...] = ()
     page_reads: tuple[PageRead, ...] = ()
     evidence: tuple[EvidenceReference, ...] = ()
+    catalog: EvidenceCatalogSlice | None = None
     conditions: tuple[EvidenceCondition, ...] = ()
 
 
@@ -505,6 +656,19 @@ def retrieve_evidence(
     continuations: list[Cursor] = []
     page_results: list[PageRead] = []
     conditions: list[EvidenceCondition] = []
+    if request.catalog is not None:
+        try:
+            catalog = reusable_evidence_catalog(
+                workspace, request.trial_id, aliases, basis=request.catalog.basis, after=request.catalog.after
+            )
+        except ValueError as error:
+            if str(error) != "stale_catalog":
+                raise
+            return EvidenceRetrievalResponse(
+                snapshot=context.snapshot.snapshot_hash,
+                conditions=(EvidenceCondition(code="stale_catalog", detail="catalog changed; restart from the first page", next_action="restart_catalog"),),
+            )
+        return EvidenceRetrievalResponse(snapshot=context.snapshot.snapshot_hash, catalog=catalog)
     for search in request.searches:
         offset = 0
         if search.cursor is not None:
@@ -793,15 +957,15 @@ def retrieve_evidence(
             "transcription": selection.transcription,
         }
         evidence_identity = identity(payload)
+        record = VisualEvidenceRecord(identity=evidence_identity, **payload)
         write_json(
             workspace,
             f"evidence-{evidence_identity.removeprefix('sha256:')}.json",
-            {"identity": evidence_identity, **payload},
+            record.model_dump(mode="json"),
         )
         evidence.append(EvidenceReference(kind="evidence", identity=evidence_identity))
     return EvidenceRetrievalResponse(
         snapshot=context.snapshot.snapshot_hash,
-        sources=aliases,
         hits=tuple(hits),
         continuations=tuple(continuations),
         page_reads=tuple(page_results),
@@ -855,10 +1019,11 @@ def _mint_text(
         "quote_sha256": "sha256:" + hashlib.sha256(quote.encode()).hexdigest(),
     }
     record_identity = identity(record_payload)
+    record = TextEvidenceRecord(identity=record_identity, **record_payload)
     write_json(
         workspace,
         f"evidence-{record_identity.removeprefix('sha256:')}.json",
-        {"identity": record_identity, **record_payload},
+        record.model_dump(mode="json"),
     )
     return EvidenceReference(kind="evidence", identity=record_identity)
 
@@ -867,8 +1032,11 @@ def resolve_evidence(workspace: str | Path, reference: EvidenceReference) -> Evi
     raw = read_json(workspace, f"evidence-{reference.identity.removeprefix('sha256:')}.json")
     if raw is None:
         raise ValueError("Evidence is unavailable")
-    record = EvidenceRecord.model_validate(raw)
-    if record.identity != reference.identity or identity({k: v for k, v in raw.items() if k != "identity"}) != reference.identity:
+    try:
+        record = parse_evidence_record(raw)
+    except ValueError as error:
+        raise ValueError("Evidence identity is corrupt") from error
+    if record.identity != reference.identity or identity(record.model_dump(mode="json", exclude={"identity"})) != reference.identity:
         raise ValueError("Evidence identity is corrupt")
     if record.kind == "text":
         sources, projections = _source_basis(workspace, record.trial_id)
@@ -911,6 +1079,8 @@ def resolve_evidence(workspace: str | Path, reference: EvidenceReference) -> Evi
             or rendered.region != record.region
         ):
             raise ValueError("visual Evidence render scope is invalid")
+        if rendered.source_hash != record.source_sha256:
+            raise ValueError("visual Evidence render source hash is outside its scope")
         sources, projections = _source_basis(workspace, record.trial_id)
         source_index = next(
             (index for index, item in enumerate(sources) if item.id == record.source_id),
@@ -928,3 +1098,68 @@ def resolve_evidence(workspace: str | Path, reference: EvidenceReference) -> Evi
         if projection.projection_hash != record.projection_hash:
             raise ValueError("visual Evidence projection is stale")
     return record
+
+
+def reusable_evidence_catalog(
+    workspace: str | Path,
+    trial_id: str,
+    aliases: tuple[SourceAlias, ...],
+    *,
+    basis: str | None = None,
+    after: EvidenceReference | None = None,
+) -> EvidenceCatalogSlice:
+    """Return one fixed, content-addressed keyset page of reusable Evidence."""
+    with read_only_transaction(workspace) as connection:
+        rows = () if connection is None else connection.execute(
+            "SELECT name FROM records WHERE name LIKE 'application:evidence-%.json'"
+        ).fetchall()
+    by_source = {alias.source_id: alias.alias for alias in aliases}
+    records: list[tuple[EvidenceReference, EvidenceRecord, str]] = []
+    for (name,) in rows:
+        record_name = str(name).removeprefix("application:")
+        token = record_name.removeprefix("evidence-").removesuffix(".json")
+        reference = EvidenceReference(kind="evidence", identity=f"sha256:{token}")
+        record = resolve_evidence(workspace, reference)
+        if record.trial_id != trial_id:
+            continue
+        source_alias = by_source.get(record.source_id or "")
+        if source_alias is None or record.page is None:
+            raise ValueError("retained Evidence Source is outside the Trial scope")
+        records.append((reference, record, source_alias))
+    records.sort(key=lambda row: row[0].identity)
+    computed_basis = identity({
+        "trial_id": trial_id,
+        "snapshot": _context(workspace, trial_id)[0].snapshot.snapshot_hash,
+        "sources": [(alias.source_id, alias.sha256, alias.projection_hash) for alias in aliases],
+        "evidence": [reference.identity for reference, _record, _alias in records],
+    })
+    if basis is not None and basis != computed_basis:
+        raise ValueError("stale_catalog")
+    start_index = 0
+    if after is not None:
+        identities = [reference.identity for reference, _record, _alias in records]
+        if after.identity not in identities:
+            raise ValueError("stale_catalog")
+        start_index = identities.index(after.identity) + 1
+    page = records[start_index : start_index + 32]
+    entries: list[EvidenceCatalogEntry] = []
+    for reference, record, source_alias in page:
+        if isinstance(record, TextEvidenceRecord):
+            content = record.quote
+            entries.append(TextEvidenceCatalogEntry(
+                evidence=reference, source_id=record.source_id, source_alias=source_alias,
+                page=record.page, start=record.start, end=record.end,
+                preview=content[:160], truncated=len(content) > 160,
+            ))
+        else:
+            content = record.transcription
+            entries.append(VisualEvidenceCatalogEntry(
+                evidence=reference, source_id=record.source_id, source_alias=source_alias,
+                page=record.page, region=record.region,
+                preview=content[:160], truncated=len(content) > 160,
+            ))
+    has_more = start_index + len(page) < len(records)
+    return EvidenceCatalogSlice(
+        basis=computed_basis, entries=tuple(entries), has_more=has_more,
+        next_after=entries[-1].evidence if has_more else None,
+    )
