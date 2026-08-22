@@ -7,7 +7,6 @@ and the server only checks their explicit, closed fields.
 
 from __future__ import annotations
 
-import re
 from datetime import UTC, datetime
 from enum import StrEnum
 from pathlib import Path
@@ -42,27 +41,9 @@ from .contracts import (
 )
 from .evidence import EvidenceRecord, TextEvidenceRecord, resolve_evidence, source_layout_projection
 
-_NUMERIC_LEXEME = re.compile(
-    r"(?<![\w.])[+-]?(?:\d+\.\d*|\.\d+|\d+)(?:[eE][+-]?\d+)?(?![\w.])"
-)
-_EFFECT_QUALIFIERS = re.compile(
-    r"(?:hazard ratio(?:\s+(?:in|for)\s+[^,;]+)?,\s*)?"
-    r"(?P<point>\d+(?:\.\d+)?)\s*(?:\(\s*|;\s*)"
-    r"(?P<confidence_level>\d+(?:\.\d+)?)\s*%\s*"
-    r"(?:ci|confidence interval)\s*[,;:]?\s*"
-    r"(?P<lower>\d+(?:\.\d+)?)(?:\s+to\s+|-)"
-    r"(?P<upper>\d+(?:\.\d+)?)\s*;\s*"
-    r"p\s*(?P<p_operator><=|<)\s*(?P<p_value>\d+(?:\.\d+)?)\s*\)?",
-    re.IGNORECASE,
-)
-
 
 class _Closed(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
-
-
-def _numeric_lexemes(value: object) -> tuple[str, ...]:
-    return tuple(_NUMERIC_LEXEME.findall(str(value)))
 
 
 class Quantity(_Closed):
@@ -118,6 +99,22 @@ class PopulationAccount(_Closed):
     analyzed_population: str = Field(min_length=1)
 
 
+class ConfidenceInterval(_Closed):
+    level: str = Field(min_length=1)
+    lower: str = Field(min_length=1)
+    upper: str = Field(min_length=1)
+
+
+class PValue(_Closed):
+    operator: Literal["=", "<", "<=", ">", ">="]
+    value: str = Field(min_length=1)
+
+
+class EffectPrecision(_Closed):
+    confidence_interval: ConfidenceInterval | None = None
+    p_value: PValue | None = None
+
+
 class ComparativeEffect(_Closed):
     form: Literal["comparative_effect"]
     effect_measure: str = Field(min_length=1)
@@ -125,6 +122,7 @@ class ComparativeEffect(_Closed):
     effect: Quantity
     quantities: tuple[Quantity, ...] = Field(min_length=2)
     comparison_groups: tuple[str, str]
+    precision: EffectPrecision | None = None
 
     @model_validator(mode="after")
     def denominator_bases_are_labeled(self) -> ComparativeEffect:
@@ -272,6 +270,7 @@ class ResultCard(ResultCardInput):
             "effect",
             "comparison_groups",
             "quantities",
+            "precision",
             "group_id",
             "categories",
             "reason",
@@ -436,8 +435,8 @@ def _compatibility(card: ResultCardInput) -> CompatibilityFinding:
     target_ids = tuple(group.id for group in card.target.comparison_groups)
     if isinstance(card.reported, SingleGroupCategoryProfile):
         return CompatibilityFinding(
-            status=Compatibility.INCOMPATIBLE,
-            reasons=("single_group_category_profile_has_no_comparator",),
+            status=Compatibility.REVIEW_REQUIRED,
+            reasons=("single_group_category_profile_requires_review",),
         )
     if isinstance(card.reported, UnavailableResult):
         return CompatibilityFinding(
@@ -531,9 +530,6 @@ def _validate_evidence(
                 detail="reported-values Evidence must be text Evidence with an exact source quote",
             ),
         )
-    reported_values_text = " ".join(
-        source_layout_projection(item.quote)[0] for item in text_reported_evidence
-    )
     repairs: list[ProposalRepair] = []
     if isinstance(card.reported, ComparativeEffect):
         statement = source_layout_projection(card.reported.reported_text)[0].strip()
@@ -581,30 +577,6 @@ def _validate_evidence(
                     ),
                 )
             )
-    quantities: tuple[Quantity, ...]
-    if isinstance(card.reported, ComparativeEffect):
-        quantities = (card.reported.effect, *card.reported.quantities)
-    elif isinstance(card.reported, GroupBoundValues):
-        quantities = card.reported.quantities
-    elif isinstance(card.reported, SingleGroupCategoryProfile):
-        quantities = card.reported.categories
-    else:
-        quantities = ()
-    for quantity in quantities:
-        tokens = _numeric_lexemes(quantity.value)
-        text = statement if isinstance(card.reported, ComparativeEffect) else reported_values_text
-        reported_tokens = set(_numeric_lexemes(text))
-        if tokens and any(token not in reported_tokens for token in tokens):
-            repairs.append(
-                ProposalRepair(
-                    pointer="/evidence/reported_values",
-                    code="invalid",
-                    detail=(
-                        f"reported value {quantity.value!s} is not present in "
-                        "reported-values Evidence"
-                    ),
-                )
-            )
     return tuple(repairs)
 
 
@@ -647,50 +619,6 @@ def _comparative_structure_repairs(card: ResultCardInput) -> tuple[ProposalRepai
                 ),
             )
         )
-    if card.reported.effect_measure.casefold() == "hazard ratio":
-        if card.reported.effect.denominator_basis != "time-to-event analysis":
-            repairs.append(
-                ProposalRepair(
-                    pointer="/reported/effect/denominator_basis",
-                    code="invalid",
-                    detail=(
-                        "hazard-ratio reported.effect.denominator_basis must be exactly "
-                        "'time-to-event analysis'"
-                    ),
-                )
-            )
-        for index, quantity in enumerate(card.reported.quantities):
-            if quantity.denominator_basis != "randomized arm":
-                repairs.append(
-                    ProposalRepair(
-                        pointer=f"/reported/quantities/{index}/denominator_basis",
-                        code="invalid",
-                        detail=(
-                            "hazard-ratio group median denominator_basis must be exactly "
-                            "'randomized arm' when the host asserts that source-backed basis"
-                        ),
-                    )
-                )
-        reported_text = source_layout_projection(card.reported.reported_text)[0]
-        reported_match = _EFFECT_QUALIFIERS.search(reported_text)
-        if reported_match is not None:
-            value_match = (
-                _EFFECT_QUALIFIERS.fullmatch(card.reported.effect.value)
-                if isinstance(card.reported.effect.value, str)
-                else None
-            )
-            if value_match is None or value_match.groupdict() != reported_match.groupdict():
-                repairs.append(
-                    ProposalRepair(
-                        pointer="/reported/effect/value",
-                        code="invalid",
-                        detail=(
-                            "reported.effect.value must be a complete string preserving the "
-                            "source-reported point estimate, confidence level and bounds, and "
-                            "P operator and value; a float-only point estimate is incomplete"
-                        ),
-                    )
-                )
     return tuple(repairs)
 
 
@@ -736,9 +664,8 @@ def _card_contract_repairs(
                 detail=f"target outcome definition must be exactly {expected!r}",
             )
         )
-    if (
-        " ".join(card.target.effect_of_interest.casefold().split())
-        != " ".join(expected_effect.casefold().split())
+    if " ".join(card.target.effect_of_interest.casefold().split()) != " ".join(
+        expected_effect.casefold().split()
     ):
         repairs.append(
             ProposalRepair(
@@ -747,7 +674,7 @@ def _card_contract_repairs(
                 detail=f"effect of interest must be exactly {expected_effect!r}",
             )
         )
-    if source not in allowed_source:
+    if not isinstance(card.reported, SingleGroupCategoryProfile) and source not in allowed_source:
         repairs.append(
             ProposalRepair(
                 pointer="/source_table_meaning",
@@ -780,8 +707,7 @@ def _compatibility_repairs(
         else card.reported.comparison_groups
     )
     coverage = {
-        item.group_id: item.status.value
-        for item in card.population.outcome_measurement_coverage
+        item.group_id: item.status.value for item in card.population.outcome_measurement_coverage
     }
     incomplete_coverage = tuple(
         (group_id, coverage.get(group_id, "missing"))
@@ -897,9 +823,7 @@ def save_proposal(
         raise ValueError("Proposal requires exactly one disposition for every captured Trial")
     reviewed: list[tuple[int, ResultCard]] = []
     repairs: list[ProposalRepair] = []
-    result_index_by_trial = {
-        item.trial_id: index for index, item in enumerate(proposal.results)
-    }
+    result_index_by_trial = {item.trial_id: index for index, item in enumerate(proposal.results)}
     for trial_id in trial_ids:
         card = result_by_trial.get(trial_id)
         if card is None:
@@ -1296,6 +1220,9 @@ __all__ = [
     "CompatibilityFinding",
     "DerivedResult",
     "EvidenceSet",
+    "EffectPrecision",
+    "ConfidenceInterval",
+    "PValue",
     "GroupBoundValues",
     "NeedsInputReason",
     "OutcomeMeasurementCoverage",

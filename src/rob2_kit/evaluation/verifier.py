@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import html
 import json
 import math
 import re
@@ -16,7 +17,8 @@ import pymupdf
 
 from rob2_kit.packs import MAINTAINER_POLICY_PACK, SCIENTIFIC_PACK
 
-from .manifest import ObjectiveFactManifest, check_reported_facts
+from .manifest import ObjectiveFactManifest, OutcomeFacts, check_reported_facts
+from .trace import TraceEvent, check_required_operations, check_trace
 
 
 def _presentation(counts: dict[str, Any]) -> dict[str, str] | None:
@@ -220,8 +222,7 @@ def _active_questions_from_pack(answers: dict[str, Any]) -> tuple[str, ...] | No
         sections = {
             match.group(1)
             for question in questions
-            if question.domain_id == domain.id
-            and question.active_when is not None
+            if question.domain_id == domain.id and question.active_when is not None
             for match in [re.match(r"^(\d+)\.\d+", question.active_when)]
             if match is not None
         }
@@ -286,14 +287,17 @@ def _domain_oracle(candidate: dict[str, Any]) -> str | None:
     if not all(isinstance(row, dict) for row in rows):
         return None
     question_ids = [row.get("question_id") for row in rows]
-    if (
-        not all(isinstance(question_id, str) for question_id in question_ids)
-        or len(set(question_ids)) != len(question_ids)
-    ):
+    if not all(isinstance(question_id, str) for question_id in question_ids) or len(
+        set(question_ids)
+    ) != len(question_ids):
         return None
     domain = candidate.get("domain_id")
     domain_questions = next(
-        (domain_record.question_ids for domain_record in SCIENTIFIC_PACK.domains if domain_record.id == domain),
+        (
+            domain_record.question_ids
+            for domain_record in SCIENTIFIC_PACK.domains
+            if domain_record.id == domain
+        ),
         None,
     )
     if domain_questions is None:
@@ -416,6 +420,8 @@ def _proposal(bundle: _Bundle, key: str, objective: ObjectiveFactManifest) -> di
     if value.get("kind") != "proposal_review" or _canonical(base) != value.get("identity"):
         bundle.failures.append("Proposal identity is invalid")
         return None
+    if not _closed_proposal(value):
+        bundle.failures.append("Proposal schema contains extra or invalid fields")
     if _ref(value.get("captured_batch"), "captured_batch") is None:
         bundle.failures.append("Proposal does not bind a captured Batch")
     facts = objective.outcome(key)
@@ -428,9 +434,326 @@ def _proposal(bundle: _Bundle, key: str, objective: ObjectiveFactManifest) -> di
         needs = value.get("needs_input")
         if not isinstance(needs, list) or len(needs) != 1:
             bundle.failures.append("adverse events requires a separate needs-input disposition")
-        elif needs[0].get("reason") != "comparator_unavailable":
+        elif not isinstance(needs[0], dict) or needs[0].get("reason") != "comparator_unavailable":
             bundle.failures.append("adverse-events needs-input reason must be missing comparator")
     return value
+
+
+def _closed_proposal(value: dict[str, Any]) -> bool:
+    fields = {
+        "kind",
+        "identity",
+        "captured_batch",
+        "outcome_statement",
+        "results",
+        "needs_input",
+        "review",
+        "transition",
+    }
+    if (
+        set(value) != fields
+        or not isinstance(value.get("results"), list)
+        or not isinstance(value.get("needs_input"), list)
+    ):
+        return False
+    if not _ref(value.get("captured_batch"), "captured_batch"):
+        return False
+    return (
+        all(_closed_result(item) for item in value["results"])
+        and all(_closed_needs_input(item) for item in value["needs_input"])
+        and _closed_review(value.get("review"))
+        and _closed_transition(value.get("transition"))
+    )
+
+
+def _closed_needs_input(value: object) -> bool:
+    return (
+        isinstance(value, dict)
+        and set(value) == {"trial_id", "reason", "missing_facts", "evidence"}
+        and isinstance(value.get("trial_id"), str)
+        and isinstance(value.get("reason"), str)
+        and value["reason"] in {
+            "outcome_not_reported",
+            "outcome_not_measured",
+            "comparator_unavailable",
+            "population_unclear",
+            "result_not_estimable",
+        }
+        and isinstance(value.get("missing_facts"), list)
+        and bool(value["missing_facts"])
+        and all(isinstance(item, str) for item in value["missing_facts"])
+        and isinstance(value.get("evidence"), list)
+        and all(_evidence_ref(item) for item in value["evidence"])
+    )
+
+
+def _closed_review(value: object) -> bool:
+    if not isinstance(value, dict) or set(value) != {"required", "satisfied", "acknowledgment"}:
+        return False
+    acknowledgment = value.get("acknowledgment")
+    return (
+        isinstance(value.get("required"), str)
+        and value["required"] in {"none", "host", "researcher"}
+        and isinstance(value.get("satisfied"), bool)
+        and (
+            acknowledgment is None
+            or _ref(acknowledgment, "review_ack") is not None
+        )
+    )
+
+
+def _closed_transition(value: object) -> bool:
+    return (
+        isinstance(value, dict)
+        and set(value) == {"operation", "identity"}
+        and isinstance(value.get("operation"), str)
+        and re.fullmatch(r"[a-z][a-z0-9_]{1,63}", value["operation"]) is not None
+        and _is_hash(value.get("identity"))
+    )
+
+
+def _closed_result(value: object) -> bool:
+    if not isinstance(value, dict):
+        return False
+    reported = value.get("reported")
+    if not isinstance(reported, dict):
+        return False
+    reported_fields = _reported_fields(reported.get("form"))
+    common = {
+        "trial_id",
+        "target",
+        "reported",
+        "derived",
+        "population",
+        "source_table_meaning",
+        "evidence",
+        "clarity",
+        "compatibility",
+    }
+    if reported_fields is None or set(value) != common | reported_fields:
+        return False
+    target = value.get("target")
+    population = value.get("population")
+    evidence = value.get("evidence")
+    if not isinstance(target, dict) or set(target) != {
+        "outcome_definition",
+        "measurement",
+        "time_point_or_window",
+        "effect_of_interest",
+        "comparison_groups",
+        "intended_analysis_population",
+        "intended_effect_measure",
+    } or not _closed_target(target):
+        return False
+    if not isinstance(population, dict) or set(population) != {
+        "randomized_enrollment",
+        "outcome_measurement_coverage",
+        "analyzed_population",
+    } or not _closed_population(population):
+        return False
+    if not isinstance(evidence, dict) or set(evidence) != {
+        "target_basis",
+        "reported_values",
+        "reported_context",
+        "population_basis",
+    } or not _closed_evidence(evidence):
+        return False
+    return (
+        _closed_reported(reported)
+        and _closed_derived(value.get("derived"))
+        and _closed_clarity(value.get("clarity"))
+        and _closed_compatibility(value.get("compatibility"))
+        and all(
+        isinstance(references, list)
+        and references
+        and all(_evidence_ref(item) for item in references)
+        for references in evidence.values()
+        )
+    )
+
+
+def _reported_fields(form: object) -> set[str] | None:
+    return {
+        "comparative_effect": {
+            "form",
+            "effect_measure",
+            "reported_text",
+            "effect",
+            "quantities",
+            "comparison_groups",
+            "precision",
+        },
+        "group_bound_values": {"form", "quantities", "comparison_groups"},
+        "single_group_category_profile": {"form", "group_id", "categories"},
+        "unavailable": {"form", "reason", "explanation"},
+    }.get(form) if isinstance(form, str) else None
+
+
+def _closed_quantity(value: object) -> bool:
+    return isinstance(value, dict) and set(value) == {
+        "statistic",
+        "unit",
+        "group_or_category",
+        "value",
+        "denominator_basis",
+    }
+
+
+def _closed_target(value: object) -> bool:
+    if not isinstance(value, dict) or set(value) != {
+        "outcome_definition",
+        "measurement",
+        "time_point_or_window",
+        "effect_of_interest",
+        "comparison_groups",
+        "intended_analysis_population",
+        "intended_effect_measure",
+    }:
+        return False
+    groups = value.get("comparison_groups")
+    return (
+        isinstance(groups, list)
+        and len(groups) == 2
+        and all(
+            isinstance(group, dict)
+            and set(group) == {"id", "label"}
+            and isinstance(group.get("id"), str)
+            and isinstance(group.get("label"), str)
+            for group in groups
+        )
+    )
+
+
+def _closed_population(value: dict[str, Any]) -> bool:
+    enrollment = value.get("randomized_enrollment")
+    coverage = value.get("outcome_measurement_coverage")
+    return (
+        isinstance(enrollment, list)
+        and all(_closed_quantity(item) for item in enrollment)
+        and isinstance(coverage, list)
+        and all(
+            isinstance(item, dict)
+            and set(item) == {"group_id", "status", "explanation"}
+            and isinstance(item.get("group_id"), str)
+            and item.get("status") in {"measured", "not_measured", "unclear"}
+            and (item.get("explanation") is None or isinstance(item.get("explanation"), str))
+            for item in coverage
+        )
+    )
+
+
+def _closed_evidence(value: dict[str, Any]) -> bool:
+    return all(
+        isinstance(references, list)
+        and references
+        and all(_evidence_ref(item) for item in references)
+        for references in value.values()
+    )
+
+
+def _closed_precision(value: object) -> bool:
+    if value is None:
+        return True
+    if not isinstance(value, dict) or set(value) != {"confidence_interval", "p_value"}:
+        return False
+    interval, p_value = value["confidence_interval"], value["p_value"]
+    return (
+        isinstance(interval, dict)
+        and set(interval) == {"level", "lower", "upper"}
+        and isinstance(p_value, dict)
+        and set(p_value) == {"operator", "value"}
+        and p_value.get("operator") in {"=", "<", "<=", ">", ">="}
+    )
+
+
+def _closed_reported(value: dict[str, Any]) -> bool:
+    form = value.get("form")
+    if _reported_fields(form) != set(value):
+        return False
+    if form == "comparative_effect":
+        return (
+            isinstance(value.get("effect_measure"), str)
+            and isinstance(value.get("reported_text"), str)
+            and _closed_quantity(value.get("effect"))
+            and isinstance(value.get("quantities"), list)
+            and len(value["quantities"]) >= 2
+            and all(_closed_quantity(item) for item in value["quantities"])
+            and isinstance(value.get("comparison_groups"), list)
+            and len(value["comparison_groups"]) == 2
+            and all(isinstance(item, str) for item in value["comparison_groups"])
+            and _closed_precision(value.get("precision"))
+        )
+    if form == "group_bound_values":
+        return (
+            isinstance(value.get("quantities"), list)
+            and len(value["quantities"]) >= 2
+            and all(_closed_quantity(item) for item in value["quantities"])
+            and isinstance(value.get("comparison_groups"), list)
+            and len(value["comparison_groups"]) == 2
+            and all(isinstance(item, str) for item in value["comparison_groups"])
+        )
+    if form == "single_group_category_profile":
+        return (
+            isinstance(value.get("group_id"), str)
+            and isinstance(value.get("categories"), list)
+            and bool(value["categories"])
+            and all(_closed_quantity(item) for item in value["categories"])
+        )
+    return (
+        form == "unavailable"
+        and value.get("reason") in {"not_reported", "not_measured", "not_estimable"}
+        and isinstance(value.get("explanation"), str)
+    )
+
+
+def _closed_derived(value: object) -> bool:
+    if value is None:
+        return True
+    if not isinstance(value, dict) or set(value) != {
+        "operation",
+        "numerator_inputs",
+        "denominator_inputs",
+    }:
+        return False
+    return (
+        value.get("operation") in {"risk_ratio", "risk_difference"}
+        and isinstance(value.get("numerator_inputs"), list)
+        and len(value["numerator_inputs"]) == 2
+        and all(_closed_quantity(item) for item in value["numerator_inputs"])
+        and isinstance(value.get("denominator_inputs"), list)
+        and len(value["denominator_inputs"]) == 2
+        and all(_closed_quantity(item) for item in value["denominator_inputs"])
+    )
+
+
+def _closed_clarity(value: object) -> bool:
+    fields = {
+        "outcome_definition",
+        "measurement",
+        "time_point",
+        "analysis_population",
+        "comparison_groups",
+        "effect_measure",
+        "source_table_meaning",
+        "choice_among_eligible_results",
+    }
+    return isinstance(value, dict) and set(value) == fields and all(
+        isinstance(item, dict)
+        and set(item) == {"state", "explanation"}
+        and item.get("state") in {"specified", "unclear", "unavailable"}
+        and (item.get("explanation") is None or isinstance(item.get("explanation"), str))
+        for item in value.values()
+    )
+
+
+def _closed_compatibility(value: object) -> bool:
+    return (
+        isinstance(value, dict)
+        and set(value) == {"status", "reasons"}
+        and value.get("status") in {"compatible", "review_required", "incompatible"}
+        and isinstance(value.get("reasons"), list)
+        and all(isinstance(reason, str) for reason in value["reasons"])
+    )
 
 
 def _sources_and_evidence(
@@ -596,14 +919,163 @@ def _sources_and_evidence(
             or not 0 <= start < end <= len(source_page)
         ):
             bundle.failures.append("Evidence provenance or exact quote binding is invalid")
-        elif (
-            source_page[start:end] != quote
-            or row.get("quote_sha256") != _bytes_hash(quote.encode())
+        elif source_page[start:end] != quote or row.get("quote_sha256") != _bytes_hash(
+            quote.encode()
         ):
             bundle.failures.append("Evidence provenance or exact quote binding is invalid")
         else:
             evidence[str(row.get("identity"))] = row
     return evidence, sources
+
+
+def _verify_proposal_evidence(
+    bundle: _Bundle,
+    proposal: dict[str, Any],
+    evidence: dict[str, dict[str, Any]],
+    required_roles: tuple[str, ...],
+) -> None:
+    """Require every Proposal Evidence reference to resolve to verified Evidence."""
+    for result in proposal.get("results", []):
+        if not isinstance(result, dict):
+            continue
+        trial_id = result.get("trial_id")
+        roles = result.get("evidence")
+        if not isinstance(roles, dict):
+            bundle.failures.append("Proposal Result Evidence bindings are invalid")
+            continue
+        if set(roles) != set(required_roles):
+            bundle.failures.append("Proposal Result Evidence roles are incomplete")
+        for references in roles.values():
+            if not isinstance(references, list) or not references:
+                bundle.failures.append("Proposal Result Evidence bindings are invalid")
+                continue
+            for reference in references:
+                evidence_id = _evidence_ref(reference)
+                record = evidence.get(evidence_id or "")
+                if record is None or record.get("trial_id") != trial_id:
+                    bundle.failures.append(
+                        "Proposal Evidence reference is unavailable or unrelated"
+                    )
+    for disposition in proposal.get("needs_input", []):
+        if not isinstance(disposition, dict):
+            continue
+        trial_id = disposition.get("trial_id")
+        references = disposition.get("evidence")
+        if not isinstance(references, list):
+            bundle.failures.append("Proposal needs-input Evidence bindings are invalid")
+            continue
+        for reference in references:
+            evidence_id = _evidence_ref(reference)
+            record = evidence.get(evidence_id or "")
+            if record is None or record.get("trial_id") != trial_id:
+                bundle.failures.append("Proposal Evidence reference is unavailable or unrelated")
+
+
+def _evidence_text(record: dict[str, Any]) -> str:
+    value = record.get("quote", record.get("transcription", ""))
+    return " ".join(str(value).casefold().split())
+
+
+def _verify_result_evidence_facts(
+    bundle: _Bundle,
+    result: dict[str, Any],
+    evidence: dict[str, dict[str, Any]],
+    outcome: OutcomeFacts,
+) -> None:
+    roles = result.get("evidence")
+    if not isinstance(roles, dict):
+        return
+
+    def role_text(role: str) -> str:
+        references = roles.get(role, [])
+        return " ".join(
+            _evidence_text(evidence[_evidence_ref(reference) or ""])
+            for reference in references
+            if _evidence_ref(reference) in evidence
+        )
+
+    target_raw = result.get("target")
+    population_raw = result.get("population")
+    reported_raw = result.get("reported")
+    target: dict[str, Any] = target_raw if isinstance(target_raw, dict) else {}
+    population: dict[str, Any] = population_raw if isinstance(population_raw, dict) else {}
+    reported: dict[str, Any] = reported_raw if isinstance(reported_raw, dict) else {}
+    checks: list[tuple[str, object]] = [
+        ("target_basis", target.get("outcome_definition")),
+        ("target_basis", target.get("measurement")),
+        ("target_basis", target.get("time_point_or_window")),
+        ("target_basis", target.get("intended_effect_measure")),
+        ("reported_context", result.get("source_table_meaning")),
+        ("population_basis", target.get("intended_analysis_population")),
+        ("population_basis", population.get("analyzed_population")),
+    ]
+    groups = target.get("comparison_groups")
+    if isinstance(groups, list):
+        checks.extend(
+            ("target_basis", item.get("label")) for item in groups if isinstance(item, dict)
+        )
+    for quantity in reported.get("quantities", reported.get("categories", [])):
+        if isinstance(quantity, dict):
+            checks.extend(
+                ("reported_values", quantity.get(field))
+                for field in ("statistic", "unit", "group_or_category", "value")
+            )
+            checks.append(("population_basis", quantity.get("denominator_basis")))
+    effect = reported.get("effect")
+    if isinstance(effect, dict):
+        checks.extend(
+            ("reported_values", effect.get(field)) for field in ("statistic", "unit", "value")
+        )
+        checks.append(("population_basis", effect.get("denominator_basis")))
+    for role, required in checks:
+        if (
+            isinstance(required, str)
+            and required.strip()
+            and _evidence_value(required) not in role_text(role)
+        ):
+            bundle.failures.append(f"Proposal Evidence does not contain required {role} fact")
+    values = roles.get("reported_values")
+    if not isinstance(values, list) or len(values) != 1:
+        bundle.failures.append("reported-values Evidence must be one complete record")
+    elif (record := evidence.get(_evidence_ref(values[0]) or "")) is None or record.get(
+        "kind"
+    ) != "text":
+        bundle.failures.append("reported-values Evidence must be one text record")
+    elif isinstance(reported.get("reported_text"), str) and not _contains_normalized(
+        record.get("quote"), reported.get("reported_text")
+    ):
+        bundle.failures.append(
+            "reported-values Evidence does not contain the complete reported text"
+        )
+
+
+def _evidence_value(value: str) -> str:
+    return " ".join(value.casefold().replace("+", " plus ").replace("–", "-").split())
+
+
+def _contains_normalized(container: object, value: object) -> bool:
+    return (
+        isinstance(container, str)
+        and isinstance(value, str)
+        and _evidence_value(value) in _evidence_value(container)
+    )
+
+
+def _verify_domain_binding_provenance(
+    bundle: _Bundle, binding: dict[str, Any], record: dict[str, Any] | None
+) -> None:
+    if record is None or not isinstance(binding, dict):
+        return
+    fields = (
+        ("kind", "trial_id", "snapshot", "source_id", "source_sha256", "projection_hash", "page"),
+        ("start", "end", "quote", "quote_sha256")
+        if record.get("kind") == "text"
+        else ("region", "render", "transcription"),
+    )
+    for field in fields[0] + fields[1]:
+        if binding.get(field) != record.get(field):
+            bundle.failures.append("Domain evidence binding provenance does not match Evidence")
+            return
 
 
 def _validate_visual_evidence(
@@ -752,9 +1224,7 @@ def _valid_region(value: object) -> bool:
         isinstance(value, (list, tuple))
         and len(value) == 4
         and all(
-            isinstance(item, (int, float))
-            and not isinstance(item, bool)
-            and math.isfinite(item)
+            isinstance(item, (int, float)) and not isinstance(item, bool) and math.isfinite(item)
             for item in value
         )
         and 0 <= value[0] < value[2] <= 1
@@ -770,7 +1240,11 @@ def _verify_packet_catalog(
     trial_id: object,
 ) -> None:
     catalog = packet.get("reusable_evidence")
-    if not isinstance(catalog, dict) or set(catalog) != {"basis", "entries", "has_more", "next_after"} or not isinstance(trial_id, str):
+    if (
+        not isinstance(catalog, dict)
+        or set(catalog) != {"basis", "entries", "has_more", "next_after"}
+        or not isinstance(trial_id, str)
+    ):
         bundle.failures.append("Domain work packet reusable Evidence catalog is invalid")
         return
     entries = catalog.get("entries")
@@ -805,8 +1279,7 @@ def _verify_packet_catalog(
         ),
     )
     source_aliases = {
-        row.get("candidate_identity"): f"s{index}"
-        for index, row in enumerate(ordered_sources, 1)
+        row.get("candidate_identity"): f"s{index}" for index, row in enumerate(ordered_sources, 1)
     }
     expected_aliases = [f"s{index}" for index in range(1, len(ordered_sources) + 1)]
     if packet.get("stable_aliases") != expected_aliases:
@@ -847,7 +1320,17 @@ def _verify_packet_catalog(
             bundle.failures.append("Domain work packet reusable Evidence catalog is unbound")
             continue
         if entry.get("kind") == "text":
-            valid = {"kind", "evidence", "source_id", "source_alias", "page", "start", "end", "preview", "truncated"}
+            valid = {
+                "kind",
+                "evidence",
+                "source_id",
+                "source_alias",
+                "page",
+                "start",
+                "end",
+                "preview",
+                "truncated",
+            }
             matches = (
                 isinstance(entry.get("start"), int)
                 and not isinstance(entry.get("start"), bool)
@@ -865,7 +1348,16 @@ def _verify_packet_catalog(
                 and entry.get("truncated") is (len(record.get("quote", "")) > 160)
             )
         elif entry.get("kind") == "visual":
-            valid = {"kind", "evidence", "source_id", "source_alias", "page", "region", "preview", "truncated"}
+            valid = {
+                "kind",
+                "evidence",
+                "source_id",
+                "source_alias",
+                "page",
+                "region",
+                "preview",
+                "truncated",
+            }
             matches = (
                 _valid_region(entry.get("region"))
                 and isinstance(entry.get("preview"), str)
@@ -888,7 +1380,195 @@ def _verify_packet_catalog(
         )
     next_after = catalog.get("next_after")
     if next_after is not None and (not actual or _evidence_ref(next_after) != actual[-1]):
-        bundle.failures.append("Domain work packet reusable Evidence catalog continuation is invalid")
+        bundle.failures.append(
+            "Domain work packet reusable Evidence catalog continuation is invalid"
+        )
+
+
+def _verify_approved_dispositions(
+    bundle: _Bundle, approved: dict[str, Any] | None, proposal: dict[str, Any]
+) -> None:
+    if approved is None:
+        bundle.failures.append("Approved Batch is unavailable")
+        return
+    needs_input = {
+        str(item.get("trial_id"))
+        for item in proposal.get("needs_input", [])
+        if isinstance(item, dict)
+    }
+    expected = sorted(
+        [[trial_id, "needs_input"] for trial_id in needs_input]
+        + [
+            [str(item.get("trial_id")), "pending"]
+            for item in proposal.get("results", [])
+            if isinstance(item, dict) and str(item.get("trial_id")) not in needs_input
+        ]
+    )
+    if approved.get("dispositions") != expected:
+        bundle.failures.append("Approved Batch dispositions do not match Proposal dispositions")
+
+
+def _verify_report_semantics(bundle: _Bundle, summary: dict[str, Any], report: str) -> None:
+    def trial_section(trial_id: object) -> str:
+        if not isinstance(trial_id, str) or not trial_id:
+            return ""
+        marker = f"<section><h2>{html.escape(trial_id)}</h2>"
+        start = report.find(marker)
+        if start < 0:
+            return ""
+        end = report.find("</section>", start + len(marker))
+        return report[start : end + len("</section>")] if end >= 0 else ""
+
+    def require(section: str, value: object, detail: str) -> None:
+        if isinstance(value, str) and value and html.escape(value) not in section:
+            bundle.failures.append(f"report omits {detail}")
+
+    def require_global(value: object, detail: str) -> None:
+        if isinstance(value, str) and value and html.escape(value) not in report:
+            bundle.failures.append(f"report omits {detail}")
+
+    require_global(summary.get("identity"), "summary identity")
+    summary_presentation = summary.get("presentation", {})
+    if isinstance(summary_presentation, dict):
+        require_global(summary_presentation.get("code"), "summary presentation code")
+    approved = bundle.names.get("approved_batch.json", {})
+    require_global(approved.get("identity"), "approved Batch identity")
+    require_global(approved.get("review"), "approved Proposal review")
+    proposal = next(
+        (
+            row
+            for row in bundle.records.values()
+            if row.get("kind") == "proposal_review"
+            and row.get("identity") == approved.get("review")
+        ),
+        {},
+    )
+    for trial in summary.get("trials", []):
+        if not isinstance(trial, dict):
+            continue
+        trial_id = trial.get("trial_id")
+        section = trial_section(trial_id)
+        if not section:
+            bundle.failures.append(f"report omits Trial section {trial_id}")
+            continue
+        require(section, trial_id, "Trial identity")
+        require(section, trial.get("disposition"), f"disposition for Trial {trial_id}")
+        result = next(
+            (
+                row
+                for row in proposal.get("results", [])
+                if isinstance(row, dict) and row.get("trial_id") == trial_id
+            ),
+            None,
+        )
+        if isinstance(result, dict):
+            target = result.get("target", {})
+            reported = result.get("reported", {})
+            if isinstance(target, dict):
+                for field in (
+                    "outcome_definition",
+                    "measurement",
+                    "time_point_or_window",
+                    "intended_analysis_population",
+                ):
+                    require(section, target.get(field), f"target {field}")
+            if isinstance(reported, dict):
+                require(section, reported.get("reported_text"), "reported source text")
+                for quantity in reported.get("quantities", reported.get("categories", [])):
+                    if isinstance(quantity, dict):
+                        for field in (
+                            "statistic",
+                            "group_or_category",
+                            "value",
+                            "unit",
+                            "denominator_basis",
+                        ):
+                            require(section, quantity.get(field), f"reported {field}")
+                effect = reported.get("effect")
+                if isinstance(effect, dict):
+                    for field in (
+                        "statistic",
+                        "group_or_category",
+                        "value",
+                        "unit",
+                        "denominator_basis",
+                    ):
+                        require(section, effect.get(field), f"reported effect {field}")
+                precision = reported.get("precision")
+                if isinstance(precision, dict):
+                    interval = precision.get("confidence_interval", {})
+                    p_value = precision.get("p_value", {})
+                    if isinstance(interval, dict):
+                        for field in ("level", "lower", "upper"):
+                            require(
+                                section,
+                                interval.get(field),
+                                f"reported confidence interval {field}",
+                            )
+                    if isinstance(p_value, dict):
+                        require(section, p_value.get("operator"), "reported P-value operator")
+                        require(section, p_value.get("value"), "reported P-value value")
+            if trial.get("disposition") == "assessed":
+                snapshot = trial.get("snapshot", {})
+                snapshot_id = snapshot.get("identity") if isinstance(snapshot, dict) else None
+                hashes = {
+                    str(item[1])
+                    for row in bundle.records.values()
+                    if row.get("kind") == "assessment_snapshot"
+                    and row.get("identity") == snapshot_id
+                    for item in row.get("checkpoint_hashes", [])
+                    if isinstance(item, list) and len(item) == 2
+                }
+                for checkpoint in bundle.records.values():
+                    if (
+                        checkpoint.get("kind") == "domain_candidate"
+                        and checkpoint.get("trial_id") == trial_id
+                        and checkpoint.get("active_hash") in hashes
+                    ):
+                        require(section, checkpoint.get("domain_id"), "retained Domain")
+                        require(section, checkpoint.get("proposed_judgment"), "Domain judgment")
+                        for binding in checkpoint.get("evidence_bindings", []):
+                            if isinstance(binding, dict):
+                                reference = binding.get("evidence")
+                                if isinstance(reference, dict):
+                                    require(section, reference.get("identity"), "Domain Evidence")
+            else:
+                terminal = next(
+                    (
+                        row
+                        for row in bundle.records.values()
+                        if row.get("kind") == "trial_terminal" and row.get("trial_id") == trial_id
+                    ),
+                    {},
+                )
+                require(section, terminal.get("reason"), "terminal reason")
+                for missing in terminal.get("missing_facts", []):
+                    require(section, missing, "terminal missing fact")
+                for reference in terminal.get("evidence", []):
+                    if isinstance(reference, dict):
+                        require(section, reference.get("identity"), "terminal Evidence")
+                acknowledgment = terminal.get("acknowledgment", {})
+                if isinstance(acknowledgment, dict):
+                    require(
+                        section,
+                        acknowledgment.get("identity"),
+                        "terminal researcher acknowledgment",
+                    )
+        else:
+            terminal = next(
+                (
+                    row
+                    for row in bundle.records.values()
+                    if row.get("kind") == "trial_terminal" and row.get("trial_id") == trial_id
+                ),
+                {},
+            )
+            require(section, terminal.get("reason"), "terminal reason")
+            for missing in terminal.get("missing_facts", []):
+                require(section, missing, "terminal missing fact")
+            for reference in terminal.get("evidence", []):
+                if isinstance(reference, dict):
+                    require(section, reference.get("identity"), "terminal Evidence")
 
 
 def _assessed(
@@ -898,6 +1578,15 @@ def _assessed(
     evidence: dict[str, dict[str, Any]],
     sources: dict[str, tuple[str, bytes, tuple[str, ...], str]],
 ) -> None:
+    if summary.get("counts") != {
+        "total": 1,
+        "pending": 0,
+        "assessed": 1,
+        "needs_input": 0,
+        "failed": 0,
+    }:
+        bundle.failures.append("assessed final counts are invalid")
+        return
     approved = bundle.names.get("approved_batch.json")
     if approved is None:
         bundle.failures.append("Approved Batch is unavailable")
@@ -1001,10 +1690,7 @@ def _assessed(
         if (
             packet is None
             or not _has_exact_record_keys(packet, packet_fields)
-            or _canonical(
-                {key: packet.get(key) for key in packet_fields}
-            )
-            != packet_id
+            or _canonical({key: packet.get(key) for key in packet_fields}) != packet_id
             or _ref(packet.get("approved_batch"), "approved_batch") != approved.get("identity")
             or any(
                 packet.get(key) != row.get(key) for key in ("trial_id", "result_id", "domain_id")
@@ -1029,15 +1715,12 @@ def _assessed(
             ):
                 bundle.failures.append("Domain work packet question scope is invalid")
             prior = packet.get("prior_domain_hashes") if isinstance(packet, dict) else None
-            prior_valid = (
-                isinstance(prior, list)
-                and all(
-                    isinstance(item, list)
-                    and len(item) == 2
-                    and isinstance(item[0], str)
-                    and _is_hash(item[1])
-                    for item in prior
-                )
+            prior_valid = isinstance(prior, list) and all(
+                isinstance(item, list)
+                and len(item) == 2
+                and isinstance(item[0], str)
+                and _is_hash(item[1])
+                for item in prior
             )
             expected_prior = [
                 [earlier, retained_hashes.get(earlier)]
@@ -1062,6 +1745,7 @@ def _assessed(
                 bundle.failures.append(
                     "Domain evidence binding is missing, unrelated, or unprovenanced"
                 )
+            _verify_domain_binding_provenance(bundle, binding, record)
         domain = str(row.get("domain_id"))
         if domain in domains:
             bundle.failures.append("duplicate active Domain checkpoint")
@@ -1178,7 +1862,12 @@ def _assessed(
                 bundle.failures.append("assessed Trial finish acknowledgment chain is invalid")
 
 
-def _needs_input(bundle: _Bundle, summary: dict[str, Any], proposal: dict[str, Any]) -> None:
+def _needs_input(
+    bundle: _Bundle,
+    summary: dict[str, Any],
+    proposal: dict[str, Any],
+    evidence: dict[str, dict[str, Any]],
+) -> None:
     """Validate the preapproval terminal separately from the AE Result card."""
     approved = bundle.names.get("approved_batch.json")
     ack = bundle.names.get("proposal_ack.json")
@@ -1205,6 +1894,14 @@ def _needs_input(bundle: _Bundle, summary: dict[str, Any], proposal: dict[str, A
         bundle.failures.append("AE needs-input terminal count is invalid")
         return
     terminal = bundle.names.get(f"trial-outcome-{terminals[0].get('trial_id')}.json")
+    proposal_terminal = next(
+        (
+            item
+            for item in proposal.get("needs_input", [])
+            if isinstance(item, dict) and item.get("trial_id") == terminals[0].get("trial_id")
+        ),
+        None,
+    )
     fields = ("trial_id", "disposition", "reason", "missing_facts", "evidence", "acknowledgment")
     if (
         terminal is None
@@ -1214,25 +1911,61 @@ def _needs_input(bundle: _Bundle, summary: dict[str, Any], proposal: dict[str, A
         or _canonical({key: terminal.get(key) for key in fields}) != terminal.get("identity")
         or _ref(terminal.get("acknowledgment"), "review_ack") != ack.get("identity")
         or terminals[0].get("outcome", {}).get("identity") != terminal.get("identity")
+        or not isinstance(proposal_terminal, dict)
+        or terminal.get("reason") != proposal_terminal.get("reason")
+        or terminal.get("missing_facts") != proposal_terminal.get("missing_facts")
+        or terminal.get("evidence") != proposal_terminal.get("evidence")
     ):
         bundle.failures.append(
             "AE needs-input terminal identity, reason, or acknowledgment is invalid"
         )
+    terminal_evidence = terminal.get("evidence") if terminal is not None else None
+    if not isinstance(terminal_evidence, list) or not terminal_evidence:
+        bundle.failures.append("AE needs-input terminal requires nonempty Evidence")
+    else:
+        trial_id = terminals[0].get("trial_id")
+        for reference in terminal_evidence:
+            evidence_id = _evidence_ref(reference)
+            record = evidence.get(evidence_id or "")
+            if record is None or record.get("trial_id") != trial_id:
+                bundle.failures.append("AE terminal Evidence reference is unavailable or unrelated")
     if summary.get("presentation", {}).get("code") != "finalized_zero_assessed":
         bundle.failures.append("AE finalization presentation is invalid")
 
 
 def verify_artifact(
-    root: str | Path, objective: ObjectiveFactManifest, outcome_key: str
+    root: str | Path,
+    objective: ObjectiveFactManifest,
+    outcome_key: str,
+    *,
+    trace: tuple[TraceEvent, ...] | list[TraceEvent] | None = None,
 ) -> VerificationResult:
     """Verify bytes, identities, workflow chains, and independent RoB 2 logic."""
     failures: list[str] = []
+    if trace:
+        failures.extend(check_trace(trace))
+        if outcome_key == "adverse_events":
+            failures.extend(
+                check_required_operations(
+                    trace, (("clarify_adverse_events", "completed"),)
+                )
+            )
+    else:
+        failures.append("nonempty complete trace is required")
     bundle = _Bundle(Path(root), failures)
     bundle.load()
     summary, proposal = _summary(bundle), _proposal(bundle, outcome_key, objective)
     expected = objective.outcome(outcome_key).expected_terminal
     if summary is not None and proposal is not None:
+        _verify_approved_dispositions(bundle, bundle.names.get("approved_batch.json"), proposal)
         evidence, sources = _sources_and_evidence(bundle, proposal)
+        _verify_proposal_evidence(
+            bundle, proposal, evidence, objective.outcome(outcome_key).required_evidence_context
+        )
+        facts = objective.outcome(outcome_key)
+        for result in proposal.get("results", []):
+            if isinstance(result, dict):
+                _verify_result_evidence_facts(bundle, result, evidence, facts)
         if expected == "assessed":
             _assessed(bundle, summary, proposal, evidence, sources)
         elif summary.get("counts") != {
@@ -1244,7 +1977,7 @@ def verify_artifact(
         }:
             failures.append("adverse-events final counts are invalid")
         else:
-            _needs_input(bundle, summary, proposal)
+            _needs_input(bundle, summary, proposal, evidence)
     if not (bundle.root / "report.html").is_file():
         failures.append("verified report artifact is unavailable")
     receipt = bundle.names.get("finalization-receipt.json")
@@ -1259,8 +1992,10 @@ def verify_artifact(
         failures.append("durable finalization receipt is unavailable or unbound")
     try:
         report = (bundle.root / "report.html").read_text(encoding="utf-8")
-        if summary is None or summary["presentation"]["summary"] not in report:
+        if summary is None:
             failures.append("report does not bind the finalized summary")
+        else:
+            _verify_report_semantics(bundle, summary, report)
     except (OSError, KeyError, TypeError):
         failures.append("verified report artifact is unavailable")
     return VerificationResult(not failures, tuple(failures), (outcome_key,) if proposal else ())

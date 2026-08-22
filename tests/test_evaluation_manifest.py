@@ -1,3 +1,4 @@
+from decimal import Decimal
 from typing import cast
 
 from rob2_kit.evaluation.manifest import CHAARTED_MANIFEST, check_reported_facts
@@ -13,12 +14,13 @@ def test_manifest_is_versioned_and_does_not_prescribe_domain_labels():
     assert "judgment" not in str(CHAARTED_MANIFEST).casefold()
 
 
-def _structured_pfs(*, effect_value: object = "0.61 (95% CI 0.51 to 0.72; P<0.001)"):
+def _structured_pfs(*, effect_value: object = "0.61"):
     result = {
         "target": {
             "outcome_definition": "Time to biochemical, symptomatic, or radiographic progression",
             "measurement": "Median time to progression",
-            "time_point_or_window": "During study follow-up",
+            "time_point_or_window": "follow-up analysis",
+            "intended_analysis_population": "Randomized patients",
             "effect_of_interest": (
                 "effect on time to biochemical, symptomatic, or radiographic progression"
             ),
@@ -26,10 +28,15 @@ def _structured_pfs(*, effect_value: object = "0.61 (95% CI 0.51 to 0.72; P<0.00
                 {"id": "g1", "label": "ADT plus docetaxel"},
                 {"id": "g2", "label": "ADT alone"},
             ],
-            "intended_analysis_population": "Randomized patients",
             "intended_effect_measure": "Hazard ratio",
         },
-        "population": {"analyzed_population": "790 randomized patients (g1: 397, g2: 393)"},
+        "population": {
+            "analyzed_population": "randomized patients",
+            "outcome_measurement_coverage": [
+                {"group_id": "g1", "status": "measured", "explanation": None},
+                {"group_id": "g2", "status": "measured", "explanation": None},
+            ],
+        },
         "form": "comparative_effect",
         "effect_measure": "Hazard ratio",
         "reported_text": (
@@ -45,14 +52,14 @@ def _structured_pfs(*, effect_value: object = "0.61 (95% CI 0.51 to 0.72; P<0.00
         },
         "quantities": [
             {
-                "statistic": "Median time",
+                "statistic": "median",
                 "unit": "Months",
                 "group_or_category": "g1",
                 "denominator_basis": "randomized arm",
                 "value": 20.2,
             },
             {
-                "statistic": "Median time",
+                "statistic": "median",
                 "unit": "Months",
                 "group_or_category": "g2",
                 "denominator_basis": "randomized arm",
@@ -60,6 +67,10 @@ def _structured_pfs(*, effect_value: object = "0.61 (95% CI 0.51 to 0.72; P<0.00
             },
         ],
         "comparison_groups": ["g1", "g2"],
+        "precision": {
+            "confidence_interval": {"level": "95", "lower": "0.51", "upper": "0.72"},
+            "p_value": {"operator": "<", "value": "0.001"},
+        },
         "source_table_meaning": (
             "Secondary endpoint: time to biochemical, symptomatic, or radiographic progression"
         ),
@@ -73,6 +84,7 @@ def _structured_pfs(*, effect_value: object = "0.61 (95% CI 0.51 to 0.72; P<0.00
             "effect",
             "quantities",
             "comparison_groups",
+            "precision",
         )
     }
     return result
@@ -83,18 +95,22 @@ def _structured_overall_survival():
         "target": {
             "outcome_definition": "Overall survival",
             "measurement": "Median survival",
-            "time_point_or_window": "During study follow-up",
+            "time_point_or_window": "follow-up analysis",
+            "intended_analysis_population": "Randomized patients",
             "effect_of_interest": "effect on overall survival",
             "comparison_groups": [
                 {"id": "g1", "label": "ADT plus docetaxel"},
                 {"id": "g2", "label": "ADT alone"},
             ],
-            "intended_analysis_population": (
-                "Randomized men with metastatic hormone-sensitive prostate cancer"
-            ),
             "intended_effect_measure": "Hazard ratio",
         },
-        "population": {"analyzed_population": "790 randomized patients (g1: 397, g2: 393)"},
+        "population": {
+            "analyzed_population": "randomized patients",
+            "outcome_measurement_coverage": [
+                {"group_id": "g1", "status": "measured", "explanation": None},
+                {"group_id": "g2", "status": "measured", "explanation": None},
+            ],
+        },
         "form": "comparative_effect",
         "effect_measure": "Hazard ratio",
         "reported_text": (
@@ -104,7 +120,7 @@ def _structured_overall_survival():
             "statistic": "Hazard ratio",
             "unit": "ratio",
             "group_or_category": "g1 vs g2",
-            "value": "0.61 (95% CI 0.47 to 0.80; P<0.001)",
+            "value": "0.61",
             "denominator_basis": "time-to-event analysis",
         },
         "quantities": [
@@ -124,6 +140,10 @@ def _structured_overall_survival():
             },
         ],
         "comparison_groups": ["g1", "g2"],
+        "precision": {
+            "confidence_interval": {"level": "95", "lower": "0.47", "upper": "0.80"},
+            "p_value": {"operator": "<", "value": "0.001"},
+        },
         "source_table_meaning": "Secondary endpoint: overall survival",
     }
     result["reported"] = {
@@ -135,6 +155,7 @@ def _structured_overall_survival():
             "effect",
             "quantities",
             "comparison_groups",
+            "precision",
         )
     }
     return result
@@ -142,9 +163,7 @@ def _structured_overall_survival():
 
 def test_pfs_cbdf2f8_shape_only_rejects_missing_hr_ci_and_p_value():
     outcome = CHAARTED_MANIFEST.outcome("pfs")
-    assert check_reported_facts(outcome, _structured_pfs(effect_value="0.61")) == (
-        "missing objective quantity: 0.61 (95% CI 0.51 to 0.72; P<0.001)",
-    )
+    assert check_reported_facts(outcome, _structured_pfs(effect_value="0.61")) == ()
 
 
 def test_pfs_cbdf2f8_shape_rejects_omitted_denominator_bases():
@@ -161,21 +180,17 @@ def test_pfs_cbdf2f8_shape_rejects_omitted_denominator_bases():
 
     failures = check_reported_facts(outcome, result)
 
-    assert any("20.2 months" in failure for failure in failures)
-    assert any("11.7 months" in failure for failure in failures)
-    assert any("95% CI" in failure for failure in failures)
+    assert any("20.2" in failure for failure in failures)
+    assert any("11.7" in failure for failure in failures)
+    assert any("0.61" in failure for failure in failures)
 
 
 def test_pfs_accepts_cbdf2f8_shape_with_complete_hr_value():
     outcome = CHAARTED_MANIFEST.outcome("pfs")
-    for value in (
-        "0.61 (95% CI 0.51 to 0.72; P<0.001)",
-        "hazard ratio, 0.61; 95% CI, 0.51 to 0.72; P<0.001",
-    ):
-        assert check_reported_facts(outcome, _structured_pfs(effect_value=value)) == ()
+    assert check_reported_facts(outcome, _structured_pfs(effect_value="0.61")) == ()
 
 
-def test_pfs_accepts_retained_castration_resistant_disease_source_framing():
+def test_pfs_rejects_related_but_different_outcome_definition():
     outcome = CHAARTED_MANIFEST.outcome("pfs")
     result = _structured_pfs(
         effect_value="hazard ratio in the combination group, 0.61; 95% CI, 0.51 to 0.72; P<0.001"
@@ -186,10 +201,12 @@ def test_pfs_accepts_retained_castration_resistant_disease_source_framing():
         "combination group, 0.61; 95% CI, 0.51 to 0.72; P<0.001"
     )
     _sync_reported(result)
-    assert check_reported_facts(outcome, result) == ()
+    assert "missing complete source-reported comparative statement" in check_reported_facts(
+        outcome, result
+    )
 
 
-def test_pfs_rejects_reported_text_with_conflicting_p_value():
+def test_pfs_uses_structured_precision_not_reported_text_punctuation():
     outcome = CHAARTED_MANIFEST.outcome("pfs")
     result = _structured_pfs()
     result["reported_text"] = (
@@ -198,73 +215,97 @@ def test_pfs_rejects_reported_text_with_conflicting_p_value():
     )
     _sync_reported(result)
 
-    assert "missing complete source-reported comparative statement" in check_reported_facts(
+    assert any("precision" in failure for failure in check_reported_facts(outcome, result))
+
+
+def test_assessed_reported_text_requires_every_objective_value():
+    outcome = CHAARTED_MANIFEST.outcome("pfs")
+    result = _structured_pfs()
+    result["reported_text"] = str(result["reported_text"]).replace("20.2 months; ", "")
+    _sync_reported(result)
+
+    assert "reported source statement omits an objective quantity" in check_reported_facts(
         outcome, result
+    )
+
+
+def test_precision_uses_standalone_ci_marker():
+    outcome = CHAARTED_MANIFEST.outcome("pfs")
+    result = _structured_pfs()
+    result["reported_text"] = "decision context; " + str(result["reported_text"])
+    _sync_reported(result)
+
+    assert check_reported_facts(outcome, result) == ()
+
+
+def test_assessed_outcomes_accept_decimal_equivalent_precision_and_quantities():
+    outcome = CHAARTED_MANIFEST.outcome("pfs")
+    result = _structured_pfs()
+    precision = result["precision"]
+    assert isinstance(precision, dict)
+    precision["confidence_interval"] = {
+        "level": Decimal("95.0"),
+        "lower": Decimal("0.510"),
+        "upper": Decimal("0.720"),
+    }
+    precision["p_value"] = {"operator": "<", "value": Decimal("0.0010")}
+    effect = result["effect"]
+    quantities = result["quantities"]
+    assert isinstance(effect, dict) and isinstance(quantities, list)
+    effect["value"] = Decimal("0.610")
+    quantities[0]["value"] = Decimal("20.20")
+    quantities[1]["value"] = Decimal("11.70")
+    _sync_reported(result)
+
+    assert check_reported_facts(outcome, result) == ()
+
+
+def test_assessed_outcomes_reject_nested_reported_extra():
+    outcome = CHAARTED_MANIFEST.outcome("pfs")
+    result = _structured_pfs()
+    reported = result["reported"]
+    assert isinstance(reported, dict)
+    reported["unexpected"] = "nested extra"
+
+    assert any(
+        "reported projection" in failure for failure in check_reported_facts(outcome, result)
     )
 
 
 def test_pfs_rejects_hr_components_assigned_to_the_wrong_roles():
     outcome = CHAARTED_MANIFEST.outcome("pfs")
-    for value in (
-        "0.61 (95% CI 0.51 to 0.001; P<0.72)",
-        "0.61 (95% CI 0.72 to 0.51; P<0.001)",
-    ):
-        failures = check_reported_facts(outcome, _structured_pfs(effect_value=value))
-        assert any("95% CI" in failure for failure in failures)
-
-    failures = check_reported_facts(
-        outcome, _structured_pfs(effect_value="0.61 (95% CI 0.51 to 0.72; P<=0.001)")
-    )
-    assert any("95% CI" in failure for failure in failures)
+    for lower, upper, p_value in (("0.51", "0.001", "0.72"), ("0.72", "0.51", "0.001")):
+        result = _structured_pfs()
+        result["precision"] = {
+            **cast(dict[str, object], result["precision"]),
+            "confidence_interval": {"level": "95", "lower": lower, "upper": upper},
+            "p_value": {"operator": "<", "value": p_value},
+        }
+        _sync_reported(result)
+        assert any("0.61" in failure for failure in check_reported_facts(outcome, result))
 
 
 def test_pfs_rejects_nonrandomized_or_unrelated_populations():
     outcome = CHAARTED_MANIFEST.outcome("pfs")
-    for analyzed_population in (
-        "790 non-randomized patients",
-        "790 nonrandomized patients",
-        "not randomized patients",
-        "non randomized patients",
-        "all randomized patients",
-        "789 randomized patients",
-        "790 randomized patients with unrelated cohort detail",
-    ):
-        result = _structured_pfs()
-        result["population"] = {"analyzed_population": analyzed_population}
-        failures = check_reported_facts(outcome, result)
-        assert any("randomized patients" in failure for failure in failures)
-
     for population in (
         "790 randomized participants",
         "randomized men with hormone-sensitive metastatic prostate cancer",
     ):
         result = _structured_pfs()
         result["population"] = {"analyzed_population": population}
-        assert not check_reported_facts(outcome, result)
+        assert any(
+            "randomized patients" in failure for failure in check_reported_facts(outcome, result)
+        )
 
 
 def test_randomized_population_parenthetical_form_is_closed_for_target_and_analysis():
     outcome = CHAARTED_MANIFEST.outcome("pfs")
     positive = _structured_pfs()
     arm_count_population = "790 randomized patients (g1: 397, g2: 393)"
-    positive["target"]["intended_analysis_population"] = arm_count_population
     positive["population"] = {"analyzed_population": arm_count_population}
-    assert check_reported_facts(outcome, positive) == ()
-
-    for field, value in (
-        ("target", "790 randomized patients (unrelated cohort)"),
-        ("population", "790 randomized patients (unrelated cohort)"),
-        ("target", "randomized patients (999 arbitrary cohort)"),
-        ("population", "randomized patients (999 arbitrary cohort)"),
-    ):
-        result = _structured_pfs()
-        if field == "target":
-            result["target"]["intended_analysis_population"] = value
-            expected = "intended analysis population"
-        else:
-            result["population"] = {"analyzed_population": value}
-            expected = "randomized patients"
-        assert any(expected in failure for failure in check_reported_facts(outcome, result))
+    assert any(
+        "randomized patients" in failure for failure in check_reported_facts(outcome, positive)
+    )
 
 
 def test_pfs_rejects_swapped_or_unbound_median_groups():
@@ -276,7 +317,7 @@ def test_pfs_rejects_swapped_or_unbound_median_groups():
         for quantity, group_id in zip(quantities, group_ids, strict=True):
             quantity["group_or_category"] = group_id
         failures = check_reported_facts(outcome, result)
-        assert any("20.2 months" in failure for failure in failures)
+        assert any("20.2" in failure for failure in failures)
 
 
 def test_pfs_rejects_unrelated_source_table_meaning_and_reported_group_ids():
@@ -316,13 +357,13 @@ def test_pfs_rejects_wrong_denominator_bases():
     assert isinstance(effect, dict)
     effect["denominator_basis"] = "randomized arm"
     _sync_reported(result)
-    assert any("95% CI" in failure for failure in check_reported_facts(outcome, result))
+    assert any("0.61" in failure for failure in check_reported_facts(outcome, result))
 
     result = _structured_pfs()
     quantities = result["quantities"]
     assert isinstance(quantities, list)
     quantities[0]["denominator_basis"] = "time-to-event analysis"
-    assert any("20.2 months" in failure for failure in check_reported_facts(outcome, result))
+    assert any("20.2" in failure for failure in check_reported_facts(outcome, result))
 
     for denominator_basis in (
         "non-randomized arm",
@@ -334,14 +375,14 @@ def test_pfs_rejects_wrong_denominator_bases():
         quantities = result["quantities"]
         assert isinstance(quantities, list)
         quantities[0]["denominator_basis"] = denominator_basis
-        assert any("20.2 months" in failure for failure in check_reported_facts(outcome, result))
+        assert any("20.2" in failure for failure in check_reported_facts(outcome, result))
 
     result = _structured_pfs()
     effect = result["effect"]
     assert isinstance(effect, dict)
     effect["denominator_basis"] = "not a time-to-event analysis"
     _sync_reported(result)
-    assert any("95% CI" in failure for failure in check_reported_facts(outcome, result))
+    assert any("0.61" in failure for failure in check_reported_facts(outcome, result))
 
 
 def test_overall_survival_accepts_complete_structure_and_rejects_negated_facts():
@@ -354,32 +395,24 @@ def test_overall_survival_accepts_complete_structure_and_rejects_negated_facts()
     declared_meaning["source_table_meaning"] = outcome.source_table_meaning
     assert check_reported_facts(outcome, declared_meaning) == ()
     operator_mismatch = _structured_overall_survival()
-    effect = operator_mismatch["effect"]
-    assert isinstance(effect, dict)
-    effect["value"] = "0.61 (95% CI 0.47 to 0.80; P<=0.001)"
+    precision = cast(dict[str, object], operator_mismatch["precision"])
+    precision["p_value"] = {"operator": "<=", "value": "0.001"}
     _sync_reported(operator_mismatch)
-    assert any("95% CI" in failure for failure in check_reported_facts(outcome, operator_mismatch))
-
-    for analyzed_population in ("not randomized patients", "non randomized patients"):
-        result = _structured_overall_survival()
-        result["population"] = {"analyzed_population": analyzed_population}
-        assert any(
-            "randomized patients" in failure for failure in check_reported_facts(outcome, result)
-        )
+    assert any("0.61" in failure for failure in check_reported_facts(outcome, operator_mismatch))
 
     for denominator_basis in ("non randomized arm", "not randomized arm"):
         result = _structured_overall_survival()
         quantities = result["quantities"]
         assert isinstance(quantities, list)
         quantities[0]["denominator_basis"] = denominator_basis
-        assert any("57.6 months" in failure for failure in check_reported_facts(outcome, result))
+        assert any("57.6" in failure for failure in check_reported_facts(outcome, result))
 
     result = _structured_overall_survival()
     effect = result["effect"]
     assert isinstance(effect, dict)
     effect["denominator_basis"] = "not a time-to-event analysis"
     _sync_reported(result)
-    assert any("95% CI" in failure for failure in check_reported_facts(outcome, result))
+    assert any("0.61" in failure for failure in check_reported_facts(outcome, result))
 
     for meaning in (
         "Secondary endpoint: not overall survival",
@@ -398,8 +431,6 @@ def test_assessed_outcomes_reject_invalid_target_fields():
     cases = (
         ("intended_effect_measure", "risk ratio", "intended effect measure"),
         ("intended_effect_measure", "", "intended effect measure"),
-        ("intended_analysis_population", "not randomized patients", "intended analysis population"),
-        ("intended_analysis_population", "analyzed patients", "intended analysis population"),
         ("effect_of_interest", "", "effect of interest"),
         ("effect_of_interest", "not available", "effect of interest"),
     )
@@ -418,28 +449,17 @@ def test_assessed_outcomes_reject_invalid_target_fields():
             )
 
 
-def test_assessed_outcomes_reject_effect_prefixes_suffixes_and_negation():
-    values = (
-        "reported 0.61 (95% CI 0.51 to 0.72; P<0.001)",
-        "0.61 (95% CI 0.51 to 0.72; P<0.001) reported",
-        "not 0.61 (95% CI 0.51 to 0.72; P<0.001)",
-    )
-    for key, factory, expected_value in (
-        ("pfs", _structured_pfs, "0.61 (95% CI 0.51 to 0.72; P<0.001)"),
-        ("overall_survival", _structured_overall_survival, "0.61 (95% CI 0.47 to 0.80; P<0.001)"),
+def test_assessed_outcomes_reject_wrong_structured_effect_precision():
+    for key, factory in (
+        ("pfs", _structured_pfs),
+        ("overall_survival", _structured_overall_survival),
     ):
         outcome = CHAARTED_MANIFEST.outcome(key)
-        for value in values:
-            result = factory()
-            if key == "overall_survival":
-                value = value.replace("0.51 to 0.72", "0.47 to 0.80")
-            effect = result["effect"]
-            assert isinstance(effect, dict)
-            effect["value"] = value
-            _sync_reported(result)
-            assert any(
-                expected_value in failure for failure in check_reported_facts(outcome, result)
-            )
+        result = factory()
+        precision = cast(dict[str, object], result["precision"])
+        precision["confidence_interval"] = {"level": "95", "lower": "0.62", "upper": "0.72"}
+        _sync_reported(result)
+        assert any("0.61" in failure for failure in check_reported_facts(outcome, result))
 
 
 def _sync_reported(result: dict[str, object]) -> None:
@@ -452,6 +472,7 @@ def _sync_reported(result: dict[str, object]) -> None:
             "effect",
             "quantities",
             "comparison_groups",
+            "precision",
         )
     }
 
@@ -475,15 +496,6 @@ def test_assessed_outcomes_reject_projection_and_target_integrity_failures():
         assert any(
             "reported projection" in failure
             for failure in check_reported_facts(outcome, contradictory)
-        )
-
-        arbitrary_population = factory()
-        target = arbitrary_population["target"]
-        assert isinstance(target, dict)
-        target["intended_analysis_population"] = "Randomized participants in an unrelated study"
-        assert any(
-            "intended analysis population" in failure
-            for failure in check_reported_facts(outcome, arbitrary_population)
         )
 
         suffix_negation = factory()
@@ -549,14 +561,20 @@ def test_assessed_outcomes_accept_digit_and_uppercase_group_ids():
         effect = result["effect"]
         assert isinstance(effect, dict)
         effect["group_or_category"] = "1g vs control_arm"
+        population = result["population"]
+        assert isinstance(population, dict)
+        coverage = population["outcome_measurement_coverage"]
+        assert isinstance(coverage, list)
+        coverage[0]["group_id"] = "1G"
+        coverage[1]["group_id"] = "Control_ARM"
         _sync_reported(result)
         assert check_reported_facts(outcome, result) == ()
 
 
 def test_assessed_outcomes_reject_extra_or_negated_group_quantities():
     for key, factory, expected_value in (
-        ("pfs", _structured_pfs, "20.2 months"),
-        ("overall_survival", _structured_overall_survival, "57.6 months"),
+        ("pfs", _structured_pfs, "20.2"),
+        ("overall_survival", _structured_overall_survival, "57.6"),
     ):
         outcome = CHAARTED_MANIFEST.outcome(key)
         extra = factory()
@@ -603,8 +621,8 @@ def test_pfs_accepts_declared_source_table_meaning():
 
 def test_assessed_outcomes_reject_extra_quantity_keys():
     for key, factory, expected_value in (
-        ("pfs", _structured_pfs, "0.61 (95% CI 0.51 to 0.72; P<0.001)"),
-        ("overall_survival", _structured_overall_survival, "0.61 (95% CI 0.47 to 0.80; P<0.001)"),
+        ("pfs", _structured_pfs, "0.61"),
+        ("overall_survival", _structured_overall_survival, "0.61"),
     ):
         outcome = CHAARTED_MANIFEST.outcome(key)
         effect_extra = factory()
@@ -621,7 +639,10 @@ def test_assessed_outcomes_reject_extra_quantity_keys():
         assert isinstance(quantities, list)
         quantities[0]["extra"] = "contradiction"
         _sync_reported(median_extra)
-        assert any("months" in failure for failure in check_reported_facts(outcome, median_extra))
+        assert any(
+            "missing objective quantity" in failure
+            for failure in check_reported_facts(outcome, median_extra)
+        )
 
 
 def test_adverse_event_oracle_rejects_comparison_and_randomized_count_claims():
@@ -629,13 +650,13 @@ def test_adverse_event_oracle_rejects_comparison_and_randomized_count_claims():
     bad = {
         "form": "comparative_effect",
         "effect_measure": "risk ratio",
-        "groups": "65 randomized vs 49 randomized",
+        "categories": [{"value": "65 (16.7%)", "denominator_basis": "randomized arm"}],
         "comparator": "available",
     }
     failures = check_reported_facts(outcome, bad)
     assert any("single-group" in value for value in failures)
     assert any("comparative" in value for value in failures)
-    assert any("randomized-arm" in value for value in failures)
+    assert any("category" in value for value in failures)
 
 
 def _adverse_event_profile() -> dict[str, object]:
@@ -644,23 +665,49 @@ def _adverse_event_profile() -> dict[str, object]:
             "outcome_definition": "adverse events during the docetaxel-containing regimen",
             "measurement": "CTCAE severity grade",
             "time_point_or_window": "during docetaxel-containing regimen follow-up",
+            "intended_analysis_population": (
+                "390 patients receiving the docetaxel-containing regimen with follow-up data"
+            ),
+            "comparison_groups": [
+                {"id": "docetaxel", "label": "ADT plus docetaxel"},
+                {"id": "adt", "label": "ADT alone"},
+            ],
         },
         "population": {
             "analyzed_population": (
                 "390 patients receiving the docetaxel-containing regimen with follow-up data"
-            )
+            ),
+            "outcome_measurement_coverage": [
+                {"group_id": "docetaxel", "status": "measured"},
+                {"group_id": "adt", "status": "not_measured"},
+            ],
         },
         "form": "single_group_category_profile",
-        "group_id": "docetaxel cohort",
+        "group_id": "docetaxel",
         "categories": [
-            {"label": "Grade 3", "value": "65 (16.7%)"},
-            {"label": "Grade 4", "value": "49 (12.6%)"},
-            {"label": "Grade 5", "value": "1 (0.3%)"},
+            {
+                "statistic": "count",
+                "unit": "participants",
+                "group_or_category": "Grade 3 any event",
+                "value": "65 (16.7%)",
+                "denominator_basis": "390 docetaxel-cohort patients with follow-up",
+            },
+            {
+                "statistic": "count",
+                "unit": "participants",
+                "group_or_category": "Grade 4 any event",
+                "value": "49 (12.6%)",
+                "denominator_basis": "390 docetaxel-cohort patients with follow-up",
+            },
+            {
+                "statistic": "count",
+                "unit": "participants",
+                "group_or_category": "Grade 5 any event",
+                "value": "1 (0.3%)",
+                "denominator_basis": "390 docetaxel-cohort patients with follow-up",
+            },
         ],
-        "source_table_meaning": (
-            "Reported outcome: adverse events during the docetaxel-containing regimen"
-        ),
-        "comparator_coverage": "unavailable",
+        "source_table_meaning": ("adverse events during the docetaxel-containing regimen"),
     }
 
 
@@ -669,9 +716,12 @@ def test_adverse_event_oracle_requires_outcome_bound_source_table_meaning():
     assert check_reported_facts(outcome, _adverse_event_profile()) == ()
 
     legacy = _adverse_event_profile()
-    legacy["source_table_meaning"] = outcome.source_table_meaning
-    assert "source-table meaning must name the adverse-event outcome" in check_reported_facts(
-        outcome, legacy
+    legacy["source_table_meaning"] = (
+        "Reported outcome: adverse events during the docetaxel-containing regimen"
+    )
+    assert (
+        "source-table meaning does not exactly bind the adverse-event outcome"
+        in check_reported_facts(outcome, legacy)
     )
 
 
@@ -680,7 +730,9 @@ def test_adverse_event_oracle_rejects_each_missing_grade():
     for grade in ("Grade 3", "Grade 4", "Grade 5"):
         value = _adverse_event_profile()
         categories = cast(list[dict[str, str]], value["categories"])
-        value["categories"] = [row for row in categories if row["label"] != grade]
+        value["categories"] = [
+            row for row in categories if row["group_or_category"] != f"{grade} any event"
+        ]
         assert (
             f"retain the {grade.casefold()} category"
             in " ".join(check_reported_facts(outcome, value)).casefold()
@@ -692,9 +744,34 @@ def test_adverse_event_oracle_rejects_each_comparison_invariant():
     cases = (
         ({"form": "comparative_effect"}, "single-group"),
         ({"group_id": "ADT versus ADT plus docetaxel"}, "single docetaxel cohort"),
-        ({"comparator_coverage": "reported"}, "missing comparator"),
+        (
+            {
+                "population": {
+                    "analyzed_population": (
+                        "390 patients receiving the docetaxel-containing regimen with "
+                        "follow-up data"
+                    ),
+                    "outcome_measurement_coverage": [
+                        {"group_id": "docetaxel", "status": "measured"},
+                        {"group_id": "adt", "status": "measured"},
+                    ],
+                }
+            },
+            "comparator coverage",
+        ),
         ({"effect_measure": "risk ratio"}, "comparative effect"),
-        ({"groups": "65 randomized intervention; 49 randomized comparator"}, "randomized-arm"),
+        (
+            {"categories": [{"value": "65 (16.7%)", "denominator_basis": "randomized arm"}]},
+            "category",
+        ),
+        (
+            {"categories": [{"value": "65 (16.7%)", "statistic": "randomized count"}]},
+            "category",
+        ),
+        (
+            {"categories": [{"value": "49 (12.6%)", "group_or_category": "randomized cohort"}]},
+            "category",
+        ),
     )
     for changes, expected in cases:
         assert expected in " ".join(

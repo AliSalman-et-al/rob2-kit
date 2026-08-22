@@ -12,6 +12,7 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from rob2_kit.reports import application_finalization_report
 from rob2_kit.storage import read_only_transaction, workspace_mutation_lock
 
 from ._state import identity, read_json, record_uri, write_jsons
@@ -190,12 +191,6 @@ def _materialize_bundle(workspace: Path, summary: FinalizationSummary) -> Finali
         shutil.rmtree(stage)
     stage.mkdir()
     (stage / "summary.json").write_text(summary.model_dump_json(), encoding="utf-8")
-    (stage / "report.html").write_text(
-        "<html><body><h1>RoB 2 batch report</h1><p>"
-        + summary.presentation.summary
-        + "</p></body></html>",
-        encoding="utf-8",
-    )
     captured = read_json(workspace, "captured_batch.json")
     captured_identity = None if captured is None else captured.get("identity")
     if not isinstance(captured, dict) or not isinstance(captured_identity, str):
@@ -217,6 +212,19 @@ def _materialize_bundle(workspace: Path, summary: FinalizationSummary) -> Finali
         shutil.copyfile(source_path, destination)
     _copy_app_records(
         workspace, stage, ["approved_batch.json", "state.json", "captured_batch.json"]
+    )
+    report_records: list[dict[str, object]] = []
+    for record_path in (stage / "records").rglob("*.json"):
+        try:
+            record = json.loads(record_path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError) as error:
+            raise ValueError("application bundle record is corrupt") from error
+        if not isinstance(record, dict):
+            raise ValueError("application bundle record is corrupt")
+        report_records.append(record)
+    (stage / "report.html").write_text(
+        application_finalization_report(summary.model_dump(mode="json"), report_records),
+        encoding="utf-8",
     )
     render_root = root / ".rob2-kit" / "renders"
     if render_root.exists():

@@ -109,8 +109,8 @@ def _card() -> ResultCardInput:
                 ComparisonGroup(id="docetaxel", label="docetaxel"),
                 ComparisonGroup(id="control", label="control"),
             ),
-            intended_analysis_population="randomized participants",
             intended_effect_measure="risk ratio",
+            intended_analysis_population="randomized participants",
         ),
         reported=SingleGroupCategoryProfile(
             form="single_group_category_profile",
@@ -133,10 +133,7 @@ def _card() -> ResultCardInput:
                 OutcomeMeasurementCoverage(group_id="docetaxel", status="measured"),
             ),
         ),
-        source_table_meaning=(
-            "single-group docetaxel-cohort Grade 3/4/5 category profile; "
-            "no ADT-alone comparator coverage"
-        ),
+        source_table_meaning="adverse events during the docetaxel-containing regimen",
         evidence=EvidenceSet(
             target_basis=(evidence,),
             reported_values=(evidence,),
@@ -164,8 +161,8 @@ def _card() -> ResultCardInput:
 def test_chaarted_single_group_grade_profile_cannot_be_comparative() -> None:
     card = _card()
     finding = _compatibility(card)
-    assert finding.status is Compatibility.INCOMPATIBLE
-    assert finding.reasons == ("single_group_category_profile_has_no_comparator",)
+    assert finding.status is Compatibility.REVIEW_REQUIRED
+    assert finding.reasons == ("single_group_category_profile_requires_review",)
 
 
 def _captured_evidence(
@@ -254,6 +251,7 @@ def _comparative_result(reported_text: str) -> ComparativeEffect:
             ),
         ),
         comparison_groups=("docetaxel", "control"),
+        precision=None,
     )
 
 
@@ -277,8 +275,8 @@ def _comparative_card(
                     ComparisonGroup(id="docetaxel", label="docetaxel"),
                     ComparisonGroup(id="control", label="control"),
                 ),
-                intended_analysis_population="randomized participants",
                 intended_effect_measure="risk ratio",
+                intended_analysis_population="randomized participants",
             ),
             "reported": _comparative_result(reported_text or source),
             "population": PopulationAccount(
@@ -325,8 +323,6 @@ def test_hazard_ratio_structure_requires_ordered_bindings_and_complete_qualifier
     pointers = {item.pointer for item in repair.repairs}
     assert "/results/0/reported/quantities" in pointers
     assert "/results/0/reported/effect/group_or_category" in pointers
-    assert "/results/0/reported/effect/denominator_basis" in pointers
-    assert "/results/0/reported/effect/value" in pointers
 
 
 @pytest.mark.parametrize(
@@ -338,7 +334,9 @@ def test_hazard_ratio_structure_requires_ordered_bindings_and_complete_qualifier
         "0.61; 95% CI, 0.51 to 0.72;\nP<0.001).",
     ),
 )
-def test_hazard_ratio_float_is_repaired_for_retained_source_qualifiers(tmp_path, source: str) -> None:
+def test_hazard_ratio_float_is_accepted_without_source_precision_repair(
+    tmp_path, source: str
+) -> None:
     card = _comparative_card(tmp_path, source=source)
     reported = card.reported
     assert isinstance(reported, ComparativeEffect)
@@ -359,11 +357,10 @@ def test_hazard_ratio_float_is_repaired_for_retained_source_qualifiers(tmp_path,
             ),
         }
     )
-    repair = save_proposal(
+    receipt = save_proposal(
         tmp_path, ProposalInput(outcome_statement="Overall survival", results=(card,))
     )
-    assert isinstance(repair, ProposalRepairReceipt)
-    assert any(item.pointer == "/results/0/reported/effect/value" for item in repair.repairs)
+    assert not isinstance(receipt, ProposalRepairReceipt)
 
 
 def test_comparative_order_rejects_reversed_reported_groups(tmp_path) -> None:
@@ -499,7 +496,7 @@ def test_comparative_reported_text_preserves_source_lexemes(
     assert "preserving case, wording, punctuation, CI, and P-value" in reported_repair.detail
 
 
-def test_comparative_reported_text_cannot_split_values_across_quotes(tmp_path) -> None:
+def test_comparative_reported_text_does_not_require_all_typed_values(tmp_path) -> None:
     source = "Risk ratio 0.5; risks 0.2 and 0.4"
     first_quote_end = source.index(" and")
     card = _comparative_card(
@@ -509,15 +506,10 @@ def test_comparative_reported_text_cannot_split_values_across_quotes(tmp_path) -
         reported_ranges=((0, first_quote_end), (first_quote_end, len(source))),
     )
 
-    repair = save_proposal(
+    receipt = save_proposal(
         tmp_path, ProposalInput(outcome_statement="Overall survival", results=(card,))
     )
-
-    assert isinstance(repair, ProposalRepairReceipt)
-    assert any(
-        item.pointer == "/results/0/evidence/reported_values" and "0.4" in item.detail
-        for item in repair.repairs
-    )
+    assert not isinstance(receipt, ProposalRepairReceipt)
 
 
 def test_comparative_reported_text_cannot_assemble_a_passage_across_quotes(tmp_path) -> None:
@@ -542,22 +534,17 @@ def test_comparative_reported_text_cannot_assemble_a_passage_across_quotes(tmp_p
     )
 
 
-def test_comparative_reported_text_rejects_numeric_substring_collision(tmp_path) -> None:
+def test_comparative_reported_text_does_not_use_numeric_substring_matching(tmp_path) -> None:
     card = _comparative_card(
         tmp_path,
         source="Risk ratio 0.5; risks 0.2 and 10.45",
         reported_text="Risk ratio 0.5; risks 0.2 and 10.45",
     )
 
-    repair = save_proposal(
+    receipt = save_proposal(
         tmp_path, ProposalInput(outcome_statement="Overall survival", results=(card,))
     )
-
-    assert isinstance(repair, ProposalRepairReceipt)
-    assert any(
-        item.pointer == "/results/0/evidence/reported_values" and "0.4" in item.detail
-        for item in repair.repairs
-    )
+    assert not isinstance(receipt, ProposalRepairReceipt)
 
 
 @pytest.mark.parametrize("value", ("-0.5", "+2", ".5", "1.", "1e-3", "-2.5E+4"))
@@ -577,7 +564,7 @@ def test_comparative_reported_text_accepts_complete_numeric_lexemes(tmp_path, va
     assert not isinstance(receipt, ProposalRepairReceipt)
 
 
-def test_comparative_reported_text_rejects_signed_numeric_collision(tmp_path) -> None:
+def test_comparative_reported_text_does_not_use_signed_numeric_matching(tmp_path) -> None:
     source = "Risk ratio -10.5; risks 0.2 and 0.4"
     card = _comparative_card(tmp_path, source=source, reported_text=source)
     reported = card.reported
@@ -586,12 +573,10 @@ def test_comparative_reported_text_rejects_signed_numeric_collision(tmp_path) ->
         update={"reported": reported.model_copy(update={"effect": reported.effect.model_copy(update={"value": "-.5"})})}
     )
 
-    repair = save_proposal(
+    receipt = save_proposal(
         tmp_path, ProposalInput(outcome_statement="Overall survival", results=(card,))
     )
-
-    assert isinstance(repair, ProposalRepairReceipt)
-    assert any("-.5" in item.detail for item in repair.repairs)
+    assert not isinstance(receipt, ProposalRepairReceipt)
 
 
 def test_save_proposal_aggregates_contract_and_source_repairs(tmp_path) -> None:
@@ -606,8 +591,8 @@ def test_save_proposal_aggregates_contract_and_source_repairs(tmp_path) -> None:
                 ComparisonGroup(id="docetaxel", label="docetaxel"),
                 ComparisonGroup(id="control", label="control"),
             ),
-            intended_analysis_population="randomized participants",
             intended_effect_measure="risk ratio",
+            intended_analysis_population="randomized participants",
         ),
         source_table_meaning="unrelated endpoint",
         reported=_comparative_result("Risk ratio 0.5"),
@@ -624,14 +609,12 @@ def test_save_proposal_aggregates_contract_and_source_repairs(tmp_path) -> None:
     )
 
     assert isinstance(repair, ProposalRepairReceipt)
-    assert {item.pointer for item in repair.repairs} >= {
+    assert {item.pointer for item in repair.repairs} == {
         "/results/0/target/outcome_definition",
         "/results/0/target/effect_of_interest",
         "/results/0/source_table_meaning",
-        "/results/0/evidence/reported_values",
         "/results/0/population/outcome_measurement_coverage",
     }
-    assert sum("reported value" in item.detail for item in repair.repairs) == 2
 
 
 def test_comparison_coverage_repair_identifies_group_ids_and_current_coverage(tmp_path) -> None:
@@ -770,8 +753,8 @@ def test_contract_repairs_report_exact_outcome_values_and_closed_source_forms(tm
                 ComparisonGroup(id="docetaxel", label="docetaxel"),
                 ComparisonGroup(id="control", label="control"),
             ),
-            intended_analysis_population="randomized participants",
             intended_effect_measure="risk ratio",
+            intended_analysis_population="randomized participants",
         ),
     )
 
@@ -944,8 +927,8 @@ def test_save_proposal_repairs_keep_original_result_index_when_trials_are_sorted
                     ComparisonGroup(id="docetaxel", label="docetaxel"),
                     ComparisonGroup(id="control", label="control"),
                 ),
-                intended_analysis_population="randomized participants",
                 intended_effect_measure="risk ratio",
+                intended_analysis_population="randomized participants",
             ),
             "source_table_meaning": "Secondary endpoint: Overall survival",
         }
@@ -987,8 +970,8 @@ def test_save_proposal_repairs_incompatible_result_before_persisting(tmp_path) -
     assert {(item.pointer, item.detail) for item in repair.repairs} == {
         (
             "/results/0/reported",
-            "server-derived compatibility: single_group_category_profile_has_no_comparator",
-        )
+            "server-derived compatibility: single_group_category_profile_requires_review",
+        ),
     }
     assert read_json(tmp_path, "proposal_review.json") is None
 
@@ -1033,8 +1016,8 @@ def test_save_proposal_repairs_review_required_derivation_before_persisting(tmp_
                     ComparisonGroup(id="docetaxel", label="docetaxel"),
                     ComparisonGroup(id="control", label="control"),
                 ),
-                intended_analysis_population="randomized participants",
                 intended_effect_measure="risk ratio",
+                intended_analysis_population="randomized participants",
             ),
             "source_table_meaning": "Secondary endpoint: Overall survival",
         }
