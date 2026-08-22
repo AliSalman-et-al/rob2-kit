@@ -84,7 +84,14 @@ def _parent(document: object, pointer: str) -> tuple[object, str]:
 def _get(document: object, pointer: str) -> object:
     current = document
     for part in _decode(pointer):
-        current = current[part] if isinstance(current, dict) else current[int(part)]
+        if isinstance(current, dict):
+            if part not in current:
+                raise ValueError(f"patch path does not exist: {pointer}")
+            current = current[part]
+        elif isinstance(current, list):
+            current = current[int(part)]
+        else:
+            raise ValueError(f"patch path traverses a scalar: {pointer}")
     return current
 
 
