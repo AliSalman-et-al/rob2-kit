@@ -309,7 +309,7 @@ class PreapprovalNeedsInput(_Closed):
     trial_id: str
     reason: NeedsInputReason
     missing_facts: tuple[str, ...] = Field(min_length=1)
-    evidence: tuple[EvidenceReference, ...] = ()
+    evidence: tuple[EvidenceReference, ...] = Field(min_length=1)
 
 
 class ProposalInput(_Closed):
@@ -645,15 +645,6 @@ def _card_contract_repairs(
 ) -> tuple[ProposalRepair, ...]:
     expected = _declared_outcome_definition(outcome_statement)
     normalized_expected = " ".join(expected.casefold().split())
-    source = " ".join(card.source_table_meaning.casefold().split())
-    source_forms = (
-        expected,
-        f"Primary endpoint: {expected}",
-        f"Secondary endpoint: {expected}",
-        f"Reported outcome: {expected}",
-        f"Outcome: {expected}",
-    )
-    allowed_source = {" ".join(form.casefold().split()) for form in source_forms}
     expected_effect = f"effect on {expected}"
     repairs: list[ProposalRepair] = []
     if " ".join(card.target.outcome_definition.casefold().split()) != normalized_expected:
@@ -672,17 +663,6 @@ def _card_contract_repairs(
                 pointer="/target/effect_of_interest",
                 code="invalid",
                 detail=f"effect of interest must be exactly {expected_effect!r}",
-            )
-        )
-    if not isinstance(card.reported, SingleGroupCategoryProfile) and source not in allowed_source:
-        repairs.append(
-            ProposalRepair(
-                pointer="/source_table_meaning",
-                code="invalid",
-                detail=(
-                    "source-table meaning must be one of: "
-                    + ", ".join(repr(form) for form in source_forms)
-                ),
             )
         )
     return tuple(repairs)
@@ -883,7 +863,13 @@ def save_proposal(
                 )
                 continue
             if evidence.trial_id != disposition.trial_id:
-                raise ValueError("needs-input Evidence must bind its Trial")
+                repairs.append(
+                    ProposalRepair(
+                        pointer=f"/needs_input/{disposition_index}/evidence/{evidence_index}",
+                        code="invalid",
+                        detail="needs-input Evidence must bind its Trial",
+                    )
+                )
     if repairs:
         unique: dict[tuple[str, str, str], ProposalRepair] = {}
         for item in repairs:

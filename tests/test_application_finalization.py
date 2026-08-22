@@ -60,6 +60,7 @@ def test_application_report_uses_persisted_records_and_escapes_content() -> None
                                     "group_or_category": "treatment",
                                     "value": "20.2",
                                     "unit": "months",
+                                    "denominator_basis": None,
                                 }
                             ],
                         },
@@ -103,6 +104,7 @@ def test_application_report_uses_persisted_records_and_escapes_content() -> None
     assert "sha256:superseded" not in report
     assert "sha256:evidence" in report
     assert "sha256:proposal-evidence" in report and "20.2 months" in report
+    assert "denominator: None" not in report
     assert "&lt;script&gt;" in report and "&lt;reported&gt;" in report
     assert "&lt;safe&gt;" in report and "&lt;source&gt;" in report
 

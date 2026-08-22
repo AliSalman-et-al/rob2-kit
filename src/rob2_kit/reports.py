@@ -154,10 +154,16 @@ def application_finalization_report(summary: dict[str, Any], records: list[dict[
                 quantities = reported.get("quantities", reported.get("categories", []))
                 if isinstance(quantities, list):
                     values = [
-                        f"{item.get('statistic', '')}; "
-                        f"{item.get('group_or_category', '')}: "
-                        f"{item.get('value', '')} {item.get('unit', '')}; "
-                        f"denominator: {item.get('denominator_basis', '')}".strip()
+                        (
+                            f"{item.get('statistic', '')}; "
+                            f"{item.get('group_or_category', '')}: "
+                            f"{item.get('value', '')} {item.get('unit', '')}"
+                            + (
+                                f"; denominator: {item['denominator_basis']}"
+                                if item.get("denominator_basis")
+                                else ""
+                            )
+                        ).strip()
                         for item in quantities
                         if isinstance(item, dict)
                     ]

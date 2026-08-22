@@ -63,7 +63,36 @@ def pending_proposal(tmp_path):
         (IntakePlanEntry(candidate_identity=preflight.candidates[0].identity, role="main_article", disposition=SourceDisposition.INCLUDE, criticality=SourceCriticality.REQUIRED),),
     )
     capture_batch(tmp_path, CaptureRequest(plan=plan.plan, acknowledgment=acknowledge_intake(tmp_path, plan.plan, ReviewAuthority.HOST)))
-    saved = save_proposal(tmp_path, ProposalInput(outcome_statement="Overall survival", needs_input=(PreapprovalNeedsInput(trial_id="trial", reason=NeedsInputReason.OUTCOME_NOT_REPORTED, missing_facts=("an outcome result",)),)))
+    evidence = retrieve_evidence(
+        tmp_path,
+        EvidenceRetrievalRequest(
+            trial_id="trial",
+            manual_selections=(
+                ManualSelectionRequest(
+                    kind="manual_selection",
+                    source_alias="s1",
+                    page=1,
+                    start=0,
+                    end=len("No outcome was reported."),
+                    quote="No outcome was reported.",
+                ),
+            ),
+        ),
+    ).evidence[0]
+    saved = save_proposal(
+        tmp_path,
+        ProposalInput(
+            outcome_statement="Overall survival",
+            needs_input=(
+                PreapprovalNeedsInput(
+                    trial_id="trial",
+                    reason=NeedsInputReason.OUTCOME_NOT_REPORTED,
+                    missing_facts=("an outcome result",),
+                    evidence=(evidence,),
+                ),
+            ),
+        ),
+    )
     assert not isinstance(saved, ProposalRepairReceipt)
     assert saved.transition is not None
     ack = acknowledge_proposal(tmp_path, saved.review, caller="server:interactive")
@@ -163,6 +192,25 @@ def test_chaarted_single_group_grade_profile_cannot_be_comparative() -> None:
     finding = _compatibility(card)
     assert finding.status is Compatibility.REVIEW_REQUIRED
     assert finding.reasons == ("single_group_category_profile_requires_review",)
+
+
+def test_empty_needs_input_evidence_is_a_typed_repair() -> None:
+    receipt = save_proposal(
+        "unused",
+        {
+            "outcome_statement": "Synthetic outcome",
+            "needs_input": [
+                {
+                    "trial_id": "synthetic-trial",
+                    "reason": "outcome_not_reported",
+                    "missing_facts": ["result"],
+                    "evidence": [],
+                }
+            ],
+        },
+    )
+    assert isinstance(receipt, ProposalRepairReceipt)
+    assert any(item.pointer == "/needs_input/0/evidence" for item in receipt.repairs)
 
 
 def _captured_evidence(
@@ -393,8 +441,10 @@ def test_comparative_reported_text_requires_exact_normalized_quote(
         tmp_path, ProposalInput(outcome_statement="Overall survival", results=(card,))
     )
     assert isinstance(repair, ProposalRepairReceipt)
-    assert repair.repairs[0].pointer == "/results/0/reported/reported_text"
-    assert detail in repair.repairs[0].detail
+    matching = [
+        item for item in repair.repairs if item.pointer == "/results/0/reported/reported_text"
+    ]
+    assert matching and detail in matching[0].detail
 
 
 def test_comparative_reported_text_must_name_declared_outcome(tmp_path) -> None:
@@ -579,7 +629,7 @@ def test_comparative_reported_text_does_not_use_signed_numeric_matching(tmp_path
     assert not isinstance(receipt, ProposalRepairReceipt)
 
 
-def test_save_proposal_aggregates_contract_and_source_repairs(tmp_path) -> None:
+def test_save_proposal_aggregates_contract_and_coverage_repairs(tmp_path) -> None:
     card = _comparative_card(
         tmp_path,
         target=ResultTarget(
@@ -609,12 +659,11 @@ def test_save_proposal_aggregates_contract_and_source_repairs(tmp_path) -> None:
     )
 
     assert isinstance(repair, ProposalRepairReceipt)
-    assert {item.pointer for item in repair.repairs} == {
+    assert {
         "/results/0/target/outcome_definition",
         "/results/0/target/effect_of_interest",
-        "/results/0/source_table_meaning",
         "/results/0/population/outcome_measurement_coverage",
-    }
+    } <= {item.pointer for item in repair.repairs}
 
 
 def test_comparison_coverage_repair_identifies_group_ids_and_current_coverage(tmp_path) -> None:
@@ -740,7 +789,7 @@ def test_effect_measure_repair_identifies_target_and_reported_values(tmp_path) -
     }
 
 
-def test_contract_repairs_report_exact_outcome_values_and_closed_source_forms(tmp_path) -> None:
+def test_contract_repairs_report_exact_outcome_values(tmp_path) -> None:
     card = _comparative_card(
         tmp_path,
         source_table_meaning="unrelated endpoint",
@@ -774,13 +823,19 @@ def test_contract_repairs_report_exact_outcome_values_and_closed_source_forms(tm
     assert details["/results/0/target/effect_of_interest"] == (
         "effect of interest must be exactly 'effect on death from any cause'"
     )
-    assert details["/results/0/source_table_meaning"] == (
-        "source-table meaning must be one of: 'death from any cause', "
-        "'Primary endpoint: death from any cause', "
-        "'Secondary endpoint: death from any cause', "
-        "'Reported outcome: death from any cause', "
-        "'Outcome: death from any cause'"
+
+
+def test_source_table_meaning_accepts_source_wording(tmp_path) -> None:
+    card = _comparative_card(
+        tmp_path,
+        source_table_meaning="Kaplan-Meier estimate in the prespecified efficacy analysis",
     )
+
+    receipt = save_proposal(
+        tmp_path, ProposalInput(outcome_statement="Overall survival", results=(card,))
+    )
+
+    assert not isinstance(receipt, ProposalRepairReceipt)
 
 
 @pytest.mark.parametrize(
@@ -857,22 +912,103 @@ def test_needs_input_unavailable_evidence_uses_indexed_minting_repair(tmp_path) 
     )
 
 
+def test_needs_input_wrong_trial_evidence_is_a_typed_repair(tmp_path) -> None:
+    for trial_id in ("alpha", "beta"):
+        trial_path = tmp_path / trial_id
+        trial_path.mkdir()
+        (trial_path / "article.txt").write_text(
+            f"Outcome unavailable for {trial_id}.", encoding="utf-8"
+        )
+    preflight = preflight_sources(
+        tmp_path,
+        PreflightRequest(
+            roots=tuple(
+                AuthorizedSourceRoot(alias=trial_id, path=trial_id, trial_id=trial_id)
+                for trial_id in ("alpha", "beta")
+            )
+        ),
+    )
+    plan = save_intake_plan(
+        tmp_path,
+        preflight.reference,
+        tuple(
+            IntakePlanEntry(
+                candidate_identity=candidate.identity,
+                role="main_article" if candidate.trial_id == "alpha" else "supplement",
+                disposition=SourceDisposition.INCLUDE,
+                criticality=SourceCriticality.REQUIRED,
+            )
+            for candidate in preflight.candidates
+        ),
+    )
+    capture_batch(
+        tmp_path,
+        CaptureRequest(
+            plan=plan.plan,
+            acknowledgment=acknowledge_intake(tmp_path, plan.plan, ReviewAuthority.HOST),
+        ),
+    )
+
+    def evidence_for(trial_id: str):
+        quote = f"Outcome unavailable for {trial_id}."
+        return retrieve_evidence(
+            tmp_path,
+            EvidenceRetrievalRequest(
+                trial_id=trial_id,
+                manual_selections=(
+                    ManualSelectionRequest(
+                        kind="manual_selection",
+                        source_alias="s1",
+                        page=1,
+                        start=0,
+                        end=len(quote),
+                        quote=quote,
+                    ),
+                ),
+            ),
+        ).evidence[0]
+
+    alpha_evidence = evidence_for("alpha")
+    beta_evidence = evidence_for("beta")
+    receipt = save_proposal(
+        tmp_path,
+        ProposalInput(
+            outcome_statement="Synthetic outcome",
+            needs_input=(
+                PreapprovalNeedsInput(
+                    trial_id="alpha",
+                    reason=NeedsInputReason.OUTCOME_NOT_REPORTED,
+                    missing_facts=("result",),
+                    evidence=(beta_evidence,),
+                ),
+                PreapprovalNeedsInput(
+                    trial_id="beta",
+                    reason=NeedsInputReason.OUTCOME_NOT_REPORTED,
+                    missing_facts=("result",),
+                    evidence=(alpha_evidence,),
+                ),
+            ),
+        ),
+    )
+
+    assert isinstance(receipt, ProposalRepairReceipt)
+    assert {
+        item.pointer for item in receipt.repairs if "must bind its Trial" in item.detail
+    } == {"/needs_input/0/evidence/0", "/needs_input/1/evidence/0"}
+
+
 @pytest.mark.parametrize(
     ("field", "value", "pointer"),
     (
         ("outcome_definition", "Overall mortality", "/results/0/target/outcome_definition"),
         ("effect_of_interest", "effect on Overall mortality", "/results/0/target/effect_of_interest"),
-        ("source_table_meaning", "unrelated endpoint", "/results/0/source_table_meaning"),
     ),
 )
 def test_comparative_contract_repairs_reject_mismatched_target_fields(
     tmp_path, field: str, value: str, pointer: str
 ) -> None:
-    if field == "source_table_meaning":
-        card = _comparative_card(tmp_path, source_table_meaning=value)
-    else:
-        card = _comparative_card(tmp_path)
-        card = card.model_copy(update={"target": card.target.model_copy(update={field: value})})
+    card = _comparative_card(tmp_path)
+    card = card.model_copy(update={"target": card.target.model_copy(update={field: value})})
     repair = save_proposal(
         tmp_path, ProposalInput(outcome_statement="Overall survival", results=(card,))
     )
@@ -1043,7 +1179,6 @@ def test_save_proposal_repairs_review_required_derivation_before_persisting(tmp_
             "effect on Overall mortality",
             "/results/0/target/effect_of_interest",
         ),
-        ("source_table_meaning", "unrelated endpoint", "/results/0/source_table_meaning"),
     ),
 )
 def test_group_bound_values_contract_rejects_mismatched_target_fields(
@@ -1061,10 +1196,7 @@ def test_group_bound_values_contract_rejects_mismatched_target_fields(
             comparison_groups=("docetaxel", "control"),
         ),
     )
-    if field == "source_table_meaning":
-        card = card.model_copy(update={field: value})
-    else:
-        card = card.model_copy(update={"target": card.target.model_copy(update={field: value})})
+    card = card.model_copy(update={"target": card.target.model_copy(update={field: value})})
 
     repair = save_proposal(
         tmp_path, ProposalInput(outcome_statement="Overall survival", results=(card,))
@@ -1167,6 +1299,22 @@ def test_preapproval_needs_input_is_acknowledged_and_applied_once(tmp_path) -> N
     )
     intake_ack = acknowledge_intake(tmp_path, plan.plan, ReviewAuthority.HOST)
     capture_batch(tmp_path, CaptureRequest(plan=plan.plan, acknowledgment=intake_ack))
+    evidence = retrieve_evidence(
+        tmp_path,
+        EvidenceRetrievalRequest(
+            trial_id="trial",
+            manual_selections=(
+                ManualSelectionRequest(
+                    kind="manual_selection",
+                    source_alias="s1",
+                    page=1,
+                    start=0,
+                    end=len("No outcome was reported."),
+                    quote="No outcome was reported.",
+                ),
+            ),
+        ),
+    ).evidence[0]
     saved = save_proposal(
         tmp_path,
         ProposalInput(
@@ -1176,6 +1324,7 @@ def test_preapproval_needs_input_is_acknowledged_and_applied_once(tmp_path) -> N
                     trial_id="trial",
                     reason=NeedsInputReason.OUTCOME_NOT_REPORTED,
                     missing_facts=("an outcome result for the randomized comparison",),
+                    evidence=(evidence,),
                 ),
             ),
         ),
