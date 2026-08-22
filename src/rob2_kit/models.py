@@ -7,8 +7,9 @@ import json
 from collections.abc import Mapping
 from datetime import UTC, datetime
 from enum import StrEnum
+from typing import Annotated, Literal
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 
 class StrictModel(BaseModel):
@@ -63,12 +64,30 @@ class Provenance(StrictModel):
     attribution: str
 
 
+class AlwaysActive(StrictModel):
+    kind: Literal["always"] = "always"
+
+
+class ActivationPredicate(StrictModel):
+    question_id: str = Field(min_length=1)
+    accepted_answers: tuple[Answer, ...] = Field(min_length=1)
+
+
+class ConditionalActivation(StrictModel):
+    kind: Literal["rule"] = "rule"
+    mode: Literal["any", "all"]
+    predicates: tuple[ActivationPredicate, ...] = Field(min_length=1)
+
+
+Activation = Annotated[AlwaysActive | ConditionalActivation, Field(discriminator="kind")]
+
+
 class Question(StrictModel):
     id: str
     domain_id: str
     wording: str
     allowed_answers: tuple[Answer, ...] = tuple(Answer)
-    active_when: str | None = None
+    activation: Activation = Field(default_factory=AlwaysActive)
 
 
 class Domain(StrictModel):
@@ -83,6 +102,27 @@ class ScientificPack(StrictModel):
     questions: tuple[Question, ...]
     domains: tuple[Domain, ...]
     content_hash: str
+
+    @model_validator(mode="after")
+    def activation_predicates_are_valid(self) -> ScientificPack:
+        questions = {
+            question.id: (position, question) for position, question in enumerate(self.questions)
+        }
+        for position, question in enumerate(self.questions):
+            if not isinstance(question.activation, ConditionalActivation):
+                continue
+            for predicate in question.activation.predicates:
+                predecessor_row = questions.get(predicate.question_id)
+                if predecessor_row is None:
+                    raise ValueError("activation predicate references an unknown question")
+                predecessor_position, predecessor = predecessor_row
+                if predecessor_position >= position:
+                    raise ValueError("activation predicate must reference an earlier question")
+                if predecessor.domain_id != question.domain_id:
+                    raise ValueError("activation predicate must reference the same domain")
+                if not set(predicate.accepted_answers) <= set(predecessor.allowed_answers):
+                    raise ValueError("activation predicate accepts a disallowed predecessor answer")
+        return self
 
 
 class LexicalSeed(StrictModel):

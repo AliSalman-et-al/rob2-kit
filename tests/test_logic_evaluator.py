@@ -5,8 +5,8 @@ import pytest
 from oracle.rob2_parallel import QIDS, cases, judgment, overall
 from pydantic import ValidationError
 
-from rob2_kit.logic import evaluate_domain, evaluate_overall
-from rob2_kit.models import Judgment, sha256
+from rob2_kit.logic import active_questions, evaluate_domain, evaluate_overall
+from rob2_kit.models import Answer, ConditionalActivation, Judgment, sha256
 from rob2_kit.packs import (
     MAINTAINER_POLICY_PACK,
     SCIENTIFIC_PACK,
@@ -115,5 +115,73 @@ def test_rejects_unknown_inactive_and_missing_answers():
                 "sq:randomization:concealment": "yes",
                 "sq:randomization:baseline-imbalance": "no",
                 "sq:not-real": "yes",
+            },
+        )
+
+
+@pytest.mark.parametrize(
+    ("answers", "question_id", "expected"),
+    (
+        ({"sq:deviations:participants-aware": "yes"}, "sq:deviations:context-deviations", True),
+        (
+            {
+                "sq:deviations:participants-aware": "no",
+                "sq:deviations:personnel-aware": "no",
+            },
+            "sq:deviations:context-deviations",
+            False,
+        ),
+        (
+            {
+                "sq:measurement:method-inappropriate": "no",
+                "sq:measurement:differential": "probably_no",
+            },
+            "sq:measurement:assessor-aware",
+            True,
+        ),
+        (
+            {
+                "sq:measurement:method-inappropriate": "yes",
+                "sq:measurement:differential": "no",
+            },
+            "sq:measurement:assessor-aware",
+            False,
+        ),
+    ),
+)
+def test_typed_activation_rules_preserve_any_and_all_behavior(answers, question_id, expected):
+    assert (question_id in active_questions(answers)) is expected
+
+
+def test_every_conditional_activation_matches_its_typed_predicates():
+    conditional_questions = [
+        question for question in SCIENTIFIC_PACK.questions if question.activation.kind == "rule"
+    ]
+    assert len(conditional_questions) == 10
+    for question in conditional_questions:
+        activation = question.activation
+        assert isinstance(activation, ConditionalActivation)
+        answers = {
+            predicate.question_id: predicate.accepted_answers[0].value
+            for predicate in activation.predicates
+        }
+        assert question.id in active_questions(answers)
+
+        misses = {
+            predicate.question_id: next(
+                answer.value for answer in Answer if answer not in predicate.accepted_answers
+            )
+            for predicate in activation.predicates
+        }
+        assert (question.id in active_questions(misses)) is False
+
+
+def test_allowed_answer_restrictions_still_apply_to_active_questions():
+    with pytest.raises(ValueError):
+        evaluate_domain(
+            "domain:missing",
+            {
+                "sq:missing:data-available": "no",
+                "sq:missing:evidence-unbiased": "no_information",
             },
         )

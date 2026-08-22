@@ -52,7 +52,7 @@ def _events() -> tuple[TelemetryEvent, ...]:
             outcome=RepairOutcome.DEFECTS,
             defect_count=2,
         ),
-        McpOutcomeEvent(operation=McpOperation.LIST_SOURCES, outcome=McpOutcome.SUCCEEDED),
+        McpOutcomeEvent(operation=McpOperation.LIST_SOURCES, outcome=McpOutcome.SUCCESS),
         DurationEvent(operation=DurationOperation.RETRIEVAL, duration_ms=12),
         CardinalityEvent(metric=CardinalityMetric.SOURCES, value=2),
         SerializedBytesEvent(

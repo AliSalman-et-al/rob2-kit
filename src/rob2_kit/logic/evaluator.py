@@ -4,7 +4,14 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 
-from rob2_kit.models import Answer, Evaluation, Judgment, OverallEvaluation
+from rob2_kit.models import (
+    AlwaysActive,
+    Answer,
+    ConditionalActivation,
+    Evaluation,
+    Judgment,
+    OverallEvaluation,
+)
 from rob2_kit.packs.scientific import SCIENTIFIC_PACK
 
 Y, PY, PN, N, NI = (
@@ -26,52 +33,23 @@ def _answers(answers: Mapping[str, Answer | str]) -> dict[str, Answer]:
         raise ValueError("unknown signalling answer") from error
 
 
+def _is_active(
+    activation: AlwaysActive | ConditionalActivation, answers: Mapping[str, Answer]
+) -> bool:
+    if isinstance(activation, AlwaysActive):
+        return True
+    matches = (
+        answers.get(predicate.question_id) in predicate.accepted_answers
+        for predicate in activation.predicates
+    )
+    return any(matches) if activation.mode == "any" else all(matches)
+
+
 def active_questions(answers: Mapping[str, Answer | str]) -> tuple[str, ...]:
     a = _answers(answers)
-    active = []
-    for q in SCIENTIFIC_PACK.questions:
-        i = q.id
-        ok = (
-            q.active_when is None
-            or (
-                i.endswith("context-deviations")
-                and (
-                    a.get("sq:deviations:participants-aware") in YES | {NI}
-                    or a.get("sq:deviations:personnel-aware") in YES | {NI}
-                )
-            )
-            or (i.endswith("affected-outcome") and a.get("sq:deviations:context-deviations") in YES)
-            or (i.endswith("balanced") and a.get("sq:deviations:affected-outcome") in YES | {NI})
-            or (
-                i.endswith("substantial-impact")
-                and a.get("sq:deviations:appropriate-analysis") in NO_OR_UNKNOWN
-            )
-            or (
-                i.endswith("evidence-unbiased")
-                and a.get("sq:missing:data-available") in NO_OR_UNKNOWN
-            )
-            or (i.endswith("true-value-dependent") and a.get("sq:missing:evidence-unbiased") in NO)
-            or (
-                i.endswith("likely-dependent")
-                and a.get("sq:missing:true-value-dependent") in YES | {NI}
-            )
-            or (
-                i.endswith("assessor-aware")
-                and a.get("sq:measurement:method-inappropriate") in NO_OR_UNKNOWN
-                and a.get("sq:measurement:differential") in NO_OR_UNKNOWN
-            )
-            or (
-                i.endswith("influence-possible")
-                and a.get("sq:measurement:assessor-aware") in YES | {NI}
-            )
-            or (
-                i.endswith("influence-likely")
-                and a.get("sq:measurement:influence-possible") in YES | {NI}
-            )
-        )
-        if ok:
-            active.append(i)
-    return tuple(active)
+    return tuple(
+        question.id for question in SCIENTIFIC_PACK.questions if _is_active(question.activation, a)
+    )
 
 
 def _validate(domain_id: str, answers: Mapping[str, Answer | str]) -> dict[str, Answer]:
