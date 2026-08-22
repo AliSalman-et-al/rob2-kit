@@ -44,6 +44,38 @@ def test_packaged_skills_guard_the_human_acceptance_boundaries() -> None:
     assert "use that exact full text in `ProposalInput.outcome_statement`" in workflow
     assert "use the exact suffix as `target.outcome_definition`" in workflow
     assert (
+        "Before considering `outcome_not_measured` for a researcher-supplied "
+        "`<label>, defined as <definition>`, search the primary report abstract and "
+        "results for the complete definition and its distinctive component phrases"
+        in workflow
+    )
+    assert (
+        "A broader, narrower, component, protocol-planned, or merely related endpoint "
+        "is not evidence that the exact requested outcome is absent and must not replace it"
+        in workflow
+    )
+    assert (
+        "Do not select `outcome_not_measured` while an exact requested-outcome result is "
+        "reported in any included source"
+        in workflow
+    )
+    assert (
+        "Before using `outcome_not_measured`, inspect every included main report/result "
+        "source likely to report the requested outcome and cite complete passages that "
+        "establish the unresolved absence or definition problem"
+        in workflow
+    )
+    assert (
+        "search hits and clipped line fragments are not sufficient Evidence for a "
+        "terminal scientific disposition"
+        in workflow
+    )
+    assert (
+        "When the exact requested-outcome result is found, build the Result card from "
+        "that result even if another related endpoint is more prominent or appears elsewhere"
+        in workflow
+    )
+    assert (
         "Choose stable comparison group IDs once and reuse them exactly in "
         "`target.comparison_groups`, `reported.comparison_groups` or group bindings, "
         "and `population.outcome_measurement_coverage`"
