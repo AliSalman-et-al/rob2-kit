@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+from . import launcher_legacy as _legacy
 from .application.status import current_status
 from .application.transport import actionable_json, sanitize_model_output
 from .launcher_legacy import (
@@ -16,7 +17,6 @@ from .launcher_legacy import (
     LaunchResult,
     UnsupportedHostIsolation,
 )
-from . import launcher_legacy as _legacy
 
 
 def launch_assessment(

@@ -120,7 +120,7 @@ def test_field_provenance_rejects_value_free_quote() -> None:
 
 
 def test_related_endpoint_requires_clarification() -> None:
-    evidence = EvidenceReference(kind="evidence", identity="sha256:" + "c" * 64)
+    EvidenceReference(kind="evidence", identity="sha256:" + "c" * 64)
     card = {"reported": {"categories": []}}
     declaration = ProvenanceDeclaration(
         source_reported_outcome="time to clinical progression",

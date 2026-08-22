@@ -5,8 +5,8 @@ from __future__ import annotations
 from collections.abc import Mapping, Sequence
 from pathlib import Path
 
-from ._state import write_json
 from . import transport_legacy as _legacy
+from ._state import write_json
 
 TransportRepair = _legacy.TransportRepair
 TransportRepairReceipt = _legacy.TransportRepairReceipt

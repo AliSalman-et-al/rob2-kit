@@ -8,9 +8,9 @@ from typing import Any
 
 from pydantic import ValidationError
 
+from . import proposal_runtime_legacy as _legacy
 from .drafts import ProposalDraftCommand, create_draft, read_draft
 from .transport import validation_repairs
-from . import proposal_runtime_legacy as _legacy
 
 approve_proposal = _legacy.approve_proposal
 read_review_provenance = _legacy.read_review_provenance

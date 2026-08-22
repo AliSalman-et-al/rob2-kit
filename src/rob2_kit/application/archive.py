@@ -8,7 +8,6 @@ import zipfile
 from collections import deque
 from collections.abc import Mapping, Sequence
 from pathlib import Path
-from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field
 

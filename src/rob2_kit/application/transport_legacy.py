@@ -13,7 +13,7 @@ import re
 from collections.abc import Mapping, MutableMapping, Sequence
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Protocol
+from typing import Protocol
 
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
