@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 import pymupdf
@@ -13,6 +14,7 @@ from rob2_kit.application.contracts import (
     ValidateDomainJudgmentContinuation,
 )
 from rob2_kit.application.domains import (
+    ApplicationWorkPacket,
     DomainAnswerInput,
     DomainDraftInput,
     DomainEvidenceUseInput,
@@ -38,6 +40,7 @@ from rob2_kit.application.intake import (
 from rob2_kit.application.preflight import AuthorizedSourceRoot, PreflightRequest, preflight_sources
 from rob2_kit.judgment_models import EvidenceRelationship
 from rob2_kit.models import Answer
+from rob2_kit.packs import SCIENTIFIC_PACK
 
 # ruff: noqa: E501
 
@@ -132,6 +135,55 @@ def test_domain_packet_binds_domain_and_is_restart_safe(tmp_path: Path) -> None:
     )
 
 
+def test_domain_packets_expose_canonical_question_guidance(tmp_path: Path) -> None:
+    approved = _captured(tmp_path)
+    for index, domain in enumerate(SCIENTIFIC_PACK.domains):
+        state = read_json(tmp_path, "state.json")
+        assert state is not None
+        state["domains"] = {
+            f"trial:result:{earlier.id}": [identity({"checkpoint": earlier.id})]
+            for earlier in SCIENTIFIC_PACK.domains[:index]
+        }
+        write_jsons(tmp_path, {"state.json": state})
+        packet = prepare_domain_packet(tmp_path, approved, trial_id="trial", domain_id=domain.id)
+        raw = read_json(tmp_path, f"domain-packet-{packet.identity.removeprefix('sha256:')}.json")
+        assert raw is not None
+        expected = tuple(
+            question for question in SCIENTIFIC_PACK.questions if question.domain_id == domain.id
+        )
+        expected_guidance = [
+            {
+                "id": question.id,
+                "wording": question.wording,
+                "allowed_answers": [answer.value for answer in question.allowed_answers],
+                "activation": question.activation.model_dump(mode="json"),
+            }
+            for question in expected
+        ]
+        assert raw["question_guidance"] == expected_guidance
+        assert (
+            ApplicationWorkPacket.model_validate(raw).model_dump(mode="json")["question_guidance"]
+            == expected_guidance
+        )
+        json.dumps(raw, sort_keys=True)
+        assert raw["active_question_ids"] == [question.id for question in expected]
+        assert raw["allowed_question_ids"] == [question.id for question in expected]
+
+
+def test_domain_packet_identity_covers_question_guidance(tmp_path: Path) -> None:
+    approved = _captured(tmp_path)
+    packet = prepare_domain_packet(
+        tmp_path, approved, trial_id="trial", domain_id="domain:randomization"
+    )
+    raw = read_json(tmp_path, f"domain-packet-{packet.identity.removeprefix('sha256:')}.json")
+    assert raw is not None
+    changed = {**raw, "question_guidance": raw["question_guidance"][1:]}
+    assert (
+        identity({key: value for key, value in changed.items() if key != "identity"})
+        != packet.identity
+    )
+
+
 def test_domain_packet_prior_hashes_use_full_pack_ordered_domain_ids(tmp_path: Path) -> None:
     approved = _captured(tmp_path)
     randomization_hash = identity({"checkpoint": "randomization"})
@@ -146,9 +198,7 @@ def test_domain_packet_prior_hashes_use_full_pack_ordered_domain_ids(tmp_path: P
     }
     write_jsons(tmp_path, {"state.json": state})
 
-    packet = prepare_domain_packet(
-        tmp_path, approved, trial_id="trial", domain_id="domain:missing"
-    )
+    packet = prepare_domain_packet(tmp_path, approved, trial_id="trial", domain_id="domain:missing")
     raw = read_json(tmp_path, f"domain-packet-{packet.identity.removeprefix('sha256:')}.json")
     assert raw is not None
     assert raw["prior_domain_hashes"] == [
@@ -232,7 +282,10 @@ def test_domain_packet_catalog_binds_retained_evidence(tmp_path: Path) -> None:
     assert after != before
     raw = read_json(tmp_path, f"domain-packet-{after.identity.removeprefix('sha256:')}.json")
     assert raw is not None
-    assert raw["reusable_evidence"]["entries"][0]["evidence"]["identity"] == minted.evidence[0].identity
+    assert (
+        raw["reusable_evidence"]["entries"][0]["evidence"]["identity"]
+        == minted.evidence[0].identity
+    )
 
 
 def _validated_randomization(tmp_path: Path):
@@ -385,9 +438,10 @@ def test_domain_commit_prebuilds_next_packet_before_consuming_transition(tmp_pat
         commit_domain_judgment(tmp_path, validated.transition)
 
     assert read_json(tmp_path, "state.json") == state_before
-    assert sorted(
-        path.name for path in (tmp_path / ".rob2-kit").glob("domain-packet-*.json")
-    ) == packets_before
+    assert (
+        sorted(path.name for path in (tmp_path / ".rob2-kit").glob("domain-packet-*.json"))
+        == packets_before
+    )
     assert not list((tmp_path / ".rob2-kit").glob("domain-observation-*.json"))
     assert not list((tmp_path / ".rob2-kit").glob("domain-commit-*.json"))
     transition_raw = read_json(
