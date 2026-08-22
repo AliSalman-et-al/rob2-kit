@@ -477,7 +477,7 @@ def _compatibility(card: ResultCardInput) -> CompatibilityFinding:
 
 
 def _validate_evidence(
-    workspace: str | Path, card: ResultCardInput
+    workspace: str | Path, card: ResultCardInput, outcome_statement: str | None = None
 ) -> tuple[ProposalRepair, ...]:
     role_refs = (
         ("target_basis", card.evidence.target_basis),
@@ -543,6 +543,24 @@ def _validate_evidence(
                     pointer="/reported/reported_text",
                     code="invalid",
                     detail="reported_text must not be empty",
+                )
+            )
+        declared_outcome = source_layout_projection(card.target.outcome_definition)[0].strip()
+        projected_statement = source_layout_projection(statement)[0]
+        explicit_target = outcome_statement is not None and ", defined as " in outcome_statement
+        if (
+            explicit_target
+            and declared_outcome
+            and declared_outcome.casefold() not in projected_statement.casefold()
+        ):
+            repairs.append(
+                ProposalRepair(
+                    pointer="/reported/reported_text",
+                    code="invalid",
+                    detail=(
+                        "reported_text must name the exact declared outcome definition "
+                        f"{card.target.outcome_definition!r}"
+                    ),
                 )
             )
         quotes = tuple(
@@ -897,7 +915,7 @@ def save_proposal(
             item.model_copy(update={"pointer": f"/results/{input_index}{item.pointer}"})
             for item in structural_repairs
         )
-        evidence_repairs = _validate_evidence(workspace, card)
+        evidence_repairs = _validate_evidence(workspace, card, proposal.outcome_statement)
         repairs.extend(
             item.model_copy(update={"pointer": f"/results/{input_index}{item.pointer}"})
             for item in evidence_repairs

@@ -400,6 +400,28 @@ def test_comparative_reported_text_requires_exact_normalized_quote(
     assert detail in repair.repairs[0].detail
 
 
+def test_comparative_reported_text_must_name_declared_outcome(tmp_path) -> None:
+    definition = "time to biochemical, symptomatic, or radiographic progression"
+    card = _comparative_card(
+        tmp_path,
+        source="Time to clinical progression: Risk ratio 0.5; risks 0.2 and 0.4",
+        reported_text="Time to clinical progression: Risk ratio 0.5; risks 0.2 and 0.4",
+    )
+    repair = save_proposal(
+        tmp_path,
+        ProposalInput(
+            outcome_statement=f"Effect on progression-free survival, defined as {definition}",
+            results=(card,),
+        ),
+    )
+    assert isinstance(repair, ProposalRepairReceipt)
+    assert any(
+        item.pointer == "/results/0/reported/reported_text"
+        and "exact declared outcome definition" in item.detail
+        for item in repair.repairs
+    )
+
+
 def test_comparative_reported_text_accepts_whitespace_normalization(tmp_path) -> None:
     card = _comparative_card(
         tmp_path,
