@@ -16,6 +16,7 @@ from .proposal import (
     ApprovalRequest,
     ProposalInput,
     ProposalRepairReceipt,
+    ResultCardInput,
     approve_batch,
     save_proposal,
 )
@@ -38,20 +39,19 @@ def _evidence_text(workspace: str | Path, reference: EvidenceReference) -> str:
     raise ValueError("unsupported Evidence record")
 
 
-def _card_evidence_ids(card: object) -> set[str]:
-    evidence = getattr(card, "evidence", None)
-    if evidence is None:
-        return set()
+def _card_evidence_ids(card: ResultCardInput) -> set[str]:
     result: set[str] = set()
     for name in ("target_basis", "reported_values", "reported_context", "population_basis"):
-        result.update(item.identity for item in getattr(evidence, name, ()))
+        result.update(item.identity for item in getattr(card.evidence, name))
     return result
 
 
-def _implicit_defects(workspace: str | Path, card: object) -> list[dict[str, object]]:
+def _implicit_defects(
+    workspace: str | Path, card: ResultCardInput
+) -> list[dict[str, object]]:
     """Compatibility bridge for clients not yet emitting explicit bindings."""
 
-    reported_values = tuple(getattr(card.evidence, "reported_values", ()))
+    reported_values = tuple(card.evidence.reported_values)
     texts = [_evidence_text(workspace, reference) for reference in reported_values]
     combined = "\n".join(texts)
     raw = card.model_dump(mode="json")
