@@ -44,20 +44,212 @@ def _bundle_hash(files: list[tuple[str, bytes]]) -> str:
     return "sha256:" + digest.hexdigest()
 
 
+def _report_escape(value: object) -> str:
+    return html.escape(str(value))
+
+
+def _report_values_text(value: object) -> str:
+    if not isinstance(value, list):
+        return ""
+    return ", ".join(str(item) for item in value)
+
+
+def _report_judgment_class(value: object) -> str:
+    return {
+        "low": "low",
+        "some_concerns": "some_concerns",
+        "high": "high",
+    }.get(str(value), "none")
+
+
+def _report_quantity_text(item: dict[str, Any]) -> str:
+    value = (
+        f"{item.get('statistic', '')}; "
+        f"{item.get('group_or_category', '')}: "
+        f"{item.get('value', '')} {item.get('unit', '')}"
+    )
+    denominator = item.get("denominator_basis")
+    if denominator:
+        value += f"; denominator: {denominator}"
+    return value.strip()
+
+
+def _report_evidence_bindings(checkpoint: dict[str, Any]) -> dict[str, dict[str, Any]]:
+    bindings_by_identity: dict[str, dict[str, Any]] = {}
+    bindings = checkpoint.get("evidence_bindings", [])
+    if not isinstance(bindings, list):
+        return bindings_by_identity
+    for binding in bindings:
+        if not isinstance(binding, dict):
+            continue
+        reference = binding.get("evidence")
+        identity = reference.get("identity") if isinstance(reference, dict) else None
+        if isinstance(identity, str) and identity:
+            bindings_by_identity.setdefault(identity, binding)
+    return bindings_by_identity
+
+
+def _report_evidence_use(
+    use: dict[str, Any], bindings_by_identity: dict[str, dict[str, Any]]
+) -> str:
+    relationship = str(use.get("relationship", ""))
+    relationship_class = {
+        "supporting": "supporting",
+        "contradicting": "contradicting",
+        "contextual": "contextual",
+        "residual": "residual",
+    }.get(relationship, "other")
+    content = [
+        f"<article class=\"evidence {relationship_class}\">",
+        f"<h4>{_report_escape(relationship)}</h4>",
+        f"<p class=\"claim\"><strong>Claim:</strong> {_report_escape(use.get('claim', ''))}</p>",
+        "<details><summary>Evidence-use rationale</summary>"
+        f"<p>{_report_escape(use.get('rationale', ''))}</p></details>",
+    ]
+    references = use.get("evidence", [])
+    if not isinstance(references, list):
+        references = []
+    seen: set[str] = set()
+    for reference in references:
+        identity = reference.get("identity") if isinstance(reference, dict) else str(reference)
+        if not isinstance(identity, str) or not identity or identity in seen:
+            continue
+        seen.add(identity)
+        binding = bindings_by_identity.get(identity)
+        if binding is None:
+            content.append(
+                f"<p class=\"unresolved-evidence\"><strong>Evidence identity:</strong> "
+                f"<code>{_report_escape(identity)}</code> (binding unavailable)</p>"
+            )
+            continue
+        quote = binding.get("quote")
+        if not isinstance(quote, str):
+            quote = binding.get("transcription")
+        if isinstance(quote, str):
+            content.append(f"<blockquote>\"{_report_escape(quote)}\"</blockquote>")
+        provenance: list[str] = []
+        if binding.get("source_id") is not None:
+            provenance.append(f"Source: {binding.get('source_id')}")
+        if binding.get("page") is not None:
+            provenance.append(f"page {binding.get('page')}")
+        if binding.get("start") is not None and binding.get("end") is not None:
+            provenance.append(f"extent [{binding.get('start')}:{binding.get('end')}]")
+        if provenance:
+            content.append(
+                f"<p class=\"provenance\">{_report_escape('; '.join(provenance))}</p>"
+            )
+        content.append(f"<p class=\"evidence-identity\"><code>{_report_escape(identity)}</code></p>")
+    content.append("</article>")
+    return "".join(content)
+
+
+def _report_domain(
+    checkpoint: dict[str, Any], trial_number: int, number: int
+) -> tuple[str, str]:
+    domain_id = str(checkpoint.get("domain_id", ""))
+    anchor = f"domain-{trial_number}-{number}"
+    proposed = str(checkpoint.get("proposed_judgment", ""))
+    judgment = _report_judgment_class(proposed)
+    bindings_by_identity = _report_evidence_bindings(checkpoint)
+    nav = (
+        f"<li><a href=\"#{anchor}\"><span class=\"domain-number\">{number}</span>"
+        f"<span>{_report_escape(domain_id)}</span><span class=\"judgment judgment-{judgment}\">"
+        f"{_report_escape(proposed)}</span><small class=\"domain-evidence\">Evidence: "
+        f"{_report_escape(', '.join(bindings_by_identity) or 'none')}</small></a></li>"
+    )
+    draft = checkpoint.get("draft", {})
+    draft = draft if isinstance(draft, dict) else {}
+    inactive = checkpoint.get("inactive_questions", [])
+    limitations = draft.get("limitations", [])
+    answers = draft.get("active_answers", [])
+    answers = answers if isinstance(answers, list) else []
+    content = [
+        f"<article class=\"domain\" id=\"{anchor}\" aria-labelledby=\"{anchor}-heading\">",
+        f"<p class=\"judgment judgment-{judgment}\"><strong>Proposed judgment: "
+        f"{_report_escape(proposed)}</strong></p>",
+        f"<h2 id=\"{anchor}-heading\">{_report_escape(domain_id)}</h2>",
+    ]
+    if isinstance(inactive, list) and inactive:
+        content.append(
+            f"<p class=\"domain-meta\"><strong>Inactive questions:</strong> "
+            f"{_report_escape(_report_values_text(inactive))}</p>"
+        )
+    if isinstance(limitations, list) and limitations:
+        content.append(
+            f"<p class=\"domain-meta\"><strong>Limitations:</strong> "
+            f"{_report_escape(_report_values_text(limitations))}</p>"
+        )
+    content.append(
+        f"<p class=\"domain-meta\"><strong>Active questions:</strong> {len(answers)}</p>"
+    )
+    content.append(
+        f"<div class=\"questions\" aria-label=\"Signaling questions for "
+        f"{_report_escape(domain_id)}\">"
+    )
+    for answer in answers:
+        if not isinstance(answer, dict):
+            continue
+        question_content = [
+            "<div class=\"question\">",
+            f"<h3>Signaling question <code>{_report_escape(answer.get('question_id', ''))}</code></h3>",
+            f"<p><strong>Answer:</strong> {_report_escape(answer.get('answer', ''))}</p>",
+            "<details><summary>Answer rationale</summary>"
+            f"<p>{_report_escape(answer.get('rationale', ''))}</p></details>",
+            "<div class=\"evidence-list\" aria-label=\"Evidence uses\">",
+        ]
+        uses = answer.get("evidence_uses", [])
+        if isinstance(uses, list):
+            question_content.extend(
+                _report_evidence_use(use, bindings_by_identity)
+                for use in uses
+                if isinstance(use, dict)
+            )
+        question_content.extend(("</div>", "</div>"))
+        content.append("".join(question_content))
+    content.extend(("</div>", "</article>"))
+    return nav, "".join(content)
+
+
+def _report_ordered_checkpoints(
+    records: list[dict[str, Any]], trial_id: str, checkpoint_order: tuple[tuple[str, str], ...]
+) -> list[dict[str, Any]]:
+    candidates: dict[tuple[str, str], list[dict[str, Any]]] = {}
+    for record in records:
+        if record.get("kind") != "domain_candidate" or record.get("trial_id") != trial_id:
+            continue
+        domain_id = record.get("domain_id")
+        active_hash = record.get("active_hash")
+        if isinstance(domain_id, str) and isinstance(active_hash, str):
+            candidates.setdefault((domain_id, active_hash), []).append(record)
+    return [
+        candidates[key][0]
+        for key in checkpoint_order
+        if len(candidates.get(key, ())) == 1
+    ]
+
+
 def application_finalization_report(summary: dict[str, Any], records: list[dict[str, Any]]) -> str:
     """Render the portable application bundle from its persisted record basis."""
+
+    escaped = _report_escape
+    values_text = _report_values_text
+    judgment_class = _report_judgment_class
+    quantity_text = _report_quantity_text
 
     terminals = [
         record
         for record in records
         if record.get("kind") == "trial_terminal" and isinstance(record.get("trial_id"), str)
     ]
-    snapshot_hashes = {
-        (str(record.get("trial_id")), str(record.get("identity"))): {
-            str(item[1])
+    snapshot_checkpoints = {
+        (str(record.get("trial_id")), str(record.get("identity"))): tuple(
+            (item[0], item[1])
             for item in record.get("checkpoint_hashes", [])
-            if isinstance(item, (list, tuple)) and len(item) == 2
-        }
+            if isinstance(item, (list, tuple))
+            and len(item) == 2
+            and isinstance(item[0], str)
+            and isinstance(item[1], str)
+        )
         for record in records
         if record.get("kind") == "assessment_snapshot" and isinstance(record.get("trial_id"), str)
     }
@@ -91,7 +283,7 @@ def application_finalization_report(summary: dict[str, Any], records: list[dict[
         if isinstance(result, dict) and isinstance(result.get("trial_id"), str)
     }
     sections: list[str] = []
-    for trial in summary.get("trials", []):
+    for trial_number, trial in enumerate(summary.get("trials", []), 1):
         if not isinstance(trial, dict):
             continue
         trial_id = str(trial.get("trial_id", ""))
@@ -107,68 +299,71 @@ def application_finalization_report(summary: dict[str, Any], records: list[dict[
             ),
             {},
         )
-        details = [f"<p>Disposition: <b>{html.escape(disposition)}</b></p>"]
         result = proposal_results.get(trial_id)
+        target = result.get("target", {}) if isinstance(result, dict) else {}
+        reported = result.get("reported", {}) if isinstance(result, dict) else {}
+        target = target if isinstance(target, dict) else {}
+        reported = reported if isinstance(reported, dict) else {}
+
+        details: list[str] = []
+        if disposition != "assessed":
+            details.append(f"<p>Disposition: <b>{escaped(disposition)}</b></p>")
+        record_details: list[str] = []
         if result is not None:
-            target = result.get("target", {})
-            reported = result.get("reported", {})
-            if isinstance(target, dict) and isinstance(reported, dict):
+            reported_text = reported.get("reported_text")
+            if disposition != "assessed":
                 details.append(
                     "<h3>Outcome</h3>"
-                    f"<p><b>{html.escape(str(target.get('outcome_definition', '')))}</b><br>"
-                    f"Measurement: {html.escape(str(target.get('measurement', '')))}<br>"
-                    f"Time: {html.escape(str(target.get('time_point_or_window', '')))}<br>"
+                    f"<p><b>{escaped(target.get('outcome_definition', ''))}</b><br>"
+                    f"Measurement: {escaped(target.get('measurement', ''))}<br>"
+                    f"Time: {escaped(target.get('time_point_or_window', ''))}<br>"
                     "Analysis population: "
-                    f"{html.escape(str(target.get('intended_analysis_population', '')))}<br>"
-                    "</p>"
+                    f"{escaped(target.get('intended_analysis_population', ''))}<br></p>"
                 )
-                reported_text = reported.get("reported_text")
                 if isinstance(reported_text, str):
-                    details.append(f"<blockquote>{html.escape(reported_text)}</blockquote>")
-                effect = reported.get("effect")
-                if isinstance(effect, dict):
-                    details.append(
-                        "<p>Reported effect: "
-                        f"{html.escape(str(effect.get('statistic', '')))}; "
-                        f"{html.escape(str(effect.get('group_or_category', '')))}; "
-                        f"{html.escape(str(effect.get('value', '')))} "
-                        f"{html.escape(str(effect.get('unit', '')))}; "
-                        f"denominator: {html.escape(str(effect.get('denominator_basis', '')))}"
-                        "</p>"
+                    details.append(f"<blockquote>{escaped(reported_text)}</blockquote>")
+            effect = reported.get("effect")
+            if isinstance(effect, dict):
+                effect_text = (
+                    f"{effect.get('statistic', '')}; {effect.get('group_or_category', '')}; "
+                    f"{effect.get('value', '')} {effect.get('unit', '')}"
+                )
+                denominator = effect.get("denominator_basis")
+                if denominator:
+                    effect_text += f"; denominator: {denominator}"
+                effect_detail = f"<p>Reported effect: {escaped(effect_text)}</p>"
+                if disposition == "assessed":
+                    record_details.append(effect_detail)
+                else:
+                    details.append(effect_detail)
+            precision = reported.get("precision")
+            if isinstance(precision, dict):
+                interval = precision.get("confidence_interval", {})
+                p_value = precision.get("p_value", {})
+                if isinstance(interval, dict) or isinstance(p_value, dict):
+                    interval = interval if isinstance(interval, dict) else {}
+                    p_value = p_value if isinstance(p_value, dict) else {}
+                    precision_detail = (
+                        "<p>Reported precision: "
+                        f"CI {escaped(interval.get('level', ''))}%; "
+                        f"{escaped(interval.get('lower', ''))} to "
+                        f"{escaped(interval.get('upper', ''))}; "
+                        f"P{escaped(p_value.get('operator', ''))}"
+                        f"{escaped(p_value.get('value', ''))}</p>"
                     )
-                precision = reported.get("precision")
-                if isinstance(precision, dict):
-                    interval = precision.get("confidence_interval", {})
-                    p_value = precision.get("p_value", {})
-                    if isinstance(interval, dict) or isinstance(p_value, dict):
-                        interval = interval if isinstance(interval, dict) else {}
-                        p_value = p_value if isinstance(p_value, dict) else {}
-                        details.append(
-                            "<p>Reported precision: "
-                            f"CI {html.escape(str(interval.get('level', '')))}%; "
-                            f"{html.escape(str(interval.get('lower', '')))} to "
-                            f"{html.escape(str(interval.get('upper', '')))}; "
-                            f"P{html.escape(str(p_value.get('operator', '')))}"
-                            f"{html.escape(str(p_value.get('value', '')))}</p>"
-                        )
-                quantities = reported.get("quantities", reported.get("categories", []))
-                if isinstance(quantities, list):
-                    values = [
-                        (
-                            f"{item.get('statistic', '')}; "
-                            f"{item.get('group_or_category', '')}: "
-                            f"{item.get('value', '')} {item.get('unit', '')}"
-                            + (
-                                f"; denominator: {item['denominator_basis']}"
-                                if item.get("denominator_basis")
-                                else ""
-                            )
-                        ).strip()
-                        for item in quantities
-                        if isinstance(item, dict)
-                    ]
-                    if values:
-                        details.append(f"<p>Reported values: {html.escape('; '.join(values))}</p>")
+                    if disposition == "assessed":
+                        record_details.append(precision_detail)
+                    else:
+                        details.append(precision_detail)
+            quantities = reported.get("quantities", reported.get("categories", []))
+            if isinstance(quantities, list):
+                values = [quantity_text(item) for item in quantities if isinstance(item, dict)]
+                if values:
+                    values_detail = f"<p>Reported values: {escaped('; '.join(values))}</p>"
+                    if disposition == "assessed":
+                        record_details.append(values_detail)
+                    else:
+                        details.append(values_detail)
             evidence = result.get("evidence", {})
             if isinstance(evidence, dict):
                 evidence_ids = sorted(
@@ -181,78 +376,218 @@ def application_finalization_report(summary: dict[str, Any], records: list[dict[
                     }
                 )
                 if evidence_ids:
-                    details.append(
-                        f"<p>Proposal evidence: {html.escape(', '.join(evidence_ids))}</p>"
+                    evidence_detail = (
+                        f"<p>Proposal evidence: {escaped(', '.join(evidence_ids))}</p>"
                     )
-        if disposition == "assessed":
-            snapshot = trial.get("snapshot")
-            snapshot_id = snapshot.get("identity") if isinstance(snapshot, dict) else ""
-            details.append(
-                f"<p>Assessment snapshot: <code>{html.escape(str(snapshot_id))}</code></p>"
-            )
-            active_hashes = snapshot_hashes.get((trial_id, str(snapshot_id)), set())
-            checkpoints = [
-                record
-                for record in records
-                if record.get("kind") == "domain_candidate"
-                and record.get("trial_id") == trial_id
-                and record.get("active_hash") in active_hashes
-            ]
-            for checkpoint in sorted(
-                (item for item in checkpoints if item.get("trial_id") == trial_id),
-                key=lambda item: str(item.get("domain_id")),
-            ):
-                evidence = []
-                for binding in checkpoint.get("evidence_bindings", []):
-                    if not isinstance(binding, dict):
-                        continue
-                    reference = binding.get("evidence")
-                    evidence_id = reference.get("identity") if isinstance(reference, dict) else ""
-                    provenance = " ".join(
-                        str(binding.get(key, "")) for key in ("source_id", "page")
-                    ).strip()
-                    evidence.append(
-                        f"<code>{html.escape(str(evidence_id))}</code> {html.escape(provenance)}"
-                    )
-                details.append(
-                    f"<p><b>{html.escape(str(checkpoint.get('domain_id', '')))}</b>: "
-                    f"{html.escape(str(checkpoint.get('proposed_judgment', '')))}; "
-                    f"evidence: {'; '.join(evidence) or 'none'}</p>"
-                )
-        else:
+                    if disposition == "assessed":
+                        record_details.append(evidence_detail)
+                    else:
+                        details.append(evidence_detail)
+
+        snapshot = trial.get("snapshot")
+        snapshot_id = snapshot.get("identity") if isinstance(snapshot, dict) else ""
+        checkpoint_order = (
+            snapshot_checkpoints.get((trial_id, str(snapshot_id)), ())
+            if disposition == "assessed"
+            else ()
+        )
+        checkpoints = _report_ordered_checkpoints(records, trial_id, checkpoint_order)
+        if disposition != "assessed":
+            # Keep the problem-terminal record content stable and directly sourced.
             missing = terminal.get("missing_facts", [])
             evidence = terminal.get("evidence", [])
-            details.append(f"<p>Reason: {html.escape(str(terminal.get('reason', '')))}</p>")
+            details.append(f"<p>Reason: {escaped(terminal.get('reason', ''))}</p>")
             details.append(
-                f"<p>Missing facts: {html.escape(', '.join(map(str, missing)) if isinstance(missing, list) else '')}</p>"
+                f"<p>Missing facts: {escaped(values_text(missing) if isinstance(missing, list) else '')}</p>"
             )
             evidence_ids = [
                 str(item.get("identity", "")) for item in evidence if isinstance(item, dict)
             ]
-            details.append(f"<p>Evidence: {html.escape(', '.join(evidence_ids))}</p>")
+            details.append(f"<p>Evidence: {escaped(', '.join(evidence_ids))}</p>")
             acknowledgment = terminal.get("acknowledgment", {})
             if isinstance(acknowledgment, dict):
                 details.append(
                     "<p>Researcher acknowledgment: "
-                    f"{html.escape(str(acknowledgment.get('identity', '')))}</p>"
+                    f"{escaped(acknowledgment.get('identity', ''))}</p>"
                 )
-        sections.append(f"<section><h2>{html.escape(trial_id)}</h2>{''.join(details)}</section>")
+
+        result_id = (
+            next(
+                (
+                    str(checkpoint.get("result_id"))
+                    for checkpoint in checkpoints
+                    if checkpoint.get("result_id")
+                ),
+                "",
+            )
+            if disposition == "assessed"
+            else ""
+        )
+        groups = target.get("comparison_groups", [])
+        group_labels = [
+            str(group.get("label", ""))
+            for group in groups
+            if isinstance(group, dict) and group.get("label")
+        ]
+        outcome_definition = str(target.get("outcome_definition", ""))
+        measurement = str(target.get("measurement", ""))
+        time_point = str(target.get("time_point_or_window", ""))
+        reported_text = reported.get("reported_text")
+        effect = reported.get("effect")
+        estimate = "Not reported"
+        if isinstance(effect, dict):
+            estimate = (
+                f"{effect.get('value', '')} {effect.get('unit', '')}".strip()
+                or str(effect.get("statistic", ""))
+            )
+        elif isinstance(reported_text, str) and reported_text:
+            estimate = "Reported result"
+        result_hero = (
+            "<div class=\"result-hero\">"
+            "<div><p class=\"eyebrow\">Reported outcome</p>"
+            f"<h2>{escaped(outcome_definition or 'Result')}</h2>"
+            f"<p>Measurement: {escaped(measurement)}; time point: {escaped(time_point)}.</p>"
+            + (
+                f"<blockquote class=\"result-quote\">{escaped(reported_text)}</blockquote>"
+                if isinstance(reported_text, str)
+                else ""
+            )
+            + (
+                f"<details class=\"record-details\"><summary>Record details</summary>"
+                f"{''.join(record_details)}</details>"
+                if record_details
+                else ""
+            )
+            + "</div>"
+            f"<aside class=\"estimate-card\" aria-label=\"Reported result estimate\">"
+            f"<span class=\"eyebrow\">{escaped(target.get('intended_effect_measure', 'Estimate'))}</span>"
+            f"<strong>{escaped(estimate)}</strong>"
+            + (
+                f"<small>{escaped(effect.get('denominator_basis', ''))}</small>"
+                if isinstance(effect, dict) and effect.get("denominator_basis")
+                else ""
+            )
+            + "</aside></div>"
+        ) if disposition == "assessed" else ""
+        identity_items = [f"<div><dt>Trial</dt><dd>{escaped(trial_id)}</dd></div>"]
+        if disposition == "assessed":
+            identity_items.extend(
+                (
+                    f"<div><dt>Result</dt><dd>{escaped(result_id)}</dd></div>",
+                    f"<div><dt>Disposition</dt><dd>{escaped(disposition)}</dd></div>",
+                )
+            )
+            if group_labels:
+                identity_items.append(
+                    f"<div><dt>Comparison</dt><dd>{escaped(' vs. '.join(group_labels))}</dd></div>"
+                )
+            if target.get("effect_of_interest"):
+                identity_items.append(
+                    f"<div><dt>Effect of interest</dt><dd>{escaped(target.get('effect_of_interest', ''))}</dd></div>"
+                )
+            if target.get("intended_analysis_population"):
+                identity_items.append(
+                    f"<div><dt>Analysis population</dt><dd>{escaped(target.get('intended_analysis_population', ''))}</dd></div>"
+                )
+            identity_items.append(
+                f"<div><dt>Assessment snapshot</dt><dd><code>{escaped(snapshot_id)}</code></dd></div>"
+            )
+        else:
+            identity_items.append(f"<div><dt>Disposition</dt><dd>{escaped(disposition)}</dd></div>")
+        identity_grid = f"<dl class=\"identity-grid\">{''.join(identity_items)}</dl>"
+        trial_header = (
+            "<header class=\"report-header trial-header\">"
+            f"<p class=\"eyebrow\">Trial record</p>{identity_grid}</header>"
+        )
+        if disposition == "assessed":
+            snapshot_record = next(
+                (
+                    record
+                    for record in records
+                    if record.get("kind") == "assessment_snapshot"
+                    and record.get("trial_id") == trial_id
+                    and record.get("identity") == snapshot_id
+                ),
+                {},
+            )
+            overall = snapshot_record.get("final_judgment") or snapshot_record.get(
+                "proposed_overall", ""
+            )
+            if isinstance(overall, dict):
+                overall = overall.get("judgment", "")
+            overall_text = str(overall)
+            domain_rail = [
+                "<nav class=\"domain-rail\" aria-label=\"Domain navigation\"><h2>Domains</h2><ol>"
+            ]
+            domain_sections: list[str] = []
+            for number, checkpoint in enumerate(checkpoints, 1):
+                nav, domain = _report_domain(checkpoint, trial_number, number)
+                domain_rail.append(nav)
+                domain_sections.append(domain)
+            domain_rail.append("</ol></nav>")
+            audit = (
+                "<div class=\"audit-summary\">"
+                "<span><strong>Overall risk-of-bias judgment:</strong> "
+                f"<span class=\"judgment judgment-{judgment_class(overall_text)}\">"
+                f"{escaped(overall_text or 'not recorded')}</span></span>"
+                f"<span class=\"summary-count\">{len(checkpoints)} domains assessed</span>"
+                "</div>"
+            )
+            assessed_content = (
+                audit
+                + "<div class=\"report-layout\">"
+                + "".join(domain_rail)
+                + f"<div>{''.join(domain_sections)}</div></div>"
+            )
+        else:
+            assessed_content = f"<div class=\"diagnostic\">{''.join(details)}</div>"
+        sections.append(
+            f"<section><h2>{escaped(trial_id)}</h2><div class=\"trial-report\" data-trial-id=\"{escaped(trial_id)}\">"
+            + trial_header
+            + result_hero
+            + assessed_content
+            + "</div></section>"
+        )
     presentation = summary.get("presentation", {})
     headline = presentation.get("headline", "") if isinstance(presentation, dict) else ""
     message = presentation.get("summary", "") if isinstance(presentation, dict) else ""
     code = presentation.get("code", "") if isinstance(presentation, dict) else ""
-    approved = summary.get("approved_batch", {})
-    approved_id = approved.get("identity", "") if isinstance(approved, dict) else ""
+    approved_summary = summary.get("approved_batch", {})
+    approved_summary_id = (
+        approved_summary.get("identity", "") if isinstance(approved_summary, dict) else ""
+    )
+    style = """
+<style>
+:root{color-scheme:light;font-family:system-ui,sans-serif;color:#17322d;background:#f7f4ed}
+body{margin:0;line-height:1.5}main{max-width:90rem;margin:auto;padding:1rem}
+h1,h2,h3{font-family:Georgia,serif}.report-header,.result-hero,.audit-summary,.domain,.question,.diagnostic{border:1px solid #c9c5ba;border-radius:.5rem;background:#fffdf8;padding:1rem;margin:1rem 0}
+.report-header h1,.report-header h2{margin-top:0}.identity-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(14rem,1fr));gap:.75rem}.identity-grid div{border-left:.25rem solid #40645a;padding-left:.5rem}.identity-grid dt{font-weight:700}.identity-grid dd{margin:0;overflow-wrap:anywhere}
+.result-hero{display:flex;justify-content:space-between;gap:1.5rem;align-items:stretch}.result-hero>div{min-width:0}.estimate-card{min-width:12rem;display:flex;flex-direction:column;justify-content:center;padding:1rem;border-left:.25rem solid #9a5a12;background:#fff4dc}.estimate-card strong{font:1.7rem Georgia,serif}.estimate-card small{margin-top:.35rem}.eyebrow{font-size:.84rem;text-transform:uppercase;letter-spacing:.06em;color:#53635e}.result-quote,blockquote{margin-left:0;padding-left:.75rem;border-left:.2rem solid #777;white-space:pre-wrap}
+.audit-summary{position:sticky;top:.25rem;z-index:4;display:flex;gap:1rem;align-items:center;flex-wrap:wrap}.summary-count{color:#53635e;font-size:.9rem}.judgment{display:inline-block;padding:.25rem .5rem;border-radius:.25rem}.judgment-low{background:#dcefe3}.judgment-some_concerns{background:#fff0c9}.judgment-high{background:#f9ddd8}.judgment-none{background:#e4e7e5}
+.report-layout{display:grid;grid-template-columns:minmax(15rem,18rem) minmax(0,1fr);gap:1rem;align-items:start}.domain-rail{position:sticky;top:5rem;border:1px solid #c9c5ba;border-radius:.5rem;background:#fffdf8;padding:.75rem}.domain-rail h2{font-size:1.15rem;margin-top:.25rem}.domain-rail ol{padding:0;margin:0;list-style:none}.domain-rail li+li{margin-top:.35rem}.domain-rail a{display:grid;grid-template-columns:1.7rem minmax(0,1fr);gap:.55rem;align-items:center;padding:.5rem;border-radius:.4rem;text-decoration:none;color:inherit}.domain-rail a:hover,.domain-rail a:focus-visible{background:#e4ede8}.domain-rail .judgment{grid-column:2;font-size:.7rem;padding:0;margin:0;background:transparent}.domain-number{display:grid;place-items:center;width:1.55rem;height:1.55rem;color:#fff;background:#40645a;border-radius:50%;font-weight:700}.domain-evidence{grid-column:2;overflow-wrap:anywhere}
+.domain-meta,.provenance,.evidence-identity{font-size:.9rem;overflow-wrap:anywhere}.questions{margin-top:1rem}.question{margin:1rem 0}.question h3{margin-top:0}.evidence{border-left:.3rem solid #40645a;padding:.5rem 1rem;margin:.75rem 0;background:#f7f4ed}.evidence.contradicting{border-color:#9c3226}.evidence.contextual,.evidence.residual{border-color:#9a5a12}.evidence.other{border-color:#53635e}.evidence-list{margin-top:1rem}.evidence-list article h4{margin:.2rem 0}.evidence-identity{color:#53635e}.unresolved-evidence{border-left:.3rem solid #9a5a12;padding:.5rem 1rem;background:#fff4dc;overflow-wrap:anywhere}
+code{overflow-wrap:anywhere}a{color:#064c87}a:focus-visible,summary:focus-visible{outline:.2rem solid #9a5a12;outline-offset:.2rem}summary{cursor:pointer;font-weight:700}
+@media(max-width:58rem){.report-layout{grid-template-columns:1fr}.domain-rail{position:static}.domain-rail ol{display:flex;overflow-x:auto;gap:.35rem}.domain-rail li{min-width:13rem}.result-hero{flex-direction:column}}
+@media print{body{background:#fff;color:#000}main{max-width:none}.domain-rail{display:none}.report-layout{display:block}.audit-summary{position:static;box-shadow:none}details,details[open]{display:block}details>* ,details:not([open])>*{display:block}details>summary{display:none}.report-header,.audit-summary,.domain,.question,.diagnostic{break-inside:avoid;box-shadow:none}a{color:inherit;text-decoration:none}}
+</style>
+"""
     return (
-        "<!doctype html><meta charset=utf-8><title>RoB 2 batch report</title>"
-        "<style>body{font:16px sans-serif;max-width:960px;margin:auto}code{overflow-wrap:anywhere}</style>"
-        f"<h1>{html.escape(str(headline))}</h1><p>{html.escape(str(message))}</p>"
-        f"<p>Presentation code: <code>{html.escape(str(code))}</code></p>"
-        f"<p>Summary identity/hash: <code>{html.escape(str(summary.get('identity', '')))}</code><br>"
-        f"Approved batch identity: <code>{html.escape(str(approved_id))}</code><br>"
-        f"Proposal review identity: <code>{html.escape(str(proposal_id or ''))}</code><br>"
-        "Artifact integrity: <code>manifest.json</code> binds the exact report and bundle files.</p>"
+        "<!doctype html><html lang=\"en\"><head><meta charset=\"utf-8\">"
+        "<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">"
+        "<title>RoB 2 batch report</title>"
+        + style
+        + "</head><body><main>"
+        + "<header class=\"report-header\"><h1>RoB 2 batch report</h1>"
+        + f"<p>{escaped(headline)}</p><p>{escaped(message)}</p>"
+        + "<dl class=\"identity-grid\">"
+        + f"<div><dt>Presentation code</dt><dd><code>{escaped(code)}</code></dd></div>"
+        + f"<div><dt>Summary identity</dt><dd><code>{escaped(summary.get('identity', ''))}</code></dd></div>"
+        + f"<div><dt>Approved batch</dt><dd><code>{escaped(approved_summary_id)}</code></dd></div>"
+        + f"<div><dt>Proposal review</dt><dd><code>{escaped(proposal_id or '')}</code></dd></div>"
+        + "<div><dt>Artifact integrity</dt><dd><code>manifest.json</code> binds the exact report and bundle files.</dd></div>"
+        + "</dl></header>"
         + "".join(sections)
+        + "</main></body></html>"
     )
 
 

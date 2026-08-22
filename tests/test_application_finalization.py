@@ -72,7 +72,10 @@ def test_application_report_uses_persisted_records_and_escapes_content() -> None
                 "kind": "assessment_snapshot",
                 "identity": "sha256:snapshot",
                 "trial_id": "trial",
-                "checkpoint_hashes": [["domain:randomization", "sha256:checkpoint"]],
+                "checkpoint_hashes": [
+                    ["domain:measurement", "sha256:measurement-checkpoint"],
+                    ["domain:randomization", "sha256:checkpoint"],
+                ],
             },
             {
                 "kind": "domain_candidate",
@@ -80,13 +83,68 @@ def test_application_report_uses_persisted_records_and_escapes_content() -> None
                 "trial_id": "trial",
                 "domain_id": "domain:randomization",
                 "proposed_judgment": "low",
+                "draft": {
+                    "active_answers": [
+                        {
+                            "question_id": "sq:randomization:sequence",
+                            "answer": "yes <answer>",
+                            "rationale": "Answer rationale & <details>",
+                            "evidence_uses": [
+                                {
+                                    "relationship": "supporting",
+                                    "claim": "Claim <claim>",
+                                    "rationale": "Evidence-use rationale & <reason>",
+                                    "evidence": [
+                                        {"kind": "evidence", "identity": "sha256:evidence"},
+                                        {"kind": "evidence", "identity": "sha256:evidence"},
+                                        {
+                                            "kind": "evidence",
+                                            "identity": "sha256:missing-evidence",
+                                        },
+                                    ],
+                                }
+                            ],
+                        }
+                    ],
+                    "limitations": ["Limitation <note>"],
+                },
+                "inactive_questions": ["sq:randomization:baseline-imbalance"],
                 "evidence_bindings": [
                     {
                         "evidence": {"identity": "sha256:evidence"},
                         "source_id": "<source>",
                         "page": 1,
+                        "start": 4,
+                        "end": 28,
+                        "quote": "Exact <quote> & provenance",
                     }
                 ],
+            },
+            {
+                "kind": "domain_candidate",
+                "active_hash": "sha256:checkpoint",
+                "trial_id": "trial",
+                "domain_id": "domain:wrong-domain",
+                "proposed_judgment": "high",
+                "draft": {
+                    "active_answers": [
+                        {
+                            "question_id": "sq:wrong-domain:unique",
+                            "answer": "Wrong-domain answer unique",
+                            "rationale": "Wrong-domain rationale unique",
+                        }
+                    ]
+                },
+                "evidence_bindings": [],
+            },
+            {
+                "kind": "domain_candidate",
+                "active_hash": "sha256:measurement-checkpoint",
+                "trial_id": "trial",
+                "domain_id": "domain:measurement",
+                "proposed_judgment": "low",
+                "draft": {"active_answers": []},
+                "evidence_bindings": [],
             },
             {
                 "kind": "domain_candidate",
@@ -94,6 +152,15 @@ def test_application_report_uses_persisted_records_and_escapes_content() -> None
                 "trial_id": "trial",
                 "domain_id": "domain:randomization",
                 "proposed_judgment": "high",
+                "draft": {
+                    "active_answers": [
+                        {
+                            "question_id": "sq:superseded:unique",
+                            "answer": "Superseded answer unique",
+                            "rationale": "Superseded rationale unique",
+                        }
+                    ]
+                },
                 "evidence_bindings": [],
             },
         ],
@@ -101,12 +168,128 @@ def test_application_report_uses_persisted_records_and_escapes_content() -> None
     assert "sha256:summary" in report
     assert "finalized_all_assessed" in report
     assert "domain:randomization" in report
+    assert report.index("domain:measurement") < report.index("domain:randomization")
     assert "sha256:superseded" not in report
+    assert "sq:superseded:unique" not in report
+    assert "Superseded rationale unique" not in report
+    assert "sq:wrong-domain:unique" not in report
+    assert "Wrong-domain rationale unique" not in report
     assert "sha256:evidence" in report
+    assert "sha256:missing-evidence" in report
+    assert "binding unavailable" in report
     assert "sha256:proposal-evidence" in report and "20.2 months" in report
     assert "denominator: None" not in report
     assert "&lt;script&gt;" in report and "&lt;reported&gt;" in report
     assert "&lt;safe&gt;" in report and "&lt;source&gt;" in report
+    assert 'class="question"' in report
+    assert "sq:randomization:sequence" in report
+    assert "yes &lt;answer&gt;" in report
+    assert "Answer rationale &amp; &lt;details&gt;" in report
+    assert "supporting" in report
+    assert "Claim &lt;claim&gt;" in report
+    assert "Evidence-use rationale &amp; &lt;reason&gt;" in report
+    assert '"Exact &lt;quote&gt; &amp; provenance"' in report
+    assert "Source: &lt;source&gt;; page 1; extent [4:28]" in report
+    assert report.count('"Exact &lt;quote&gt; &amp; provenance"') == 1
+    assert "sq:randomization:baseline-imbalance" in report
+    assert "Limitation &lt;note&gt;" in report
+    trial_start = report.index("<section><h2>trial</h2>")
+    trial_end = report.index("</section>", trial_start)
+    trial_section = report[trial_start : trial_end + len("</section>")]
+    assert "sq:randomization:sequence" in trial_section
+    assert trial_section.count("</section>") == 1
+
+
+def test_application_report_keeps_problem_terminal_content_without_assessed_metadata() -> None:
+    report = application_finalization_report(
+        {
+            "identity": "sha256:problem-summary",
+            "trials": [
+                {
+                    "trial_id": "problem-trial",
+                    "disposition": "needs_input",
+                    "outcome": {"identity": "sha256:terminal"},
+                }
+            ],
+        },
+        [
+            {
+                "kind": "trial_terminal",
+                "identity": "sha256:terminal",
+                "trial_id": "problem-trial",
+                "reason": "Outcome is unavailable <reason>",
+                "missing_facts": ["Missing fact <detail>"],
+                "evidence": [{"identity": "sha256:terminal-evidence"}],
+                "acknowledgment": {"identity": "sha256:acknowledgment"},
+            }
+        ],
+    )
+
+    assert "Result: result" not in report
+    assert "Assessment snapshot" not in report
+    assert "Outcome is unavailable &lt;reason&gt;" in report
+    assert "Missing fact &lt;detail&gt;" in report
+    assert "sha256:terminal-evidence" in report
+    assert "sha256:acknowledgment" in report
+
+
+def test_application_report_domain_navigation_is_unique_across_trials() -> None:
+    report = application_finalization_report(
+        {
+            "approved_batch": {"identity": "sha256:multi-batch"},
+            "trials": [
+                {
+                    "trial_id": "trial-a",
+                    "disposition": "assessed",
+                    "snapshot": {"identity": "sha256:snapshot-a"},
+                },
+                {
+                    "trial_id": "trial-b",
+                    "disposition": "assessed",
+                    "snapshot": {"identity": "sha256:snapshot-b"},
+                },
+            ],
+        },
+        [
+            {
+                "kind": "assessment_snapshot",
+                "identity": "sha256:snapshot-a",
+                "trial_id": "trial-a",
+                "checkpoint_hashes": [["domain:a", "sha256:checkpoint-a"]],
+                "final_judgment": "low",
+            },
+            {
+                "kind": "assessment_snapshot",
+                "identity": "sha256:snapshot-b",
+                "trial_id": "trial-b",
+                "checkpoint_hashes": [["domain:b", "sha256:checkpoint-b"]],
+                "final_judgment": "low",
+            },
+            {
+                "kind": "domain_candidate",
+                "active_hash": "sha256:checkpoint-a",
+                "trial_id": "trial-a",
+                "domain_id": "domain:a",
+                "proposed_judgment": "low",
+                "draft": {"active_answers": []},
+                "evidence_bindings": [],
+            },
+            {
+                "kind": "domain_candidate",
+                "active_hash": "sha256:checkpoint-b",
+                "trial_id": "trial-b",
+                "domain_id": "domain:b",
+                "proposed_judgment": "low",
+                "draft": {"active_answers": []},
+                "evidence_bindings": [],
+            },
+        ],
+    )
+
+    for anchor in ("domain-1-1", "domain-2-1"):
+        assert report.count(f'id="{anchor}"') == 1
+        assert report.count(f'href="#{anchor}"') == 1
+    assert report.index('href="#domain-1-1"') < report.index('href="#domain-2-1"')
 
 
 def _rehash_manifest(bundle: Path) -> None:
