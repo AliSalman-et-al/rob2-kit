@@ -16,7 +16,9 @@ def install_runtime_hardening() -> None:
 
     original_suggest = preflight._suggest
 
-    def suggest(alias: str, relative: str, media: str):
+    def suggest(
+        alias: str, relative: str, media: str
+    ) -> tuple[preflight.RoleSuggestion, ...]:
         name = relative.rsplit("/", 1)[-1].casefold()
         administrative = (
             "disclos",
