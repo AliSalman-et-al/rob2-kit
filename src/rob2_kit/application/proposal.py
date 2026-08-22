@@ -40,7 +40,7 @@ from .contracts import (
     TransitionReference,
     ValidateDomainJudgmentContinuation,
 )
-from .evidence import EvidenceRecord, resolve_evidence
+from .evidence import EvidenceRecord, resolve_evidence, source_layout_projection
 
 _NUMERIC_LEXEME = re.compile(
     r"(?<![\w.])[+-]?(?:\d+\.\d*|\.\d+|\d+)(?:[eE][+-]?\d+)?(?![\w.])"
@@ -511,12 +511,12 @@ def _validate_evidence(
         return tuple(resolution_repairs)
     reported_evidence = resolved_by_role["reported_values"]
     reported_values_text = " ".join(
-        " ".join((item.quote or "").split()) for item in reported_evidence
+        source_layout_projection(item.quote or "")[0] for item in reported_evidence
     )
     repairs: list[ProposalRepair] = []
     if isinstance(card.reported, ComparativeEffect):
-        statement = " ".join(card.reported.reported_text.split())
-        if not statement:
+        statement = source_layout_projection(card.reported.reported_text)[0].strip()
+        if not statement.strip():
             repairs.append(
                 ProposalRepair(
                     pointer="/reported/reported_text",
@@ -524,13 +524,22 @@ def _validate_evidence(
                     detail="reported_text must not be empty",
                 )
             )
-        quotes = (" ".join((item.quote or "").split()) for item in reported_evidence)
-        if statement and not any(statement in quote for quote in quotes):
+        quotes = tuple(
+            source_layout_projection(item.quote or "")[0].strip() for item in reported_evidence
+        )
+        if statement.strip() and not any(statement in quote for quote in quotes):
+            identities = ", ".join(item.identity for item in reported_evidence)
             repairs.append(
                 ProposalRepair(
                     pointer="/reported/reported_text",
                     code="invalid",
-                    detail="reported_text is not contiguous in reported-values Evidence",
+                    detail=(
+                        "reported_text is not contiguous in reported-values Evidence; copy one "
+                        "complete contiguous source passage from a single cited reported-values "
+                        f"Evidence record ({identities}), preserving case, wording, punctuation, "
+                        "CI, and P-value. Only PDF whitespace and line-end hyphenation are "
+                        "normalized"
+                    ),
                 )
             )
     quantities: tuple[Quantity, ...]
