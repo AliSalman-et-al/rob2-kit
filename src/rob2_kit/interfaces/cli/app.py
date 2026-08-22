@@ -7,6 +7,8 @@ import json
 import os
 from pathlib import Path
 
+from pydantic import BaseModel
+
 from rob2_kit.application.archive import ArchiveArtifact, verify_archive
 from rob2_kit.application.finalization import FinalizationResult, verify_finalization_result
 from rob2_kit.application.finalization_runtime import finalize_with_archive
@@ -18,7 +20,7 @@ def _finalize(workspace: str | Path) -> int:
     result = finalize_with_archive(workspace)
     payload = (
         result.model_dump(mode="json", exclude_none=True)
-        if hasattr(result, "model_dump")
+        if isinstance(result, BaseModel)
         else result
     )
     print(json.dumps(payload, sort_keys=True, separators=(",", ":")))
