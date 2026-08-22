@@ -155,18 +155,39 @@ def validate_domain_runtime(
             "repairs": [{"pointer": "", "code": "invalid", "detail": str(error)}],
         }
 
-    answers = dict(state["answers"])
+    stored_answers = state.get("answers")
+    answers: dict[str, object] = (
+        dict(stored_answers) if isinstance(stored_answers, dict) else {}
+    )
     for row in incoming:
         answers[str(row["question_id"])] = row
     state["answers"] = answers
     if "limitations" in raw_draft:
-        state["limitations"] = list(raw_draft.get("limitations") or [])
+        limitations = raw_draft.get("limitations")
+        state["limitations"] = (
+            list(limitations)
+            if isinstance(limitations, Sequence)
+            and not isinstance(limitations, str | bytes | bytearray)
+            else []
+        )
     if "override" in raw_draft:
         state["override"] = raw_draft.get("override")
 
-    guidance = list(packet_data.get("question_guidance", ()))
+    raw_guidance = packet_data.get("question_guidance", ())
+    guidance = (
+        list(raw_guidance)
+        if isinstance(raw_guidance, Sequence)
+        and not isinstance(raw_guidance, str | bytes | bytearray)
+        else []
+    )
     order = [str(item["id"]) for item in guidance if isinstance(item, dict)]
-    allowed = set(str(item) for item in packet_data.get("allowed_question_ids", order))
+    raw_allowed = packet_data.get("allowed_question_ids", order)
+    allowed = (
+        {str(item) for item in raw_allowed}
+        if isinstance(raw_allowed, Sequence)
+        and not isinstance(raw_allowed, str | bytes | bytearray)
+        else set(order)
+    )
     answer_tokens = {
         question_id: str(row.get("answer"))
         for question_id, row in answers.items()
@@ -218,8 +239,9 @@ def validate_domain_runtime(
         }
 
     ordered_rows = [answers[item] for item in order if item in active]
-    evidence_texts = _evidence_texts(workspace, ordered_rows)
-    admissibility = validate_domain_answers(ordered_rows, evidence_texts)
+    typed_rows = [item for item in ordered_rows if isinstance(item, Mapping)]
+    evidence_texts = _evidence_texts(workspace, typed_rows)
+    admissibility = validate_domain_answers(typed_rows, evidence_texts)
     if admissibility:
         _save(workspace, packet, state)
         return {
@@ -231,7 +253,7 @@ def validate_domain_runtime(
     try:
         draft = DomainDraftInput.model_validate(
             {
-                "active_answers": [_core_answer(row) for row in ordered_rows],
+                "active_answers": [_core_answer(row) for row in typed_rows],
                 "limitations": state.get("limitations", []),
                 "override": state.get("override"),
             }
@@ -253,7 +275,7 @@ def validate_domain_runtime(
             "kind": "domain_scientific_draft",
             "candidate": dict(candidate),
             "packet": packet.model_dump(mode="json"),
-            "answers": ordered_rows,
+            "answers": typed_rows,
             "limitations": state.get("limitations", []),
             "override": state.get("override"),
         }
