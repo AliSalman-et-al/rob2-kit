@@ -1,0 +1,23 @@
+name: Export source snapshot
+
+on:
+  push:
+    branches:
+      - refactor/optimize-rob2-kit-performance
+
+permissions:
+  contents: read
+
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Create source archive
+        run: tar --exclude=.git -czf rob2-kit-source.tar.gz .
+      - uses: actions/upload-artifact@v4
+        with:
+          name: rob2-kit-source-${{ github.sha }}
+          path: rob2-kit-source.tar.gz
+          if-no-files-found: error
+          retention-days: 1
