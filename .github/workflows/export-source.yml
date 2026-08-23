@@ -1,0 +1,26 @@
+name: Export branch source
+
+on:
+  push:
+    branches:
+      - refactor/optimize-rob2-kit-performance
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Create source archive
+        run: |
+          git archive --format=zip --output=rob2-kit-source.zip HEAD
+      - uses: actions/upload-artifact@v4
+        with:
+          name: rob2-kit-source-${{ github.sha }}
+          path: rob2-kit-source.zip
+          if-no-files-found: error
