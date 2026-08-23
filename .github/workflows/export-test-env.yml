@@ -1,0 +1,30 @@
+name: Export branch test environment
+
+on:
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - uses: astral-sh/setup-uv@v6
+      - run: uv sync --locked --all-groups --python "3.13"
+      - name: Archive environment
+        run: |
+          tar -C .venv -czf rob2-kit-test-env.tar.gz bin lib
+      - uses: actions/upload-artifact@v4
+        with:
+          name: rob2-kit-test-env-${{ github.sha }}
+          path: rob2-kit-test-env.tar.gz
+          compression-level: 0
+          if-no-files-found: error
