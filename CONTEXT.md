@@ -18,80 +18,80 @@ inventories, registry outcomes or conditions, and their content identities so
 later Model-authored drafts can refer to scientific targets without repeating
 captured facts.
 
-An **Authorized Source root** is a Trial-scoped file or directory inside the
-configured workspace that a researcher or host explicitly grants to one Source
-preflight. It bounds discovery and never authorizes an ambient workspace scan.
+A **Trial directory** is the exact researcher-authorized directory from which one
+Trial dossier is captured. Intake includes every supported file in that directory
+by default and never scans an ambient workspace.
 
-A **Candidate Source** is a file or file-level condition found under an
-Authorized Source root before the intended dossier has been decided. Every
-Candidate Source remains visible until it receives an explicit disposition.
+A **Source manifest** is an optional `sources.toml` in a Trial directory. It may
+declare exceptional Source roles or omissions and one optional **NCT identifier**
+for the intended ClinicalTrials.gov record. Without a Source manifest, reserved
+filenames supply Source roles and every supported file is included.
 
-A **Candidate Source identity** binds one Candidate Source to its Authorized
-Source root, logical relative path, media facts, and exact bytes. It is distinct
-from the identity of any Source later captured from that candidate.
+An NCT identifier declared in a Source manifest is the authoritative registry
+target for that Trial, not a search hint. Invalid syntax, an unavailable record,
+or a material contradiction with the captured dossier produces an Intake review
+condition; the server never substitutes a different registry record silently. If
+the manifest omits it, deterministic registry discovery may produce a match or an
+explicit ambiguity or unavailable condition.
 
-A **Logical Source path** is a portable path relative to a server-issued
-Authorized Source root alias. It preserves dossier provenance without exposing
-or depending on an absolute filesystem path.
+A **Logical Source path** is a portable path relative to its Trial directory. It
+preserves dossier provenance without exposing or depending on an absolute
+filesystem path.
 
-A **Source preflight** is the deterministic, read-only catalog of Candidate
-Sources under exact Authorized Source roots. It precedes capture and does not
-itself establish the intended dossier. Each exact catalog is a durable,
-immutable Review record.
-
-An **Intake plan** is the exact preflight-derived inclusion, omission, and role
-decision for every Candidate Source in a Batch. A complete Intake plan has no
-silently undecided Candidate Sources.
-
-A **Dossier identity** binds one Trial's complete Candidate Source manifest,
-final dispositions, accepted conditions, and Intake acknowledgment. The Batch
-identity binds the ordered Trial dossier identities.
-
-An **Intake acknowledgment** accepts one exact Intake plan for capture. The host
-may acknowledge a plan that includes every Candidate Source without ambiguity or
-warnings; omissions, ambiguity, and conditions require a user-mediated researcher
-acknowledgment that the model cannot author for itself.
+A **Dossier identity** binds one Trial's complete captured Source inventory,
+Source manifest when present, registry result or condition, accepted intake
+conditions, and exact Source bytes. The Batch identity binds the ordered Trial
+dossier identities.
 
 An **Intake blocker** is an unresolved intake defect that prevents acknowledgment
 or capture and cannot be waived. An **Intake review condition** is a disclosed
 omission, ambiguity, or limitation that a researcher may knowingly accept.
 
 An **Omission decision** is the researcher's stable reason code and concise
-rationale for excluding one Candidate Source. Mechanical file conditions remain
+rationale for excluding one supported file. Mechanical file conditions remain
 separate from that decision.
-
-**Source criticality** is the researcher-authored consequence of omitting a
-Candidate Source: required, expected, or optional. It is independent of Source
-role and is never inferred by the server.
 
 **Source origin** records how a Source was acquired, independently of what kind
 of scientific document its role says it is.
 
 A **Superseded Captured Batch** is an integrity-verifiable Captured Batch that a
-researcher replaced through a new Source preflight before Proposal approval. It
-remains historical and cannot become active again.
+researcher replaced through new intake before Proposal approval. It remains
+historical and cannot become active again.
 
 The host locates evidence using lexical search, exact page reading, and selective
 PDF rendering. A **Domain judgment** is a versioned, evidence-grounded working
-record for one Trial and result: before `finish_trial`, its active revision may be
-replaced by an exact-hash correction while prior revisions remain append-only audit
-entries. It binds active answers, inactive questions, attributable text or visual
-evidence, rationale, reviewing actor, and UTC observation time. `finish_trial`
-freezes the active revisions into an immutable AssessmentSnapshot. The server
-validates judgments and derives Domain and overall judgments through the pinned
-deterministic RoB 2 logic; hosts do not invent evidence or save hidden reasoning.
+record for one Trial and Result. Before the Trial becomes assessed, its active
+revision may be replaced by an exact-hash correction while prior revisions remain
+append-only audit entries. It binds active answers, inactive questions,
+attributable text or visual Evidence, rationale, authoring host, and UTC observation
+time. Five completed Domain checkpoints produce an immutable AssessmentSnapshot.
+That snapshot is provisional until Batch finalization. Before finalization, a new
+active Domain revision produces a new immutable snapshot while retaining every
+prior snapshot. Batch finalization freezes the active snapshot. The server validates
+judgments and derives Domain and overall judgments through the pinned deterministic
+RoB 2 logic; hosts do not invent Evidence or save hidden reasoning.
 
 Each Trial is terminal exactly once: `assessed`, `needs_input`, or `failed`.
-Assessment requires all five Domain checkpoints. Batch finalization records the
-mixed terminal outcomes, exports verified trial and batch reports, and exposes
-restart progress through `rob2://current-batch`. An unfinished active batch can be
-recoverably discarded; committed report artifacts remain protected.
+Assessment requires all five Domain checkpoints and Batch finalization. A Trial
+with five checkpoints and an active provisional AssessmentSnapshot is ready for
+finalization but is not yet assessed. Batch finalization records the mixed terminal
+outcomes, exports verified trial and batch reports, and exposes restart progress
+through `rob2://current-batch`. An unfinished active batch can be recoverably
+discarded; committed report artifacts remain protected.
+
+A **Finalized artifact bundle** is the deterministic `.rob2.zip` export of one
+finalized Batch. It contains the versioned manifest, Canonical JSON, static HTML,
+Evidence excerpts and transcriptions, provenance, hashes, and verification results.
+It excludes Source files, absolute paths, private prompts, and host traces. A Source
+archive is a separate, explicit export and never appears in the bundle by default.
 
 A **Trial disposition** is the scientific workflow state of one Trial: pending,
-assessed, needs input, or failed. An assessment exists only for an assessed Trial
-with an integrity-verified AssessmentSnapshot that binds all five committed Domain
-checkpoints. A needs-input or failed terminal is an authoritative Canonical record
-of what happened, but it is not a RoB 2 assessment.
+provisional, assessed, needs input, or failed. Provisional is nonterminal and means
+that an active AssessmentSnapshot binds all five Domain checkpoints but Batch
+finalization has not frozen it. An assessment exists only for an assessed Trial
+with an integrity-verified final AssessmentSnapshot. A needs-input or failed
+terminal is an authoritative Canonical record of what happened, but it is not a
+RoB 2 assessment.
 
 Committed Domain checkpoints are assessment progress, not a partial assessment.
 A needs-input or failed Trial remains unassessed even when it retains one or more
@@ -109,32 +109,33 @@ facts; host-authored prose alone cannot choose its category.
 
 An **Assessment claim** presents a Domain judgment or overall RoB 2 judgment as a
 completed scientific finding. Only a committed Canonical Domain checkpoint can
-support a claim about a committed Domain judgment, and only an AssessmentSnapshot
-can support a completed overall RoB 2 judgment. Before then, a host may report
-Evidence-navigation facts and explicitly unresolved observations, but it cannot
-claim that a Result was approved or that an assessment or review was completed.
+support a claim about a committed Domain judgment, and only a final
+AssessmentSnapshot can support a completed overall RoB 2 judgment. A provisional
+AssessmentSnapshot supports only an explicitly provisional overall judgment. Before
+then, a host may report Evidence-navigation facts and explicitly unresolved
+observations, but it cannot claim that a Result was approved or that an assessment
+or review was completed.
 
 ## MCP and host boundary
 
-The public server shape is exactly fifteen tools, in order: `preflight_sources`,
-`inspect_candidate_sources`, `save_intake_plan`, `capture_batch`, `list_sources`,
-`retrieve_evidence`, `render_page`, `save_proposal`, `approve_batch`,
-`validate_domain_judgment`, `commit_domain_judgment`, `prepare_trial_finish`,
-`finish_trial`, `finalize_batch`, and `read_record`. Its resources are compact
-`rob2://current-batch`, immutable `rob2://detail/{kind}/{identity}`, captured
-`rob2://registry/{trial_id}`, and binary `rob2://render/{identity}`. The portable
-skills are `rob2-workflow` and `rob2-signalling`; they instruct both supported
-hosts without creating a second model loop.
+The public server exposes the smallest tool and resource set needed to cross real
+workflow or authority boundaries. Tool count is not a compatibility constraint.
+
+The **Assessment skill** is the single portable, progressive-disclosure workflow
+used by supported hosts. It loads only the current Result, Evidence, or Domain
+guidance and never creates or pretends to invoke a second model loop. Claude Code
+and Codex use the same scientific instructions and references; adapters may differ
+only in mechanical host integration.
 
 A **Canonical record** is the complete authoritative workflow or scientific
 record retained by the server and protected by its identity and integrity rules.
 A **Continuation receipt** is a compact, operation-specific projection of a
-transition for the host: it carries only the status, identities, actionable
+completed operation for the host. It carries only the status, identities, actionable
 conditions, and next action needed to continue. A Continuation receipt is not a
 second source of scientific or audit truth. When whole-record review is required,
 the host deliberately reads the exact Canonical record instead of requesting a
-verbose mutation response. It has no separate public reference; a consumed
-Transition record retains the exact logical receipt needed for replay.
+verbose mutation response. An identical mutation retry returns the same Canonical
+record and logical receipt.
 
 A **Next-call descriptor** is the typed continuation carried by every nonterminal
 receipt. It names the permitted operation, supplies every server-owned argument,
@@ -144,51 +145,29 @@ they never carry arbitrary argument objects. A tool continuation names one exact
 tool. A researcher-review continuation identifies the exact reviewed record, review
 purpose, allowed elicitation or CLI method, and operation that acknowledgment will
 unlock. Once acknowledged, verified current status replaces it with the exact tool
-continuation carrying the Transition and Review acknowledgment references. A
-terminal Trial has no Trial continuation, although its enclosing Batch may still
-direct work to another pending Trial or to Batch finalization. A finalized Batch has
-no Next-call descriptor. A needs-input or failed Trial cannot resume in place;
-reassessment requires a new Batch after the missing input or failure has been
+continuation carrying the current state revision and Review acknowledgment
+reference. A terminal Trial has no Trial continuation, although its enclosing Batch
+may still direct work to another pending Trial or to Batch finalization. A finalized
+Batch has no Next-call descriptor. A needs-input or failed Trial cannot resume in
+place; reassessment requires a new Batch after the missing input or failure has been
 addressed.
 
-A **Transition record** is a durable, immutable, noncanonical record that binds
-one prepared or validated candidate to its exact operation and verified workflow
-basis. A **Transition reference** is the opaque typed locator for one Transition
-record. It is not an authorization capability, proof of review, scientific claim,
-or audit entry. A committing operation resolves and verifies the Transition record
-instead of requiring the host to reconstruct server-owned identities or resend the
-candidate. An unavailable or corrupt Transition record cannot authorize a commit;
-the host must prepare or validate the candidate again.
-
-Only a pause before a delayed, reviewed, or destructive mutation creates a
-Transition record. Read-only work, repairs, deterministic draft or plan revisions,
-and mutations that need no later confirmation return ordinary operation-specific
-receipts. A Transition reference has a typed operation and opaque deterministic
-identity derived from the exact candidate, workflow basis, and review requirement.
-An unchanged preparation returns the same reference. The public contract exposes
-no separate continuation token, commit token, readable Transition resource, or
-caller-generated idempotency key.
-
-A live Transition record has no wall-clock expiry. It becomes invalid when its
-verified workflow basis changes, its candidate is superseded, or its Batch is
-discarded. Consumption retains a replay entry so an exact retry returns the same
-logical receipt for the lifetime of the owning Batch records. Reuse with a
-different normalized request returns a consumed-Transition mismatch and never
-reveals the stored receipt.
-
-Transition consumption authorizes the caller, resolves the record, verifies its
-live workflow basis, Review acknowledgment, candidate, and dependencies, then
-publishes the Canonical mutation, acknowledgment binding, and replay receipt in one
-atomic operation. A stale basis permanently invalidates the Transition record. A
-missing acknowledgment leaves it live. Missing or corrupt Transition content
-invalidates it and requires fresh preparation.
+A **State revision** identifies the exact verified workflow basis for one ordinary
+mutation. The server checks it inside the same SQLite transaction that writes the
+Canonical result. A stale revision returns a Workflow conflict and never adopts the
+newer state silently.
 
 **Caller authority** comes from the adapter's invocation context, not a
-model-authored `actor` field or possession of a Transition reference. An MCP tool
+model-authored `actor` field or possession of a record reference. An MCP tool
 invocation carries host authority. An accepted server-initiated elicitation or an
 interactive local CLI review carries researcher authority. A public model-facing
 call cannot claim researcher authority. A display label may support attribution but
 does not establish identity.
+
+The portable researcher-authority path is `rob2 review` with an exact Record
+reference. A supported adapter may use MCP elicitation as a convenience, but it
+creates the same Review acknowledgment. Model-facing tools never approve Review
+records.
 
 An immutable **Detail resource** is the deliberate whole-record review path for a
 specific content identity. Its copy-safe **Record reference** contains the closed
@@ -197,51 +176,44 @@ Record reference unchanged and never parse the URI or extract its hash. Reading 
 Detail resource never changes workflow state and must verify the record before
 returning it. The live `rob2://current-batch` progress resource is intentionally
 mutable and is not a Detail resource. A **Review record** is noncanonical data that
-preserves an exact uncommitted candidate for deliberate review. When a Transition
-depends on it, loss or corruption requires fresh preparation and can never
-authorize a commit. The closed Detail kinds are `source_preflight`, `intake_plan`,
-`captured_batch`, `proposal_review`, `approved_batch`, `domain_candidate`,
-`domain_checkpoint`, `work_packet`, `trial_synthesis`, `trial_terminal`,
-`assessment_snapshot`, `batch_summary`, `artifact_manifest`, `review_ack`, and
-`diagnostic`. Trial, Result, Source, Evidence, Transition, and render records do not
-create additional Detail kinds.
-
-A **Validation observation** is the immutable Review record, server observation
-time, and receipt produced when one exact Domain draft is successfully validated
-against one exact approved state. Retrying that unchanged validation reuses the
-same observation rather than creating a new scientific identity.
+preserves an exact uncommitted candidate for deliberate researcher review. Loss,
+corruption, or a stale workflow basis requires fresh preparation and can never
+authorize a commit. Recomputable Domain context and synthesis views are not Detail
+resources.
 
 A **Review acknowledgment** binds an exact reviewed record to the required review
 authority, review method, adapter-observed caller, and server observation time. It
 records which candidate was accepted, not whether its scientific conclusions are
-true. The host may acknowledge clean intake, a Domain candidate, or an assessed
-Trial synthesis. Every Proposal Review requires researcher acknowledgment. Intake
-omissions, ambiguity, warnings, and conditions; needs-input terminals;
-researcher-authorized failed abandonment; and destructive instructions also require
-researcher acknowledgment that the model cannot author for itself. A verified
+true. Every Proposal Review requires researcher acknowledgment. Intake omissions,
+ambiguity, warnings, and conditions; needs-input terminals; researcher-authorized
+failed abandonment; and destructive instructions also require researcher
+acknowledgment that the model cannot author for itself. Clean intake, Domain work,
+and Trial synthesis require no host-authored acknowledgment. A verified
 server-detected failure requires no acknowledgment. Each acknowledgment is an
 immutable audit record addressed by a copy-safe **Review acknowledgment reference**.
 A resulting Canonical record retains the acknowledgment identity. The
-acknowledgment binds the reviewed Record reference and review purpose rather than a
-Transition identity, so an identical candidate prepared again for the same purpose
-does not require duplicate review.
+acknowledgment binds the reviewed Record reference, review purpose, and verified
+workflow basis, so an identical current candidate does not require duplicate review.
 
-A **Review authority requirement** states whether no acknowledgment, a host
-acknowledgment, or a researcher acknowledgment is required for one exact reviewed
-record, and whether that requirement has been satisfied. A needs-input terminal
-always requires researcher acknowledgment because it irreversibly ends the Trial.
-A failed terminal requires either a verified server-detected terminal failure or
-an explicit researcher-authorized abandonment; a host cannot infer failure from an
-unsuccessful call. Caller identity comes from the adapter and observation time
-comes from the server.
-
-A **Validation receipt** binds one Domain draft and its resolved Canonical record
-to the exact approved state against which they were checked. It permits only the
-reviewed candidate to advance that Domain's active revision.
+A **Review authority requirement** states whether no acknowledgment or a
+researcher acknowledgment is required for one exact reviewed record, and whether
+that requirement has been satisfied. A needs-input terminal always requires
+researcher acknowledgment because it irreversibly ends the Trial. A failed terminal
+requires either a verified server-detected terminal failure or an explicit
+researcher-authorized abandonment; a host cannot infer failure from an unsuccessful
+call. Caller identity comes from the adapter and observation time comes from the
+server.
 
 A **Model-authored draft** contains the scientific choices and prose supplied by
 the host, together with only the target selection needed to apply them. It does
 not repeat identities or facts the server already owns and can reconstruct.
+
+A **Wire draft** is the closed, typed, potentially incomplete boundary form of a
+Model-authored draft. It preserves discriminators and semantic identifiers, rejects
+unknown fields, uses short server-issued handles for server-owned records, and
+carries the expected State revision for a mutation. It never becomes Canonical
+state. The application constructs a strict Canonical variant only after validation
+succeeds.
 
 A **Proposal draft** is the Model-authored draft of the outcome target and one
 scientifically specified, text-anchored Result for each ingested Trial. The server
@@ -255,6 +227,13 @@ A **Reported result** states what a Source actually reports, independently of th
 Result target. It identifies the observed population, the meaning of relevant
 rows and columns, labeled quantities and their denominator basis, and whether a
 comparative estimate is reported or estimable.
+
+A **Target relation** is the host-authored scientific relationship between one
+Result target and one Reported result: exact, source-defined equivalent, broader,
+narrower, component, related, ambiguous, or unavailable. The server validates its
+structure but never infers semantic equivalence. A non-exact assessable relation
+requires researcher confirmation; ambiguous and unavailable relations cannot enter
+Domain assessment.
 
 A **Derived result** is an effect calculated from exact labeled Reported
 quantities through a closed deterministic derivation chosen by the host and
@@ -273,17 +252,26 @@ distinct even when their participant counts happen to match.
 **Outcome-measurement coverage** records whether the requested outcome was
 measured, not measured, or remains unclear for each target comparison group.
 
-A **Result Evidence set** is the role-labeled collection of exact Evidence used
-to review one Result target and Reported result. Its roles distinguish the target
-basis, reported values, reported context, and population basis. One exact
-selection may fulfill several roles when it contains the required context.
+A **Result Evidence set** is the role-labeled collection of exact Result Evidence
+used to review one Result target and Reported result. Its roles distinguish the
+target basis, reported values, reported context, and population basis. One exact
+selection may fulfill several roles only when its typed bindings contain every
+required fact.
 
-**Result compatibility** is the deterministic relationship between one explicit
-Result target and Reported result. It is compatible, review-required, or
-incompatible. Only a compatible Result may advance to Proposal approval, and
-every compatible Result requires researcher confirmation of its exact review
-record. A researcher-approved manifest may provide that confirmation; the host
-alone cannot.
+**Result Evidence** is a closed union of Narrative Result Evidence, Table Result
+Evidence, Figure Result Evidence, and Derived Result Evidence. Narrative Evidence
+binds exact clauses and values in Source text. Table Evidence binds table scope,
+row, column, group or category axes, cells, units, denominators, and applicable
+footnotes. Figure Evidence binds one Verified render region, axes, series,
+extraction method, values, and uncertainty. Derived Evidence names one closed
+deterministic calculation and binds its exact inputs. Every structured Result field
+and value resolves to at least one exact binding.
+
+**Result compatibility** is the server-derived structural disposition of one
+explicit Result target, Reported result, Target relation, and Result Evidence set.
+It is compatible, review-required, or incompatible. Only a compatible,
+researcher-confirmed Result may enter Domain assessment. A researcher-approved
+manifest may provide that confirmation; the host alone cannot.
 
 A **Result clarity declaration** is the host's explicit account of whether the
 outcome definition, measurement, time point, analysis population, comparison
@@ -294,8 +282,9 @@ does not override deterministic Result compatibility.
 A **Proposal Review record** is the immutable whole-Batch review candidate. It
 contains the researcher's requested outcome statement and one ordered Result
 review card per Trial. Each card binds the Result target, Reported result,
-population account, Result Evidence set, Result clarity declaration, and
-compatibility findings. Any changed card creates a new Proposal Review record.
+Target relation, population account, Result Evidence set, Result clarity
+declaration, and compatibility findings. Any changed card creates a new Proposal
+Review record.
 
 An **Exact Proposal manifest** is a researcher acknowledgment prepared for an
 exact Proposal Review record so its unchanged review may resume or replay without
@@ -303,10 +292,11 @@ another live interaction. It cannot approve a different Source identity, Result,
 Evidence selection, compatibility finding, or newly extracted value.
 
 A **Result clarification** is a researcher decision among server-validated,
-host-authored alternatives for one exact ambiguous Result field. Each alternative
-contains complete replacement values rather than a patch. Selecting a fully
-displayed alternative may acknowledge the exact resulting Proposal Review record;
-free text requires the host to prepare a new candidate for review.
+host-authored complete Result alternatives. Each alternative contains the complete
+Result target, Reported result, Target relation, Result Evidence set, and clarity
+declaration rather than a field patch. Selecting a fully displayed alternative may
+acknowledge the exact resulting Proposal Review record; free text requires the host
+to prepare a new candidate for review.
 
 A **Preapproval needs-input terminal** records, with researcher acknowledgment,
 that no compatible assessable Result can be established for one Trial from the
@@ -318,15 +308,27 @@ researcher-confirmed compatible Result or a researcher-acknowledged Preapproval
 needs-input terminal. The Batch advances atomically only when every Trial has one
 disposition; only Trials with compatible Results enter Domain assessment.
 
+An **Evidence use** binds one material rationale clause to a relationship, exact
+Evidence, supported clause, and limitation. The closed relationships are direct
+support, indirect support, contradiction, context, absence, and inference. Every
+material rationale clause has an Evidence use or an explicit unresolved limitation.
+The server validates coverage, references, and mechanical polarity but does not
+claim to prove scientific entailment.
+
+An **Evidence search account** binds an absence claim to the exact Source scope,
+queries, lexical modes, and observed retrieval conditions used to investigate it.
+It reports search work rather than proving scientific absence; a no-hit search alone
+cannot establish an absence claim.
+
 A **Domain draft** is the Model-authored draft of active signaling answers,
 rationales, Evidence uses, limitations, and any explicit judgment override. The
 server derives the inactive partition, deterministic judgment, and complete
-canonical evidence and checkpoint identities.
+canonical Evidence and checkpoint identities.
 
 A **Repair result** is a compact continuation outcome bound to one exact
 Model-authored draft and verified workflow basis. It reports every independently
-actionable deterministic defect but creates no Canonical record, Validation
-observation, or commit authority.
+actionable deterministic defect but creates no Canonical or Review record and no
+commit authority.
 
 A **Workflow condition** is an expected noncommitting application outcome that
 preserves the current phase and carries a stable code, affected scope, concise safe
@@ -410,6 +412,11 @@ render, while a different recipe produces a different render. Every read
 verifies both identities; missing or corrupt content is unavailable and is never
 silently regenerated or replaced.
 
+The first render request returns inline pixels and a Verified render reference.
+An identical later request returns metadata and the reference without inline pixels
+unless the host explicitly requests inline delivery. Transport deduplication never
+changes the Evidence identity or the fail-closed verification rules.
+
 A **Verified render reference** is the copy-safe locator for one Verified
 render. It contains the render identity and complete `rob2://render/` resource
 URI. Callers pass it unchanged and never substitute the PNG hash for the render
@@ -467,15 +474,15 @@ A **Retrieval condition** is an expected, operation-attributed outcome such as n
 hits or an ambiguous quote. It does not invalidate independent operations in the
 same Evidence retrieval batch and carries the exact safe next action.
 
-An **Approved work packet** is an immutable, content-addressed derivative
-projection of verified approved and committed state that is sufficient to start
-or resume work on one Trial Domain without replaying Canonical records or Source
-text. It is neither a Canonical record nor an audit record, and it contains no
-uncommitted model scratch state.
+A **Domain context** is a bounded, read-only projection of verified approved and
+committed state sufficient to start or resume work on one Trial Domain without
+replaying Canonical records or Source text. It is recomputed on demand, is neither
+a Canonical record nor an audit record, and contains no uncommitted model scratch
+state.
 
 A **Portable context boundary** is the post-approval transition at which a host
-may discard preapproval conversation and rehydrate assessment work from an
-Approved work packet. Correctness never depends on whether a host actually resets
+may discard preapproval conversation and rehydrate assessment work from a
+Domain context. Correctness never depends on whether a host actually resets
 or compacts its context.
 
 A **Prior Domain digest** is the bounded projection of one committed Domain that
@@ -485,13 +492,12 @@ Evidence locators while leaving complete quotes and rationales in the Canonical
 checkpoint.
 
 A **Source alias** is a compact per-Trial label assigned in authoritative Source
-order and kept stable across Approved work packets and Trial synthesis packets.
+order and kept stable across Domain contexts and Trial synthesis views.
 It supplements rather than replaces the Source's canonical identity.
 
-A **Trial synthesis packet** is an immutable, content-addressed derivative
-projection of all five active Domain checkpoints used for final cross-Domain
-review. A reviewed synthesis hash acknowledges the exact checkpoint set reviewed;
-it is not a scientific attestation or a Canonical record.
+A **Trial synthesis view** is a bounded, read-only projection of all five active
+Domain checkpoints for cross-Domain audit. It is recomputed on demand and is not a
+scientific attestation, an authority boundary, or a Canonical record.
 
 A **Text coordinate** is a zero-based, page-local Unicode-code-point offset into
 the exact extracted page text. Text spans use half-open `[start, end)` intervals
@@ -501,7 +507,3 @@ A **Search diagnostic** reports deterministic facts about one exact lexical
 search and Source scope, including normalized terms and matching-page counts. It
 may explain why the requested expression produced no hits, but never proposes
 scientific vocabulary or claims that Evidence is absent.
-
-The v0.2.0 candidate is created only from the clean exact final commit after the
-release-manifest commit, final review, and remote 3x3 CI. Its machine-readable
-contract and verification steps are in [docs/release](docs/release/README.md).
