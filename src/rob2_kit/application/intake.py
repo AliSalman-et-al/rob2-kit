@@ -1,628 +1,721 @@
-"""Immutable Intake plans, review authority, and exact atomic capture."""
-# ruff: noqa: E501
-
-from __future__ import annotations
-
 import hashlib
-import os
+import re
 import shutil
-import tempfile
+import unicodedata
+from dataclasses import dataclass
 from datetime import UTC, datetime
-from enum import StrEnum
 from pathlib import Path
-from typing import Literal
+from typing import Any
 
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+import httpx
+import pymupdf
 
-from rob2_kit.sources import SourceRole
-from rob2_kit.storage import workspace_mutation_lock
-
-from ._state import delete_json, identity, read_json, record_uri, write_jsons
-from .acknowledgments import verify_acknowledgment
-from .contracts import (
-    CaptureBatchContinuation,
-    Continuation,
-    OperationOutcome,
-    PreflightSourcesContinuation,
-    RecordKind,
-    RecordReference,
-    ReviewAcknowledgmentReference,
-    ReviewAuthority,
-    SaveProposalContinuation,
+from ..models import canonical_json_bytes
+from ..workflow_models import (
+    CapturedBatch,
+    CapturedTrial,
+    ExpectedRevision,
+    ReviewAcknowledgment,
+    TrialDeclaration,
 )
-from .preflight import (
-    AuthorizedSourceRoot,
-    CandidateSource,
-    PreflightRequest,
-    SourcePreflight,
-    preflight_sources,
-    verify_source_preflight,
+from ._state import (
+    _commit_records,
+    _db,
+    _ensure,
+    _identity,
+    _manifest,
+    _pages,
+    _projection_hash,
+    _read,
+    _reserved_role,
+    _result,
+    _root,
+    _search_derivative,
+    _source_id,
+    _state,
+    _supported,
+    internal_path,
 )
+from .contracts import WorkflowConflict
+from .status import _continuation
 
 
-class _Closed(BaseModel):
-    model_config = ConfigDict(extra="forbid", frozen=True)
+@dataclass(frozen=True, slots=True)
+class _RegistryCapture:
+    outcome: dict[str, Any]
+    content: bytes | None = None
 
 
-class SourceDisposition(StrEnum):
-    INCLUDE = "include"
-    OMIT = "omit"
-
-
-class SourceCriticality(StrEnum):
-    REQUIRED = "required"
-    EXPECTED = "expected"
-    OPTIONAL = "optional"
-
-
-class IntakePlanEntry(_Closed):
-    candidate_identity: str = Field(pattern=r"^sha256:[0-9a-f]{64}$")
-    role: SourceRole
-    disposition: SourceDisposition
-    criticality: SourceCriticality
-    omission_reason: str | None = None
-
-    @model_validator(mode="after")
-    def omission_is_explained(self) -> IntakePlanEntry:
-        if self.disposition is SourceDisposition.OMIT and not self.omission_reason:
-            raise ValueError("omitted candidates require an omission reason")
-        if self.disposition is SourceDisposition.INCLUDE and self.omission_reason is not None:
-            raise ValueError("included candidates cannot have an omission reason")
-        return self
-
-
-class IntakePlan(_Closed):
-    kind: Literal["intake_plan"] = "intake_plan"
-    identity: str = Field(pattern=r"^sha256:[0-9a-f]{64}$")
-    preflight: RecordReference
-    entries: tuple[IntakePlanEntry, ...] = Field(min_length=1)
-    blockers: tuple[str, ...] = ()
-    conditions: tuple[str, ...] = ()
-
-    @property
-    def reference(self) -> RecordReference:
-        return RecordReference(
-            kind=RecordKind.INTAKE_PLAN,
-            identity=self.identity,
-            uri=record_uri("intake_plan", self.identity),
+def _registry_record(nct: object) -> _RegistryCapture:
+    """Normalize the registry boundary into one closed, persisted outcome."""
+    # Manifest data may identify the requested registry record, but it cannot
+    # supply a provider outcome.  In particular, ``kind=matched`` and a
+    # hand-written title are not evidence of a ClinicalTrials.gov match.
+    if not isinstance(nct, str) or not re.fullmatch(r"NCT\d{8}", nct):
+        return _RegistryCapture(
+            {
+                "kind": "not_found",
+                "query": str(nct or "undeclared"),
+                "retrieved_at": datetime.now(UTC).isoformat(),
+            }
         )
 
-
-def _plan_payload(plan: IntakePlan) -> dict[str, object]:
-    return {
-        "preflight": plan.preflight.model_dump(mode="json"),
-        "entries": [item.model_dump(mode="json") for item in plan.entries],
-        "blockers": list(plan.blockers),
-        "conditions": list(plan.conditions),
-    }
+    # A syntactically valid identifier is only a query.  It is not evidence
+    # that the requested trial exists, much less that its title matches this
+    # dossier.  Resolve it through the provider and fail closed when the
+    # provider cannot supply a complete record.
+    return _fetch_registry_record(nct)
 
 
-def verify_intake_plan(raw: object) -> IntakePlan:
-    """Validate the closed stored shape and its content-addressed identity."""
-    if not isinstance(raw, dict) or set(raw) != {
-        "kind",
-        "identity",
-        "preflight",
-        "entries",
-        "blockers",
-        "conditions",
-    }:
-        raise ValueError("stored Intake plan has an invalid shape")
-    plan = IntakePlan.model_validate(raw)
-    if identity(_plan_payload(plan)) != plan.identity:
-        raise ValueError("stored Intake plan identity mismatch")
-    return plan
+def _fetch_registry_record(nct: str) -> _RegistryCapture:
+    """Fetch one exact ClinicalTrials.gov record using a fixed request shape."""
 
-
-class IntakePlanReceipt(_Closed):
-    outcome: OperationOutcome
-    plan: RecordReference
-    blockers: tuple[str, ...] = ()
-    conditions: tuple[str, ...] = ()
-    acknowledgment: ReviewAcknowledgmentReference | None = None
-    next_action: Continuation | None = None
-
-
-class CaptureRequest(_Closed):
-    plan: RecordReference
-    acknowledgment: ReviewAcknowledgmentReference
-
-
-class CaptureReceipt(_Closed):
-    outcome: OperationOutcome
-    captured_batch: RecordReference | None = None
-    plan: RecordReference
-    acknowledgment: ReviewAcknowledgmentReference
-    conditions: tuple[str, ...] = ()
-    next_action: Continuation | None = None
-
-
-def intake_required_authority(plan: IntakePlan) -> ReviewAuthority:
-    return ReviewAuthority.RESEARCHER if plan.conditions else ReviewAuthority.HOST
-
-
-def _preflight_record(workspace: str | Path) -> SourcePreflight:
-    raw = read_json(workspace, "preflight.json")
-    if raw is None:
-        raise ValueError("source preflight does not exist")
-    return verify_source_preflight(raw)
-
-
-def _entry_candidates(preflight: SourcePreflight) -> dict[str, CandidateSource]:
-    return {item.identity: item for item in preflight.candidates}
-
-
-def save_intake_plan(
-    workspace: str | Path,
-    preflight: RecordReference,
-    entries: tuple[IntakePlanEntry, ...],
-    *,
-    host_caller: str | None = None,
-) -> IntakePlanReceipt:
-    current = _preflight_record(workspace)
-    if preflight.kind is not RecordKind.SOURCE_PREFLIGHT or preflight.identity != current.identity:
-        raise ValueError("plan must reference the current source preflight")
-    candidates = _entry_candidates(current)
-    provided = {entry.candidate_identity for entry in entries}
-    blockers: list[str] = []
-    if provided != set(candidates):
-        missing = sorted(set(candidates) - provided)
-        extra = sorted(provided - set(candidates))
-        blockers.extend([f"undecided_candidate:{item}" for item in missing])
-        blockers.extend([f"unknown_candidate:{item}" for item in extra])
-    if len(provided) != len(entries):
-        blockers.append("duplicate_candidate_decision")
-    for entry in entries:
-        candidate = candidates.get(entry.candidate_identity)
-        if candidate is None:
-            continue
-        if candidate.condition and entry.disposition is SourceDisposition.INCLUDE:
-            blockers.append(f"unreadable_inclusion:{candidate.relative_path}")
-    included = [entry for entry in entries if entry.disposition is SourceDisposition.INCLUDE]
-    main_count = sum(entry.role is SourceRole.MAIN_ARTICLE for entry in included)
-    if main_count != 1:
-        blockers.append("main_article_cardinality")
-    for entry in entries:
-        if (
-            entry.disposition is SourceDisposition.OMIT
-            and entry.criticality is SourceCriticality.REQUIRED
-        ):
-            blockers.append(f"required_omission:{entry.candidate_identity}")
-    conditions = sorted(set(current.conditions))
-    for entry in entries:
-        if (
-            entry.disposition is SourceDisposition.OMIT
-            and entry.criticality is not SourceCriticality.REQUIRED
-        ):
-            conditions.append(f"omission:{entry.candidate_identity}")
-    ordered_entries = tuple(sorted(entries, key=lambda item: item.candidate_identity))
-    payload = {
-        "preflight": preflight.model_dump(mode="json"),
-        "entries": [item.model_dump(mode="json") for item in ordered_entries],
-        "blockers": sorted(set(blockers)),
-        "conditions": sorted(set(conditions)),
-    }
-    plan = IntakePlan(
-        identity=identity(payload),
-        preflight=preflight,
-        entries=ordered_entries,
-        blockers=tuple(sorted(set(blockers))),
-        conditions=tuple(sorted(set(conditions))),
-    )
-    state = read_json(workspace, "state.json") or {}
-    acknowledgment: ReviewAcknowledgmentReference | None = None
-    records = {"intake_plan.json": plan.model_dump(mode="json")}
-    state.update(
+    url = f"https://clinicaltrials.gov/api/v2/studies/{nct}"
+    retrieved = datetime.now(UTC).isoformat()
+    try:
+        response = httpx.get(
+            url,
+            headers={"Accept": "application/json"},
+            follow_redirects=False,
+            timeout=5.0,
+        )
+    except httpx.HTTPError as error:
+        return _RegistryCapture(
+            {
+                "kind": "unavailable",
+                "query": nct,
+                "reason": f"ClinicalTrials.gov request failed: {type(error).__name__}",
+                "retrieved_at": retrieved,
+            }
+        )
+    if response.status_code == 404:
+        return _RegistryCapture({"kind": "not_found", "query": nct, "retrieved_at": retrieved})
+    if response.status_code < 200 or response.status_code >= 300:
+        return _RegistryCapture(
+            {
+                "kind": "unavailable",
+                "query": nct,
+                "reason": f"ClinicalTrials.gov returned HTTP {response.status_code}",
+                "retrieved_at": retrieved,
+            }
+        )
+    try:
+        payload = response.json()
+    except ValueError:
+        return _RegistryCapture(
+            {
+                "kind": "unavailable",
+                "query": nct,
+                "reason": "ClinicalTrials.gov returned invalid JSON",
+                "retrieved_at": retrieved,
+            }
+        )
+    if not isinstance(payload, dict):
+        return _RegistryCapture(
+            {
+                "kind": "unavailable",
+                "query": nct,
+                "reason": "ClinicalTrials.gov returned an invalid record",
+                "retrieved_at": retrieved,
+            }
+        )
+    protocol = payload.get("protocolSection")
+    identification = protocol.get("identificationModule") if isinstance(protocol, dict) else None
+    registry_id = identification.get("nctId") if isinstance(identification, dict) else None
+    title = identification.get("officialTitle") if isinstance(identification, dict) else None
+    if not isinstance(title, str) or not title.strip():
+        title = identification.get("briefTitle") if isinstance(identification, dict) else None
+    if not isinstance(registry_id, str) or not registry_id.strip() or not isinstance(title, str):
+        return _RegistryCapture(
+            {
+                "kind": "unavailable",
+                "query": nct,
+                "reason": "ClinicalTrials.gov record is missing identity or title",
+                "retrieved_at": retrieved,
+            }
+        )
+    if registry_id.upper() != nct:
+        return _RegistryCapture(
+            {
+                "kind": "contradiction",
+                "registry_id": registry_id,
+                "facts": [f"ClinicalTrials.gov returned {registry_id} for requested {nct}"],
+                "retrieved_at": retrieved,
+            }
+        )
+    return _RegistryCapture(
         {
-            "phase": "intake",
-            "plan_identity": plan.identity,
-            "review_authority": "none",
-            "review_satisfied": False,
-        }
+            "kind": "matched",
+            "registry_id": nct,
+            "title": title,
+            "url": f"https://clinicaltrials.gov/study/{nct}",
+            "retrieved_at": retrieved,
+        },
+        canonical_json_bytes(payload),
     )
-    if not plan.blockers and not plan.conditions and host_caller is not None:
-        caller = host_caller.strip()
-        if not caller.startswith("host:"):
-            raise ValueError("host caller attribution is required")
-        observed_at = datetime.now(UTC).isoformat()
-        ack_payload = {
-            "record": plan.reference.model_dump(mode="json"),
-            "authority": ReviewAuthority.HOST.value,
-            "purpose": "intake",
-            "caller": caller,
-            "observed_at": observed_at,
-        }
-        ack_identity = identity(ack_payload)
-        acknowledgment = ReviewAcknowledgmentReference(
-            kind="review_ack", identity=ack_identity, uri=record_uri("review_ack", ack_identity)
-        )
-        records["review_ack.json"] = {**acknowledgment.model_dump(mode="json"), **ack_payload}
-        state.update(
-            {"review_authority": "host", "review_satisfied": True, "ack_identity": ack_identity}
-        )
-    records["state.json"] = state
-    write_jsons(
-        workspace,
-        records,
-    )
-    return IntakePlanReceipt(
-        outcome=OperationOutcome.CONDITION if plan.blockers else OperationOutcome.SUCCESS,
-        plan=plan.reference,
-        blockers=plan.blockers,
-        conditions=plan.conditions,
-        acknowledgment=acknowledgment,
-        next_action=(
-            CaptureBatchContinuation(plan=plan.reference, acknowledgment=acknowledgment)
-            if acknowledgment is not None
-            else None
+
+
+def _manifest_registry_identifier(config: dict[str, Any]) -> str | None:
+    """Return one manifest identifier, rejecting competing spellings."""
+
+    registry = config.get("registry")
+    declarations: list[tuple[str, object]] = []
+    for key in ("nct", "nct_id"):
+        if key in config:
+            declarations.append((key, config[key]))
+    if isinstance(registry, dict):
+        unsupported = sorted(set(registry) - {"nct", "nct_id", "registry_id"})
+        if unsupported:
+            raise ValueError("sources.toml registry may contain only an authoritative identifier")
+        for key in ("nct", "nct_id", "registry_id"):
+            if key in registry:
+                declarations.append((f"registry.{key}", registry[key]))
+    elif registry is not None:
+        raise ValueError("sources.toml registry must be a table")
+    if len(declarations) > 1:
+        names = ", ".join(name for name, _value in declarations)
+        raise ValueError(f"ambiguous registry identifier declarations: {names}")
+    return None if not declarations else str(declarations[0][1])
+
+
+def _is_link_like(path: Path) -> bool:
+    """Reject filesystem indirection at the authorized intake boundary."""
+    is_junction = getattr(path, "is_junction", None)
+    return path.is_symlink() or bool(is_junction and is_junction())
+
+
+def _is_contained_source(directory: Path, path: Path) -> bool:
+    """Accept only ordinary files reached without symlinks or junctions."""
+    try:
+        relative = path.relative_to(directory)
+        resolved_directory = directory.resolve(strict=True)
+        resolved_path = path.resolve(strict=True)
+    except (OSError, ValueError):
+        return False
+    current = directory
+    for part in relative.parts:
+        current = current / part
+        if _is_link_like(current):
+            return False
+    return resolved_path.is_relative_to(resolved_directory)
+
+
+def _trial_directory(root: Path, label: str) -> Path:
+    """Resolve one declared Trial to its server-owned ``input/<name>`` dossier."""
+    input_root = root / "input"
+    if not input_root.is_dir() or _is_link_like(input_root):
+        raise ValueError("input directory is not available")
+    candidates = [
+        path
+        for path in input_root.iterdir()
+        if path.is_dir() and not _is_link_like(path) and not path.name.startswith(".")
+    ]
+    exact = [path for path in candidates if path.name == label]
+    if len(exact) == 1:
+        return exact[0]
+    normalized_label = unicodedata.normalize("NFKC", label).casefold().strip()
+    matches = [
+        path
+        for path in candidates
+        if unicodedata.normalize("NFKC", path.name).casefold().strip() == normalized_label
+    ]
+    if len(matches) > 1:
+        raise ValueError(f"trial directory is ambiguous: input/{label}")
+    if not matches:
+        raise ValueError(f"trial directory is not available: input/{label}")
+    return matches[0]
+
+
+_TRIAL_ID_PATTERN = re.compile(r"[A-Za-z0-9][A-Za-z0-9_-]{0,127}")
+
+
+def _trial_directories(root: Path) -> list[Path]:
+    """Return the researcher-owned Trial dossiers in deterministic order."""
+    input_root = root / "input"
+    if not input_root.is_dir() or _is_link_like(input_root):
+        raise ValueError("input directory is not available")
+    return sorted(
+        (
+            path
+            for path in input_root.iterdir()
+            if path.is_dir() and not path.name.startswith(".") and not _is_link_like(path)
+        ),
+        key=lambda path: (
+            unicodedata.normalize("NFKC", path.name).casefold(),
+            unicodedata.normalize("NFKC", path.name),
+            path.name,
         ),
     )
 
 
-def acknowledge_intake(
+def _trial_id_from_directory(label: str) -> str:
+    """Derive a stable, readable Trial ID, with a hash for unrepresentable names."""
+    normalized = unicodedata.normalize("NFKD", label).casefold().strip()
+    ascii_name = normalized.encode("ascii", "ignore").decode("ascii")
+    slug = re.sub(r"[^a-z0-9]+", "-", ascii_name).strip("-")
+    if _TRIAL_ID_PATTERN.fullmatch(slug or ""):
+        return slug
+    digest = hashlib.sha256(unicodedata.normalize("NFKC", label).encode("utf-8")).hexdigest()
+    return f"trial-{digest[:16]}"
+
+
+def prepare_batch_for_outcome(
     workspace: str | Path,
-    plan: RecordReference,
-    authority: ReviewAuthority,
-    *,
-    caller: str = "host:internal",
-    observed_at: datetime | None = None,
-) -> ReviewAcknowledgmentReference:
-    raw = read_json(workspace, "intake_plan.json")
-    if raw is None:
-        raise ValueError("intake plan does not exist")
-    current = verify_intake_plan(raw)
-    if plan.kind is not RecordKind.INTAKE_PLAN or plan.identity != current.identity:
-        raise ValueError("acknowledgment does not identify the current Intake plan")
-    if current.blockers:
-        raise ValueError("blocking Intake defects cannot be acknowledged")
-    required = intake_required_authority(current)
-    if authority is not required:
-        raise PermissionError("researcher acknowledgment is required")
-    if authority not in {ReviewAuthority.HOST, ReviewAuthority.RESEARCHER}:
-        raise PermissionError("a caller acknowledgment is required")
-    caller = caller.strip()
-    if not caller:
-        raise ValueError("caller attribution is required")
-    if authority is ReviewAuthority.RESEARCHER and not caller.startswith(("cli:", "server:")):
-        raise PermissionError("researcher authority must come from an interactive adapter")
-    if authority is ReviewAuthority.HOST and not caller.startswith("host:"):
-        raise PermissionError("host authority must come from a host adapter")
-    observation = observed_at or datetime.now(UTC)
-    if observation.tzinfo is None or observation.utcoffset() is None:
-        raise ValueError("observation time must be timezone-aware")
-    observation = observation.astimezone(UTC)
-    ack_payload = {
-        "record": plan.model_dump(mode="json"),
-        "authority": authority.value,
-        "purpose": "intake",
-        "caller": caller,
-        "observed_at": observation.isoformat(),
-    }
-    ack_identity = identity(ack_payload)
-    ack = ReviewAcknowledgmentReference(
-        kind="review_ack", identity=ack_identity, uri=record_uri("review_ack", ack_identity)
-    )
-    state = read_json(workspace, "state.json") or {}
-    state.update(
-        {
-            "review_authority": authority.value,
-            "review_satisfied": True,
-            "ack_identity": ack.identity,
-        }
-    )
-    write_jsons(
-        workspace,
-        {
-            "review_ack.json": {**ack.model_dump(mode="json"), **ack_payload},
-            "state.json": state,
-        },
-    )
-    return ack
-
-
-def _roots(workspace: str | Path) -> tuple[AuthorizedSourceRoot, ...]:
-    raw = read_json(workspace, "roots.json")
-    if raw is None:
-        raise ValueError("authorized roots are unavailable after restart")
-    return tuple(AuthorizedSourceRoot.model_validate(item) for item in raw.get("roots", ()))
-
-
-def _drift_details(original: SourcePreflight, current: SourcePreflight) -> tuple[str, ...]:
-    old = {
-        (item.trial_id, item.root_alias, item.relative_path): item for item in original.candidates
-    }
-    new = {
-        (item.trial_id, item.root_alias, item.relative_path): item for item in current.candidates
-    }
-    details: list[str] = []
-    removed = set(old) - set(new)
-    added = set(new) - set(old)
-    # A same-byte path move is a rename; classify it separately from additions
-    # and removals while retaining only safe logical aliases in the receipt.
-    for old_key in sorted(removed):
-        matches = [key for key in added if old[old_key].sha256 == new[key].sha256]
-        if matches:
-            new_key = sorted(matches)[0]
-            details.append(f"renamed:{old_key[1]}:{old_key[2]}->{new_key[2]}")
-            added.remove(new_key)
-        else:
-            details.append(f"removed:{old_key[1]}:{old_key[2]}")
-    details.extend(f"added:{key[1]}:{key[2]}" for key in sorted(added))
-    for key in sorted(set(old) & set(new)):
-        if old[key].sha256 != new[key].sha256:
-            details.append(f"changed_bytes:{key[1]}:{key[2]}")
-    return tuple(details)
-
-
-def _recover_pending_capture(workspace: str | Path) -> None:
-    marker = read_json(workspace, "capture_pending.json")
-    if marker is None:
-        return
-    root = Path(workspace).resolve(strict=True)
-    final = root / Path(str(marker.get("final_relative", "")))
-    if not final.is_relative_to(root) or not final.is_dir() or final.is_symlink():
-        staging_name = marker.get("staging_name")
-        if isinstance(staging_name, str):
-            staging = root / ".rob2-kit" / "capture-staging" / staging_name
-            if staging.is_dir() and not staging.is_symlink():
-                shutil.rmtree(staging)
-        delete_json(workspace, "capture_pending.json")
-        return
-    sources = marker.get("sources")
-    if not isinstance(sources, list):
-        raise ValueError("capture recovery marker is corrupt")
-    for source in sources:
-        if not isinstance(source, dict):
-            raise ValueError("capture recovery marker is corrupt")
-        trial_id = source.get("trial_id")
-        candidate_id = source.get("candidate_identity")
-        digest = source.get("sha256")
-        if not all(isinstance(value, str) for value in (trial_id, candidate_id, digest)):
-            raise ValueError("capture recovery marker is corrupt")
-        path = final / trial_id / candidate_id
-        if not path.is_file() or path.is_symlink():
-            raise ValueError("capture recovery bytes are incomplete")
-        actual = "sha256:" + hashlib.sha256(path.read_bytes()).hexdigest()
-        if actual != digest:
-            raise ValueError("capture recovery bytes are corrupt")
-    batch_payload = {
-        "plan": marker["plan"],
-        "acknowledgment": marker["acknowledgment"],
-        "sources": sources,
-    }
-    captured_identity = str(marker["captured_identity"])
-    state = read_json(workspace, "state.json") or {}
-    state.update(
-        {
-            "phase": "proposal",
-            "captured_identity": captured_identity,
-            "plan_identity": marker["plan"],
-            "capture_pending": False,
-        }
-    )
-    write_jsons(
-        workspace,
-        {
-            "captured_batch.json": {
-                "kind": "captured_batch",
-                "identity": captured_identity,
-                **batch_payload,
-            },
-            "state.json": state,
-        },
-    )
-    delete_json(workspace, "capture_pending.json")
-
-
-def _captured_replay_is_exact(workspace: str | Path, captured_identity: object) -> bool:
-    if not isinstance(captured_identity, str):
-        return False
-    raw = read_json(workspace, "captured_batch.json")
-    if not isinstance(raw, dict) or set(raw) != {
-        "kind",
-        "identity",
-        "plan",
-        "acknowledgment",
-        "sources",
-    }:
-        return False
-    if raw.get("kind") != "captured_batch" or raw.get("identity") != captured_identity:
-        return False
-    payload = {key: raw[key] for key in ("plan", "acknowledgment", "sources")}
-    if identity(payload) != captured_identity or not isinstance(raw["sources"], list):
-        return False
-    root = (
-        Path(workspace).resolve(strict=True)
-        / ".rob2-kit"
-        / "sources-v3"
-        / captured_identity.removeprefix("sha256:")
-    )
-    for source in raw["sources"]:
-        if not isinstance(source, dict) or set(source) != {
-            "candidate_identity",
-            "trial_id",
-            "sha256",
-            "role",
-        }:
-            return False
-        if not all(isinstance(source[key], str) for key in source):
-            return False
-        path = root / source["trial_id"] / source["candidate_identity"]
-        if not path.is_file() or path.is_symlink():
-            return False
-        if "sha256:" + hashlib.sha256(path.read_bytes()).hexdigest() != source["sha256"]:
-            return False
-    return True
-
-
-def capture_batch(workspace: str | Path, request: CaptureRequest) -> CaptureReceipt:
-    with workspace_mutation_lock(workspace):
-        return _capture_batch_locked(workspace, request)
-
-
-def _capture_batch_locked(workspace: str | Path, request: CaptureRequest) -> CaptureReceipt:
-    _recover_pending_capture(workspace)
-    state = read_json(workspace, "state.json") or {}
-    plan = verify_intake_plan(read_json(workspace, "intake_plan.json"))
-    if request.plan.identity != plan.identity:
-        raise ValueError("capture plan is stale")
-    if (
-        state.get("ack_identity") != request.acknowledgment.identity
-        or verify_acknowledgment(
-            workspace,
-            "review_ack.json",
-            request.acknowledgment,
-            record=plan.reference,
-            purpose="intake",
-            authority=intake_required_authority(plan),
-        )
-        is None
-    ):
-        raise ValueError("capture acknowledgment is stale")
-    if state.get("captured_identity") and state.get("plan_identity") == plan.identity:
-        if not _captured_replay_is_exact(workspace, state.get("captured_identity")):
-            return CaptureReceipt(
-                outcome=OperationOutcome.CONDITION,
-                plan=request.plan,
-                acknowledgment=request.acknowledgment,
-                conditions=("captured_integrity_failure",),
+    requested_outcome: str,
+    expected_revision: ExpectedRevision,
+) -> dict[str, Any]:
+    """Discover all Trial dossiers and prepare one Batch for one outcome."""
+    if not isinstance(requested_outcome, str) or not requested_outcome.strip():
+        raise ValueError("requested_outcome must contain non-whitespace content")
+    root = _root(workspace)
+    _ensure(root)
+    directories = _trial_directories(root)
+    if not directories:
+        raise ValueError("input directory contains no Trial directories")
+    declarations: list[TrialDeclaration] = []
+    seen_ids: set[str] = set()
+    for directory in directories:
+        trial_id = _trial_id_from_directory(directory.name)
+        if trial_id in seen_ids:
+            raise ValueError(
+                f"Trial directory names produce a duplicate Trial ID: input/{directory.name}"
             )
-        reference = RecordReference(
-            kind=RecordKind.CAPTURED_BATCH,
-            identity=state["captured_identity"],
-            uri=record_uri("captured_batch", state["captured_identity"]),
+        seen_ids.add(trial_id)
+        declarations.append(
+            TrialDeclaration(
+                id=trial_id,
+                label=directory.name,
+                requested_outcome=requested_outcome,
+            )
         )
-        return CaptureReceipt(
-            outcome=OperationOutcome.SUCCESS,
-            captured_batch=reference,
-            plan=request.plan,
-            acknowledgment=request.acknowledgment,
-            next_action=SaveProposalContinuation(captured_batch=reference),
-        )
-    if state.get("ack_identity") != request.acknowledgment.identity or not state.get(
-        "review_satisfied"
-    ):
-        raise PermissionError("capture requires the exact stored Intake acknowledgment")
-    roots = _roots(workspace)
-    original = _preflight_record(workspace)
-    expected = {item.identity for item in original.candidates}
-    rescanned = preflight_sources(
-        workspace,
-        PreflightRequest(roots=roots, expected_head=plan.preflight.identity),
-        persist=False,
-    )
-    actual = {item.identity for item in rescanned.candidates}
-    if expected != actual:
-        return CaptureReceipt(
-            outcome=OperationOutcome.CONFLICT,
-            plan=request.plan,
-            acknowledgment=request.acknowledgment,
-            conditions=("inventory_drift", *_drift_details(original, rescanned)),
-            next_action=PreflightSourcesContinuation(),
-        )
-    candidates = _entry_candidates(rescanned)
-    included = [entry for entry in plan.entries if entry.disposition is SourceDisposition.INCLUDE]
-    workspace_path = Path(workspace).resolve(strict=True)
-    root_map = {root.alias: workspace_path / root.path for root in roots}
-    stage_root = Path(workspace).resolve(strict=True) / ".rob2-kit" / "capture-staging"
-    stage_root.mkdir(parents=True, exist_ok=True)
-    staging: Path | None = Path(tempfile.mkdtemp(prefix="batch-", dir=stage_root))
-    final: Path | None = None
-    published = False
-    try:
-        staged_sources: list[dict[str, object]] = []
-        for entry in included:
-            candidate = candidates[entry.candidate_identity]
-            source_path = root_map[candidate.root_alias] / Path(candidate.relative_path)
-            if not source_path.is_file() or source_path.is_symlink():
-                raise ValueError("source changed or redirected during capture")
-            destination = staging / candidate.trial_id / candidate.identity
-            destination.parent.mkdir(parents=True, exist_ok=True)
-            shutil.copyfile(source_path, destination)
-            copied_digest = "sha256:" + hashlib.sha256(destination.read_bytes()).hexdigest()
-            if copied_digest != candidate.sha256:
-                raise ValueError("source changed during capture")
-            staged_sources.append(
+    return prepare_batch(root, declarations, expected_revision)
+
+
+def prepare_batch(
+    workspace: str | Path,
+    trials: list[TrialDeclaration] | tuple[TrialDeclaration, ...],
+    expected_revision: ExpectedRevision,
+) -> dict[str, Any]:
+    normalized_trials: list[dict[str, Any]] = []
+    for item in trials:
+        normalized_trials.append(item.model_dump(mode="json"))
+    declaration_identity = _identity({"trials": normalized_trials})
+    root = _root(workspace)
+    _ensure(root)
+    current = _state(root)
+    existing_batch = current.get("batch")
+    existing_declaration_identity = current.get("declaration_identity")
+    if isinstance(existing_batch, dict) and isinstance(existing_declaration_identity, str):
+        if declaration_identity == existing_declaration_identity:
+            return _result("success", current, batch=existing_batch, retry=True)
+        if expected_revision != current.get("revision", 0):
+            raise WorkflowConflict(expected_revision, int(current.get("revision", 0)))
+        raise ValueError("prepare_batch declarations differ from the existing batch")
+    if expected_revision != current.get("revision", 0):
+        raise WorkflowConflict(expected_revision, int(current.get("revision", 0)))
+    if isinstance(existing_batch, dict):
+        raise ValueError("intake state is missing declaration identity")
+    if current.get("phase") != "empty":
+        raise ValueError("prepare_batch is not the current operation")
+    seen_trial_ids: set[str] = set()
+    seen_directories: set[Path] = set()
+    resolved_trials: list[tuple[dict[str, Any], Path]] = []
+    for raw_trial in normalized_trials:
+        trial_id = raw_trial["id"]
+        if re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_-]{0,127}", trial_id) is None:
+            raise ValueError("invalid trial identifier")
+        if trial_id in seen_trial_ids:
+            raise ValueError("duplicate trial identifier")
+        seen_trial_ids.add(trial_id)
+        directory = _trial_directory(root, str(raw_trial["label"]))
+        if directory in seen_directories:
+            raise ValueError(f"duplicate trial directory: input/{directory.name}")
+        seen_directories.add(directory)
+        resolved_trials.append((raw_trial, directory))
+
+    captured: list[dict[str, Any]] = []
+    conditions: list[dict[str, Any]] = []
+    source_root = internal_path(root, "sources")
+    source_root.mkdir(exist_ok=True)
+    for raw_trial, directory in resolved_trials:
+        trial_id = raw_trial["id"]
+        manifest_path = directory / "sources.toml"
+        if (manifest_path.exists() or _is_link_like(manifest_path)) and not _is_contained_source(
+            directory, manifest_path
+        ):
+            raise ValueError(f"sources.toml is outside the Trial directory: input/{directory.name}")
+        config = _manifest(directory)
+        omissions = config.get("omissions", [])
+        if not isinstance(omissions, list):
+            raise ValueError("sources.toml omissions must be a list")
+        omission_paths = [
+            item if isinstance(item, str) else str(item.get("path", "")) for item in omissions
+        ]
+        omission_records = [
+            item
+            if isinstance(item, dict)
+            else {"path": item, "reason": "other", "rationale": "omitted by sources.toml"}
+            for item in omissions
+        ]
+        role_map = config.get("roles", {})
+        if not isinstance(role_map, dict):
+            raise ValueError("sources.toml roles must be a table")
+        if isinstance(config.get("sources"), list):
+            role_map = {
+                str(item.get("path", item.get("file", ""))): item.get("role", "other")
+                for item in config["sources"]
+                if isinstance(item, dict)
+            }
+        nct = _manifest_registry_identifier(config)
+        records: list[dict[str, Any]] = []
+        for path in sorted(directory.rglob("*"), key=lambda item: item.as_posix().casefold()):
+            if (
+                not path.is_file()
+                or path.name == "sources.toml"
+                or not _is_contained_source(directory, path)
+            ):
+                continue
+            relative = path.relative_to(directory).as_posix()
+            if any(part.startswith(".") for part in Path(relative).parts):
+                continue
+            data = path.read_bytes()
+            if not _supported(path, data):
+                continue
+            digest = "sha256:" + hashlib.sha256(data).hexdigest()
+            source_id = _source_id(trial_id, relative, digest)
+            if relative in omission_paths or path.name in omission_paths:
+                continue
+            try:
+                pages = _pages(path, data)
+            except (UnicodeDecodeError, ValueError, pymupdf.FileDataError):
+                conditions.append(
+                    {"code": "unreadable_source", "trial_id": trial_id, "path": relative}
+                )
+                continue
+            target = internal_path(root, "sources", trial_id, f"{source_id}.bin")
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_bytes(data)
+            role = str(role_map.get(relative, role_map.get(path.name, _reserved_role(relative))))
+            record = {
+                "id": source_id,
+                "trial_id": trial_id,
+                "role": role,
+                "label": path.name,
+                "logical_path": relative,
+                "sha256": digest,
+                "media_type": "application/pdf" if data.startswith(b"%PDF-") else "text/plain",
+                "page_count": len(pages),
+                "origin": "local_dossier",
+                "projection_hash": _projection_hash(
+                    digest,
+                    "application/pdf" if data.startswith(b"%PDF-") else "text/plain",
+                    pages,
+                ),
+            }
+            records.append(record)
+            with _db(root, "derivative.sqlite3") as derivative:
+                derivative.executemany(
+                    "INSERT OR REPLACE INTO pages VALUES (?,?,?)",
+                    [(source_id, number, text) for number, text in enumerate(pages, 1)],
+                )
+                derivative.execute("DELETE FROM pages_fts WHERE source_id=?", (source_id,))
+                derivative.executemany(
+                    "INSERT INTO pages_fts VALUES (?,?,?,?)",
+                    [
+                        (source_id, number, *_search_derivative(text))
+                        for number, text in enumerate(pages, 1)
+                    ],
+                )
+        registry_capture = _registry_record(nct)
+        registry_record = registry_capture.outcome
+        if registry_capture.content is not None:
+            relative = f"registry/{nct}.json"
+            data = registry_capture.content
+            digest = "sha256:" + hashlib.sha256(data).hexdigest()
+            source_id = _source_id(trial_id, relative, digest)
+            pages = _pages(Path(relative), data)
+            media_type = "application/json"
+            target = internal_path(root, "sources", trial_id, f"{source_id}.bin")
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_bytes(data)
+            records.append(
                 {
-                    "candidate_identity": candidate.identity,
-                    "trial_id": candidate.trial_id,
-                    "sha256": candidate.sha256,
-                    "role": entry.role,
+                    "id": source_id,
+                    "trial_id": trial_id,
+                    "role": "registry",
+                    "label": f"ClinicalTrials.gov {nct}",
+                    "logical_path": relative,
+                    "sha256": digest,
+                    "media_type": media_type,
+                    "page_count": len(pages),
+                    "origin": "registry",
+                    "projection_hash": _projection_hash(digest, media_type, pages),
                 }
             )
-        batch_payload = {
-            "plan": plan.identity,
-            "acknowledgment": request.acknowledgment.identity,
-            "sources": sorted(
-                staged_sources,
-                key=lambda item: (str(item["trial_id"]), str(item["candidate_identity"])),
-            ),
+            with _db(root, "derivative.sqlite3") as derivative:
+                derivative.executemany(
+                    "INSERT OR REPLACE INTO pages VALUES (?,?,?)",
+                    [(source_id, number, text) for number, text in enumerate(pages, 1)],
+                )
+                derivative.execute("DELETE FROM pages_fts WHERE source_id=?", (source_id,))
+                derivative.executemany(
+                    "INSERT INTO pages_fts VALUES (?,?,?,?)",
+                    [
+                        (source_id, number, *_search_derivative(text))
+                        for number, text in enumerate(pages, 1)
+                    ],
+                )
+        if nct is not None and (not isinstance(nct, str) or not re.fullmatch(r"NCT\d{8}", nct)):
+            conditions.append(
+                {"code": "invalid_registry_identifier", "trial_id": trial_id, "value": str(nct)}
+            )
+        # A plain dossier has no registry claim to review.  A manifest that
+        # declares an authoritative NCT or registry outcome does.
+        if (nct is not None or "registry" in config) and registry_record.get("kind") != "matched":
+            conditions.append(
+                {
+                    "code": "registry_review",
+                    "trial_id": trial_id,
+                    "outcome": registry_record,
+                }
+            )
+        if omissions:
+            conditions.append(
+                {
+                    "code": "omission_review",
+                    "trial_id": trial_id,
+                    "paths": omission_paths,
+                    "records": omission_records,
+                }
+            )
+        if not records:
+            conditions.append({"code": "no_supported_sources", "trial_id": trial_id})
+        captured_trial = {
+            "id": trial_id,
+            "label": raw_trial["label"],
+            "requested_outcome": raw_trial["requested_outcome"],
+            "sources": records,
+            "registry": registry_record,
+            "omissions": omission_records,
         }
-        captured_identity = identity(batch_payload)
-        final = (
-            Path(workspace).resolve(strict=True)
-            / ".rob2-kit"
-            / "sources-v3"
-            / captured_identity.removeprefix("sha256:")
+        captured.append(CapturedTrial.model_validate(captured_trial).model_dump(mode="json"))
+    batch = {"trials": captured, "conditions": conditions}
+    batch["identity"] = _identity(batch)
+    # Validate the complete canonical Batch before creating any derivative
+    # indexes or committing the workflow head.  Intake conditions are kept in
+    # the public condition vocabulary; the workflow model validates their
+    # typed presence while the persisted fields above remain closed below.
+    CapturedBatch.model_validate(
+        {
+            "trials": batch["trials"],
+            "conditions": [
+                {
+                    "kind": "review_condition",
+                    "code": condition["code"],
+                    "trial_id": condition.get("trial_id"),
+                    "detail": condition["code"],
+                }
+                for condition in batch["conditions"]
+            ],
+            "identity": None,
+        }
+    )
+    # Keep an indexed direct resolver for immutable Source handles.  The
+    # payload remains derivative navigation state; Canonical retains the
+    # captured Source record and bytes.
+    with _db(root, "derivative.sqlite3") as derivative:
+        derivative.executemany(
+            "INSERT OR REPLACE INTO source_index(source_id,batch_id,trial_id,payload) "
+            "VALUES (?,?,?,?)",
+            [
+                (source["id"], batch["identity"], trial["id"], canonical_json_bytes(source))
+                for trial in captured
+                for source in trial["sources"]
+            ],
         )
-        final.parent.mkdir(parents=True, exist_ok=True)
-        if final.exists():
-            # A failed transaction can leave only staged bytes.  It has no
-            # ledger record and is deliberately never an observable capture.
-            shutil.rmtree(final)
-        write_jsons(
-            workspace,
-            {
-                "capture_pending.json": {
-                    "plan": plan.identity,
-                    "acknowledgment": request.acknowledgment.identity,
-                    "captured_identity": captured_identity,
-                    "final_relative": final.relative_to(
-                        Path(workspace).resolve(strict=True)
-                    ).as_posix(),
-                    "staging_name": staging.name,
-                    "sources": staged_sources,
-                },
-                "state.json": {**state, "capture_pending": True},
+    state = {
+        **current,
+        "phase": "proposal",
+        "declaration_identity": declaration_identity,
+        "batch": batch,
+        "trial_dispositions": {t["id"]: "pending" for t in captured},
+        "review": None,
+        "proposal": None,
+        "discard_identity": None,
+    }
+    records: dict[str, dict[str, Any]] = {"batch": batch}
+    state = _commit_records(root, state, expected_revision, records)
+    result = _result(
+        "success",
+        state,
+        batch_identity=batch["identity"],
+        conditions=conditions,
+        trials=captured,
+    )
+    return result
+
+
+def discard_workspace(workspace: str | Path) -> dict[str, Any]:
+    """Researcher-only reset that preserves finalized artifacts and an audit tombstone."""
+    root = _root(workspace)
+    _ensure(root)
+    state = _state(root)
+    if state.get("phase") == "empty" and state.get("discard_identity"):
+        tombstone = _read(root, f"discard:{state['discard_identity']}")
+        if not isinstance(tombstone, dict):
+            raise ValueError("discard tombstone is unavailable")
+        _clear_discarded_derivatives(root)
+        return _result("success", state, discard=tombstone, retry=True)
+    if state.get("phase") == "empty":
+        return _result(
+            "condition",
+            state,
+            condition={
+                "code": "no_active_batch",
+                "detail": "discard requires an active or finalized Batch.",
             },
         )
-        os.replace(staging, final)
-        staging = None
-        record = RecordReference(
-            kind=RecordKind.CAPTURED_BATCH,
-            identity=captured_identity,
-            uri=record_uri("captured_batch", captured_identity),
+    artifact = state.get("artifact") if isinstance(state.get("artifact"), dict) else None
+    tombstone = {
+        "kind": "discard_tombstone",
+        "from_phase": state.get("phase"),
+        "from_revision": state.get("revision", 0),
+        "batch_identity": (state.get("batch") or {}).get("identity"),
+        "artifact": artifact,
+    }
+    tombstone["identity"] = _identity(tombstone)
+    empty = {
+        "phase": "empty",
+        "revision": state.get("revision", 0),
+        "trial_dispositions": {},
+        "discard_identity": tombstone["identity"],
+    }
+    committed = _commit_records(
+        root,
+        empty,
+        state.get("revision", 0),
+        {f"discard:{tombstone['identity']}": tombstone},
+    )
+    with _db(root, "canonical.sqlite3") as connection:
+        connection.execute(
+            "DELETE FROM records WHERE name NOT IN (?, ?)",
+            ("state", f"discard:{tombstone['identity']}"),
         )
-        state.update(
-            {
-                "phase": "proposal",
-                "captured_identity": captured_identity,
-                "plan_identity": plan.identity,
-                "capture_pending": False,
-            }
+    _clear_discarded_derivatives(root)
+    return _result("success", committed, discard=tombstone)
+
+
+def _clear_discarded_derivatives(root: Path) -> None:
+    sources = internal_path(root, "sources")
+    if sources.exists():
+        shutil.rmtree(sources)
+    sources.mkdir(parents=True, exist_ok=True)
+    with _db(root, "derivative.sqlite3") as connection:
+        for table in (
+            "source_index",
+            "pages",
+            "evidence_handles",
+            "search_receipts",
+            "renders",
+        ):
+            connection.execute(f"DELETE FROM {table}")
+        connection.execute("DELETE FROM pages_fts")
+
+
+def approve_review(
+    workspace: str | Path,
+    review_reference: str | None = None,
+    *,
+    caller: str = "cli",
+    method: str = "cli",
+) -> dict[str, Any]:
+    root = _root(workspace)
+    _ensure(root)
+    state = _state(root)
+    review = state.get("review")
+    if not isinstance(review, dict):
+        prior_ack = state.get("proposal_acknowledgment")
+        if isinstance(prior_ack, dict):
+            acknowledgment = ReviewAcknowledgment.model_validate(prior_ack).model_dump(mode="json")
+            if (
+                review_reference is not None
+                and review_reference != acknowledgment["review_identity"]
+            ):
+                raise ValueError("the exact displayed Review record must be acknowledged")
+            return _result(
+                "success",
+                state,
+                approved=True,
+                retry=True,
+                acknowledgment=acknowledgment["identity"],
+                acknowledgment_record=acknowledgment,
+                continuation=_continuation(state),
+            )
+        return _result("success", state, retry=True)
+    if review.get("purpose") != "proposal":
+        raise ValueError("only Proposal Review is researcher-authorized")
+    if review_reference != review.get("identity"):
+        raise ValueError("the exact displayed Review record must be acknowledged")
+    acknowledgment = {
+        "review_identity": review["identity"],
+        "purpose": review["purpose"],
+        "caller": caller,
+        "method": method,
+        "observed_at": datetime.now(UTC).isoformat(),
+        "workflow_basis": review["workflow_basis"],
+    }
+    acknowledgment = ReviewAcknowledgment.model_validate(acknowledgment).model_dump(mode="json")
+    if state.get("phase") == "proposal":
+        disposition = dict(state.get("trial_dispositions", {}))
+        terminals = dict(state.get("terminals", {}))
+        terminal_records: dict[str, dict[str, Any]] = {}
+        for result in state["proposal"]["payload"]["results"]:
+            if result.get("kind") == "unavailable":
+                terminal = {
+                    "trial_id": result["trial_id"],
+                    "disposition": "needs_input",
+                    "reason": "The requested Result is not assessable from the captured Sources.",
+                    "missing_facts": [
+                        item.get("fact", "") if isinstance(item, dict) else item
+                        for item in result.get("missing_facts", [])
+                    ],
+                }
+                terminal["identity"] = _identity(terminal)
+                terminals[terminal["identity"]] = terminal
+                terminal_records[f"terminal:{terminal['identity']}"] = terminal
+                disposition[result["trial_id"]] = "needs_input"
+        phase = (
+            "ready_to_finalize"
+            if not any(value == "pending" for value in disposition.values())
+            else "assessment"
         )
-        write_jsons(
-            workspace,
-            {
-                "captured_batch.json": {
-                    "kind": "captured_batch",
-                    "identity": captured_identity,
-                    **batch_payload,
-                },
-                "state.json": state,
+        state = {
+            **state,
+            "trial_dispositions": disposition,
+            "phase": phase,
+            "review": None,
+            "proposal_review": review,
+            "proposal_acknowledgment": acknowledgment,
+            "terminals": terminals,
+            "acknowledgments": [*state.get("acknowledgments", []), acknowledgment],
+            "domain_index": {
+                trial_id: [] for trial_id, value in disposition.items() if value == "pending"
             },
+        }
+        approval_revision = state.get("revision", 0)
+        if isinstance(approval_revision, bool) or not isinstance(approval_revision, int):
+            raise ValueError("workflow state revision is invalid")
+        state = _commit_records(
+            root,
+            state,
+            approval_revision,
+            {f"acknowledgment:{acknowledgment['identity']}": acknowledgment, **terminal_records},
         )
-        delete_json(workspace, "capture_pending.json")
-        published = True
-        return CaptureReceipt(
-            outcome=OperationOutcome.SUCCESS,
-            captured_batch=record,
-            plan=request.plan,
-            acknowledgment=request.acknowledgment,
-            next_action=SaveProposalContinuation(captured_batch=record),
-        )
-    finally:
-        if staging is not None and staging.exists():
-            shutil.rmtree(staging)
-        if final is not None and final.exists() and not published:
-            shutil.rmtree(final)
+    return _result(
+        "success",
+        state,
+        approved=True,
+        acknowledgment_record=acknowledgment,
+        acknowledgment=acknowledgment["identity"],
+        continuation=_continuation(state),
+    )

@@ -7,6 +7,7 @@ import asyncio
 import hashlib
 import json
 from pathlib import Path
+from typing import cast
 
 from fastmcp import Client
 from pydantic import BaseModel, ConfigDict
@@ -19,10 +20,7 @@ class ContractExample(BaseModel):
     resource: str
 
 
-EXAMPLES = (
-    ContractExample(name="current_status", resource="rob2://current-batch"),
-    ContractExample(name="render_resource", resource="rob2://render/{identity}"),
-)
+EXAMPLES = (ContractExample(name="current_status", resource="rob2://current-batch"),)
 
 
 def _schema_hash(schema: dict[str, object]) -> str:
@@ -35,21 +33,32 @@ async def _manifest() -> dict[str, object]:
 
     async with Client(mcp) as client:
         tools = await client.list_tools()
-        resources = [str(item.uri) for item in await client.list_resources()]
+        if any(tool.outputSchema is None for tool in tools):
+            raise ValueError("public MCP tool is missing outputSchema")
+        resource_items = await client.list_resources()
+        if any(not (item.description or "").strip() for item in resource_items):
+            raise ValueError("public MCP resource is missing description")
+        resources = [str(item.uri) for item in resource_items]
         templates = [str(item.uriTemplate) for item in await client.list_resource_templates()]
     hosts = Path(__file__).parent / "hosts"
     host = json.loads((hosts / "codex.json").read_text(encoding="utf-8"))
     return {
+        "contract_version": "0.3.0",
         "tools": [
             {
                 "name": tool.name,
+                "description": (tool.description or "").strip(),
                 "read_only": bool(tool.annotations and tool.annotations.readOnlyHint),
-                "open_world": bool(tool.annotations and tool.annotations.openWorldHint),
+                "open_world": tool.annotations.openWorldHint if tool.annotations else None,
                 "schema_sha256": _schema_hash(tool.inputSchema),
+                "output_schema_sha256": _schema_hash(cast(dict[str, object], tool.outputSchema)),
             }
             for tool in tools
         ],
         "resources": resources,
+        "resource_descriptions": {
+            str(item.uri): (item.description or "").strip() for item in resource_items
+        },
         "resource_templates": templates,
         "skill_pointers": host["skills"],
         "examples": [example.model_dump(mode="json") for example in EXAMPLES],

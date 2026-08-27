@@ -1,7 +1,6 @@
 {
   "host": "claude-code",
   "mcp_command": "rob2 mcp",
-  "assess_command": "rob2 assess --host claude-code",
   "skill_directory": "rob2_kit/skills",
-  "skills": ["rob2-workflow", "rob2-signalling"]
+  "skills": ["rob2-assess"]
 }

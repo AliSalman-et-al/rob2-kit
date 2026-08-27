@@ -14,10 +14,10 @@ _CONTENT = {
     "source_priority": (
         "main_article",
         "registry",
-        "protocol",
-        "sap",
         "supplement",
-        "secondary_report",
+        "sap",
+        "protocol",
+        "other",
     ),
     "contradiction_checks": (
         "retain material contradicting evidence",

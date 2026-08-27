@@ -1,1234 +1,1343 @@
-"""Restart-safe navigation and Evidence records for the application boundary."""
-# ruff: noqa: E501
-
-from __future__ import annotations
-
 import hashlib
+import json
+import math
 import re
-from enum import StrEnum
+import sqlite3
+import unicodedata
 from pathlib import Path
-from typing import Annotated, Literal, TypeAlias
+from typing import Any
 
-from pydantic import (
-    AfterValidator,
-    BaseModel,
-    ConfigDict,
-    Field,
-    TypeAdapter,
-    field_validator,
-    model_validator,
+import pymupdf
+
+from ..models import canonical_json_bytes
+from ..workflow_models import SearchReceiptHandle
+from ._state import (
+    _canonical_search_text,
+    _db,
+    _ensure,
+    _identity,
+    _normalized_text_with_spans,
+    _ordered_sources,
+    _projection_hash,
+    _read,
+    _root,
+    _search_derivative,
+    internal_path,
 )
+from .contracts import COUNTERS
 
-from rob2_kit.retrieval import (
-    RetrievalSnapshot,
-    authoritative_sources,
-    build_retrieval_snapshot,
+_INCOMPLETE_DOMAIN_LEADS = (
+    "the following",
+    "as follows",
+    "following factors",
+    "following stratification",
+    "following stratifications",
 )
-from rob2_kit.sources import Source, SourceRole, _extract_pages, sha256_bytes
-from rob2_kit.storage import read_only_transaction
-from rob2_kit.text_projection import (
-    TextProjectionIdentity,
-    canonical_projection_identity,
-    projection_identity,
-    unicode61_tokens,
+_INCOMPLETE_BOUNDARY_LEADS = _INCOMPLETE_DOMAIN_LEADS + ("please note",)
+_INCOMPLETE_BOUNDARY_TERMINALS = frozenset(
+    "a an the this that these those each every either neither of to for from with "
+    "without by in on at into onto upon between among through during after before "
+    "under over within per via and or nor but as than if whether because while when "
+    "although whereas which who whom whose is are was were be been being has have "
+    "had do does did can could may might must shall should will would".split()
 )
-
-from ._state import identity, read_json, write_json
-from .contracts import EvidenceReference, RenderReference
-
-
-class _Closed(BaseModel):
-    model_config = ConfigDict(extra="forbid", frozen=True)
-
-
-def _require_nonblank(value: str) -> str:
-    if not value.strip():
-        raise ValueError("transcription must contain non-whitespace text")
-    return value
-
-
-NonBlankTranscription = Annotated[str, Field(min_length=1), AfterValidator(_require_nonblank)]
-
-
-class LexicalMode(StrEnum):
-    ALL_TERMS = "all_terms"
-    EXACT_PHRASE = "exact_phrase"
-    ANY_TERMS = "any_terms"
-    PREFIX_TERMS = "prefix_terms"
-
-
-class SourceAlias(_Closed):
-    alias: str
-    source_id: str
-    role: SourceRole
-    origin: Literal["local", "registry"]
-    media_type: str
-    page_count: int = Field(ge=1)
-    sha256: str
-    projection_hash: str
-    limitations: tuple[str, ...] = ()
-
-
-class SearchRequest(_Closed):
-    kind: Literal["search"]
-    query: str = Field(min_length=1)
-    mode: LexicalMode
-    source_aliases: tuple[str, ...] = ()
-    limit: int = Field(default=5, ge=1, le=20)
-    cursor: str | None = Field(default=None, pattern=r"^sha256:[0-9a-f]{64}$")
-
-    @model_validator(mode="after")
-    def source_aliases_are_unique(self) -> SearchRequest:
-        if len(self.source_aliases) != len(set(self.source_aliases)):
-            raise ValueError("source aliases must be unique")
-        return self
-
-
-class SearchContinuation(_Closed):
-    kind: Literal["continuation"]
-    cursor: str = Field(min_length=1)
-
-
-class PageReadRequest(_Closed):
-    kind: Literal["page_read"]
-    source_alias: str
-    page: int = Field(ge=1)
-
-
-class NormalSelectionRequest(_Closed):
-    kind: Literal["normal_selection"]
-    hit: str = Field(pattern=r"^sha256:[0-9a-f]{64}$")
-    extent: Literal["match", "sentence", "paragraph", "table_row"]
-
-
-class ManualSelectionRequest(_Closed):
-    kind: Literal["manual_selection"]
-    source_alias: str
-    page: int = Field(ge=1)
-    start: int = Field(ge=0)
-    end: int = Field(gt=0)
-    quote: str = Field(min_length=1)
-
-    @model_validator(mode="after")
-    def span_is_ordered(self) -> ManualSelectionRequest:
-        if self.end <= self.start or self.end - self.start != len(self.quote):
-            raise ValueError("manual extent must bind the exact Unicode quote")
-        return self
-
-
-class VisualSelectionRequest(_Closed):
-    kind: Literal["visual_selection"]
-    render: RenderReference
-    transcription: NonBlankTranscription
-
-
-class EvidenceCatalogRequest(_Closed):
-    kind: Literal["catalog"]
-    basis: str | None = Field(default=None, pattern=r"^sha256:[0-9a-f]{64}$")
-    after: EvidenceReference | None = None
-
-    @model_validator(mode="after")
-    def pagination_is_paired(self) -> EvidenceCatalogRequest:
-        if (self.basis is None) != (self.after is None):
-            raise ValueError("catalog basis and after must be supplied together")
-        return self
-
-
-class EvidenceRetrievalRequest(_Closed):
-    trial_id: str
-    searches: tuple[SearchRequest, ...] = ()
-    continuations: tuple[SearchContinuation, ...] = ()
-    page_reads: tuple[PageReadRequest, ...] = ()
-    normal_selections: tuple[NormalSelectionRequest, ...] = ()
-    manual_selections: tuple[ManualSelectionRequest, ...] = ()
-    visual_selections: tuple[VisualSelectionRequest, ...] = ()
-    catalog: EvidenceCatalogRequest | None = None
-
-    @model_validator(mode="after")
-    def has_work(self) -> EvidenceRetrievalRequest:
-        if not any(
-            (
-                self.searches,
-                self.continuations,
-                self.page_reads,
-                self.normal_selections,
-                self.manual_selections,
-                self.visual_selections,
-                self.catalog,
-            )
-        ):
-            raise ValueError("retrieval request must contain an operation")
-        if (
-            len(self.searches)
-            + len(self.continuations)
-            + len(self.page_reads)
-            + len(self.normal_selections)
-            + len(self.manual_selections)
-            + len(self.visual_selections)
-            + int(self.catalog is not None)
-            > 8
-        ):
-            raise ValueError("retrieval request may contain at most 8 operations")
-        if self.catalog is not None and any(
-            (
-                self.searches,
-                self.continuations,
-                self.page_reads,
-                self.normal_selections,
-                self.manual_selections,
-                self.visual_selections,
-            )
-        ):
-            raise ValueError("catalog retrieval is exclusive of other operations")
-        return self
-
-
-class HitSpan(_Closed):
-    start: int = Field(ge=0)
-    end: int = Field(gt=0)
-    text: str
-
-
-class Hit(_Closed):
-    identity: str = Field(pattern=r"^sha256:[0-9a-f]{64}$")
-    snapshot: str
-    source_alias: str
-    source_id: str
-    page: int = Field(ge=1)
-    projection_hash: str
-    preview: str
-    spans: tuple[HitSpan, ...]
-    omitted_match_count: int = Field(default=0, ge=0)
-    available_extents: tuple[str, ...] = ("match", "sentence", "paragraph", "table_row")
-    next_cursor: str | None = None
-
-
-class Cursor(_Closed):
-    kind: Literal["cursor"] = "cursor"
-    identity: str = Field(pattern=r"^sha256:[0-9a-f]{64}$")
-    snapshot: str
-    query: str
-    mode: LexicalMode
-    source_aliases: tuple[str, ...]
-    offset: int = Field(ge=0)
-    limit: int = Field(ge=1, le=20)
-    projection_hashes: tuple[str, ...]
-
-
-class PageRead(_Closed):
-    source_alias: str
-    page: int
-    text: str
-
-
-_HASH = r"^sha256:[0-9a-f]{64}$"
-
-
-class TextEvidenceRecord(_Closed):
-    kind: Literal["text"]
-    identity: str = Field(pattern=_HASH, strict=True)
-    trial_id: str = Field(min_length=1, strict=True)
-    snapshot: str = Field(pattern=_HASH, strict=True)
-    source_id: str = Field(min_length=1, strict=True)
-    source_sha256: str = Field(pattern=_HASH, strict=True)
-    projection_hash: str = Field(pattern=_HASH, strict=True)
-    page: int = Field(ge=1, strict=True)
-    start: int = Field(ge=0, strict=True)
-    end: int = Field(gt=0, strict=True)
-    quote: str = Field(min_length=1, strict=True)
-    quote_sha256: str = Field(pattern=_HASH, strict=True)
-
-    @model_validator(mode="after")
-    def quote_extent_is_exact(self) -> TextEvidenceRecord:
-        if self.end <= self.start or self.end - self.start != len(self.quote):
-            raise ValueError("Evidence extent must bind the exact Unicode quote")
-        return self
-
-
-class VisualEvidenceRecord(_Closed):
-    kind: Literal["visual"]
-    identity: str = Field(pattern=_HASH, strict=True)
-    trial_id: str = Field(min_length=1, strict=True)
-    snapshot: str = Field(pattern=_HASH, strict=True)
-    source_id: str = Field(min_length=1, strict=True)
-    source_sha256: str = Field(pattern=_HASH, strict=True)
-    projection_hash: str = Field(pattern=_HASH, strict=True)
-    page: int = Field(ge=1, strict=True)
-    region: tuple[float, float, float, float] | None = None
-    render: RenderReference
-    transcription: NonBlankTranscription
-
-    @field_validator("region", mode="before")
-    @classmethod
-    def normalized_region(cls, value: object):
-        if value is None:
-            return value
-        if (
-            not isinstance(value, (list, tuple))
-            or len(value) != 4
-            or any(isinstance(item, bool) or not isinstance(item, (int, float)) for item in value)
-        ):
-            raise ValueError("region must contain four finite numbers")
-        x0, y0, x1, y1 = (float(item) for item in value)
-        import math
-
-        if not all(math.isfinite(item) for item in (x0, y0, x1, y1)) or not (
-            0 <= x0 < x1 <= 1 and 0 <= y0 < y1 <= 1
-        ):
-            raise ValueError("region must be normalized and ordered")
-        return (x0, y0, x1, y1)
-
-
-EvidenceRecord: TypeAlias = TextEvidenceRecord | VisualEvidenceRecord
-_EVIDENCE_RECORD = TypeAdapter(Annotated[EvidenceRecord, Field(discriminator="kind")])
-
-
-def parse_evidence_record(value: object) -> EvidenceRecord:
-    """Parse the one canonical, closed Evidence union at every trust boundary."""
-    return _EVIDENCE_RECORD.validate_python(value)
-
-
-class TextEvidenceCatalogEntry(_Closed):
-    kind: Literal["text"] = "text"
-    evidence: EvidenceReference
-    source_id: str = Field(min_length=1, strict=True)
-    source_alias: str = Field(min_length=1, max_length=16, strict=True)
-    page: int = Field(ge=1, strict=True)
-    start: int = Field(ge=0, strict=True)
-    end: int = Field(gt=0, strict=True)
-    preview: str = Field(min_length=1, max_length=160, strict=True)
-    truncated: bool = Field(strict=True)
-
-    @model_validator(mode="after")
-    def coordinates_are_ordered(self) -> TextEvidenceCatalogEntry:
-        if self.end <= self.start:
-            raise ValueError("catalog text coordinates must be ordered")
-        return self
-
-
-class VisualEvidenceCatalogEntry(_Closed):
-    kind: Literal["visual"] = "visual"
-    evidence: EvidenceReference
-    source_id: str = Field(min_length=1, strict=True)
-    source_alias: str = Field(min_length=1, max_length=16, strict=True)
-    page: int = Field(ge=1, strict=True)
-    region: tuple[float, float, float, float] | None
-    preview: str = Field(min_length=1, max_length=160, strict=True)
-    truncated: bool = Field(strict=True)
-
-    @field_validator("region", mode="before")
-    @classmethod
-    def normalized_region(cls, value: object):
-        return VisualEvidenceRecord.normalized_region(value)
-
-
-EvidenceCatalogEntry = Annotated[
-    TextEvidenceCatalogEntry | VisualEvidenceCatalogEntry, Field(discriminator="kind")
-]
-
-
-class EvidenceCatalogSlice(_Closed):
-    basis: str = Field(pattern=_HASH, strict=True)
-    entries: tuple[EvidenceCatalogEntry, ...] = Field(max_length=32)
-    has_more: bool = Field(strict=True)
-    next_after: EvidenceReference | None = None
-
-    @model_validator(mode="after")
-    def page_is_keyset_ordered(self) -> EvidenceCatalogSlice:
-        identities = [entry.evidence.identity for entry in self.entries]
-        if identities != sorted(identities) or len(identities) != len(set(identities)):
-            raise ValueError("catalog entries must be sorted and unique")
-        if self.has_more != (self.next_after is not None):
-            raise ValueError("catalog continuation does not match has_more")
-        if self.next_after is not None and (
-            not identities or self.next_after.identity != identities[-1]
-        ):
-            raise ValueError("catalog continuation must be the final entry")
-        return self
-
-
-class EvidenceCondition(_Closed):
-    code: Literal[
-        "no_hits",
-        "ambiguous",
-        "invalid_cursor",
-        "source_out_of_scope",
-        "page_out_of_range",
-        "visual_render_required",
-        "render_unavailable",
-        "stale_catalog",
-    ]
-    detail: str
-    next_action: str
-
-
-class EvidenceRetrievalResponse(_Closed):
-    snapshot: str
-    hits: tuple[Hit, ...] = ()
-    continuations: tuple[Cursor, ...] = ()
-    page_reads: tuple[PageRead, ...] = ()
-    evidence: tuple[EvidenceReference, ...] = ()
-    catalog: EvidenceCatalogSlice | None = None
-    conditions: tuple[EvidenceCondition, ...] = ()
-
-
-def list_sources(workspace: str | Path, trial_id: str) -> tuple[SourceAlias, ...]:
-    sources, projections = _source_basis(workspace, trial_id)
-    aliases: list[SourceAlias] = []
-    for number, (source, projection) in enumerate(zip(sources, projections, strict=True), 1):
-        aliases.append(
-            SourceAlias(
-                alias=f"s{number}",
-                source_id=source.id,
-                role=source.role.value,
-                origin="registry" if source.role.value == "registry" else "local",
-                media_type=source.media_type,
-                page_count=source.page_count,
-                sha256=source.sha256,
-                projection_hash=projection.projection_hash,
-                limitations=source.extraction_warnings,
-            )
-        )
-    return tuple(aliases)
-
-
-def source_records(workspace: str | Path, trial_id: str) -> tuple[Source, ...]:
-    return _source_basis(workspace, trial_id)[0]
-
-
-def _source_basis(
-    workspace: str | Path, trial_id: str
-) -> tuple[tuple[Source, ...], tuple[TextProjectionIdentity, ...]]:
-    """Read either the new application capture or the legacy verified basis."""
-    captured = read_json(workspace, "captured_batch.json")
-    preflight = read_json(workspace, "preflight.json")
-    if captured is None or preflight is None:
-        sources = authoritative_sources(workspace, trial_id)
-        return sources, tuple(
-            canonical_projection_identity(workspace, source) for source in sources
-        )
-    candidate_rows = {
-        str(item["identity"]): item
-        for item in preflight.get("candidates", ())
-        if isinstance(item, dict)
-    }
-    source_rows = [
-        item
-        for item in captured.get("sources", ())
-        if isinstance(item, dict) and item.get("trial_id") == trial_id
-    ]
-    built: list[Source] = []
-    projections: list[TextProjectionIdentity] = []
-    root = Path(workspace).resolve(strict=True)
-    captured_identity = str(captured.get("identity", "")).removeprefix("sha256:")
-    for row in source_rows:
-        candidate = candidate_rows.get(str(row.get("candidate_identity")))
-        if candidate is None:
-            raise ValueError("application capture references an unknown candidate")
-        path = (
-            Path(".rob2-kit")
-            / "sources-v3"
-            / captured_identity
-            / trial_id
-            / str(row["candidate_identity"])
-        )
-        data_path = root / path
-        if not data_path.is_file() or data_path.is_symlink():
-            raise ValueError("application capture bytes are unavailable")
-        data = data_path.read_bytes()
-        if sha256_bytes(data) != row.get("sha256"):
-            raise ValueError("application capture bytes are stale")
-        media = str(candidate["media_type"])
-        pages = _extract_pages(data, media)
-        source = Source(
-            id=str(candidate["identity"]),
-            trial_id=trial_id,
-            role=SourceRole(str(row["role"])),
-            label=Path(str(candidate["relative_path"])).name,
-            sha256=str(row["sha256"]),
-            media_type=media,
-            page_count=len(pages),
-            extraction_warnings=(),
-            captured_path=path.as_posix(),
-        )
-        built.append(source)
-        projections.append(projection_identity(source, pages))
-    ordered = tuple(
-        sorted(
-            zip(built, projections, strict=True),
-            key=lambda pair: (
-                int(pair[0].role is not SourceRole.MAIN_ARTICLE),
-                pair[0].label.casefold(),
-                pair[0].id,
-            ),
-        )
-    )
-    return tuple(item[0] for item in ordered), tuple(item[1] for item in ordered)
-
-
-def _context(workspace: str | Path, trial_id: str):
-    captured = read_json(workspace, "captured_batch.json")
-    if captured is None:
-        context = build_retrieval_snapshot(workspace, trial_id)
-    else:
-        sources, projections = _source_basis(workspace, trial_id)
-        pages = {
-            source.id: _extract_pages(
-                (Path(workspace).resolve(strict=True) / source.captured_path).read_bytes(),
-                source.media_type,
-            )
-            for source in sources
-        }
-        scope_hash = str(captured.get("identity"))
-        snapshot_content = {
-            "trial_id": trial_id,
-            "scope_kind": "captured_batch",
-            "scope_hash": scope_hash,
-            "source_ids": tuple(source.id for source in sources),
-            "source_hashes": tuple(source.sha256 for source in sources),
-            "projection_hashes": tuple(item.projection_hash for item in projections),
-            "tokenizer": "unicode61_casefold_no_diacritics_v1",
-            "ordering": "authoritative_source_role_label_id_page_v1",
-        }
-        snapshot = RetrievalSnapshot(
-            trial_id=trial_id,
-            scope_kind="captured_batch",
-            scope_hash=scope_hash,
-            source_ids=tuple(source.id for source in sources),
-            source_hashes=tuple(source.sha256 for source in sources),
-            projection_hashes=tuple(item.projection_hash for item in projections),
-            snapshot_hash=identity(snapshot_content),
-        )
-
-        class ApplicationContext:
-            def __init__(self) -> None:
-                self.snapshot = snapshot
-                self.sources = sources
-                self.pages = pages
-
-        context = ApplicationContext()
-    aliases = list_sources(workspace, trial_id)
-    by_alias = {alias.alias: source for alias, source in zip(aliases, context.sources, strict=True)}
-    return context, aliases, by_alias
-
-
-def _terms(query: str) -> tuple[str, ...]:
-    terms = tuple(item.casefold() for item in re.findall(r"\w+", query, flags=re.UNICODE))
-    if not terms:
-        raise ValueError("query has no lexical terms")
-    return terms
-
-
-def source_layout_projection(
-    text: str, *, casefold: bool = False
-) -> tuple[str, tuple[int, ...], tuple[int, ...]]:
-    """Collapse PDF layout while retaining coordinates in the original text.
-
-    A hyphen followed by a line break is PDF line-end layout, not source wording.
-    Other punctuation and hyphens remain exact.  ``casefold`` is solely for search.
-    """
-    characters: list[str] = []
-    starts: list[int] = []
-    ends: list[int] = []
-    index = 0
-    while index < len(text):
-        if text[index] == "-" and index + 1 < len(text) and text[index + 1].isspace():
-            whitespace_end = index + 1
-            while whitespace_end < len(text) and text[whitespace_end].isspace():
-                whitespace_end += 1
-            if "\r" in text[index + 1 : whitespace_end] or "\n" in text[index + 1 : whitespace_end]:
-                index = whitespace_end
-                continue
-        if text[index].isspace():
-            start = index
-            while index < len(text) and text[index].isspace():
-                index += 1
-            characters.append(" ")
-            starts.append(start)
-            ends.append(index)
-            continue
-        value = text[index].casefold() if casefold else text[index]
-        characters.extend(value)
-        starts.extend([index] * len(value))
-        ends.extend([index + 1] * len(value))
-        index += 1
-    return "".join(characters), tuple(starts), tuple(ends)
-
-
-def _spans(text: str, query: str, mode: LexicalMode) -> tuple[HitSpan, ...]:
-    terms = _terms(query)
-    spans: list[HitSpan] = []
-    if mode is LexicalMode.EXACT_PHRASE:
-        folded, starts, ends = source_layout_projection(text, casefold=True)
-        start = 0
-        last_original_end = 0
-        phrase = " ".join(terms)
-        while (found := folded.find(phrase, start)) >= 0:
-            end = found + len(phrase)
-            original_start = starts[found]
-            original_end = ends[end - 1]
-            if original_start >= last_original_end:
-                spans.append(
-                    HitSpan(
-                        start=original_start,
-                        end=original_end,
-                        text=text[original_start:original_end],
-                    )
-                )
-                last_original_end = original_end
-            start = end
-    else:
-        token_matches = unicode61_tokens(text)
-        values = {token for _start, _end, token in token_matches}
-        for start, end, value in token_matches:
-            matched = (
-                all(term in values for term in terms) and value in terms
-                if mode is LexicalMode.ALL_TERMS
-                else any(value.startswith(term) for term in terms)
-                if mode is LexicalMode.PREFIX_TERMS
-                else any(term == value for term in terms)
-            )
-            if matched:
-                spans.append(HitSpan(start=start, end=end, text=text[start:end]))
-    return tuple(spans)
-
-
-def _search_rows(
-    workspace: str | Path,
-    context,
-    aliases: tuple[SourceAlias, ...],
-    by_alias: dict[str, Source],
-    search: SearchRequest,
-    *,
-    offset: int = 0,
-) -> tuple[tuple[Hit, ...], Cursor | None]:
-    selected = (
-        set(search.source_aliases) if search.source_aliases else {alias.alias for alias in aliases}
-    )
-    invalid = selected - set(by_alias)
-    if invalid:
-        raise KeyError(",".join(sorted(invalid)))
-    rows: list[Hit] = []
-    for alias in aliases:
-        if alias.alias not in selected:
-            continue
-        source = by_alias[alias.alias]
-        projection_hash = alias.projection_hash
-        for page, text in enumerate(context.pages[source.id], 1):
-            spans = _spans(text, search.query, search.mode)
-            if not spans:
-                continue
-            hit_identity = identity(
-                {
-                    "snapshot": context.snapshot.snapshot_hash,
-                    "source": source.id,
-                    "page": page,
-                    "query": search.query,
-                    "mode": search.mode.value,
-                    "projection": projection_hash,
-                }
-            )
-            hit = Hit(
-                identity=hit_identity,
-                snapshot=context.snapshot.snapshot_hash,
-                source_alias=alias.alias,
-                source_id=source.id,
-                page=page,
-                projection_hash=projection_hash,
-                preview=text[:240],
-                spans=spans[:8],
-                omitted_match_count=max(0, len(spans) - 8),
-            )
-            write_json(
-                workspace,
-                f"hit-{hit_identity.removeprefix('sha256:')}.json",
-                hit.model_dump(mode="json"),
-            )
-            rows.append(hit)
-    page = tuple(rows[offset : offset + search.limit])
-    next_cursor = None
-    cursor = None
-    if offset + search.limit < len(rows):
-        payload = {
-            "snapshot": context.snapshot.snapshot_hash,
-            "query": search.query,
-            "mode": search.mode.value,
-            "source_aliases": tuple(alias.alias for alias in aliases if alias.alias in selected),
-            "offset": offset + search.limit,
-            "limit": search.limit,
-            "projection_hashes": context.snapshot.projection_hashes,
-        }
-        next_cursor = identity(payload)
-        cursor = Cursor(
-            identity=next_cursor,
-            snapshot=context.snapshot.snapshot_hash,
-            query=search.query,
-            mode=search.mode,
-            source_aliases=tuple(alias.alias for alias in aliases if alias.alias in selected),
-            offset=offset + search.limit,
-            limit=search.limit,
-            projection_hashes=context.snapshot.projection_hashes,
-        )
-        write_json(
-            workspace,
-            f"cursor-{next_cursor.removeprefix('sha256:')}.json",
-            cursor.model_dump(mode="json"),
-        )
-    if page and next_cursor:
-        page = tuple(hit.model_copy(update={"next_cursor": next_cursor}) for hit in page)
-    return page, cursor
-
-
-def retrieve_evidence(
-    workspace: str | Path, request: EvidenceRetrievalRequest
-) -> EvidenceRetrievalResponse:
-    context, aliases, by_alias = _context(workspace, request.trial_id)
-    hits: list[Hit] = []
-    continuations: list[Cursor] = []
-    page_results: list[PageRead] = []
-    conditions: list[EvidenceCondition] = []
-    if request.catalog is not None:
-        try:
-            catalog = reusable_evidence_catalog(
-                workspace,
-                request.trial_id,
-                aliases,
-                basis=request.catalog.basis,
-                after=request.catalog.after,
-            )
-        except ValueError as error:
-            if str(error) != "stale_catalog":
-                raise
-            return EvidenceRetrievalResponse(
-                snapshot=context.snapshot.snapshot_hash,
-                conditions=(
-                    EvidenceCondition(
-                        code="stale_catalog",
-                        detail="catalog changed; restart from the first page",
-                        next_action="restart_catalog",
-                    ),
-                ),
-            )
-        return EvidenceRetrievalResponse(snapshot=context.snapshot.snapshot_hash, catalog=catalog)
-    for search in request.searches:
-        offset = 0
-        if search.cursor is not None:
-            raw = read_json(workspace, f"cursor-{search.cursor.removeprefix('sha256:')}.json")
-            try:
-                cursor = Cursor.model_validate(raw) if raw is not None else None
-            except ValueError:
-                cursor = None
-            if (
-                cursor is None
-                or cursor.identity != search.cursor
-                or cursor.snapshot != context.snapshot.snapshot_hash
-                or cursor.projection_hashes != context.snapshot.projection_hashes
-                or cursor.query != search.query
-                or cursor.mode != search.mode
-                or cursor.source_aliases
-                != (search.source_aliases or tuple(alias.alias for alias in aliases))
-                or cursor.limit != search.limit
-            ):
-                conditions.append(
-                    EvidenceCondition(
-                        code="invalid_cursor",
-                        detail="search cursor is stale or does not bind this query",
-                        next_action="search_again",
-                    )
-                )
-                continue
-            offset = cursor.offset
-        try:
-            rows, cursor = _search_rows(
-                workspace, context, aliases, by_alias, search, offset=offset
-            )
-        except KeyError as error:
-            conditions.append(
-                EvidenceCondition(
-                    code="source_out_of_scope",
-                    detail=str(error),
-                    next_action="use_list_sources",
-                )
-            )
-            continue
-        if not rows:
-            conditions.append(
-                EvidenceCondition(
-                    code="no_hits",
-                    detail="the exact lexical query produced no hits",
-                    next_action="change_query",
-                )
-            )
-        hits.extend(rows)
-        if cursor is not None:
-            continuations.append(cursor)
-    for continuation in request.continuations:
-        raw = read_json(workspace, f"cursor-{continuation.cursor.removeprefix('sha256:')}.json")
-        if raw is None:
-            conditions.append(
-                EvidenceCondition(
-                    code="invalid_cursor",
-                    detail="continuation is unavailable",
-                    next_action="search_again",
-                )
-            )
-            continue
-        try:
-            cursor = Cursor.model_validate(raw)
-        except ValueError:
-            conditions.append(
-                EvidenceCondition(
-                    code="invalid_cursor",
-                    detail="continuation is corrupt",
-                    next_action="search_again",
-                )
-            )
-            continue
-        if (
-            cursor.identity != continuation.cursor
-            or cursor.snapshot != context.snapshot.snapshot_hash
-            or cursor.projection_hashes != context.snapshot.projection_hashes
-        ):
-            conditions.append(
-                EvidenceCondition(
-                    code="invalid_cursor",
-                    detail="continuation is stale for this verified snapshot",
-                    next_action="search_again",
-                )
-            )
-            continue
-        try:
-            rows, next_cursor = _search_rows(
-                workspace,
-                context,
-                aliases,
-                by_alias,
-                SearchRequest(
-                    kind="search",
-                    query=cursor.query,
-                    mode=cursor.mode,
-                    source_aliases=cursor.source_aliases,
-                    limit=cursor.limit,
-                ),
-                offset=cursor.offset,
-            )
-        except KeyError as error:
-            conditions.append(
-                EvidenceCondition(
-                    code="source_out_of_scope", detail=str(error), next_action="use_list_sources"
-                )
-            )
-            continue
-        hits.extend(rows)
-        if next_cursor is not None:
-            continuations.append(next_cursor)
-    for read in request.page_reads:
-        source = by_alias.get(read.source_alias)
-        if source is None:
-            conditions.append(
-                EvidenceCondition(
-                    code="source_out_of_scope",
-                    detail=read.source_alias,
-                    next_action="use_list_sources",
-                )
-            )
-            continue
-        pages = context.pages[source.id]
-        if read.page > len(pages):
-            conditions.append(
-                EvidenceCondition(
-                    code="page_out_of_range", detail=str(read.page), next_action="read_exact_page"
-                )
-            )
-            continue
-        page_results.append(
-            PageRead(source_alias=read.source_alias, page=read.page, text=pages[read.page - 1])
-        )
-    evidence: list[EvidenceReference] = []
-    for selection in request.normal_selections:
-        raw = read_json(workspace, f"hit-{selection.hit.removeprefix('sha256:')}.json")
-        if raw is None:
-            conditions.append(
-                EvidenceCondition(
-                    code="invalid_cursor",
-                    detail="Hit reference is unavailable",
-                    next_action="search_again",
-                )
-            )
-            continue
-        hit = Hit.model_validate(raw)
-        if hit.snapshot != context.snapshot.snapshot_hash:
-            conditions.append(
-                EvidenceCondition(
-                    code="invalid_cursor",
-                    detail="Hit reference is stale",
-                    next_action="search_again",
-                )
-            )
-            continue
-        source = by_alias.get(hit.source_alias)
-        if source is None:
-            conditions.append(
-                EvidenceCondition(
-                    code="source_out_of_scope",
-                    detail=hit.source_alias,
-                    next_action="use_list_sources",
-                )
-            )
-            continue
-        expected_projection = aliases[int(hit.source_alias[1:]) - 1].projection_hash
-        if hit.projection_hash != expected_projection or hit.source_id != source.id:
-            conditions.append(
-                EvidenceCondition(
-                    code="invalid_cursor",
-                    detail="Hit projection or Source identity is stale",
-                    next_action="search_again",
-                )
-            )
-            continue
-        if hit.page > len(context.pages[source.id]) or not hit.spans:
-            conditions.append(
-                EvidenceCondition(
-                    code="page_out_of_range"
-                    if hit.page > len(context.pages[source.id])
-                    else "invalid_cursor",
-                    detail="Hit extent is unavailable",
-                    next_action="read_exact_page"
-                    if hit.page > len(context.pages[source.id])
-                    else "search_again",
-                )
-            )
-            continue
-        if selection.extent == "match" and len(hit.spans) > 1:
-            conditions.append(
-                EvidenceCondition(
-                    code="ambiguous",
-                    detail="Hit contains multiple exact matches",
-                    next_action="choose_an_exact_match_or_a_larger_extent",
-                )
-            )
-            continue
-        text = context.pages[source.id][hit.page - 1]
-        start, end = _extent(text, hit.spans[0], selection.extent)
-        evidence.append(
-            _mint_text(
-                workspace, request.trial_id, source, context, hit.page, start, end, text[start:end]
-            )
-        )
-    for selection in request.manual_selections:
-        source = by_alias.get(selection.source_alias)
-        if source is None:
-            conditions.append(
-                EvidenceCondition(
-                    code="source_out_of_scope",
-                    detail=selection.source_alias,
-                    next_action="use_list_sources",
-                )
-            )
-            continue
-        pages = context.pages[source.id]
-        if selection.page > len(pages):
-            conditions.append(
-                EvidenceCondition(
-                    code="page_out_of_range",
-                    detail=str(selection.page),
-                    next_action="read_exact_page",
-                )
-            )
-            continue
-        text = pages[selection.page - 1]
-        if text[selection.start : selection.end] != selection.quote:
-            conditions.append(
-                EvidenceCondition(
-                    code="ambiguous",
-                    detail="manual quote does not match frozen text",
-                    next_action="choose_exact_span",
-                )
-            )
-            continue
-        evidence.append(
-            _mint_text(
-                workspace,
-                request.trial_id,
-                source,
-                context,
-                selection.page,
-                selection.start,
-                selection.end,
-                selection.quote,
-            )
-        )
-    for selection in request.visual_selections:
-        try:
-            from rob2_kit.rendering import read_render
-
-            rendered, _image = read_render(workspace, selection.render.identity)
-        except (OSError, ValueError):
-            conditions.append(
-                EvidenceCondition(
-                    code="render_unavailable",
-                    detail="the referenced persistent render is unavailable or corrupt",
-                    next_action="render_the_full_page_again",
-                )
-            )
-            continue
-        source = next((item for item in context.sources if item.id == rendered.source_id), None)
-        if source is None or source.sha256 != rendered.source_hash:
-            conditions.append(
-                EvidenceCondition(
-                    code="source_out_of_scope",
-                    detail="render Source is outside the verified Trial inventory",
-                    next_action="render_a_scoped_source",
-                )
-            )
-            continue
-        projection_hash = context.snapshot.projection_hashes[
-            context.snapshot.source_ids.index(source.id)
-        ]
-        payload = {
-            "kind": "visual",
-            "trial_id": request.trial_id,
-            "snapshot": context.snapshot.snapshot_hash,
-            "source_id": source.id,
-            "source_sha256": source.sha256,
-            "projection_hash": projection_hash,
-            "page": rendered.page_number,
-            "region": rendered.region,
-            "render": selection.render.model_dump(mode="json"),
-            "transcription": selection.transcription,
-        }
-        evidence_identity = identity(payload)
-        record = VisualEvidenceRecord(identity=evidence_identity, **payload)
-        write_json(
-            workspace,
-            f"evidence-{evidence_identity.removeprefix('sha256:')}.json",
-            record.model_dump(mode="json"),
-        )
-        evidence.append(EvidenceReference(kind="evidence", identity=evidence_identity))
-    return EvidenceRetrievalResponse(
-        snapshot=context.snapshot.snapshot_hash,
-        hits=tuple(hits),
-        continuations=tuple(continuations),
-        page_reads=tuple(page_results),
-        evidence=tuple(evidence),
-        conditions=tuple(conditions),
+_INCOMPLETE_BOUNDARY_OPENERS = frozenset(
+    "if when while because although whereas unless until after before since once".split()
+)
+_HEADING_STOP_WORDS = frozenset("a an the and or of in to for by on with from at as".split())
+
+
+def _is_incomplete_domain_source(value: str) -> bool:
+    """Reject only source fragments that visibly introduce an unfinished list."""
+    normalized = unicodedata.normalize("NFKC", value).casefold()
+    normalized = re.sub(r"-\s*(?:\r\n|\r|\n)\s*", "", normalized)
+    normalized = " ".join(normalized.split())
+    return normalized.endswith(":") or any(
+        normalized.endswith(lead) for lead in _INCOMPLETE_DOMAIN_LEADS
     )
 
 
-def _extent(text: str, span: HitSpan, extent: str) -> tuple[int, int]:
-    if extent == "match":
-        return span.start, span.end
-    if extent == "table_row":
-        start = text.rfind("\n", 0, span.start) + 1
-        end = text.find("\n", span.end)
-        return start, len(text) if end < 0 else end
-    if extent == "paragraph":
-        start = text.rfind("\n\n", 0, span.start) + 2
-        end = text.find("\n\n", span.end)
-        return start, len(text) if end < 0 else end
-    boundaries = ".!?\n"
-    start = max((text.rfind(char, 0, span.start) for char in boundaries), default=-1) + 1
-    end_candidates = [
-        text.find(char, span.end) for char in boundaries if text.find(char, span.end) >= 0
-    ]
-    return start, (min(end_candidates) + 1 if end_candidates else len(text))
+def _looks_like_structural_line(value: str) -> bool:
+    """Keep intentional table, list, and heading selections permissive."""
+    line = value.strip()
+    if not line:
+        return True
+    if line.startswith(("|", "#")):
+        return True
+    if re.fullmatch(r"[<>=~+\-\u2212\u2013\u2014\d\s.,()%/:*\u2020\u2021]+", line):
+        return True
+    if re.match(r"(?:table|figure|fig\.|appendix|box|panel)\s", line, flags=re.IGNORECASE):
+        return True
+    words = re.findall(r"[^\W_]+", line, flags=re.UNICODE)
+    if re.match(r"(?:[-–—*+•·](?:\s|$)|\d+[.)]\s)", line):
+        return len(words) <= 12
+    if not words or len(words) > 12 or re.search(r"[.!?;]", line):
+        return False
+    content_words = [word for word in words if word.casefold() not in _HEADING_STOP_WORDS]
+    return bool(content_words) and all(word[0].isupper() for word in content_words)
 
 
-def _mint_text(
-    workspace: str | Path,
-    trial_id: str,
-    source: Source,
-    context,
-    page: int,
+def _starts_with_lowercase_prose(value: str) -> bool:
+    """Return whether the next bounded text visibly continues a sentence."""
+    for line in value.splitlines():
+        stripped = line.strip()
+        if not stripped:
+            continue
+        match = re.search(r"[^\W\d_]", stripped, flags=re.UNICODE)
+        return bool(match and match.group(0).islower())
+    return False
+
+
+def _looks_like_page_furniture(value: str) -> bool:
+    """Recognize common extraction-only headers and footers."""
+    normalized = " ".join(unicodedata.normalize("NFKC", value).casefold().split())
+    return bool(
+        re.fullmatch(r"\d+", normalized)
+        or "downloaded from" in normalized
+        or "all rights reserved" in normalized
+        or "is produced by" in normalized
+        or "copyright" in normalized
+        or re.search(r"\b(?:doi|issn)\b", normalized)
+    )
+
+
+def _is_incomplete_page_boundary_selection(
+    text: str,
     start: int,
     end: int,
-    quote: str,
-) -> EvidenceReference:
-    record_payload = {
-        "kind": "text",
-        "trial_id": trial_id,
-        "snapshot": context.snapshot.snapshot_hash,
-        "source_id": source.id,
-        "source_sha256": source.sha256,
-        "projection_hash": context.snapshot.projection_hashes[
-            context.snapshot.source_ids.index(source.id)
-        ],
-        "page": page,
-        "start": start,
-        "end": end,
-        "quote": quote,
-        "quote_sha256": "sha256:" + hashlib.sha256(quote.encode()).hexdigest(),
-    }
-    record_identity = identity(record_payload)
-    record = TextEvidenceRecord(identity=record_identity, **record_payload)
-    write_json(
-        workspace,
-        f"evidence-{record_identity.removeprefix('sha256:')}.json",
-        record.model_dump(mode="json"),
+    next_page_text: str | None = None,
+) -> bool:
+    """Detect high-confidence unfinished prose at a selection boundary.
+
+    This is deliberately lexical. It rejects a selection ending in a split word
+    or a closed-class connector, and uses bounded trailing text to catch a line
+    or page continuation. Semantic entailment remains model work; intentional
+    tables, bullets, and headings remain selectable.
+    """
+    if end < 1 or end > len(text):
+        return False
+    fragment = text[start:end].rstrip()
+    if not fragment:
+        return False
+    content_lines = [line for line in fragment.splitlines() if not _looks_like_page_furniture(line)]
+    if not content_lines:
+        return False
+    final_line = content_lines[-1]
+    normalized = unicodedata.normalize("NFKC", final_line).casefold()
+    normalized = " ".join(normalized.split())
+    if re.search(r"\w-$", normalized):
+        return True
+    words = re.findall(r"[^\W_]+", normalized, flags=re.UNICODE)
+    if not words:
+        return False
+    trailing_text = text[end:]
+    meaningful_trailing_lines = [
+        line
+        for line in trailing_text.splitlines()
+        if line.strip() and not _looks_like_page_furniture(line)
+    ]
+    trailing_continuation = _starts_with_lowercase_prose(trailing_text) or (
+        not meaningful_trailing_lines
+        and next_page_text is not None
+        and _starts_with_lowercase_prose(next_page_text)
     )
-    return EvidenceReference(kind="evidence", identity=record_identity)
-
-
-def resolve_evidence(workspace: str | Path, reference: EvidenceReference) -> EvidenceRecord:
-    raw = read_json(workspace, f"evidence-{reference.identity.removeprefix('sha256:')}.json")
-    if raw is None:
-        raise ValueError("Evidence is unavailable")
-    try:
-        record = parse_evidence_record(raw)
-    except ValueError as error:
-        raise ValueError("Evidence identity is corrupt") from error
-    if (
-        record.identity != reference.identity
-        or identity(record.model_dump(mode="json", exclude={"identity"})) != reference.identity
+    if _looks_like_structural_line(final_line) and (len(words) > 1 or not trailing_continuation):
+        return False
+    if words[-1] in _INCOMPLETE_BOUNDARY_TERMINALS:
+        return True
+    if any(
+        normalized.removesuffix(":").rstrip().endswith(lead) for lead in _INCOMPLETE_BOUNDARY_LEADS
     ):
-        raise ValueError("Evidence identity is corrupt")
-    if record.kind == "text":
-        sources, projections = _source_basis(workspace, record.trial_id)
-        source = next((item for item in sources if item.id == record.source_id), None)
-        if source is None or source.sha256 != record.source_sha256:
-            raise ValueError("Evidence Source is outside its scope")
-        projection = projections[
-            next(index for index, item in enumerate(sources) if item.id == source.id)
-        ]
-        if projection.projection_hash != record.projection_hash:
-            raise ValueError("Evidence projection is stale")
-        context, _aliases, _by_alias = _context(workspace, record.trial_id)
-        if record.snapshot != context.snapshot.snapshot_hash:
-            raise ValueError("Evidence scope is stale")
-        if (
-            record.page is None
-            or record.start is None
-            or record.end is None
-            or record.quote is None
-        ):
-            raise ValueError("Evidence text coordinates are incomplete")
-        if record.page < 1 or record.page > len(context.pages[source.id]):
-            raise ValueError("Evidence page coordinate is outside its Source")
-        text = context.pages[source.id][record.page - 1]
-        if (
-            record.start < 0
-            or record.end > len(text)
-            or record.end <= record.start
-            or text[record.start : record.end] != record.quote
-            or record.quote_sha256 != "sha256:" + hashlib.sha256(record.quote.encode()).hexdigest()
-        ):
-            raise ValueError("Evidence quote is corrupt")
+        return True
+    if not re.search(r"[.!?]\s*$", final_line):
+        if words[0] in _INCOMPLETE_BOUNDARY_OPENERS:
+            return True
+        lines = fragment.splitlines()
+        selected_complete_hyphenation = len(lines) == 2 and bool(re.search(r"\w-\s*$", lines[0]))
+        if not selected_complete_hyphenation and trailing_continuation:
+            return True
+    return False
+
+
+_INCOMPLETE_BOUNDARY_SELECTION = (
+    "selected text appears incomplete at the page boundary; re-read the adjacent page and "
+    "select a complete premise, or select the page fragment only when it is intentionally "
+    "self-contained"
+)
+
+
+def list_sources(workspace: str | Path, trial_id: str | None = None) -> dict[str, Any]:
+    root = _root(workspace)
+    _ensure(root)
+    batch = _read(root, "batch") or {}
+    trials = batch.get("trials", [])
+    if trial_id is None:
+        if len(trials) != 1:
+            raise ValueError("trial_id is required unless the Batch has exactly one captured Trial")
+        trial = trials[0]
     else:
-        if record.render is None or not record.transcription:
-            raise ValueError("visual Evidence is incomplete")
-        from rob2_kit.rendering import read_render
+        trial = next((item for item in trials if item["id"] == trial_id), None)
+        if trial is None:
+            raise ValueError("unknown captured Trial ID")
+    return {"outcome": "success", "sources": _ordered_sources(trial["sources"])}
 
-        rendered, _image = read_render(workspace, record.render.identity)
+
+def _verified_source_projections(
+    root: Path, requested: set[tuple[str, str]]
+) -> dict[tuple[str, str], tuple[dict[str, Any], tuple[str, ...]]]:
+    """Resolve and verify a small Source set in one derivative read pass."""
+    if not requested:
+        return {}
+    batch = _read(root, "batch") or {}
+    # The Batch is the authority for Source metadata.  ``source_index`` is a
+    # disposable lookup cache, not a second authority: accepting its payload
+    # here would let a tampered derivative redefine the bytes and projection
+    # that later Evidence operations trust.
+    authoritative: dict[tuple[str, str], dict[str, Any]] = {}
+    for trial in batch.get("trials", []):
+        for source in trial.get("sources", []):
+            key = (trial.get("id"), source.get("id"))
+            if key in requested:
+                authoritative[key] = source
+    missing = requested - set(authoritative)
+    if missing:
+        raise ValueError("source is outside the active Trial")
+
+    with _db(root, "derivative.sqlite3") as connection:
+        placeholders = ",".join("?" for _ in requested)
+        indexed_rows = connection.execute(
+            "SELECT source_id,batch_id,trial_id,payload FROM source_index "
+            f"WHERE source_id IN ({placeholders})",
+            tuple(source_id for _, source_id in sorted(requested)),
+        ).fetchall()
+        page_rows = connection.execute(
+            "SELECT source_id,page,text FROM pages "
+            f"WHERE source_id IN ({placeholders}) ORDER BY source_id,page",
+            tuple(source_id for _, source_id in sorted(requested)),
+        ).fetchall()
+
+    indexed = {str(row[0]): row for row in indexed_rows}
+    pages_by_source: dict[str, list[Any]] = {}
+    for row in page_rows:
+        pages_by_source.setdefault(str(row[0]), []).append(row)
+
+    verified: dict[tuple[str, str], tuple[dict[str, Any], tuple[str, ...]]] = {}
+    for key, source in authoritative.items():
+        trial_id, source_id = key
+        cached = indexed.get(source_id)
+        if cached is not None:
+            try:
+                indexed_source = json.loads(bytes(cached[3]))
+            except (UnicodeDecodeError, json.JSONDecodeError) as error:
+                raise ValueError("source index payload is corrupt") from error
+            if (
+                cached[1] != batch.get("identity")
+                or cached[2] != trial_id
+                or not isinstance(indexed_source, dict)
+                or indexed_source.get("id") != source_id
+                or canonical_json_bytes(indexed_source) != canonical_json_bytes(source)
+            ):
+                raise ValueError("source index payload is stale or corrupt")
+        path = internal_path(root, "sources", trial_id, f"{source_id}.bin")
+        if not path.is_file():
+            raise ValueError("captured Source bytes are unavailable")
+        data = path.read_bytes()
+        if "sha256:" + hashlib.sha256(data).hexdigest() != source["sha256"]:
+            raise ValueError("captured Source bytes do not match Canonical identity")
+        # Intake (or an explicit derivative rebuild) owns extraction.  Normal
+        # Evidence operations verify the persisted projection instead of
+        # reopening and parsing the captured PDF on every call.
+        source_pages = pages_by_source.get(source_id, [])
+        page_numbers = tuple(row[1] for row in source_pages)
+        if any(not isinstance(row[2], str) for row in source_pages):
+            raise ValueError("captured Source page text is corrupt")
+        pages = tuple(row[2] for row in source_pages)
+        media_type = source.get("media_type", "text/plain")
+        if _projection_hash(source["sha256"], media_type, pages) != source.get("projection_hash"):
+            raise ValueError("captured Source projection identity is corrupt")
+        page_count = source.get("page_count")
         if (
-            rendered.source_id != record.source_id
-            or rendered.page_number != record.page
-            or rendered.region != record.region
+            not isinstance(page_count, int)
+            or isinstance(page_count, bool)
+            or len(pages) != page_count
+            or not pages
+            or page_numbers != tuple(range(1, page_count + 1))
         ):
-            raise ValueError("visual Evidence render scope is invalid")
-        if rendered.source_hash != record.source_sha256:
-            raise ValueError("visual Evidence render source hash is outside its scope")
-        sources, projections = _source_basis(workspace, record.trial_id)
-        source_index = next(
-            (index for index, item in enumerate(sources) if item.id == record.source_id),
-            None,
-        )
-        source = None if source_index is None else sources[source_index]
-        if source is None or source.sha256 != record.source_sha256:
-            raise ValueError("visual Evidence Source is outside its scope")
-        context, _aliases, _by_alias = _context(workspace, record.trial_id)
-        if record.snapshot != context.snapshot.snapshot_hash:
-            raise ValueError("visual Evidence scope is stale")
-        if source_index is None:
-            raise ValueError("visual Evidence Source is outside its scope")
-        projection = projections[source_index]
-        if projection.projection_hash != record.projection_hash:
-            raise ValueError("visual Evidence projection is stale")
-    return record
+            raise ValueError("captured Source page count is corrupt")
+        verified[key] = (source, pages)
+    COUNTERS["source_projection_verifications"] += len(verified)
+    return verified
 
 
-def reusable_evidence_catalog(
+def _find_source(root: Path, trial_id: str, source_id: str) -> dict[str, Any]:
+    return _verified_source_projections(root, {(trial_id, source_id)})[(trial_id, source_id)][0]
+
+
+def search_sources(
     workspace: str | Path,
     trial_id: str,
-    aliases: tuple[SourceAlias, ...],
-    *,
-    basis: str | None = None,
-    after: EvidenceReference | None = None,
-) -> EvidenceCatalogSlice:
-    """Return one fixed, content-addressed keyset page of reusable Evidence."""
-    with read_only_transaction(workspace) as connection:
-        rows = (
-            ()
-            if connection is None
-            else connection.execute(
-                "SELECT name FROM records WHERE name LIKE 'application:evidence-%.json'"
-            ).fetchall()
-        )
-    by_source = {alias.source_id: alias.alias for alias in aliases}
-    records: list[tuple[EvidenceReference, EvidenceRecord, str]] = []
-    for (name,) in rows:
-        record_name = str(name).removeprefix("application:")
-        token = record_name.removeprefix("evidence-").removesuffix(".json")
-        reference = EvidenceReference(kind="evidence", identity=f"sha256:{token}")
-        record = resolve_evidence(workspace, reference)
-        if record.trial_id != trial_id:
-            continue
-        source_alias = by_source.get(record.source_id or "")
-        if source_alias is None or record.page is None:
-            raise ValueError("retained Evidence Source is outside the Trial scope")
-        records.append((reference, record, source_alias))
-    records.sort(key=lambda row: row[0].identity)
-    computed_basis = identity(
-        {
+    query: str,
+    mode: str = "all",
+    limit: int = 10,
+    source_id: str | None = None,
+) -> dict[str, Any]:
+    root = _root(workspace)
+    _ensure(root)
+    normalized_query = _canonical_search_text(query)
+    terms = [term for term in normalized_query.split() if term]
+    if not terms:
+        raise ValueError("query must not be empty")
+    if mode not in {"all", "phrase", "any", "prefix"}:
+        raise ValueError("unknown lexical mode")
+    sources = list_sources(workspace, trial_id)["sources"]
+    if source_id is not None:
+        sources = [source for source in sources if source["id"] == source_id]
+        if not sources:
+            raise ValueError("source is outside the active Trial")
+    # FTS is a derivative projection, not evidence in its own right.  Verify
+    # every projection this query is about to trust once before reading it.
+    # This also makes a damaged FTS cache fail closed instead of returning
+    # plausible-looking stale text.
+    verified = _verified_source_projections(root, {(trial_id, source["id"]) for source in sources})
+    allowed = {source["id"] for source in sources}
+    bounded_limit = max(1, min(limit, 100))
+    # Scope ranking to the verified Trial pages.  The persistent FTS cache is
+    # checked below for integrity, but its corpus also contains other Trials;
+    # using it for BM25 would make a receipt depend on unrelated documents.
+    if not allowed:
+        receipt = {
             "trial_id": trial_id,
-            "snapshot": _context(workspace, trial_id)[0].snapshot.snapshot_hash,
-            "sources": [
-                (alias.source_id, alias.sha256, alias.projection_hash) for alias in aliases
-            ],
-            "evidence": [reference.identity for reference, _record, _alias in records],
+            "sources": [],
+            "query": query,
+            "normalized_query": " ".join(terms),
+            "mode": mode,
+            "hits": [],
+            "limit": bounded_limit,
+            "total_matches": 0,
+            "truncated": False,
+            "condition": "no_hits",
+            "batch_identity": (_read(root, "batch") or {}).get("identity"),
+        }
+        receipt["identity"] = _identity(receipt)
+        receipt["handle"] = "sr_" + receipt["identity"].removeprefix("sha256:")[:16]
+        with _db(root, "derivative.sqlite3") as connection:
+            connection.execute(
+                "INSERT OR REPLACE INTO search_receipts VALUES (?,?)",
+                (receipt["identity"], canonical_json_bytes(receipt)),
+            )
+        return {
+            "outcome": "success",
+            "hits": [],
+            "total_matches": 0,
+            "truncated": False,
+            "condition": "no_hits",
+            "search_receipt": receipt,
+        }
+    ordered_sources = _ordered_sources(sources)
+    ordered_source_ids = [str(source["id"]) for source in ordered_sources]
+    placeholders = ",".join("?" for _ in allowed)
+    with _db(root, "derivative.sqlite3") as connection:
+        cached_rows = connection.execute(
+            "SELECT source_id,page,raw_text,normalized_text FROM pages_fts "
+            f"WHERE source_id IN ({placeholders}) ORDER BY source_id,page",
+            tuple(sorted(allowed)),
+        ).fetchall()
+        expected_rows = [
+            (source_id, page, *_search_derivative(text))
+            for source_id in sorted(allowed)
+            for page, text in enumerate(verified[(trial_id, source_id)][1], 1)
+        ]
+        if [tuple(row) for row in cached_rows] != expected_rows:
+            raise ValueError("text search projection is corrupt")
+    matching_pairs, total_matches = _recomputed_search_summary(
+        {source_id: verified[(trial_id, source_id)][1] for source_id in ordered_source_ids},
+        query,
+        mode,
+        bounded_limit,
+        ordered_source_ids,
+    )
+    source_by_id = {str(source["id"]): source for source in ordered_sources}
+    hits = [
+        {
+            "source_id": source_id,
+            "source_role": source_by_id[source_id]["role"],
+            "source_label": source_by_id[source_id]["label"],
+            "page": page,
+            "preview": _match_centered_preview(
+                verified[(trial_id, source_id)][1][page - 1], query, mode
+            ),
+            "query": query,
+        }
+        for source_id, page in matching_pairs
+    ]
+    condition = None if hits else "no_hits"
+    receipt = {
+        "trial_id": trial_id,
+        "sources": [
+            {"id": source["id"], "projection_hash": source["projection_hash"]}
+            for source in ordered_sources
+        ],
+        "query": query,
+        "normalized_query": " ".join(terms),
+        "mode": mode,
+        "hits": [{"source_id": item["source_id"], "page": item["page"]} for item in hits],
+        "limit": bounded_limit,
+        "total_matches": total_matches,
+        "truncated": total_matches > bounded_limit,
+        "condition": condition,
+        "batch_identity": (_read(root, "batch") or {}).get("identity"),
+    }
+    receipt["identity"] = _identity(receipt)
+    receipt["handle"] = "sr_" + receipt["identity"].removeprefix("sha256:")[:16]
+    with _db(root, "derivative.sqlite3") as connection:
+        connection.execute(
+            "INSERT OR REPLACE INTO search_receipts VALUES (?,?)",
+            (receipt["identity"], canonical_json_bytes(receipt)),
+        )
+    return {
+        "outcome": "success",
+        "hits": hits,
+        "total_matches": total_matches,
+        "truncated": total_matches > bounded_limit,
+        "condition": condition,
+        "search_receipt": receipt,
+    }
+
+
+def _search_expression(query: str, mode: str) -> str:
+    terms = [term for term in _canonical_search_text(query).split() if term]
+    if not terms:
+        raise ValueError("query must not be empty")
+    if mode not in {"all", "phrase", "any", "prefix"}:
+        raise ValueError("unknown lexical mode")
+
+    def quoted(term: str) -> str:
+        return '"' + term.replace('"', '""') + '"'
+
+    if mode == "phrase":
+        return quoted(" ".join(terms))
+    if mode == "any":
+        return " OR ".join(quoted(term) for term in terms)
+    if mode == "prefix":
+        return " OR ".join(f"{quoted(term)}*" for term in terms)
+    return " AND ".join(quoted(term) for term in terms)
+
+
+def _search_result_order(
+    source_id: str,
+    page: int,
+    rank: float,
+    source_order: dict[str, int],
+) -> tuple[int, float, int]:
+    """Prefer the established Source order, then FTS relevance and page order."""
+    return source_order[source_id], rank, page
+
+
+def _search_text_with_spans(text: str, dehyphenate: bool) -> tuple[str, list[int]]:
+    """Build one searchable line-wrap form and map characters to raw text."""
+    normalized, ranges = _normalized_text_with_spans(text, dehyphenate_line_ends=dehyphenate)
+    return normalized, [start for start, _end in ranges]
+
+
+def _match_centered_preview(text: str, query: str, mode: str, radius: int = 120) -> str:
+    """Return a compact discovery preview centered on an actual query match."""
+    terms = [item.casefold() for item in query.split() if item]
+    if not terms:
+        return text[: 2 * radius]
+
+    def variants(term: str) -> tuple[str, ...]:
+        return tuple(
+            dict.fromkeys(
+                (
+                    term,
+                    re.sub(r"-", "", term),
+                    re.sub(r"-", " ", term),
+                )
+            )
+        )
+
+    def find(searchable: str, term: str, prefix: bool = False) -> tuple[int, int]:
+        folded = searchable.casefold()
+        positions: list[tuple[int, int]] = []
+        for candidate in variants(term):
+            if not candidate:
+                continue
+            pattern = rf"(?<!\w){re.escape(candidate)}"
+            if not prefix:
+                pattern += r"(?!\w)"
+            match = re.search(pattern, folded)
+            if match is not None:
+                positions.append((match.start(), len(candidate)))
+        return min(positions, default=(-1, 0))
+
+    def phrase_variants() -> tuple[str, ...]:
+        phrase = " ".join(terms)
+        return tuple(
+            dict.fromkeys(
+                (
+                    phrase,
+                    phrase.replace("-", ""),
+                    phrase.replace("-", " "),
+                )
+            )
+        )
+
+    candidates: list[tuple[int, int, list[int]]] = []
+    for dehyphenate in (False, True):
+        searchable, spans = _search_text_with_spans(text, dehyphenate)
+        if mode == "phrase":
+            folded = searchable.casefold()
+            for phrase in phrase_variants():
+                match = re.search(rf"(?<!\w){re.escape(phrase)}(?!\w)", folded)
+                if match is not None:
+                    candidates.append((match.start(), len(phrase), spans))
+        else:
+            matches = [find(searchable, term, mode == "prefix") for term in terms]
+            if mode == "all" and not all(start >= 0 for start, _ in matches):
+                continue
+            for start, length in matches:
+                if start >= 0:
+                    candidates.append((start, length, spans))
+                    if mode == "any" or mode == "prefix":
+                        break
+    if not candidates:
+        return text[: 2 * radius]
+    start, match_length, spans = min(candidates, key=lambda item: item[0])
+    raw_start = spans[start]
+    raw_end = spans[min(start + match_length - 1, len(spans) - 1)] + 1
+    left = max(0, raw_start - radius)
+    right = min(len(text), raw_end + radius)
+    prefix = "…" if left else ""
+    suffix = "…" if right < len(text) else ""
+    return prefix + text[left:right] + suffix
+
+
+def _recomputed_search_hits(
+    pages: dict[str, tuple[str, ...]], query: str, mode: str, limit: int
+) -> list[tuple[str, int]]:
+    """Recompute lexical hits from verified pages, bypassing the persistent FTS cache."""
+    return _recomputed_search_summary(pages, query, mode, limit)[0]
+
+
+def _recomputed_search_summary(
+    pages: dict[str, tuple[str, ...]],
+    query: str,
+    mode: str,
+    limit: int,
+    source_order: list[str] | None = None,
+) -> tuple[list[tuple[str, int]], int]:
+    """Recompute bounded hits and the complete scoped match count."""
+    expression = _search_expression(query, mode)
+    with sqlite3.connect(":memory:") as connection:
+        connection.execute(
+            "CREATE VIRTUAL TABLE pages_fts USING fts5("
+            "source_id, page UNINDEXED, raw_text, normalized_text)"
+        )
+        rows = [
+            (source_id, page, *_search_derivative(text))
+            for source_id in (source_order or sorted(pages))
+            for page, text in enumerate(pages[source_id], 1)
+        ]
+        connection.executemany("INSERT INTO pages_fts VALUES (?,?,?,?)", rows)
+        total = int(
+            connection.execute(
+                "SELECT COUNT(*) FROM pages_fts WHERE pages_fts MATCH ?", (expression,)
+            ).fetchone()[0]
+        )
+        hits = connection.execute(
+            "SELECT source_id,page,bm25(pages_fts) FROM pages_fts WHERE pages_fts MATCH ?",
+            (expression,),
+        ).fetchall()
+    order = {source_id: index for index, source_id in enumerate(source_order or sorted(pages))}
+    hits.sort(key=lambda row: _search_result_order(str(row[0]), int(row[1]), float(row[2]), order))
+    return [(str(row[0]), int(row[1])) for row in hits[: max(1, min(limit, 100))]], total
+
+
+def _search_receipt(root: Path, handle: SearchReceiptHandle) -> dict[str, Any]:
+    """Resolve a disposable receipt only when its verified basis is still current."""
+    with _db(root, "derivative.sqlite3") as connection:
+        # The handle is the first 16 digest characters.  The candidate prefix
+        # narrows the lookup, while the full receipt integrity checks below
+        # remain authoritative (including collision safety).
+        rows = connection.execute(
+            "SELECT payload FROM search_receipts WHERE identity LIKE ? ORDER BY identity",
+            (f"sha256:{handle[3:]}%",),
+        ).fetchall()
+    if not rows:
+        raise ValueError("search receipt is unavailable")
+    matches: list[dict[str, Any]] = []
+    for row in rows:
+        candidate = json.loads(bytes(row[0]))
+        if isinstance(candidate, dict) and candidate.get("handle") == handle:
+            matches.append(candidate)
+    if len(matches) > 1:
+        raise ValueError("search receipt handle is ambiguous")
+    if not matches:
+        raise ValueError("search receipt is unavailable")
+    receipt = matches[0]
+    expected_keys = {
+        "trial_id",
+        "sources",
+        "query",
+        "normalized_query",
+        "mode",
+        "hits",
+        "condition",
+        "batch_identity",
+        "limit",
+        "total_matches",
+        "truncated",
+        "identity",
+        "handle",
+    }
+    if (
+        not isinstance(receipt, dict)
+        or set(receipt) != expected_keys
+        or handle != receipt.get("handle")
+        or receipt.get("identity")
+        != _identity(
+            {key: value for key, value in receipt.items() if key not in {"identity", "handle"}}
+        )
+        or receipt.get("handle")
+        != "sr_" + str(receipt.get("identity")).removeprefix("sha256:")[:16]
+    ):
+        raise ValueError("search receipt identity is corrupt")
+    batch = _read(root, "batch") or {}
+    trial_id = receipt.get("trial_id")
+    query = receipt.get("query")
+    mode = receipt.get("mode")
+    sources = receipt.get("sources")
+    hits = receipt.get("hits")
+    limit = receipt.get("limit")
+    total_matches = receipt.get("total_matches")
+    truncated = receipt.get("truncated")
+    if (
+        not isinstance(trial_id, str)
+        or not isinstance(query, str)
+        or not query.strip()
+        or receipt.get("normalized_query") != _canonical_search_text(query)
+        or mode not in {"all", "phrase", "any", "prefix"}
+        or not isinstance(limit, int)
+        or isinstance(limit, bool)
+        or not 1 <= limit <= 100
+        or not isinstance(total_matches, int)
+        or isinstance(total_matches, bool)
+        or total_matches < 0
+        or not isinstance(truncated, bool)
+        or receipt.get("batch_identity") != batch.get("identity")
+        or not isinstance(sources, list)
+        or not isinstance(hits, list)
+    ):
+        raise ValueError("search receipt shape is corrupt")
+    authoritative = {
+        source["id"]: source
+        for trial in batch.get("trials", [])
+        if trial.get("id") == trial_id
+        for source in trial.get("sources", [])
+    }
+    source_ids = [item.get("id") for item in sources if isinstance(item, dict)]
+    if (
+        not any(
+            isinstance(trial, dict) and trial.get("id") == trial_id
+            for trial in batch.get("trials", [])
+        )
+        or not source_ids
+        or len(source_ids) != len(set(source_ids))
+        or any(
+            not isinstance(item, dict)
+            or set(item) != {"id", "projection_hash"}
+            or item.get("id") not in authoritative
+            or item.get("projection_hash") != authoritative[item["id"]].get("projection_hash")
+            for item in sources
+        )
+    ):
+        raise ValueError("search receipt Source coverage is stale or corrupt")
+    if source_ids != [
+        source["id"]
+        for source in _ordered_sources(
+            authoritative[source_id] for source_id in source_ids if source_id in authoritative
+        )
+    ]:
+        raise ValueError("search receipt Source coverage is stale or corrupt")
+    hit_pairs = []
+    for hit in hits:
+        if (
+            not isinstance(hit, dict)
+            or set(hit) != {"source_id", "page"}
+            or not isinstance(hit.get("source_id"), str)
+            or not isinstance(hit.get("page"), int)
+            or isinstance(hit.get("page"), bool)
+            or hit["source_id"] not in authoritative
+            or not 1 <= hit["page"] <= authoritative[hit["source_id"]]["page_count"]
+        ):
+            raise ValueError("search receipt hit is corrupt")
+        hit_pairs.append((hit["source_id"], hit["page"]))
+    if len(hit_pairs) != len(set(hit_pairs)):
+        raise ValueError("search receipt contains duplicate hits")
+    if total_matches < len(hit_pairs) or truncated != (total_matches > limit):
+        raise ValueError("search receipt match summary is corrupt")
+    if (bool(hits) and receipt.get("condition") is not None) or (
+        not hits and receipt.get("condition") != "no_hits"
+    ):
+        raise ValueError("search receipt condition is corrupt")
+    verified = _verified_source_projections(
+        root, set((trial_id, source_id) for source_id in source_ids)
+    )
+    expected_hits, expected_total = _recomputed_search_summary(
+        {source_id: verified[(trial_id, source_id)][1] for source_id in source_ids},
+        query,
+        mode,
+        limit,
+        source_ids,
+    )
+    expected_pairs = expected_hits
+    if hit_pairs != expected_pairs or total_matches != expected_total:
+        raise ValueError("search receipt results do not match the captured page projections")
+    return receipt
+
+
+def read_pages(
+    workspace: str | Path, trial_id: str, source_id: str, pages: list[int] | None = None
+) -> dict[str, Any]:
+    root = _root(workspace)
+    _ensure(root)
+    source = _find_source(root, trial_id, source_id)
+    page_count = int(source["page_count"])
+    requested_pages = pages or list(range(1, page_count + 1))
+    if any(page < 1 or page > page_count for page in requested_pages):
+        raise ValueError("requested page is outside Source")
+    with _db(root, "derivative.sqlite3") as connection:
+        rows = connection.execute(
+            "SELECT page,text FROM pages WHERE source_id=? ORDER BY page", (source_id,)
+        ).fetchall()
+    wanted = set(requested_pages)
+    selected = [{"page": row[0], "text": row[1]} for row in rows if row[0] in wanted]
+    if not selected:
+        raise ValueError("requested pages are outside Source")
+    return {
+        "outcome": "success",
+        "pages": selected,
+    }
+
+
+def _evidence(
+    root: Path, trial_id: str, source_id: str, kind: str, payload: dict[str, Any]
+) -> dict[str, Any]:
+    item = {"kind": kind, "trial_id": trial_id, "source_id": source_id, **payload}
+    item["identity"] = _identity(item)
+    item["handle"] = "eh_" + item["identity"].removeprefix("sha256:")[:16]
+    with _db(root, "derivative.sqlite3") as connection:
+        connection.execute(
+            "INSERT OR REPLACE INTO evidence_handles VALUES (?,?)",
+            (item["identity"], canonical_json_bytes(item)),
+        )
+    return item
+
+
+def _validate_selected_evidence(
+    root: Path,
+    row_identity: str,
+    payload: bytes,
+    verified: dict[tuple[str, str], tuple[dict[str, Any], tuple[str, ...]]] | None = None,
+) -> dict[str, Any]:
+    """Validate one disposable handle against the captured projections.
+
+    Evidence handles are convenient derivative references, not an authority.
+    Recomputing a handle digest only proves that a row is self-consistent.  The
+    promotion boundary must also prove that the narrative span or cached
+    render still belongs to the canonical Source projection.
+    """
+    try:
+        item = json.loads(payload)
+    except (UnicodeDecodeError, json.JSONDecodeError) as error:
+        raise ValueError("evidence handle payload is corrupt") from error
+    if not isinstance(item, dict):
+        raise ValueError("evidence handle payload is not an object")
+    if row_identity != item.get("identity"):
+        raise ValueError("evidence handle row identity is corrupt")
+    kind = item.get("kind")
+    expected = (
+        {"kind", "trial_id", "source_id", "page", "start", "end", "quote", "identity", "handle"}
+        if kind == "narrative"
+        else {
+            "kind",
+            "trial_id",
+            "source_id",
+            "render",
+            "transcription",
+            "region",
+            "provenance",
+            "identity",
+            "handle",
+        }
+        if kind == "figure"
+        else set()
+    )
+    if not expected or set(item) != expected:
+        raise ValueError("evidence handle shape is corrupt")
+    if (
+        not isinstance(item.get("trial_id"), str)
+        or not isinstance(item.get("source_id"), str)
+        or item["identity"]
+        != _identity(
+            {key: value for key, value in item.items() if key not in {"identity", "handle"}}
+        )
+        or item["handle"] != "eh_" + row_identity.removeprefix("sha256:")[:16]
+    ):
+        raise ValueError("evidence handle identity is corrupt")
+
+    source_data = (
+        verified.get((item["trial_id"], item["source_id"])) if verified is not None else None
+    )
+    if source_data is None:
+        if verified is not None:
+            raise ValueError("evidence handle source is outside the active Trial")
+        source_data = _verified_source_projections(
+            root, {(item["trial_id"], item["source_id"])}
+        ).get((item["trial_id"], item["source_id"]))
+        if source_data is None:
+            raise ValueError("evidence handle source is outside the active Trial")
+    source, pages = source_data
+    if kind == "narrative":
+        page = item.get("page")
+        start = item.get("start")
+        end = item.get("end")
+        quote = item.get("quote")
+        if (
+            not isinstance(page, int)
+            or isinstance(page, bool)
+            or not isinstance(start, int)
+            or isinstance(start, bool)
+            or not isinstance(end, int)
+            or isinstance(end, bool)
+            or not isinstance(quote, str)
+            or not quote
+            or not 1 <= page <= source["page_count"]
+        ):
+            raise ValueError("narrative Evidence coordinates are corrupt")
+        page_text = pages[page - 1] if page <= len(pages) else None
+        if (
+            not isinstance(page_text, str)
+            or not 0 <= start < end <= len(page_text)
+            or page_text[start:end] != quote
+        ):
+            raise ValueError("narrative Evidence is outside the captured page projection")
+        return item
+
+    render = item["render"]
+    region = item["region"]
+    if (
+        not isinstance(render, dict)
+        or set(render) != {"identity", "source_id", "page", "png_sha256", "recipe"}
+        or render.get("source_id") != item["source_id"]
+        or not isinstance(render.get("page"), int)
+        or isinstance(render["page"], bool)
+        or not 1 <= render["page"] <= source["page_count"]
+        or render.get("recipe") != "pymupdf-1.5"
+        or not isinstance(render.get("png_sha256"), str)
+        or not re.fullmatch(r"sha256:[0-9a-f]{64}", render["png_sha256"])
+        or render.get("identity")
+        != _identity(
+            {
+                "source_id": item["source_id"],
+                "source_sha256": source["sha256"],
+                "page": render["page"],
+                "recipe": render["recipe"],
+            }
+        )
+        or not isinstance(item.get("transcription"), str)
+        or not item["transcription"].strip()
+        or item["transcription"] != item["transcription"].strip()
+        or item.get("provenance") not in {"text_corroborated", "host_visual"}
+        or not isinstance(region, list)
+        or len(region) != 4
+        or not all(
+            isinstance(value, (int, float)) and not isinstance(value, bool) and math.isfinite(value)
+            for value in region
+        )
+        or not (0 <= region[0] < region[2] <= 1 and 0 <= region[1] < region[3] <= 1)
+    ):
+        raise ValueError("figure Evidence projection is corrupt")
+    with _db(root, "derivative.sqlite3") as connection:
+        render_row = connection.execute(
+            "SELECT payload,png FROM renders WHERE identity=?", (render["identity"],)
+        ).fetchone()
+    if render_row is None:
+        raise ValueError("figure Evidence render is unavailable")
+    try:
+        stored_render = json.loads(bytes(render_row[0]))
+    except (UnicodeDecodeError, json.JSONDecodeError) as error:
+        raise ValueError("cached render payload is corrupt") from error
+    png = bytes(render_row[1])
+    if (
+        not isinstance(stored_render, dict)
+        or canonical_json_bytes(stored_render) != canonical_json_bytes(render)
+        or stored_render.get("identity") != render["identity"]
+        or stored_render.get("png_sha256") != "sha256:" + hashlib.sha256(png).hexdigest()
+    ):
+        raise ValueError("figure Evidence does not match the cached render projection")
+    canonical_png = _render_page_png(root, item["trial_id"], item["source_id"], render["page"])
+    canonical_png_sha256 = "sha256:" + hashlib.sha256(canonical_png).hexdigest()
+    if render["png_sha256"] != canonical_png_sha256:
+        raise ValueError("figure Evidence does not match the captured PDF render")
+    return item
+
+
+def _evidence_catalog(root: Path) -> dict[str, dict[str, Any]]:
+    """Read disposable handles.  Cache loss is recoverable, not workflow loss."""
+    with _db(root, "derivative.sqlite3") as connection:
+        rows = connection.execute("SELECT identity,payload FROM evidence_handles").fetchall()
+    requested: set[tuple[str, str]] = set()
+    for row in rows:
+        try:
+            item = json.loads(bytes(row[1]))
+        except (UnicodeDecodeError, json.JSONDecodeError):
+            continue
+        if (
+            isinstance(item, dict)
+            and isinstance(item.get("trial_id"), str)
+            and isinstance(item.get("source_id"), str)
+        ):
+            requested.add((item["trial_id"], item["source_id"]))
+    verified = _verified_source_projections(root, requested)
+    catalog: dict[str, dict[str, Any]] = {}
+    for row in rows:
+        identity = str(row[0])
+        payload = bytes(row[1])
+        item = _validate_selected_evidence(root, identity, payload, verified)
+        if payload != canonical_json_bytes(item):
+            raise ValueError("evidence handle payload is not canonical")
+        catalog[identity] = item
+    return catalog
+
+
+def _evidence_for_handles(
+    root: Path, handles: set[str], trial_id: str | None = None
+) -> dict[str, dict[str, Any]]:
+    """Resolve and validate only the bounded Evidence handles in one operation."""
+    if not handles:
+        return {}
+    prefixes = sorted({handle.removeprefix("eh_") for handle in handles})
+    with _db(root, "derivative.sqlite3") as connection:
+        rows = connection.execute(
+            "SELECT identity,payload FROM evidence_handles WHERE "
+            + " OR ".join("identity LIKE ?" for _ in prefixes),
+            tuple(f"sha256:{prefix}%" for prefix in prefixes),
+        ).fetchall()
+    candidates: dict[str, tuple[str, bytes]] = {}
+    for row in rows:
+        identity = str(row[0])
+        try:
+            item = json.loads(bytes(row[1]))
+        except (UnicodeDecodeError, json.JSONDecodeError) as error:
+            raise ValueError("evidence handle payload is corrupt") from error
+        handle = item.get("handle") if isinstance(item, dict) else None
+        if handle in handles:
+            if handle in candidates:
+                raise ValueError("evidence handle is ambiguous")
+            candidates[handle] = (identity, bytes(row[1]))
+    missing = handles - set(candidates)
+    if missing:
+        raise ValueError("evidence handle is unavailable")
+    parsed: dict[str, dict[str, Any]] = {}
+    requested_sources: set[tuple[str, str]] = set()
+    for handle, (identity, payload) in candidates.items():
+        try:
+            item = json.loads(payload)
+        except (UnicodeDecodeError, json.JSONDecodeError) as error:
+            raise ValueError("evidence handle payload is corrupt") from error
+        if not isinstance(item, dict) or trial_id is not None and item.get("trial_id") != trial_id:
+            raise ValueError("evidence handle is outside the active Trial")
+        requested_sources.add((str(item.get("trial_id")), str(item.get("source_id"))))
+        parsed[handle] = {"identity": identity, "payload": payload}
+    verified = _verified_source_projections(root, requested_sources)
+    result: dict[str, dict[str, Any]] = {}
+    for handle, value in parsed.items():
+        item = _validate_selected_evidence(
+            root,
+            value["identity"],
+            value["payload"],
+            verified,
+        )
+        result[item["identity"]] = item
+    return result
+
+
+def _normalized_with_spans(value: str) -> tuple[str, list[tuple[int, int]]]:
+    """Normalize caller/page text while retaining exact raw character spans."""
+    return _normalized_text_with_spans(value)
+
+
+def _normalized_equal(left: str, right: str) -> bool:
+    """Compare text after the Evidence boundary's canonical normalization."""
+    return _normalized_with_spans(left)[0] == _normalized_with_spans(right)[0]
+
+
+def _normalized_contains(material: str, phrase: str) -> bool:
+    """Test normalized containment without requiring a unique occurrence.
+
+    Evidence handles identify one immutable selected item. Binding several
+    Result leaves to that item must not fail merely because common labels,
+    units, or zero values occur more than once inside its transcription.
+    Uniqueness remains a requirement when selecting a passage, where it
+    disambiguates the caller's selection; it is not a requirement for this
+    later leaf-to-item binding.
+    """
+    normalized_material, _ = _normalized_with_spans(material)
+    normalized_phrase, _ = _normalized_with_spans(phrase)
+    return bool(normalized_phrase) and normalized_phrase in normalized_material
+
+
+def _normalized_match(material: str, phrase: str) -> tuple[str | None, str | None]:
+    """Resolve one normalization-equivalent phrase to its raw material span."""
+    normalized_material, spans = _normalized_with_spans(material)
+    normalized_phrase, _ = _normalized_with_spans(phrase)
+    if not normalized_phrase:
+        return None, "empty"
+    starts: list[int] = []
+    start = normalized_material.find(normalized_phrase)
+    while start >= 0:
+        starts.append(start)
+        start = normalized_material.find(normalized_phrase, start + 1)
+    if not starts:
+        return None, "absent"
+    if len(starts) != 1:
+        return None, "ambiguous"
+    first = starts[0]
+    last = first + len(normalized_phrase) - 1
+    return material[spans[first][0] : spans[last][1]], None
+
+
+def select_text_evidence(
+    workspace: str | Path,
+    trial_id: str,
+    source_id: str,
+    page: int,
+    selected_text: str,
+) -> dict[str, Any]:
+    root = _root(workspace)
+    _ensure(root)
+    source_data = _verified_source_projections(root, {(trial_id, source_id)}).get(
+        (trial_id, source_id)
+    )
+    if source_data is None:
+        raise ValueError("page is outside Source")
+    source, pages = source_data
+    if page < 1:
+        raise ValueError("page is outside Source")
+    invalid_selection = (
+        "selected text is not an exact page selection: copy one contiguous passage from one "
+        "read_pages page; "
+        "use the 1-based source page index, not a printed page label; never paraphrase, "
+        "reorder, omit intervening text, or reconstruct a table; select page-boundary "
+        "fragments separately, and copy an extracted table's exact Markdown or use "
+        "visual Evidence"
+    )
+    normalized_selection, _ = _normalized_with_spans(selected_text)
+    if not normalized_selection:
+        raise ValueError(invalid_selection)
+
+    def matches(page_text: str) -> tuple[str, list[tuple[int, int]], list[int]]:
+        normalized_text, spans = _normalized_with_spans(page_text)
+        starts: list[int] = []
+        offset = 0
+        while True:
+            start = normalized_text.find(normalized_selection, offset)
+            if start < 0:
+                break
+            starts.append(start)
+            offset = start + 1
+        if starts:
+            return page_text, spans, starts
+
+        # Search and Evidence share line-wrap dehyphenation, but a model may
+        # copy a semantic spelling such as ``multi-stage`` where the raw page
+        # has ``multi-\nstage``. Retry only against the non-dehyphenated page
+        # stream, where a hyphen-plus-line-break becomes a space. This does not
+        # make ordinary punctuation optional. Unwrapped words and paraphrases
+        # still fail.
+        wrapped_text, wrapped_spans = _normalized_text_with_spans(
+            page_text, dehyphenate_line_ends=False
+        )
+        wrapped_selection, _ = _normalized_text_with_spans(
+            selected_text, dehyphenate_line_ends=False
+        )
+        line_wrap_selection = re.sub(r"(?<=\w)-(?=\w)", " ", wrapped_selection)
+        if line_wrap_selection == wrapped_selection:
+            return page_text, spans, starts
+        offset = 0
+        while True:
+            start = wrapped_text.find(line_wrap_selection, offset)
+            if start < 0:
+                break
+            starts.append(start)
+            offset = start + 1
+        if starts:
+            return page_text, wrapped_spans, starts
+        return page_text, spans, starts
+
+    if page <= source["page_count"]:
+        text, spans, starts = matches(pages[page - 1])
+    else:
+        text, spans, starts = "", [], []
+    # Models occasionally carry the printed page label forward instead of the
+    # 1-based source page index.  A unique exact match elsewhere in this same
+    # verified projection is still unambiguous evidence: canonicalize to the
+    # actual page rather than making the caller rediscover the page number.
+    if not starts:
+        candidates: list[tuple[int, list[tuple[int, int]], list[int]]] = []
+        occurrence_count = 0
+        for candidate_page, candidate_text in enumerate(pages, 1):
+            if candidate_page == page and page <= source["page_count"]:
+                continue
+            _, candidate_spans, candidate_starts = matches(candidate_text)
+            occurrence_count += len(candidate_starts)
+            if candidate_starts:
+                candidates.append((candidate_page, candidate_spans, candidate_starts))
+        if occurrence_count == 1:
+            page, spans, starts = candidates[0]
+            text = pages[page - 1]
+    # Caller supplied offsets are a second, unstable interpretation of page
+    # text.  The server finds the one normalized occurrence and rejects ambiguity.
+    if not starts:
+        raise ValueError(invalid_selection)
+    if len(starts) != 1:
+        raise ValueError("selected text is ambiguous; select a unique passage")
+    start = spans[starts[0]][0]
+    end = spans[starts[0] + len(normalized_selection) - 1][1]
+    next_page_text = pages[page] if page < len(pages) else None
+    if _is_incomplete_page_boundary_selection(text, start, end, next_page_text):
+        raise ValueError(_INCOMPLETE_BOUNDARY_SELECTION)
+    return {
+        "outcome": "success",
+        "evidence": _evidence(
+            root,
+            trial_id,
+            source_id,
+            "narrative",
+            {"page": page, "start": start, "end": end, "quote": text[start:end]},
+        ),
+    }
+
+
+def select_text_evidence_by_lines(
+    workspace: str | Path,
+    trial_id: str,
+    source_id: str,
+    page: int,
+    start_line: int,
+    end_line: int,
+    start_text: str | None = None,
+    end_text: str | None = None,
+) -> dict[str, Any]:
+    """Select exact source text using coordinates issued by ``read_pages``.
+
+    Optional boundary anchors disambiguate a sentence that shares its first or
+    last extracted line with unrelated text. They trim only the boundary line;
+    the numbered line range remains the primary coordinate system.
+    """
+    root = _root(workspace)
+    _ensure(root)
+    source_data = _verified_source_projections(root, {(trial_id, source_id)}).get(
+        (trial_id, source_id)
+    )
+    if source_data is None:
+        raise ValueError("page is outside Source")
+    source, pages = source_data
+    if page < 1 or page > int(source["page_count"]):
+        raise ValueError("page is outside Source")
+
+    text = pages[page - 1]
+    lines = text.splitlines(keepends=True)
+    if start_line < 1 or end_line < start_line or end_line > len(lines):
+        raise ValueError(
+            f"line range is outside page {page}; choose 1 <= start_line <= end_line <= "
+            f"{len(lines)} from read_pages"
+        )
+    start = sum(len(line) for line in lines[: start_line - 1])
+    end = sum(len(line) for line in lines[:end_line])
+    while end > start and text[end - 1] in "\r\n":
+        end -= 1
+
+    def anchored_offset(line_number: int, anchor: str, *, use_end: bool) -> int:
+        if not anchor.strip():
+            raise ValueError("boundary text must contain non-whitespace content")
+        line_start = sum(len(line) for line in lines[: line_number - 1])
+        line_end = line_start + len(lines[line_number - 1].rstrip("\r\n"))
+        line_text = text[line_start:line_end]
+        normalized_line, spans = _normalized_text_with_spans(line_text)
+        normalized_anchor = _canonical_search_text(anchor)
+        if not normalized_anchor:
+            raise ValueError("boundary text must contain searchable content")
+        matches: list[int] = []
+        offset = 0
+        while True:
+            match = normalized_line.find(normalized_anchor, offset)
+            if match < 0:
+                break
+            matches.append(match)
+            offset = match + 1
+        if len(matches) != 1:
+            raise ValueError(
+                "boundary text must match exactly once within its numbered boundary line"
+            )
+        match = matches[0]
+        relative = spans[match + len(normalized_anchor) - 1][1] if use_end else spans[match][0]
+        return line_start + relative
+
+    if start_text is not None:
+        start = anchored_offset(start_line, start_text, use_end=False)
+    if end_text is not None:
+        end = anchored_offset(end_line, end_text, use_end=True)
+    if end <= start:
+        raise ValueError("selected boundary text does not define a positive contiguous range")
+    quote = text[start:end]
+    if not quote.strip():
+        raise ValueError("line range must contain non-whitespace source text")
+    next_page_text = pages[page] if page < len(pages) else None
+    if _is_incomplete_page_boundary_selection(text, start, end, next_page_text):
+        raise ValueError(_INCOMPLETE_BOUNDARY_SELECTION)
+    return {
+        "outcome": "success",
+        "evidence": _evidence(
+            root,
+            trial_id,
+            source_id,
+            "narrative",
+            {"page": page, "start": start, "end": end, "quote": quote},
+        ),
+    }
+
+
+def _render_page_png(root: Path, trial_id: str, source_id: str, page: int) -> bytes:
+    """Render one canonical captured PDF page using the fixed recipe."""
+    path = internal_path(root, "sources", trial_id, f"{source_id}.bin")
+    data = path.read_bytes()
+    document = pymupdf.open(stream=data, filetype="pdf")
+    try:
+        png = (
+            document[page - 1]
+            .get_pixmap(matrix=pymupdf.Matrix(1.5, 1.5), alpha=False)
+            .tobytes("png")
+        )
+    finally:
+        document.close()
+    COUNTERS["render_bytes"] += len(png)
+    return png
+
+
+def render_page(
+    workspace: str | Path, trial_id: str, source_id: str, page: int, inline: bool = True
+) -> dict[str, Any]:
+    root = _root(workspace)
+    _ensure(root)
+    source = _find_source(root, trial_id, source_id)
+    if page > int(source["page_count"]):
+        raise ValueError("page is outside Source")
+    identity = _identity(
+        {
+            "source_id": source_id,
+            "source_sha256": source["sha256"],
+            "page": page,
+            "recipe": "pymupdf-1.5",
         }
     )
-    if basis is not None and basis != computed_basis:
-        raise ValueError("stale_catalog")
-    start_index = 0
-    if after is not None:
-        identities = [reference.identity for reference, _record, _alias in records]
-        if after.identity not in identities:
-            raise ValueError("stale_catalog")
-        start_index = identities.index(after.identity) + 1
-    page = records[start_index : start_index + 32]
-    entries: list[EvidenceCatalogEntry] = []
-    for reference, record, source_alias in page:
-        if isinstance(record, TextEvidenceRecord):
-            content = record.quote
-            entries.append(
-                TextEvidenceCatalogEntry(
-                    evidence=reference,
-                    source_id=record.source_id,
-                    source_alias=source_alias,
-                    page=record.page,
-                    start=record.start,
-                    end=record.end,
-                    preview=content[:160],
-                    truncated=len(content) > 160,
-                )
-            )
-        else:
-            content = record.transcription
-            entries.append(
-                VisualEvidenceCatalogEntry(
-                    evidence=reference,
-                    source_id=record.source_id,
-                    source_alias=source_alias,
-                    page=record.page,
-                    region=record.region,
-                    preview=content[:160],
-                    truncated=len(content) > 160,
-                )
-            )
-    has_more = start_index + len(page) < len(records)
-    return EvidenceCatalogSlice(
-        basis=computed_basis,
-        entries=tuple(entries),
-        has_more=has_more,
-        next_after=entries[-1].evidence if has_more else None,
-    )
+    with _db(root, "derivative.sqlite3") as connection:
+        cached = connection.execute(
+            "SELECT payload,png FROM renders WHERE identity=?", (identity,)
+        ).fetchone()
+    if cached is not None:
+        payload = json.loads(bytes(cached[0]))
+        return {
+            "outcome": "success",
+            "render": payload,
+            "_png_bytes": bytes(cached[1]) if inline else None,
+        }
+    png = _render_page_png(root, trial_id, source_id, page)
+    payload = {
+        "identity": identity,
+        "source_id": source_id,
+        "page": page,
+        "png_sha256": "sha256:" + hashlib.sha256(png).hexdigest(),
+        "recipe": "pymupdf-1.5",
+    }
+    with _db(root, "derivative.sqlite3") as connection:
+        connection.execute(
+            "INSERT OR REPLACE INTO renders VALUES (?,?,?)",
+            (identity, canonical_json_bytes(payload), png),
+        )
+    return {
+        "outcome": "success",
+        "render": payload,
+        # Pixels are transport data, but inspection is the normal render call;
+        # inline=False remains available for metadata/cache-only callers.
+        "_png_bytes": png if inline else None,
+    }
+
+
+def select_visual_evidence(
+    workspace: str | Path,
+    trial_id: str,
+    source_id: str,
+    render_identity: str,
+    transcription: str,
+    region: list[float],
+) -> dict[str, Any]:
+    root = _root(workspace)
+    _ensure(root)
+    transcription = transcription.strip()
+    if not transcription:
+        raise ValueError("visual transcription must contain non-whitespace text")
+    source = _find_source(root, trial_id, source_id)
+    with _db(root, "derivative.sqlite3") as connection:
+        row = connection.execute(
+            "SELECT payload,png FROM renders WHERE identity=?", (render_identity,)
+        ).fetchone()
+    if row is None:
+        raise ValueError("verified render is unavailable")
+    render = json.loads(bytes(row[0]))
+    png = bytes(row[1])
+    if (
+        not isinstance(render, dict)
+        or render.get("identity") != render_identity
+        or render.get("source_id") != source_id
+        or render.get("page", 0) < 1
+        or render.get("png_sha256") != "sha256:" + hashlib.sha256(png).hexdigest()
+        or render_identity
+        != _identity(
+            {
+                "source_id": source_id,
+                "source_sha256": source["sha256"],
+                "page": render.get("page"),
+                "recipe": render.get("recipe"),
+            }
+        )
+    ):
+        raise ValueError("cached render is corrupt or outside the requested Source")
+    if len(region) != 4 or not all(math.isfinite(value) for value in region):
+        raise ValueError("region must contain four finite normalized bounds")
+    x0, y0, x1, y1 = region
+    if not (0 <= x0 < x1 <= 1 and 0 <= y0 < y1 <= 1):
+        raise ValueError("region must be ordered and inside the render page")
+    provenance = "host_visual"
+    if region == [0.0, 0.0, 1.0, 1.0]:
+        page_text = read_pages(workspace, trial_id, source_id, [int(render["page"])])["pages"][0][
+            "text"
+        ]
+        if _normalized_contains(page_text, transcription):
+            provenance = "text_corroborated"
+    return {
+        "outcome": "success",
+        "evidence": _evidence(
+            root,
+            trial_id,
+            source_id,
+            "figure",
+            {
+                "render": render,
+                "transcription": transcription,
+                "region": region,
+                "provenance": provenance,
+            },
+        ),
+    }

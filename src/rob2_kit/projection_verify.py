@@ -19,13 +19,13 @@ def reproduce_projection_identity(
         raise ValueError("a Text projection must contain at least one page")
     page_hashes = ["sha256:" + hashlib.sha256(page.encode("utf-8")).hexdigest() for page in pages]
     content = {
-        "recipe": "rob2-kit.extract-pages.v1",
+        "recipe": "rob2-kit.extract-pages.v2",
         "source_sha256": source["sha256"],
         "media_type": source["media_type"],
         "page_hashes": page_hashes,
     }
     return {
-        "schema_version": "rob2-kit.text-projection.v1",
+        "schema_version": "rob2-kit.text-projection.v2",
         **content,
         "projection_hash": _hash(content),
         "page_count": len(pages),

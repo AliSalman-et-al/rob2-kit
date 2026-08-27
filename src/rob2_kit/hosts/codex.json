@@ -1,9 +1,6 @@
 {
   "host": "codex",
   "mcp_command": "rob2 mcp",
-  "assess_command": "rob2 assess --host codex",
-  "assessment_supported": false,
-  "assessment_support_reason": "Codex CLI exposes built-in shell/filesystem capabilities and has no supported per-process MCP-only tool allowlist.",
   "skill_directory": "rob2_kit/skills",
-  "skills": ["rob2-workflow", "rob2-signalling"]
+  "skills": ["rob2-assess"]
 }

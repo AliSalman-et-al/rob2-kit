@@ -1,659 +1,884 @@
-"""Application Domain candidate validation and Transition-only commit."""
-# ruff: noqa: E501
-
-from __future__ import annotations
-
+import json
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any, Literal, cast
+from typing import Any
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import ValidationError
 
-from rob2_kit.judgment_models import EvidenceRelationship
-from rob2_kit.logic.evaluator import active_questions, evaluate_domain
-from rob2_kit.models import Activation, Answer, Judgment
-from rob2_kit.packs import MAINTAINER_POLICY_PACK, SCIENTIFIC_PACK
-from rob2_kit.storage import workspace_mutation_lock
-
-from ._state import identity, read_json, record_uri, write_jsons
-from .contracts import (
-    Continuation,
-    EvidenceReference,
-    PrepareTrialFinishContinuation,
-    RecordKind,
-    RecordReference,
-    ReviewAcknowledgmentReference,
-    ReviewAuthority,
-    TransitionReference,
-    ValidateDomainJudgmentContinuation,
-)
+from ..logic.evaluator import active_questions, evaluate_domain, evaluate_overall
+from ..models import ResponseFramework, canonical_json_bytes
+from ..packs import SCIENTIFIC_PACK
+from ..workflow_models import DomainDraft
+from ._state import _commit_records, _db, _ensure, _identity, _result, _root, _state
+from .contracts import WorkflowConflict
 from .evidence import (
-    EvidenceCatalogSlice,
-    list_sources,
-    resolve_evidence,
-    reusable_evidence_catalog,
+    _evidence_for_handles,
+    _is_incomplete_domain_source,
+    _search_receipt,
 )
-from .transitions import issue_transition, read_transition
+from .status import _continuation
+
+_DOMAIN_GUIDANCE = (
+    "Before the first save for this Domain, run bounded searches for every active question "
+    "using the retrieval concepts in its operational guidance. Search method Sources such "
+    "as the protocol or SAP when present. Read positive hits before answering. Do not write "
+    "a limitation or no_information answer from currently selected Result Evidence alone; "
+    "attach an exact Trial-scoped, non-truncated search receipt to every limitation (positive "
+    "or no-hit), and use a scoped untruncated no-hit receipt when the search finds nothing.",
+    "For every non-absence use, select one Evidence item containing a complete exact premise "
+    "that supports the active question.",
+    "A definitive yes or no needs direct_support, indirect_support, or contradiction; "
+    "a limitation or absence alone supports uncertainty, not a definitive answer.",
+    "A relationship kind describes how the premise relates to the answer; it never adds "
+    "an explanation or scientific fact.",
+    "A missing premise needs a limitation or scoped absence receipt, not a low-risk claim.",
+)
+_DOMAIN_TRAPS = (
+    "A relationship label never permits a broader clause than the selected source supports.",
+    "A planned method does not prove conduct; a time origin or analysis population does "
+    "not prove complete follow-up or equal assessment.",
+    "An endpoint label or definition does not prove objectivity, blinding, "
+    "prespecification, or no alternative analyses.",
+    "A treatment assignment or visibly different intervention does not by itself prove "
+    "that participants or personnel knew the assignment.",
+    "Different treatment or visit schedules do not by themselves prove that outcome "
+    "measurement differed between groups.",
+    "One endpoint definition does not prove that there were no multiple eligible "
+    "measurements or analyses.",
+    "Stratification does not prove allocation concealment.",
+)
+
+_RESPONSE_FRAMEWORK = ResponseFramework(
+    version="22 August 2019",
+    source_locator="Full guidance p. 3, sections 1.1 and 1.1.1",
+    response_options=("yes", "probably_yes", "probably_no", "no", "no_information"),
+    firm_evidence_rule=(
+        "The definitive versions (‘Yes’ and ‘No’) would typically imply that firm evidence "
+        "is available in relation to the signalling question."
+    ),
+    probable_judgment_rule=(
+        "The ‘Probably’ versions would typically imply that a judgement has been made. "
+        "‘Yes’ and ‘Probably yes’ have the same implications for risk of bias, as do ‘No’ "
+        "and ‘Probably no’."
+    ),
+    no_information_rule=(
+        "Use ‘No information’ only when both (i) insufficient details are reported to permit "
+        "a response of ‘Probably yes’ or ‘Probably no’, and (ii) in the absence of these "
+        "details it would be unreasonable to respond ‘Probably yes’ or ‘Probably no’ in the "
+        "circumstances of the trial."
+    ),
+    independence_rule=(
+        "Signalling questions should be answered independently: the answer to one question "
+        "should not affect answers to other questions in the same or other domains other than "
+        "through determining which subsequent questions are answered."
+    ),
+    quotation_rule=(
+        "Brief direct quotations from the text of the study report should be used whenever "
+        "possible to support the answer."
+    ),
+)
 
 
-class _Closed(BaseModel):
-    model_config = ConfigDict(extra="forbid", frozen=True)
-
-
-class ApplicationQuestionGuidance(_Closed):
-    id: str = Field(min_length=1, strict=True)
-    wording: str = Field(min_length=1, strict=True)
-    allowed_answers: tuple[Answer, ...]
-    activation: Activation
-
-
-class ApplicationWorkPacket(_Closed):
-    """The closed, content-addressed packet handed to a Domain worker."""
-
-    kind: Literal["work_packet"]
-    identity: str = Field(pattern=r"^sha256:[0-9a-f]{64}$", strict=True)
-    approved_batch: RecordReference
-    trial_id: str = Field(min_length=1, strict=True)
-    result_id: str = Field(min_length=1, strict=True)
-    domain_id: str = Field(min_length=1, strict=True)
-    active_question_ids: tuple[str, ...]
-    allowed_question_ids: tuple[str, ...]
-    question_guidance: tuple[ApplicationQuestionGuidance, ...]
-    stable_aliases: tuple[str, ...]
-    reusable_evidence: EvidenceCatalogSlice
-    prior_domain_hashes: tuple[tuple[str, str], ...]
-    scientific_pack: str = Field(pattern=r"^sha256:[0-9a-f]{64}$", strict=True)
-    policy_pack: str = Field(pattern=r"^sha256:[0-9a-f]{64}$", strict=True)
-
-
-def _packet_payload(value: ApplicationWorkPacket) -> dict[str, object]:
-    return value.model_dump(mode="json", exclude={"identity"})
-
-
-def parse_application_work_packet(value: object) -> ApplicationWorkPacket:
-    packet = ApplicationWorkPacket.model_validate(value)
-    if identity(_packet_payload(packet)) != packet.identity:
-        raise ValueError("Domain work packet identity is corrupt")
-    return packet
-
-
-class DomainEvidenceUseInput(_Closed):
-    relationship: EvidenceRelationship
-    claim: str = Field(min_length=1)
-    rationale: str = Field(min_length=1)
-    evidence: tuple[EvidenceReference, ...] = Field(min_length=1)
-
-
-class DomainAnswerInput(_Closed):
-    question_id: str = Field(min_length=1)
-    answer: Answer
-    rationale: str = Field(min_length=1)
-    evidence_uses: tuple[DomainEvidenceUseInput, ...] = Field(min_length=1)
-
-
-class DomainOverrideInput(_Closed):
-    final_judgment: Judgment
-    justification: str = Field(min_length=1)
-
-
-class DomainDraftInput(_Closed):
-    active_answers: tuple[DomainAnswerInput, ...]
-    limitations: tuple[str, ...] = ()
-    override: DomainOverrideInput | None = None
-
-
-class DomainValidationRequest(_Closed):
-    packet: RecordReference
-    draft: DomainDraftInput
-
-
-class DomainRepair(_Closed):
-    pointer: str
-    code: str
-    detail: str
-    next_action: str = "correct_field"
-
-
-class DomainValidationResult(_Closed):
-    outcome: Literal["success"] = "success"
-    candidate: RecordReference
-    transition: TransitionReference
-    candidate_hash: str
-    draft_hash: str
-    proposed_judgment: Judgment
-    inactive_questions: tuple[str, ...]
-    next_action: Literal["review_then_commit"] = "review_then_commit"
-
-
-class DomainRepairResult(_Closed):
-    outcome: Literal["repair"] = "repair"
-    draft_hash: str
-    repairs: tuple[DomainRepair, ...]
-
-
-class DomainCondition(_Closed):
-    outcome: Literal["condition"] = "condition"
-    code: str
-    detail: str
-    next_action: Continuation
-
-
-def _domain_ids() -> tuple[str, ...]:
-    return tuple(domain.id for domain in SCIENTIFIC_PACK.domains)
-
-
-def _current_prior_domain_hashes(
-    state: dict[str, Any], trial_id: str, result_id: str, domain_id: str
-) -> tuple[tuple[str, str], ...]:
-    """Return every earlier Domain's current checkpoint in pack order."""
-    domain_ids = _domain_ids()
-    try:
-        prior_domains = domain_ids[: domain_ids.index(domain_id)]
-    except ValueError as error:
-        raise ValueError("unknown Domain") from error
-    if not prior_domains:
-        return ()
-    domains = state.get("domains")
-    if not isinstance(domains, dict):
-        raise ValueError("concurrent_domain_conflict")
-    rows: list[tuple[str, str]] = []
-    for prior_domain in prior_domains:
-        values = domains.get(f"{trial_id}:{result_id}:{prior_domain}")
-        if not isinstance(values, list) or not values or not isinstance(values[-1], str):
-            raise ValueError("concurrent_domain_conflict")
-        rows.append((prior_domain, values[-1]))
-    return tuple(rows)
-
-
-def _build_domain_packet(
-    workspace: str | Path,
-    approved_batch: RecordReference,
-    *,
-    trial_id: str,
-    domain_id: str,
-    result_id: str = "result",
-    state: dict[str, Any] | None = None,
-) -> ApplicationWorkPacket:
-    """Build and validate a Domain packet without changing workspace state."""
-    if approved_batch.kind is not RecordKind.APPROVED_BATCH:
-        raise ValueError("a work packet starts at an Approved Batch")
-    approved_raw = read_json(workspace, "approved_batch.json")
-    if approved_raw is None or approved_raw.get("identity") != approved_batch.identity:
-        raise ValueError("Approved Batch reference is stale")
-    rows = cast(list[list[object]], approved_raw.get("dispositions", []))
-    pending = {str(row[0]) for row in rows if len(row) >= 2 and row[1] == "pending"}
-    if trial_id not in pending:
-        raise ValueError("Trial is not pending in the Approved Batch")
-    if domain_id not in _domain_ids():
-        raise ValueError("unknown Domain")
-    current_state = state if state is not None else (read_json(workspace, "state.json") or {})
-    prior = _current_prior_domain_hashes(current_state, trial_id, result_id, domain_id)
-    source_aliases = list_sources(workspace, trial_id)
-    aliases = tuple(source.alias for source in source_aliases)
-    payload = {
-        "kind": "work_packet",
-        "approved_batch": approved_batch.model_dump(mode="json"),
-        "trial_id": trial_id,
-        "result_id": result_id,
-        "domain_id": domain_id,
-        "active_question_ids": tuple(
-            q.id for q in SCIENTIFIC_PACK.questions if q.domain_id == domain_id
-        ),
-        "allowed_question_ids": tuple(
-            q.id for q in SCIENTIFIC_PACK.questions if q.domain_id == domain_id
-        ),
-        "question_guidance": tuple(
-            {
-                "id": q.id,
-                "wording": q.wording,
-                "allowed_answers": tuple(answer.value for answer in q.allowed_answers),
-                "activation": q.activation.model_dump(mode="json"),
-            }
-            for q in SCIENTIFIC_PACK.questions
-            if q.domain_id == domain_id
-        ),
-        "stable_aliases": aliases,
-        "reusable_evidence": reusable_evidence_catalog(
-            workspace, trial_id, source_aliases
-        ).model_dump(mode="json"),
-        "prior_domain_hashes": prior,
-        "scientific_pack": SCIENTIFIC_PACK.content_hash,
-        "policy_pack": MAINTAINER_POLICY_PACK.content_hash,
-    }
-    return ApplicationWorkPacket(identity=identity(payload), **payload)
-
-
-def _packet_record(workspace: str | Path, packet: RecordReference) -> dict[str, object]:
-    """Resolve a server-issued packet; an Approved Batch is accepted for its first Domain."""
-    if packet.kind is RecordKind.APPROVED_WORK_PACKET:
-        raw = read_json(workspace, f"domain-packet-{packet.identity.removeprefix('sha256:')}.json")
-        if raw is None or raw.get("identity") != packet.identity:
-            raise ValueError("Domain work packet is unavailable or corrupt")
-        return parse_application_work_packet(raw).model_dump(mode="json")
-    if packet.kind is not RecordKind.APPROVED_BATCH:
-        raise ValueError("Domain work requires the server-issued work packet")
-    state = read_json(workspace, "state.json") or {}
-    domains = state.get("domains")
-    if (
-        "work_packet_identity" in state
-        or (isinstance(domains, dict) and domains)
-        or (domains is not None and domains != {})
-    ):
-        raise ValueError("Approved Batch bootstrap is only valid before Domain work has started")
-    raw = read_json(workspace, "approved_batch.json")
-    if raw is None or raw.get("identity") != packet.identity:
-        raise ValueError("Approved Batch reference is stale")
-    rows = cast(list[list[object]], raw.get("dispositions", []))
-    pending = sorted(str(row[0]) for row in rows if len(row) >= 2 and row[1] == "pending")
-    if not pending:
-        raise ValueError("Approved Batch has no pending Trial")
-    return _build_domain_packet(
-        workspace,
-        packet,
-        trial_id=pending[0],
-        domain_id=_domain_ids()[0],
-    ).model_dump(mode="json")
-
-
-def prepare_domain_packet(
-    workspace: str | Path,
-    approved_batch: RecordReference,
-    *,
-    trial_id: str,
-    domain_id: str,
-    result_id: str = "result",
-) -> RecordReference:
-    """Create a deterministic per-Domain packet from the approved Batch."""
-    state = read_json(workspace, "state.json") or {}
-    packet_record = _build_domain_packet(
-        workspace,
-        approved_batch,
-        trial_id=trial_id,
-        domain_id=domain_id,
-        result_id=result_id,
-        state=state,
-    )
-    state["work_packet_identity"] = packet_record.identity
-    write_jsons(
-        workspace,
+def _repairs(error: ValidationError) -> list[dict[str, Any]]:
+    return [
         {
-            f"domain-packet-{packet_record.identity.removeprefix('sha256:')}.json": {
-                **packet_record.model_dump(mode="json"),
-            },
-            "state.json": state,
-        },
-    )
-    return RecordReference(
-        kind=RecordKind.APPROVED_WORK_PACKET,
-        identity=packet_record.identity,
-        uri=record_uri(RecordKind.APPROVED_WORK_PACKET.value, packet_record.identity),
-    )
+            "path": "/" + "/".join(map(str, item["loc"])),
+            "code": "invalid_draft",
+            "detail": item["msg"],
+        }
+        for item in error.errors()
+    ]
 
 
-def _evidence(
-    workspace: str | Path, use: DomainEvidenceUseInput, trial_id: str
-) -> list[dict[str, object]]:
-    records: list[dict[str, object]] = []
-    for reference in use.evidence:
-        record = resolve_evidence(workspace, reference)
-        if record.trial_id != trial_id:
-            raise ValueError("Evidence is outside the Trial scope")
-        records.append(
+def _repair(path: str, code: str, detail: str) -> dict[str, str]:
+    return {"path": path, "code": code, "detail": detail}
+
+
+def _duplicate_repairs(values: list[str], path: str, code: str, label: str) -> list[dict[str, str]]:
+    seen: dict[str, int] = {}
+    repairs: list[dict[str, str]] = []
+    for index, value in enumerate(values):
+        first = seen.get(value)
+        if first is None:
+            seen[value] = index
+            continue
+        repairs.append(
+            _repair(
+                f"{path}/{index}",
+                code,
+                f"{label} '{value}' duplicates item {first}; keep one entry.",
+            )
+        )
+    return repairs
+
+
+def _ids(values: list[str]) -> str:
+    return ", ".join(values) if values else "none"
+
+
+def _domain_identity(record: dict[str, Any]) -> str:
+    fields = (
+        "trial_id",
+        "domain_id",
+        "answers",
+        "supersedes",
+        "revision_basis",
+        "search_accounts",
+        "active_questions",
+        "inactive_questions",
+        "judgment",
+        "trace",
+    )
+    return _identity({key: record[key] for key in fields})
+
+
+def _canonical_observed_at(root: Path, identity: str) -> str | None:
+    """Reuse immutable metadata when the same semantic checkpoint is replayed.
+
+    ``observed_at`` is provenance metadata, not part of a Domain's semantic
+    identity.  A discarded run can therefore legitimately produce the same
+    checkpoint identity.  Reusing the existing canonical payload keeps the
+    content-addressed ledger exact instead of generating a different payload
+    under an already occupied identity.
+    """
+
+    with _db(root, "canonical.sqlite3") as connection:
+        row = connection.execute(
+            "SELECT payload FROM canonical_records WHERE identity=? AND kind='domain'",
+            (identity,),
+        ).fetchone()
+    if row is None:
+        return None
+    try:
+        prior = json.loads(bytes(row[0]))
+    except (TypeError, UnicodeDecodeError, json.JSONDecodeError) as error:
+        raise ValueError("canonical Domain checkpoint is corrupt") from error
+    observed_at = prior.get("observed_at") if isinstance(prior, dict) else None
+    if not isinstance(observed_at, str) or not observed_at.strip():
+        raise ValueError("canonical Domain checkpoint metadata is corrupt")
+    return observed_at
+
+
+def save_domain_judgment(
+    workspace: str | Path, draft: dict[str, Any] | DomainDraft
+) -> dict[str, Any]:
+    """Validate and atomically persist one structured Domain checkpoint."""
+    root = _root(workspace)
+    _ensure(root)
+    state = _state(root)
+    try:
+        parsed = draft if isinstance(draft, DomainDraft) else DomainDraft.model_validate(draft)
+    except ValidationError as error:
+        return _result("repair", state, repairs=_repairs(error))
+    if state.get("phase") not in {"assessment", "ready_to_finalize"}:
+        raise ValueError("Domain work is not active")
+    if state.get("trial_dispositions", {}).get(parsed.trial_id) != "pending":
+        raise ValueError("Trial is not available for Domain assessment")
+    if parsed.domain_id not in {item.id for item in SCIENTIFIC_PACK.domains}:
+        raise ValueError("unknown Domain")
+
+    allowed = {
+        question.id: {answer.value for answer in question.allowed_answers}
+        for question in SCIENTIFIC_PACK.questions
+        if question.domain_id == parsed.domain_id
+    }
+    answer_items = list(parsed.answers)
+    answer_ids = [item.question_id for item in answer_items]
+    repairs: list[dict[str, Any]] = _duplicate_repairs(
+        answer_ids, "/answers", "duplicate_answer", "answer question"
+    )
+    answers: dict[str, str] = {}
+    for index, item in enumerate(answer_items):
+        if item.question_id in answers:
+            continue
+        answers[item.question_id] = item.answer
+        if item.question_id not in allowed:
+            repairs.append(
+                _repair(
+                    f"/answers/{index}",
+                    "invalid_answer",
+                    f"question '{item.question_id}' is not active in Domain '{parsed.domain_id}'.",
+                )
+            )
+    valid_answers = {key: value for key, value in answers.items() if key in allowed}
+    try:
+        active = [item for item in active_questions(valid_answers) if item in allowed]
+    except ValueError as error:
+        active = []
+        repairs.append(
+            _repair("/answers", "invalid_answers", f"could not determine active questions: {error}")
+        )
+    missing_active = [item for item in active if item not in answers]
+    for index, item in enumerate(answer_items):
+        if item.question_id in active and item.answer not in allowed[item.question_id]:
+            repairs.append(
+                _repair(
+                    f"/answers/{index}/answer",
+                    "invalid_answer",
+                    f"question '{item.question_id}' expects one of: "
+                    f"{_ids(sorted(allowed[item.question_id]))}; supplied '{item.answer}'.",
+                )
+            )
+    if missing_active:
+        repairs.append(
+            _repair(
+                "/answers",
+                "answers_must_match_active_questions",
+                "active IDs: "
+                f"[{_ids(active)}]; missing active IDs: [{_ids(missing_active)}]. "
+                "Supplied inactive branch answers are ignored.",
+            )
+        )
+
+    active_answer_items = [
+        (index, item) for index, item in enumerate(answer_items) if item.question_id in active
+    ]
+
+    proposal_catalog = {
+        key: value
+        for key, value in (state.get("proposal") or {}).get("evidence", {}).items()
+        if isinstance(value, dict)
+    }
+    referenced_handles: set[str] = set()
+    for _, answer in active_answer_items:
+        for basis in answer.bases:
+            evidence_handle = getattr(basis, "evidence", None)
+            if isinstance(evidence_handle, str):
+                referenced_handles.add(evidence_handle)
+    if parsed.revision_basis is not None and parsed.revision_basis.kind == "new_evidence":
+        referenced_handles.add(parsed.revision_basis.evidence)
+    try:
+        catalog = dict(proposal_catalog)
+        missing_handles = {
+            handle
+            for handle in referenced_handles
+            if not any(item.get("handle") == handle for item in catalog.values())
+        }
+        catalog.update(_evidence_for_handles(root, missing_handles, parsed.trial_id))
+    except ValueError as error:
+        return _result(
+            "repair",
+            state,
+            repairs=[
+                _repair(
+                    "/answers",
+                    "invalid_evidence",
+                    f"Evidence handle does not resolve to captured evidence: {error}",
+                )
+            ],
+        )
+    catalog_by_handle = {
+        item["handle"]: item for item in catalog.values() if isinstance(item, dict)
+    }
+    canonical_answers: list[dict[str, Any]] = []
+    search_accounts: dict[str, dict[str, Any]] = {}
+    for answer_index, answer_item in active_answer_items:
+        answer = answer_item.model_dump(mode="json")
+        bases: list[dict[str, Any]] = []
+        direct_basis = False
+        uncertainty_basis = False
+        seen_basis: set[bytes] = set()
+        for basis_index, basis_model in enumerate(answer_item.bases):
+            basis = basis_model.model_dump(mode="json", exclude_none=True)
+            path = f"/answers/{answer_index}/bases/{basis_index}"
+            if basis["kind"] == "limitation":
+                try:
+                    receipt = _search_receipt(root, basis["search_receipt"])
+                    if receipt.get("trial_id") != parsed.trial_id:
+                        raise ValueError("search receipt is outside the Trial")
+                    if receipt.get("truncated") is not False:
+                        raise ValueError(
+                            "limitation requires a non-truncated search; refine the search "
+                            "before using its receipt"
+                        )
+                    uncertainty_basis = True
+                    basis["search_receipt"] = receipt["identity"]
+                    search_accounts[receipt["identity"]] = receipt
+                except (KeyError, ValueError) as error:
+                    repairs.append(
+                        _repair(
+                            f"{path}/search_receipt",
+                            "invalid_search_receipt",
+                            f"question '{answer_item.question_id}' has an invalid search receipt "
+                            f"for Trial '{parsed.trial_id}': {error}. Attach the exact "
+                            "search_receipt handle returned by the scoped search for this "
+                            "question; do not reuse a stale or mismatched receipt.",
+                        )
+                    )
+            elif basis["kind"] == "absence":
+                try:
+                    receipt = _search_receipt(root, basis["search_receipt"])
+                    if receipt.get("trial_id") != parsed.trial_id:
+                        raise ValueError("search receipt is outside the Trial")
+                    if (
+                        receipt.get("truncated") is not False
+                        or receipt.get("total_matches") != 0
+                        or receipt.get("condition") != "no_hits"
+                    ):
+                        raise ValueError(
+                            "absence requires an untruncated no-hit search; refine the search "
+                            "and confirm total_matches=0 before using it"
+                        )
+                    uncertainty_basis = True
+                    # Keep the disposable handle at the MCP boundary only.
+                    # Checkpoints and their identities refer to the validated
+                    # receipt content, so later finalization and verification
+                    # do not depend on a navigation token.
+                    basis["search_receipt"] = receipt["identity"]
+                    search_accounts[receipt["identity"]] = receipt
+                except (KeyError, ValueError) as error:
+                    repairs.append(
+                        _repair(
+                            f"{path}/search_receipt",
+                            "invalid_search_receipt",
+                            f"question '{answer_item.question_id}' has an invalid search receipt "
+                            f"for Trial '{parsed.trial_id}': {error}. Attach the exact "
+                            "search_receipt handle returned by the scoped search for this "
+                            "question; do not reuse a stale or mismatched receipt.",
+                        )
+                    )
+            else:
+                if basis["kind"] in {"direct_support", "indirect_support", "contradiction"}:
+                    direct_basis = True
+                elif basis["kind"] in {"context", "inference"}:
+                    uncertainty_basis = True
+                evidence = catalog_by_handle.get(basis["evidence"]) or catalog.get(
+                    basis["evidence"]
+                )
+                if evidence is None or evidence.get("trial_id") != parsed.trial_id:
+                    repairs.append(
+                        _repair(
+                            f"{path}/evidence",
+                            "invalid_evidence",
+                            f"Evidence '{basis['evidence']}' does not resolve to captured evidence "
+                            f"for Trial '{parsed.trial_id}'.",
+                        )
+                    )
+                else:
+                    basis["evidence"] = evidence["identity"]
+                    material = str(evidence.get("quote", evidence.get("transcription", "")))
+                    basis["source"] = material
+                    if _is_incomplete_domain_source(material):
+                        repairs.append(
+                            _repair(
+                                f"{path}/source",
+                                "incomplete_domain_source",
+                                "selected source is an unfinished list or lead-in; select the "
+                                "complete sentence, list, or passage.",
+                            )
+                        )
+            key = canonical_json_bytes(basis)
+            if key in seen_basis:
+                repairs.append(
+                    _repair(
+                        path,
+                        "duplicate_answer_basis",
+                        "each answer basis must be unique within its question response.",
+                    )
+                )
+            seen_basis.add(key)
+            bases.append(basis)
+        if answer["answer"] in {"yes", "no"} and not direct_basis:
+            repairs.append(
+                _repair(
+                    f"/answers/{answer_index}/bases",
+                    "answer_requires_direct_basis",
+                    f"question '{answer_item.question_id}' has definitive answer "
+                    f"'{answer['answer']}', which needs a direct, indirect, or contradictory "
+                    "Evidence basis; use probably_yes/probably_no or no_information when the "
+                    "question card allows it, with a limitation, valid scoped no-hit receipt, "
+                    "or exact context/inference premise for uncertainty.",
+                )
+            )
+        elif answer["answer"] in {"probably_yes", "probably_no"} and not (
+            direct_basis or uncertainty_basis
+        ):
+            repairs.append(
+                _repair(
+                    f"/answers/{answer_index}/bases",
+                    "answer_requires_uncertainty_basis",
+                    "a probable answer needs direct evidence, a limitation, a valid scoped no-hit "
+                    "receipt, or an exact context/inference premise; use no_information when "
+                    "the question card allows it.",
+                )
+            )
+        answer["bases"] = bases
+        canonical_answers.append(answer)
+    if repairs:
+        return _result("repair", state, repairs=repairs)
+
+    canonical_answer_values = {item.question_id: item.answer for _, item in active_answer_items}
+    evaluation = evaluate_domain(parsed.domain_id, canonical_answer_values)
+    existing_rows = state.get("domain_records", {})
+    key = f"{parsed.trial_id}:{parsed.domain_id}"
+    existing_record = existing_rows.get(key)
+    if existing_record is None and (
+        parsed.supersedes is not None or parsed.revision_basis is not None
+    ):
+        return _result(
+            "condition",
+            state,
+            code="domain_initial_checkpoint_cannot_have_revision",
+            detail=(
+                "an initial Domain checkpoint must omit supersedes and revision_basis; "
+                "correction reasons apply only when replacing the exact current checkpoint"
+            ),
+        )
+    revision_basis = (
+        parsed.revision_basis.model_dump(mode="json") if parsed.revision_basis is not None else None
+    )
+    # Evidence handles are disposable navigation identities.  Canonicalize a
+    # revision basis before constructing the candidate checkpoint identity so
+    # a retry of a successful new-evidence revision compares equal to the
+    # committed checkpoint even when the caller repeats the handle form.
+    if revision_basis is not None and revision_basis["kind"] == "new_evidence":
+        basis_evidence = catalog_by_handle.get(revision_basis["evidence"]) or catalog.get(
+            revision_basis["evidence"]
+        )
+        if basis_evidence is not None and basis_evidence.get("trial_id") == parsed.trial_id:
+            revision_basis["evidence"] = basis_evidence["identity"]
+    if existing_record is not None and not isinstance(existing_record, dict):
+        raise ValueError("Domain checkpoint ledger is corrupt")
+    existing_judgments = {
+        domain.id: existing_rows[f"{parsed.trial_id}:{domain.id}"]["judgment"]
+        for domain in SCIENTIFIC_PACK.domains
+        if f"{parsed.trial_id}:{domain.id}" in existing_rows
+    }
+    proposed_judgments = {**existing_judgments, parsed.domain_id: evaluation.judgment.value}
+    all_domains_proposed = len(proposed_judgments) == len(SCIENTIFIC_PACK.domains)
+    multiple_concerns = None
+    if all_domains_proposed:
+        concern_count = sum(value == "some_concerns" for value in proposed_judgments.values())
+        has_high = "high" in proposed_judgments.values()
+        if concern_count >= 2 and not has_high:
+            if parsed.multiple_concerns is None:
+                concerned = [
+                    domain.id
+                    for domain in SCIENTIFIC_PACK.domains
+                    if proposed_judgments[domain.id] == "some_concerns"
+                ]
+                return _result(
+                    "repair",
+                    state,
+                    repairs=[
+                        _repair(
+                            "/multiple_concerns",
+                            "multiple_concerns_decision_required",
+                            "Provide raises_overall_to_high and a concise rationale for the "
+                            "multiple Some concerns Domains: " + ", ".join(concerned) + ".",
+                        )
+                    ],
+                )
+            multiple_concerns = parsed.multiple_concerns.model_dump(mode="json")
+        elif parsed.multiple_concerns is not None:
+            return _result(
+                "repair",
+                state,
+                repairs=[
+                    _repair(
+                        "/multiple_concerns",
+                        "multiple_concerns_decision_not_applicable",
+                        "The decision applies only when at least two Domains are "
+                        "some_concerns and none is high; remove it for the proposed "
+                        "Domain judgments.",
+                    )
+                ],
+            )
+    record = {
+        "trial_id": parsed.trial_id,
+        "domain_id": parsed.domain_id,
+        "answers": canonical_answers,
+        "supersedes": parsed.supersedes,
+        "revision_basis": revision_basis,
+        "search_accounts": [search_accounts[key] for key in sorted(search_accounts)],
+        "active_questions": active,
+        "inactive_questions": [key for key in allowed if key not in active],
+        "judgment": evaluation.judgment.value,
+        "trace": list(evaluation.trace),
+        "observed_at": datetime.now(UTC).isoformat(),
+    }
+    record["identity"] = _domain_identity(record)
+    prior_observed_at = _canonical_observed_at(root, record["identity"])
+    if prior_observed_at is not None:
+        record["observed_at"] = prior_observed_at
+    rows = dict(state.get("domain_records", {}))
+    if rows.get(key, {}).get("identity") == record["identity"]:
+        current_snapshot = (state.get("snapshots") or {}).get(parsed.trial_id)
+        if isinstance(current_snapshot, dict) and current_snapshot.get("multiple_concerns") != (
+            parsed.multiple_concerns.model_dump(mode="json") if parsed.multiple_concerns else None
+        ):
+            return _result(
+                "condition",
+                state,
+                condition={
+                    "code": "domain_revision_basis_required",
+                    "detail": (
+                        "this Domain checkpoint is already committed; a different save must "
+                        "name its exact superseded identity and a closed revision basis."
+                    ),
+                },
+            )
+        return _result("success", state, checkpoint=rows[key], retry=True)
+    if existing_record is not None:
+        if parsed.supersedes != existing_record.get("identity"):
+            return _result(
+                "condition",
+                state,
+                condition={
+                    "code": "domain_revision_basis_required",
+                    "detail": (
+                        f"supersedes must name the exact current checkpoint identity "
+                        f"'{existing_record.get('identity')}'."
+                    ),
+                },
+            )
+        if revision_basis is None:
+            return _result(
+                "condition",
+                state,
+                condition={
+                    "code": "domain_revision_basis_required",
+                    "detail": (
+                        "a changed Domain save requires revision_basis kind 'new_evidence' "
+                        "or 'self_correction'."
+                    ),
+                },
+            )
+        if revision_basis["kind"] == "new_evidence":
+            evidence = catalog_by_handle.get(revision_basis["evidence"]) or catalog.get(
+                revision_basis["evidence"]
+            )
+            prior_evidence = {
+                basis.get("evidence")
+                for answer in existing_record.get("answers", [])
+                if isinstance(answer, dict)
+                for basis in answer.get("bases", [])
+                if isinstance(basis, dict) and isinstance(basis.get("evidence"), str)
+            }
+            revised_evidence = {
+                basis.get("evidence")
+                for answer in canonical_answers
+                for basis in answer.get("bases", [])
+                if isinstance(basis, dict) and isinstance(basis.get("evidence"), str)
+            }
+            if (
+                evidence is None
+                or evidence.get("trial_id") != parsed.trial_id
+                or evidence.get("identity") in prior_evidence
+                or evidence.get("identity") not in revised_evidence
+            ):
+                return _result(
+                    "condition",
+                    state,
+                    condition={
+                        "code": "domain_revision_basis_invalid",
+                        "detail": (
+                            "new_evidence must reference selected Evidence from this Trial "
+                            "that is not present in the superseded checkpoint."
+                        ),
+                    },
+                )
+            revision_basis["evidence"] = evidence["identity"]
+        record["revision_basis"] = revision_basis
+        record["identity"] = _domain_identity(record)
+        prior_observed_at = _canonical_observed_at(root, record["identity"])
+        if prior_observed_at is not None:
+            record["observed_at"] = prior_observed_at
+        if rows.get(key, {}).get("identity") == record["identity"]:
+            return _result("success", state, checkpoint=rows[key], retry=True)
+    if parsed.expected_revision != state.get("revision", 0):
+        raise WorkflowConflict(parsed.expected_revision, int(state.get("revision", 0)))
+
+    rows[key] = record
+    history = dict(state.get("domain_history", {}))
+    history.setdefault(key, []).append(record["identity"])
+    history_records = dict(state.get("domain_history_records", {}))
+    history_records.setdefault(key, []).append(record)
+    state = {
+        **state,
+        "domain_records": rows,
+        "domain_history": history,
+        "domain_history_records": history_records,
+    }
+    snapshot: dict[str, Any] | None = None
+    if all(f"{parsed.trial_id}:{item.id}" in rows for item in SCIENTIFIC_PACK.domains):
+        checkpoints = [
+            rows[f"{parsed.trial_id}:{item.id}"]["identity"] for item in SCIENTIFIC_PACK.domains
+        ]
+        judgments = {
+            item.id: rows[f"{parsed.trial_id}:{item.id}"]["judgment"]
+            for item in SCIENTIFIC_PACK.domains
+        }
+        snapshot = {
+            "trial_id": parsed.trial_id,
+            "checkpoints": checkpoints,
+            "provisional": True,
+            "domain_judgments": judgments,
+            "multiple_concerns": multiple_concerns,
+        }
+        snapshot["overall"] = evaluate_overall(
+            judgments,
+            combined_concerns=(
+                multiple_concerns["raises_overall_to_high"]
+                if multiple_concerns is not None
+                else None
+            ),
+        ).judgment.value
+        snapshot["identity"] = _identity(
             {
-                "evidence": reference.model_dump(mode="json"),
-                "relationship": use.relationship.value,
-                "claim": use.claim,
-                "rationale": use.rationale,
-                **record.model_dump(mode="json"),
+                "trial_id": parsed.trial_id,
+                "checkpoints": checkpoints,
+                "multiple_concerns": multiple_concerns,
             }
         )
-    return records
-
-
-def _candidate(
-    workspace: str | Path, packet: RecordReference, draft: DomainDraftInput
-) -> tuple[dict[str, object], tuple[DomainRepair, ...]]:
-    raw = _packet_record(workspace, packet)
-    trial_id = str(raw["trial_id"])
-    result_id = str(raw.get("result_id", "result"))
-    domain_id = str(raw["domain_id"])
-    known = set(cast(list[str] | tuple[str, ...], raw.get("active_question_ids", ())))
-    if not known:
-        known = {item.id for item in SCIENTIFIC_PACK.questions if item.domain_id == domain_id}
-    answers = {item.question_id: item.answer for item in draft.active_answers}
-    repairs: list[DomainRepair] = []
-    evidence_bindings: list[dict[str, object]] = []
-    if len(answers) != len(draft.active_answers):
-        repairs.append(
-            DomainRepair(
-                pointer="/active_answers", code="duplicate", detail="question IDs must be unique"
-            )
+        current_snapshots = state.get("snapshots")
+        snapshots: dict[str, Any] = (
+            dict(current_snapshots) if isinstance(current_snapshots, dict) else {}
         )
-    for index, answer in enumerate(draft.active_answers):
-        if answer.question_id not in known:
-            repairs.append(
-                DomainRepair(
-                    pointer=f"/active_answers/{index}/question_id",
-                    code="unknown",
-                    detail="question is not active in this Domain",
-                )
-            )
-        for use_index, use in enumerate(answer.evidence_uses):
-            try:
-                evidence_bindings.extend(_evidence(workspace, use, trial_id))
-            except ValueError as error:
-                repairs.append(
-                    DomainRepair(
-                        pointer=f"/active_answers/{index}/evidence_uses/{use_index}",
-                        code="invalid",
-                        detail=str(error),
-                        next_action="replace_evidence",
-                    )
-                )
-    try:
-        active_ids = tuple(
-            question_id for question_id in active_questions(answers) if question_id in known
+        snapshots[parsed.trial_id] = snapshot
+        current_history = state.get("snapshot_history")
+        snapshot_history: dict[str, list[str]] = (
+            {str(key): list(value) for key, value in current_history.items()}
+            if isinstance(current_history, dict)
+            else {}
         )
-        active = set(active_ids)
-    except ValueError as error:
-        repairs.append(DomainRepair(pointer="/active_answers", code="invalid", detail=str(error)))
-        active_ids = ()
-        active = set()
-    if set(answers) != active:
-        repairs.append(
-            DomainRepair(
-                pointer="/active_answers",
-                code="mismatch",
-                detail=f"active questions must be exactly {sorted(active)}",
-            )
+        snapshot_history.setdefault(parsed.trial_id, []).append(snapshot["identity"])
+        current_history_records = state.get("snapshot_history_records")
+        snapshot_history_records: dict[str, list[dict[str, Any]]] = (
+            {str(key): list(value) for key, value in current_history_records.items()}
+            if isinstance(current_history_records, dict)
+            else {}
         )
-    elif tuple(item.question_id for item in draft.active_answers) != active_ids:
-        repairs.append(
-            DomainRepair(
-                pointer="/active_answers",
-                code="order",
-                detail=(f"active answers must follow packet/scientific-pack order: {active_ids!r}"),
-            )
-        )
-    if repairs:
-        return {}, tuple(sorted(repairs, key=lambda item: (item.pointer, item.code, item.detail)))
-    try:
-        proposed = (
-            draft.override.final_judgment
-            if draft.override is not None
-            else evaluate_domain(domain_id, answers).judgment
-        )
-    except ValueError as error:
-        return {}, (DomainRepair(pointer="/active_answers", code="invalid", detail=str(error)),)
-    candidate = {
-        "kind": "domain_candidate",
-        "packet": packet.model_dump(mode="json"),
-        "trial_id": trial_id,
-        "result_id": result_id,
-        "domain_id": domain_id,
-        "draft": draft.model_dump(mode="json"),
-        "proposed_judgment": proposed.value,
-        "inactive_questions": sorted(known - active),
-        "evidence_bindings": evidence_bindings,
-        "scientific_pack": SCIENTIFIC_PACK.content_hash,
-        "policy_pack": MAINTAINER_POLICY_PACK.content_hash,
+        snapshot_history_records.setdefault(parsed.trial_id, []).append(snapshot)
+        state = {
+            **state,
+            "snapshots": snapshots,
+            "snapshot_history": snapshot_history,
+            "snapshot_history_records": snapshot_history_records,
+        }
+    current_snapshots = state.get("snapshots")
+    current_dispositions = state.get("trial_dispositions")
+    snapshot_trials = current_snapshots if isinstance(current_snapshots, dict) else {}
+    dispositions = current_dispositions if isinstance(current_dispositions, dict) else {}
+    if all(value != "pending" or trial in snapshot_trials for trial, value in dispositions.items()):
+        state = {**state, "phase": "ready_to_finalize"}
+    promoted_evidence = {
+        item["identity"]: item
+        for item in catalog.values()
+        if isinstance(item, dict)
+        and (item.get("handle") in referenced_handles or item.get("identity") in referenced_handles)
     }
-    candidate["identity"] = identity(candidate)
-    return candidate, ()
+    records = {
+        f"domain:{key}:{record['identity']}": record,
+        **{f"evidence:{identity}": item for identity, item in promoted_evidence.items()},
+    }
+    if snapshot is not None:
+        records[f"snapshot:{snapshot['identity']}"] = snapshot
+    state = _commit_records(root, state, parsed.expected_revision, records)
+    return _result(
+        "success",
+        state,
+        checkpoint=record,
+        provisional=snapshot is not None,
+        continuation=_continuation(state),
+    )
 
 
-def validate_domain_judgment(
-    workspace: str | Path, request: DomainValidationRequest, *, caller: str = "host"
-) -> DomainValidationResult | DomainRepairResult | DomainCondition:
-    del caller
-    # The public continuation starts at the Approved Batch. Materialize its
-    # first durable Domain work packet before binding the candidate so every
-    # checkpoint has the same packet chain in the final artifact.
-    if request.packet.kind is RecordKind.APPROVED_BATCH:
-        try:
-            work = _packet_record(workspace, request.packet)
-            request = request.model_copy(
-                update={
-                    "packet": prepare_domain_packet(
-                        workspace,
-                        request.packet,
-                        trial_id=str(work["trial_id"]),
-                        domain_id=str(work["domain_id"]),
-                        result_id=str(work.get("result_id", "result")),
-                    )
+def get_domain_context(
+    workspace: str | Path, trial_id: str | None = None, domain_id: str | None = None
+) -> dict[str, Any]:
+    root = _root(workspace)
+    _ensure(root)
+    state = _state(root)
+    if state.get("phase") not in {"assessment", "ready_to_finalize"}:
+        raise ValueError("Domain work is not active")
+    if trial_id is None:
+        records = state.get("domain_records") or {}
+        trial_id = next(
+            (
+                candidate
+                for candidate, value in state.get("trial_dispositions", {}).items()
+                if value == "pending"
+                and any(
+                    f"{candidate}:{domain.id}" not in records for domain in SCIENTIFIC_PACK.domains
+                )
+            ),
+            None,
+        )
+    if trial_id is None:
+        raise ValueError("no Trial is available")
+    if domain_id is None:
+        records = state.get("domain_records") or {}
+        domain_id = next(
+            (
+                domain.id
+                for domain in SCIENTIFIC_PACK.domains
+                if f"{trial_id}:{domain.id}" not in records
+            ),
+            SCIENTIFIC_PACK.domains[-1].id,
+        )
+    if domain_id not in {item.id for item in SCIENTIFIC_PACK.domains}:
+        raise ValueError("unknown Domain")
+    result = next(
+        (
+            item
+            for item in (state.get("proposal") or {}).get("payload", {}).get("results", [])
+            if item.get("trial_id") == trial_id
+        ),
+        None,
+    )
+    if not isinstance(result, dict):
+        raise ValueError("approved Result is unavailable")
+    existing = (state.get("domain_records") or {}).get(f"{trial_id}:{domain_id}", {})
+    answer_rows = existing.get("answers", []) if isinstance(existing, dict) else []
+    answers = {
+        item["question_id"]: item["answer"]
+        for item in answer_rows
+        if isinstance(item, dict)
+        and isinstance(item.get("question_id"), str)
+        and isinstance(item.get("answer"), str)
+    }
+    active = (
+        set(active_questions(answers))
+        if answers
+        else {
+            item.id
+            for item in SCIENTIFIC_PACK.questions
+            if item.domain_id == domain_id and item.activation.kind == "always"
+        }
+    )
+    handles = {
+        item.get("handle") for item in (result or {}).get("evidence", []) if isinstance(item, dict)
+    }
+    proposal_catalog = {
+        key: value
+        for key, value in (state.get("proposal") or {}).get("evidence", {}).items()
+        if isinstance(value, dict)
+    }
+    catalog = dict(proposal_catalog)
+    missing_handles = {
+        handle
+        for handle in handles
+        if not any(item.get("handle") == handle for item in catalog.values())
+    }
+    if missing_handles:
+        catalog.update(_evidence_for_handles(root, missing_handles, trial_id))
+
+    def result_projection(value: dict[str, Any]) -> dict[str, Any]:
+        if value.get("kind") == "unavailable":
+            return value
+        reported = value["reported"]
+        if reported.get("form") == "single_group_category_profile":
+            reported = {
+                key: reported[key]
+                for key in (
+                    "form",
+                    "endpoint",
+                    "group_id",
+                    "denominator_basis",
+                    "category_axis_names",
+                )
+            } | {"category_count": len(reported["categories"])}
+        references = []
+        for evidence_item in value.get("evidence", []):
+            if not isinstance(evidence_item, dict):
+                continue
+            handle = evidence_item.get("handle")
+            selected = next(
+                (item for item in catalog.values() if item.get("handle") == handle), None
+            )
+            if not isinstance(handle, str) or not isinstance(selected, dict):
+                raise ValueError("Result Evidence handle is unavailable")
+            references.append(
+                {
+                    "kind": evidence_item.get("kind"),
+                    "handle": handle,
+                    "identity": selected["identity"],
                 }
             )
-        except ValueError as error:
-            return DomainCondition(
-                outcome="condition",
-                code="packet_unavailable",
-                detail=str(error),
-                next_action=ValidateDomainJudgmentContinuation(packet=request.packet),
-            )
-    draft_hash = identity(request.draft.model_dump(mode="json"))
-    try:
-        candidate, repairs = _candidate(workspace, request.packet, request.draft)
-    except ValueError as error:
-        return DomainCondition(
-            outcome="condition",
-            code="packet_unavailable",
-            detail=str(error),
-            next_action=ValidateDomainJudgmentContinuation(packet=request.packet),
-        )
-    if repairs:
-        return DomainRepairResult(draft_hash=draft_hash, repairs=repairs)
-    candidate_ref = RecordReference(
-        kind=RecordKind.DOMAIN_CANDIDATE,
-        identity=str(candidate["identity"]),
-        uri=record_uri("domain_candidate", str(candidate["identity"])),
-    )
-    transition = issue_transition(
-        workspace,
-        "commit_domain_judgment",
-        {
-            "candidate": candidate_ref.model_dump(mode="json"),
-            "packet": request.packet.model_dump(mode="json"),
-        },
-    )
-    candidate["transition"] = transition.model_dump(mode="json")
-    write_jsons(
-        workspace,
-        {f"domain-candidate-{candidate_ref.identity.removeprefix('sha256:')}.json": candidate},
-    )
-    inactive = cast(list[Any], candidate["inactive_questions"])
-    return DomainValidationResult(
-        candidate=candidate_ref,
-        transition=transition,
-        candidate_hash=candidate_ref.identity,
-        draft_hash=draft_hash,
-        proposed_judgment=Judgment(str(candidate["proposed_judgment"])),
-        inactive_questions=tuple(str(item) for item in inactive),
-    )
-
-
-class DomainCommitResult(_Closed):
-    outcome: Literal["success"] = "success"
-    candidate: RecordReference
-    active_revision: int
-    active_hash: str
-    acknowledgment: ReviewAcknowledgmentReference
-    remaining_domains: tuple[str, ...]
-    next_action: Continuation
-
-
-def commit_domain_judgment(
-    workspace: str | Path, transition: TransitionReference, *, caller: str = "host"
-) -> DomainCommitResult:
-    with workspace_mutation_lock(workspace):
-        raw_transition = read_transition(workspace, transition)
-        if raw_transition.get("consumed"):
-            replay = read_json(
-                workspace, f"domain-commit-{transition.identity.removeprefix('sha256:')}.json"
-            )
-            if replay is None:
-                raise ValueError("consumed Domain Transition replay is corrupt")
-            return DomainCommitResult.model_validate(replay)
-        if raw_transition.get("operation") != "commit_domain_judgment":
-            raise ValueError("Transition operation does not match commit_domain_judgment")
-        candidate_ref = RecordReference.model_validate(raw_transition.get("candidate"))
-        raw = read_json(
-            workspace, f"domain-candidate-{candidate_ref.identity.removeprefix('sha256:')}.json"
-        )
-        if raw is None or raw.get("identity") != candidate_ref.identity:
-            raise ValueError("Domain candidate is unavailable or corrupt")
-        candidate_payload = {
-            key: raw[key]
+        projection = {
+            key: value[key]
             for key in (
                 "kind",
-                "packet",
                 "trial_id",
-                "result_id",
-                "domain_id",
-                "draft",
-                "proposed_judgment",
-                "inactive_questions",
-                "evidence_bindings",
-                "scientific_pack",
-                "policy_pack",
+                "requested_outcome",
+                "relation",
+                "relation_rationale",
+                "target",
+                "clarity",
             )
-            if key in raw
         }
-        if identity(candidate_payload) != candidate_ref.identity:
-            raise ValueError("transition_consumed_mismatch")
-        state = read_json(workspace, "state.json") or {}
-        packet_payload = raw.get("packet")
-        packet = RecordReference.model_validate(packet_payload)
-        if packet.kind is RecordKind.APPROVED_WORK_PACKET:
-            # A validated packet is usable only while it remains the current
-            # packet.  Checking this before the prior-checkpoint comparison
-            # prevents an old packet from being treated as a concurrent basis.
-            if state.get("work_packet_identity") != packet.identity:
-                raise ValueError("concurrent_domain_conflict")
-        elif packet.kind is RecordKind.APPROVED_BATCH:
-            # Bootstrap candidates are valid only before any Domain work has
-            # started.  A candidate validated from the Batch must not race a
-            # later packet materialization or checkpoint commit.
-            state_domains = state.get("domains")
-            if (
-                "work_packet_identity" in state
-                or (isinstance(state_domains, dict) and state_domains)
-                or (state_domains is not None and state_domains != {})
-            ):
-                raise ValueError("concurrent_domain_conflict")
-        domains = dict(state.get("domains", {}))
-        key = f"{raw['trial_id']}:{raw['result_id']}:{raw['domain_id']}"
-        prior = domains.get(key, ())
-        packet_model: ApplicationWorkPacket | None = None
-        if (
-            isinstance(packet_payload, dict)
-            and packet_payload.get("kind") == RecordKind.APPROVED_WORK_PACKET.value
-        ):
-            packet_reference = RecordReference.model_validate(packet_payload)
-            packet_record = read_json(
-                workspace,
-                f"domain-packet-{packet_reference.identity.removeprefix('sha256:')}.json",
-            )
-            if packet_record is None:
-                raise ValueError("Domain work packet is unavailable")
-            packet_model = parse_application_work_packet(packet_record)
-            if packet_model.identity != packet_reference.identity:
-                raise ValueError("Domain work packet reference is stale")
-            current_prior = _current_prior_domain_hashes(
-                state,
-                str(raw["trial_id"]),
-                str(raw["result_id"]),
-                str(raw["domain_id"]),
-            )
-            if tuple(packet_model.prior_domain_hashes) != current_prior:
-                raise ValueError("concurrent_domain_conflict")
-        revision = len(prior) + 1
-        active_hash = identity({"candidate": candidate_ref.identity, "revision": revision})
-        domains[key] = [active_hash]
-        remaining = tuple(
-            item
-            for item in _domain_ids()
-            if f"{raw['trial_id']}:{raw['result_id']}:{item}" not in domains
-        )
-        state_for_write = {**state, "domains": domains, "phase": "assessment"}
-        next_packet_record: ApplicationWorkPacket | None = None
-        if remaining:
-            approved_batch = packet_model.approved_batch if packet_model is not None else packet
-            next_packet_record = _build_domain_packet(
-                workspace,
-                approved_batch,
-                trial_id=str(raw["trial_id"]),
-                domain_id=remaining[0],
-                result_id=str(raw["result_id"]),
-                state=state_for_write,
-            )
-            next_packet = RecordReference(
-                kind=RecordKind.APPROVED_WORK_PACKET,
-                identity=next_packet_record.identity,
-                uri=record_uri(RecordKind.APPROVED_WORK_PACKET.value, next_packet_record.identity),
-            )
-            state_for_write["work_packet_identity"] = next_packet_record.identity
-            next_action: Continuation = ValidateDomainJudgmentContinuation(packet=next_packet)
-        else:
-            next_action = PrepareTrialFinishContinuation(packet=packet)
-        observed_at = datetime.now(UTC)
-        acknowledgment_identity = identity(
-            {
-                "candidate": candidate_ref.model_dump(mode="json"),
-                "authority": ReviewAuthority.HOST.value,
-                "caller": caller,
-                "observed_at": observed_at.isoformat(),
-            }
-        )
-        acknowledgment = ReviewAcknowledgmentReference(
-            kind="review_ack",
-            identity=acknowledgment_identity,
-            uri=record_uri("review_ack", acknowledgment_identity),
-        )
-        receipt = DomainCommitResult(
-            candidate=candidate_ref,
-            active_revision=revision,
-            active_hash=active_hash,
-            acknowledgment=acknowledgment,
-            remaining_domains=remaining,
-            next_action=next_action,
-        )
-        raw_transition["consumed"] = True
-        observation = {
-            **raw,
-            "active_hash": active_hash,
-            "active_revision": revision,
-            "caller": caller,
-            "acknowledgment": acknowledgment.model_dump(mode="json"),
-            "observed_at": observed_at.isoformat(),
+        projection["reported"] = reported
+        return projection | {
+            "evidence": references,
         }
-        writes = {
-            f"domain-observation-{active_hash.removeprefix('sha256:')}.json": observation,
-            f"domain-commit-{transition.identity.removeprefix('sha256:')}.json": receipt.model_dump(
-                mode="json"
+
+    continuation: dict[str, Any] = {
+        "operation": "save_domain_judgment",
+        "authority": "host",
+        "trial_id": trial_id,
+        "domain_id": domain_id,
+        "expected_revision": int(state.get("revision", 0)),
+        "caller_inputs": ["answers", "multiple_concerns"],
+    }
+    # A correction continuation names the exact active checkpoint to replace.
+    # The model therefore never has to infer a parent from the historical
+    # digest list, and a stale or unrelated checkpoint cannot be selected by
+    # guessing.
+    if isinstance(existing, dict) and isinstance(existing.get("identity"), str):
+        continuation["supersedes"] = existing["identity"]
+        continuation["caller_inputs"] = [
+            "answers",
+            "multiple_concerns",
+            "revision_basis",
+        ]
+    return {
+        "outcome": "success",
+        "trial_id": trial_id,
+        "domain_id": domain_id,
+        "state_revision": state.get("revision", 0),
+        "result": result_projection(result),
+        "evidence": [item for item in catalog.values() if item.get("handle") in handles],
+        "answers": answer_rows,
+        "current_checkpoint": (existing.get("identity") if isinstance(existing, dict) else None),
+        "guidance": [
+            (
+                "Answer every initially active question plus each dependent question whose "
+                "activation predicate is met by your earlier answers. Extra inactive branch "
+                "answers are ignored and never committed. Preserve the approved Result target."
             ),
-            f"transition-{transition.identity.removeprefix('sha256:')}.json": raw_transition,
-            "state.json": state_for_write,
-        }
-        if next_packet_record is not None:
-            writes[f"domain-packet-{next_packet_record.identity.removeprefix('sha256:')}.json"] = (
-                next_packet_record.model_dump(mode="json")
-            )
-        write_jsons(workspace, writes)
-        return receipt
-
-
-__all__ = [
-    "DomainAnswerInput",
-    "DomainCondition",
-    "DomainDraftInput",
-    "DomainEvidenceUseInput",
-    "DomainOverrideInput",
-    "DomainRepair",
-    "DomainRepairResult",
-    "DomainValidationRequest",
-    "DomainValidationResult",
-    "DomainCommitResult",
-    "prepare_domain_packet",
-    "validate_domain_judgment",
-    "commit_domain_judgment",
-]
+            *_DOMAIN_GUIDANCE,
+        ],
+        "response_framework": _RESPONSE_FRAMEWORK.model_dump(mode="json"),
+        "traps": [
+            "Do not infer semantic entailment or treat a no-hit search as scientific absence.",
+            *_DOMAIN_TRAPS,
+        ],
+        "questions": [
+            {
+                "id": item.id,
+                "wording": item.wording,
+                "allowed_answers": [answer.value for answer in item.allowed_answers],
+                "active": item.id in active,
+                "activation": item.activation.model_dump(mode="json"),
+                "official_guidance": item.guidance.official.source_excerpt,
+                "source_locator": item.guidance.official.source_locator,
+                "decision_rule": item.guidance.operational.decision_rule,
+                "evidence_needed": item.guidance.operational.evidence_needed,
+                "answer_anchors": [
+                    anchor.model_dump(mode="json")
+                    for anchor in item.guidance.operational.answer_anchors
+                ],
+                "no_information_rule": item.guidance.operational.no_information_rule,
+                "invalid_shortcuts": item.guidance.operational.invalid_shortcuts,
+            }
+            for item in SCIENTIFIC_PACK.questions
+            if item.domain_id == domain_id
+        ],
+        "completion_rule": (
+            "complete bounded question-specific discovery, then supply every question activated "
+            "by the submitted answer path and link each active answer to at least one Evidence "
+            "use, scoped absence receipt, or limitation; inactive extras are ignored"
+        ),
+        "continuation": continuation,
+    }

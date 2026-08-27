@@ -1,92 +1,67 @@
-"""The small, typed MCP boundary for the RoB 2 application."""
+"""The exact v0.3 FastMCP boundary."""
 
 from __future__ import annotations
 
 import base64
 import json
 import os
-from pathlib import Path
-from typing import Any
+from typing import Annotated, Any, Literal
 
 from fastmcp import FastMCP
 from fastmcp.tools import ToolResult
-from mcp.types import ImageContent, ResourceLink, TextContent, ToolAnnotations
+from mcp.types import ImageContent, TextContent, ToolAnnotations
+from pydantic import Field, StrictBool, StrictInt, StrictStr
+from pydantic.functional_validators import AfterValidator
 
-from rob2_kit.application import (
-    AuthorizedSourceRoot,
-    CandidateSource,
-    CaptureRequest,
-    IntakePlanEntry,
-    PreflightRequest,
-    ProposalInput,
-    capture_batch,
-    inspect_candidate_sources,
-    preflight_sources,
-    save_intake_plan,
-    save_proposal,
-)
-from rob2_kit.application._state import read_json
-from rob2_kit.application.contracts import (
-    EvidenceReference,
-    RecordReference,
-    ReviewAcknowledgmentReference,
-    TransitionReference,
-)
-from rob2_kit.application.domains import (
-    DomainDraftInput,
-    DomainValidationRequest,
-    commit_domain_judgment,
-    validate_domain_judgment,
-)
+from rob2_kit.application.contracts import TOOL_NAMES, WorkflowConflict
+from rob2_kit.application.domains import get_domain_context as _get_domain_context
+from rob2_kit.application.domains import save_domain_judgment as _save_domain_judgment
+from rob2_kit.application.evidence import list_sources as _list_sources
+from rob2_kit.application.evidence import read_pages as _read_pages
+from rob2_kit.application.evidence import render_page as _render_page
+from rob2_kit.application.evidence import search_sources as _search_sources
 from rob2_kit.application.evidence import (
-    EvidenceCatalogRequest,
-    EvidenceRetrievalRequest,
-    ManualSelectionRequest,
-    NormalSelectionRequest,
-    PageReadRequest,
-    SearchContinuation,
-    SearchRequest,
-    VisualSelectionRequest,
-    list_sources,
-    resolve_evidence,
-    retrieve_evidence,
-    source_records,
+    select_text_evidence_by_lines as _select_text_evidence_by_lines,
 )
-from rob2_kit.application.finalization import finalize_batch
-from rob2_kit.application.proposal import ApprovalRequest, approve_batch
-from rob2_kit.application.status import status_json
-from rob2_kit.application.trials import (
-    TrialFinishCandidate,
-    TrialFinishRequest,
-    finish_trial,
-    prepare_trial_finish,
+from rob2_kit.application.evidence import select_visual_evidence as _select_visual_evidence
+from rob2_kit.application.finalization import finalize_batch as _finalize_batch
+from rob2_kit.application.intake import prepare_batch_for_outcome as _prepare_batch
+from rob2_kit.application.proposal import save_proposal as _save_proposal
+from rob2_kit.application.status import get_status as _get_status
+from rob2_kit.application.status import get_status_head as _get_status_head
+from rob2_kit.application.trials import request_trial_terminal as _request_trial_terminal
+from rob2_kit.workflow_models import (
+    DomainAnswer,
+    DomainDraft,
+    DomainId,
+    DomainRevisionBasis,
+    ExpectedRevision,
+    Identity,
+    MultipleConcernsDecision,
+    NormalizedCoordinate,
+    PageNumber,
+    ProposalDraft,
+    ResultChoiceDraft,
+    SourceId,
+    TerminalRequest,
+    TerminalRequestEnvelope,
+    TrialId,
+    VisualTranscription,
 )
-from rob2_kit.models import sha256
-from rob2_kit.rendering import RenderCondition, read_render, render_page
-from rob2_kit.storage import read_only_transaction
 
-PUBLIC_TOOL_NAMES = (
-    "preflight_sources",
-    "inspect_candidate_sources",
-    "save_intake_plan",
-    "capture_batch",
-    "list_sources",
-    "retrieve_evidence",
-    "render_page",
-    "save_proposal",
-    "approve_batch",
-    "validate_domain_judgment",
-    "commit_domain_judgment",
-    "prepare_trial_finish",
-    "finish_trial",
-    "finalize_batch",
-    "read_record",
-)
+from .contracts import normalize, output_schema, validate_output
 
 mcp = FastMCP("rob2-kit")
-_READ_ONLY = ToolAnnotations(readOnlyHint=True, destructiveHint=False, idempotentHint=True)
-_MUTATION = ToolAnnotations(readOnlyHint=False, destructiveHint=False, idempotentHint=False)
-_PREFLIGHT = ToolAnnotations(
+PUBLIC_TOOL_NAMES = TOOL_NAMES
+SearchLimit = Annotated[StrictInt, Field(ge=1, le=100)]
+Inline = StrictBool
+_READ_ONLY = ToolAnnotations(
+    readOnlyHint=True, destructiveHint=False, idempotentHint=True, openWorldHint=False
+)
+_MUTATION = ToolAnnotations(
+    readOnlyHint=False, destructiveHint=False, idempotentHint=True, openWorldHint=False
+)
+_INTAKE = ToolAnnotations(
     readOnlyHint=False, destructiveHint=False, idempotentHint=True, openWorldHint=True
 )
 
@@ -95,446 +70,541 @@ def _workspace() -> str:
     return os.environ.get("ROB2_WORKSPACE", ".")
 
 
-def _content(value: Any) -> ToolResult:
-    """Structured content is the sole complete receipt; prose remains a headline."""
-    dumped = (
-        value.model_dump(mode="json", exclude_none=True) if hasattr(value, "model_dump") else value
-    )
-    outcome = dumped.get("outcome", "success") if isinstance(dumped, dict) else "success"
-    return ToolResult(
-        content=[
-            TextContent(
-                type="text", text=f"{outcome}; inspect structured content for the typed receipt."
-            )
-        ],
-        structured_content=dumped,
-    )
+def _nonblank(value: str) -> str:
+    if not value.strip():
+        raise ValueError("requested_outcome must contain non-whitespace content")
+    return value
 
 
-def _candidate_summary(candidate: CandidateSource) -> dict[str, Any]:
-    return candidate.model_dump(mode="json", exclude={"pages"})
+RequestedOutcome = Annotated[
+    StrictStr,
+    Field(
+        min_length=1,
+        description=(
+            "Outcome concept to assess across Trials; preserve the researcher's wording and "
+            "omit Trial names and scope phrases."
+        ),
+    ),
+    AfterValidator(_nonblank),
+]
 
 
-@mcp.resource("rob2://current-batch")
-def current_batch() -> str:
-    return status_json(_workspace())
-
-
-def _detail(kind: str, identity: str) -> dict[str, object]:
-    if kind == "evidence":
-        raise ValueError("Evidence detail URI is unsupported")
-    names = {
-        "source_preflight": "preflight.json",
-        "intake_plan": "intake_plan.json",
-        "captured_batch": "captured_batch.json",
-        "proposal_review": "proposal_review.json",
-        "approved_batch": "approved_batch.json",
-        "work_packet": f"domain-packet-{identity.removeprefix('sha256:')}.json",
-        "review_ack": "review_ack.json",
-        "trial_synthesis": f"synthesis-{identity.removeprefix('sha256:')}.json",
-        "domain_candidate": f"domain-candidate-{identity.removeprefix('sha256:')}.json",
-        "domain_checkpoint": f"domain-observation-{identity.removeprefix('sha256:')}.json",
-        "trial_terminal": f"trial-outcome-{identity.removeprefix('sha256:')}.json",
-        "assessment_snapshot": f"assessment-snapshot-{identity.removeprefix('sha256:')}.json",
-        "batch_summary": "finalization-summary.json",
-    }
-    name = names.get(kind)
-    value = None if name is None else read_json(_workspace(), name)
-    if value is not None and _verified_detail(kind, identity, value):
-        return value
-    # Trial outcomes are keyed by Trial id, not their content identity.  The
-    # remaining immutable records similarly need identity-based resolution.
-    workspace = Path(_workspace())
-    paths = list(workspace.glob("*.json"))
-    if kind == "artifact_manifest":
-        paths.extend(workspace.glob(".rob2-kit/finalized/*/manifest.json"))
-    for path in paths:
-        try:
-            candidate = json.loads(path.read_text(encoding="utf-8"))
-        except (OSError, UnicodeDecodeError, json.JSONDecodeError):
-            continue
-        if _verified_detail(kind, identity, candidate):
-            return candidate
-    with read_only_transaction(_workspace()) as connection:
-        if connection is not None:
-            rows = connection.execute(
-                "SELECT payload FROM records WHERE name LIKE 'application:%'"
-            ).fetchall()
-            for row in rows:
-                candidate = json.loads(bytes(row[0]).decode("utf-8"))
-                if _verified_detail(kind, identity, candidate):
-                    return candidate
-    raise ValueError("Detail record is unavailable or does not match its identity")
-
-
-def _verified_detail(kind: str, requested_identity: str, value: object) -> bool:
-    """Per-kind verification prevents a self-reported identity becoming authority."""
-    if not isinstance(value, dict):
-        return False
-    actual_identity = (
-        value.get("manifest_hash")
-        if kind == "artifact_manifest"
-        else value.get("active_hash")
-        if kind == "domain_checkpoint"
-        else value.get("identity")
-    )
-    if actual_identity != requested_identity:
-        return False
-    try:
-        if kind == "source_preflight":
-            from rob2_kit.application.preflight import verify_source_preflight
-
-            return verify_source_preflight(value).identity == requested_identity
-        if kind == "intake_plan":
-            from rob2_kit.application.intake import verify_intake_plan
-
-            return verify_intake_plan(value).identity == requested_identity
-        if kind == "review_ack":
-            from rob2_kit.application._state import identity
-            from rob2_kit.application.acknowledgments import StoredReviewAcknowledgment
-
-            stored = StoredReviewAcknowledgment.model_validate(value)
-            payload = {
-                key: value[key]
-                for key in ("record", "authority", "purpose", "caller", "observed_at")
-            }
-            return stored.identity == identity(payload)
-        if kind == "captured_batch":
-            from rob2_kit.application._state import identity
-
-            return set(value) == {"kind", "identity", "plan", "acknowledgment", "sources"} and (
-                value["kind"] == "captured_batch"
-                and identity({key: value[key] for key in ("plan", "acknowledgment", "sources")})
-                == requested_identity
-            )
-        from rob2_kit.application._state import identity
-
-        if kind == "approved_batch":
-            return (
-                value.get("kind") == kind
-                and identity(
-                    {key: item for key, item in value.items() if key not in {"kind", "identity"}}
-                )
-                == requested_identity
-            )
-        if kind == "proposal_review":
-            fields = ("captured_batch", "outcome_statement", "results", "needs_input")
-            return (
-                value.get("kind") == kind
-                and identity({key: value.get(key) for key in fields}) == requested_identity
-            )
-        if kind == "work_packet":
-            from rob2_kit.application.domains import parse_application_work_packet
-
-            return parse_application_work_packet(value).identity == requested_identity
-        if kind == "trial_synthesis":
-            fields = (
-                "approved_batch",
-                "trial_id",
-                "result_id",
-                "checkpoint_hashes",
-                "checkpoint_judgments",
-                "proposed_overall",
-            )
-            payload = {key: value.get(key) for key in fields} | {"combined_concerns": False}
-            return value.get("kind") == kind and identity(payload) == requested_identity
-        if kind in {"domain_candidate", "domain_checkpoint"}:
-            fields = (
-                "kind",
-                "packet",
-                "trial_id",
-                "result_id",
-                "domain_id",
-                "draft",
-                "proposed_judgment",
-                "inactive_questions",
-                "evidence_bindings",
-                "scientific_pack",
-                "policy_pack",
-            )
-            candidate_identity = identity({key: value.get(key) for key in fields})
-            if value.get("kind") != "domain_candidate" or candidate_identity != value.get(
-                "identity"
-            ):
-                return False
-            return (
-                candidate_identity == requested_identity
-                if kind == "domain_candidate"
-                else identity(
-                    {"candidate": candidate_identity, "revision": value.get("active_revision")}
-                )
-                == requested_identity
-            )
-        if kind == "batch_summary":
-            fields = ("approved_batch", "counts", "trials", "presentation")
-            return (
-                value.get("kind") == "finalization"
-                and identity({key: value.get(key) for key in fields}) == requested_identity
-            )
-        if kind == "assessment_snapshot":
-            from rob2_kit.application.trials import AssessmentSnapshot
-
-            snapshot = AssessmentSnapshot.model_validate(value)
-            payload = {
-                "synthesis": snapshot.synthesis.model_dump(mode="json"),
-                "checkpoint_hashes": snapshot.checkpoint_hashes,
-                "proposed_overall": snapshot.proposed_overall.value,
-                "final_judgment": snapshot.final_judgment.value,
-                "caller": snapshot.caller,
-                "observed_at": snapshot.observed_at.isoformat().replace("+00:00", "Z"),
-            }
-            return (
-                snapshot.identity == requested_identity
-                and snapshot.snapshot_hash == sha256(payload)
-                and identity(payload) == requested_identity
-            )
-        if kind == "trial_terminal":
-            if "candidate" in value:
-                payload = {"synthesis": value.get("synthesis"), "candidate": value.get("candidate")}
-            elif "acknowledgment" in value and "synthesis" not in value:
-                payload = {
-                    "trial_id": value.get("trial_id"),
-                    "disposition": value.get("disposition"),
-                    "reason": value.get("reason"),
-                    "missing_facts": value.get("missing_facts"),
-                    "evidence": value.get("evidence"),
-                    "acknowledgment": value.get("acknowledgment"),
-                }
-            else:
-                payload = {
-                    key: value.get(key)
-                    for key in (
-                        "synthesis",
-                        "trial_id",
-                        "disposition",
-                        "reason",
-                        "failure_cause",
-                        "missing_facts",
-                        "available_evidence",
-                        "retained_checkpoints",
-                        "caller",
-                        "observed_at",
-                        "snapshot",
-                        "transition",
-                    )
-                }
-            return value.get("kind") == kind and identity(payload) == requested_identity
-        if kind == "artifact_manifest":
-            payload = {"summary_hash": value.get("summary_hash"), "files": value.get("files")}
-            return (
-                value.get("manifest_hash") == requested_identity
-                and identity(payload) == requested_identity
-            )
-        if kind == "diagnostic":
-            return (
-                value.get("kind") == kind
-                and identity(
-                    {key: item for key, item in value.items() if key not in {"kind", "identity"}}
-                )
-                == requested_identity
-            )
-    except (KeyError, TypeError, ValueError):
-        return False
-    return False
-
-
-@mcp.resource("rob2://detail/{kind}/{identity}")
-def detail_resource(kind: str, identity: str) -> str:
-    return json.dumps(
-        _detail(kind, identity), sort_keys=True, separators=(",", ":"), ensure_ascii=False
-    )
-
-
-@mcp.resource("rob2://registry/{trial_id}")
-def registry_resource(trial_id: str) -> str:
-    preflight = read_json(_workspace(), "preflight.json") or {}
-    outcomes = dict(preflight.get("registry_outcomes", ()))
-    if trial_id not in outcomes:
-        raise ValueError("registry record is unavailable")
-    return json.dumps({"trial_id": trial_id, "status": outcomes[trial_id]}, separators=(",", ":"))
-
-
-@mcp.resource("rob2://render/{identity}")
-def render_resource(identity: str) -> bytes:
-    return read_render(_workspace(), identity)[1]
-
-
-@mcp.tool(name="preflight_sources", annotations=_PREFLIGHT)
-def preflight(
-    roots: tuple[AuthorizedSourceRoot, ...], expected_head: str | None = None
-) -> ToolResult:
-    result = preflight_sources(
-        _workspace(), PreflightRequest(roots=roots, expected_head=expected_head)
-    )
-    return _content(
-        {
-            "kind": result.kind,
-            "identity": result.identity,
-            "roots": result.roots,
-            "candidates": [_candidate_summary(item) for item in result.candidates],
-            "conditions": result.conditions,
-            "registry_attempts": result.registry_attempts,
-            "registry_outcomes": result.registry_outcomes,
-            "reference": result.reference.model_dump(mode="json"),
+def _content(tool: str, value: dict[str, Any]) -> ToolResult:
+    # Pixel bytes are transport content, never part of the typed JSON receipt.
+    png_bytes = value.get("_png_bytes")
+    value = {key: item for key, item in value.items() if key != "_png_bytes"}
+    if tool != "get_status":
+        current = _get_status_head(_workspace())
+        value = {
+            **value,
+            "phase": current.get("phase", "empty"),
+            "state_revision": current.get("state_revision", 0),
+            "continuation": value.get("continuation", current.get("continuation")),
+            "authoritative_wording": current.get("authoritative_wording"),
         }
-    )
-
-
-@mcp.tool(name="inspect_candidate_sources", annotations=_READ_ONLY)
-def inspect(
-    candidate_identity: str, query: str | None = None, page: int | None = None
-) -> ToolResult:
-    result = inspect_candidate_sources(_workspace(), candidate_identity, query=query, page=page)
-    return _content(
-        {
-            "candidate": _candidate_summary(result.candidate),
-            "page": result.page,
-            "text": result.text,
-            "hits": result.hits,
-        }
-    )
-
-
-@mcp.tool(name="save_intake_plan", annotations=_MUTATION)
-def save_plan(preflight: RecordReference, entries: tuple[IntakePlanEntry, ...]) -> ToolResult:
-    # The caller is adapter-observed; it is intentionally absent from the
-    # public model-facing schema.
-    return _content(save_intake_plan(_workspace(), preflight, entries, host_caller="host:mcp"))
-
-
-@mcp.tool(name="capture_batch", annotations=_MUTATION)
-def capture(plan: RecordReference, acknowledgment: ReviewAcknowledgmentReference) -> ToolResult:
-    return _content(
-        capture_batch(_workspace(), CaptureRequest(plan=plan, acknowledgment=acknowledgment))
-    )
-
-
-@mcp.tool(name="list_sources", annotations=_READ_ONLY)
-def list_trial_sources(trial_id: str) -> ToolResult:
-    # ToolResult structured content is an object in MCP; keep the collection
-    # under a named field instead of handing FastMCP a bare JSON array.
-    return _content({"sources": list_sources(_workspace(), trial_id)})
-
-
-@mcp.tool(name="retrieve_evidence", annotations=_READ_ONLY)
-def retrieve(
-    trial_id: str,
-    searches: tuple[SearchRequest, ...] = (),
-    continuations: tuple[SearchContinuation, ...] = (),
-    page_reads: tuple[PageReadRequest, ...] = (),
-    normal_selections: tuple[NormalSelectionRequest, ...] = (),
-    manual_selections: tuple[ManualSelectionRequest, ...] = (),
-    visual_selections: tuple[VisualSelectionRequest, ...] = (),
-    catalog: EvidenceCatalogRequest | None = None,
-) -> ToolResult:
-    request = EvidenceRetrievalRequest(
-        trial_id=trial_id,
-        searches=searches,
-        continuations=continuations,
-        page_reads=page_reads,
-        normal_selections=normal_selections,
-        manual_selections=manual_selections,
-        visual_selections=visual_selections,
-        catalog=catalog,
-    )
-    return _content(retrieve_evidence(_workspace(), request))
-
-
-@mcp.tool(name="render_page", annotations=_READ_ONLY)
-def render_source_page(
-    trial_id: str,
-    source_id: str,
-    page: int,
-    region: tuple[float, float, float, float] | None = None,
-) -> ToolResult | RenderCondition:
-    source = next(
-        (item for item in source_records(_workspace(), trial_id) if item.id == source_id), None
-    )
-    if source is None:
-        raise ValueError("source is outside the Trial inventory")
-    rendered = render_page(_workspace(), source, page, region)
-    if isinstance(rendered, RenderCondition):
-        return rendered
-    structured = rendered.model_dump(mode="json", exclude={"image_bytes"})
-    return ToolResult(
-        content=[
+    normalized = validate_output(tool, normalize(tool, value))
+    outcome = str(normalized["outcome"])
+    content: list[TextContent | ImageContent] = [
+        TextContent(type="text", text=f"{outcome}; inspect structured content.")
+    ]
+    if isinstance(png_bytes, bytes):
+        content.append(
             ImageContent(
-                type="image",
-                data=base64.b64encode(rendered.image_bytes).decode(),
-                mimeType="image/png",
-            ),
-            ResourceLink(
-                type="resource_link",
-                name="rob2-render",
-                uri=f"rob2://render/{rendered.render_identity}",
-                mimeType="image/png",
-            ),
-            TextContent(
-                type="text", text="Rendered page; read the linked image resource if needed."
-            ),
-        ],
-        structured_content=structured,
-    )
-
-
-@mcp.tool(name="save_proposal", annotations=_MUTATION)
-def save_review(proposal: ProposalInput) -> ToolResult:
-    return _content(save_proposal(_workspace(), proposal))
-
-
-@mcp.tool(name="approve_batch", annotations=_MUTATION)
-def approve(
-    transition: TransitionReference, acknowledgment: ReviewAcknowledgmentReference
-) -> ToolResult:
-    return _content(
-        approve_batch(
-            _workspace(), ApprovalRequest(transition=transition, acknowledgment=acknowledgment)
+                type="image", data=base64.b64encode(png_bytes).decode("ascii"), mimeType="image/png"
+            )
         )
-    )
+    return ToolResult(content=content, structured_content=normalized)
 
 
-@mcp.tool(name="validate_domain_judgment", annotations=_MUTATION)
-def validate_domain(packet: RecordReference, draft: DomainDraftInput) -> ToolResult:
-    return _content(
-        validate_domain_judgment(_workspace(), DomainValidationRequest(packet=packet, draft=draft))
-    )
+def _invoke(tool: str, operation: Any) -> ToolResult:
+    try:
+        return _content(tool, operation())
+    except WorkflowConflict as error:
+        return _content(
+            tool,
+            {
+                "outcome": "conflict",
+                "code": "workflow_conflict",
+                "expected_revision": error.expected,
+                "current_revision": error.actual,
+            },
+        )
+    except ValueError as error:
+        condition = str(error)
+        if tool in {
+            "get_domain_context",
+            "save_domain_judgment",
+            "request_trial_terminal",
+            "finalize_batch",
+        }:
+            # Application operations own lifecycle enforcement. Inspect status
+            # only after rejection so successful Domain writes do not pay for a
+            # redundant preflight query.
+            head = _get_status_head(_workspace())
+            continuation = head.get("continuation")
+            next_operation = (
+                continuation.get("operation") if isinstance(continuation, dict) else None
+            )
+            if next_operation == "researcher_review":
+                condition = (
+                    "Stop: Proposal Review is pending. Do not perform or report Domain "
+                    "judgments. Present the exact Proposal Review. After researcher approval, "
+                    "call get_status and follow next_action."
+                )
+            elif tool == "finalize_batch" and next_operation != "finalize_batch":
+                condition = (
+                    "finalize_batch is available only when next_action.operation is "
+                    "finalize_batch; call get_status and follow next_action."
+                )
+            elif tool != "finalize_batch" and head.get("phase") not in {
+                "assessment",
+                "ready_to_finalize",
+            }:
+                condition = (
+                    f"{tool} is available only during Domain assessment; call get_status "
+                    "and follow next_action."
+                )
+        return _content(
+            tool,
+            {
+                "outcome": "condition",
+                "code": "invalid_request",
+                "condition": condition,
+            },
+        )
 
 
-@mcp.tool(name="commit_domain_judgment", annotations=_MUTATION)
-def commit_domain(transition: TransitionReference) -> ToolResult:
-    return _content(commit_domain_judgment(_workspace(), transition, caller="server:mcp"))
+@mcp.resource(
+    "rob2://current-batch",
+    description="Read current batch status. Returns the authoritative workflow snapshot.",
+)
+def current_batch() -> str:
+    receipt = _content("get_status", _get_status(_workspace()))
+    return json.dumps(receipt.structured_content, sort_keys=True)
 
 
-@mcp.tool(name="prepare_trial_finish", annotations=_MUTATION)
-def prepare_trial(packet: RecordReference, candidate: TrialFinishCandidate) -> ToolResult:
-    return _content(prepare_trial_finish(_workspace(), packet, candidate, caller="server:mcp"))
-
-
-@mcp.tool(name="finish_trial", annotations=_MUTATION)
-def finish(
-    transition: TransitionReference, acknowledgment: ReviewAcknowledgmentReference
+@mcp.tool(
+    name="prepare_batch",
+    description=(
+        "Start or retry intake for one requested outcome. The server discovers every immediate "
+        "non-hidden, non-link Trial directory under input/{TRIAL NAME}/ and captures its sources; "
+        "call this directly without listing input. requested_outcome is only the clinical outcome "
+        "concept, without task framing, risk-of-bias wording, or Trial scope."
+    ),
+    annotations=_INTAKE,
+    output_schema=output_schema("prepare_batch"),
+)
+def prepare_batch(
+    requested_outcome: RequestedOutcome,
+    expected_revision: Annotated[
+        ExpectedRevision, Field(description="Revision from the latest status.")
+    ],
 ) -> ToolResult:
-    return _content(
-        finish_trial(
+    return _invoke(
+        "prepare_batch",
+        lambda: _prepare_batch(_workspace(), requested_outcome, expected_revision),
+    )
+
+
+@mcp.tool(
+    name="get_status",
+    description="Read workflow status. Returns phase, revision, dispositions, and next action.",
+    annotations=_READ_ONLY,
+    output_schema=output_schema("get_status"),
+)
+def get_status() -> ToolResult:
+    return _invoke("get_status", lambda: _get_status(_workspace()))
+
+
+@mcp.tool(
+    name="list_sources",
+    description="List captured sources. Requires a Trial ID for multi-Trial batches.",
+    annotations=_READ_ONLY,
+    output_schema=output_schema("list_sources"),
+)
+def list_sources(
+    trial_id: Annotated[
+        TrialId | None,
+        Field(description="Captured Trial ID; omit only when the batch has one Trial."),
+    ] = None,
+) -> ToolResult:
+    return _invoke("list_sources", lambda: _list_sources(_workspace(), trial_id))
+
+
+@mcp.tool(
+    name="search_sources",
+    description=(
+        "Search captured source-page text. Returned page values are 1-based source indexes, not "
+        "printed page labels. Use phrase only for known contiguous wording; use all or any for "
+        "concept discovery. Returns bounded hits, total_matches, truncated, and an opaque "
+        "search_receipt in data, including for valid no-hit searches; refine a truncated search "
+        "before treating discovery as complete or using it for absence."
+    ),
+    annotations=_READ_ONLY,
+    output_schema=output_schema("search_sources"),
+)
+def search_sources(
+    trial_id: Annotated[TrialId, Field(description="Captured Trial to search.")],
+    query: Annotated[str, Field(min_length=1, description="Non-empty text query.")],
+    source_id: Annotated[
+        SourceId | None,
+        Field(
+            description=(
+                "Optional captured Source ID. When supplied, search only this Source; omit for "
+                "the Trial's normal source-priority search."
+            )
+        ),
+    ] = None,
+    mode: Annotated[
+        Literal["all", "phrase", "any", "prefix"],
+        Field(
+            description=(
+                "Mode: all=every token on the same page; phrase=adjacent ordered tokens; "
+                "any=at least one token; prefix=token-prefix."
+            )
+        ),
+    ] = "all",
+    limit: Annotated[
+        SearchLimit, Field(description="Maximum number of matching pages (1-100); default 10.")
+    ] = 10,
+) -> ToolResult:
+    return _invoke(
+        "search_sources",
+        lambda: _search_sources(_workspace(), trial_id, query, mode, limit, source_id),
+    )
+
+
+@mcp.tool(
+    name="read_pages",
+    description=(
+        "Read exact captured source-page text as numbered lines. Page numbers are 1-based "
+        "source indexes, not printed labels. Use the issued line numbers with "
+        "select_text_evidence; only copy a unique boundary substring when trimming shared first "
+        "or last lines. Never reconstruct PDF text. Every requested page must be valid; mixed "
+        "valid/invalid requests fail atomically. Pass page numbers in pages; there is no limit "
+        "or range parameter."
+    ),
+    annotations=_READ_ONLY,
+    output_schema=output_schema("read_pages"),
+)
+def read_pages(
+    trial_id: Annotated[TrialId, Field(description="Captured Trial containing the source.")],
+    source_id: Annotated[SourceId, Field(description="Server-issued source ID from list_sources.")],
+    pages: Annotated[
+        list[PageNumber],
+        Field(min_length=1, max_length=10, description="One to ten 1-based page numbers to read."),
+    ],
+) -> ToolResult:
+    def read() -> dict[str, Any]:
+        result = _read_pages(_workspace(), trial_id, source_id, pages)
+        numbered_pages = []
+        for item in result["pages"]:
+            lines = item["text"].splitlines()
+            numbered_pages.append(
+                {
+                    "page": item["page"],
+                    "numbered_text": "\n".join(
+                        f"{line_number:04d}|{line}" for line_number, line in enumerate(lines, 1)
+                    ),
+                    "line_count": len(lines),
+                }
+            )
+        return {"outcome": "success", "pages": numbered_pages}
+
+    return _invoke("read_pages", read)
+
+
+@mcp.tool(
+    name="select_text_evidence",
+    description=(
+        "Select one contiguous range of numbered lines from one read_pages page. Use the "
+        "1-based source page and line numbers exactly as issued; split a page-boundary passage "
+        "into one selection per page. If the desired passage shares its first or last line with "
+        "other text, copy a unique start_text or end_text from that boundary line to trim it. "
+        "The server stores the exact unnumbered source text. Use visual Evidence when layout, "
+        "symbols, or figure structure carry the meaning."
+    ),
+    annotations=_MUTATION,
+    output_schema=output_schema("select_text_evidence"),
+)
+def select_text_evidence(
+    trial_id: Annotated[TrialId, Field(description="Captured Trial containing the source.")],
+    source_id: Annotated[SourceId, Field(description="Server-issued source ID from list_sources.")],
+    page: Annotated[PageNumber, Field(description="1-based page containing the passage.")],
+    start_line: Annotated[
+        StrictInt,
+        Field(ge=1, description="First numbered read_pages line to include."),
+    ],
+    end_line: Annotated[
+        StrictInt,
+        Field(ge=1, description="Last numbered read_pages line to include, inclusive."),
+    ],
+    start_text: Annotated[
+        StrictStr | None,
+        Field(
+            min_length=1,
+            description=(
+                "Optional unique text within start_line where the selection begins; omit when "
+                "the whole first line belongs to the passage."
+            ),
+        ),
+    ] = None,
+    end_text: Annotated[
+        StrictStr | None,
+        Field(
+            min_length=1,
+            description=(
+                "Optional unique text within end_line where the selection ends; omit when the "
+                "whole last line belongs to the passage."
+            ),
+        ),
+    ] = None,
+) -> ToolResult:
+    return _invoke(
+        "select_text_evidence",
+        lambda: _select_text_evidence_by_lines(
             _workspace(),
-            TrialFinishRequest(transition=transition, acknowledgment=acknowledgment),
-            caller="server:mcp",
-        )
+            trial_id,
+            source_id,
+            page,
+            start_line,
+            end_line,
+            start_text,
+            end_text,
+        ),
     )
 
 
-@mcp.tool(name="finalize_batch", annotations=_MUTATION)
-def finalize() -> ToolResult:
-    return _content(finalize_batch(_workspace()))
+@mcp.tool(
+    name="render_page",
+    description=(
+        "Render one PDF page. Returns metadata and pixels as ImageContent by default; "
+        "pass inline=false for metadata/cache-only use."
+    ),
+    annotations=_READ_ONLY,
+    output_schema=output_schema("render_page"),
+)
+def render_page(
+    trial_id: Annotated[TrialId, Field(description="Captured Trial containing the source.")],
+    source_id: Annotated[SourceId, Field(description="Server-issued source ID from list_sources.")],
+    page: Annotated[PageNumber, Field(description="1-based PDF page to render.")],
+    inline: Annotated[
+        Inline,
+        Field(
+            description=(
+                "Return pixels as MCP ImageContent; default is true, while false is "
+                "metadata/cache-only."
+            )
+        ),
+    ] = True,
+) -> ToolResult:
+    return _invoke(
+        "render_page", lambda: _render_page(_workspace(), trial_id, source_id, page, inline)
+    )
 
 
-@mcp.tool(name="read_record", annotations=_READ_ONLY)
-def read_record(record: RecordReference | EvidenceReference) -> ToolResult:
-    # Validate the complete caller-owned reference before resolving it.
-    if isinstance(record, EvidenceReference):
-        return _content(resolve_evidence(_workspace(), record))
-    return _content(_detail(record.kind.value, record.identity))
+@mcp.tool(
+    name="select_visual_evidence",
+    description=(
+        "Record visual Evidence from a rendered page. Transcription must be one exact, "
+        "self-contained account containing every applicable title, axis, series, label, value, "
+        "unit, uncertainty, denominator, and footnote."
+    ),
+    annotations=_MUTATION,
+    output_schema=output_schema("select_visual_evidence"),
+)
+def select_visual_evidence(
+    trial_id: Annotated[TrialId, Field(description="Captured Trial containing the source.")],
+    source_id: Annotated[SourceId, Field(description="Server-issued source ID from list_sources.")],
+    render_identity: Annotated[
+        Identity, Field(description="Render identity returned by render_page.")
+    ],
+    transcription: Annotated[
+        VisualTranscription,
+        Field(
+            min_length=1,
+            description=(
+                "One exact self-contained account of the region containing every applicable "
+                "title, axis, series, label, value, unit, uncertainty, denominator, and footnote."
+            ),
+        ),
+    ],
+    region: tuple[
+        NormalizedCoordinate, NormalizedCoordinate, NormalizedCoordinate, NormalizedCoordinate
+    ] = Field(
+        description=("Normalized x0,y0,x1,y1 bounds in [0,1]; use [0,0,1,1] for the whole page."),
+    ),
+) -> ToolResult:
+    return _invoke(
+        "select_visual_evidence",
+        lambda: _select_visual_evidence(
+            _workspace(), trial_id, source_id, render_identity, transcription, list(region)
+        ),
+    )
+
+
+@mcp.tool(
+    name="save_proposal",
+    description=(
+        "Submit one typed Result card per Trial after selecting its supporting Evidence. "
+        "Every results item has kind=assessable or kind=unavailable; an Evidence object is "
+        "never a Result card. "
+        "For an assessable Result, one selected passage, table block, or figure must join an "
+        "endpoint identifier to one complete quantitative tuple. "
+        "The server binds already-selected Evidence and keeps only material used by the Result. "
+        "Proposal Review is the only researcher gate; revise and resubmit before approval "
+        "if the source-reported candidate is wrong."
+    ),
+    annotations=_MUTATION,
+    output_schema=output_schema("save_proposal"),
+)
+def save_proposal(
+    results: Annotated[
+        list[ResultChoiceDraft],
+        Field(
+            min_length=1,
+            description=(
+                "One typed Result card per Trial. Select supporting Evidence first; do not "
+                "submit an Evidence object as a Result or repeat Evidence handles in the card. "
+                "Revise before researcher approval when "
+                "another source-reported candidate is better."
+            ),
+        ),
+    ],
+    expected_revision: Annotated[
+        ExpectedRevision,
+        Field(description="Current revision from get_status; required for a non-stale proposal."),
+    ],
+) -> ToolResult:
+    proposal = ProposalDraft(results=tuple(results), expected_revision=expected_revision)
+    return _invoke("save_proposal", lambda: _save_proposal(_workspace(), proposal))
+
+
+@mcp.tool(
+    name="get_domain_context",
+    description=(
+        "Read active RoB 2 question cards after get_status reports "
+        "next_action.operation=get_domain_context. Before saving, perform the bounded "
+        "question-specific discovery required by the returned cards; read positive hits "
+        "and do not claim missing information from Result Evidence alone."
+    ),
+    annotations=_READ_ONLY,
+    output_schema=output_schema("get_domain_context"),
+)
+def get_domain_context(
+    trial_id: Annotated[
+        TrialId | None, Field(description="Captured Trial whose result is being assessed.")
+    ] = None,
+    domain_id: Annotated[
+        DomainId | None,
+        Field(description="RoB 2 Domain ID; omit to receive the current active Domain."),
+    ] = None,
+) -> ToolResult:
+    return _invoke(
+        "get_domain_context", lambda: _get_domain_context(_workspace(), trial_id, domain_id)
+    )
+
+
+@mcp.tool(
+    name="save_domain_judgment",
+    description=(
+        "Save one RoB 2 Domain judgment after get_domain_context; call only during active "
+        "Domain assessment and after its bounded question-specific source searches. Every "
+        "Evidence premise must state the question proposition; treatment assignment alone "
+        "does not prove awareness, differential measurement, or lack of analysis choices. "
+        "Supply every active question. Extra inactive future branch answers are ignored."
+    ),
+    annotations=_MUTATION,
+    output_schema=output_schema("save_domain_judgment"),
+)
+def save_domain_judgment(
+    trial_id: Annotated[TrialId, Field(description="Trial being assessed.")],
+    domain_id: Annotated[DomainId, Field(description="RoB 2 Domain being assessed.")],
+    expected_revision: Annotated[
+        ExpectedRevision, Field(description="Current revision from get_domain_context.")
+    ],
+    answers: Annotated[
+        list[DomainAnswer],
+        Field(
+            description=(
+                "One typed answer for every active question. Inactive branch answers are "
+                "ignored and never committed."
+            )
+        ),
+    ],
+    multiple_concerns: Annotated[
+        MultipleConcernsDecision | None,
+        Field(description="Optional Domain 2 multiple-concerns decision."),
+    ] = None,
+    supersedes: Annotated[
+        Identity | None,
+        Field(description="Exact prior checkpoint identity when revising a Domain."),
+    ] = None,
+    revision_basis: Annotated[
+        DomainRevisionBasis | None,
+        Field(description="Closed new_evidence or self_correction basis for a revision."),
+    ] = None,
+) -> ToolResult:
+    draft = DomainDraft(
+        trial_id=trial_id,
+        domain_id=domain_id,
+        expected_revision=expected_revision,
+        answers=tuple(answers),
+        multiple_concerns=multiple_concerns,
+        supersedes=supersedes,
+        revision_basis=revision_basis,
+    )
+    return _invoke("save_domain_judgment", lambda: _save_domain_judgment(_workspace(), draft))
+
+
+@mcp.tool(
+    name="request_trial_terminal",
+    description=(
+        "Request a needs_input or failed terminal only when the Trial cannot continue after "
+        "ordinary conservative Domain work. Do not use it for missing direct evidence, repairs, "
+        "unfinished source review, context or token limits, or uncertainty answerable as "
+        "probably_yes, probably_no, or no_information under the question card."
+    ),
+    annotations=_MUTATION,
+    output_schema=output_schema("request_trial_terminal"),
+)
+def request_trial_terminal(
+    request: Annotated[
+        TerminalRequest,
+        Field(
+            description=(
+                "Typed terminal for a Trial that cannot continue after ordinary conservative "
+                "Domain work; not a shortcut for evidence or workflow incompleteness."
+            )
+        ),
+    ],
+    expected_revision: Annotated[ExpectedRevision, Field(description="Revision from get_status.")],
+) -> ToolResult:
+    envelope = TerminalRequestEnvelope(request=request, expected_revision=expected_revision)
+    return _invoke(
+        "request_trial_terminal", lambda: _request_trial_terminal(_workspace(), envelope)
+    )
+
+
+@mcp.tool(
+    name="finalize_batch",
+    description=(
+        "Finalize terminal Trial assessments only when get_status reports "
+        "next_action.operation=finalize_batch."
+    ),
+    annotations=_MUTATION,
+    output_schema=output_schema("finalize_batch"),
+)
+def finalize_batch(
+    expected_revision: Annotated[
+        ExpectedRevision, Field(description="Current state revision from get_status.")
+    ],
+) -> ToolResult:
+    return _invoke("finalize_batch", lambda: _finalize_batch(_workspace(), expected_revision))
 
 
 def main() -> None:
     mcp.run()
+
+
+__all__ = ["PUBLIC_TOOL_NAMES", "current_batch", "main", "mcp"]

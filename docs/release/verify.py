@@ -7,7 +7,9 @@ import asyncio
 import hashlib
 import json
 import os
+import re
 import subprocess
+import sys
 import tempfile
 import zipfile
 from pathlib import Path
@@ -22,33 +24,57 @@ CONTRACT = ROOT / "docs" / "release" / "public-contract.json"
 
 def _load_contract() -> dict[str, Any]:
     value = json.loads(CONTRACT.read_text(encoding="utf-8"))
-    if set(value) != {"tools", "resources", "resource_templates", "skill_pointers", "examples"}:
+    if set(value) != {
+        "contract_version",
+        "tools",
+        "resources",
+        "resource_descriptions",
+        "resource_templates",
+        "skill_pointers",
+        "examples",
+    }:
         raise ValueError("public contract shape differs")
+    if value["contract_version"] != "0.3.0":
+        raise ValueError("public contract version differs")
     expected_order = [
-        "preflight_sources",
-        "inspect_candidate_sources",
-        "save_intake_plan",
-        "capture_batch",
+        "prepare_batch",
+        "get_status",
         "list_sources",
-        "retrieve_evidence",
+        "search_sources",
+        "read_pages",
+        "select_text_evidence",
         "render_page",
+        "select_visual_evidence",
         "save_proposal",
-        "approve_batch",
-        "validate_domain_judgment",
-        "commit_domain_judgment",
-        "prepare_trial_finish",
-        "finish_trial",
+        "get_domain_context",
+        "save_domain_judgment",
+        "request_trial_terminal",
         "finalize_batch",
-        "read_record",
     ]
     if [item["name"] for item in value["tools"]] != expected_order:
         raise ValueError("public tool order differs")
-    if value["resources"] != ["rob2://current-batch"] or value["resource_templates"] != [
-        "rob2://detail/{kind}/{identity}",
-        "rob2://registry/{trial_id}",
-        "rob2://render/{identity}",
-    ]:
+    if any(
+        set(item)
+        != {
+            "name",
+            "description",
+            "read_only",
+            "open_world",
+            "schema_sha256",
+            "output_schema_sha256",
+        }
+        for item in value["tools"]
+    ):
+        raise ValueError("public tool schema hash fields differ")
+    if any(not item["description"].strip() for item in value["tools"]):
+        raise ValueError("public tool description is missing")
+    if value["resources"] != ["rob2://current-batch"] or value["resource_templates"] != []:
         raise ValueError("public resource catalog differs")
+    if set(value["resource_descriptions"]) != {"rob2://current-batch"} or not all(
+        isinstance(description, str) and description.strip()
+        for description in value["resource_descriptions"].values()
+    ):
+        raise ValueError("public resource description is missing")
     return value
 
 
@@ -79,16 +105,221 @@ async def _verify_client(client: Client, contract: dict[str, Any]) -> None:
             raise ValueError(f"MCP tool is destructively advertised: {tool.name}")
         if _schema_hash(tool.inputSchema) != expected["schema_sha256"]:
             raise ValueError(f"MCP schema hash differs: {tool.name}")
+        if (tool.description or "").strip() != expected["description"]:
+            raise ValueError(f"MCP description differs: {tool.name}")
+        if tool.outputSchema is None:
+            raise ValueError(f"MCP output schema is missing: {tool.name}")
+        if _schema_hash(tool.outputSchema) != expected["output_schema_sha256"]:
+            raise ValueError(f"MCP output schema hash differs: {tool.name}")
     resources = [str(item.uri) for item in await client.list_resources()]
     templates = [str(item.uriTemplate) for item in await client.list_resource_templates()]
     if resources != contract["resources"] or templates != contract["resource_templates"]:
         raise ValueError("MCP resource catalog differs")
+    resource_items = await client.list_resources()
+    descriptions = {str(item.uri): (item.description or "").strip() for item in resource_items}
+    if descriptions != contract["resource_descriptions"]:
+        raise ValueError("MCP resource descriptions differ")
     current = await client.read_resource("rob2://current-batch")
     if len(current) != 1 or not getattr(current[0], "text", None):
         raise ValueError("current-batch resource is unreadable")
 
 
+async def _call(client: Client, name: str, arguments: dict[str, Any]) -> dict[str, Any]:
+    result = await client.call_tool(name, arguments)
+    value = result.structured_content
+    if not isinstance(value, dict):
+        raise ValueError(f"{name} did not return structured content")
+    flat = dict(value)
+    head = flat.get("head")
+    if isinstance(head, dict):
+        flat["phase"] = head["phase"]
+        flat["state_revision"] = head["state_revision"]
+    data = flat.get("data")
+    if isinstance(data, dict):
+        flat.update(data)
+    return flat
+
+
+def _stdio_result(_evidence: dict[str, Any]) -> dict[str, Any]:
+    """Build a deliberately small, fully Evidence-bound acceptance Result."""
+
+    phrase = "requested outcome"
+    return {
+        "kind": "assessable",
+        "trial_id": "trial",
+        "relation": "exact",
+        "target": {
+            "measurement": {"method": phrase},
+            "time_point_or_window": {"kind": "described", "description": phrase},
+            "comparison_groups": [
+                {"id": "a", "assignment": phrase},
+                {"id": "b", "assignment": phrase},
+            ],
+            "intended_analysis_population": phrase,
+            "intended_effect_measure": phrase,
+        },
+        "reported": {
+            "form": "group_bound_values",
+            "endpoint": {"name": phrase, "definition": phrase},
+            "values": [
+                {"group_id": "a", "statistic": phrase, "value": phrase, "unit": phrase},
+                {"group_id": "b", "statistic": phrase, "value": phrase, "unit": phrase},
+            ],
+        },
+    }
+
+
+async def _verify_stdio_proposal(client: Client) -> None:
+    """Exercise intake, Evidence selection, and the sole Proposal gate."""
+
+    prepared = await _call(
+        client,
+        "prepare_batch",
+        {
+            "expected_revision": 0,
+            "requested_outcome": "requested outcome",
+        },
+    )
+    if prepared.get("phase") != "proposal":
+        raise ValueError("stdio intake did not reach proposal")
+    sources = await _call(client, "list_sources", {"trial_id": "trial"})
+    rows = sources.get("sources")
+    if not isinstance(rows, list) or len(rows) != 1:
+        raise ValueError("stdio source catalog differs")
+    selected = await _call(
+        client,
+        "select_text_evidence",
+        {
+            "trial_id": "trial",
+            "source_id": rows[0]["id"],
+            "page": 1,
+            "start_line": 1,
+            "end_line": 1,
+        },
+    )
+    evidence = selected.get("evidence")
+    if not isinstance(evidence, dict):
+        raise ValueError("stdio evidence selection failed")
+    result = _stdio_result(evidence)
+    proposed = await _call(
+        client,
+        "save_proposal",
+        {"results": [result], "expected_revision": prepared["state_revision"]},
+    )
+    if proposed.get("outcome") != "review_required":
+        raise ValueError("stdio proposal did not request researcher approval")
+
+
+def _stdio_domain_answers(
+    context: dict[str, Any],
+    evidence: dict[str, Any],
+    search_receipt: str,
+    question_ids: set[str] | None = None,
+) -> list[dict[str, Any]]:
+    """Create a typed, evidence-backed no-information path for release acceptance."""
+
+    answers: list[dict[str, Any]] = []
+    for question in context.get("questions", []):
+        if not isinstance(question, dict) or (question_ids is None and not question.get("active")):
+            continue
+        if question_ids is not None and question.get("id") not in question_ids:
+            continue
+        allowed = question.get("allowed_answers", [])
+        if not isinstance(allowed, list):
+            raise ValueError("stdio Domain question answers are malformed")
+        answer = "no_information" if "no_information" in allowed else "probably_no"
+        basis = (
+            {
+                "kind": "limitation",
+                "text": "The release acceptance source does not report this fact.",
+                "search_receipt": search_receipt,
+            }
+            if answer == "no_information"
+            else {
+                "kind": "direct_support",
+                "evidence": evidence["handle"],
+            }
+        )
+        answers.append({"question_id": question["id"], "answer": answer, "bases": [basis]})
+    return answers
+
+
+async def _verify_stdio_domains(
+    client: Client, evidence: dict[str, Any], domains: list[str]
+) -> int:
+    """Save all requested Domains through the real FastMCP/stdio boundary."""
+
+    revision = int((await _call(client, "get_status", {}))["state_revision"])
+    for domain_id in domains:
+        context = await _call(
+            client, "get_domain_context", {"trial_id": "trial", "domain_id": domain_id}
+        )
+        if context.get("domain_id") != domain_id:
+            raise ValueError(f"stdio Domain context differs: {domain_id}")
+        revision = int(context["state_revision"])
+        searched = await _call(
+            client,
+            "search_sources",
+            {
+                "trial_id": "trial",
+                "query": f"release acceptance absent {domain_id.replace(':', ' ')}",
+            },
+        )
+        search_data = searched.get("data")
+        if (
+            searched.get("outcome") != "success"
+            or not isinstance(search_data, dict)
+            or search_data.get("condition") != "no_hits"
+            or not isinstance(search_data.get("search_receipt"), str)
+        ):
+            raise ValueError(f"stdio Domain limitation search differs: {domain_id}")
+        search_receipt = search_data["search_receipt"]
+        answers = _stdio_domain_answers(context, evidence, search_receipt)
+        for _attempt in range(5):
+            saved = await _call(
+                client,
+                "save_domain_judgment",
+                {
+                    "trial_id": "trial",
+                    "domain_id": domain_id,
+                    "expected_revision": revision,
+                    "answers": answers,
+                },
+            )
+            if saved.get("outcome") == "success":
+                break
+            repair = next(
+                (
+                    item
+                    for item in saved.get("repairs", [])
+                    if isinstance(item, dict)
+                    and item.get("code") == "answers_must_match_active_questions"
+                ),
+                None,
+            )
+            detail = repair.get("detail") if isinstance(repair, dict) else None
+            match = re.search(r"active IDs: \[([^]]*)\]", str(detail))
+            if match is None:
+                raise ValueError(f"stdio Domain save failed: {domain_id}: {saved}")
+            active_ids = {item.strip() for item in match.group(1).split(",") if item.strip()}
+            answers = _stdio_domain_answers(context, evidence, search_receipt, active_ids)
+        else:
+            raise ValueError(f"stdio Domain save exceeded repair attempts: {domain_id}")
+        revision = int(saved["state_revision"])
+    return revision
+
+
 def _verify_wheel_archive(wheel: Path) -> None:
+    skill_members = {
+        "rob2_kit/skills/rob2-assess/SKILL.md",
+        "rob2_kit/skills/rob2-assess/references/deviations.md",
+        "rob2_kit/skills/rob2-assess/references/evidence.md",
+        "rob2_kit/skills/rob2-assess/references/measurement.md",
+        "rob2_kit/skills/rob2-assess/references/missing.md",
+        "rob2_kit/skills/rob2-assess/references/randomization.md",
+        "rob2_kit/skills/rob2-assess/references/result.md",
+        "rob2_kit/skills/rob2-assess/references/selection.md",
+    }
     with zipfile.ZipFile(wheel) as archive:
         names = archive.namelist()
         if len(names) != len(set(names)) or any(
@@ -104,13 +335,31 @@ def _verify_wheel_archive(wheel: Path) -> None:
         for host in ("codex.json", "claude-code.json"):
             member = f"rob2_kit/hosts/{host}"
             payload = json.loads(archive.read(member))
-            if payload.get("mcp_command") != "rob2 mcp":
-                raise ValueError(f"wheel host command differs: {host}")
+            if payload.get("mcp_command") != "rob2 mcp" or payload.get("skills") != ["rob2-assess"]:
+                raise ValueError(f"wheel host contract differs: {host}")
+        missing_skills = sorted(skill_members - set(names))
+        if missing_skills:
+            raise ValueError(f"wheel skill is incomplete: {', '.join(missing_skills)}")
+        for member in sorted(skill_members):
+            try:
+                content = archive.read(member).decode("utf-8")
+            except UnicodeDecodeError as error:
+                raise ValueError(f"wheel skill is not UTF-8: {member}") from error
+            if not content.strip():
+                raise ValueError(f"wheel skill member is empty: {member}")
 
 
 def _installed_python(wheel: Path, directory: Path) -> Path:
     venv = directory / "venv"
-    subprocess.run(["uv", "venv", str(venv)], cwd=ROOT, check=True, capture_output=True)
+    # Use the interpreter that runs this verifier.  On Windows, the machine
+    # default can be an Anaconda build whose decorated ``sys.version`` breaks
+    # stdlib/platform consumers during the real stdio acceptance check.
+    subprocess.run(
+        ["uv", "venv", "--python", sys.executable, str(venv)],
+        cwd=ROOT,
+        check=True,
+        capture_output=True,
+    )
     python = venv / ("Scripts/python.exe" if os.name == "nt" else "bin/python")
     subprocess.run(
         ["uv", "pip", "install", "--python", str(python), str(wheel)],
@@ -121,7 +370,13 @@ def _installed_python(wheel: Path, directory: Path) -> Path:
     return python
 
 
-def verify(wheel: Path | None = None) -> None:
+def verify(wheel: Path | None = None, bundle: Path | None = None) -> None:
+    if bundle is not None:
+        from rob2_kit.application.finalization import verify_bundle
+
+        if not verify_bundle(bundle):
+            raise ValueError("assessment bundle failed independent verification")
+        return
     contract = _load_contract()
     _assert_generated(contract)
     if wheel is None:
@@ -137,10 +392,23 @@ def verify(wheel: Path | None = None) -> None:
     with tempfile.TemporaryDirectory(prefix="rob2-release-") as temporary:
         workspace = Path(temporary) / "workspace"
         workspace.mkdir()
+        trial = workspace / "input" / "trial"
+        trial.mkdir(parents=True)
+        (trial / "main.txt").write_text(
+            "requested outcome",
+            encoding="utf-8",
+        )
         python = _installed_python(wheel, Path(temporary))
         environment = os.environ | {"ROB2_WORKSPACE": str(workspace)}
+        domains = [
+            "domain:randomization",
+            "domain:deviations",
+            "domain:missing",
+            "domain:measurement",
+            "domain:selection",
+        ]
 
-        async def stdio() -> None:
+        async def proposal_process() -> None:
             transport = StdioTransport(
                 command=str(python),
                 args=["-m", "rob2_kit.interfaces.cli.app", "mcp"],
@@ -148,11 +416,156 @@ def verify(wheel: Path | None = None) -> None:
             )
             async with Client(transport) as client:
                 await _verify_client(client, contract)
+                await _verify_stdio_proposal(client)
 
-        asyncio.run(stdio())
+        # The researcher gate is deliberately exercised through the installed
+        # CLI, not a private application helper or a second MCP operation.
+        asyncio.run(proposal_process())
+        review = subprocess.run(
+            [
+                str(python),
+                "-m",
+                "rob2_kit.interfaces.cli.app",
+                "review",
+                "--workspace",
+                str(workspace),
+            ],
+            cwd=workspace,
+            env=environment,
+            input="yes\n",
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+        if review.returncode != 0:
+            raise ValueError(f"wheel-installed Proposal review failed: {review.stderr.strip()}")
+
+        async def first_domain_process() -> None:
+            transport = StdioTransport(
+                command=str(python),
+                args=["-m", "rob2_kit.interfaces.cli.app", "mcp"],
+                env=environment,
+            )
+            async with Client(transport) as client:
+                await _verify_client(client, contract)
+                context = await _call(
+                    client,
+                    "get_domain_context",
+                    {"trial_id": "trial", "domain_id": domains[0]},
+                )
+                evidence_rows = context.get("evidence")
+                if not isinstance(evidence_rows, list):
+                    raise ValueError("wheel restart acceptance returned no selected Evidence")
+                evidence = next(
+                    (
+                        item
+                        for item in evidence_rows
+                        if isinstance(item, dict) and item.get("kind") == "narrative"
+                    ),
+                    None,
+                )
+                if not isinstance(evidence, dict):
+                    raise ValueError("wheel restart acceptance lost selected Evidence")
+                await _verify_stdio_domains(client, evidence, domains[:1])
+
+        # Close the first MCP process after approval and one Domain.  The next
+        # process must recover the durable ledger and continue from it.
+        asyncio.run(first_domain_process())
+
+        async def resumed_domains_process() -> None:
+            transport = StdioTransport(
+                command=str(python),
+                args=["-m", "rob2_kit.interfaces.cli.app", "mcp"],
+                env=environment,
+            )
+            async with Client(transport) as client:
+                await _verify_client(client, contract)
+                status = await _call(client, "get_status", {})
+                if status.get("phase") != "assessment":
+                    raise ValueError("wheel process restart did not resume assessment")
+                context = await _call(
+                    client,
+                    "get_domain_context",
+                    {"trial_id": "trial", "domain_id": domains[1]},
+                )
+                evidence_rows = context.get("evidence")
+                if not isinstance(evidence_rows, list):
+                    raise ValueError("wheel process restart returned no Domain Evidence")
+                evidence = next(
+                    (
+                        item
+                        for item in evidence_rows
+                        if isinstance(item, dict) and item.get("kind") == "narrative"
+                    ),
+                    None,
+                )
+                if not isinstance(evidence, dict):
+                    raise ValueError("wheel process restart lost Domain Evidence")
+                await _verify_stdio_domains(client, evidence, domains[1:])
+
+        asyncio.run(resumed_domains_process())
+
+        artifact_path: Path | None = None
+
+        async def finalization_process() -> None:
+            nonlocal artifact_path
+            transport = StdioTransport(
+                command=str(python),
+                args=["-m", "rob2_kit.interfaces.cli.app", "mcp"],
+                env=environment,
+            )
+            async with Client(transport) as client:
+                await _verify_client(client, contract)
+                status = await _call(client, "get_status", {})
+                if status.get("phase") != "ready_to_finalize":
+                    raise ValueError("wheel process restart did not reach finalization")
+                finalized = await _call(
+                    client, "finalize_batch", {"expected_revision": status["state_revision"]}
+                )
+                if finalized.get("outcome") != "success":
+                    raise ValueError(f"wheel finalization failed: {finalized}")
+                artifact = finalized.get("artifact")
+                if not isinstance(artifact, dict) or not isinstance(artifact.get("path"), str):
+                    raise ValueError("wheel finalization did not return an artifact")
+                artifact_path = workspace / artifact["path"]
+                if not artifact_path.is_file():
+                    raise ValueError("wheel finalization artifact is missing")
+
+        # A third process proves that the final ledger and artifact survive a
+        # host restart immediately before automatic finalization.
+        asyncio.run(finalization_process())
+        if artifact_path is None:
+            raise ValueError("wheel finalization artifact path is unavailable")
+
+        product_verify = subprocess.run(
+            [str(python), "-m", "rob2_kit.interfaces.cli.app", "verify", str(artifact_path)],
+            cwd=workspace,
+            env=environment,
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+        if product_verify.returncode != 0:
+            raise ValueError(f"wheel product bundle verification failed: {product_verify.stderr}")
+        standalone_verify = subprocess.run(
+            [sys.executable, str(ROOT / "scripts" / "verify_bundle.py"), str(artifact_path)],
+            cwd=ROOT,
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+        if standalone_verify.returncode != 0:
+            raise ValueError(
+                f"standalone bundle verification failed: {standalone_verify.stdout}"
+                f"{standalone_verify.stderr}"
+            )
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--wheel", type=Path)
-    verify(parser.parse_args().wheel)
+    parser.add_argument("--bundle", type=Path)
+    arguments = parser.parse_args()
+    if arguments.wheel is not None and arguments.bundle is not None:
+        parser.error("--wheel and --bundle are mutually exclusive")
+    verify(arguments.wheel, arguments.bundle)

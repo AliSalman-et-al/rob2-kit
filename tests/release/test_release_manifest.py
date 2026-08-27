@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import zipfile
 from copy import deepcopy
 from pathlib import Path
 
@@ -31,13 +32,41 @@ def test_contract_rejects_catalog_drift(tmp_path: Path, monkeypatch: pytest.Monk
         verifier._load_contract()
 
 
+def test_contract_rejects_missing_public_description(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    verifier = _verifier()
+    contract = deepcopy(verifier._load_contract())
+    contract["tools"][0]["description"] = ""
+    path = tmp_path / "public-contract.json"
+    path.write_text(json.dumps(contract), encoding="utf-8")
+    monkeypatch.setattr(verifier, "CONTRACT", path)
+    with pytest.raises(ValueError, match="description"):
+        verifier._load_contract()
+
+
 def test_wheel_archive_rejects_wrong_entry_point(tmp_path: Path) -> None:
     wheel = tmp_path / "bad.whl"
-    import zipfile
 
     with zipfile.ZipFile(wheel, "w") as archive:
         archive.writestr(
-            "rob2_kit-0.2.0.dist-info/entry_points.txt", "[console_scripts]\nrob2-mcp = bad:main\n"
+            "broken.dist-info/entry_points.txt", "[console_scripts]\nrob2-mcp = bad:main\n"
         )
     with pytest.raises(ValueError, match="entry point"):
+        _verifier()._verify_wheel_archive(wheel)
+
+
+def test_wheel_archive_rejects_missing_packaged_skill(tmp_path: Path) -> None:
+    wheel = tmp_path / "missing-skill.whl"
+    with zipfile.ZipFile(wheel, "w") as archive:
+        archive.writestr(
+            "package.dist-info/entry_points.txt",
+            "[console_scripts]\nrob2 = rob2_kit.interfaces.cli.app:main\n",
+        )
+        for host in ("codex.json", "claude-code.json"):
+            archive.writestr(
+                f"rob2_kit/hosts/{host}",
+                json.dumps({"mcp_command": "rob2 mcp", "skills": ["rob2-assess"]}),
+            )
+    with pytest.raises(ValueError, match="wheel skill is incomplete"):
         _verifier()._verify_wheel_archive(wheel)
