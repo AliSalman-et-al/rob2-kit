@@ -6,6 +6,7 @@ import hashlib
 import json
 import re
 import sqlite3
+import stat
 import time
 import tomllib
 import unicodedata
@@ -131,8 +132,14 @@ def _normalized_text_with_spans(
 
 
 def _link_like(path: Path) -> bool:
+    """Reject symlinks and Windows reparse-point indirection on all supported Python versions."""
     is_junction = getattr(path, "is_junction", None)
-    return path.is_symlink() or bool(is_junction and is_junction())
+    if path.is_symlink() or bool(is_junction and is_junction()):
+        return True
+    try:
+        return bool(path.lstat().st_file_attributes & stat.FILE_ATTRIBUTE_REPARSE_POINT)
+    except (AttributeError, OSError):
+        return False
 
 
 def internal_path(root: Path, *parts: str) -> Path:

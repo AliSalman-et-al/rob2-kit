@@ -23,6 +23,7 @@ from ._state import (
     _db,
     _ensure,
     _identity,
+    _link_like,
     _manifest,
     _pages,
     _projection_hash,
@@ -178,12 +179,6 @@ def _manifest_registry_identifier(config: dict[str, Any]) -> str | None:
     return None if not declarations else str(declarations[0][1])
 
 
-def _is_link_like(path: Path) -> bool:
-    """Reject filesystem indirection at the authorized intake boundary."""
-    is_junction = getattr(path, "is_junction", None)
-    return path.is_symlink() or bool(is_junction and is_junction())
-
-
 def _is_contained_source(directory: Path, path: Path) -> bool:
     """Accept only ordinary files reached without symlinks or junctions."""
     try:
@@ -195,7 +190,7 @@ def _is_contained_source(directory: Path, path: Path) -> bool:
     current = directory
     for part in relative.parts:
         current = current / part
-        if _is_link_like(current):
+        if _link_like(current):
             return False
     return resolved_path.is_relative_to(resolved_directory)
 
@@ -203,12 +198,12 @@ def _is_contained_source(directory: Path, path: Path) -> bool:
 def _trial_directory(root: Path, label: str) -> Path:
     """Resolve one declared Trial to its server-owned ``input/<name>`` dossier."""
     input_root = root / "input"
-    if not input_root.is_dir() or _is_link_like(input_root):
+    if not input_root.is_dir() or _link_like(input_root):
         raise ValueError("input directory is not available")
     candidates = [
         path
         for path in input_root.iterdir()
-        if path.is_dir() and not _is_link_like(path) and not path.name.startswith(".")
+        if path.is_dir() and not _link_like(path) and not path.name.startswith(".")
     ]
     exact = [path for path in candidates if path.name == label]
     if len(exact) == 1:
@@ -232,13 +227,13 @@ _TRIAL_ID_PATTERN = re.compile(r"[A-Za-z0-9][A-Za-z0-9_-]{0,127}")
 def _trial_directories(root: Path) -> list[Path]:
     """Return the researcher-owned Trial dossiers in deterministic order."""
     input_root = root / "input"
-    if not input_root.is_dir() or _is_link_like(input_root):
+    if not input_root.is_dir() or _link_like(input_root):
         raise ValueError("input directory is not available")
     return sorted(
         (
             path
             for path in input_root.iterdir()
-            if path.is_dir() and not path.name.startswith(".") and not _is_link_like(path)
+            if path.is_dir() and not path.name.startswith(".") and not _link_like(path)
         ),
         key=lambda path: (
             unicodedata.normalize("NFKC", path.name).casefold(),
@@ -340,7 +335,7 @@ def prepare_batch(
     for raw_trial, directory in resolved_trials:
         trial_id = raw_trial["id"]
         manifest_path = directory / "sources.toml"
-        if (manifest_path.exists() or _is_link_like(manifest_path)) and not _is_contained_source(
+        if (manifest_path.exists() or _link_like(manifest_path)) and not _is_contained_source(
             directory, manifest_path
         ):
             raise ValueError(f"sources.toml is outside the Trial directory: input/{directory.name}")
