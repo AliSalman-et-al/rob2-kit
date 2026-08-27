@@ -137,9 +137,11 @@ def _link_like(path: Path) -> bool:
     if path.is_symlink() or bool(is_junction and is_junction()):
         return True
     try:
-        return bool(path.lstat().st_file_attributes & stat.FILE_ATTRIBUTE_REPARSE_POINT)
-    except (AttributeError, OSError):
+        attributes = getattr(path.lstat(), "st_file_attributes", 0)
+    except OSError:
         return False
+    reparse_point = getattr(stat, "FILE_ATTRIBUTE_REPARSE_POINT", 0)
+    return bool(attributes & reparse_point)
 
 
 def internal_path(root: Path, *parts: str) -> Path:
