@@ -20,4 +20,6 @@ tmp/
 
 # AI Agents
 .claude/
+.claude-config/
 .codex/
+.rob2-kit/

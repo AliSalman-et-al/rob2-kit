@@ -22,7 +22,9 @@ def test_pack_ids_wording_provenance_and_hashes():
         tuple((question.id, question.wording) for question in SCIENTIFIC_PACK.questions)
     ) == ("sha256:96ff2d1a649d6b40f40fe7fa73c3127c5eb1725e8392b8728f9d25f951338425")
     assert SCIENTIFIC_PACK.questions[16].wording.startswith("If N/PN/NI to 4.1 and 4.2")
-    assert SCIENTIFIC_PACK.content_hash.startswith("sha256:")
+    assert SCIENTIFIC_PACK.content_hash == (
+        "sha256:9ae610db3b3bf1773c78658d431192438e982e26df60062ac652a3750f4881b7"
+    )
     assert "not attributed to Cochrane" in MAINTAINER_POLICY_PACK.attribution
     assert MAINTAINER_POLICY_PACK.id != SCIENTIFIC_PACK.id
     assert load_scientific_pack(SCIENTIFIC_PACK.model_dump(mode="json")) == SCIENTIFIC_PACK
@@ -37,6 +39,14 @@ def test_pack_ids_wording_provenance_and_hashes():
 
 def test_policy_lexical_seeds_are_deeply_immutable_and_deterministic():
     assert MAINTAINER_POLICY_PACK.seeds_for("randomization") == ("random", "allocation", "conceal")
+    assert MAINTAINER_POLICY_PACK.source_priority == (
+        "main_article",
+        "registry",
+        "supplement",
+        "sap",
+        "protocol",
+        "other",
+    )
     with pytest.raises(TypeError):
         cast(Any, MAINTAINER_POLICY_PACK.lexical_seeds)[0] = MAINTAINER_POLICY_PACK.lexical_seeds[0]
     with pytest.raises(ValidationError):
@@ -154,6 +164,16 @@ def test_typed_activation_rules_preserve_any_and_all_behavior(answers, question_
 
 
 def test_every_conditional_activation_matches_its_typed_predicates():
+    by_id = {question.id: question for question in SCIENTIFIC_PACK.questions}
+
+    def activate(question_id: str, answers: dict[str, str]) -> None:
+        question = by_id[question_id]
+        if question.activation.kind == "always":
+            return
+        for predicate in question.activation.predicates:
+            activate(predicate.question_id, answers)
+            answers[predicate.question_id] = predicate.accepted_answers[0].value
+
     conditional_questions = [
         question for question in SCIENTIFIC_PACK.questions if question.activation.kind == "rule"
     ]
@@ -161,18 +181,19 @@ def test_every_conditional_activation_matches_its_typed_predicates():
     for question in conditional_questions:
         activation = question.activation
         assert isinstance(activation, ConditionalActivation)
-        answers = {
-            predicate.question_id: predicate.accepted_answers[0].value
-            for predicate in activation.predicates
-        }
+        answers: dict[str, str] = {}
+        activate(question.id, answers)
         assert question.id in active_questions(answers)
 
-        misses = {
-            predicate.question_id: next(
-                answer.value for answer in Answer if answer not in predicate.accepted_answers
-            )
-            for predicate in activation.predicates
-        }
+        misses = dict(answers)
+        misses.update(
+            {
+                predicate.question_id: next(
+                    answer.value for answer in Answer if answer not in predicate.accepted_answers
+                )
+                for predicate in activation.predicates
+            }
+        )
         assert (question.id in active_questions(misses)) is False
 
 

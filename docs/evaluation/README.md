@@ -1,42 +1,66 @@
-# CHAARTED release evaluator
+# Evaluate a release
 
-`rob2_kit.evaluation` is an independent consumer of retained run metadata and
-finalized artifacts. It does not import proposal compatibility or presentation
-logic from the product. The v1 objective manifest fixes only source facts and
-terminal expectations: PFS and overall survival are assessed; adverse events is
-preapproval `needs_input`. It deliberately does not prescribe RoB 2 labels.
+Use the independent `scripts/verify_bundle.py` consumer to check each finalized
+bundle. It does not import proposal or presentation code from the product. The
+source-defined Result remains the researcher's choice, and the evaluator does
+not prescribe endpoint mappings, terminal dispositions, or RoB 2 labels.
 
-Private inputs and runs belong under `eval/reference/` and `eval/runs/`, which
-are ignored. Retain only a `RetainedEvidenceManifest`: hashes, identities,
-timings, counts, review/final references, verifier output, and configuration
-hashes. Sources, extracted text, credentials, prompts, and paths are rejected.
+Keep each run in a fresh workspace outside the repository. Use neutral run
+labels such as `run A`, `run B`, and `run C`, then add one canary run. Give each
+workspace, project, server, and MCP connection a unique identity. Start with a
+zero-source attestation, use one attempt per run, and keep the captured source
+hashes identical across the runs. Repeat a run only after a documented external
+interruption before product or host behavior.
 
-Run the gate in three fresh host processes. Each requires a zero-source
-attestation, unique workspace/project/server/MCP identities, identical source
-hashes, and a single attempt. A rerun is permitted only after a documented
-external interruption before product or model behavior. For PFS, stop before
-Proposal confirmation and use `IsolatedRun.verify_restart` to require exact
-workspace/MCP/source-hash rehydration before continuing.
-
-The runner is intentionally host-agnostic. Qualification #247 must invoke it
-only when the exact candidate wheel, private CHAARTED inputs, and supported host
-are available; absence of those is an external qualification blocker, not an
-implementation gap in this evaluator.
-
-For each completed isolated run, the #247 launcher invokes:
-
-```powershell
-uv run python -m rob2_kit.evaluation <finalized-artifact-directory> --outcome pfs --trace <external-trace.json>
-uv run python -m rob2_kit.evaluation <finalized-artifact-directory> --outcome overall_survival --trace <external-trace.json>
-uv run python -m rob2_kit.evaluation <finalized-artifact-directory> --outcome adverse_events --trace <external-trace.json>
-```
-
-These commands verify retained artifacts and the external privacy-safe complete
-trace; they do not launch Haiku or read private inputs. The launcher records the
-resulting JSON in the privacy-safe manifest after the host process has stopped.
-
-Use this researcher prompt for all three runs, substituting only `{outcome}`:
+The workflow has one researcher gate. Review the exact Result mapping at
+`Proposal Review` before approval. After approval, resume the same host session;
+the host owns the Domain answers and follows `head.next_action` through
+finalization. Do not turn a conversational answer into scientific feedback
+after the gate. Use only this minimal continuation:
 
 ```text
-/rob2-workflow Assess the CHAARTED trial for RoB 2 for the outcome "{outcome}". The authorized source root is "." with alias "chaarted" and Trial ID "CHAARTED". Use this exact outcome target. Continue until Verified rob2-kit status requires researcher review or the Batch is finalized.
+Continue.
+```
+
+For the restart run, stop after the Proposal Review record exists and before
+acknowledgment. After the host restarts, compare the Proposal Review, Batch, and
+Source-set identities. Retain a closed top-level `restart_proof` object with
+`passed: true`, the run ID, and equal before-and-after identity hashes for all
+three records.
+
+For every completed run, verify the bundle:
+
+```powershell
+uv run python scripts/verify_bundle.py <finalized-bundle.rob2.zip>
+```
+
+The command checks the archive without importing the package or reading source
+documents. Do not coach Domain answers. Audit the final output, then retain the
+run receipt or discard it and restart without coaching.
+
+After the runs finish, validate the retained receipt:
+
+```powershell
+uv run --no-sync python scripts/qualification_manifest.py validate eval/retained-evidence.json
+```
+
+To close a run record, validate it and write the privacy-safe receipt without
+retaining its input location:
+
+```powershell
+uv run --no-sync python scripts/qualification_manifest.py generate eval/run-record.json eval/retained-evidence.json
+uv run --no-sync python scripts/qualification_manifest.py validate eval/retained-evidence.json
+```
+
+The `rob2-kit.retained-evidence.v0.3` receipt stores commit and wheel hashes,
+input identities, run metadata, bundle identities, verifier output, the
+restart proof, and supported CI evidence. It rejects paths, source content,
+prompts, credentials, and traces. A verdict of `all_green` requires every run,
+the canary, the restart proof, and the CI record to pass validation.
+
+Use a generic researcher prompt for each run. Replace only `{outcome}` with the
+outcome concept under test:
+
+```text
+/rob2-assess Assess risk of bias for {outcome} across the trials in input.
 ```

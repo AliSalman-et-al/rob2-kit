@@ -1,23 +1,33 @@
 [project]
 name = "rob2-kit"
-version = "0.2.0"
+version = "0.3.0"
 description = "Model-free MCP boundary for RoB 2 assessment"
 readme = "README.md"
 requires-python = ">=3.11"
-dependencies = ["fastmcp==3.2.4", "httpx==0.28.1", "pymupdf==1.27.1"]
+dependencies = [
+    "fastmcp==3.4.7",
+    "httpx==0.28.1",
+    "mcp==1.29.1",
+    "pydantic==2.13.4",
+    "pymupdf==1.28.2",
+]
 
 [project.scripts]
 rob2 = "rob2_kit.interfaces.cli.app:main"
 
 [build-system]
-requires = ["hatchling==1.27.0"]
+requires = ["hatchling==1.32.0"]
 build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/rob2_kit"]
 
 [dependency-groups]
-dev = ["pytest==9.1.1", "ruff==0.16.3", "ty==0.0.71"]
+dev = [
+    "pytest==9.1.1",
+    "ruff==0.16.4",
+    "ty==0.0.74",
+]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
@@ -26,6 +36,10 @@ pythonpath = ["tests"]
 [tool.ruff]
 target-version = "py311"
 line-length = 100
+extend-exclude = ["docs/release/public-contract.json"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP"]
+
+[tool.ruff.lint.per-file-ignores]
+"src/rob2_kit/application/contracts.py" = ["E501"]

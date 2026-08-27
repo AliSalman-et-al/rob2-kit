@@ -7,19 +7,49 @@ from rob2_kit.models import (
     ActivationPredicate,
     Answer,
     ConditionalActivation,
+    GuidanceAnchor,
+    OfficialQuestionGuidance,
+    OperationalQuestionGuidance,
     Question,
+    QuestionGuidance,
     ScientificPack,
     canonical_json_bytes,
     sha256,
 )
 
+_GUIDANCE = QuestionGuidance(
+    official=OfficialQuestionGuidance(
+        version="test",
+        source_locator="test source, question 1",
+        source_sha256="A" * 64,
+        source_excerpt="the test official source excerpt",
+    ),
+    operational=OperationalQuestionGuidance(
+        id="test-guidance",
+        version="1",
+        attribution="test",
+        bias_construct="the test construct",
+        decision_rule="apply the test decision rule",
+        evidence_needed=("the test evidence",),
+        no_information_rule="use no_information when the test evidence is unavailable",
+        answer_anchors=(GuidanceAnchor(answer=Answer.YES, text="the test yes anchor"),),
+        considerations=("the test consideration",),
+        invalid_shortcuts=("the test shortcut",),
+    ),
+)
+
+
+def _question(**values: Any) -> Question:
+    values.setdefault("guidance", _GUIDANCE)
+    return Question(**values)
+
 
 def test_models_are_strict_immutable_and_canonical():
     with pytest.raises(ValidationError):
-        Question(
+        _question(
             **cast(dict[str, Any], {"id": "x", "domain_id": "d", "wording": "w", "extra": "no"})
         )
-    question = Question(id="x", domain_id="d", wording="w")
+    question = _question(id="x", domain_id="d", wording="w")
     with pytest.raises(ValidationError):
         cast(Any, question).wording = "changed"
     assert canonical_json_bytes({"b": 1, "a": Answer.YES}) == b'{"a":"yes","b":1}'
@@ -49,7 +79,7 @@ def test_activation_rules_are_strict_and_reference_pack_questions() -> None:
                 "attribution": "source",
             },
             questions=(
-                Question(
+                _question(
                     id="question", domain_id="domain", wording="wording", activation=activation
                 ),
             ),
@@ -62,7 +92,7 @@ def test_activation_rules_are_strict_and_reference_pack_questions() -> None:
     "questions",
     (
         (
-            Question(
+            _question(
                 id="first",
                 domain_id="domain",
                 wording="first",
@@ -73,11 +103,11 @@ def test_activation_rules_are_strict_and_reference_pack_questions() -> None:
                     ),
                 ),
             ),
-            Question(id="second", domain_id="domain", wording="second"),
+            _question(id="second", domain_id="domain", wording="second"),
         ),
         (
-            Question(id="first", domain_id="other-domain", wording="first"),
-            Question(
+            _question(id="first", domain_id="other-domain", wording="first"),
+            _question(
                 id="second",
                 domain_id="domain",
                 wording="second",
@@ -126,13 +156,13 @@ def test_activation_predicates_use_allowed_predecessor_tokens() -> None:
                 "attribution": "source",
             },
             questions=(
-                Question(
+                _question(
                     id="first",
                     domain_id="domain",
                     wording="first",
                     allowed_answers=(Answer.YES,),
                 ),
-                Question(
+                _question(
                     id="second",
                     domain_id="domain",
                     wording="second",

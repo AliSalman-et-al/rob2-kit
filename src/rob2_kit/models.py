@@ -82,12 +82,72 @@ class ConditionalActivation(StrictModel):
 Activation = Annotated[AlwaysActive | ConditionalActivation, Field(discriminator="kind")]
 
 
+class OfficialQuestionGuidance(StrictModel):
+    """Official RoB 2 source excerpt and provenance for one signalling question."""
+
+    version: str = Field(min_length=1)
+    source_locator: str = Field(min_length=1)
+    source_sha256: str = Field(pattern=r"^[A-F0-9]{64}$")
+    source_excerpt: str = Field(min_length=1)
+
+
+class GuidanceAnchor(StrictModel):
+    """Rob2-kit answer anchor tied to one permitted response."""
+
+    answer: Answer
+    text: str = Field(min_length=1)
+
+
+class OperationalQuestionGuidance(StrictModel):
+    """Rob2-kit operational evidence contract for one signalling question."""
+
+    id: str = Field(min_length=1)
+    version: str = Field(min_length=1)
+    attribution: str = Field(min_length=1)
+    bias_construct: str = Field(min_length=1)
+    decision_rule: str = Field(min_length=1)
+    evidence_needed: tuple[str, ...] = Field(min_length=1)
+    no_information_rule: str = Field(min_length=1)
+    answer_anchors: tuple[GuidanceAnchor, ...] = Field(min_length=1)
+    considerations: tuple[str, ...] = Field(min_length=1)
+    invalid_shortcuts: tuple[str, ...] = Field(min_length=1)
+
+
+class QuestionGuidance(StrictModel):
+    """Official provenance paired with rob2-kit operational answering guidance."""
+
+    official: OfficialQuestionGuidance
+    operational: OperationalQuestionGuidance
+
+
+class ResponseFramework(StrictModel):
+    """Official response semantics shared by every Domain context."""
+
+    version: str = Field(min_length=1)
+    source_locator: str = Field(min_length=1)
+    response_options: tuple[Answer, ...] = Field(min_length=1)
+    firm_evidence_rule: str = Field(min_length=1)
+    probable_judgment_rule: str = Field(min_length=1)
+    no_information_rule: str = Field(min_length=1)
+    independence_rule: str = Field(min_length=1)
+    quotation_rule: str = Field(min_length=1)
+
+
 class Question(StrictModel):
     id: str
     domain_id: str
     wording: str
     allowed_answers: tuple[Answer, ...] = tuple(Answer)
     activation: Activation = Field(default_factory=AlwaysActive)
+    guidance: QuestionGuidance
+
+    @model_validator(mode="after")
+    def guidance_anchors_are_allowed(self) -> Question:
+        if not set(anchor.answer for anchor in self.guidance.operational.answer_anchors) <= set(
+            self.allowed_answers
+        ):
+            raise ValueError("guidance anchor references a disallowed answer")
+        return self
 
 
 class Domain(StrictModel):

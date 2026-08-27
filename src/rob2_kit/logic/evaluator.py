@@ -34,12 +34,15 @@ def _answers(answers: Mapping[str, Answer | str]) -> dict[str, Answer]:
 
 
 def _is_active(
-    activation: AlwaysActive | ConditionalActivation, answers: Mapping[str, Answer]
+    activation: AlwaysActive | ConditionalActivation,
+    answers: Mapping[str, Answer],
+    active: set[str],
 ) -> bool:
     if isinstance(activation, AlwaysActive):
         return True
-    matches = (
-        answers.get(predicate.question_id) in predicate.accepted_answers
+    matches = tuple(
+        predicate.question_id in active
+        and answers.get(predicate.question_id) in predicate.accepted_answers
         for predicate in activation.predicates
     )
     return any(matches) if activation.mode == "any" else all(matches)
@@ -47,9 +50,13 @@ def _is_active(
 
 def active_questions(answers: Mapping[str, Answer | str]) -> tuple[str, ...]:
     a = _answers(answers)
-    return tuple(
-        question.id for question in SCIENTIFIC_PACK.questions if _is_active(question.activation, a)
-    )
+    active: set[str] = set()
+    ordered: list[str] = []
+    for question in SCIENTIFIC_PACK.questions:
+        if _is_active(question.activation, a, active):
+            active.add(question.id)
+            ordered.append(question.id)
+    return tuple(ordered)
 
 
 def _validate(domain_id: str, answers: Mapping[str, Answer | str]) -> dict[str, Answer]:

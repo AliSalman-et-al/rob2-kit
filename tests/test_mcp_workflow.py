@@ -1,0 +1,372 @@
+"""Black-box MCP workflow behavior tests."""
+
+# Shared private helpers keep caller setup out of the scenarios.
+# ruff: noqa: F405
+
+from __future__ import annotations
+
+from pathlib import Path
+from typing import Any
+
+import pymupdf
+import pytest
+from pydantic import ValidationError
+from support.rob2 import *  # noqa: F401,F403
+
+from rob2_kit.application._state import _state
+from rob2_kit.application.contracts import COUNTERS
+from rob2_kit.application.evidence import _search_receipt
+from rob2_kit.application.intake import prepare_batch as application_prepare_batch
+from rob2_kit.application.status import get_status
+from rob2_kit.interfaces.mcp import server
+from rob2_kit.packs import SCIENTIFIC_PACK
+from rob2_kit.workflow_models import ProposalDraft, TrialDeclaration
+
+
+def test_prepare_rejects_malformed_intake_before_durable_state_commit(tmp_path: Path) -> None:
+    workspace = tmp_path
+    trial = workspace / "input" / "trial"
+    trial.mkdir(parents=True)
+    (trial / "main.txt").write_text("captured source", encoding="utf-8")
+    (trial / "sources.toml").write_text(
+        'omissions = [{path = "main.txt", reason = "not-a-reason", rationale = "bad"}]\n',
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError):
+        application_prepare_batch(
+            workspace,
+            [
+                TrialDeclaration(
+                    id="trial",
+                    label="trial",
+                    requested_outcome="requested outcome",
+                )
+            ],
+            expected_revision=0,
+        )
+    assert _state(workspace).get("batch") is None
+
+
+def test_finalize_value_error_is_preserved_when_finalization_is_next(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    def fail() -> dict[str, Any]:
+        raise ValueError("final bundle integrity failed")
+
+    monkeypatch.setattr(
+        server,
+        "_get_status_head",
+        lambda _workspace: {"continuation": {"operation": "finalize_batch"}},
+    )
+    monkeypatch.setattr(server, "_content", lambda _tool, value: value)
+
+    receipt: Any = server._invoke("finalize_batch", fail)
+
+    assert receipt["condition"] == "final bundle integrity failed"
+
+
+def test_verify_cli_checks_product_bundle_and_returns_status(tmp_path: Path) -> None:
+    artifact = _assessed_artifact(_workspace(tmp_path))
+    from rob2_kit.interfaces.cli.app import main as cli_main
+
+    assert cli_main(["verify", str(artifact)]) == 0
+    assert cli_main(["verify", str(tmp_path / "missing.rob2.zip")]) == 1
+
+
+def test_cli_exports_packaged_skill(tmp_path: Path) -> None:
+    from rob2_kit.interfaces.cli.app import main as cli_main
+
+    destination = tmp_path / ".claude" / "skills" / "rob2-assess"
+
+    assert cli_main(["export-skill", "--output", str(destination)]) == 0
+    assert (destination / "SKILL.md").is_file()
+    assert (destination / "references" / "randomization.md").is_file()
+
+
+def test_domain_questions_include_typed_premise_rules_and_shortcuts(tmp_path: Path) -> None:
+    workspace = _assessment_workspace(tmp_path)[0]
+    questions: dict[str, dict[str, Any]] = {}
+    for domain in SCIENTIFIC_PACK.domains:
+        context = _call(workspace, "get_domain_context", {"domain_id": domain.id})["data"]
+        questions.update({item["id"]: item for item in context["questions"]})
+    expected = {
+        "sq:randomization:sequence": "underwent randomization",
+        "sq:deviations:participants-aware": "completed treatment",
+        "sq:deviations:context-deviations": "nonadherence alone",
+        "sq:deviations:affected-outcome": "an ITT analysis",
+        "sq:selection:prespecified-analysis": "an objective definition",
+        "sq:selection:multiple-analyses": "a single ITT analysis",
+    }
+    fidelity_markers = {
+        "sq:randomization:sequence": "random component",
+        "sq:randomization:concealment": "remote or centrally",
+        "sq:randomization:baseline-imbalance": "compatible with chance",
+        "sq:deviations:participants-aware": "side effects",
+        "sq:deviations:personnel-aware": "carers",
+        "sq:deviations:context-deviations": "trial context",
+        "sq:deviations:affected-outcome": "effect estimate",
+        "sq:deviations:balanced": "balanced between",
+        "sq:deviations:appropriate-analysis": "intention-to-treat",
+        "sq:deviations:substantial-impact": "5%",
+        "sq:missing:data-available": "95%",
+        "sq:missing:evidence-unbiased": "last-observation",
+        "sq:missing:true-value-dependent": "health status",
+        "sq:missing:likely-dependent": "censoring",
+        "sq:measurement:method-inappropriate": "sensitive",
+        "sq:measurement:differential": "Comparable methods",
+        "sq:measurement:assessor-aware": "blinded",
+        "sq:measurement:influence-possible": "participant-reported",
+        "sq:measurement:influence-likely": "strong levels of belief",
+        "sq:selection:prespecified-analysis": "unblinded outcome data",
+        "sq:selection:multiple-measurements": "multiple eligible",
+        "sq:selection:multiple-analyses": "multiple eligible ways",
+    }
+    assert set(questions) == set(fidelity_markers)
+    compact_fields = {
+        "id",
+        "wording",
+        "allowed_answers",
+        "active",
+        "activation",
+        "official_guidance",
+        "source_locator",
+        "decision_rule",
+        "evidence_needed",
+        "answer_anchors",
+        "no_information_rule",
+        "invalid_shortcuts",
+    }
+    assert all(set(question) == compact_fields for question in questions.values())
+    for question_id, shortcut in expected.items():
+        question = questions[question_id]
+        assert question["activation"]["kind"] in {"always", "rule"}
+        assert question["source_locator"].startswith("Full guidance ")
+        assert shortcut in question["invalid_shortcuts"]
+        assert question["decision_rule"]
+        assert question["answer_anchors"]
+        assert question["no_information_rule"]
+        pack_question = next(item for item in SCIENTIFIC_PACK.questions if item.id == question_id)
+        assert pack_question.guidance.official.source_excerpt == question["official_guidance"]
+        assert pack_question.guidance.official.source_locator == question["source_locator"]
+        assert pack_question.guidance.operational.decision_rule == question["decision_rule"]
+        assert pack_question.guidance.operational.evidence_needed == tuple(
+            question["evidence_needed"]
+        )
+        assert [
+            anchor.model_dump(mode="json")
+            for anchor in pack_question.guidance.operational.answer_anchors
+        ] == question["answer_anchors"]
+        assert (
+            pack_question.guidance.operational.no_information_rule
+            == question["no_information_rule"]
+        )
+        assert pack_question.guidance.operational.invalid_shortcuts == tuple(
+            question["invalid_shortcuts"]
+        )
+    for question_id, marker in fidelity_markers.items():
+        guidance = questions[question_id]
+        assert marker.lower() in guidance["official_guidance"].lower()
+        allowed = set(questions[question_id]["allowed_answers"])
+        assert all(anchor["answer"] in allowed for anchor in guidance["answer_anchors"])
+
+
+def test_unsupported_result_leaves_are_aggregated_repairs(tmp_path: Path) -> None:
+    workspace = _workspace(tmp_path)
+    evidence = _prepared_evidence(workspace)
+    result = _result(evidence)
+    result["target"]["comparison_groups"][0]["assignment"] = "unsupported assignment"
+    result["reported"]["values"][0]["statistic"] = "unsupported statistic"
+    repair = _call(workspace, "save_proposal", _proposal_args(workspace, [result]))
+    assert repair["outcome"] == "repair"
+    unsupported = [
+        item for item in repair["repairs"] if item["code"] == "result_value_not_supported"
+    ]
+    paths = {item["path"] for item in unsupported}
+    assert "/results/0/target/comparison_groups/0/assignment" in paths
+    assert "/results/0/reported/values/0/statistic" in paths
+
+
+def test_fastmcp_resolves_text_and_figure_evidence_handles(tmp_path: Path) -> None:
+    workspace = _workspace(tmp_path)
+    table_text = "Unrelated appendix prose"
+    (workspace / "input" / "trial" / "table.txt").write_text(table_text, encoding="utf-8")
+    pdf = pymupdf.open()
+    page = pdf.new_page()
+    page.insert_text((72, 72), "Figure plot")
+    (workspace / "input" / "trial" / "figure.pdf").write_bytes(pdf.tobytes())
+    pdf.close()
+    _call(
+        workspace,
+        "prepare_batch",
+        {"requested_outcome": "requested outcome", "expected_revision": 0},
+    )
+    sources = _call(workspace, "list_sources", {"trial_id": "trial"})["data"]["sources"]
+    main_source = next(source for source in sources if source["label"] == "main.txt")
+    narrative = _call(
+        workspace,
+        "select_text_evidence",
+        {
+            "trial_id": "trial",
+            "source_id": main_source["id"],
+            "page": 1,
+            "start_line": 1,
+            "end_line": 1,
+        },
+    )["data"]["evidence"]
+    table_source = next(source for source in sources if source["label"] == "table.txt")
+    figure_source = next(source for source in sources if source["label"] == "figure.pdf")
+    table_selection = _call(
+        workspace,
+        "select_text_evidence",
+        {
+            "trial_id": "trial",
+            "source_id": table_source["id"],
+            "page": 1,
+            "start_line": 1,
+            "end_line": 1,
+        },
+    )["data"]["evidence"]
+    render = _call(
+        workspace,
+        "render_page",
+        {"trial_id": "trial", "source_id": figure_source["id"], "page": 1},
+    )["data"]["render"]
+    figure_selection = _call(
+        workspace,
+        "select_visual_evidence",
+        {
+            "trial_id": "trial",
+            "source_id": figure_source["id"],
+            "render_identity": render["identity"],
+            "transcription": "Unrelated figure plot",
+            "region": [0.1, 0.1, 0.9, 0.9],
+        },
+    )["data"]["evidence"]
+    result = _result(narrative)
+    typed = _call(workspace, "save_proposal", _proposal_args(workspace, [result]))
+    assert typed["outcome"] == "review_required"
+    stored = _state(workspace)["review"]["candidate"]["proposal"]["results"][0]
+    stored_handles = {item["handle"] for item in stored["evidence"]}
+    assert narrative["handle"] in stored_handles
+    assert table_selection["handle"] not in stored_handles
+    assert figure_selection["handle"] not in stored_handles
+
+
+def test_proposal_rejects_object_group_value_fields_in_the_closed_reported_form(
+    tmp_path: Path,
+) -> None:
+    workspace = _workspace(tmp_path)
+    evidence = _prepared_evidence(workspace)
+    result = _result(evidence)
+    result["reported"]["values"][0] = {"group_id": "a", "value": "1"}
+    with pytest.raises(ValidationError):
+        ProposalDraft.model_validate(
+            {"results": [result], "expected_revision": int(get_status(workspace)["state_revision"])}
+        )
+
+
+def test_proposal_cannot_use_another_trials_selected_evidence(tmp_path: Path) -> None:
+    workspace = _workspace(tmp_path)
+    second = workspace / "input" / "second"
+    second.mkdir(parents=True)
+    (second / "main.txt").write_text("The requested outcome was measured.", encoding="utf-8")
+    _call(
+        workspace,
+        "prepare_batch",
+        {"requested_outcome": "requested outcome", "expected_revision": 0},
+    )
+    source = _call(workspace, "list_sources", {"trial_id": "second"})["data"]["sources"][0]
+    foreign = _call(
+        workspace,
+        "select_text_evidence",
+        {
+            "trial_id": "second",
+            "source_id": source["id"],
+            "page": 1,
+            "start_line": 1,
+            "end_line": 1,
+        },
+    )["data"]["evidence"]
+    result = _result(foreign)
+    unavailable = _unavailable_result(foreign, "Researcher must select the intended result.")
+    unavailable["trial_id"] = "second"
+    repair = _call(workspace, "save_proposal", _proposal_args(workspace, [result, unavailable]))
+    assert repair["outcome"] == "repair"
+    assert any(item["code"] == "result_value_not_supported" for item in repair["repairs"])
+
+
+def test_counters_capture_structural_work(tmp_path: Path) -> None:
+    for name in COUNTERS:
+        COUNTERS[name] = 0
+    workspace = _workspace(tmp_path)
+    pdf = pymupdf.open()
+    page = pdf.new_page()
+    page.insert_text((72, 72), "A rendered table")
+    (workspace / "input" / "trial" / "table.pdf").write_bytes(pdf.tobytes(garbage=4, deflate=True))
+    pdf.close()
+    evidence = _prepared_evidence(workspace)
+    pdf_source = next(
+        item
+        for item in _call(workspace, "list_sources", {"trial_id": "trial"})["data"]["sources"]
+        if item["label"] == "table.pdf"
+    )
+    _call(
+        workspace,
+        "read_pages",
+        {"trial_id": "trial", "source_id": evidence["source_id"], "pages": [1]},
+    )
+    _call(
+        workspace,
+        "render_page",
+        {"trial_id": "trial", "source_id": pdf_source["id"], "page": 1},
+    )
+    counters = COUNTERS
+    for name in (
+        "extraction_calls",
+        "source_projection_verifications",
+        "database_queries",
+        "serialized_bytes",
+        "render_bytes",
+        "elapsed_ms",
+    ):
+        assert counters[name] > 0, name
+
+
+def test_search_receipts_are_verified_disposable_derivatives(tmp_path: Path) -> None:
+    workspace = _workspace(tmp_path)
+    _call(
+        workspace,
+        "prepare_batch",
+        {"requested_outcome": "requested outcome", "expected_revision": 0},
+    )
+    COUNTERS["extraction_calls"] = 0
+    hit = _call(workspace, "search_sources", {"trial_id": "trial", "query": "requested"})
+    retry = _call(workspace, "search_sources", {"trial_id": "trial", "query": "requested"})
+    assert hit["data"]["hits"][0]["source_role"] == "other"
+    assert hit["data"]["hits"][0]["source_label"] == "main.txt"
+    assert (
+        _search_receipt(workspace, hit["data"]["search_receipt"])["identity"]
+        == _search_receipt(workspace, retry["data"]["search_receipt"])["identity"]
+    )
+    no_hit = _call(workspace, "search_sources", {"trial_id": "trial", "query": "absent"})
+    changed = _call(
+        workspace, "search_sources", {"trial_id": "trial", "query": "requested", "mode": "any"}
+    )
+    assert no_hit["outcome"] == "success"
+    assert no_hit["data"]["condition"] == "no_hits"
+    assert no_hit["data"]["search_receipt"].startswith("sr_")
+    assert (
+        _search_receipt(workspace, changed["data"]["search_receipt"])["identity"]
+        != _search_receipt(workspace, hit["data"]["search_receipt"])["identity"]
+    )
+    assert COUNTERS["extraction_calls"] == 0
+    with pytest.raises(ValueError):
+        _search_receipt(workspace, "sr_" + "0" * 16)
+    derivative = workspace / ".rob2-kit" / "derivative.sqlite3"
+    derivative.unlink()
+    rebuilt = _call(workspace, "search_sources", {"trial_id": "trial", "query": "requested"})
+    assert (
+        _search_receipt(workspace, rebuilt["data"]["search_receipt"])["identity"]
+        == _search_receipt(workspace, hit["data"]["search_receipt"])["identity"]
+    )
+    assert COUNTERS["extraction_calls"] > 0
