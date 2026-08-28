@@ -13,7 +13,9 @@ Use this reference during source navigation, Result preparation, and Domain work
    search as an absence basis.
 2. Use `read_pages` to inspect exact page text with server-issued line numbers.
    Page values are 1-based source-page indexes, not printed page labels.
-   Pass the explicit `pages` list; there is no `limit` or range argument.
+   Pass the explicit `pages` list. If a page has `truncated:true`, call that
+   page again with its issued `next_start_line`. There is no caller-selected
+   output limit.
 3. Use `render_page` when visual structure changes the meaning.
 4. Call `select_text_evidence` or `select_visual_evidence` only after you identify the exact support.
 
@@ -22,12 +24,10 @@ A search hit is navigation, not Evidence. A no-hit search does not prove absence
 ## Select one immutable Evidence item
 
 Use `select_text_evidence` with the page, first line, and last line issued by
-`read_pages`. If unrelated text shares the first or last selected line, copy a
-unique `start_text` or `end_text` from that boundary line to trim the range.
-Never otherwise copy or reconstruct PDF text. If a passage crosses a page
-boundary, make one selection on each page. Select the lines for one complete
+`read_pages`. Never copy or reconstruct PDF text from a search preview. If a
+passage crosses a page boundary, make one selection on each page. Select the lines for one complete
 `[Extracted table N]` block. If extraction interleaves adjacent tables or you
-cannot isolate the table with boundary text, render the page and select only
+cannot isolate the table with line selection alone, render the page and select only
 the relevant visual region. The selected passage must
 contain the complete fact and every applicable row, column, header, cohort,
 unit, denominator, cell, or footnote needed to interpret it. Expand a truncated
@@ -65,8 +65,8 @@ selections, derives Result bindings, and retains only material used by the
 Result. Do not invent or collapse labels or values absent from selected
 material; proposed Result values must be reported by the Source.
 
-Before saving, check the mechanical support rules: every Source-bound target
-leaf and every reported leaf has exact support from selected Evidence. The
+Before saving, check the mechanical support rules: every Source-bound reported
+leaf has exact support from selected Evidence. The
 server reconstructs `/target/outcome_definition`, `/target/measurement/metric`,
 and `/target/effect_of_interest` from Intake and the fixed contract.
 Comparison-group IDs are caller-supplied structural identifiers; repeated

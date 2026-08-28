@@ -29,7 +29,7 @@ def _prepare(tmp_path: Path, *, manifest: str | None = None) -> Path:
         (trial / "sources.toml").write_text(manifest, encoding="utf-8")
     prepare_batch(
         tmp_path,
-        [TrialDeclaration(id="trial", label="Trial", requested_outcome="outcome")],
+        [TrialDeclaration(id="trial", label="trial", requested_outcome="outcome")],
         expected_revision=0,
     )
     return tmp_path

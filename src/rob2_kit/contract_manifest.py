@@ -47,8 +47,11 @@ async def _manifest() -> dict[str, object]:
         "tools": [
             {
                 "name": tool.name,
+                "title": (tool.title or "").strip(),
                 "description": (tool.description or "").strip(),
                 "read_only": bool(tool.annotations and tool.annotations.readOnlyHint),
+                "destructive": bool(tool.annotations and tool.annotations.destructiveHint),
+                "idempotent": bool(tool.annotations and tool.annotations.idempotentHint),
                 "open_world": tool.annotations.openWorldHint if tool.annotations else None,
                 "schema_sha256": _schema_hash(tool.inputSchema),
                 "output_schema_sha256": _schema_hash(cast(dict[str, object], tool.outputSchema)),

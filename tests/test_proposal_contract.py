@@ -8,7 +8,7 @@ from support.proposal import _state_proposal
 from support.rob2 import _call, _prepared_evidence, _proposal_args, _result, _workspace
 
 
-def test_unsupported_result_leaves_are_aggregated_with_actionable_detail(
+def test_target_interpretation_leaves_do_not_require_exact_source_support(
     tmp_path: Path,
 ) -> None:
     workspace = _workspace(tmp_path)
@@ -17,13 +17,14 @@ def test_unsupported_result_leaves_are_aggregated_with_actionable_detail(
     result["target"]["time_point_or_window"]["description"] = "unsupported window"
     result["target"]["comparison_groups"][0]["assignment"] = "unsupported assignment"
 
-    repair = _call(workspace, "save_proposal", _proposal_args(workspace, [result]))
-    repairs = repair["repairs"]
-    unsupported = [item for item in repairs if item["code"] == "result_value_not_supported"]
-    paths = {item["path"] for item in unsupported}
-    assert "/results/0/target/comparison_groups/0/assignment" in paths
-    assert "/results/0/target/time_point_or_window/description" in paths
-    assert all(item["detail"] for item in unsupported)
+    saved = _call(workspace, "save_proposal", _proposal_args(workspace, [result]))
+
+    assert saved["outcome"] == "review_required", saved
+    bindings = {
+        item["field"]["path"] for item in _state_proposal(workspace)["results"][0]["bindings"]
+    }
+    assert "/target/comparison_groups/0/assignment" not in bindings
+    assert "/target/time_point_or_window/description" not in bindings
 
 
 def test_assessable_relation_enum_excludes_unavailable_values(
@@ -35,7 +36,7 @@ def test_assessable_relation_enum_excludes_unavailable_values(
     result["relation"] = "unavailable"
     result["relation_rationale"] = "Use unavailable Result kind instead."
 
-    with pytest.raises(ToolError, match="Input should be"):
+    with pytest.raises(ToolError, match="Input validation error"):
         _call(workspace, "save_proposal", _proposal_args(workspace, [result]))
 
 
@@ -47,7 +48,7 @@ def test_removed_equivalence_relation_is_rejected_at_typed_boundary(
     result = _result(evidence)
     result["relation"] = "source_defined_equivalent"
 
-    with pytest.raises(ToolError, match="Input should be"):
+    with pytest.raises(ToolError, match="Input validation error"):
         _call(workspace, "save_proposal", _proposal_args(workspace, [result]))
 
 
@@ -100,6 +101,38 @@ def test_absent_comparative_precision_is_not_source_bound(tmp_path: Path) -> Non
     assert "/reported/precision" not in paths
 
 
+def test_complete_comparative_effect_does_not_require_group_values(tmp_path: Path) -> None:
+    workspace = _workspace(tmp_path)
+    evidence = _prepared_evidence(workspace)
+    result = _result(evidence)
+    result["reported"] = {
+        "form": "comparative_effect",
+        "effect_measure": "risk ratio",
+        "estimate": "1",
+        "precision": None,
+        "endpoint": result["reported"]["endpoint"],
+    }
+
+    saved = _call(workspace, "save_proposal", _proposal_args(workspace, [result]))
+
+    assert saved["outcome"] == "review_required"
+    assert _state_proposal(workspace)["results"][0]["reported"]["group_values"] == []
+
+
+def test_endpoint_definition_can_be_omitted_when_no_coherent_definition_is_selected(
+    tmp_path: Path,
+) -> None:
+    workspace = _workspace(tmp_path)
+    evidence = _prepared_evidence(workspace)
+    result = _result(evidence)
+    result["reported"]["endpoint"].pop("definition")
+
+    saved = _call(workspace, "save_proposal", _proposal_args(workspace, [result]))
+
+    assert saved["outcome"] == "review_required"
+    assert _state_proposal(workspace)["results"][0]["reported"]["endpoint"]["definition"] is None
+
+
 @pytest.mark.parametrize("field", ("statistic", "value", "unit"))
 def test_whitespace_reported_scalars_fail_at_typed_boundary(tmp_path: Path, field: str) -> None:
     workspace = _workspace(tmp_path)
@@ -111,7 +144,7 @@ def test_whitespace_reported_scalars_fail_at_typed_boundary(tmp_path: Path, fiel
         _call(workspace, "save_proposal", _proposal_args(workspace, [result]))
 
 
-def test_structural_group_references_need_no_mapping_but_assignments_do(
+def test_structural_group_references_and_assignments_need_no_source_mapping(
     tmp_path: Path,
 ) -> None:
     workspace = _workspace(tmp_path)
@@ -121,13 +154,12 @@ def test_structural_group_references_need_no_mapping_but_assignments_do(
 
     repair = _call(workspace, "save_proposal", _proposal_args(workspace, [result]))
 
-    unsupported = [
-        item for item in repair["repairs"] if item["code"] == "result_value_not_supported"
-    ]
-    assert any(
-        item["path"] == "/results/0/target/comparison_groups/0/assignment" for item in unsupported
-    )
-    assert not any(item["path"].endswith("/group_id") for item in unsupported)
+    assert repair["outcome"] == "review_required", repair
+    bindings = {
+        item["field"]["path"] for item in _state_proposal(workspace)["results"][0]["bindings"]
+    }
+    assert "/target/comparison_groups/0/id" not in bindings
+    assert "/target/comparison_groups/0/assignment" not in bindings
 
 
 def test_structural_category_dimensions_need_no_mapping_but_labels_do(

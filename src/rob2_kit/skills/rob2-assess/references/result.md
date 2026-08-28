@@ -65,9 +65,82 @@ label in one selected passage; when no such passage exists, use `null` rather
 than borrowing a component or related endpoint definition. The endpoint name
 is the Source's endpoint name, not a summary statistic.
 A comparative effect has `effect_measure`, `estimate`, optional `precision`,
-and at least two `group_values`. A group-bound result has at least two `values`. Every group
-value is `{group_id,statistic,value,unit}`; the reported group IDs must exactly
-match the target group IDs. Do not send parallel quantities or group lists.
+and optional `group_values`. Omit `group_values` when the comparative estimate
+is complete and the Source does not state one unambiguous statistic and unit
+for every randomized group. When supplied, `group_values` contains at least two
+items and covers every target group. A group-bound result has at least two
+`values`. Every group value is `{group_id,statistic,value,unit}`; the reported
+group IDs must exactly match the target group IDs. Do not invent a statistic or
+unit to make an optional group value fit the schema.
+
+## Minimal proposal examples
+
+Use these examples as shapes, not content. Replace every identifier and value
+with the current Batch data and exact Source wording. Select the supporting
+Evidence before calling `save_proposal`; Evidence handles do not appear in an
+assessable Result card.
+
+This is one exact comparative Result. It is exact only because the captured
+requested outcome and `reported.endpoint.name` normalize to the same text.
+
+```json
+{
+  "results": [
+    {
+      "kind": "assessable",
+      "trial_id": "trial_a",
+      "relation": "exact",
+      "target": {
+        "measurement": {"method": "time from assignment to the endpoint"},
+        "time_point_or_window": {
+          "kind": "described",
+          "description": "through the reported data cutoff"
+        },
+        "comparison_groups": [
+          {"id": "group_a", "assignment": "Strategy A"},
+          {"id": "group_b", "assignment": "Strategy B"}
+        ],
+        "intended_analysis_population": "all randomized participants",
+        "intended_effect_measure": "hazard ratio"
+      },
+      "reported": {
+        "form": "comparative_effect",
+        "effect_measure": "hazard ratio",
+        "estimate": "0.80",
+        "precision": "95% CI 0.65 to 0.98",
+        "endpoint": {"name": "Requested endpoint", "definition": null}
+      }
+    }
+  ],
+  "expected_revision": 7
+}
+```
+
+Use this unavailable shape only after ruling out every complete assessable
+candidate. The Evidence handle must identify a selected same-Trial passage that
+states the missing premise; related-endpoint Evidence is not enough.
+
+```json
+{
+  "results": [
+    {
+      "kind": "unavailable",
+      "trial_id": "trial_a",
+      "relation": "unavailable",
+      "missing_facts": [
+        {
+          "fact": "The requested endpoint result is not reported.",
+          "basis": {
+            "kind": "missing_reporting",
+            "evidence": "eh_0123456789abcdef"
+          }
+        }
+      ]
+    }
+  ],
+  "expected_revision": 7
+}
+```
 
 ## State one Target relation
 
@@ -91,7 +164,7 @@ deterministic rationale. A non-exact assessable relation requires a rationale
 and researcher confirmation.
 `ambiguous` and `unavailable` cannot enter Domain assessment.
 
-When several endpoints may match, choose one complete candidate and submit it. If another candidate is better, revise and resubmit the complete proposal; do not send alternatives or a field patch.
+When several endpoints may match, choose one complete candidate and submit it. During a pending Proposal Review, if another candidate is better for one Trial, submit one complete replacement card for that Trial. The server preserves unmentioned Trial cards. Do not send alternatives or a field patch.
 
 When the Source has no exact endpoint label, do not stop at the first lexical
 match and do not default to unavailable. Compare the Source-defined endpoint
@@ -134,10 +207,10 @@ equivalence. Each reported endpoint field must be supported by selected
 Evidence; the fields may use different selected passages. If the premise does
 not entail a proof-critical reported field, revise the field, select better
 Evidence, choose and resubmit a different complete candidate, or record the
-Result as unavailable with a concrete missing fact. Target timing and arm
-assignments require selected source support. Target method, intended
-population, and intended measure are reviewer-visible interpretation fields and
-do not need duplicate source quotations.
+Result as unavailable with a concrete missing fact. Target method, timing,
+intended population, intended measure, and arm assignments are
+reviewer-visible interpretation fields and do not need duplicate source
+quotations. The researcher reviews them at Proposal Review.
 
 Keep endpoint definitions, time points, populations, outcome coverage,
 denominators, categories, and randomized groups distinct. Treat table axes as
@@ -182,13 +255,13 @@ Completion: every Trial has one internally consistent Result card or one unavail
 
 Select a complete sentence or complete table/figure transcription before making a
 Result claim. A truncated narrative fragment cannot support fields outside its exact
-quote. Every proof-critical reported leaf and source-owned arm/category label
-needs one indexed Evidence binding with its exact JSON-pointer path and value
+quote. Every proof-critical reported leaf and source-owned reported group or
+category label needs one indexed Evidence binding with its exact JSON-pointer path and value
 digest. A narrative Evidence item is only its server-issued handle; the handle
 already resolves to the immutable page-preserving quote. Do not copy clauses or
-author source-to-value mappings. Target interpretation fields, caller-owned
-labels, the closed effect discriminator, and comparison-group IDs are not
-Source claims and are intentionally unbound.
+author source-to-value mappings. Target interpretation fields, including timing
+and arm assignments, caller-owned labels, the closed effect discriminator, and
+comparison-group IDs are not Source claims and are intentionally unbound.
 Figure Evidence carries server-assigned `text_corroborated` or `host_visual`
 provenance. Every figure-bound leaf must occur in its literal transcription;
 host-visual support is limited to visible labels, endpoint text, values, axes,

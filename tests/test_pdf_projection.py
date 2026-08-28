@@ -7,6 +7,7 @@ import pytest
 
 from rob2_kit.application._state import (
     _db,
+    _normalize_projected_text,
     _pages,
     _projection_hash,
     _semantic_table_page,
@@ -50,7 +51,7 @@ def _prepare_pdf(tmp_path: Path) -> tuple[Path, dict[str, object]]:
     (trial / "article.pdf").write_bytes(_pdf_bytes())
     prepared = prepare_batch(
         tmp_path,
-        [TrialDeclaration(id="trial", label="Trial", requested_outcome="result")],
+        [TrialDeclaration(id="trial", label="trial", requested_outcome="result")],
         expected_revision=0,
     )
     return tmp_path, prepared["trials"][0]["sources"][0]
@@ -140,11 +141,25 @@ def test_projection_identity_is_recipe_versioned() -> None:
     source = {"sha256": "sha256:" + "a" * 64, "media_type": "application/pdf"}
     identity = reproduce_projection_identity(source, pages)
 
-    assert identity["schema_version"] == "rob2-kit.text-projection.v2"
-    assert identity["recipe"] == "rob2-kit.extract-pages.v2"
+    assert identity["schema_version"] == "rob2-kit.text-projection.v3"
+    assert identity["recipe"] == "rob2-kit.extract-pages.v4"
     assert (
         _projection_hash(source["sha256"], source["media_type"], pages)
         == identity["projection_hash"]
+    )
+
+
+def test_projection_normalization_removes_nonprinting_artifacts_once() -> None:
+    raw = "The \ufb01nal\u200b\u202e analysis\x00 was complete.\u00ad\r\n"
+
+    assert _normalize_projected_text(raw) == "The final analysis was complete.\n"
+
+
+def test_text_source_projection_uses_the_same_normalized_text_as_public_reads() -> None:
+    raw = "A\u00a0ligature: \ufb01. A bidi marker:\u202e done.\x07\n"
+
+    assert _pages(Path("source.txt"), raw.encode("utf-8")) == (
+        "A ligature: fi. A bidi marker: done.\n",
     )
 
 
@@ -176,7 +191,7 @@ def test_text_selection_canonicalizes_a_unique_match_on_another_page(tmp_path: P
     (trial / "article.pdf").write_bytes(pdf)
     prepared = prepare_batch(
         tmp_path,
-        [TrialDeclaration(id="trial", label="Trial", requested_outcome="result")],
+        [TrialDeclaration(id="trial", label="trial", requested_outcome="result")],
         expected_revision=0,
     )
     source = prepared["trials"][0]["sources"][0]
@@ -207,7 +222,7 @@ def test_text_selection_rejects_cross_page_ambiguity(tmp_path: Path) -> None:
     (trial / "article.pdf").write_bytes(pdf)
     prepared = prepare_batch(
         tmp_path,
-        [TrialDeclaration(id="trial", label="Trial", requested_outcome="result")],
+        [TrialDeclaration(id="trial", label="trial", requested_outcome="result")],
         expected_revision=0,
     )
     source = prepared["trials"][0]["sources"][0]
@@ -230,7 +245,7 @@ def test_text_selection_canonicalizes_a_unique_out_of_range_page_hint(tmp_path: 
     (trial / "article.pdf").write_bytes(pdf)
     prepared = prepare_batch(
         tmp_path,
-        [TrialDeclaration(id="trial", label="Trial", requested_outcome="result")],
+        [TrialDeclaration(id="trial", label="trial", requested_outcome="result")],
         expected_revision=0,
     )
     source = prepared["trials"][0]["sources"][0]
@@ -258,7 +273,7 @@ def test_text_selection_rejects_ambiguous_out_of_range_page_hint(tmp_path: Path)
     (trial / "article.pdf").write_bytes(pdf)
     prepared = prepare_batch(
         tmp_path,
-        [TrialDeclaration(id="trial", label="Trial", requested_outcome="result")],
+        [TrialDeclaration(id="trial", label="trial", requested_outcome="result")],
         expected_revision=0,
     )
     source = prepared["trials"][0]["sources"][0]

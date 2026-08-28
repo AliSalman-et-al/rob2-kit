@@ -19,6 +19,7 @@ from support.rob2 import (
     _workspace,
 )
 
+from rob2_kit.application._state import _state
 from rob2_kit.application.evidence import _search_receipt
 from rob2_kit.interfaces.mcp.server import mcp
 from rob2_kit.packs import SCIENTIFIC_PACK
@@ -32,6 +33,10 @@ def _call_raw(workspace: Path, arguments: dict[str, Any]) -> dict[str, Any]:
             return dict(result.structured_content or {})
 
     return asyncio.run(invoke())
+
+
+def _stored_checkpoint(workspace: Path, domain_id: str = "domain:randomization") -> dict[str, Any]:
+    return _state(workspace)["domain_records"][f"trial:{domain_id}"]
 
 
 def _assert_repairs(receipt: dict[str, Any]) -> None:
@@ -110,6 +115,7 @@ def test_domain_context_result_projection_omits_canonical_bindings(tmp_path: Pat
         "evidence_needed",
         "answer_anchors",
         "no_information_rule",
+        "considerations",
         "invalid_shortcuts",
     }
     assert question_card["official_guidance"]
@@ -139,6 +145,9 @@ def test_domain_context_result_projection_omits_canonical_bindings(tmp_path: Pat
     assert pack_question.guidance.official.source_excerpt == question_card["official_guidance"]
     assert pack_question.guidance.official.source_locator == question_card["source_locator"]
     assert pack_question.guidance.operational.decision_rule == question_card["decision_rule"]
+    assert pack_question.guidance.operational.considerations == tuple(
+        question_card["considerations"]
+    )
 
 
 def test_domain_rejects_unknown_answer_question(tmp_path: Path) -> None:
@@ -168,7 +177,7 @@ def test_domain_source_is_derived_from_selected_evidence(tmp_path: Path) -> None
     accepted = _call(workspace, "save_domain_judgment", draft)
     assert accepted["outcome"] == "success", accepted
     assert "clauses" not in accepted["data"]["checkpoint"]
-    basis = accepted["data"]["checkpoint"]["answers"][0]["bases"][0]
+    basis = _stored_checkpoint(workspace)["answers"][0]["bases"][0]
     assert basis["source"] == evidence["quote"]
     assert "rationale" not in basis
 
@@ -319,7 +328,7 @@ def test_domain_absence_basis_contains_only_search_receipt(tmp_path: Path) -> No
     ]
     accepted = _call(workspace, "save_domain_judgment", draft)
     assert accepted["outcome"] == "success"
-    assert accepted["data"]["checkpoint"]["answers"][0]["bases"] == [
+    assert _stored_checkpoint(workspace)["answers"][0]["bases"] == [
         {"kind": "absence", "search_receipt": receipt["identity"]}
     ]
 
@@ -336,7 +345,7 @@ def test_domain_absence_basis_resolves_server_receipt_handle(tmp_path: Path) -> 
     accepted = _call(workspace, "save_domain_judgment", draft)
 
     assert accepted["outcome"] == "success", accepted
-    assert accepted["data"]["checkpoint"]["answers"][0]["bases"] == [
+    assert _stored_checkpoint(workspace)["answers"][0]["bases"] == [
         {"kind": "absence", "search_receipt": receipt["identity"]}
     ]
 
@@ -360,7 +369,7 @@ def test_domain_limitation_requires_and_stores_nontruncated_receipt(tmp_path: Pa
     accepted = _call(workspace, "save_domain_judgment", draft)
     assert accepted["outcome"] == "success", accepted
     receipt = _search_receipt(workspace, search["data"]["search_receipt"])
-    checkpoint = accepted["data"]["checkpoint"]
+    checkpoint = _stored_checkpoint(workspace)
     assert checkpoint["answers"][0]["bases"] == [
         {
             "kind": "limitation",
@@ -368,21 +377,32 @@ def test_domain_limitation_requires_and_stores_nontruncated_receipt(tmp_path: Pa
             "search_receipt": receipt["identity"],
         }
     ]
-    assert checkpoint["search_accounts"] == [
-        {
-            key: receipt[key]
-            for key in (
-                "identity",
-                "handle",
-                "trial_id",
-                "query",
-                "mode",
-                "total_matches",
-                "truncated",
-                "condition",
-            )
-        }
-    ]
+    assert len(checkpoint["search_accounts"]) == 1
+    assert {
+        key: checkpoint["search_accounts"][0][key]
+        for key in (
+            "identity",
+            "handle",
+            "trial_id",
+            "query",
+            "mode",
+            "total_matches",
+            "truncated",
+            "condition",
+        )
+    } == {
+        key: receipt[key]
+        for key in (
+            "identity",
+            "handle",
+            "trial_id",
+            "query",
+            "mode",
+            "total_matches",
+            "truncated",
+            "condition",
+        )
+    }
 
 
 def test_domain_limitation_accepts_positive_nontruncated_receipt(tmp_path: Path) -> None:

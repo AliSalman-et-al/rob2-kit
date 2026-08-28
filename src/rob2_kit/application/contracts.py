@@ -12,6 +12,7 @@ TOOL_NAMES = (
     "render_page",
     "select_visual_evidence",
     "save_proposal",
+    "request_proposal_approval",
     "get_domain_context",
     "save_domain_judgment",
     "request_trial_terminal",

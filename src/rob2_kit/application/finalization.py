@@ -40,10 +40,7 @@ from ._state import (
 )
 from .contracts import WorkflowConflict
 from .evidence import (
-    _is_incomplete_domain_source,
     _normalized_contains,
-    _normalized_match,
-    _normalized_with_spans,
     _render_page_png,
 )
 from .status import presentation
@@ -65,31 +62,6 @@ _FORBIDDEN_PATH_FIELDS = frozenset(
 
 def _nonblank(value: object) -> bool:
     return isinstance(value, str) and bool(value.strip())
-
-
-def _has_missing_reporting_signal(value: str) -> bool:
-    """Apply the same lexical, non-semantic unavailable-source gate as proposal."""
-    normalized = unicodedata.normalize("NFKC", value).casefold()
-    normalized = re.sub(r"\s+", " ", normalized).strip()
-    return bool(
-        re.search(
-            r"(?:\b(?:not|did not)\b(?:\s+\w+){0,3}\s+"
-            r"\b(?:collect(?:ed)?|document(?:ed)?|report(?:ed)?(?!\s+as\b)|record(?:ed)?|"
-            r"measure(?:d)?|assess(?:ed)?|captur(?:e|ed)|available)\b|"
-            r"\bno\b(?:\s+\w+){0,2}\s+\b(?:data|information|results?"
-            r"(?!\s+(?:were\s+)?(?:statistically|significant)\b)|records?|"
-            r"reporting|measurements?)\b|"
-            r"\bwithout\b(?:\s+\w+){0,2}\s+\b(?:data|reporting|documentation|"
-            r"measurements?)\b|"
-            r"\b(?:missing|unavailable|l(?:ack|acked|acking)?)\b(?:\s+\w+){0,3}\s+"
-            r"\b(?:data|information|results?|records?|reporting|documentation|"
-            r"measurements?|assessment|capture)\b|"
-            r"\b(?:data|information|results?|records?|reporting|documentation|"
-            r"measurements?|assessment|capture)\b(?:\s+\w+){0,2}\s+"
-            r"\b(?:missing|unavailable|l(?:ack|acked|acking)?)\b)",
-            normalized,
-        )
-    )
 
 
 _PATH_FIELDS = frozenset({"logical_path", "path"})
@@ -138,7 +110,10 @@ def _source_bound_leaves(value: object, path: str) -> dict[str, object]:
     """Return Result claims that must be replayed against Source Evidence.
 
     Repeated group references and category dimension declarations are structural
-    and are checked by the result-shape validator instead.
+    and are checked by the result-shape validator instead. Target timing and
+    randomized-arm descriptions are caller/model interpretation fields; they
+    remain required and are shown in the audit, but are not duplicate source
+    quotations that need exact leaf bindings.
     """
     caller_owned = {
         "/target/outcome_definition",
@@ -157,7 +132,12 @@ def _source_bound_leaves(value: object, path: str) -> dict[str, object]:
             leaf_path in caller_owned
             or (leaf_path == "/reported/precision" and leaf is None)
             or (leaf_path == "/reported/endpoint/definition" and leaf is None)
+            or leaf_path.startswith("/target/time_point_or_window/")
             or (leaf_path.startswith("/target/comparison_groups/") and leaf_path.endswith("/id"))
+            or (
+                leaf_path.startswith("/target/comparison_groups/")
+                and leaf_path.endswith("/assignment")
+            )
             or (leaf_path.startswith("/reported/group_values/") and leaf_path.endswith("/group_id"))
             or (leaf_path.startswith("/reported/values/") and leaf_path.endswith("/group_id"))
             or leaf_path.startswith("/reported/category_axis_names/")
@@ -775,8 +755,12 @@ def _valid_result_shape(result: dict[str, object], requested_outcome: str) -> bo
     if len(target_ids) != len(set(target_ids)):
         return False
 
-    def valid_values(values: object) -> tuple[bool, set[str]]:
-        if not isinstance(values, list) or len(values) < 2:
+    def valid_values(values: object, *, optional: bool = False) -> tuple[bool, set[str]]:
+        if not isinstance(values, list):
+            return False, set()
+        if optional and not values:
+            return True, set()
+        if len(values) < 2:
             return False, set()
         ids: list[str] = []
         for item in values:
@@ -807,7 +791,7 @@ def _valid_result_shape(result: dict[str, object], requested_outcome: str) -> bo
             or (reported["precision"] is not None and not _nonblank(reported["precision"]))
         ):
             return False
-        valid, reported_ids = valid_values(reported["group_values"])
+        valid, reported_ids = valid_values(reported["group_values"], optional=True)
     elif form == "group_bound_values":
         if set(reported) != {"form", "endpoint", "values"}:
             return False
@@ -856,7 +840,7 @@ def _valid_result_shape(result: dict[str, object], requested_outcome: str) -> bo
         return False
     if form == "single_group_category_profile":
         return valid and len(reported_ids) == 1 and reported_ids <= set(target_ids)
-    return valid and reported_ids == set(target_ids)
+    return valid and (not reported_ids or reported_ids == set(target_ids))
 
 
 def _reported_result_has_coherent_anchor(
@@ -1005,13 +989,7 @@ def _verify_result_evidence(
             if not isinstance(selected, dict) or selected.get("trial_id") != result["trial_id"]:
                 return False
             material = str(selected.get("quote", selected.get("transcription", "")))
-            matched, _ = _normalized_match(material, basis["source"])
-            if (
-                matched is None
-                or matched != basis["source"]
-                or _is_incomplete_domain_source(matched)
-                or not _has_missing_reporting_signal(matched)
-            ):
+            if material != basis["source"]:
                 return False
         return True
     if result.get("kind") != "assessable" or result.get("relation") not in {
@@ -1111,10 +1089,10 @@ def _verify_result_evidence(
                 or set(item) != {"handle", "value"}
                 or not isinstance((selected := by_handle.get(item.get("handle"))), dict)
                 or selected.get("trial_id") != result["trial_id"]
-                or _normalized_with_spans(
-                    str(selected.get("quote", selected.get("transcription", "")))
-                )[0].find(_normalized_with_spans(str(item.get("value", "")))[0])
-                < 0
+                or not _normalized_contains(
+                    str(selected.get("quote", selected.get("transcription", ""))),
+                    str(item.get("value", "")),
+                )
                 for item in inputs
             ):
                 return False
@@ -1264,7 +1242,7 @@ def _verify_result_evidence(
         if reference["kind"] == "narrative":
             selected = by_handle[reference["handle"]]
             material = str(selected.get("quote", selected.get("transcription", "")))
-            if _normalized_with_spans(material)[0].find(_normalized_with_spans(value)[0]) < 0:
+            if not _normalized_contains(material, value):
                 return False
         if reference["kind"] == "table" and not _normalized_contains(
             str(
@@ -1816,28 +1794,7 @@ def finalize_batch(workspace: str | Path, expected_revision: ExpectedRevision) -
         raise WorkflowConflict(expected_revision, int(state.get("revision", 0)))
     dispositions = dict(state.get("trial_dispositions", {}))
     snapshots = dict(state.get("snapshots", {}))
-    snapshot_history = dict(state.get("snapshot_history", {}))
-    snapshot_history_records = dict(state.get("snapshot_history_records", {}))
-    for trial_id, value in list(dispositions.items()):
-        snapshot = snapshots.get(trial_id)
-        if (
-            value == "pending"
-            and isinstance(snapshot, dict)
-            and snapshot.get("provisional") is True
-        ):
-            frozen = {
-                **snapshot,
-                "provisional": False,
-            }
-            frozen["identity"] = _identity(
-                {key: value for key, value in frozen.items() if key != "identity"}
-            )
-            snapshots[trial_id] = frozen
-            snapshot_history.setdefault(trial_id, []).append(frozen["identity"])
-            snapshot_history_records.setdefault(trial_id, []).append(frozen)
-    if any(
-        value == "pending" and trial_id not in snapshots for trial_id, value in dispositions.items()
-    ):
+    if any(value == "pending" for value in dispositions.values()):
         raise ValueError("all Trials must have a terminal disposition")
     if any(
         value == "assessed"
@@ -1853,17 +1810,8 @@ def finalize_batch(workspace: str | Path, expected_revision: ExpectedRevision) -
         "phase": "ready_to_finalize",
         "trial_dispositions": dispositions,
         "snapshots": snapshots,
-        "snapshot_history": snapshot_history,
-        "snapshot_history_records": snapshot_history_records,
     }
-    final_dispositions = {
-        trial_id: (
-            "assessed"
-            if disposition == "pending" and isinstance(snapshots.get(trial_id), dict)
-            else disposition
-        )
-        for trial_id, disposition in dispositions.items()
-    }
+    final_dispositions = dispositions
     final_state = {**state, "phase": "finalized", "trial_dispositions": final_dispositions}
     artifact = _bundle(root, final_state)
     artifact_path = root / artifact["path"]
@@ -1918,15 +1866,7 @@ def verify_bundle(path: str | Path) -> bool:
         return "sha256:" + hashlib.sha256(encoded).hexdigest()
 
     def snapshot_identity(snapshot: dict[str, object]) -> str:
-        """Recompute provisional and frozen snapshot identities independently."""
-        if snapshot.get("provisional") is True:
-            return independent_identity(
-                {
-                    "trial_id": snapshot.get("trial_id"),
-                    "checkpoints": snapshot.get("checkpoints"),
-                    "multiple_concerns": snapshot.get("multiple_concerns"),
-                }
-            )
+        """Recompute a final Trial snapshot identity independently."""
         return independent_identity(
             {key: value for key, value in snapshot.items() if key != "identity"}
         )
@@ -2333,12 +2273,7 @@ def verify_bundle(path: str | Path) -> bool:
                         if not isinstance(source, str) or not source:
                             return False
                         material = str(evidence.get("quote") or evidence.get("transcription") or "")
-                        matched, _ = _normalized_match(material, source)
-                        if (
-                            matched != source
-                            or _is_incomplete_domain_source(source)
-                            or matched is None
-                        ):
+                        if material != source:
                             return False
                     if answer["answer"] in {"yes", "no"} and not direct_basis:
                         return False
@@ -2527,8 +2462,7 @@ def verify_bundle(path: str | Path) -> bool:
                             material = str(
                                 evidence.get("quote") or evidence.get("transcription") or ""
                             )
-                            matched, _ = _normalized_match(material, source)
-                            if matched != source or _is_incomplete_domain_source(source):
+                            if material != source:
                                 return False
                         if answer["answer"] in {"yes", "no"} and not direct_basis:
                             return False
@@ -2541,30 +2475,19 @@ def verify_bundle(path: str | Path) -> bool:
                 if not isinstance(history, list) or not history or not isinstance(historical, list):
                     return False
                 for item, digest in zip(historical, history, strict=True):
-                    expected_shape = (
-                        {
-                            "trial_id",
-                            "checkpoints",
-                            "provisional",
-                            "domain_judgments",
-                            "multiple_concerns",
-                            "overall",
-                            "identity",
-                        }
-                        if isinstance(item, dict) and item.get("provisional") is True
-                        else {
-                            "trial_id",
-                            "checkpoints",
-                            "provisional",
-                            "domain_judgments",
-                            "multiple_concerns",
-                            "overall",
-                            "identity",
-                        }
-                    )
+                    expected_shape = {
+                        "trial_id",
+                        "checkpoints",
+                        "provisional",
+                        "domain_judgments",
+                        "multiple_concerns",
+                        "overall",
+                        "identity",
+                    }
                     if (
                         not isinstance(item, dict)
                         or set(item) != expected_shape
+                        or item.get("provisional") is not False
                         or item.get("identity") != digest
                         or item.get("trial_id") != trial_id
                         or item.get("identity") != snapshot_identity(item)

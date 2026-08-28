@@ -13,10 +13,9 @@ from ._state import _commit_records, _db, _ensure, _identity, _result, _root, _s
 from .contracts import WorkflowConflict
 from .evidence import (
     _evidence_for_handles,
-    _is_incomplete_domain_source,
     _search_receipt,
 )
-from .status import _continuation
+from .status import _active_trial_and_domain, _continuation
 
 _DOMAIN_GUIDANCE = (
     "Before the first save for this Domain, run bounded searches for every active question "
@@ -172,7 +171,38 @@ def save_domain_judgment(
         return _result("repair", state, repairs=_repairs(error))
     if state.get("phase") not in {"assessment", "ready_to_finalize"}:
         raise ValueError("Domain work is not active")
-    if state.get("trial_dispositions", {}).get(parsed.trial_id) != "pending":
+    is_revision = parsed.supersedes is not None
+    records = state.get("domain_records") or {}
+    existing_domain = f"{parsed.trial_id}:{parsed.domain_id}" in records
+    disposition = state.get("trial_dispositions", {}).get(parsed.trial_id)
+    if disposition == "assessed" and (is_revision or not existing_domain):
+        raise ValueError("Trial AssessmentSnapshot is final; Domain revisions are closed")
+    active_trial, active_domain = _active_trial_and_domain(state)
+    if not existing_domain and parsed.trial_id != active_trial:
+        return _result(
+            "repair",
+            state,
+            repairs=[
+                _repair(
+                    "/trial_id",
+                    "trial_out_of_sequence",
+                    f"complete Trial '{active_trial}' before Trial '{parsed.trial_id}'",
+                )
+            ],
+        )
+    if not existing_domain and parsed.domain_id != active_domain:
+        return _result(
+            "repair",
+            state,
+            repairs=[
+                _repair(
+                    "/domain_id",
+                    "domain_out_of_sequence",
+                    f"complete Domain '{active_domain}' before Domain '{parsed.domain_id}'",
+                )
+            ],
+        )
+    if disposition not in {"pending", "assessed"}:
         raise ValueError("Trial is not available for Domain assessment")
     if parsed.domain_id not in {item.id for item in SCIENTIFIC_PACK.domains}:
         raise ValueError("unknown Domain")
@@ -358,15 +388,6 @@ def save_domain_judgment(
                     basis["evidence"] = evidence["identity"]
                     material = str(evidence.get("quote", evidence.get("transcription", "")))
                     basis["source"] = material
-                    if _is_incomplete_domain_source(material):
-                        repairs.append(
-                            _repair(
-                                f"{path}/source",
-                                "incomplete_domain_source",
-                                "selected source is an unfinished list or lead-in; select the "
-                                "complete sentence, list, or passage.",
-                            )
-                        )
             key = canonical_json_bytes(basis)
             if key in seen_basis:
                 repairs.append(
@@ -612,7 +633,7 @@ def save_domain_judgment(
         snapshot = {
             "trial_id": parsed.trial_id,
             "checkpoints": checkpoints,
-            "provisional": True,
+            "provisional": False,
             "domain_judgments": judgments,
             "multiple_concerns": multiple_concerns,
         }
@@ -624,13 +645,7 @@ def save_domain_judgment(
                 else None
             ),
         ).judgment.value
-        snapshot["identity"] = _identity(
-            {
-                "trial_id": parsed.trial_id,
-                "checkpoints": checkpoints,
-                "multiple_concerns": multiple_concerns,
-            }
-        )
+        snapshot["identity"] = _identity(snapshot)
         current_snapshots = state.get("snapshots")
         snapshots: dict[str, Any] = (
             dict(current_snapshots) if isinstance(current_snapshots, dict) else {}
@@ -655,12 +670,14 @@ def save_domain_judgment(
             "snapshots": snapshots,
             "snapshot_history": snapshot_history,
             "snapshot_history_records": snapshot_history_records,
+            "trial_dispositions": {
+                **state.get("trial_dispositions", {}),
+                parsed.trial_id: "assessed",
+            },
         }
-    current_snapshots = state.get("snapshots")
     current_dispositions = state.get("trial_dispositions")
-    snapshot_trials = current_snapshots if isinstance(current_snapshots, dict) else {}
     dispositions = current_dispositions if isinstance(current_dispositions, dict) else {}
-    if all(value != "pending" or trial in snapshot_trials for trial, value in dispositions.items()):
+    if not any(value == "pending" for value in dispositions.values()):
         state = {**state, "phase": "ready_to_finalize"}
     promoted_evidence = {
         item["identity"]: item
@@ -679,7 +696,7 @@ def save_domain_judgment(
         "success",
         state,
         checkpoint=record,
-        provisional=snapshot is not None,
+        trial_completed=snapshot is not None,
         continuation=_continuation(state),
     )
 
@@ -692,31 +709,19 @@ def get_domain_context(
     state = _state(root)
     if state.get("phase") not in {"assessment", "ready_to_finalize"}:
         raise ValueError("Domain work is not active")
-    if trial_id is None:
-        records = state.get("domain_records") or {}
-        trial_id = next(
-            (
-                candidate
-                for candidate, value in state.get("trial_dispositions", {}).items()
-                if value == "pending"
-                and any(
-                    f"{candidate}:{domain.id}" not in records for domain in SCIENTIFIC_PACK.domains
-                )
-            ),
-            None,
-        )
-    if trial_id is None:
+    active_trial, active_domain = _active_trial_and_domain(state)
+    if active_trial is None:
         raise ValueError("no Trial is available")
+    if trial_id is not None and trial_id != active_trial:
+        raise ValueError(f"complete Trial '{active_trial}' before Trial '{trial_id}'")
+    trial_id = active_trial
+    records = state.get("domain_records") or {}
     if domain_id is None:
-        records = state.get("domain_records") or {}
-        domain_id = next(
-            (
-                domain.id
-                for domain in SCIENTIFIC_PACK.domains
-                if f"{trial_id}:{domain.id}" not in records
-            ),
-            SCIENTIFIC_PACK.domains[-1].id,
-        )
+        domain_id = active_domain
+    elif domain_id != active_domain and f"{trial_id}:{domain_id}" not in records:
+        raise ValueError(f"complete Domain '{active_domain}' before Domain '{domain_id}'")
+    if domain_id is None:
+        raise ValueError("no Domain is available")
     if domain_id not in {item.id for item in SCIENTIFIC_PACK.domains}:
         raise ValueError("unknown Domain")
     result = next(
@@ -870,6 +875,7 @@ def get_domain_context(
                     for anchor in item.guidance.operational.answer_anchors
                 ],
                 "no_information_rule": item.guidance.operational.no_information_rule,
+                "considerations": item.guidance.operational.considerations,
                 "invalid_shortcuts": item.guidance.operational.invalid_shortcuts,
             }
             for item in SCIENTIFIC_PACK.questions

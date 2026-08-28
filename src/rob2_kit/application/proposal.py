@@ -17,13 +17,11 @@ from ..workflow_models import (
     ProposalDraft,
     UnavailableIntakeConditionBasisDraft,
     exact_relation_rationale,
-    has_missing_reporting_signal,
 )
 from ._state import _commit_records, _ensure, _identity, _result, _root, _state
 from .contracts import WorkflowConflict
 from .evidence import (
     _evidence_catalog,
-    _is_incomplete_domain_source,
     _normalized_contains,
     _normalized_with_spans,
 )
@@ -50,11 +48,12 @@ def _source_bound_leaves(value: Any, path: str) -> dict[str, Any]:
     """Return Result leaves whose values must be supported by Source Evidence.
 
     The target is a researcher/model interpretation of the captured request;
-    its method, timing, population, and intended measure are not duplicated
-    source quotations. The selected passage still proves the reported
-    endpoint, arm assignments, and reported values. Caller-owned outcome
-    labels, effect-of-interest discriminator, and randomized-arm identifiers
-    are structural and are validated separately.
+    its method, timing, population, arm descriptions, and intended measure are
+    not duplicated source quotations. The selected passage still proves the
+    reported endpoint and reported values. Caller-owned outcome labels,
+    effect-of-interest discriminator, randomized-arm identifiers, and target
+    arm descriptions are structural or interpretive fields and are validated
+    separately.
     """
     leaves = {
         **_leaves(value, path),
@@ -73,9 +72,14 @@ def _source_bound_leaves(value: Any, path: str) -> dict[str, Any]:
                 "/target/intended_effect_measure",
                 "/reported/group_id",
             }
+            or leaf_path.startswith("/target/time_point_or_window/")
             or (leaf_path == "/reported/precision" and leaf is None)
             or (leaf_path == "/reported/endpoint/definition" and leaf is None)
             or (leaf_path.startswith("/target/comparison_groups/") and leaf_path.endswith("/id"))
+            or (
+                leaf_path.startswith("/target/comparison_groups/")
+                and leaf_path.endswith("/assignment")
+            )
             or (leaf_path.startswith("/reported/group_values/") and leaf_path.endswith("/group_id"))
             or (leaf_path.startswith("/reported/values/") and leaf_path.endswith("/group_id"))
             or leaf_path.startswith("/reported/category_axis_names/")
@@ -175,8 +179,12 @@ def _proposal_shape_repairs(
             )
         )
         if isinstance(result.reported, ComparativeEffectResult):
-            reported_path = f"{path}/reported/group_values"
-            reported_ids = [item.group_id for item in result.reported.group_values]
+            if result.reported.group_values:
+                reported_path = f"{path}/reported/group_values"
+                reported_ids = [item.group_id for item in result.reported.group_values]
+            else:
+                reported_path = ""
+                reported_ids = []
         elif isinstance(result.reported, GroupBoundValuesResult):
             reported_path = f"{path}/reported/values"
             reported_ids = [item.group_id for item in result.reported.values]
@@ -241,18 +249,17 @@ def _proposal_shape_repairs(
         return result_repairs
 
     for index, result in enumerate(draft.results):
+        if result.trial_id not in requested_outcomes:
+            repairs.append(
+                {
+                    "path": f"/results/{index}/trial_id",
+                    "code": "unknown_trial",
+                    "detail": "result trial_id is not in the captured Batch",
+                }
+            )
+            continue
         if isinstance(result, AssessableResultDraft):
             repairs.extend(assessable_repairs(result, f"/results/{index}"))
-        else:
-            expected = requested_outcomes.get(result.trial_id)
-            if expected is None:
-                repairs.append(
-                    {
-                        "path": f"/results/{index}/trial_id",
-                        "code": "unknown_trial",
-                        "detail": "result trial_id is not in the captured Batch",
-                    }
-                )
     return repairs
 
 
@@ -356,6 +363,8 @@ def _canonical_results(
     defects: list[dict[str, Any]] = []
     used: set[str] = set()
     for index, result in enumerate(draft.results):
+        if result.trial_id not in requested_outcomes:
+            continue
         if isinstance(result, AssessableResultDraft):
             canonical, result_defects = _canonical_result(
                 result,
@@ -412,34 +421,8 @@ def _canonical_results(
                     continue
                 material = str(selected.get("quote", selected.get("transcription", "")))
                 source = material
-                incomplete = _is_incomplete_domain_source(source)
-                if incomplete:
-                    defects.append(
-                        {
-                            "path": f"{path}/source",
-                            "code": "incomplete_unavailable_evidence_source",
-                            "detail": (
-                                "source must be a complete premise, not a lead-in or "
-                                "unfinished list"
-                            ),
-                        }
-                    )
-                elif not has_missing_reporting_signal(source):
-                    defects.append(
-                        {
-                            "path": f"{path}/source",
-                            "code": "unavailable_source_lacks_missing_signal",
-                            "detail": (
-                                "source must contain an explicit lexical non-reporting signal "
-                                "such as 'not reported', 'missing', or 'not documented'"
-                            ),
-                        }
-                    )
-                if not incomplete:
-                    canonical["missing_facts"][fact_index]["basis"]["evidence"] = selected[
-                        "identity"
-                    ]
-                    canonical["missing_facts"][fact_index]["basis"]["source"] = source
+                canonical["missing_facts"][fact_index]["basis"]["evidence"] = selected["identity"]
+                canonical["missing_facts"][fact_index]["basis"]["source"] = source
                 used.add(use.evidence)
             results.append(canonical)
     return (results or None, defects, used)
@@ -484,11 +467,9 @@ def _validate_evidence(
                             ),
                         }
                     )
-                elif (
-                    _normalized_with_spans(
-                        str(selected.get("quote", selected.get("transcription", "")))
-                    )[0].find(_normalized_with_spans(str(input["value"]))[0])
-                    < 0
+                elif not _normalized_contains(
+                    str(selected.get("quote", selected.get("transcription", ""))),
+                    str(input["value"]),
                 ):
                     defects.append(
                         {
@@ -645,7 +626,7 @@ def _supports_leaf(
         # span for each leaf. Exact normalized containment is therefore the
         # right proof: requiring a unique occurrence falsely rejects repeated
         # endpoint names, statistics, and units such as ``months``.
-        return _normalized_with_spans(material)[0].find(_normalized_with_spans(leaf)[0]) >= 0
+        return _normalized_contains(material, leaf)
     if kind == "table":
         material = str(selected.get("quote", selected.get("transcription", "")))
         return _normalized_contains(material, leaf)
@@ -954,7 +935,7 @@ def _bind_result(
                 "code": "endpoint_definition_not_jointly_supported",
                 "detail": (
                     "select a passage that explicitly ties the endpoint name and its exact "
-                    "definition, or use null for endpoint.definition"
+                    "definition, or omit endpoint.definition"
                 ),
             }
         )
@@ -968,19 +949,27 @@ def _bind_result(
             defect.get("code") == "endpoint_definition_not_jointly_supported" for defect in defects
         )
     ):
+        detail = (
+            "no single selected Evidence item supports the endpoint name and any "
+            "provided definition together with one complete quantitative Result tuple. "
+            "Do not resubmit the "
+            "same cross-passage combination: either use the endpoint identifier exactly "
+            "as it appears in the quantitative Evidence, or select one complete table "
+            "block or figure containing the endpoint, headers, values, units, and "
+            "applicable footnotes"
+        )
+        gap = _closest_evidence_gap(result, catalog)
+        if gap is not None:
+            handle, missing = gap
+            detail += (
+                f" Closest selected Evidence handle {handle!r} is missing required exact "
+                "value(s): " + ", ".join(repr(value) for value in missing) + "."
+            )
         defects.append(
             {
                 "path": f"{path}/reported",
                 "code": "incoherent_reported_result",
-                "detail": (
-                    "no single selected Evidence item supports the endpoint name and any "
-                    "provided definition together with one complete quantitative Result tuple. "
-                    "Do not resubmit the "
-                    "same cross-passage combination: either use the endpoint identifier exactly "
-                    "as it appears in the quantitative Evidence, or select one complete table "
-                    "block or figure containing the endpoint, headers, values, units, and "
-                    "applicable footnotes"
-                ),
+                "detail": detail,
             }
         )
     _derive_bindings(result, catalog, path)
@@ -1000,6 +989,93 @@ def _bind_result(
     return defects, handles
 
 
+def _result_handles(result: dict[str, Any], catalog: dict[str, dict[str, Any]]) -> set[str]:
+    """Return selected Evidence handles referenced by one canonical Result."""
+    handles: set[str] = set()
+    for item in result.get("evidence", []):
+        if not isinstance(item, dict):
+            continue
+        handle = item.get("handle")
+        if isinstance(handle, str):
+            handles.add(handle)
+        if item.get("kind") == "derived":
+            handles.update(
+                input_item["handle"]
+                for input_item in item.get("inputs", [])
+                if isinstance(input_item, dict) and isinstance(input_item.get("handle"), str)
+            )
+    for missing in result.get("missing_facts", []):
+        if not isinstance(missing, dict):
+            continue
+        basis = missing.get("basis")
+        if not isinstance(basis, dict):
+            continue
+        identity = basis.get("evidence")
+        selected = catalog.get(identity) if isinstance(identity, str) else None
+        if isinstance(selected, dict) and isinstance(selected.get("handle"), str):
+            handles.add(selected["handle"])
+    return handles
+
+
+def _bound_proposal_evidence(
+    catalog: dict[str, dict[str, Any]],
+    used_handles: set[str],
+    prior: dict[str, Any] | None,
+) -> dict[str, dict[str, Any]]:
+    """Keep prior Evidence bytes where possible, then append newly bound items."""
+    prior_evidence = prior.get("evidence", {}) if isinstance(prior, dict) else {}
+    bound: dict[str, dict[str, Any]] = {}
+    prior_handles: set[str] = set()
+    if isinstance(prior_evidence, dict):
+        for identity, item in prior_evidence.items():
+            if not isinstance(item, dict) or item.get("handle") not in used_handles:
+                continue
+            bound[identity] = item
+            prior_handles.add(str(item["handle"]))
+    for identity, item in catalog.items():
+        handle = item.get("handle")
+        if handle in used_handles and handle not in prior_handles:
+            bound[identity] = item
+    return bound
+
+
+def _closest_evidence_gap(
+    result: dict[str, Any], catalog: dict[str, dict[str, Any]]
+) -> tuple[str, list[str]] | None:
+    """Find the selected Evidence item closest to proving one complete tuple."""
+    reported = result.get("reported")
+    if not isinstance(reported, dict) or not result.get("evidence"):
+        return None
+    endpoint = reported.get("endpoint", {})
+    endpoint_name = endpoint.get("name") if isinstance(endpoint, dict) else None
+    if not isinstance(endpoint_name, str):
+        return None
+    best: tuple[int, int, str, list[str]] | None = None
+    for item in result["evidence"]:
+        if not isinstance(item, dict):
+            continue
+        handle = item.get("handle")
+        if not isinstance(handle, str) and item.get("kind") == "derived":
+            inputs = item.get("inputs", [])
+            handle = next(
+                (entry.get("handle") for entry in inputs if isinstance(entry, dict)), None
+            )
+        if not isinstance(handle, str):
+            continue
+        for quantitative in _reported_quantitative_tuples(reported):
+            required = (endpoint_name, *quantitative)
+            missing = [
+                str(value) for value in required if not _supports_leaf(value, item, result, catalog)
+            ]
+            score = sum(_supports_leaf(value, item, result, catalog) for value in required)
+            candidate = (score, -len(missing), handle, missing)
+            if best is None or candidate[:2] > best[:2]:
+                best = (score, -len(missing), handle, missing)
+    if best is None or not best[3]:
+        return None
+    return best[2], best[3]
+
+
 def save_proposal(
     workspace: str | Path,
     proposal: ProposalDraft,
@@ -1015,6 +1091,18 @@ def save_proposal(
         if isinstance(item, dict) and "id" in item and "requested_outcome" in item
     }
     batch = state.get("batch")
+    expected_trials_in_order = [
+        str(item["id"])
+        for item in (state.get("batch") or {}).get("trials", [])
+        if isinstance(item, dict) and "id" in item
+    ]
+    expected_trials = set(expected_trials_in_order)
+    prior_proposal = state.get("proposal")
+    pending_review = (
+        isinstance(state.get("review"), dict)
+        and state["review"].get("purpose") == "proposal"
+        and isinstance(prior_proposal, dict)
+    )
     shape_defects = _proposal_shape_repairs(draft, requested_outcomes)
     canonical_results, draft_defects, used = _canonical_results(
         draft, catalog, requested_outcomes, batch
@@ -1023,8 +1111,7 @@ def save_proposal(
         return _result("repair", state, repairs=shape_defects + draft_defects)
     raw = {"results": canonical_results}
     defects: list[dict[str, Any]] = []
-    expected_trials = {item["id"] for item in (state.get("batch") or {}).get("trials", [])}
-    if {item["trial_id"] for item in raw["results"]} != expected_trials:
+    if not pending_review and {item["trial_id"] for item in raw["results"]} != expected_trials:
         defects.append(
             {
                 "path": "/results",
@@ -1067,7 +1154,37 @@ def save_proposal(
             )
     if canonical_defects:
         return _result("repair", state, repairs=canonical_defects)
-    raw["results"] = canonical
+    if pending_review:
+        prior_payload = prior_proposal.get("payload", {})
+        prior_results = prior_payload.get("results", []) if isinstance(prior_payload, dict) else []
+        prior_by_trial = {
+            item["trial_id"]: item
+            for item in prior_results
+            if isinstance(item, dict) and isinstance(item.get("trial_id"), str)
+        }
+        replacement_by_trial = {item["trial_id"]: item for item in canonical}
+        if not defects and any(
+            trial_id not in prior_by_trial for trial_id in expected_trials_in_order
+        ):
+            defects.append(
+                {
+                    "path": "/results",
+                    "code": "existing_proposal_incomplete",
+                    "detail": (
+                        "the pending Proposal must contain one result for every captured Trial"
+                    ),
+                }
+            )
+        if defects:
+            return _result("repair", state, repairs=defects)
+        raw["results"] = [
+            replacement_by_trial.get(trial_id, prior_by_trial[trial_id])
+            for trial_id in expected_trials_in_order
+            if trial_id in replacement_by_trial or trial_id in prior_by_trial
+        ]
+    else:
+        canonical_by_trial = {item["trial_id"]: item for item in canonical}
+        raw["results"] = [canonical_by_trial[trial_id] for trial_id in expected_trials_in_order]
     identity = _identity(raw)
     if state.get("phase") != "proposal":
         raise ValueError("proposal is not the current operation")
@@ -1075,7 +1192,9 @@ def save_proposal(
         return _result("success", state, proposal_identity=identity, retry=True)
     if draft.expected_revision != state.get("revision", 0):
         raise WorkflowConflict(draft.expected_revision, int(state.get("revision", 0)))
-    bound = {key: item for key, item in catalog.items() if item.get("handle") in used}
+    if pending_review:
+        used = set().union(*(_result_handles(result, catalog) for result in raw["results"]))
+    bound = _bound_proposal_evidence(catalog, used, prior_proposal)
     proposal_record = {"identity": identity, "payload": raw, "evidence": bound}
     review = {
         "kind": "review",

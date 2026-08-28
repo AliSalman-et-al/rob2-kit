@@ -1,4 +1,5 @@
 import hashlib
+import json
 import re
 import shutil
 import unicodedata
@@ -19,6 +20,7 @@ from ..workflow_models import (
     TrialDeclaration,
 )
 from ._state import (
+    _PAGE_PROJECTION_VERSION,
     _commit_records,
     _db,
     _ensure,
@@ -144,6 +146,13 @@ def _fetch_registry_record(nct: str) -> _RegistryCapture:
                 "retrieved_at": retrieved,
             }
         )
+    # Keep the captured provider record deterministic but readable.  Compact
+    # API JSON is often one enormous physical line, which is unusable as an
+    # MCP line-addressed page.  The canonical JSON projection remains fully
+    # auditable because its Source hash is computed from these exact bytes.
+    readable_content = json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True).encode(
+        "utf-8"
+    )
     return _RegistryCapture(
         {
             "kind": "matched",
@@ -152,7 +161,7 @@ def _fetch_registry_record(nct: str) -> _RegistryCapture:
             "url": f"https://clinicaltrials.gov/study/{nct}",
             "retrieved_at": retrieved,
         },
-        canonical_json_bytes(payload),
+        readable_content,
     )
 
 
@@ -205,20 +214,10 @@ def _trial_directory(root: Path, label: str) -> Path:
         for path in input_root.iterdir()
         if path.is_dir() and not _link_like(path) and not path.name.startswith(".")
     ]
-    exact = [path for path in candidates if path.name == label]
-    if len(exact) == 1:
-        return exact[0]
-    normalized_label = unicodedata.normalize("NFKC", label).casefold().strip()
-    matches = [
-        path
-        for path in candidates
-        if unicodedata.normalize("NFKC", path.name).casefold().strip() == normalized_label
-    ]
-    if len(matches) > 1:
-        raise ValueError(f"trial directory is ambiguous: input/{label}")
-    if not matches:
-        raise ValueError(f"trial directory is not available: input/{label}")
-    return matches[0]
+    for path in candidates:
+        if path.name == label:
+            return path
+    raise ValueError(f"trial directory is not available: input/{label}")
 
 
 _TRIAL_ID_PATTERN = re.compile(r"[A-Za-z0-9][A-Za-z0-9_-]{0,127}")
@@ -258,13 +257,27 @@ def prepare_batch_for_outcome(
     workspace: str | Path,
     requested_outcome: str,
     expected_revision: ExpectedRevision,
+    trial_labels: list[str] | tuple[str, ...] | None = None,
 ) -> dict[str, Any]:
-    """Discover all Trial dossiers and prepare one Batch for one outcome."""
+    """Discover selected Trial dossiers and prepare one Batch for one outcome."""
     if not isinstance(requested_outcome, str) or not requested_outcome.strip():
         raise ValueError("requested_outcome must contain non-whitespace content")
     root = _root(workspace)
     _ensure(root)
     directories = _trial_directories(root)
+    if trial_labels is not None:
+        if not trial_labels:
+            raise ValueError("trial_labels must contain at least one directory label")
+        if any(not isinstance(label, str) or not label.strip() for label in trial_labels):
+            raise ValueError("trial_labels must contain non-blank directory labels")
+        if len(set(trial_labels)) != len(trial_labels):
+            raise ValueError("trial_labels must not contain duplicate directory labels")
+        available = {directory.name: directory for directory in directories}
+        unknown = next((label for label in trial_labels if label not in available), None)
+        if unknown is not None:
+            raise ValueError(f"unknown trial label: input/{unknown}")
+        requested = set(trial_labels)
+        directories = [directory for directory in directories if directory.name in requested]
     if not directories:
         raise ValueError("input directory contains no Trial directories")
     declarations: list[TrialDeclaration] = []
@@ -312,6 +325,15 @@ def prepare_batch(
         raise ValueError("intake state is missing declaration identity")
     if current.get("phase") != "empty":
         raise ValueError("prepare_batch is not the current operation")
+    # This recipe version is canonical workspace metadata rather than a
+    # disposable derivative flag.  It survives deletion/rebuild of the
+    # derivative database and lets a later code version reject old page
+    # coordinates instead of silently changing their meaning.
+    with _db(root, "canonical.sqlite3") as connection:
+        connection.execute(
+            "INSERT OR REPLACE INTO meta(name,value) VALUES ('page_projection',?)",
+            (_PAGE_PROJECTION_VERSION,),
+        )
     seen_trial_ids: set[str] = set()
     seen_directories: set[Path] = set()
     resolved_trials: list[tuple[dict[str, Any], Path]] = []
@@ -615,6 +637,24 @@ def _clear_discarded_derivatives(root: Path) -> None:
         ):
             connection.execute(f"DELETE FROM {table}")
         connection.execute("DELETE FROM pages_fts")
+
+
+@dataclass(frozen=True)
+class ProposalApprovalContext:
+    review: dict[str, Any] | None
+    acknowledgment: dict[str, Any] | None
+
+
+def proposal_approval_context(workspace: str | Path) -> ProposalApprovalContext:
+    root = _root(workspace)
+    _ensure(root)
+    state = _state(root)
+    review = state.get("review")
+    acknowledgment = state.get("proposal_acknowledgment")
+    return ProposalApprovalContext(
+        review=review if isinstance(review, dict) and review.get("purpose") == "proposal" else None,
+        acknowledgment=acknowledgment if isinstance(acknowledgment, dict) else None,
+    )
 
 
 def approve_review(

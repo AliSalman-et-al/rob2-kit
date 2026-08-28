@@ -84,11 +84,19 @@ def test_cli_exports_packaged_skill(tmp_path: Path) -> None:
 
 
 def test_domain_questions_include_typed_premise_rules_and_shortcuts(tmp_path: Path) -> None:
-    workspace = _assessment_workspace(tmp_path)[0]
+    workspace, evidence, revision = _assessment_workspace(tmp_path)
     questions: dict[str, dict[str, Any]] = {}
     for domain in SCIENTIFIC_PACK.domains:
-        context = _call(workspace, "get_domain_context", {"domain_id": domain.id})["data"]
+        context = _call(workspace, "get_domain_context", {})["data"]
+        assert context["domain_id"] == domain.id
         questions.update({item["id"]: item for item in context["questions"]})
+        saved = _call(
+            workspace,
+            "save_domain_judgment",
+            _domain_draft("trial", domain.id, revision, evidence),
+        )
+        assert saved["outcome"] == "success", saved
+        revision = int(saved["head"]["state_revision"])
     expected = {
         "sq:randomization:sequence": "underwent randomization",
         "sq:deviations:participants-aware": "completed treatment",
@@ -134,6 +142,7 @@ def test_domain_questions_include_typed_premise_rules_and_shortcuts(tmp_path: Pa
         "evidence_needed",
         "answer_anchors",
         "no_information_rule",
+        "considerations",
         "invalid_shortcuts",
     }
     assert all(set(question) == compact_fields for question in questions.values())
@@ -160,6 +169,9 @@ def test_domain_questions_include_typed_premise_rules_and_shortcuts(tmp_path: Pa
             pack_question.guidance.operational.no_information_rule
             == question["no_information_rule"]
         )
+        assert pack_question.guidance.operational.considerations == tuple(
+            question["considerations"]
+        )
         assert pack_question.guidance.operational.invalid_shortcuts == tuple(
             question["invalid_shortcuts"]
         )
@@ -182,7 +194,7 @@ def test_unsupported_result_leaves_are_aggregated_repairs(tmp_path: Path) -> Non
         item for item in repair["repairs"] if item["code"] == "result_value_not_supported"
     ]
     paths = {item["path"] for item in unsupported}
-    assert "/results/0/target/comparison_groups/0/assignment" in paths
+    assert "/results/0/target/comparison_groups/0/assignment" not in paths
     assert "/results/0/reported/values/0/statistic" in paths
 
 
@@ -350,7 +362,7 @@ def test_search_receipts_are_verified_disposable_derivatives(tmp_path: Path) -> 
     )
     no_hit = _call(workspace, "search_sources", {"trial_id": "trial", "query": "absent"})
     changed = _call(
-        workspace, "search_sources", {"trial_id": "trial", "query": "requested", "mode": "any"}
+        workspace, "search_sources", {"trial_id": "trial", "query": "requested", "mode": "all"}
     )
     assert no_hit["outcome"] == "success"
     assert no_hit["data"]["condition"] == "no_hits"

@@ -30,12 +30,28 @@ def test_public_output_surface_is_closed_and_within_budget() -> None:
         "render_page",
         "select_visual_evidence",
         "save_proposal",
+        "request_proposal_approval",
         "get_domain_context",
         "save_domain_judgment",
         "request_trial_terminal",
         "finalize_batch",
     )
     schemas = [tool.output_schema for tool in tools]
+    assert all((tool.title or "").strip() for tool in tools)
+    assert all((tool.description or "").strip() for tool in tools)
+    assert all(tool.annotations is not None for tool in tools)
+    assert all(
+        tool.annotations is not None
+        and tool.annotations.destructiveHint is False
+        and tool.annotations.idempotentHint is True
+        for tool in tools
+    )
+    assert all(
+        property_schema.get("description")
+        for tool in tools
+        for node in _walk(tool.parameters)
+        for property_schema in node.get("properties", {}).values()
+    )
     assert all(isinstance(schema, dict) for schema in schemas)
     closed_schemas = [schema for schema in schemas if isinstance(schema, dict)]
     assert all(schema.get("type") == "object" for schema in closed_schemas)
@@ -63,17 +79,62 @@ def test_public_output_surface_is_closed_and_within_budget() -> None:
 
     search_description = by_name["search_sources"].description or ""
     search_parameters = by_name["search_sources"].parameters
+    search_mode_description = search_parameters["properties"]["mode"]["description"]
     read_description = by_name["read_pages"].description or ""
+    read_parameters = by_name["read_pages"].parameters
     select_description = by_name["select_text_evidence"].description or ""
     assert "1-based source indexes" in search_description
-    assert "phrase only for known contiguous wording" in search_description
+    assert "Omitted mode is exploratory any" in search_description
+    assert search_parameters["properties"]["mode"]["default"] == "any"
+    assert "Omit=exploratory any" in search_mode_description
+    assert "all=every token on one page" in search_mode_description
+    assert "phrase=known contiguous wording" in search_mode_description
+    assert search_parameters["properties"]["query"]["examples"] == [
+        "random sequence allocation concealment"
+    ]
     source_scope = search_parameters["properties"]["source_id"]
     assert source_scope["default"] is None
     assert source_scope["anyOf"][0]["pattern"] == r"^source_[0-9a-f]{64}$"
     assert "not printed labels" in read_description
     assert "numbered lines" in read_description
+    assert "integer source-page indexes" in read_parameters["properties"]["pages"]["description"]
+    assert read_parameters["properties"]["pages"]["examples"] == [[1, 3]]
     assert "one contiguous range" in select_description
     assert "one selection per page" in select_description
+    assert "start_text" not in select_description
+    assert "end_text" not in select_description
+    domain_tool = by_name["save_domain_judgment"]
+    assert "same answers list" in (domain_tool.description or "")
+    answer_example = domain_tool.parameters["properties"]["answers"]["examples"][0][0]
+    assert set(answer_example) == {"question_id", "answer", "bases"}
+    assert set(answer_example["bases"][0]) == {"kind", "evidence"}
+    multiple_concerns = domain_tool.parameters["properties"]["multiple_concerns"]
+    assert set(multiple_concerns["examples"][0]) == {
+        "raises_overall_to_high",
+        "rationale",
+    }
+    assert "Omit unless a repair requests" in multiple_concerns["description"]
+    assert "never boolean/string" in multiple_concerns["description"]
+
+
+def test_server_and_resource_metadata_are_explicit() -> None:
+    async def metadata() -> tuple[Any, list[Any]]:
+        from fastmcp import Client
+
+        async with Client(mcp) as client:
+            return client.initialize_result, list(await client.list_resources())
+
+    initialization, resources = asyncio.run(metadata())
+    assert initialization is not None
+    assert initialization.serverInfo.name == "rob2-kit"
+    assert initialization.serverInfo.version == "0.3.0"
+    assert initialization.serverInfo.websiteUrl == "https://github.com/AliSalman-et-al/rob2-kit"
+    assert len(resources) == 1
+    resource = resources[0]
+    assert str(resource.uri) == "rob2://current-batch"
+    assert resource.title == "Current batch status"
+    assert resource.mimeType == "application/json"
+    assert (resource.description or "").strip()
 
 
 def test_required_skill_references_match_handle_only_proposal_contract() -> None:
@@ -88,15 +149,13 @@ def test_required_skill_references_match_handle_only_proposal_contract() -> None
     assert "not printed page labels" in required_instructions
     assert "never reconstruct PDF text" in required_instructions
     assert "one selection on each page" in normalized_instructions
-    assert "Target timing and arm assignments require selected source support" in (
-        normalized_instructions
-    )
+    assert "timing and arm assignments" in normalized_instructions
+    assert "do not need duplicate source quotations" in normalized_instructions
     for deleted_instruction in (
         "Use Table Evidence",
         "Use Derived Evidence",
         '{"kind":"narrative","handle":"eh_..."}',
         "mark its clarity",
         "add a complete alternative",
-        "Target method, timing, intended population",
     ):
         assert deleted_instruction not in normalized_instructions

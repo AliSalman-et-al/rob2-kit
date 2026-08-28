@@ -37,7 +37,14 @@ def test_finalization_auto_freezes_without_assessment_review(tmp_path: Path) -> 
 
 
 def test_domain_revision_requires_lineage_and_preserves_history(tmp_path: Path) -> None:
-    workspace, evidence, revision = _complete_assessment(tmp_path)
+    workspace, evidence, revision = _assessment_workspace(tmp_path)
+    first = _call(
+        workspace,
+        "save_domain_judgment",
+        _domain_draft("trial", SCIENTIFIC_PACK.domains[0].id, revision, evidence),
+    )
+    assert first["outcome"] == "success", first
+    revision = int(first["head"]["state_revision"])
     key = "trial:domain:randomization"
     prior = _state(workspace)["domain_records"][key]
 
@@ -66,10 +73,20 @@ def test_domain_revision_requires_lineage_and_preserves_history(tmp_path: Path) 
     assert retry["data"]["retry"] is True
     assert _state(workspace)["domain_history"][key] == state["domain_history"][key]
 
+    revision = int(revised["head"]["state_revision"])
+    for domain in SCIENTIFIC_PACK.domains[1:]:
+        saved = _call(
+            workspace,
+            "save_domain_judgment",
+            _domain_draft("trial", domain.id, revision, evidence),
+        )
+        assert saved["outcome"] == "success", saved
+        revision = int(saved["head"]["state_revision"])
+
     finalized = _call(
         workspace,
         "finalize_batch",
-        {"expected_revision": int(revised["head"]["state_revision"])},
+        {"expected_revision": revision},
     )
     assert finalized["outcome"] == "success", finalized
 
@@ -108,7 +125,14 @@ def test_new_evidence_revision_must_use_novel_evidence(tmp_path: Path) -> None:
     (trial / "novel.txt").write_text(
         "A newly selected complete premise changes the evidence audit.", encoding="utf-8"
     )
-    workspace, evidence, revision = _complete_assessment(tmp_path)
+    workspace, evidence, revision = _assessment_workspace(tmp_path)
+    first = _call(
+        workspace,
+        "save_domain_judgment",
+        _domain_draft("trial", SCIENTIFIC_PACK.domains[0].id, revision, evidence),
+    )
+    assert first["outcome"] == "success", first
+    revision = int(first["head"]["state_revision"])
     key = "trial:domain:randomization"
     prior = _state(workspace)["domain_records"][key]
     source = next(
@@ -147,16 +171,28 @@ def test_new_evidence_revision_must_use_novel_evidence(tmp_path: Path) -> None:
     ]
     revised = _call(workspace, "save_domain_judgment", changed)
     assert revised["outcome"] == "success", revised
-    assert revised["data"]["checkpoint"]["revision_basis"]["evidence"] == novel["identity"]
+    assert (
+        _state(workspace)["domain_records"][key]["revision_basis"]["evidence"] == novel["identity"]
+    )
 
     retry = _call(workspace, "save_domain_judgment", changed)
     assert retry["outcome"] == "success"
     assert retry["data"]["retry"] is True
 
+    revision = int(revised["head"]["state_revision"])
+    for domain in SCIENTIFIC_PACK.domains[1:]:
+        saved = _call(
+            workspace,
+            "save_domain_judgment",
+            _domain_draft("trial", domain.id, revision, evidence),
+        )
+        assert saved["outcome"] == "success", saved
+        revision = int(saved["head"]["state_revision"])
+
     finalized = _call(
         workspace,
         "finalize_batch",
-        {"expected_revision": int(revised["head"]["state_revision"])},
+        {"expected_revision": revision},
     )
     assert finalized["outcome"] == "success", finalized
     artifact = workspace / finalized["data"]["artifact"]["path"]

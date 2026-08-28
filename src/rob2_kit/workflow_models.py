@@ -9,8 +9,6 @@ content identity derived from its other fields; callers cannot choose an identit
 from __future__ import annotations
 
 import hashlib
-import re
-import unicodedata
 from datetime import UTC, datetime
 from enum import StrEnum
 from pathlib import PurePosixPath
@@ -132,31 +130,6 @@ def exact_relation_rationale(target_name: str, reported_name: str) -> str:
     return (
         f"Exact relation: target outcome '{target_name}' and reported endpoint "
         f"'{reported_name}' match after Unicode, whitespace, case, and hyphen normalization."
-    )
-
-
-def has_missing_reporting_signal(value: str) -> bool:
-    """Apply a lexical, non-semantic gate to an unavailable-source premise."""
-    normalized = unicodedata.normalize("NFKC", value).casefold()
-    normalized = re.sub(r"\s+", " ", normalized).strip()
-    return bool(
-        re.search(
-            r"(?:\b(?:not|did not)\b(?:\s+\w+){0,3}\s+"
-            r"\b(?:collect(?:ed)?|document(?:ed)?|report(?:ed)?(?!\s+as\b)|record(?:ed)?|"
-            r"measure(?:d)?|assess(?:ed)?|captur(?:e|ed)|available)\b|"
-            r"\bno\b(?:\s+\w+){0,2}\s+\b(?:data|information|results?"
-            r"(?!\s+(?:were\s+)?(?:statistically|significant)\b)|records?|"
-            r"reporting|measurements?)\b|"
-            r"\bwithout\b(?:\s+\w+){0,2}\s+\b(?:data|reporting|documentation|"
-            r"measurements?)\b|"
-            r"\b(?:missing|unavailable|l(?:ack|acked|acking)?)\b(?:\s+\w+){0,3}\s+"
-            r"\b(?:data|information|results?|records?|reporting|documentation|"
-            r"measurements?|assessment|capture)\b|"
-            r"\b(?:data|information|results?|records?|reporting|documentation|"
-            r"measurements?|assessment|capture)\b(?:\s+\w+){0,2}\s+"
-            r"\b(?:missing|unavailable|l(?:ack|acked|acking)?)\b)",
-            normalized,
-        )
     )
 
 
@@ -386,19 +359,25 @@ class OutcomeMeasurement(StrictModel):
 class OutcomeMeasurementDraft(StrictModel):
     """Caller-owned measurement method; the target metric comes from Intake."""
 
-    method: NonBlankText
+    method: NonBlankText = Field(
+        description="Source-supported method used to measure the requested outcome.",
+    )
 
 
 class DescribedTiming(StrictModel):
-    kind: Literal["described"]
-    description: NonBlankText
+    kind: Literal["described"] = Field(description="Use when timing is stated without a number.")
+    description: NonBlankText = Field(
+        description="Exact or normalization-equivalent source wording for the timing or window.",
+    )
 
 
 class QuantifiedTiming(StrictModel):
-    kind: Literal["quantified"]
-    description: NonBlankText
-    value: NonBlankText
-    unit: NonBlankText
+    kind: Literal["quantified"] = Field(description="Use when timing has a numeric value and unit.")
+    description: NonBlankText = Field(
+        description="Exact or normalization-equivalent source wording for the timing or window.",
+    )
+    value: NonBlankText = Field(description="Source-reported timing value.")
+    unit: NonBlankText = Field(description="Source-reported timing unit.")
 
 
 ResultTiming = Annotated[
@@ -411,7 +390,9 @@ class ComparisonGroup(StrictModel):
     id: NonBlankText = Field(
         description="Caller-owned structural identifier used to reference this comparison group.",
     )
-    assignment: NonBlankText
+    assignment: NonBlankText = Field(
+        description="Exact or normalization-equivalent randomized-group assignment wording.",
+    )
 
 
 class ResultTarget(StrictModel):
@@ -427,11 +408,22 @@ class ResultTarget(StrictModel):
 class ResultTargetDraft(StrictModel):
     """Proposal target fields that require researcher interpretation."""
 
-    measurement: OutcomeMeasurementDraft
-    time_point_or_window: ResultTiming
-    comparison_groups: tuple[ComparisonGroup, ...] = Field(min_length=2)
-    intended_analysis_population: NonBlankText
-    intended_effect_measure: NonBlankText
+    measurement: OutcomeMeasurementDraft = Field(
+        description="How the requested outcome is measured for this Trial.",
+    )
+    time_point_or_window: ResultTiming = Field(
+        description="Source-supported timing or analysis window for the target Result.",
+    )
+    comparison_groups: tuple[ComparisonGroup, ...] = Field(
+        min_length=2,
+        description="Every randomized group compared by the target Result.",
+    )
+    intended_analysis_population: NonBlankText = Field(
+        description="Source-supported population intended for this target Result.",
+    )
+    intended_effect_measure: NonBlankText = Field(
+        description="Effect measure intended for the target comparison.",
+    )
 
 
 class TargetRelation(StrEnum):
@@ -472,9 +464,9 @@ class GroupResultValue(StrictModel):
             "id but does not require a separate Source Evidence mapping."
         ),
     )
-    statistic: NonBlankText
-    value: NonBlankText
-    unit: NonBlankText
+    statistic: NonBlankText = Field(description="Source-reported statistic label for this group.")
+    value: NonBlankText = Field(description="Source-reported value for this group.")
+    unit: NonBlankText = Field(description="Source-reported unit for this group value.")
 
 
 class ReportedEndpoint(StrictModel):
@@ -485,9 +477,10 @@ class ReportedEndpoint(StrictModel):
         ),
     )
     definition: NonBlankText | None = Field(
+        default=None,
         description=(
             "Complete Source definition, including event set, time origin or window, population, "
-            "and measurement or state criteria; null when no selected passage explicitly ties "
+            "and measurement or state criteria; omit when no selected passage explicitly ties "
             "a coherent definition to this endpoint label. Never borrow a component or related "
             "endpoint definition."
         ),
@@ -495,18 +488,45 @@ class ReportedEndpoint(StrictModel):
 
 
 class ComparativeEffectResult(StrictModel):
-    form: Literal["comparative_effect"]
-    effect_measure: NonBlankText
-    estimate: NonBlankText
-    precision: NonBlankText | None = None
-    endpoint: ReportedEndpoint
-    group_values: tuple[GroupResultValue, ...] = Field(min_length=2)
+    form: Literal["comparative_effect"] = Field(
+        description="A source-reported between-group effect estimate.",
+    )
+    effect_measure: NonBlankText = Field(description="Source-reported effect-measure label.")
+    estimate: NonBlankText = Field(description="Source-reported comparative estimate.")
+    precision: NonBlankText | None = Field(
+        default=None,
+        description="Source-reported precision interval or uncertainty; omit when absent.",
+    )
+    endpoint: ReportedEndpoint = Field(
+        description="Endpoint identified by the same Evidence as the quantitative tuple.",
+    )
+    group_values: tuple[GroupResultValue, ...] = Field(
+        default=(),
+        description=(
+            "Optional source-reported values for each randomized group. Omit these when the "
+            "comparative estimate is complete and the source does not state an unambiguous "
+            "statistic and unit for every group."
+        ),
+    )
+
+    @model_validator(mode="after")
+    def complete_optional_group_values(self) -> ComparativeEffectResult:
+        if len(self.group_values) == 1:
+            raise ValueError("group_values must be omitted or contain at least two groups")
+        return self
 
 
 class GroupBoundValuesResult(StrictModel):
-    form: Literal["group_bound_values"]
-    endpoint: ReportedEndpoint
-    values: tuple[GroupResultValue, ...] = Field(min_length=2)
+    form: Literal["group_bound_values"] = Field(
+        description="Source-reported values bound to each randomized group.",
+    )
+    endpoint: ReportedEndpoint = Field(
+        description="Endpoint identified by the same Evidence as the group values.",
+    )
+    values: tuple[GroupResultValue, ...] = Field(
+        min_length=2,
+        description="One complete source-reported value for every randomized group.",
+    )
 
 
 class CategoryValue(StrictModel):
@@ -546,8 +566,12 @@ class CategoryProfileResult(StrictModel):
     A complete assessable profile is preferred to an unavailable result.
     """
 
-    form: Literal["single_group_category_profile"]
-    endpoint: ReportedEndpoint
+    form: Literal["single_group_category_profile"] = Field(
+        description="A complete source-reported category profile for one randomized group.",
+    )
+    endpoint: ReportedEndpoint = Field(
+        description="Endpoint identified by the same Evidence as the category profile.",
+    )
     group_id: NonBlankText = Field(
         description=(
             "Structural reference to the target comparison-group id; it must match a target "
@@ -565,7 +589,10 @@ class CategoryProfileResult(StrictModel):
             "require separate Source Evidence mappings. Source labels remain in category_axes."
         ),
     )
-    categories: tuple[CategoryValue, ...] = Field(min_length=1)
+    categories: tuple[CategoryValue, ...] = Field(
+        min_length=1,
+        description="Every source-reported category cell in the selected profile.",
+    )
 
     @model_validator(mode="before")
     @classmethod
@@ -795,8 +822,10 @@ class AssessableResult(StrictModel):
 class AssessableResultDraft(StrictModel):
     """The MCP proposal form before the server adds canonical leaf digests."""
 
-    kind: Literal["assessable"]
-    trial_id: TrialId
+    kind: Literal["assessable"] = Field(
+        description="Use when a complete source-reported Result candidate exists.",
+    )
+    trial_id: TrialId = Field(description="Server-issued Trial ID for this Result card.")
     relation: AssessableTargetRelation = Field(
         description=(
             "Choose exact only for a server-normalized name match. Relative to the requested "
@@ -810,15 +839,22 @@ class AssessableResultDraft(StrictModel):
             "candidate is better, resubmit the proposal."
         ),
     )
-    relation_rationale: NonBlankText | None = None
-    target: ResultTargetDraft
+    relation_rationale: NonBlankText | None = Field(
+        default=None,
+        description=(
+            "Material source-supported difference from the requested target; omit for exact."
+        ),
+    )
+    target: ResultTargetDraft = Field(description="Requested target Result for this Trial.")
     reported: Annotated[
         ComparativeEffectResult | GroupBoundValuesResult | CategoryProfileResult,
         Field(
             discriminator="form",
             description=(
-                "One reported-result object. Never place selected Evidence, an Evidence handle, "
-                "a render, table metadata, or a figure object here."
+                "One reported-result object with required form. For example, a minimal "
+                "comparative object has form, effect_measure, estimate, and endpoint.name. "
+                "Never place selected Evidence, an Evidence handle, a render, table metadata, "
+                "or a figure object here."
             ),
         ),
     ]
@@ -864,15 +900,23 @@ class UnavailableMissingFact(StrictModel):
 class UnavailableEvidenceBasisDraft(StrictModel):
     """Caller-owned Evidence premise before the server copies its exact source."""
 
-    kind: Literal["missing_reporting"]
-    evidence: EvidenceHandle
+    kind: Literal["missing_reporting"] = Field(
+        description="Use when selected Evidence explicitly establishes missing reporting.",
+    )
+    evidence: EvidenceHandle = Field(
+        description="Selected Evidence handle that establishes the missing fact.",
+    )
 
 
 class UnavailableIntakeConditionBasisDraft(StrictModel):
     """Caller reference to the captured no-supported-Sources intake condition."""
 
-    kind: Literal["intake_condition"]
-    code: Literal["no_supported_sources"]
+    kind: Literal["intake_condition"] = Field(
+        description="Use only for a captured intake condition.",
+    )
+    code: Literal["no_supported_sources"] = Field(
+        description="Captured condition showing that the Trial has no supported Sources.",
+    )
 
 
 UnavailableEvidenceBasisDraftChoice = Annotated[
@@ -884,8 +928,10 @@ UnavailableEvidenceBasisDraftChoice = Annotated[
 class UnavailableMissingFactDraft(StrictModel):
     """Caller-owned missing input and its typed basis."""
 
-    fact: NonBlankText
-    basis: UnavailableEvidenceBasisDraftChoice
+    fact: NonBlankText = Field(description="Specific missing fact required to define a Result.")
+    basis: UnavailableEvidenceBasisDraftChoice = Field(
+        description="Typed source or intake basis that establishes this missing fact.",
+    )
 
 
 class UnavailableResult(StrictModel):
@@ -910,10 +956,17 @@ class UnavailableResultDraft(StrictModel):
     isolated component. Never infer equivalence from identical numbers.
     """
 
-    kind: Literal["unavailable"]
-    trial_id: TrialId
-    relation: Literal[TargetRelation.AMBIGUOUS, TargetRelation.UNAVAILABLE]
-    missing_facts: tuple[UnavailableMissingFactDraft, ...] = Field(min_length=1)
+    kind: Literal["unavailable"] = Field(
+        description="Use only when no complete assessable Result candidate exists.",
+    )
+    trial_id: TrialId = Field(description="Server-issued Trial ID for this Result card.")
+    relation: Literal[TargetRelation.AMBIGUOUS, TargetRelation.UNAVAILABLE] = Field(
+        description="Whether the closest Result is ambiguous or unavailable.",
+    )
+    missing_facts: tuple[UnavailableMissingFactDraft, ...] = Field(
+        min_length=1,
+        description="Every fact whose absence prevents a complete assessable Result.",
+    )
 
 
 AssessableResultChoice = Annotated[AssessableResult, Field(discriminator="kind")]
@@ -958,9 +1011,13 @@ class RenderIdentity(StrictModel):
 
 
 class DomainLimitationBasis(StrictModel):
-    kind: Literal["limitation"]
-    text: str = Field(min_length=1)
-    search_receipt: SearchReceiptHandle
+    kind: Literal["limitation"] = Field(
+        description="Use for an exact limitation found during a scoped search.",
+    )
+    text: str = Field(min_length=1, description="Exact limitation relevant to this question.")
+    search_receipt: SearchReceiptHandle = Field(
+        description="Search receipt from the scoped discovery that exposed this limitation.",
+    )
 
     @field_validator("text")
     @classmethod
@@ -971,8 +1028,13 @@ class DomainLimitationBasis(StrictModel):
 
 
 class MultipleConcernsDecision(StrictModel):
-    raises_overall_to_high: StrictBool
-    rationale: str = Field(min_length=1)
+    raises_overall_to_high: StrictBool = Field(
+        description="Whether multiple Domain 2 concerns together raise its judgment to high.",
+    )
+    rationale: str = Field(
+        min_length=1,
+        description="Concise reason for the combined-concerns decision.",
+    )
 
     @field_validator("rationale")
     @classmethod
@@ -983,13 +1045,19 @@ class MultipleConcernsDecision(StrictModel):
 
 
 class DirectEvidenceUse(StrictModel):
-    kind: Literal["direct_support", "indirect_support", "contradiction", "context", "inference"]
-    evidence: EvidenceHandle
+    kind: Literal["direct_support", "indirect_support", "contradiction", "context", "inference"] = (
+        Field(description="How the selected Evidence bears on this question answer.")
+    )
+    evidence: EvidenceHandle = Field(description="Selected Evidence handle for this premise.")
 
 
 class AbsenceEvidenceUse(StrictModel):
-    kind: Literal["absence"]
-    search_receipt: SearchReceiptHandle
+    kind: Literal["absence"] = Field(
+        description="Use for a valid scoped search that found no relevant information.",
+    )
+    search_receipt: SearchReceiptHandle = Field(
+        description="No-hit search receipt scoped to this question and Trial.",
+    )
 
 
 DomainBasis = Annotated[
@@ -999,15 +1067,24 @@ DomainBasis = Annotated[
 
 
 class DomainAnswer(StrictModel):
-    question_id: QuestionId
-    answer: Answer
-    bases: tuple[DomainBasis, ...] = Field(min_length=1)
+    question_id: QuestionId = Field(description="Active question ID from get_domain_context.")
+    answer: Answer = Field(description="RoB 2 answer permitted by the active question card.")
+    bases: tuple[DomainBasis, ...] = Field(
+        min_length=1,
+        description=(
+            "Evidence premises for this answer. Definitive yes or no needs direct_support, "
+            "indirect_support, or contradiction; probable answers may also use a limitation, "
+            "valid absence receipt, context, or inference."
+        ),
+    )
 
 
 class NewEvidenceRevision(StrictModel):
-    kind: Literal["new_evidence"]
-    evidence: EvidenceHandle
-    rationale: str = Field(min_length=1)
+    kind: Literal["new_evidence"] = Field(
+        description="Use when newly selected Evidence changes a saved Domain.",
+    )
+    evidence: EvidenceHandle = Field(description="New Evidence supporting this revision.")
+    rationale: str = Field(min_length=1, description="Why the new Evidence changes the Domain.")
 
     @field_validator("rationale")
     @classmethod
@@ -1018,8 +1095,10 @@ class NewEvidenceRevision(StrictModel):
 
 
 class SelfCorrectionRevision(StrictModel):
-    kind: Literal["self_correction"]
-    rationale: str = Field(min_length=1)
+    kind: Literal["self_correction"] = Field(
+        description="Use when correcting the interpretation of already available Evidence.",
+    )
+    rationale: str = Field(min_length=1, description="Why the prior checkpoint was incorrect.")
 
     @field_validator("rationale")
     @classmethod
@@ -1059,10 +1138,15 @@ class DomainContext(StrictModel):
 
 
 class NeedsInputTerminalRequest(StrictModel):
-    disposition: Literal["needs_input"]
-    trial_id: TrialId
-    reason: str = Field(min_length=1)
-    missing_facts: tuple[str, ...] = Field(min_length=1)
+    disposition: Literal["needs_input"] = Field(
+        description="Use only when specific researcher-supplied facts are required to continue.",
+    )
+    trial_id: TrialId = Field(description="Server-issued Trial ID that cannot continue.")
+    reason: str = Field(min_length=1, description="Why ordinary conservative work cannot continue.")
+    missing_facts: tuple[str, ...] = Field(
+        min_length=1,
+        description="Specific nonblank facts the researcher must supply.",
+    )
 
     @field_validator("reason")
     @classmethod
@@ -1080,10 +1164,15 @@ class NeedsInputTerminalRequest(StrictModel):
 
 
 class AbandonmentTerminalRequest(StrictModel):
-    disposition: Literal["failed"]
-    trial_id: TrialId
-    reason: str = Field(min_length=1)
-    facts: tuple[str, ...] = Field(min_length=1)
+    disposition: Literal["failed"] = Field(
+        description="Use only for an unrecoverable Trial failure.",
+    )
+    trial_id: TrialId = Field(description="Server-issued Trial ID that failed.")
+    reason: str = Field(min_length=1, description="Why this Trial cannot be completed.")
+    facts: tuple[str, ...] = Field(
+        min_length=1,
+        description="Specific nonblank facts establishing the unrecoverable failure.",
+    )
 
     @field_validator("reason")
     @classmethod

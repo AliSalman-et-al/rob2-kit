@@ -24,7 +24,7 @@ rob2 --help
 
 If `rob2` is not found, run `uv tool update-shell`, open a new terminal, and
 try `rob2 --help` again. The installed package contains the `rob2` command, the
-13-tool MCP server, and the portable `rob2-assess` skill.
+14-tool MCP server, and the portable `rob2-assess` skill.
 
 To install a built release artifact instead, replace `.` with the wheel path:
 
@@ -75,7 +75,9 @@ When `sources.toml` contains an NCT identifier, `prepare_batch` sends that
 identifier to the public ClinicalTrials.gov API and captures the returned
 registry record as a searchable `registry` Source. The full returned JSON is
 content-addressed with the local dossier, so registry methods and outcomes can
-be selected as evidence. Replace `<NCT-ID>` with an authorized identifier
+be selected as evidence. For navigation, JSON is projected as sorted path-value
+lines such as `protocolSection.identificationModule.nctId: "NCT01234567"`;
+the captured bytes and content identity remain unchanged. Replace `<NCT-ID>` with an authorized identifier
 before you run the command. Do not declare an identifier unless that network
 lookup is authorized. All other source capture is local.
 
@@ -129,37 +131,82 @@ files or construct trial records manually. It searches the main article first
 for the reported result, checks the registry next for outcome identity, and
 uses supplements, protocols, and statistical analysis plans for competing
 definitions and methods. Within each source, FTS5 BM25 relevance and then page
-order rank matches.
+order rank matches. A bounded result reserves the best match from each matching
+source when space permits, then gives the remaining slots to earlier-ranked
+sources. This keeps the main article primary without hiding a protocol or plan
+behind many article pages.
 This order is a discovery default, not an evidence hierarchy or permission to
 skip the bounded cross-source check.
 
 Search results are navigation only. `read_pages` returns numbered source lines,
 and the host selects one contiguous range on one source page as evidence.
-Optional boundary text can trim unrelated material that shares the first or
-last selected line.
-The server stores the exact underlying text, so search normalization never
-breaks later evidence selection. Figures, tables, and CONSORT diagrams can be
-selected as visual evidence; text corroboration is preferred when available.
+Large pages return a bounded window and `next_start_line`; the host continues
+the same page until `truncated` is false.
+Selection uses only the returned page and inclusive line range. The server
+creates one deterministic readable text projection during capture: Unicode
+compatibility forms and ligatures are normalized, discretionary and hidden
+formatting marks are removed, and PDF line-end hyphenation is resolved. Search,
+page reads, and selected quotations therefore use the same text. The immutable
+captured bytes remain the source authority. Figures, tables, and CONSORT
+diagrams can be selected as visual evidence; text corroboration is preferred
+when available.
 
-When the proposal is ready, the host pauses at the only researcher gate. Review
-the exact proposed result mapping:
+When the proposal is ready, the host pauses at the only researcher gate and
+presents the proposed Result mapping. Respond in the same Claude Code, Codex,
+or other MCP client conversation:
+
+- Reply `Approved` only when the proposed mapping is the Result you intend to
+  assess. The host calls `request_proposal_approval`; the client displays the
+  exact immutable Review and asks for direct confirmation before the server
+  commits it.
+- If a Trial uses the wrong source-reported Result, describe the intended
+  construct in ordinary language. The host treats that text as search direction,
+  not Evidence, rechecks the captured Sources, and submits one complete replacement
+  card for that Trial. The server preserves the other Trial mappings. Review the fresh record
+  before approving it.
+
+Clients without MCP elicitation support retain the researcher-only CLI fallback:
 
 ```powershell
 rob2 review --workspace C:/path/to/my-assessment
 ```
 
 - Enter `yes` only when the proposed result is the result you intend to assess.
-- Enter `no` when it is wrong or ambiguous, then tell the host which alternative
-  source-reported candidate to inspect. Review the replacement record before
-  approving it.
+- Enter `no` when it is wrong or ambiguous, then give the host the same natural
+  correction in conversation.
 
 After approval, the host owns signaling answers and follows the server through
 all five domains and finalization. Do not direct individual signaling answers.
+The workflow completes one Trial at a time, in captured Batch order, and one
+Domain at a time within that Trial. The server rejects attempts to start a
+later Trial or new Domain before the current one is complete. Accepting the
+fifth Domain automatically freezes that Trial's AssessmentSnapshot and marks
+the Trial `assessed`; the next action then advances to the next Trial. No
+separate Trial-finalization tool or host decision exists. `finalize_batch` only
+packages the already-terminal Trial records. Every Trial in a Batch shares the
+one outcome concept supplied to `prepare_batch`; a Batch cannot mix different
+requested outcomes across Trials.
+
+Long batches do not depend on one conversation fitting in one context window.
+rob2-kit stores every approved Proposal and Domain checkpoint durably. After
+automatic compaction, the host calls `get_status` and continues the exact next
+action without replaying completed work. After a host restart, invoke the skill
+again to do the same. Do not clear context manually at Proposal or Trial
+boundaries: retained source knowledge remains useful, while normal automatic
+compaction handles capacity. No context-management MCP tool is involved. Low
+remaining context must never cause the host to skip searches, infer unfinished
+judgments, or finalize early.
+
 For each active question, the host performs a bounded, question-specific search
 across the relevant sources before it claims that information is absent. A
 current Result Evidence set is not proof that no other relevant evidence exists.
-The host may revise its own committed domain checkpoint when new evidence or a
-documented self-correction requires it; the immutable history is retained.
+The Domain context includes every question card and its activation predicate.
+The host computes the complete active branch from answers in the same save call;
+the server ignores extra inactive branch answers.
+While the current Trial remains pending, the host may revise one of its committed
+Domain checkpoints when new evidence or a documented self-correction requires
+it; the immutable history is retained. Once the fifth Domain freezes the Trial,
+its AssessmentSnapshot is final.
 
 Use these researcher commands for recovery and verification:
 
@@ -193,12 +240,12 @@ The server exposes exactly these strictly typed FastMCP tools:
 
 `prepare_batch`, `get_status`, `list_sources`, `search_sources`, `read_pages`,
 `select_text_evidence`, `render_page`, `select_visual_evidence`,
-`save_proposal`, `get_domain_context`, `save_domain_judgment`,
-`request_trial_terminal`, and `finalize_batch`.
+`save_proposal`, `request_proposal_approval`, `get_domain_context`,
+`save_domain_judgment`, `request_trial_terminal`, and `finalize_batch`.
 
 The live `rob2://current-batch` resource is the restart-safe status projection.
-Researcher authority enters only through the `rob2 review` CLI boundary, never
-through a model-facing field.
+Researcher authority enters through a directly accepted MCP elicitation or the
+`rob2 review` CLI fallback, never through a model-facing field or tool argument.
 The scientific pack retains each question's full nested official and operational
 guidance. `get_domain_context` returns a compact typed question-card projection
 with the complete official excerpt and locator plus the actionable operational
@@ -215,11 +262,10 @@ wheel verification.
 
 ```powershell
 uv sync --frozen
-uv run ruff format --check .
-uv run ruff check .
-uv run ty check
-uv run pytest
-uv run python docs/release/verify.py
-uv build --wheel --out-dir dist
-uv run python docs/release/verify.py --wheel dist/rob2_kit-0.3.0-py3-none-any.whl
+./scripts/verify_v03.ps1
 ```
+
+The verification script runs Ruff, ty, the four-worker pytest suite, runtime
+contract checks, wheel construction, and independent verification of the built
+wheel. Pytest uses four workers through the repository configuration; use
+`uv run pytest -n 0` only when debugging a test that requires serial output.

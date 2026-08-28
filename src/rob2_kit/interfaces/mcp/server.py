@@ -7,12 +7,19 @@ import json
 import os
 from typing import Annotated, Any, Literal
 
-from fastmcp import FastMCP
+from fastmcp import Context, FastMCP
+from fastmcp.server.context import (
+    AcceptedElicitation,
+    CancelledElicitation,
+    DeclinedElicitation,
+)
 from fastmcp.tools import ToolResult
+from mcp.shared.exceptions import McpError
 from mcp.types import ImageContent, TextContent, ToolAnnotations
 from pydantic import Field, StrictBool, StrictInt, StrictStr
 from pydantic.functional_validators import AfterValidator
 
+from rob2_kit import __version__
 from rob2_kit.application.contracts import TOOL_NAMES, WorkflowConflict
 from rob2_kit.application.domains import get_domain_context as _get_domain_context
 from rob2_kit.application.domains import save_domain_judgment as _save_domain_judgment
@@ -25,7 +32,9 @@ from rob2_kit.application.evidence import (
 )
 from rob2_kit.application.evidence import select_visual_evidence as _select_visual_evidence
 from rob2_kit.application.finalization import finalize_batch as _finalize_batch
+from rob2_kit.application.intake import approve_review as _approve_review
 from rob2_kit.application.intake import prepare_batch_for_outcome as _prepare_batch
+from rob2_kit.application.intake import proposal_approval_context as _proposal_approval_context
 from rob2_kit.application.proposal import save_proposal as _save_proposal
 from rob2_kit.application.status import get_status as _get_status
 from rob2_kit.application.status import get_status_head as _get_status_head
@@ -43,6 +52,7 @@ from rob2_kit.workflow_models import (
     ProposalDraft,
     ResultChoiceDraft,
     SourceId,
+    StrictModel,
     TerminalRequest,
     TerminalRequestEnvelope,
     TrialId,
@@ -51,7 +61,12 @@ from rob2_kit.workflow_models import (
 
 from .contracts import normalize, output_schema, validate_output
 
-mcp = FastMCP("rob2-kit")
+mcp = FastMCP(
+    "rob2-kit",
+    version=__version__,
+    website_url="https://github.com/AliSalman-et-al/rob2-kit",
+    strict_input_validation=True,
+)
 PUBLIC_TOOL_NAMES = TOOL_NAMES
 SearchLimit = Annotated[StrictInt, Field(ge=1, le=100)]
 Inline = StrictBool
@@ -64,6 +79,11 @@ _MUTATION = ToolAnnotations(
 _INTAKE = ToolAnnotations(
     readOnlyHint=False, destructiveHint=False, idempotentHint=True, openWorldHint=True
 )
+
+# Keep every read_pages response small enough for clients with conservative
+# tool-result limits.  The application still owns the complete captured
+# projection; this is only a transport window.
+_READ_PAGES_RESPONSE_CHARS = 24_000
 
 
 def _workspace() -> str:
@@ -86,6 +106,23 @@ RequestedOutcome = Annotated[
         ),
     ),
     AfterValidator(_nonblank),
+]
+
+
+def _nonblank_trial_label(value: str) -> str:
+    if not value.strip():
+        raise ValueError("trial label must contain non-whitespace content")
+    return value
+
+
+TrialLabel = Annotated[
+    StrictStr,
+    Field(min_length=1, description="Exact immediate input directory label for one Trial."),
+    AfterValidator(_nonblank_trial_label),
+]
+TrialLabels = Annotated[
+    list[TrialLabel],
+    Field(min_length=1),
 ]
 
 
@@ -176,7 +213,9 @@ def _invoke(tool: str, operation: Any) -> ToolResult:
 
 @mcp.resource(
     "rob2://current-batch",
+    title="Current batch status",
     description="Read current batch status. Returns the authoritative workflow snapshot.",
+    mime_type="application/json",
 )
 def current_batch() -> str:
     receipt = _content("get_status", _get_status(_workspace()))
@@ -185,11 +224,12 @@ def current_batch() -> str:
 
 @mcp.tool(
     name="prepare_batch",
+    title="Prepare batch",
     description=(
-        "Start or retry intake for one requested outcome. The server discovers every immediate "
-        "non-hidden, non-link Trial directory under input/{TRIAL NAME}/ and captures its sources; "
-        "call this directly without listing input. requested_outcome is only the clinical outcome "
-        "concept, without task framing, risk-of-bias wording, or Trial scope."
+        "Use requested_outcome for the outcome concept to assess. If the user names Trials, pass "
+        "their exact input directory labels in trial_labels. Omit trial_labels to capture all "
+        "immediate valid Trial directories. The server resolves directories, so no listing is "
+        "required."
     ),
     annotations=_INTAKE,
     output_schema=output_schema("prepare_batch"),
@@ -199,15 +239,20 @@ def prepare_batch(
     expected_revision: Annotated[
         ExpectedRevision, Field(description="Revision from the latest status.")
     ],
+    trial_labels: Annotated[
+        TrialLabels | None,
+        Field(description="Exact input/{TRIAL NAME} directory labels. Omit to capture all."),
+    ] = None,
 ) -> ToolResult:
     return _invoke(
         "prepare_batch",
-        lambda: _prepare_batch(_workspace(), requested_outcome, expected_revision),
+        lambda: _prepare_batch(_workspace(), requested_outcome, expected_revision, trial_labels),
     )
 
 
 @mcp.tool(
     name="get_status",
+    title="Get workflow status",
     description="Read workflow status. Returns phase, revision, dispositions, and next action.",
     annotations=_READ_ONLY,
     output_schema=output_schema("get_status"),
@@ -218,6 +263,7 @@ def get_status() -> ToolResult:
 
 @mcp.tool(
     name="list_sources",
+    title="List Trial sources",
     description="List captured sources. Requires a Trial ID for multi-Trial batches.",
     annotations=_READ_ONLY,
     output_schema=output_schema("list_sources"),
@@ -233,39 +279,43 @@ def list_sources(
 
 @mcp.tool(
     name="search_sources",
+    title="Search Trial sources",
     description=(
-        "Search captured source-page text. Returned page values are 1-based source indexes, not "
-        "printed page labels. Use phrase only for known contiguous wording; use all or any for "
-        "concept discovery. Returns bounded hits, total_matches, truncated, and an opaque "
-        "search_receipt in data, including for valid no-hit searches; refine a truncated search "
-        "before treating discovery as complete or using it for absence."
+        "Search captured source pages (1-based source indexes). Omitted mode is exploratory any. "
+        "Required: trial_id, query. Optional: source_id, mode, limit. Returns bounded hits, "
+        "counts, truncation, and opaque receipt, including valid no-hit searches; refine "
+        "truncated searches before absence."
     ),
     annotations=_READ_ONLY,
     output_schema=output_schema("search_sources"),
 )
 def search_sources(
-    trial_id: Annotated[TrialId, Field(description="Captured Trial to search.")],
-    query: Annotated[str, Field(min_length=1, description="Non-empty text query.")],
+    trial_id: Annotated[
+        TrialId, Field(description="Captured Trial to search.", examples=["trial-a"])
+    ],
+    query: Annotated[
+        str,
+        Field(
+            min_length=1,
+            description="Concept or wording to search; must be non-empty.",
+            examples=["random sequence allocation concealment"],
+        ),
+    ],
     source_id: Annotated[
         SourceId | None,
-        Field(
-            description=(
-                "Optional captured Source ID. When supplied, search only this Source; omit for "
-                "the Trial's normal source-priority search."
-            )
-        ),
+        Field(description="Optional Source ID; omit for all Trial sources in priority order."),
     ] = None,
     mode: Annotated[
         Literal["all", "phrase", "any", "prefix"],
         Field(
             description=(
-                "Mode: all=every token on the same page; phrase=adjacent ordered tokens; "
-                "any=at least one token; prefix=token-prefix."
+                "Omit=exploratory any; all=every token on one page; phrase=known contiguous "
+                "wording; any=one token; prefix=token prefix."
             )
         ),
-    ] = "all",
+    ] = "any",
     limit: Annotated[
-        SearchLimit, Field(description="Maximum number of matching pages (1-100); default 10.")
+        SearchLimit, Field(description="Maximum matching pages (1-100); default 10.")
     ] = 10,
 ) -> ToolResult:
     return _invoke(
@@ -276,37 +326,85 @@ def search_sources(
 
 @mcp.tool(
     name="read_pages",
+    title="Read source pages",
     description=(
         "Read exact captured source-page text as numbered lines. Page numbers are 1-based "
-        "source indexes, not printed labels. Use the issued line numbers with "
-        "select_text_evidence; only copy a unique boundary substring when trimming shared first "
-        "or last lines. Never reconstruct PDF text. Every requested page must be valid; mixed "
-        "valid/invalid requests fail atomically. Pass page numbers in pages; there is no limit "
-        "or range parameter."
+        "source indexes, not printed labels. Use the issued lines with select_text_evidence; "
+        "pages must contain integers such as [1, 3], not strings; there is no limit or offset. "
+        "Pass page numbers in pages. For a large page, use next_start_line with the same page "
+        "until truncated is false."
     ),
     annotations=_READ_ONLY,
     output_schema=output_schema("read_pages"),
 )
 def read_pages(
-    trial_id: Annotated[TrialId, Field(description="Captured Trial containing the source.")],
-    source_id: Annotated[SourceId, Field(description="Server-issued source ID from list_sources.")],
+    trial_id: Annotated[
+        TrialId, Field(description="Trial containing the source.", examples=["trial-a"])
+    ],
+    source_id: Annotated[SourceId, Field(description="Source ID from list_sources.")],
     pages: Annotated[
         list[PageNumber],
-        Field(min_length=1, max_length=10, description="One to ten 1-based page numbers to read."),
+        Field(
+            min_length=1,
+            max_length=10,
+            description="One to ten integer source-page indexes, for example [1, 3].",
+            examples=[[1, 3]],
+        ),
     ],
+    start_line: Annotated[
+        StrictInt,
+        Field(
+            ge=1,
+            description=("First line; use next_start_line to continue a truncated page."),
+            examples=[1],
+        ),
+    ] = 1,
 ) -> ToolResult:
     def read() -> dict[str, Any]:
         result = _read_pages(_workspace(), trial_id, source_id, pages)
+        page_budget = max(1, _READ_PAGES_RESPONSE_CHARS // len(result["pages"]))
         numbered_pages = []
         for item in result["pages"]:
             lines = item["text"].splitlines()
+            if not lines:
+                numbered_pages.append(
+                    {
+                        "page": item["page"],
+                        "numbered_text": "",
+                        "line_count": 0,
+                        "returned_start_line": start_line,
+                        "returned_end_line": 0,
+                        "truncated": False,
+                        "next_start_line": None,
+                    }
+                )
+                continue
+            if start_line > len(lines):
+                raise ValueError(
+                    f"start_line {start_line} is outside page {item['page']}; "
+                    f"choose 1 <= start_line <= {len(lines)}"
+                )
+            returned: list[str] = []
+            used = 0
+            end_line = start_line - 1
+            for line_number in range(start_line, len(lines) + 1):
+                numbered = f"{line_number:04d}|{lines[line_number - 1]}"
+                additional = len(numbered) + (1 if returned else 0)
+                if returned and used + additional > page_budget:
+                    break
+                returned.append(numbered)
+                used += additional
+                end_line = line_number
+            truncated = end_line < len(lines)
             numbered_pages.append(
                 {
                     "page": item["page"],
-                    "numbered_text": "\n".join(
-                        f"{line_number:04d}|{line}" for line_number, line in enumerate(lines, 1)
-                    ),
+                    "numbered_text": "\n".join(returned),
                     "line_count": len(lines),
+                    "returned_start_line": start_line,
+                    "returned_end_line": end_line,
+                    "truncated": truncated,
+                    "next_start_line": end_line + 1 if truncated else None,
                 }
             )
         return {"outcome": "success", "pages": numbered_pages}
@@ -316,11 +414,12 @@ def read_pages(
 
 @mcp.tool(
     name="select_text_evidence",
+    title="Select text Evidence",
     description=(
-        "Select one contiguous range of numbered lines from one read_pages page. Use the "
+        "Select one contiguous range of numbered lines from one read_pages page. The usual call "
+        "needs only trial_id, source_id, page, start_line, and end_line. Use the "
         "1-based source page and line numbers exactly as issued; split a page-boundary passage "
-        "into one selection per page. If the desired passage shares its first or last line with "
-        "other text, copy a unique start_text or end_text from that boundary line to trim it. "
+        "into one selection per page; never reconstruct text from a preview. "
         "The server stores the exact unnumbered source text. Use visual Evidence when layout, "
         "symbols, or figure structure carry the meaning."
     ),
@@ -328,37 +427,26 @@ def read_pages(
     output_schema=output_schema("select_text_evidence"),
 )
 def select_text_evidence(
-    trial_id: Annotated[TrialId, Field(description="Captured Trial containing the source.")],
+    trial_id: Annotated[
+        TrialId,
+        Field(description="Captured Trial containing the source.", examples=["trial-a"]),
+    ],
     source_id: Annotated[SourceId, Field(description="Server-issued source ID from list_sources.")],
-    page: Annotated[PageNumber, Field(description="1-based page containing the passage.")],
+    page: Annotated[
+        PageNumber, Field(description="1-based page containing the passage.", examples=[7])
+    ],
     start_line: Annotated[
         StrictInt,
-        Field(ge=1, description="First numbered read_pages line to include."),
+        Field(ge=1, description="First numbered read_pages line to include.", examples=[5]),
     ],
     end_line: Annotated[
         StrictInt,
-        Field(ge=1, description="Last numbered read_pages line to include, inclusive."),
+        Field(
+            ge=1,
+            description="Last numbered read_pages line to include, inclusive.",
+            examples=[8],
+        ),
     ],
-    start_text: Annotated[
-        StrictStr | None,
-        Field(
-            min_length=1,
-            description=(
-                "Optional unique text within start_line where the selection begins; omit when "
-                "the whole first line belongs to the passage."
-            ),
-        ),
-    ] = None,
-    end_text: Annotated[
-        StrictStr | None,
-        Field(
-            min_length=1,
-            description=(
-                "Optional unique text within end_line where the selection ends; omit when the "
-                "whole last line belongs to the passage."
-            ),
-        ),
-    ] = None,
 ) -> ToolResult:
     return _invoke(
         "select_text_evidence",
@@ -369,14 +457,13 @@ def select_text_evidence(
             page,
             start_line,
             end_line,
-            start_text,
-            end_text,
         ),
     )
 
 
 @mcp.tool(
     name="render_page",
+    title="Render source page",
     description=(
         "Render one PDF page. Returns metadata and pixels as ImageContent by default; "
         "pass inline=false for metadata/cache-only use."
@@ -405,6 +492,7 @@ def render_page(
 
 @mcp.tool(
     name="select_visual_evidence",
+    title="Select visual Evidence",
     description=(
         "Record visual Evidence from a rendered page. Transcription must be one exact, "
         "self-contained account containing every applicable title, axis, series, label, value, "
@@ -445,10 +533,16 @@ def select_visual_evidence(
 
 @mcp.tool(
     name="save_proposal",
+    title="Save Result proposal",
     description=(
-        "Submit one typed Result card per Trial after selecting its supporting Evidence. "
+        "Submit typed Result cards after selecting their supporting Evidence. Before the first "
+        "Proposal Review, include exactly one card per captured Trial. While a Review is pending, "
+        "submit only the Trial cards that need replacement; the server preserves every unmentioned "
+        "card. "
         "Every results item has kind=assessable or kind=unavailable; an Evidence object is "
-        "never a Result card. "
+        "never a Result card. An assessable card requires target measurement, timing, at least "
+        "two comparison groups, intended population, and intended effect measure, plus reported "
+        "data with its form discriminator. Keep all source-reported numbers as strings. "
         "For an assessable Result, one selected passage, table block, or figure must join an "
         "endpoint identifier to one complete quantitative tuple. "
         "The server binds already-selected Evidence and keeps only material used by the Result. "
@@ -464,10 +558,12 @@ def save_proposal(
         Field(
             min_length=1,
             description=(
-                "One typed Result card per Trial. Select supporting Evidence first; do not "
-                "submit an Evidence object as a Result or repeat Evidence handles in the card. "
-                "Revise before researcher approval when "
-                "another source-reported candidate is better."
+                "Initial save: one typed Result card per captured Trial. Pending Review: only the "
+                "Trial cards to replace. The server preserves unmentioned cards. Select supporting "
+                "Evidence first; do not submit an Evidence object as a Result or repeat Evidence "
+                "handles in the card. A Result kind is only assessable or unavailable; "
+                "narrative, table, and figure are Evidence kinds. Revise before researcher "
+                "approval when another source-reported candidate is better."
             ),
         ),
     ],
@@ -480,13 +576,120 @@ def save_proposal(
     return _invoke("save_proposal", lambda: _save_proposal(_workspace(), proposal))
 
 
+class ProposalApprovalDecision(StrictModel):
+    approved: StrictBool = Field(
+        title="Approve Proposal Review",
+        description=(
+            "Approve the exact displayed Result mapping and begin automated RoB 2 assessment."
+        ),
+    )
+
+
+@mcp.tool(
+    name="request_proposal_approval",
+    title="Request Proposal approval",
+    description=(
+        "After the researcher explicitly approves the current Proposal Review in conversation, "
+        "ask the client to confirm that exact immutable Review. This tool has no approval "
+        "arguments: only a directly accepted elicitation with approved=true commits it. "
+        "For corrections, inspect Sources and replace the complete Proposal with save_proposal."
+    ),
+    annotations=_MUTATION,
+    output_schema=output_schema("request_proposal_approval"),
+)
+async def request_proposal_approval(ctx: Context) -> ToolResult:
+    approval_context = _proposal_approval_context(_workspace())
+    review = approval_context.review
+    if not isinstance(review, dict) or review.get("purpose") != "proposal":
+        if approval_context.acknowledgment is not None:
+            approved = _approve_review(
+                _workspace(),
+                None,
+                caller="researcher",
+                method="mcp_elicitation",
+            )
+            return _content("request_proposal_approval", approved)
+        return _content(
+            "request_proposal_approval",
+            {
+                "outcome": "condition",
+                "code": "proposal_review_not_pending",
+                "condition": "Proposal Review is not pending.",
+            },
+        )
+    review_reference = review.get("identity")
+    if not isinstance(review_reference, str):
+        return _content(
+            "request_proposal_approval",
+            {
+                "outcome": "condition",
+                "code": "proposal_approval_stale",
+                "condition": "The pending Proposal Review identity is invalid.",
+            },
+        )
+    try:
+        response = await ctx.elicit(
+            "Confirm whether to approve this exact Proposal Review. Decline or cancel to leave "
+            "it pending.\n" + json.dumps(review, sort_keys=True),
+            ProposalApprovalDecision,
+        )
+    except McpError:
+        return _content(
+            "request_proposal_approval",
+            {
+                "outcome": "condition",
+                "code": "proposal_approval_unsupported",
+                "condition": "The connected client does not support researcher elicitation.",
+            },
+        )
+    if isinstance(response, (DeclinedElicitation, CancelledElicitation)):
+        code = (
+            "proposal_approval_declined"
+            if isinstance(response, DeclinedElicitation)
+            else "proposal_approval_cancelled"
+        )
+        return _content(
+            "request_proposal_approval",
+            {"outcome": "condition", "code": code, "condition": response.action},
+        )
+    if not isinstance(response, AcceptedElicitation) or not response.data.approved:
+        return _content(
+            "request_proposal_approval",
+            {
+                "outcome": "condition",
+                "code": "proposal_approval_declined",
+                "condition": "The researcher did not approve the Proposal Review.",
+            },
+        )
+    try:
+        approved = _approve_review(
+            _workspace(),
+            review_reference,
+            caller="researcher",
+            method="mcp_elicitation",
+        )
+    except ValueError as error:
+        return _content(
+            "request_proposal_approval",
+            {
+                "outcome": "condition",
+                "code": "proposal_approval_stale",
+                "condition": str(error),
+            },
+        )
+    return _content("request_proposal_approval", approved)
+
+
 @mcp.tool(
     name="get_domain_context",
+    title="Get Domain context",
     description=(
         "Read active RoB 2 question cards after get_status reports "
         "next_action.operation=get_domain_context. Before saving, perform the bounded "
         "question-specific discovery required by the returned cards; read positive hits "
-        "and do not claim missing information from Result Evidence alone."
+        "and do not claim missing information from Result Evidence alone. The response includes "
+        "every Domain card and its activation predicate. Build the complete transitive active "
+        "set from answers in the same save call; inactive extra answers are ignored."
     ),
     annotations=_READ_ONLY,
     output_schema=output_schema("get_domain_context"),
@@ -507,12 +710,17 @@ def get_domain_context(
 
 @mcp.tool(
     name="save_domain_judgment",
+    title="Save Domain judgment",
     description=(
         "Save one RoB 2 Domain judgment after get_domain_context; call only during active "
         "Domain assessment and after its bounded question-specific source searches. Every "
         "Evidence premise must state the question proposition; treatment assignment alone "
         "does not prove awareness, differential measurement, or lack of analysis choices. "
-        "Supply every active question. Extra inactive future branch answers are ignored."
+        "Supply every active question. Extra inactive future branch answers are ignored. "
+        "Evaluate activation predicates against earlier items in this same answers list before "
+        "the first save. "
+        "The fifth accepted Domain freezes that Trial's final AssessmentSnapshot before "
+        "next_action advances to another Trial; no separate Trial-finalization call exists."
     ),
     annotations=_MUTATION,
     output_schema=output_schema("save_domain_judgment"),
@@ -526,15 +734,43 @@ def save_domain_judgment(
     answers: Annotated[
         list[DomainAnswer],
         Field(
+            min_length=1,
             description=(
-                "One typed answer for every active question. Inactive branch answers are "
-                "ignored and never committed."
-            )
+                "One typed answer per active question: question_id, answer, bases. Definitive "
+                "yes/no needs direct/indirect/contradictory Evidence; probable answers may use "
+                "limitation, absence receipt, context, or inference. List, not map; inactive "
+                "branches ignored."
+            ),
+            examples=[
+                [
+                    {
+                        "question_id": "sq:randomization:sequence",
+                        "answer": "probably_yes",
+                        "bases": [
+                            {
+                                "kind": "direct_support",
+                                "evidence": "eh_0123456789abcdef",
+                            }
+                        ],
+                    }
+                ]
+            ],
         ),
     ],
     multiple_concerns: Annotated[
         MultipleConcernsDecision | None,
-        Field(description="Optional Domain 2 multiple-concerns decision."),
+        Field(
+            description=(
+                "Omit unless a repair requests it. Object only: raises_overall_to_high:boolean, "
+                "rationale:string; never boolean/string."
+            ),
+            examples=[
+                {
+                    "raises_overall_to_high": False,
+                    "rationale": "Concerns remain below threshold.",
+                }
+            ],
+        ),
     ] = None,
     supersedes: Annotated[
         Identity | None,
@@ -559,6 +795,7 @@ def save_domain_judgment(
 
 @mcp.tool(
     name="request_trial_terminal",
+    title="Request Trial terminal",
     description=(
         "Request a needs_input or failed terminal only when the Trial cannot continue after "
         "ordinary conservative Domain work. Do not use it for missing direct evidence, repairs, "
@@ -588,9 +825,11 @@ def request_trial_terminal(
 
 @mcp.tool(
     name="finalize_batch",
+    title="Finalize batch",
     description=(
-        "Finalize terminal Trial assessments only when get_status reports "
-        "next_action.operation=finalize_batch."
+        "Package the already-final Trial records into the verified Batch artifact. Call only "
+        "when get_status reports next_action.operation=finalize_batch; this operation does "
+        "not complete an individual Trial."
     ),
     annotations=_MUTATION,
     output_schema=output_schema("finalize_batch"),

@@ -62,7 +62,7 @@ class PrepareBatchAction(PublicModel):
     operation: Literal["prepare_batch"]
     authority: Literal["host"]
     expected_revision: NonNegativeInt
-    caller_inputs: tuple[Literal["requested_outcome"], ...]
+    caller_inputs: tuple[Literal["requested_outcome", "trial_labels"], ...]
 
 
 class GetDomainContextAction(PublicModel):
@@ -84,7 +84,7 @@ class SaveDomainJudgmentAction(PublicModel):
     # content identity; callers must not infer it from the unbounded history.
     supersedes: Identity | None = Field(
         default=None,
-        description="Exact active checkpoint identity to replace; present only for a correction.",
+        description="Checkpoint replaced by this correction; omit otherwise.",
     )
 
     @model_validator(mode="after")
@@ -213,6 +213,7 @@ _RECEIPT_OPTIONS: Final = {
     "render_page": {},
     "select_visual_evidence": {},
     "save_proposal": {"review": True, "repair": True, "conflict": True},
+    "request_proposal_approval": {},
     "get_domain_context": {},
     "save_domain_judgment": {"repair": True, "conflict": True},
     "request_trial_terminal": {"conflict": True},
@@ -282,7 +283,6 @@ class TerminalCounts(PublicModel):
     needs_input: NonNegativeInt
     failed: NonNegativeInt
     pending: NonNegativeInt
-    provisional: NonNegativeInt
 
 
 class SelectedNarrativeEvidence(PublicModel):
@@ -329,9 +329,7 @@ SelectedEvidence = Annotated[
 
 
 class StatusData(PublicModel):
-    trial_dispositions: dict[
-        TrialId, Literal["pending", "provisional", "assessed", "needs_input", "failed"]
-    ]
+    trial_dispositions: dict[TrialId, Literal["pending", "assessed", "needs_input", "failed"]]
     terminal_counts: TerminalCounts
     selected_evidence: tuple[SelectedEvidence, ...]
 
@@ -345,6 +343,8 @@ class SearchHit(PublicModel):
     source_role: SourceRole
     source_label: str = Field(min_length=1)
     page: PageNumber
+    start_line: PageNumber = Field(description="First matching read_pages line.")
+    end_line: PageNumber = Field(description="Last matching read_pages line.")
     preview: str = Field(min_length=1)
 
 
@@ -373,6 +373,10 @@ class PageData(PublicModel):
     page: PageNumber
     numbered_text: str
     line_count: NonNegativeInt
+    returned_start_line: PageNumber
+    returned_end_line: NonNegativeInt
+    truncated: StrictBool
+    next_start_line: PageNumber | None = None
 
 
 class PagesData(PublicModel):
@@ -394,6 +398,58 @@ class RenderData(PublicModel):
 class ProposalData(PublicModel):
     proposal_identity: Identity
     retry: StrictBool = False
+
+
+class ProposalApprovalAcknowledgment(PublicModel):
+    review_identity: Identity
+    purpose: Literal["proposal"]
+    caller: str = Field(min_length=1)
+    method: str = Field(min_length=1)
+    observed_at: str = Field(min_length=1)
+    workflow_basis: NonNegativeInt
+    identity: Identity
+
+
+class ProposalApprovalData(PublicModel):
+    approved: Literal[True]
+    acknowledgment: Identity
+    acknowledgment_record: ProposalApprovalAcknowledgment
+    retry: StrictBool = False
+
+
+class ProposalApprovalDeclined(PublicModel):
+    code: Literal["proposal_approval_declined"]
+    detail: str = Field(min_length=1)
+
+
+class ProposalApprovalCancelled(PublicModel):
+    code: Literal["proposal_approval_cancelled"]
+    detail: str = Field(min_length=1)
+
+
+class ProposalApprovalUnsupported(PublicModel):
+    code: Literal["proposal_approval_unsupported"]
+    detail: str = Field(min_length=1)
+
+
+class ProposalApprovalStale(PublicModel):
+    code: Literal["proposal_approval_stale"]
+    detail: str = Field(min_length=1)
+
+
+class ProposalApprovalUnavailable(PublicModel):
+    code: Literal["proposal_review_not_pending"]
+    detail: str = Field(min_length=1)
+
+
+ProposalApprovalCondition = Annotated[
+    ProposalApprovalDeclined
+    | ProposalApprovalCancelled
+    | ProposalApprovalUnsupported
+    | ProposalApprovalStale
+    | ProposalApprovalUnavailable,
+    Field(discriminator="code"),
+]
 
 
 class AlwaysQuestionActivation(PublicModel):
@@ -431,6 +487,13 @@ class DomainQuestionCard(PublicModel):
     evidence_needed: tuple[str, ...] = Field(min_length=1)
     answer_anchors: tuple[GuidanceAnchor, ...] = Field(min_length=1)
     no_information_rule: str = Field(min_length=1)
+    considerations: tuple[str, ...] = Field(
+        min_length=1,
+        description=(
+            "Optional operational considerations and retrieval examples. Adapt, combine, "
+            "or ignore them; they are examples, not a required query list."
+        ),
+    )
     invalid_shortcuts: tuple[str, ...] = Field(min_length=1)
 
 
@@ -598,9 +661,22 @@ class Checkpoint(PublicModel):
     revision_basis: CheckpointRevisionBasis | None = None
 
 
+class DomainCheckpointSummary(PublicModel):
+    identity: Identity
+    trial_id: TrialId
+    domain_id: DomainId
+    judgment: Judgment
+
+
 class DomainJudgmentData(PublicModel):
-    checkpoint: Checkpoint
-    provisional: StrictBool = False
+    checkpoint: DomainCheckpointSummary
+    trial_completed: StrictBool = Field(
+        default=False,
+        description=(
+            "True only when this save completed the fifth Domain and froze the Trial's final "
+            "AssessmentSnapshot."
+        ),
+    )
     retry: StrictBool = False
 
 
@@ -666,6 +742,7 @@ DataByTool: Final = {
     "render_page": RenderData,
     "select_visual_evidence": VisualEvidenceData,
     "save_proposal": ProposalData,
+    "request_proposal_approval": ProposalApprovalData,
     "get_domain_context": DomainContextData,
     "save_domain_judgment": DomainJudgmentData,
     "request_trial_terminal": TerminalReceiptData,
@@ -673,6 +750,7 @@ DataByTool: Final = {
 }
 ConditionByTool: Final = {
     "finalize_batch": ConditionData,
+    "request_proposal_approval": ProposalApprovalCondition,
 }
 
 
@@ -715,7 +793,7 @@ def _head(value: dict[str, Any]) -> dict[str, Any]:
             "operation": "prepare_batch",
             "authority": "host",
             "expected_revision": value.get("state_revision", 0),
-            "caller_inputs": ["requested_outcome"],
+            "caller_inputs": ["requested_outcome", "trial_labels"],
         }
     else:
         next_action = None
@@ -787,7 +865,15 @@ def _payload(tool: str, value: dict[str, Any]) -> dict[str, Any]:
         data["hits"] = [
             {
                 key: item[key]
-                for key in ("source_id", "source_role", "source_label", "page", "preview")
+                for key in (
+                    "source_id",
+                    "source_role",
+                    "source_label",
+                    "page",
+                    "start_line",
+                    "end_line",
+                    "preview",
+                )
             }
             for item in data["hits"]
         ]
@@ -795,26 +881,10 @@ def _payload(tool: str, value: dict[str, Any]) -> dict[str, Any]:
         receipt = data["search_receipt"]
         data["search_receipt"] = receipt["handle"]
     checkpoint = data.get("checkpoint")
-    if isinstance(checkpoint, dict) and isinstance(checkpoint.get("search_accounts"), list):
-        checkpoint = dict(checkpoint)
-        checkpoint["search_accounts"] = [
-            {
-                key: receipt[key]
-                for key in (
-                    "identity",
-                    "handle",
-                    "trial_id",
-                    "query",
-                    "mode",
-                    "total_matches",
-                    "truncated",
-                    "condition",
-                )
-                if key in receipt
-            }
-            for receipt in checkpoint["search_accounts"]
-        ]
-        data["checkpoint"] = checkpoint
+    if tool == "save_domain_judgment" and isinstance(checkpoint, dict):
+        data["checkpoint"] = {
+            key: checkpoint[key] for key in ("identity", "trial_id", "domain_id", "judgment")
+        }
     if tool == "prepare_batch" and "batch" in data:
         batch = data.pop("batch")
         data.update(

@@ -11,6 +11,32 @@ Call rob2-kit tools directly as tool calls; never type their names into a shell.
 
 The server owns workflow state, record identity, and deterministic RoB 2 logic. You supply scientific choices and Evidence selections. The Proposal Review is the sole scientific researcher gate: before approval, the researcher may accept the displayed source-reported candidate or ask you in natural language to choose another candidate; revise the Proposal and present the fresh Review. After Proposal approval, do not ask for a final review or approval, whether to continue, or permission to pause. Follow the server's next action through every Domain until finalization or a typed `needs_input`/`failed` terminal.
 
+## Continue across context windows
+
+Treat host-managed context compaction and restarts as ordinary continuation
+paths. The durable server state owns completed work. After a compaction or
+restart, call `get_status` before any other workflow call, then resume the exact
+`head.next_action` with its server-owned fields unchanged. Use that state to
+recover; do not recreate completed work from memory or a summary. Use only the
+tool schemas supplied by the host. After compaction, use the host's tool
+discovery for the exact next operation when tools are lazy-loaded; never infer
+argument names from the compaction summary or memory.
+
+A low-context signal does not lower rigor. Keep bounded source discovery,
+premise audits, and typed judgments. Continue the current Trial. Do not rush,
+shorten the search, summarize remaining Trials, or ask the researcher how to
+proceed solely because context is low. Let the host compact automatically.
+If the host signals low context before compaction, do not answer in prose:
+immediately call `get_status`, then execute its exact `head.next_action`. This
+short, repeatable state lookup gives the host another safe continuation point.
+
+Save each Domain judgment with `save_domain_judgment` before moving to another
+Domain. The fifth valid checkpoint must mark the current Trial complete. Confirm
+`data.trial_completed:true`, then follow `head.next_action` before starting the
+next Trial. Call `finalize_batch` only when `head.next_action` directs it and
+every Trial is assessed or has a typed terminal. If a turn ends after a durable
+receipt, resume with `get_status`; an unsaved judgment is not final.
+
 ## Result-choice invariant
 
 Choose in this order: (1) an exact assessable Result; (2) the closest
@@ -33,21 +59,21 @@ put `condition`. Do not look for tool fields beside `data`.
 ## Complete the Batch
 
 1. Call `get_status` first. Pass `head.state_revision` unchanged as
-   `prepare_batch.expected_revision`, then call `prepare_batch` with the user's
-   requested clinical outcome concept. Remove task framing such as `assess risk
-   of bias for` or `risk of bias of`. Also omit Trial names and scope phrases
-   such as `in TRIAL-A`; Trial identity comes from the input directory. For
-   example, `Assess risk of bias for a requested outcome in TRIAL-A` supplies
-   `requested_outcome:"a requested outcome"`. The server
-   discovers every immediate,
-   non-hidden Trial directory under `input/{TRIAL NAME}/`, derives stable Trial
-   IDs from those directory names, and recursively captures supported sources.
+   `prepare_batch.expected_revision`. Set `requested_outcome` to the user's
+   clinical outcome concept after removing task framing. If the user names
+   Trials, pass their exact input directory labels in `trial_labels`. For
+   example, `Assess risk of bias for a requested outcome in Trial A` maps to:
+   `{"requested_outcome":"a requested outcome","trial_labels":["Trial A"],"expected_revision":0}`.
+   `Assess risk of bias for a requested outcome across Trial A and Trial B`
+   maps to:
+   `{"requested_outcome":"a requested outcome","trial_labels":["Trial A","Trial B"],"expected_revision":0}`.
+   If the user requests all input Trials, omit `trial_labels`. For example:
+   `{"requested_outcome":"a requested outcome","expected_revision":0}`.
    Call `prepare_batch` directly. Do not use shell, glob, or file-listing tools
    to inspect or declare Trial directories. Never replace the user's requested
-   outcome with a source endpoint. For example:
-   `{"requested_outcome":"a requested outcome","expected_revision":0}`.
+   outcome with a source endpoint.
 
-   Completion: `get_status` reports a Captured Batch and the next host operation is proposal work.
+   Completion: `get_status` reports proposal work, and the captured Trial labels match the requested scope.
 
 2. Intake conditions are typed constraints carried with the Captured Batch; they do not create a
    researcher gate. Continue to source review and Result construction. Proposal Review is the
@@ -55,11 +81,18 @@ put `condition`. Do not look for tool fields beside `data`.
 
    Completion: status reports proposal work in `head.next_action`.
 
-3. Use `list_sources`, `search_sources`, and `read_pages` to find the requested Result. Tool page numbers are 1-based source-page indexes, not printed journal or protocol labels. `read_pages` returns server-issued numbered lines; select text by page and inclusive line range. If the passage begins or ends within a shared line, copy only a unique `start_text` or `end_text` from that boundary line; never reconstruct PDF text. Search modes are `all` (every token on the same page), `phrase` (known adjacent ordered wording), `any` (at least one discovery term), and `prefix` (token-prefix). Use `all` or `any` for concept discovery; do not put noncontiguous concepts into `phrase`. A truncated search does not invalidate a positive exact passage, but refine it before treating candidate discovery as complete or using it as an absence basis. Use `render_page` when layout, axes, columns, symbols, or footnotes affect meaning; it returns pixels by default.
+3. Use `list_sources`, `search_sources`, and `read_pages` to find the requested Result. Tool page numbers are 1-based source-page indexes, not printed journal or protocol labels. `read_pages` returns server-issued numbered lines. Select the smallest complete passage with the issued page and inclusive line range:
 
-   `read_pages` accepts only the explicit `pages` list; it has no `limit` or
-   range argument. Search hits name their Source role and label. Source-first
-   ordering is a navigation priority, not an exhaustiveness claim: use a
+   `{"trial_id":"trial-a","source_id":"source_<full id>","page":7,"start_line":5,"end_line":8}`
+
+   Use the issued line numbers exactly; never reconstruct PDF text or copy text from a search preview. If a passage crosses a page boundary, select one fragment per page. Search modes are `any` (at least one discovery term; the default when omitted), `all` (every token on the same page), `phrase` (known contiguous wording), and `prefix` (token-prefix). Use `any` or `all` for concept discovery; do not put noncontiguous concepts into `phrase`. A truncated search does not invalidate a positive exact passage, but refine it before treating candidate discovery as complete or using it as an absence basis. Use `render_page` when layout, axes, columns, symbols, or footnotes affect meaning; it returns pixels by default.
+
+   `read_pages` accepts an explicit `pages` list and an optional `start_line`.
+   When a returned page has `truncated:true`, call it again for that one page
+   with the issued `next_start_line`; do not guess or skip the omitted lines.
+   It has no caller-selected output limit. Search hits name their Source role and label and issue
+   exact `start_line` and `end_line` coordinates. Read that page from `start_line`; do not scan or
+   guess line offsets. Source-first ordering is a navigation priority, not an exhaustiveness claim: use a
    narrower follow-up query when the active question points to a protocol,
    SAP, registry, or other later-ranked Source.
 
@@ -103,41 +136,41 @@ put `condition`. Do not look for tool fields beside `data`.
    numbers. An isolated component is a last resort when no complete profile or
    closer candidate is reported.
 
-5. Before calling `save_proposal`, read [Specify the Result](references/result.md) and [Select Evidence](references/evidence.md). The proposal is one object with a `results` array:
+5. Before calling `save_proposal`, read [Specify the Result](references/result.md) and [Select Evidence](references/evidence.md). The initial proposal is one object with a `results` array containing one card per captured Trial. During a pending Proposal Review, a researcher correction is a partial replacement: submit only the corrected Trial card or cards, and the server preserves every unmentioned card.
 
    - every Result has `trial_id`; the server derives the captured `requested_outcome` from Intake;
    - an assessable Result has `kind`, `relation`, `target`, and `reported`; the server derives `clarity`, Evidence, and canonical bindings; a non-exact relation also has `relation_rationale`;
    - an unavailable Result has `kind`, `relation` (`ambiguous` or `unavailable`), and `missing_facts`. Each missing fact is one object with `fact` and a nested `basis`: use `missing_reporting` with a selected Evidence handle when the Trial has Sources, or use `intake_condition` with `code:no_supported_sources` only when the captured Batch contains that exact condition and the Trial has zero captured Sources. For `missing_reporting`, the server retains the selected quote or transcription as the complete exact source premise. The basis must be an explicit missing-reporting premise or the exact captured no-source condition, not merely a related endpoint. Unavailable is not an escape from Evidence or Proposal Review.
 
-   Call `save_proposal` with `{"results":[...],"expected_revision":<current state revision>}`. The Result cards are top-level under `results`; there is no `proposal` wrapper and no nested revision. Do not put `trial_id` or `outcome` beside a Result's own fields. Do not send an `evidence` field, table or figure wrappers, `clarity`, `bindings`, or `value_digest`. Evidence selection is already durable server state: the server binds the Result against selected material and retains only Evidence that supports a Result field.
+   Call `save_proposal` with `{"results":[...],"expected_revision":<current state revision>}`. On the first save, include every Trial. During Proposal Review, include only Trials whose cards must change; do not reconstruct unaffected cards. The Result cards are top-level under `results`; there is no `proposal` wrapper and no nested revision. Do not put `trial_id` or `outcome` beside a Result's own fields. Do not send an `evidence` field, table or figure wrappers, `clarity`, `bindings`, or `value_digest`. Evidence selection is already durable server state: the server binds the Result against selected material and retains only Evidence that supports a Result field.
 
    The server derives canonical bindings for proof-critical Source-owned
-   leaves under `target` and `reported`; do not send a `bindings` field. The
+   leaves under `reported`; do not send a `bindings` field. The
    server reconstructs `/target/outcome_definition`,
    `/target/measurement/metric`, and `/target/effect_of_interest` from Intake
    and the fixed contract. Target method, intended population, and intended
-   effect measure are model/researcher interpretation fields shown at review,
-   not duplicate quotation claims. Target timing and arm assignments require
-   selected source support. Comparison-group IDs remain
+   effect measure, timing, and arm assignments are model/researcher interpretation
+   fields shown at review, not duplicate quotation claims. Comparison-group IDs remain
    caller-supplied structural identifiers. Repeated `reported.group_id` and
    each reported `group_values[].group_id` or `values[].group_id` are structural
    references: they must match target IDs but do not need separate Evidence
    mappings. `category_axis_names` are structural dimension declarations;
    source-owned labels remain in each category value's `category_axes`.
-   Reported endpoint fields, arm assignments, category labels, and reported
-   quantities still require exact or normalization-equivalent support from
+   Reported endpoint fields, source-owned group or category labels, and reported
+   quantities require exact or normalization-equivalent support from
    selected typed Evidence. Each handle resolves to one immutable selected
    Evidence item; do not copy clauses, paraphrase the quote, or author
    source-to-value mappings.
+   `reported.endpoint` requires `name` and accepts an optional `definition`.
    Keep the endpoint name and at least one complete quantitative result tuple in
-   the same selected immutable Evidence item. Set `reported.endpoint.definition`
-   only to the exact complete definition tied to that same endpoint label in a
-   selected passage; otherwise use `null` (never borrow a component or related
-   endpoint definition):
+   the same selected immutable Evidence item.
+   Include `definition` only when the selected passage gives the exact complete
+   definition tied to that endpoint label; omit it otherwise (never borrow a
+   component or related endpoint definition):
    effect measure plus estimate, or one complete group-value tuple
    (statistic/value/unit) for a comparative effect; statistic/value/unit for a
    group-bound value; or category axes/value for a category profile. Precision
-   is checked independently and is not required in the anchor. Do not splice
+   is checked independently. Do not splice
    an endpoint from one passage with values from another.
 
    Mechanical result shape: do not repeat the captured request in a Result.
@@ -165,8 +198,9 @@ put `condition`. Do not look for tool fields beside `data`.
    label for each axis name, in source order. Do not invent statistic or unit
    labels that the selected material does not contain. If a source prints both
    counts and percentages in one cell, preserve the complete cell value.
-   `reported.endpoint` is `{name,definition}` from the Source; its name is an
-   endpoint label, not a summary statistic. Use `relation:"exact"` only when
+   `reported.endpoint` contains the Source endpoint `name` plus an optional
+   `definition`; its name is an endpoint label, not a summary statistic. Use
+   `relation:"exact"` only when
    the target outcome name and reported endpoint name match after Unicode,
    whitespace, case, and hyphen normalization; do not infer synonyms. For
    `relation:"exact"`, omit `relation_rationale`; the server derives the
@@ -179,7 +213,9 @@ put `condition`. Do not look for tool fields beside `data`.
    `described` or `quantified` union. Each target comparison group is
    `{id,assignment}` with the complete randomized arm. A comparative report
    uses `effect_measure`, `estimate`, and optional `precision`,
-   `group_values`; a group-bound report uses `values`. Each group value is
+   plus optional `group_values`; omit `group_values` when the comparative
+   estimate is complete and the Source does not state one unambiguous
+   statistic and unit for every group. A group-bound report uses `values`. Each group value is
    `{group_id,statistic,value,unit}`, and reported group IDs must equal target
    group IDs. Do not send parallel quantities or group lists. Figure drafts
    are handle-only: `{"kind":"figure","handle":"..."}`.
@@ -209,7 +245,7 @@ put `condition`. Do not look for tool fields beside `data`.
 
    Completion: each Trial has one complete Result card or one complete unavailable disposition in the proposal `data`. Every Source-derived structured fact, including every unavailable missing fact, has one nested typed Evidence basis. Before submission, perform a premise audit: each exact cited fragment must entail the field or question proposition it is attached to. If it does not, revise the claim conservatively or use a concrete missing fact. Do not cite a lead-in or unfinished list, and do not use an inference about missingness when the source does not state the relevant premise. If a related endpoint or profile contains enough data, revise and resubmit one complete assessable non-exact Result rather than declaring it unavailable solely because names differ.
 
-6. After a restart, call `get_status` first. During proposal phase it returns bounded `selected_evidence` records (handles plus the selected material metadata); deterministically reselect a missing passage before rebuilding the typed Result card. Do not repeat handles in the card. Call `save_proposal` with top-level `results` and the current State revision in required `expected_revision`. Repair every returned defect together. If the server prepares a Proposal Review, ask the researcher to review that exact record.
+6. After a restart, call `get_status` first. During proposal phase it returns bounded `selected_evidence` records (handles plus the selected material metadata); deterministically reselect a missing passage before rebuilding the typed Result card. Do not repeat handles in the card. Call `save_proposal` with top-level `results` and the current State revision in required `expected_revision`. Repair every returned defect for the submitted card or cards together. If the server prepares a Proposal Review, ask the researcher to review that exact record.
 
    Completion: `get_status.head.phase` is `assessment` or every affected Trial
    has an automatically committed terminal disposition.
@@ -244,7 +280,10 @@ put `condition`. Do not look for tool fields beside `data`.
    for that question. Its `official_guidance` is the complete official source
    excerpt and its `source_locator` identifies the official location. Its
    actionable operational fields are `decision_rule`, `evidence_needed`,
-   `answer_anchors`, `no_information_rule`, and `invalid_shortcuts`. The
+   `answer_anchors`, `no_information_rule`, `considerations`, and
+   `invalid_shortcuts`. Treat `considerations` as optional examples: adapt,
+   combine, or ignore them based on the documents and unresolved evidence gap.
+   They are not a required query list or checklist. The
    scientific pack retains the full nested official and operational guidance for
    artifact and audit use; the card deliberately omits operational metadata that
    is not needed on this answering path. Apply the card directly; loading a
@@ -273,10 +312,14 @@ put `condition`. Do not look for tool fields beside `data`.
 8. Call `save_domain_judgment` with top-level `trial_id`, `domain_id`,
    `expected_revision`, `answers`, and (when requested) `multiple_concerns`.
    Include every initially active question plus each dependent question whose
-   activation predicate is met by your earlier answers. The server ignores and
-   never commits extra inactive branch answers, so one conservative superset is
-   safe when a branch is uncertain. Each active item in `answers` is one nested response with `question_id`,
-   `answer`, and non-empty `bases`. A basis is a limitation, a server-issued
+   activation predicate is met by earlier items in the same `answers` list. Follow
+   predicates recursively before the first save; do not wait for a Repair to learn
+   the next branch. `get_domain_context` returns every Domain card and its predicate.
+   The server ignores and never commits extra inactive branch answers, so one
+   conservative superset is safe when a branch is uncertain. Each active item in
+   `answers` is one nested response with `question_id`,
+   `answer`, and non-empty `bases`. Answer objects are closed: use only those
+   three fields. A basis is a limitation, a server-issued
    absence receipt, or a selected Evidence handle. For a `limitation`, pass
    the opaque `sr_...` `handle` returned by `search_sources` as
    `search_receipt`; it must be a non-truncated receipt from the current Trial
@@ -286,6 +329,12 @@ put `condition`. Do not look for tool fields beside `data`.
    The receipt must be an untruncated no-hit result (`truncated:false`,
    `total_matches:0`, `condition:no_hits`); refine a truncated or positive
    search before using it to support absence.
+
+   Example answer item:
+
+   `{"question_id":"sq:randomization:sequence","answer":"probably_yes","bases":[{"kind":"direct_support","evidence":"eh_<full handle>"}]}`
+
+   `answers` is a list of these objects, not a map keyed by question ID.
    Limitations, absence, context, and inference alone cannot justify a
    definitive answer; apply the p.3 response framework and the question card
    before choosing a probable answer or `no_information`. The missing-outcome
@@ -337,28 +386,51 @@ put `condition`. Do not look for tool fields beside `data`.
    active answer needs at least one nested basis. Never add clauses, clause
    IDs, question-level parallel Evidence lists, or Evidence rationale.
 
+   Complete call shape (generic example):
+
+   ```json
+   {
+     "trial_id": "trial-a",
+     "domain_id": "domain:randomization",
+     "expected_revision": 12,
+     "answers": [
+       {
+         "question_id": "sq:randomization:sequence",
+         "answer": "probably_yes",
+         "bases": [{"kind": "direct_support", "evidence": "eh_<full handle>"}]
+       }
+     ]
+   }
+   ```
+
+   Omit `multiple_concerns` unless a repair requests it. When requested, it is
+   one object, never a bare boolean or string:
+   `{"raises_overall_to_high":false,"rationale":"The concerns remain below the high-risk threshold."}`.
+
    When the final Domain would leave at least two `some_concerns` judgments and
    no `high` judgment, the server asks for `multiple_concerns` with
    `raises_overall_to_high` and a concise rationale naming the concerned Domains.
    Supply it only when requested; remove it when the repair says it is not
    applicable. The server stores that explicit synthesis decision.
 
-   Completion: five valid Domain checkpoints in `data.checkpoint` create one provisional AssessmentSnapshot for the Trial.
+   Completion: five valid Domain checkpoints in `data.checkpoint` automatically
+   freeze one final AssessmentSnapshot and mark that Trial `assessed`. Confirm
+   `data.trial_completed:true`, then follow `head.next_action`; the server advances
+   to the next Trial without a separate Trial-finalization call.
 
-9. Before finalization, call `finalize_batch` with the current revision. Once
-   all five Domains are complete, this host call automatically freezes the
-   provisional snapshot and creates the verified artifact. There is no
-   assessment Review or final researcher approval step.
+9. When every Trial is assessed or has another terminal disposition, call
+   `finalize_batch` with the current revision. This packages the already-final
+   Trial snapshots into the verified artifact. There is no assessment Review,
+   per-Trial finalization tool, or final researcher approval step.
 
-   `ready_to_finalize` is not a terminal state and a provisional snapshot is
-   not a completed assessment. When any receipt reports
+   `ready_to_finalize` is not the finalized Batch state. When any receipt reports
    `head.next_action.operation:"finalize_batch"`, call `finalize_batch`
    immediately with that receipt's revision before emitting text. Report
    completion only after the finalization receipt reports `phase:"finalized"`.
    Copy the final overall and Domain judgments exactly from
    `data.assessment_summary`; do not reconstruct or soften them in prose.
 
-10. To correct a Domain before finalization, load its current context and save a
+10. To correct a Domain while its Trial is still pending, load its current context and save a
    new revision with the current State revision, `supersedes` naming the exact
    prior checkpoint identity, and one closed `revision_basis`: `new_evidence`
    must reference selected Evidence absent from the prior checkpoint and use
@@ -388,15 +460,19 @@ the verified artifact.
   closed; pass every server-owned field (including `expected_revision`, Trial and
   Domain identifiers) unchanged, and provide only the caller-owned inputs that
   the named operation still requires. When the operation is `researcher_review`,
-  stop and present the Proposal Review to the researcher; it is the sole gate and
-  is completed outside MCP. If the researcher asks for another candidate, treat
-  that request as direction to reinspect the captured Sources, not as Evidence;
-  submit a revised source-bound Proposal with the latest State revision and
-  present its fresh Review. After approval, continue from `get_status` without
-  accepting researcher-supplied signalling answers. Do not ask whether to
+  present the proposed Result mapping and stop. If the researcher explicitly
+  approves that Review in ordinary conversation, call
+  `request_proposal_approval`; its client elicitation displays and binds the
+  exact immutable Review. Do not call it before explicit approval. If the
+  researcher instead corrects one or more Result targets, treat that text as
+  search direction, not Evidence. Keep the Review pending, inspect the captured
+  Sources, and call `save_proposal` with only the corrected Trial card or cards.
+  The server preserves unmentioned Trials. Present the fresh Review identity before accepting approval. After approval,
+  continue from `get_status` without accepting researcher-supplied signalling
+  answers. Do not ask whether to
   continue or pause for progress confirmation; repeatedly follow
-  `head.next_action` through every Domain until finalization or a typed
-  `needs_input`/`failed` terminal.
+  `head.next_action` through every Domain until finalization
+  or a typed `needs_input`/`failed` terminal.
 - Pass server-issued handles and references unchanged.
 - After Proposal Review approval, call `get_status` first, then follow every
   `head.next_action`; do not report Domain judgments before saving their typed

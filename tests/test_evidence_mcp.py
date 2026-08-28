@@ -16,7 +16,11 @@ from support.rob2 import *  # noqa: F401,F403
 from rob2_kit.application import finalization
 from rob2_kit.application._state import _identity, _state
 from rob2_kit.application.contracts import COUNTERS
-from rob2_kit.application.evidence import _normalized_contains, _search_receipt
+from rob2_kit.application.evidence import (
+    _cached_normalized_search_text,
+    _normalized_contains,
+    _search_receipt,
+)
 
 
 def test_list_sources_resolves_one_captured_trial_or_returns_boundary_error(tmp_path: Path) -> None:
@@ -132,6 +136,82 @@ def test_search_preserves_source_priority_then_uses_fts_bm25_within_source(
     assert pairs[3] == (protocol_source["id"], 1)
 
 
+def test_search_reserves_one_hit_per_matching_source_within_limit(tmp_path: Path) -> None:
+    workspace = _workspace(tmp_path)
+    trial = workspace / "input" / "trial"
+    article = pymupdf.open()
+    for text in (
+        "alpha beta " * 40,
+        "alpha beta alpha beta alpha beta",
+        "alpha beta",
+    ):
+        article.new_page().insert_text((72, 72), text)
+    (trial / "article.pdf").write_bytes(article.tobytes())
+    article.close()
+    protocol = pymupdf.open()
+    protocol.new_page().insert_text((72, 72), "alpha beta")
+    (trial / "protocol.pdf").write_bytes(protocol.tobytes())
+    protocol.close()
+    (trial / "sources.toml").write_text(
+        'roles = { "article.pdf" = "main_article", "protocol.pdf" = "protocol" }\n',
+        encoding="utf-8",
+    )
+    _call(
+        workspace,
+        "prepare_batch",
+        {"requested_outcome": "requested outcome", "expected_revision": 0},
+    )
+    sources = _call(workspace, "list_sources", {"trial_id": "trial"})["data"]["sources"]
+    article_source = next(source for source in sources if source["label"] == "article.pdf")
+    protocol_source = next(source for source in sources if source["label"] == "protocol.pdf")
+
+    result = _call(
+        workspace,
+        "search_sources",
+        {"trial_id": "trial", "query": "alpha beta", "limit": 2},
+    )
+    pairs = [(hit["source_id"], hit["page"]) for hit in result["data"]["hits"]]
+
+    assert result["data"]["total_matches"] == 4
+    assert result["data"]["truncated"] is True
+    assert pairs[0][0] == article_source["id"]
+    assert pairs[1] == (protocol_source["id"], 1)
+    expected_hits = [{"source_id": source_id, "page": page} for source_id, page in pairs]
+    receipt = _search_receipt(workspace, result["data"]["search_receipt"])
+    assert receipt["hits"] == expected_hits
+    state = _state(workspace)
+    authoritative = {
+        source["id"]: source
+        for trial_state in state["batch"]["trials"]
+        if trial_state["id"] == "trial"
+        for source in trial_state["sources"]
+    }
+    assert finalization._valid_search_account(
+        receipt,
+        "trial",
+        state["batch"]["identity"],
+        authoritative,
+        _identity,
+    )
+
+    limited = _call(
+        workspace,
+        "search_sources",
+        {"trial_id": "trial", "query": "alpha beta", "limit": 1},
+    )
+    assert len(limited["data"]["hits"]) == 1
+    assert limited["data"]["hits"][0]["source_id"] == article_source["id"]
+
+
+def test_search_normalization_derivatives_are_bounded_and_reused() -> None:
+    _cached_normalized_search_text.cache_clear()
+    text = "A captured page with a typographic ﬁligature and a line-\nwrap."
+
+    assert _cached_normalized_search_text(text) == _cached_normalized_search_text(text)
+    assert _cached_normalized_search_text.cache_info().hits == 1
+    assert _cached_normalized_search_text.cache_info().maxsize == 2048
+
+
 def test_search_replays_bm25_order_from_the_selected_trial_only(tmp_path: Path) -> None:
     workspace = _workspace(tmp_path)
     target = workspace / "input" / "trial"
@@ -192,7 +272,19 @@ def test_numbered_page_lines_select_exact_source_text(tmp_path: Path) -> None:
         "read_pages",
         {"trial_id": "trial", "source_id": source["id"], "pages": [1]},
     )["data"]["pages"][0]
-    assert set(page) == {"page", "numbered_text", "line_count"}
+    assert set(page) == {
+        "page",
+        "numbered_text",
+        "line_count",
+        "returned_start_line",
+        "returned_end_line",
+        "truncated",
+        "next_start_line",
+    }
+    assert page["returned_start_line"] == 1
+    assert page["returned_end_line"] == 4
+    assert page["truncated"] is False
+    assert page["next_start_line"] is None
     assert page["numbered_text"] == ("0001|first line\n0002|middle-\n0003|line\n0004|last line")
 
     selected = _call(
@@ -226,12 +318,12 @@ def test_numbered_page_lines_select_exact_source_text(tmp_path: Path) -> None:
     )
 
 
-def test_boundary_text_selects_one_sentence_from_shared_lines(tmp_path: Path) -> None:
+def test_read_pages_returns_bounded_line_windows_with_continuation(tmp_path: Path) -> None:
     workspace = _workspace(tmp_path)
+    # The application projection wraps this valid but unusually long source
+    # line.  The MCP response must still be bounded and line-addressable.
     (workspace / "input" / "trial" / "main.txt").write_text(
-        "Prior sentence. An intention-to-treat analy-\n"
-        "sis included all randomly assigned patients. P values were\n"
-        "two-sided.\n",
+        "word " * 20_000,
         encoding="utf-8",
     )
     _call(
@@ -241,88 +333,32 @@ def test_boundary_text_selects_one_sentence_from_shared_lines(tmp_path: Path) ->
     )
     source = _call(workspace, "list_sources", {"trial_id": "trial"})["data"]["sources"][0]
 
-    selected = _call(
+    first = _call(
         workspace,
-        "select_text_evidence",
+        "read_pages",
+        {"trial_id": "trial", "source_id": source["id"], "pages": [1]},
+    )
+    assert first["outcome"] == "success"
+    page = first["data"]["pages"][0]
+    assert len(first["data"]["pages"]) == 1
+    assert len(page["numbered_text"]) <= 24_000
+    assert page["line_count"] > page["returned_end_line"]
+    assert page["truncated"] is True
+    assert page["next_start_line"] == page["returned_end_line"] + 1
+
+    second = _call(
+        workspace,
+        "read_pages",
         {
             "trial_id": "trial",
             "source_id": source["id"],
-            "page": 1,
-            "start_line": 1,
-            "end_line": 2,
-            "start_text": "An intention-to-treat analy-",
-            "end_text": "patients.",
+            "pages": [1],
+            "start_line": page["next_start_line"],
         },
     )
-
-    assert selected["outcome"] == "success"
-    assert selected["data"]["evidence"]["quote"].splitlines() == [
-        "An intention-to-treat analy-",
-        "sis included all randomly assigned patients.",
-    ]
-
-
-def test_boundary_text_must_be_unique_within_its_numbered_line(tmp_path: Path) -> None:
-    workspace = _workspace(tmp_path)
-    (workspace / "input" / "trial" / "main.txt").write_text(
-        "same text, same text.\n", encoding="utf-8"
-    )
-    _call(
-        workspace,
-        "prepare_batch",
-        {"requested_outcome": "requested outcome", "expected_revision": 0},
-    )
-    source = _call(workspace, "list_sources", {"trial_id": "trial"})["data"]["sources"][0]
-
-    result = _call(
-        workspace,
-        "select_text_evidence",
-        {
-            "trial_id": "trial",
-            "source_id": source["id"],
-            "page": 1,
-            "start_line": 1,
-            "end_line": 1,
-            "start_text": "same text",
-        },
-    )
-
-    assert result["outcome"] == "condition"
-    assert result["condition"]["detail"] == (
-        "boundary text must match exactly once within its numbered boundary line"
-    )
-
-
-@pytest.mark.parametrize("source_text", ("The analysis was specified by the\n", "Please note\n"))
-def test_select_text_evidence_rejects_incomplete_page_boundary_fragment(
-    tmp_path: Path, source_text: str
-) -> None:
-    workspace = _workspace(tmp_path)
-    (workspace / "input" / "trial" / "main.txt").write_text(source_text, encoding="utf-8")
-    _call(
-        workspace,
-        "prepare_batch",
-        {"requested_outcome": "requested outcome", "expected_revision": 0},
-    )
-    source = _call(workspace, "list_sources", {"trial_id": "trial"})["data"]["sources"][0]
-
-    invalid = _call(
-        workspace,
-        "select_text_evidence",
-        {
-            "trial_id": "trial",
-            "source_id": source["id"],
-            "page": 1,
-            "start_line": 1,
-            "end_line": 1,
-        },
-    )
-
-    assert invalid["outcome"] == "condition"
-    assert invalid["condition"]["code"] == "invalid_request"
-    assert "incomplete" in invalid["condition"]["detail"]
-    with sqlite3.connect(workspace / ".rob2-kit" / "derivative.sqlite3") as connection:
-        assert connection.execute("SELECT COUNT(*) FROM evidence_handles").fetchone()[0] == 0
+    next_page = second["data"]["pages"][0]
+    assert next_page["returned_start_line"] == page["next_start_line"]
+    assert next_page["numbered_text"].startswith(f"{next_page['returned_start_line']:04d}|")
 
 
 @pytest.mark.parametrize(
@@ -332,11 +368,12 @@ def test_select_text_evidence_rejects_incomplete_page_boundary_fragment(
         ("- The following\n", 1),
         ("| Measure | the |\n", 1),
         ("Please Note\n", 1),
+        ("The analysis was specified by\nprotocol.\n", 1),
         ("The analysis was specified by the\nprotocol.\n", 2),
         ("The analysis was specified by the protocol.\n", 1),
     ),
 )
-def test_select_text_evidence_preserves_structural_and_complete_fragments(
+def test_select_text_evidence_accepts_exact_fragments(
     tmp_path: Path, source_text: str, end_line: int
 ) -> None:
     workspace = _workspace(tmp_path)
@@ -361,142 +398,6 @@ def test_select_text_evidence_preserves_structural_and_complete_fragments(
     )
 
     assert selected["outcome"] == "success"
-
-
-@pytest.mark.parametrize(
-    "source_text,end_line",
-    (
-        ("If a dose was reduced\nfor toxicity.\n", 1),
-        ("The assessment used CTCAE\nversion 4.0.\n", 1),
-        ("The analysis accounted for the use of the\nplanned model.\n", 1),
-        ("The treatment continued for\nsix cycles.\n", 1),
-        ("The hazard ratio was 0.61;\n95% confidence interval, 0.47 to 0.80.\n", 1),
-    ),
-)
-def test_select_text_evidence_rejects_incomplete_mid_page_prose(
-    tmp_path: Path, source_text: str, end_line: int
-) -> None:
-    workspace = _workspace(tmp_path)
-    (workspace / "input" / "trial" / "main.txt").write_text(source_text, encoding="utf-8")
-    _call(
-        workspace,
-        "prepare_batch",
-        {"requested_outcome": "requested outcome", "expected_revision": 0},
-    )
-    source = _call(workspace, "list_sources", {"trial_id": "trial"})["data"]["sources"][0]
-
-    invalid = _call(
-        workspace,
-        "select_text_evidence",
-        {
-            "trial_id": "trial",
-            "source_id": source["id"],
-            "page": 1,
-            "start_line": 1,
-            "end_line": end_line,
-        },
-    )
-
-    assert invalid["outcome"] == "condition"
-    assert invalid["condition"]["code"] == "invalid_request"
-    assert "incomplete" in invalid["condition"]["detail"]
-
-
-def test_select_text_evidence_rejects_cross_page_continuation(tmp_path: Path) -> None:
-    workspace = _workspace(tmp_path)
-    trial = workspace / "input" / "trial"
-    document = pymupdf.open()
-    document.new_page().insert_text((72, 72), "Treatment was planned for six")
-    document.new_page().insert_text((72, 72), "cycles.")
-    (trial / "article.pdf").write_bytes(document.tobytes())
-    document.close()
-    _call(
-        workspace,
-        "prepare_batch",
-        {"requested_outcome": "requested outcome", "expected_revision": 0},
-    )
-    source = _call(workspace, "list_sources", {"trial_id": "trial"})["data"]["sources"][0]
-
-    invalid = _call(
-        workspace,
-        "select_text_evidence",
-        {
-            "trial_id": "trial",
-            "source_id": source["id"],
-            "page": 1,
-            "start_line": 1,
-            "end_line": 1,
-        },
-    )
-
-    assert invalid["outcome"] == "condition"
-    assert "incomplete" in invalid["condition"]["detail"]
-
-
-def test_select_text_evidence_ignores_footer_before_cross_page_continuation(
-    tmp_path: Path,
-) -> None:
-    workspace = _workspace(tmp_path)
-    trial = workspace / "input" / "trial"
-    document = pymupdf.open()
-    document.new_page().insert_text(
-        (72, 72),
-        "Treatment was planned for six\nThe Journal is produced by Example Publisher.",
-    )
-    document.new_page().insert_text((72, 72), "journal.example\n12\ncycles.")
-    (trial / "article.pdf").write_bytes(document.tobytes())
-    document.close()
-    _call(
-        workspace,
-        "prepare_batch",
-        {"requested_outcome": "requested outcome", "expected_revision": 0},
-    )
-    source = _call(workspace, "list_sources", {"trial_id": "trial"})["data"]["sources"][0]
-
-    invalid = _call(
-        workspace,
-        "select_text_evidence",
-        {
-            "trial_id": "trial",
-            "source_id": source["id"],
-            "page": 1,
-            "start_line": 1,
-            "end_line": 2,
-        },
-    )
-
-    assert invalid["outcome"] == "condition"
-    assert "incomplete" in invalid["condition"]["detail"]
-
-
-def test_select_text_evidence_rejects_long_footnote_ending_in_connector(tmp_path: Path) -> None:
-    workspace = _workspace(tmp_path)
-    (workspace / "input" / "trial" / "main.txt").write_text(
-        "* There were no significant differences between groups when analyzed with the use of the\n"
-        "Wilcoxon rank-sum test.\n",
-        encoding="utf-8",
-    )
-    _call(
-        workspace,
-        "prepare_batch",
-        {"requested_outcome": "requested outcome", "expected_revision": 0},
-    )
-    source = _call(workspace, "list_sources", {"trial_id": "trial"})["data"]["sources"][0]
-
-    invalid = _call(
-        workspace,
-        "select_text_evidence",
-        {
-            "trial_id": "trial",
-            "source_id": source["id"],
-            "page": 1,
-            "start_line": 1,
-            "end_line": 1,
-        },
-    )
-
-    assert invalid["outcome"] == "condition"
-    assert "incomplete" in invalid["condition"]["detail"]
 
 
 @pytest.mark.parametrize(
@@ -576,7 +477,14 @@ def test_product_and_standalone_text_normalization_match() -> None:
         ("pro\u2010\ngression", "progression", True),
         ("pro-\n\u200bgression", "progression", True),
         ("pro\u200b-\ngression", "progression", True),
+        ("follow-\nup", "follow-up", True),
+        ("castrationresistant", "castration-resistant", False),
         ("e\u0301-\nvalue", "\u00e9value", True),
+        (
+            "The ﬁnal\u200b\u202e analysis\x00 was complete.\u00ad",
+            "the final analysis was complete.",
+            True,
+        ),
         ("(-\nvalue", "(value", False),
         ("x-\n_axis", "x_axis", True),
     )

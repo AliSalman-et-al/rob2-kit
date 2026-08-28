@@ -216,6 +216,16 @@ def test_rehashed_historical_probable_basis_tampering_fails_both_verifiers(
     saved = _call(workspace, "save_domain_judgment", initial)
     assert saved["outcome"] == "success", saved
     revision = int(saved["head"]["state_revision"])
+    current = _state(workspace)["domain_records"]["trial:domain:randomization"]
+    revised = _domain_draft("trial", "domain:randomization", revision, evidence)
+    revised["supersedes"] = current["identity"]
+    revised["revision_basis"] = {
+        "kind": "self_correction",
+        "rationale": "The current checkpoint corrects the earlier uncertain judgment.",
+    }
+    saved = _call(workspace, "save_domain_judgment", revised)
+    assert saved["outcome"] == "success", saved
+    revision = int(saved["head"]["state_revision"])
     for domain_id in (
         "domain:deviations",
         "domain:missing",
@@ -229,20 +239,10 @@ def test_rehashed_historical_probable_basis_tampering_fails_both_verifiers(
         )
         assert saved["outcome"] == "success", saved
         revision = int(saved["head"]["state_revision"])
-
-    current = _state(workspace)["domain_records"]["trial:domain:randomization"]
-    revised = _domain_draft("trial", "domain:randomization", revision, evidence)
-    revised["supersedes"] = current["identity"]
-    revised["revision_basis"] = {
-        "kind": "self_correction",
-        "rationale": "The current checkpoint corrects the earlier uncertain judgment.",
-    }
-    saved = _call(workspace, "save_domain_judgment", revised)
-    assert saved["outcome"] == "success", saved
     finalized = _call(
         workspace,
         "finalize_batch",
-        {"expected_revision": int(saved["head"]["state_revision"])},
+        {"expected_revision": revision},
     )
     assert finalized["outcome"] == "success", finalized
     artifact = workspace / finalized["data"]["artifact"]["path"]

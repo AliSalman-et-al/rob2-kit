@@ -42,7 +42,8 @@ def test_structured_domain_uses_and_search_receipts(tmp_path: Path) -> None:
     draft = _domain_draft("trial", domain_id, revision, evidence)
     saved = _call(workspace, "save_domain_judgment", draft)
     assert saved["outcome"] == "success"
-    assert saved["data"]["checkpoint"]["answers"][0]["bases"][0]["evidence"] == evidence["identity"]
+    checkpoint = _state(workspace)["domain_records"][f"trial:{domain_id}"]
+    assert checkpoint["answers"][0]["bases"][0]["evidence"] == evidence["identity"]
     assert _call(workspace, "save_domain_judgment", draft)["data"]["retry"] is True
 
     stale = _domain_draft("trial", SCIENTIFIC_PACK.domains[1].id, revision, evidence)
@@ -63,21 +64,33 @@ def test_structured_domain_uses_and_search_receipts(tmp_path: Path) -> None:
     absence["answers"][0]["bases"] = [{"kind": "absence", "search_receipt": receipt["handle"]}]
     accepted = _call(workspace, "save_domain_judgment", absence)
     assert accepted["outcome"] == "success"
-    assert accepted["data"]["checkpoint"]["search_accounts"] == [
-        {
-            key: receipt[key]
-            for key in (
-                "identity",
-                "handle",
-                "trial_id",
-                "query",
-                "mode",
-                "total_matches",
-                "truncated",
-                "condition",
-            )
-        }
-    ]
+    checkpoint = _state(workspace)["domain_records"][f"trial:{SCIENTIFIC_PACK.domains[1].id}"]
+    assert len(checkpoint["search_accounts"]) == 1
+    assert {
+        key: checkpoint["search_accounts"][0][key]
+        for key in (
+            "identity",
+            "handle",
+            "trial_id",
+            "query",
+            "mode",
+            "total_matches",
+            "truncated",
+            "condition",
+        )
+    } == {
+        key: receipt[key]
+        for key in (
+            "identity",
+            "handle",
+            "trial_id",
+            "query",
+            "mode",
+            "total_matches",
+            "truncated",
+            "condition",
+        )
+    }
 
     invalid = _domain_draft(
         "trial",
@@ -92,6 +105,164 @@ def test_structured_domain_uses_and_search_receipts(tmp_path: Path) -> None:
 def test_absence_based_five_domain_assessment_finalizes(tmp_path: Path) -> None:
     artifact = _absence_assessed_artifact(_workspace(tmp_path))
     assert artifact.is_file()
+
+
+def test_finalization_preserves_trailing_pdf_format_characters(tmp_path: Path) -> None:
+    workspace = _workspace(tmp_path)
+    source = workspace / "input" / "trial" / "main.txt"
+    source.write_text(
+        source.read_text(encoding="utf-8").rstrip("\n") + "\u00ad\n",
+        encoding="utf-8",
+    )
+    evidence = _prepared_evidence(workspace)
+    proposed = _call(workspace, "save_proposal", _proposal_args(workspace, [_result(evidence)]))
+    assert proposed["outcome"] == "review_required", proposed
+    _review(workspace)
+    revision = int(_call(workspace, "get_domain_context", {})["head"]["state_revision"])
+    for domain in SCIENTIFIC_PACK.domains:
+        saved = _call(
+            workspace,
+            "save_domain_judgment",
+            _domain_draft("trial", domain.id, revision, evidence),
+        )
+        assert saved["outcome"] == "success", saved
+        revision = int(saved["head"]["state_revision"])
+    finalized = _finalize_assessment(workspace, revision)
+    artifact = workspace / finalized["data"]["artifact"]["path"]
+    assert verify_bundle(artifact)
+    assert _standalone_verify(artifact).returncode == 0
+
+
+def test_batch_domains_cannot_advance_a_later_trial(tmp_path: Path) -> None:
+    source_text = (
+        "The requested outcome was measured in the analyzed population. "
+        "death ascertainment; end of follow-up; assigned to intervention; "
+        "assigned to control; randomized population; risk ratio; risk; 1; events; 2.\n"
+    )
+    for label in ("trial-a", "trial-b"):
+        trial = tmp_path / "input" / label
+        trial.mkdir(parents=True)
+        (trial / "main.txt").write_text(source_text, encoding="utf-8")
+
+    prepared = _call(
+        tmp_path,
+        "prepare_batch",
+        {"requested_outcome": "requested outcome", "expected_revision": 0},
+    )
+    assert {trial["requested_outcome"] for trial in prepared["data"]["trials"]} == {
+        "requested outcome"
+    }
+
+    evidence_by_trial: dict[str, dict[str, Any]] = {}
+    for trial_id in ("trial-a", "trial-b"):
+        source = _call(tmp_path, "list_sources", {"trial_id": trial_id})["data"]["sources"][0]
+        evidence_by_trial[trial_id] = _call(
+            tmp_path,
+            "select_text_evidence",
+            {
+                "trial_id": trial_id,
+                "source_id": source["id"],
+                "page": 1,
+                "start_line": 1,
+                "end_line": 1,
+            },
+        )["data"]["evidence"]
+    proposal = _call(
+        tmp_path,
+        "save_proposal",
+        _proposal_args(
+            tmp_path,
+            [
+                _result_for_trial(evidence_by_trial["trial-a"], "trial-a"),
+                _result_for_trial(evidence_by_trial["trial-b"], "trial-b"),
+            ],
+        ),
+    )
+    assert proposal["outcome"] == "review_required", proposal
+    _review(tmp_path)
+    context = _call(tmp_path, "get_domain_context", {})
+    domain_id = SCIENTIFIC_PACK.domains[0].id
+    assert context["data"]["trial_id"] == "trial-a"
+
+    skipped = _call(
+        tmp_path,
+        "save_domain_judgment",
+        _domain_draft(
+            "trial-b",
+            domain_id,
+            int(context["head"]["state_revision"]),
+            evidence_by_trial["trial-b"],
+        ),
+    )
+
+    assert skipped["outcome"] == "repair"
+    assert skipped["repairs"] == [
+        {
+            "path": "/trial_id",
+            "code": "trial_out_of_sequence",
+            "detail": "complete Trial 'trial-a' before Trial 'trial-b'",
+        }
+    ]
+
+    skipped_terminal = _call(
+        tmp_path,
+        "request_trial_terminal",
+        {
+            "request": {
+                "disposition": "needs_input",
+                "trial_id": "trial-b",
+                "reason": "Researcher clarification is required.",
+                "missing_facts": ["Clarification."],
+            },
+            "expected_revision": int(context["head"]["state_revision"]),
+        },
+    )
+    assert skipped_terminal["outcome"] == "condition"
+    assert skipped_terminal["condition"]["detail"] == (
+        "complete Trial 'trial-a' before Trial 'trial-b'"
+    )
+
+    revision = int(context["head"]["state_revision"])
+    for domain in SCIENTIFIC_PACK.domains:
+        saved = _call(
+            tmp_path,
+            "save_domain_judgment",
+            _domain_draft("trial-a", domain.id, revision, evidence_by_trial["trial-a"]),
+        )
+        assert saved["outcome"] == "success"
+        revision = int(saved["head"]["state_revision"])
+    assert saved["data"]["trial_completed"] is True
+    assert _state(tmp_path)["trial_dispositions"]["trial-a"] == "assessed"
+
+    first_checkpoint = _state(tmp_path)["domain_records"]["trial-a:domain:randomization"]
+    closed_revision = _domain_draft(
+        "trial-a",
+        SCIENTIFIC_PACK.domains[0].id,
+        revision,
+        evidence_by_trial["trial-a"],
+    )
+    closed_revision["supersedes"] = first_checkpoint["identity"]
+    closed_revision["revision_basis"] = {
+        "kind": "self_correction",
+        "rationale": "This attempted correction occurs after Trial completion.",
+    }
+    refused_revision = _call(tmp_path, "save_domain_judgment", closed_revision)
+    assert refused_revision["outcome"] == "condition"
+    assert refused_revision["condition"]["detail"] == (
+        "Trial AssessmentSnapshot is final; Domain revisions are closed"
+    )
+
+    status = _call(tmp_path, "get_status", {})
+    assert status["head"]["next_action"] == {
+        "operation": "get_domain_context",
+        "authority": "host",
+        "trial_id": "trial-b",
+        "domain_id": SCIENTIFIC_PACK.domains[0].id,
+    }
+    next_context = _call(tmp_path, "get_domain_context", {})
+    assert next_context["outcome"] == "success"
+    assert next_context["data"]["trial_id"] == "trial-b"
+    assert next_context["data"]["domain_id"] == SCIENTIFIC_PACK.domains[0].id
 
 
 def test_real_fastmcp_assessed_path_restart_derivative_rebuild_and_freeze(tmp_path: Path) -> None:
@@ -519,6 +690,9 @@ def test_non_exact_result_binds_source_facts_but_not_caller_owned_target_leaves(
     assert "/target/effect_of_interest" not in paths
     assert "/target/comparison_groups/0/id" not in paths
     assert "/target/comparison_groups/1/id" not in paths
+    assert "/target/comparison_groups/0/assignment" not in paths
+    assert "/target/comparison_groups/1/assignment" not in paths
+    assert "/target/time_point_or_window/description" not in paths
     assert "/target/measurement/method" not in paths
     assert "/reported/endpoint/name" in paths
 
