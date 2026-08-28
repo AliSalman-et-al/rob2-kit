@@ -65,10 +65,19 @@ def test_registry_response_is_a_searchable_captured_source(
     assert source["role"] == "registry"
     assert source["origin"] == "registry"
     assert source["logical_path"] == "registry/NCT00000001.json"
+    captured = next((tmp_path / ".rob2-kit" / "sources" / "trial").glob(f"{source['id']}.bin"))
+    assert captured.read_bytes().startswith(b"{\n")
+    registry_page = read_pages(tmp_path, "trial", source["id"], [1])["pages"][0]
+    assert len(registry_page["text"].splitlines()) > 1
     (tmp_path / ".rob2-kit" / "derivative.sqlite3").unlink()
     found = search_sources(tmp_path, "trial", "permuted blocks")
     assert found["outcome"] == "success"
-    assert found["hits"][0]["source_id"] == source["id"]
+    hit = found["hits"][0]
+    assert hit["source_id"] == source["id"]
+    assert hit["start_line"] == hit["end_line"]
+    anchored_page = read_pages(tmp_path, "trial", source["id"], [hit["page"]])["pages"][0]
+    anchored_line = anchored_page["text"].splitlines()[hit["start_line"] - 1]
+    assert 'studyMethod: "The method of permuted blocks' in anchored_line
     selected = select_text_evidence(
         tmp_path,
         "trial",
@@ -221,7 +230,7 @@ def test_prepare_batch_rejects_two_declarations_for_one_trial_directory(tmp_path
             tmp_path,
             [
                 TrialDeclaration(id="first", label="Trial", requested_outcome="outcome"),
-                TrialDeclaration(id="second", label="trial", requested_outcome="outcome"),
+                TrialDeclaration(id="second", label="Trial", requested_outcome="outcome"),
             ],
             expected_revision=0,
         )
@@ -261,6 +270,26 @@ def test_search_orders_main_article_before_protocol_and_replays_that_order(
     )
     replayed = _search_receipt(tmp_path, result["search_receipt"]["handle"])
     assert replayed["hits"] == result["search_receipt"]["hits"]
+
+
+def test_search_defaults_to_any_for_exploratory_concepts(tmp_path: Path) -> None:
+    trial = tmp_path / "input" / "trial"
+    trial.mkdir(parents=True)
+    document = pymupdf.open()
+    document.new_page().insert_text((72, 72), "randomized")
+    document.new_page().insert_text((72, 72), "concealment")
+    (trial / "main.pdf").write_bytes(document.tobytes())
+    document.close()
+    prepare_batch(
+        tmp_path,
+        [TrialDeclaration(id="trial", label="trial", requested_outcome="trial outcome")],
+        expected_revision=0,
+    )
+
+    result = search_sources(tmp_path, "trial", "randomized concealment")
+
+    assert [hit["page"] for hit in result["hits"]] == [1, 2]
+    assert result["search_receipt"]["mode"] == "any"
 
 
 def test_broad_search_prefers_source_priority_then_term_coverage(tmp_path: Path) -> None:
@@ -435,7 +464,7 @@ def test_select_text_evidence_accepts_unicode_normalization_and_nbsp(tmp_path: P
         "Cafe\u0301 benefit was observed.",
     )["evidence"]
 
-    assert selected["quote"] == raw
+    assert selected["quote"] == "Café benefit was observed."
 
 
 def test_select_text_evidence_accepts_typographic_quote_normalization(tmp_path: Path) -> None:
@@ -450,7 +479,7 @@ def test_select_text_evidence_accepts_typographic_quote_normalization(tmp_path: 
         'The "unknown" category was excluded.',
     )["evidence"]
 
-    assert selected["quote"] == raw
+    assert selected["quote"] == 'The "unknown" category was excluded.'
 
 
 def test_search_and_selection_share_case_soft_hyphen_and_dash_normalization(
@@ -468,9 +497,10 @@ def test_search_and_selection_share_case_soft_hyphen_and_dash_normalization(
         "the docetaxel group reported a hazard ratio of 0.61-0.80.",
     )["evidence"]
 
-    assert selected["quote"] == raw
+    projected = "The Docetaxel Group reported a Hazard Ratio of 0.61-0.80."
+    assert selected["quote"] == projected
     assert selected["start"] == 0
-    assert selected["end"] == len(raw)
+    assert selected["end"] == len(projected)
 
 
 @pytest.mark.parametrize("hyphen", ["-", "\u2010", "\u2011", "\u2013"])
@@ -489,9 +519,10 @@ def test_select_text_evidence_accepts_line_end_word_hyphenation(
         "The overall survival result improved.",
     )["evidence"]
 
-    assert selected["quote"] == raw
+    projected = "The overall sur-\nvival result improved."
+    assert selected["quote"] == projected
     assert selected["start"] == 0
-    assert selected["end"] == len(raw)
+    assert selected["end"] == len(projected)
 
 
 def test_select_text_evidence_maps_semantic_hyphen_to_real_source_line_wrap(
@@ -544,6 +575,60 @@ def test_search_derivative_finds_dehyphenated_and_original_forms(tmp_path: Path)
     assert any_mode["hits"][0]["page"] == 1
     assert prefix_mode["hits"][0]["page"] == 1
     assert "bio-\nchemical" in dehyphenated["hits"][0]["preview"]
+
+
+def test_search_hits_issue_read_pages_line_coordinates_from_normalized_span(
+    tmp_path: Path,
+) -> None:
+    raw = "prefix\nThe bio-\nchemical result was retained.\nsuffix"
+    workspace, source = _source_for_text(tmp_path, raw)
+
+    result = search_sources(workspace, "trial", "biochemical result", mode="phrase")
+    hit = result["hits"][0]
+    page = read_pages(workspace, "trial", str(source["id"]), [1])["pages"][0]
+
+    assert (hit["start_line"], hit["end_line"]) == (2, 3)
+    assert page["text"].splitlines()[hit["start_line"] - 1] == "The bio-"
+    assert page["text"].splitlines()[hit["end_line"] - 1] == "chemical result was retained."
+
+
+def test_search_maps_fts_punctuation_tokens_back_to_source_lines(tmp_path: Path) -> None:
+    raw = "prefix\nComputer-generated random number, stratified 1:1.\nsuffix"
+    workspace, _ = _source_for_text(tmp_path, raw)
+
+    result = search_sources(
+        workspace,
+        "trial",
+        "computer-generated random number stratified 1:1",
+    )
+
+    assert len(result["hits"]) == 1
+    assert (result["hits"][0]["start_line"], result["hits"][0]["end_line"]) == (2, 2)
+    assert "Computer-generated" in result["hits"][0]["preview"]
+
+
+def test_search_maps_fts_diacritic_folding_back_to_source_lines(tmp_path: Path) -> None:
+    workspace, _ = _source_for_text(tmp_path, "The café result was retained.")
+
+    result = search_sources(workspace, "trial", "cafe")
+
+    assert len(result["hits"]) == 1
+    assert result["hits"][0]["start_line"] == 1
+
+
+def test_search_and_public_reads_share_the_normalized_page_projection(
+    tmp_path: Path,
+) -> None:
+    raw = "The ﬁnal\u200b\u202e analysis\x00 was complete.\u00ad"
+    workspace, source = _source_for_text(tmp_path, raw)
+
+    result = search_sources(workspace, "trial", "final analysis was complete", mode="phrase")
+    page = read_pages(workspace, "trial", str(source["id"]), [1])["pages"][0]
+
+    assert result["hits"][0]["page"] == 1
+    projected = "The final analysis was complete."
+    assert result["hits"][0]["preview"] == projected
+    assert page["text"] == projected
 
 
 def test_phrase_search_does_not_cross_search_variant_boundary(tmp_path: Path) -> None:
@@ -644,10 +729,30 @@ def test_search_preview_is_match_centered_and_cache_rebuilds_by_version(
         assert connection.execute("SELECT normalized_text FROM pages_fts").fetchone()[0] == ""
 
     with _db(workspace, "derivative.sqlite3") as connection:
-        connection.execute("DELETE FROM search_projection_meta")
+        connection.execute("DELETE FROM search_projection_meta WHERE name='version'")
 
     rebuilt = search_sources(workspace, "trial", "target phrase")
     assert rebuilt["search_receipt"]["identity"] == first["search_receipt"]["identity"]
+
+
+def test_old_page_projection_recipe_is_rejected_without_rewriting_identity(
+    tmp_path: Path,
+) -> None:
+    workspace, source = _source_for_text(tmp_path, "captured text")
+    with _db(workspace, "canonical.sqlite3") as connection:
+        connection.execute(
+            "UPDATE meta SET value='rob2-kit.page-projection.legacy' WHERE name='page_projection'"
+        )
+
+    with pytest.raises(ValueError, match="page_projection_recipe_unsupported"):
+        read_pages(workspace, "trial", str(source["id"]), [1])
+
+    # The canonical Source identity and bytes remain untouched by the refusal.
+    with _db(workspace, "canonical.sqlite3") as connection:
+        stored = connection.execute(
+            "SELECT value FROM meta WHERE name='page_projection'"
+        ).fetchone()
+    assert stored[0] == "rob2-kit.page-projection.legacy"
 
 
 def test_select_text_evidence_rejects_ambiguous_normalized_matches(tmp_path: Path) -> None:

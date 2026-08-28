@@ -642,7 +642,7 @@ def test_component_definition_is_repaired_but_nullable_definition_finalizes(
     assert any(
         item["code"] == "endpoint_definition_not_jointly_supported"
         and item["path"] == "/results/0/reported/endpoint/definition"
-        and "use null" in item["detail"]
+        and "omit endpoint.definition" in item["detail"]
         for item in repair["repairs"]
     )
 
@@ -677,7 +677,7 @@ def test_proposal_support_uses_the_same_presentation_normalization_as_selection(
     workspace = _workspace(tmp_path)
     raw = (
         "The Requested Outcome was not reported; only an alternate endpoint was measured. "
-        "Death Ascertainment; End of Follow\u2011up; assigned to Inter\u00ad\nvention; "
+        "Death Ascertainment; End of Follow-\nup; assigned to Inter\u00ad\nvention; "
         "assigned to Control; Randomized Population; Risk Ratio; The Requested Outcome "
         "was measured in the analyzed population.; Risk; 1; Events; 2."
     )
@@ -696,9 +696,10 @@ def test_proposal_support_uses_the_same_presentation_normalization_as_selection(
             "source_id": source["id"],
             "page": 1,
             "start_line": 1,
-            "end_line": 2,
+            "end_line": 3,
         },
     )["data"]["evidence"]
+    assert "Follow-" in evidence["quote"]
 
     saved = _call(workspace, "save_proposal", _proposal_args(workspace, [_result(evidence)]))
 

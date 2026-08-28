@@ -7,6 +7,7 @@ function Invoke-Checked([string]$program, [string[]]$arguments) {
     }
 }
 
+Invoke-Checked "uv" @("run", "ruff", "format", "--check", ".")
 Invoke-Checked "uv" @("run", "ruff", "check", ".")
 Invoke-Checked "uv" @("run", "ty", "check")
 Invoke-Checked "uv" @("run", "python", "-m", "rob2_kit.contract_manifest", "--output", "docs/release/public-contract.json")

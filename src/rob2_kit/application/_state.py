@@ -20,7 +20,24 @@ from ..models import canonical_json_bytes, sha256
 from ..workflow_models import SourceRole
 from .contracts import COUNTERS, WorkflowConflict
 
-_SEARCH_DERIVATIVE_VERSION = "rob2-kit.search-projection.v4"
+_SEARCH_DERIVATIVE_VERSION = "rob2-kit.search-projection.v5"
+_PAGE_PROJECTION_VERSION = "rob2-kit.page-projection.v4"
+
+# A physical source line can be arbitrarily long (for example, compact JSON
+# returned by a registry API).  Keep the persisted page projection readable so
+# MCP line coordinates remain useful and bounded without changing the captured
+# source bytes.
+_MAX_PROJECTED_LINE_LENGTH = 2_000
+
+
+class InvalidJSONSourceError(ValueError):
+    """Raised when a captured JSON source cannot be parsed as UTF-8 JSON."""
+
+    def __init__(self, path: Path, error: ValueError | UnicodeDecodeError) -> None:
+        super().__init__(f"invalid JSON source {path}: {error}")
+        self.path = path
+        self.error = error
+
 
 _SEARCH_PUNCTUATION_EQUIVALENTS = str.maketrans(
     {
@@ -41,6 +58,43 @@ _SEARCH_PUNCTUATION_EQUIVALENTS = str.maketrans(
         "\u201f": '"',
     }
 )
+
+_PDF_TEXT_FLAGS = (
+    pymupdf.TEXTFLAGS_TEXT | pymupdf.TEXT_DEHYPHENATE
+) & ~pymupdf.TEXT_PRESERVE_LIGATURES
+
+
+def _normalize_projected_text(value: str) -> str:
+    """Return the one readable text projection exposed by every public surface.
+
+    Captured source bytes remain immutable. The parsed projection removes only
+    presentation artifacts that cannot carry scientific meaning, so search,
+    page reads, and selected quotations no longer expose different text forms.
+    """
+    value = unicodedata.normalize("NFKC", value).translate(_SEARCH_PUNCTUATION_EQUIVALENTS)
+    output: list[str] = []
+    for character in value.replace("\r\n", "\n").replace("\r", "\n"):
+        category = unicodedata.category(character)
+        if character == "\u00ad" or category == "Cf":
+            continue
+        if character == "\n" or category in {"Zl", "Zp"}:
+            output.append("\n")
+            continue
+        if character == "\ufffd" or category in {"Cc", "Cs"}:
+            output.append(" ")
+            continue
+        output.append(" " if character.isspace() else character)
+
+    normalized = re.sub(r"[^\S\n]+", " ", "".join(output))
+    had_trailing_newline = normalized.endswith("\n")
+    lines = normalized.split("\n")
+    if had_trailing_newline:
+        lines.pop()
+    lines = [line.rstrip() for line in lines]
+    result = "\n".join(lines)
+    if had_trailing_newline:
+        result += "\n"
+    return result
 
 
 def _canonical_search_text(value: str) -> str:
@@ -71,8 +125,10 @@ def _normalized_text_with_spans(
             if re.match(r"[^\S\r\n]*\r?\n", value[index + 1 :]):
                 filtered.append(("-", index, index + 1))
             continue
-        if unicodedata.category(character) != "Cf":
-            filtered.append((character, index, index + 1))
+        category = unicodedata.category(character)
+        if category == "Cf" or category == "Cc" and not character.isspace():
+            continue
+        filtered.append((character, index, index + 1))
     characters: list[str] = []
     spans: list[tuple[int, int]] = []
     index = 0
@@ -210,6 +266,16 @@ def _ensure(root: Path) -> None:
             connection.execute("INSERT INTO meta VALUES ('contract','0.3.0')")
         elif current[0] != "0.3.0":
             raise ValueError("contract_version_unsupported")
+        page_recipe = connection.execute(
+            "SELECT value FROM meta WHERE name='page_projection'"
+        ).fetchone()
+        batch_exists = connection.execute(
+            "SELECT 1 FROM records WHERE name='batch' LIMIT 1"
+        ).fetchone()
+        if batch_exists is not None and (
+            page_recipe is None or page_recipe[0] != _PAGE_PROJECTION_VERSION
+        ):
+            raise ValueError("page_projection_recipe_unsupported")
     with _db(root, "derivative.sqlite3") as connection:
         connection.execute(
             "CREATE TABLE IF NOT EXISTS source_index ("
@@ -530,19 +596,81 @@ def _supported(path: Path, data: bytes) -> bool:
     return data.startswith(b"%PDF-") or path.suffix.lower() in {".txt", ".md", ".csv", ".json"}
 
 
+_JSON_IDENTIFIER = re.compile(r"[A-Za-z_][A-Za-z0-9_]*\Z")
+
+
+def _json_path(parent: str, key: str) -> str:
+    """Append one object key using a path form that cannot be ambiguous."""
+
+    key = _normalize_projected_text(key)
+    if _JSON_IDENTIFIER.fullmatch(key):
+        return key if parent == "$" else f"{parent}.{key}"
+    quoted = json.dumps(key, ensure_ascii=False, separators=(",", ":"))
+    return f"[{quoted}]" if parent == "$" else f"{parent}[{quoted}]"
+
+
+def _json_array_path(parent: str, index: int) -> str:
+    return f"[{index}]" if parent == "$" else f"{parent}[{index}]"
+
+
+def _append_json_leaves(value: Any, path: str, output: list[str]) -> None:
+    """Append deterministic scalar and empty-container leaves in JSON order."""
+
+    if isinstance(value, dict):
+        if not value:
+            output.append(f"{path}: {{}}")
+            return
+        for key in sorted(value):
+            _append_json_leaves(value[key], _json_path(path, key), output)
+        return
+    if isinstance(value, list):
+        if not value:
+            output.append(f"{path}: []")
+            return
+        for index, item in enumerate(value):
+            _append_json_leaves(item, _json_array_path(path, index), output)
+        return
+    if isinstance(value, str) and any(character in value for character in "\r\n"):
+        for segment in _normalize_projected_text(value).split("\n"):
+            output.append(f"{path}: {canonical_json_bytes(segment).decode('utf-8')}")
+        return
+    if isinstance(value, str):
+        value = _normalize_projected_text(value)
+    output.append(f"{path}: {canonical_json_bytes(value).decode('utf-8')}")
+
+
+def _json_pages(path: Path, data: bytes) -> tuple[str, ...]:
+    """Project valid JSON into stable, line-addressable leaf paths."""
+
+    def reject_non_json_constant(value: str) -> None:
+        raise ValueError(f"non-standard JSON constant {value}")
+
+    try:
+        value = json.loads(data.decode("utf-8"), parse_constant=reject_non_json_constant)
+    except (UnicodeDecodeError, ValueError) as error:
+        raise InvalidJSONSourceError(path, error) from error
+    lines: list[str] = []
+    _append_json_leaves(value, "$", lines)
+    return (_bound_projected_lines("\n".join(lines)),)
+
+
 def _pages(path: Path, data: bytes) -> tuple[str, ...]:
     COUNTERS["extraction_calls"] += 1
     if data.startswith(b"%PDF-"):
         document = pymupdf.open(stream=data, filetype="pdf")
         try:
-            pages = [document[number].get_text() for number in range(len(document))]
+            pages = [
+                document[number].get_text(flags=_PDF_TEXT_FLAGS) for number in range(len(document))
+            ]
             table_pages: dict[int, tuple[Any, ...]] = {}
             for number in range(len(document)):
                 tables = getattr(document[number].find_tables(), "tables", ())
                 if _semantic_table_page(tables):
                     table_pages[number] = tuple(tables)
             if not table_pages:
-                return tuple(pages)
+                return tuple(
+                    _bound_projected_lines(_normalize_projected_text(page)) for page in pages
+                )
             for number, tables in table_pages.items():
                 rendered = [
                     _table_gfm(table, index)
@@ -551,10 +679,41 @@ def _pages(path: Path, data: bytes) -> tuple[str, ...]:
                 ]
                 if rendered:
                     pages[number] = pages[number].rstrip() + "\n\n" + "\n\n".join(rendered) + "\n"
-            return tuple(pages)
+            return tuple(_bound_projected_lines(_normalize_projected_text(page)) for page in pages)
         finally:
             document.close()
-    return (data.decode("utf-8"),)
+    if path.suffix.casefold() == ".json":
+        return _json_pages(path, data)
+    return (_bound_projected_lines(_normalize_projected_text(data.decode("utf-8"))),)
+
+
+def _bound_projected_lines(text: str) -> str:
+    """Split only overlong presentation lines while preserving every character.
+
+    The inserted line breaks belong to the parsed page projection, not the
+    captured bytes.  Splitting at a whitespace boundary where possible keeps
+    normal prose readable; hard wrapping is the safe fallback for long tokens.
+    """
+
+    if (
+        not text
+        or max((len(line) for line in text.splitlines()), default=0) <= _MAX_PROJECTED_LINE_LENGTH
+    ):
+        return text
+    output: list[str] = []
+    for line in text.splitlines(keepends=False):
+        remainder = line
+        while len(remainder) > _MAX_PROJECTED_LINE_LENGTH:
+            split_at = remainder.rfind(" ", 1, _MAX_PROJECTED_LINE_LENGTH + 1)
+            if split_at <= _MAX_PROJECTED_LINE_LENGTH // 2:
+                split_at = _MAX_PROJECTED_LINE_LENGTH
+            output.append(remainder[:split_at])
+            remainder = remainder[split_at:]
+        output.append(remainder)
+    projected = "\n".join(output)
+    if text.endswith(("\n", "\r")):
+        projected += "\n"
+    return projected
 
 
 def _semantic_table_page(tables: Any) -> bool:
@@ -774,7 +933,7 @@ def _projection_hash(source_sha256: str, media_type: str, pages: tuple[str, ...]
     """Freeze the exact extraction recipe and every page's UTF-8 bytes."""
     return _identity(
         {
-            "recipe": "rob2-kit.extract-pages.v2",
+            "recipe": "rob2-kit.extract-pages.v4",
             "source_sha256": source_sha256,
             "media_type": media_type,
             "page_hashes": [

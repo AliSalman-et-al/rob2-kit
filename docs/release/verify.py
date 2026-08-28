@@ -46,6 +46,7 @@ def _load_contract() -> dict[str, Any]:
         "render_page",
         "select_visual_evidence",
         "save_proposal",
+        "request_proposal_approval",
         "get_domain_context",
         "save_domain_judgment",
         "request_trial_terminal",
@@ -57,8 +58,11 @@ def _load_contract() -> dict[str, Any]:
         set(item)
         != {
             "name",
+            "title",
             "description",
             "read_only",
+            "destructive",
+            "idempotent",
             "open_world",
             "schema_sha256",
             "output_schema_sha256",
@@ -66,8 +70,12 @@ def _load_contract() -> dict[str, Any]:
         for item in value["tools"]
     ):
         raise ValueError("public tool schema hash fields differ")
+    if any(not item["title"].strip() for item in value["tools"]):
+        raise ValueError("public tool title is missing")
     if any(not item["description"].strip() for item in value["tools"]):
         raise ValueError("public tool description is missing")
+    if any(item["destructive"] or not item["idempotent"] for item in value["tools"]):
+        raise ValueError("public tool safety annotations differ")
     if value["resources"] != ["rob2://current-batch"] or value["resource_templates"] != []:
         raise ValueError("public resource catalog differs")
     if set(value["resource_descriptions"]) != {"rob2://current-batch"} or not all(
@@ -101,12 +109,16 @@ async def _verify_client(client: Client, contract: dict[str, Any]) -> None:
             raise ValueError(f"MCP annotations differ: {tool.name}")
         if bool(annotations.openWorldHint) != expected["open_world"]:
             raise ValueError(f"MCP open-world annotation differs: {tool.name}")
-        if annotations.destructiveHint:
-            raise ValueError(f"MCP tool is destructively advertised: {tool.name}")
+        if bool(annotations.destructiveHint) != expected["destructive"]:
+            raise ValueError(f"MCP destructive annotation differs: {tool.name}")
+        if bool(annotations.idempotentHint) != expected["idempotent"]:
+            raise ValueError(f"MCP idempotent annotation differs: {tool.name}")
         if _schema_hash(tool.inputSchema) != expected["schema_sha256"]:
             raise ValueError(f"MCP schema hash differs: {tool.name}")
         if (tool.description or "").strip() != expected["description"]:
             raise ValueError(f"MCP description differs: {tool.name}")
+        if (tool.title or "").strip() != expected["title"]:
+            raise ValueError(f"MCP title differs: {tool.name}")
         if tool.outputSchema is None:
             raise ValueError(f"MCP output schema is missing: {tool.name}")
         if _schema_hash(tool.outputSchema) != expected["output_schema_sha256"]:

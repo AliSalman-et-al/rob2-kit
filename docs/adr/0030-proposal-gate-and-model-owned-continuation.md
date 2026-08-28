@@ -17,6 +17,10 @@ text as authority would make the audit trail ambiguous.
 
 - Use one researcher gate: `Proposal Review`. The researcher can approve,
   reject, or replace the proposed Result mapping.
+- The first Proposal save contains one Result card per captured Trial. While
+  Review is pending, a correction replaces only the submitted Trial cards;
+  the server carries forward every unmentioned card into the fresh immutable
+  Proposal and Review.
 - After approval, signaling answers belong to the model. The model continues
   through Domain judgments and automatic finalization. There is no final
   researcher review.

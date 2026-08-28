@@ -25,6 +25,7 @@ packages = ["src/rob2_kit"]
 [dependency-groups]
 dev = [
     "pytest==9.1.1",
+    "pytest-xdist>=3.8.0",
     "ruff==0.16.4",
     "ty==0.0.74",
 ]
@@ -32,6 +33,7 @@ dev = [
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["tests"]
+addopts = "-n 4"
 
 [tool.ruff]
 target-version = "py311"

@@ -33,10 +33,10 @@ def _selected_evidence(workspace: Path) -> list[dict[str, Any]]:
 
 def presentation(state: dict[str, Any]) -> dict[str, Any]:
     """Derive the one public status projection from durable workflow state."""
-    dispositions = _public_dispositions(state)
+    dispositions = dict(state.get("trial_dispositions", {}))
     counts = {
         disposition: sum(value == disposition for value in dispositions.values())
-        for disposition in ("assessed", "needs_input", "failed", "pending", "provisional")
+        for disposition in ("assessed", "needs_input", "failed", "pending")
     }
     phase = str(state.get("phase", "empty"))
     total = len(dispositions)
@@ -48,14 +48,23 @@ def presentation(state: dict[str, Any]) -> dict[str, Any]:
             f"RoB 2 assessments completed for {counts['assessed']}/{total} Trials. "
             f"{counts['needs_input']} Trials need input; {counts['failed']} Trials failed."
         )
+    elif phase == "ready_to_finalize":
+        wording = (
+            "Batch incomplete. Continue now with head.next_action to finalize the Batch. Never "
+            "stop, summarize, or ask whether to continue before finalization."
+        )
+    elif phase == "assessment":
+        wording = (
+            f"Batch incomplete: {counts['assessed']}/{total} Trials completed; "
+            f"{counts['pending']} pending. Continue now with head.next_action. Never stop at a "
+            "Trial boundary, ask whether to continue, infer pending Trial judgments, or reduce "
+            "rigor for token or context limits."
+        )
     elif counts["needs_input"] or counts["failed"]:
         wording = (
-            "Active Batch: terminal Trials remain unassessed; pending Trials remain unassessed."
+            "Batch incomplete. Continue now with head.next_action. Never stop, summarize, ask "
+            "whether to continue, or infer pending Trial judgments."
         )
-    elif phase == "ready_to_finalize":
-        wording = "Provisional Batch: no Trial is assessed until finalization."
-    elif phase == "assessment":
-        wording = "Assessment in progress: no pending Trial is presented as assessed."
     elif phase == "proposal":
         if isinstance(state.get("review"), dict):
             wording = (
@@ -74,7 +83,7 @@ def get_status(workspace: str | Path) -> dict[str, Any]:
     root = _root(workspace)
     _ensure(root)
     state = _state(root)
-    dispositions = _public_dispositions(state)
+    dispositions = dict(state.get("trial_dispositions", {}))
     public = presentation(state)
     return _result(
         "success",
@@ -101,20 +110,16 @@ def get_status_head(workspace: str | Path) -> dict[str, Any]:
     )
 
 
-def _public_dispositions(state: dict[str, Any]) -> dict[str, str]:
-    """Expose provisional snapshots as the nonterminal provisional status."""
-    dispositions = dict(state.get("trial_dispositions", {}))
-    snapshots = state.get("snapshots", {})
-    if not isinstance(snapshots, dict):
-        return dispositions
-    for trial_id, snapshot in snapshots.items():
-        if (
-            dispositions.get(trial_id) == "pending"
-            and isinstance(snapshot, dict)
-            and snapshot.get("provisional") is True
-        ):
-            dispositions[trial_id] = "provisional"
-    return dispositions
+def _active_trial_and_domain(state: dict[str, Any]) -> tuple[str | None, str | None]:
+    """Return the one pending Trial and Domain that may advance."""
+    records = state.get("domain_records") or {}
+    for trial_id, disposition in state.get("trial_dispositions", {}).items():
+        if disposition != "pending":
+            continue
+        for domain in SCIENTIFIC_PACK.domains:
+            if f"{trial_id}:{domain.id}" not in records:
+                return trial_id, domain.id
+    return None, None
 
 
 def _continuation(state: dict[str, Any]) -> dict[str, Any] | None:
@@ -132,7 +137,7 @@ def _continuation(state: dict[str, Any]) -> dict[str, Any] | None:
             "operation": "prepare_batch",
             "authority": "host",
             "expected_revision": int(state.get("revision", 0)),
-            "caller_inputs": ["requested_outcome"],
+            "caller_inputs": ["requested_outcome", "trial_labels"],
         }
     if phase == "proposal":
         return {
@@ -142,19 +147,14 @@ def _continuation(state: dict[str, Any]) -> dict[str, Any] | None:
             "caller_inputs": ["results"],
         }
     if phase == "assessment":
-        dispositions = state.get("trial_dispositions", {})
-        rows = state.get("domain_records", {})
-        for trial_id, disposition in dispositions.items():
-            if disposition != "pending":
-                continue
-            for domain in SCIENTIFIC_PACK.domains:
-                if f"{trial_id}:{domain.id}" not in rows:
-                    return {
-                        "operation": "get_domain_context",
-                        "authority": "host",
-                        "trial_id": trial_id,
-                        "domain_id": domain.id,
-                    }
+        trial_id, domain_id = _active_trial_and_domain(state)
+        if trial_id is not None and domain_id is not None:
+            return {
+                "operation": "get_domain_context",
+                "authority": "host",
+                "trial_id": trial_id,
+                "domain_id": domain_id,
+            }
         return None
     if phase == "ready_to_finalize":
         return {

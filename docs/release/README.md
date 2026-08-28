@@ -31,6 +31,16 @@ checks the local boundary or a supplied wheel. For a wheel it installs into a
 fresh virtual environment and queries the real stdio process, so a packaged
 catalog, schema, resource, or console-entry-point drift fails closed.
 
+Run the complete release check with:
+
+```powershell
+./scripts/verify_v03.ps1
+```
+
+That script regenerates the public contract, runs lint, type checks, and the
+parallel test suite, builds the wheel, and verifies the installed artifact.
+The lower-level commands remain available for isolated contract work:
+
 ```powershell
 uv run python docs/release/verify.py
 uv build --wheel --out-dir dist

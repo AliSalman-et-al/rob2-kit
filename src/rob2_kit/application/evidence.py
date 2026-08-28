@@ -4,6 +4,8 @@ import math
 import re
 import sqlite3
 import unicodedata
+from bisect import bisect_right
+from functools import lru_cache
 from pathlib import Path
 from typing import Any
 
@@ -21,149 +23,9 @@ from ._state import (
     _projection_hash,
     _read,
     _root,
-    _search_derivative,
     internal_path,
 )
 from .contracts import COUNTERS
-
-_INCOMPLETE_DOMAIN_LEADS = (
-    "the following",
-    "as follows",
-    "following factors",
-    "following stratification",
-    "following stratifications",
-)
-_INCOMPLETE_BOUNDARY_LEADS = _INCOMPLETE_DOMAIN_LEADS + ("please note",)
-_INCOMPLETE_BOUNDARY_TERMINALS = frozenset(
-    "a an the this that these those each every either neither of to for from with "
-    "without by in on at into onto upon between among through during after before "
-    "under over within per via and or nor but as than if whether because while when "
-    "although whereas which who whom whose is are was were be been being has have "
-    "had do does did can could may might must shall should will would".split()
-)
-_INCOMPLETE_BOUNDARY_OPENERS = frozenset(
-    "if when while because although whereas unless until after before since once".split()
-)
-_HEADING_STOP_WORDS = frozenset("a an the and or of in to for by on with from at as".split())
-
-
-def _is_incomplete_domain_source(value: str) -> bool:
-    """Reject only source fragments that visibly introduce an unfinished list."""
-    normalized = unicodedata.normalize("NFKC", value).casefold()
-    normalized = re.sub(r"-\s*(?:\r\n|\r|\n)\s*", "", normalized)
-    normalized = " ".join(normalized.split())
-    return normalized.endswith(":") or any(
-        normalized.endswith(lead) for lead in _INCOMPLETE_DOMAIN_LEADS
-    )
-
-
-def _looks_like_structural_line(value: str) -> bool:
-    """Keep intentional table, list, and heading selections permissive."""
-    line = value.strip()
-    if not line:
-        return True
-    if line.startswith(("|", "#")):
-        return True
-    if re.fullmatch(r"[<>=~+\-\u2212\u2013\u2014\d\s.,()%/:*\u2020\u2021]+", line):
-        return True
-    if re.match(r"(?:table|figure|fig\.|appendix|box|panel)\s", line, flags=re.IGNORECASE):
-        return True
-    words = re.findall(r"[^\W_]+", line, flags=re.UNICODE)
-    if re.match(r"(?:[-–—*+•·](?:\s|$)|\d+[.)]\s)", line):
-        return len(words) <= 12
-    if not words or len(words) > 12 or re.search(r"[.!?;]", line):
-        return False
-    content_words = [word for word in words if word.casefold() not in _HEADING_STOP_WORDS]
-    return bool(content_words) and all(word[0].isupper() for word in content_words)
-
-
-def _starts_with_lowercase_prose(value: str) -> bool:
-    """Return whether the next bounded text visibly continues a sentence."""
-    for line in value.splitlines():
-        stripped = line.strip()
-        if not stripped:
-            continue
-        match = re.search(r"[^\W\d_]", stripped, flags=re.UNICODE)
-        return bool(match and match.group(0).islower())
-    return False
-
-
-def _looks_like_page_furniture(value: str) -> bool:
-    """Recognize common extraction-only headers and footers."""
-    normalized = " ".join(unicodedata.normalize("NFKC", value).casefold().split())
-    return bool(
-        re.fullmatch(r"\d+", normalized)
-        or "downloaded from" in normalized
-        or "all rights reserved" in normalized
-        or "is produced by" in normalized
-        or "copyright" in normalized
-        or re.search(r"\b(?:doi|issn)\b", normalized)
-    )
-
-
-def _is_incomplete_page_boundary_selection(
-    text: str,
-    start: int,
-    end: int,
-    next_page_text: str | None = None,
-) -> bool:
-    """Detect high-confidence unfinished prose at a selection boundary.
-
-    This is deliberately lexical. It rejects a selection ending in a split word
-    or a closed-class connector, and uses bounded trailing text to catch a line
-    or page continuation. Semantic entailment remains model work; intentional
-    tables, bullets, and headings remain selectable.
-    """
-    if end < 1 or end > len(text):
-        return False
-    fragment = text[start:end].rstrip()
-    if not fragment:
-        return False
-    content_lines = [line for line in fragment.splitlines() if not _looks_like_page_furniture(line)]
-    if not content_lines:
-        return False
-    final_line = content_lines[-1]
-    normalized = unicodedata.normalize("NFKC", final_line).casefold()
-    normalized = " ".join(normalized.split())
-    if re.search(r"\w-$", normalized):
-        return True
-    words = re.findall(r"[^\W_]+", normalized, flags=re.UNICODE)
-    if not words:
-        return False
-    trailing_text = text[end:]
-    meaningful_trailing_lines = [
-        line
-        for line in trailing_text.splitlines()
-        if line.strip() and not _looks_like_page_furniture(line)
-    ]
-    trailing_continuation = _starts_with_lowercase_prose(trailing_text) or (
-        not meaningful_trailing_lines
-        and next_page_text is not None
-        and _starts_with_lowercase_prose(next_page_text)
-    )
-    if _looks_like_structural_line(final_line) and (len(words) > 1 or not trailing_continuation):
-        return False
-    if words[-1] in _INCOMPLETE_BOUNDARY_TERMINALS:
-        return True
-    if any(
-        normalized.removesuffix(":").rstrip().endswith(lead) for lead in _INCOMPLETE_BOUNDARY_LEADS
-    ):
-        return True
-    if not re.search(r"[.!?]\s*$", final_line):
-        if words[0] in _INCOMPLETE_BOUNDARY_OPENERS:
-            return True
-        lines = fragment.splitlines()
-        selected_complete_hyphenation = len(lines) == 2 and bool(re.search(r"\w-\s*$", lines[0]))
-        if not selected_complete_hyphenation and trailing_continuation:
-            return True
-    return False
-
-
-_INCOMPLETE_BOUNDARY_SELECTION = (
-    "selected text appears incomplete at the page boundary; re-read the adjacent page and "
-    "select a complete premise, or select the page fragment only when it is intentionally "
-    "self-contained"
-)
 
 
 def list_sources(workspace: str | Path, trial_id: str | None = None) -> dict[str, Any]:
@@ -277,7 +139,7 @@ def search_sources(
     workspace: str | Path,
     trial_id: str,
     query: str,
-    mode: str = "all",
+    mode: str = "any",
     limit: int = 10,
     source_id: str | None = None,
 ) -> dict[str, Any]:
@@ -343,33 +205,39 @@ def search_sources(
             tuple(sorted(allowed)),
         ).fetchall()
         expected_rows = [
-            (source_id, page, *_search_derivative(text))
+            (source_id, page, *_discovery_search_derivative(text))
             for source_id in sorted(allowed)
             for page, text in enumerate(verified[(trial_id, source_id)][1], 1)
         ]
         if [tuple(row) for row in cached_rows] != expected_rows:
             raise ValueError("text search projection is corrupt")
+    match_spans: dict[tuple[str, int], list[tuple[int, int]]] = {}
     matching_pairs, total_matches = _recomputed_search_summary(
         {source_id: verified[(trial_id, source_id)][1] for source_id in ordered_source_ids},
         query,
         mode,
         bounded_limit,
         ordered_source_ids,
+        span_cache=match_spans,
     )
     source_by_id = {str(source["id"]): source for source in ordered_sources}
-    hits = [
-        {
-            "source_id": source_id,
-            "source_role": source_by_id[source_id]["role"],
-            "source_label": source_by_id[source_id]["label"],
-            "page": page,
-            "preview": _match_centered_preview(
-                verified[(trial_id, source_id)][1][page - 1], query, mode
-            ),
-            "query": query,
-        }
-        for source_id, page in matching_pairs
-    ]
+    hits = []
+    for source_id, page in matching_pairs:
+        page_text = verified[(trial_id, source_id)][1][page - 1]
+        spans = match_spans[(source_id, page)]
+        start_line, end_line = _search_match_line_range(page_text, query, mode, spans)
+        hits.append(
+            {
+                "source_id": source_id,
+                "source_role": source_by_id[source_id]["role"],
+                "source_label": source_by_id[source_id]["label"],
+                "page": page,
+                "start_line": start_line,
+                "end_line": end_line,
+                "preview": _match_centered_preview(page_text, query, mode, spans=spans),
+                "query": query,
+            }
+        )
     condition = None if hits else "no_hits"
     receipt = {
         "trial_id": trial_id,
@@ -423,6 +291,26 @@ def _search_expression(query: str, mode: str) -> str:
     return " AND ".join(quoted(term) for term in terms)
 
 
+@lru_cache(maxsize=2048)
+def _cached_normalized_search_text(text: str) -> str:
+    """Cache only the bounded, discovery-only normalized page text.
+
+    The captured page text remains the authority for evidence and coordinate
+    validation.  This cache only avoids rebuilding the same FTS input during
+    search projection checks and in-memory ranking; its key is the immutable
+    page text, and it has a bounded size so a large corpus cannot grow the
+    process without limit.  Raw page text and coordinate spans are never
+    cached here.
+    """
+    return _canonical_search_text(text)
+
+
+def _discovery_search_derivative(text: str) -> tuple[str, str]:
+    """Return the raw and cached normalized variants used to build FTS rows."""
+    normalized = _cached_normalized_search_text(text)
+    return text, normalized if normalized != text else ""
+
+
 def _search_result_order(
     source_id: str,
     page: int,
@@ -433,17 +321,11 @@ def _search_result_order(
     return source_order[source_id], rank, page
 
 
-def _search_text_with_spans(text: str, dehyphenate: bool) -> tuple[str, list[int]]:
-    """Build one searchable line-wrap form and map characters to raw text."""
-    normalized, ranges = _normalized_text_with_spans(text, dehyphenate_line_ends=dehyphenate)
-    return normalized, [start for start, _end in ranges]
-
-
-def _match_centered_preview(text: str, query: str, mode: str, radius: int = 120) -> str:
-    """Return a compact discovery preview centered on an actual query match."""
+def _search_match_spans(text: str, query: str, mode: str) -> list[tuple[int, int]]:
+    """Return raw spans for the normalized match selected by one search mode."""
     terms = [item.casefold() for item in query.split() if item]
     if not terms:
-        return text[: 2 * radius]
+        return []
 
     def variants(term: str) -> tuple[str, ...]:
         return tuple(
@@ -482,29 +364,129 @@ def _match_centered_preview(text: str, query: str, mode: str, radius: int = 120)
             )
         )
 
-    candidates: list[tuple[int, int, list[int]]] = []
+    candidates: list[tuple[int, list[tuple[int, int]], list[tuple[int, int]]]] = []
     for dehyphenate in (False, True):
-        searchable, spans = _search_text_with_spans(text, dehyphenate)
+        searchable, spans = _normalized_text_with_spans(text, dehyphenate_line_ends=dehyphenate)
         if mode == "phrase":
             folded = searchable.casefold()
             for phrase in phrase_variants():
                 match = re.search(rf"(?<!\w){re.escape(phrase)}(?!\w)", folded)
                 if match is not None:
-                    candidates.append((match.start(), len(phrase), spans))
+                    candidates.append((match.start(), [(match.start(), len(phrase))], spans))
         else:
             matches = [find(searchable, term, mode == "prefix") for term in terms]
             if mode == "all" and not all(start >= 0 for start, _ in matches):
                 continue
-            for start, length in matches:
-                if start >= 0:
-                    candidates.append((start, length, spans))
-                    if mode == "any" or mode == "prefix":
-                        break
+            found = [(start, length) for start, length in matches if start >= 0]
+            if found:
+                candidates.append((found[0][0], found, spans))
     if not candidates:
+        return _fts_token_match_spans(text, query, mode)
+    _start, matches, spans = min(candidates, key=lambda item: item[0])
+    raw_spans = [
+        (spans[start][0], spans[min(start + length - 1, len(spans) - 1)][1])
+        for start, length in matches
+        if spans and 0 <= start < len(spans) and length > 0
+    ]
+    raw_spans.sort()
+    # ``all`` only determines whether the page is a hit.  Navigation should
+    # stay compact and point at the same first term that the preview uses,
+    # rather than spanning unrelated terms across a long page.
+    return raw_spans[:1]
+
+
+def _fts_token_match_spans(text: str, query: str, mode: str) -> list[tuple[int, int]]:
+    """Map an FTS token match when punctuation differs from the source text."""
+
+    def fold(token: str) -> str:
+        return "".join(
+            character
+            for character in unicodedata.normalize("NFKD", token)
+            if unicodedata.category(character) != "Mn"
+        )
+
+    query_tokens = [fold(token) for token in re.findall(r"\w+", _canonical_search_text(query))]
+    if not query_tokens:
+        return []
+
+    candidates: list[tuple[int, int]] = []
+    for dehyphenate in (False, True):
+        searchable, character_spans = _normalized_text_with_spans(
+            text, dehyphenate_line_ends=dehyphenate
+        )
+        tokens = [
+            (
+                fold(match.group()),
+                character_spans[match.start()][0],
+                character_spans[match.end() - 1][1],
+            )
+            for match in re.finditer(r"\w+", searchable)
+            if character_spans
+        ]
+        if mode == "phrase":
+            width = len(query_tokens)
+            for index in range(len(tokens) - width + 1):
+                if [token[0] for token in tokens[index : index + width]] == query_tokens:
+                    candidates.append((tokens[index][1], tokens[index + width - 1][2]))
+        else:
+            matches: list[tuple[int, int]] = []
+            for query_token in query_tokens:
+                match = next(
+                    (
+                        (start, end)
+                        for token, start, end in tokens
+                        if (
+                            token.startswith(query_token)
+                            if mode == "prefix"
+                            else token == query_token
+                        )
+                    ),
+                    None,
+                )
+                if match is not None:
+                    matches.append(match)
+            if mode == "all" and len(matches) != len(query_tokens):
+                continue
+            candidates.extend(matches)
+    return [min(candidates)] if candidates else []
+
+
+def _search_match_line_range(
+    text: str,
+    query: str,
+    mode: str,
+    spans: list[tuple[int, int]] | None = None,
+) -> tuple[int, int]:
+    """Map the normalized search span to inclusive lines of the page projection."""
+    if spans is None:
+        spans = _search_match_spans(text, query, mode)
+    if not spans:
+        raise ValueError("search result match is absent from the captured page projection")
+    raw_start = min(start for start, _end in spans)
+    raw_end = max(end for _start, end in spans)
+    line_starts = [0]
+    offset = 0
+    for line in text.splitlines(keepends=True):
+        offset += len(line)
+        line_starts.append(offset)
+    start_line = bisect_right(line_starts, raw_start)
+    end_line = bisect_right(line_starts, max(raw_start, raw_end - 1))
+    return start_line, end_line
+
+
+def _match_centered_preview(
+    text: str,
+    query: str,
+    mode: str,
+    radius: int = 120,
+    spans: list[tuple[int, int]] | None = None,
+) -> str:
+    """Return a compact discovery preview centered on an actual query match."""
+    if spans is None:
+        spans = _search_match_spans(text, query, mode)
+    if not spans:
         return text[: 2 * radius]
-    start, match_length, spans = min(candidates, key=lambda item: item[0])
-    raw_start = spans[start]
-    raw_end = spans[min(start + match_length - 1, len(spans) - 1)] + 1
+    raw_start, raw_end = spans[0]
     left = max(0, raw_start - radius)
     right = min(len(text), raw_end + radius)
     prefix = "…" if left else ""
@@ -519,12 +501,48 @@ def _recomputed_search_hits(
     return _recomputed_search_summary(pages, query, mode, limit)[0]
 
 
+def _source_diverse_search_hits(
+    pairs: list[tuple[str, int]], limit: int, source_order: list[str]
+) -> list[tuple[str, int]]:
+    """Bound hits while retaining one best hit from every matching Source.
+
+    ``pairs`` is already ordered by Source priority and BM25 rank.  When the
+    bound can cover all matching Sources, reserve each Source's first hit and
+    spend the remaining slots in that same established order.  If there are
+    more matching Sources than slots, the highest-priority Sources receive the
+    slots.  Sorting the selected set again restores the original grouped
+    order, making the result and its receipt deterministic.
+    """
+    if len(pairs) <= limit:
+        return pairs
+
+    source_rank = {source_id: index for index, source_id in enumerate(source_order)}
+    ranked_pairs = {pair: index for index, pair in enumerate(pairs)}
+    by_source: dict[str, list[tuple[str, int]]] = {}
+    for pair in pairs:
+        by_source.setdefault(pair[0], []).append(pair)
+    matching_sources = [source_id for source_id in source_order if source_id in by_source]
+
+    if len(matching_sources) > limit:
+        selected = [by_source[source_id][0] for source_id in matching_sources[:limit]]
+    else:
+        selected = [by_source[source_id][0] for source_id in matching_sources]
+        for pair in pairs:
+            if len(selected) >= limit:
+                break
+            if pair not in selected:
+                selected.append(pair)
+
+    return sorted(selected, key=lambda pair: (source_rank[pair[0]], ranked_pairs[pair]))
+
+
 def _recomputed_search_summary(
     pages: dict[str, tuple[str, ...]],
     query: str,
     mode: str,
     limit: int,
     source_order: list[str] | None = None,
+    span_cache: dict[tuple[str, int], list[tuple[int, int]]] | None = None,
 ) -> tuple[list[tuple[str, int]], int]:
     """Recompute bounded hits and the complete scoped match count."""
     expression = _search_expression(query, mode)
@@ -534,23 +552,49 @@ def _recomputed_search_summary(
             "source_id, page UNINDEXED, raw_text, normalized_text)"
         )
         rows = [
-            (source_id, page, *_search_derivative(text))
+            (source_id, page, *_discovery_search_derivative(text))
             for source_id in (source_order or sorted(pages))
             for page, text in enumerate(pages[source_id], 1)
         ]
         connection.executemany("INSERT INTO pages_fts VALUES (?,?,?,?)", rows)
-        total = int(
-            connection.execute(
-                "SELECT COUNT(*) FROM pages_fts WHERE pages_fts MATCH ?", (expression,)
-            ).fetchone()[0]
-        )
         hits = connection.execute(
             "SELECT source_id,page,bm25(pages_fts) FROM pages_fts WHERE pages_fts MATCH ?",
             (expression,),
         ).fetchall()
     order = {source_id: index for index, source_id in enumerate(source_order or sorted(pages))}
     hits.sort(key=lambda row: _search_result_order(str(row[0]), int(row[1]), float(row[2]), order))
-    return [(str(row[0]), int(row[1])) for row in hits[: max(1, min(limit, 100))]], total
+    all_pairs = [(str(row[0]), int(row[1])) for row in hits]
+    bounded_limit = max(1, min(limit, 100))
+    ordered_source_ids = source_order or sorted(pages)
+    selected = _source_diverse_search_hits(all_pairs, bounded_limit, ordered_source_ids)
+    if span_cache is None:
+        return selected, len(all_pairs)
+
+    # Coordinate mapping is a presentation concern, so do it only for the
+    # bounded result set.  FTS and the canonical projection normally use the
+    # same normalized text; if a future tokenizer edge case produces a hit
+    # that cannot map, walk the remaining deterministic FTS order for a
+    # replacement rather than returning an invalid coordinate.
+    mapped: list[tuple[str, int]] = []
+    for pair in selected:
+        spans = _search_match_spans(pages[pair[0]][pair[1] - 1], query, mode)
+        span_cache[pair] = spans
+        if spans:
+            mapped.append(pair)
+    if len(mapped) < len(selected):
+        selected_set = set(selected)
+        for pair in all_pairs:
+            if pair in selected_set:
+                continue
+            spans = _search_match_spans(pages[pair[0]][pair[1] - 1], query, mode)
+            span_cache[pair] = spans
+            if spans:
+                mapped.append(pair)
+                if len(mapped) == len(selected):
+                    break
+    rank = {pair: index for index, pair in enumerate(all_pairs)}
+    mapped.sort(key=lambda pair: (ordered_source_ids.index(pair[0]), rank[pair]))
+    return mapped, len(all_pairs)
 
 
 def _search_receipt(root: Path, handle: SearchReceiptHandle) -> dict[str, Any]:
@@ -689,6 +733,7 @@ def _search_receipt(root: Path, handle: SearchReceiptHandle) -> dict[str, Any]:
         mode,
         limit,
         source_ids,
+        span_cache={},
     )
     expected_pairs = expected_hits
     if hit_pairs != expected_pairs or total_matches != expected_total:
@@ -985,7 +1030,15 @@ def _normalized_contains(material: str, phrase: str) -> bool:
     """
     normalized_material, _ = _normalized_with_spans(material)
     normalized_phrase, _ = _normalized_with_spans(phrase)
-    return bool(normalized_phrase) and normalized_phrase in normalized_material
+    if not normalized_phrase:
+        return False
+    if normalized_phrase in normalized_material:
+        return True
+
+    wrapped_material, _ = _normalized_text_with_spans(material, dehyphenate_line_ends=False)
+    wrapped_phrase, _ = _normalized_text_with_spans(phrase, dehyphenate_line_ends=False)
+    line_wrap_phrase = re.sub(r"(?<=\w)-(?=\w)", " ", wrapped_phrase)
+    return bool(line_wrap_phrase) and line_wrap_phrase in wrapped_material
 
 
 def _normalized_match(material: str, phrase: str) -> tuple[str | None, str | None]:
@@ -1105,9 +1158,6 @@ def select_text_evidence(
         raise ValueError("selected text is ambiguous; select a unique passage")
     start = spans[starts[0]][0]
     end = spans[starts[0] + len(normalized_selection) - 1][1]
-    next_page_text = pages[page] if page < len(pages) else None
-    if _is_incomplete_page_boundary_selection(text, start, end, next_page_text):
-        raise ValueError(_INCOMPLETE_BOUNDARY_SELECTION)
     return {
         "outcome": "success",
         "evidence": _evidence(
@@ -1127,15 +1177,8 @@ def select_text_evidence_by_lines(
     page: int,
     start_line: int,
     end_line: int,
-    start_text: str | None = None,
-    end_text: str | None = None,
 ) -> dict[str, Any]:
-    """Select exact source text using coordinates issued by ``read_pages``.
-
-    Optional boundary anchors disambiguate a sentence that shares its first or
-    last extracted line with unrelated text. They trim only the boundary line;
-    the numbered line range remains the primary coordinate system.
-    """
+    """Select exact source text using coordinates issued by ``read_pages``."""
     root = _root(workspace)
     _ensure(root)
     source_data = _verified_source_projections(root, {(trial_id, source_id)}).get(
@@ -1159,44 +1202,11 @@ def select_text_evidence_by_lines(
     while end > start and text[end - 1] in "\r\n":
         end -= 1
 
-    def anchored_offset(line_number: int, anchor: str, *, use_end: bool) -> int:
-        if not anchor.strip():
-            raise ValueError("boundary text must contain non-whitespace content")
-        line_start = sum(len(line) for line in lines[: line_number - 1])
-        line_end = line_start + len(lines[line_number - 1].rstrip("\r\n"))
-        line_text = text[line_start:line_end]
-        normalized_line, spans = _normalized_text_with_spans(line_text)
-        normalized_anchor = _canonical_search_text(anchor)
-        if not normalized_anchor:
-            raise ValueError("boundary text must contain searchable content")
-        matches: list[int] = []
-        offset = 0
-        while True:
-            match = normalized_line.find(normalized_anchor, offset)
-            if match < 0:
-                break
-            matches.append(match)
-            offset = match + 1
-        if len(matches) != 1:
-            raise ValueError(
-                "boundary text must match exactly once within its numbered boundary line"
-            )
-        match = matches[0]
-        relative = spans[match + len(normalized_anchor) - 1][1] if use_end else spans[match][0]
-        return line_start + relative
-
-    if start_text is not None:
-        start = anchored_offset(start_line, start_text, use_end=False)
-    if end_text is not None:
-        end = anchored_offset(end_line, end_text, use_end=True)
     if end <= start:
-        raise ValueError("selected boundary text does not define a positive contiguous range")
+        raise ValueError("line range must define a positive contiguous range")
     quote = text[start:end]
     if not quote.strip():
         raise ValueError("line range must contain non-whitespace source text")
-    next_page_text = pages[page] if page < len(pages) else None
-    if _is_incomplete_page_boundary_selection(text, start, end, next_page_text):
-        raise ValueError(_INCOMPLETE_BOUNDARY_SELECTION)
     return {
         "outcome": "success",
         "evidence": _evidence(

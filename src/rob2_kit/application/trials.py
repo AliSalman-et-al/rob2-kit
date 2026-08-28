@@ -5,7 +5,7 @@ from ..workflow_models import TerminalRequestEnvelope
 from ._state import _commit_records, _ensure, _identity, _result, _root, _state
 from .contracts import WorkflowConflict
 from .finalization import _valid_proposal_gate
-from .status import _continuation
+from .status import _active_trial_and_domain, _continuation
 
 
 def _proposal_gate_is_approved(state: dict[str, Any]) -> bool:
@@ -66,6 +66,9 @@ def request_trial_terminal(
         or state["trial_dispositions"][trial_id] != "pending"
     ):
         raise ValueError("Trial is not pending")
+    active_trial, _ = _active_trial_and_domain(state)
+    if trial_id != active_trial:
+        raise ValueError(f"complete Trial '{active_trial}' before Trial '{trial_id}'")
     if disposition == "needs_input" and not all(
         isinstance(item, str) and item.strip() for item in missing_facts
     ):

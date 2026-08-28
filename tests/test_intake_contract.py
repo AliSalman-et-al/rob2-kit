@@ -128,8 +128,8 @@ def test_every_public_tool_publishes_closed_input_and_output_schemas() -> None:
         assert tool.outputSchema
         for schema in (tool.inputSchema, tool.outputSchema):
             for path, obj in _walk_schema(schema):
-                # The only open objects are deliberate maps (trial dispositions
-                # and answer maps), which have no named properties.
+                # Deliberate server-owned maps, such as trial dispositions, have
+                # no named properties. Every modeled object remains closed.
                 if "properties" in obj:
                     assert obj.get("additionalProperties") is False, path
             arrays: list[dict[str, Any]] = []
@@ -161,6 +161,7 @@ def test_every_public_tool_publishes_closed_input_and_output_schemas() -> None:
             "get_domain_context": 2,
             "prepare_batch": 3,
             "save_proposal": 5,
+            "request_proposal_approval": 2,
             "save_domain_judgment": 4,
             "request_trial_terminal": 3,
             "finalize_batch": 3,
@@ -227,8 +228,18 @@ def test_prepare_batch_schema_is_closed_and_requires_outcome_request() -> None:
     schema = cast(dict[str, Any], _prepare_schema())
     assert schema["required"] == ["requested_outcome", "expected_revision"]
     assert schema["additionalProperties"] is False
-    assert set(schema["properties"]) == {"requested_outcome", "expected_revision"}
+    assert set(schema["properties"]) == {
+        "requested_outcome",
+        "expected_revision",
+        "trial_labels",
+    }
     assert schema["properties"]["requested_outcome"]["type"] == "string"
+    trial_labels = schema["properties"]["trial_labels"]
+    array_schema = next(item for item in trial_labels["anyOf"] if item.get("type") == "array")
+    assert array_schema["minItems"] == 1
+    assert array_schema["items"]["type"] == "string"
+    assert array_schema["items"]["minLength"] == 1
+    assert array_schema["items"]["description"]
 
 
 def test_prepare_batch_discovers_server_owned_input_trial_directory(tmp_path: Path) -> None:
@@ -278,6 +289,102 @@ def test_prepare_batch_discovers_multiple_trials_deterministically(tmp_path: Pat
     assert {trial["requested_outcome"] for trial in result["data"]["trials"]} == {
         "overall survival"
     }
+
+
+def test_prepare_batch_scopes_exact_trial_labels_in_directory_order(tmp_path: Path) -> None:
+    for name in ("PEACE-1", "TITAN", "STAMPEDE"):
+        trial = tmp_path / "input" / name
+        trial.mkdir(parents=True)
+        (trial / "main.txt").write_text(name, encoding="utf-8")
+
+    result = _call(
+        tmp_path,
+        "prepare_batch",
+        {
+            "requested_outcome": "overall survival",
+            "trial_labels": ["TITAN", "STAMPEDE"],
+            "expected_revision": 0,
+        },
+    )
+
+    assert [trial["label"] for trial in result["data"]["trials"]] == ["STAMPEDE", "TITAN"]
+
+
+@pytest.mark.parametrize(
+    ("labels", "detail"),
+    (
+        (["STAMPEDE", "STAMPEDE"], "trial_labels must not contain duplicate directory labels"),
+        (["MISSING"], "unknown trial label: input/MISSING"),
+    ),
+)
+def test_prepare_batch_rejects_invalid_trial_labels(
+    tmp_path: Path, labels: list[str], detail: str
+) -> None:
+    for name in ("STAMPEDE", "PEACE-1"):
+        (tmp_path / "input" / name).mkdir(parents=True)
+
+    result = _call(
+        tmp_path,
+        "prepare_batch",
+        {
+            "requested_outcome": "overall survival",
+            "trial_labels": labels,
+            "expected_revision": 0,
+        },
+    )
+
+    assert result["outcome"] == "condition"
+    assert result["condition"] == {"code": "invalid_request", "detail": detail}
+
+
+@pytest.mark.parametrize("labels", ([], [" "]))
+def test_prepare_batch_rejects_empty_or_blank_trial_labels(
+    tmp_path: Path, labels: list[str]
+) -> None:
+    (tmp_path / "input" / "Trial A").mkdir(parents=True)
+
+    async def prepare() -> None:
+        os.environ["ROB2_WORKSPACE"] = str(tmp_path)
+        async with Client(mcp) as client:
+            with pytest.raises(ToolError):
+                await client.call_tool(
+                    "prepare_batch",
+                    {
+                        "requested_outcome": "requested outcome",
+                        "trial_labels": labels,
+                        "expected_revision": 0,
+                    },
+                )
+
+    asyncio.run(prepare())
+
+
+def test_prepare_batch_retries_subset_idempotently_when_label_order_changes(tmp_path: Path) -> None:
+    for name in ("Trial A", "Trial B", "Trial C"):
+        (tmp_path / "input" / name).mkdir(parents=True)
+
+    first = _call(
+        tmp_path,
+        "prepare_batch",
+        {
+            "requested_outcome": "requested outcome",
+            "trial_labels": ["Trial B", "Trial A"],
+            "expected_revision": 0,
+        },
+    )
+    retry = _call(
+        tmp_path,
+        "prepare_batch",
+        {
+            "requested_outcome": "requested outcome",
+            "trial_labels": ["Trial A", "Trial B"],
+            "expected_revision": first["head"]["state_revision"],
+        },
+    )
+
+    assert retry["outcome"] == "success"
+    assert retry["data"]["retry"] is True
+    assert retry["data"]["batch_identity"] == first["data"]["batch_identity"]
 
 
 def test_prepare_batch_rejects_empty_trial_directory_set(tmp_path: Path) -> None:
@@ -372,7 +479,7 @@ def test_receipt_head_uses_authoritative_post_operation_status(tmp_path: Path) -
         "operation": "prepare_batch",
         "authority": "host",
         "expected_revision": 0,
-        "caller_inputs": ["requested_outcome"],
+        "caller_inputs": ["requested_outcome", "trial_labels"],
     }
     assert prepared["head"]["phase"] == "proposal"
     assert prepared["head"]["next_action"] == {
@@ -430,7 +537,6 @@ def test_next_action_is_operation_discriminated_and_closed() -> None:
                         "needs_input": 0,
                         "failed": 0,
                         "pending": 0,
-                        "provisional": 0,
                     },
                     "review_required": False,
                     "authority_required": "host",
@@ -449,28 +555,48 @@ def test_next_action_is_operation_discriminated_and_closed() -> None:
         )
 
 
-def test_status_presents_provisional_snapshot_as_provisional() -> None:
+def test_status_counts_a_completed_trial_before_batch_finalization() -> None:
     status = presentation(
         {
-            "phase": "ready_to_finalize",
-            "trial_dispositions": {"trial": "pending"},
-            "snapshots": {"trial": {"provisional": True}},
+            "phase": "assessment",
+            "trial_dispositions": {"trial-a": "assessed", "trial-b": "pending"},
         }
     )
     assert status["counts"] == {
-        "assessed": 0,
+        "assessed": 1,
         "needs_input": 0,
         "failed": 0,
-        "pending": 0,
-        "provisional": 1,
+        "pending": 1,
     }
+    assert status["wording"] == (
+        "Batch incomplete: 1/2 Trials completed; 1 pending. Continue now with head.next_action. "
+        "Never stop at a Trial boundary, ask whether to continue, infer pending Trial "
+        "judgments, or reduce rigor for token or context limits."
+    )
+
+
+def test_status_keeps_incomplete_batch_authoritative_until_finalization() -> None:
+    status = presentation(
+        {
+            "phase": "ready_to_finalize",
+            "trial_dispositions": {"trial-a": "assessed", "trial-b": "needs_input"},
+        }
+    )
+    assert status["wording"] == (
+        "Batch incomplete. Continue now with head.next_action to finalize the Batch. Never stop, "
+        "summarize, or ask whether to continue before finalization."
+    )
 
 
 def test_assessment_skill_spells_out_intake_mapping() -> None:
     skill = Path(__file__).parents[1] / "src/rob2_kit/skills/rob2-assess/SKILL.md"
     text = skill.read_text(encoding="utf-8")
     assert '"requested_outcome":"a requested outcome","expected_revision":0' in text
-    assert "discovers every immediate,\n   non-hidden Trial directory" in text
+    assert "Assess risk of bias for a requested outcome in Trial A" in text
+    assert '"trial_labels":["Trial A"]' in text
+    assert "across Trial A and Trial B" in text
+    assert '"trial_labels":["Trial A","Trial B"]' in text
+    assert "captured Trial labels match the requested scope" in text
 
 
 def test_assessment_skill_spells_out_result_choice_invariant() -> None:
@@ -511,6 +637,27 @@ def test_assessment_skill_spells_out_result_choice_invariant() -> None:
     assert "probably_yes" in terminal_description
 
 
+def test_assessment_skill_preserves_rigor_across_context_compaction() -> None:
+    skill = Path(__file__).parents[1] / "src/rob2_kit/skills/rob2-assess/SKILL.md"
+    text = skill.read_text(encoding="utf-8")
+    normalized = " ".join(text.split())
+
+    assert (
+        "After a compaction or restart, call `get_status` before any other workflow call"
+        in normalized
+    )
+    assert "resume the exact `head.next_action`" in normalized
+    assert "A low-context signal does not lower rigor" in normalized
+    assert "summarize remaining Trials" in normalized
+    assert "ask the researcher how to proceed solely because context is low" in normalized
+    assert "Let the host compact automatically" in normalized
+    assert "immediately call `get_status`" in normalized
+    assert "gives the host another safe continuation point" in normalized
+    assert "Save each Domain judgment with `save_domain_judgment`" in normalized
+    assert "fifth valid checkpoint must mark the current Trial complete" in normalized
+    assert "Call `finalize_batch` only when `head.next_action` directs it" in normalized
+
+
 def test_result_relation_schema_has_only_visible_non_exact_categories() -> None:
     schema = _tool_schema("save_proposal")
     result_items = cast(dict[str, Any], schema["properties"]["results"]["items"])
@@ -530,12 +677,15 @@ def test_result_relation_schema_has_only_visible_non_exact_categories() -> None:
     assert "scope is a superset" in result_items["description"]
     assert "subset or has additional restrictions" in result_items["description"]
     results_description = cast(dict[str, Any], schema["properties"]["results"])["description"]
+    assert "Initial save" in results_description
+    assert "preserves unmentioned cards" in results_description
     assert "Select supporting Evidence first" in results_description
     assert "repeat Evidence handles" in results_description
     tool_description = _tool_description("save_proposal")
     assert "binds already-selected Evidence" in tool_description
     assert "keeps only material used" in tool_description
     assert "only researcher gate" in tool_description
+    assert "Keep all source-reported numbers as strings" in tool_description
 
 
 def test_search_contract_exposes_match_summary_and_render_defaults_to_pixels() -> None:
@@ -561,12 +711,14 @@ def test_search_contract_exposes_match_summary_and_render_defaults_to_pixels() -
         "source_role",
         "source_label",
         "page",
+        "start_line",
+        "end_line",
         "preview",
     }
     assert data_objects[0]["properties"]["search_receipt"]["pattern"] == r"^sr_[0-9a-f]{16}$"
     search_description = _tool_description("search_sources")
-    assert "total_matches" in search_description
-    assert "refine a truncated search" in search_description.lower()
+    assert "counts" in search_description
+    assert "refine truncated searches" in search_description.lower()
     render_schema = _tool_schema("render_page")
     assert render_schema["properties"]["inline"]["default"] is True
     assert "pixels as ImageContent by default" in _tool_description("render_page")
@@ -634,14 +786,17 @@ def test_save_proposal_schema_is_closed_and_discriminated() -> None:
     )
     assert "endpoint" in comparative
     endpoint = comparative["endpoint"]
-    assert endpoint["required"] == ["name", "definition"]
+    assert endpoint["required"] == ["name"]
+    assert endpoint["properties"]["definition"]["default"] is None
     assert "group_values" in comparative
     assert "quantities" not in comparative
     assert "comparison_groups" not in comparative
     for name, definition in _walk_schema(schema):
         if definition.get("type") == "object":
             assert definition["additionalProperties"] is False, name
-    assert len(json.dumps(schema, separators=(",", ":")).encode()) < 12000
+    # Every nested caller field is self-describing; keep the complete proposal
+    # schema compact enough to inspect in one tool definition.
+    assert len(json.dumps(schema, separators=(",", ":")).encode()) < 16000
     assert len(_walk_schema(schema)) < 22
 
 
@@ -769,8 +924,11 @@ def test_selected_evidence_and_typed_proposal_survive_host_restart(tmp_path: Pat
         "/target/measurement/method",
         "/target/intended_analysis_population",
         "/target/intended_effect_measure",
+        "/target/time_point_or_window/description",
         "/target/comparison_groups/0/id",
+        "/target/comparison_groups/0/assignment",
         "/target/comparison_groups/1/id",
+        "/target/comparison_groups/1/assignment",
         "/reported/values/0/group_id",
         "/reported/values/1/group_id",
     }

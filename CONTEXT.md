@@ -25,7 +25,8 @@ The closed workflow phases are `empty`, `proposal`, `assessment`,
    reject, or replace the chosen Result mapping.
 4. After approval, the model answers all active signaling questions and the
    server derives Domain and overall judgments.
-5. `finalize_batch` automatically freezes completed snapshots and creates the
+5. Accepting the fifth Domain freezes that Trial's AssessmentSnapshot and marks
+   it `assessed`. `finalize_batch` packages the terminal Trial records into the
    verified bundle. There is no Assessment Review or final approval.
 
 A **State revision** is the optimistic-concurrency basis for one mutation. A
@@ -34,9 +35,11 @@ An identical retry returns the same logical record without duplicating history.
 
 ## Authority
 
-Researcher authority enters through `rob2 review`, which acknowledges one exact
-Proposal Review record. Model-facing MCP tools cannot approve it. The researcher
-may change the Result only before that approval.
+Researcher authority enters through `rob2 review` or capability-backed MCP
+elicitation, either of which acknowledges one exact Proposal Review record. A
+model-authored tool call cannot approve the record by itself: the MCP path
+commits only a directly accepted client elicitation. The researcher may change
+the Result only before that approval.
 
 After approval, signaling answers are model-owned. User messages that prescribe
 or revise answers are not scientific authority. The server exposes no researcher
@@ -58,20 +61,23 @@ Absolute paths and Source bytes do not enter the finalized bundle.
 A **Text projection** is a deterministic, page-preserving derivative used for
 search and exact text selection. PDF pages use plain text plus compact Markdown
 tables only when table structure is meaningful. Raw PyMuPDF4LLM JSON is not a
-model-facing contract. A **Verified render** is a content-addressed PNG derivative
+model-facing contract. Captured JSON is presented as a sorted, canonical
+path-value projection with arrays preserved by index; the captured bytes remain
+the content authority. A **Verified render** is a content-addressed PNG derivative
 used when layout, axes, footnotes, or table geometry affect meaning.
 
-The exact page projection is Evidence authority and is never rewritten for search.
-A separate versioned search derivative may normalize Unicode, whitespace, and
-line-end word hyphenation. It keeps raw and normalized variants separate so a
-phrase cannot cross an artificial boundary, and search previews map the matched
-normalized span back to the exact page text. `read_pages` presents stable
-one-based source-page indexes and numbered lines from the authoritative
-projection. Text selection names one inclusive, contiguous line range on one
-page; the server stores the exact underlying page text. Discovery and selection
-therefore share the same projection without making normalized search text the
-canonical quote. Rebuilding this disposable derivative must not change Source,
-projection, Evidence, or workflow identities.
+The exact page projection is Evidence authority. Capture normalizes Unicode
+compatibility forms, ligatures, ordinary punctuation variants, line endings,
+PDF line-end hyphenation, and nonprinting formatting artifacts once. Search,
+page reads, and selected quotations use that same readable projection. A
+separate versioned FTS derivative adds case folding and tokenization for
+discovery without becoming Evidence. `read_pages` presents stable
+one-based source-page indexes and bounded windows of numbered lines from the
+authoritative projection. A typed line cursor continues a large page without
+changing its coordinates. Text selection names one inclusive, contiguous line
+range on one page; the server stores that exact projected text. Rebuilding the
+disposable FTS derivative must not change Source, projection, Evidence, or
+workflow identities. The immutable captured bytes remain available for audit.
 
 An **Evidence handle** is a short, Trial-scoped transport pointer to selected
 text or a selected visual region. Canonical Evidence retains Source identity,
@@ -100,8 +106,10 @@ not caller-supplied Proposal structure. On Proposal submission, the server binds
 the Result to selected Evidence, retains only material used by the Result, and
 derives canonical field bindings. Structural identifiers such as `group_id` and
 `category_axis_names` connect typed fields but are not Source claims. Source-owned
-labels, values, units, denominators, endpoint definitions, and category cells must
-remain bound to exact selected Evidence. An unavailable Result requires one typed
+reported labels, values, units, denominators, endpoint definitions, and category
+cells must remain bound to exact selected Evidence. Target method, timing,
+population, effect measure, and arm assignments are researcher-reviewed
+interpretation fields and do not require duplicate bindings. An unavailable Result requires one typed
 basis for each missing fact. Normally, that basis is selected Evidence that
 explicitly establishes missing reporting. For a Trial with zero captured Sources,
 the basis is instead the exact captured `no_supported_sources` Intake condition.
@@ -131,14 +139,16 @@ measurement properties or prespecification, and relationship labels never add
 facts to a Source premise. Activation is dependency-closed: a dependent
 question can become active only when its parent path is active. The server
 ignores and does not commit extra inactive branch answers, but still requires
-every active answer.
+every active answer. The caller evaluates predicates transitively against
+earlier answers in the same Domain save rather than discovering one branch per
+repair cycle.
 
 A **Domain checkpoint** is an immutable, content-addressed record of the active
 answers, inactive questions, Evidence uses, search accounts, deterministic
 judgment, and evaluation trace. The first save has no revision basis.
 
-Before finalization, the model may replace the active checkpoint only by naming
-its exact `supersedes` identity and one closed revision basis:
+While the Trial remains pending, the model may replace an active checkpoint only
+by naming its exact `supersedes` identity and one closed revision basis:
 
 - `new_evidence` names selected Evidence absent from the prior checkpoint and
   actually used in the revised answers;
@@ -150,11 +160,12 @@ Domain, active snapshot, and overall judgment. Exact retries are idempotent, and
 finalized artifacts cannot be revised. The researcher cannot invoke this mechanism
 to coach an answer; disagreement requires discard and a fresh run.
 
-Five active Domain checkpoints produce a provisional **AssessmentSnapshot**.
-Where multiple `some_concerns` judgments require an overall decision, the model
-must submit the typed `multiple_concerns` decision requested by the server.
-Finalization freezes the active snapshot and changes the Trial disposition to
-`assessed`.
+Five active Domain checkpoints produce an immutable **AssessmentSnapshot**,
+freeze the Trial, and change its disposition to `assessed`. Where multiple
+`some_concerns` judgments require an overall decision, the model must submit the
+typed `multiple_concerns` decision requested by the server before that fifth
+checkpoint can be accepted. Batch finalization only packages Trial records that
+are already terminal.
 
 ## Terminals and artifacts
 
@@ -175,12 +186,12 @@ change Canonical records or scientific judgments.
 
 ## Public boundary
 
-The v0.3 FastMCP surface is frozen at exactly 13 strictly typed tools:
+The v0.3 FastMCP surface is frozen at exactly 14 strictly typed tools:
 
 `prepare_batch`, `get_status`, `list_sources`, `search_sources`, `read_pages`,
 `select_text_evidence`, `render_page`, `select_visual_evidence`, `save_proposal`,
-`get_domain_context`, `save_domain_judgment`, `request_trial_terminal`, and
-`finalize_batch`.
+`request_proposal_approval`, `get_domain_context`, `save_domain_judgment`,
+`request_trial_terminal`, and `finalize_batch`.
 
 Input and output schemas are closed Pydantic unions. Tool descriptions state the
 single operation, required caller inputs, and server-owned fields. The live

@@ -638,15 +638,19 @@ def _canonical_search_text(value: str) -> str:
     return " ".join(normalized.split())
 
 
-def _normalized_with_spans(value: str) -> tuple[str, list[tuple[int, int]]]:
+def _normalized_with_spans(
+    value: str, *, dehyphenate_line_ends: bool = True
+) -> tuple[str, list[tuple[int, int]]]:
     filtered: list[tuple[str, int, int]] = []
     for index, character in enumerate(value):
         if character == "\u00ad":
             if re.match(r"[^\S\r\n]*\r?\n", value[index + 1 :]):
                 filtered.append(("-", index, index + 1))
             continue
-        if unicodedata.category(character) != "Cf":
-            filtered.append((character, index, index + 1))
+        category = unicodedata.category(character)
+        if category == "Cf" or category == "Cc" and not character.isspace():
+            continue
+        filtered.append((character, index, index + 1))
     characters: list[str] = []
     spans: list[tuple[int, int]] = []
     index = 0
@@ -692,7 +696,11 @@ def _normalized_with_spans(value: str) -> tuple[str, list[tuple[int, int]]]:
                 and next_index < len(characters)
                 and (characters[next_index].isalnum() or characters[next_index] == "_")
             ):
-                output_spans[-1] = (output_spans[-1][0], spans[next_index][0])
+                if dehyphenate_line_ends:
+                    output_spans[-1] = (output_spans[-1][0], spans[next_index][0])
+                else:
+                    output.append(" ")
+                    output_spans.append((spans[index][0], spans[next_index][0]))
                 index = next_index
                 continue
         output.append(characters[index])
@@ -701,77 +709,23 @@ def _normalized_with_spans(value: str) -> tuple[str, list[tuple[int, int]]]:
     return "".join(output), output_spans
 
 
-def _normalized_match(material: str, phrase: str) -> tuple[str | None, str | None]:
-    normalized_material, spans = _normalized_with_spans(material)
-    normalized_phrase, _ = _normalized_with_spans(phrase)
-    if not normalized_phrase:
-        return None, "empty"
-    starts: list[int] = []
-    start = normalized_material.find(normalized_phrase)
-    while start >= 0:
-        starts.append(start)
-        start = normalized_material.find(normalized_phrase, start + 1)
-    if not starts:
-        return None, "absent"
-    if len(starts) != 1:
-        return None, "ambiguous"
-    first = starts[0]
-    last = first + len(normalized_phrase) - 1
-    return material[spans[first][0] : spans[last][1]], None
-
-
 def _normalized_contains(material: str, phrase: str) -> bool:
     normalized_material, _ = _normalized_with_spans(material)
     normalized_phrase, _ = _normalized_with_spans(phrase)
-    return bool(normalized_phrase) and normalized_phrase in normalized_material
+    if not normalized_phrase:
+        return False
+    if normalized_phrase in normalized_material:
+        return True
+
+    wrapped_material, _ = _normalized_with_spans(material, dehyphenate_line_ends=False)
+    wrapped_phrase, _ = _normalized_with_spans(phrase, dehyphenate_line_ends=False)
+    line_wrap_phrase = re.sub(r"(?<=\w)-(?=\w)", " ", wrapped_phrase)
+    return bool(line_wrap_phrase) and line_wrap_phrase in wrapped_material
 
 
 def _normalized_equal(left: str, right: str) -> bool:
     """Compare mapping values as complete normalized leaves, not substrings."""
     return _normalized_with_spans(left)[0] == _normalized_with_spans(right)[0]
-
-
-def _has_missing_reporting_signal(value: str) -> bool:
-    """Apply the same lexical, non-semantic unavailable-source gate as proposal."""
-    normalized = unicodedata.normalize("NFKC", value).casefold()
-    normalized = re.sub(r"\s+", " ", normalized).strip()
-    return bool(
-        re.search(
-            r"(?:\b(?:not|did not)\b(?:\s+\w+){0,3}\s+"
-            r"\b(?:collect(?:ed)?|document(?:ed)?|report(?:ed)?(?!\s+as\b)|record(?:ed)?|"
-            r"measure(?:d)?|assess(?:ed)?|captur(?:e|ed)|available)\b|"
-            r"\bno\b(?:\s+\w+){0,2}\s+\b(?:data|information|results?"
-            r"(?!\s+(?:were\s+)?(?:statistically|significant)\b)|records?|"
-            r"reporting|measurements?)\b|"
-            r"\bwithout\b(?:\s+\w+){0,2}\s+\b(?:data|reporting|documentation|"
-            r"measurements?)\b|"
-            r"\b(?:missing|unavailable|l(?:ack|acked|acking)?)\b(?:\s+\w+){0,3}\s+"
-            r"\b(?:data|information|results?|records?|reporting|documentation|"
-            r"measurements?|assessment|capture)\b|"
-            r"\b(?:data|information|results?|records?|reporting|documentation|"
-            r"measurements?|assessment|capture)\b(?:\s+\w+){0,2}\s+"
-            r"\b(?:missing|unavailable|l(?:ack|acked|acking)?)\b)",
-            normalized,
-        )
-    )
-
-
-_INCOMPLETE_DOMAIN_LEADS = (
-    "the following",
-    "as follows",
-    "following factors",
-    "following stratification",
-    "following stratifications",
-)
-
-
-def _is_incomplete_domain_source(value: str) -> bool:
-    normalized = unicodedata.normalize("NFKC", value).casefold()
-    normalized = re.sub(r"-\s*(?:\r\n|\r|\n)\s*", "", normalized)
-    normalized = " ".join(normalized.split())
-    return normalized.endswith(":") or any(
-        normalized.endswith(lead) for lead in _INCOMPLETE_DOMAIN_LEADS
-    )
 
 
 _FORBIDDEN_PATH_FIELDS = frozenset(
@@ -1015,14 +969,6 @@ def _valid_domain_lineage(
 
 
 def _snapshot_identity(snapshot: dict[str, object]) -> str:
-    if snapshot.get("provisional") is True:
-        return identity(
-            {
-                "trial_id": snapshot.get("trial_id"),
-                "checkpoints": snapshot.get("checkpoints"),
-                "multiple_concerns": snapshot.get("multiple_concerns"),
-            }
-        )
     return identity({key: value for key, value in snapshot.items() if key != "identity"})
 
 
@@ -1208,7 +1154,10 @@ def _source_bound_leaves(value: object, path: str) -> dict[str, object]:
     """Return Result claims that must be replayed against Source Evidence.
 
     Repeated group references and category dimension declarations are structural
-    and are checked by the result-shape validator instead.
+    and are checked by the result-shape validator instead. Target timing and
+    randomized-arm descriptions are caller/model interpretation fields; they
+    remain required and are shown in the audit, but are not duplicate source
+    quotations that need exact leaf bindings.
     """
     caller_owned = {
         "/target/outcome_definition",
@@ -1227,7 +1176,12 @@ def _source_bound_leaves(value: object, path: str) -> dict[str, object]:
             leaf_path in caller_owned
             or (leaf_path == "/reported/precision" and leaf is None)
             or (leaf_path == "/reported/endpoint/definition" and leaf is None)
+            or leaf_path.startswith("/target/time_point_or_window/")
             or (leaf_path.startswith("/target/comparison_groups/") and leaf_path.endswith("/id"))
+            or (
+                leaf_path.startswith("/target/comparison_groups/")
+                and leaf_path.endswith("/assignment")
+            )
             or (leaf_path.startswith("/reported/group_values/") and leaf_path.endswith("/group_id"))
             or (leaf_path.startswith("/reported/values/") and leaf_path.endswith("/group_id"))
             or leaf_path.startswith("/reported/category_axis_names/")
@@ -1379,8 +1333,12 @@ def _valid_result_shape(result: dict[str, object], requested_outcome: str) -> bo
     if len(target_ids) != len(set(target_ids)):
         return False
 
-    def valid_values(values: object) -> tuple[bool, set[str]]:
-        if not isinstance(values, list) or len(values) < 2:
+    def valid_values(values: object, *, optional: bool = False) -> tuple[bool, set[str]]:
+        if not isinstance(values, list):
+            return False, set()
+        if optional and not values:
+            return True, set()
+        if len(values) < 2:
             return False, set()
         ids: list[str] = []
         for item in values:
@@ -1411,7 +1369,7 @@ def _valid_result_shape(result: dict[str, object], requested_outcome: str) -> bo
             or (reported["precision"] is not None and not _nonblank(reported["precision"]))
         ):
             return False
-        valid, reported_ids = valid_values(reported["group_values"])
+        valid, reported_ids = valid_values(reported["group_values"], optional=True)
     elif form == "group_bound_values":
         if set(reported) != {"form", "endpoint", "values"}:
             return False
@@ -1457,7 +1415,7 @@ def _valid_result_shape(result: dict[str, object], requested_outcome: str) -> bo
         return False
     if form == "single_group_category_profile":
         return valid and len(reported_ids) == 1 and reported_ids <= set(target_ids)
-    return valid and reported_ids == set(target_ids)
+    return valid and (not reported_ids or reported_ids == set(target_ids))
 
 
 def _reported_result_has_coherent_anchor(
@@ -1607,13 +1565,7 @@ def _valid_result_evidence(
             if not isinstance(selected, dict) or selected.get("trial_id") != result["trial_id"]:
                 return False
             material = str(selected.get("quote", selected.get("transcription", "")))
-            matched, _ = _normalized_match(material, basis["source"])
-            if (
-                matched is None
-                or matched != basis["source"]
-                or _is_incomplete_domain_source(matched)
-                or not _has_missing_reporting_signal(matched)
-            ):
+            if material != basis["source"]:
                 return False
         return True
     if kind != "assessable" or relation not in {
@@ -1712,10 +1664,7 @@ def _valid_result_evidence(
                 if (
                     not isinstance(selected, dict)
                     or selected.get("trial_id") != result["trial_id"]
-                    or _normalized_with_spans(material)[0].find(
-                        _normalized_with_spans(str(input.get("value", "")))[0]
-                    )
-                    < 0
+                    or not _normalized_contains(material, str(input.get("value", "")))
                 ):
                     return False
             continue
@@ -1862,7 +1811,7 @@ def _valid_result_evidence(
                     "quote", by_handle[reference["handle"]].get("transcription", "")
                 )
             )
-            if _normalized_with_spans(material)[0].find(_normalized_with_spans(value)[0]) < 0:
+            if not _normalized_contains(material, value):
                 return False
         if item_kind == "table" and not _normalized_contains(
             str(
@@ -1890,7 +1839,7 @@ def _claims(canonical: dict[str, object]) -> dict[str, object]:
     assert isinstance(dispositions, dict)
     counts = {
         name: sum(value == name for value in dispositions.values())
-        for name in ("assessed", "needs_input", "failed", "pending", "provisional")
+        for name in ("assessed", "needs_input", "failed", "pending")
     }
     total = len(dispositions)
     wording = (
@@ -2337,12 +2286,7 @@ def verify(path: Path) -> tuple[bool, str]:
                         material = str(
                             evidence_item.get("quote") or evidence_item.get("transcription") or ""
                         )
-                        matched, _ = _normalized_match(material, source)
-                        if (
-                            matched != source
-                            or _is_incomplete_domain_source(source)
-                            or matched is None
-                        ):
+                        if material != source:
                             return False, "Domain Evidence source is not an exact selected fragment"
                     if answer["answer"] in {"yes", "no"} and not direct_basis:
                         return False, "definitive Domain answer lacks a direct basis"
@@ -2520,8 +2464,7 @@ def verify(path: Path) -> tuple[bool, str]:
                                 or evidence_item.get("transcription")
                                 or ""
                             )
-                            matched, _ = _normalized_match(material, source)
-                            if matched != source or _is_incomplete_domain_source(source):
+                            if material != source:
                                 return False, "Domain history Evidence source is invalid"
                         if answer["answer"] in {"yes", "no"} and not direct_basis:
                             return False, "definitive Domain history answer lacks a direct basis"
@@ -2534,30 +2477,19 @@ def verify(path: Path) -> tuple[bool, str]:
                 if not isinstance(history, list) or not history or not isinstance(historical, list):
                     return False, "snapshot history records are malformed"
                 for item, digest in zip(historical, history, strict=True):
-                    expected_shape = (
-                        {
-                            "trial_id",
-                            "checkpoints",
-                            "provisional",
-                            "domain_judgments",
-                            "multiple_concerns",
-                            "overall",
-                            "identity",
-                        }
-                        if isinstance(item, dict) and item.get("provisional") is True
-                        else {
-                            "trial_id",
-                            "checkpoints",
-                            "provisional",
-                            "domain_judgments",
-                            "multiple_concerns",
-                            "overall",
-                            "identity",
-                        }
-                    )
+                    expected_shape = {
+                        "trial_id",
+                        "checkpoints",
+                        "provisional",
+                        "domain_judgments",
+                        "multiple_concerns",
+                        "overall",
+                        "identity",
+                    }
                     if (
                         not isinstance(item, dict)
                         or set(item) != expected_shape
+                        or item.get("provisional") is not False
                         or item.get("identity") != digest
                         or item.get("trial_id") != trial_id
                         or item.get("identity") != _snapshot_identity(item)
