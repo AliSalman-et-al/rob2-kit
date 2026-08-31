@@ -6,7 +6,16 @@ import sys
 from pathlib import Path
 from typing import Any
 
-from support.rob2 import _assessment_workspace, _call, _domain_draft
+import pytest
+from support.rob2 import (
+    _assessment_workspace,
+    _call,
+    _domain_draft,
+    _prepared_evidence,
+    _proposal_args,
+    _result,
+    _workspace,
+)
 
 from rob2_kit.application._state import _state
 from rob2_kit.packs import SCIENTIFIC_PACK
@@ -23,6 +32,52 @@ def _complete_assessment(tmp_path: Path) -> tuple[Path, dict[str, Any], int]:
         assert saved["outcome"] == "success", saved
         revision = int(saved["head"]["state_revision"])
     return workspace, evidence, revision
+
+
+def _review_candidate(tmp_path: Path) -> Path:
+    workspace = _workspace(tmp_path)
+    evidence = _prepared_evidence(workspace)
+    proposed = _call(workspace, "save_proposal", _proposal_args(workspace, [_result(evidence)]))
+    assert proposed["outcome"] == "review_required"
+    return workspace
+
+
+def _answer_review(workspace: Path, answer: bytes) -> subprocess.CompletedProcess[bytes]:
+    return subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "rob2_kit.interfaces.cli.app",
+            "review",
+            "--workspace",
+            str(workspace),
+        ],
+        input=answer,
+        check=False,
+        capture_output=True,
+    )
+
+
+@pytest.mark.parametrize("answer", [b"yes\n", b"yes\r\n", b"\xef\xbb\xbfyes\r\n", b"YES\n"])
+def test_piped_acknowledgment_survives_a_byte_order_mark(tmp_path: Path, answer: bytes) -> None:
+    workspace = _review_candidate(tmp_path)
+
+    assert _answer_review(workspace, answer).returncode == 0
+    assert _state(workspace)["phase"] == "assessment"
+    assert _state(workspace)["review"] is None
+
+
+@pytest.mark.parametrize(("answer", "reported"), [(b"no\n", "'no'"), (b"", "''")])
+def test_declined_review_names_the_answer_it_received(
+    tmp_path: Path, answer: bytes, reported: str
+) -> None:
+    workspace = _review_candidate(tmp_path)
+
+    declined = _answer_review(workspace, answer)
+
+    assert declined.returncode == 1
+    assert f"not acknowledged: {reported}" in declined.stderr.decode()
+    assert _state(workspace)["review"] is not None
 
 
 def test_finalization_auto_freezes_without_assessment_review(tmp_path: Path) -> None:

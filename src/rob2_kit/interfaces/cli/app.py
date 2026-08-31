@@ -16,6 +16,12 @@ from rob2_kit.application.source_archive import archive_sources, verify_source_a
 from rob2_kit.application.status import get_status
 
 
+def _read_review_acknowledgment(prompt: str) -> str:
+    """Read one researcher answer as bytes so a piped byte order mark cannot corrupt it."""
+    print(prompt, end="", flush=True)
+    return sys.stdin.buffer.readline().decode("utf-8-sig", "replace").rstrip("\r\n").casefold()
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         prog="rob2",
@@ -68,13 +74,12 @@ def main(argv: list[str] | None = None) -> int:
         # The CLI is the researcher-authority seam.  Display the whole exact
         # candidate before accepting an acknowledgment reference.
         print(json.dumps(review, sort_keys=True, indent=2))
-        if (
-            input(
-                "Acknowledge this exact Review record as researcher? "
-                "[yes/no; ask the model to choose another candidate before approval] "
-            ).casefold()
-            != "yes"
-        ):
+        answer = _read_review_acknowledgment(
+            "Acknowledge this exact Review record as researcher? "
+            "[yes/no; ask the model to choose another candidate before approval] "
+        )
+        if answer != "yes":
+            print(f"not acknowledged: {answer!r}", file=sys.stderr)
             return 1
         print(json.dumps(approve_review(args.workspace, str(review["identity"])), sort_keys=True))
         return 0
