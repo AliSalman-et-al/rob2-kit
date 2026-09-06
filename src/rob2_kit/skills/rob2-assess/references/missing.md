@@ -6,6 +6,27 @@ Identify the denominator for the approved Result before you assess completeness.
 
 Assess whether outcome data are available for all or nearly all participants. If data are missing, look for evidence that the result is not biased. Then assess whether missingness could depend on the true outcome and whether that dependence is likely.
 
+For question 3.1, compare the approved outcome and time point with the flow
+and outcome-data passages. One passage may establish complete ascertainment;
+otherwise cite separate passages for randomized, observed, and analyzed
+populations. Do not treat an analyzed denominator as observed data. For
+example, a flow passage reporting 110 randomized and 105 analyzed participants
+does not by itself identify five missing outcomes; the host must determine what
+those exclusions represent.
+
+Use one basis when it contains the complete premise. Use several bases when,
+for example, a flow passage gives arm-specific counts and a results passage
+explains imputation or censoring. Keep conflicting counts visible and explain
+the comparison briefly in `justification`; the server only calculates a
+randomized-minus-observed difference after scope, arm, unit, and time point
+match.
+
+Question 3.1 may include compact `missing_data` rows for those comparisons.
+The server uses Evidence handles already attached to the answer as each row's
+provenance. Set a row's optional `basis` only when the row is supported by a
+specific subset or additional Evidence handle; do not repeat quotes or
+canonical Evidence identities.
+
 The active question card is authoritative. Its official excerpt and locator
 define the proposition; the seeds and pitfalls below guide retrieval.
 

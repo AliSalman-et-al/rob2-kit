@@ -64,6 +64,113 @@ def _nonblank(value: object) -> bool:
     return isinstance(value, str) and bool(value.strip())
 
 
+def _valid_missing_data(
+    value: object,
+    question_id: object,
+    evidence: dict[str, Any],
+    trial_id: object,
+) -> bool:
+    """Validate the canonical reconciliation stored on Domain 3.1 answers."""
+    if question_id != "sq:missing:data-available" or not isinstance(value, dict):
+        return False
+    if (
+        set(value) != {"rows", "conflicts"}
+        or not isinstance(value["rows"], list)
+        or not value["rows"]
+        or not isinstance(value["conflicts"], list)
+    ):
+        return False
+
+    def valid_row(row: object) -> bool:
+        if not isinstance(row, dict) or set(row) != {
+            "scope",
+            "randomized",
+            "observed",
+            "analyzed",
+            "imputed",
+            "exclusions",
+            "basis",
+            "missing",
+            "missing_fraction",
+        }:
+            return False
+        scope = row["scope"]
+        if (
+            not isinstance(scope, dict)
+            or set(scope) != {"arm", "population", "unit", "time_point"}
+            or any(not _nonblank(scope[key]) for key in scope)
+        ):
+            return False
+        for key in ("randomized", "observed", "analyzed", "imputed", "missing"):
+            item = row[key]
+            if item is not None and (
+                isinstance(item, bool) or not isinstance(item, int) or item < 0
+            ):
+                return False
+        if not isinstance(row["exclusions"], list) or not all(
+            _nonblank(item) for item in row["exclusions"]
+        ):
+            return False
+        if (
+            not isinstance(row["basis"], list)
+            or not row["basis"]
+            or not all(
+                _nonblank(identity)
+                and isinstance(evidence.get(identity), dict)
+                and evidence[identity].get("trial_id") == trial_id
+                for identity in row["basis"]
+            )
+        ):
+            return False
+        randomized, observed = row["randomized"], row["observed"]
+        expected_missing = (
+            randomized - observed
+            if isinstance(randomized, int)
+            and not isinstance(randomized, bool)
+            and isinstance(observed, int)
+            and not isinstance(observed, bool)
+            and randomized >= observed
+            else None
+        )
+        if row["missing"] != expected_missing:
+            return False
+        expected_fraction = (
+            expected_missing / randomized
+            if expected_missing is not None and randomized
+            else 0.0
+            if expected_missing is not None
+            else None
+        )
+        return row["missing_fraction"] == expected_fraction
+
+    if not all(valid_row(row) for row in value["rows"]):
+        return False
+    for conflict in value["conflicts"]:
+        if (
+            not isinstance(conflict, dict)
+            or set(conflict) != {"scope", "reports"}
+            or not isinstance(conflict["reports"], list)
+            or len(conflict["reports"]) < 2
+            or not all(valid_row(row) for row in conflict["reports"])
+            or any(row["scope"] != conflict["scope"] for row in conflict["reports"])
+        ):
+            return False
+    compared_fields = ("randomized", "observed", "analyzed", "imputed", "exclusions")
+    expected_conflicts: list[dict[str, object]] = []
+    seen: dict[tuple[object, ...], dict[str, object]] = {}
+    for row in value["rows"]:
+        scope = row["scope"]
+        key = tuple(scope[field] for field in ("arm", "population", "unit", "time_point"))
+        prior = seen.get(key)
+        if prior is not None and tuple(prior[field] for field in compared_fields) != tuple(
+            row[field] for field in compared_fields
+        ):
+            expected_conflicts.append({"scope": scope, "reports": [prior, row]})
+        else:
+            seen[key] = row
+    return value["conflicts"] == expected_conflicts
+
+
 _PATH_FIELDS = frozenset({"logical_path", "path"})
 
 
@@ -528,12 +635,8 @@ def _valid_search_account(
         return False
     if len(hit_pairs) > limit:
         return False
-    source_rank = {source_id: index for index, source_id in enumerate(source_ids)}
-    hit_source_ranks = [source_rank.get(source_id) for source_id, _page in hit_pairs]
-    if any(rank is None for rank in hit_source_ranks):
-        return False
-    if hit_source_ranks != sorted([rank for rank in hit_source_ranks if rank is not None]):
-        return False
+    # Search deliberately interleaves Sources. Membership, coordinates,
+    # uniqueness, and the bound are verified above; receipt identity binds order.
     return account.get("condition") in {None, "no_hits"}
 
 
@@ -1386,13 +1489,23 @@ def _valid_proposal_gate(
 def _domain_evidence_ids(record: object) -> set[str]:
     if not isinstance(record, dict) or not isinstance(record.get("answers"), list):
         return set()
-    return {
+    answer_basis_ids = {
         basis.get("evidence")
         for answer in record["answers"]
         if isinstance(answer, dict) and isinstance(answer.get("bases"), list)
         for basis in answer["bases"]
         if isinstance(basis, dict) and isinstance(basis.get("evidence"), str)
     }
+    missing_data_ids = {
+        evidence_identity
+        for answer in record["answers"]
+        if isinstance(answer, dict)
+        for row in (answer.get("missing_data") or {}).get("rows", [])
+        if isinstance(row, dict) and isinstance(row.get("basis"), list)
+        for evidence_identity in row["basis"]
+        if isinstance(evidence_identity, str)
+    }
+    return answer_basis_ids | missing_data_ids
 
 
 def _verify_domain_lineage(
@@ -1559,12 +1672,7 @@ def _bundle(root: Path, state: dict[str, Any]) -> dict[str, Any]:
     for history in records_to_scan:
         records = history if isinstance(history, list) else [history]
         for record in records:
-            for answer in record.get("answers", []) if isinstance(record, dict) else []:
-                for basis in answer.get("bases", []) if isinstance(answer, dict) else []:
-                    evidence_identity = basis.get("evidence") if isinstance(basis, dict) else None
-                    if not isinstance(evidence_identity, str):
-                        continue
-                    domain_evidence_ids.add(evidence_identity)
+            domain_evidence_ids.update(_domain_evidence_ids(record))
     promoted = _canonical_evidence_records(root, domain_evidence_ids - set(evidence))
     missing = domain_evidence_ids - set(evidence) - set(promoted)
     if missing:
@@ -2163,10 +2271,32 @@ def verify_bundle(path: str | Path) -> bool:
                 for answer in answers:
                     if (
                         not isinstance(answer, dict)
-                        or set(answer) != {"question_id", "answer", "bases"}
+                        or set(answer)
+                        not in (
+                            {"question_id", "answer", "bases"},
+                            {"question_id", "answer", "bases", "justification"},
+                            {"question_id", "answer", "bases", "missing_data"},
+                            {"question_id", "answer", "bases", "justification", "missing_data"},
+                        )
                         or not isinstance(answer.get("question_id"), str)
                         or not isinstance(answer.get("answer"), str)
                         or not answer["answer"].strip()
+                        or (
+                            "justification" in answer
+                            and (
+                                not isinstance(answer.get("justification"), str)
+                                or not answer["justification"].strip()
+                            )
+                        )
+                        or (
+                            "missing_data" in answer
+                            and not _valid_missing_data(
+                                answer["missing_data"],
+                                answer.get("question_id"),
+                                evidence_by_identity,
+                                record.get("trial_id"),
+                            )
+                        )
                         or not isinstance(answer.get("bases"), list)
                         or not answer["bases"]
                         or answer["question_id"] in answer_map
@@ -2397,9 +2527,31 @@ def verify_bundle(path: str | Path) -> bool:
                     for answer in item["answers"]:
                         if (
                             not isinstance(answer, dict)
-                            or set(answer) != {"question_id", "answer", "bases"}
+                            or set(answer)
+                            not in (
+                                {"question_id", "answer", "bases"},
+                                {"question_id", "answer", "bases", "justification"},
+                                {"question_id", "answer", "bases", "missing_data"},
+                                {"question_id", "answer", "bases", "justification", "missing_data"},
+                            )
+                            or (
+                                "justification" in answer
+                                and (
+                                    not isinstance(answer.get("justification"), str)
+                                    or not answer["justification"].strip()
+                                )
+                            )
                             or not isinstance(answer.get("bases"), list)
                             or not answer["bases"]
+                            or (
+                                "missing_data" in answer
+                                and not _valid_missing_data(
+                                    answer["missing_data"],
+                                    answer.get("question_id"),
+                                    evidence_by_identity,
+                                    item.get("trial_id"),
+                                )
+                            )
                         ):
                             return False
                         direct_basis = False

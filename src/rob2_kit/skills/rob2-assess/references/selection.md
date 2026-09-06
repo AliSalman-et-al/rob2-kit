@@ -9,6 +9,14 @@ define the proposition; the seeds and pitfalls below guide retrieval.
 
 The approved Result fixes the target for this Domain. Do not switch endpoints to match an easier source passage.
 
+For question 5.1, compare the approved Result with the exact planned
+measurement, time point, population, and analysis passages. A single detailed
+plan passage can be sufficient. If the plan is split across a dated protocol
+and SAP, cite both independent passage references and explain what each
+establishes. A registration identifier, endpoint label, or statement that an
+analysis was prespecified does not by itself establish the plan, its timing
+before unblinding, or correspondence to the reported result.
+
 For a composite, component, or related endpoint, compare the exact definition,
 assessment schedule, analysis population, censoring rules, and time point. A
 non-exact relation still requires the researcher's confirmed Result card.

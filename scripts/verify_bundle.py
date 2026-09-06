@@ -154,7 +154,7 @@ _QUESTION_ALLOWED_ANSWERS = {
 _SCIENTIFIC_PACK = {
     "id": "rob2.parallel.assignment",
     "version": "2019.1",
-    "content_hash": "sha256:9ae610db3b3bf1773c78658d431192438e982e26df60062ac652a3750f4881b7",
+    "content_hash": "sha256:c9d01e3d6f360ec12b06e0fa3e86a3d2635b8eb57028ea39bef82d9be721ff62",
     "official_source": {
         "version": "22 August 2019",
         "source_sha256": "A9E9C4FDC4BE2D29B5C0A1A6B828E09F2014A34F6D5C302A532F6153EA0FD670",
@@ -516,12 +516,8 @@ def _valid_search_account(
         return False
     if len(hit_pairs) > limit:
         return False
-    source_rank = {source_id: index for index, source_id in enumerate(source_ids)}
-    hit_source_ranks = [source_rank.get(source_id) for source_id, _page in hit_pairs]
-    if any(rank is None for rank in hit_source_ranks):
-        return False
-    if hit_source_ranks != sorted([rank for rank in hit_source_ranks if rank is not None]):
-        return False
+    # Search deliberately interleaves Sources. Membership, coordinates,
+    # uniqueness, and the bound are verified above; receipt identity binds order.
     return account.get("condition") in {None, "no_hits"}
 
 
@@ -748,6 +744,116 @@ def _nonblank(value: object) -> bool:
     return isinstance(value, str) and bool(value.strip())
 
 
+def _valid_missing_data(
+    value: object,
+    question_id: object,
+    evidence: dict[str, Any],
+    trial_id: object,
+) -> bool:
+    """Validate the canonical Domain 3.1 count reconciliation."""
+    if question_id != "sq:missing:data-available" or not isinstance(value, dict):
+        return False
+    if (
+        set(value) != {"rows", "conflicts"}
+        or not isinstance(value["rows"], list)
+        or not value["rows"]
+        or not isinstance(value["conflicts"], list)
+    ):
+        return False
+
+    def valid_row(row: object) -> bool:
+        if not isinstance(row, dict) or set(row) != {
+            "scope",
+            "randomized",
+            "observed",
+            "analyzed",
+            "imputed",
+            "exclusions",
+            "basis",
+            "missing",
+            "missing_fraction",
+        }:
+            return False
+        scope = row["scope"]
+        if (
+            not isinstance(scope, dict)
+            or set(scope) != {"arm", "population", "unit", "time_point"}
+            or any(not _nonblank(scope[key]) for key in scope)
+        ):
+            return False
+        for key in ("randomized", "observed", "analyzed", "imputed", "missing"):
+            item = row[key]
+            if item is not None and (
+                isinstance(item, bool) or not isinstance(item, int) or item < 0
+            ):
+                return False
+        if not isinstance(row["exclusions"], list) or not all(
+            _nonblank(item) for item in row["exclusions"]
+        ):
+            return False
+        if (
+            not isinstance(row["basis"], list)
+            or not row["basis"]
+            or not all(
+                _nonblank(identity)
+                and isinstance(evidence.get(identity), dict)
+                and evidence[identity].get("trial_id") == trial_id
+                for identity in row["basis"]
+            )
+        ):
+            return False
+        randomized, observed = row["randomized"], row["observed"]
+        expected_missing = (
+            randomized - observed
+            if isinstance(randomized, int)
+            and not isinstance(randomized, bool)
+            and isinstance(observed, int)
+            and not isinstance(observed, bool)
+            and randomized >= observed
+            else None
+        )
+        if row["missing"] != expected_missing:
+            return False
+        expected_fraction = (
+            expected_missing / randomized
+            if expected_missing is not None and randomized
+            else 0.0
+            if expected_missing is not None
+            else None
+        )
+        return row["missing_fraction"] == expected_fraction
+
+    if not all(valid_row(row) for row in value["rows"]):
+        return False
+    if not all(
+        isinstance(conflict, dict)
+        and set(conflict) == {"scope", "reports"}
+        and isinstance(conflict["scope"], dict)
+        and set(conflict["scope"]) == {"arm", "population", "unit", "time_point"}
+        and all(_nonblank(conflict["scope"][key]) for key in conflict["scope"])
+        and isinstance(conflict["reports"], list)
+        and len(conflict["reports"]) >= 2
+        and all(valid_row(row) for row in conflict["reports"])
+        and all(row["scope"] == conflict["scope"] for row in conflict["reports"])
+        for conflict in value["conflicts"]
+    ):
+        return False
+    compared_fields = ("randomized", "observed", "analyzed", "imputed", "exclusions")
+    expected_conflicts: list[dict[str, object]] = []
+    seen: dict[tuple[object, ...], dict[str, object]] = {}
+    for row in value["rows"]:
+        scope = row["scope"]
+        key = tuple(scope[field] for field in ("arm", "population", "unit", "time_point"))
+        prior = seen.get(key)
+        if prior is not None and tuple(prior[field] for field in compared_fields) != tuple(
+            row[field] for field in compared_fields
+        ):
+            expected_conflicts.append({"scope": scope, "reports": [prior, row]})
+        else:
+            seen[key] = row
+    return value["conflicts"] == expected_conflicts
+
+
 def _contains_platform_path(value: object, field: str | None = None) -> bool:
     if field in _FORBIDDEN_PATH_FIELDS:
         return True
@@ -871,13 +977,23 @@ def _valid_proposal_gate(review: object, acknowledgment: object, proposal: objec
 def _domain_evidence_ids(record: object) -> set[str]:
     if not isinstance(record, dict) or not isinstance(record.get("answers"), list):
         return set()
-    return {
+    answer_basis_ids = {
         basis.get("evidence")
         for answer in record["answers"]
         if isinstance(answer, dict) and isinstance(answer.get("bases"), list)
         for basis in answer["bases"]
         if isinstance(basis, dict) and isinstance(basis.get("evidence"), str)
     }
+    missing_data_ids = {
+        evidence_identity
+        for answer in record["answers"]
+        if isinstance(answer, dict)
+        for row in (answer.get("missing_data") or {}).get("rows", [])
+        if isinstance(row, dict) and isinstance(row.get("basis"), list)
+        for evidence_identity in row["basis"]
+        if isinstance(evidence_identity, str)
+    }
+    return answer_basis_ids | missing_data_ids
 
 
 def _valid_domain_lineage(
@@ -2181,12 +2297,34 @@ def verify(path: Path) -> tuple[bool, str]:
                 for answer in answers:
                     if (
                         not isinstance(answer, dict)
-                        or set(answer) != {"question_id", "answer", "bases"}
+                        or set(answer)
+                        not in (
+                            {"question_id", "answer", "bases"},
+                            {"question_id", "answer", "bases", "justification"},
+                            {"question_id", "answer", "bases", "missing_data"},
+                            {"question_id", "answer", "bases", "justification", "missing_data"},
+                        )
                         or not isinstance(answer.get("question_id"), str)
                         or not isinstance(answer.get("answer"), str)
                         or not answer["answer"].strip()
+                        or (
+                            "justification" in answer
+                            and (
+                                not isinstance(answer.get("justification"), str)
+                                or not answer["justification"].strip()
+                            )
+                        )
                         or not isinstance(answer.get("bases"), list)
                         or not answer["bases"]
+                        or (
+                            "missing_data" in answer
+                            and not _valid_missing_data(
+                                answer["missing_data"],
+                                answer.get("question_id"),
+                                proposal_evidence,
+                                record.get("trial_id"),
+                            )
+                        )
                         or answer["question_id"] in answer_map
                     ):
                         return False, "Domain answer shape is invalid"
@@ -2397,9 +2535,31 @@ def verify(path: Path) -> tuple[bool, str]:
                     for answer in item["answers"]:
                         if (
                             not isinstance(answer, dict)
-                            or set(answer) != {"question_id", "answer", "bases"}
+                            or set(answer)
+                            not in (
+                                {"question_id", "answer", "bases"},
+                                {"question_id", "answer", "bases", "justification"},
+                                {"question_id", "answer", "bases", "missing_data"},
+                                {"question_id", "answer", "bases", "justification", "missing_data"},
+                            )
+                            or (
+                                "justification" in answer
+                                and (
+                                    not isinstance(answer.get("justification"), str)
+                                    or not answer["justification"].strip()
+                                )
+                            )
                             or not isinstance(answer.get("bases"), list)
                             or not answer["bases"]
+                            or (
+                                "missing_data" in answer
+                                and not _valid_missing_data(
+                                    answer["missing_data"],
+                                    answer.get("question_id"),
+                                    proposal_evidence,
+                                    item.get("trial_id"),
+                                )
+                            )
                         ):
                             return False, "Domain history answer shape is invalid"
                         direct_basis = False

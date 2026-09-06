@@ -17,6 +17,7 @@ from typing import Any
 
 from fastmcp import Client
 from fastmcp.client.transports import StdioTransport
+from mcp.types import TextContent
 
 ROOT = Path(__file__).resolve().parents[2]
 CONTRACT = ROOT / "docs" / "release" / "public-contract.json"
@@ -34,7 +35,7 @@ def _load_contract() -> dict[str, Any]:
         "examples",
     }:
         raise ValueError("public contract shape differs")
-    if value["contract_version"] != "0.3.0":
+    if value["contract_version"] != "0.4.0":
         raise ValueError("public contract version differs")
     expected_order = [
         "prepare_batch",
@@ -105,26 +106,26 @@ async def _verify_client(client: Client, contract: dict[str, Any]) -> None:
         raise ValueError("MCP tool catalog differs")
     for tool, expected in zip(tools, contract["tools"], strict=True):
         annotations = tool.annotations
-        if annotations is None or annotations.readOnlyHint != expected["read_only"]:
+        if annotations is None or annotations.read_only_hint != expected["read_only"]:
             raise ValueError(f"MCP annotations differ: {tool.name}")
-        if bool(annotations.openWorldHint) != expected["open_world"]:
+        if bool(annotations.open_world_hint) != expected["open_world"]:
             raise ValueError(f"MCP open-world annotation differs: {tool.name}")
-        if bool(annotations.destructiveHint) != expected["destructive"]:
+        if bool(annotations.destructive_hint) != expected["destructive"]:
             raise ValueError(f"MCP destructive annotation differs: {tool.name}")
-        if bool(annotations.idempotentHint) != expected["idempotent"]:
+        if bool(annotations.idempotent_hint) != expected["idempotent"]:
             raise ValueError(f"MCP idempotent annotation differs: {tool.name}")
-        if _schema_hash(tool.inputSchema) != expected["schema_sha256"]:
+        if _schema_hash(tool.input_schema) != expected["schema_sha256"]:
             raise ValueError(f"MCP schema hash differs: {tool.name}")
         if (tool.description or "").strip() != expected["description"]:
             raise ValueError(f"MCP description differs: {tool.name}")
         if (tool.title or "").strip() != expected["title"]:
             raise ValueError(f"MCP title differs: {tool.name}")
-        if tool.outputSchema is None:
+        if tool.output_schema is None:
             raise ValueError(f"MCP output schema is missing: {tool.name}")
-        if _schema_hash(tool.outputSchema) != expected["output_schema_sha256"]:
+        if _schema_hash(tool.output_schema) != expected["output_schema_sha256"]:
             raise ValueError(f"MCP output schema hash differs: {tool.name}")
     resources = [str(item.uri) for item in await client.list_resources()]
-    templates = [str(item.uriTemplate) for item in await client.list_resource_templates()]
+    templates = [str(item.uri_template) for item in await client.list_resource_templates()]
     if resources != contract["resources"] or templates != contract["resource_templates"]:
         raise ValueError("MCP resource catalog differs")
     resource_items = await client.list_resources()
@@ -141,6 +142,9 @@ async def _call(client: Client, name: str, arguments: dict[str, Any]) -> dict[st
     value = result.structured_content
     if not isinstance(value, dict):
         raise ValueError(f"{name} did not return structured content")
+    text = [item.text for item in result.content if isinstance(item, TextContent)]
+    if len(text) != 1 or json.loads(text[0]) != value:
+        raise ValueError(f"{name} text and structured content differ")
     flat = dict(value)
     head = flat.get("head")
     if isinstance(head, dict):
@@ -398,7 +402,16 @@ def verify(wheel: Path | None = None, bundle: Path | None = None) -> None:
             async with Client(mcp) as client:
                 await _verify_client(client, contract)
 
-        asyncio.run(local())
+        previous_workspace = os.environ.get("ROB2_WORKSPACE")
+        with tempfile.TemporaryDirectory(prefix="rob2-release-local-") as temporary:
+            try:
+                os.environ["ROB2_WORKSPACE"] = temporary
+                asyncio.run(local())
+            finally:
+                if previous_workspace is None:
+                    os.environ.pop("ROB2_WORKSPACE", None)
+                else:
+                    os.environ["ROB2_WORKSPACE"] = previous_workspace
         return
     _verify_wheel_archive(wheel)
     with tempfile.TemporaryDirectory(prefix="rob2-release-") as temporary:

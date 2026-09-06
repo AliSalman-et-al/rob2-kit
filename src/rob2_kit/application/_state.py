@@ -263,8 +263,8 @@ def _ensure(root: Path) -> None:
         )
         current = connection.execute("SELECT value FROM meta WHERE name='contract'").fetchone()
         if current is None:
-            connection.execute("INSERT INTO meta VALUES ('contract','0.3.0')")
-        elif current[0] != "0.3.0":
+            connection.execute("INSERT INTO meta VALUES ('contract','0.4.0')")
+        elif current[0] != "0.4.0":
             raise ValueError("contract_version_unsupported")
         page_recipe = connection.execute(
             "SELECT value FROM meta WHERE name='page_projection'"

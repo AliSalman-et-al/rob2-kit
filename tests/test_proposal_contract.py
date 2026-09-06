@@ -36,7 +36,7 @@ def test_assessable_relation_enum_excludes_unavailable_values(
     result["relation"] = "unavailable"
     result["relation_rationale"] = "Use unavailable Result kind instead."
 
-    with pytest.raises(ToolError, match="Input validation error"):
+    with pytest.raises(ToolError, match=r"validation error for call\[save_proposal\]"):
         _call(workspace, "save_proposal", _proposal_args(workspace, [result]))
 
 
@@ -48,7 +48,7 @@ def test_removed_equivalence_relation_is_rejected_at_typed_boundary(
     result = _result(evidence)
     result["relation"] = "source_defined_equivalent"
 
-    with pytest.raises(ToolError, match="Input validation error"):
+    with pytest.raises(ToolError, match=r"validation error for call\[save_proposal\]"):
         _call(workspace, "save_proposal", _proposal_args(workspace, [result]))
 
 

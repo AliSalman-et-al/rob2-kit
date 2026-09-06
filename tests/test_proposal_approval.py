@@ -5,11 +5,15 @@ from __future__ import annotations
 import asyncio
 import os
 from pathlib import Path
-from typing import Any
+from types import SimpleNamespace
+from typing import Any, cast
 
 import pytest
+from fastmcp import Context
 from fastmcp.client import Client
 from fastmcp.client.elicitation import ElicitResult
+from fastmcp.tools import InputRequiredToolResult, ToolResult
+from mcp import types as mcp_types
 from support.rob2 import _call, _proposal_args, _result, _workspace
 
 from rob2_kit.interfaces.mcp import server
@@ -77,6 +81,43 @@ def _approval_call(
     return asyncio.run(run())
 
 
+class _ModernContext:
+    def __init__(
+        self,
+        *,
+        input_responses: mcp_types.InputResponses | None = None,
+        request_state: str | None = None,
+    ) -> None:
+        self.session = SimpleNamespace(client_capabilities=SimpleNamespace(elicitation=object()))
+        self.input_responses = input_responses
+        self.request_state = request_state
+
+    @staticmethod
+    def _is_modern_protocol() -> bool:
+        return True
+
+
+def _modern_approval_call(
+    workspace: Path,
+    *,
+    input_responses: mcp_types.InputResponses | None = None,
+    request_state: str | None = None,
+) -> ToolResult:
+    previous_workspace = os.environ.get("ROB2_WORKSPACE")
+    try:
+        os.environ["ROB2_WORKSPACE"] = str(workspace)
+        context = _ModernContext(
+            input_responses=input_responses,
+            request_state=request_state,
+        )
+        return asyncio.run(server.request_proposal_approval(cast(Context, context)))
+    finally:
+        if previous_workspace is None:
+            os.environ.pop("ROB2_WORKSPACE", None)
+        else:
+            os.environ["ROB2_WORKSPACE"] = previous_workspace
+
+
 def test_request_proposal_approval_accepts_exact_review(tmp_path: Path) -> None:
     workspace = _pending_workspace(tmp_path)
     review_reference = _call(workspace, "get_status", {})["head"]["next_action"]["reference"]
@@ -90,6 +131,84 @@ def test_request_proposal_approval_accepts_exact_review(tmp_path: Path) -> None:
     assert result["data"]["acknowledgment_record"]["review_identity"] == review_reference
     assert result["data"]["acknowledgment_record"]["caller"] == "researcher"
     assert result["data"]["acknowledgment_record"]["method"] == "mcp_elicitation"
+
+
+def test_modern_proposal_approval_binds_input_request_to_exact_review(
+    tmp_path: Path,
+) -> None:
+    workspace = _pending_workspace(tmp_path)
+    review_reference = _call(workspace, "get_status", {})["head"]["next_action"]["reference"]
+
+    result = _modern_approval_call(workspace)
+
+    assert isinstance(result, InputRequiredToolResult)
+    assert result.input_required.request_state == review_reference
+    assert result.input_required.input_requests is not None
+    request = result.input_required.input_requests["proposal_review"]
+    assert isinstance(request, mcp_types.ElicitRequest)
+    assert review_reference in request.params.message
+
+
+def test_modern_proposal_approval_accepts_only_bound_researcher_response(
+    tmp_path: Path,
+) -> None:
+    workspace = _pending_workspace(tmp_path)
+    review_reference = _call(workspace, "get_status", {})["head"]["next_action"]["reference"]
+    response = mcp_types.ElicitResult(action="accept", content={"approved": True})
+
+    result = _modern_approval_call(
+        workspace,
+        input_responses={"proposal_review": response},
+        request_state=review_reference,
+    )
+
+    assert result.structured_content is not None
+    assert result.structured_content["outcome"] == "success"
+    acknowledgment = result.structured_content["data"]["acknowledgment_record"]
+    assert acknowledgment["review_identity"] == review_reference
+    assert acknowledgment["method"] == "mcp_elicitation"
+
+
+@pytest.mark.parametrize(
+    ("request_state", "response", "code"),
+    (
+        (
+            "sha256:" + "0" * 64,
+            mcp_types.ElicitResult(action="accept", content={"approved": True}),
+            "proposal_approval_stale",
+        ),
+        (
+            None,
+            mcp_types.ElicitResult(action="decline"),
+            "proposal_approval_declined",
+        ),
+        (
+            None,
+            mcp_types.ElicitResult(action="cancel"),
+            "proposal_approval_cancelled",
+        ),
+    ),
+)
+def test_modern_proposal_approval_preserves_stale_declined_and_cancelled_reviews(
+    tmp_path: Path,
+    request_state: str | None,
+    response: mcp_types.ElicitResult,
+    code: str,
+) -> None:
+    workspace = _pending_workspace(tmp_path)
+    review_reference = _call(workspace, "get_status", {})["head"]["next_action"]["reference"]
+
+    result = _modern_approval_call(
+        workspace,
+        input_responses={"proposal_review": response},
+        request_state=request_state or review_reference,
+    )
+
+    assert result.structured_content is not None
+    assert result.structured_content["outcome"] == "condition"
+    assert result.structured_content["condition"]["code"] == code
+    current_reference = _call(workspace, "get_status", {})["head"]["next_action"]["reference"]
+    assert current_reference == review_reference
 
 
 @pytest.mark.parametrize(
@@ -163,7 +282,7 @@ def test_request_proposal_approval_has_no_caller_arguments() -> None:
                 for item in await client.list_tools()
                 if item.name == "request_proposal_approval"
             )
-            return dict(tool.inputSchema)
+            return dict(tool.input_schema)
 
     schema = asyncio.run(inspect())
 

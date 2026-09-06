@@ -1,4 +1,4 @@
-"""Shared black-box workflow helpers for v0.3 tests."""
+"""Shared black-box workflow helpers."""
 
 from __future__ import annotations
 

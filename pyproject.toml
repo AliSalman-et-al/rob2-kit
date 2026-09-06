@@ -1,13 +1,13 @@
 [project]
 name = "rob2-kit"
-version = "0.3.0"
+version = "0.4.0"
 description = "Model-free MCP boundary for RoB 2 assessment"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
-    "fastmcp==3.4.7",
+    "fastmcp==4.0.3",
     "httpx==0.28.1",
-    "mcp==1.29.1",
+    "mcp==2.1.1",
     "pydantic==2.13.4",
     "pymupdf==1.28.2",
 ]

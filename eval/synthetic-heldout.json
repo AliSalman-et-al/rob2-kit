@@ -1,0 +1,25 @@
+{
+  "trials": [
+    {"trial_id": "heldout-a", "outcomes": ["o1"]},
+    {"trial_id": "heldout-b", "outcomes": ["o1"]}
+  ],
+  "missing_artifacts": ["external_reference_labels", "second_model_family"],
+  "needed_passages": [
+    {"trial_id": "heldout-a", "passage_id": "flow"},
+    {"trial_id": "heldout-a", "passage_id": "outcome"},
+    {"trial_id": "heldout-b", "passage_id": "plan"}
+  ],
+  "retrieved_passages": [
+    {"trial_id": "heldout-a", "passage_id": "outcome"},
+    {"trial_id": "heldout-a", "passage_id": "flow"},
+    {"trial_id": "heldout-b", "passage_id": "plan"}
+  ],
+  "premises": [
+    {"required": true, "supported": true, "contradiction_handled": true},
+    {"required": true, "supported": false, "contradiction_handled": false, "missing_reference": true}
+  ],
+  "attempts": [
+    {"trial_id": "heldout-a", "outcome_id": "o1", "draw": 1, "model_family": "synthetic", "label": "low", "prediction": "low", "tool_calls": 3, "repair_loops": 0, "tokens": 100, "elapsed_ms": 10},
+    {"trial_id": "heldout-b", "outcome_id": "o1", "draw": 1, "model_family": "synthetic", "label": "some_concerns", "prediction": "no_information", "tool_calls": 4, "repair_loops": 1, "tokens": 140, "elapsed_ms": 12, "false_repair": false}
+  ]
+}

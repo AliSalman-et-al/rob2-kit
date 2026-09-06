@@ -7,6 +7,12 @@ This package assesses the effect of assignment to intervention. Assess participa
 The active question card is authoritative. Its official excerpt and locator
 define the proposition; the seeds and pitfalls below guide retrieval.
 
+Keep two comparisons distinct: for 2.3, compare intended intervention with
+reported conduct and the trial-context link; for 2.6, compare randomized
+assignment with the analyzed population, exclusions, and reassignment reasons.
+Carry those facts forward if 2.7 activates. An ITT label is an analysis name,
+not evidence that no participants were excluded.
+
 ## Optional search leads from official guidance
 
 - **Official guidance, p. 28, Box 6, questions 2.1-2.2:** Consider awareness

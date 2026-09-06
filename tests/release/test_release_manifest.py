@@ -17,7 +17,15 @@ def _verifier():
     return module
 
 
-def test_release_contract_verifies_local_public_surface() -> None:
+def test_release_contract_verifies_local_public_surface(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # The repository may contain an ignored developer ledger from an older
+    # contract. Release verification must exercise a clean workspace and keep
+    # rejecting that old active state in production.
+    workspace = tmp_path / "workspace"
+    workspace.mkdir()
+    monkeypatch.setenv("ROB2_WORKSPACE", str(workspace))
     _verifier().verify()
 
 

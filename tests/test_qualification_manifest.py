@@ -59,7 +59,7 @@ def _manifest() -> dict[str, object]:
         },
     ]
     return {
-        "schema": "rob2-kit.retained-evidence.v0.3",
+        "schema": "rob2-kit.retained-evidence.v0.4",
         "commit": "a" * 40,
         "wheel_sha256": _hash("wheel"),
         "inputs": [{"identity": "trial-set", "sha256": input_hash}],

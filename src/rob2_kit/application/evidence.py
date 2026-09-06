@@ -225,7 +225,38 @@ def search_sources(
     for source_id, page in matching_pairs:
         page_text = verified[(trial_id, source_id)][1][page - 1]
         spans = match_spans[(source_id, page)]
-        start_line, end_line = _search_match_line_range(page_text, query, mode, spans)
+        # Use the same local co-occurrence cluster for navigation, preview,
+        # and the reusable passage. Otherwise a preview can mention a nearby
+        # term while passage_ref points at a different line.
+        preview_spans = _preview_match_spans(page_text, query, mode, 120, spans)
+        start_line, end_line = _search_match_line_range(page_text, query, mode, preview_spans)
+        # Search hits are navigation results, but giving the host a reusable
+        # exact window removes the error-prone copy/paste/select round trip.
+        # The handle is derivative state; submission still revalidates its
+        # coordinates against the immutable captured projection.
+        line_starts = [0]
+        offset = 0
+        for line in page_text.splitlines(keepends=True):
+            offset += len(line)
+            line_starts.append(offset)
+        quote_start = line_starts[start_line - 1]
+        quote_end = line_starts[end_line] if end_line < len(line_starts) else len(page_text)
+        if quote_end <= quote_start:
+            quote_end = len(page_text)
+        while quote_end > quote_start and page_text[quote_end - 1] in "\r\n":
+            quote_end -= 1
+        passage = _evidence(
+            root,
+            trial_id,
+            source_id,
+            "narrative",
+            {
+                "page": page,
+                "start": quote_start,
+                "end": quote_end,
+                "quote": page_text[quote_start:quote_end],
+            },
+        )
         hits.append(
             {
                 "source_id": source_id,
@@ -234,7 +265,8 @@ def search_sources(
                 "page": page,
                 "start_line": start_line,
                 "end_line": end_line,
-                "preview": _match_centered_preview(page_text, query, mode, spans=spans),
+                "preview": _match_centered_preview(page_text, query, mode, spans=preview_spans),
+                "passage_ref": passage["handle"],
                 "query": query,
             }
         )
@@ -482,16 +514,89 @@ def _match_centered_preview(
     spans: list[tuple[int, int]] | None = None,
 ) -> str:
     """Return a compact discovery preview centered on an actual query match."""
+    # A search hit's coordinate remains anchored to its first match, while
+    # the preview should show nearby distinct query terms when they co-occur.
+    # This is presentation-only and never changes Evidence boundaries.
     if spans is None:
         spans = _search_match_spans(text, query, mode)
-    if not spans:
+    preview_spans = _preview_match_spans(text, query, mode, radius, spans)
+    if not preview_spans:
         return text[: 2 * radius]
-    raw_start, raw_end = spans[0]
+    raw_start = min(start for start, _end in preview_spans)
+    raw_end = max(end for _start, end in preview_spans)
     left = max(0, raw_start - radius)
     right = min(len(text), raw_end + radius)
     prefix = "…" if left else ""
     suffix = "…" if right < len(text) else ""
     return prefix + text[left:right] + suffix
+
+
+def _preview_match_spans(
+    text: str,
+    query: str,
+    mode: str,
+    radius: int,
+    fallback: list[tuple[int, int]],
+) -> list[tuple[int, int]]:
+    """Choose a bounded local cluster of distinct query-term matches."""
+    terms = [term for term in _canonical_search_text(query).split() if term]
+    if not terms or not fallback:
+        return fallback
+    # Search the same normalized stream as FTS and map every occurrence back
+    # to raw coordinates. This lets previews score co-occurring terms even
+    # when punctuation, accents, or a line-end hyphen differs from the query.
+    searchable, character_spans = _normalized_text_with_spans(text)
+    occurrences: list[tuple[int, int, str]] = []
+    for term in terms:
+        variants = tuple(dict.fromkeys((term, term.replace("-", ""), term.replace("-", " "))))
+        for variant in variants:
+            if not variant:
+                continue
+            suffix = "" if mode == "prefix" else r"(?!\w)"
+            pattern = rf"(?<!\w){re.escape(variant)}{suffix}"
+            for match in re.finditer(pattern, searchable, re.IGNORECASE):
+                if not character_spans:
+                    continue
+                start = character_spans[match.start()][0]
+                end = character_spans[min(match.end() - 1, len(character_spans) - 1)][1]
+                occurrences.append((start, end, term.casefold()))
+    if not occurrences:
+        return fallback
+    occurrences = sorted(set(occurrences))
+    anchor = fallback[0][0]
+    candidates = [item for item in occurrences if abs(item[0] - anchor) <= 2 * radius]
+    if not candidates:
+        return fallback
+
+    # Score candidate windows globally: maximize distinct query-term coverage,
+    # then minimize the span and distance from the primary FTS match.
+    def window(item: tuple[int, int, str]) -> list[tuple[int, int, str]]:
+        nearby = [candidate for candidate in candidates if abs(candidate[0] - item[0]) <= radius]
+        closest_by_term: dict[str, tuple[int, int, str]] = {}
+        for candidate in nearby:
+            current = closest_by_term.get(candidate[2])
+            if current is None or (abs(candidate[0] - item[0]), candidate[0]) < (
+                abs(current[0] - item[0]),
+                current[0],
+            ):
+                closest_by_term[candidate[2]] = candidate
+        return list(closest_by_term.values())
+
+    best = min(
+        candidates,
+        key=lambda item: (
+            -len({candidate[2] for candidate in window(item)}),
+            max(candidate[1] for candidate in window(item))
+            - min(candidate[0] for candidate in window(item)),
+            abs(item[0] - anchor),
+            item[0],
+        ),
+    )
+    selected = window(best)
+    distinct = {item[2] for item in selected}
+    if mode in {"all", "phrase"} or len(distinct) > 1:
+        return [(item[0], item[1]) for item in selected]
+    return fallback
 
 
 def _recomputed_search_hits(
@@ -507,33 +612,31 @@ def _source_diverse_search_hits(
     """Bound hits while retaining one best hit from every matching Source.
 
     ``pairs`` is already ordered by Source priority and BM25 rank.  When the
-    bound can cover all matching Sources, reserve each Source's first hit and
-    spend the remaining slots in that same established order.  If there are
-    more matching Sources than slots, the highest-priority Sources receive the
-    slots.  Sorting the selected set again restores the original grouped
-    order, making the result and its receipt deterministic.
+    bound can cover all matching Sources, return one hit per Source before a
+    second hit from any Source. If there are more matching Sources than slots,
+    the highest-priority Sources receive the slots.
     """
-    if len(pairs) <= limit:
-        return pairs
-
-    source_rank = {source_id: index for index, source_id in enumerate(source_order)}
-    ranked_pairs = {pair: index for index, pair in enumerate(pairs)}
     by_source: dict[str, list[tuple[str, int]]] = {}
     for pair in pairs:
         by_source.setdefault(pair[0], []).append(pair)
     matching_sources = [source_id for source_id in source_order if source_id in by_source]
 
-    if len(matching_sources) > limit:
-        selected = [by_source[source_id][0] for source_id in matching_sources[:limit]]
-    else:
-        selected = [by_source[source_id][0] for source_id in matching_sources]
-        for pair in pairs:
-            if len(selected) >= limit:
-                break
-            if pair not in selected:
-                selected.append(pair)
+    selected: list[tuple[str, int]] = []
+    depth = 0
+    while len(selected) < limit:
+        added = False
+        for source_id in matching_sources:
+            source_pairs = by_source[source_id]
+            if depth < len(source_pairs):
+                selected.append(source_pairs[depth])
+                added = True
+                if len(selected) >= limit:
+                    break
+        if not added:
+            break
+        depth += 1
 
-    return sorted(selected, key=lambda pair: (source_rank[pair[0]], ranked_pairs[pair]))
+    return selected
 
 
 def _recomputed_search_summary(
@@ -592,8 +695,9 @@ def _recomputed_search_summary(
                 mapped.append(pair)
                 if len(mapped) == len(selected):
                     break
-    rank = {pair: index for index, pair in enumerate(all_pairs)}
-    mapped.sort(key=lambda pair: (ordered_source_ids.index(pair[0]), rank[pair]))
+    # Keep the diversity interleaving chosen above. Re-sorting by Source here
+    # silently undoes the one-hit-per-Source guarantee whenever the result is
+    # mapped back to raw coordinates.
     return mapped, len(all_pairs)
 
 
@@ -928,10 +1032,40 @@ def _validate_selected_evidence(
     return item
 
 
-def _evidence_catalog(root: Path) -> dict[str, dict[str, Any]]:
+def _evidence_catalog(
+    root: Path, trial_id: str | None = None, limit: int | None = None
+) -> dict[str, dict[str, Any]]:
     """Read disposable handles.  Cache loss is recoverable, not workflow loss."""
+    if limit is not None and limit < 1:
+        return {}
     with _db(root, "derivative.sqlite3") as connection:
-        rows = connection.execute("SELECT identity,payload FROM evidence_handles").fetchall()
+        if trial_id is None:
+            if limit is None:
+                rows = connection.execute(
+                    "SELECT identity,payload FROM evidence_handles ORDER BY identity"
+                ).fetchall()
+            else:
+                rows = connection.execute(
+                    "SELECT identity,payload FROM evidence_handles ORDER BY rowid DESC LIMIT ?",
+                    (limit,),
+                ).fetchall()
+        else:
+            # Evidence handles are disposable and may belong to another Trial.
+            # Filter in SQLite before validating source projections so a Domain
+            # context cannot accidentally recover cross-Trial material.
+            escaped_trial_id = (
+                trial_id.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
+            )
+            query = (
+                "SELECT identity,payload FROM evidence_handles "
+                "WHERE CAST(payload AS TEXT) LIKE ? ESCAPE '\\' "
+                f"ORDER BY {'rowid DESC' if limit is not None else 'identity'}"
+            )
+            parameters: tuple[Any, ...] = (f'%"trial_id":"{escaped_trial_id}"%',)
+            if limit is not None:
+                query += " LIMIT ?"
+                parameters += (limit,)
+            rows = connection.execute(query, parameters).fetchall()
     requested: set[tuple[str, str]] = set()
     for row in rows:
         try:
@@ -942,6 +1076,7 @@ def _evidence_catalog(root: Path) -> dict[str, dict[str, Any]]:
             isinstance(item, dict)
             and isinstance(item.get("trial_id"), str)
             and isinstance(item.get("source_id"), str)
+            and (trial_id is None or item["trial_id"] == trial_id)
         ):
             requested.add((item["trial_id"], item["source_id"]))
     verified = _verified_source_projections(root, requested)

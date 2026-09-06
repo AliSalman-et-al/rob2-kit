@@ -15,14 +15,17 @@ from support.rob2 import (
     _prepared_evidence,
     _proposal_args,
     _result,
+    _result_for_trial,
     _review,
     _workspace,
 )
 
 from rob2_kit.application._state import _state
+from rob2_kit.application.domains import reconcile_missing_data
 from rob2_kit.application.evidence import _search_receipt
 from rob2_kit.interfaces.mcp.server import mcp
 from rob2_kit.packs import SCIENTIFIC_PACK
+from rob2_kit.workflow_models import DomainAnswer
 
 
 def _call_raw(workspace: Path, arguments: dict[str, Any]) -> dict[str, Any]:
@@ -50,7 +53,7 @@ def test_domain_public_shape_is_flat_and_closed() -> None:
             tool = next(
                 tool for tool in await client.list_tools() if tool.name == "save_domain_judgment"
             )
-            return dict(tool.inputSchema)
+            return dict(tool.input_schema)
 
     schema = asyncio.run(inspect())
     draft = schema
@@ -58,7 +61,13 @@ def test_domain_public_shape_is_flat_and_closed() -> None:
     assert "evidence_uses" not in draft["properties"]
     assert "limitations" not in draft["properties"]
     answer = draft["properties"]["answers"]["items"]
-    assert set(answer["properties"]) == {"question_id", "answer", "bases"}
+    assert set(answer["properties"]) == {
+        "question_id",
+        "answer",
+        "bases",
+        "justification",
+        "missing_data",
+    }
     bases = answer["properties"]["bases"]["items"]["oneOf"]
     kinds = {
         item["properties"]["kind"].get("const") or item["properties"]["kind"]["enum"][0]
@@ -84,6 +93,249 @@ def test_domain_public_shape_is_flat_and_closed() -> None:
     )
     assert set(limitation["properties"]) == {"kind", "text", "search_receipt"}
     assert limitation["properties"]["search_receipt"]["pattern"] == r"^sr_[0-9a-f]{16}$"
+    missing_row = answer["properties"]["missing_data"]["anyOf"][0]["items"]
+    assert missing_row["properties"]["basis"]["items"]["pattern"] == r"^eh_[0-9a-f]{16}$"
+
+
+def test_missing_data_is_typed_and_only_allowed_for_domain_3_1() -> None:
+    row = {
+        "arm": "intervention",
+        "population": "randomized participants",
+        "unit": "participants",
+        "time_point": "week 12",
+        "randomized": 100,
+        "observed": 95,
+    }
+    parsed = DomainAnswer.model_validate(
+        {
+            "question_id": "sq:missing:data-available",
+            "answer": "probably_no",
+            "bases": [{"kind": "context", "evidence": "eh_0123456789abcdef"}],
+            "missing_data": [row],
+        }
+    )
+    assert parsed.missing_data is not None
+    assert parsed.missing_data[0].basis == ()
+    with pytest.raises(ValueError, match="string_pattern_mismatch"):
+        DomainAnswer.model_validate(
+            {
+                "question_id": "sq:missing:data-available",
+                "answer": "probably_no",
+                "bases": [{"kind": "context", "evidence": "eh_0123456789abcdef"}],
+                "missing_data": [row | {"basis": ["copied quote"]}],
+            }
+        )
+    with pytest.raises(ValueError, match="only valid for question"):
+        DomainAnswer.model_validate(
+            {
+                "question_id": "sq:missing:evidence-unbiased",
+                "answer": "no",
+                "bases": [{"kind": "context", "evidence": "eh_0123456789abcdef"}],
+                "missing_data": [row],
+            }
+        )
+
+
+def test_missing_data_reconciliation_derives_arithmetic_and_count_conflicts() -> None:
+    first = {
+        "arm": "intervention",
+        "population": "randomized participants",
+        "unit": "participants",
+        "time_point": "week 12",
+        "randomized": 100,
+        "observed": 95,
+        "analyzed": 95,
+        "exclusions": ["five outcomes unavailable"],
+        "basis": ["eh_0123456789abcdef"],
+    }
+    second = first | {
+        "analyzed": 94,
+        "basis": ["eh_fedcba9876543210"],
+    }
+
+    reconciled = reconcile_missing_data([first, second])
+
+    assert [row["missing"] for row in reconciled["rows"]] == [5, 5]
+    assert [row["missing_fraction"] for row in reconciled["rows"]] == [0.05, 0.05]
+    assert reconciled["conflicts"] == [
+        {
+            "scope": reconciled["rows"][1]["scope"],
+            "reports": reconciled["rows"],
+        }
+    ]
+
+
+def test_missing_data_reuses_and_canonicalizes_answer_evidence(tmp_path: Path) -> None:
+    workspace, evidence, revision = _assessment_workspace(tmp_path)
+    for domain in SCIENTIFIC_PACK.domains[:2]:
+        saved = _call(
+            workspace,
+            "save_domain_judgment",
+            _domain_draft("trial", domain.id, revision, evidence),
+        )
+        assert saved["outcome"] == "success", saved
+        revision = int(saved["head"]["state_revision"])
+
+    draft = _domain_draft("trial", "domain:missing", revision, evidence)
+    answer = next(
+        item for item in draft["answers"] if item["question_id"] == "sq:missing:data-available"
+    )
+    answer["missing_data"] = [
+        {
+            "arm": "intervention",
+            "population": "randomized participants",
+            "unit": "participants",
+            "time_point": "week 12",
+            "randomized": 100,
+            "observed": 95,
+        }
+    ]
+
+    saved = _call(workspace, "save_domain_judgment", draft)
+
+    assert saved["outcome"] == "success", saved
+    checkpoint = _stored_checkpoint(workspace, "domain:missing")
+    stored = next(
+        item for item in checkpoint["answers"] if item["question_id"] == "sq:missing:data-available"
+    )
+    assert stored["missing_data"]["rows"][0]["basis"] == [evidence["identity"]]
+
+
+def test_domain_context_recovers_uncommitted_trial_evidence(tmp_path: Path) -> None:
+    workspace = _workspace(tmp_path)
+    main = workspace / "input" / "trial" / "main.txt"
+    main.write_text(
+        main.read_text(encoding="utf-8") + "Domain-specific participant flow.\n",
+        encoding="utf-8",
+    )
+    proposal_evidence = _prepared_evidence(workspace)
+    _call(
+        workspace,
+        "save_proposal",
+        _proposal_args(workspace, [_result(proposal_evidence)]),
+    )
+    _review(workspace)
+    domain_evidence = _call(
+        workspace,
+        "select_text_evidence",
+        {
+            "trial_id": "trial",
+            "source_id": proposal_evidence["source_id"],
+            "page": 1,
+            "start_line": 2,
+            "end_line": 2,
+        },
+    )["data"]["evidence"]
+
+    context = _call(workspace, "get_domain_context", {})["data"]
+
+    recovered = {item["handle"]: item for item in context["evidence"]}
+    assert recovered[domain_evidence["handle"]]["quote"] == domain_evidence["quote"]
+    assert recovered[domain_evidence["handle"]]["identity"] == domain_evidence["identity"]
+
+
+def test_domain_context_recovers_prior_checkpoint_evidence_after_cache_loss(
+    tmp_path: Path,
+) -> None:
+    workspace = _workspace(tmp_path)
+    main = workspace / "input" / "trial" / "main.txt"
+    main.write_text(
+        main.read_text(encoding="utf-8") + "Domain-specific participant flow.\n",
+        encoding="utf-8",
+    )
+    proposal_evidence = _prepared_evidence(workspace)
+    _call(
+        workspace,
+        "save_proposal",
+        _proposal_args(workspace, [_result(proposal_evidence)]),
+    )
+    _review(workspace)
+    domain_evidence = _call(
+        workspace,
+        "select_text_evidence",
+        {
+            "trial_id": "trial",
+            "source_id": proposal_evidence["source_id"],
+            "page": 1,
+            "start_line": 2,
+            "end_line": 2,
+        },
+    )["data"]["evidence"]
+    revision = int(_call(workspace, "get_domain_context", {})["head"]["state_revision"])
+    saved = _call(
+        workspace,
+        "save_domain_judgment",
+        _domain_draft("trial", "domain:randomization", revision, evidence=domain_evidence),
+    )
+    assert saved["outcome"] == "success", saved
+    (workspace / ".rob2-kit" / "derivative.sqlite3").unlink()
+
+    context = _call(workspace, "get_domain_context", {})["data"]
+
+    recovered = {item["identity"]: item for item in context["evidence"]}
+    assert recovered[domain_evidence["identity"]]["handle"] == domain_evidence["handle"]
+    assert recovered[domain_evidence["identity"]]["quote"] == domain_evidence["quote"]
+
+
+def test_domain_context_does_not_expose_another_trials_uncommitted_evidence(
+    tmp_path: Path,
+) -> None:
+    workspace = _workspace(tmp_path)
+    trial_b = workspace / "input" / "trial-b"
+    trial_b.mkdir()
+    text = (workspace / "input" / "trial" / "main.txt").read_text(encoding="utf-8")
+    for trial_id in ("trial", "trial-b"):
+        path = workspace / "input" / trial_id / "main.txt"
+        path.write_text(text + "Domain-only evidence.\n", encoding="utf-8")
+    _call(
+        workspace,
+        "prepare_batch",
+        {"requested_outcome": "requested outcome", "expected_revision": 0},
+    )
+    selected: dict[str, dict[str, Any]] = {}
+    for trial_id in ("trial", "trial-b"):
+        source = _call(workspace, "list_sources", {"trial_id": trial_id})["data"]["sources"][0]
+        selected[trial_id] = _call(
+            workspace,
+            "select_text_evidence",
+            {
+                "trial_id": trial_id,
+                "source_id": source["id"],
+                "page": 1,
+                "start_line": 1,
+                "end_line": 1,
+            },
+        )["data"]["evidence"]
+    _call(
+        workspace,
+        "save_proposal",
+        _proposal_args(
+            workspace,
+            [
+                _result_for_trial(selected["trial"], "trial"),
+                _result_for_trial(selected["trial-b"], "trial-b"),
+            ],
+        ),
+    )
+    _review(workspace)
+    other = _call(
+        workspace,
+        "select_text_evidence",
+        {
+            "trial_id": "trial-b",
+            "source_id": selected["trial-b"]["source_id"],
+            "page": 1,
+            "start_line": 2,
+            "end_line": 2,
+        },
+    )["data"]["evidence"]
+
+    context = _call(workspace, "get_domain_context", {"trial_id": "trial"})["data"]
+
+    exposed = {item["handle"] for item in context["evidence"]}
+    assert selected["trial"]["handle"] in exposed
+    assert selected["trial-b"]["handle"] not in exposed
+    assert other["handle"] not in exposed
 
 
 def test_domain_context_result_projection_omits_canonical_bindings(tmp_path: Path) -> None:

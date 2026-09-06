@@ -1,0 +1,114 @@
+# Use an evidence-first v0.4 interaction without new workflow tools
+
+Status: accepted
+
+## Context
+
+The v0.3 boundary exposed exact Evidence, but ordinary Proposal and Domain work
+still required the host to copy coordinates through avoidable selection calls.
+Assessment context also omitted Evidence selected after Proposal approval and
+could not restore a saved checkpoint's short Evidence handles after derivative
+cache loss. FastMCP 4 changes the transport and modern approval round trip, so
+these contract changes require a versioned successor rather than edits to the
+frozen v0.3 contract.
+
+## Decision
+
+- Keep the same 14 public tools. Search hits and page windows prepare exact,
+  source-bound `passage_ref` handles. Proposal and Domain submissions resolve
+  the chosen handles atomically into separate canonical Evidence records.
+- Keep scientific choices with the host. The server supplies source metadata,
+  exact passages, active questions, arithmetic reconciliation, state revisions,
+  and canonical provenance; it does not infer Result correspondence, signaling
+  answers, assessor identity, conduct from a plan, or semantic entailment.
+- Make `get_domain_context` the recovery projection. It returns the approved
+  target, current checkpoint, canonical Evidence from current and earlier
+  checkpoints, and at most the 64 most recently prepared passages for that
+  Trial. It never exposes another Trial's Evidence.
+- Add an optional concise justification to each Domain answer. Add typed
+  participant-flow rows only to question 3.1; the server computes comparable
+  missing counts and fractions and preserves conflicts without choosing a
+  scientific answer.
+- Upgrade to FastMCP 4.0.3 and MCP SDK 2.1.x. Use FastMCP's input-required
+  result for modern Proposal approval and the supported elicitation path for
+  negotiated legacy sessions. Both paths bind the response to the exact pending
+  Review and call the same approval implementation.
+- Return one normalized result as both structured content and compact JSON text.
+  Image content remains a separate binary block.
+
+## Input ownership
+
+| Data | Owner | Public input |
+| --- | --- | --- |
+| Trial IDs, Source IDs, current phase and revision | Server state | References only |
+| Exact quote, coordinates, Source identity and Evidence identity | Server | Short `passage_ref`/Evidence handle |
+| Requested outcome | Researcher at intake | `prepare_batch.requested_outcome` |
+| Chosen reported Result and its relation to the request | Host scientific judgment | Proposal Result card |
+| Target measurement, timing, groups, population and effect measure | Host interpretation reviewed by researcher | Proposal Result card |
+| Source-reported endpoint labels and quantitative values | Host selects; server binds to exact Evidence | Proposal Result card plus `passage_refs` |
+| Proposal approval | Researcher through client elicitation or CLI | Never a model-authored tool argument |
+| Active signaling answers and evidence relationships | Host scientific judgment | `answers[].answer` and `answers[].bases` |
+| Active branches, Domain/overall judgments and checkpoint provenance | Server | Derived, never repeated by caller |
+| D3 comparable flow scope and reported counts | Host interprets scope; server computes arithmetic and reuses answer Evidence as row provenance | Optional `answers[].missing_data` on 3.1 only |
+| Scientific explanation and unresolved facts | Host | Optional `answers[].justification` |
+
+## Concrete call transcripts
+
+Synthetic identifiers are shortened only in prose; each JSON example uses the
+actual public shape.
+
+### Proposal
+
+Before v0.4, the ordinary path was `search_sources` -> `read_pages` ->
+`select_text_evidence` -> `save_proposal`. In v0.4 the search response includes
+an exact passage handle:
+
+```json
+{"hits":[{"source_id":"source_<hash>","page":2,"start_line":14,"end_line":16,"preview":"...mortality at day 28...","passage_ref":"eh_0123456789abcdef"}]}
+```
+
+The host submits its scientific Result card with
+`"passage_refs":["eh_0123456789abcdef"]`. The server removes that convenience
+field from the canonical Result and retains the resolved Evidence separately.
+
+### Simple Domain
+
+```json
+{"trial_id":"trial-a","domain_id":"domain:randomization","expected_revision":3,"answers":[{"question_id":"sq:randomization:sequence","answer":"probably_yes","bases":[{"kind":"direct_support","evidence":"eh_0123456789abcdef"}],"justification":"The cited passage describes a computer-generated sequence; concealment is addressed separately."}]}
+```
+
+### Multi-document Domain
+
+One call reads independent windows from two Sources:
+
+```json
+{"trial_id":"trial-a","windows":[{"source_id":"source_<article>","page":3,"start_line":20,"end_line":24},{"source_id":"source_<sap>","page":7,"start_line":4,"end_line":9}]}
+```
+
+Each returned page carries its own `source_id`, coordinates and `passage_ref`.
+The answer cites both handles as separate bases; the server never concatenates
+them into a false contiguous quotation.
+
+### Stale retry
+
+A save using `expected_revision:3` after revision 4 returns a typed conflict and
+does not persist. The host calls `get_status`/`get_domain_context`, keeps the
+same scientific answer if still applicable, and retries with revision 4. An
+identical retry at the accepted revision resolves to the existing record.
+
+### Restart
+
+After a host restart, `get_status` supplies the active Trial and operation.
+`get_domain_context` then restores the approved Result, exact selected passages,
+and handle-to-identity mappings from current and prior checkpoints. Loss of
+`derivative.sqlite3` removes only uncommitted derivative handles; canonical
+checkpoint Evidence remains recoverable with the same handle and identity.
+
+## Consequences
+
+The common path has fewer coordinate-copying calls while preserving exact
+Evidence and atomic commits. The response can be larger because it includes a
+bounded recovery workspace and text fallback. Host delivery and scientific
+accuracy remain qualification results, not properties inferred from unit tests.
+The FastMCP dependency change stays separable in history so it can be reverted
+without migrating canonical v0.3 records.

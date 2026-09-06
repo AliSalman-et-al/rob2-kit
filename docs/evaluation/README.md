@@ -1,5 +1,20 @@
 # Evaluate a release
 
+The provider-independent scorer is rerunnable without paid model calls:
+
+```powershell
+uv run python scripts/run_heldout_eval.py eval/synthetic-heldout.json
+```
+
+It scores needed-passage recall/rank, required-premise support and handled
+contradictions, scientific accuracy/balanced classes/coverage/abstentions,
+and all-attempt friction. Scoring cells are grouped by trial, outcome, draw,
+and model family; duplicate retries remain in the audit but cannot change the
+numerator or the always-Low denominator. The synthetic fixture intentionally
+reports missing external labels and a second model family as an incomplete
+replay rather than inventing a baseline. It is a scoring/coverage check, not
+evidence of an accuracy improvement.
+
 Use the independent `scripts/verify_bundle.py` consumer to check each finalized
 bundle. It does not import proposal or presentation code from the product. The
 source-defined Result remains the researcher's choice, and the evaluator does
@@ -52,7 +67,7 @@ uv run --no-sync python scripts/qualification_manifest.py generate eval/run-reco
 uv run --no-sync python scripts/qualification_manifest.py validate eval/retained-evidence.json
 ```
 
-The `rob2-kit.retained-evidence.v0.3` receipt stores commit and wheel hashes,
+The `rob2-kit.retained-evidence.v0.4` receipt stores commit and wheel hashes,
 input identities, run metadata, bundle identities, verifier output, the
 restart proof, and supported CI evidence. It rejects paths, source content,
 prompts, credentials, and traces. A verdict of `all_green` requires every run,

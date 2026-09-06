@@ -7,6 +7,13 @@ Assess whether the measurement method was inappropriate. Then assess whether gro
 The active question card is authoritative. Its official excerpt and locator
 define the proposition; the seeds and pitfalls below guide retrieval.
 
+For assessor questions, identify who generates or determines the approved
+outcome, who records it, and what judgment enters measurement. Cite awareness
+separately from the mechanism by which awareness could influence measurement
+when the source does not establish both facts. Keep method appropriateness,
+differential assessment, possible influence, and likely influence as distinct
+answers; an open-label design alone does not decide them.
+
 ## Optional search leads from official guidance
 
 - **Official guidance, p. 54, Box 10, question 4.1:** Consider method-suitability

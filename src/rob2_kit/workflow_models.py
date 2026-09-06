@@ -1,4 +1,4 @@
-"""Closed, immutable v0.3 workflow models.
+"""Closed, immutable v0.4 workflow models.
 
 The application stores JSON, but it must not pass JSON-shaped dictionaries between
 workflow boundaries.  This module is the small vocabulary shared by the adapters,
@@ -77,10 +77,53 @@ EvidenceHandle = Annotated[str, StringConstraints(pattern=r"^eh_[0-9a-f]{16}$")]
 # short handle returned by ``search_sources`` and the application resolves it
 # before persisting any checkpoint.
 SearchReceiptHandle = Annotated[str, StringConstraints(pattern=r"^sr_[0-9a-f]{16}$")]
-PageNumber = Annotated[StrictInt, Field(ge=1)]
+
+
+def _strict_json_int(value: Any) -> Any:
+    if type(value) is not int:
+        raise ValueError("JSON integer must be encoded as an integer")
+    return value
+
+
+PageNumber = Annotated[StrictInt, BeforeValidator(_strict_json_int), Field(ge=1)]
 NormalizedCoordinate = Annotated[StrictFloat, Field(ge=0, le=1)]
-ExpectedRevision = Annotated[StrictInt, Field(ge=0)]
+ExpectedRevision = Annotated[StrictInt, BeforeValidator(_strict_json_int), Field(ge=0)]
 NonNegativeInt = Annotated[StrictInt, Field(ge=0)]
+
+
+class MissingDataRow(StrictModel):
+    """One scope-matched participant-flow count supplied for Domain 3."""
+
+    arm: NonBlankText = Field(description="Trial arm for this participant-flow row.")
+    population: NonBlankText = Field(
+        description="Population represented by this participant-flow row."
+    )
+    unit: NonBlankText = Field(description="Unit counted, such as participants.")
+    time_point: NonBlankText = Field(description="Outcome time point represented by this row.")
+    randomized: NonNegativeInt | None = Field(
+        default=None, description="Number randomized when reported."
+    )
+    observed: NonNegativeInt | None = Field(
+        default=None, description="Number with observed outcome data when reported."
+    )
+    analyzed: NonNegativeInt | None = Field(
+        default=None, description="Number included in the analysis when reported."
+    )
+    imputed: NonNegativeInt | None = Field(
+        default=None, description="Number whose outcome data were imputed when reported."
+    )
+    exclusions: tuple[NonBlankText, ...] = Field(
+        default=(), description="Reported reasons for exclusion or missingness."
+    )
+    basis: tuple[EvidenceHandle, ...] = Field(
+        default=(),
+        description=(
+            "Evidence handles supporting this row. Omit to reuse all Evidence handles "
+            "already attached to the same answer."
+        ),
+    )
+
+
 RelativePath = Annotated[
     str,
     StringConstraints(min_length=1, max_length=4096),
@@ -782,15 +825,11 @@ class AssessableResult(StrictModel):
     requested_outcome: NonBlankText
     relation: AssessableTargetRelation = Field(
         description=(
-            "How the Source-reported candidate relates to the requested target. Use exact only "
-            "when the server can normalize-match the names. Relative to the requested target, "
-            "use broader when the reported event/population/time scope is a superset; narrower "
-            "when it is a subset or has additional restrictions; component when it is one "
-            "constituent of a requested composite or category; and related when it overlaps "
-            "but none of those ordered relations applies. Added criteria make a candidate "
-            "narrower, not broader. Name the material event, time, population, measurement, "
-            "or state-criterion differences in the rationale. Never infer equivalence from "
-            "identical numbers."
+            "Relation to the requested target: exact requires a server-normalized name match; "
+            "broader is a superset, narrower is a subset or has additional restrictions, "
+            "component is one constituent, and related is other overlap. Added criteria make "
+            "a candidate narrower. Explain material differences; matching numbers do not prove "
+            "equivalence."
         ),
     )
     relation_rationale: NonBlankText
@@ -828,15 +867,12 @@ class AssessableResultDraft(StrictModel):
     trial_id: TrialId = Field(description="Server-issued Trial ID for this Result card.")
     relation: AssessableTargetRelation = Field(
         description=(
-            "Choose exact only for a server-normalized name match. Relative to the requested "
-            "target, broader means the reported event/population/time scope is a superset; "
-            "narrower means it is a subset or has additional restrictions; component means "
-            "one constituent of a requested composite or category; related means overlap "
-            "without one of those ordered relations. Added criteria make a candidate narrower, "
-            "not broader. Compare complete Source facets: event set, time origin or window, "
-            "population, measurement, and state criteria. Prefer direct event wording and the "
-            "fewest added criteria; do not infer equivalence from matching numbers. If another "
-            "candidate is better, resubmit the proposal."
+            "Use exact only for a server-normalized name match. Broader when scope is a "
+            "superset; narrower "
+            "is a subset or has additional restrictions; component is one constituent; related "
+            "is other overlap. Added criteria make a candidate narrower. Compare event set, time, "
+            "population, measurement, and state criteria; matching numbers do not prove "
+            "equivalence. Resubmit if another candidate is better."
         ),
     )
     relation_rationale: NonBlankText | None = Field(
@@ -858,6 +894,10 @@ class AssessableResultDraft(StrictModel):
             ),
         ),
     ]
+    passage_refs: tuple[EvidenceHandle, ...] = Field(
+        default=(),
+        description="Optional search/read passage references.",
+    )
 
     @model_validator(mode="after")
     def rationale_for_non_exact_relation(self) -> AssessableResultDraft:
@@ -943,17 +983,10 @@ class UnavailableResult(StrictModel):
 
 
 class UnavailableResultDraft(StrictModel):
-    """Unavailable proposal fields; requested outcome comes from Intake.
+    """Unavailable proposal fields; use only when no complete assessable candidate exists.
 
-    Use this only when no complete assessable candidate or profile exists.
-    Missing comparator values alone are not a valid reason to use unavailable
-    when a one-arm categorical profile is fully reported.
-    Choose a candidate by event set, time origin or window, population,
-    measurement, and state criteria. Prefer direct event wording and the fewest
-    added criteria; do not rank by clinical salience, abstract accessibility,
-    name similarity, or effect size. When a complete source-defined category
-    profile exists for a requested category family, prefer that profile over an
-    isolated component. Never infer equivalence from identical numbers.
+    Missing comparator values alone do not make a complete one-arm category profile
+    unavailable. Choose by event, time, population, measurement, and state criteria.
     """
 
     kind: Literal["unavailable"] = Field(
@@ -978,20 +1011,12 @@ ResultChoiceDraft = Annotated[
         discriminator="kind",
         description=(
             "Choose exact assessable first, then the closest complete non-exact "
-            "assessable candidate or profile; use unavailable only when no complete "
-            "assessable candidate exists. Missing comparator values do not make a "
-            "fully reported one-arm categorical profile unavailable. Choose by "
-            "event set, time origin or window, population, measurement, and state "
-            "criteria. Prefer direct event wording and the fewest added criteria; "
-            "do not rank by clinical salience, abstract accessibility, name "
-            "similarity, or effect size. Prefer a complete source-defined category "
-            "profile over an isolated component. Never infer equivalence from "
-            "identical numbers. Relations are relative to the requested target: "
-            "broader means the reported event/population/time scope is a superset; "
-            "narrower means a subset or has additional restrictions; component "
-            "means one constituent of a requested composite or category; related "
-            "means overlap without one of those ordered relations. Added criteria "
-            "make a candidate narrower, not broader."
+            "candidate or profile; use unavailable only when none exists. Do not rank by clinical "
+            "salience. Missing comparator "
+            "values do not invalidate a complete one-arm category profile. Compare event, time, "
+            "population, measurement, and state criteria. Relations are relative to the target: "
+            "broader is a superset; narrower is a subset or has additional restrictions; "
+            "component is one constituent; related is other overlap."
         ),
     ),
 ]
@@ -1077,6 +1102,31 @@ class DomainAnswer(StrictModel):
             "valid absence receipt, context, or inference."
         ),
     )
+    missing_data: tuple[MissingDataRow, ...] | None = Field(
+        default=None,
+        min_length=1,
+        description=(
+            "Optional scope-matched randomized/observed counts for the Domain 3.1 "
+            "outcome-availability question."
+        ),
+    )
+    justification: str | None = Field(
+        default=None,
+        description="Concise scientific justification.",
+    )
+
+    @field_validator("justification")
+    @classmethod
+    def justification_is_meaningful(cls, value: str | None) -> str | None:
+        if value is not None and not value.strip():
+            raise ValueError("justification must contain non-whitespace text")
+        return value
+
+    @model_validator(mode="after")
+    def missing_data_is_domain_3_only(self) -> DomainAnswer:
+        if self.missing_data is not None and self.question_id != "sq:missing:data-available":
+            raise ValueError("missing_data is only valid for question 'sq:missing:data-available'")
+        return self
 
 
 class NewEvidenceRevision(StrictModel):

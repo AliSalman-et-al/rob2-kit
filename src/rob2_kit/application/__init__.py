@@ -1,1 +1,1 @@
-"""Closed v0.3 application services and transport contracts."""
+"""Closed v0.4 application services and transport contracts."""

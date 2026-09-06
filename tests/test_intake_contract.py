@@ -61,7 +61,7 @@ def _prepare_schema() -> dict[str, object]:
     async def read_schema() -> dict[str, object]:
         async with Client(mcp) as client:
             tool = next(item for item in await client.list_tools() if item.name == "prepare_batch")
-            return dict(tool.inputSchema)
+            return dict(tool.input_schema)
 
     return asyncio.run(read_schema())
 
@@ -70,7 +70,7 @@ def _tool_schema(name: str) -> dict[str, Any]:
     async def read_schema() -> dict[str, Any]:
         async with Client(mcp) as client:
             tool = next(item for item in await client.list_tools() if item.name == name)
-            return dict(tool.inputSchema)
+            return dict(tool.input_schema)
 
     return asyncio.run(read_schema())
 
@@ -88,7 +88,7 @@ def _tool_output_schema(name: str) -> dict[str, Any]:
     async def read_schema() -> dict[str, Any]:
         async with Client(mcp) as client:
             tool = next(item for item in await client.list_tools() if item.name == name)
-            return dict(tool.outputSchema)
+            return dict(tool.output_schema)
 
     return asyncio.run(read_schema())
 
@@ -124,9 +124,9 @@ def test_every_public_tool_publishes_closed_input_and_output_schemas() -> None:
     tools = asyncio.run(read_tools())
     assert [tool.name for tool in tools] == list(TOOL_NAMES)
     for tool in tools:
-        assert tool.inputSchema
-        assert tool.outputSchema
-        for schema in (tool.inputSchema, tool.outputSchema):
+        assert tool.input_schema
+        assert tool.output_schema
+        for schema in (tool.input_schema, tool.output_schema):
             for path, obj in _walk_schema(schema):
                 # Deliberate server-owned maps, such as trial dispositions, have
                 # no named properties. Every modeled object remains closed.
@@ -148,7 +148,7 @@ def test_every_public_tool_publishes_closed_input_and_output_schemas() -> None:
 
             collect(schema)
         assert all("items" in array or "prefixItems" in array for array in arrays)
-        output = cast(dict[str, Any], tool.outputSchema)
+        output = cast(dict[str, Any], tool.output_schema)
         assert output["type"] == "object"
         expected_outcomes = {
             "get_status": 2,
@@ -668,24 +668,20 @@ def test_result_relation_schema_has_only_visible_non_exact_categories() -> None:
     assert "event set" in relation_description
     assert "scope is a superset" in relation_description
     assert "subset or has additional restrictions" in relation_description
-    assert "Added criteria make a candidate narrower, not broader" in relation_description
-    assert "do not infer equivalence from matching numbers" in relation_description
+    assert "Added criteria make a candidate narrower" in relation_description
+    assert "matching numbers do not prove equivalence" in relation_description
     assert "alternatives" not in relation_description
     assert "clinical salience" in result_items["description"]
-    assert "abstract accessibility" in result_items["description"]
-    assert "complete source-defined category" in result_items["description"]
-    assert "scope is a superset" in result_items["description"]
+    assert "complete non-exact candidate" in result_items["description"]
+    assert "broader is a superset" in result_items["description"]
     assert "subset or has additional restrictions" in result_items["description"]
     results_description = cast(dict[str, Any], schema["properties"]["results"])["description"]
     assert "Initial save" in results_description
-    assert "preserves unmentioned cards" in results_description
-    assert "Select supporting Evidence first" in results_description
-    assert "repeat Evidence handles" in results_description
+    assert "unmentioned cards are preserved" in results_description
+    assert "Select Evidence first" in results_description
     tool_description = _tool_description("save_proposal")
-    assert "binds already-selected Evidence" in tool_description
-    assert "keeps only material used" in tool_description
-    assert "only researcher gate" in tool_description
-    assert "Keep all source-reported numbers as strings" in tool_description
+    assert "supporting Evidence" in tool_description
+    assert "source numbers as strings" in tool_description
 
 
 def test_search_contract_exposes_match_summary_and_render_defaults_to_pixels() -> None:
@@ -714,6 +710,7 @@ def test_search_contract_exposes_match_summary_and_render_defaults_to_pixels() -
         "start_line",
         "end_line",
         "preview",
+        "passage_ref",
     }
     assert data_objects[0]["properties"]["search_receipt"]["pattern"] == r"^sr_[0-9a-f]{16}$"
     search_description = _tool_description("search_sources")
@@ -815,7 +812,13 @@ def test_save_domain_judgment_schema_is_closed_and_typed() -> None:
     ]
     answers = cast(dict[str, Any], draft["properties"]["answers"])["items"]
     assert answers["additionalProperties"] is False
-    assert set(answers["properties"]) == {"question_id", "answer", "bases"}
+    assert set(answers["properties"]) == {
+        "question_id",
+        "answer",
+        "bases",
+        "justification",
+        "missing_data",
+    }
     variants = cast(dict[str, Any], answers["properties"]["bases"]["items"])["oneOf"]
     assert len(variants) == 3
     assert all(variant["additionalProperties"] is False for variant in variants)
