@@ -41,6 +41,9 @@ scope.
 
 Read [Specify the Result](references/result.md). Use `list_sources`,
 `search_sources`, and `read_pages` to compare complete reported candidates.
+`search_sources` returns a stable session and opaque `next_cursor`; continue
+that session before treating a bounded result as complete. A zero-hit receipt
+describes only that lexical query and never proves scientific absence.
 Search the main article first, then use registry, protocol, SAP, or supplement
 Sources for material competing definitions and missing context.
 
@@ -91,8 +94,8 @@ answers.
 ### 5. Assess the next Domain
 
 Call `get_domain_context` for the Trial and Domain in `head.next_action`. Treat
-each returned question card as authoritative for wording, allowed answers,
-activation, official guidance, decision rules, anchors, and uncertainty. Open
+each returned question card as authoritative for wording, server-issued options,
+activation, official guidance, decision rules, and uncertainty. Open
 the matching scientific reference when working on that Domain:
 
 - [Randomization](references/randomization.md)
@@ -106,6 +109,13 @@ positive passages that could resolve the active proposition and check material
 contradictions. Stop when the proposition and any remaining uncertainty are
 grounded; an untruncated search is a retrieval fact, not proof of scientific
 exhaustion.
+
+For each active answer, select exactly one server-issued `options[].id` from
+the current question card and submit it as `answers[].option_id`. The server
+resolves that identity to the official RoB 2 code before constructing the
+checkpoint. Do not submit both an option ID and a separate answer code, and do
+not invent option IDs after a card or pack version changes. The checkpoint and
+artifact retain the standard official answer code.
 
 For each active answer, use at least one closed basis from the live schema:
 
@@ -129,14 +139,11 @@ Derive the dependency-closed active path from the returned activation predicates
 and your earlier answers. Submit every active answer in one
 `save_domain_judgment` call. Inactive branch answers are unnecessary and ignored.
 
-Before saving, perform two checks:
-
-1. **Premise:** Does each cited passage support the proposition attributed to it?
-2. **Polarity:** Does the answer code literally answer the question as worded?
-
-Do not translate an answer code into “low risk” or “high risk”; question polarity
-varies. Add a concise `justification` when several premises, conflicting counts,
-or uncertainty must be connected.
+Before saving, ensure each cited passage supports the proposition attributed to
+it. Select the option whose literal meaning answers the exact question; do not
+translate it into “low risk” or “high risk,” add a second polarity field, or add
+a confirmation round trip. Add a concise `justification` when several premises,
+conflicting counts, or uncertainty must be connected.
 
 Only question 3.1 may carry `missing_data` rows. Keep randomized, observed,
 analyzed, imputed, and excluded counts distinct. The server reuses answer

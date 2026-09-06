@@ -6,14 +6,26 @@ The provider-independent scorer is rerunnable without paid model calls:
 uv run python scripts/run_heldout_eval.py eval/synthetic-heldout.json
 ```
 
-It scores needed-passage recall/rank, required-premise support and handled
-contradictions, scientific accuracy/balanced classes/coverage/abstentions,
-and all-attempt friction. Scoring cells are grouped by trial, outcome, draw,
-and model family; duplicate retries remain in the audit but cannot change the
-numerator or the always-Low denominator. The synthetic fixture intentionally
-reports missing external labels and a second model family as an incomplete
-replay rather than inventing a baseline. It is a scoring/coverage check, not
-evidence of an accuracy improvement.
+It emits only the privacy-safe `rob2-kit.held-out-evaluation.v0.5` receipt. In
+addition to needed-passage recall/rank, it scores alternative Evidence sets,
+required-premise support and handled contradictions, question/Domain/overall
+confusions, exact five-Domain vectors, `no_information` separately from
+workflow abstention, baseline denominators, observable trajectory events,
+query repetition/overlap/novelty and progress-per-call, premise support-category
+confusion, duplicate attempts, and all-attempt friction. Scoring cells use the
+closed 11-part key: Trial, approved Result, outcome, Domain, question, run,
+draw, model family/version, kit revision, and intervention. The manifest
+freezes source/projection/corpus/result/model/prompt/skill/tool/scorer/budget
+hashes, preregistered selection and primary metric, limits, and every attempt.
+Restricted reviewer annotations and exact Evidence coordinates are accepted
+only in restricted reference input and are recursively removed from receipts.
+Adjudicated answer truth never comes from an attempt. Every trajectory event
+and query names one frozen attempt; only the preregistered attempt can
+contribute to its funnel and query metrics. Duplicate retries remain in the
+audit but cannot change scientific numerators. A manifest can
+declare development/holdout splits and source/projection fingerprints; any
+extra split field or cross-split Trial/fingerprint fails validation. Receipts contain no source
+text, reviewer identity, rationale, query recipe, or holdout adjudication.
 
 Use the independent `scripts/verify_bundle.py` consumer to check each finalized
 bundle. It does not import proposal or presentation code from the product. The

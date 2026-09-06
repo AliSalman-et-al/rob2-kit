@@ -1,4 +1,4 @@
-"""CLI adapter for the v0.4 ledger and researcher review boundary."""
+"""CLI adapter for the v0.5 ledger and researcher review boundary."""
 
 from __future__ import annotations
 

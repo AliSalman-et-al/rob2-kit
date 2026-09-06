@@ -11,6 +11,7 @@ from support.rob2 import (
     _assessment_workspace,
     _call,
     _domain_draft,
+    _option_for,
     _prepared_evidence,
     _proposal_args,
     _result,
@@ -104,7 +105,9 @@ def test_domain_revision_requires_lineage_and_preserves_history(tmp_path: Path) 
     prior = _state(workspace)["domain_records"][key]
 
     changed = _domain_draft("trial", SCIENTIFIC_PACK.domains[0].id, revision, evidence)
-    changed["answers"][0]["answer"] = "probably_yes"
+    changed["answers"][0]["option_id"] = _option_for(
+        changed["answers"][0]["question_id"], "probably_yes"
+    )
     refused = _call(workspace, "save_domain_judgment", changed)
     assert refused["outcome"] == "condition"
     assert refused["condition"]["code"] == "domain_revision_basis_required"

@@ -13,7 +13,18 @@ from typing import Any
 import pymupdf
 import pytest
 from pydantic import ValidationError
-from support.rob2 import _assessment_workspace, _call, _domain_draft, _standalone_verify
+from support.rob2 import (
+    _assessment_workspace,
+    _call,
+    _domain_draft,
+    _option_for,
+    _prepared_evidence,
+    _proposal_args,
+    _result,
+    _review,
+    _standalone_verify,
+    _workspace,
+)
 from test_assessment_review_gate import _complete_assessment
 
 from rob2_kit.application import finalization
@@ -99,16 +110,66 @@ def test_search_receipt_verifiers_accept_within_source_bm25_order(tmp_path: Path
         _identity,
     )
 
+    for mutation in ("session", "duplicate_rank", "noncontiguous_rank"):
+        malformed = json.loads(json.dumps(receipt))
+        if mutation == "session":
+            malformed["session_id"] = "sha256:" + "a" * 65
+            malformed["session_handle"] = "ss_" + "a" * 16
+        elif mutation == "duplicate_rank":
+            malformed["returned_candidates"][1]["rank"] = malformed["returned_candidates"][0][
+                "rank"
+            ]
+        else:
+            malformed["returned_candidates"][1]["rank"] += 10
+        malformed["identity"] = _identity(
+            {key: value for key, value in malformed.items() if key not in {"identity", "handle"}}
+        )
+        malformed["handle"] = "sr_" + malformed["identity"].removeprefix("sha256:")[:16]
+        assert not finalization._valid_search_account(
+            malformed,
+            "trial",
+            state["batch"]["identity"],
+            authoritative,
+            _identity,
+        )
+        assert not standalone["_valid_search_account"](
+            malformed,
+            "trial",
+            state["batch"]["identity"],
+            authoritative,
+            _identity,
+        )
+
 
 def test_probable_limitation_domain_basis_finalizes_after_derivative_restart(
     tmp_path: Path,
 ) -> None:
-    workspace, evidence, revision = _assessment_workspace(tmp_path)
-    receipt = _call(workspace, "search_sources", {"trial_id": "trial", "query": "not-in-source"})[
-        "data"
-    ]["search_receipt"]
+    workspace = _workspace(tmp_path)
+    (workspace / "input" / "trial" / "main.txt").write_text(
+        "The requested outcome was not reported; only an alternate endpoint was measured; "
+        "death ascertainment; end of follow-up; assigned to intervention; assigned to control; "
+        "randomized population; risk ratio; The requested outcome was measured in the "
+        "analyzed population.; risk; 1; events; 2.\n" + "context\n" * 12 + "requested outcome\n",
+        encoding="utf-8",
+    )
+    evidence = _prepared_evidence(workspace)
+    proposed = _call(workspace, "save_proposal", _proposal_args(workspace, [_result(evidence)]))
+    assert proposed["outcome"] == "review_required"
+    _review(workspace)
+    revision = int(_call(workspace, "get_domain_context", {})["head"]["state_revision"])
+    search = _call(
+        workspace,
+        "search_sources",
+        {"trial_id": "trial", "query": "requested outcome", "mode": "any", "limit": 10},
+    )["data"]
+    assert search["truncated"] is False and search["exhausted"] is True
+    assert len(search["hits"]) >= 2
+    assert len({(hit["source_id"], hit["page"]) for hit in search["hits"]}) == 1
+    receipt = search["search_receipt"]
     first = _domain_draft("trial", "domain:randomization", revision, search_receipt=receipt)
-    first["answers"][0]["answer"] = "probably_yes"
+    first["answers"][0]["option_id"] = _option_for(
+        first["answers"][0]["question_id"], "probably_yes"
+    )
     first["answers"][0]["bases"] = [
         {
             "kind": "limitation",
@@ -203,7 +264,9 @@ def test_rehashed_historical_probable_basis_tampering_fails_both_verifiers(
         "data"
     ]["search_receipt"]
     initial = _domain_draft("trial", "domain:randomization", revision, search_receipt=receipt)
-    initial["answers"][0]["answer"] = "probably_yes"
+    initial["answers"][0]["option_id"] = _option_for(
+        initial["answers"][0]["question_id"], "probably_yes"
+    )
     initial["answers"][0]["bases"] = [
         {
             "kind": "limitation",
@@ -414,6 +477,50 @@ def test_scientific_contract_tampering_is_rejected(tmp_path: Path, mutation: str
             canonical["scientific_pack"][field]["source_sha256"] = "0" * 64
 
     tampered = tmp_path / f"scientific-contract-{mutation}.rob2.zip"
+    _rewrite_rehashed(artifact, tampered, tamper)
+    assert not verify_bundle(tampered)
+    assert _standalone_verify(tampered).returncode == 1
+
+
+def test_malformed_canonical_answer_is_rejected_by_both_verifiers(tmp_path: Path) -> None:
+    artifact = _artifact(tmp_path)
+
+    def tamper(canonical: dict[str, Any]) -> None:
+        key = "trial:domain:randomization"
+        record = canonical["domain_records"][key]
+        old_identity = record["identity"]
+        record["answers"][0]["answer"] = "probably_maybe"
+        record["identity"] = _identity(
+            {
+                field: record[field]
+                for field in (
+                    "trial_id",
+                    "domain_id",
+                    "answers",
+                    "supersedes",
+                    "revision_basis",
+                    "search_accounts",
+                    "active_questions",
+                    "inactive_questions",
+                    "judgment",
+                    "trace",
+                )
+            }
+        )
+        canonical["domain_history"][key][-1] = record["identity"]
+        canonical["domain_history_records"][key][-1] = record
+        snapshot = canonical["snapshots"]["trial"]
+        snapshot["checkpoints"] = [
+            record["identity"] if identity == old_identity else identity
+            for identity in snapshot["checkpoints"]
+        ]
+        snapshot["identity"] = _identity(
+            {field: value for field, value in snapshot.items() if field != "identity"}
+        )
+        canonical["snapshot_history"]["trial"][-1] = snapshot["identity"]
+        canonical["snapshot_history_records"]["trial"][-1] = snapshot
+
+    tampered = tmp_path / "malformed-answer.rob2.zip"
     _rewrite_rehashed(artifact, tampered, tamper)
     assert not verify_bundle(tampered)
     assert _standalone_verify(tampered).returncode == 1

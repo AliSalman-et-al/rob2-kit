@@ -5,15 +5,17 @@ import re
 import sqlite3
 import unicodedata
 from bisect import bisect_right
+from collections import Counter
 from functools import lru_cache
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 import pymupdf
 
 from ..models import canonical_json_bytes
 from ..workflow_models import SearchReceiptHandle
 from ._state import (
+    _canonical_query_text,
     _canonical_search_text,
     _db,
     _ensure,
@@ -26,6 +28,9 @@ from ._state import (
     internal_path,
 )
 from .contracts import COUNTERS
+
+_SEARCH_SESSION_VERSION = "rob2-kit.search-session.v0.5"
+_SEARCH_CANDIDATE_VERSION = "rob2-kit.search-candidates.v0.5"
 
 
 def list_sources(workspace: str | Path, trial_id: str | None = None) -> dict[str, Any]:
@@ -142,10 +147,11 @@ def search_sources(
     mode: str = "any",
     limit: int = 10,
     source_id: str | None = None,
+    cursor: str | None = None,
 ) -> dict[str, Any]:
     root = _root(workspace)
     _ensure(root)
-    normalized_query = _canonical_search_text(query)
+    normalized_query = _canonical_query_text(query)
     terms = [term for term in normalized_query.split() if term]
     if not terms:
         raise ValueError("query must not be empty")
@@ -167,6 +173,31 @@ def search_sources(
     # checked below for integrity, but its corpus also contains other Trials;
     # using it for BM25 would make a receipt depend on unrelated documents.
     if not allowed:
+        session_spec = {
+            "version": _SEARCH_SESSION_VERSION,
+            "candidate_version": _SEARCH_CANDIDATE_VERSION,
+            "trial_id": trial_id,
+            "sources": [],
+            "query": " ".join(terms),
+            "normalized_query": " ".join(terms),
+            "mode": mode,
+            "ranking": "fts5-bm25-source-order-page-cluster",
+        }
+        session_identity = _identity(session_spec)
+        session_handle = _session_handle(session_identity)
+        session_payload = {
+            "identity": session_identity,
+            "handle": session_handle,
+            "spec": session_spec,
+            "matching_page_count": 0,
+            "candidate_count": 0,
+            "complete": True,
+        }
+        with _db(root, "derivative.sqlite3") as connection:
+            connection.execute(
+                "INSERT OR REPLACE INTO search_sessions VALUES (?,?)",
+                (session_identity, canonical_json_bytes(session_payload)),
+            )
         receipt = {
             "trial_id": trial_id,
             "sources": [],
@@ -179,6 +210,17 @@ def search_sources(
             "truncated": False,
             "condition": "no_hits",
             "batch_identity": (_read(root, "batch") or {}).get("identity"),
+            "session_id": session_identity,
+            "session_handle": session_handle,
+            "candidate_count": 0,
+            "matching_page_count": 0,
+            "ranking_complete": True,
+            "returned_rank_start": None,
+            "returned_rank_end": None,
+            "next_cursor": None,
+            "exhausted": True,
+            "returned_material": 0,
+            "returned_candidates": [],
         }
         receipt["identity"] = _identity(receipt)
         receipt["handle"] = "sr_" + receipt["identity"].removeprefix("sha256:")[:16]
@@ -194,6 +236,15 @@ def search_sources(
             "truncated": False,
             "condition": "no_hits",
             "search_receipt": receipt,
+            "session_id": session_identity,
+            "session_handle": session_handle,
+            "matching_page_count": 0,
+            "candidate_count": 0,
+            "ranking_complete": True,
+            "returned_rank_start": None,
+            "returned_rank_end": None,
+            "next_cursor": None,
+            "exhausted": True,
         }
     ordered_sources = _ordered_sources(sources)
     ordered_source_ids = [str(source["id"]) for source in ordered_sources]
@@ -211,36 +262,127 @@ def search_sources(
         ]
         if [tuple(row) for row in cached_rows] != expected_rows:
             raise ValueError("text search projection is corrupt")
-    match_spans: dict[tuple[str, int], list[tuple[int, int]]] = {}
-    matching_pairs, total_matches = _recomputed_search_summary(
-        {source_id: verified[(trial_id, source_id)][1] for source_id in ordered_source_ids},
-        query,
-        mode,
-        bounded_limit,
-        ordered_source_ids,
-        span_cache=match_spans,
-    )
+    page_map = {source_id: verified[(trial_id, source_id)][1] for source_id in ordered_source_ids}
+    all_pairs = _recomputed_all_pairs(page_map, normalized_query, mode, ordered_source_ids)
+    total_matches = len(all_pairs)
+    session_spec = {
+        "version": _SEARCH_SESSION_VERSION,
+        "candidate_version": _SEARCH_CANDIDATE_VERSION,
+        "trial_id": trial_id,
+        "sources": [
+            {"id": source["id"], "projection_hash": source["projection_hash"]}
+            for source in ordered_sources
+        ],
+        "query": " ".join(terms),
+        "normalized_query": " ".join(terms),
+        "mode": mode,
+        "ranking": "fts5-bm25-source-order-page-cluster",
+    }
+    session_identity = _identity(session_spec)
+    session_handle = _session_handle(session_identity)
+    with _db(root, "derivative.sqlite3") as connection:
+        existing_session = connection.execute(
+            "SELECT payload FROM search_sessions WHERE identity=?", (session_identity,)
+        ).fetchone()
+    candidates: list[dict[str, Any]] = []
+    if existing_session is not None:
+        try:
+            stored = json.loads(bytes(existing_session[0]))
+            if stored.get("spec") != session_spec:
+                raise ValueError("search session configuration is stale")
+            with _db(root, "derivative.sqlite3") as connection:
+                candidate_rows = connection.execute(
+                    "SELECT payload FROM search_candidates WHERE session_identity=? ORDER BY rank",
+                    (session_identity,),
+                ).fetchall()
+            candidates = [json.loads(bytes(row[0])) for row in candidate_rows]
+        except (UnicodeDecodeError, json.JSONDecodeError, KeyError) as error:
+            raise ValueError("search session derivative is corrupt; restart the search") from error
+    if not candidates:
+        candidates = _session_candidates(
+            page_map, normalized_query, mode, ordered_source_ids, all_pairs
+        )
+        session_payload = {
+            "identity": session_identity,
+            "handle": session_handle,
+            "spec": session_spec,
+            "matching_page_count": total_matches,
+            "candidate_count": len(candidates),
+            "complete": True,
+        }
+        with _db(root, "derivative.sqlite3") as connection:
+            connection.execute(
+                "INSERT OR REPLACE INTO search_sessions VALUES (?,?)",
+                (session_identity, canonical_json_bytes(session_payload)),
+            )
+            connection.execute(
+                "DELETE FROM search_candidates WHERE session_identity=?", (session_identity,)
+            )
+            connection.executemany(
+                "INSERT INTO search_candidates VALUES (?,?,?)",
+                [
+                    (session_identity, item["rank"], canonical_json_bytes(item))
+                    for item in candidates
+                ],
+            )
+    # Candidate rank is the one public ordering.  It already includes the
+    # Source-diversity pass, so receipts, cursors, cached rows, and displayed
+    # hits cannot disagree about what ranks 1..N mean.
+    presentation = candidates
+    offset = 0
+    if cursor is not None:
+        match = re.fullmatch(r"sc_([0-9a-f]{16})_(\d+)", cursor)
+        if match is None or match.group(1) != session_identity.removeprefix("sha256:")[:16]:
+            raise ValueError(
+                "search_cursor_stale: restart search with the same query, mode, and Source scope"
+            )
+        offset = int(match.group(2))
+        if offset < 0 or offset > len(presentation):
+            raise ValueError("search_cursor_expired: request a fresh search session")
+    selected_candidates = presentation[offset : offset + bounded_limit]
+    candidate_truncated = offset + len(selected_candidates) < len(presentation)
     source_by_id = {str(source["id"]): source for source in ordered_sources}
+    # Import lazily: status projects search data, while search needs only its
+    # authoritative workflow selector here.
+    from .status import _active_trial_and_domain
+
+    active_trial_id, active_domain_id = _active_trial_and_domain(_read(root, "state") or {})
+    if active_trial_id == trial_id and active_domain_id is not None:
+        # Associate the complete immutable ranking with the Domain that issued
+        # the search. Lower-ranked candidates may not be materialized yet, but
+        # context continuation must still reach them without rerunning retrieval.
+        for candidate in candidates:
+            _associate_search_candidate(
+                root,
+                session_identity,
+                candidate["rank"],
+                active_domain_id,
+            )
     hits = []
-    for source_id, page in matching_pairs:
+    for candidate in selected_candidates:
+        source_id, page = candidate["source_id"], candidate["page"]
         page_text = verified[(trial_id, source_id)][1][page - 1]
-        spans = match_spans[(source_id, page)]
+        spans = _search_match_spans(page_text, normalized_query, mode)
+        if not spans or not any(
+            start < candidate["end"] and end > candidate["start"] for start, end in spans
+        ):
+            spans = [(candidate["start"], candidate["end"])]
         # Use the same local co-occurrence cluster for navigation, preview,
         # and the reusable passage. Otherwise a preview can mention a nearby
         # term while passage_ref points at a different line.
-        preview_spans = _preview_match_spans(page_text, query, mode, 120, spans)
-        start_line, end_line = _search_match_line_range(page_text, query, mode, preview_spans)
+        preview_spans = spans
+        start_line, end_line = candidate["start_line"], candidate["end_line"]
         # Search hits are navigation results, but giving the host a reusable
         # exact window removes the error-prone copy/paste/select round trip.
         # The handle is derivative state; submission still revalidates its
         # coordinates against the immutable captured projection.
         line_starts = [0]
-        offset = 0
+        line_offset = 0
         for line in page_text.splitlines(keepends=True):
-            offset += len(line)
-            line_starts.append(offset)
-        quote_start = line_starts[start_line - 1]
-        quote_end = line_starts[end_line] if end_line < len(line_starts) else len(page_text)
+            line_offset += len(line)
+            line_starts.append(line_offset)
+        quote_start = candidate["start"]
+        quote_end = candidate["end"]
         if quote_end <= quote_start:
             quote_end = len(page_text)
         while quote_end > quote_start and page_text[quote_end - 1] in "\r\n":
@@ -255,6 +397,10 @@ def search_sources(
                 "start": quote_start,
                 "end": quote_end,
                 "quote": page_text[quote_start:quote_end],
+                "search_session": session_identity,
+                "candidate_rank": candidate["rank"],
+                "start_line": start_line,
+                "end_line": end_line,
             },
         )
         hits.append(
@@ -265,9 +411,14 @@ def search_sources(
                 "page": page,
                 "start_line": start_line,
                 "end_line": end_line,
-                "preview": _match_centered_preview(page_text, query, mode, spans=preview_spans),
+                "preview": _match_centered_preview(
+                    page_text, normalized_query, mode, spans=preview_spans
+                ),
                 "passage_ref": passage["handle"],
                 "query": query,
+                "rank": candidate["rank"],
+                "within_source_rank": candidate["within_source_rank"],
+                "range": {"start": offset + 1, "end": offset + len(selected_candidates)},
             }
         )
     condition = None if hits else "no_hits"
@@ -283,9 +434,33 @@ def search_sources(
         "hits": [{"source_id": item["source_id"], "page": item["page"]} for item in hits],
         "limit": bounded_limit,
         "total_matches": total_matches,
-        "truncated": total_matches > bounded_limit,
+        "truncated": candidate_truncated,
         "condition": condition,
         "batch_identity": (_read(root, "batch") or {}).get("identity"),
+        "session_id": session_identity,
+        "session_handle": session_handle,
+        "candidate_count": len(candidates),
+        "matching_page_count": total_matches,
+        "ranking_complete": True,
+        "returned_rank_start": offset + 1 if selected_candidates else None,
+        "returned_rank_end": offset + len(selected_candidates) if selected_candidates else None,
+        "next_cursor": (
+            _cursor_handle(session_identity, offset + len(selected_candidates))
+            if offset + len(selected_candidates) < len(presentation)
+            else None
+        ),
+        "exhausted": not candidate_truncated,
+        "returned_material": len(selected_candidates),
+        "returned_candidates": [
+            {
+                "rank": item["rank"],
+                "source_id": item["source_id"],
+                "page": item["page"],
+                "start_line": item["start_line"],
+                "end_line": item["end_line"],
+            }
+            for item in selected_candidates
+        ],
     }
     receipt["identity"] = _identity(receipt)
     receipt["handle"] = "sr_" + receipt["identity"].removeprefix("sha256:")[:16]
@@ -298,9 +473,18 @@ def search_sources(
         "outcome": "success",
         "hits": hits,
         "total_matches": total_matches,
-        "truncated": total_matches > bounded_limit,
+        "truncated": candidate_truncated,
         "condition": condition,
         "search_receipt": receipt,
+        "session_id": session_identity,
+        "session_handle": session_handle,
+        "matching_page_count": total_matches,
+        "candidate_count": len(candidates),
+        "ranking_complete": True,
+        "returned_rank_start": receipt["returned_rank_start"],
+        "returned_rank_end": receipt["returned_rank_end"],
+        "next_cursor": receipt["next_cursor"],
+        "exhausted": receipt["exhausted"],
     }
 
 
@@ -701,6 +885,203 @@ def _recomputed_search_summary(
     return mapped, len(all_pairs)
 
 
+def _recomputed_all_pairs(
+    pages: dict[str, tuple[str, ...]], query: str, mode: str, source_order: list[str]
+) -> list[tuple[str, int]]:
+    expression = _search_expression(query, mode)
+    with sqlite3.connect(":memory:") as connection:
+        connection.execute(
+            "CREATE VIRTUAL TABLE pages_fts USING fts5("
+            "source_id,page UNINDEXED,raw_text,normalized_text)"
+        )
+        rows = [
+            (source_id, page, *_discovery_search_derivative(text))
+            for source_id in source_order
+            for page, text in enumerate(pages[source_id], 1)
+        ]
+        connection.executemany("INSERT INTO pages_fts VALUES (?,?,?,?)", rows)
+        hits = connection.execute(
+            "SELECT source_id,page,bm25(pages_fts) FROM pages_fts WHERE pages_fts MATCH ?",
+            (expression,),
+        ).fetchall()
+    order = {source_id: index for index, source_id in enumerate(source_order)}
+    hits.sort(key=lambda row: _search_result_order(str(row[0]), int(row[1]), float(row[2]), order))
+    return [(str(row[0]), int(row[1])) for row in hits]
+
+
+def _all_search_match_spans(text: str, query: str, mode: str) -> list[tuple[int, int]]:
+    """Map every lexical occurrence to raw projection coordinates.
+
+    The older helper intentionally returned one anchor for a page. Sessions
+    retain all local anchors so a page with separated match clusters can be
+    traversed without changing the authoritative quote coordinates.
+    """
+    terms = [term for term in _canonical_search_text(query).split() if term]
+    searchable, character_spans = _normalized_text_with_spans(text)
+    if not terms or not character_spans:
+        return []
+    occurrences: list[tuple[int, int, str]] = []
+    if mode == "phrase":
+        phrases = tuple(dict.fromkeys((" ".join(terms), " ".join(terms).replace("-", ""))))
+        for phrase in phrases:
+            for match in re.finditer(
+                rf"(?<!\w){re.escape(phrase)}(?!\w)", searchable, re.IGNORECASE
+            ):
+                occurrences.append(
+                    (
+                        character_spans[match.start()][0],
+                        character_spans[min(match.end() - 1, len(character_spans) - 1)][1],
+                        " ".join(terms),
+                    )
+                )
+    else:
+        for term in terms:
+            suffix = "" if mode == "prefix" else r"(?!\w)"
+            for variant in tuple(
+                dict.fromkeys((term, term.replace("-", ""), term.replace("-", " ")))
+            ):
+                for match in re.finditer(
+                    rf"(?<!\w){re.escape(variant)}{suffix}", searchable, re.IGNORECASE
+                ):
+                    occurrences.append(
+                        (
+                            character_spans[match.start()][0],
+                            character_spans[min(match.end() - 1, len(character_spans) - 1)][1],
+                            term.casefold(),
+                        )
+                    )
+    if mode == "all":
+        # Enumerate minimal co-occurrence windows, then keep the narrowest
+        # non-overlapping windows. This retains repeated local clusters on one
+        # page without manufacturing a giant bridge between two clusters.
+        ordered = sorted(set(occurrences))
+        needed = {term.casefold() for term in terms}
+        counts: Counter[str] = Counter()
+        left = 0
+        windows: list[tuple[int, int]] = []
+        for right, occurrence in enumerate(ordered):
+            counts[occurrence[2]] += 1
+            if not all(counts[term] for term in needed):
+                continue
+            while left <= right and counts[ordered[left][2]] > 1:
+                counts[ordered[left][2]] -= 1
+                left += 1
+            window = ordered[left : right + 1]
+            windows.append((min(item[0] for item in window), max(item[1] for item in window)))
+            counts[ordered[left][2]] -= 1
+            left += 1
+        selected: list[tuple[int, int]] = []
+        for candidate in sorted(set(windows), key=lambda value: (value[1] - value[0], *value)):
+            if any(candidate[0] < end and candidate[1] > start for start, end in selected):
+                continue
+            selected.append(candidate)
+        return sorted(selected)
+    return [(start, end) for start, end, _term in sorted(set(occurrences))]
+
+
+def _line_bounds(text: str, start: int, end: int) -> tuple[int, int, int, int]:
+    starts = [0]
+    offset = 0
+    for line in text.splitlines(keepends=True):
+        offset += len(line)
+        starts.append(offset)
+    first = bisect_right(starts, start)
+    last = bisect_right(starts, max(start, end - 1))
+    return first, last, starts[first - 1], starts[last] if last < len(starts) else len(text)
+
+
+def _session_candidates(
+    pages: dict[str, tuple[str, ...]],
+    query: str,
+    mode: str,
+    ordered_source_ids: list[str],
+    all_pairs: list[tuple[str, int]],
+) -> list[dict[str, Any]]:
+    by_page_rank = {pair: index + 1 for index, pair in enumerate(all_pairs)}
+    candidates: list[dict[str, Any]] = []
+    for source_id, page in all_pairs:
+        text = pages[source_id][page - 1]
+        spans = _all_search_match_spans(text, query, mode)
+        if not spans:
+            spans = _search_match_spans(text, query, mode)
+        if not spans:
+            continue
+        # One local line window per cluster; adjacent windows merge, but the
+        # raw coordinates remain the exact boundaries of the merged quote.
+        windows: list[tuple[int, int]] = []
+        for start, end in spans:
+            first, last, _raw_start, _raw_end = _line_bounds(text, start, end)
+            windows.append((first, last))
+        windows.sort()
+        merged: list[tuple[int, int]] = []
+        for first, last in windows:
+            if merged and first <= merged[-1][1] + 1:
+                merged[-1] = (merged[-1][0], max(merged[-1][1], last))
+            else:
+                merged.append((first, last))
+        for cluster, (first, last) in enumerate(merged):
+            starts = [0]
+            offset = 0
+            for line in text.splitlines(keepends=True):
+                offset += len(line)
+                starts.append(offset)
+            raw_start = starts[max(0, first - 1)]
+            raw_end = starts[min(last, len(starts) - 1)]
+            while raw_end > raw_start and text[raw_end - 1] in "\r\n":
+                raw_end -= 1
+            candidates.append(
+                {
+                    "source_id": source_id,
+                    "page": page,
+                    "start_line": first,
+                    "end_line": min(last, len(starts) - 1),
+                    "start": raw_start,
+                    "end": raw_end,
+                    "score": float(by_page_rank[(source_id, page)]),
+                    "page_rank": by_page_rank[(source_id, page)],
+                    "cluster": cluster,
+                }
+            )
+    source_order = {value: index for index, value in enumerate(ordered_source_ids)}
+    candidates.sort(
+        key=lambda item: (
+            item["score"],
+            source_order[item["source_id"]],
+            item["page"],
+            item["cluster"],
+        )
+    )
+    by_source: dict[str, list[dict[str, Any]]] = {}
+    for item in candidates:
+        by_source.setdefault(item["source_id"], []).append(item)
+    presentation: list[dict[str, Any]] = []
+    depth = 0
+    while len(presentation) < len(candidates):
+        added = False
+        for source_id in ordered_source_ids:
+            rows = by_source.get(source_id, [])
+            if depth < len(rows):
+                presentation.append(rows[depth])
+                added = True
+        if not added:
+            break
+        depth += 1
+    for rank, item in enumerate(presentation, 1):
+        item["rank"] = rank
+        item["within_source_rank"] = sum(
+            1 for prior in presentation[:rank] if prior["source_id"] == item["source_id"]
+        )
+    return presentation
+
+
+def _session_handle(identity: str) -> str:
+    return "ss_" + identity.removeprefix("sha256:")[:16]
+
+
+def _cursor_handle(session_identity: str, offset: int) -> str:
+    return "sc_" + session_identity.removeprefix("sha256:")[:16] + "_" + str(offset)
+
+
 def _search_receipt(root: Path, handle: SearchReceiptHandle) -> dict[str, Any]:
     """Resolve a disposable receipt only when its verified basis is still current."""
     with _db(root, "derivative.sqlite3") as connection:
@@ -723,7 +1104,7 @@ def _search_receipt(root: Path, handle: SearchReceiptHandle) -> dict[str, Any]:
     if not matches:
         raise ValueError("search receipt is unavailable")
     receipt = matches[0]
-    expected_keys = {
+    base_keys = {
         "trial_id",
         "sources",
         "query",
@@ -735,12 +1116,24 @@ def _search_receipt(root: Path, handle: SearchReceiptHandle) -> dict[str, Any]:
         "limit",
         "total_matches",
         "truncated",
+        "session_id",
+        "session_handle",
+        "candidate_count",
+        "matching_page_count",
+        "ranking_complete",
+        "returned_rank_start",
+        "returned_rank_end",
+        "next_cursor",
+        "exhausted",
+        "returned_material",
+        "returned_candidates",
         "identity",
         "handle",
     }
     if (
         not isinstance(receipt, dict)
-        or set(receipt) != expected_keys
+        or set(receipt) != base_keys
+        or not base_keys.issubset(receipt)
         or handle != receipt.get("handle")
         or receipt.get("identity")
         != _identity(
@@ -763,7 +1156,7 @@ def _search_receipt(root: Path, handle: SearchReceiptHandle) -> dict[str, Any]:
         not isinstance(trial_id, str)
         or not isinstance(query, str)
         or not query.strip()
-        or receipt.get("normalized_query") != _canonical_search_text(query)
+        or receipt.get("normalized_query") != _canonical_query_text(query)
         or mode not in {"all", "phrase", "any", "prefix"}
         or not isinstance(limit, int)
         or isinstance(limit, bool)
@@ -772,6 +1165,21 @@ def _search_receipt(root: Path, handle: SearchReceiptHandle) -> dict[str, Any]:
         or isinstance(total_matches, bool)
         or total_matches < 0
         or not isinstance(truncated, bool)
+        or not isinstance(receipt.get("session_id"), str)
+        or not re.fullmatch(r"sha256:[0-9a-f]{64}", receipt["session_id"])
+        or receipt.get("session_handle")
+        != "ss_" + receipt["session_id"].removeprefix("sha256:")[:16]
+        or not isinstance(receipt.get("candidate_count"), int)
+        or isinstance(receipt.get("candidate_count"), bool)
+        or receipt["candidate_count"] < 0
+        or not isinstance(receipt.get("matching_page_count"), int)
+        or isinstance(receipt.get("matching_page_count"), bool)
+        or receipt["matching_page_count"] < 0
+        or receipt.get("ranking_complete") is not True
+        or not isinstance(receipt.get("returned_material"), int)
+        or isinstance(receipt.get("returned_material"), bool)
+        or receipt["returned_material"] < 0
+        or not isinstance(receipt.get("returned_candidates"), list)
         or receipt.get("batch_identity") != batch.get("identity")
         or not isinstance(sources, list)
         or not isinstance(hits, list)
@@ -789,7 +1197,6 @@ def _search_receipt(root: Path, handle: SearchReceiptHandle) -> dict[str, Any]:
             isinstance(trial, dict) and trial.get("id") == trial_id
             for trial in batch.get("trials", [])
         )
-        or not source_ids
         or len(source_ids) != len(set(source_ids))
         or any(
             not isinstance(item, dict)
@@ -820,10 +1227,8 @@ def _search_receipt(root: Path, handle: SearchReceiptHandle) -> dict[str, Any]:
         ):
             raise ValueError("search receipt hit is corrupt")
         hit_pairs.append((hit["source_id"], hit["page"]))
-    if len(hit_pairs) != len(set(hit_pairs)):
-        raise ValueError("search receipt contains duplicate hits")
-    if total_matches < len(hit_pairs) or truncated != (total_matches > limit):
-        raise ValueError("search receipt match summary is corrupt")
+        if truncated != (receipt["returned_rank_end"] is not None and not receipt["exhausted"]):
+            raise ValueError("search receipt match summary is corrupt")
     if (bool(hits) and receipt.get("condition") is not None) or (
         not hits and receipt.get("condition") != "no_hits"
     ):
@@ -831,17 +1236,115 @@ def _search_receipt(root: Path, handle: SearchReceiptHandle) -> dict[str, Any]:
     verified = _verified_source_projections(
         root, set((trial_id, source_id) for source_id in source_ids)
     )
-    expected_hits, expected_total = _recomputed_search_summary(
-        {source_id: verified[(trial_id, source_id)][1] for source_id in source_ids},
-        query,
-        mode,
-        limit,
-        source_ids,
-        span_cache={},
+    session_identity = receipt["session_id"]
+    with _db(root, "derivative.sqlite3") as connection:
+        session_row = connection.execute(
+            "SELECT payload FROM search_sessions WHERE identity=?", (session_identity,)
+        ).fetchone()
+        candidate_rows = connection.execute(
+            "SELECT payload FROM search_candidates WHERE session_identity=? ORDER BY rank",
+            (session_identity,),
+        ).fetchall()
+    if session_row is None:
+        raise ValueError(
+            "search_cursor_expired: the search receipt's session is unavailable; rerun the search"
+        )
+    try:
+        session = json.loads(bytes(session_row[0]))
+        candidates = [json.loads(bytes(row[0])) for row in candidate_rows]
+    except (UnicodeDecodeError, json.JSONDecodeError) as error:
+        raise ValueError("search session derivative is corrupt") from error
+    spec = session.get("spec") if isinstance(session, dict) else None
+    expected_spec = {
+        "version": _SEARCH_SESSION_VERSION,
+        "candidate_version": _SEARCH_CANDIDATE_VERSION,
+        "trial_id": trial_id,
+        "sources": sources,
+        "query": receipt["normalized_query"],
+        "normalized_query": receipt["normalized_query"],
+        "mode": mode,
+        "ranking": "fts5-bm25-source-order-page-cluster",
+    }
+    if (
+        not isinstance(session, dict)
+        or set(session)
+        != {"identity", "handle", "spec", "matching_page_count", "candidate_count", "complete"}
+        or spec != expected_spec
+        or session.get("identity") != session_identity
+        or session.get("identity") != _identity(spec)
+        or session.get("handle") != _session_handle(session_identity)
+        or session.get("complete") is not True
+    ):
+        raise ValueError("search session configuration is stale or corrupt")
+    pages = {source_id: verified[(trial_id, source_id)][1] for source_id in source_ids}
+    all_pairs = _recomputed_all_pairs(pages, receipt["normalized_query"], mode, source_ids)
+    expected_candidates = _session_candidates(
+        pages, receipt["normalized_query"], mode, source_ids, all_pairs
     )
-    expected_pairs = expected_hits
-    if hit_pairs != expected_pairs or total_matches != expected_total:
+    if candidates != expected_candidates:
+        raise ValueError("search session candidates are stale or corrupt")
+    if session.get("candidate_count") != len(candidates) or session.get(
+        "matching_page_count"
+    ) != len(all_pairs):
+        raise ValueError("search session counts are stale")
+    if (
+        receipt.get("candidate_count") != len(candidates)
+        or receipt.get("matching_page_count") != len(all_pairs)
+        or total_matches != len(all_pairs)
+    ):
         raise ValueError("search receipt results do not match the captured page projections")
+    returned = receipt.get("returned_candidates", [])
+    if not isinstance(returned, list):
+        raise ValueError("search receipt candidate range is corrupt")
+    expected_ranks = [item.get("rank") for item in returned if isinstance(item, dict)]
+    if any(
+        rank not in {candidate.get("rank") for candidate in candidates} for rank in expected_ranks
+    ):
+        raise ValueError("search receipt candidate range is corrupt")
+    by_rank = {candidate.get("rank"): candidate for candidate in candidates}
+    selected = [by_rank.get(rank) for rank in expected_ranks]
+    if (
+        len(expected_ranks) != len(returned)
+        or len(expected_ranks) != len(set(expected_ranks))
+        or any(not isinstance(candidate, dict) for candidate in selected)
+        or any(
+            not isinstance(item, dict)
+            or set(item) != {"rank", "source_id", "page", "start_line", "end_line"}
+            or not isinstance(candidate, dict)
+            or any(item[key] != candidate.get(key) for key in item)
+            for item, candidate in zip(returned, selected, strict=True)
+        )
+        or hit_pairs
+        != [
+            (candidate["source_id"], candidate["page"])
+            for candidate in selected
+            if isinstance(candidate, dict)
+        ]
+    ):
+        raise ValueError("search receipt results do not match the captured page projections")
+    if receipt.get("returned_material") != len(selected):
+        raise ValueError("search receipt candidate range is corrupt")
+    start = receipt.get("returned_rank_start")
+    end = receipt.get("returned_rank_end")
+    if selected:
+        if not isinstance(start, int) or not isinstance(end, int):
+            raise ValueError("search receipt candidate range is corrupt")
+        if end - start + 1 != len(selected) or expected_ranks != list(range(start, end + 1)):
+            raise ValueError("search receipt candidate range is corrupt")
+        expected_exhausted = end >= len(candidates)
+    else:
+        if start is not None or end is not None:
+            raise ValueError("search receipt candidate range is corrupt")
+        expected_exhausted = True
+    if receipt.get("exhausted") is not expected_exhausted:
+        raise ValueError("search receipt candidate range is corrupt")
+    if truncated is not (not expected_exhausted):
+        raise ValueError("search receipt match summary is corrupt")
+    expected_cursor = None
+    if selected and not expected_exhausted:
+        expected_cursor = _cursor_handle(session_identity, cast(int, end))
+    if receipt.get("next_cursor") != expected_cursor:
+        raise ValueError("search receipt candidate range is corrupt")
     return receipt
 
 
@@ -883,6 +1386,136 @@ def _evidence(
     return item
 
 
+def _associate_search_candidate(
+    root: Path, session_identity: str, rank: int, domain_id: str
+) -> None:
+    """Associate disposable navigation with a Domain without changing its identity."""
+    with _db(root, "derivative.sqlite3") as connection:
+        connection.execute(
+            "INSERT OR IGNORE INTO search_domain_associations VALUES (?,?,?)",
+            (session_identity, rank, domain_id),
+        )
+
+
+def _associated_search_ranks(root: Path, trial_id: str, domain_id: str) -> set[tuple[str, int]]:
+    """Return associations owned by exactly one Trial.
+
+    The derivative association table has no Trial column.  A search session's
+    immutable spec is the owner, so filter through it rather than joining the
+    shared RoB Domain ids across Trials.
+    """
+    with _db(root, "derivative.sqlite3") as connection:
+        rows = connection.execute(
+            "SELECT session_identity,rank FROM search_domain_associations WHERE domain_id=?",
+            (domain_id,),
+        ).fetchall()
+    result: set[tuple[str, int]] = set()
+    with _db(root, "derivative.sqlite3") as connection:
+        for session_identity, rank in rows:
+            payload = connection.execute(
+                "SELECT payload FROM search_sessions WHERE identity=?", (session_identity,)
+            ).fetchone()
+            if payload is None:
+                continue
+            try:
+                spec = json.loads(bytes(payload[0]))["spec"]
+            except (KeyError, TypeError, UnicodeDecodeError, json.JSONDecodeError) as error:
+                raise ValueError("search session derivative is corrupt") from error
+            if spec.get("trial_id") == trial_id:
+                result.add((str(session_identity), int(rank)))
+    return result
+
+
+def _search_continuation(
+    root: Path,
+    trial_id: str,
+    domain_id: str,
+    included: set[tuple[str, int]],
+    limit: int,
+) -> dict[str, Any] | None:
+    """Return one fully bound action that starts at an omitted candidate."""
+    with _db(root, "derivative.sqlite3") as connection:
+        rows = connection.execute(
+            "SELECT session_identity,rank FROM search_domain_associations "
+            "WHERE domain_id=? ORDER BY session_identity,rank",
+            (domain_id,),
+        ).fetchall()
+    by_session: dict[str, list[int]] = {}
+    for session_identity, rank in rows:
+        by_session.setdefault(str(session_identity), []).append(int(rank))
+    for session_identity, ranks in by_session.items():
+        included_ranks = {rank for session, rank in included if session == session_identity}
+        omitted_ranks = sorted(set(ranks) - included_ranks)
+        if not omitted_ranks:
+            continue
+        with _db(root, "derivative.sqlite3") as connection:
+            row = connection.execute(
+                "SELECT payload FROM search_sessions WHERE identity=?", (session_identity,)
+            ).fetchone()
+        if row is None:
+            continue
+        try:
+            payload = json.loads(bytes(row[0]))
+            spec = payload["spec"]
+        except (KeyError, TypeError, UnicodeDecodeError, json.JSONDecodeError) as error:
+            raise ValueError("search session derivative is corrupt") from error
+        if spec.get("trial_id") != trial_id:
+            continue
+        sources = spec.get("sources")
+        if not isinstance(sources, list):
+            raise ValueError("search session derivative is corrupt")
+        source_id = (
+            sources[0].get("id") if len(sources) == 1 and isinstance(sources[0], dict) else None
+        )
+        first_omitted_rank = omitted_ranks[0]
+        with _db(root, "derivative.sqlite3") as connection:
+            candidate_rows = connection.execute(
+                "SELECT payload FROM search_candidates WHERE session_identity=? ORDER BY rank",
+                (session_identity,),
+            ).fetchall()
+        candidates = [json.loads(bytes(candidate[0])) for candidate in candidate_rows]
+        by_source: dict[str, list[dict[str, Any]]] = {}
+        for candidate in candidates:
+            by_source.setdefault(candidate["source_id"], []).append(candidate)
+        source_order = [
+            item["id"]
+            for item in sources
+            if isinstance(item, dict) and isinstance(item.get("id"), str)
+        ]
+        presentation: list[dict[str, Any]] = []
+        depth = 0
+        while len(presentation) < len(candidates):
+            added = False
+            for source in source_order:
+                values = by_source.get(source, [])
+                if depth < len(values):
+                    presentation.append(values[depth])
+                    added = True
+            if not added:
+                break
+            depth += 1
+        offset = next(
+            (
+                index
+                for index, candidate in enumerate(presentation)
+                if candidate.get("rank") == first_omitted_rank
+            ),
+            None,
+        )
+        if offset is None:
+            raise ValueError("search session candidate is corrupt")
+        return {
+            "operation": "search_sources",
+            "trial_id": spec["trial_id"],
+            "query": spec["query"],
+            "mode": spec["mode"],
+            "source_id": source_id,
+            "limit": limit,
+            "cursor": _cursor_handle(session_identity, offset),
+        }
+    return None
+
+
 def _validate_selected_evidence(
     root: Path,
     row_identity: str,
@@ -922,6 +1555,10 @@ def _validate_selected_evidence(
         if kind == "figure"
         else set()
     )
+    if kind == "narrative" and "search_session" in item:
+        expected = expected | {"search_session", "candidate_rank"}
+    if kind == "narrative" and {"start_line", "end_line"}.issubset(item):
+        expected = expected | {"start_line", "end_line"}
     if not expected or set(item) != expected:
         raise ValueError("evidence handle shape is corrupt")
     if (
@@ -952,6 +1589,12 @@ def _validate_selected_evidence(
         start = item.get("start")
         end = item.get("end")
         quote = item.get("quote")
+        if "search_session" in item and (
+            not isinstance(item.get("candidate_rank"), int)
+            or isinstance(item.get("candidate_rank"), bool)
+            or item["candidate_rank"] < 1
+        ):
+            raise ValueError("search candidate rank is corrupt")
         if (
             not isinstance(page, int)
             or isinstance(page, bool)
@@ -971,6 +1614,10 @@ def _validate_selected_evidence(
             or page_text[start:end] != quote
         ):
             raise ValueError("narrative Evidence is outside the captured page projection")
+        if "start_line" in item and (
+            (item["start_line"], item["end_line"]) != _line_bounds(page_text, start, end)[:2]
+        ):
+            raise ValueError("narrative Evidence line coordinates are corrupt")
         return item
 
     render = item["render"]
@@ -1293,6 +1940,7 @@ def select_text_evidence(
         raise ValueError("selected text is ambiguous; select a unique passage")
     start = spans[starts[0]][0]
     end = spans[starts[0] + len(normalized_selection) - 1][1]
+    start_line, end_line, _raw_start, _raw_end = _line_bounds(text, start, end)
     return {
         "outcome": "success",
         "evidence": _evidence(
@@ -1300,7 +1948,14 @@ def select_text_evidence(
             trial_id,
             source_id,
             "narrative",
-            {"page": page, "start": start, "end": end, "quote": text[start:end]},
+            {
+                "page": page,
+                "start": start,
+                "end": end,
+                "quote": text[start:end],
+                "start_line": start_line,
+                "end_line": end_line,
+            },
         ),
     }
 
@@ -1349,7 +2004,14 @@ def select_text_evidence_by_lines(
             trial_id,
             source_id,
             "narrative",
-            {"page": page, "start": start, "end": end, "quote": quote},
+            {
+                "page": page,
+                "start": start,
+                "end": end,
+                "quote": quote,
+                "start_line": start_line,
+                "end_line": end_line,
+            },
         ),
     }
 

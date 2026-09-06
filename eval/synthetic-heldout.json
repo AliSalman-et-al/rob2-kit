@@ -1,25 +1,16 @@
 {
-  "trials": [
-    {"trial_id": "heldout-a", "outcomes": ["o1"]},
-    {"trial_id": "heldout-b", "outcomes": ["o1"]}
-  ],
-  "missing_artifacts": ["external_reference_labels", "second_model_family"],
-  "needed_passages": [
-    {"trial_id": "heldout-a", "passage_id": "flow"},
-    {"trial_id": "heldout-a", "passage_id": "outcome"},
-    {"trial_id": "heldout-b", "passage_id": "plan"}
-  ],
-  "retrieved_passages": [
-    {"trial_id": "heldout-a", "passage_id": "outcome"},
-    {"trial_id": "heldout-a", "passage_id": "flow"},
-    {"trial_id": "heldout-b", "passage_id": "plan"}
-  ],
-  "premises": [
-    {"required": true, "supported": true, "contradiction_handled": true},
-    {"required": true, "supported": false, "contradiction_handled": false, "missing_reference": true}
-  ],
-  "attempts": [
-    {"trial_id": "heldout-a", "outcome_id": "o1", "draw": 1, "model_family": "synthetic", "label": "low", "prediction": "low", "tool_calls": 3, "repair_loops": 0, "tokens": 100, "elapsed_ms": 10},
-    {"trial_id": "heldout-b", "outcome_id": "o1", "draw": 1, "model_family": "synthetic", "label": "some_concerns", "prediction": "no_information", "tool_calls": 4, "repair_loops": 1, "tokens": 140, "elapsed_ms": 12, "false_repair": false}
-  ]
+  "schema":"rob2-kit.held-out-evaluation.v0.5",
+  "manifest":{"schema":"rob2-kit.evaluation-manifest.v0.5","splits":[{"trial_id":"t","split":"holdout","source_fingerprints":["sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"],"projection_fingerprints":["sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"],"document_family_fingerprints":["sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"]}],"source_hash":"sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","projection_hash":"sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb","corpus_hash":"sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc","result_mapping_hash":"sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd","model":{"family":"synthetic","version":"1"},"prompt_hash":"sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee","skill_hash":"sha256:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff","tool_schema_hash":"sha256:1111111111111111111111111111111111111111111111111111111111111111","kit_revision":"v0.5","scorer_hash":"sha256:2222222222222222222222222222222222222222222222222222222222222222","interventions":{"base":"sha256:3333333333333333333333333333333333333333333333333333333333333333"},"budget_hash":"sha256:4444444444444444444444444444444444444444444444444444444444444444","selection_rule":"lowest_final_attempt_id","primary_metric":"domain_accuracy","coverage_floor":0.8,"cost_limit":1,"attempt_ids":["a"]},
+  "references":[{"trial_id":"t","result_identity":"r","outcome_id":"o","domain_id":"domain:1","question_id":"q","run_id":"run","draw":"1","model_family":"synthetic","model_version":"1","kit_revision":"v0.5","intervention_id":"base","premise_id":"p","status":"adjudicated","required":true,"acceptable_evidence_sets":[["e2"],["e3"]],"contradiction_ids":[],"source_roles":["report"],"useful_depth":2,"restricted":{"answer_label":"low","support_label":"full"}}],
+  "attempts":[{"trial_id":"t","result_identity":"r","outcome_id":"o","domain_id":"domain:1","question_id":"q","run_id":"run","draw":"1","model_family":"synthetic","model_version":"1","kit_revision":"v0.5","intervention_id":"base","attempt_id":"a","disposition":"assessed","selected":true,"prediction":"low","tool_calls":1,"response_bytes":1,"context_bytes":1,"tokens":1,"latency_ms":1,"cost":0,"repair_count":0,"false_repair":false}],
+  "events":[
+    {"trial_id":"t","result_identity":"r","outcome_id":"o","domain_id":"domain:1","question_id":"q","run_id":"run","draw":"1","model_family":"synthetic","model_version":"1","kit_revision":"v0.5","intervention_id":"base","attempt_id":"a","type":"projection_available","identity":"projection","observer":"server","observed":true,"limit":"full","rank":1,"premise_id":"p","support":"full"},
+    {"trial_id":"t","result_identity":"r","outcome_id":"o","domain_id":"domain:1","question_id":"q","run_id":"run","draw":"1","model_family":"synthetic","model_version":"1","kit_revision":"v0.5","intervention_id":"base","attempt_id":"a","type":"candidate_ranked","identity":"e1","observer":"server","observed":true,"limit":"top-10","rank":1,"premise_id":"p","support":"full"},
+    {"trial_id":"t","result_identity":"r","outcome_id":"o","domain_id":"domain:1","question_id":"q","run_id":"run","draw":"1","model_family":"synthetic","model_version":"1","kit_revision":"v0.5","intervention_id":"base","attempt_id":"a","type":"passage_surfaced","identity":"e2","observer":"server","observed":true,"limit":"top-10","rank":2,"premise_id":"p","support":"full"},
+    {"trial_id":"t","result_identity":"r","outcome_id":"o","domain_id":"domain:1","question_id":"q","run_id":"run","draw":"1","model_family":"synthetic","model_version":"1","kit_revision":"v0.5","intervention_id":"base","attempt_id":"a","type":"content_delivered","identity":"e2","observer":"host","observed":null,"limit":"unknown","rank":2,"premise_id":"p","support":"unavailable"},
+    {"trial_id":"t","result_identity":"r","outcome_id":"o","domain_id":"domain:1","question_id":"q","run_id":"run","draw":"1","model_family":"synthetic","model_version":"1","kit_revision":"v0.5","intervention_id":"base","attempt_id":"a","type":"passage_inspected","identity":"e2","observer":"host","observed":true,"limit":"host-event","rank":2,"premise_id":"p","support":"full"},
+    {"trial_id":"t","result_identity":"r","outcome_id":"o","domain_id":"domain:1","question_id":"q","run_id":"run","draw":"1","model_family":"synthetic","model_version":"1","kit_revision":"v0.5","intervention_id":"base","attempt_id":"a","type":"evidence_cited","identity":"e2","observer":"host","observed":true,"limit":"host-event","rank":2,"premise_id":"p","support":"full"},
+    {"trial_id":"t","result_identity":"r","outcome_id":"o","domain_id":"domain:1","question_id":"q","run_id":"run","draw":"1","model_family":"synthetic","model_version":"1","kit_revision":"v0.5","intervention_id":"base","attempt_id":"a","type":"premise_assessed","identity":"p","observer":"evaluator","observed":true,"limit":"annotation","rank":1,"premise_id":"p","support":"full"},
+    {"trial_id":"t","result_identity":"r","outcome_id":"o","domain_id":"domain:1","question_id":"q","run_id":"run","draw":"1","model_family":"synthetic","model_version":"1","kit_revision":"v0.5","intervention_id":"base","attempt_id":"a","type":"answer_committed","identity":"answer","observer":"server","observed":true,"limit":"commit","rank":1,"premise_id":"p","support":"full"}],
+  "queries":[{"trial_id":"t","result_identity":"r","outcome_id":"o","domain_id":"domain:1","question_id":"q","run_id":"run","draw":"1","model_family":"synthetic","model_version":"1","kit_revision":"v0.5","intervention_id":"base","attempt_id":"a","query_hash":"sha256:5555555555555555555555555555555555555555555555555555555555555555","result_ids":["e1","e2"],"source_ids":["s"],"stop":"answer_committed"}]
 }

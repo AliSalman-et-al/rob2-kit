@@ -27,7 +27,7 @@ from ..workflow_models import (
 )
 from ._state import (
     _canonical_evidence_records,
-    _canonical_search_text,
+    _canonical_query_text,
     _commit_records,
     _db,
     _ensure,
@@ -536,7 +536,7 @@ def _valid_search_account(
     authoritative: dict[str, dict[str, object]],
     identity: Callable[[object], str],
 ) -> bool:
-    if not isinstance(account, dict) or set(account) != {
+    required_keys = {
         "trial_id",
         "sources",
         "query",
@@ -548,9 +548,25 @@ def _valid_search_account(
         "limit",
         "condition",
         "batch_identity",
+        "session_id",
+        "session_handle",
+        "candidate_count",
+        "matching_page_count",
+        "ranking_complete",
+        "returned_rank_start",
+        "returned_rank_end",
+        "next_cursor",
+        "exhausted",
+        "returned_material",
+        "returned_candidates",
         "identity",
         "handle",
-    }:
+    }
+    if (
+        not isinstance(account, dict)
+        or not required_keys.issubset(account)
+        or set(account) != required_keys
+    ):
         return False
     query = account.get("query")
     sources = account.get("sources")
@@ -568,6 +584,92 @@ def _valid_search_account(
         if isinstance(hits, list)
         else []
     )
+    returned_candidates = account.get("returned_candidates")
+    candidate_pairs = (
+        [(item.get("source_id"), item.get("page")) for item in returned_candidates]
+        if isinstance(returned_candidates, list)
+        else []
+    )
+    candidate_ranks = (
+        [item.get("rank") for item in returned_candidates if isinstance(item, dict)]
+        if isinstance(returned_candidates, list)
+        else []
+    )
+    session_id = account.get("session_id")
+    session_handle = account.get("session_handle")
+    session_fields_valid = ("session_id" not in account and "session_handle" not in account) or (
+        isinstance(session_id, str)
+        and re.fullmatch(r"sha256:[0-9a-f]{64}", session_id) is not None
+        and isinstance(session_handle, str)
+        and re.fullmatch(r"ss_[0-9a-f]{16}", session_handle) is not None
+        and session_handle == "ss_" + session_id.removeprefix("sha256:")[:16]
+    )
+    scalar_optional_valid = (
+        all(
+            (
+                key not in account
+                or (
+                    isinstance(account[key], int)
+                    and not isinstance(account[key], bool)
+                    and account[key] >= 0
+                )
+            )
+            for key in (
+                "candidate_count",
+                "matching_page_count",
+                "returned_material",
+            )
+        )
+        and all(
+            (
+                key not in account
+                or account[key] is None
+                or (
+                    isinstance(account[key], int)
+                    and not isinstance(account[key], bool)
+                    and account[key] >= 0
+                )
+            )
+            for key in ("returned_rank_start", "returned_rank_end")
+        )
+        and all(
+            key not in account or isinstance(account[key], bool)
+            for key in ("ranking_complete", "exhausted")
+        )
+    )
+    cursor_valid = (
+        "next_cursor" not in account
+        or account["next_cursor"] is None
+        or (
+            isinstance(account["next_cursor"], str)
+            and re.fullmatch(r"sc_[0-9a-f]{16}_[0-9]+", account["next_cursor"]) is not None
+        )
+    )
+    candidates_valid = "returned_candidates" not in account or (
+        isinstance(returned_candidates, list)
+        and all(
+            isinstance(item, dict)
+            and set(item) == {"rank", "source_id", "page", "start_line", "end_line"}
+            and isinstance(item["rank"], int)
+            and not isinstance(item["rank"], bool)
+            and item["rank"] >= 1
+            and isinstance(item["source_id"], str)
+            and isinstance(item["page"], int)
+            and not isinstance(item["page"], bool)
+            and item["page"] >= 1
+            and isinstance(item["start_line"], int)
+            and not isinstance(item["start_line"], bool)
+            and item["start_line"] >= 1
+            and isinstance(item["end_line"], int)
+            and not isinstance(item["end_line"], bool)
+            and item["end_line"] >= item["start_line"]
+            and item["source_id"] in source_ids
+            and isinstance(authoritative.get(item["source_id"]), dict)
+            and item["page"] <= authoritative[item["source_id"]].get("page_count", 0)
+            for item in returned_candidates
+        )
+        and candidate_pairs == hit_pairs
+    )
     if (
         account.get("trial_id") != trial_id
         or account.get("batch_identity") != batch_identity
@@ -580,7 +682,7 @@ def _valid_search_account(
         or not query.strip()
         or not isinstance(account.get("normalized_query"), str)
         or not account["normalized_query"].strip()
-        or account["normalized_query"] != _canonical_search_text(query)
+        or account["normalized_query"] != _canonical_query_text(query)
         or not isinstance(account.get("mode"), str)
         or account["mode"] not in {"all", "phrase", "any", "prefix"}
         or not isinstance(limit, int)
@@ -590,8 +692,11 @@ def _valid_search_account(
         or isinstance(total_matches, bool)
         or total_matches < 0
         or not isinstance(truncated, bool)
+        or not session_fields_valid
+        or not scalar_optional_valid
+        or not cursor_valid
+        or not candidates_valid
         or not isinstance(sources, list)
-        or not sources
         or any(not isinstance(source_id, str) for source_id in source_ids)
         or len(set(source_ids)) != len(sources)
         or any(
@@ -607,9 +712,46 @@ def _valid_search_account(
             not isinstance(source_id, str) or not isinstance(page, int) or isinstance(page, bool)
             for source_id, page in hit_pairs
         )
-        or len(set(hit_pairs)) != len(hits)
-        or total_matches < len(hits)
-        or truncated != (total_matches > limit)
+        or account.get("returned_material") != len(hits)
+        or not isinstance(account.get("candidate_count"), int)
+        or account["candidate_count"] < len(hits)
+        or account.get("matching_page_count") != total_matches
+        or account.get("ranking_complete") is not True
+        or (
+            (not hits)
+            != (
+                account.get("returned_rank_start") is None
+                and account.get("returned_rank_end") is None
+            )
+        )
+        or (
+            bool(hits)
+            and account["returned_rank_end"] - account["returned_rank_start"] + 1 != len(hits)
+        )
+        or (
+            bool(hits)
+            and candidate_ranks
+            != list(
+                range(
+                    account["returned_rank_start"],
+                    account["returned_rank_end"] + 1,
+                )
+            )
+        )
+        or account.get("exhausted")
+        != (not hits or account["returned_rank_end"] >= account["candidate_count"])
+        or truncated != (not account.get("exhausted"))
+        or (
+            account.get("next_cursor")
+            != (
+                None
+                if account.get("exhausted")
+                else "sc_"
+                + str(account["session_id"]).removeprefix("sha256:")[:16]
+                + "_"
+                + str(account["returned_rank_end"])
+            )
+        )
         or any(
             not isinstance(hit, dict)
             or set(hit) != {"source_id", "page"}
@@ -662,6 +804,21 @@ def _valid_selected_evidence(
             "handle",
         }
     )
+    if kind == "narrative":
+        has_line_coordinates = {"start_line", "end_line"}.issubset(item)
+        if "search_session" in item and (
+            not isinstance(item.get("search_session"), str)
+            or re.fullmatch(r"sha256:[0-9a-f]{64}", item["search_session"]) is None
+            or not isinstance(item.get("candidate_rank"), int)
+            or isinstance(item.get("candidate_rank"), bool)
+            or item["candidate_rank"] < 1
+            or not has_line_coordinates
+        ):
+            return False
+        if "search_session" in item:
+            expected |= {"search_session", "candidate_rank"}
+        if has_line_coordinates:
+            expected |= {"start_line", "end_line"}
     if set(item) != expected:
         return False
     source = sources.get(str(item.get("source_id")))
@@ -687,6 +844,18 @@ def _valid_selected_evidence(
             and 0 <= item["start"] < item["end"]
             and isinstance(item.get("quote"), str)
             and bool(item["quote"])
+            and item["end"] - item["start"] == len(item["quote"])
+            and (
+                "start_line" not in item
+                or (
+                    isinstance(item["start_line"], int)
+                    and not isinstance(item["start_line"], bool)
+                    and isinstance(item["end_line"], int)
+                    and not isinstance(item["end_line"], bool)
+                    and 1 <= item["start_line"] <= item["end_line"]
+                    and len(item["quote"].splitlines()) == item["end_line"] - item["start_line"] + 1
+                )
+            )
         )
     render = item.get("render")
     region = item.get("region")

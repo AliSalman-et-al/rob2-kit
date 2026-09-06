@@ -98,6 +98,20 @@ class GuidanceAnchor(StrictModel):
     text: str = Field(min_length=1)
 
 
+class AnswerOption(StrictModel):
+    """Server-issued, self-describing selection for one signaling answer."""
+
+    id: str = Field(pattern=r"^opt_[0-9a-f]{24}$")
+    official_answer: Answer
+    proposition: Literal["true", "false", "unknown"]
+    certainty: Literal["certain", "probable", "unknown"]
+    decision_table_value: Literal["yes", "no", "no_information"]
+    meaning: str = Field(min_length=1)
+    anchor: str = Field(min_length=1)
+    activates: tuple[str, ...] = ()
+    consequence: str = Field(min_length=1)
+
+
 class OperationalQuestionGuidance(StrictModel):
     """Rob2-kit operational evidence contract for one signalling question."""
 

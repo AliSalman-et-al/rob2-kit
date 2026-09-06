@@ -67,7 +67,9 @@ def test_public_output_surface_is_closed_and_within_budget() -> None:
         for tool, schema in zip(tools, closed_schemas, strict=True)
     )
     # This is a ceiling, not a target. Smaller closed schemas are better.
-    assert total_bytes < 240_000
+    # v0.5 adds stable search-session metadata, option cards, and bounded
+    # domain comparison projections to the closed output contract.
+    assert total_bytes < 260_000
 
     by_name = {tool.name: tool for tool in tools}
     search_annotations = by_name["search_sources"].annotations
@@ -104,9 +106,9 @@ def test_public_output_surface_is_closed_and_within_budget() -> None:
     assert "start_text" not in select_description
     assert "end_text" not in select_description
     domain_tool = by_name["save_domain_judgment"]
-    assert "same answers list" in (domain_tool.description or "")
+    assert "selected options in this same save" in (domain_tool.description or "")
     answer_example = domain_tool.parameters["properties"]["answers"]["examples"][0][0]
-    assert set(answer_example) == {"question_id", "answer", "bases"}
+    assert set(answer_example) == {"question_id", "option_id", "bases"}
     assert set(answer_example["bases"][0]) == {"kind", "evidence"}
     multiple_concerns = domain_tool.parameters["properties"]["multiple_concerns"]
     assert set(multiple_concerns["examples"][0]) == {
@@ -129,7 +131,7 @@ def test_server_and_resource_metadata_are_explicit() -> None:
     # exposing the initialize result through its in-process client.
     assert initialization is None
     assert mcp.name == "rob2-kit"
-    assert mcp.version == "0.4.0"
+    assert mcp.version == "0.5.0"
     assert mcp.website_url == "https://github.com/AliSalman-et-al/rob2-kit"
     assert len(resources) == 1
     resource = resources[0]

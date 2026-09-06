@@ -213,6 +213,8 @@ def test_revised_result_binds_reported_leaves_to_its_coherent_evidence_and_final
                 "start": 0,
                 "end": len(quote),
                 "quote": quote,
+                "start_line": 1,
+                "end_line": 1,
             }
         )
 

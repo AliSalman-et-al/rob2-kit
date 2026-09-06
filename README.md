@@ -24,13 +24,13 @@ rob2 --help
 
 If `rob2` is not found, run `uv tool update-shell`, open a new terminal, and
 try `rob2 --help` again. The installed package contains the `rob2` command, the
-14-tool MCP server, and the portable `rob2-assess` skill. The v0.4 boundary
+14-tool MCP server, and the portable `rob2-assess` skill. The v0.5 boundary
 returns equivalent structured and serialized text results for MCP hosts.
 
 To install a built release artifact instead, replace `.` with the wheel path:
 
 ```powershell
-uv tool install --force dist/rob2_kit-0.4.0-py3-none-any.whl
+uv tool install --force dist/rob2_kit-0.5.0-py3-none-any.whl
 ```
 
 ## Prepare the workspace
@@ -263,7 +263,7 @@ wheel verification.
 
 ```powershell
 uv sync --frozen
-./scripts/verify_v04.ps1
+./scripts/verify_v05.ps1
 ```
 
 The verification script runs Ruff, ty, the four-worker pytest suite, runtime

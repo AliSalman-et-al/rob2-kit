@@ -12,6 +12,7 @@ from support.rob2 import (
     _assessment_workspace,
     _call,
     _domain_draft,
+    _option_for,
     _prepared_evidence,
     _proposal_args,
     _result,
@@ -63,7 +64,7 @@ def test_domain_public_shape_is_flat_and_closed() -> None:
     answer = draft["properties"]["answers"]["items"]
     assert set(answer["properties"]) == {
         "question_id",
-        "answer",
+        "option_id",
         "bases",
         "justification",
         "missing_data",
@@ -97,6 +98,59 @@ def test_domain_public_shape_is_flat_and_closed() -> None:
     assert missing_row["properties"]["basis"]["items"]["pattern"] == r"^eh_[0-9a-f]{16}$"
 
 
+def test_option_id_repairs_are_atomic_and_valid_replay_is_idempotent(tmp_path: Path) -> None:
+    workspace, evidence, revision = _assessment_workspace(tmp_path)
+    domain_id = SCIENTIFIC_PACK.domains[0].id
+    draft = _domain_draft("trial", domain_id, revision, evidence)
+
+    invalid = {**draft, "answers": [dict(item) for item in draft["answers"]]}
+    invalid["answers"][0]["option_id"] = "opt:wrong-pack"
+    repaired = _call(workspace, "save_domain_judgment", invalid)
+    assert repaired["outcome"] == "repair"
+    assert any(item["code"] == "invalid_answer_option" for item in repaired["repairs"])
+    assert _state(workspace)["revision"] == revision
+
+    saved = _call(workspace, "save_domain_judgment", draft)
+    assert saved["outcome"] == "success", saved
+    retry = _call(workspace, "save_domain_judgment", draft)
+    assert retry["outcome"] == "success"
+    assert retry["data"]["retry"] is True
+
+
+def test_stale_inactive_option_and_evidence_are_ignored(tmp_path: Path) -> None:
+    workspace, evidence, revision = _assessment_workspace(tmp_path)
+    first = _call(
+        workspace,
+        "save_domain_judgment",
+        _domain_draft("trial", "domain:randomization", revision, evidence),
+    )
+    assert first["outcome"] == "success", first
+    draft = _domain_draft(
+        "trial",
+        "domain:deviations",
+        int(first["head"]["state_revision"]),
+        evidence,
+    )
+    by_question = {item["question_id"]: item for item in draft["answers"]}
+    for question_id in (
+        "sq:deviations:participants-aware",
+        "sq:deviations:personnel-aware",
+    ):
+        by_question[question_id]["option_id"] = _option_for(question_id, "no")
+    inactive = by_question["sq:deviations:context-deviations"]
+    inactive["option_id"] = "opt_stale_inactive_option"
+    inactive["bases"] = [{"kind": "direct_support", "evidence": "eh_0000000000000000"}]
+
+    saved = _call(workspace, "save_domain_judgment", draft)
+
+    assert saved["outcome"] == "success", saved
+    stored_questions = {
+        item["question_id"]
+        for item in _stored_checkpoint(workspace, "domain:deviations")["answers"]
+    }
+    assert "sq:deviations:context-deviations" not in stored_questions
+
+
 def test_missing_data_is_typed_and_only_allowed_for_domain_3_1() -> None:
     row = {
         "arm": "intervention",
@@ -109,7 +163,7 @@ def test_missing_data_is_typed_and_only_allowed_for_domain_3_1() -> None:
     parsed = DomainAnswer.model_validate(
         {
             "question_id": "sq:missing:data-available",
-            "answer": "probably_no",
+            "option_id": _option_for("sq:missing:data-available", "probably_no"),
             "bases": [{"kind": "context", "evidence": "eh_0123456789abcdef"}],
             "missing_data": [row],
         }
@@ -120,7 +174,7 @@ def test_missing_data_is_typed_and_only_allowed_for_domain_3_1() -> None:
         DomainAnswer.model_validate(
             {
                 "question_id": "sq:missing:data-available",
-                "answer": "probably_no",
+                "option_id": _option_for("sq:missing:data-available", "probably_no"),
                 "bases": [{"kind": "context", "evidence": "eh_0123456789abcdef"}],
                 "missing_data": [row | {"basis": ["copied quote"]}],
             }
@@ -129,7 +183,7 @@ def test_missing_data_is_typed_and_only_allowed_for_domain_3_1() -> None:
         DomainAnswer.model_validate(
             {
                 "question_id": "sq:missing:evidence-unbiased",
-                "answer": "no",
+                "option_id": _option_for("sq:missing:evidence-unbiased", "no"),
                 "bases": [{"kind": "context", "evidence": "eh_0123456789abcdef"}],
                 "missing_data": [row],
             }
@@ -232,6 +286,7 @@ def test_domain_context_recovers_uncommitted_trial_evidence(tmp_path: Path) -> N
     recovered = {item["handle"]: item for item in context["evidence"]}
     assert recovered[domain_evidence["handle"]]["quote"] == domain_evidence["quote"]
     assert recovered[domain_evidence["handle"]]["identity"] == domain_evidence["identity"]
+    assert recovered[domain_evidence["handle"]]["inclusion_reason"] == "explicit_carry_forward"
 
 
 def test_domain_context_recovers_prior_checkpoint_evidence_after_cache_loss(
@@ -270,11 +325,224 @@ def test_domain_context_recovers_prior_checkpoint_evidence_after_cache_loss(
     assert saved["outcome"] == "success", saved
     (workspace / ".rob2-kit" / "derivative.sqlite3").unlink()
 
-    context = _call(workspace, "get_domain_context", {})["data"]
+    active_context = _call(workspace, "get_domain_context", {})["data"]
+    assert domain_evidence["identity"] not in {
+        item["identity"] for item in active_context["evidence"]
+    }
+    context = _call(
+        workspace,
+        "get_domain_context",
+        {"domain_id": "domain:randomization"},
+    )["data"]
 
     recovered = {item["identity"]: item for item in context["evidence"]}
     assert recovered[domain_evidence["identity"]]["handle"] == domain_evidence["handle"]
     assert recovered[domain_evidence["identity"]]["quote"] == domain_evidence["quote"]
+
+
+def test_domain_context_scopes_candidates_before_applying_the_budget(tmp_path: Path) -> None:
+    workspace = _workspace(tmp_path)
+    document = pymupdf.open()
+    page = document.new_page()
+    page.insert_text((72, 72), "decisive randomization detail")
+    for index in range(70):
+        page = document.new_page()
+        page.insert_text((72, 72), f"later deviation noise {index}")
+    (workspace / "input" / "trial" / "domain-noise.pdf").write_bytes(document.tobytes())
+    document.close()
+
+    proposal_evidence = _prepared_evidence(workspace)
+    _call(workspace, "save_proposal", _proposal_args(workspace, [_result(proposal_evidence)]))
+    _review(workspace)
+    source = next(
+        item
+        for item in _call(workspace, "list_sources", {"trial_id": "trial"})["data"]["sources"]
+        if item["label"] == "domain-noise.pdf"
+    )
+    decisive = _call(
+        workspace,
+        "search_sources",
+        {
+            "trial_id": "trial",
+            "source_id": source["id"],
+            "query": "decisive randomization detail",
+            "mode": "all",
+            "limit": 1,
+        },
+    )["data"]["hits"][0]
+    revision = int(_call(workspace, "get_domain_context", {})["head"]["state_revision"])
+    saved = _call(
+        workspace,
+        "save_domain_judgment",
+        _domain_draft("trial", "domain:randomization", revision, proposal_evidence),
+    )
+    assert saved["outcome"] == "success", saved
+    noise = _call(
+        workspace,
+        "search_sources",
+        {
+            "trial_id": "trial",
+            "source_id": source["id"],
+            "query": "later deviation noise",
+            "mode": "all",
+            "limit": 100,
+        },
+    )["data"]
+    assert len(noise["hits"]) == 70
+
+    context = _call(
+        workspace,
+        "get_domain_context",
+        {"domain_id": "domain:randomization"},
+    )["data"]
+    candidates = {
+        item["handle"]: item
+        for item in context["evidence"]
+        if item.get("inclusion_reason") == "active_domain_candidate"
+    }
+    assert decisive["passage_ref"] in candidates
+    assert candidates[decisive["passage_ref"]]["domain_id"] == "domain:randomization"
+    assert not ({hit["passage_ref"] for hit in noise["hits"]} & candidates.keys())
+    candidate_group = next(
+        item
+        for item in context["evidence_workspace"]["groups"]
+        if item["inclusion_reason"] == "active_domain_candidate"
+    )
+    assert decisive["passage_ref"] in candidate_group["evidence_handles"]
+    assert set(candidate_group["question_ids"]) == {
+        item.id for item in SCIENTIFIC_PACK.questions if item.domain_id == "domain:randomization"
+    }
+
+
+def test_domain_context_continuation_reaches_omissions_across_sessions(tmp_path: Path) -> None:
+    workspace = _workspace(tmp_path)
+    document = pymupdf.open()
+    for query in ("alpha candidate", "beta candidate"):
+        for index in range(33):
+            page = document.new_page()
+            page.insert_text((72, 72), f"{query} {index}")
+    (workspace / "input" / "trial" / "many-candidates.pdf").write_bytes(document.tobytes())
+    document.close()
+
+    proposal_evidence = _prepared_evidence(workspace)
+    _call(workspace, "save_proposal", _proposal_args(workspace, [_result(proposal_evidence)]))
+    _review(workspace)
+    source = next(
+        item
+        for item in _call(workspace, "list_sources", {"trial_id": "trial"})["data"]["sources"]
+        if item["label"] == "many-candidates.pdf"
+    )
+    for query in ("alpha candidate", "beta candidate"):
+        search = _call(
+            workspace,
+            "search_sources",
+            {
+                "trial_id": "trial",
+                "source_id": source["id"],
+                "query": query,
+                "mode": "all",
+                "limit": 100,
+            },
+        )["data"]
+        assert len(search["hits"]) == 33
+
+    context = _call(workspace, "get_domain_context", {})["data"]
+    evidence_workspace = context["evidence_workspace"]
+    assert evidence_workspace["omitted_count"] == 2
+    assert evidence_workspace["omitted_by_category"]["active_domain_candidate"] == 2
+    action = evidence_workspace["continuation"]
+    assert action is not None
+
+    continued = _call(workspace, action.pop("operation"), action)
+    assert continued["outcome"] == "success", continued
+    assert continued["data"]["hits"]
+
+
+def test_domain_context_continuation_reaches_unreturned_session_candidates(
+    tmp_path: Path,
+) -> None:
+    workspace = _workspace(tmp_path / "captured")
+    trial = workspace / "input" / "trial"
+    document = pymupdf.open()
+    for index in range(70):
+        page = document.new_page()
+        page.insert_text((72, 72), f"deep candidate {index}")
+    (trial / "deep.pdf").write_bytes(document.tobytes())
+    document.close()
+    proposal_evidence = _prepared_evidence(workspace)
+    _call(workspace, "save_proposal", _proposal_args(workspace, [_result(proposal_evidence)]))
+    _review(workspace)
+    source = next(
+        item
+        for item in _call(workspace, "list_sources", {"trial_id": "trial"})["data"]["sources"]
+        if item["label"] == "deep.pdf"
+    )
+
+    first = _call(
+        workspace,
+        "search_sources",
+        {
+            "trial_id": "trial",
+            "source_id": source["id"],
+            "query": "deep candidate",
+            "mode": "all",
+            "limit": 1,
+        },
+    )["data"]
+    assert first["candidate_count"] == 70
+
+    context = _call(workspace, "get_domain_context", {})["data"]
+    evidence_workspace = context["evidence_workspace"]
+    assert evidence_workspace["omitted_by_category"]["active_domain_candidate"] == 69
+    action = dict(evidence_workspace["continuation"])
+    continued = _call(workspace, action.pop("operation"), action)
+    assert continued["data"]["hits"][0]["rank"] == 2
+
+
+def test_explicit_carry_forward_has_budget_priority_and_exact_read_continuation(
+    tmp_path: Path,
+) -> None:
+    workspace = _workspace(tmp_path)
+    extra = workspace / "input" / "trial" / "explicit.txt"
+    extra.write_text(
+        "".join(f"explicit evidence {index}\n" for index in range(65)), encoding="utf-8"
+    )
+    proposal_evidence = _prepared_evidence(workspace)
+    _call(workspace, "save_proposal", _proposal_args(workspace, [_result(proposal_evidence)]))
+    _review(workspace)
+    source = next(
+        item
+        for item in _call(workspace, "list_sources", {"trial_id": "trial"})["data"]["sources"]
+        if item["label"] == "explicit.txt"
+    )
+    for line in range(1, 66):
+        selected = _call(
+            workspace,
+            "select_text_evidence",
+            {
+                "trial_id": "trial",
+                "source_id": source["id"],
+                "page": 1,
+                "start_line": line,
+                "end_line": line,
+            },
+        )
+        assert selected["outcome"] == "success"
+
+    context = _call(workspace, "get_domain_context", {})["data"]
+    workspace_data = context["evidence_workspace"]
+    explicit = next(
+        group
+        for group in workspace_data["groups"]
+        if group["inclusion_reason"] == "explicit_carry_forward"
+    )
+    assert len(explicit["evidence_handles"]) == 64
+    assert workspace_data["omitted_by_category"]["explicit_carry_forward"] == 1
+    action = dict(workspace_data["continuation"])
+    assert action["operation"] == "read_pages"
+    assert action["windows"][0]["start_line"] == 65
+    continued = _call(workspace, action.pop("operation"), action)
+    assert continued["outcome"] == "success"
 
 
 def test_domain_context_does_not_expose_another_trials_uncommitted_evidence(
@@ -358,14 +626,13 @@ def test_domain_context_result_projection_omits_canonical_bindings(tmp_path: Pat
     assert set(question_card) == {
         "id",
         "wording",
-        "allowed_answers",
+        "options",
         "active",
         "activation",
         "official_guidance",
         "source_locator",
         "decision_rule",
         "evidence_needed",
-        "answer_anchors",
         "no_information_rule",
         "considerations",
         "invalid_shortcuts",
@@ -400,6 +667,9 @@ def test_domain_context_result_projection_omits_canonical_bindings(tmp_path: Pat
     assert pack_question.guidance.operational.considerations == tuple(
         question_card["considerations"]
     )
+    assert {item["id"] for item in data["questions"]} == {
+        item.id for item in SCIENTIFIC_PACK.questions if item.domain_id == data["domain_id"]
+    }
 
 
 def test_domain_rejects_unknown_answer_question(tmp_path: Path) -> None:
@@ -412,7 +682,7 @@ def test_domain_rejects_unknown_answer_question(tmp_path: Path) -> None:
     receipt = _call_raw(workspace, draft)
     _assert_repairs(receipt)
     codes = {item["code"] for item in receipt["repairs"]}
-    assert "invalid_answer" in codes
+    assert "invalid_answer_question" in codes
     assert "answers_must_match_active_questions" in codes
 
 
@@ -461,7 +731,7 @@ def test_probable_answers_accept_limitation_but_firm_answers_require_direct_evid
         "data"
     ]["search_receipt"]
     probable = _domain_draft("trial", "domain:randomization", revision, search_receipt=receipt)
-    probable["answers"][0]["answer"] = probable_answer
+    probable["answers"][0]["option_id"] = _option_for("sq:randomization:sequence", probable_answer)
     probable["answers"][0]["bases"] = [
         {
             "kind": "limitation",
@@ -478,7 +748,7 @@ def test_probable_answers_accept_limitation_but_firm_answers_require_direct_evid
         accepted["head"]["state_revision"],
         search_receipt=receipt,
     )
-    firm["answers"][0]["answer"] = firm_answer
+    firm["answers"][0]["option_id"] = _option_for("sq:deviations:participants-aware", firm_answer)
     repaired = _call_raw(workspace, firm)
     _assert_repairs(repaired)
     repair = next(
@@ -511,6 +781,11 @@ def test_domain_two_judgment_with_itt_premise_advances_to_domain_three(
     )
     assert first["outcome"] == "success", first
     revision = int(first["head"]["state_revision"])
+    branch_context = _call(workspace, "get_domain_context", {})["data"]
+    assert {item["id"] for item in branch_context["questions"]} == {
+        item.id for item in SCIENTIFIC_PACK.questions if item.domain_id == "domain:deviations"
+    }
+    assert any(not item["active"] for item in branch_context["questions"])
     itt = _call(
         workspace,
         "select_text_evidence",
@@ -532,7 +807,7 @@ def test_domain_two_judgment_with_itt_premise_advances_to_domain_three(
             "sq:deviations:personnel-aware",
             "sq:deviations:context-deviations",
         }:
-            answer["answer"] = "no_information"
+            answer["option_id"] = _option_for(answer["question_id"], "no_information")
             answer["bases"] = [
                 {
                     "kind": "limitation",
@@ -541,7 +816,7 @@ def test_domain_two_judgment_with_itt_premise_advances_to_domain_three(
                 }
             ]
         elif answer["question_id"] == "sq:deviations:appropriate-analysis":
-            answer["answer"] = appropriate_answer
+            answer["option_id"] = _option_for(answer["question_id"], appropriate_answer)
             answer["bases"] = [
                 {
                     "kind": "direct_support",

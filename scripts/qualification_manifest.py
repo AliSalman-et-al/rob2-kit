@@ -10,7 +10,15 @@ import sys
 from pathlib import Path
 from typing import Any
 
+from rob2_kit.evaluation.harness import (
+    MANIFEST_SCHEMA,
+)
+from rob2_kit.evaluation.harness import (
+    validate_manifest as _validate_evaluation_manifest,
+)
+
 SCHEMA = "rob2-kit.retained-evidence.v0.4"
+EVALUATION_SCHEMA = MANIFEST_SCHEMA
 SHA256 = re.compile(r"^sha256:[0-9a-f]{64}$")
 FORBIDDEN = {
     "path",
@@ -48,6 +56,22 @@ RESTART_PROOF = {
     "after_source_set_identity",
     "passed",
 }
+
+
+def validate_evaluation_manifest(manifest: object) -> list[str]:
+    """Validate the privacy-safe development/holdout join manifest.
+
+    This is intentionally independent of retained release evidence: expert
+    annotations and source text stay in restricted stores, while this manifest
+    contains only immutable fingerprints and versioned run dimensions.
+    """
+    if not isinstance(manifest, dict):
+        return ["evaluation manifest must be an object"]
+    try:
+        _validate_evaluation_manifest(manifest)
+    except ValueError as error:
+        return [str(error)]
+    return []
 
 
 def _private(value: Any, at: str = "$") -> list[str]:
@@ -247,7 +271,11 @@ def main(argv: list[str] | None = None) -> int:
     except (OSError, json.JSONDecodeError) as error:
         print(error, file=sys.stderr)
         return 2
-    errors = validate(manifest)
+    errors = (
+        validate_evaluation_manifest(manifest)
+        if isinstance(manifest, dict) and manifest.get("schema") == EVALUATION_SCHEMA
+        else validate(manifest)
+    )
     if errors:
         print("qualification rejected: " + "; ".join(errors), file=sys.stderr)
         return 1
@@ -257,7 +285,11 @@ def main(argv: list[str] | None = None) -> int:
         )
         print("qualification manifest generated")
     else:
-        print("qualification evidence validated; " + manifest["verdict"])
+        print(
+            "evaluation manifest validated"
+            if manifest.get("schema") == EVALUATION_SCHEMA
+            else "qualification evidence validated; " + manifest["verdict"]
+        )
     return 0
 
 

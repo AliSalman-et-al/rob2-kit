@@ -1,7 +1,7 @@
 # Assess randomization
 
 Use this reference for Domain 1. The returned question cards supply the exact
-wording, allowed answers, guidance, and activation rules.
+wording, server-issued options, guidance, and activation rules.
 
 Keep three propositions separate:
 

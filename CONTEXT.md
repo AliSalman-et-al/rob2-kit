@@ -82,8 +82,13 @@ workflow identities. The immutable captured bytes remain available for audit.
 An **Evidence handle** is a short, Trial-scoped transport pointer to selected
 text or a selected visual region. Canonical Evidence retains Source identity,
 page, exact quote or transcription, and applicable render provenance. Search
-hits are navigation results, not Evidence. A no-hit search receipt documents the
-search performed; it does not prove scientific absence.
+hits are navigation results, not Evidence. Each search creates an immutable,
+Trial- and projection-bound candidate ranking. Bounded responses carry stable
+candidate ranks and an opaque cursor so lower-ranked passages can be inspected
+without rerunning retrieval. The Source-diverse display order is that one
+stable rank everywhere, and the active Domain is associated with the complete
+session even before lower candidates are returned. A no-hit search receipt documents the search
+performed; it does not prove scientific absence.
 
 ## Result model
 
@@ -127,7 +132,11 @@ question's full nested official and operational guidance for authoritative
 assessment and artifact/audit use. `get_domain_context` returns a compact typed
 question-card projection with the full official excerpt and locator plus the
 actionable operational fields needed to answer that question. Operational guidance
-supplements the official source; it never replaces or impersonates it. Each active
+supplements the official source; it never replaces or impersonates it. Cards
+replace bare answer strings with server-issued options that bind the exact
+question and pack version to the official code, literal proposition, certainty,
+anchor, branch activation, and decision-table value. The caller submits only
+`option_id`; the checkpoint retains only the official RoB 2 answer. Each active
 answer has at least one typed basis: a selected Evidence handle, a scoped
 absence receipt, or an explicit limitation. For selected Evidence, the server
 derives the exact quote or transcription stored in the checkpoint; the caller
@@ -142,6 +151,18 @@ ignores and does not commit extra inactive branch answers, but still requires
 every active answer. The caller evaluates predicates transitively against
 earlier answers in the same Domain save rather than discovering one branch per
 repair cycle.
+
+The Domain Evidence workspace has separate mandatory Result, active-checkpoint,
+and contradiction tiers. Disposable search candidates are included only when
+their immutable session was associated with the requested Trial and Domain;
+other-Domain search fragments are excluded before the 64-candidate budget is
+applied. Typed groups expose inclusion reasons and question scope, and any
+omission carries an executable session cursor. Explicitly selected unscoped
+passages take priority as carry-forward material, with exact read continuation
+if they exceed the disposable budget. D2, D3, and D5 additionally
+receive read-only comparison cards: the server fills only known Result scope,
+Source provenance, and compatible D3 arithmetic, leaving causal, follow-up,
+censoring, and plan-correspondence classifications to the host.
 
 A **Domain checkpoint** is an immutable, content-addressed record of the active
 answers, inactive questions, Evidence uses, search accounts, deterministic
@@ -186,7 +207,7 @@ change Canonical records or scientific judgments.
 
 ## Public boundary
 
-The v0.4 FastMCP surface preserves exactly 14 strictly typed tools:
+The v0.5 FastMCP surface preserves exactly 14 strictly typed tools:
 
 `prepare_batch`, `get_status`, `list_sources`, `search_sources`, `read_pages`,
 `select_text_evidence`, `render_page`, `select_visual_evidence`, `save_proposal`,

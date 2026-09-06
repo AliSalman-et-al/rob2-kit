@@ -1,0 +1,161 @@
+{
+  "schema": "rob2-kit.contrast-fixtures.v0.5",
+  "purpose": "development_only",
+  "reference_status": "provisional_guidance_transcription_requires_independent_expert_review",
+  "guidance": {
+    "id": "cochrane-rob2-2019",
+    "version": "22 August 2019",
+    "source_locators": [
+      "Full guidance pp. 28-29, Box 6",
+      "Full guidance pp. 45-46, Box 8",
+      "Full guidance pp. 63-65, Box 11"
+    ]
+  },
+  "experimental_arms": [
+    "current_domain_context",
+    "assembled_passages",
+    "assembled_passages_with_comparison_layout",
+    "assembled_passages_with_minimal_typed_classification"
+  ],
+  "cases": [
+    {
+      "case_id": "d2-ordinary-nonadherence",
+      "pair_id": "d2-trial-context-cause",
+      "variant": "ordinary",
+      "domain_id": "domain:deviations",
+      "question_id": "sq:deviations:context-deviations",
+      "result_scope": "symptom score at week 12 in all randomized participants",
+      "passages": [
+        {"passage_id": "passage:d2:ordinary:open-label", "source_role": "main_article", "text": "The trial was open label and participants and treating clinicians knew the assigned intervention.", "hard_negative": true},
+        {"passage_id": "passage:d2:ordinary:conduct", "source_role": "main_article", "text": "One participant independently stopped study tablets because of nausea; outcome follow-up continued and trial staff did not direct a treatment change.", "hard_negative": false},
+        {"passage_id": "passage:d2:ordinary:protocol", "source_role": "protocol", "text": "The protocol permits temporary interruption or discontinuation for toxicity while outcome follow-up continues.", "hard_negative": false}
+      ],
+      "premises": [
+        {"premise_id": "premise:d2:ordinary:cause", "status": "full", "acceptable_evidence_sets": [["passage:d2:ordinary:conduct"]], "rationale": "The conduct passage distinguishes an ordinary participant choice from a change caused by trial personnel or trial procedures."},
+        {"premise_id": "premise:d2:ordinary:protocol-consistency", "status": "full", "acceptable_evidence_sets": [["passage:d2:ordinary:conduct", "passage:d2:ordinary:protocol"]], "rationale": "The pair establishes the observed interruption and that toxicity interruption was protocol permitted."}
+      ],
+      "expected_answer_path": {
+        "sq:deviations:participants-aware": "yes",
+        "sq:deviations:personnel-aware": "yes",
+        "sq:deviations:context-deviations": "probably_no",
+        "sq:deviations:appropriate-analysis": "yes"
+      },
+      "expected_judgment": "low"
+    },
+    {
+      "case_id": "d2-differential-trial-caused-switch",
+      "pair_id": "d2-trial-context-cause",
+      "variant": "trial_context",
+      "domain_id": "domain:deviations",
+      "question_id": "sq:deviations:context-deviations",
+      "result_scope": "symptom score at week 12 in all randomized participants",
+      "passages": [
+        {"passage_id": "passage:d2:trial:open-label", "source_role": "main_article", "text": "The trial was open label and participants and treating clinicians knew the assigned intervention.", "hard_negative": true},
+        {"passage_id": "passage:d2:trial:conduct", "source_role": "main_article", "text": "Because clinicians expected toxicity, trial staff scheduled extra monitoring only in the experimental group and directed twelve participants to switch to a prohibited therapy before week 12.", "hard_negative": false},
+        {"passage_id": "passage:d2:trial:imbalance", "source_role": "supplement", "text": "The prohibited switch occurred in twelve experimental-group participants and no control-group participants, before measurement of the week 12 symptom score.", "hard_negative": false}
+      ],
+      "premises": [
+        {"premise_id": "premise:d2:trial:cause", "status": "full", "acceptable_evidence_sets": [["passage:d2:trial:conduct"]], "rationale": "The passage explicitly links the protocol-inconsistent switch to assignment-aware trial staff and trial-specific monitoring."},
+        {"premise_id": "premise:d2:trial:outcome-balance", "status": "full", "acceptable_evidence_sets": [["passage:d2:trial:conduct", "passage:d2:trial:imbalance"]], "rationale": "The passages locate the differential change before the approved outcome time point and report its arm imbalance."}
+      ],
+      "expected_answer_path": {
+        "sq:deviations:participants-aware": "yes",
+        "sq:deviations:personnel-aware": "yes",
+        "sq:deviations:context-deviations": "yes",
+        "sq:deviations:affected-outcome": "probably_yes",
+        "sq:deviations:balanced": "no",
+        "sq:deviations:appropriate-analysis": "yes"
+      },
+      "expected_judgment": "high"
+    },
+    {
+      "case_id": "d3-discontinued-followup-complete",
+      "pair_id": "d3-outcome-availability",
+      "variant": "followup_observed",
+      "domain_id": "domain:missing",
+      "question_id": "sq:missing:data-available",
+      "result_scope": "relapse by day 90 in all randomized participants",
+      "passages": [
+        {"passage_id": "passage:d3:complete:discontinuation", "source_role": "main_article", "text": "Twelve participants discontinued assigned treatment before day 90.", "hard_negative": true},
+        {"passage_id": "passage:d3:complete:followup", "source_role": "main_article", "text": "Relapse status at day 90 was obtained for all 200 randomized participants, including all twelve who discontinued treatment.", "hard_negative": false},
+        {"passage_id": "passage:d3:complete:censoring", "source_role": "sap", "text": "Administrative censoring begins after the prespecified day 90 endpoint and does not remove day 90 relapse observations.", "hard_negative": false}
+      ],
+      "premises": [
+        {"premise_id": "premise:d3:complete:availability", "status": "full", "acceptable_evidence_sets": [["passage:d3:complete:followup"]], "rationale": "Treatment discontinuation is not missing outcome data when the approved outcome remains observed."},
+        {"premise_id": "premise:d3:complete:censoring", "status": "full", "acceptable_evidence_sets": [["passage:d3:complete:censoring"]], "rationale": "Administrative censoring after the compatible endpoint does not imply missing day 90 outcome data."}
+      ],
+      "expected_answer_path": {"sq:missing:data-available": "yes"},
+      "expected_judgment": "low"
+    },
+    {
+      "case_id": "d3-discontinued-outcomes-missing",
+      "pair_id": "d3-outcome-availability",
+      "variant": "followup_missing",
+      "domain_id": "domain:missing",
+      "question_id": "sq:missing:data-available",
+      "result_scope": "relapse by day 90 in all randomized participants",
+      "passages": [
+        {"passage_id": "passage:d3:missing:discontinuation", "source_role": "main_article", "text": "Twelve participants discontinued assigned treatment before day 90.", "hard_negative": true},
+        {"passage_id": "passage:d3:missing:followup", "source_role": "main_article", "text": "The twelve participants who discontinued because their symptoms worsened were lost to follow-up and had no recorded relapse status at day 90.", "hard_negative": false},
+        {"passage_id": "passage:d3:missing:counts", "source_role": "supplement", "text": "Day 90 relapse status was observed for 188 of 200 randomized participants; all twelve unavailable outcomes were in participants who withdrew after symptom worsening.", "hard_negative": false}
+      ],
+      "premises": [
+        {"premise_id": "premise:d3:missing:availability", "status": "full", "acceptable_evidence_sets": [["passage:d3:missing:followup"], ["passage:d3:missing:counts"]], "rationale": "Either passage establishes that the approved day 90 outcome is actually unavailable, not merely that treatment stopped."},
+        {"premise_id": "premise:d3:missing:true-value", "status": "full", "acceptable_evidence_sets": [["passage:d3:missing:followup", "passage:d3:missing:counts"]], "rationale": "The withdrawal reason links missingness to worsening symptoms and therefore to the possible true outcome value."}
+      ],
+      "expected_answer_path": {
+        "sq:missing:data-available": "probably_no",
+        "sq:missing:evidence-unbiased": "probably_no",
+        "sq:missing:true-value-dependent": "yes",
+        "sq:missing:likely-dependent": "probably_yes"
+      },
+      "expected_judgment": "high"
+    },
+    {
+      "case_id": "d5-timely-matching-sap",
+      "pair_id": "d5-plan-correspondence",
+      "variant": "timely_exact",
+      "domain_id": "domain:selection",
+      "question_id": "sq:selection:prespecified-analysis",
+      "result_scope": "relapse by day 90 in all randomized participants using a risk ratio",
+      "passages": [
+        {"passage_id": "passage:d5:timely:existence", "source_role": "main_article", "text": "A statistical analysis plan was prepared before analysis.", "hard_negative": true},
+        {"passage_id": "passage:d5:timely:plan", "source_role": "sap", "text": "Version 1.0, signed before database unblinding, specifies relapse by day 90, all randomized participants, risk ratio estimation, and multiple imputation as the missing-data method.", "hard_negative": false},
+        {"passage_id": "passage:d5:timely:report", "source_role": "main_article", "text": "The reported result is the day 90 relapse risk ratio in all randomized participants using the prespecified multiple-imputation analysis.", "hard_negative": false}
+      ],
+      "premises": [
+        {"premise_id": "premise:d5:timely:finalization", "status": "full", "acceptable_evidence_sets": [["passage:d5:timely:plan"]], "rationale": "The exact analysis detail and finalization before unblinded outcome access are both stated."},
+        {"premise_id": "premise:d5:timely:correspondence", "status": "full", "acceptable_evidence_sets": [["passage:d5:timely:plan", "passage:d5:timely:report"]], "rationale": "The plan and report match on endpoint, time point, population, estimator, and missing-data method."}
+      ],
+      "expected_answer_path": {
+        "sq:selection:prespecified-analysis": "yes",
+        "sq:selection:multiple-measurements": "probably_no",
+        "sq:selection:multiple-analyses": "probably_no"
+      },
+      "expected_judgment": "low"
+    },
+    {
+      "case_id": "d5-vague-undated-plan",
+      "pair_id": "d5-plan-correspondence",
+      "variant": "timing_and_detail_unknown",
+      "domain_id": "domain:selection",
+      "question_id": "sq:selection:prespecified-analysis",
+      "result_scope": "relapse by day 90 in all randomized participants using a risk ratio",
+      "passages": [
+        {"passage_id": "passage:d5:unclear:existence", "source_role": "main_article", "text": "A statistical analysis plan was prepared before analysis.", "hard_negative": true},
+        {"passage_id": "passage:d5:unclear:plan", "source_role": "sap", "text": "The undated plan states only that outcomes will be compared between groups and does not identify the time point, population, estimator, or missing-data method.", "hard_negative": false},
+        {"passage_id": "passage:d5:unclear:report", "source_role": "main_article", "text": "The report presents several relapse time points and adjusted and unadjusted estimates without stating which analysis was selected before unblinded outcome data were available.", "hard_negative": false}
+      ],
+      "premises": [
+        {"premise_id": "premise:d5:unclear:finalization", "status": "genuinely_unavailable", "acceptable_evidence_sets": [], "rationale": "Plan existence alone does not establish exact detail or finalization before unblinded outcome access."},
+        {"premise_id": "premise:d5:unclear:correspondence", "status": "unsupported", "acceptable_evidence_sets": [], "rationale": "The available plan cannot be matched to the reported population, time point, estimator, or missing-data method."}
+      ],
+      "expected_answer_path": {
+        "sq:selection:prespecified-analysis": "no_information",
+        "sq:selection:multiple-measurements": "no_information",
+        "sq:selection:multiple-analyses": "no_information"
+      },
+      "expected_judgment": "some_concerns"
+    }
+  ]
+}

@@ -634,7 +634,8 @@ def test_assessment_skill_preserves_result_choice_and_completion_guards() -> Non
     assert "`ready_to_finalize` is not completion" in instructions
     assert "`probably_no` or `no`" in instructions
     assert "Do not fabricate direct support" in instructions
-    assert "Does the answer code literally answer the question as worded?" in instructions
+    assert "Select the option whose literal meaning answers the exact question" in instructions
+    assert "add a confirmation round trip" in instructions
     assert "Was allocation concealed until participants were enrolled and assigned?" in instructions
 
     terminal_description = _tool_description("request_trial_terminal")
@@ -655,7 +656,9 @@ def test_assessment_skill_preserves_rigor_across_context_compaction() -> None:
     assert "Do not recreate completed work from memory" in normalized
     assert "Save each Domain before moving on" in normalized
     assert "fifth accepted checkpoint freezes the Trial snapshot" in normalized
-    assert "When `head.next_action.operation` is `finalize_batch`, call it immediately" in normalized
+    assert (
+        "When `head.next_action.operation` is `finalize_batch`, call it immediately" in normalized
+    )
 
 
 def test_result_relation_schema_has_only_visible_non_exact_categories() -> None:
@@ -700,6 +703,15 @@ def test_search_contract_exposes_match_summary_and_render_defaults_to_pixels() -
         "truncated",
         "condition",
         "search_receipt",
+        "session_id",
+        "session_handle",
+        "matching_page_count",
+        "candidate_count",
+        "ranking_complete",
+        "returned_rank_start",
+        "returned_rank_end",
+        "next_cursor",
+        "exhausted",
     }
     hit_schema = data_objects[0]["properties"]["hits"]["items"]
     assert set(hit_schema["properties"]) == {
@@ -711,6 +723,9 @@ def test_search_contract_exposes_match_summary_and_render_defaults_to_pixels() -
         "end_line",
         "preview",
         "passage_ref",
+        "rank",
+        "within_source_rank",
+        "range",
     }
     assert data_objects[0]["properties"]["search_receipt"]["pattern"] == r"^sr_[0-9a-f]{16}$"
     search_description = _tool_description("search_sources")
@@ -814,7 +829,7 @@ def test_save_domain_judgment_schema_is_closed_and_typed() -> None:
     assert answers["additionalProperties"] is False
     assert set(answers["properties"]) == {
         "question_id",
-        "answer",
+        "option_id",
         "bases",
         "justification",
         "missing_data",
