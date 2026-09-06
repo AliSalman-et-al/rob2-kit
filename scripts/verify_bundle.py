@@ -516,12 +516,8 @@ def _valid_search_account(
         return False
     if len(hit_pairs) > limit:
         return False
-    source_rank = {source_id: index for index, source_id in enumerate(source_ids)}
-    hit_source_ranks = [source_rank.get(source_id) for source_id, _page in hit_pairs]
-    if any(rank is None for rank in hit_source_ranks):
-        return False
-    if hit_source_ranks != sorted([rank for rank in hit_source_ranks if rank is not None]):
-        return False
+    # Search deliberately interleaves Sources. Membership, coordinates,
+    # uniqueness, and the bound are verified above; receipt identity binds order.
     return account.get("condition") in {None, "no_hits"}
 
 

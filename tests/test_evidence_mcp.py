@@ -138,6 +138,24 @@ def test_search_interleaves_sources_then_uses_fts_bm25_within_source(
         (article["id"], int(article_ranks[1][0])),
         (article["id"], int(article_ranks[2][0])),
     ]
+    receipt = _search_receipt(workspace, result["data"]["search_receipt"])
+    state = _state(workspace)
+    authoritative = {source["id"]: source for source in state["batch"]["trials"][0]["sources"]}
+    assert finalization._valid_search_account(
+        receipt,
+        "trial",
+        state["batch"]["identity"],
+        authoritative,
+        _identity,
+    )
+    standalone = runpy.run_path("scripts/verify_bundle.py")
+    assert standalone["_valid_search_account"](
+        receipt,
+        "trial",
+        state["batch"]["identity"],
+        authoritative,
+        _identity,
+    )
 
 
 def test_search_reserves_one_hit_per_matching_source_within_limit(tmp_path: Path) -> None:
