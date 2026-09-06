@@ -2,6 +2,8 @@
 
 Status: accepted
 
+Amended for the v0.5 successor contract by issues 283-286.
+
 ## Context
 
 The v0.3 boundary exposed exact Evidence, but ordinary Proposal and Domain work
@@ -23,8 +25,23 @@ frozen v0.3 contract.
   answers, assessor identity, conduct from a plan, or semantic entailment.
 - Make `get_domain_context` the recovery projection. It returns the approved
   target, current checkpoint, canonical Evidence from current and earlier
-  checkpoints, and at most the 64 most recently prepared passages for that
-  Trial. It never exposes another Trial's Evidence.
+  checkpoints, and a bounded question/Domain-oriented workspace of disposable
+  candidates. Approved Result and checkpoint Evidence are mandatory tiers and
+  are never ranked against disposable candidates. Each disposable item carries
+  a reproducible inclusion reason; omitted candidates remain reachable through
+  their immutable search session/cursor. It never exposes another Trial's
+  Evidence.
+- Search is split into a complete deterministic derivative ranking and bounded
+  rendering. A session identity binds Trial, projection identities, normalized
+  query, lexical mode, and ranking versions, but excludes display limit,
+  workflow revision, creation time, and viewed range. The Source-diverse order
+  is the public candidate rank used by cache rows, receipts, cursors, and hits;
+  there is no second presentation rank. Cursors are opaque,
+  stable, and stale when the projection/configuration no longer matches.
+- Signalling cards expose server-issued self-describing answer options bound to
+  the pack version, exact question, official answer, proposition, certainty,
+  anchor, and decision-table consequence. Public submissions select one option
+  identity; canonical checkpoints continue to store official RoB 2 codes.
 - Add an optional concise justification to each Domain answer. Add typed
   participant-flow rows only to question 3.1; the server computes comparable
   missing counts and fractions and preserves conflicts without choosing a
@@ -35,6 +52,23 @@ frozen v0.3 contract.
   Review and call the same approval implementation.
 - Return one normalized result as both structured content and compact JSON text.
   Image content remains a separate binary block.
+
+## Domain projection ownership
+
+| Tier | Inclusion and ownership |
+| --- | --- |
+| Approved Result Evidence | Always included from the approved canonical Result. |
+| Active checkpoint Evidence | Always included from the requested Domain checkpoint; Evidence from other Domain checkpoints is not copied into this context. |
+| Active checkpoint contradictions | Always included and indexed separately as contradictions. |
+| Active-Domain search candidates | Ranked deterministically by stable candidate rank and session identity, then bounded to 64 items. |
+| Explicit carry-forward | Exact passages selected outside a search session take priority within the 64-item disposable budget; overflow remains reachable by an exact read continuation. |
+| Other-Domain search candidates | Excluded. They remain reachable through their original immutable session while derivative session state exists. |
+
+Canonical tiers never compete with the candidate budget. The response groups
+Evidence handles by inclusion reason and question scope, reports every omitted
+candidate, and supplies an executable search cursor whenever an associated
+candidate is omitted. Loss of disposable state never invalidates canonical
+Result or checkpoint Evidence.
 
 ## Input ownership
 
@@ -47,7 +81,7 @@ frozen v0.3 contract.
 | Target measurement, timing, groups, population and effect measure | Host interpretation reviewed by researcher | Proposal Result card |
 | Source-reported endpoint labels and quantitative values | Host selects; server binds to exact Evidence | Proposal Result card plus `passage_refs` |
 | Proposal approval | Researcher through client elicitation or CLI | Never a model-authored tool argument |
-| Active signaling answers and evidence relationships | Host scientific judgment | `answers[].answer` and `answers[].bases` |
+| Active signaling answers and evidence relationships | Host scientific judgment | `answers[].option_id` and `answers[].bases` |
 | Active branches, Domain/overall judgments and checkpoint provenance | Server | Derived, never repeated by caller |
 | D3 comparable flow scope and reported counts | Host interprets scope; server computes arithmetic and reuses answer Evidence as row provenance | Optional `answers[].missing_data` on 3.1 only |
 | Scientific explanation and unresolved facts | Host | Optional `answers[].justification` |
@@ -74,7 +108,7 @@ field from the canonical Result and retains the resolved Evidence separately.
 ### Simple Domain
 
 ```json
-{"trial_id":"trial-a","domain_id":"domain:randomization","expected_revision":3,"answers":[{"question_id":"sq:randomization:sequence","answer":"probably_yes","bases":[{"kind":"direct_support","evidence":"eh_0123456789abcdef"}],"justification":"The cited passage describes a computer-generated sequence; concealment is addressed separately."}]}
+{"trial_id":"trial-a","domain_id":"domain:randomization","expected_revision":3,"answers":[{"question_id":"sq:randomization:sequence","option_id":"opt_0123456789abcdef01234567","bases":[{"kind":"direct_support","evidence":"eh_0123456789abcdef"}],"justification":"The cited passage describes a computer-generated sequence; concealment is addressed separately."}]}
 ```
 
 ### Multi-document Domain

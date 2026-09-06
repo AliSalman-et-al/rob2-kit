@@ -35,7 +35,7 @@ def _load_contract() -> dict[str, Any]:
         "examples",
     }:
         raise ValueError("public contract shape differs")
-    if value["contract_version"] != "0.4.0":
+    if value["contract_version"] != "0.5.0":
         raise ValueError("public contract version differs")
     expected_order = [
         "prepare_batch",
@@ -240,10 +240,27 @@ def _stdio_domain_answers(
             continue
         if question_ids is not None and question.get("id") not in question_ids:
             continue
-        allowed = question.get("allowed_answers", [])
-        if not isinstance(allowed, list):
-            raise ValueError("stdio Domain question answers are malformed")
-        answer = "no_information" if "no_information" in allowed else "probably_no"
+        options = question.get("options", [])
+        if not isinstance(options, list):
+            raise ValueError("stdio Domain question options are malformed")
+        selected = next(
+            (
+                option
+                for option in options
+                if isinstance(option, dict) and option.get("official_answer") == "no_information"
+            ),
+            next(
+                (
+                    option
+                    for option in options
+                    if isinstance(option, dict) and option.get("official_answer") == "probably_no"
+                ),
+                None,
+            ),
+        )
+        if not isinstance(selected, dict) or not isinstance(selected.get("id"), str):
+            raise ValueError("stdio Domain question has no usable uncertainty option")
+        answer = selected["official_answer"]
         basis = (
             {
                 "kind": "limitation",
@@ -256,7 +273,9 @@ def _stdio_domain_answers(
                 "evidence": evidence["handle"],
             }
         )
-        answers.append({"question_id": question["id"], "answer": answer, "bases": [basis]})
+        answers.append(
+            {"question_id": question["id"], "option_id": selected["id"], "bases": [basis]}
+        )
     return answers
 
 

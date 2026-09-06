@@ -45,7 +45,11 @@ def _multi_trial_evidence(workspace: Path) -> dict[str, dict[str, object]]:
     )
     evidence: dict[str, dict[str, object]] = {}
     for trial_id in ("trial-a", "trial-b"):
-        source = _call(workspace, "list_sources", {"trial_id": trial_id})["data"]["sources"][0]
+        source = next(
+            item
+            for item in _call(workspace, "list_sources", {"trial_id": trial_id})["data"]["sources"]
+            if item["label"] == "main.txt"
+        )
         evidence[trial_id] = _call(
             workspace,
             "select_text_evidence",
@@ -153,6 +157,7 @@ def test_pending_partial_replacement_preserves_unmentioned_result_and_evidence(
     )["data"]["evidence"]
 
     replacement = _result_for_trial(revised_evidence, "trial-a")
+    replacement["passage_refs"] = [revised_evidence["handle"]]
     replacement["target"]["time_point_or_window"]["description"] = "a corrected window"
     saved = _call(workspace, "save_proposal", _proposal_args(workspace, [replacement]))
 

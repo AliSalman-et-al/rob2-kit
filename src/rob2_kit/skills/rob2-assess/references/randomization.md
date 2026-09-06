@@ -1,44 +1,26 @@
 # Assess randomization
 
-Use this reference for Domain 1.
+Use this reference for Domain 1. The returned question cards supply the exact
+wording, server-issued options, guidance, and activation rules.
 
-Answer only the questions active in `get_domain_context`, in the returned order.
-The active question card is authoritative. Its official excerpt and locator
-define the proposition; the seeds and pitfalls below guide retrieval.
+Keep three propositions separate:
 
-Assess whether the allocation sequence was random and concealed until enrollment and assignment. Then assess baseline differences for evidence of a randomization problem.
+1. **Sequence generation:** Was the allocation sequence random?
+2. **Allocation concealment:** Was allocation concealed until participants were
+   enrolled and assigned?
+3. **Baseline differences:** Do observed imbalances suggest a problem with the
+   randomization process rather than chance?
 
-## Optional search leads from official guidance
+Sequence methods such as computer generation, random-number tables, lots, or
+minimization may support the first proposition. Stratification, block size, a
+registration system, or a numbered sequence does not by itself establish
+concealment. Concealment needs the pre-assignment mechanism and who controlled
+access to it.
 
-- **Official guidance, p. 17, Box 4, question 1.1:** Consider sequence-generation
-  terms such as `computer-generated random numbers`, `random number table`, `coin
-  tossing`, `shuffling cards`, `throwing dice`, `drawing lots`, and
-  `minimization`.
-- **Official guidance, p. 17, Box 4, question 1.2:** Consider concealment terms
-  such as `remote allocation`, `central allocation`, `external unit`, `enrolment
-  personnel`, `sealed envelopes`, `sequentially numbered`, and `allocation
-  concealment`.
-- **Official guidance, pp. 17-18, Box 4, question 1.3:** Consider baseline
-  information terms such as `baseline characteristics`, `prognostic factors`, `group
-  sizes`, `statistically significant`, `chance`, and `randomized groups`.
+For baseline differences, inspect the complete arm-specific baseline table or
+list and any explanation. Different values are not automatically evidence of a
+randomization problem. Missing reporting is not evidence that randomization
+failed.
 
-Optional related sequence-generation concepts include `block randomization`,
-`permuted blocks`, and `random block sizes`. These examples may be used verbatim,
-reformulated, or ignored based on the documents.
-
-When useful, group sequence-generation and concealment terms separately. Use
-`any` when broad discovery helps. A truncated broad search is discovery only.
-Refine it before using it to support an absence claim.
-
-## Pitfalls
-
-Missing reporting does not prove that randomization failed. Differences
-compatible with chance do not establish a randomization problem. Stratification,
-central registration, or a numbered sequence does not establish concealment. A
-concealment answer needs the method used before assignment and who controlled it.
-
-Read the complete premise or baseline list. A heading or list-introducing lead-in
-does not answer a question.
-
-Completion: every active Domain 1 question has a permitted answer, and the
-answer addresses the proposition in its active question card.
+Select complete premises. A Methods heading, the word “randomized,” or a
+list-introducing sentence alone does not answer these questions.

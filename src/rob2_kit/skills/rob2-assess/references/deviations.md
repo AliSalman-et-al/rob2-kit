@@ -1,49 +1,28 @@
 # Assess deviations from intended interventions
 
-Use this reference for Domain 2.
+Use this reference for Domain 2, which assesses the effect of assignment to
+intervention. The returned question cards are authoritative.
 
-This package assesses the effect of assignment to intervention. Assess participant and caregiver awareness, deviations caused by trial context, balance of deviations between groups, and the analysis used to estimate assignment.
+Build the conduct chain in order:
 
-The active question card is authoritative. Its official excerpt and locator
-define the proposition; the seeds and pitfalls below guide retrieval.
+1. What intervention was intended in each randomized group?
+2. What change, non-adherence, or additional intervention occurred?
+3. Did the trial context cause that change?
+4. Could it affect the outcome, and was it balanced between groups?
 
-Keep two comparisons distinct: for 2.3, compare intended intervention with
-reported conduct and the trial-context link; for 2.6, compare randomized
-assignment with the analyzed population, exclusions, and reassignment reasons.
-Carry those facts forward if 2.7 activates. An ITT label is an analysis name,
-not evidence that no participants were excluded.
+Ordinary non-adherence is not a trial-context deviation without a source link.
+A protocol establishes the plan, not conduct. Different assigned treatments or
+visible schedules do not by themselves prove that participants or carers knew
+the assignment.
 
-## Optional search leads from official guidance
+Assess the analysis separately. Compare randomized assignment with the analyzed
+population, exclusions, reassignment, and reasons. An ITT label is not proof
+that all randomized participants were analyzed as assigned. Excluding only
+participants with missing outcome data is not automatically the same as an
+inappropriate assignment-effect analysis; keep that issue distinct for Domain
+3. If an analysis defect activates the impact question, consider outcome rarity
+and prognostic exclusions as well as the percentage affected.
 
-- **Official guidance, p. 28, Box 6, questions 2.1-2.2:** Consider awareness
-  terms such as `blinding`, `placebo`, `sham`, `aware`, `side effects`, `toxicities`, `carers`,
-  and `people delivering interventions`.
-- **Official guidance, p. 28, Box 6, questions 2.3-2.4:** Consider context-caused
-  deviation terms such as `trial context`, `failure to implement`, `not allowed by the
-  protocol`, `non-adherence`, `recruitment`, `engagement`, `affect the outcome`,
-  and `effect estimate`.
-- **Official guidance, p. 29, Box 6, questions 2.5-2.7:** Consider balance and
-  impact terms such as `balanced between groups`, `wrong intervention group`, `excluded
-  from the analysis`, `substantial impact`, `rare outcome`, and `prognostic
-  factors`.
-- **Official guidance, p. 29, Box 6, question 2.6:** Consider analysis-rule terms
-  such as `intention-to-treat`, `modified intention-to-treat`, `per-protocol`,
-  `as treated`, `post-randomization exclusion`, and `missing outcome data`.
-
-When useful, group awareness, context-caused deviations, balance, impact, and
-analysis terms separately. Refine a truncated discovery search before concluding
-that a mechanism is not reported.
-
-## Pitfalls
-
-Ordinary non-adherence is not a context-caused deviation without a source link.
-Planned adherence or treatment policy does not prove conduct. An ITT or
-all-randomized analysis describes an analysis choice, not whether deviations
-occurred, were balanced, or had no effect. Keep participant awareness, personnel
-awareness, deviations, outcome impact, balance, and analysis separate.
-
-Treat a small percentage as potentially important when the outcome is rare or
-exclusions relate strongly to prognostic factors.
-
-Completion: every active Domain 2 question has a permitted answer, and the
-answer addresses the proposition in its active question card.
+Do not use one passage to claim awareness, deviation, trial-context cause,
+outcome effect, balance, and analysis integrity unless it explicitly establishes
+each proposition.

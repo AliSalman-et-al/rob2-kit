@@ -1,4 +1,4 @@
-"""Closed, immutable v0.4 workflow models.
+"""Closed, immutable v0.5 workflow models.
 
 The application stores JSON, but it must not pass JSON-shaped dictionaries between
 workflow boundaries.  This module is the small vocabulary shared by the adapters,
@@ -28,7 +28,7 @@ from pydantic import (
 )
 from pydantic.functional_validators import AfterValidator
 
-from .models import Answer, canonical_json_bytes
+from .models import canonical_json_bytes
 
 
 class StrictModel(BaseModel):
@@ -1093,7 +1093,10 @@ DomainBasis = Annotated[
 
 class DomainAnswer(StrictModel):
     question_id: QuestionId = Field(description="Active question ID from get_domain_context.")
-    answer: Answer = Field(description="RoB 2 answer permitted by the active question card.")
+    option_id: str = Field(
+        min_length=1,
+        description="Exactly one server-issued option identity from the current question card.",
+    )
     bases: tuple[DomainBasis, ...] = Field(
         min_length=1,
         description=(

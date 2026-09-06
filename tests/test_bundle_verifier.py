@@ -314,6 +314,30 @@ def test_selected_evidence_catalog_is_closed_and_source_bound() -> None:
     assert not _valid_selected_evidence(unknown_source, sources, _identity)
     assert not standalone_valid_selected_evidence(unknown_source, sources, _identity)
 
+    for malformed in (
+        {
+            **evidence,
+            "search_session": "not-a-sha",
+            "candidate_rank": 1,
+            "start_line": 1,
+            "end_line": 1,
+        },
+        {
+            **evidence,
+            "start": 0,
+            "end": 1,
+            "quote": "x",
+            "start_line": 500,
+            "end_line": 999,
+        },
+    ):
+        malformed["identity"] = _identity(
+            {key: value for key, value in malformed.items() if key not in {"identity", "handle"}}
+        )
+        malformed["handle"] = "eh_" + malformed["identity"].removeprefix("sha256:")[:16]
+        assert not _valid_selected_evidence(malformed, sources, _identity)
+        assert not standalone_valid_selected_evidence(malformed, sources, _identity)
+
     render = {
         "source_id": source_id,
         "page": 1,

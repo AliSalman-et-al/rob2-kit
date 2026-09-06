@@ -197,12 +197,10 @@ def test_revised_result_binds_reported_leaves_to_its_coherent_evidence_and_final
         "randomized population; risk ratio; The requested outcome was measured in the "
         "analyzed population.; risk; 1; events; 2."
     )
-    (workspace / "input" / "trial" / "main.txt").write_text(
-        candidate_a_text + "\n", encoding="utf-8"
-    )
+    (workspace / "input" / "trial" / "main.txt").write_bytes((candidate_a_text + "\n").encode())
 
     def evidence_identity(relative: str, quote: str) -> str:
-        digest = "sha256:" + hashlib.sha256((quote + "\r\n").encode()).hexdigest()
+        digest = "sha256:" + hashlib.sha256((quote + "\n").encode()).hexdigest()
         source_id = _source_id("trial", relative, digest)
         return _identity(
             {
@@ -213,6 +211,8 @@ def test_revised_result_binds_reported_leaves_to_its_coherent_evidence_and_final
                 "start": 0,
                 "end": len(quote),
                 "quote": quote,
+                "start_line": 1,
+                "end_line": 1,
             }
         )
 
@@ -230,9 +230,7 @@ def test_revised_result_binds_reported_leaves_to_its_coherent_evidence_and_final
         ]
         if candidate_a_identity < evidence_identity("revised.txt", text)
     )
-    (workspace / "input" / "trial" / "revised.txt").write_text(
-        candidate_b_text + "\n", encoding="utf-8"
-    )
+    (workspace / "input" / "trial" / "revised.txt").write_bytes((candidate_b_text + "\n").encode())
 
     candidate_a_evidence = _prepared_evidence(workspace)
     sources = _call(workspace, "list_sources", {"trial_id": "trial"})["data"]["sources"]

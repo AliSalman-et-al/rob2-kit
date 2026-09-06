@@ -21,8 +21,10 @@ from ._state import (
 )
 from .contracts import WorkflowConflict
 from .evidence import (
+    _associated_search_ranks,
     _evidence_catalog,
     _evidence_for_handles,
+    _search_continuation,
     _search_receipt,
 )
 from .status import _active_trial_and_domain, _continuation
@@ -91,6 +93,356 @@ _RESPONSE_FRAMEWORK = ResponseFramework(
         "possible to support the answer."
     ),
 )
+
+
+_OPTION_SEMANTICS_VERSION = "rob2-kit.answer-option.v0.5"
+
+
+def _answer_option(question: Any, answer: Any) -> dict[str, Any]:
+    """Build one exact, self-describing option from the current scientific pack."""
+    value = answer.value
+    if value in {"yes", "no"}:
+        proposition, certainty = ("true" if value == "yes" else "false"), "certain"
+    elif value in {"probably_yes", "probably_no"}:
+        proposition, certainty = ("true" if value == "probably_yes" else "false"), "probable"
+    else:
+        proposition, certainty = "unknown", "unknown"
+    decision_table_value = (
+        "yes"
+        if value in {"yes", "probably_yes"}
+        else "no"
+        if value in {"no", "probably_no"}
+        else "no_information"
+    )
+    anchor_answer = (
+        next(
+            candidate
+            for candidate in question.allowed_answers
+            if candidate.value == ("yes" if value == "probably_yes" else "no")
+        )
+        if value in {"probably_yes", "probably_no"}
+        else answer
+    )
+    anchor = (
+        question.guidance.operational.no_information_rule
+        if value == "no_information"
+        else next(
+            item.text
+            for item in question.guidance.operational.answer_anchors
+            if item.answer == anchor_answer
+        )
+    )
+    dependents = tuple(
+        candidate.id
+        for candidate in SCIENTIFIC_PACK.questions
+        if candidate.domain_id == question.domain_id
+        and candidate.activation.kind == "rule"
+        and any(
+            predicate.question_id == question.id and answer in predicate.accepted_answers
+            for predicate in candidate.activation.predicates
+        )
+    )
+    consequence = (
+        f"The Domain decision table treats this as {decision_table_value}. "
+        + (
+            "It activates dependent questions: " + ", ".join(dependents) + "."
+            if dependents
+            else "It activates no dependent questions."
+        )
+        + " The Domain judgment is derived only from the complete active answer path."
+    )
+    payload = {
+        "semantics_version": _OPTION_SEMANTICS_VERSION,
+        "pack_version": SCIENTIFIC_PACK.version,
+        "question_id": question.id,
+        "question_wording": question.wording,
+        "official_answer": value,
+        "anchor": anchor,
+        "proposition": proposition,
+        "certainty": certainty,
+        "decision_table_value": decision_table_value,
+        "activates": dependents,
+    }
+    return {
+        "id": "opt_" + _identity(payload).removeprefix("sha256:")[:24],
+        "official_answer": value,
+        "proposition": proposition,
+        "certainty": certainty,
+        "decision_table_value": decision_table_value,
+        "meaning": (
+            "The exact question proposition is unknown."
+            if certainty == "unknown"
+            else (
+                "The exact question proposition is "
+                f"{('probably ' if certainty == 'probable' else '')}{proposition}."
+            )
+        ),
+        "activates": dependents,
+        "anchor": anchor,
+        "consequence": consequence,
+    }
+
+
+def _comparison_cards(
+    domain_id: str,
+    result: dict[str, Any],
+    catalog: dict[str, dict[str, Any]],
+    checkpoint_answers: list[dict[str, Any]],
+    sources: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    """Return a small deterministic read projection for D2/D3/D5.
+
+    The slots deliberately stay descriptive. The server aligns known source
+    coordinates and compatible counts, but never fills a causal or bias
+    conclusion from prose.
+    """
+    question_by_domain = {
+        "domain:deviations": "sq:deviations:context-deviations",
+        "domain:missing": "sq:missing:data-available",
+        "domain:selection": "sq:selection:prespecified-analysis",
+    }
+    names = {
+        "domain:deviations": (
+            "intended_intervention",
+            "observed_conduct",
+            "trial_context_cause",
+            "protocol_consistency",
+            "outcome_effect",
+            "group_balance",
+        ),
+        "domain:missing": (
+            "approved_outcome",
+            "randomized",
+            "observed",
+            "follow_up_availability",
+            "censoring",
+            "missingness_reason",
+        ),
+        "domain:selection": (
+            "reported_result",
+            "analysis_plan",
+            "unblinded_access",
+            "amendment",
+            "correspondence",
+        ),
+    }
+    if domain_id not in question_by_domain:
+        return []
+    refs = []
+    for item in catalog.values():
+        if not isinstance(item, dict) or item.get("kind") != "narrative":
+            continue
+        if not all(
+            isinstance(item.get(key), (str, int)) for key in ("handle", "source_id", "page")
+        ):
+            continue
+        refs.append(
+            {
+                "handle": item["handle"],
+                "source_id": item["source_id"],
+                "page": item["page"],
+                "start_line": item.get("start_line", 1),
+                "end_line": item.get("end_line", item.get("start_line", 1)),
+            }
+        )
+    refs.sort(
+        key=lambda value: (value["source_id"], value["page"], value["start_line"], value["handle"])
+    )
+    refs_by_identity = {
+        item["identity"]: ref
+        for item in catalog.values()
+        if isinstance(item, dict) and isinstance(item.get("identity"), str)
+        for ref in refs
+        if ref["handle"] == item.get("handle")
+    }
+    result_evidence = result.get("evidence", [])
+
+    def bound_refs(*prefixes: str) -> list[dict[str, Any]]:
+        handles: list[str] = []
+        for binding in result.get("bindings", []):
+            if not isinstance(binding, dict):
+                continue
+            field = binding.get("field")
+            path = field.get("path") if isinstance(field, dict) else None
+            index = binding.get("evidence_index")
+            if (
+                not isinstance(path, str)
+                or not any(path == prefix or path.startswith(prefix + "/") for prefix in prefixes)
+                or not isinstance(index, int)
+                or isinstance(index, bool)
+                or not isinstance(result_evidence, list)
+                or not 0 <= index < len(result_evidence)
+            ):
+                continue
+            evidence = result_evidence[index]
+            handle = evidence.get("handle") if isinstance(evidence, dict) else None
+            if isinstance(handle, str) and handle not in handles:
+                handles.append(handle)
+        return [ref for handle in handles for ref in refs if ref["handle"] == handle]
+
+    source_by_id = {
+        item["id"]: item
+        for item in sources
+        if isinstance(item, dict) and isinstance(item.get("id"), str)
+    }
+    passage_groups = []
+    for source_id in sorted({item["source_id"] for item in refs}):
+        source = source_by_id.get(source_id, {})
+        passages = []
+        seen_ranges: set[tuple[int, int, int]] = set()
+        for item in (value for value in refs if value["source_id"] == source_id):
+            coordinate = (item["page"], item["start_line"], item["end_line"])
+            if coordinate in seen_ranges:
+                continue
+            seen_ranges.add(coordinate)
+            passages.append(item)
+        passage_groups.append(
+            {
+                "source_id": source_id,
+                "source_role": source.get("role", "other"),
+                "source_label": source.get("label", source_id),
+                "passages": passages,
+            }
+        )
+
+    question = next(
+        item for item in SCIENTIFIC_PACK.questions if item.id == question_by_domain[domain_id]
+    )
+    target = result.get("target", {})
+    reported = result.get("reported", {})
+    slots = [
+        {"name": name, "status": "unknown", "value": None, "passages": []}
+        for name in names[domain_id]
+    ]
+
+    def support(name: str, value: str, passages: list[dict[str, Any]]) -> None:
+        slot = next(item for item in slots if item["name"] == name)
+        slot.update(status="supported", value=value, passages=passages)
+
+    if domain_id == "domain:deviations":
+        groups = target.get("comparison_groups", [])
+        if isinstance(groups, list) and groups:
+            support(
+                "intended_intervention",
+                "; ".join(
+                    f"{item['id']}: {item['assignment']}"
+                    for item in groups
+                    if isinstance(item, dict)
+                    and isinstance(item.get("id"), str)
+                    and isinstance(item.get("assignment"), str)
+                ),
+                bound_refs("/target/comparison_groups"),
+            )
+    elif domain_id == "domain:missing":
+        timing = target.get("time_point_or_window", {})
+        timing_description = timing.get("description") if isinstance(timing, dict) else None
+        outcome_parts = [
+            target.get("outcome_definition"),
+            timing_description,
+            target.get("intended_analysis_population"),
+        ]
+        scope = " | ".join(item for item in outcome_parts if isinstance(item, str) and item)
+        if scope:
+            support(
+                "approved_outcome",
+                scope,
+                bound_refs(
+                    "/target/outcome_definition",
+                    "/target/measurement",
+                    "/target/time_point_or_window",
+                    "/target/intended_analysis_population",
+                ),
+            )
+    else:
+        endpoint = reported.get("endpoint", {})
+        endpoint_name = endpoint.get("name") if isinstance(endpoint, dict) else None
+        result_summary = " | ".join(
+            item
+            for item in (reported.get("form"), endpoint_name, reported.get("effect_measure"))
+            if isinstance(item, str) and item
+        )
+        if result_summary:
+            support("reported_result", result_summary, bound_refs("/reported"))
+
+    missing_data = None
+    if domain_id == "domain:missing":
+        answer = next(
+            (
+                item
+                for item in checkpoint_answers
+                if item.get("question_id") == "sq:missing:data-available"
+            ),
+            None,
+        )
+        if isinstance(answer, dict) and isinstance(answer.get("missing_data"), dict):
+            missing_data = answer["missing_data"]
+            for field in ("randomized", "observed"):
+                rows = [
+                    row
+                    for row in missing_data.get("rows", [])
+                    if isinstance(row, dict) and isinstance(row.get(field), int)
+                ]
+                if not rows:
+                    continue
+                field_conflicted = any(
+                    len(
+                        {
+                            report.get(field)
+                            for report in conflict.get("reports", [])
+                            if isinstance(report, dict)
+                        }
+                    )
+                    > 1
+                    for conflict in missing_data.get("conflicts", [])
+                    if isinstance(conflict, dict)
+                )
+                slot = next(item for item in slots if item["name"] == field)
+                slot["status"] = "conflicted" if field_conflicted else "supported"
+                slot["value"] = "; ".join(
+                    f"{row['scope']['arm']} | {row['scope']['population']} | "
+                    f"{row['scope']['unit']} | {row['scope']['time_point']}: {row[field]}"
+                    for row in rows
+                )
+                slot["passages"] = [
+                    {
+                        key: evidence[key]
+                        for key in ("handle", "source_id", "page", "start_line", "end_line")
+                    }
+                    for row in rows
+                    for identity in row.get("basis", [])
+                    for evidence in (refs_by_identity.get(identity),)
+                    if isinstance(evidence, dict)
+                    and all(
+                        key in evidence
+                        for key in ("handle", "source_id", "page", "start_line", "end_line")
+                    )
+                ]
+
+    card_id = _identity(
+        {
+            "version": "rob2-kit.comparison-card.v0.5",
+            "domain_id": domain_id,
+            "question_id": question_by_domain[domain_id],
+            "result": _identity(result),
+        }
+    )
+    return [
+        {
+            "card_id": card_id,
+            "question_id": question_by_domain[domain_id],
+            "question_wording": question.wording,
+            "options": [_answer_option(question, answer) for answer in question.allowed_answers],
+            "result_identity": _identity(result),
+            "passage_groups": passage_groups,
+            "slots": slots,
+            "missing_data": missing_data,
+            "prompt": (
+                "Use the exact passages and server-known scope above. Classify only the remaining "
+                "scientific propositions; do not infer causation, follow-up availability, "
+                "informative censoring, or plan correspondence from Source role or wording alone."
+            ),
+        }
+    ]
 
 
 def reconcile_missing_data(rows: list[dict[str, Any]]) -> dict[str, Any]:
@@ -282,48 +634,79 @@ def save_domain_judgment(
     if parsed.domain_id not in {item.id for item in SCIENTIFIC_PACK.domains}:
         raise ValueError("unknown Domain")
 
-    allowed = {
-        question.id: {answer.value for answer in question.allowed_answers}
+    questions_by_id = {
+        question.id: question
         for question in SCIENTIFIC_PACK.questions
         if question.domain_id == parsed.domain_id
     }
+    option_cards = {
+        question.id: tuple(_answer_option(question, answer) for answer in question.allowed_answers)
+        for question in questions_by_id.values()
+    }
+    option_tables = {
+        question_id: {option["id"]: option["official_answer"] for option in options}
+        for question_id, options in option_cards.items()
+    }
+    allowed = {question_id: set(options.values()) for question_id, options in option_tables.items()}
     answer_items = list(parsed.answers)
-    answer_ids = [item.question_id for item in answer_items]
-    repairs: list[dict[str, Any]] = _duplicate_repairs(
-        answer_ids, "/answers", "duplicate_answer", "answer question"
-    )
-    answers: dict[str, str] = {}
+    items_by_question: dict[str, list[tuple[int, Any]]] = {}
     for index, item in enumerate(answer_items):
-        if item.question_id in answers:
+        items_by_question.setdefault(item.question_id, []).append((index, item))
+    repairs: list[dict[str, Any]] = []
+    for question_id, items in items_by_question.items():
+        if question_id in questions_by_id:
             continue
-        answers[item.question_id] = item.answer
-        if item.question_id not in allowed:
+        for index, _item in items:
             repairs.append(
                 _repair(
-                    f"/answers/{index}",
-                    "invalid_answer",
-                    f"question '{item.question_id}' is not active in Domain '{parsed.domain_id}'.",
+                    f"/answers/{index}/question_id",
+                    "invalid_answer_question",
+                    f"question '{question_id}' is not in Domain '{parsed.domain_id}'.",
                 )
             )
-    valid_answers = {key: value for key, value in answers.items() if key in allowed}
-    try:
-        active = [item for item in active_questions(valid_answers) if item in allowed]
-    except ValueError as error:
-        active = []
-        repairs.append(
-            _repair("/answers", "invalid_answers", f"could not determine active questions: {error}")
-        )
+
+    answers: dict[str, str] = {}
+    active: list[str] = []
+    processed: set[str] = set()
+    while True:
+        active = [
+            question_id for question_id in active_questions(answers) if question_id in allowed
+        ]
+        pending = [question_id for question_id in active if question_id not in processed]
+        if not pending:
+            break
+        for question_id in pending:
+            processed.add(question_id)
+            items = items_by_question.get(question_id, [])
+            if len(items) > 1:
+                repairs.append(
+                    _repair(
+                        "/answers",
+                        "duplicate_answer",
+                        f"answer question '{question_id}' occurs {len(items)} times.",
+                    )
+                )
+            if not items:
+                continue
+            index, item = items[0]
+            resolved = option_tables[question_id].get(item.option_id)
+            if resolved is None:
+                permitted = "; ".join(
+                    f"{option['id']}={option['official_answer']} ({option['meaning']})"
+                    for option in option_cards[question_id]
+                )
+                repairs.append(
+                    _repair(
+                        f"/answers/{index}/option_id",
+                        "invalid_answer_option",
+                        f"option '{item.option_id}' is not current for question '{question_id}'. "
+                        f"Use one current card option: {permitted}",
+                    )
+                )
+                continue
+            answers[question_id] = resolved
+    active = [question_id for question_id in active_questions(answers) if question_id in allowed]
     missing_active = [item for item in active if item not in answers]
-    for index, item in enumerate(answer_items):
-        if item.question_id in active and item.answer not in allowed[item.question_id]:
-            repairs.append(
-                _repair(
-                    f"/answers/{index}/answer",
-                    "invalid_answer",
-                    f"question '{item.question_id}' expects one of: "
-                    f"{_ids(sorted(allowed[item.question_id]))}; supplied '{item.answer}'.",
-                )
-            )
     if missing_active:
         repairs.append(
             _repair(
@@ -334,9 +717,8 @@ def save_domain_judgment(
                 "Supplied inactive branch answers are ignored.",
             )
         )
-
     active_answer_items = [
-        (index, item) for index, item in enumerate(answer_items) if item.question_id in active
+        items_by_question[question_id][0] for question_id in active if question_id in answers
     ]
 
     proposal_catalog = {
@@ -354,26 +736,19 @@ def save_domain_judgment(
             referenced_handles.update(row.basis)
     if parsed.revision_basis is not None and parsed.revision_basis.kind == "new_evidence":
         referenced_handles.add(parsed.revision_basis.evidence)
-    try:
-        catalog = dict(proposal_catalog)
-        missing_handles = {
-            handle
-            for handle in referenced_handles
-            if not any(item.get("handle") == handle for item in catalog.values())
-        }
-        catalog.update(_evidence_for_handles(root, missing_handles, parsed.trial_id))
-    except ValueError as error:
-        return _result(
-            "repair",
-            state,
-            repairs=[
-                _repair(
-                    "/answers",
-                    "invalid_evidence",
-                    f"Evidence handle does not resolve to captured evidence: {error}",
-                )
-            ],
-        )
+    catalog = dict(proposal_catalog)
+    missing_handles = {
+        handle
+        for handle in referenced_handles
+        if not any(item.get("handle") == handle for item in catalog.values())
+    }
+    for handle in sorted(missing_handles):
+        try:
+            catalog.update(_evidence_for_handles(root, {handle}, parsed.trial_id))
+        except ValueError:
+            # The exact answer/revision path below reports every unresolved
+            # handle without discarding independent option or basis defects.
+            continue
     catalog_by_handle = {
         item["handle"]: item for item in catalog.values() if isinstance(item, dict)
     }
@@ -381,6 +756,11 @@ def save_domain_judgment(
     search_accounts: dict[str, dict[str, Any]] = {}
     for answer_index, answer_item in active_answer_items:
         answer = answer_item.model_dump(mode="json", exclude_none=True)
+        # Canonical checkpoints retain the standard official RoB code. The
+        # compact option identity is a transport selection, not a second
+        # scientific field in the artifact.
+        answer.pop("option_id", None)
+        answer["answer"] = answers[answer_item.question_id]
         if answer_item.missing_data is not None:
             # Keep the caller's typed rows small and source-oriented, while
             # persisting one deterministic clerical reconciliation that can
@@ -544,7 +924,9 @@ def save_domain_judgment(
     if repairs:
         return _result("repair", state, repairs=repairs)
 
-    canonical_answer_values = {item.question_id: item.answer for _, item in active_answer_items}
+    canonical_answer_values = {
+        item.question_id: answers[item.question_id] for _, item in active_answer_items
+    }
     evaluation = evaluate_domain(parsed.domain_id, canonical_answer_values)
     existing_rows = state.get("domain_records", {})
     key = f"{parsed.trial_id}:{parsed.domain_id}"
@@ -850,6 +1232,14 @@ def get_domain_context(
     )
     if not isinstance(result, dict):
         raise ValueError("approved Result is unavailable")
+    trial_sources = next(
+        (
+            item.get("sources", [])
+            for item in (state.get("batch") or {}).get("trials", [])
+            if isinstance(item, dict) and item.get("id") == trial_id
+        ),
+        [],
+    )
     existing = (state.get("domain_records") or {}).get(f"{trial_id}:{domain_id}", {})
     answer_rows = existing.get("answers", []) if isinstance(existing, dict) else []
     answers = {
@@ -871,31 +1261,14 @@ def get_domain_context(
     handles = {
         item.get("handle") for item in (result or {}).get("evidence", []) if isinstance(item, dict)
     }
-    proposal_catalog = {
-        key: value
-        for key, value in (state.get("proposal") or {}).get("evidence", {}).items()
-        if isinstance(value, dict) and value.get("trial_id") == trial_id
+    result_handles = {
+        item.get("handle")
+        for item in result.get("evidence", [])
+        if isinstance(item, dict) and isinstance(item.get("handle"), str)
     }
-    catalog = dict(proposal_catalog)
-    # Domain Evidence remains in the disposable handle cache until a checkpoint
-    # promotes it. Recover the most recent bounded, Trial-isolated workspace so
-    # an interrupted host can resume with the exact handles it already selected.
-    catalog.update(_evidence_catalog(root, trial_id=trial_id, limit=64))
-    missing_handles = {
-        handle
-        for handle in handles
-        if not any(item.get("handle") == handle for item in catalog.values())
-    }
-    if missing_handles:
-        catalog.update(_evidence_for_handles(root, missing_handles, trial_id))
-    # A restart or compaction must not discard the evidence already used by
-    # the active checkpoint. Those records are canonical and can be recovered
-    # even when the disposable handle cache was rebuilt.
     checkpoint_answers = [
         answer
-        for key, checkpoint in (state.get("domain_records") or {}).items()
-        if key.startswith(f"{trial_id}:") and isinstance(checkpoint, dict)
-        for answer in checkpoint.get("answers", [])
+        for answer in (existing.get("answers", []) if isinstance(existing, dict) else [])
         if isinstance(answer, dict)
     ]
     checkpoint_identities = {
@@ -912,7 +1285,266 @@ def get_domain_context(
         for evidence_identity in row["basis"]
         if isinstance(evidence_identity, str)
     )
+    proposal_catalog = {
+        key: value
+        for key, value in (state.get("proposal") or {}).get("evidence", {}).items()
+        if isinstance(value, dict)
+        and value.get("trial_id") == trial_id
+        and value.get("handle") in result_handles
+    }
+    # Disposable candidates are selected by the active Domain association,
+    # never by latest-row recency. Canonical Result/checkpoint Evidence is
+    # added below as a separate non-competing tier.
+    disposable = _evidence_catalog(root, trial_id=trial_id, limit=None)
+    associated_ranks = _associated_search_ranks(root, trial_id, domain_id)
+    explicit_carry_forward = [
+        value
+        for value in disposable.values()
+        if isinstance(value, dict)
+        and not isinstance(value.get("search_session"), str)
+        and value.get("handle") not in result_handles
+        and value.get("identity") not in checkpoint_identities
+    ]
+    associated = [
+        value
+        for value in disposable.values()
+        if isinstance(value, dict)
+        and isinstance(value.get("search_session"), str)
+        and isinstance(value.get("candidate_rank"), int)
+        and (value["search_session"], value["candidate_rank"]) in associated_ranks
+    ]
+    # Handles selected explicitly through the existing Evidence boundary do
+    # not carry a search association. Preserve those manual selections when
+    # no scoped candidates exist, but do not fall back to search fragments from
+    # an earlier Domain.
+    associated.sort(
+        key=lambda value: (
+            int(value.get("candidate_rank", 2**31 - 1)),
+            str(value.get("search_session")),
+            str(value.get("source_id")),
+            int(value.get("page", 0)),
+            int(value.get("start", 0)),
+            str(value.get("identity")),
+        )
+    )
+    explicit_carry_forward.sort(
+        key=lambda value: (
+            str(value.get("source_id")),
+            int(value.get("page", 0)),
+            int(value.get("start_line", 0)),
+            int(value.get("end_line", 0)),
+            str(value.get("identity")),
+        )
+    )
+
+    # Repeated searches can materialize the same exact passage under distinct
+    # disposable session identities. Keep one visible copy without merging
+    # partial overlaps or changing any source-bound quote.
+    seen_coordinates: set[tuple[Any, ...]] = {
+        (
+            value.get("source_id"),
+            value.get("page"),
+            value.get("start_line"),
+            value.get("end_line"),
+        )
+        for value in proposal_catalog.values()
+        if all(
+            value.get(key) is not None for key in ("source_id", "page", "start_line", "end_line")
+        )
+    }
+
+    def unique_passages(values: list[dict[str, Any]]) -> tuple[list[dict[str, Any]], int]:
+        unique: list[dict[str, Any]] = []
+        duplicates = 0
+        for value in values:
+            coordinate = (
+                value.get("source_id"),
+                value.get("page"),
+                value.get("start_line"),
+                value.get("end_line"),
+            )
+            key = (
+                coordinate
+                if all(item is not None for item in coordinate)
+                else ("identity", value.get("identity"))
+            )
+            if key in seen_coordinates:
+                duplicates += 1
+                continue
+            seen_coordinates.add(key)
+            unique.append(value)
+        return unique, duplicates
+
+    associated, associated_duplicates = unique_passages(associated)
+    explicit_carry_forward, explicit_duplicates = unique_passages(explicit_carry_forward)
+    projection_budget = 64
+    # Explicit selections are deliberate carry-forward and therefore take
+    # priority over disposable search candidates within the shared budget.
+    # Result/checkpoint Evidence remains outside this budget above.
+    selected_explicit = explicit_carry_forward[:projection_budget]
+    remaining_budget = projection_budget - len(selected_explicit)
+    selected_candidates = associated[:remaining_budget]
+    omitted_explicit = explicit_carry_forward[len(selected_explicit) :]
+    included_candidate_ranks = {
+        (value["search_session"], value["candidate_rank"]) for value in selected_candidates
+    }
+    omitted_candidate_ranks = associated_ranks - included_candidate_ranks
+    omitted_evidence_count = len(omitted_candidate_ranks) + len(omitted_explicit)
+    omitted_by_category = {
+        "result": 0,
+        "checkpoint": 0,
+        "contradiction": 0,
+        "active_domain_candidate": len(omitted_candidate_ranks),
+        "explicit_carry_forward": len(omitted_explicit),
+        "deduplicated": associated_duplicates + explicit_duplicates,
+    }
+    catalog = dict(proposal_catalog)
+    for value in [*selected_candidates, *selected_explicit]:
+        catalog[value["identity"]] = value
+    missing_handles = {
+        handle
+        for handle in handles
+        if not any(item.get("handle") == handle for item in catalog.values())
+    }
+    if missing_handles:
+        catalog.update(_evidence_for_handles(root, missing_handles, trial_id))
+    # A restart or compaction must not discard the evidence already used by
+    # the active checkpoint. Those records are canonical and can be recovered
+    # even when the disposable handle cache was rebuilt.
     catalog.update(_canonical_evidence_records(root, checkpoint_identities))
+
+    canonical_handles = {
+        item.get("handle")
+        for item in catalog.values()
+        if isinstance(item, dict) and item.get("identity") in checkpoint_identities
+    }
+    contradiction_handles = {
+        basis.get("evidence")
+        for answer in checkpoint_answers
+        for basis in answer.get("bases", [])
+        if isinstance(basis, dict)
+        and basis.get("kind") == "contradiction"
+        and isinstance(basis.get("evidence"), str)
+    }
+    for value in catalog.values():
+        if not isinstance(value, dict):
+            continue
+        handle = value.get("handle")
+        if handle in result_handles:
+            value.setdefault("inclusion_reason", "result")
+        elif handle in contradiction_handles:
+            value.setdefault("inclusion_reason", "contradiction")
+        elif handle in canonical_handles:
+            value.setdefault("inclusion_reason", "checkpoint")
+        elif (
+            isinstance(value.get("search_session"), str)
+            and isinstance(value.get("candidate_rank"), int)
+            and (value["search_session"], value["candidate_rank"]) in associated_ranks
+        ):
+            value.setdefault("inclusion_reason", "active_domain_candidate")
+            value.setdefault("domain_id", domain_id)
+            value.setdefault("returned_previously", True)
+        elif not isinstance(value.get("search_session"), str):
+            value.setdefault("inclusion_reason", "explicit_carry_forward")
+            value.setdefault("domain_id", domain_id)
+
+    domain_question_ids = tuple(
+        item.id for item in SCIENTIFIC_PACK.questions if item.domain_id == domain_id
+    )
+    questions_by_evidence: dict[str, set[str]] = {}
+    for answer in checkpoint_answers:
+        question_id = answer.get("question_id")
+        if not isinstance(question_id, str):
+            continue
+        for basis in answer.get("bases", []):
+            if isinstance(basis, dict) and isinstance(basis.get("evidence"), str):
+                questions_by_evidence.setdefault(basis["evidence"], set()).add(question_id)
+        missing_data = answer.get("missing_data")
+        if isinstance(missing_data, dict):
+            for row in missing_data.get("rows", []):
+                if not isinstance(row, dict):
+                    continue
+                for evidence_identity in row.get("basis", []):
+                    if isinstance(evidence_identity, str):
+                        questions_by_evidence.setdefault(evidence_identity, set()).add(question_id)
+
+    evidence_continuation = _search_continuation(
+        root,
+        trial_id,
+        domain_id,
+        included_candidate_ranks,
+        projection_budget,
+    )
+    if evidence_continuation is None and omitted_explicit:
+        windows = []
+        seen_windows: set[tuple[str, int, int, int]] = set()
+        for value in omitted_explicit:
+            source_id = value.get("source_id")
+            page = value.get("page")
+            start_line = value.get("start_line", 1)
+            end_line = value.get("end_line", start_line)
+            if (
+                not isinstance(source_id, str)
+                or not isinstance(page, int)
+                or not isinstance(start_line, int)
+                or not isinstance(end_line, int)
+            ):
+                continue
+            window = (source_id, page, start_line, end_line)
+            if window in seen_windows:
+                continue
+            seen_windows.add(window)
+            windows.append(
+                {
+                    "source_id": source_id,
+                    "page": page,
+                    "start_line": start_line,
+                    "end_line": end_line,
+                }
+            )
+            if len(windows) == 20:
+                break
+        if windows:
+            evidence_continuation = {
+                "operation": "read_pages",
+                "trial_id": trial_id,
+                "windows": windows,
+            }
+    workspace_groups = []
+    for reason in (
+        "result",
+        "checkpoint",
+        "contradiction",
+        "active_domain_candidate",
+        "explicit_carry_forward",
+    ):
+        items = [
+            value
+            for value in catalog.values()
+            if isinstance(value, dict) and value.get("inclusion_reason") == reason
+        ]
+        if not items:
+            continue
+        scoped_questions = (
+            sorted(
+                {
+                    question_id
+                    for value in items
+                    for question_id in questions_by_evidence.get(value["identity"], set())
+                }
+            )
+            if reason in {"checkpoint", "contradiction"}
+            else list(domain_question_ids)
+            if reason in {"active_domain_candidate", "explicit_carry_forward"}
+            else []
+        )
+        workspace_groups.append(
+            {
+                "inclusion_reason": reason,
+                "question_ids": scoped_questions,
+                "evidence_handles": sorted(value["handle"] for value in items),
+            }
+        )
 
     def result_projection(value: dict[str, Any]) -> dict[str, Any]:
         if value.get("kind") == "unavailable":
@@ -1008,17 +1640,13 @@ def get_domain_context(
             {
                 "id": item.id,
                 "wording": item.wording,
-                "allowed_answers": [answer.value for answer in item.allowed_answers],
+                "options": [_answer_option(item, answer) for answer in item.allowed_answers],
                 "active": item.id in active,
                 "activation": item.activation.model_dump(mode="json"),
                 "official_guidance": item.guidance.official.source_excerpt,
                 "source_locator": item.guidance.official.source_locator,
                 "decision_rule": item.guidance.operational.decision_rule,
                 "evidence_needed": item.guidance.operational.evidence_needed,
-                "answer_anchors": [
-                    anchor.model_dump(mode="json")
-                    for anchor in item.guidance.operational.answer_anchors
-                ],
                 "no_information_rule": item.guidance.operational.no_information_rule,
                 "considerations": item.guidance.operational.considerations,
                 "invalid_shortcuts": item.guidance.operational.invalid_shortcuts,
@@ -1030,6 +1658,20 @@ def get_domain_context(
             "complete bounded question-specific discovery, then supply every question activated "
             "by the submitted answer path and link each active answer to at least one Evidence "
             "use, scoped absence receipt, or limitation; inactive extras are ignored"
+        ),
+        "evidence_workspace": {
+            "selection_policy_version": "rob2-kit.domain-projection.v0.5",
+            "groups": workspace_groups,
+            "omitted_count": omitted_evidence_count,
+            "omitted_by_category": omitted_by_category,
+            "continuation": evidence_continuation,
+        },
+        "comparison_cards": _comparison_cards(
+            domain_id,
+            result,
+            catalog,
+            checkpoint_answers,
+            trial_sources,
         ),
         "continuation": continuation,
     }

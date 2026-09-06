@@ -18,13 +18,15 @@ from pydantic import (
     TypeAdapter,
     model_validator,
 )
+from pydantic.types import PositiveInt
 
 from rob2_kit.application.contracts import TOOL_NAMES
-from rob2_kit.models import Answer, GuidanceAnchor, Judgment, ResponseFramework
+from rob2_kit.models import Answer, AnswerOption, Judgment, ResponseFramework
 from rob2_kit.workflow_models import (
     AssessableTargetRelation,
     ComparativeEffectResult,
     DomainId,
+    EvidenceHandle,
     GroupBoundValuesResult,
     Identity,
     NormalizedCoordinate,
@@ -145,6 +147,26 @@ class ConditionData(PublicModel):
     code: str = Field(min_length=1)
     detail: str = Field(min_length=1)
 
+
+class SearchCursorStaleCondition(PublicModel):
+    code: Literal["search_cursor_stale"]
+    detail: str = Field(min_length=1)
+
+
+class SearchCursorExpiredCondition(PublicModel):
+    code: Literal["search_cursor_expired"]
+    detail: str = Field(min_length=1)
+
+
+class SearchInvalidRequestCondition(PublicModel):
+    code: Literal["invalid_request"]
+    detail: str = Field(min_length=1)
+
+
+SearchCursorCondition = Annotated[
+    SearchCursorStaleCondition | SearchCursorExpiredCondition | SearchInvalidRequestCondition,
+    Field(discriminator="code"),
+]
 
 DataT = TypeVar("DataT", bound=PublicModel)
 
@@ -292,9 +314,29 @@ class SelectedNarrativeEvidence(PublicModel):
     trial_id: TrialId
     source_id: str = Field(pattern=r"^source_[0-9a-f]{64}$")
     page: PageNumber
+    # Exact line bounds are emitted for new search- and read-derived passages.
+    # They remain optional for canonical evidence created by an older contract.
+    start_line: PageNumber | None = None
+    end_line: PageNumber | None = None
     start: NonNegativeInt | None = None
     end: NonNegativeInt | None = None
     quote: str = Field(min_length=1)
+    inclusion_reason: (
+        Literal[
+            "result",
+            "checkpoint",
+            "active_domain_candidate",
+            "question_candidate",
+            "contradiction",
+            "explicit_carry_forward",
+        ]
+        | None
+    ) = None
+    domain_id: DomainId | None = None
+    question_id: QuestionId | None = None
+    search_session: Identity | None = None
+    candidate_rank: PositiveInt | None = None
+    returned_previously: StrictBool | None = None
 
 
 class RenderProjection(PublicModel):
@@ -320,6 +362,11 @@ class SelectedFigureEvidence(PublicModel):
         NormalizedCoordinate,
         NormalizedCoordinate,
     ]
+    inclusion_reason: str | None = None
+    domain_id: DomainId | None = None
+    question_id: QuestionId | None = None
+    search_session: Identity | None = None
+    returned_previously: StrictBool | None = None
 
 
 SelectedEvidence = Annotated[
@@ -338,6 +385,11 @@ class SourcesData(PublicModel):
     sources: tuple[Source, ...]
 
 
+class SearchRange(PublicModel):
+    start: PositiveInt
+    end: PositiveInt
+
+
 class SearchHit(PublicModel):
     source_id: str = Field(pattern=r"^source_[0-9a-f]{64}$")
     source_role: SourceRole
@@ -350,6 +402,9 @@ class SearchHit(PublicModel):
         pattern=r"^eh_[0-9a-f]{16}$",
         description="Passage reference.",
     )
+    rank: PositiveInt = Field(description="Stable underlying candidate rank.")
+    within_source_rank: PositiveInt = Field(description="Rank within the Source.")
+    range: SearchRange
 
 
 class SearchReceipt(PublicModel):
@@ -362,15 +417,34 @@ class SearchReceipt(PublicModel):
     mode: Literal["all", "phrase", "any", "prefix"]
     total_matches: NonNegativeInt
     truncated: StrictBool
-    condition: str | None = None
+    condition: str | None
+    session_id: Identity
+    session_handle: str = Field(pattern=r"^ss_[0-9a-f]{16}$")
+    candidate_count: NonNegativeInt
+    matching_page_count: NonNegativeInt
+    ranking_complete: StrictBool
+    returned_rank_start: PositiveInt | None
+    returned_rank_end: PositiveInt | None
+    next_cursor: str | None
+    exhausted: StrictBool
+    returned_material: NonNegativeInt
 
 
 class SearchData(PublicModel):
     hits: tuple[SearchHit, ...]
     total_matches: NonNegativeInt
     truncated: StrictBool
-    condition: Literal["no_hits"] | None = None
+    condition: Literal["no_hits"] | None
     search_receipt: SearchReceiptHandle
+    session_id: Identity
+    session_handle: str = Field(pattern=r"^ss_[0-9a-f]{16}$")
+    matching_page_count: NonNegativeInt
+    candidate_count: NonNegativeInt
+    ranking_complete: StrictBool
+    returned_rank_start: PositiveInt | None
+    returned_rank_end: PositiveInt | None
+    next_cursor: str | None
+    exhausted: StrictBool
 
 
 class PageData(PublicModel):
@@ -491,14 +565,13 @@ class DomainQuestionCard(PublicModel):
 
     id: QuestionId
     wording: str = Field(min_length=1)
-    allowed_answers: tuple[Answer, ...]
+    options: tuple[AnswerOption, ...] = Field(min_length=1)
     active: StrictBool
     activation: QuestionActivation
     official_guidance: str = Field(min_length=1)
     source_locator: str = Field(min_length=1)
     decision_rule: str = Field(min_length=1)
     evidence_needed: tuple[str, ...] = Field(min_length=1)
-    answer_anchors: tuple[GuidanceAnchor, ...] = Field(min_length=1)
     no_information_rule: str = Field(min_length=1)
     considerations: tuple[str, ...] = Field(
         min_length=1,
@@ -589,6 +662,64 @@ DomainResultChoice = Annotated[
 ]
 
 
+class SearchEvidenceContinuation(PublicModel):
+    operation: Literal["search_sources"]
+    trial_id: TrialId
+    query: str = Field(min_length=1)
+    mode: Literal["all", "phrase", "any", "prefix"]
+    source_id: str | None = None
+    limit: PositiveInt
+    cursor: str = Field(pattern=r"^sc_[0-9a-f]{16}_[0-9]+$")
+
+
+class EvidenceReadWindow(PublicModel):
+    source_id: str = Field(pattern=r"^source_[0-9a-f]{64}$")
+    page: PageNumber
+    start_line: PageNumber
+    end_line: PageNumber
+
+
+class ReadEvidenceContinuation(PublicModel):
+    operation: Literal["read_pages"]
+    trial_id: TrialId
+    windows: tuple[EvidenceReadWindow, ...] = Field(min_length=1, max_length=20)
+
+
+EvidenceContinuation = Annotated[
+    SearchEvidenceContinuation | ReadEvidenceContinuation,
+    Field(discriminator="operation"),
+]
+
+
+class OmittedEvidenceCounts(PublicModel):
+    result: NonNegativeInt = 0
+    checkpoint: NonNegativeInt = 0
+    contradiction: NonNegativeInt = 0
+    active_domain_candidate: NonNegativeInt = 0
+    explicit_carry_forward: NonNegativeInt = 0
+    deduplicated: NonNegativeInt = 0
+
+
+class EvidenceWorkspaceGroup(PublicModel):
+    inclusion_reason: Literal[
+        "result",
+        "checkpoint",
+        "contradiction",
+        "active_domain_candidate",
+        "explicit_carry_forward",
+    ]
+    question_ids: tuple[QuestionId, ...] = ()
+    evidence_handles: tuple[EvidenceHandle, ...] = ()
+
+
+class EvidenceWorkspace(PublicModel):
+    selection_policy_version: Literal["rob2-kit.domain-projection.v0.5"]
+    groups: tuple[EvidenceWorkspaceGroup, ...]
+    omitted_count: NonNegativeInt = 0
+    omitted_by_category: OmittedEvidenceCounts = OmittedEvidenceCounts()
+    continuation: EvidenceContinuation | None = None
+
+
 class DomainContextData(PublicModel):
     trial_id: TrialId
     domain_id: DomainId
@@ -607,6 +738,42 @@ class DomainContextData(PublicModel):
     traps: tuple[str, ...]
     questions: tuple[DomainQuestionCard, ...]
     completion_rule: str = Field(min_length=1)
+    evidence_workspace: EvidenceWorkspace
+    comparison_cards: tuple[ComparisonCard, ...] = ()
+
+
+class ComparisonPassageRef(PublicModel):
+    handle: str = Field(pattern=r"^eh_[0-9a-f]{16}$")
+    source_id: str = Field(pattern=r"^source_[0-9a-f]{64}$")
+    page: PageNumber
+    start_line: PageNumber
+    end_line: PageNumber
+
+
+class ComparisonPassageGroup(PublicModel):
+    source_id: str = Field(pattern=r"^source_[0-9a-f]{64}$")
+    source_role: SourceRole
+    source_label: str = Field(min_length=1)
+    passages: tuple[ComparisonPassageRef, ...] = ()
+
+
+class ComparisonSlot(PublicModel):
+    name: str = Field(min_length=1)
+    status: Literal["supported", "unknown", "conflicted"]
+    value: str | None = None
+    passages: tuple[ComparisonPassageRef, ...] = ()
+
+
+class ComparisonCard(PublicModel):
+    card_id: str = Field(min_length=1)
+    question_id: QuestionId
+    question_wording: str = Field(min_length=1)
+    options: tuple[AnswerOption, ...] = Field(min_length=1)
+    result_identity: Identity
+    passage_groups: tuple[ComparisonPassageGroup, ...] = ()
+    slots: tuple[ComparisonSlot, ...] = Field(min_length=1)
+    missing_data: MissingDataReconciliation | None = None
+    prompt: str = Field(min_length=1)
 
 
 class DirectCheckpointEvidenceUse(PublicModel):
@@ -670,6 +837,9 @@ class CheckpointAnswer(PublicModel):
         default=None,
         description="Concise explanation of cited premises and uncertainty.",
     )
+
+
+DomainContextData.model_rebuild()
 
 
 class NewEvidenceRevision(PublicModel):
@@ -796,6 +966,7 @@ DataByTool: Final = {
     "finalize_batch": FinalizeData,
 }
 ConditionByTool: Final = {
+    "search_sources": SearchCursorCondition,
     "finalize_batch": ConditionData,
     "request_proposal_approval": ProposalApprovalCondition,
 }
@@ -921,6 +1092,9 @@ def _payload(tool: str, value: dict[str, Any]) -> dict[str, Any]:
                     "end_line",
                     "preview",
                     "passage_ref",
+                    "rank",
+                    "within_source_rank",
+                    "range",
                 )
             }
             for item in data["hits"]

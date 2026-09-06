@@ -17,10 +17,282 @@ from rob2_kit.application import finalization
 from rob2_kit.application._state import _identity, _state
 from rob2_kit.application.contracts import COUNTERS
 from rob2_kit.application.evidence import (
+    _associated_search_ranks,
     _cached_normalized_search_text,
+    _evidence_catalog,
     _normalized_contains,
     _search_receipt,
 )
+
+
+def test_search_session_cursor_reuses_stable_ranking_after_derivative_restart(
+    tmp_path: Path,
+) -> None:
+    workspace = _workspace(tmp_path)
+    (workspace / "input" / "trial" / "main.txt").write_text(
+        "alpha beta one\nunrelated\nalpha beta two\nunrelated\nalpha beta three\n",
+        encoding="utf-8",
+    )
+    _call(
+        workspace,
+        "prepare_batch",
+        {"requested_outcome": "requested outcome", "expected_revision": 0},
+    )
+
+    first = _call(
+        workspace,
+        "search_sources",
+        {"trial_id": "trial", "query": "alpha beta", "limit": 1},
+    )["data"]
+    assert first["next_cursor"]
+    first_session = first["session_id"]
+    second = _call(
+        workspace,
+        "search_sources",
+        {
+            "trial_id": "trial",
+            "query": "alpha beta",
+            "limit": 2,
+            "cursor": first["next_cursor"],
+        },
+    )["data"]
+    assert second["session_id"] == first_session
+    assert [hit["rank"] for hit in first["hits"]] == [1]
+    assert [hit["rank"] for hit in second["hits"]] == [2, 3]
+    assert second["returned_rank_start"] == 2
+    assert second["returned_rank_end"] == 3
+    assert second["exhausted"] is True
+
+    (workspace / ".rob2-kit" / "derivative.sqlite3").unlink()
+    restarted = _call(
+        workspace,
+        "search_sources",
+        {
+            "trial_id": "trial",
+            "query": "alpha beta",
+            "limit": 2,
+            "cursor": first["next_cursor"],
+        },
+    )["data"]
+    assert restarted["session_id"] == first_session
+    assert [hit["rank"] for hit in restarted["hits"]] == [2, 3]
+
+
+def test_search_returns_multiple_source_windows_for_one_matching_page(
+    tmp_path: Path,
+) -> None:
+    workspace = _workspace(tmp_path)
+    (workspace / "input" / "trial" / "main.txt").write_text(
+        "alpha\ncontext\ncontext\nbeta\n",
+        encoding="utf-8",
+    )
+    _call(
+        workspace,
+        "prepare_batch",
+        {"requested_outcome": "requested outcome", "expected_revision": 0},
+    )
+    result = _call(
+        workspace,
+        "search_sources",
+        {"trial_id": "trial", "query": "alpha beta", "mode": "any", "limit": 10},
+    )["data"]
+    assert len(result["hits"]) == 2
+    assert [hit["rank"] for hit in result["hits"]] == [1, 2]
+    assert [hit["start_line"] for hit in result["hits"]] == [1, 4]
+    assert [hit["end_line"] for hit in result["hits"]] == [1, 4]
+    receipt = _search_receipt(workspace, result["search_receipt"])
+    assert receipt["hits"] == [
+        {"source_id": result["hits"][0]["source_id"], "page": 1},
+        {"source_id": result["hits"][1]["source_id"], "page": 1},
+    ]
+
+
+def test_all_mode_keeps_two_separated_complete_clusters_on_one_page(tmp_path: Path) -> None:
+    workspace = _workspace(tmp_path)
+    (workspace / "input" / "trial" / "main.txt").write_text(
+        "alpha beta first\nnoise\nnoise\nalpha beta second\n",
+        encoding="utf-8",
+    )
+    _call(workspace, "prepare_batch", {"requested_outcome": "outcome", "expected_revision": 0})
+
+    result = _call(
+        workspace,
+        "search_sources",
+        {"trial_id": "trial", "query": "alpha beta", "mode": "all", "limit": 10},
+    )["data"]
+
+    assert [hit["rank"] for hit in result["hits"]] == [1, 2]
+    assert [hit["start_line"] for hit in result["hits"]] == [1, 4]
+    assert [hit["end_line"] for hit in result["hits"]] == [1, 4]
+
+
+def test_search_session_identity_uses_normalized_query(tmp_path: Path) -> None:
+    workspace = _workspace(tmp_path)
+    _call(
+        workspace,
+        "prepare_batch",
+        {"requested_outcome": "requested outcome", "expected_revision": 0},
+    )
+
+    plain = _call(
+        workspace,
+        "search_sources",
+        {"trial_id": "trial", "query": "requested outcome", "mode": "all"},
+    )["data"]
+    punctuated = _call(
+        workspace,
+        "search_sources",
+        {"trial_id": "trial", "query": "  REQUESTED, outcome!! ", "mode": "all"},
+    )["data"]
+
+    assert punctuated["session_id"] == plain["session_id"]
+    assert [hit["rank"] for hit in punctuated["hits"]] == [hit["rank"] for hit in plain["hits"]]
+
+
+def test_search_pagination_is_page_size_independent_and_source_diverse(tmp_path: Path) -> None:
+    workspace = _workspace(tmp_path)
+    trial = workspace / "input" / "trial"
+    (trial / "main.txt").write_text("needle one\nneedle two\nneedle three\n", encoding="utf-8")
+    (trial / "protocol.txt").write_text("needle protocol\n", encoding="utf-8")
+    (trial / "sources.toml").write_text(
+        'roles = { "main.txt" = "main_article", "protocol.txt" = "protocol" }\n',
+        encoding="utf-8",
+    )
+    _call(workspace, "prepare_batch", {"requested_outcome": "outcome", "expected_revision": 0})
+
+    def traverse(limit: int) -> tuple[list[tuple[int, str]], dict[str, object]]:
+        cursor = None
+        rows: list[tuple[int, str]] = []
+        last: dict[str, object] = {}
+        while True:
+            args = {"trial_id": "trial", "query": "needle", "limit": limit}
+            if cursor:
+                args["cursor"] = cursor
+            last = _call(workspace, "search_sources", args)["data"]
+            rows.extend((hit["rank"], hit["passage_ref"]) for hit in last["hits"])
+            cursor = last["next_cursor"]
+            if not cursor:
+                return rows, last
+
+    one, last_one = traverse(1)
+    five, last_five = traverse(5)
+    ten, last_ten = traverse(10)
+    assert one == five == ten
+    assert [rank for rank, _ref in one] == [1, 2]
+    assert last_one["truncated"] is False and last_one["exhausted"] is True
+    assert last_five["truncated"] is False and last_ten["truncated"] is False
+    first_two = _call(
+        workspace, "search_sources", {"trial_id": "trial", "query": "needle", "limit": 2}
+    )["data"]["hits"]
+    assert len({hit["source_id"] for hit in first_two}) == 2
+    assert [hit["rank"] for hit in first_two] == [1, 2]
+
+
+def test_all_mode_matches_widely_separated_terms_without_changing_exact_quote(
+    tmp_path: Path,
+) -> None:
+    workspace = _workspace(tmp_path)
+    text = "alpha " + "x " * 30 + "beta\n"
+    (workspace / "input" / "trial" / "main.txt").write_text(text, encoding="utf-8")
+    _call(workspace, "prepare_batch", {"requested_outcome": "outcome", "expected_revision": 0})
+    result = _call(
+        workspace, "search_sources", {"trial_id": "trial", "query": "alpha beta", "mode": "all"}
+    )["data"]
+    assert result["hits"]
+    evidence = _search_receipt(workspace, result["search_receipt"])
+    assert evidence["candidate_count"] >= 1
+
+
+def test_search_cursor_conditions_are_typed_and_source_scope_is_bound(tmp_path: Path) -> None:
+    workspace = _workspace(tmp_path)
+    trial = workspace / "input" / "trial"
+    (trial / "main.txt").write_text("needle one\nneedle two\n", encoding="utf-8")
+    (trial / "protocol.txt").write_text(
+        "needle protocol\n" + "context\n" * 12 + "needle protocol again\n",
+        encoding="utf-8",
+    )
+    _call(workspace, "prepare_batch", {"requested_outcome": "outcome", "expected_revision": 0})
+    sources = _call(workspace, "list_sources", {"trial_id": "trial"})["data"]["sources"]
+    first = _call(
+        workspace, "search_sources", {"trial_id": "trial", "query": "needle", "limit": 1}
+    )["data"]
+    stale = _call(
+        workspace,
+        "search_sources",
+        {"trial_id": "trial", "query": "different", "cursor": first["next_cursor"]},
+    )
+    assert stale["condition"]["code"] == "search_cursor_stale"
+    scoped = _call(
+        workspace,
+        "search_sources",
+        {"trial_id": "trial", "query": "needle", "source_id": sources[0]["id"], "limit": 1},
+    )["data"]
+    mismatch = _call(
+        workspace,
+        "search_sources",
+        {
+            "trial_id": "trial",
+            "query": "needle",
+            "source_id": sources[-1]["id"],
+            "cursor": scoped["next_cursor"],
+        },
+    )
+    assert mismatch["condition"]["code"] == "search_cursor_stale"
+    expired = _call(
+        workspace,
+        "search_sources",
+        {
+            "trial_id": "trial",
+            "query": "needle",
+            "cursor": first["next_cursor"].rsplit("_", 1)[0] + "_999",
+        },
+    )
+    assert expired["condition"]["code"] == "search_cursor_expired"
+
+
+def test_search_candidate_identity_is_invariant_across_active_domains(tmp_path: Path) -> None:
+    from support.rob2 import _assessment_workspace, _domain_draft
+
+    workspace, evidence, revision = _assessment_workspace(tmp_path)
+    first = _call(
+        workspace,
+        "get_domain_context",
+        {"trial_id": "trial", "domain_id": "domain:randomization"},
+    )
+    assert first["outcome"] == "success"
+    randomization = _call(
+        workspace,
+        "search_sources",
+        {"trial_id": "trial", "query": "requested outcome"},
+    )["data"]
+    saved = _call(
+        workspace,
+        "save_domain_judgment",
+        _domain_draft("trial", "domain:randomization", revision, evidence),
+    )
+    assert saved["outcome"] == "success"
+    second = _call(
+        workspace,
+        "get_domain_context",
+        {"trial_id": "trial", "domain_id": "domain:deviations"},
+    )
+    assert second["outcome"] == "success"
+    missing = _call(
+        workspace,
+        "search_sources",
+        {"trial_id": "trial", "query": "requested outcome"},
+    )["data"]
+    assert randomization["session_id"] == missing["session_id"]
+    assert [hit["passage_ref"] for hit in randomization["hits"]] == [
+        hit["passage_ref"] for hit in missing["hits"]
+    ]
+    rank = randomization["hits"][0]["rank"]
+    assert (randomization["session_id"], rank) in _associated_search_ranks(
+        workspace, "trial", "domain:randomization"
+    )
+    assert (randomization["session_id"], rank) in _associated_search_ranks(
+        workspace, "trial", "domain:deviations"
+    )
 
 
 def test_list_sources_resolves_one_captured_trial_or_returns_boundary_error(tmp_path: Path) -> None:
@@ -409,6 +681,46 @@ def test_read_pages_returns_independent_cross_source_windows_and_passage_refs(
         },
     )["data"]["evidence"]
     assert selected["handle"] == pages[0]["passage_ref"]
+
+
+def test_read_pages_passage_uses_trimmed_line_bounds(tmp_path: Path) -> None:
+    workspace = _workspace(tmp_path)
+    (workspace / "input" / "trial" / "main.txt").write_text(
+        "first line\nsecond line\n\nfourth line\n",
+        encoding="utf-8",
+    )
+    _call(
+        workspace,
+        "prepare_batch",
+        {"requested_outcome": "requested outcome", "expected_revision": 0},
+    )
+    source = _call(workspace, "list_sources", {"trial_id": "trial"})["data"]["sources"][0]
+
+    page = _call(
+        workspace,
+        "read_pages",
+        {
+            "trial_id": "trial",
+            "windows": [
+                {
+                    "source_id": source["id"],
+                    "page": 1,
+                    "start_line": 1,
+                    "end_line": 3,
+                }
+            ],
+        },
+    )["data"]["pages"][0]
+
+    assert page["returned_end_line"] == 3
+    passage = next(
+        item
+        for item in _evidence_catalog(workspace).values()
+        if item["handle"] == page["passage_ref"]
+    )
+    assert passage["quote"] == "first line\nsecond line"
+    assert passage["start_line"] == 1
+    assert passage["end_line"] == 2
 
 
 def test_read_pages_returns_bounded_line_windows_with_continuation(tmp_path: Path) -> None:

@@ -1,4 +1,4 @@
-"""The exact v0.4 FastMCP boundary."""
+"""The exact v0.5 FastMCP boundary."""
 
 from __future__ import annotations
 
@@ -117,8 +117,9 @@ RequestedOutcome = Annotated[
     Field(
         min_length=1,
         description=(
-            "Outcome concept to assess across Trials; preserve the researcher's wording and "
-            "omit Trial names and scope phrases."
+            "Outcome concept to assess across Trials; preserve only the researcher's outcome "
+            "wording. Omit Trial names, population, comparison, effect estimate, follow-up, and "
+            "other Result-specific scope; those belong in the Proposal."
         ),
     ),
     AfterValidator(_nonblank),
@@ -211,6 +212,24 @@ def _invoke(tool: str, operation: Any) -> ToolResult:
         )
     except ValueError as error:
         condition = str(error)
+        if condition.startswith("search_cursor_stale:"):
+            return _content(
+                tool,
+                {
+                    "outcome": "condition",
+                    "code": "search_cursor_stale",
+                    "condition": condition.removeprefix("search_cursor_stale:"),
+                },
+            )
+        if condition.startswith("search_cursor_expired:"):
+            return _content(
+                tool,
+                {
+                    "outcome": "condition",
+                    "code": "search_cursor_expired",
+                    "condition": condition.removeprefix("search_cursor_expired:"),
+                },
+            )
         if tool in {
             "get_domain_context",
             "save_domain_judgment",
@@ -269,10 +288,10 @@ def current_batch() -> str:
     name="prepare_batch",
     title="Prepare batch",
     description=(
-        "Use requested_outcome for the outcome concept to assess. If the user names Trials, pass "
-        "their exact input directory labels in trial_labels. Omit trial_labels to capture all "
-        "immediate valid Trial directories. The server resolves directories, so no listing is "
-        "required."
+        "Use requested_outcome only for the outcome concept, excluding population, comparison, "
+        "effect estimate, follow-up, and other Result facets. If the user names Trials, pass their "
+        "exact input directory labels in trial_labels. Omit trial_labels to capture all immediate "
+        "valid Trial directories. The server resolves directories, so no listing is required."
     ),
     annotations=_INTAKE,
     output_schema=output_schema("prepare_batch"),
@@ -325,9 +344,10 @@ def list_sources(
     title="Search Trial sources",
     description=(
         "Search captured source pages (1-based source indexes). Omitted mode is exploratory any. "
-        "Required: trial_id, query. Optional: source_id, mode, limit. Returns bounded hits, "
-        "counts, truncation, and opaque receipt, including valid no-hit searches; refine "
-        "truncated searches before absence."
+        "Required: trial_id, query. Optional: source_id, mode, limit, cursor. Returns a "
+        "bounded first batch with a stable session, counts, truncation, and opaque receipt; "
+        "continue with next_cursor for the same ranking. Valid no-hit searches are returned; "
+        "refine truncated searches before absence."
     ),
     annotations=_READ_ONLY,
     output_schema=output_schema("search_sources"),
@@ -360,10 +380,14 @@ def search_sources(
     limit: Annotated[
         SearchLimit, Field(description="Maximum matching pages (1-100); default 10.")
     ] = 10,
+    cursor: Annotated[
+        str | None,
+        Field(description="Opaque continuation cursor returned by the prior search response."),
+    ] = None,
 ) -> ToolResult:
     return _invoke(
         "search_sources",
-        lambda: _search_sources(_workspace(), trial_id, query, mode, limit, source_id),
+        lambda: _search_sources(_workspace(), trial_id, query, mode, limit, source_id, cursor),
     )
 
 
@@ -870,8 +894,9 @@ async def request_proposal_approval(ctx: Context) -> ToolResult:
         "next_action.operation=get_domain_context. Before saving, perform the bounded "
         "question-specific discovery required by the returned cards; read positive hits "
         "and do not claim missing information from Result Evidence alone. The response includes "
-        "every Domain card and its activation predicate. Build the complete transitive active "
-        "set from answers in the same save call; inactive extra answers are ignored."
+        "a scoped Evidence workspace, safe comparison cards for D2/D3/D5, and every Domain "
+        "question with its activation predicate and server-issued answer options. Build the "
+        "complete transitive active set in one save; inactive extra answers are ignored."
     ),
     annotations=_READ_ONLY,
     output_schema=output_schema("get_domain_context"),
@@ -898,9 +923,9 @@ def get_domain_context(
         "Domain assessment and after its bounded question-specific source searches. Every "
         "Evidence premise must state the question proposition; treatment assignment alone "
         "does not prove awareness, differential measurement, or lack of analysis choices. "
-        "Supply every active question. Extra inactive future branch answers are ignored. "
-        "Evaluate activation predicates against earlier items in this same answers list before "
-        "the first save. "
+        "Supply one current option ID for every active question. Extra inactive future branch "
+        "answers are ignored. Evaluate activation predicates from the selected options in this "
+        "same save before the first commit. "
         "The fifth accepted Domain freezes that Trial's final AssessmentSnapshot before "
         "next_action advances to another Trial; no separate Trial-finalization call exists."
     ),
@@ -918,7 +943,7 @@ def save_domain_judgment(
         Field(
             min_length=1,
             description=(
-                "One typed answer per active question: question_id, answer, bases. Definitive "
+                "One typed answer per active question: question_id, option_id, bases. Definitive "
                 "yes/no needs direct/indirect/contradictory Evidence; probable answers may use "
                 "limitation, absence receipt, context, or inference. List, not map; inactive "
                 "branches ignored."
@@ -927,7 +952,7 @@ def save_domain_judgment(
                 [
                     {
                         "question_id": "sq:randomization:sequence",
-                        "answer": "probably_yes",
+                        "option_id": "opt_0123456789abcdef01234567",
                         "bases": [
                             {
                                 "kind": "direct_support",

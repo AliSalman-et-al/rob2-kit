@@ -167,7 +167,9 @@ def test_fts_and_exact_evidence_use_projected_table_cells(tmp_path: Path) -> Non
     workspace, source = _prepare_pdf(tmp_path)
 
     hits = search_sources(workspace, "trial", "Docetaxel")
-    assert len(hits["hits"]) == 1
+    # Search sessions retain separate local match windows, even when table
+    # extraction and page text produce two navigable passages on one page.
+    assert len(hits["hits"]) == 2
     assert hits["hits"][0]["page"] == 2
     assert "Docetaxel" in hits["hits"][0]["preview"]
     assert "[Extracted table 1]" in hits["hits"][0]["preview"]

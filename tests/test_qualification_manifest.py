@@ -117,6 +117,25 @@ def test_restart_proof_requires_pre_ack_identity_equality(tmp_path: Path) -> Non
     )
 
 
+def test_evaluation_manifest_generate_rejects_nested_private_extra(tmp_path: Path) -> None:
+    fixture = json.loads(Path("eval/synthetic-heldout.json").read_text(encoding="utf-8"))
+    manifest = fixture["manifest"]
+    manifest["splits"][0]["source_text"] = "must not be retained"
+    source, output = tmp_path / "input.json", tmp_path / "output.json"
+    source.write_text(json.dumps(manifest), encoding="utf-8")
+
+    generated = subprocess.run(
+        [sys.executable, "scripts/qualification_manifest.py", "generate", str(source), str(output)],
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+    assert generated.returncode == 1
+    assert "unclosed field set" in generated.stderr
+    assert not output.exists()
+
+
 @pytest.mark.parametrize(
     "mutate",
     [

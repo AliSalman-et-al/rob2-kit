@@ -103,6 +103,15 @@ def _canonical_search_text(value: str) -> str:
     return " ".join(normalized.split())
 
 
+def _canonical_query_text(value: str) -> str:
+    """Normalize lexical query differences that FTS does not distinguish."""
+    return " ".join(
+        term
+        for raw in _canonical_search_text(value).casefold().split()
+        if (term := re.sub(r"^\W+|\W+$", "", raw))
+    )
+
+
 def _search_derivative(text: str) -> tuple[str, str]:
     """Return separate raw and normalized discovery-only search variants."""
     normalized = _canonical_search_text(text)
@@ -263,8 +272,8 @@ def _ensure(root: Path) -> None:
         )
         current = connection.execute("SELECT value FROM meta WHERE name='contract'").fetchone()
         if current is None:
-            connection.execute("INSERT INTO meta VALUES ('contract','0.4.0')")
-        elif current[0] != "0.4.0":
+            connection.execute("INSERT INTO meta VALUES ('contract','0.5.0')")
+        elif current[0] != "0.5.0":
             raise ValueError("contract_version_unsupported")
         page_recipe = connection.execute(
             "SELECT value FROM meta WHERE name='page_projection'"
@@ -313,6 +322,21 @@ def _ensure(root: Path) -> None:
         connection.execute(
             "CREATE TABLE IF NOT EXISTS search_receipts (identity TEXT PRIMARY KEY, "
             "payload BLOB NOT NULL)"
+        )
+        # Search sessions and candidates are immutable, rebuildable navigation
+        # state. They never enter the canonical ledger or assessment identity.
+        connection.execute(
+            "CREATE TABLE IF NOT EXISTS search_sessions (identity TEXT PRIMARY KEY, "
+            "payload BLOB NOT NULL)"
+        )
+        connection.execute(
+            "CREATE TABLE IF NOT EXISTS search_candidates (session_identity TEXT NOT NULL, "
+            "rank INTEGER NOT NULL, payload BLOB NOT NULL, PRIMARY KEY(session_identity,rank))"
+        )
+        connection.execute(
+            "CREATE TABLE IF NOT EXISTS search_domain_associations ("
+            "session_identity TEXT NOT NULL, rank INTEGER NOT NULL, domain_id TEXT NOT NULL, "
+            "PRIMARY KEY(session_identity,rank,domain_id))"
         )
     _rebuild_derivative_if_needed(root)
 

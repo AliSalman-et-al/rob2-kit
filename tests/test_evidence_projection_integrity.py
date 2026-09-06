@@ -223,6 +223,31 @@ def test_rehashed_no_hit_search_receipt_cannot_gain_a_result(tmp_path: Path) -> 
         _search_receipt(workspace, str(tampered["handle"]))
 
 
+def test_search_receipt_rejects_a_rehashed_or_missing_session(tmp_path: Path) -> None:
+    workspace, _source = _workspace(tmp_path)
+    receipt = search_sources(workspace, "trial", "absent term")["search_receipt"]
+    derivative = workspace / ".rob2-kit" / "derivative.sqlite3"
+    with sqlite3.connect(derivative) as connection:
+        row = connection.execute(
+            "SELECT payload FROM search_sessions WHERE identity=?", (receipt["session_id"],)
+        ).fetchone()
+        assert row is not None
+        session = json.loads(bytes(row[0]))
+        session["spec"]["mode"] = "phrase"
+        connection.execute(
+            "UPDATE search_sessions SET payload=? WHERE identity=?",
+            (canonical_json_bytes(session), receipt["session_id"]),
+        )
+
+    with pytest.raises(ValueError, match="session configuration is stale or corrupt"):
+        _search_receipt(workspace, str(receipt["handle"]))
+
+    with sqlite3.connect(derivative) as connection:
+        connection.execute("DELETE FROM search_sessions")
+    with pytest.raises(ValueError, match="search_cursor_expired"):
+        _search_receipt(workspace, str(receipt["handle"]))
+
+
 def test_rehashed_visual_handle_cannot_replace_cached_render_projection(tmp_path: Path) -> None:
     trial = tmp_path / "input" / "trial"
     trial.mkdir(parents=True)

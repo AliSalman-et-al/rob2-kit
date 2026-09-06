@@ -34,7 +34,7 @@ catalog, schema, resource, or console-entry-point drift fails closed.
 Run the complete release check with:
 
 ```powershell
-./scripts/verify_v04.ps1
+./scripts/verify_v05.ps1
 ```
 
 That script regenerates the public contract, runs lint, type checks, and the
@@ -44,7 +44,7 @@ The lower-level commands remain available for isolated contract work:
 ```powershell
 uv run python docs/release/verify.py
 uv build --wheel --out-dir dist
-uv run python docs/release/verify.py --wheel dist/rob2_kit-0.4.0-py3-none-any.whl
+uv run python docs/release/verify.py --wheel dist/rob2_kit-0.5.0-py3-none-any.whl
 ```
 
 See `docs/adr/0031-v0-4-evidence-first-interaction.md` for the public input

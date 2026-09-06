@@ -133,14 +133,13 @@ def test_domain_questions_include_typed_premise_rules_and_shortcuts(tmp_path: Pa
     compact_fields = {
         "id",
         "wording",
-        "allowed_answers",
+        "options",
         "active",
         "activation",
         "official_guidance",
         "source_locator",
         "decision_rule",
         "evidence_needed",
-        "answer_anchors",
         "no_information_rule",
         "considerations",
         "invalid_shortcuts",
@@ -152,7 +151,7 @@ def test_domain_questions_include_typed_premise_rules_and_shortcuts(tmp_path: Pa
         assert question["source_locator"].startswith("Full guidance ")
         assert shortcut in question["invalid_shortcuts"]
         assert question["decision_rule"]
-        assert question["answer_anchors"]
+        assert question["options"]
         assert question["no_information_rule"]
         pack_question = next(item for item in SCIENTIFIC_PACK.questions if item.id == question_id)
         assert pack_question.guidance.official.source_excerpt == question["official_guidance"]
@@ -161,10 +160,9 @@ def test_domain_questions_include_typed_premise_rules_and_shortcuts(tmp_path: Pa
         assert pack_question.guidance.operational.evidence_needed == tuple(
             question["evidence_needed"]
         )
-        assert [
-            anchor.model_dump(mode="json")
-            for anchor in pack_question.guidance.operational.answer_anchors
-        ] == question["answer_anchors"]
+        assert {option["official_answer"] for option in question["options"]} == {
+            answer.value for answer in pack_question.allowed_answers
+        }
         assert (
             pack_question.guidance.operational.no_information_rule
             == question["no_information_rule"]
@@ -178,8 +176,13 @@ def test_domain_questions_include_typed_premise_rules_and_shortcuts(tmp_path: Pa
     for question_id, marker in fidelity_markers.items():
         guidance = questions[question_id]
         assert marker.lower() in guidance["official_guidance"].lower()
-        allowed = set(questions[question_id]["allowed_answers"])
-        assert all(anchor["answer"] in allowed for anchor in guidance["answer_anchors"])
+        allowed = {
+            answer.value
+            for answer in next(
+                item for item in SCIENTIFIC_PACK.questions if item.id == question_id
+            ).allowed_answers
+        }
+        assert all(option["official_answer"] in allowed for option in guidance["options"])
 
 
 def test_unsupported_result_leaves_are_aggregated_repairs(tmp_path: Path) -> None:

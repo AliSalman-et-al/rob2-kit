@@ -1,276 +1,106 @@
 # Specify the Result
 
-Use this reference before `save_proposal`.
+Use this reference while choosing and constructing each Proposal Result. Use the
+live `save_proposal` schema for field shapes.
 
-## Result-choice invariant
+## Choose the closest complete Result
 
-Choose an exact assessable Result first. If no exact endpoint exists, choose
-the closest complete non-exact assessable candidate or profile. Use unavailable
-only when no complete assessable candidate exists. Missing comparator values do
-not make a fully reported one-arm categorical profile unavailable: use
-`single_group_category_profile`, keep all randomized arms in `target`, set
-`reported.group_id` to the supported arm, and never invent comparator
-categories.
+Choose an exact assessable Result first. If none exists, choose the closest
+complete non-exact assessable candidate or profile. Use unavailable only when no
+complete assessable candidate exists.
 
-## Keep the target and the report separate
+Inventory complete main-article candidates and any materially competing
+candidates in other Sources. Compare:
 
-Write the Result target from the researcher's request. Record what the Source reports as a separate Reported result.
+- event set;
+- time origin or window;
+- population;
+- measurement or ascertainment; and
+- state, severity, or other eligibility criteria.
 
-The `results` array contains Result cards only. Every item starts with exactly
-`kind:"assessable"` or `kind:"unavailable"`. Outputs from
-`select_text_evidence` and `select_visual_evidence` are durable server state:
-never place those objects in `results`, never place a figure handle under
-`reported`, and never add an `evidence` field to an assessable card.
+Prefer the candidate that directly covers the requested construct with the
+fewest added criteria. For an umbrella or composite request, prefer a complete
+reported family or profile over an isolated component when available. A first
+hit, familiar label, important clinical result, or identical number is not a
+scientific correspondence rule.
 
-Do not repeat the user's named outcome in a Result. The server reconstructs
-`requested_outcome`, `target.outcome_definition`, `target.measurement.metric`,
-and `target.effect_of_interest` from the captured Intake declaration and fixed
-workflow contract. Do not replace the captured request with a Source endpoint
-or synonym. Keep a different Source endpoint in `reported.endpoint` and use an
-explicit non-exact relation, or provide an evidence-bound unavailable result.
+Submit one best candidate per Trial. Competing candidates inform the choice;
+they are not Proposal alternatives. Replace the complete Trial card if later
+review identifies a better candidate.
 
-The Result target states:
+## Separate target from report
 
-- the measurement method;
-- the time point;
-- the intervention and comparator groups;
-- the intended analysis population;
-- the effect of interest; and
-- the intended effect measure.
+The target records the requested measurement, time, randomized groups, intended
+analysis population, and intended effect measure. Describe every complete
+randomized arm in `comparison_groups`. `measurement.method` is ascertainment or
+definition, not a summary statistic.
 
-Use the closed target shapes exactly:
+The reported object records the Source endpoint and quantities. Keep its
+endpoint distinct from the captured requested outcome. The server supplies the
+captured outcome, target metric, and `effect_of_interest:"assignment"`.
 
-- `measurement` is `{method}`. The server supplies the captured metric; `method`
-  names its definition or ascertainment, not a summary statistic such as a median.
-- `time_point_or_window` is either `{kind:"described",description}` or
-  `{kind:"quantified",description,value,unit}`.
-- Each `comparison_groups` item is `{id,assignment}`. `assignment` describes the
-  complete randomized arm, not one component of an arm.
+Use `relation:"exact"` only when the requested outcome name and reported
+endpoint name match after the server's Unicode, whitespace, case, and hyphen
+normalization. Omit `relation_rationale` for exact. For other assessable Results:
 
-This package implements the RoB 2 effect-of-assignment domain. The server sets
-`effect_of_interest` to the exact closed value `assignment`. An intervention
-name belongs in `comparison_groups`, not in an effect field.
+- `broader`: the reported event, population, or time scope is a superset;
+- `narrower`: it is a subset or adds restrictions;
+- `component`: it is one constituent of the requested composite or category;
+- `related`: the constructs overlap without one of those ordered relations.
 
-The Reported result states:
+State the material difference in `relation_rationale`. Do not infer synonyms.
 
-- the Source-reported endpoint `name` and its exact `definition`;
-- the population that the Source analyzed;
-- the meaning of each group, row, column, or series;
-- each quantity, unit, and denominator basis; and
-- whether the Source reports or permits a comparative estimate.
+## Preserve the Source-owned quantities
 
-Use one closed reported form. Every form includes `endpoint:{name,definition}`.
-Set `definition` to the exact complete definition tied to that same endpoint
-label in one selected passage; when no such passage exists, use `null` rather
-than borrowing a component or related endpoint definition. The endpoint name
-is the Source's endpoint name, not a summary statistic.
-A comparative effect has `effect_measure`, `estimate`, optional `precision`,
-and optional `group_values`. Omit `group_values` when the comparative estimate
-is complete and the Source does not state one unambiguous statistic and unit
-for every randomized group. When supplied, `group_values` contains at least two
-items and covers every target group. A group-bound result has at least two
-`values`. Every group value is `{group_id,statistic,value,unit}`; the reported
-group IDs must exactly match the target group IDs. Do not invent a statistic or
-unit to make an optional group value fit the schema.
+Choose one reported form:
 
-## Minimal proposal examples
+- `comparative_effect` for a between-group estimate;
+- `group_bound_values` for one complete statistic, value, and unit per randomized
+  group;
+- `single_group_category_profile` for a complete category profile reported for
+  one randomized group.
 
-Use these examples as shapes, not content. Replace every identifier and value
-with the current Batch data and exact Source wording. Select the supporting
-Evidence before calling `save_proposal`; Evidence handles do not appear in an
-assessable Result card.
+Use the Source endpoint label in `endpoint.name`. Include
+`endpoint.definition` only when one selected passage explicitly ties the exact
+complete definition to that label; otherwise omit it.
 
-This is one exact comparative Result. It is exact only because the captured
-requested outcome and `reported.endpoint.name` normalize to the same text.
+Keep the endpoint name and at least one complete quantitative tuple in the same
+Evidence item. The tuple is an effect measure plus estimate, a complete
+statistic/value/unit group value, or complete category axes plus cell value.
+Precision is supported separately. Do not splice an endpoint name from one
+passage with all quantities from another.
 
-```json
-{
-  "results": [
-    {
-      "kind": "assessable",
-      "trial_id": "trial_a",
-      "relation": "exact",
-      "target": {
-        "measurement": {"method": "time from assignment to the endpoint"},
-        "time_point_or_window": {
-          "kind": "described",
-          "description": "through the reported data cutoff"
-        },
-        "comparison_groups": [
-          {"id": "group_a", "assignment": "Strategy A"},
-          {"id": "group_b", "assignment": "Strategy B"}
-        ],
-        "intended_analysis_population": "all randomized participants",
-        "intended_effect_measure": "hazard ratio"
-      },
-      "reported": {
-        "form": "comparative_effect",
-        "effect_measure": "hazard ratio",
-        "estimate": "0.80",
-        "precision": "95% CI 0.65 to 0.98",
-        "endpoint": {"name": "Requested endpoint", "definition": null}
-      }
-    }
-  ],
-  "expected_revision": 7
-}
-```
+Keep quantities as Source strings. Do not invent statistics or units. For a
+comparative effect, omit optional `group_values` unless the Source states one
+unambiguous statistic and unit for every target group. Reported group IDs are
+structural references and must match target group IDs.
 
-Use this unavailable shape only after ruling out every complete assessable
-candidate. The Evidence handle must identify a selected same-Trial passage that
-states the missing premise; related-endpoint Evidence is not enough.
+## Keep one-arm category profiles assessable
 
-```json
-{
-  "results": [
-    {
-      "kind": "unavailable",
-      "trial_id": "trial_a",
-      "relation": "unavailable",
-      "missing_facts": [
-        {
-          "fact": "The requested endpoint result is not reported.",
-          "basis": {
-            "kind": "missing_reporting",
-            "evidence": "eh_0123456789abcdef"
-          }
-        }
-      ]
-    }
-  ],
-  "expected_revision": 7
-}
-```
+Missing comparator values do not make a fully reported one-arm categorical
+profile unavailable. Use `single_group_category_profile`, retain all randomized
+arms in the target, and point `reported.group_id` to the supported arm.
 
-## State one Target relation
+Set `category_axis_names` to the ordered non-treatment dimensions. Each cell's
+`category_axes` contains one exact Source label for every dimension, in that
+order. Put the shared population or denominator in `denominator_basis`. Preserve
+each opaque cell value, including a combined count and percentage. Never invent
+comparator cells.
 
-For an assessable Result, choose `exact`, `broader`, `narrower`, `component`,
-or `related`. `ambiguous` and `unavailable` belong only
-to an unavailable Result.
+## Use unavailable only for a real missing premise
 
-These relations are relative to the requested target. `exact` is a normalized
-name match only. `broader` means the reported event, population, or time scope
-is a superset of the target. `narrower` means it is a subset or has additional
-restrictions; added criteria make a candidate narrower, not broader. `component`
-means the reported endpoint is one constituent of a requested composite or
-category. `related` means the constructs overlap but none of those ordered
-relations applies.
+An unavailable Result needs concrete `missing_facts`. Each fact has exactly one
+basis:
 
-Every non-exact assessable Result needs a `relation_rationale`. Use `exact` only
-when the captured target outcome name matches the Source-reported endpoint name
-after Unicode, whitespace, case, and hyphen normalization. Do not infer
-synonyms. Omit `relation_rationale` for `exact`; the server derives its
-deterministic rationale. A non-exact assessable relation requires a rationale
-and researcher confirmation.
-`ambiguous` and `unavailable` cannot enter Domain assessment.
+- `missing_reporting` with an Evidence handle whose passage explicitly states
+  the missing input; or
+- `intake_condition` with `code:"no_supported_sources"` for a captured Trial
+  with zero Sources and that exact Intake condition.
 
-When several endpoints may match, choose one complete candidate and submit it. During a pending Proposal Review, if another candidate is better for one Trial, submit one complete replacement card for that Trial. The server preserves unmentioned Trial cards. Do not send alternatives or a field patch.
+A related endpoint, missing comparator for a complete one-arm profile, or a
+repairable draft does not establish unavailability. If the requested label is
+absent but a complete related candidate exists, submit it with a non-exact
+relation for Proposal Review.
 
-When the Source has no exact endpoint label, do not stop at the first lexical
-match and do not default to unavailable. Compare the Source-defined endpoint
-definitions by event set, time origin or window, population, measurement, and
-state criteria before extracting values. Make the closest fully reported
-candidate the Result. Prefer direct event-construct wording and the fewest
-added criteria over a named disease-state transition or surrogate; prefer
-neither candidate merely because its name is more similar or its effect is
-larger. Never infer equivalence from identical numbers. Apply the relation
-definitions above and name the material differences in the rationale.
-
-Before submitting any non-exact, related, or component Result, search beyond
-the abstract, summary, or first hit into the source body and tables and compare
-all complete candidates. The first valid, most salient, or easiest-to-extract
-candidate is not necessarily closest. Choose the direct complete construct or
-profile with the fewest added criteria; use an isolated component only as a
-last resort when no complete profile or closer candidate is reported.
-
-For a broadly requested category outcome, identify the Source's reported scope
-before choosing cells: population, severity window, time window, and category
-set. Prefer the trial's explicitly reported summary or prespecified profile as
-the candidate. If several scopes remain plausible, choose the best complete
-candidate and revise the proposal if later review selects another scope; do not
-silently splice rows, grades, or time windows.
-
-The server derives canonical Result clarity for a fully assessable card. Do not
-submit a `clarity` field.
-
-Evidence selection is durable server state. Select every premise needed by the
-Result before submission, but do not add an `evidence` field to the Result card.
-The server derives bindings across selected material and retains only Evidence
-that supports a Result field.
-
-## Premise audit before submission
-
-For each Source-derived Result field, compare the proposed value with the exact
-selected premise that binds it. For each non-exact relation, keep the rationale
-as researcher reasoning; the server checks provenance and identity, not semantic
-equivalence. Each reported endpoint field must be supported by selected
-Evidence; the fields may use different selected passages. If the premise does
-not entail a proof-critical reported field, revise the field, select better
-Evidence, choose and resubmit a different complete candidate, or record the
-Result as unavailable with a concrete missing fact. Target method, timing,
-intended population, intended measure, and arm assignments are
-reviewer-visible interpretation fields and do not need duplicate source
-quotations. The researcher reviews them at Proposal Review.
-
-Keep endpoint definitions, time points, populations, outcome coverage,
-denominators, categories, and randomized groups distinct. Treat table axes as
-categories unless the Source labels them as treatment groups. Preserve complete
-category sets and do not infer comparator values from a one-arm report. A
-composite or related endpoint is not interchangeable with the requested target
-without a researcher-visible rationale and review.
-
-For a single-group category table reported for only one randomized arm, use
-`single_group_category_profile` with that supported `group_id`; this is
-assessable even when comparator values were not collected. Keep both randomized
-arms in the target and do not invent comparator categories. A related endpoint
-with enough data is likewise an assessable non-exact Result, not automatically
-unavailable.
-
-Set `category_axis_names` to the ordered names of the non-treatment dimensions
-shared by every category cell. One name is valid for a one-dimensional profile.
-Each `reported.categories[*]` value must use exactly one source-owned label in
-`category_axes` for each name, in table order, such as
-`["category", "level"]`. Set the shared `denominator_basis` once on the
-profile. Each cell contains only its complete opaque source value (for example,
-`count (percentage)`); do not invent statistic or unit labels that the selected
-material does not contain. Do not submit only one axis when both are needed to
-locate the value. If a source prints both counts and percentages in one cell,
-preserve the complete cell value.
-
-For an unavailable Result, every `missing_facts` item is an object with a `fact`
-and one nested `basis`. Use
-`{kind:"missing_reporting",evidence:"<selected handle>"}` when a Source
-explicitly reports the missing input. The server retains that selection's
-complete quote or transcription as the exact source premise. For a Trial with
-zero captured Sources, use
-`{kind:"intake_condition",code:"no_supported_sources"}` only when the
-Captured Batch contains that exact Trial condition. Both forms still require
-Proposal Review. A related endpoint is not a missing-reporting premise. There
-is no free rationale field. If a plausible related endpoint exists, revise and
-submit it as one complete assessable non-exact Result instead of declaring the
-requested endpoint unavailable solely because names differ.
-
-Completion: every Trial has one internally consistent Result card or one unavailable disposition with concrete missing-input facts and one-to-one Evidence coverage.
-# Selected material and Result completeness
-
-Select a complete sentence or complete table/figure transcription before making a
-Result claim. A truncated narrative fragment cannot support fields outside its exact
-quote. Every proof-critical reported leaf and source-owned reported group or
-category label needs one indexed Evidence binding with its exact JSON-pointer path and value
-digest. A narrative Evidence item is only its server-issued handle; the handle
-already resolves to the immutable page-preserving quote. Do not copy clauses or
-author source-to-value mappings. Target interpretation fields, including timing
-and arm assignments, caller-owned labels, the closed effect discriminator, and
-comparison-group IDs are not Source claims and are intentionally unbound.
-Figure Evidence carries server-assigned `text_corroborated` or `host_visual`
-provenance. Every figure-bound leaf must occur in its literal transcription;
-host-visual support is limited to visible labels, endpoint text, values, axes,
-arm labels, and stated timing. Use narrative or text-corroborated Evidence for
-population, analysis/measurement method, prespecification, and conduct claims.
-At least one selected immutable Evidence item must also anchor an endpoint
-identifier (name or definition) together with one complete quantitative result
-tuple: effect measure plus estimate, or one complete group-value tuple
-(statistic/value/unit) for a comparative effect; statistic/value/unit for a
-group-bound value; or category axes/value for a category profile. Precision is
-checked independently and is not required in the anchor. Do not splice an
-endpoint from one passage with values from another.
+Completion: every Trial has one internally coherent assessable Result or one
+unavailable disposition grounded in concrete missing facts.

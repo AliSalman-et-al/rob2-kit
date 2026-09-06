@@ -16,6 +16,7 @@ from typing import Any
 from fastmcp import Client
 
 from rob2_kit.application._state import _identity
+from rob2_kit.application.domains import _answer_option
 from rob2_kit.application.evidence import _search_receipt
 from rob2_kit.application.finalization import verify_bundle
 from rob2_kit.interfaces.mcp.server import mcp
@@ -129,6 +130,17 @@ def _answers(domain_id: str) -> dict[str, str]:
     return values
 
 
+def _option_for(question_id: str, answer: str) -> str:
+    question = next(item for item in SCIENTIFIC_PACK.questions if item.id == question_id)
+    selected = next(
+        option
+        for candidate in question.allowed_answers
+        for option in (_answer_option(question, candidate),)
+        if option["official_answer"] == answer
+    )
+    return str(selected["id"])
+
+
 def _domain_draft(
     trial_id: str,
     domain_id: str,
@@ -157,7 +169,11 @@ def _domain_draft(
         "domain_id": domain_id,
         "expected_revision": revision,
         "answers": [
-            {"question_id": question_id, "answer": answer, "bases": list(bases)}
+            {
+                "question_id": question_id,
+                "option_id": _option_for(question_id, answer),
+                "bases": list(bases),
+            }
             for question_id, answer in _answers(domain_id).items()
         ],
     }
@@ -265,7 +281,16 @@ def _absence_assessed_artifact(workspace: Path) -> Path:
         )
         draft = _domain_draft("trial", domain.id, revision, evidence)
         for answer in draft["answers"]:
-            if answer["answer"] == "no_information":
+            question = next(
+                item for item in SCIENTIFIC_PACK.questions if item.id == answer["question_id"]
+            )
+            no_information = next(
+                (item for item in question.allowed_answers if item.value == "no_information"),
+                None,
+            )
+            if no_information is not None and answer["option_id"] == _option_for(
+                answer["question_id"], "no_information"
+            ):
                 answer["bases"] = [{"kind": "absence", "search_receipt": receipt["handle"]}]
             else:
                 answer["bases"] = [
