@@ -414,6 +414,35 @@ def test_domain_context_scopes_candidates_before_applying_the_budget(tmp_path: P
     }
 
 
+def test_proposal_search_candidates_do_not_leak_into_first_domain(tmp_path: Path) -> None:
+    workspace = _workspace(tmp_path)
+    (workspace / "input" / "trial" / "proposal-only.txt").write_text(
+        "proposal candidate unrelated to randomization\n", encoding="utf-8"
+    )
+    proposal_evidence = _prepared_evidence(workspace)
+    source = next(
+        item
+        for item in _call(workspace, "list_sources", {"trial_id": "trial"})["data"]["sources"]
+        if item["label"] == "proposal-only.txt"
+    )
+    proposal_candidate = _call(
+        workspace,
+        "search_sources",
+        {
+            "trial_id": "trial",
+            "source_id": source["id"],
+            "query": "proposal candidate",
+            "mode": "all",
+        },
+    )["data"]["hits"][0]
+    _call(workspace, "save_proposal", _proposal_args(workspace, [_result(proposal_evidence)]))
+    _review(workspace)
+
+    context = _call(workspace, "get_domain_context", {})["data"]
+
+    assert proposal_candidate["passage_ref"] not in {item["handle"] for item in context["evidence"]}
+
+
 def test_domain_context_continuation_reaches_omissions_across_sessions(tmp_path: Path) -> None:
     workspace = _workspace(tmp_path)
     document = pymupdf.open()

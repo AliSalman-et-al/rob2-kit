@@ -234,6 +234,11 @@ def test_prepare_batch_schema_is_closed_and_requires_outcome_request() -> None:
         "trial_labels",
     }
     assert schema["properties"]["requested_outcome"]["type"] == "string"
+    outcome_description = schema["properties"]["requested_outcome"]["description"]
+    assert all(
+        excluded in outcome_description
+        for excluded in ("Trial names", "population", "comparison", "effect estimate")
+    )
     trial_labels = schema["properties"]["trial_labels"]
     array_schema = next(item for item in trial_labels["anyOf"] if item.get("type") == "array")
     assert array_schema["minItems"] == 1

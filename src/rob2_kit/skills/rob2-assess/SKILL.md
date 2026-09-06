@@ -20,8 +20,10 @@ without asking for signalling answers, progress confirmation, or final approval.
 Call `get_status` first. Follow `head.next_action`; it is the authoritative next
 operation. Pass its server-owned IDs and `expected_revision` unchanged.
 
-When the Batch is empty, call `prepare_batch` with the clinical outcome concept
-from the request. If the researcher named Trials, pass their exact input
+When the Batch is empty, call `prepare_batch` with only the clinical outcome
+concept from the request. Do not include the Trial name, population, comparison,
+effect estimate, follow-up, or other Result facets in `requested_outcome`; those
+belong in the Proposal. If the researcher named Trials, pass their exact input
 directory labels. Omit `trial_labels` only when the request covers every input
 Trial.
 

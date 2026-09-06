@@ -19,6 +19,7 @@ from rob2_kit.application.contracts import COUNTERS
 from rob2_kit.application.evidence import (
     _associated_search_ranks,
     _cached_normalized_search_text,
+    _evidence_catalog,
     _normalized_contains,
     _search_receipt,
 )
@@ -680,6 +681,46 @@ def test_read_pages_returns_independent_cross_source_windows_and_passage_refs(
         },
     )["data"]["evidence"]
     assert selected["handle"] == pages[0]["passage_ref"]
+
+
+def test_read_pages_passage_uses_trimmed_line_bounds(tmp_path: Path) -> None:
+    workspace = _workspace(tmp_path)
+    (workspace / "input" / "trial" / "main.txt").write_text(
+        "first line\nsecond line\n\nfourth line\n",
+        encoding="utf-8",
+    )
+    _call(
+        workspace,
+        "prepare_batch",
+        {"requested_outcome": "requested outcome", "expected_revision": 0},
+    )
+    source = _call(workspace, "list_sources", {"trial_id": "trial"})["data"]["sources"][0]
+
+    page = _call(
+        workspace,
+        "read_pages",
+        {
+            "trial_id": "trial",
+            "windows": [
+                {
+                    "source_id": source["id"],
+                    "page": 1,
+                    "start_line": 1,
+                    "end_line": 3,
+                }
+            ],
+        },
+    )["data"]["pages"][0]
+
+    assert page["returned_end_line"] == 3
+    passage = next(
+        item
+        for item in _evidence_catalog(workspace).values()
+        if item["handle"] == page["passage_ref"]
+    )
+    assert passage["quote"] == "first line\nsecond line"
+    assert passage["start_line"] == 1
+    assert passage["end_line"] == 2
 
 
 def test_read_pages_returns_bounded_line_windows_with_continuation(tmp_path: Path) -> None:

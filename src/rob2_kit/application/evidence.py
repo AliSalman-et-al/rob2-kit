@@ -346,8 +346,13 @@ def search_sources(
     # authoritative workflow selector here.
     from .status import _active_trial_and_domain
 
-    active_trial_id, active_domain_id = _active_trial_and_domain(_read(root, "state") or {})
-    if active_trial_id == trial_id and active_domain_id is not None:
+    state = _read(root, "state") or {}
+    active_trial_id, active_domain_id = _active_trial_and_domain(state)
+    if (
+        state.get("phase") == "assessment"
+        and active_trial_id == trial_id
+        and active_domain_id is not None
+    ):
         # Associate the complete immutable ranking with the Domain that issued
         # the search. Lower-ranked candidates may not be materialized yet, but
         # context continuation must still reach them without rerunning retrieval.
@@ -1997,6 +2002,7 @@ def select_text_evidence_by_lines(
     quote = text[start:end]
     if not quote.strip():
         raise ValueError("line range must contain non-whitespace source text")
+    selected_start_line, selected_end_line, _, _ = _line_bounds(text, start, end)
     return {
         "outcome": "success",
         "evidence": _evidence(
@@ -2009,8 +2015,8 @@ def select_text_evidence_by_lines(
                 "start": start,
                 "end": end,
                 "quote": quote,
-                "start_line": start_line,
-                "end_line": end_line,
+                "start_line": selected_start_line,
+                "end_line": selected_end_line,
             },
         ),
     }

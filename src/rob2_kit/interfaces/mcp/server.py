@@ -117,8 +117,9 @@ RequestedOutcome = Annotated[
     Field(
         min_length=1,
         description=(
-            "Outcome concept to assess across Trials; preserve the researcher's wording and "
-            "omit Trial names and scope phrases."
+            "Outcome concept to assess across Trials; preserve only the researcher's outcome "
+            "wording. Omit Trial names, population, comparison, effect estimate, follow-up, and "
+            "other Result-specific scope; those belong in the Proposal."
         ),
     ),
     AfterValidator(_nonblank),
@@ -287,10 +288,10 @@ def current_batch() -> str:
     name="prepare_batch",
     title="Prepare batch",
     description=(
-        "Use requested_outcome for the outcome concept to assess. If the user names Trials, pass "
-        "their exact input directory labels in trial_labels. Omit trial_labels to capture all "
-        "immediate valid Trial directories. The server resolves directories, so no listing is "
-        "required."
+        "Use requested_outcome only for the outcome concept, excluding population, comparison, "
+        "effect estimate, follow-up, and other Result facets. If the user names Trials, pass their "
+        "exact input directory labels in trial_labels. Omit trial_labels to capture all immediate "
+        "valid Trial directories. The server resolves directories, so no listing is required."
     ),
     annotations=_INTAKE,
     output_schema=output_schema("prepare_batch"),
