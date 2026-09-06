@@ -42,8 +42,8 @@ def test_public_output_surface_is_closed_and_within_budget() -> None:
     assert all(tool.annotations is not None for tool in tools)
     assert all(
         tool.annotations is not None
-        and tool.annotations.destructiveHint is False
-        and tool.annotations.idempotentHint is True
+        and tool.annotations.destructive_hint is False
+        and tool.annotations.idempotent_hint is True
         for tool in tools
     )
     assert all(
@@ -67,15 +67,15 @@ def test_public_output_surface_is_closed_and_within_budget() -> None:
         for tool, schema in zip(tools, closed_schemas, strict=True)
     )
     # This is a ceiling, not a target. Smaller closed schemas are better.
-    assert total_bytes < 230_000
+    assert total_bytes < 240_000
 
     by_name = {tool.name: tool for tool in tools}
     search_annotations = by_name["search_sources"].annotations
     text_annotations = by_name["select_text_evidence"].annotations
     visual_annotations = by_name["select_visual_evidence"].annotations
-    assert search_annotations is not None and search_annotations.readOnlyHint is True
-    assert text_annotations is not None and text_annotations.readOnlyHint is False
-    assert visual_annotations is not None and visual_annotations.readOnlyHint is False
+    assert search_annotations is not None and search_annotations.read_only_hint is True
+    assert text_annotations is not None and text_annotations.read_only_hint is False
+    assert visual_annotations is not None and visual_annotations.read_only_hint is False
 
     search_description = by_name["search_sources"].description or ""
     search_parameters = by_name["search_sources"].parameters
@@ -125,15 +125,17 @@ def test_server_and_resource_metadata_are_explicit() -> None:
             return client.initialize_result, list(await client.list_resources())
 
     initialization, resources = asyncio.run(metadata())
-    assert initialization is not None
-    assert initialization.serverInfo.name == "rob2-kit"
-    assert initialization.serverInfo.version == "0.3.0"
-    assert initialization.serverInfo.websiteUrl == "https://github.com/AliSalman-et-al/rob2-kit"
+    # FastMCP 4 stores handshake metadata on the server object rather than
+    # exposing the initialize result through its in-process client.
+    assert initialization is None
+    assert mcp.name == "rob2-kit"
+    assert mcp.version == "0.4.0"
+    assert mcp.website_url == "https://github.com/AliSalman-et-al/rob2-kit"
     assert len(resources) == 1
     resource = resources[0]
     assert str(resource.uri) == "rob2://current-batch"
     assert resource.title == "Current batch status"
-    assert resource.mimeType == "application/json"
+    assert resource.mime_type == "application/json"
     assert (resource.description or "").strip()
 
 

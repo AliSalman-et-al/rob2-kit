@@ -14,7 +14,7 @@ Invoke-Checked "uv" @("run", "python", "-m", "rob2_kit.contract_manifest", "--ou
 Invoke-Checked "uv" @("run", "python", "docs/release/verify.py")
 Invoke-Checked "uv" @("run", "pytest", "-q")
 Invoke-Checked "uv" @("build", "--wheel", "--out-dir", "dist")
-$wheel = Join-Path (Resolve-Path dist) "rob2_kit-0.3.0-py3-none-any.whl"
+$wheel = Join-Path (Resolve-Path dist) "rob2_kit-0.4.0-py3-none-any.whl"
 Invoke-Checked "uv" @("run", "python", "docs/release/verify.py", "--wheel", $wheel)
 
-Write-Output "v0.3 verification passed"
+Write-Output "v0.4 verification passed"

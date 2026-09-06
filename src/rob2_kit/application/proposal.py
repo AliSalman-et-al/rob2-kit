@@ -278,6 +278,10 @@ def _canonical_result(
     requested_outcome: str,
 ) -> tuple[dict[str, Any], list[dict[str, Any]]]:
     raw = result.model_dump(mode="json")
+    # Passage references are an input-only convenience. Canonical Result
+    # records retain the materialized Evidence items, not the caller's
+    # navigation list.
+    raw.pop("passage_refs", None)
     evidence: list[dict[str, Any]] = []
     selected_for_trial = sorted(
         (
@@ -286,6 +290,7 @@ def _canonical_result(
             if item.get("trial_id") == result.trial_id
             and item.get("kind") in {"narrative", "figure"}
             and isinstance(item.get("handle"), str)
+            and (not result.passage_refs or item.get("handle") in set(result.passage_refs))
         ),
         key=lambda item: (str(item.get("identity", "")), str(item["handle"])),
     )

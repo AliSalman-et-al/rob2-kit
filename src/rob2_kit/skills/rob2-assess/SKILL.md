@@ -88,6 +88,9 @@ put `condition`. Do not look for tool fields beside `data`.
    Use the issued line numbers exactly; never reconstruct PDF text or copy text from a search preview. If a passage crosses a page boundary, select one fragment per page. Search modes are `any` (at least one discovery term; the default when omitted), `all` (every token on the same page), `phrase` (known contiguous wording), and `prefix` (token-prefix). Use `any` or `all` for concept discovery; do not put noncontiguous concepts into `phrase`. A truncated search does not invalidate a positive exact passage, but refine it before treating candidate discovery as complete or using it as an absence basis. Use `render_page` when layout, axes, columns, symbols, or footnotes affect meaning; it returns pixels by default.
 
    `read_pages` accepts an explicit `pages` list and an optional `start_line`.
+   For comparison work across documents, use `windows` with independent
+   `source_id`, `page`, `start_line`, and optional `end_line` values. Each
+   returned window has its own exact bounds and a reusable `passage_ref`.
    When a returned page has `truncated:true`, call it again for that one page
    with the issued `next_start_line`; do not guess or skip the omitted lines.
    It has no caller-selected output limit. Search hits name their Source role and label and issue
@@ -142,7 +145,7 @@ put `condition`. Do not look for tool fields beside `data`.
    - an assessable Result has `kind`, `relation`, `target`, and `reported`; the server derives `clarity`, Evidence, and canonical bindings; a non-exact relation also has `relation_rationale`;
    - an unavailable Result has `kind`, `relation` (`ambiguous` or `unavailable`), and `missing_facts`. Each missing fact is one object with `fact` and a nested `basis`: use `missing_reporting` with a selected Evidence handle when the Trial has Sources, or use `intake_condition` with `code:no_supported_sources` only when the captured Batch contains that exact condition and the Trial has zero captured Sources. For `missing_reporting`, the server retains the selected quote or transcription as the complete exact source premise. The basis must be an explicit missing-reporting premise or the exact captured no-source condition, not merely a related endpoint. Unavailable is not an escape from Evidence or Proposal Review.
 
-   Call `save_proposal` with `{"results":[...],"expected_revision":<current state revision>}`. On the first save, include every Trial. During Proposal Review, include only Trials whose cards must change; do not reconstruct unaffected cards. The Result cards are top-level under `results`; there is no `proposal` wrapper and no nested revision. Do not put `trial_id` or `outcome` beside a Result's own fields. Do not send an `evidence` field, table or figure wrappers, `clarity`, `bindings`, or `value_digest`. Evidence selection is already durable server state: the server binds the Result against selected material and retains only Evidence that supports a Result field.
+   Call `save_proposal` with `{"results":[...],"expected_revision":<current state revision>}`. On the first save, include every Trial. During Proposal Review, include only Trials whose cards must change; do not reconstruct unaffected cards. The Result cards are top-level under `results`; there is no `proposal` wrapper and no nested revision. Do not put `trial_id` or `outcome` beside a Result's own fields. Do not send an `evidence` field, table or figure wrappers, `clarity`, `bindings`, or `value_digest`. Search/read `passage_ref` values may be supplied in an assessable card's optional `passage_refs`; the server resolves them and retains separate exact Evidence items. Evidence selection is already durable server state: the server binds the Result against selected material and retains only Evidence that supports a Result field.
 
    The server derives canonical bindings for proof-critical Source-owned
    leaves under `reported`; do not send a `bindings` field. The
@@ -318,8 +321,19 @@ put `condition`. Do not look for tool fields beside `data`.
    The server ignores and never commits extra inactive branch answers, so one
    conservative superset is safe when a branch is uncertain. Each active item in
    `answers` is one nested response with `question_id`,
-   `answer`, and non-empty `bases`. Answer objects are closed: use only those
-   three fields. A basis is a limitation, a server-issued
+   `answer`, and non-empty `bases`. Question 3.1 may also include
+   `missing_data`; all other questions must omit it. Include a concise question-specific
+   `justification` when the cited material leaves an unresolved or conflicting
+   premise: state what the cited passage(s) establish and why the answer
+   follows. One sufficient passage is valid; use multiple bases when separate
+   passages establish separate facts, preserving each boundary. Answer
+   objects are closed: use only these fields. Each `missing_data` row names
+   `arm`, `population`, `unit`, and `time_point`, plus any reported
+   `randomized`, `observed`, `analyzed`, `imputed`, and `exclusions` values.
+   The server reuses Evidence handles from the containing answer as the row's
+   provenance; set the row's optional `basis` only to narrow or add specific
+   Evidence handles. Never copy quotes or Evidence identities into a row.
+   A basis is a limitation, a server-issued
    absence receipt, or a selected Evidence handle. For a `limitation`, pass
    the opaque `sr_...` `handle` returned by `search_sources` as
    `search_receipt`; it must be a non-truncated receipt from the current Trial
@@ -332,7 +346,7 @@ put `condition`. Do not look for tool fields beside `data`.
 
    Example answer item:
 
-   `{"question_id":"sq:randomization:sequence","answer":"probably_yes","bases":[{"kind":"direct_support","evidence":"eh_<full handle>"}]}`
+   `{"question_id":"sq:randomization:sequence","answer":"probably_yes","justification":"The passage reports the sequence method; concealment remains unresolved.","bases":[{"kind":"direct_support","evidence":"eh_<full handle>"}]}`
 
    `answers` is a list of these objects, not a map keyed by question ID.
    Limitations, absence, context, and inference alone cannot justify a
@@ -396,8 +410,9 @@ put `condition`. Do not look for tool fields beside `data`.
      "answers": [
        {
          "question_id": "sq:randomization:sequence",
-         "answer": "probably_yes",
-         "bases": [{"kind": "direct_support", "evidence": "eh_<full handle>"}]
+           "answer": "probably_yes",
+           "justification": "The cited passage establishes the sequence method; concealment remains unresolved.",
+           "bases": [{"kind": "direct_support", "evidence": "eh_<full handle>"}]
        }
      ]
    }

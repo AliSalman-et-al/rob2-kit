@@ -300,7 +300,7 @@ _GUIDANCE: dict[str, QuestionGuidance] = {
     ),
     "sq:deviations:appropriate-analysis": _guidance(
         "Full guidance p. 29, Box 6, signalling question 2.6",
-        "Whether an appropriate analysis estimated the effect of assignment to intervention.",
+        "Whether an appropriate analysis estimated the effect of assignment to intervention. Compare randomized assignment with the population and groups actually analysed, including exclusions, reassignment, and reasons; an ITT label alone does not establish this.",
         "Consider ITT and modified ITT excluding participants with missing outcome data appropriate. Consider naive per-protocol, as-treated, and post-randomization exclusion of eligible participants inappropriate; post-randomization exclusion of ineligible participants may be appropriate when eligibility could not have been influenced by assignment.",
         (
             "The analysis population and grouping rule, including whether participants remained grouped by assignment and which post-randomization exclusions occurred.",
@@ -351,7 +351,7 @@ _GUIDANCE: dict[str, QuestionGuidance] = {
         "Whether outcome data were available for all or nearly all randomized participants.",
         "Use the randomized population. Nearly all means missing outcomes were sufficiently few that, whatever they were, they could make no important difference; 95% often suffices for continuous outcomes, while dichotomous outcomes depend on event risk. Imputed data count as missing.",
         (
-            "The number or proportion randomized and the number with observed outcome data for this outcome, including reasons and any imputation.",
+            "Compare the approved outcome/time point across participant-flow and outcome-data passages. For each comparable arm or unit distinguish randomized, observed, analysed, and imputed counts, plus exclusions and reasons. A missing count or an explicit complete-ascertainment statement is valid source information; do not substitute an analysis denominator for observed data. Calculate randomized minus observed only when population, arm, unit, and time point are the same. Imputed data count as missing.",
         ),
         "Only answer no_information when the report provides no information about the extent of missing outcome data.",
         (
@@ -369,7 +369,7 @@ _GUIDANCE: dict[str, QuestionGuidance] = {
             ),
         ),
         (
-            "The appropriate population is all randomized participants, not only participants included in a final analysis.",
+            "The appropriate population is all randomized participants, not only participants included in a final analysis. Keep outcome availability distinct from exclusions for analysis or conduct; the same passage may inform both Domains for different scientific reasons.",
         ),
         (
             "a complete-case analysis label",
@@ -487,7 +487,7 @@ _GUIDANCE: dict[str, QuestionGuidance] = {
     ),
     "sq:measurement:assessor-aware": _guidance(
         "Full guidance p. 54, Box 10, signalling question 4.3",
-        "Whether outcome assessors were aware of the intervention received, when 4.1 and 4.2 are not yes/probably yes.",
+        "Whether outcome assessors were aware of the intervention received, when 4.1 and 4.2 are not yes/probably yes. Identify who determines the approved outcome at the relevant time point and distinguish that assessor from someone who merely records it.",
         "Answer no when outcome assessors were blinded to intervention status. For participant-reported outcomes, the participant is the outcome assessor. This question is applicable only after the stated activation conditions.",
         ("Who assessed the outcome and whether that assessor was blinded to intervention status.",),
         "Use no_information when assessor awareness cannot be determined; do not infer blinding from an objective endpoint or from blinding elsewhere in the trial.",
@@ -505,7 +505,7 @@ _GUIDANCE: dict[str, QuestionGuidance] = {
     ),
     "sq:measurement:influence-possible": _guidance(
         "Full guidance p. 54, Box 10, signalling question 4.4",
-        "Whether assessment could have been influenced by knowledge of intervention received.",
+        "Whether assessment could have been influenced by knowledge of intervention received. Keep assessor awareness separate from the mechanism by which awareness could change a judgement.",
         "Knowledge could influence participant-reported outcomes, observer-reported outcomes involving judgement, and intervention-provider decisions; it is unlikely to influence observer-reported outcomes without judgement, such as all-cause mortality.",
         (
             "Outcome type, assessor role, degree of judgement, and whether knowledge of assignment could change assessment.",
@@ -527,7 +527,7 @@ _GUIDANCE: dict[str, QuestionGuidance] = {
     ),
     "sq:measurement:influence-likely": _guidance(
         "Full guidance p. 54, Box 10, signalling question 4.5",
-        "Whether knowledge of intervention likely influenced outcome assessment.",
+        "Whether knowledge of intervention likely influenced outcome assessment. Require evidence or strong beliefs plus a judgement opportunity; awareness alone establishes possibility, not likelihood.",
         "Distinguish possible influence without reason to believe it occurred from likely influence. Strong beliefs about benefits or harms make influence more likely, for example patient-reported symptoms in homeopathy or recovery assessed by an intervention physiotherapist.",
         (
             "Evidence of actual influence or strong beliefs and judgement opportunities that make influence likely, given the assessor and outcome.",
@@ -548,7 +548,7 @@ _GUIDANCE: dict[str, QuestionGuidance] = {
     "sq:selection:prespecified-analysis": _guidance(
         "Full guidance p. 63, Box 11, signalling question 5.1",
         "Whether data producing this result followed a pre-specified plan finalized before unblinded outcome data were available.",
-        "Compare intended measurements and analyses with the reported result. Changes made before unblinded data were available, or clearly unrelated to results such as a broken machine, do not raise concerns.",
+        "Compare the approved result with intended measurements, timing, population, and analyses. Distinguish source creation/version and amendment dates from trial events and retrieval time; only compare chronology when the relevant events and precision are established. Changes made before unblinded data were available, or clearly unrelated to results such as a broken machine, do not raise concerns.",
         (
             "A sufficiently detailed protocol or SAP, its finalization date relative to unblinded outcome data, and the reported analysis.",
         ),

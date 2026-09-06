@@ -346,6 +346,10 @@ class SearchHit(PublicModel):
     start_line: PageNumber = Field(description="First matching read_pages line.")
     end_line: PageNumber = Field(description="Last matching read_pages line.")
     preview: str = Field(min_length=1)
+    passage_ref: str = Field(
+        pattern=r"^eh_[0-9a-f]{16}$",
+        description="Passage reference.",
+    )
 
 
 class SearchReceipt(PublicModel):
@@ -370,6 +374,10 @@ class SearchData(PublicModel):
 
 
 class PageData(PublicModel):
+    source_id: str = Field(
+        pattern=r"^source_[0-9a-f]{64}$",
+        description="Source.",
+    )
     page: PageNumber
     numbered_text: str
     line_count: NonNegativeInt
@@ -377,6 +385,11 @@ class PageData(PublicModel):
     returned_end_line: NonNegativeInt
     truncated: StrictBool
     next_start_line: PageNumber | None = None
+    passage_ref: str | None = Field(
+        default=None,
+        pattern=r"^eh_[0-9a-f]{16}$",
+        description="Evidence ref, when non-empty.",
+    )
 
 
 class PagesData(PublicModel):
@@ -619,10 +632,44 @@ CheckpointEvidenceUse = Annotated[
 ]
 
 
+class MissingDataScope(PublicModel):
+    arm: str = Field(min_length=1)
+    population: str = Field(min_length=1)
+    unit: str = Field(min_length=1)
+    time_point: str = Field(min_length=1)
+
+
+class MissingDataReconciledRow(PublicModel):
+    scope: MissingDataScope
+    randomized: StrictInt | None = Field(default=None, ge=0)
+    observed: StrictInt | None = Field(default=None, ge=0)
+    analyzed: StrictInt | None = Field(default=None, ge=0)
+    imputed: StrictInt | None = Field(default=None, ge=0)
+    exclusions: tuple[str, ...] = ()
+    basis: tuple[Identity, ...] = Field(min_length=1)
+    missing: StrictInt | None = Field(default=None, ge=0)
+    missing_fraction: float | None = Field(default=None, ge=0)
+
+
+class MissingDataConflict(PublicModel):
+    scope: MissingDataScope
+    reports: tuple[MissingDataReconciledRow, ...] = Field(min_length=2)
+
+
+class MissingDataReconciliation(PublicModel):
+    rows: tuple[MissingDataReconciledRow, ...] = Field(min_length=1)
+    conflicts: tuple[MissingDataConflict, ...] = ()
+
+
 class CheckpointAnswer(PublicModel):
     question_id: QuestionId
     answer: Answer
     bases: tuple[CheckpointEvidenceUse, ...] = Field(min_length=1)
+    missing_data: MissingDataReconciliation | None = None
+    justification: str | None = Field(
+        default=None,
+        description="Concise explanation of cited premises and uncertainty.",
+    )
 
 
 class NewEvidenceRevision(PublicModel):
@@ -873,6 +920,7 @@ def _payload(tool: str, value: dict[str, Any]) -> dict[str, Any]:
                     "start_line",
                     "end_line",
                     "preview",
+                    "passage_ref",
                 )
             }
             for item in data["hits"]

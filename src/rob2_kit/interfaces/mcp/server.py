@@ -1,4 +1,4 @@
-"""The exact v0.3 FastMCP boundary."""
+"""The exact v0.4 FastMCP boundary."""
 
 from __future__ import annotations
 
@@ -7,17 +7,19 @@ import json
 import os
 from typing import Annotated, Any, Literal
 
+import mcp_types
 from fastmcp import Context, FastMCP
+from fastmcp.exceptions import ToolError
 from fastmcp.server.context import (
     AcceptedElicitation,
     CancelledElicitation,
     DeclinedElicitation,
 )
-from fastmcp.tools import ToolResult
-from mcp.shared.exceptions import McpError
+from fastmcp.tools import InputRequiredToolResult, ToolResult
+from mcp.shared.exceptions import MCPError
 from mcp.types import ImageContent, TextContent, ToolAnnotations
-from pydantic import Field, StrictBool, StrictInt, StrictStr
-from pydantic.functional_validators import AfterValidator
+from pydantic import Field, StrictBool, StrictInt, StrictStr, model_validator
+from pydantic.functional_validators import AfterValidator, BeforeValidator
 
 from rob2_kit import __version__
 from rob2_kit.application.contracts import TOOL_NAMES, WorkflowConflict
@@ -65,19 +67,33 @@ mcp = FastMCP(
     "rob2-kit",
     version=__version__,
     website_url="https://github.com/AliSalman-et-al/rob2-kit",
-    strict_input_validation=True,
+    # JSON arrays and enum values must be decoded by Pydantic before invoking
+    # the typed workflow models. FastMCP 4's strict adapter rejects those
+    # ordinary JSON representations (tuples/enums) before our models run;
+    # semantic scalar strictness remains enforced by the model fields.
+    strict_input_validation=False,
 )
 PUBLIC_TOOL_NAMES = TOOL_NAMES
-SearchLimit = Annotated[StrictInt, Field(ge=1, le=100)]
-Inline = StrictBool
+
+
+def _reject_scalar_coercion(value: Any) -> Any:
+    if type(value) not in (int, bool):
+        raise ValueError("JSON scalar must use its declared type")
+    return value
+
+
+StrictJsonInt = Annotated[StrictInt, BeforeValidator(_reject_scalar_coercion)]
+StrictJsonBool = Annotated[StrictBool, BeforeValidator(_reject_scalar_coercion)]
+SearchLimit = Annotated[StrictJsonInt, Field(ge=1, le=100)]
+Inline = StrictJsonBool
 _READ_ONLY = ToolAnnotations(
-    readOnlyHint=True, destructiveHint=False, idempotentHint=True, openWorldHint=False
+    read_only_hint=True, destructive_hint=False, idempotent_hint=True, open_world_hint=False
 )
 _MUTATION = ToolAnnotations(
-    readOnlyHint=False, destructiveHint=False, idempotentHint=True, openWorldHint=False
+    read_only_hint=False, destructive_hint=False, idempotent_hint=True, open_world_hint=False
 )
 _INTAKE = ToolAnnotations(
-    readOnlyHint=False, destructiveHint=False, idempotentHint=True, openWorldHint=True
+    read_only_hint=False, destructive_hint=False, idempotent_hint=True, open_world_hint=True
 )
 
 # Keep every read_pages response small enough for clients with conservative
@@ -107,6 +123,25 @@ RequestedOutcome = Annotated[
     ),
     AfterValidator(_nonblank),
 ]
+
+
+class ReadWindow(StrictModel):
+    """One independent source-page window."""
+
+    source_id: SourceId = Field(description="ID.")
+    page: PageNumber = Field(description="Page.")
+    start_line: StrictInt = Field(
+        ge=1, default=1, description="First one-based numbered line to return."
+    )
+    end_line: StrictInt | None = Field(
+        default=None, ge=1, description="Last one-based numbered line to return, inclusive."
+    )
+
+    @model_validator(mode="after")
+    def line_range_is_ordered(self) -> ReadWindow:
+        if self.end_line is not None and self.end_line < self.start_line:
+            raise ValueError("end_line must be greater than or equal to start_line")
+        return self
 
 
 def _nonblank_trial_label(value: str) -> str:
@@ -140,14 +175,22 @@ def _content(tool: str, value: dict[str, Any]) -> ToolResult:
             "authoritative_wording": current.get("authoritative_wording"),
         }
     normalized = validate_output(tool, normalize(tool, value))
-    outcome = str(normalized["outcome"])
+    # MCP clients are allowed to expose only ``content`` to a model.  Carry
+    # the same validated object in a compact JSON text block so text-only and
+    # structured consumers receive identical workflow state.  Images remain
+    # separate binary content and are intentionally not duplicated in JSON.
     content: list[TextContent | ImageContent] = [
-        TextContent(type="text", text=f"{outcome}; inspect structured content.")
+        TextContent(
+            type="text",
+            text=json.dumps(normalized, ensure_ascii=False, separators=(",", ":"), sort_keys=True),
+        )
     ]
     if isinstance(png_bytes, bytes):
         content.append(
             ImageContent(
-                type="image", data=base64.b64encode(png_bytes).decode("ascii"), mimeType="image/png"
+                type="image",
+                data=base64.b64encode(png_bytes).decode("ascii"),
+                mime_type="image/png",
             )
         )
     return ToolResult(content=content, structured_content=normalized)
@@ -328,83 +371,137 @@ def search_sources(
     name="read_pages",
     title="Read source pages",
     description=(
-        "Read exact captured source-page text as numbered lines. Page numbers are 1-based "
-        "source indexes, not printed labels. Use the issued lines with select_text_evidence; "
-        "pages must contain integers such as [1, 3], not strings; there is no limit or offset. "
-        "Pass page numbers in pages. For a large page, use next_start_line with the same page "
-        "until truncated is false."
+        "Read source text as numbered lines. Pages are 1-based source indexes, not printed "
+        "labels; continue large pages with next_start_line. Use windows across sources; each "
+        "item preserves its source and line bounds."
     ),
     annotations=_READ_ONLY,
     output_schema=output_schema("read_pages"),
 )
 def read_pages(
     trial_id: Annotated[
-        TrialId, Field(description="Trial containing the source.", examples=["trial-a"])
-    ],
-    source_id: Annotated[SourceId, Field(description="Source ID from list_sources.")],
+        TrialId | None, Field(description="Trial ID.", examples=["trial-a"])
+    ] = None,
+    source_id: Annotated[
+        SourceId | None, Field(description="Source ID for a single-source read.")
+    ] = None,
     pages: Annotated[
-        list[PageNumber],
+        list[PageNumber] | None,
         Field(
             min_length=1,
             max_length=10,
             description="One to ten integer source-page indexes, for example [1, 3].",
             examples=[[1, 3]],
         ),
-    ],
+    ] = None,
     start_line: Annotated[
         StrictInt,
         Field(
             ge=1,
-            description=("First line; use next_start_line to continue a truncated page."),
+            description="First line; use next_start_line to continue.",
             examples=[1],
         ),
     ] = 1,
+    windows: Annotated[
+        list[ReadWindow] | None,
+        Field(
+            min_length=1,
+            max_length=20,
+            description="Independent source/page windows, each with its own line bounds.",
+        ),
+    ] = None,
 ) -> ToolResult:
     def read() -> dict[str, Any]:
-        result = _read_pages(_workspace(), trial_id, source_id, pages)
-        page_budget = max(1, _READ_PAGES_RESPONSE_CHARS // len(result["pages"]))
+        if trial_id is None:
+            raise ValueError("trial_id is required")
+        if windows is None and (source_id is None or pages is None):
+            raise ValueError("source_id and pages are required unless windows is supplied")
+        requests = [(trial_id, source_id, pages, start_line, None)]
+        if windows:
+            if source_id is not None or pages is not None or start_line != 1:
+                raise ValueError("use windows alone for independent reads")
+            requests = [
+                (trial_id, item.source_id, [item.page], item.start_line, item.end_line)
+                for item in windows
+            ]
+        raw_pages: list[dict[str, Any]] = []
+        include_source = True
+        for request_trial, request_source, request_pages, request_start, request_end in requests:
+            assert request_trial is not None and request_source is not None
+            result = _read_pages(_workspace(), request_trial, request_source, request_pages)
+            raw_pages.extend(
+                {
+                    **item,
+                    **({"source_id": request_source} if include_source else {}),
+                    "requested_start": request_start,
+                    "requested_end": request_end,
+                }
+                for item in result["pages"]
+            )
+        page_budget = max(1, _READ_PAGES_RESPONSE_CHARS // max(1, len(raw_pages)))
         numbered_pages = []
-        for item in result["pages"]:
+        for item in raw_pages:
             lines = item["text"].splitlines()
+            requested_start = item["requested_start"]
+            requested_end = item["requested_end"]
             if not lines:
                 numbered_pages.append(
                     {
+                        **({"source_id": item["source_id"]} if include_source else {}),
                         "page": item["page"],
                         "numbered_text": "",
                         "line_count": 0,
-                        "returned_start_line": start_line,
+                        "returned_start_line": requested_start,
                         "returned_end_line": 0,
                         "truncated": False,
                         "next_start_line": None,
+                        "passage_ref": None,
                     }
                 )
                 continue
-            if start_line > len(lines):
+            if requested_start > len(lines):
                 raise ValueError(
-                    f"start_line {start_line} is outside page {item['page']}; "
+                    f"start_line {requested_start} is outside page {item['page']}; "
                     f"choose 1 <= start_line <= {len(lines)}"
                 )
             returned: list[str] = []
             used = 0
-            end_line = start_line - 1
-            for line_number in range(start_line, len(lines) + 1):
-                numbered = f"{line_number:04d}|{lines[line_number - 1]}"
+            end_line = requested_start - 1
+            for line_number in range(requested_start, len(lines) + 1):
+                if requested_end is not None and line_number > requested_end:
+                    break
+                numbered = f"{line_number}|{lines[line_number - 1]}"
                 additional = len(numbered) + (1 if returned else 0)
                 if returned and used + additional > page_budget:
                     break
                 returned.append(numbered)
                 used += additional
                 end_line = line_number
-            truncated = end_line < len(lines)
+            truncated = end_line < len(lines) and (
+                requested_end is None or end_line < requested_end
+            )
+            passage_ref = None
+            if end_line >= requested_start:
+                passage = _select_text_evidence_by_lines(
+                    _workspace(),
+                    request_trial,
+                    item["source_id"],
+                    item["page"],
+                    requested_start,
+                    end_line,
+                )
+                passage_ref = passage.get("evidence", {}).get("handle")
             numbered_pages.append(
                 {
+                    **({"source_id": item["source_id"]} if include_source else {}),
                     "page": item["page"],
                     "numbered_text": "\n".join(returned),
                     "line_count": len(lines),
-                    "returned_start_line": start_line,
+                    "returned_start_line": requested_start,
                     "returned_end_line": end_line,
                     "truncated": truncated,
                     "next_start_line": end_line + 1 if truncated else None,
+                    "passage_ref": passage_ref,
                 }
             )
         return {"outcome": "success", "pages": numbered_pages}
@@ -535,19 +632,11 @@ def select_visual_evidence(
     name="save_proposal",
     title="Save Result proposal",
     description=(
-        "Submit typed Result cards after selecting their supporting Evidence. Before the first "
-        "Proposal Review, include exactly one card per captured Trial. While a Review is pending, "
-        "submit only the Trial cards that need replacement; the server preserves every unmentioned "
-        "card. "
-        "Every results item has kind=assessable or kind=unavailable; an Evidence object is "
-        "never a Result card. An assessable card requires target measurement, timing, at least "
-        "two comparison groups, intended population, and intended effect measure, plus reported "
-        "data with its form discriminator. Keep all source-reported numbers as strings. "
-        "For an assessable Result, one selected passage, table block, or figure must join an "
-        "endpoint identifier to one complete quantitative tuple. "
-        "The server binds already-selected Evidence and keeps only material used by the Result. "
-        "Proposal Review is the only researcher gate; revise and resubmit before approval "
-        "if the source-reported candidate is wrong."
+        "Submit typed Result cards after selecting supporting Evidence. The first save needs one "
+        "card per Trial; a pending Review accepts only cards being replaced and preserves the "
+        "rest. Each card is assessable or unavailable (Evidence is separate). Assessable cards "
+        "require target facets, two groups, intended population/effect measure, and one complete "
+        "reported quantitative tuple. Keep source numbers as strings; revise before approval."
     ),
     annotations=_MUTATION,
     output_schema=output_schema("save_proposal"),
@@ -558,12 +647,9 @@ def save_proposal(
         Field(
             min_length=1,
             description=(
-                "Initial save: one typed Result card per captured Trial. Pending Review: only the "
-                "Trial cards to replace. The server preserves unmentioned cards. Select supporting "
-                "Evidence first; do not submit an Evidence object as a Result or repeat Evidence "
-                "handles in the card. A Result kind is only assessable or unavailable; "
-                "narrative, table, and figure are Evidence kinds. Revise before researcher "
-                "approval when another source-reported candidate is better."
+                "Initial save: one typed Result card per Trial. Pending Review: only cards to "
+                "replace; unmentioned cards are preserved. Select Evidence first. Result kind is "
+                "assessable or unavailable; narrative, table, and figure are Evidence kinds."
             ),
         ),
     ],
@@ -627,13 +713,109 @@ async def request_proposal_approval(ctx: Context) -> ToolResult:
                 "condition": "The pending Proposal Review identity is invalid.",
             },
         )
+    capabilities = getattr(ctx.session, "client_capabilities", None)
+    if capabilities is None or getattr(capabilities, "elicitation", None) is None:
+        return _content(
+            "request_proposal_approval",
+            {
+                "outcome": "condition",
+                "code": "proposal_approval_unsupported",
+                "condition": "The connected client does not support researcher elicitation.",
+            },
+        )
+    # MCP 2026-07-28 removed server-initiated back-channel elicitation.  Use
+    # FastMCP 4's supported guard/result round trip there; the echoed state
+    # binds the accepted response to this exact pending review.  Older
+    # negotiated protocol versions continue through ctx.elicit below.
+    if getattr(ctx, "_is_modern_protocol", lambda: False)():
+        responses = ctx.input_responses
+        if responses is None:
+            request = mcp_types.ElicitRequest(
+                params=mcp_types.ElicitRequestFormParams(
+                    message=(
+                        "Confirm whether to approve this exact Proposal Review. Decline or "
+                        "cancel to leave it pending.\n" + json.dumps(review, sort_keys=True)
+                    ),
+                    requested_schema=ProposalApprovalDecision.model_json_schema(),
+                )
+            )
+            return InputRequiredToolResult(
+                mcp_types.InputRequiredResult(
+                    input_requests={"proposal_review": request},
+                    request_state=review_reference,
+                )
+            )
+        if ctx.request_state != review_reference:
+            return _content(
+                "request_proposal_approval",
+                {
+                    "outcome": "condition",
+                    "code": "proposal_approval_stale",
+                    "condition": "The Proposal Review response is stale or mismatched.",
+                },
+            )
+        response = responses.get("proposal_review")
+        if not isinstance(response, mcp_types.ElicitResult):
+            return _content(
+                "request_proposal_approval",
+                {
+                    "outcome": "condition",
+                    "code": "proposal_approval_unsupported",
+                    "condition": "The connected client did not return an elicitation response.",
+                },
+            )
+        if response.action == "cancel":
+            return _content(
+                "request_proposal_approval",
+                {
+                    "outcome": "condition",
+                    "code": "proposal_approval_cancelled",
+                    "condition": "cancel",
+                },
+            )
+        if response.action == "decline":
+            return _content(
+                "request_proposal_approval",
+                {
+                    "outcome": "condition",
+                    "code": "proposal_approval_declined",
+                    "condition": "decline",
+                },
+            )
+        try:
+            decision = ProposalApprovalDecision.model_validate(response.content or {})
+        except ValueError:
+            decision = None
+        if decision is None or not decision.approved:
+            return _content(
+                "request_proposal_approval",
+                {
+                    "outcome": "condition",
+                    "code": "proposal_approval_declined",
+                    "condition": "The researcher did not approve the Proposal Review.",
+                },
+            )
+        try:
+            approved = _approve_review(
+                _workspace(), review_reference, caller="researcher", method="mcp_elicitation"
+            )
+        except ValueError as error:
+            return _content(
+                "request_proposal_approval",
+                {
+                    "outcome": "condition",
+                    "code": "proposal_approval_stale",
+                    "condition": str(error),
+                },
+            )
+        return _content("request_proposal_approval", approved)
     try:
         response = await ctx.elicit(
             "Confirm whether to approve this exact Proposal Review. Decline or cancel to leave "
             "it pending.\n" + json.dumps(review, sort_keys=True),
             ProposalApprovalDecision,
         )
-    except McpError:
+    except (MCPError, ToolError):
         return _content(
             "request_proposal_approval",
             {

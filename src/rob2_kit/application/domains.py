@@ -9,9 +9,19 @@ from ..logic.evaluator import active_questions, evaluate_domain, evaluate_overal
 from ..models import ResponseFramework, canonical_json_bytes
 from ..packs import SCIENTIFIC_PACK
 from ..workflow_models import DomainDraft
-from ._state import _commit_records, _db, _ensure, _identity, _result, _root, _state
+from ._state import (
+    _canonical_evidence_records,
+    _commit_records,
+    _db,
+    _ensure,
+    _identity,
+    _result,
+    _root,
+    _state,
+)
 from .contracts import WorkflowConflict
 from .evidence import (
+    _evidence_catalog,
     _evidence_for_handles,
     _search_receipt,
 )
@@ -24,8 +34,13 @@ _DOMAIN_GUIDANCE = (
     "a limitation or no_information answer from currently selected Result Evidence alone; "
     "attach an exact Trial-scoped, non-truncated search receipt to every limitation (positive "
     "or no-hit), and use a scoped untruncated no-hit receipt when the search finds nothing.",
-    "For every non-absence use, select one Evidence item containing a complete exact premise "
-    "that supports the active question.",
+    "For every non-absence use, cite one or more Evidence items containing the complete exact "
+    "premises that support the active question. One passage may support several facts; combine "
+    "separate passages when the answer depends on separate facts, and keep their boundaries "
+    "distinct.",
+    "Include a concise question-specific justification with each answer: state what the cited "
+    "passages establish, what remains unresolved or conflicting, and why the selected answer "
+    "follows. This is a scientific explanation, not a reasoning transcript or a duplicate ledger.",
     "A definitive yes or no needs direct_support, indirect_support, or contradiction; "
     "a limitation or absence alone supports uncertainty, not a definitive answer.",
     "A relationship kind describes how the premise relates to the answer; it never adds "
@@ -76,6 +91,66 @@ _RESPONSE_FRAMEWORK = ResponseFramework(
         "possible to support the answer."
     ),
 )
+
+
+def reconcile_missing_data(rows: list[dict[str, Any]]) -> dict[str, Any]:
+    """Reconcile comparable randomized/observed counts without guessing scope.
+
+    This bounded clerical helper is deliberately not a scientific classifier.
+    A difference is calculated only for rows sharing arm, population, unit,
+    and time-point scope. Unknown values, imputation, overlapping exclusions,
+    and conflicting reports remain visible for the host to interpret.
+    """
+    normalized: list[dict[str, Any]] = []
+    conflicts: list[dict[str, Any]] = []
+    seen: dict[tuple[Any, ...], dict[str, Any]] = {}
+    for row in rows:
+        if not isinstance(row, dict):
+            continue
+        scope = tuple(row.get(key) for key in ("arm", "population", "unit", "time_point"))
+        randomized = row.get("randomized")
+        observed = row.get("observed")
+        item = {
+            "scope": {
+                "arm": scope[0],
+                "population": scope[1],
+                "unit": scope[2],
+                "time_point": scope[3],
+            },
+            "randomized": randomized,
+            "observed": observed,
+            "analyzed": row.get("analyzed"),
+            "imputed": row.get("imputed"),
+            "exclusions": (
+                list(row.get("exclusions", []))
+                if isinstance(row.get("exclusions", []), list)
+                else []
+            ),
+            "basis": list(row.get("basis", [])) if isinstance(row.get("basis", []), list) else [],
+        }
+        key = scope
+        prior = seen.get(key)
+        compared_fields = ("randomized", "observed", "analyzed", "imputed", "exclusions")
+        if prior is not None and tuple(prior[field] for field in compared_fields) != tuple(
+            item[field] for field in compared_fields
+        ):
+            conflicts.append({"scope": item["scope"], "reports": [prior, item]})
+        else:
+            seen[key] = item
+        if (
+            isinstance(randomized, int)
+            and not isinstance(randomized, bool)
+            and isinstance(observed, int)
+            and not isinstance(observed, bool)
+            and randomized >= observed >= 0
+        ):
+            item["missing"] = randomized - observed
+            item["missing_fraction"] = (randomized - observed) / randomized if randomized else 0.0
+        else:
+            item["missing"] = None
+            item["missing_fraction"] = None
+        normalized.append(item)
+    return {"rows": normalized, "conflicts": conflicts}
 
 
 def _repairs(error: ValidationError) -> list[dict[str, Any]]:
@@ -267,7 +342,7 @@ def save_domain_judgment(
     proposal_catalog = {
         key: value
         for key, value in (state.get("proposal") or {}).get("evidence", {}).items()
-        if isinstance(value, dict)
+        if isinstance(value, dict) and value.get("trial_id") == parsed.trial_id
     }
     referenced_handles: set[str] = set()
     for _, answer in active_answer_items:
@@ -275,6 +350,8 @@ def save_domain_judgment(
             evidence_handle = getattr(basis, "evidence", None)
             if isinstance(evidence_handle, str):
                 referenced_handles.add(evidence_handle)
+        for row in answer.missing_data or ():
+            referenced_handles.update(row.basis)
     if parsed.revision_basis is not None and parsed.revision_basis.kind == "new_evidence":
         referenced_handles.add(parsed.revision_basis.evidence)
     try:
@@ -303,7 +380,46 @@ def save_domain_judgment(
     canonical_answers: list[dict[str, Any]] = []
     search_accounts: dict[str, dict[str, Any]] = {}
     for answer_index, answer_item in active_answer_items:
-        answer = answer_item.model_dump(mode="json")
+        answer = answer_item.model_dump(mode="json", exclude_none=True)
+        if answer_item.missing_data is not None:
+            # Keep the caller's typed rows small and source-oriented, while
+            # persisting one deterministic clerical reconciliation that can
+            # be replayed by the bundle verifier.
+            answer_evidence: list[str] = []
+            for basis in answer_item.bases:
+                evidence_handle = getattr(basis, "evidence", None)
+                if isinstance(evidence_handle, str):
+                    answer_evidence.append(evidence_handle)
+            missing_data_rows: list[dict[str, Any]] = []
+            for row_index, row_model in enumerate(answer_item.missing_data):
+                row = row_model.model_dump(mode="json", exclude_none=True)
+                handles = list(dict.fromkeys(row["basis"] or answer_evidence))
+                resolved: list[str] = []
+                for handle in handles:
+                    evidence = catalog_by_handle.get(handle) or catalog.get(handle)
+                    if evidence is None or evidence.get("trial_id") != parsed.trial_id:
+                        repairs.append(
+                            _repair(
+                                f"/answers/{answer_index}/missing_data/{row_index}/basis",
+                                "invalid_evidence",
+                                f"Evidence '{handle}' does not resolve to captured evidence "
+                                f"for Trial '{parsed.trial_id}'.",
+                            )
+                        )
+                        continue
+                    resolved.append(evidence["identity"])
+                if not resolved:
+                    repairs.append(
+                        _repair(
+                            f"/answers/{answer_index}/missing_data/{row_index}/basis",
+                            "missing_data_basis_required",
+                            "each participant-flow row needs Evidence; attach it to the row "
+                            "or to the containing answer.",
+                        )
+                    )
+                row["basis"] = resolved
+                missing_data_rows.append(row)
+            answer["missing_data"] = reconcile_missing_data(missing_data_rows)
         bases: list[dict[str, Any]] = []
         direct_basis = False
         uncertainty_basis = False
@@ -758,9 +874,13 @@ def get_domain_context(
     proposal_catalog = {
         key: value
         for key, value in (state.get("proposal") or {}).get("evidence", {}).items()
-        if isinstance(value, dict)
+        if isinstance(value, dict) and value.get("trial_id") == trial_id
     }
     catalog = dict(proposal_catalog)
+    # Domain Evidence remains in the disposable handle cache until a checkpoint
+    # promotes it. Recover the most recent bounded, Trial-isolated workspace so
+    # an interrupted host can resume with the exact handles it already selected.
+    catalog.update(_evidence_catalog(root, trial_id=trial_id, limit=64))
     missing_handles = {
         handle
         for handle in handles
@@ -768,6 +888,31 @@ def get_domain_context(
     }
     if missing_handles:
         catalog.update(_evidence_for_handles(root, missing_handles, trial_id))
+    # A restart or compaction must not discard the evidence already used by
+    # the active checkpoint. Those records are canonical and can be recovered
+    # even when the disposable handle cache was rebuilt.
+    checkpoint_answers = [
+        answer
+        for key, checkpoint in (state.get("domain_records") or {}).items()
+        if key.startswith(f"{trial_id}:") and isinstance(checkpoint, dict)
+        for answer in checkpoint.get("answers", [])
+        if isinstance(answer, dict)
+    ]
+    checkpoint_identities = {
+        basis.get("evidence")
+        for answer in checkpoint_answers
+        for basis in answer.get("bases", [])
+        if isinstance(basis, dict) and isinstance(basis.get("evidence"), str)
+    }
+    checkpoint_identities.update(
+        evidence_identity
+        for answer in checkpoint_answers
+        for row in (answer.get("missing_data") or {}).get("rows", [])
+        if isinstance(row, dict) and isinstance(row.get("basis"), list)
+        for evidence_identity in row["basis"]
+        if isinstance(evidence_identity, str)
+    )
+    catalog.update(_canonical_evidence_records(root, checkpoint_identities))
 
     def result_projection(value: dict[str, Any]) -> dict[str, Any]:
         if value.get("kind") == "unavailable":
@@ -843,7 +988,7 @@ def get_domain_context(
         "domain_id": domain_id,
         "state_revision": state.get("revision", 0),
         "result": result_projection(result),
-        "evidence": [item for item in catalog.values() if item.get("handle") in handles],
+        "evidence": list(catalog.values()),
         "answers": answer_rows,
         "current_checkpoint": (existing.get("identity") if isinstance(existing, dict) else None),
         "guidance": [

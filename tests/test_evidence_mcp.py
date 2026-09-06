@@ -91,7 +91,7 @@ def test_list_sources_uses_the_same_source_priority_as_search(tmp_path: Path) ->
     ]
 
 
-def test_search_preserves_source_priority_then_uses_fts_bm25_within_source(
+def test_search_interleaves_sources_then_uses_fts_bm25_within_source(
     tmp_path: Path,
 ) -> None:
     workspace = _workspace(tmp_path)
@@ -132,8 +132,12 @@ def test_search_preserves_source_priority_then_uses_fts_bm25_within_source(
         {"trial_id": "trial", "query": "alpha beta", "limit": 4},
     )
     pairs = [(item["source_id"], item["page"]) for item in result["data"]["hits"]]
-    assert pairs[:3] == [(article["id"], int(page)) for page, _rank in article_ranks]
-    assert pairs[3] == (protocol_source["id"], 1)
+    assert pairs == [
+        (article["id"], int(article_ranks[0][0])),
+        (protocol_source["id"], 1),
+        (article["id"], int(article_ranks[1][0])),
+        (article["id"], int(article_ranks[2][0])),
+    ]
 
 
 def test_search_reserves_one_hit_per_matching_source_within_limit(tmp_path: Path) -> None:
@@ -273,6 +277,7 @@ def test_numbered_page_lines_select_exact_source_text(tmp_path: Path) -> None:
         {"trial_id": "trial", "source_id": source["id"], "pages": [1]},
     )["data"]["pages"][0]
     assert set(page) == {
+        "source_id",
         "page",
         "numbered_text",
         "line_count",
@@ -280,12 +285,13 @@ def test_numbered_page_lines_select_exact_source_text(tmp_path: Path) -> None:
         "returned_end_line",
         "truncated",
         "next_start_line",
+        "passage_ref",
     }
     assert page["returned_start_line"] == 1
     assert page["returned_end_line"] == 4
     assert page["truncated"] is False
     assert page["next_start_line"] is None
-    assert page["numbered_text"] == ("0001|first line\n0002|middle-\n0003|line\n0004|last line")
+    assert page["numbered_text"] == ("1|first line\n2|middle-\n3|line\n4|last line")
 
     selected = _call(
         workspace,
@@ -316,6 +322,75 @@ def test_numbered_page_lines_select_exact_source_text(tmp_path: Path) -> None:
     assert invalid["condition"]["detail"] == (
         "line range is outside page 1; choose 1 <= start_line <= end_line <= 4 from read_pages"
     )
+
+
+def test_read_pages_returns_independent_cross_source_windows_and_passage_refs(
+    tmp_path: Path,
+) -> None:
+    workspace = _workspace(tmp_path)
+    trial = workspace / "input" / "trial"
+    (trial / "main.txt").write_text("article one\narticle two\narticle three\n", encoding="utf-8")
+    (trial / "protocol.txt").write_text(
+        "protocol one\nprotocol two\nprotocol three\n", encoding="utf-8"
+    )
+    _call(
+        workspace,
+        "prepare_batch",
+        {"requested_outcome": "requested outcome", "expected_revision": 0},
+    )
+    sources = _call(workspace, "list_sources", {"trial_id": "trial"})["data"]["sources"]
+    article = next(source for source in sources if source["label"] == "main.txt")
+    protocol = next(source for source in sources if source["label"] == "protocol.txt")
+
+    result = _call(
+        workspace,
+        "read_pages",
+        {
+            "trial_id": "trial",
+            "windows": [
+                {
+                    "source_id": article["id"],
+                    "page": 1,
+                    "start_line": 2,
+                    "end_line": 3,
+                },
+                {
+                    "source_id": protocol["id"],
+                    "page": 1,
+                    "start_line": 1,
+                    "end_line": 1,
+                },
+            ],
+        },
+    )
+
+    assert result["outcome"] == "success"
+    pages = result["data"]["pages"]
+    returned_ranges = [
+        (page["source_id"], page["returned_start_line"], page["returned_end_line"])
+        for page in pages
+    ]
+    assert returned_ranges == [
+        (article["id"], 2, 3),
+        (protocol["id"], 1, 1),
+    ]
+    assert [page["numbered_text"] for page in pages] == [
+        "2|article two\n3|article three",
+        "1|protocol one",
+    ]
+    assert all(page["passage_ref"].startswith("eh_") for page in pages)
+    selected = _call(
+        workspace,
+        "select_text_evidence",
+        {
+            "trial_id": "trial",
+            "source_id": article["id"],
+            "page": 1,
+            "start_line": 2,
+            "end_line": 3,
+        },
+    )["data"]["evidence"]
+    assert selected["handle"] == pages[0]["passage_ref"]
 
 
 def test_read_pages_returns_bounded_line_windows_with_continuation(tmp_path: Path) -> None:
@@ -358,7 +433,7 @@ def test_read_pages_returns_bounded_line_windows_with_continuation(tmp_path: Pat
     )
     next_page = second["data"]["pages"][0]
     assert next_page["returned_start_line"] == page["next_start_line"]
-    assert next_page["numbered_text"].startswith(f"{next_page['returned_start_line']:04d}|")
+    assert next_page["numbered_text"].startswith(f"{next_page['returned_start_line']}|")
 
 
 @pytest.mark.parametrize(

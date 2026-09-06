@@ -33,28 +33,28 @@ async def _manifest() -> dict[str, object]:
 
     async with Client(mcp) as client:
         tools = await client.list_tools()
-        if any(tool.outputSchema is None for tool in tools):
-            raise ValueError("public MCP tool is missing outputSchema")
+        if any(tool.output_schema is None for tool in tools):
+            raise ValueError("public MCP tool is missing output_schema")
         resource_items = await client.list_resources()
         if any(not (item.description or "").strip() for item in resource_items):
             raise ValueError("public MCP resource is missing description")
         resources = [str(item.uri) for item in resource_items]
-        templates = [str(item.uriTemplate) for item in await client.list_resource_templates()]
+        templates = [str(item.uri_template) for item in await client.list_resource_templates()]
     hosts = Path(__file__).parent / "hosts"
     host = json.loads((hosts / "codex.json").read_text(encoding="utf-8"))
     return {
-        "contract_version": "0.3.0",
+        "contract_version": "0.4.0",
         "tools": [
             {
                 "name": tool.name,
                 "title": (tool.title or "").strip(),
                 "description": (tool.description or "").strip(),
-                "read_only": bool(tool.annotations and tool.annotations.readOnlyHint),
-                "destructive": bool(tool.annotations and tool.annotations.destructiveHint),
-                "idempotent": bool(tool.annotations and tool.annotations.idempotentHint),
-                "open_world": tool.annotations.openWorldHint if tool.annotations else None,
-                "schema_sha256": _schema_hash(tool.inputSchema),
-                "output_schema_sha256": _schema_hash(cast(dict[str, object], tool.outputSchema)),
+                "read_only": bool(tool.annotations and tool.annotations.read_only_hint),
+                "destructive": bool(tool.annotations and tool.annotations.destructive_hint),
+                "idempotent": bool(tool.annotations and tool.annotations.idempotent_hint),
+                "open_world": tool.annotations.open_world_hint if tool.annotations else None,
+                "schema_sha256": _schema_hash(tool.input_schema),
+                "output_schema_sha256": _schema_hash(cast(dict[str, object], tool.output_schema)),
             }
             for tool in tools
         ],

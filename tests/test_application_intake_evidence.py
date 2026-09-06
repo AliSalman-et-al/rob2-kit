@@ -11,6 +11,7 @@ import pytest
 from rob2_kit.application import intake
 from rob2_kit.application._state import _db, _reserved_role
 from rob2_kit.application.evidence import (
+    _evidence_for_handles,
     _search_receipt,
     read_pages,
     search_sources,
@@ -98,6 +99,30 @@ def _source_for_text(tmp_path: Path, text: str) -> tuple[Path, dict[str, object]
     )
     source = prepared["trials"][0]["sources"][0]
     return tmp_path, source
+
+
+def test_search_preview_coordinates_and_passage_reference_share_one_window(
+    tmp_path: Path,
+) -> None:
+    workspace, source = _source_for_text(
+        tmp_path,
+        "analysis appears alone\nfiller\nprospective analysis plan finalized\ntrailer\n",
+    )
+
+    result = search_sources(
+        workspace,
+        "trial",
+        "prospective analysis plan",
+        mode="all",
+    )
+
+    hit = result["hits"][0]
+    [passage] = _evidence_for_handles(workspace, {hit["passage_ref"]}, "trial").values()
+    assert (hit["start_line"], hit["end_line"]) == (3, 3)
+    assert "prospective analysis plan" in hit["preview"]
+    assert passage["source_id"] == source["id"]
+    assert passage["page"] == hit["page"]
+    assert passage["quote"] == "prospective analysis plan finalized"
 
 
 def test_prepare_batch_ignores_hidden_files_and_directories_but_keeps_nested_docs(
@@ -292,7 +317,7 @@ def test_search_defaults_to_any_for_exploratory_concepts(tmp_path: Path) -> None
     assert result["search_receipt"]["mode"] == "any"
 
 
-def test_broad_search_prefers_source_priority_then_term_coverage(tmp_path: Path) -> None:
+def test_broad_search_interleaves_sources_then_prefers_term_coverage(tmp_path: Path) -> None:
     trial = tmp_path / "input" / "trial"
     trial.mkdir(parents=True)
     document = pymupdf.open()
@@ -333,8 +358,8 @@ def test_broad_search_prefers_source_priority_then_term_coverage(tmp_path: Path)
     assert result["truncated"] is False
     assert [(hit["source_id"], hit["page"]) for hit in result["hits"]] == [
         (main_id, 2),
-        (main_id, 1),
         (supplement_id, 1),
+        (main_id, 1),
     ]
     replayed = _search_receipt(tmp_path, result["search_receipt"]["handle"])
     assert replayed["hits"] == result["search_receipt"]["hits"]

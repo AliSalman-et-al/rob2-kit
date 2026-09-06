@@ -10,7 +10,7 @@ import sys
 from pathlib import Path
 from typing import Any
 
-SCHEMA = "rob2-kit.retained-evidence.v0.3"
+SCHEMA = "rob2-kit.retained-evidence.v0.4"
 SHA256 = re.compile(r"^sha256:[0-9a-f]{64}$")
 FORBIDDEN = {
     "path",

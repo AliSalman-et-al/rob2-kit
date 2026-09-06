@@ -186,7 +186,7 @@ change Canonical records or scientific judgments.
 
 ## Public boundary
 
-The v0.3 FastMCP surface is frozen at exactly 14 strictly typed tools:
+The v0.4 FastMCP surface preserves exactly 14 strictly typed tools:
 
 `prepare_batch`, `get_status`, `list_sources`, `search_sources`, `read_pages`,
 `select_text_evidence`, `render_page`, `select_visual_evidence`, `save_proposal`,
@@ -198,3 +198,7 @@ single operation, required caller inputs, and server-owned fields. The live
 `rob2://current-batch` resource is the restart-safe projection. The package ships
 one portable, progressive-disclosure `rob2-assess` skill shared by Codex and
 Claude Code.
+
+The successor interaction and field ownership are recorded in ADR 0031. Actual
+host delivery is tracked separately in `docs/acceptance/v0-4-host-matrix.md`;
+unrun or unobservable checks remain explicitly incomplete.
