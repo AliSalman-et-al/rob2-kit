@@ -1058,7 +1058,7 @@ def _evidence_catalog(
             )
             query = (
                 "SELECT identity,payload FROM evidence_handles "
-                "WHERE payload LIKE ? ESCAPE '\\' "
+                "WHERE CAST(payload AS TEXT) LIKE ? ESCAPE '\\' "
                 f"ORDER BY {'rowid DESC' if limit is not None else 'identity'}"
             )
             parameters: tuple[Any, ...] = (f'%"trial_id":"{escaped_trial_id}"%',)
