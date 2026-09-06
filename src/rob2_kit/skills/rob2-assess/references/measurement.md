@@ -1,46 +1,24 @@
 # Assess outcome measurement
 
-Use this reference for Domain 4.
+Use this reference for Domain 4. The approved Result fixes the outcome; the
+returned question cards are authoritative.
 
-Assess whether the measurement method was inappropriate. Then assess whether groups used different methods or schedules.
+Assess five distinct propositions:
 
-The active question card is authoritative. Its official excerpt and locator
-define the proposition; the seeds and pitfalls below guide retrieval.
+1. Is the measurement method inappropriate for this outcome?
+2. Could methods, thresholds, visit schedules, or detection opportunities differ
+   between randomized groups?
+3. Who determined the outcome, and did that assessor know the assignment?
+4. Could that knowledge influence the measurement?
+5. If it could, was influence likely in these trial circumstances?
 
-For assessor questions, identify who generates or determines the approved
-outcome, who records it, and what judgment enters measurement. Cite awareness
-separately from the mechanism by which awareness could influence measurement
-when the source does not establish both facts. Keep method appropriateness,
-differential assessment, possible influence, and likely influence as distinct
-answers; an open-label design alone does not decide them.
+Identify who generates or determines the outcome, not merely who records it.
+For participant-reported outcomes, the participant is the assessor. Cite
+assessor awareness separately from the mechanism and circumstances of possible
+influence.
 
-## Optional search leads from official guidance
-
-- **Official guidance, p. 54, Box 10, question 4.1:** Consider method-suitability
-  terms such as `sensitive to plausible intervention effects`, `measurement instrument`,
-  and `validity`.
-- **Official guidance, p. 54, Box 10, question 4.2:** Consider comparability terms
-  such as `same measurement methods`, `thresholds`, `comparable time points`,
-  `diagnostic detection bias`, `passive collection`, and `additional visits`.
-- **Official guidance, p. 54, Box 10, question 4.3:** Consider assessor-awareness
-  terms such as `outcome assessors`, `blinded`, `intervention status`, and
-  `participant-reported outcomes`.
-- **Official guidance, p. 54, Box 10, questions 4.4-4.5:** Consider influence terms
-  such as `observer-reported`, `judgement`, `intervention provider decision`,
-  `beneficial effects`, `harmful effects`, and `knowledge of assignment`.
-
-When useful, group method, schedule, assessor-awareness, and influence terms
-separately. Refine a truncated discovery search before concluding that a
-mechanism is not reported.
-
-## Pitfalls
-
-An endpoint label or definition does not prove objective measurement. A time
-origin, common analysis population, or planned protocol does not prove equal
-assessment or actual conduct. Separate method suitability, schedule
-comparability, assessor awareness, and influence. Awareness alone does not prove
-biased measurement. For participant-reported outcomes, the participant is the
-assessor.
-
-Completion: every active Domain 4 question has a permitted answer, and the
-answer addresses the proposition in its active question card.
+An endpoint label does not prove validity or objectivity. A shared time origin,
+analysis population, or planned protocol does not prove equal actual assessment.
+An open-label design alone does not decide method suitability, differential
+measurement, or likely influence. Additional visits, passive detection, or
+different thresholds matter only through their effect on outcome ascertainment.

@@ -1,123 +1,82 @@
 # Select Evidence
 
-Use this reference during source navigation, Result preparation, and Domain work.
+Use this reference while locating Result support and answering Domain questions.
 
-## Navigate before you select
+## Reuse inspected passage handles
 
-1. Use `search_sources` to locate candidate pages.
-   Each hit includes its Source role and label. Source-first order is a
-   navigation priority; use a targeted follow-up query when the active question
-   points to a protocol, SAP, registry, or other later-ranked Source.
-   If `truncated` is true, a positive exact passage remains usable, but refine
-   the query before treating candidate discovery as complete or using the
-   search as an absence basis.
-2. Use `read_pages` to inspect exact page text with server-issued line numbers.
-   Page values are 1-based source-page indexes, not printed page labels.
-   Pass the explicit `pages` list. If a page has `truncated:true`, call that
-   page again with its issued `next_start_line`. There is no caller-selected
-   output limit.
-3. Use `render_page` when visual structure changes the meaning.
-4. Call `select_text_evidence` or `select_visual_evidence` only after you identify the exact support.
+`search_sources` locates candidate pages. A hit is navigation, not scientific
+proof, but its `passage_ref` already identifies the exact returned passage.
+`read_pages` likewise prepares a `passage_ref` for each non-empty window. After
+you inspect a complete passage, reuse that handle in Proposal `passage_refs` or
+Domain `bases`; no separate text-selection call is required.
 
-A search hit is navigation, not Evidence. A no-hit search does not prove absence.
+Tool page numbers are 1-based Source indexes, not printed page labels. Read the
+numbered Source text; never reconstruct PDF text from a preview. If a page is
+truncated, continue with its issued `next_start_line`. For comparison across
+Sources, use independent `windows`. A passage crossing a page boundary needs one
+selection on each page.
 
-## Select one immutable Evidence item
+Use `select_text_evidence` when the prepared passage is too broad, truncated, or
+misses required context. Select one contiguous inclusive line range containing
+the complete premise and its needed header, list, cohort, denominator, unit, or
+footnote. A heading or list-introducing lead-in alone is incomplete.
 
-Use `select_text_evidence` with the page, first line, and last line issued by
-`read_pages`. Never copy or reconstruct PDF text from a search preview. If a
-passage crosses a page boundary, make one selection on each page. Select the lines for one complete
-`[Extracted table N]` block. If extraction interleaves adjacent tables or you
-cannot isolate the table with line selection alone, render the page and select only
-the relevant visual region. The selected passage must
-contain the complete fact and every applicable row, column, header, cohort,
-unit, denominator, cell, or footnote needed to interpret it. Expand a truncated
-passage before using it. For Domain Evidence, select the complete premise,
-sentence, or list: a heading, colon, or lead-in such as “the following” is
-incomplete on its own.
+## Use visual Evidence for visual meaning
 
-Use `select_visual_evidence` only after you inspect a verified render. A normal
-`render_page` call returns the pixels as ImageContent; pass `inline:false` only
-when metadata/cache-only behavior is explicitly wanted. Selection persists the
-figure; do not repeat its handle in a Result card. The visual Evidence consists of the
-render identity, normalized `x0,y0,x1,y1` region, and one exact, self-contained
-transcription containing every applicable title, axis, series, label, value,
-unit, uncertainty, denominator, and footnote. Use `[0,0,1,1]` for the whole
-page. Do not invent typed axes, series, or extraction fields.
-The server assigns figure provenance automatically as `text_corroborated` or
-`host_visual`; never provide that label. Prefer text corroboration: it is used
-only for a full-page region whose transcription has an exact normalized span in
-the persisted page text. `host_visual` is valid for image-only figures and
-diagrams. Every Result leaf must occur in the selected transcription. Host
-visual Evidence may support only literal endpoint/name/definition, reported
-values or category axes, arm-assignment labels, and stated time points/windows.
-Claims about intended population, analysis or measurement method,
-prespecification, or conduct require text-corroborated or narrative Evidence.
-Transcription must contain literal visible content only; put interpretation in
-the Result relation rationale or Domain rationale/basis. Proposal review shows
-the provenance, transcription, render, and region.
+Call `render_page` when layout, axes, columns, symbols, or footnotes affect the
+meaning. Inspect the returned pixels, then call `select_visual_evidence` with a
+normalized region and a literal, self-contained transcription. Include every
+applicable title, axis, series, label, value, unit, uncertainty, denominator, and
+footnote visible in the region.
 
-## Bind Result fields to selected material
+The server owns the render identity and assigns `text_corroborated` or
+`host_visual` provenance. Host-visual Evidence can support only literal visible
+labels, endpoint text, values, axes, arm labels, and stated timing. Use narrative
+or text-corroborated Evidence for population, analysis or measurement methods,
+prespecification, and conduct. Put interpretation in the Result rationale or
+Domain justification, not in the transcription.
 
-Do not send an `evidence` field, Evidence objects, copied table fields, figure
-metadata, derived calculations, bindings, clauses, or source-to-value mappings
-in an assessable Proposal. The server resolves durable text and visual
-selections, derives Result bindings, and retains only material used by the
-Result. Do not invent or collapse labels or values absent from selected
-material; proposed Result values must be reported by the Source.
+## Ground a Result
 
-Before saving, check the mechanical support rules: every Source-bound reported
-leaf has exact support from selected Evidence. The
-server reconstructs `/target/outcome_definition`, `/target/measurement/metric`,
-and `/target/effect_of_interest` from Intake and the fixed contract.
-Comparison-group IDs are caller-supplied structural identifiers; repeated
-reported group IDs are structural references that must match target IDs but do
-not need separate Evidence mappings. `category_axis_names` likewise declares
-dimensions structurally; source-owned category labels remain in each
-`category_axes` tuple. Direct narrative, table, and figure leaves use normalized
-containment against the selected immutable Evidence item; repeated labels,
-units, or values do not require a unique occurrence once the Evidence handle
-has been selected.
-Use the shortest complete Source wording that identifies each structured leaf.
-Do not expand an arm-assignment value with dosage or schedule detail unless that
-detail is needed to distinguish the randomized arms.
-Repair all other reported unsupported leaf values and Evidence
-defects together. A draft repair is not evidence that the result is unavailable.
-For `result_value_not_supported`, use exact source wording and select Evidence
-containing the supplied value.
+Do not send an `evidence` field, copied clauses, bindings, digests, table
+wrappers, or figure objects in an assessable Result card. Pass inspected handles
+through `passage_refs`. The server retains only Evidence that supports the
+Result and derives canonical bindings.
 
-## Write Evidence uses for Domain answers
+Every Source-owned reported leaf must have exact or normalization-equivalent
+support. Caller-owned target interpretation, timing and arm assignments do not
+need duplicate source quotations. Comparison-group IDs and structural
+`category_axis_names` do not need them either. Source-owned endpoint labels,
+definitions, group or category labels, quantities, units, and denominators do.
 
-Bind each Domain Evidence use to its active question:
+At least one Evidence item must contain `reported.endpoint.name` and a complete
+quantitative tuple. Follow the tuple rules in [Specify the Result](result.md).
+Repair unsupported leaves with exact Source wording and better Evidence; a
+support defect does not make the Result unavailable.
 
-- `direct_support` when the Evidence states the answer premise;
-- `indirect_support` when the Evidence supports the answer premise through an explicit link;
-- `contradiction` when the Evidence conflicts with the answer premise;
-- `context` when the Evidence defines scope or meaning;
-- `absence` when a scoped search account supports an absence claim; or
-- `inference` only when the selected premise directly warrants the answer.
+## Ground a Domain answer
 
-For an absence use, record the Source scope, exact query, lexical mode, and
-retrieval result in the search receipt. The receipt must be an untruncated
-no-hit result (`truncated:false`, `total_matches:0`, `condition:no_hits`);
-refine the search before using a truncated or positive receipt. Add a
-limitation when the answer remains uncertain. A no-hit query alone is
-insufficient for a confident scientific conclusion.
+Attach each basis to the active question it informs:
 
-For every non-absence Domain use, select Evidence for the active question and
-send its handle. The server derives the exact stored quote or transcription as
-the checkpoint `source`. Reuse Result Evidence only when that complete selected
-premise supports the answer. This exact-premise rule
-applies regardless of whether the relationship is `direct_support`,
-`indirect_support`, `context`, `contradiction`, or `inference`. For
-`indirect_support`, the passage must prove the stated premise through an
-explicit link. A relationship label never licenses extra facts. An absence use
-has only a search receipt and no selected Evidence. Do not mistake stratification
-or central registration for allocation concealment, a table header for baseline
-balance, an ITT/all-randomized sentence for no deviations, an endpoint label or
-time origin for follow-up completeness or equal assessment, or an outcome
-definition for objectivity, blinding, prespecification, or absence of
-alternative analyses. Use an absence search account or a limitation when the
-source does not prove the claim.
+- `direct_support`: the passage states the answer premise;
+- `indirect_support`: the passage establishes it through an explicit link;
+- `contradiction`: the passage conflicts with the premise;
+- `context`: the passage fixes scope or meaning;
+- `inference`: the exact premise directly warrants the conclusion;
+- `absence`: an untruncated scoped search found no hits;
+- `limitation`: a concise unresolved information limit plus an untruncated
+  current-Trial search receipt.
 
-Completion: every structured Result fact and every active Domain answer has an
-exact Evidence use or an explicit limitation.
+Non-absence Evidence relationships use a selected Evidence handle, except
+`limitation`, which uses text and a search receipt. An `absence` receipt must
+report `truncated:false`, `total_matches:0`, and `condition:"no_hits"`. A
+positive untruncated search may support a limitation after you inspect the
+relevant material, but it cannot support absence.
+
+A relationship label never expands what the passage says. Keep plans separate
+from conduct, analysis populations from observed outcomes, endpoint definitions
+from measurement properties, and absence of reporting from absence of bias.
+Reuse Result Evidence only when its exact premise answers the Domain question.
+
+Completion: each Source-owned assessable Result leaf has exact support, and each
+active Domain answer has a valid basis for its stated premise and uncertainty.

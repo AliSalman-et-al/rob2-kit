@@ -591,46 +591,52 @@ def test_status_keeps_incomplete_batch_authoritative_until_finalization() -> Non
 def test_assessment_skill_spells_out_intake_mapping() -> None:
     skill = Path(__file__).parents[1] / "src/rob2_kit/skills/rob2-assess/SKILL.md"
     text = skill.read_text(encoding="utf-8")
+    normalized = " ".join(text.split())
     assert '"requested_outcome":"a requested outcome","expected_revision":0' in text
     assert "Assess risk of bias for a requested outcome in Trial A" in text
     assert '"trial_labels":["Trial A"]' in text
     assert "across Trial A and Trial B" in text
     assert '"trial_labels":["Trial A","Trial B"]' in text
-    assert "captured Trial labels match the requested scope" in text
+    assert "captured Trial labels match the requested scope" in normalized
 
 
-def test_assessment_skill_spells_out_result_choice_invariant() -> None:
-    skill = Path(__file__).parents[1] / "src/rob2_kit/skills/rob2-assess/SKILL.md"
-    text = skill.read_text(encoding="utf-8")
-    assert "exact assessable Result" in text
-    assert "closest\ncomplete non-exact assessable candidate or profile" in text
-    assert "Missing comparator values do not make" in text
-    assert "single_group_category_profile" in text
-    assert "never invent comparator" in text
-    assert "event set" in text
-    assert "time origin or window" in text
-    assert "state criteria" in text
-    assert "Never infer equivalence from identical\n   numbers" in text
-    assert "fewest added criteria" in text
-    assert "clinical salience" in text
-    assert "abstract accessibility" in text
-    assert "mandatory Result-choice phase" in text
-    assert "List every complete main-article candidate found" in text
-    assert "add materially\n      competing candidates from other Sources" in text
-    assert "Compare each candidate's event set" in text
-    assert "revise the proposal instead of submitting alternatives" in text
-    assert "Read only the pages needed" in text
-    assert "do not read the whole article mechanically" in text
-    assert (
-        "After Proposal approval, do not ask for a final review or approval, whether to continue"
-        in text
-    )
-    assert "Follow the server's next action through every Domain" in text
-    assert "Do not ask whether to\n  continue or pause" in text
-    assert "Missing direct Evidence" in text
-    assert (
-        "uncertainty\n   answerable as `probably_yes`, `probably_no`, or `no_information`" in text
-    )
+def test_assessment_skill_preserves_result_choice_and_completion_guards() -> None:
+    root = Path(__file__).parents[1] / "src/rob2_kit/skills/rob2-assess"
+    skill = (root / "SKILL.md").read_text(encoding="utf-8")
+    result = (root / "references/result.md").read_text(encoding="utf-8")
+    missing = (root / "references/missing.md").read_text(encoding="utf-8")
+    randomization = (root / "references/randomization.md").read_text(encoding="utf-8")
+    instructions = " ".join((skill + result + missing + randomization).split())
+
+    assert "an exact assessable Result" in instructions
+    assert "closest complete non-exact assessable candidate or profile" in instructions
+    assert "unavailable Result only when no complete assessable candidate exists" in instructions
+    assert "Missing comparator values do not make" in instructions
+    assert "single_group_category_profile" in instructions
+    assert "Never invent comparator cells" in instructions
+    for comparison in (
+        "event set",
+        "time origin or window",
+        "population",
+        "measurement",
+        "state criteria",
+    ):
+        assert comparison in instructions
+    assert "fewest added criteria" in instructions
+    assert "materially competing candidates" in instructions
+    assert "Matching numbers do not prove equivalent endpoints" in instructions
+    assert "clinical salience" in instructions
+    assert "abstract accessibility" in instructions
+    assert "do not read every Source mechanically" in instructions
+    assert "Proposal Review is the only researcher gate" in instructions
+    assert "continue without asking" in instructions
+    assert "fifth accepted checkpoint freezes the Trial snapshot" in instructions
+    assert "`ready_to_finalize` is not completion" in instructions
+    assert "`probably_no` or `no`" in instructions
+    assert "Do not fabricate direct support" in instructions
+    assert "Does the answer code literally answer the question as worded?" in instructions
+    assert "Was allocation concealed until participants were enrolled and assigned?" in instructions
+
     terminal_description = _tool_description("request_trial_terminal")
     assert "missing direct evidence" in terminal_description.lower()
     assert "unfinished source review" in terminal_description
@@ -642,20 +648,14 @@ def test_assessment_skill_preserves_rigor_across_context_compaction() -> None:
     text = skill.read_text(encoding="utf-8")
     normalized = " ".join(text.split())
 
-    assert (
-        "After a compaction or restart, call `get_status` before any other workflow call"
-        in normalized
-    )
-    assert "resume the exact `head.next_action`" in normalized
-    assert "A low-context signal does not lower rigor" in normalized
-    assert "summarize remaining Trials" in normalized
-    assert "ask the researcher how to proceed solely because context is low" in normalized
-    assert "Let the host compact automatically" in normalized
-    assert "immediately call `get_status`" in normalized
-    assert "gives the host another safe continuation point" in normalized
-    assert "Save each Domain judgment with `save_domain_judgment`" in normalized
-    assert "fifth valid checkpoint must mark the current Trial complete" in normalized
-    assert "Call `finalize_batch` only when `head.next_action` directs it" in normalized
+    assert "After a restart or context compaction, call `get_status`" in normalized
+    assert "before any other workflow call" in normalized
+    assert "resume its exact next action" in normalized
+    assert "Use `get_domain_context` to restore Domain Evidence" in normalized
+    assert "Do not recreate completed work from memory" in normalized
+    assert "Save each Domain before moving on" in normalized
+    assert "fifth accepted checkpoint freezes the Trial snapshot" in normalized
+    assert "When `head.next_action.operation` is `finalize_batch`, call it immediately" in normalized
 
 
 def test_result_relation_schema_has_only_visible_non_exact_categories() -> None:
