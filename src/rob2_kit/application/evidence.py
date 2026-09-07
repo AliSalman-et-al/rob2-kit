@@ -483,6 +483,7 @@ def search_sources(
                 session_identity,
                 candidate["rank"],
                 active_domain_id,
+                trial_id,
             )
     hits = []
     for candidate in selected_candidates:
@@ -1540,43 +1541,30 @@ def _evidence(
 
 
 def _associate_search_candidate(
-    root: Path, session_identity: str, rank: int, domain_id: str
+    root: Path,
+    session_identity: str,
+    rank: int,
+    domain_id: str,
+    trial_id: str,
 ) -> None:
     """Associate disposable navigation with a Domain without changing its identity."""
     with _db(root, "derivative.sqlite3") as connection:
         connection.execute(
-            "INSERT OR IGNORE INTO search_domain_associations VALUES (?,?,?)",
-            (session_identity, rank, domain_id),
+            "INSERT OR IGNORE INTO search_domain_associations "
+            "(session_identity,rank,domain_id,trial_id) VALUES (?,?,?,?)",
+            (session_identity, rank, domain_id, trial_id),
         )
 
 
 def _associated_search_ranks(root: Path, trial_id: str, domain_id: str) -> set[tuple[str, int]]:
-    """Return associations owned by exactly one Trial.
-
-    The derivative association table has no Trial column.  A search session's
-    immutable spec is the owner, so filter through it rather than joining the
-    shared RoB Domain ids across Trials.
-    """
+    """Return associations owned by exactly one Trial, including lost sessions."""
     with _db(root, "derivative.sqlite3") as connection:
         rows = connection.execute(
-            "SELECT session_identity,rank FROM search_domain_associations WHERE domain_id=?",
-            (domain_id,),
+            "SELECT session_identity,rank FROM search_domain_associations "
+            "WHERE domain_id=? AND trial_id=?",
+            (domain_id, trial_id),
         ).fetchall()
-    result: set[tuple[str, int]] = set()
-    with _db(root, "derivative.sqlite3") as connection:
-        for session_identity, rank in rows:
-            payload = connection.execute(
-                "SELECT payload FROM search_sessions WHERE identity=?", (session_identity,)
-            ).fetchone()
-            if payload is None:
-                continue
-            try:
-                spec = json.loads(bytes(payload[0]))["spec"]
-            except (KeyError, TypeError, UnicodeDecodeError, json.JSONDecodeError) as error:
-                raise ValueError("search session derivative is corrupt") from error
-            if spec.get("trial_id") == trial_id:
-                result.add((str(session_identity), int(rank)))
-    return result
+    return {(str(session_identity), int(rank)) for session_identity, rank in rows}
 
 
 def _search_continuation(
@@ -1585,13 +1573,14 @@ def _search_continuation(
     domain_id: str,
     included: set[tuple[str, int]],
     limit: int,
-) -> dict[str, Any] | None:
-    """Return one fully bound action that starts at an omitted candidate."""
+) -> list[dict[str, Any]]:
+    """Return one fully bound action for each session with omitted candidates."""
+    continuations: list[dict[str, Any]] = []
     with _db(root, "derivative.sqlite3") as connection:
         rows = connection.execute(
             "SELECT session_identity,rank FROM search_domain_associations "
-            "WHERE domain_id=? ORDER BY session_identity,rank",
-            (domain_id,),
+            "WHERE domain_id=? AND trial_id=? ORDER BY session_identity,rank",
+            (domain_id, trial_id),
         ).fetchall()
     by_session: dict[str, list[int]] = {}
     for session_identity, rank in rows:
@@ -1606,6 +1595,14 @@ def _search_continuation(
                 "SELECT payload FROM search_sessions WHERE identity=?", (session_identity,)
             ).fetchone()
         if row is None:
+            continuations.append(
+                {
+                    "operation": "unavailable",
+                    "trial_id": trial_id,
+                    "search_session": session_identity,
+                    "reason": "derivative_search_session_unavailable",
+                }
+            )
             continue
         try:
             payload = json.loads(bytes(row[0]))
@@ -1657,16 +1654,18 @@ def _search_continuation(
         )
         if offset is None:
             raise ValueError("search session candidate is corrupt")
-        return {
-            "operation": "search_sources",
-            "trial_id": spec["trial_id"],
-            "query": spec["query"],
-            "mode": spec["mode"],
-            "source_id": source_id,
-            "limit": limit,
-            "cursor": _cursor_handle(session_identity, offset),
-        }
-    return None
+        continuations.append(
+            {
+                "operation": "search_sources",
+                "trial_id": spec["trial_id"],
+                "query": spec["query"],
+                "mode": spec["mode"],
+                "source_id": source_id,
+                "limit": limit,
+                "cursor": _cursor_handle(session_identity, offset),
+            }
+        )
+    return continuations
 
 
 def _validate_selected_evidence(

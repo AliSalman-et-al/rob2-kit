@@ -66,6 +66,20 @@ frozen v0.3 contract.
   Source scope, and limit. The action is retrieval advice only; a zero-hit
   receipt remains specific to its issued lexical query, and broad `any`
   truncation/cursor behavior is unchanged.
+- Present `get_domain_context` in stages. The approved Result, complete
+  question semantics, and comparison cards precede bulk Evidence in the
+  model-facing text. Comparison cards retain Result scope, passage groups, and
+  slots. They use `question_id` to refer to wording and options in exactly one
+  returned question card. The 64-item disposable selection limit is separate
+  from the 12,288-byte budget for recoverable narrative Evidence text. Narrative
+  overflow retains the selected narrative Evidence identity, coordinates, and
+  executable `read_pages` recovery windows. Visual transcription, table values,
+  derived values, and coordinate-less legacy narrative text remain inline when
+  no exact existing recovery operation exists, even beyond the recoverable
+  disposable-item limit; their additional bytes are reported separately.
+  Missing derivative search sessions are reported explicitly rather than
+  silently erased. This is a transport projection, not a canonical or
+  scientific-state change.
 - Keep Domain 4 host reasoning outcome-specific. The host audits the approved
   event and method, between-group ascertainment opportunities, assessor identity
   and awareness, and any influence mechanism in that order. Mixed-outcome
@@ -79,11 +93,12 @@ frozen v0.3 contract.
 | Approved Result Evidence | Always included from the approved canonical Result. |
 | Active checkpoint Evidence | Always included from the requested Domain checkpoint; Evidence from other Domain checkpoints is not copied into this context. |
 | Active checkpoint contradictions | Always included and indexed separately as contradictions. |
-| Active-Domain search candidates | Ranked deterministically by stable candidate rank and session identity, then bounded to 64 items. |
-| Explicit carry-forward | Exact passages selected outside a search session take priority within the 64-item disposable budget; overflow remains reachable by an exact read continuation. |
+| Active-Domain search candidates | Ranked deterministically by stable candidate rank and session identity, then selected within the 64-item disposable limit; selected narrative quotes use the recoverable narrative-text budget. |
+| Explicit carry-forward | Exact passages selected outside a search session take priority within the 64-item disposable limit and the recoverable narrative-text budget; overflow remains reachable through executable `read_pages` windows. |
 | Other-Domain search candidates | Excluded. They remain reachable through their original immutable session while derivative session state exists. |
 
-Canonical tiers never compete with the candidate budget. The response groups
+Canonical tiers never compete with the 64-item disposable limit. They take
+priority within the recoverable narrative-text budget. The response groups
 Evidence handles by inclusion reason and question scope, reports every omitted
 candidate, and supplies an executable search cursor whenever an associated
 candidate is omitted. Loss of disposable state never invalidates canonical

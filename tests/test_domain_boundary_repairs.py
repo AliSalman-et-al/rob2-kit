@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import os
+import sqlite3
 from pathlib import Path
 from typing import Any
 
@@ -479,12 +480,48 @@ def test_domain_context_continuation_reaches_omissions_across_sessions(tmp_path:
     evidence_workspace = context["evidence_workspace"]
     assert evidence_workspace["omitted_count"] == 2
     assert evidence_workspace["omitted_by_category"]["active_domain_candidate"] == 2
+    actions = evidence_workspace["continuations"]
+    assert len(actions) == 2
+    assert {action["query"] for action in actions} == {"alpha candidate", "beta candidate"}
     action = evidence_workspace["continuation"]
-    assert action is not None
+    assert action == actions[0]
 
-    continued = _call(workspace, action.pop("operation"), action)
-    assert continued["outcome"] == "success", continued
-    assert continued["data"]["hits"]
+    for action in actions:
+        arguments = dict(action)
+        continued = _call(workspace, arguments.pop("operation"), arguments)
+        assert continued["outcome"] == "success", continued
+        assert continued["data"]["hits"]
+
+
+def test_saved_contradiction_is_projected_in_contradiction_group(tmp_path: Path) -> None:
+    workspace = _workspace(tmp_path)
+    result_evidence = _prepared_evidence(workspace)
+    _call(workspace, "save_proposal", _proposal_args(workspace, [_result(result_evidence)]))
+    _review(workspace)
+    revision = int(_call(workspace, "get_domain_context", {})["head"]["state_revision"])
+    draft = _domain_draft("trial", "domain:randomization", revision, result_evidence)
+    for answer in draft["answers"]:
+        answer["bases"][0]["kind"] = "contradiction"
+    saved = _call(workspace, "save_domain_judgment", draft)
+    assert saved["outcome"] == "success", saved
+
+    context = _call(
+        workspace,
+        "get_domain_context",
+        {"trial_id": "trial", "domain_id": "domain:randomization"},
+    )["data"]
+    group = next(
+        item
+        for item in context["evidence_workspace"]["groups"]
+        if item["inclusion_reason"] == "contradiction"
+    )
+    assert group["evidence_handles"] == [result_evidence["handle"]]
+    result_group = next(
+        item
+        for item in context["evidence_workspace"]["groups"]
+        if item["inclusion_reason"] == "result"
+    )
+    assert result_group["evidence_handles"] == [result_evidence["handle"]]
 
 
 def test_domain_context_continuation_reaches_unreturned_session_candidates(
@@ -528,13 +565,70 @@ def test_domain_context_continuation_reaches_unreturned_session_candidates(
     assert continued["data"]["hits"][0]["rank"] == 2
 
 
+def test_domain_context_reports_unavailable_search_session_after_cache_loss(
+    tmp_path: Path,
+) -> None:
+    workspace = _workspace(tmp_path)
+    document = pymupdf.open()
+    for index in range(70):
+        page = document.new_page()
+        page.insert_text((72, 72), f"lost candidate {index}")
+    (workspace / "input" / "trial" / "lost.pdf").write_bytes(document.tobytes())
+    document.close()
+    proposal_evidence = _prepared_evidence(workspace)
+    _call(workspace, "save_proposal", _proposal_args(workspace, [_result(proposal_evidence)]))
+    _review(workspace)
+    source = next(
+        item
+        for item in _call(workspace, "list_sources", {"trial_id": "trial"})["data"]["sources"]
+        if item["label"] == "lost.pdf"
+    )
+    search = _call(
+        workspace,
+        "search_sources",
+        {
+            "trial_id": "trial",
+            "source_id": source["id"],
+            "query": "lost candidate",
+            "mode": "all",
+            "limit": 1,
+        },
+    )["data"]
+    derivative = workspace / ".rob2-kit" / "derivative.sqlite3"
+    with sqlite3.connect(derivative) as connection:
+        connection.execute(
+            "UPDATE search_domain_associations SET trial_id=NULL WHERE session_identity=?",
+            (search["session_id"],),
+        )
+    _call(workspace, "get_domain_context", {})
+    with sqlite3.connect(derivative) as connection:
+        owner = connection.execute(
+            "SELECT DISTINCT trial_id FROM search_domain_associations WHERE session_identity=?",
+            (search["session_id"],),
+        ).fetchone()
+        assert owner == ("trial",)
+        connection.execute("DELETE FROM search_sessions WHERE identity=?", (search["session_id"],))
+
+    evidence_workspace = _call(workspace, "get_domain_context", {})["data"]["evidence_workspace"]
+    assert evidence_workspace["continuation"] is None
+    assert evidence_workspace["continuations"] == [
+        {
+            "operation": "unavailable",
+            "trial_id": "trial",
+            "search_session": search["session_id"],
+            "reason": "derivative_search_session_unavailable",
+        }
+    ]
+    assert evidence_workspace["omitted_by_category"]["active_domain_candidate"] == 69
+
+
 def test_explicit_carry_forward_has_budget_priority_and_exact_read_continuation(
     tmp_path: Path,
 ) -> None:
     workspace = _workspace(tmp_path)
     extra = workspace / "input" / "trial" / "explicit.txt"
     extra.write_text(
-        "".join(f"explicit evidence {index}\n" for index in range(65)), encoding="utf-8"
+        "".join(f"explicit evidence {index}\n" for index in range(130)), encoding="utf-8"
     )
     proposal_evidence = _prepared_evidence(workspace)
     _call(workspace, "save_proposal", _proposal_args(workspace, [_result(proposal_evidence)]))
@@ -544,7 +638,7 @@ def test_explicit_carry_forward_has_budget_priority_and_exact_read_continuation(
         for item in _call(workspace, "list_sources", {"trial_id": "trial"})["data"]["sources"]
         if item["label"] == "explicit.txt"
     )
-    for line in range(1, 66):
+    for line in range(1, 131):
         selected = _call(
             workspace,
             "select_text_evidence",
@@ -566,7 +660,8 @@ def test_explicit_carry_forward_has_budget_priority_and_exact_read_continuation(
         if group["inclusion_reason"] == "explicit_carry_forward"
     )
     assert len(explicit["evidence_handles"]) == 64
-    assert workspace_data["omitted_by_category"]["explicit_carry_forward"] == 1
+    assert workspace_data["omitted_by_category"]["explicit_carry_forward"] == 66
+    assert [len(item["windows"]) for item in workspace_data["continuations"]] == [20, 20, 20, 6]
     action = dict(workspace_data["continuation"])
     assert action["operation"] == "read_pages"
     assert action["windows"][0]["start_line"] == 65

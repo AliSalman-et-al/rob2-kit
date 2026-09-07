@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from typing import Any
 
 from support.rob2 import _assessment_workspace, _call, _domain_draft
 
@@ -35,22 +36,31 @@ def test_deviation_card_exposes_provenance_without_classifying_prose(tmp_path: P
     )["data"]
 
     context = _call(workspace, "get_domain_context", {})["data"]
-    card = context["comparison_cards"][0]
-
-    assert card["question_id"] == "sq:deviations:context-deviations"
-    assert card["question_wording"]
-    assert {option["official_answer"] for option in card["options"]} == {
+    first_card = context["comparison_cards"][0]
+    assert first_card["question_id"] == "sq:deviations:context-deviations"
+    questions_by_id: dict[str, list[dict[str, Any]]] = {}
+    for question in context["questions"]:
+        questions_by_id.setdefault(question["id"], []).append(question)
+    for comparison_card in context["comparison_cards"]:
+        assert "question_wording" not in comparison_card
+        assert "options" not in comparison_card
+        matching_questions = questions_by_id.get(comparison_card["question_id"], [])
+        assert len(matching_questions) == 1
+    first_question = questions_by_id[first_card["question_id"]][0]
+    assert {option["official_answer"] for option in first_question["options"]} == {
         "yes",
         "probably_yes",
         "probably_no",
         "no",
         "no_information",
     }
-    intended = next(item for item in card["slots"] if item["name"] == "intended_intervention")
+    intended = next(item for item in first_card["slots"] if item["name"] == "intended_intervention")
     assert intended["status"] == "supported"
     assert "a: assigned to intervention" in intended["value"]
     scientific = {
-        item["name"]: item for item in card["slots"] if item["name"] != "intended_intervention"
+        item["name"]: item
+        for item in first_card["slots"]
+        if item["name"] != "intended_intervention"
     }
     assert all(item["status"] == "unknown" for item in scientific.values())
     assert all(not item["passages"] for item in scientific.values())
@@ -63,11 +73,11 @@ def test_deviation_card_exposes_provenance_without_classifying_prose(tmp_path: P
             searched_hit["start_line"],
             searched_hit["end_line"],
         )
-        for group in card["passage_groups"]
+        for group in first_card["passage_groups"]
         for passage in group["passages"]
     )
-    assert all(group["source_role"] for group in card["passage_groups"])
-    assert "do not infer causation" in card["prompt"]
+    assert all(group["source_role"] for group in first_card["passage_groups"])
+    assert "do not infer causation" in first_card["prompt"]
 
 
 def test_missing_data_card_marks_conflicting_typed_counts(tmp_path: Path) -> None:

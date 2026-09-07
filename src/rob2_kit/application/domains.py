@@ -29,6 +29,152 @@ from .evidence import (
 )
 from .status import _active_trial_and_domain, _continuation
 
+_DOMAIN_RECOVERABLE_NARRATIVE_TEXT_BUDGET = 12_288
+
+
+def _evidence_text_bytes(item: dict[str, Any]) -> int:
+    """Count source-bound Evidence text, not serialized JSON bytes."""
+
+    kind = item.get("kind")
+    if kind == "narrative":
+        values = (item.get("quote"),)
+    elif kind == "figure":
+        values = (item.get("transcription"),)
+    elif kind == "table":
+        values = (
+            item.get("title"),
+            item.get("scope"),
+            item.get("cohort"),
+            item.get("row"),
+            *(item.get("columns") or ()),
+            *(item.get("group_or_category_axes") or ()),
+            *(item.get("cells") or ()),
+            *(item.get("units") or ()),
+            *(item.get("denominators") or ()),
+            *(item.get("footnotes") or ()),
+        )
+    elif kind == "derived":
+        values = [item.get("value")]
+        values.extend(
+            input_item.get("value")
+            for input_item in (item.get("inputs") or ())
+            if isinstance(input_item, dict)
+        )
+    else:
+        values = ()
+    return sum(len(value.encode("utf-8")) for value in values if isinstance(value, str))
+
+
+def _compact_domain_evidence(context: dict[str, Any]) -> dict[str, Any]:
+    """Bound only the model-facing Evidence text; canonical rows stay untouched."""
+
+    # Checkpoint bases historically repeated the complete Evidence quote in a
+    # ``source`` field.  The identity and projected Evidence are sufficient;
+    # remove the duplicate from this presentation while retaining its byte
+    # count in omitted_narrative_text_bytes.
+    checkpoint_source_bytes = 0
+    answers = context.get("answers")
+    if isinstance(answers, list):
+        answers = [dict(answer) if isinstance(answer, dict) else answer for answer in answers]
+        for answer in answers:
+            if not isinstance(answer, dict):
+                continue
+            bases = answer.get("bases")
+            if not isinstance(bases, list):
+                continue
+            copied_bases = []
+            for basis in bases:
+                if not isinstance(basis, dict):
+                    copied_bases.append(basis)
+                    continue
+                copied_basis = dict(basis)
+                source = copied_basis.pop("source", None)
+                if isinstance(source, str):
+                    checkpoint_source_bytes += len(source.encode("utf-8"))
+                copied_bases.append(copied_basis)
+            answer["bases"] = copied_bases
+        context["answers"] = answers
+    evidence = context.get("evidence")
+    if not isinstance(evidence, list):
+        return context
+    # Allocate the byte budget by priority without reordering Evidence.
+    tier = {
+        "result": 0,
+        "checkpoint": 1,
+        "contradiction": 2,
+        "explicit_carry_forward": 3,
+        "active_domain_candidate": 4,
+        "question_candidate": 4,
+    }
+    indexed = list(enumerate(evidence))
+    indexed.sort(key=lambda pair: (tier.get(str(pair[1].get("inclusion_reason")), 5), pair[0]))
+    remaining = _DOMAIN_RECOVERABLE_NARRATIVE_TEXT_BUDGET
+    recoverable_narrative_bytes = omitted = omitted_count = unrecoverable_inline = 0
+    projected: dict[int, dict[str, Any]] = {}
+    for index, original in indexed:
+        if not isinstance(original, dict):
+            continue
+        item = dict(original)
+        size = _evidence_text_bytes(item)
+        kind = item.get("kind")
+        has_exact_recovery = (
+            kind == "narrative"
+            and all(isinstance(item.get(key), int) for key in ("page", "start_line", "end_line"))
+            and isinstance(item.get("source_id"), str)
+            and isinstance(item.get("trial_id"), str)
+        )
+        # Visual transcription and derived/table values have no exact existing
+        # recovery operation, so preserve them inline even when large.
+        include = not has_exact_recovery or size <= remaining
+        if include:
+            if has_exact_recovery:
+                remaining -= size
+            if has_exact_recovery:
+                recoverable_narrative_bytes += size
+            else:
+                unrecoverable_inline += size
+            if kind == "narrative":
+                item["text_status"] = "complete"
+        else:
+            item["quote"] = None
+            item["text_status"] = "omitted"
+            item["recovery"] = {
+                "operation": "read_pages",
+                "trial_id": item["trial_id"],
+                "windows": [
+                    {
+                        "source_id": item["source_id"],
+                        "page": item["page"],
+                        "start_line": item["start_line"],
+                        "end_line": item["end_line"],
+                    }
+                ],
+            }
+            omitted += size
+            omitted_count += 1
+        projected[index] = item
+    result = context.get("result")
+    if isinstance(result, dict):
+        unrecoverable_inline += sum(
+            _evidence_text_bytes(item)
+            for item in result.get("evidence", [])
+            if isinstance(item, dict) and item.get("kind") == "derived"
+        )
+    omitted += checkpoint_source_bytes
+    context["evidence"] = [projected.get(index, item) for index, item in enumerate(evidence)]
+    workspace = context.get("evidence_workspace")
+    if isinstance(workspace, dict):
+        workspace = dict(workspace)
+        workspace["selection_policy_version"] = "rob2-kit.domain-projection.v0.6"
+        workspace["recoverable_narrative_text_budget"] = _DOMAIN_RECOVERABLE_NARRATIVE_TEXT_BUDGET
+        workspace["recoverable_narrative_text_bytes"] = recoverable_narrative_bytes
+        workspace["omitted_narrative_text_bytes"] = omitted
+        workspace["omitted_narrative_text_count"] = omitted_count
+        workspace["unrecoverable_inline_text_bytes"] = unrecoverable_inline
+        context["evidence_workspace"] = workspace
+    return context
+
+
 _DOMAIN_GUIDANCE = (
     "Before the first save for this Domain, run bounded searches for every active question "
     "using the retrieval concepts in its operational guidance. Search method Sources such "
@@ -305,9 +451,6 @@ def _comparison_cards(
             }
         )
 
-    question = next(
-        item for item in SCIENTIFIC_PACK.questions if item.id == question_by_domain[domain_id]
-    )
     target = result.get("target", {})
     reported = result.get("reported", {})
     slots = [
@@ -430,8 +573,6 @@ def _comparison_cards(
         {
             "card_id": card_id,
             "question_id": question_by_domain[domain_id],
-            "question_wording": question.wording,
-            "options": [_answer_option(question, answer) for answer in question.allowed_answers],
             "result_identity": _identity(result),
             "passage_groups": passage_groups,
             "slots": slots,
@@ -1259,13 +1400,23 @@ def get_domain_context(
         }
     )
     handles = {
-        item.get("handle") for item in (result or {}).get("evidence", []) if isinstance(item, dict)
+        item.get("handle")
+        for item in (result or {}).get("evidence", [])
+        if isinstance(item, dict) and isinstance(item.get("handle"), str)
     }
     result_handles = {
         item.get("handle")
         for item in result.get("evidence", [])
         if isinstance(item, dict) and isinstance(item.get("handle"), str)
     }
+    result_handles.update(
+        input_item.get("handle")
+        for item in result.get("evidence", [])
+        if isinstance(item, dict) and item.get("kind") == "derived"
+        for input_item in item.get("inputs", [])
+        if isinstance(input_item, dict) and isinstance(input_item.get("handle"), str)
+    )
+    handles.update(result_handles)
     checkpoint_answers = [
         answer
         for answer in (existing.get("answers", []) if isinstance(existing, dict) else [])
@@ -1378,13 +1529,29 @@ def get_domain_context(
     associated, associated_duplicates = unique_passages(associated)
     explicit_carry_forward, explicit_duplicates = unique_passages(explicit_carry_forward)
     projection_budget = 64
-    # Explicit selections are deliberate carry-forward and therefore take
-    # priority over disposable search candidates within the shared budget.
-    # Result/checkpoint Evidence remains outside this budget above.
-    selected_explicit = explicit_carry_forward[:projection_budget]
-    remaining_budget = projection_budget - len(selected_explicit)
+
+    # Recoverable explicit selections take priority over search candidates
+    # within the shared item budget. Non-reconstructible selections remain
+    # inline outside it, as do Result/checkpoint Evidence.
+    def has_exact_read_recovery(value: dict[str, Any]) -> bool:
+        return (
+            value.get("kind") == "narrative"
+            and all(isinstance(value.get(key), int) for key in ("page", "start_line", "end_line"))
+            and isinstance(value.get("source_id"), str)
+            and isinstance(value.get("trial_id"), str)
+        )
+
+    recoverable_explicit = [
+        value for value in explicit_carry_forward if has_exact_read_recovery(value)
+    ]
+    unrecoverable_explicit = [
+        value for value in explicit_carry_forward if not has_exact_read_recovery(value)
+    ]
+    selected_recoverable_explicit = recoverable_explicit[:projection_budget]
+    selected_explicit = [*unrecoverable_explicit, *selected_recoverable_explicit]
+    remaining_budget = projection_budget - len(selected_recoverable_explicit)
     selected_candidates = associated[:remaining_budget]
-    omitted_explicit = explicit_carry_forward[len(selected_explicit) :]
+    omitted_explicit = recoverable_explicit[len(selected_recoverable_explicit) :]
     included_candidate_ranks = {
         (value["search_session"], value["candidate_rank"]) for value in selected_candidates
     }
@@ -1418,7 +1585,7 @@ def get_domain_context(
         for item in catalog.values()
         if isinstance(item, dict) and item.get("identity") in checkpoint_identities
     }
-    contradiction_handles = {
+    contradiction_identities = {
         basis.get("evidence")
         for answer in checkpoint_answers
         for basis in answer.get("bases", [])
@@ -1432,7 +1599,7 @@ def get_domain_context(
         handle = value.get("handle")
         if handle in result_handles:
             value.setdefault("inclusion_reason", "result")
-        elif handle in contradiction_handles:
+        elif value.get("identity") in contradiction_identities:
             value.setdefault("inclusion_reason", "contradiction")
         elif handle in canonical_handles:
             value.setdefault("inclusion_reason", "checkpoint")
@@ -1468,21 +1635,23 @@ def get_domain_context(
                     if isinstance(evidence_identity, str):
                         questions_by_evidence.setdefault(evidence_identity, set()).add(question_id)
 
-    evidence_continuation = _search_continuation(
+    evidence_continuations: list[dict[str, Any]] = []
+    search_continuations = _search_continuation(
         root,
         trial_id,
         domain_id,
         included_candidate_ranks,
         projection_budget,
     )
-    if evidence_continuation is None and omitted_explicit:
-        windows = []
+    evidence_continuations.extend(search_continuations)
+    if omitted_explicit:
+        windows: list[dict[str, Any]] = []
         seen_windows: set[tuple[str, int, int, int]] = set()
         for value in omitted_explicit:
             source_id = value.get("source_id")
             page = value.get("page")
-            start_line = value.get("start_line", 1)
-            end_line = value.get("end_line", start_line)
+            start_line = value.get("start_line")
+            end_line = value.get("end_line")
             if (
                 not isinstance(source_id, str)
                 or not isinstance(page, int)
@@ -1503,13 +1672,30 @@ def get_domain_context(
                 }
             )
             if len(windows) == 20:
-                break
+                evidence_continuations.append(
+                    {
+                        "operation": "read_pages",
+                        "trial_id": trial_id,
+                        "windows": windows,
+                    }
+                )
+                windows = []
         if windows:
-            evidence_continuation = {
-                "operation": "read_pages",
-                "trial_id": trial_id,
-                "windows": windows,
-            }
+            evidence_continuations.append(
+                {
+                    "operation": "read_pages",
+                    "trial_id": trial_id,
+                    "windows": windows,
+                }
+            )
+    evidence_continuation = next(
+        (
+            action
+            for action in evidence_continuations
+            if action.get("operation") in {"search_sources", "read_pages"}
+        ),
+        None,
+    )
     workspace_groups = []
     for reason in (
         "result",
@@ -1518,11 +1704,32 @@ def get_domain_context(
         "active_domain_candidate",
         "explicit_carry_forward",
     ):
-        items = [
-            value
-            for value in catalog.values()
-            if isinstance(value, dict) and value.get("inclusion_reason") == reason
-        ]
+        if reason == "result":
+            items = [
+                value
+                for value in catalog.values()
+                if isinstance(value, dict) and value.get("handle") in result_handles
+            ]
+        elif reason == "contradiction":
+            items = [
+                value
+                for value in catalog.values()
+                if isinstance(value, dict) and value.get("identity") in contradiction_identities
+            ]
+        elif reason == "checkpoint":
+            items = [
+                value
+                for value in catalog.values()
+                if isinstance(value, dict)
+                and value.get("identity") in checkpoint_identities
+                and value.get("identity") not in contradiction_identities
+            ]
+        else:
+            items = [
+                value
+                for value in catalog.values()
+                if isinstance(value, dict) and value.get("inclusion_reason") == reason
+            ]
         if not items:
             continue
         scoped_questions = (
@@ -1550,20 +1757,12 @@ def get_domain_context(
         if value.get("kind") == "unavailable":
             return value
         reported = value["reported"]
-        if reported.get("form") == "single_group_category_profile":
-            reported = {
-                key: reported[key]
-                for key in (
-                    "form",
-                    "endpoint",
-                    "group_id",
-                    "denominator_basis",
-                    "category_axis_names",
-                )
-            } | {"category_count": len(reported["categories"])}
         references = []
         for evidence_item in value.get("evidence", []):
             if not isinstance(evidence_item, dict):
+                continue
+            if evidence_item.get("kind") == "derived":
+                references.append(dict(evidence_item))
                 continue
             handle = evidence_item.get("handle")
             selected = next(
@@ -1614,7 +1813,7 @@ def get_domain_context(
             "multiple_concerns",
             "revision_basis",
         ]
-    return {
+    context = {
         "outcome": "success",
         "trial_id": trial_id,
         "domain_id": domain_id,
@@ -1664,11 +1863,12 @@ def get_domain_context(
             "use, scoped absence receipt, or limitation; inactive extras are ignored"
         ),
         "evidence_workspace": {
-            "selection_policy_version": "rob2-kit.domain-projection.v0.5",
+            "selection_policy_version": "rob2-kit.domain-projection.v0.6",
             "groups": workspace_groups,
             "omitted_count": omitted_evidence_count,
             "omitted_by_category": omitted_by_category,
             "continuation": evidence_continuation,
+            "continuations": evidence_continuations,
         },
         "comparison_cards": _comparison_cards(
             domain_id,
@@ -1679,3 +1879,4 @@ def get_domain_context(
         ),
         "continuation": continuation,
     }
+    return _compact_domain_evidence(context)

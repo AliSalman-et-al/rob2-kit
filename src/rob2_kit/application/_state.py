@@ -336,8 +336,35 @@ def _ensure(root: Path) -> None:
         connection.execute(
             "CREATE TABLE IF NOT EXISTS search_domain_associations ("
             "session_identity TEXT NOT NULL, rank INTEGER NOT NULL, domain_id TEXT NOT NULL, "
+            "trial_id TEXT, "
             "PRIMARY KEY(session_identity,rank,domain_id))"
         )
+        association_columns = {
+            str(row[1])
+            for row in connection.execute("PRAGMA table_info(search_domain_associations)")
+        }
+        if "trial_id" not in association_columns:
+            connection.execute("ALTER TABLE search_domain_associations ADD COLUMN trial_id TEXT")
+        missing_owners = connection.execute(
+            "SELECT DISTINCT session_identity FROM search_domain_associations "
+            "WHERE trial_id IS NULL"
+        ).fetchall()
+        for (session_identity,) in missing_owners:
+            row = connection.execute(
+                "SELECT payload FROM search_sessions WHERE identity=?", (session_identity,)
+            ).fetchone()
+            if row is None:
+                continue
+            try:
+                trial_id = json.loads(bytes(row[0]))["spec"]["trial_id"]
+            except (KeyError, TypeError, UnicodeDecodeError, json.JSONDecodeError):
+                continue
+            if isinstance(trial_id, str):
+                connection.execute(
+                    "UPDATE search_domain_associations SET trial_id=? "
+                    "WHERE session_identity=? AND trial_id IS NULL",
+                    (trial_id, session_identity),
+                )
     _rebuild_derivative_if_needed(root)
 
 

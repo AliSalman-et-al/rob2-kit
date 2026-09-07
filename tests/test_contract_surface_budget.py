@@ -67,9 +67,9 @@ def test_public_output_surface_is_closed_and_within_budget() -> None:
         for tool, schema in zip(tools, closed_schemas, strict=True)
     )
     # This is a ceiling, not a target. Smaller closed schemas are better.
-    # v0.5 adds stable search-session metadata, option cards, and bounded
-    # domain comparison projections to the closed output contract.
-    assert total_bytes < 260_000
+    # v0.6 adds bounded Domain Evidence, complete approved category profiles,
+    # and explicit recovery/unavailable states to the closed output contract.
+    assert total_bytes < 264_000
 
     by_name = {tool.name: tool for tool in tools}
     search_annotations = by_name["search_sources"].annotations
@@ -99,16 +99,41 @@ def test_public_output_surface_is_closed_and_within_budget() -> None:
     assert source_scope["anyOf"][0]["pattern"] == r"^source_[0-9a-f]{64}$"
     assert "not printed labels" in read_description
     assert "numbered lines" in read_description
+    assert "required for every read" in read_parameters["properties"]["trial_id"]["description"]
     assert "integer source-page indexes" in read_parameters["properties"]["pages"]["description"]
     assert read_parameters["properties"]["pages"]["examples"] == [[1, 3]]
     assert "one contiguous range" in select_description
     assert "one selection per page" in select_description
     assert "start_text" not in select_description
     assert "end_text" not in select_description
+    windows_description = read_parameters["properties"]["windows"]["description"]
+    assert "Supply trial_id and windows" in windows_description
+    assert "top-level start_line" in windows_description
+    read_window = read_parameters["properties"]["windows"]["anyOf"][0]["items"]
+    assert "Captured Source ID" in read_window["properties"]["source_id"]["description"]
+    assert "One-based Source-page index" in read_window["properties"]["page"]["description"]
     domain_tool = by_name["save_domain_judgment"]
     context_tool = by_name["get_domain_context"]
-    assert "alternative search suggestions" in (context_tool.description or "")
-    assert "treating the list as a checklist" in (context_tool.description or "")
+    assert "current checkpoint" in (context_tool.description or "")
+    assert "recovery.trial_id and recovery.windows" in (context_tool.description or "")
+    workspace_schema = next(
+        node
+        for node in _walk(context_tool.output_schema)
+        if "recoverable_narrative_text_budget" in node.get("properties", {})
+    )
+    workspace_properties = workspace_schema["properties"]
+    assert (
+        "duplicate checkpoint basis"
+        in workspace_properties["omitted_narrative_text_bytes"]["description"]
+    )
+    assert (
+        "narrative Evidence items"
+        in workspace_properties["omitted_narrative_text_count"]["description"]
+    )
+    assert (
+        "outside the recoverable narrative budget"
+        in workspace_properties["unrecoverable_inline_text_bytes"]["description"]
+    )
     assert "activated by the selected options" in (domain_tool.description or "")
     assert "check each basis against the approved Result" in (domain_tool.description or "")
     assert "grouped repairs without committing" in (domain_tool.description or "")

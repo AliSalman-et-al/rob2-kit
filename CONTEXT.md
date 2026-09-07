@@ -168,17 +168,36 @@ every active answer. The caller evaluates predicates transitively against
 earlier answers in the same Domain save rather than discovering one branch per
 repair cycle.
 
+The model-facing Domain context is staged: the approved Result, complete
+question semantics, and comparison cards precede bulk Evidence. Comparison
+cards use `question_id` to resolve wording and options in exactly one returned
+question card. Result scope, passage groups, and slots remain on the comparison
+card. The 64-item disposable selection limit is separate from
+the 12,288-byte budget for recoverable narrative Evidence text. When that text
+is omitted, the selected narrative Evidence keeps its identity, handle,
+coordinates, and executable `read_pages` recovery windows. Visual transcription,
+table values, and derived values remain inline when the existing tools cannot
+recover their exact canonical text. This projection does not alter canonical
+Evidence, checkpoints, hashes, or final bundles.
+
 The Domain Evidence workspace has separate mandatory Result, active-checkpoint,
-and contradiction tiers. Disposable search candidates are included only when
-their immutable session was associated with the requested Trial and Domain;
-other-Domain search fragments are excluded before the 64-candidate budget is
-applied. Typed groups expose inclusion reasons and question scope, and any
-omission carries an executable session cursor. Explicitly selected unscoped
-passages take priority as carry-forward material, with exact read continuation
-if they exceed the disposable budget. D2, D3, and D5 additionally
-receive read-only comparison cards: the server fills only known Result scope,
-Source provenance, and compatible D3 arithmetic, leaving causal, follow-up,
-censoring, and plan-correspondence classifications to the host.
+and contradiction tiers. Canonical tiers sit outside the 64-item disposable
+selection limit and take priority within the recoverable narrative-text budget.
+Disposable search candidates are included only when their immutable session was
+associated with the requested Trial and Domain. Explicit Evidence without an
+exact recovery operation remains inline outside the 64-item recoverable
+disposable limit; it is never silently dropped to satisfy that limit.
+other-Domain search fragments are excluded before the 64-item disposable
+selection limit is applied. Typed groups expose inclusion reasons and question
+scope. Each omission carries an executable session cursor, an exact text
+recovery action, or an explicit unavailable search-session state after
+derivative cache loss.
+Explicitly selected unscoped passages take priority as carry-forward material,
+with exact read continuation if they exceed the 64-item selection limit. D2, D3,
+and D5 additionally receive read-only comparison cards. The server fills only
+known Result scope, Source provenance, passage groups, and compatible D3
+arithmetic. The host classifies causation, follow-up, censoring, and plan
+correspondence.
 
 For Domain 4, the host's audit starts from the approved event and ascertainment
 method, then checks method suitability, between-group detection opportunities,

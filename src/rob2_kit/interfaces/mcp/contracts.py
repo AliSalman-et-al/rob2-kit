@@ -21,7 +21,7 @@ from pydantic import (
 from pydantic.types import PositiveInt
 
 from rob2_kit.application.contracts import TOOL_NAMES
-from rob2_kit.models import Answer, AnswerOption, Judgment, QuerySuggestion, ResponseFramework
+from rob2_kit.models import Answer, Judgment, QuerySuggestion, ResponseFramework
 from rob2_kit.workflow_models import (
     AssessableTargetRelation,
     ComparativeEffectResult,
@@ -370,6 +370,21 @@ class SelectedFigureEvidence(PublicModel):
     returned_previously: StrictBool | None = None
 
 
+class EvidenceReadWindow(PublicModel):
+    source_id: str = Field(pattern=r"^source_[0-9a-f]{64}$")
+    page: PageNumber
+    start_line: PageNumber
+    end_line: PageNumber
+
+
+class EvidenceRecovery(PublicModel):
+    """Exact recovery metadata for text omitted from a context projection."""
+
+    operation: Literal["read_pages"]
+    trial_id: TrialId
+    windows: tuple[EvidenceReadWindow, ...] = Field(min_length=1, max_length=20)
+
+
 SelectedEvidence = Annotated[
     SelectedNarrativeEvidence | SelectedFigureEvidence,
     Field(discriminator="kind"),
@@ -597,12 +612,26 @@ QuestionActivation = Annotated[
 ]
 
 
+class CompactAnswerOption(PublicModel):
+    """Lossless option semantics without repeated generated prose."""
+
+    id: str = Field(pattern=r"^opt_[0-9a-f]{24}$")
+    official_answer: Answer
+    proposition: Literal["true", "false", "unknown"]
+    certainty: Literal["certain", "probable", "unknown"]
+    decision_table_value: Literal["yes", "no", "no_information"]
+    anchor: str = Field(min_length=1)
+    activates: tuple[str, ...] = ()
+    meaning: str | None = None
+    consequence: str | None = None
+
+
 class DomainQuestionCard(PublicModel):
     """Compact model-facing card for one scientific-pack question."""
 
     id: QuestionId
     wording: str = Field(min_length=1)
-    options: tuple[AnswerOption, ...] = Field(min_length=1)
+    options: tuple[CompactAnswerOption, ...] = Field(min_length=1)
     active: StrictBool
     activation: QuestionActivation
     official_guidance: str = Field(min_length=1)
@@ -649,11 +678,69 @@ class DomainDerivedEvidence(PublicModel):
     value: str = Field(min_length=1)
 
 
+class DomainNarrativeEvidence(PublicModel):
+    """Domain-only narrative projection; canonical selected Evidence stays strict."""
+
+    kind: Literal["narrative"]
+    handle: str = Field(pattern=r"^eh_[0-9a-f]{16}$")
+    identity: Identity
+    trial_id: TrialId
+    source_id: SourceId
+    page: PageNumber
+    # Canonical Evidence from older checkpoints may have a complete quote but
+    # no line coordinates.  Coordinates are required only when text is omitted
+    # and the model needs to execute read_pages recovery.
+    start_line: PageNumber | None = None
+    end_line: PageNumber | None = None
+    start: NonNegativeInt | None = None
+    end: NonNegativeInt | None = None
+    quote: str | None = Field(default=None, min_length=1)
+    inclusion_reason: (
+        Literal[
+            "result",
+            "checkpoint",
+            "active_domain_candidate",
+            "question_candidate",
+            "contradiction",
+            "explicit_carry_forward",
+        ]
+        | None
+    ) = None
+    domain_id: DomainId | None = None
+    question_id: QuestionId | None = None
+    search_session: Identity | None = None
+    candidate_rank: PositiveInt | None = None
+    returned_previously: StrictBool | None = None
+    text_status: Literal["complete", "omitted"] = "complete"
+    recovery: EvidenceRecovery | None = None
+
+    @model_validator(mode="after")
+    def text_projection_shape(self) -> DomainNarrativeEvidence:
+        if self.text_status == "omitted":
+            if self.quote is not None or self.recovery is None:
+                raise ValueError("omitted narrative text requires recovery and no quote")
+            if self.recovery.operation != "read_pages":
+                raise ValueError("omitted narrative text requires read_pages recovery")
+            if self.start_line is None or self.end_line is None:
+                raise ValueError("omitted narrative text requires exact line coordinates")
+            if len(self.recovery.windows) != 1:
+                raise ValueError("omitted narrative text requires one exact recovery window")
+            window = self.recovery.windows[0]
+            if (
+                self.recovery.trial_id != self.trial_id
+                or window.source_id != self.source_id
+                or window.page != self.page
+                or window.start_line != self.start_line
+                or window.end_line != self.end_line
+            ):
+                raise ValueError("recovery window does not match narrative coordinates")
+        elif self.quote is None or self.recovery is not None:
+            raise ValueError("complete narrative text requires a quote and no recovery")
+        return self
+
+
 DomainEvidence = Annotated[
-    SelectedNarrativeEvidence
-    | DomainTableEvidence
-    | SelectedFigureEvidence
-    | DomainDerivedEvidence,
+    DomainNarrativeEvidence | DomainTableEvidence | SelectedFigureEvidence | DomainDerivedEvidence,
     Field(discriminator="kind"),
 ]
 
@@ -661,20 +748,31 @@ DomainEvidence = Annotated[
 class DomainResultEvidenceReference(PublicModel):
     """The compact Evidence identity needed while answering a Domain."""
 
-    kind: Literal["narrative", "table", "figure", "derived"]
+    kind: Literal["narrative", "table", "figure"]
     handle: str = Field(pattern=r"^eh_[0-9a-f]{16}$")
     identity: Identity
 
 
+DomainResultEvidence = Annotated[
+    DomainResultEvidenceReference | DomainDerivedEvidence,
+    Field(discriminator="kind"),
+]
+
+
+class DomainCategoryValue(PublicModel):
+    category_axes: tuple[str, ...] = Field(min_length=1)
+    value: str = Field(min_length=1)
+
+
 class DomainCategoryProfileResult(PublicModel):
-    """Result-specific category profile without repeating every source cell."""
+    """Complete approved category profile without proof-oriented bindings."""
 
     form: Literal["single_group_category_profile"]
     endpoint: ReportedEndpoint
     group_id: str = Field(min_length=1)
     denominator_basis: str = Field(min_length=1)
     category_axis_names: tuple[str, ...] = Field(min_length=1)
-    category_count: StrictInt = Field(ge=1)
+    categories: tuple[DomainCategoryValue, ...] = Field(min_length=1)
 
 
 class DomainAssessableResult(PublicModel):
@@ -691,7 +789,7 @@ class DomainAssessableResult(PublicModel):
         Field(discriminator="form"),
     ]
     clarity: ResultClarity
-    evidence: tuple[DomainResultEvidenceReference, ...] = Field(min_length=1)
+    evidence: tuple[DomainResultEvidence, ...] = Field(min_length=1)
 
 
 DomainResultChoice = Annotated[
@@ -710,21 +808,27 @@ class SearchEvidenceContinuation(PublicModel):
     cursor: str = Field(pattern=r"^sc_[0-9a-f]{16}_[0-9]+$")
 
 
-class EvidenceReadWindow(PublicModel):
-    source_id: str = Field(pattern=r"^source_[0-9a-f]{64}$")
-    page: PageNumber
-    start_line: PageNumber
-    end_line: PageNumber
-
-
 class ReadEvidenceContinuation(PublicModel):
     operation: Literal["read_pages"]
     trial_id: TrialId
     windows: tuple[EvidenceReadWindow, ...] = Field(min_length=1, max_length=20)
 
 
-EvidenceContinuation = Annotated[
+class UnavailableEvidenceContinuation(PublicModel):
+    operation: Literal["unavailable"]
+    trial_id: TrialId
+    search_session: Identity
+    reason: Literal["derivative_search_session_unavailable"]
+
+
+ExecutableEvidenceContinuation = Annotated[
     SearchEvidenceContinuation | ReadEvidenceContinuation,
+    Field(discriminator="operation"),
+]
+
+
+EvidenceContinuation = Annotated[
+    SearchEvidenceContinuation | ReadEvidenceContinuation | UnavailableEvidenceContinuation,
     Field(discriminator="operation"),
 ]
 
@@ -751,11 +855,52 @@ class EvidenceWorkspaceGroup(PublicModel):
 
 
 class EvidenceWorkspace(PublicModel):
-    selection_policy_version: Literal["rob2-kit.domain-projection.v0.5"]
+    selection_policy_version: Literal["rob2-kit.domain-projection.v0.6"]
     groups: tuple[EvidenceWorkspaceGroup, ...]
     omitted_count: NonNegativeInt = 0
     omitted_by_category: OmittedEvidenceCounts = OmittedEvidenceCounts()
-    continuation: EvidenceContinuation | None = None
+    continuation: ExecutableEvidenceContinuation | None = Field(
+        default=None,
+        description="Backward-compatible alias for the first executable recovery action.",
+    )
+    continuations: tuple[EvidenceContinuation, ...] = Field(
+        default=(),
+        description=(
+            "All executable recovery actions and explicit unavailable session states, in "
+            "deterministic order. This collection is authoritative when more than one search "
+            "session or read-pages chunk is omitted."
+        ),
+    )
+    recoverable_narrative_text_budget: NonNegativeInt = Field(
+        default=12_288,
+        description=(
+            "UTF-8 byte limit for recoverable narrative quote text. Table, figure, and derived "
+            "text is additional."
+        ),
+    )
+    recoverable_narrative_text_bytes: NonNegativeInt = Field(
+        default=0,
+        description="UTF-8 bytes of included narrative quote text within the recoverable budget.",
+    )
+    omitted_narrative_text_bytes: NonNegativeInt = Field(
+        default=0,
+        description=(
+            "UTF-8 bytes omitted from narrative quotes, including duplicate checkpoint basis "
+            "source text removed from the context."
+        ),
+    )
+    omitted_narrative_text_count: NonNegativeInt = Field(
+        default=0,
+        description="Number of narrative Evidence items whose quote text was omitted.",
+    )
+    unrecoverable_inline_text_bytes: NonNegativeInt = Field(
+        default=0,
+        description=(
+            "UTF-8 bytes of inline Evidence text outside the recoverable narrative budget "
+            "because no exact recovery operation exists. This includes coordinate-less legacy "
+            "narrative text and table, figure, or derived text."
+        ),
+    )
 
 
 class DomainContextData(PublicModel):
@@ -805,8 +950,6 @@ class ComparisonSlot(PublicModel):
 class ComparisonCard(PublicModel):
     card_id: str = Field(min_length=1)
     question_id: QuestionId
-    question_wording: str = Field(min_length=1)
-    options: tuple[AnswerOption, ...] = Field(min_length=1)
     result_identity: Identity
     passage_groups: tuple[ComparisonPassageGroup, ...] = ()
     slots: tuple[ComparisonSlot, ...] = Field(min_length=1)
@@ -817,7 +960,9 @@ class ComparisonCard(PublicModel):
 class DirectCheckpointEvidenceUse(PublicModel):
     kind: Literal["direct_support", "indirect_support", "contradiction", "context", "inference"]
     evidence: Identity
-    source: str = Field(min_length=1)
+    # The Domain projection can omit this duplicate of Evidence text; the
+    # handle/identity remains authoritative and exactly recoverable.
+    source: str | None = Field(default=None, min_length=1)
 
 
 class AbsenceCheckpointEvidenceUse(PublicModel):
