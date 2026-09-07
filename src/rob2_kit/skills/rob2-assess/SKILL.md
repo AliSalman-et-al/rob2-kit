@@ -108,6 +108,11 @@ the matching scientific reference when working on that Domain:
 - [Outcome measurement](references/measurement.md)
 - [Selection of the reported result](references/selection.md)
 
+For a comparison card, use `question_id` to find its wording and options in
+`questions`. Before citing Evidence with `text_status:"omitted"`, follow
+[Recover omitted Evidence](references/evidence.md#recover-omitted-evidence).
+Complete that recovery before using the passage as an answer basis.
+
 Perform bounded, question-specific discovery across the relevant Sources. Read
 positive passages that could resolve the active proposition and check material
 contradictions. Stop when the proposition and any remaining uncertainty are

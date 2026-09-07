@@ -102,6 +102,46 @@ _INTAKE = ToolAnnotations(
 _READ_PAGES_RESPONSE_CHARS = 24_000
 
 
+def _compact_domain_context_transport(value: dict[str, Any]) -> dict[str, Any]:
+    """Order high-signal context first and drop redundant option prose."""
+
+    encoded = json.dumps(value, ensure_ascii=False, separators=(",", ":"))
+    copied = json.loads(encoded)
+    data = copied.get("data")
+    if not isinstance(data, dict):
+        return copied
+    questions = data.get("questions")
+    if isinstance(questions, list):
+        for card in questions:
+            if not isinstance(card, dict) or not isinstance(card.get("options"), list):
+                continue
+            for option in card["options"]:
+                if isinstance(option, dict):
+                    option.pop("meaning", None)
+                    option.pop("consequence", None)
+    ordered = {
+        key: data[key]
+        for key in (
+            "trial_id",
+            "domain_id",
+            "result",
+            "answers",
+            "current_checkpoint",
+            "guidance",
+            "response_framework",
+            "traps",
+            "questions",
+            "completion_rule",
+            "comparison_cards",
+            "evidence",
+            "evidence_workspace",
+        )
+        if key in data
+    }
+    copied["data"] = ordered
+    return copied
+
+
 def _workspace() -> str:
     return os.environ.get("ROB2_WORKSPACE", ".")
 
@@ -129,8 +169,8 @@ RequestedOutcome = Annotated[
 class ReadWindow(StrictModel):
     """One independent source-page window."""
 
-    source_id: SourceId = Field(description="ID.")
-    page: PageNumber = Field(description="Page.")
+    source_id: SourceId = Field(description="Captured Source ID.")
+    page: PageNumber = Field(description="One-based Source-page index.")
     start_line: StrictInt = Field(
         ge=1, default=1, description="First one-based numbered line to return."
     )
@@ -176,6 +216,12 @@ def _content(tool: str, value: dict[str, Any]) -> ToolResult:
             "authoritative_wording": current.get("authoritative_wording"),
         }
     normalized = validate_output(tool, normalize(tool, value))
+    if tool == "get_domain_context":
+        # Validate the compact public variant as well as the application
+        # projection.  This keeps structured and text consumers on one typed
+        # contract while allowing the transport-only option prose omission.
+        normalized = _compact_domain_context_transport(normalized)
+        validate_output(tool, normalized)
     # MCP clients are allowed to expose only ``content`` to a model.  Carry
     # the same validated object in a compact JSON text block so text-only and
     # structured consumers receive identical workflow state.  Images remain
@@ -183,7 +229,12 @@ def _content(tool: str, value: dict[str, Any]) -> ToolResult:
     content: list[TextContent | ImageContent] = [
         TextContent(
             type="text",
-            text=json.dumps(normalized, ensure_ascii=False, separators=(",", ":"), sort_keys=True),
+            text=json.dumps(
+                normalized,
+                ensure_ascii=False,
+                separators=(",", ":"),
+                sort_keys=tool != "get_domain_context",
+            ),
         )
     ]
     if isinstance(png_bytes, bytes):
@@ -411,7 +462,8 @@ def search_sources(
 )
 def read_pages(
     trial_id: Annotated[
-        TrialId | None, Field(description="Trial ID.", examples=["trial-a"])
+        TrialId | None,
+        Field(description="Captured Trial that owns the Source pages; required for every read."),
     ] = None,
     source_id: Annotated[
         SourceId | None, Field(description="Source ID for a single-source read.")
@@ -438,7 +490,10 @@ def read_pages(
         Field(
             min_length=1,
             max_length=20,
-            description="Independent source/page windows, each with its own line bounds.",
+            description=(
+                "Independent Source-page windows with their own line bounds. Supply trial_id "
+                "and windows without source_id, pages, or top-level start_line."
+            ),
         ),
     ] = None,
 ) -> ToolResult:
@@ -899,19 +954,25 @@ async def request_proposal_approval(ctx: Context) -> ToolResult:
     name="get_domain_context",
     title="Get Domain context",
     description=(
-        "Read the approved Result, current checkpoint, scoped Evidence workspace, comparison "
-        "cards, and all questions for a Domain. Question cards provide scientific guidance, "
-        "activation predicates, server-issued answer options, and executable alternative search "
-        "suggestions; choose relevant wording from inspected Sources rather than treating the "
-        "list as a checklist. "
-        "Use the returned revision and option IDs when saving the active answers."
+        "Read the approved Result, current checkpoint, Evidence workspace, comparison cards, "
+        "and questions for a Domain. Question cards contain scientific guidance, activation "
+        "predicates, server-issued answer options, and executable search suggestions. "
+        "Choose wording "
+        "from inspected Sources. If Evidence text is omitted, call read_pages with "
+        "recovery.trial_id and recovery.windows. Use the returned revision and option IDs when "
+        "saving active answers."
     ),
     annotations=_READ_ONLY,
     output_schema=output_schema("get_domain_context"),
 )
 def get_domain_context(
     trial_id: Annotated[
-        TrialId | None, Field(description="Captured Trial whose result is being assessed.")
+        TrialId | None,
+        Field(
+            description=(
+                "Exact Trial whose approved Result and current Domain checkpoint this call reads."
+            )
+        ),
     ] = None,
     domain_id: Annotated[
         DomainId | None,

@@ -29,6 +29,145 @@ from .evidence import (
 )
 from .status import _active_trial_and_domain, _continuation
 
+_DOMAIN_RECOVERABLE_NARRATIVE_TEXT_BUDGET = 12_288
+
+
+def _evidence_text_bytes(item: dict[str, Any]) -> int:
+    """Count source-bound Evidence text, not serialized JSON bytes."""
+
+    kind = item.get("kind")
+    if kind == "narrative":
+        values = (item.get("quote"),)
+    elif kind == "figure":
+        values = (item.get("transcription"),)
+    elif kind == "table":
+        values = (
+            item.get("title"),
+            item.get("scope"),
+            item.get("cohort"),
+            item.get("row"),
+            *(item.get("columns") or ()),
+            *(item.get("group_or_category_axes") or ()),
+            *(item.get("cells") or ()),
+            *(item.get("units") or ()),
+            *(item.get("denominators") or ()),
+            *(item.get("footnotes") or ()),
+        )
+    elif kind == "derived":
+        values = [item.get("value")]
+        values.extend(
+            input_item.get("value")
+            for input_item in (item.get("inputs") or ())
+            if isinstance(input_item, dict)
+        )
+    else:
+        values = ()
+    return sum(len(value.encode("utf-8")) for value in values if isinstance(value, str))
+
+
+def _compact_domain_evidence(context: dict[str, Any]) -> dict[str, Any]:
+    """Bound only the model-facing Evidence text; canonical rows stay untouched."""
+
+    # Checkpoint bases historically repeated the complete Evidence quote in a
+    # ``source`` field.  The identity and projected Evidence are sufficient;
+    # remove the duplicate from this presentation while retaining its byte
+    # count in omitted_narrative_text_bytes.
+    checkpoint_source_bytes = 0
+    answers = context.get("answers")
+    if isinstance(answers, list):
+        answers = [dict(answer) if isinstance(answer, dict) else answer for answer in answers]
+        for answer in answers:
+            if not isinstance(answer, dict):
+                continue
+            bases = answer.get("bases")
+            if not isinstance(bases, list):
+                continue
+            copied_bases = []
+            for basis in bases:
+                if not isinstance(basis, dict):
+                    copied_bases.append(basis)
+                    continue
+                copied_basis = dict(basis)
+                source = copied_basis.pop("source", None)
+                if isinstance(source, str):
+                    checkpoint_source_bytes += len(source.encode("utf-8"))
+                copied_bases.append(copied_basis)
+            answer["bases"] = copied_bases
+        context["answers"] = answers
+    evidence = context.get("evidence")
+    if not isinstance(evidence, list):
+        return context
+    # Allocate the byte budget by priority without reordering Evidence.
+    tier = {
+        "result": 0,
+        "checkpoint": 1,
+        "contradiction": 2,
+        "explicit_carry_forward": 3,
+        "active_domain_candidate": 4,
+        "question_candidate": 4,
+    }
+    indexed = list(enumerate(evidence))
+    indexed.sort(key=lambda pair: (tier.get(str(pair[1].get("inclusion_reason")), 5), pair[0]))
+    remaining = _DOMAIN_RECOVERABLE_NARRATIVE_TEXT_BUDGET
+    recoverable_narrative_bytes = omitted = omitted_count = unavoidable = 0
+    projected: dict[int, dict[str, Any]] = {}
+    for index, original in indexed:
+        if not isinstance(original, dict):
+            continue
+        item = dict(original)
+        size = _evidence_text_bytes(item)
+        kind = item.get("kind")
+        has_exact_recovery = (
+            kind == "narrative"
+            and all(isinstance(item.get(key), int) for key in ("page", "start_line", "end_line"))
+            and isinstance(item.get("source_id"), str)
+            and isinstance(item.get("trial_id"), str)
+        )
+        # Visual transcription and derived/table values have no exact existing
+        # recovery operation, so preserve them inline even when large.
+        include = not has_exact_recovery or size <= remaining
+        if include:
+            if has_exact_recovery:
+                remaining -= size
+            if kind == "narrative":
+                recoverable_narrative_bytes += size
+            else:
+                unavoidable += size
+            if kind == "narrative":
+                item["text_status"] = "complete"
+        else:
+            item["quote"] = None
+            item["text_status"] = "omitted"
+            item["recovery"] = {
+                "operation": "read_pages",
+                "trial_id": item["trial_id"],
+                "windows": [
+                    {
+                        "source_id": item["source_id"],
+                        "page": item["page"],
+                        "start_line": item["start_line"],
+                        "end_line": item["end_line"],
+                    }
+                ],
+            }
+            omitted += size
+            omitted_count += 1
+        projected[index] = item
+    omitted += checkpoint_source_bytes
+    context["evidence"] = [projected.get(index, item) for index, item in enumerate(evidence)]
+    workspace = context.get("evidence_workspace")
+    if isinstance(workspace, dict):
+        workspace = dict(workspace)
+        workspace["selection_policy_version"] = "rob2-kit.domain-projection.v0.6"
+        workspace["recoverable_narrative_text_budget"] = _DOMAIN_RECOVERABLE_NARRATIVE_TEXT_BUDGET
+        workspace["recoverable_narrative_text_bytes"] = recoverable_narrative_bytes
+        workspace["omitted_narrative_text_bytes"] = omitted
+        workspace["omitted_narrative_text_count"] = omitted_count
+        workspace["unavoidable_non_narrative_text_bytes"] = unavoidable
+        context["evidence_workspace"] = workspace
+    return context
+
+
 _DOMAIN_GUIDANCE = (
     "Before the first save for this Domain, run bounded searches for every active question "
     "using the retrieval concepts in its operational guidance. Search method Sources such "
@@ -305,9 +444,6 @@ def _comparison_cards(
             }
         )
 
-    question = next(
-        item for item in SCIENTIFIC_PACK.questions if item.id == question_by_domain[domain_id]
-    )
     target = result.get("target", {})
     reported = result.get("reported", {})
     slots = [
@@ -430,8 +566,6 @@ def _comparison_cards(
         {
             "card_id": card_id,
             "question_id": question_by_domain[domain_id],
-            "question_wording": question.wording,
-            "options": [_answer_option(question, answer) for answer in question.allowed_answers],
             "result_identity": _identity(result),
             "passage_groups": passage_groups,
             "slots": slots,
@@ -1614,7 +1748,7 @@ def get_domain_context(
             "multiple_concerns",
             "revision_basis",
         ]
-    return {
+    context = {
         "outcome": "success",
         "trial_id": trial_id,
         "domain_id": domain_id,
@@ -1664,7 +1798,7 @@ def get_domain_context(
             "use, scoped absence receipt, or limitation; inactive extras are ignored"
         ),
         "evidence_workspace": {
-            "selection_policy_version": "rob2-kit.domain-projection.v0.5",
+            "selection_policy_version": "rob2-kit.domain-projection.v0.6",
             "groups": workspace_groups,
             "omitted_count": omitted_evidence_count,
             "omitted_by_category": omitted_by_category,
@@ -1679,3 +1813,4 @@ def get_domain_context(
         ),
         "continuation": continuation,
     }
+    return _compact_domain_evidence(context)

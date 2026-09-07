@@ -17,6 +17,21 @@ discovery by itself.
 you inspect a complete passage, reuse that handle in Proposal `passage_refs` or
 Domain `bases`; no separate text-selection call is required.
 
+## Recover omitted Evidence
+
+If an Evidence item has `text_status:"omitted"`, recover it before citing it.
+
+1. Call `read_pages` with `recovery.trial_id` and `recovery.windows`.
+2. If a returned page has `next_start_line`, repeat that window with
+   `start_line` set to `next_start_line`. Keep the Source, page, and original
+   `end_line`.
+3. Continue until the returned lines cover every requested window through its
+   `end_line`.
+4. Inspect the complete passage before citing it.
+
+The original Evidence handle identifies the complete passage. A partial
+`passage_ref` from `read_pages` identifies only the range returned in that call.
+
 Tool page numbers are 1-based Source indexes, not printed page labels. Read the
 numbered Source text; never reconstruct PDF text from a preview. If a page is
 truncated, continue with its issued `next_start_line`. For comparison across
