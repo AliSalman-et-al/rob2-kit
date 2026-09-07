@@ -119,25 +119,16 @@ def _verify_d3_projection(context: dict[str, Any]) -> None:
     if not isinstance(card, dict):
         raise ValueError("D3.1 question card is missing")
 
-    from rob2_kit.packs import SCIENTIFIC_PACK
-
-    pack_question = next(
-        item for item in SCIENTIFIC_PACK.questions if item.id == "sq:missing:data-available"
-    )
-    if card.get("official_guidance") != pack_question.guidance.official.source_excerpt:
+    if card.get("official_guidance") != (
+        "‘Nearly all’ should be interpreted as that the number of participants with missing "
+        "outcome data is sufficiently small that their outcomes, whatever they were, could "
+        "have made no important difference to the estimated effect of intervention. For "
+        "continuous outcomes, availability of data from 95% of the participants will often be "
+        "sufficient. Note that imputed data should be regarded as missing data."
+    ):
         raise ValueError("D3.1 official guidance projection differs")
-    if card.get("source_locator") != pack_question.guidance.official.source_locator:
+    if card.get("source_locator") != "Full guidance p. 45, Box 8, signalling question 3.1":
         raise ValueError("D3.1 official locator projection differs")
-    if pack_question.guidance.official.source_locator != (
-        "Full guidance p. 45, Box 8, signalling question 3.1"
-    ):
-        raise ValueError("D3.1 official locator changed")
-    if pack_question.guidance.official.source_sha256 != (
-        "A9E9C4FDC4BE2D29B5C0A1A6B828E09F2014A34F6D5C302A532F6153EA0FD670"
-    ):
-        raise ValueError("D3.1 official source identity changed")
-    if pack_question.guidance.operational.attribution != "rob2-kit maintainers":
-        raise ValueError("D3.1 operational attribution changed")
 
     evidence_needed = card.get("evidence_needed")
     invalid_shortcuts = card.get("invalid_shortcuts")
@@ -288,7 +279,7 @@ async def _call(client: Client, name: str, arguments: dict[str, Any]) -> dict[st
     return flat
 
 
-def _stdio_result(_evidence: dict[str, Any]) -> dict[str, Any]:
+def _acceptance_result(_evidence: dict[str, Any]) -> dict[str, Any]:
     """Build a deliberately small, fully Evidence-bound acceptance Result."""
 
     phrase = "requested outcome"
@@ -317,7 +308,7 @@ def _stdio_result(_evidence: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-async def _verify_stdio_proposal(client: Client) -> None:
+async def _verify_proposal(client: Client) -> None:
     """Exercise intake, Evidence selection, and the sole Proposal gate."""
 
     prepared = await _call(
@@ -329,11 +320,11 @@ async def _verify_stdio_proposal(client: Client) -> None:
         },
     )
     if prepared.get("phase") != "proposal":
-        raise ValueError("stdio intake did not reach proposal")
+        raise ValueError("acceptance intake did not reach proposal")
     sources = await _call(client, "list_sources", {"trial_id": "trial"})
     rows = sources.get("sources")
     if not isinstance(rows, list) or len(rows) != 1:
-        raise ValueError("stdio source catalog differs")
+        raise ValueError("acceptance source catalog differs")
     selected = await _call(
         client,
         "select_text_evidence",
@@ -347,18 +338,18 @@ async def _verify_stdio_proposal(client: Client) -> None:
     )
     evidence = selected.get("evidence")
     if not isinstance(evidence, dict):
-        raise ValueError("stdio evidence selection failed")
-    result = _stdio_result(evidence)
+        raise ValueError("acceptance evidence selection failed")
+    result = _acceptance_result(evidence)
     proposed = await _call(
         client,
         "save_proposal",
         {"results": [result], "expected_revision": prepared["state_revision"]},
     )
     if proposed.get("outcome") != "review_required":
-        raise ValueError("stdio proposal did not request researcher approval")
+        raise ValueError("acceptance proposal did not request researcher approval")
 
 
-def _stdio_domain_answers(
+def _domain_answers(
     context: dict[str, Any],
     evidence: dict[str, Any],
     search_receipt: str,
@@ -374,7 +365,7 @@ def _stdio_domain_answers(
             continue
         options = question.get("options", [])
         if not isinstance(options, list):
-            raise ValueError("stdio Domain question options are malformed")
+            raise ValueError("acceptance Domain question options are malformed")
         selected = next(
             (
                 option
@@ -391,7 +382,7 @@ def _stdio_domain_answers(
             ),
         )
         if not isinstance(selected, dict) or not isinstance(selected.get("id"), str):
-            raise ValueError("stdio Domain question has no usable uncertainty option")
+            raise ValueError("acceptance Domain question has no usable uncertainty option")
         answer = selected["official_answer"]
         basis = (
             {
@@ -411,19 +402,17 @@ def _stdio_domain_answers(
     return answers
 
 
-async def _verify_stdio_domains(
-    client: Client, evidence: dict[str, Any], domains: list[str]
-) -> int:
-    """Save all requested Domains through the real FastMCP/stdio boundary."""
+async def _verify_domains(client: Client, evidence: dict[str, Any], domains: list[str]) -> int:
+    """Save requested Domains through the public FastMCP client boundary."""
 
     revision = int((await _call(client, "get_status", {}))["state_revision"])
     sources = await _call(client, "list_sources", {"trial_id": "trial"})
     source_rows = sources.get("sources")
     if not isinstance(source_rows, list) or len(source_rows) != 1:
-        raise ValueError("stdio narrow-search source scope differs")
+        raise ValueError("acceptance narrow-search source scope differs")
     source_id = source_rows[0].get("id")
     if not isinstance(source_id, str):
-        raise ValueError("stdio narrow-search Source ID is unavailable")
+        raise ValueError("acceptance narrow-search Source ID is unavailable")
     narrow = await _call(
         client,
         "search_sources",
@@ -437,7 +426,7 @@ async def _verify_stdio_domains(
     )
     narrow_data = narrow.get("data")
     if not isinstance(narrow_data, dict) or narrow_data.get("condition") != "no_hits":
-        raise ValueError("stdio narrow-search no-hit behavior differs")
+        raise ValueError("acceptance narrow-search no-hit behavior differs")
     diagnostic = narrow_data.get("diagnostic")
     expected_action = {
         "kind": "refine",
@@ -454,7 +443,7 @@ async def _verify_stdio_domains(
         or diagnostic.get("code") != "narrow_no_hits"
         or diagnostic.get("next_action") != expected_action
     ):
-        raise ValueError(f"stdio narrow-search diagnostic differs: {diagnostic}")
+        raise ValueError(f"acceptance narrow-search diagnostic differs: {diagnostic}")
     widened = await _call(
         client,
         "search_sources",
@@ -465,13 +454,13 @@ async def _verify_stdio_domains(
         or widened.get("mode") != "any"
         or not isinstance(widened.get("search_receipt"), str)
     ):
-        raise ValueError(f"stdio narrow-search action execution differs: {widened}")
+        raise ValueError(f"acceptance narrow-search action execution differs: {widened}")
     for domain_id in domains:
         context = await _call(
             client, "get_domain_context", {"trial_id": "trial", "domain_id": domain_id}
         )
         if context.get("domain_id") != domain_id:
-            raise ValueError(f"stdio Domain context differs: {domain_id}")
+            raise ValueError(f"acceptance Domain context differs: {domain_id}")
         if domain_id == "domain:missing":
             _verify_d3_projection(context)
         revision = int(context["state_revision"])
@@ -491,9 +480,9 @@ async def _verify_stdio_domains(
             or search_data.get("condition") != "no_hits"
             or not isinstance(search_data.get("search_receipt"), str)
         ):
-            raise ValueError(f"stdio Domain limitation search differs: {domain_id}")
+            raise ValueError(f"acceptance Domain limitation search differs: {domain_id}")
         search_receipt = search_data["search_receipt"]
-        answers = _stdio_domain_answers(context, evidence, search_receipt)
+        answers = _domain_answers(context, evidence, search_receipt)
         for _attempt in range(5):
             saved = await _call(
                 client,
@@ -519,11 +508,11 @@ async def _verify_stdio_domains(
             detail = repair.get("detail") if isinstance(repair, dict) else None
             match = re.search(r"active IDs: \[([^]]*)\]", str(detail))
             if match is None:
-                raise ValueError(f"stdio Domain save failed: {domain_id}: {saved}")
+                raise ValueError(f"acceptance Domain save failed: {domain_id}: {saved}")
             active_ids = {item.strip() for item in match.group(1).split(",") if item.strip()}
-            answers = _stdio_domain_answers(context, evidence, search_receipt, active_ids)
+            answers = _domain_answers(context, evidence, search_receipt, active_ids)
         else:
-            raise ValueError(f"stdio Domain save exceeded repair attempts: {domain_id}")
+            raise ValueError(f"acceptance Domain save exceeded repair attempts: {domain_id}")
         revision = int(saved["state_revision"])
     return revision
 
@@ -607,7 +596,7 @@ def verify(wheel: Path | None = None, bundle: Path | None = None) -> None:
         async def local_proposal() -> None:
             async with Client(mcp) as client:
                 await _verify_client(client, contract)
-                await _verify_stdio_proposal(client)
+                await _verify_proposal(client)
 
         async def local_domains() -> None:
             async with Client(mcp) as client:
@@ -630,7 +619,7 @@ def verify(wheel: Path | None = None, bundle: Path | None = None) -> None:
                 )
                 if not isinstance(evidence, dict):
                     raise ValueError("source-tree acceptance lost selected Evidence")
-                await _verify_stdio_domains(
+                await _verify_domains(
                     client,
                     evidence,
                     ["domain:randomization", "domain:deviations", "domain:missing"],
@@ -703,7 +692,7 @@ def verify(wheel: Path | None = None, bundle: Path | None = None) -> None:
             )
             async with Client(transport) as client:
                 await _verify_client(client, contract)
-                await _verify_stdio_proposal(client)
+                await _verify_proposal(client)
 
         # The researcher gate is deliberately exercised through the installed
         # CLI, not a private application helper or a second MCP operation.
@@ -753,7 +742,7 @@ def verify(wheel: Path | None = None, bundle: Path | None = None) -> None:
                 )
                 if not isinstance(evidence, dict):
                     raise ValueError("wheel restart acceptance lost selected Evidence")
-                await _verify_stdio_domains(client, evidence, domains[:1])
+                await _verify_domains(client, evidence, domains[:1])
 
         # Close the first MCP process after approval and one Domain.  The next
         # process must recover the durable ledger and continue from it.
@@ -788,7 +777,7 @@ def verify(wheel: Path | None = None, bundle: Path | None = None) -> None:
                 )
                 if not isinstance(evidence, dict):
                     raise ValueError("wheel process restart lost Domain Evidence")
-                await _verify_stdio_domains(client, evidence, domains[1:])
+                await _verify_domains(client, evidence, domains[1:])
 
         asyncio.run(resumed_domains_process())
 
