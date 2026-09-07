@@ -12,6 +12,7 @@ from rob2_kit.models import (
     OfficialQuestionGuidance,
     OperationalQuestionGuidance,
     Provenance,
+    QuerySuggestion,
     Question,
     QuestionGuidance,
     ScientificPack,
@@ -634,6 +635,145 @@ _GUIDANCE: dict[str, QuestionGuidance] = {
             "a registry link without analysis detail",
         ),
     ),
+}
+
+
+def _suggestion(
+    query: str,
+    mode: Literal["all", "phrase", "any", "prefix"],
+    purpose: str,
+    source_role: Literal["main_article", "registry", "supplement", "sap", "protocol", "other"]
+    | None = None,
+) -> QuerySuggestion:
+    return QuerySuggestion(query=query, mode=mode, source_role=source_role, purpose=purpose)
+
+
+# These are retrieval vocabulary, not claims about what every Source contains.
+# Keep each question's set short so a host can execute alternatives directly.
+_QUERY_SUGGESTIONS: dict[str, tuple[QuerySuggestion, ...]] = {
+    "sq:randomization:sequence": (
+        _suggestion(
+            "computer generated random numbers", "all", "computer sequence generation", "protocol"
+        ),
+        _suggestion("randomly permuted blocks", "phrase", "randomized block sequence", "protocol"),
+        _suggestion("minimization", "any", "minimization sequence method", "protocol"),
+        _suggestion("random number table", "phrase", "random sequence method", "protocol"),
+        _suggestion("coin tossing", "phrase", "physical random sequence method"),
+    ),
+    "sq:randomization:concealment": (
+        _suggestion("allocation concealment", "all", "concealment method", "protocol"),
+        _suggestion("central randomization", "phrase", "central allocation", "protocol"),
+        _suggestion("interactive web response system", "phrase", "remote allocation", "protocol"),
+        _suggestion("IWRS", "prefix", "remote allocation acronym", "protocol"),
+        _suggestion("opaque sealed envelopes", "phrase", "envelope safeguards", "protocol"),
+    ),
+    "sq:randomization:baseline-imbalance": (
+        _suggestion("baseline characteristics", "all", "baseline group comparison"),
+        _suggestion("baseline imbalance", "phrase", "randomization imbalance"),
+    ),
+    "sq:deviations:participants-aware": (
+        _suggestion("participant blinding", "all", "participant awareness"),
+        _suggestion("open label", "phrase", "unblinded participant conduct"),
+        _suggestion("side effects", "phrase", "intervention-specific unblinding"),
+    ),
+    "sq:deviations:personnel-aware": (
+        _suggestion("personnel blinding", "all", "carer awareness"),
+        _suggestion("double blind", "phrase", "blinding description"),
+        _suggestion("intervention provider", "phrase", "delivery personnel"),
+    ),
+    "sq:deviations:context-deviations": (
+        _suggestion("nonadherence", "any", "deviations from assigned intervention"),
+        _suggestion("treatment contamination", "phrase", "cross-group intervention"),
+        _suggestion("protocol deviation", "phrase", "trial-context deviation", "protocol"),
+    ),
+    "sq:deviations:affected-outcome": (
+        _suggestion("effect estimate", "phrase", "deviation impact on outcome"),
+        _suggestion("outcome affected", "all", "deviation effect"),
+    ),
+    "sq:deviations:balanced": (
+        _suggestion("between intervention groups", "phrase", "balance of deviations"),
+        _suggestion("differential nonadherence", "phrase", "unequal deviations"),
+    ),
+    "sq:deviations:appropriate-analysis": (
+        _suggestion("intention-to-treat", "phrase", "analysis by assignment"),
+        _suggestion("intent-to-treat", "phrase", "alternative analysis-by-assignment wording"),
+        _suggestion("all randomized patients", "all", "equivalent assignment-population wording"),
+        _suggestion("per protocol", "phrase", "non-assignment analysis"),
+    ),
+    "sq:deviations:substantial-impact": (
+        _suggestion("excluded participants", "all", "post-randomization exclusions"),
+        _suggestion("wrong intervention group", "phrase", "analysis group mismatch"),
+    ),
+    "sq:missing:data-available": (
+        _suggestion("missing outcome data", "all", "outcome availability"),
+        _suggestion("loss to follow-up", "phrase", "follow-up completeness"),
+        _suggestion("outcome data available", "all", "observed outcome reporting"),
+    ),
+    "sq:missing:evidence-unbiased": (
+        _suggestion("sensitivity analysis", "phrase", "missing-data sensitivity analysis", "sap"),
+        _suggestion("missing data bias", "all", "bias from missing outcomes"),
+        _suggestion("multiple imputation", "phrase", "missing-data method", "sap"),
+    ),
+    "sq:missing:true-value-dependent": (
+        _suggestion("reason for withdrawal", "all", "missingness reason"),
+        _suggestion("loss to follow-up", "phrase", "health-related missingness"),
+    ),
+    "sq:missing:likely-dependent": (
+        _suggestion("censoring", "any", "outcome-dependent missingness"),
+        _suggestion("missing by treatment group", "all", "differential missingness"),
+        _suggestion("reason for missing outcome", "all", "missingness mechanism"),
+    ),
+    "sq:measurement:method-inappropriate": (
+        _suggestion("outcome measurement validity", "all", "measurement validity"),
+        _suggestion("sensitive to treatment effect", "phrase", "measurement sensitivity"),
+    ),
+    "sq:measurement:differential": (
+        _suggestion("same measurement method", "phrase", "comparable ascertainment"),
+        _suggestion("diagnostic detection bias", "phrase", "differential detection"),
+        _suggestion("measurement threshold", "phrase", "between-group measurement threshold"),
+    ),
+    "sq:measurement:assessor-aware": (
+        _suggestion("outcome assessor blinding", "all", "assessor awareness"),
+        _suggestion("assessor blinded", "phrase", "blinded outcome assessment"),
+    ),
+    "sq:measurement:influence-possible": (
+        _suggestion("participant reported outcome", "phrase", "participant assessment influence"),
+        _suggestion("observer reported outcome", "phrase", "observer judgement influence"),
+    ),
+    "sq:measurement:influence-likely": (
+        _suggestion("beliefs about treatment", "all", "belief-driven assessment influence"),
+        _suggestion("assessment influenced", "phrase", "reported influence on outcome"),
+    ),
+    "sq:selection:prespecified-analysis": (
+        _suggestion("analysis plan", "phrase", "prespecified analysis", "sap"),
+        _suggestion("prespecified final analysis", "all", "reported final-analysis timing"),
+        _suggestion("final analysis", "phrase", "reported analysis threshold"),
+        _suggestion("before unblinding", "phrase", "analysis timing", "protocol"),
+        _suggestion("statistical analysis plan", "phrase", "finalized analysis plan", "sap"),
+    ),
+    "sq:selection:multiple-measurements": (
+        _suggestion(
+            "multiple outcome measures", "all", "eligible outcome measurements", "protocol"
+        ),
+        _suggestion("time points", "any", "eligible outcome timing", "protocol"),
+        _suggestion("outcome scale", "phrase", "eligible measurement scales", "protocol"),
+    ),
+    "sq:selection:multiple-analyses": (
+        _suggestion("multiple analyses", "phrase", "eligible analysis methods", "sap"),
+        _suggestion("analysis methods", "all", "planned analysis alternatives", "sap"),
+        _suggestion("adjusted analysis", "phrase", "analysis adjustment choice", "sap"),
+    ),
+}
+
+_GUIDANCE = {
+    question_id: guidance.model_copy(
+        update={
+            "operational": guidance.operational.model_copy(
+                update={"query_suggestions": _QUERY_SUGGESTIONS[question_id]}
+            )
+        }
+    )
+    for question_id, guidance in _GUIDANCE.items()
 }
 
 _Q = (

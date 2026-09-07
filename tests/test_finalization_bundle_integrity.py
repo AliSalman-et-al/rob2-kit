@@ -260,9 +260,9 @@ def test_rehashed_historical_probable_basis_tampering_fails_both_verifiers(
     tmp_path: Path,
 ) -> None:
     workspace, evidence, revision = _assessment_workspace(tmp_path)
-    receipt = _call(workspace, "search_sources", {"trial_id": "trial", "query": "not-in-source"})[
-        "data"
-    ]["search_receipt"]
+    receipt = _call(
+        workspace, "search_sources", {"trial_id": "trial", "query": "not-in-source", "mode": "any"}
+    )["data"]["search_receipt"]
     initial = _domain_draft("trial", "domain:randomization", revision, search_receipt=receipt)
     initial["answers"][0]["option_id"] = _option_for(
         initial["answers"][0]["question_id"], "probably_yes"

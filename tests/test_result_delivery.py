@@ -66,7 +66,7 @@ def test_text_only_and_structured_consumers_receive_the_same_workflow_results(
         _wire_call(
             workspace,
             "search_sources",
-            {"trial_id": "trial", "query": "requested outcome"},
+            {"trial_id": "trial", "query": "requested outcome", "mode": "any"},
         )
     )
     assert search["data"]["hits"][0]["passage_ref"].startswith("eh_")

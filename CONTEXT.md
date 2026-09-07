@@ -88,7 +88,14 @@ candidate ranks and an opaque cursor so lower-ranked passages can be inspected
 without rerunning retrieval. The Source-diverse display order is that one
 stable rank everywhere, and the active Domain is associated with the complete
 session even before lower candidates are returned. A no-hit search receipt documents the search
-performed; it does not prove scientific absence.
+performed; it does not prove scientific absence. The public `search_sources`
+boundary requires an explicit lexical mode: `all`, `phrase`, `any`, or
+`prefix`. A returned `any` ranking that is broad and truncated carries a
+deterministic diagnostic built only from request and result facts (term count,
+counts, truncation, and cursor availability) and one executable refinement or
+continuation. The diagnostic is retrieval advice, never a relevance,
+completeness, or scientific judgment; narrow, untruncated, and no-hit
+responses do not receive a broad-query warning.
 
 ## Result model
 
@@ -131,7 +138,11 @@ separately attributed rob2-kit operational guidance. The pack retains each
 question's full nested official and operational guidance for authoritative
 assessment and artifact/audit use. `get_domain_context` returns a compact typed
 question-card projection with the full official excerpt and locator plus the
-actionable operational fields needed to answer that question. Operational guidance
+actionable operational fields needed to answer that question. Each card also
+contains a bounded, typed set of executable query suggestions with compact
+query text, explicit lexical mode, an optional recommended Source role, and purpose.
+Suggestions are maintained retrieval vocabulary and alternatives, not claims
+that a Source uses those words or a mandatory search sequence. Operational guidance
 supplements the official source; it never replaces or impersonates it. Cards
 replace bare answer strings with server-issued options that bind the exact
 question and pack version to the official code, literal proposition, certainty,

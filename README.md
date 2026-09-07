@@ -141,6 +141,13 @@ skip the bounded cross-source check.
 
 Search results are navigation only. `read_pages` returns numbered source lines,
 and the host selects one contiguous range on one source page as evidence.
+Every `search_sources` call declares its lexical intent: `all` requires every
+term, `phrase` checks known contiguous wording, `any` performs broad OR
+discovery, and `prefix` matches token prefixes. A broad, truncated `any`
+response reports only observable counts and one executable next action (usually
+an `all` refinement for multi-term queries or the issued cursor); it never
+asserts scientific relevance or absence. No-hit and untruncated responses do
+not receive that warning. Follow `next_cursor` to continue the same ranking.
 Large pages return a bounded window and `next_start_line`; the host continues
 the same page until `truncated` is false.
 Selection uses only the returned page and inclusive line range. The server
@@ -201,7 +208,12 @@ judgments, or finalize early.
 For each active question, the host performs a bounded, question-specific search
 across the relevant sources before it claims that information is absent. A
 current Result Evidence set is not proof that no other relevant evidence exists.
-The Domain context includes every question card and its activation predicate.
+The Domain context includes every question card and its activation predicate,
+plus a short typed set of executable query suggestions. Each suggestion gives
+query text, lexical mode, an optional recommended Source role, and purpose. Suggestions
+are retrieval vocabulary and alternatives, not a mandatory sequence; for
+example, an exact-phrase `intention-to-treat` search is paired with the
+independently executable `all randomized patients` wording.
 The host computes the complete active branch from answers in the same save call;
 the server ignores extra inactive branch answers.
 While the current Trial remains pending, the host may revise one of its committed

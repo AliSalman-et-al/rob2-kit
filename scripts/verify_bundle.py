@@ -154,7 +154,7 @@ _QUESTION_ALLOWED_ANSWERS = {
 _SCIENTIFIC_PACK = {
     "id": "rob2.parallel.assignment",
     "version": "2019.1",
-    "content_hash": "sha256:c9d01e3d6f360ec12b06e0fa3e86a3d2635b8eb57028ea39bef82d9be721ff62",
+    "content_hash": "sha256:810b1b6ee8abbf3a9cb1c26a50970bf97f7053ad05f57be5bad7c3939cdba3ab",
     "official_source": {
         "version": "22 August 2019",
         "source_sha256": "A9E9C4FDC4BE2D29B5C0A1A6B828E09F2014A34F6D5C302A532F6153EA0FD670",

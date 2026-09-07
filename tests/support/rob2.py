@@ -276,7 +276,7 @@ def _absence_assessed_artifact(workspace: Path) -> Path:
             _call(
                 workspace,
                 "search_sources",
-                {"trial_id": "trial", "query": f"no-hit-{domain.id}"},
+                {"trial_id": "trial", "query": f"no-hit-{domain.id}", "mode": "any"},
             )["data"]["search_receipt"],
         )
         draft = _domain_draft("trial", domain.id, revision, evidence)

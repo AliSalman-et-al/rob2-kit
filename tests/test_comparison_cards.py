@@ -31,7 +31,7 @@ def test_deviation_card_exposes_provenance_without_classifying_prose(tmp_path: P
     searched = _call(
         workspace,
         "search_sources",
-        {"trial_id": "trial", "query": "requested outcome", "limit": 1},
+        {"trial_id": "trial", "query": "requested outcome", "mode": "any", "limit": 1},
     )["data"]
 
     context = _call(workspace, "get_domain_context", {})["data"]

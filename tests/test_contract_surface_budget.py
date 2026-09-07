@@ -86,14 +86,13 @@ def test_public_output_surface_is_closed_and_within_budget() -> None:
     read_parameters = by_name["read_pages"].parameters
     select_description = by_name["select_text_evidence"].description or ""
     assert "1-based source indexes" in search_description
-    assert "Omitted mode is exploratory any" in search_description
-    assert search_parameters["properties"]["mode"]["default"] == "any"
-    assert "Omit=exploratory any" in search_mode_description
+    assert "Required: trial_id, query, mode" in search_description
+    assert "mode" in search_parameters["required"]
+    assert "broad discovery" in search_mode_description
+    assert "Required lexical intent" in search_mode_description
     assert "all=every token on one page" in search_mode_description
     assert "phrase=known contiguous wording" in search_mode_description
-    assert search_parameters["properties"]["query"]["examples"] == [
-        "random sequence allocation concealment"
-    ]
+    assert search_parameters["properties"]["query"]["examples"] == ["central randomization"]
     source_scope = search_parameters["properties"]["source_id"]
     assert source_scope["default"] is None
     assert source_scope["anyOf"][0]["pattern"] == r"^source_[0-9a-f]{64}$"
@@ -106,7 +105,8 @@ def test_public_output_surface_is_closed_and_within_budget() -> None:
     assert "start_text" not in select_description
     assert "end_text" not in select_description
     domain_tool = by_name["save_domain_judgment"]
-    assert "selected options in this same save" in (domain_tool.description or "")
+    assert "activated by the selected options" in (domain_tool.description or "")
+    assert "grouped repairs without committing" in (domain_tool.description or "")
     answer_example = domain_tool.parameters["properties"]["answers"]["examples"][0][0]
     assert set(answer_example) == {"question_id", "option_id", "bases"}
     assert set(answer_example["bases"][0]) == {"kind", "evidence"}

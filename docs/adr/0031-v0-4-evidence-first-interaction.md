@@ -2,7 +2,7 @@
 
 Status: accepted
 
-Amended for the v0.5 successor contract by issues 283-286.
+Amended for the v0.5 successor contract by issues 283-286 and 288.
 
 ## Context
 
@@ -52,6 +52,15 @@ frozen v0.3 contract.
   Review and call the same approval implementation.
 - Return one normalized result as both structured content and compact JSON text.
   Image content remains a separate binary block.
+- Require an explicit lexical mode on the public `search_sources` call. Keep
+  `any` as an intentional broad-OR discovery mode, and when its returned
+  ranking is both broad and truncated, expose a deterministic diagnostic from
+  observable request/result facts plus one executable refinement or cursor
+  continuation. This is retrieval advice, not a scientific conclusion.
+- Add bounded typed query suggestions to each scientific question card. A
+  suggestion contains query text, lexical mode, an optional recommended Source
+  role, and a short purpose. Suggestions are maintained alternatives and vocabulary, not a
+  mandatory workflow or a claim that a Source uses those words.
 
 ## Domain projection ownership
 

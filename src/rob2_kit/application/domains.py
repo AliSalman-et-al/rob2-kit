@@ -1650,6 +1650,10 @@ def get_domain_context(
                 "no_information_rule": item.guidance.operational.no_information_rule,
                 "considerations": item.guidance.operational.considerations,
                 "invalid_shortcuts": item.guidance.operational.invalid_shortcuts,
+                "query_suggestions": tuple(
+                    suggestion.model_dump(mode="json")
+                    for suggestion in item.guidance.operational.query_suggestions
+                ),
             }
             for item in SCIENTIFIC_PACK.questions
             if item.domain_id == domain_id

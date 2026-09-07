@@ -665,6 +665,7 @@ def test_domain_context_result_projection_omits_canonical_bindings(tmp_path: Pat
         "no_information_rule",
         "considerations",
         "invalid_shortcuts",
+        "query_suggestions",
     }
     assert question_card["official_guidance"]
     assert question_card["source_locator"].startswith("Full guidance ")
@@ -689,6 +690,7 @@ def test_domain_context_result_projection_omits_canonical_bindings(tmp_path: Pat
         "answer_anchors",
         "considerations",
         "invalid_shortcuts",
+        "query_suggestions",
     }
     assert pack_question.guidance.official.source_excerpt == question_card["official_guidance"]
     assert pack_question.guidance.official.source_locator == question_card["source_locator"]
@@ -705,7 +707,7 @@ def test_domain_rejects_unknown_answer_question(tmp_path: Path) -> None:
     workspace, _evidence, revision = _assessment_workspace(tmp_path)
     draft = _domain_draft("trial", "domain:randomization", revision)
     draft["answers"][0]["bases"][0]["search_receipt"] = _call(
-        workspace, "search_sources", {"trial_id": "trial", "query": "not-in-source"}
+        workspace, "search_sources", {"trial_id": "trial", "query": "not-in-source", "mode": "any"}
     )["data"]["search_receipt"]
     draft["answers"][0]["question_id"] = "sq:randomization:not-active"
     receipt = _call_raw(workspace, draft)
@@ -717,9 +719,9 @@ def test_domain_rejects_unknown_answer_question(tmp_path: Path) -> None:
 
 def test_domain_source_is_derived_from_selected_evidence(tmp_path: Path) -> None:
     workspace, evidence, revision = _assessment_workspace(tmp_path)
-    receipt = _call(workspace, "search_sources", {"trial_id": "trial", "query": "not-in-source"})[
-        "data"
-    ]["search_receipt"]
+    receipt = _call(
+        workspace, "search_sources", {"trial_id": "trial", "query": "not-in-source", "mode": "any"}
+    )["data"]["search_receipt"]
     draft = _domain_draft("trial", "domain:randomization", revision, search_receipt=receipt)
     draft["answers"][0]["bases"][0] = {
         "kind": "direct_support",
@@ -756,9 +758,9 @@ def test_probable_answers_accept_limitation_but_firm_answers_require_direct_evid
     firm_answer: str,
 ) -> None:
     workspace, _evidence, revision = _assessment_workspace(tmp_path)
-    receipt = _call(workspace, "search_sources", {"trial_id": "trial", "query": "not-in-source"})[
-        "data"
-    ]["search_receipt"]
+    receipt = _call(
+        workspace, "search_sources", {"trial_id": "trial", "query": "not-in-source", "mode": "any"}
+    )["data"]["search_receipt"]
     probable = _domain_draft("trial", "domain:randomization", revision, search_receipt=receipt)
     probable["answers"][0]["option_id"] = _option_for("sq:randomization:sequence", probable_answer)
     probable["answers"][0]["bases"] = [
@@ -827,7 +829,7 @@ def test_domain_two_judgment_with_itt_premise_advances_to_domain_three(
         },
     )["data"]["evidence"]
     limitation_receipt = _call(
-        workspace, "search_sources", {"trial_id": "trial", "query": "not-in-source"}
+        workspace, "search_sources", {"trial_id": "trial", "query": "not-in-source", "mode": "any"}
     )["data"]["search_receipt"]
     draft = _domain_draft("trial", "domain:deviations", revision, evidence, limitation_receipt)
     for answer in draft["answers"]:
@@ -871,7 +873,9 @@ def test_domain_two_judgment_with_itt_premise_advances_to_domain_three(
 
 def test_domain_absence_basis_contains_only_search_receipt(tmp_path: Path) -> None:
     workspace, _evidence, revision = _assessment_workspace(tmp_path)
-    search = _call(workspace, "search_sources", {"trial_id": "trial", "query": "absent-term"})
+    search = _call(
+        workspace, "search_sources", {"trial_id": "trial", "query": "absent-term", "mode": "any"}
+    )
     receipt = _search_receipt(workspace, search["data"]["search_receipt"])
     draft = _domain_draft(
         "trial",
@@ -891,7 +895,9 @@ def test_domain_absence_basis_contains_only_search_receipt(tmp_path: Path) -> No
 
 def test_domain_absence_basis_resolves_server_receipt_handle(tmp_path: Path) -> None:
     workspace, _evidence, revision = _assessment_workspace(tmp_path)
-    search = _call(workspace, "search_sources", {"trial_id": "trial", "query": "absent-term"})
+    search = _call(
+        workspace, "search_sources", {"trial_id": "trial", "query": "absent-term", "mode": "any"}
+    )
     receipt = _search_receipt(workspace, search["data"]["search_receipt"])
     draft = _domain_draft(
         "trial", "domain:randomization", revision, search_receipt=receipt["handle"]
@@ -908,7 +914,9 @@ def test_domain_absence_basis_resolves_server_receipt_handle(tmp_path: Path) -> 
 
 def test_domain_limitation_requires_and_stores_nontruncated_receipt(tmp_path: Path) -> None:
     workspace, _evidence, revision = _assessment_workspace(tmp_path)
-    search = _call(workspace, "search_sources", {"trial_id": "trial", "query": "not-in-source"})
+    search = _call(
+        workspace, "search_sources", {"trial_id": "trial", "query": "not-in-source", "mode": "any"}
+    )
     draft = _domain_draft(
         "trial",
         "domain:randomization",
@@ -963,7 +971,11 @@ def test_domain_limitation_requires_and_stores_nontruncated_receipt(tmp_path: Pa
 
 def test_domain_limitation_accepts_positive_nontruncated_receipt(tmp_path: Path) -> None:
     workspace, _evidence, revision = _assessment_workspace(tmp_path)
-    search = _call(workspace, "search_sources", {"trial_id": "trial", "query": "requested outcome"})
+    search = _call(
+        workspace,
+        "search_sources",
+        {"trial_id": "trial", "query": "requested outcome", "mode": "any"},
+    )
     assert search["data"]["total_matches"] > 0
     assert search["data"]["truncated"] is False
     draft = _domain_draft(
@@ -1009,7 +1021,7 @@ def test_domain_rejects_truncated_search_as_absence_basis(tmp_path: Path) -> Non
     search = _call(
         workspace,
         "search_sources",
-        {"trial_id": "trial", "query": "rare absence candidate", "limit": 1},
+        {"trial_id": "trial", "query": "rare absence candidate", "mode": "any", "limit": 1},
     )
     assert search["data"]["truncated"] is True
     draft = _domain_draft(
@@ -1029,9 +1041,9 @@ def test_domain_rejects_truncated_search_as_absence_basis(tmp_path: Path) -> Non
 
 def test_domain_duplicate_nested_basis_is_repaired_without_mutating_state(tmp_path: Path) -> None:
     workspace, evidence, revision = _assessment_workspace(tmp_path)
-    receipt = _call(workspace, "search_sources", {"trial_id": "trial", "query": "not-in-source"})[
-        "data"
-    ]["search_receipt"]
+    receipt = _call(
+        workspace, "search_sources", {"trial_id": "trial", "query": "not-in-source", "mode": "any"}
+    )["data"]["search_receipt"]
     draft = _domain_draft("trial", "domain:randomization", revision, search_receipt=receipt)
     use = {
         "kind": "direct_support",

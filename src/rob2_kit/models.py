@@ -112,6 +112,39 @@ class AnswerOption(StrictModel):
     consequence: str = Field(min_length=1)
 
 
+QuerySourceRole = Literal[
+    "main_article",
+    "registry",
+    "supplement",
+    "sap",
+    "protocol",
+    "other",
+]
+
+
+class QuerySuggestion(StrictModel):
+    """One small, executable lexical query maintained by the scientific pack."""
+
+    query: str = Field(
+        min_length=1,
+        description="Pass this text as search_sources.query.",
+    )
+    mode: Literal["all", "phrase", "any", "prefix"] = Field(
+        description="Pass this value as search_sources.mode.",
+    )
+    source_role: QuerySourceRole | None = Field(
+        default=None,
+        description=(
+            "Recommended Source role. Resolve a matching Source ID with list_sources, or search "
+            "all Trial Sources when this field is null or no matching role is available."
+        ),
+    )
+    purpose: str = Field(
+        min_length=1,
+        description="Evidence concept searched by this alternative.",
+    )
+
+
 class OperationalQuestionGuidance(StrictModel):
     """Rob2-kit operational evidence contract for one signalling question."""
 
@@ -125,6 +158,17 @@ class OperationalQuestionGuidance(StrictModel):
     answer_anchors: tuple[GuidanceAnchor, ...] = Field(min_length=1)
     considerations: tuple[str, ...] = Field(min_length=1)
     invalid_shortcuts: tuple[str, ...] = Field(min_length=1)
+    query_suggestions: tuple[QuerySuggestion, ...] = Field(default=(), max_length=8)
+
+    @model_validator(mode="after")
+    def query_suggestions_are_distinct(self) -> OperationalQuestionGuidance:
+        keys = tuple(
+            (suggestion.query, suggestion.mode, suggestion.source_role)
+            for suggestion in self.query_suggestions
+        )
+        if len(set(keys)) != len(keys):
+            raise ValueError("query suggestions must be distinct")
+        return self
 
 
 class QuestionGuidance(StrictModel):
@@ -183,6 +227,8 @@ class ScientificPack(StrictModel):
             question.id: (position, question) for position, question in enumerate(self.questions)
         }
         for position, question in enumerate(self.questions):
+            if not question.guidance.operational.query_suggestions:
+                raise ValueError("every question must define query suggestions")
             if not isinstance(question.activation, ConditionalActivation):
                 continue
             for predicate in question.activation.predicates:

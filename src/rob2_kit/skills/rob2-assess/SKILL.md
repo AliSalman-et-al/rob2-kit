@@ -141,11 +141,14 @@ Derive the dependency-closed active path from the returned activation predicates
 and your earlier answers. Submit every active answer in one
 `save_domain_judgment` call. Inactive branch answers are unnecessary and ignored.
 
-Before saving, ensure each cited passage supports the proposition attributed to
-it. Select the option whose literal meaning answers the exact question; do not
-translate it into “low risk” or “high risk,” add a second polarity field, or add
-a confirmation round trip. Add a concise `justification` when several premises,
-conflicting counts, or uncertainty must be connected.
+Before saving, compare each active answer with the approved Result in the
+current Domain context: outcome definition, population, comparison, and time
+point. Check the selected passages against the exact proposition and guidance
+on that question card. Choose the option whose literal meaning follows from
+those passages and any stated uncertainty. Add a concise `justification` when
+an inference, conflicting evidence, or uncertainty connects the passages to the
+answer. The audit is complete when every active answer addresses that Result
+and its bases support the claims attributed to them.
 
 Only question 3.1 may carry `missing_data` rows. Keep randomized, observed,
 analyzed, imputed, and excluded counts distinct. The server reuses answer
