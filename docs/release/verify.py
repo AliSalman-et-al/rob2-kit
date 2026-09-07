@@ -602,20 +602,16 @@ def verify(wheel: Path | None = None, bundle: Path | None = None) -> None:
     contract = _load_contract()
     _assert_generated(contract)
     if wheel is None:
-        from rob2_kit.application._state import _root, _state
-        from rob2_kit.application.intake import approve_review
         from rob2_kit.interfaces.mcp.server import mcp
 
-        async def local() -> None:
+        async def local_proposal() -> None:
             async with Client(mcp) as client:
                 await _verify_client(client, contract)
                 await _verify_stdio_proposal(client)
-                review = _state(_root(temporary)).get("review")
-                if not isinstance(review, dict) or not isinstance(review.get("identity"), str):
-                    raise ValueError("source-tree acceptance Proposal Review is unavailable")
-                approved = approve_review(temporary, review["identity"])
-                if approved.get("outcome") != "success":
-                    raise ValueError(f"source-tree Proposal approval failed: {approved}")
+
+        async def local_domains() -> None:
+            async with Client(mcp) as client:
+                await _verify_client(client, contract)
                 context = await _call(
                     client,
                     "get_domain_context",
@@ -653,7 +649,26 @@ def verify(wheel: Path | None = None, bundle: Path | None = None) -> None:
                         encoding="utf-8"
                     ),
                 )
-                asyncio.run(local())
+                asyncio.run(local_proposal())
+                review = subprocess.run(
+                    [
+                        sys.executable,
+                        "-m",
+                        "rob2_kit.interfaces.cli.app",
+                        "review",
+                        "--workspace",
+                        temporary,
+                    ],
+                    cwd=ROOT,
+                    env=os.environ,
+                    input="yes\n",
+                    text=True,
+                    capture_output=True,
+                    check=False,
+                )
+                if review.returncode != 0:
+                    raise ValueError(f"source-tree Proposal review failed: {review.stderr.strip()}")
+                asyncio.run(local_domains())
             finally:
                 if previous_workspace is None:
                     os.environ.pop("ROB2_WORKSPACE", None)
