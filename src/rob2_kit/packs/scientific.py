@@ -46,7 +46,7 @@ def _rule(mode: Literal["any", "all"], *predicates: ActivationPredicate) -> Cond
 _GUIDANCE_VERSION = "22 August 2019"
 _GUIDANCE_SOURCE_SHA256 = "A9E9C4FDC4BE2D29B5C0A1A6B828E09F2014A34F6D5C302A532F6153EA0FD670"
 _OPERATIONAL_GUIDANCE_ID = "rob2-kit.parallel-assignment.question-guidance"
-_OPERATIONAL_GUIDANCE_VERSION = "1.0.1"
+_OPERATIONAL_GUIDANCE_VERSION = "1.0.2"
 _OPERATIONAL_ATTRIBUTION = "rob2-kit maintainers"
 
 _OFFICIAL_ELABORATIONS = {
@@ -350,8 +350,9 @@ _GUIDANCE: dict[str, QuestionGuidance] = {
     "sq:missing:data-available": _guidance(
         "Full guidance p. 45, Box 8, signalling question 3.1",
         "Whether outcome data were available for all or nearly all randomized participants.",
-        "Use the randomized population. Nearly all means missing outcomes were sufficiently few that, whatever they were, they could make no important difference; 95% often suffices for continuous outcomes, while dichotomous outcomes depend on event risk. Imputed data count as missing.",
+        "Use the randomized population. For yes or probably yes, require actual outcome-availability evidence. Nearly all means missing outcomes were sufficiently few that, whatever they were, they could make no important difference; 95% often suffices for continuous outcomes, while dichotomous outcomes depend on event risk. Imputed data count as missing.",
         (
+            "For yes or probably yes, actual outcome-availability evidence can be comparable observed-outcome counts, arm-specific loss-to-follow-up or censoring accounting, or an explicit complete/nearly-complete ascertainment statement.",
             "Compare the approved outcome/time point across participant-flow and outcome-data passages. For each comparable arm or unit distinguish randomized, observed, analysed, and imputed counts, plus exclusions and reasons. A missing count or an explicit complete-ascertainment statement is valid source information; do not substitute an analysis denominator for observed data. Calculate randomized minus observed only when population, arm, unit, and time point are the same. Imputed data count as missing.",
         ),
         "Only answer no_information when the report provides no information about the extent of missing outcome data.",
@@ -371,10 +372,15 @@ _GUIDANCE: dict[str, QuestionGuidance] = {
         ),
         (
             "The appropriate population is all randomized participants, not only participants included in a final analysis. Keep outcome availability distinct from exclusions for analysis or conduct; the same passage may inform both Domains for different scientific reasons.",
+            "Distinguish administrative censoring at a common data cutoff from censoring caused by missing follow-up; inspect actual rates and follow-up accounting rather than treating a generic censoring rule as outcome-availability evidence.",
         ),
         (
             "a complete-case analysis label",
             "an ITT analysis",
+            "analysis denominators or ITT membership alone",
+            "planned or scheduled follow-up alone",
+            "treatment continuation or discontinuation alone",
+            "a generic censoring rule without actual rates or follow-up accounting",
             "imputed data counted as observed outcomes",
         ),
     ),

@@ -158,6 +158,12 @@ an inference, conflicting evidence, or uncertainty connects the passages to the
 answer. The audit is complete when every active answer addresses that Result
 and its bases support the claims attributed to them.
 
+For D3.1, run the **availability audit** before saving: Yes/Probably Yes needs
+actual outcome-availability evidence; analysis membership, planned or scheduled
+follow-up, treatment continuation or discontinuation, and a generic censoring
+rule alone do not suffice. Use [Missing outcome data](references/missing.md) for
+the detailed audit and the administrative-cutoff/missing-follow-up distinction.
+
 Only question 3.1 may carry `missing_data` rows. Keep randomized, observed,
 analyzed, imputed, and excluded counts distinct. The server reuses answer
 Evidence as row provenance and performs only scope-matched arithmetic.

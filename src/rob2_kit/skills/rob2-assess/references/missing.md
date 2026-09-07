@@ -3,6 +3,23 @@
 Use this reference for Domain 3. The approved Result fixes the outcome and time
 point; the returned question cards fix answer direction and activation.
 
+## Availability audit
+
+For D3.1, support Yes or Probably Yes with actual outcome-availability
+evidence. Accept one or more of:
+
+- comparable observed-outcome counts for the randomized population;
+- arm-specific loss-to-follow-up or censoring rates, reasons, and follow-up
+  accounting; or
+- an explicit statement that ascertainment was complete or nearly complete.
+
+The following do not establish affirmative availability on their own:
+
+- analysis denominators or ITT membership;
+- planned or scheduled follow-up;
+- treatment continuation or discontinuation; or
+- a generic censoring rule without actual rates or follow-up accounting.
+
 ## Reconcile availability
 
 Keep these quantities distinct for each arm and time point:
@@ -17,8 +34,8 @@ An analyzed count is not necessarily an observed count. Imputed outcomes count
 as missing outcome data for RoB 2. Treatment discontinuation is not missing
 outcome data when follow-up and outcome ascertainment continued.
 
-Distinguish administrative censoring at a common data cutoff from loss of
-follow-up before the outcome could be observed. For time-to-event Results,
+Distinguish administrative censoring at a common data cutoff from censoring
+caused by missing follow-up before the outcome could be observed. For time-to-event Results,
 censoring may still create missing outcome information; assess its timing,
 reason, and relation to treatment or prognosis instead of treating every
 censored participant as either fully observed or missing by default.
