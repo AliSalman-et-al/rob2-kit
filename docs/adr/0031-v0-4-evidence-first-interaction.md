@@ -74,9 +74,12 @@ frozen v0.3 contract.
   from the 12,288-byte budget for recoverable narrative Evidence text. Narrative
   overflow retains the selected narrative Evidence identity, coordinates, and
   executable `read_pages` recovery windows. Visual transcription, table values,
-  and derived values remain inline when no exact existing recovery operation
-  exists; their additional bytes are reported separately. This is a transport
-  projection, not a canonical or scientific-state change.
+  derived values, and coordinate-less legacy narrative text remain inline when
+  no exact existing recovery operation exists, even beyond the recoverable
+  disposable-item limit; their additional bytes are reported separately.
+  Missing derivative search sessions are reported explicitly rather than
+  silently erased. This is a transport projection, not a canonical or
+  scientific-state change.
 - Keep Domain 4 host reasoning outcome-specific. The host audits the approved
   event and method, between-group ascertainment opportunities, assessor identity
   and awareness, and any influence mechanism in that order. Mixed-outcome

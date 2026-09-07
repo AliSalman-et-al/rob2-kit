@@ -184,11 +184,14 @@ The Domain Evidence workspace has separate mandatory Result, active-checkpoint,
 and contradiction tiers. Canonical tiers sit outside the 64-item disposable
 selection limit and take priority within the recoverable narrative-text budget.
 Disposable search candidates are included only when their immutable session was
-associated with the requested Trial and Domain.
+associated with the requested Trial and Domain. Explicit Evidence without an
+exact recovery operation remains inline outside the 64-item recoverable
+disposable limit; it is never silently dropped to satisfy that limit.
 other-Domain search fragments are excluded before the 64-item disposable
 selection limit is applied. Typed groups expose inclusion reasons and question
-scope. Each omission carries an executable session cursor or exact text recovery
-action.
+scope. Each omission carries an executable session cursor, an exact text
+recovery action, or an explicit unavailable search-session state after
+derivative cache loss.
 Explicitly selected unscoped passages take priority as carry-forward material,
 with exact read continuation if they exceed the 64-item selection limit. D2, D3,
 and D5 additionally receive read-only comparison cards. The server fills only

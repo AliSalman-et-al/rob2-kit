@@ -759,15 +759,20 @@ DomainResultEvidence = Annotated[
 ]
 
 
+class DomainCategoryValue(PublicModel):
+    category_axes: tuple[str, ...] = Field(min_length=1)
+    value: str = Field(min_length=1)
+
+
 class DomainCategoryProfileResult(PublicModel):
-    """Result-specific category profile without repeating every source cell."""
+    """Complete approved category profile without proof-oriented bindings."""
 
     form: Literal["single_group_category_profile"]
     endpoint: ReportedEndpoint
     group_id: str = Field(min_length=1)
     denominator_basis: str = Field(min_length=1)
     category_axis_names: tuple[str, ...] = Field(min_length=1)
-    category_count: StrictInt = Field(ge=1)
+    categories: tuple[DomainCategoryValue, ...] = Field(min_length=1)
 
 
 class DomainAssessableResult(PublicModel):
@@ -809,8 +814,21 @@ class ReadEvidenceContinuation(PublicModel):
     windows: tuple[EvidenceReadWindow, ...] = Field(min_length=1, max_length=20)
 
 
-EvidenceContinuation = Annotated[
+class UnavailableEvidenceContinuation(PublicModel):
+    operation: Literal["unavailable"]
+    trial_id: TrialId
+    search_session: Identity
+    reason: Literal["derivative_search_session_unavailable"]
+
+
+ExecutableEvidenceContinuation = Annotated[
     SearchEvidenceContinuation | ReadEvidenceContinuation,
+    Field(discriminator="operation"),
+]
+
+
+EvidenceContinuation = Annotated[
+    SearchEvidenceContinuation | ReadEvidenceContinuation | UnavailableEvidenceContinuation,
     Field(discriminator="operation"),
 ]
 
@@ -841,15 +859,16 @@ class EvidenceWorkspace(PublicModel):
     groups: tuple[EvidenceWorkspaceGroup, ...]
     omitted_count: NonNegativeInt = 0
     omitted_by_category: OmittedEvidenceCounts = OmittedEvidenceCounts()
-    continuation: EvidenceContinuation | None = Field(
+    continuation: ExecutableEvidenceContinuation | None = Field(
         default=None,
         description="Backward-compatible alias for the first executable recovery action.",
     )
     continuations: tuple[EvidenceContinuation, ...] = Field(
         default=(),
         description=(
-            "All executable recovery actions, in deterministic order. This collection is "
-            "authoritative when more than one search session or read-pages chunk is omitted."
+            "All executable recovery actions and explicit unavailable session states, in "
+            "deterministic order. This collection is authoritative when more than one search "
+            "session or read-pages chunk is omitted."
         ),
     )
     recoverable_narrative_text_budget: NonNegativeInt = Field(
@@ -874,10 +893,12 @@ class EvidenceWorkspace(PublicModel):
         default=0,
         description="Number of narrative Evidence items whose quote text was omitted.",
     )
-    unavoidable_non_narrative_text_bytes: NonNegativeInt = Field(
+    unrecoverable_inline_text_bytes: NonNegativeInt = Field(
         default=0,
         description=(
-            "UTF-8 bytes of inline table, figure, and derived text outside the narrative budget."
+            "UTF-8 bytes of inline Evidence text outside the recoverable narrative budget "
+            "because no exact recovery operation exists. This includes coordinate-less legacy "
+            "narrative text and table, figure, or derived text."
         ),
     )
 

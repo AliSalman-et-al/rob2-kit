@@ -664,8 +664,7 @@ def test_adverse_event_grades_are_categories_and_grade_five_is_retained(tmp_path
     _review(workspace)
     context = _call(workspace, "get_domain_context", {})
     reported = context["data"]["result"]["reported"]
-    assert reported["category_count"] == 5
-    assert "categories" not in reported
+    assert reported["categories"] == categories
 
 
 def test_non_exact_result_binds_source_facts_but_not_caller_owned_target_leaves(

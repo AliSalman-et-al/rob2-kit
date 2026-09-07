@@ -9,7 +9,15 @@ import pytest
 from fastmcp import Client
 from mcp import types as mcp_types
 from pydantic import ValidationError
-from support.rob2 import _assessment_workspace, _call
+from support.rob2 import (
+    _assessment_workspace,
+    _call,
+    _prepared_evidence,
+    _proposal_args,
+    _result,
+    _review,
+    _workspace,
+)
 
 import rob2_kit.application.domains as domain_application
 from rob2_kit.application._state import _commit, _identity, _state
@@ -102,6 +110,31 @@ def test_oversized_narrative_has_exact_read_recovery_and_utf8_accounting() -> No
     workspace = projected["evidence_workspace"]
     assert workspace["recoverable_narrative_text_bytes"] == 0
     assert workspace["omitted_narrative_text_bytes"] == len(quote.encode("utf-8"))
+
+
+def test_coordinate_less_legacy_narrative_is_reported_outside_recoverable_budget() -> None:
+    quote = "legacy " * _DOMAIN_RECOVERABLE_NARRATIVE_TEXT_BUDGET
+    projected = _compact_domain_evidence(
+        {
+            "answers": [],
+            "evidence": [
+                {
+                    "kind": "narrative",
+                    "handle": "eh_0123456789abcdef",
+                    "identity": "sha256:" + "1" * 64,
+                    "trial_id": "trial",
+                    "source_id": "source_" + "2" * 64,
+                    "page": 3,
+                    "quote": quote,
+                }
+            ],
+            "evidence_workspace": {"selection_policy_version": "rob2-kit.domain-projection.v0.5"},
+        }
+    )
+    workspace = projected["evidence_workspace"]
+    assert projected["evidence"][0]["text_status"] == "complete"
+    assert workspace["recoverable_narrative_text_bytes"] == 0
+    assert workspace["unrecoverable_inline_text_bytes"] == len(quote.encode("utf-8"))
 
 
 def test_checkpoint_basis_quote_is_not_repeated_in_context() -> None:
@@ -268,6 +301,40 @@ def test_non_narrative_evidence_stays_valid_in_compact_projection() -> None:
     DomainDerivedEvidence.model_validate(output[2])
 
 
+def test_nonrecoverable_explicit_evidence_does_not_disappear_at_item_limit(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    workspace, _result_evidence, _revision = _assessment_workspace(tmp_path)
+    source_id = _call(workspace, "list_sources", {"trial_id": "trial"})["data"]["sources"][0]["id"]
+    figures = {
+        "sha256:" + f"{index:064x}": {
+            "kind": "figure",
+            "handle": "eh_" + f"{index:016x}",
+            "identity": "sha256:" + f"{index:064x}",
+            "trial_id": "trial",
+            "source_id": source_id,
+            "render": {
+                "identity": "sha256:" + f"{index + 100:064x}",
+                "source_id": source_id,
+                "page": 1,
+                "png_sha256": "sha256:" + f"{index + 200:064x}",
+                "recipe": "page-png-v1",
+            },
+            "transcription": f"visual transcription {index}",
+            "provenance": "host_visual",
+            "region": [0.1, 0.1, 0.9, 0.9],
+        }
+        for index in range(1, 66)
+    }
+    monkeypatch.setattr(domain_application, "_evidence_catalog", lambda *_args, **_kwargs: figures)
+
+    context = domain_application.get_domain_context(workspace)
+    visible = {item["handle"] for item in context["evidence"]}
+    assert {item["handle"] for item in figures.values()} <= visible
+    assert context["evidence_workspace"]["omitted_by_category"]["explicit_carry_forward"] == 0
+
+
 def test_narrative_projection_requires_matching_text_and_recovery_state() -> None:
     complete = {
         "kind": "narrative",
@@ -361,17 +428,38 @@ def test_domain_context_accepts_legacy_complete_narrative_without_coordinates(
     assert projected["quote"] == evidence["quote"]
     assert projected["start_line"] is None
     assert projected["end_line"] is None
+    assert context["evidence_workspace"]["recoverable_narrative_text_bytes"] == 0
+    assert context["evidence_workspace"]["unrecoverable_inline_text_bytes"] == len(
+        evidence["quote"].encode("utf-8")
+    )
 
 
-def test_domain_context_projects_derived_result_evidence(tmp_path: Path) -> None:
-    workspace, evidence, _revision = _assessment_workspace(tmp_path)
+def test_domain_context_projects_derived_result_and_unique_input_evidence(tmp_path: Path) -> None:
+    workspace = _workspace(tmp_path)
+    main = workspace / "input" / "trial" / "main.txt"
+    main.write_text(main.read_text(encoding="utf-8") + "3\n", encoding="utf-8")
+    evidence = _prepared_evidence(workspace)
+    _call(workspace, "save_proposal", _proposal_args(workspace, [_result(evidence)]))
+    _review(workspace)
+    source_id = _call(workspace, "list_sources", {"trial_id": "trial"})["data"]["sources"][0]["id"]
+    derived_input = _call(
+        workspace,
+        "select_text_evidence",
+        {
+            "trial_id": "trial",
+            "source_id": source_id,
+            "page": 1,
+            "start_line": 2,
+            "end_line": 2,
+        },
+    )["data"]["evidence"]
     state = _state(workspace)
     result = state["proposal"]["payload"]["results"][0]
     derived = {
         "kind": "derived",
         "operation": "sum",
-        "inputs": [{"handle": evidence["handle"], "value": "1"}],
-        "value": "1",
+        "inputs": [{"handle": derived_input["handle"], "value": "3"}],
+        "value": "3",
     }
     result["evidence"].append(derived)
     state["proposal"]["identity"] = _identity(state["proposal"]["payload"])
@@ -379,6 +467,33 @@ def test_domain_context_projects_derived_result_evidence(tmp_path: Path) -> None
 
     context = _call(workspace, "get_domain_context", {})["data"]
     assert context["result"]["evidence"][-1] == derived
+    assert derived_input["handle"] in {item["handle"] for item in context["evidence"]}
+    assert context["evidence_workspace"]["unrecoverable_inline_text_bytes"] >= len(b"33")
+
+
+def test_domain_context_preserves_complete_category_profile_result(tmp_path: Path) -> None:
+    workspace, _evidence, _revision = _assessment_workspace(tmp_path)
+    state = _state(workspace)
+    reported = state["proposal"]["payload"]["results"][0]["reported"]
+    reported.clear()
+    reported.update(
+        {
+            "form": "single_group_category_profile",
+            "endpoint": {"name": "requested outcome", "definition": None},
+            "group_id": "a",
+            "denominator_basis": "randomized population",
+            "category_axis_names": ["event", "grade"],
+            "categories": [
+                {"category_axes": ["Any event", "Grade 3"], "value": "65"},
+                {"category_axes": ["Any event", "Grade 4"], "value": "17"},
+            ],
+        }
+    )
+    state["proposal"]["identity"] = _identity(state["proposal"]["payload"])
+    _commit(workspace, state, int(state["revision"]))
+
+    context = _call(workspace, "get_domain_context", {})["data"]
+    assert context["result"]["reported"] == reported
 
 
 def test_public_boundary_exposes_executable_narrative_recovery(monkeypatch, tmp_path: Path) -> None:

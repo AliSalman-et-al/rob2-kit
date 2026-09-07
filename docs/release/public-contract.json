@@ -97,7 +97,7 @@
 "idempotent":true,
 "open_world":false,
 "schema_sha256":"sha256:a06220d2095e7be8275bca044370afd993619c74ecdf88daa6cce41409697e5c",
-"output_schema_sha256":"sha256:b4245940120dd6cc11c88e66ce1843252d876b8cae89b23e1dae720f45d70016"},
+"output_schema_sha256":"sha256:e5fa7276d7405ba02d164d40dc8f0b80446f307ac727a993a4c742f458bee1dd"},
 {"name":"save_domain_judgment",
 "title":"Save Domain judgment",
 "description":"Atomically save answers for one Domain of the Trial's approved Result. Supply one current option ID and bases for every question activated by the selected options; inactive extra answers are ignored. Invalid input returns grouped repairs without committing. Before saving, check each basis against the approved Result and literal question; justify any inference or unresolved linkage. The fifth accepted Domain freezes the Trial snapshot and advances next_action; no separate Trial-finalization call is required.",

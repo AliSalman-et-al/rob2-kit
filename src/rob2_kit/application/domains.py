@@ -109,7 +109,7 @@ def _compact_domain_evidence(context: dict[str, Any]) -> dict[str, Any]:
     indexed = list(enumerate(evidence))
     indexed.sort(key=lambda pair: (tier.get(str(pair[1].get("inclusion_reason")), 5), pair[0]))
     remaining = _DOMAIN_RECOVERABLE_NARRATIVE_TEXT_BUDGET
-    recoverable_narrative_bytes = omitted = omitted_count = unavoidable = 0
+    recoverable_narrative_bytes = omitted = omitted_count = unrecoverable_inline = 0
     projected: dict[int, dict[str, Any]] = {}
     for index, original in indexed:
         if not isinstance(original, dict):
@@ -129,10 +129,10 @@ def _compact_domain_evidence(context: dict[str, Any]) -> dict[str, Any]:
         if include:
             if has_exact_recovery:
                 remaining -= size
-            if kind == "narrative":
+            if has_exact_recovery:
                 recoverable_narrative_bytes += size
             else:
-                unavoidable += size
+                unrecoverable_inline += size
             if kind == "narrative":
                 item["text_status"] = "complete"
         else:
@@ -153,6 +153,13 @@ def _compact_domain_evidence(context: dict[str, Any]) -> dict[str, Any]:
             omitted += size
             omitted_count += 1
         projected[index] = item
+    result = context.get("result")
+    if isinstance(result, dict):
+        unrecoverable_inline += sum(
+            _evidence_text_bytes(item)
+            for item in result.get("evidence", [])
+            if isinstance(item, dict) and item.get("kind") == "derived"
+        )
     omitted += checkpoint_source_bytes
     context["evidence"] = [projected.get(index, item) for index, item in enumerate(evidence)]
     workspace = context.get("evidence_workspace")
@@ -163,7 +170,7 @@ def _compact_domain_evidence(context: dict[str, Any]) -> dict[str, Any]:
         workspace["recoverable_narrative_text_bytes"] = recoverable_narrative_bytes
         workspace["omitted_narrative_text_bytes"] = omitted
         workspace["omitted_narrative_text_count"] = omitted_count
-        workspace["unavoidable_non_narrative_text_bytes"] = unavoidable
+        workspace["unrecoverable_inline_text_bytes"] = unrecoverable_inline
         context["evidence_workspace"] = workspace
     return context
 
@@ -1402,6 +1409,14 @@ def get_domain_context(
         for item in result.get("evidence", [])
         if isinstance(item, dict) and isinstance(item.get("handle"), str)
     }
+    result_handles.update(
+        input_item.get("handle")
+        for item in result.get("evidence", [])
+        if isinstance(item, dict) and item.get("kind") == "derived"
+        for input_item in item.get("inputs", [])
+        if isinstance(input_item, dict) and isinstance(input_item.get("handle"), str)
+    )
+    handles.update(result_handles)
     checkpoint_answers = [
         answer
         for answer in (existing.get("answers", []) if isinstance(existing, dict) else [])
@@ -1514,13 +1529,29 @@ def get_domain_context(
     associated, associated_duplicates = unique_passages(associated)
     explicit_carry_forward, explicit_duplicates = unique_passages(explicit_carry_forward)
     projection_budget = 64
-    # Explicit selections are deliberate carry-forward and therefore take
-    # priority over disposable search candidates within the shared budget.
-    # Result/checkpoint Evidence remains outside this budget above.
-    selected_explicit = explicit_carry_forward[:projection_budget]
-    remaining_budget = projection_budget - len(selected_explicit)
+
+    # Recoverable explicit selections take priority over search candidates
+    # within the shared item budget. Non-reconstructible selections remain
+    # inline outside it, as do Result/checkpoint Evidence.
+    def has_exact_read_recovery(value: dict[str, Any]) -> bool:
+        return (
+            value.get("kind") == "narrative"
+            and all(isinstance(value.get(key), int) for key in ("page", "start_line", "end_line"))
+            and isinstance(value.get("source_id"), str)
+            and isinstance(value.get("trial_id"), str)
+        )
+
+    recoverable_explicit = [
+        value for value in explicit_carry_forward if has_exact_read_recovery(value)
+    ]
+    unrecoverable_explicit = [
+        value for value in explicit_carry_forward if not has_exact_read_recovery(value)
+    ]
+    selected_recoverable_explicit = recoverable_explicit[:projection_budget]
+    selected_explicit = [*unrecoverable_explicit, *selected_recoverable_explicit]
+    remaining_budget = projection_budget - len(selected_recoverable_explicit)
     selected_candidates = associated[:remaining_budget]
-    omitted_explicit = explicit_carry_forward[len(selected_explicit) :]
+    omitted_explicit = recoverable_explicit[len(selected_recoverable_explicit) :]
     included_candidate_ranks = {
         (value["search_session"], value["candidate_rank"]) for value in selected_candidates
     }
@@ -1619,8 +1650,8 @@ def get_domain_context(
         for value in omitted_explicit:
             source_id = value.get("source_id")
             page = value.get("page")
-            start_line = value.get("start_line", 1)
-            end_line = value.get("end_line", start_line)
+            start_line = value.get("start_line")
+            end_line = value.get("end_line")
             if (
                 not isinstance(source_id, str)
                 or not isinstance(page, int)
@@ -1657,7 +1688,14 @@ def get_domain_context(
                     "windows": windows,
                 }
             )
-    evidence_continuation = evidence_continuations[0] if evidence_continuations else None
+    evidence_continuation = next(
+        (
+            action
+            for action in evidence_continuations
+            if action.get("operation") in {"search_sources", "read_pages"}
+        ),
+        None,
+    )
     workspace_groups = []
     for reason in (
         "result",
@@ -1666,11 +1704,32 @@ def get_domain_context(
         "active_domain_candidate",
         "explicit_carry_forward",
     ):
-        items = [
-            value
-            for value in catalog.values()
-            if isinstance(value, dict) and value.get("inclusion_reason") == reason
-        ]
+        if reason == "result":
+            items = [
+                value
+                for value in catalog.values()
+                if isinstance(value, dict) and value.get("handle") in result_handles
+            ]
+        elif reason == "contradiction":
+            items = [
+                value
+                for value in catalog.values()
+                if isinstance(value, dict) and value.get("identity") in contradiction_identities
+            ]
+        elif reason == "checkpoint":
+            items = [
+                value
+                for value in catalog.values()
+                if isinstance(value, dict)
+                and value.get("identity") in checkpoint_identities
+                and value.get("identity") not in contradiction_identities
+            ]
+        else:
+            items = [
+                value
+                for value in catalog.values()
+                if isinstance(value, dict) and value.get("inclusion_reason") == reason
+            ]
         if not items:
             continue
         scoped_questions = (
@@ -1698,17 +1757,6 @@ def get_domain_context(
         if value.get("kind") == "unavailable":
             return value
         reported = value["reported"]
-        if reported.get("form") == "single_group_category_profile":
-            reported = {
-                key: reported[key]
-                for key in (
-                    "form",
-                    "endpoint",
-                    "group_id",
-                    "denominator_basis",
-                    "category_axis_names",
-                )
-            } | {"category_count": len(reported["categories"])}
         references = []
         for evidence_item in value.get("evidence", []):
             if not isinstance(evidence_item, dict):

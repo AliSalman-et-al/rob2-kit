@@ -67,9 +67,9 @@ def test_public_output_surface_is_closed_and_within_budget() -> None:
         for tool, schema in zip(tools, closed_schemas, strict=True)
     )
     # This is a ceiling, not a target. Smaller closed schemas are better.
-    # v0.5 adds stable search-session metadata, option cards, and bounded
-    # domain comparison projections to the closed output contract.
-    assert total_bytes < 262_000
+    # v0.6 adds bounded Domain Evidence, complete approved category profiles,
+    # and explicit recovery/unavailable states to the closed output contract.
+    assert total_bytes < 264_000
 
     by_name = {tool.name: tool for tool in tools}
     search_annotations = by_name["search_sources"].annotations
@@ -131,8 +131,8 @@ def test_public_output_surface_is_closed_and_within_budget() -> None:
         in workspace_properties["omitted_narrative_text_count"]["description"]
     )
     assert (
-        "outside the narrative budget"
-        in workspace_properties["unavoidable_non_narrative_text_bytes"]["description"]
+        "outside the recoverable narrative budget"
+        in workspace_properties["unrecoverable_inline_text_bytes"]["description"]
     )
     assert "activated by the selected options" in (domain_tool.description or "")
     assert "check each basis against the approved Result" in (domain_tool.description or "")
