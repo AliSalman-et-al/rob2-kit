@@ -1,16 +1,21 @@
 # Assess outcome measurement
 
 Use this reference for Domain 4. The approved Result fixes the outcome; the
-returned question cards are authoritative.
+returned question cards are authoritative. Apply this ordered audit:
 
-Assess five distinct propositions:
-
-1. Is the measurement method inappropriate for this outcome?
-2. Could methods, thresholds, visit schedules, or detection opportunities differ
-   between randomized groups?
-3. Who determined the outcome, and did that assessor know the assignment?
-4. Could that knowledge influence the measurement?
-5. If it could, was influence likely in these trial circumstances?
+1. Start from the approved Result's event definition and ascertainment method.
+2. Assess whether the measurement method is appropriate for that approved event.
+3. Compare methods, thresholds, schedules, and detection opportunities between
+   randomized groups.
+4. Identify who determines whether that event occurred.
+5. Answer assessor awareness separately from susceptibility to influence.
+6. If influence is possible or likely, explain the mechanism. If no mechanism
+   can be established, apply the official uncertainty guidance.
+7. For all-cause mortality, distinguish establishing death from judging
+   progression, symptoms, or cause of death.
+8. For composite outcomes, consider every component that can determine the event.
+9. When a passage discusses several outcomes, use only the premise that applies
+   to the approved outcome and state any inference or unresolved link.
 
 Identify who generates or determines the outcome, not merely who records it.
 For participant-reported outcomes, the participant is the assessor. Cite

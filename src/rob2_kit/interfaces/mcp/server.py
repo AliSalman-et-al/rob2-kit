@@ -349,8 +349,9 @@ def list_sources(
         "Returns a "
         "bounded first batch with a stable session, counts, truncation, and opaque receipt; "
         "continue with next_cursor for the same ranking. Valid no-hit searches are returned; "
-        "a broad truncated any response includes observable refinement advice; it is not a "
-        "scientific conclusion."
+        "an initial multi-token all or phrase no-hit includes one executable any broadening "
+        "step, while a broad truncated any response includes observable refinement advice; "
+        "neither is a scientific conclusion."
     ),
     annotations=_READ_ONLY,
     output_schema=output_schema("search_sources"),
@@ -898,7 +899,9 @@ async def request_proposal_approval(ctx: Context) -> ToolResult:
     description=(
         "Read the approved Result, current checkpoint, scoped Evidence workspace, comparison "
         "cards, and all questions for a Domain. Question cards provide scientific guidance, "
-        "activation predicates, server-issued answer options, and executable search suggestions. "
+        "activation predicates, server-issued answer options, and executable alternative search "
+        "suggestions; choose relevant wording from inspected Sources rather than treating the "
+        "list as a checklist. "
         "Use the returned revision and option IDs when saving the active answers."
     ),
     annotations=_READ_ONLY,
@@ -925,7 +928,9 @@ def get_domain_context(
         "Atomically save answers for one Domain of the Trial's approved Result. Supply one "
         "current option ID and bases for every question activated by the selected options; "
         "inactive extra answers are ignored. Invalid input returns grouped repairs without "
-        "committing. The fifth accepted Domain freezes the Trial snapshot and advances "
+        "committing. Before saving, check each basis against the approved Result and literal "
+        "question; justify any inference or unresolved linkage. "
+        "The fifth accepted Domain freezes the Trial snapshot and advances "
         "next_action; no separate Trial-finalization call is required."
     ),
     annotations=_MUTATION,

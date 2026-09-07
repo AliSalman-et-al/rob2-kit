@@ -199,6 +199,53 @@ def _broad_search_diagnostic(
     }
 
 
+def _narrow_no_hits_diagnostic(
+    *,
+    trial_id: str,
+    query: str,
+    normalized_query: str,
+    mode: str,
+    source_id: str | None,
+    limit: int,
+    total_matches: int,
+    returned_count: int,
+    cursor: str | None,
+) -> dict[str, Any] | None:
+    """Offer one observable, caller-executed widening for an initial narrow miss."""
+
+    if (
+        mode not in {"all", "phrase"}
+        or len(normalized_query.split()) < 2
+        or cursor is not None
+        or total_matches != 0
+        or returned_count != 0
+    ):
+        return None
+    return {
+        "code": "narrow_no_hits",
+        "normalized_term_count": len(normalized_query.split()),
+        "total_matches": total_matches,
+        "candidate_count": 0,
+        "returned_count": returned_count,
+        "detail": (
+            "This initial multi-token narrow search matched nothing. Zero hits establish only "
+            "that the issued lexical query matched nothing; broaden once with any and inspect "
+            "the returned passages. The broader search is not evidence of relevance, scientific "
+            "completeness, or a preferred answer."
+        ),
+        "next_action": {
+            "kind": "refine",
+            "operation": "search_sources",
+            "trial_id": trial_id,
+            "query": query,
+            "mode": "any",
+            "source_id": source_id,
+            "limit": limit,
+            "cursor": None,
+        },
+    }
+
+
 def search_sources(
     workspace: str | Path,
     trial_id: str,
@@ -289,6 +336,17 @@ def search_sources(
                 "INSERT OR REPLACE INTO search_receipts VALUES (?,?)",
                 (receipt["identity"], canonical_json_bytes(receipt)),
             )
+        diagnostic = _narrow_no_hits_diagnostic(
+            trial_id=trial_id,
+            query=query,
+            normalized_query=" ".join(terms),
+            mode=mode,
+            source_id=requested_source_id,
+            limit=bounded_limit,
+            total_matches=0,
+            returned_count=0,
+            cursor=cursor,
+        )
         return {
             "outcome": "success",
             "hits": [],
@@ -307,7 +365,7 @@ def search_sources(
             "returned_rank_end": None,
             "next_cursor": None,
             "exhausted": True,
-            "diagnostic": None,
+            "diagnostic": diagnostic,
         }
     ordered_sources = _ordered_sources(sources)
     ordered_source_ids = [str(source["id"]) for source in ordered_sources]
@@ -549,6 +607,18 @@ def search_sources(
         truncated=candidate_truncated,
         next_cursor=receipt["next_cursor"],
     )
+    if diagnostic is None:
+        diagnostic = _narrow_no_hits_diagnostic(
+            trial_id=trial_id,
+            query=query,
+            normalized_query=" ".join(terms),
+            mode=mode,
+            source_id=requested_source_id,
+            limit=bounded_limit,
+            total_matches=total_matches,
+            returned_count=len(selected_candidates),
+            cursor=cursor,
+        )
     return {
         "outcome": "success",
         "hits": hits,

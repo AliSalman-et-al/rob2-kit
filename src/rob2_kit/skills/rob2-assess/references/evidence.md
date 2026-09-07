@@ -6,6 +6,13 @@ Use this reference while locating Result support and answering Domain questions.
 
 `search_sources` locates candidate pages. A hit is navigation, not scientific
 proof, but its `passage_ref` already identifies the exact returned passage.
+Suggestions are alternative wording, not a checklist. A zero-hit receipt
+establishes only that the issued lexical query matched nothing. For an eligible
+initial multi-token `all` or `phrase` no-hit, broaden once with the returned
+`mode:"any"` action and inspect the passages; if retrieval remains unhelpful,
+inspect the relevant section of an available Source and other relevant Sources
+before recording an unresolved limitation. One widening step is not adequate
+discovery by itself.
 `read_pages` likewise prepares a `passage_ref` for each non-empty window. After
 you inspect a complete passage, reuse that handle in Proposal `passage_refs` or
 Domain `bases`; no separate text-selection call is required.

@@ -56,3 +56,20 @@ def test_domain_references_use_current_handle_only_evidence_contract() -> None:
         )
     }
     assert stale == {}
+
+
+def test_measurement_reference_keeps_ordered_outcome_specific_audit() -> None:
+    text = Path("src/rob2_kit/skills/rob2-assess/references/measurement.md").read_text(
+        encoding="utf-8"
+    )
+    required = (
+        "approved Result's event definition",
+        "method is appropriate",
+        "between\n   randomized groups",
+        "assessor awareness separately",
+        "no mechanism\n   can be established",
+        "all-cause mortality",
+        "composite outcomes",
+        "several outcomes",
+    )
+    assert all(phrase in text for phrase in required)

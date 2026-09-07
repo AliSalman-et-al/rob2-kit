@@ -44,8 +44,10 @@ scope.
 Read [Specify the Result](references/result.md). Use `list_sources`,
 `search_sources`, and `read_pages` to compare complete reported candidates.
 `search_sources` returns a stable session and opaque `next_cursor`; continue
-that session before treating a bounded result as complete. A zero-hit receipt
-describes only that lexical query and never proves scientific absence.
+that session before treating a bounded result as complete. Query suggestions are
+alternatives and vocabulary, not a checklist: choose relevant wording from
+inspected Sources. A zero-hit receipt describes only that lexical query and
+never proves scientific absence.
 Search the main article first, then use registry, protocol, SAP, or supplement
 Sources for material competing definitions and missing context.
 
@@ -110,7 +112,13 @@ Perform bounded, question-specific discovery across the relevant Sources. Read
 positive passages that could resolve the active proposition and check material
 contradictions. Stop when the proposition and any remaining uncertainty are
 grounded; an untruncated search is a retrieval fact, not proof of scientific
-exhaustion.
+exhaustion. After an eligible initial multi-token `all` or `phrase` no-hit,
+follow the returned one-step `mode:"any"` action and inspect its passages. If
+that widening remains unhelpful, inspect the relevant section of an available
+Source and check other relevant Sources before recording the unresolved fact.
+One widening step is not adequate discovery by itself. Stop when the proposition
+and material contradictions are grounded or bounded discovery remains
+unresolved.
 
 For each active answer, select exactly one server-issued `options[].id` from
 the current question card and submit it as `answers[].option_id`. The server

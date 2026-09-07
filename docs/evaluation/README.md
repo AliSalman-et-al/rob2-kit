@@ -27,6 +27,18 @@ declare development/holdout splits and source/projection fingerprints; any
 extra split field or cross-split Trial/fingerprint fails validation. Receipts contain no source
 text, reviewer identity, rationale, query recipe, or holdout adjudication.
 
+For retrieval-recovery validation, report Domain reasoning alongside search
+count, zero-hit count, widening actions offered and followed, and whether the
+needed passage was discovered. Treat those as operational observations: one
+widening action does not establish adequate discovery, and a stochastic rerun
+does not justify promising a particular provisional agreement gain.
+
+For renewed Domain 4 review, inspect the rationale against the approved event
+and ascertainment method. Record whether it distinguishes assessor awareness
+from susceptibility to influence, explains any influence mechanism, and keeps a
+mixed-outcome passage tied to the approved outcome. Do not grade this review by
+string matching, a predetermined Domain label, or one agreement delta.
+
 Use the independent `scripts/verify_bundle.py` consumer to check each finalized
 bundle. It does not import proposal or presentation code from the product. The
 source-defined Result remains the researcher's choice, and the evaluator does

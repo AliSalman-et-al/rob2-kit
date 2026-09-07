@@ -383,6 +383,32 @@ def _verify_wheel_archive(wheel: Path) -> None:
                 raise ValueError(f"wheel skill is not UTF-8: {member}") from error
             if not content.strip():
                 raise ValueError(f"wheel skill member is empty: {member}")
+            required_phrases = {
+                "rob2_kit/skills/rob2-assess/SKILL.md": (
+                    "not a checklist",
+                    'mode:"any"',
+                    "One widening step is not adequate discovery",
+                ),
+                "rob2_kit/skills/rob2-assess/references/evidence.md": (
+                    "zero-hit receipt",
+                    "other relevant Sources",
+                ),
+                "rob2_kit/skills/rob2-assess/references/measurement.md": (
+                    "approved Result's event definition",
+                    "assessor awareness separately",
+                    "no mechanism can be established",
+                ),
+            }.get(member, ())
+            normalized_content = " ".join(content.split())
+            missing_phrases = [
+                phrase
+                for phrase in required_phrases
+                if phrase not in content and phrase not in normalized_content
+            ]
+            if missing_phrases:
+                raise ValueError(
+                    f"wheel skill member is stale: {member}; missing {', '.join(missing_phrases)}"
+                )
 
 
 def _installed_python(wheel: Path, directory: Path) -> Path:

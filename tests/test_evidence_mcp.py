@@ -85,6 +85,82 @@ def test_broad_truncated_any_search_exposes_observable_refinement_only(tmp_path:
     assert no_hit["diagnostic"] is None
 
 
+@pytest.mark.parametrize("mode", ["all", "phrase"])
+def test_initial_multi_token_narrow_no_hit_offers_same_scoped_any_search(
+    tmp_path: Path, mode: str
+) -> None:
+    workspace = _workspace(tmp_path)
+    (workspace / "input" / "trial" / "main.txt").write_text(
+        "the source contains unrelated wording only\n", encoding="utf-8"
+    )
+    _call(workspace, "prepare_batch", {"requested_outcome": "outcome", "expected_revision": 0})
+    source_id = _call(workspace, "list_sources", {"trial_id": "trial"})["data"]["sources"][0]["id"]
+
+    no_hit = _call(
+        workspace,
+        "search_sources",
+        {
+            "trial_id": "trial",
+            "query": "alpha beta",
+            "mode": mode,
+            "source_id": source_id,
+            "limit": 3,
+        },
+    )["data"]
+    assert no_hit["condition"] == "no_hits"
+    assert no_hit["diagnostic"]["code"] == "narrow_no_hits"
+    assert no_hit["diagnostic"]["next_action"] == {
+        "kind": "refine",
+        "operation": "search_sources",
+        "trial_id": "trial",
+        "query": "alpha beta",
+        "mode": "any",
+        "source_id": source_id,
+        "limit": 3,
+        "cursor": None,
+    }
+    assert "matched nothing" in no_hit["diagnostic"]["detail"]
+    assert "scientific completeness" in no_hit["diagnostic"]["detail"]
+
+    action = no_hit["diagnostic"]["next_action"]
+    widened = _call(
+        workspace,
+        "search_sources",
+        {key: value for key, value in action.items() if key not in {"kind", "operation"}},
+    )["data"]
+    assert widened["mode"] == "any"
+    assert _search_receipt(workspace, widened["search_receipt"])["sources"][0]["id"] == source_id
+
+
+def test_narrow_no_hit_diagnostic_excludes_ineligible_searches(tmp_path: Path) -> None:
+    workspace = _workspace(tmp_path)
+    (workspace / "input" / "trial" / "main.txt").write_text(
+        "alpha beta\nalpha beta\n", encoding="utf-8"
+    )
+    _call(workspace, "prepare_batch", {"requested_outcome": "outcome", "expected_revision": 0})
+    for mode in ("any", "prefix"):
+        result = _call(
+            workspace,
+            "search_sources",
+            {"trial_id": "trial", "query": "missing terms", "mode": mode},
+        )["data"]
+        assert result["diagnostic"] is None
+    for mode in ("all", "phrase"):
+        result = _call(
+            workspace,
+            "search_sources",
+            {"trial_id": "trial", "query": "missing", "mode": mode},
+        )["data"]
+        assert result["condition"] == "no_hits"
+        assert result["diagnostic"] is None
+    result = _call(
+        workspace,
+        "search_sources",
+        {"trial_id": "trial", "query": "alpha beta", "mode": "all", "limit": 1},
+    )["data"]
+    assert result["diagnostic"] is None
+
+
 def test_search_session_cursor_reuses_stable_ranking_after_derivative_restart(
     tmp_path: Path,
 ) -> None:
