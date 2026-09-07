@@ -432,7 +432,7 @@ class SearchReceipt(PublicModel):
 
 
 class SearchNextAction(PublicModel):
-    """One executable refinement or continuation for a broad search response."""
+    """One executable recovery refinement or continuation for a search response."""
 
     kind: Literal["refine", "continue"]
     operation: Literal["search_sources"]

@@ -349,6 +349,8 @@ def list_sources(
         "Returns a "
         "bounded first batch with a stable session, counts, truncation, and opaque receipt; "
         "continue with next_cursor for the same ranking. Valid no-hit searches are returned; "
+        "zero hits are specific only to the issued lexical query and never establish scientific "
+        "absence; "
         "an initial multi-token all or phrase no-hit includes one executable any broadening "
         "step, while a broad truncated any response includes observable refinement advice; "
         "neither is a scientific conclusion."

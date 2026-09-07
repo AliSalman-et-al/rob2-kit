@@ -59,17 +59,38 @@ def test_domain_references_use_current_handle_only_evidence_contract() -> None:
 
 
 def test_measurement_reference_keeps_ordered_outcome_specific_audit() -> None:
-    text = Path("src/rob2_kit/skills/rob2-assess/references/measurement.md").read_text(
-        encoding="utf-8"
+    normalized = " ".join(
+        Path("src/rob2_kit/skills/rob2-assess/references/measurement.md")
+        .read_text(encoding="utf-8")
+        .split()
     )
-    required = (
-        "approved Result's event definition",
-        "method is appropriate",
-        "between\n   randomized groups",
-        "assessor awareness separately",
-        "no mechanism\n   can be established",
-        "all-cause mortality",
-        "composite outcomes",
-        "several outcomes",
+    markers = list(re.finditer(r"(?<!\w)([1-9])\.\s+", normalized))
+    start = next(
+        index
+        for index in range(len(markers) - 8)
+        if [int(marker.group(1)) for marker in markers[index : index + 9]] == list(range(1, 10))
     )
-    assert all(phrase in text for phrase in required)
+    markers = markers[start : start + 9]
+    items = {
+        number: normalized[
+            marker.end() : markers[index + 1].start()
+            if index + 1 < len(markers)
+            else len(normalized)
+        ]
+        for index, marker in enumerate(markers[:9])
+        for number in [int(marker.group(1))]
+    }
+    semantic_items = (
+        "approved Result's event definition and ascertainment method",
+        "measurement method is appropriate for that approved event",
+        "methods, thresholds, schedules, and detection opportunities between randomized groups",
+        "who determines whether that event occurred",
+        "assessor awareness separately from susceptibility to influence",
+        "influence is possible or likely, explain the mechanism",
+        "all-cause mortality, distinguish establishing death from judging progression, "
+        "symptoms, or cause of death",
+        "composite outcomes, consider every component that can determine the event",
+        "passage discusses several outcomes, use only the premise that applies to the "
+        "approved outcome and state any inference or unresolved link",
+    )
+    assert all(semantic in items[index + 1] for index, semantic in enumerate(semantic_items))

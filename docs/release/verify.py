@@ -285,6 +285,55 @@ async def _verify_stdio_domains(
     """Save all requested Domains through the real FastMCP/stdio boundary."""
 
     revision = int((await _call(client, "get_status", {}))["state_revision"])
+    sources = await _call(client, "list_sources", {"trial_id": "trial"})
+    source_rows = sources.get("sources")
+    if not isinstance(source_rows, list) or len(source_rows) != 1:
+        raise ValueError("stdio narrow-search source scope differs")
+    source_id = source_rows[0].get("id")
+    if not isinstance(source_id, str):
+        raise ValueError("stdio narrow-search Source ID is unavailable")
+    narrow = await _call(
+        client,
+        "search_sources",
+        {
+            "trial_id": "trial",
+            "query": "release acceptance eligible lexical",
+            "mode": "all",
+            "source_id": source_id,
+            "limit": 2,
+        },
+    )
+    narrow_data = narrow.get("data")
+    if not isinstance(narrow_data, dict) or narrow_data.get("condition") != "no_hits":
+        raise ValueError("stdio narrow-search no-hit behavior differs")
+    diagnostic = narrow_data.get("diagnostic")
+    expected_action = {
+        "kind": "refine",
+        "operation": "search_sources",
+        "trial_id": "trial",
+        "query": "release acceptance eligible lexical",
+        "mode": "any",
+        "source_id": source_id,
+        "limit": 2,
+        "cursor": None,
+    }
+    if (
+        not isinstance(diagnostic, dict)
+        or diagnostic.get("code") != "narrow_no_hits"
+        or diagnostic.get("next_action") != expected_action
+    ):
+        raise ValueError(f"stdio narrow-search diagnostic differs: {diagnostic}")
+    widened = await _call(
+        client,
+        "search_sources",
+        {key: value for key, value in expected_action.items() if key not in {"kind", "operation"}},
+    )
+    if (
+        widened.get("outcome") != "success"
+        or widened.get("mode") != "any"
+        or not isinstance(widened.get("search_receipt"), str)
+    ):
+        raise ValueError(f"stdio narrow-search action execution differs: {widened}")
     for domain_id in domains:
         context = await _call(
             client, "get_domain_context", {"trial_id": "trial", "domain_id": domain_id}
@@ -377,38 +426,11 @@ def _verify_wheel_archive(wheel: Path) -> None:
         if missing_skills:
             raise ValueError(f"wheel skill is incomplete: {', '.join(missing_skills)}")
         for member in sorted(skill_members):
-            try:
-                content = archive.read(member).decode("utf-8")
-            except UnicodeDecodeError as error:
-                raise ValueError(f"wheel skill is not UTF-8: {member}") from error
-            if not content.strip():
-                raise ValueError(f"wheel skill member is empty: {member}")
-            required_phrases = {
-                "rob2_kit/skills/rob2-assess/SKILL.md": (
-                    "not a checklist",
-                    'mode:"any"',
-                    "One widening step is not adequate discovery",
-                ),
-                "rob2_kit/skills/rob2-assess/references/evidence.md": (
-                    "zero-hit receipt",
-                    "other relevant Sources",
-                ),
-                "rob2_kit/skills/rob2-assess/references/measurement.md": (
-                    "approved Result's event definition",
-                    "assessor awareness separately",
-                    "no mechanism can be established",
-                ),
-            }.get(member, ())
-            normalized_content = " ".join(content.split())
-            missing_phrases = [
-                phrase
-                for phrase in required_phrases
-                if phrase not in content and phrase not in normalized_content
-            ]
-            if missing_phrases:
-                raise ValueError(
-                    f"wheel skill member is stale: {member}; missing {', '.join(missing_phrases)}"
-                )
+            canonical = ROOT / "src" / Path(member)
+            if not canonical.is_file():
+                raise ValueError(f"canonical wheel skill member is missing: {member}")
+            if archive.read(member) != canonical.read_bytes():
+                raise ValueError(f"wheel skill member differs from canonical file: {member}")
 
 
 def _installed_python(wheel: Path, directory: Path) -> Path:
