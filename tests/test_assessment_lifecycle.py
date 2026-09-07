@@ -51,9 +51,11 @@ def test_structured_domain_uses_and_search_receipts(tmp_path: Path) -> None:
 
     receipt = _search_receipt(
         workspace,
-        _call(workspace, "search_sources", {"trial_id": "trial", "query": "not-in-source"})["data"][
-            "search_receipt"
-        ],
+        _call(
+            workspace,
+            "search_sources",
+            {"trial_id": "trial", "query": "not-in-source", "mode": "any"},
+        )["data"]["search_receipt"],
     )
     absence = _domain_draft(
         "trial",
@@ -361,7 +363,7 @@ def test_real_fastmcp_assessed_path_restart_derivative_rebuild_and_freeze(tmp_pa
     hits = _call(
         workspace,
         "search_sources",
-        {"trial_id": "trial", "query": "requested"},
+        {"trial_id": "trial", "query": "requested", "mode": "any"},
     )
     assert hits["data"]["hits"]
     assert (

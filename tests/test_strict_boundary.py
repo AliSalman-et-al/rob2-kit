@@ -8,6 +8,7 @@ from typing import Any, cast
 
 import pytest
 from fastmcp import Client
+from fastmcp.exceptions import ToolError
 from pydantic import TypeAdapter, ValidationError
 
 from rob2_kit.interfaces.mcp.contracts import PublicHead, SelectedFigureEvidence, normalize
@@ -113,7 +114,7 @@ def test_fastmcp_rejects_string_numeric_and_boolean_scalars() -> None:
                 ),
                 (
                     "search_sources",
-                    {"trial_id": "trial", "query": "term", "limit": "20"},
+                    {"trial_id": "trial", "query": "term", "mode": "any", "limit": "20"},
                 ),
                 (
                     "render_page",
@@ -145,6 +146,22 @@ def test_fastmcp_rejects_string_numeric_and_boolean_scalars() -> None:
             return [result.is_error for result in results]
 
     assert asyncio.run(exercise()) == [True, True, True, True]
+
+
+def test_fastmcp_requires_search_mode_at_public_boundary() -> None:
+    async def search_without_mode() -> None:
+        async with Client(mcp) as client:
+            with pytest.raises(
+                ToolError,
+                match=r"(?s)1 validation error for call\[search_sources\].*"
+                r"mode.*Missing required argument",
+            ):
+                await client.call_tool(
+                    "search_sources",
+                    {"trial_id": "trial", "query": "term"},
+                )
+
+    asyncio.run(search_without_mode())
 
 
 def test_current_batch_resource_matches_get_status_receipt(tmp_path: Path) -> None:

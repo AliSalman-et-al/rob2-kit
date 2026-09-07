@@ -102,7 +102,7 @@ def test_search_session_cursor_reuses_stable_ranking_after_derivative_restart(
     first = _call(
         workspace,
         "search_sources",
-        {"trial_id": "trial", "query": "alpha beta", "limit": 1},
+        {"trial_id": "trial", "query": "alpha beta", "mode": "any", "limit": 1},
     )["data"]
     assert first["next_cursor"]
     first_session = first["session_id"]
@@ -112,6 +112,7 @@ def test_search_session_cursor_reuses_stable_ranking_after_derivative_restart(
         {
             "trial_id": "trial",
             "query": "alpha beta",
+            "mode": "any",
             "limit": 2,
             "cursor": first["next_cursor"],
         },
@@ -130,6 +131,7 @@ def test_search_session_cursor_reuses_stable_ranking_after_derivative_restart(
         {
             "trial_id": "trial",
             "query": "alpha beta",
+            "mode": "any",
             "limit": 2,
             "cursor": first["next_cursor"],
         },
@@ -225,7 +227,7 @@ def test_search_pagination_is_page_size_independent_and_source_diverse(tmp_path:
         rows: list[tuple[int, str]] = []
         last: dict[str, object] = {}
         while True:
-            args = {"trial_id": "trial", "query": "needle", "limit": limit}
+            args = {"trial_id": "trial", "query": "needle", "mode": "any", "limit": limit}
             if cursor:
                 args["cursor"] = cursor
             last = _call(workspace, "search_sources", args)["data"]
@@ -242,7 +244,9 @@ def test_search_pagination_is_page_size_independent_and_source_diverse(tmp_path:
     assert last_one["truncated"] is False and last_one["exhausted"] is True
     assert last_five["truncated"] is False and last_ten["truncated"] is False
     first_two = _call(
-        workspace, "search_sources", {"trial_id": "trial", "query": "needle", "limit": 2}
+        workspace,
+        "search_sources",
+        {"trial_id": "trial", "query": "needle", "mode": "any", "limit": 2},
     )["data"]["hits"]
     assert len({hit["source_id"] for hit in first_two}) == 2
     assert [hit["rank"] for hit in first_two] == [1, 2]
@@ -274,18 +278,26 @@ def test_search_cursor_conditions_are_typed_and_source_scope_is_bound(tmp_path: 
     _call(workspace, "prepare_batch", {"requested_outcome": "outcome", "expected_revision": 0})
     sources = _call(workspace, "list_sources", {"trial_id": "trial"})["data"]["sources"]
     first = _call(
-        workspace, "search_sources", {"trial_id": "trial", "query": "needle", "limit": 1}
+        workspace,
+        "search_sources",
+        {"trial_id": "trial", "query": "needle", "mode": "any", "limit": 1},
     )["data"]
     stale = _call(
         workspace,
         "search_sources",
-        {"trial_id": "trial", "query": "different", "cursor": first["next_cursor"]},
+        {"trial_id": "trial", "query": "different", "mode": "any", "cursor": first["next_cursor"]},
     )
     assert stale["condition"]["code"] == "search_cursor_stale"
     scoped = _call(
         workspace,
         "search_sources",
-        {"trial_id": "trial", "query": "needle", "source_id": sources[0]["id"], "limit": 1},
+        {
+            "trial_id": "trial",
+            "query": "needle",
+            "mode": "any",
+            "source_id": sources[0]["id"],
+            "limit": 1,
+        },
     )["data"]
     mismatch = _call(
         workspace,
@@ -293,6 +305,7 @@ def test_search_cursor_conditions_are_typed_and_source_scope_is_bound(tmp_path: 
         {
             "trial_id": "trial",
             "query": "needle",
+            "mode": "any",
             "source_id": sources[-1]["id"],
             "cursor": scoped["next_cursor"],
         },
@@ -304,6 +317,7 @@ def test_search_cursor_conditions_are_typed_and_source_scope_is_bound(tmp_path: 
         {
             "trial_id": "trial",
             "query": "needle",
+            "mode": "any",
             "cursor": first["next_cursor"].rsplit("_", 1)[0] + "_999",
         },
     )
@@ -323,7 +337,7 @@ def test_search_candidate_identity_is_invariant_across_active_domains(tmp_path: 
     randomization = _call(
         workspace,
         "search_sources",
-        {"trial_id": "trial", "query": "requested outcome"},
+        {"trial_id": "trial", "query": "requested outcome", "mode": "any"},
     )["data"]
     saved = _call(
         workspace,
@@ -340,7 +354,7 @@ def test_search_candidate_identity_is_invariant_across_active_domains(tmp_path: 
     missing = _call(
         workspace,
         "search_sources",
-        {"trial_id": "trial", "query": "requested outcome"},
+        {"trial_id": "trial", "query": "requested outcome", "mode": "any"},
     )["data"]
     assert randomization["session_id"] == missing["session_id"]
     assert [hit["passage_ref"] for hit in randomization["hits"]] == [
@@ -461,7 +475,7 @@ def test_search_interleaves_sources_then_uses_fts_bm25_within_source(
     result = _call(
         workspace,
         "search_sources",
-        {"trial_id": "trial", "query": "alpha beta", "limit": 4},
+        {"trial_id": "trial", "query": "alpha beta", "mode": "any", "limit": 4},
     )
     pairs = [(item["source_id"], item["page"]) for item in result["data"]["hits"]]
     assert pairs == [
@@ -522,7 +536,7 @@ def test_search_reserves_one_hit_per_matching_source_within_limit(tmp_path: Path
     result = _call(
         workspace,
         "search_sources",
-        {"trial_id": "trial", "query": "alpha beta", "limit": 2},
+        {"trial_id": "trial", "query": "alpha beta", "mode": "any", "limit": 2},
     )
     pairs = [(hit["source_id"], hit["page"]) for hit in result["data"]["hits"]]
 
@@ -551,7 +565,7 @@ def test_search_reserves_one_hit_per_matching_source_within_limit(tmp_path: Path
     limited = _call(
         workspace,
         "search_sources",
-        {"trial_id": "trial", "query": "alpha beta", "limit": 1},
+        {"trial_id": "trial", "query": "alpha beta", "mode": "any", "limit": 1},
     )
     assert len(limited["data"]["hits"]) == 1
     assert limited["data"]["hits"][0]["source_id"] == article_source["id"]
@@ -599,7 +613,7 @@ def test_search_replays_bm25_order_from_the_selected_trial_only(tmp_path: Path) 
     result = _call(
         workspace,
         "search_sources",
-        {"trial_id": "trial", "query": "alpha beta"},
+        {"trial_id": "trial", "query": "alpha beta", "mode": "any"},
     )
     assert result["outcome"] == "success"
     pairs = [(hit["source_id"], hit["page"]) for hit in result["data"]["hits"]]
@@ -989,7 +1003,7 @@ def test_search_source_scope_preserves_broad_order_and_receipt_auditability(
     broad = _call(
         workspace,
         "search_sources",
-        {"trial_id": "trial", "query": "randomization", "limit": 1},
+        {"trial_id": "trial", "query": "randomization", "mode": "any", "limit": 1},
     )
     assert broad["data"]["total_matches"] == 3
     assert broad["data"]["truncated"] is True
@@ -1001,6 +1015,7 @@ def test_search_source_scope_preserves_broad_order_and_receipt_auditability(
         {
             "trial_id": "trial",
             "query": "randomization",
+            "mode": "any",
             "source_id": protocol_source["id"],
             "limit": 1,
         },
@@ -1038,6 +1053,7 @@ def test_search_source_scope_preserves_broad_order_and_receipt_auditability(
         {
             "trial_id": "trial",
             "query": "randomization",
+            "mode": "any",
             "source_id": protocol_source["id"],
             "limit": 1,
         },
@@ -1050,6 +1066,7 @@ def test_search_source_scope_preserves_broad_order_and_receipt_auditability(
         {
             "trial_id": "trial",
             "query": "randomization",
+            "mode": "any",
             "source_id": "source_" + "0" * 64,
         },
     )
@@ -1063,6 +1080,7 @@ def test_search_source_scope_preserves_broad_order_and_receipt_auditability(
         {
             "trial_id": "trial",
             "query": "randomization",
+            "mode": "any",
             "source_id": foreign_source["id"],
         },
     )

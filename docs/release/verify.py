@@ -298,6 +298,7 @@ async def _verify_stdio_domains(
             {
                 "trial_id": "trial",
                 "query": f"release acceptance absent {domain_id.replace(':', ' ')}",
+                "mode": "all",
             },
         )
         search_data = searched.get("data")

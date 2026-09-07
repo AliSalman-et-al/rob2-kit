@@ -31,11 +31,6 @@ standalone_normalized_contains = runpy.run_path("scripts/verify_bundle.py")["_no
 
 
 def _call(workspace: Path, tool: str, arguments: dict[str, object]) -> dict[str, Any]:
-    # The v0.5 public MCP boundary requires lexical intent. Keep older black-box
-    # fixtures readable by making their historical exploratory calls explicit.
-    if tool == "search_sources" and "mode" not in arguments:
-        arguments = {**arguments, "mode": "any"}
-
     async def invoke() -> dict[str, Any]:
         os.environ["ROB2_WORKSPACE"] = str(workspace)
         async with Client(mcp) as client:
@@ -281,7 +276,7 @@ def _absence_assessed_artifact(workspace: Path) -> Path:
             _call(
                 workspace,
                 "search_sources",
-                {"trial_id": "trial", "query": f"no-hit-{domain.id}"},
+                {"trial_id": "trial", "query": f"no-hit-{domain.id}", "mode": "any"},
             )["data"]["search_receipt"],
         )
         draft = _domain_draft("trial", domain.id, revision, evidence)

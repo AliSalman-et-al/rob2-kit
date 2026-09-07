@@ -221,6 +221,63 @@ def test_domain_query_suggestions_include_executable_alternative_wording(tmp_pat
     )
 
 
+def test_domain_query_suggestions_execute_alternative_wording_after_exact_no_hit(
+    tmp_path: Path,
+) -> None:
+    workspace = _workspace(tmp_path)
+    (workspace / "input" / "trial" / "main.txt").write_text(
+        "The requested outcome was not reported; only an alternate endpoint was measured. "
+        "death ascertainment; end of follow-up; assigned to intervention; assigned to control; "
+        "randomized population; risk ratio; The requested outcome was measured in the analyzed "
+        "population.; risk; 1; events; 2. The intent-to-treat analysis included all randomized "
+        "patients.\n",
+        encoding="utf-8",
+    )
+    evidence = _prepared_evidence(workspace)
+    _call(workspace, "save_proposal", _proposal_args(workspace, [_result(evidence)]))
+    _review(workspace)
+    revision = int(_call(workspace, "get_domain_context", {})["head"]["state_revision"])
+    first_domain = SCIENTIFIC_PACK.domains[0].id
+    saved = _call(
+        workspace,
+        "save_domain_judgment",
+        _domain_draft("trial", first_domain, revision, evidence),
+    )
+    assert saved["outcome"] == "success"
+
+    context = _call(workspace, "get_domain_context", {})["data"]
+    question = next(
+        item for item in context["questions"] if item["id"] == "sq:deviations:appropriate-analysis"
+    )
+    suggestions = question["query_suggestions"]
+    exact = next(item for item in suggestions if item["query"] == "intention-to-treat")
+    alternative = next(item for item in suggestions if item["query"] == "intent-to-treat")
+
+    no_hit = _call(
+        workspace,
+        "search_sources",
+        {"trial_id": "trial", "query": exact["query"], "mode": exact["mode"]},
+    )
+    assert no_hit["outcome"] == "success"
+    assert no_hit["data"]["condition"] == "no_hits"
+
+    visible = _call(
+        workspace,
+        "search_sources",
+        {"trial_id": "trial", "query": alternative["query"], "mode": alternative["mode"]},
+    )
+    assert visible["outcome"] == "success"
+    assert visible["data"]["hits"]
+
+    refreshed = _call(workspace, "get_domain_context", {})["data"]
+    refreshed_question = next(
+        item
+        for item in refreshed["questions"]
+        if item["id"] == "sq:deviations:appropriate-analysis"
+    )
+    assert refreshed_question["query_suggestions"] == suggestions
+
+
 def test_unsupported_result_leaves_are_aggregated_repairs(tmp_path: Path) -> None:
     workspace = _workspace(tmp_path)
     evidence = _prepared_evidence(workspace)
@@ -391,15 +448,21 @@ def test_search_receipts_are_verified_disposable_derivatives(tmp_path: Path) -> 
         {"requested_outcome": "requested outcome", "expected_revision": 0},
     )
     COUNTERS["extraction_calls"] = 0
-    hit = _call(workspace, "search_sources", {"trial_id": "trial", "query": "requested"})
-    retry = _call(workspace, "search_sources", {"trial_id": "trial", "query": "requested"})
+    hit = _call(
+        workspace, "search_sources", {"trial_id": "trial", "query": "requested", "mode": "any"}
+    )
+    retry = _call(
+        workspace, "search_sources", {"trial_id": "trial", "query": "requested", "mode": "any"}
+    )
     assert hit["data"]["hits"][0]["source_role"] == "other"
     assert hit["data"]["hits"][0]["source_label"] == "main.txt"
     assert (
         _search_receipt(workspace, hit["data"]["search_receipt"])["identity"]
         == _search_receipt(workspace, retry["data"]["search_receipt"])["identity"]
     )
-    no_hit = _call(workspace, "search_sources", {"trial_id": "trial", "query": "absent"})
+    no_hit = _call(
+        workspace, "search_sources", {"trial_id": "trial", "query": "absent", "mode": "any"}
+    )
     changed = _call(
         workspace, "search_sources", {"trial_id": "trial", "query": "requested", "mode": "all"}
     )
@@ -415,7 +478,9 @@ def test_search_receipts_are_verified_disposable_derivatives(tmp_path: Path) -> 
         _search_receipt(workspace, "sr_" + "0" * 16)
     derivative = workspace / ".rob2-kit" / "derivative.sqlite3"
     derivative.unlink()
-    rebuilt = _call(workspace, "search_sources", {"trial_id": "trial", "query": "requested"})
+    rebuilt = _call(
+        workspace, "search_sources", {"trial_id": "trial", "query": "requested", "mode": "any"}
+    )
     assert (
         _search_receipt(workspace, rebuilt["data"]["search_receipt"])["identity"]
         == _search_receipt(workspace, hit["data"]["search_receipt"])["identity"]
