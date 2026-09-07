@@ -9,9 +9,10 @@ import pytest
 from fastmcp import Client
 from mcp import types as mcp_types
 from pydantic import ValidationError
-from support.rob2 import _assessment_workspace
+from support.rob2 import _assessment_workspace, _call
 
 import rob2_kit.application.domains as domain_application
+from rob2_kit.application._state import _commit, _identity, _state
 from rob2_kit.application.domains import (
     _DOMAIN_RECOVERABLE_NARRATIVE_TEXT_BUDGET,
     _compact_domain_evidence,
@@ -49,7 +50,7 @@ def _wire_context(workspace: Path) -> tuple[dict, str]:
 
 def test_domain_context_text_is_compact_and_ordered(tmp_path: Path) -> None:
     workspace, _evidence, _revision = _assessment_workspace(tmp_path)
-    context, text = _wire_context(workspace)
+    context, _text = _wire_context(workspace)
     data = context["data"]
     keys = list(data)
     assert keys.index("result") < keys.index("questions") < keys.index("evidence")
@@ -60,7 +61,6 @@ def test_domain_context_text_is_compact_and_ordered(tmp_path: Path) -> None:
         data["evidence_workspace"]["recoverable_narrative_text_bytes"]
         <= _DOMAIN_RECOVERABLE_NARRATIVE_TEXT_BUDGET
     )
-    assert len(text.encode("utf-8")) > 0
 
 
 def test_oversized_narrative_has_exact_read_recovery_and_utf8_accounting() -> None:
@@ -286,6 +286,8 @@ def test_narrative_projection_requires_matching_text_and_recovery_state() -> Non
         **complete,
         "quote": None,
         "text_status": "omitted",
+        "start_line": 12,
+        "end_line": 80,
         "recovery": {
             "operation": "read_pages",
             "trial_id": "trial",
@@ -302,7 +304,7 @@ def test_narrative_projection_requires_matching_text_and_recovery_state() -> Non
     DomainNarrativeEvidence.model_validate(omitted)
 
 
-def test_narrative_projection_rejects_missing_recovery_coordinates() -> None:
+def test_complete_legacy_narrative_allows_missing_coordinates_but_recovery_is_exact() -> None:
     incomplete = {
         "kind": "narrative",
         "handle": "eh_0123456789abcdef",
@@ -313,8 +315,70 @@ def test_narrative_projection_rejects_missing_recovery_coordinates() -> None:
         "quote": "exact text",
         "text_status": "complete",
     }
+    DomainNarrativeEvidence.model_validate(incomplete)
     with pytest.raises(ValidationError):
-        DomainNarrativeEvidence.model_validate(incomplete)
+        DomainNarrativeEvidence.model_validate(
+            {
+                **incomplete,
+                "quote": None,
+                "text_status": "omitted",
+                "start_line": 12,
+                "end_line": 80,
+                "recovery": {
+                    "operation": "read_pages",
+                    "trial_id": "trial",
+                    "windows": [
+                        {
+                            "source_id": incomplete["source_id"],
+                            "page": 3,
+                            "start_line": 1,
+                            "end_line": 80,
+                        }
+                    ],
+                },
+            }
+        )
+
+
+def test_domain_context_accepts_legacy_complete_narrative_without_coordinates(
+    tmp_path: Path,
+) -> None:
+    workspace, evidence, _revision = _assessment_workspace(tmp_path)
+    state = _state(workspace)
+    stored = next(
+        item
+        for item in state["proposal"]["evidence"].values()
+        if item["handle"] == evidence["handle"]
+    )
+    stored.pop("start_line")
+    stored.pop("end_line")
+    state["proposal"]["identity"] = _identity(state["proposal"]["payload"])
+    _commit(workspace, state, int(state["revision"]))
+
+    context = _call(workspace, "get_domain_context", {})["data"]
+    projected = next(item for item in context["evidence"] if item["handle"] == evidence["handle"])
+    assert projected["text_status"] == "complete"
+    assert projected["quote"] == evidence["quote"]
+    assert projected["start_line"] is None
+    assert projected["end_line"] is None
+
+
+def test_domain_context_projects_derived_result_evidence(tmp_path: Path) -> None:
+    workspace, evidence, _revision = _assessment_workspace(tmp_path)
+    state = _state(workspace)
+    result = state["proposal"]["payload"]["results"][0]
+    derived = {
+        "kind": "derived",
+        "operation": "sum",
+        "inputs": [{"handle": evidence["handle"], "value": "1"}],
+        "value": "1",
+    }
+    result["evidence"].append(derived)
+    state["proposal"]["identity"] = _identity(state["proposal"]["payload"])
+    _commit(workspace, state, int(state["revision"]))
+
+    context = _call(workspace, "get_domain_context", {})["data"]
+    assert context["result"]["evidence"][-1] == derived
 
 
 def test_public_boundary_exposes_executable_narrative_recovery(monkeypatch, tmp_path: Path) -> None:

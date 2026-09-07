@@ -687,8 +687,11 @@ class DomainNarrativeEvidence(PublicModel):
     trial_id: TrialId
     source_id: SourceId
     page: PageNumber
-    start_line: PageNumber
-    end_line: PageNumber
+    # Canonical Evidence from older checkpoints may have a complete quote but
+    # no line coordinates.  Coordinates are required only when text is omitted
+    # and the model needs to execute read_pages recovery.
+    start_line: PageNumber | None = None
+    end_line: PageNumber | None = None
     start: NonNegativeInt | None = None
     end: NonNegativeInt | None = None
     quote: str | None = Field(default=None, min_length=1)
@@ -718,6 +721,19 @@ class DomainNarrativeEvidence(PublicModel):
                 raise ValueError("omitted narrative text requires recovery and no quote")
             if self.recovery.operation != "read_pages":
                 raise ValueError("omitted narrative text requires read_pages recovery")
+            if self.start_line is None or self.end_line is None:
+                raise ValueError("omitted narrative text requires exact line coordinates")
+            if len(self.recovery.windows) != 1:
+                raise ValueError("omitted narrative text requires one exact recovery window")
+            window = self.recovery.windows[0]
+            if (
+                self.recovery.trial_id != self.trial_id
+                or window.source_id != self.source_id
+                or window.page != self.page
+                or window.start_line != self.start_line
+                or window.end_line != self.end_line
+            ):
+                raise ValueError("recovery window does not match narrative coordinates")
         elif self.quote is None or self.recovery is not None:
             raise ValueError("complete narrative text requires a quote and no recovery")
         return self
@@ -732,9 +748,15 @@ DomainEvidence = Annotated[
 class DomainResultEvidenceReference(PublicModel):
     """The compact Evidence identity needed while answering a Domain."""
 
-    kind: Literal["narrative", "table", "figure", "derived"]
+    kind: Literal["narrative", "table", "figure"]
     handle: str = Field(pattern=r"^eh_[0-9a-f]{16}$")
     identity: Identity
+
+
+DomainResultEvidence = Annotated[
+    DomainResultEvidenceReference | DomainDerivedEvidence,
+    Field(discriminator="kind"),
+]
 
 
 class DomainCategoryProfileResult(PublicModel):
@@ -762,7 +784,7 @@ class DomainAssessableResult(PublicModel):
         Field(discriminator="form"),
     ]
     clarity: ResultClarity
-    evidence: tuple[DomainResultEvidenceReference, ...] = Field(min_length=1)
+    evidence: tuple[DomainResultEvidence, ...] = Field(min_length=1)
 
 
 DomainResultChoice = Annotated[
@@ -819,7 +841,17 @@ class EvidenceWorkspace(PublicModel):
     groups: tuple[EvidenceWorkspaceGroup, ...]
     omitted_count: NonNegativeInt = 0
     omitted_by_category: OmittedEvidenceCounts = OmittedEvidenceCounts()
-    continuation: EvidenceContinuation | None = None
+    continuation: EvidenceContinuation | None = Field(
+        default=None,
+        description="Backward-compatible alias for the first executable recovery action.",
+    )
+    continuations: tuple[EvidenceContinuation, ...] = Field(
+        default=(),
+        description=(
+            "All executable recovery actions, in deterministic order. This collection is "
+            "authoritative when more than one search session or read-pages chunk is omitted."
+        ),
+    )
     recoverable_narrative_text_budget: NonNegativeInt = Field(
         default=12_288,
         description=(

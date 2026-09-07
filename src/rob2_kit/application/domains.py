@@ -1393,7 +1393,9 @@ def get_domain_context(
         }
     )
     handles = {
-        item.get("handle") for item in (result or {}).get("evidence", []) if isinstance(item, dict)
+        item.get("handle")
+        for item in (result or {}).get("evidence", [])
+        if isinstance(item, dict) and isinstance(item.get("handle"), str)
     }
     result_handles = {
         item.get("handle")
@@ -1552,7 +1554,7 @@ def get_domain_context(
         for item in catalog.values()
         if isinstance(item, dict) and item.get("identity") in checkpoint_identities
     }
-    contradiction_handles = {
+    contradiction_identities = {
         basis.get("evidence")
         for answer in checkpoint_answers
         for basis in answer.get("bases", [])
@@ -1566,7 +1568,7 @@ def get_domain_context(
         handle = value.get("handle")
         if handle in result_handles:
             value.setdefault("inclusion_reason", "result")
-        elif handle in contradiction_handles:
+        elif value.get("identity") in contradiction_identities:
             value.setdefault("inclusion_reason", "contradiction")
         elif handle in canonical_handles:
             value.setdefault("inclusion_reason", "checkpoint")
@@ -1602,15 +1604,17 @@ def get_domain_context(
                     if isinstance(evidence_identity, str):
                         questions_by_evidence.setdefault(evidence_identity, set()).add(question_id)
 
-    evidence_continuation = _search_continuation(
+    evidence_continuations: list[dict[str, Any]] = []
+    search_continuations = _search_continuation(
         root,
         trial_id,
         domain_id,
         included_candidate_ranks,
         projection_budget,
     )
-    if evidence_continuation is None and omitted_explicit:
-        windows = []
+    evidence_continuations.extend(search_continuations)
+    if omitted_explicit:
+        windows: list[dict[str, Any]] = []
         seen_windows: set[tuple[str, int, int, int]] = set()
         for value in omitted_explicit:
             source_id = value.get("source_id")
@@ -1637,13 +1641,23 @@ def get_domain_context(
                 }
             )
             if len(windows) == 20:
-                break
+                evidence_continuations.append(
+                    {
+                        "operation": "read_pages",
+                        "trial_id": trial_id,
+                        "windows": windows,
+                    }
+                )
+                windows = []
         if windows:
-            evidence_continuation = {
-                "operation": "read_pages",
-                "trial_id": trial_id,
-                "windows": windows,
-            }
+            evidence_continuations.append(
+                {
+                    "operation": "read_pages",
+                    "trial_id": trial_id,
+                    "windows": windows,
+                }
+            )
+    evidence_continuation = evidence_continuations[0] if evidence_continuations else None
     workspace_groups = []
     for reason in (
         "result",
@@ -1698,6 +1712,9 @@ def get_domain_context(
         references = []
         for evidence_item in value.get("evidence", []):
             if not isinstance(evidence_item, dict):
+                continue
+            if evidence_item.get("kind") == "derived":
+                references.append(dict(evidence_item))
                 continue
             handle = evidence_item.get("handle")
             selected = next(
@@ -1803,6 +1820,7 @@ def get_domain_context(
             "omitted_count": omitted_evidence_count,
             "omitted_by_category": omitted_by_category,
             "continuation": evidence_continuation,
+            "continuations": evidence_continuations,
         },
         "comparison_cards": _comparison_cards(
             domain_id,

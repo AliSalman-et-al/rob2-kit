@@ -462,9 +462,9 @@ def search_sources(
 )
 def read_pages(
     trial_id: Annotated[
-        TrialId | None,
+        TrialId,
         Field(description="Captured Trial that owns the Source pages; required for every read."),
-    ] = None,
+    ],
     source_id: Annotated[
         SourceId | None, Field(description="Source ID for a single-source read.")
     ] = None,
@@ -957,9 +957,10 @@ async def request_proposal_approval(ctx: Context) -> ToolResult:
         "Read the approved Result, current checkpoint, Evidence workspace, comparison cards, "
         "and questions for a Domain. Question cards contain scientific guidance, activation "
         "predicates, server-issued answer options, and executable search suggestions. "
-        "Choose wording "
-        "from inspected Sources. If Evidence text is omitted, call read_pages with "
-        "recovery.trial_id and recovery.windows. Use the returned revision and option IDs when "
+        "Choose wording from inspected Sources. If complete passage text is unfamiliar or "
+        "uncertain after a restart or context compaction, and Evidence text is omitted, call "
+        "read_pages with recovery.trial_id and recovery.windows. Use the returned revision and "
+        "option IDs when "
         "saving active answers."
     ),
     annotations=_READ_ONLY,

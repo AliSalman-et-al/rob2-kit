@@ -1585,8 +1585,9 @@ def _search_continuation(
     domain_id: str,
     included: set[tuple[str, int]],
     limit: int,
-) -> dict[str, Any] | None:
-    """Return one fully bound action that starts at an omitted candidate."""
+) -> list[dict[str, Any]]:
+    """Return one fully bound action for each session with omitted candidates."""
+    continuations: list[dict[str, Any]] = []
     with _db(root, "derivative.sqlite3") as connection:
         rows = connection.execute(
             "SELECT session_identity,rank FROM search_domain_associations "
@@ -1657,16 +1658,18 @@ def _search_continuation(
         )
         if offset is None:
             raise ValueError("search session candidate is corrupt")
-        return {
-            "operation": "search_sources",
-            "trial_id": spec["trial_id"],
-            "query": spec["query"],
-            "mode": spec["mode"],
-            "source_id": source_id,
-            "limit": limit,
-            "cursor": _cursor_handle(session_identity, offset),
-        }
-    return None
+        continuations.append(
+            {
+                "operation": "search_sources",
+                "trial_id": spec["trial_id"],
+                "query": spec["query"],
+                "mode": spec["mode"],
+                "source_id": source_id,
+                "limit": limit,
+                "cursor": _cursor_handle(session_identity, offset),
+            }
+        )
+    return continuations
 
 
 def _validate_selected_evidence(

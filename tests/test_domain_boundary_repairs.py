@@ -479,12 +479,56 @@ def test_domain_context_continuation_reaches_omissions_across_sessions(tmp_path:
     evidence_workspace = context["evidence_workspace"]
     assert evidence_workspace["omitted_count"] == 2
     assert evidence_workspace["omitted_by_category"]["active_domain_candidate"] == 2
+    actions = evidence_workspace["continuations"]
+    assert len(actions) == 2
+    assert {action["query"] for action in actions} == {"alpha candidate", "beta candidate"}
     action = evidence_workspace["continuation"]
-    assert action is not None
+    assert action == actions[0]
 
-    continued = _call(workspace, action.pop("operation"), action)
-    assert continued["outcome"] == "success", continued
-    assert continued["data"]["hits"]
+    for action in actions:
+        arguments = dict(action)
+        continued = _call(workspace, arguments.pop("operation"), arguments)
+        assert continued["outcome"] == "success", continued
+        assert continued["data"]["hits"]
+
+
+def test_saved_contradiction_is_projected_in_contradiction_group(tmp_path: Path) -> None:
+    workspace = _workspace(tmp_path)
+    main = workspace / "input" / "trial" / "main.txt"
+    main.write_text(main.read_text(encoding="utf-8") + "Contradictory report.\n", encoding="utf-8")
+    result_evidence = _prepared_evidence(workspace)
+    _call(workspace, "save_proposal", _proposal_args(workspace, [_result(result_evidence)]))
+    _review(workspace)
+    source = _call(workspace, "list_sources", {"trial_id": "trial"})["data"]["sources"][0]
+    contradiction = _call(
+        workspace,
+        "select_text_evidence",
+        {
+            "trial_id": "trial",
+            "source_id": source["id"],
+            "page": 1,
+            "start_line": 2,
+            "end_line": 2,
+        },
+    )["data"]["evidence"]
+    revision = int(_call(workspace, "get_domain_context", {})["head"]["state_revision"])
+    draft = _domain_draft("trial", "domain:randomization", revision, contradiction)
+    for answer in draft["answers"]:
+        answer["bases"][0]["kind"] = "contradiction"
+    saved = _call(workspace, "save_domain_judgment", draft)
+    assert saved["outcome"] == "success", saved
+
+    context = _call(
+        workspace,
+        "get_domain_context",
+        {"trial_id": "trial", "domain_id": "domain:randomization"},
+    )["data"]
+    group = next(
+        item
+        for item in context["evidence_workspace"]["groups"]
+        if item["inclusion_reason"] == "contradiction"
+    )
+    assert group["evidence_handles"] == [contradiction["handle"]]
 
 
 def test_domain_context_continuation_reaches_unreturned_session_candidates(
@@ -534,7 +578,7 @@ def test_explicit_carry_forward_has_budget_priority_and_exact_read_continuation(
     workspace = _workspace(tmp_path)
     extra = workspace / "input" / "trial" / "explicit.txt"
     extra.write_text(
-        "".join(f"explicit evidence {index}\n" for index in range(65)), encoding="utf-8"
+        "".join(f"explicit evidence {index}\n" for index in range(130)), encoding="utf-8"
     )
     proposal_evidence = _prepared_evidence(workspace)
     _call(workspace, "save_proposal", _proposal_args(workspace, [_result(proposal_evidence)]))
@@ -544,7 +588,7 @@ def test_explicit_carry_forward_has_budget_priority_and_exact_read_continuation(
         for item in _call(workspace, "list_sources", {"trial_id": "trial"})["data"]["sources"]
         if item["label"] == "explicit.txt"
     )
-    for line in range(1, 66):
+    for line in range(1, 131):
         selected = _call(
             workspace,
             "select_text_evidence",
@@ -566,7 +610,8 @@ def test_explicit_carry_forward_has_budget_priority_and_exact_read_continuation(
         if group["inclusion_reason"] == "explicit_carry_forward"
     )
     assert len(explicit["evidence_handles"]) == 64
-    assert workspace_data["omitted_by_category"]["explicit_carry_forward"] == 1
+    assert workspace_data["omitted_by_category"]["explicit_carry_forward"] == 66
+    assert [len(item["windows"]) for item in workspace_data["continuations"]] == [20, 20, 20, 6]
     action = dict(workspace_data["continuation"])
     assert action["operation"] == "read_pages"
     assert action["windows"][0]["start_line"] == 65
