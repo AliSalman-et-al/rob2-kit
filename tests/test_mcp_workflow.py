@@ -143,6 +143,7 @@ def test_domain_questions_include_typed_premise_rules_and_shortcuts(tmp_path: Pa
         "no_information_rule",
         "considerations",
         "invalid_shortcuts",
+        "query_suggestions",
     }
     assert all(set(question) == compact_fields for question in questions.values())
     for question_id, shortcut in expected.items():
@@ -173,6 +174,10 @@ def test_domain_questions_include_typed_premise_rules_and_shortcuts(tmp_path: Pa
         assert pack_question.guidance.operational.invalid_shortcuts == tuple(
             question["invalid_shortcuts"]
         )
+        assert tuple(question["query_suggestions"]) == tuple(
+            item.model_dump(mode="json")
+            for item in pack_question.guidance.operational.query_suggestions
+        )
     for question_id, marker in fidelity_markers.items():
         guidance = questions[question_id]
         assert marker.lower() in guidance["official_guidance"].lower()
@@ -183,6 +188,37 @@ def test_domain_questions_include_typed_premise_rules_and_shortcuts(tmp_path: Pa
             ).allowed_answers
         }
         assert all(option["official_answer"] in allowed for option in guidance["options"])
+
+
+def test_domain_query_suggestions_include_executable_alternative_wording(tmp_path: Path) -> None:
+    workspace, evidence, revision = _assessment_workspace(tmp_path)
+    first_domain = SCIENTIFIC_PACK.domains[0].id
+    saved = _call(
+        workspace,
+        "save_domain_judgment",
+        _domain_draft("trial", first_domain, revision, evidence),
+    )
+    assert saved["outcome"] == "success"
+    context = _call(workspace, "get_domain_context", {})["data"]
+    question = next(
+        item for item in context["questions"] if item["id"] == "sq:deviations:appropriate-analysis"
+    )
+    suggestions = question["query_suggestions"]
+    assert all(
+        item["query"] and item["mode"] in {"all", "phrase", "any", "prefix"} for item in suggestions
+    )
+    assert {item["query"] for item in suggestions} >= {
+        "intention-to-treat",
+        "all randomized patients",
+    }
+    assert (
+        next(item for item in suggestions if item["query"] == "intention-to-treat")["mode"]
+        == "phrase"
+    )
+    assert (
+        next(item for item in suggestions if item["query"] == "all randomized patients")["mode"]
+        == "all"
+    )
 
 
 def test_unsupported_result_leaves_are_aggregated_repairs(tmp_path: Path) -> None:

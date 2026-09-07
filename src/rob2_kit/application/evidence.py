@@ -140,6 +140,65 @@ def _find_source(root: Path, trial_id: str, source_id: str) -> dict[str, Any]:
     return _verified_source_projections(root, {(trial_id, source_id)})[(trial_id, source_id)][0]
 
 
+def _broad_search_diagnostic(
+    *,
+    trial_id: str,
+    normalized_query: str,
+    mode: str,
+    source_id: str | None,
+    limit: int,
+    total_matches: int,
+    candidate_count: int,
+    returned_count: int,
+    truncated: bool,
+    next_cursor: str | None,
+) -> dict[str, Any] | None:
+    """Describe only observable breadth/truncation facts and one next call."""
+
+    terms = tuple(term for term in normalized_query.split() if term)
+    if mode != "any" or not truncated or not total_matches:
+        return None
+    if len(terms) > 1:
+        action = {
+            "kind": "refine",
+            "operation": "search_sources",
+            "trial_id": trial_id,
+            "query": normalized_query,
+            "mode": "all",
+            "source_id": source_id,
+            "limit": limit,
+            "cursor": None,
+        }
+        detail = (
+            "This multi-term any search is broad and truncated; refine with all to require "
+            "every normalized term on a page, then inspect the returned hits."
+        )
+    else:
+        action = {
+            "kind": "continue",
+            "operation": "search_sources",
+            "trial_id": trial_id,
+            "query": normalized_query,
+            "mode": "any",
+            "source_id": source_id,
+            "limit": limit,
+            "cursor": next_cursor,
+        }
+        detail = (
+            "This any search is truncated; continue the issued cursor before drawing a "
+            "conclusion from the displayed ranking."
+        )
+    return {
+        "code": "broad_any_truncated",
+        "normalized_term_count": len(terms),
+        "total_matches": total_matches,
+        "candidate_count": candidate_count,
+        "returned_count": returned_count,
+        "detail": detail,
+        "next_action": action,
+    }
+
+
 def search_sources(
     workspace: str | Path,
     trial_id: str,
@@ -151,6 +210,7 @@ def search_sources(
 ) -> dict[str, Any]:
     root = _root(workspace)
     _ensure(root)
+    requested_source_id = source_id
     normalized_query = _canonical_query_text(query)
     terms = [term for term in normalized_query.split() if term]
     if not terms:
@@ -232,6 +292,8 @@ def search_sources(
         return {
             "outcome": "success",
             "hits": [],
+            "query": query,
+            "mode": mode,
             "total_matches": 0,
             "truncated": False,
             "condition": "no_hits",
@@ -245,6 +307,7 @@ def search_sources(
             "returned_rank_end": None,
             "next_cursor": None,
             "exhausted": True,
+            "diagnostic": None,
         }
     ordered_sources = _ordered_sources(sources)
     ordered_source_ids = [str(source["id"]) for source in ordered_sources]
@@ -474,9 +537,23 @@ def search_sources(
             "INSERT OR REPLACE INTO search_receipts VALUES (?,?)",
             (receipt["identity"], canonical_json_bytes(receipt)),
         )
+    diagnostic = _broad_search_diagnostic(
+        trial_id=trial_id,
+        normalized_query=" ".join(terms),
+        mode=mode,
+        source_id=requested_source_id,
+        limit=bounded_limit,
+        total_matches=total_matches,
+        candidate_count=len(candidates),
+        returned_count=len(selected_candidates),
+        truncated=candidate_truncated,
+        next_cursor=receipt["next_cursor"],
+    )
     return {
         "outcome": "success",
         "hits": hits,
+        "query": query,
+        "mode": mode,
         "total_matches": total_matches,
         "truncated": candidate_truncated,
         "condition": condition,
@@ -490,6 +567,7 @@ def search_sources(
         "returned_rank_end": receipt["returned_rank_end"],
         "next_cursor": receipt["next_cursor"],
         "exhausted": receipt["exhausted"],
+        "diagnostic": diagnostic,
     }
 
 

@@ -26,6 +26,9 @@ from rob2_kit.interfaces.mcp.server import mcp
 def _wire_call(
     workspace: Path, tool: str, arguments: dict[str, object]
 ) -> mcp_types.CallToolResult:
+    if tool == "search_sources" and "mode" not in arguments:
+        arguments = {**arguments, "mode": "any"}
+
     async def invoke() -> mcp_types.CallToolResult:
         previous_workspace = os.environ.get("ROB2_WORKSPACE")
         try:

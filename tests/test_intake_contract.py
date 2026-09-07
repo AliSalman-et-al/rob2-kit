@@ -639,8 +639,8 @@ def test_assessment_skill_preserves_result_choice_and_completion_guards() -> Non
     assert "`ready_to_finalize` is not completion" in instructions
     assert "`probably_no` or `no`" in instructions
     assert "Do not fabricate direct support" in instructions
-    assert "Select the option whose literal meaning answers the exact question" in instructions
-    assert "add a confirmation round trip" in instructions
+    assert "Choose the option whose literal meaning follows from those passages" in instructions
+    assert "progress confirmation" in instructions
     assert "Was allocation concealed until participants were enrolled and assigned?" in instructions
 
     terminal_description = _tool_description("request_trial_terminal")
@@ -704,6 +704,8 @@ def test_search_contract_exposes_match_summary_and_render_defaults_to_pixels() -
     assert "truncated" in data_objects[0]["properties"]
     assert set(data_objects[0]["properties"]) == {
         "hits",
+        "query",
+        "mode",
         "total_matches",
         "truncated",
         "condition",
@@ -717,6 +719,7 @@ def test_search_contract_exposes_match_summary_and_render_defaults_to_pixels() -
         "returned_rank_end",
         "next_cursor",
         "exhausted",
+        "diagnostic",
     }
     hit_schema = data_objects[0]["properties"]["hits"]["items"]
     assert set(hit_schema["properties"]) == {
@@ -735,7 +738,7 @@ def test_search_contract_exposes_match_summary_and_render_defaults_to_pixels() -
     assert data_objects[0]["properties"]["search_receipt"]["pattern"] == r"^sr_[0-9a-f]{16}$"
     search_description = _tool_description("search_sources")
     assert "counts" in search_description
-    assert "refine truncated searches" in search_description.lower()
+    assert "broad truncated any" in search_description.lower()
     render_schema = _tool_schema("render_page")
     assert render_schema["properties"]["inline"]["default"] is True
     assert "pixels as ImageContent by default" in _tool_description("render_page")

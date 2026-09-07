@@ -343,11 +343,14 @@ def list_sources(
     name="search_sources",
     title="Search Trial sources",
     description=(
-        "Search captured source pages (1-based source indexes). Omitted mode is exploratory any. "
-        "Required: trial_id, query. Optional: source_id, mode, limit, cursor. Returns a "
+        "Search captured source pages (1-based source indexes). Required: trial_id, query, mode. "
+        "Choose all for every token, phrase for known contiguous wording, any for broad OR "
+        "discovery, or prefix for token-prefix matching. Optional: source_id, limit, cursor. "
+        "Returns a "
         "bounded first batch with a stable session, counts, truncation, and opaque receipt; "
         "continue with next_cursor for the same ranking. Valid no-hit searches are returned; "
-        "refine truncated searches before absence."
+        "a broad truncated any response includes observable refinement advice; it is not a "
+        "scientific conclusion."
     ),
     annotations=_READ_ONLY,
     output_schema=output_schema("search_sources"),
@@ -361,24 +364,25 @@ def search_sources(
         Field(
             min_length=1,
             description="Concept or wording to search; must be non-empty.",
-            examples=["random sequence allocation concealment"],
+            examples=["central randomization"],
+        ),
+    ],
+    mode: Annotated[
+        Literal["all", "phrase", "any", "prefix"],
+        Field(
+            description=(
+                "Required lexical intent: all=every token on one page; phrase=known contiguous "
+                "wording; any=one token for broad discovery; prefix=token prefix."
+            )
         ),
     ],
     source_id: Annotated[
         SourceId | None,
         Field(description="Optional Source ID; omit for all Trial sources in priority order."),
     ] = None,
-    mode: Annotated[
-        Literal["all", "phrase", "any", "prefix"],
-        Field(
-            description=(
-                "Omit=exploratory any; all=every token on one page; phrase=known contiguous "
-                "wording; any=one token; prefix=token prefix."
-            )
-        ),
-    ] = "any",
     limit: Annotated[
-        SearchLimit, Field(description="Maximum matching pages (1-100); default 10.")
+        SearchLimit,
+        Field(description="Maximum candidate passages returned in this batch (1-100); default 10."),
     ] = 10,
     cursor: Annotated[
         str | None,
@@ -659,7 +663,8 @@ def select_visual_evidence(
         "Submit typed Result cards after selecting supporting Evidence. The first save needs one "
         "card per Trial; a pending Review accepts only cards being replaced and preserves the "
         "rest. Each card is assessable or unavailable (Evidence is separate). Assessable cards "
-        "require target facets, two groups, intended population/effect measure, and one complete "
+        "require target facets, at least two randomized groups, intended population/effect "
+        "measure, and one complete "
         "reported quantitative tuple. Keep source numbers as strings; revise before approval."
     ),
     annotations=_MUTATION,
@@ -702,7 +707,8 @@ class ProposalApprovalDecision(StrictModel):
         "After the researcher explicitly approves the current Proposal Review in conversation, "
         "ask the client to confirm that exact immutable Review. This tool has no approval "
         "arguments: only a directly accepted elicitation with approved=true commits it. "
-        "For corrections, inspect Sources and replace the complete Proposal with save_proposal."
+        "For corrections, inspect Sources and replace each corrected Trial's complete Result "
+        "card with save_proposal."
     ),
     annotations=_MUTATION,
     output_schema=output_schema("request_proposal_approval"),
@@ -890,13 +896,10 @@ async def request_proposal_approval(ctx: Context) -> ToolResult:
     name="get_domain_context",
     title="Get Domain context",
     description=(
-        "Read active RoB 2 question cards after get_status reports "
-        "next_action.operation=get_domain_context. Before saving, perform the bounded "
-        "question-specific discovery required by the returned cards; read positive hits "
-        "and do not claim missing information from Result Evidence alone. The response includes "
-        "a scoped Evidence workspace, safe comparison cards for D2/D3/D5, and every Domain "
-        "question with its activation predicate and server-issued answer options. Build the "
-        "complete transitive active set in one save; inactive extra answers are ignored."
+        "Read the approved Result, current checkpoint, scoped Evidence workspace, comparison "
+        "cards, and all questions for a Domain. Question cards provide scientific guidance, "
+        "activation predicates, server-issued answer options, and executable search suggestions. "
+        "Use the returned revision and option IDs when saving the active answers."
     ),
     annotations=_READ_ONLY,
     output_schema=output_schema("get_domain_context"),
@@ -919,15 +922,11 @@ def get_domain_context(
     name="save_domain_judgment",
     title="Save Domain judgment",
     description=(
-        "Save one RoB 2 Domain judgment after get_domain_context; call only during active "
-        "Domain assessment and after its bounded question-specific source searches. Every "
-        "Evidence premise must state the question proposition; treatment assignment alone "
-        "does not prove awareness, differential measurement, or lack of analysis choices. "
-        "Supply one current option ID for every active question. Extra inactive future branch "
-        "answers are ignored. Evaluate activation predicates from the selected options in this "
-        "same save before the first commit. "
-        "The fifth accepted Domain freezes that Trial's final AssessmentSnapshot before "
-        "next_action advances to another Trial; no separate Trial-finalization call exists."
+        "Atomically save answers for one Domain of the Trial's approved Result. Supply one "
+        "current option ID and bases for every question activated by the selected options; "
+        "inactive extra answers are ignored. Invalid input returns grouped repairs without "
+        "committing. The fifth accepted Domain freezes the Trial snapshot and advances "
+        "next_action; no separate Trial-finalization call is required."
     ),
     annotations=_MUTATION,
     output_schema=output_schema("save_domain_judgment"),

@@ -665,6 +665,7 @@ def test_domain_context_result_projection_omits_canonical_bindings(tmp_path: Pat
         "no_information_rule",
         "considerations",
         "invalid_shortcuts",
+        "query_suggestions",
     }
     assert question_card["official_guidance"]
     assert question_card["source_locator"].startswith("Full guidance ")
@@ -689,6 +690,7 @@ def test_domain_context_result_projection_omits_canonical_bindings(tmp_path: Pat
         "answer_anchors",
         "considerations",
         "invalid_shortcuts",
+        "query_suggestions",
     }
     assert pack_question.guidance.official.source_excerpt == question_card["official_guidance"]
     assert pack_question.guidance.official.source_locator == question_card["source_locator"]

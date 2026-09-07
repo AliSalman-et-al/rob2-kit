@@ -25,6 +25,66 @@ from rob2_kit.application.evidence import (
 )
 
 
+def test_broad_truncated_any_search_exposes_observable_refinement_only(tmp_path: Path) -> None:
+    workspace = _workspace(tmp_path)
+    (workspace / "input" / "trial" / "main.txt").unlink()
+    document = pymupdf.open()
+    for text in ("alpha beta one", "alpha beta two", "alpha beta three"):
+        document.new_page().insert_text((72, 72), text)
+    (workspace / "input" / "trial" / "main.pdf").write_bytes(document.tobytes())
+    document.close()
+    _call(workspace, "prepare_batch", {"requested_outcome": "outcome", "expected_revision": 0})
+
+    broad = _call(
+        workspace,
+        "search_sources",
+        {"trial_id": "trial", "query": "alpha beta", "mode": "any", "limit": 1},
+    )["data"]
+    diagnostic = broad["diagnostic"]
+    assert diagnostic["code"] == "broad_any_truncated"
+    assert diagnostic["normalized_term_count"] == 2
+    assert diagnostic["next_action"] == {
+        "kind": "refine",
+        "operation": "search_sources",
+        "trial_id": "trial",
+        "query": "alpha beta",
+        "mode": "all",
+        "source_id": None,
+        "limit": 1,
+        "cursor": None,
+    }
+
+    narrow = _call(
+        workspace,
+        "search_sources",
+        {"trial_id": "trial", "query": "alpha beta", "mode": "all", "limit": 10},
+    )["data"]
+    assert narrow["diagnostic"] is None
+
+    single_term = _call(
+        workspace,
+        "search_sources",
+        {"trial_id": "trial", "query": "alpha", "mode": "any", "limit": 1},
+    )["data"]
+    assert single_term["diagnostic"]["next_action"] == {
+        "kind": "continue",
+        "operation": "search_sources",
+        "trial_id": "trial",
+        "query": "alpha",
+        "mode": "any",
+        "source_id": None,
+        "limit": 1,
+        "cursor": single_term["next_cursor"],
+    }
+
+    no_hit = _call(
+        workspace,
+        "search_sources",
+        {"trial_id": "trial", "query": "absent", "mode": "any", "limit": 1},
+    )["data"]
+    assert no_hit["diagnostic"] is None
+
+
 def test_search_session_cursor_reuses_stable_ranking_after_derivative_restart(
     tmp_path: Path,
 ) -> None:

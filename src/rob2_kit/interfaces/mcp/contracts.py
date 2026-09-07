@@ -21,7 +21,7 @@ from pydantic import (
 from pydantic.types import PositiveInt
 
 from rob2_kit.application.contracts import TOOL_NAMES
-from rob2_kit.models import Answer, AnswerOption, Judgment, ResponseFramework
+from rob2_kit.models import Answer, AnswerOption, Judgment, QuerySuggestion, ResponseFramework
 from rob2_kit.workflow_models import (
     AssessableTargetRelation,
     ComparativeEffectResult,
@@ -39,6 +39,7 @@ from rob2_kit.workflow_models import (
     ReviewPurpose,
     SearchReceiptHandle,
     Source,
+    SourceId,
     SourceRole,
     TrialId,
     UnavailableResult,
@@ -430,8 +431,43 @@ class SearchReceipt(PublicModel):
     returned_material: NonNegativeInt
 
 
+class SearchNextAction(PublicModel):
+    """One executable refinement or continuation for a broad search response."""
+
+    kind: Literal["refine", "continue"]
+    operation: Literal["search_sources"]
+    trial_id: TrialId
+    query: str = Field(min_length=1)
+    mode: Literal["all", "phrase", "any", "prefix"]
+    source_id: SourceId | None = None
+    limit: PositiveInt
+    cursor: str | None = None
+
+    @model_validator(mode="after")
+    def continuation_cursor_matches_kind(self) -> SearchNextAction:
+        if self.kind == "continue" and self.cursor is None:
+            raise ValueError("continuation action requires a cursor")
+        if self.kind == "refine" and self.cursor is not None:
+            raise ValueError("refinement action cannot carry a cursor")
+        return self
+
+
+class SearchDiagnostic(PublicModel):
+    """Observable retrieval advice; it is never a scientific conclusion."""
+
+    code: Literal["broad_any_truncated"]
+    normalized_term_count: PositiveInt
+    total_matches: NonNegativeInt
+    candidate_count: NonNegativeInt
+    returned_count: NonNegativeInt
+    detail: str = Field(min_length=1)
+    next_action: SearchNextAction
+
+
 class SearchData(PublicModel):
     hits: tuple[SearchHit, ...]
+    query: str = Field(min_length=1)
+    mode: Literal["all", "phrase", "any", "prefix"]
     total_matches: NonNegativeInt
     truncated: StrictBool
     condition: Literal["no_hits"] | None
@@ -445,6 +481,7 @@ class SearchData(PublicModel):
     returned_rank_end: PositiveInt | None
     next_cursor: str | None
     exhausted: StrictBool
+    diagnostic: SearchDiagnostic | None = None
 
 
 class PageData(PublicModel):
@@ -581,6 +618,7 @@ class DomainQuestionCard(PublicModel):
         ),
     )
     invalid_shortcuts: tuple[str, ...] = Field(min_length=1)
+    query_suggestions: tuple[QuerySuggestion, ...] = Field(min_length=1, max_length=8)
 
 
 class DomainTableEvidence(PublicModel):
