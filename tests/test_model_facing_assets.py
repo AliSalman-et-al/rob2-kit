@@ -94,3 +94,61 @@ def test_measurement_reference_keeps_ordered_outcome_specific_audit() -> None:
         "approved outcome and state any inference or unresolved link",
     )
     assert all(semantic in items[index + 1] for index, semantic in enumerate(semantic_items))
+
+
+def test_missing_reference_and_skill_share_the_availability_audit() -> None:
+    reference = Path("src/rob2_kit/skills/rob2-assess/references/missing.md").read_text(
+        encoding="utf-8"
+    )
+    reference_lines = reference.splitlines()
+    start = reference_lines.index("## Availability audit") + 1
+    end = next(
+        index
+        for index in range(start, len(reference_lines))
+        if reference_lines[index].startswith("## ")
+    )
+    bullets: list[str] = []
+    continuation = False
+    for line in reference_lines[start:end]:
+        if line.startswith("- "):
+            bullets.append(line.removeprefix("- ").strip())
+            continuation = True
+        elif not line.strip():
+            continuation = False
+        elif continuation:
+            bullets[-1] = f"{bullets[-1]} {line.strip()}"
+    normalized_bullets = [item.casefold() for item in bullets]
+    assert any(
+        "observed-outcome counts" in item and "randomized" in item for item in normalized_bullets
+    )
+    assert any(
+        "loss-to-follow-up" in item and "censoring" in item and "accounting" in item
+        for item in normalized_bullets
+    )
+    assert any("complete or nearly complete" in item for item in normalized_bullets)
+    shortcut_requirements = (
+        ("analysis denominators", "itt membership"),
+        ("planned", "scheduled", "follow-up"),
+        ("treatment continuation", "discontinuation"),
+        ("generic censoring rule", "actual rates", "follow-up accounting"),
+    )
+    assert all(
+        any(all(term in item for term in requirement) for item in normalized_bullets)
+        for requirement in shortcut_requirements
+    )
+
+    skill = Path("src/rob2_kit/skills/rob2-assess/SKILL.md").read_text(encoding="utf-8")
+    skill_lines = skill.splitlines()
+    skill_start = skill_lines.index("### 6. Audit and commit the Domain once") + 1
+    skill_end = next(
+        index
+        for index in range(skill_start, len(skill_lines))
+        if skill_lines[index].startswith("### ")
+    )
+    audit = " ".join(line.strip() for line in skill_lines[skill_start:skill_end]).casefold()
+    assert audit.count("availability audit") == 1
+    assert "yes/probably yes needs actual outcome-availability evidence" in audit
+    assert "analysis membership" in audit
+    assert "planned or scheduled follow-up" in audit
+    assert "treatment continuation or discontinuation" in audit
+    assert "generic censoring rule alone do not suffice" in audit

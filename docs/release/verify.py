@@ -100,6 +100,138 @@ def _schema_hash(schema: dict[str, Any]) -> str:
     return "sha256:" + hashlib.sha256(text.encode()).hexdigest()
 
 
+def _verify_d3_projection(context: dict[str, Any]) -> None:
+    """Check the live structured D3.1 premise boundary and provenance split."""
+
+    if context.get("domain_id") != "domain:missing":
+        raise ValueError("D3 acceptance context has the wrong Domain")
+    questions = context.get("questions")
+    if not isinstance(questions, list):
+        raise ValueError("D3 acceptance context has no question cards")
+    card = next(
+        (
+            item
+            for item in questions
+            if isinstance(item, dict) and item.get("id") == "sq:missing:data-available"
+        ),
+        None,
+    )
+    if not isinstance(card, dict):
+        raise ValueError("D3.1 question card is missing")
+
+    from rob2_kit.packs import SCIENTIFIC_PACK
+
+    pack_question = next(
+        item for item in SCIENTIFIC_PACK.questions if item.id == "sq:missing:data-available"
+    )
+    if card.get("official_guidance") != pack_question.guidance.official.source_excerpt:
+        raise ValueError("D3.1 official guidance projection differs")
+    if card.get("source_locator") != pack_question.guidance.official.source_locator:
+        raise ValueError("D3.1 official locator projection differs")
+    if pack_question.guidance.official.source_locator != (
+        "Full guidance p. 45, Box 8, signalling question 3.1"
+    ):
+        raise ValueError("D3.1 official locator changed")
+    if pack_question.guidance.official.source_sha256 != (
+        "A9E9C4FDC4BE2D29B5C0A1A6B828E09F2014A34F6D5C302A532F6153EA0FD670"
+    ):
+        raise ValueError("D3.1 official source identity changed")
+    if pack_question.guidance.operational.attribution != "rob2-kit maintainers":
+        raise ValueError("D3.1 operational attribution changed")
+
+    evidence_needed = card.get("evidence_needed")
+    invalid_shortcuts = card.get("invalid_shortcuts")
+    considerations = card.get("considerations")
+    if not all(
+        isinstance(value, list) for value in (evidence_needed, invalid_shortcuts, considerations)
+    ):
+        raise ValueError("D3.1 structured guidance fields are not lists")
+    evidence_text = " ".join(str(item) for item in evidence_needed).casefold()
+    if not all(
+        marker in evidence_text
+        for marker in (
+            "yes or probably yes",
+            "actual outcome-availability evidence",
+            "observed-outcome counts",
+            "loss-to-follow-up or censoring accounting",
+            "complete/nearly-complete ascertainment",
+        )
+    ):
+        raise ValueError("D3.1 affirmative availability evidence boundary is incomplete")
+    shortcuts = [str(item).casefold() for item in invalid_shortcuts]
+
+    def has_shortcut(*markers: str) -> bool:
+        return any(all(marker in item for marker in markers) for item in shortcuts)
+
+    if not all(
+        (
+            has_shortcut("analysis denominator", "itt membership"),
+            has_shortcut("planned or scheduled follow-up"),
+            has_shortcut("treatment continuation", "discontinuation"),
+            has_shortcut("generic censoring rule", "actual rates", "follow-up accounting"),
+        )
+    ):
+        raise ValueError("D3.1 non-entailing shortcut boundary is incomplete")
+    consideration_text = " ".join(str(item) for item in considerations).casefold()
+    if not all(
+        marker in consideration_text for marker in ("administrative censoring", "missing follow-up")
+    ):
+        raise ValueError("D3.1 censoring distinction is missing")
+
+
+def _verify_packaged_skill(skill: str, reference: str) -> None:
+    """Check the portable skill's compact audit and co-located detail."""
+
+    def section(text: str, heading: str, prefix: str) -> list[str]:
+        lines = text.splitlines()
+        start = lines.index(heading) + 1
+        end = next(
+            (index for index in range(start, len(lines)) if lines[index].startswith(prefix)),
+            len(lines),
+        )
+        return lines[start:end]
+
+    audit_lines = section(skill, "### 6. Audit and commit the Domain once", "### ")
+    audit = " ".join(line.strip() for line in audit_lines).casefold()
+    if audit.count("availability audit") != 1 or not all(
+        marker in audit
+        for marker in (
+            "yes/probably yes needs actual outcome-availability evidence",
+            "analysis membership",
+            "planned or scheduled follow-up",
+            "treatment continuation or discontinuation",
+            "generic censoring rule alone do not suffice",
+        )
+    ):
+        raise ValueError("packaged skill D3.1 availability audit is incomplete")
+
+    audit_lines = section(reference, "## Availability audit", "## ")
+    bullets: list[str] = []
+    continuation = False
+    for line in audit_lines:
+        if line.startswith("- "):
+            bullets.append(line.removeprefix("- ").strip())
+            continuation = True
+        elif not line.strip():
+            continuation = False
+        elif continuation:
+            bullets[-1] = f"{bullets[-1]} {line.strip()}"
+    normalized = [item.casefold() for item in bullets]
+    if not all(
+        any(all(marker in item for marker in markers) for item in normalized)
+        for markers in (
+            ("observed-outcome counts", "randomized"),
+            ("loss-to-follow-up", "censoring", "accounting"),
+            ("complete or nearly complete",),
+            ("analysis denominators", "itt membership"),
+            ("planned", "scheduled", "follow-up"),
+            ("treatment continuation", "discontinuation"),
+            ("generic censoring rule", "actual rates", "follow-up accounting"),
+        )
+    ):
+        raise ValueError("packaged missing-data reference availability audit is incomplete")
+
+
 async def _verify_client(client: Client, contract: dict[str, Any]) -> None:
     tools = await client.list_tools()
     if [tool.name for tool in tools] != [item["name"] for item in contract["tools"]]:
@@ -340,6 +472,8 @@ async def _verify_stdio_domains(
         )
         if context.get("domain_id") != domain_id:
             raise ValueError(f"stdio Domain context differs: {domain_id}")
+        if domain_id == "domain:missing":
+            _verify_d3_projection(context)
         revision = int(context["state_revision"])
         searched = await _call(
             client,
@@ -425,6 +559,10 @@ def _verify_wheel_archive(wheel: Path) -> None:
         missing_skills = sorted(skill_members - set(names))
         if missing_skills:
             raise ValueError(f"wheel skill is incomplete: {', '.join(missing_skills)}")
+        _verify_packaged_skill(
+            archive.read("rob2_kit/skills/rob2-assess/SKILL.md").decode("utf-8"),
+            archive.read("rob2_kit/skills/rob2-assess/references/missing.md").decode("utf-8"),
+        )
         for member in sorted(skill_members):
             canonical = ROOT / "src" / Path(member)
             if not canonical.is_file():
@@ -464,16 +602,57 @@ def verify(wheel: Path | None = None, bundle: Path | None = None) -> None:
     contract = _load_contract()
     _assert_generated(contract)
     if wheel is None:
+        from rob2_kit.application._state import _root, _state
+        from rob2_kit.application.intake import approve_review
         from rob2_kit.interfaces.mcp.server import mcp
 
         async def local() -> None:
             async with Client(mcp) as client:
                 await _verify_client(client, contract)
+                await _verify_stdio_proposal(client)
+                review = _state(_root(temporary)).get("review")
+                if not isinstance(review, dict) or not isinstance(review.get("identity"), str):
+                    raise ValueError("source-tree acceptance Proposal Review is unavailable")
+                approved = approve_review(temporary, review["identity"])
+                if approved.get("outcome") != "success":
+                    raise ValueError(f"source-tree Proposal approval failed: {approved}")
+                context = await _call(
+                    client,
+                    "get_domain_context",
+                    {"trial_id": "trial", "domain_id": "domain:randomization"},
+                )
+                evidence_rows = context.get("evidence")
+                if not isinstance(evidence_rows, list):
+                    raise ValueError("source-tree acceptance returned no selected Evidence")
+                evidence = next(
+                    (
+                        item
+                        for item in evidence_rows
+                        if isinstance(item, dict) and item.get("kind") == "narrative"
+                    ),
+                    None,
+                )
+                if not isinstance(evidence, dict):
+                    raise ValueError("source-tree acceptance lost selected Evidence")
+                await _verify_stdio_domains(
+                    client,
+                    evidence,
+                    ["domain:randomization", "domain:deviations", "domain:missing"],
+                )
 
         previous_workspace = os.environ.get("ROB2_WORKSPACE")
         with tempfile.TemporaryDirectory(prefix="rob2-release-local-") as temporary:
             try:
                 os.environ["ROB2_WORKSPACE"] = temporary
+                trial = Path(temporary) / "input" / "trial"
+                trial.mkdir(parents=True)
+                (trial / "main.txt").write_text("requested outcome", encoding="utf-8")
+                _verify_packaged_skill(
+                    (ROOT / "src/rob2_kit/skills/rob2-assess/SKILL.md").read_text(encoding="utf-8"),
+                    (ROOT / "src/rob2_kit/skills/rob2-assess/references/missing.md").read_text(
+                        encoding="utf-8"
+                    ),
+                )
                 asyncio.run(local())
             finally:
                 if previous_workspace is None:

@@ -23,6 +23,7 @@ from rob2_kit.application.evidence import (
     _normalized_contains,
     _search_receipt,
 )
+from rob2_kit.packs import SCIENTIFIC_PACK
 
 
 def test_broad_truncated_any_search_exposes_observable_refinement_only(tmp_path: Path) -> None:
@@ -443,6 +444,53 @@ def test_search_candidate_identity_is_invariant_across_active_domains(tmp_path: 
     assert (randomization["session_id"], rank) in _associated_search_ranks(
         workspace, "trial", "domain:deviations"
     )
+
+
+def test_missing_question_card_exposes_explicit_availability_premise(tmp_path: Path) -> None:
+    workspace, evidence, revision = _assessment_workspace(tmp_path)
+    for domain_id in ("domain:randomization", "domain:deviations"):
+        saved = _call(
+            workspace,
+            "save_domain_judgment",
+            _domain_draft("trial", domain_id, revision, evidence),
+        )
+        assert saved["outcome"] == "success", saved
+        revision = int(saved["head"]["state_revision"])
+    context = _call(
+        workspace,
+        "get_domain_context",
+        {"trial_id": "trial", "domain_id": "domain:missing"},
+    )
+    assert context["outcome"] == "success"
+    card = next(
+        item for item in context["data"]["questions"] if item["id"] == "sq:missing:data-available"
+    )
+    pack_question = next(
+        item for item in SCIENTIFIC_PACK.questions if item.id == "sq:missing:data-available"
+    )
+    assert card["official_guidance"] == pack_question.guidance.official.source_excerpt
+    assert card["source_locator"] == pack_question.guidance.official.source_locator
+
+    evidence = " ".join(card["evidence_needed"]).casefold()
+    assert "yes or probably yes" in evidence
+    assert "actual outcome-availability evidence" in evidence
+    assert "observed-outcome counts" in evidence
+    assert "loss-to-follow-up or censoring accounting" in evidence
+    assert "complete/nearly-complete ascertainment" in evidence
+
+    shortcuts = [item.casefold() for item in card["invalid_shortcuts"]]
+    assert any("analysis denominator" in item and "itt membership" in item for item in shortcuts)
+    assert any("planned or scheduled follow-up" in item for item in shortcuts)
+    assert any("treatment continuation" in item and "discontinuation" in item for item in shortcuts)
+    assert any(
+        "generic censoring rule" in item
+        and "actual rates" in item
+        and "follow-up accounting" in item
+        for item in shortcuts
+    )
+    considerations = " ".join(card["considerations"]).casefold()
+    assert "administrative censoring" in considerations
+    assert "missing follow-up" in considerations
 
 
 def test_list_sources_resolves_one_captured_trial_or_returns_boundary_error(tmp_path: Path) -> None:
