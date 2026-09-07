@@ -432,7 +432,7 @@ class SearchReceipt(PublicModel):
 
 
 class SearchNextAction(PublicModel):
-    """One executable refinement or continuation for a broad search response."""
+    """One executable recovery refinement or continuation for a search response."""
 
     kind: Literal["refine", "continue"]
     operation: Literal["search_sources"]
@@ -455,7 +455,7 @@ class SearchNextAction(PublicModel):
 class SearchDiagnostic(PublicModel):
     """Observable retrieval advice; it is never a scientific conclusion."""
 
-    code: Literal["broad_any_truncated"]
+    code: Literal["broad_any_truncated", "narrow_no_hits"]
     normalized_term_count: PositiveInt
     total_matches: NonNegativeInt
     candidate_count: NonNegativeInt

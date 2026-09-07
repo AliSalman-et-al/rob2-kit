@@ -2,7 +2,7 @@
 
 Status: accepted
 
-Amended for the v0.5 successor contract by issues 283-286 and 288.
+Amended for the v0.5 successor contract by issues 283-286, 288, 290, and 291.
 
 ## Context
 
@@ -61,6 +61,16 @@ frozen v0.3 contract.
   suggestion contains query text, lexical mode, an optional recommended Source
   role, and a short purpose. Suggestions are maintained alternatives and vocabulary, not a
   mandatory workflow or a claim that a Source uses those words.
+- Preserve a bounded recovery path for an initial multi-token `all` or `phrase`
+  no-hit: return one executable same-query `any` search with the same Trial,
+  Source scope, and limit. The action is retrieval advice only; a zero-hit
+  receipt remains specific to its issued lexical query, and broad `any`
+  truncation/cursor behavior is unchanged.
+- Keep Domain 4 host reasoning outcome-specific. The host audits the approved
+  event and method, between-group ascertainment opportunities, assessor identity
+  and awareness, and any influence mechanism in that order. Mixed-outcome
+  passages require an explicit premise link or an unresolved/inferred statement;
+  mortality and endpoint labels do not receive automatic judgments.
 
 ## Domain projection ownership
 

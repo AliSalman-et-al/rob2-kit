@@ -92,6 +92,7 @@ def test_public_output_surface_is_closed_and_within_budget() -> None:
     assert "Required lexical intent" in search_mode_description
     assert "all=every token on one page" in search_mode_description
     assert "phrase=known contiguous wording" in search_mode_description
+    assert "one executable any broadening" in search_description
     assert search_parameters["properties"]["query"]["examples"] == ["central randomization"]
     source_scope = search_parameters["properties"]["source_id"]
     assert source_scope["default"] is None
@@ -105,7 +106,11 @@ def test_public_output_surface_is_closed_and_within_budget() -> None:
     assert "start_text" not in select_description
     assert "end_text" not in select_description
     domain_tool = by_name["save_domain_judgment"]
+    context_tool = by_name["get_domain_context"]
+    assert "alternative search suggestions" in (context_tool.description or "")
+    assert "treating the list as a checklist" in (context_tool.description or "")
     assert "activated by the selected options" in (domain_tool.description or "")
+    assert "check each basis against the approved Result" in (domain_tool.description or "")
     assert "grouped repairs without committing" in (domain_tool.description or "")
     answer_example = domain_tool.parameters["properties"]["answers"]["examples"][0][0]
     assert set(answer_example) == {"question_id", "option_id", "bases"}

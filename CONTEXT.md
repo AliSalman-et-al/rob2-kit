@@ -95,7 +95,12 @@ deterministic diagnostic built only from request and result facts (term count,
 counts, truncation, and cursor availability) and one executable refinement or
 continuation. The diagnostic is retrieval advice, never a relevance,
 completeness, or scientific judgment; narrow, untruncated, and no-hit
-responses do not receive a broad-query warning.
+responses do not receive a broad-query warning. An initial multi-token `all`
+or `phrase` no-hit carries a separate deterministic one-step diagnostic
+offering the same query as `any`, preserving Trial, Source scope, and limit.
+It remains retrieval advice: the receipt documents only the issued lexical
+query, and the host inspects returned passages rather than treating suggestions
+or widening actions as a checklist.
 
 ## Result model
 
@@ -174,6 +179,12 @@ if they exceed the disposable budget. D2, D3, and D5 additionally
 receive read-only comparison cards: the server fills only known Result scope,
 Source provenance, and compatible D3 arithmetic, leaving causal, follow-up,
 censoring, and plan-correspondence classifications to the host.
+
+For Domain 4, the host's audit starts from the approved event and ascertainment
+method, then checks method suitability, between-group detection opportunities,
+assessor identity and awareness, and any influence mechanism in that order.
+Awareness is separate from susceptibility to influence; mixed-outcome passages
+require an explicit premise link or a stated inference/unresolved link.
 
 A **Domain checkpoint** is an immutable, content-addressed record of the active
 answers, inactive questions, Evidence uses, search accounts, deterministic
