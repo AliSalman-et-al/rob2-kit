@@ -19,7 +19,8 @@ Domain `bases`; no separate text-selection call is required.
 
 ## Recover omitted Evidence
 
-If an Evidence item has `text_status:"omitted"`, recover it before citing it.
+Use this procedure when an omitted passage needs inspection or its content is
+no longer available to you.
 
 1. Call `read_pages` with `recovery.trial_id` and `recovery.windows`.
 2. If a returned page has `next_start_line`, repeat that window with
