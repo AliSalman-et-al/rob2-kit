@@ -189,7 +189,10 @@ Evidence as row provenance and performs only scope-matched arithmetic.
 For an optional count preview before saving D3, follow
 [Reconcile availability](references/missing.md#reconcile-availability).
 
-Apply the complete Repair set and resubmit. When the final Domain triggers a
+Apply every reported repair and retain other drafted answers. Add missing
+questions to the existing answer set. Resolve any further activation from the
+repaired answers before resubmitting. The server ignores inactive answers.
+When the final Domain triggers a
 `multiple_concerns` Repair, supply the requested object and rationale. Do not
 send that field otherwise.
 

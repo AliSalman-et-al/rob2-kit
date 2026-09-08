@@ -34,8 +34,11 @@ maps one transcript to one workflow attempt and host session:
 
 Add frozen `trial_id`, `result_id`, `intervention_id`, `model` (with `family`
 and `version`), and `kit_revision` to each attempt when known. Missing metadata
-remains unknown. Split captures from the same session share `session_id`;
-different sessions use different IDs so local call IDs cannot collide.
+remains unknown. Assign a distinct `transcript_id` to each captured invocation
+chunk and submit each invocation once. Chunks from the same persisted session
+share `session_id`, which is grouping metadata only. Operation identities use
+`transcript_id` and the local call ID because resumed invocations can reuse
+local IDs within a session.
 Declare phases consistently: `assessment` and `correction` searches contribute
 to assessment-search reconciliation. When phases are supplied, the top-level
 `searches` count uses those phases; otherwise it counts all observed searches.
@@ -43,8 +46,9 @@ to assessment-search reconciliation. When phases are supplied, the top-level
 The importer supports captured Codex MCP JSONL records for the documented
 `rob2` tools. It is not a general transcript adapter. It emits
 `rob2-kit.mcp-observations.v1`; identical manifest and transcript bytes produce
-identical output. Repeated records for one session-local call reconcile to one
-operation. Unmatched calls remain unmatched.
+identical output. Start and completion records for one local call reconcile
+within its transcript chunk. The importer does not infer duplicates across
+chunks. Unmatched calls remain unmatched.
 
 The observer is the captured transcript, supplemented by explicit manifest
 metadata. Interpret its observation families as follows:

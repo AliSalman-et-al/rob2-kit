@@ -28,6 +28,7 @@ DOCUMENTED_TOOLS = frozenset(
         "read_pages",
         "render_page",
         "request_proposal_approval",
+        "request_trial_terminal",
         "save_domain_judgment",
         "save_proposal",
         "search_sources",
@@ -338,7 +339,6 @@ def _committed_options(response: Mapping[str, Any] | None) -> list[str] | None:
 
 def _operation(
     item: Mapping[str, Any],
-    attempt_id: str,
     transcript_id: str,
     session_id: str,
     observed_options: set[str],
@@ -358,9 +358,9 @@ def _operation(
         else "unmatched"
     )
     tool = item["tool"]
-    op_key = f"{attempt_id}:{session_id}:{item['id']}"
+    op_key = _canonical([transcript_id, item["id"]])
     operation: dict[str, Any] = {
-        "operation_id": "op_" + hashlib.sha256(op_key.encode()).hexdigest(),
+        "operation_id": "op_" + hashlib.sha256(op_key).hexdigest(),
         "session_id": _id(session_id),
         "call_id": _id(item["id"]),
         "transcript_id": _id(transcript_id),
@@ -422,10 +422,21 @@ def _operation(
                 operation["response"]["terminal_dispositions"] = sorted(
                     value for value in dispositions.values() if value in _TERMINAL
                 )
+            terminal = data.get("terminal")
+            if (
+                tool == "request_trial_terminal"
+                and outcome in _ACCEPTED_OUTCOMES
+                and isinstance(terminal, dict)
+                and terminal.get("disposition") in {"needs_input", "failed"}
+            ):
+                operation["response"]["terminal_dispositions"] = [terminal["disposition"]]
     if tool in {"select_text_evidence", "select_visual_evidence"}:
         refs = _evidence_refs(response) if status == "accepted" else []
         operation["selection"] = refs or None
-    if tool.startswith("save_") or tool == "request_proposal_approval":
+    if tool.startswith("save_") or tool in {
+        "request_proposal_approval",
+        "request_trial_terminal",
+    }:
         checkpoint = (
             response.get("data", {}).get("checkpoint")
             if isinstance(response, dict) and isinstance(response.get("data"), dict)
@@ -471,9 +482,7 @@ def _merge_call(previous: dict[str, Any], item: dict[str, Any], location: str) -
     return merged
 
 
-def _read_transcript(
-    raw: bytes, transcript_id: str, session_id: str
-) -> tuple[list[dict[str, Any]], int, int]:
+def _read_transcript(raw: bytes, transcript_id: str) -> tuple[list[dict[str, Any]], int, int]:
     records = _jsonl_records(raw, transcript_id)
     calls: dict[str, dict[str, Any]] = {}
     order: list[str] = []
@@ -535,52 +544,34 @@ def import_observations(
     phase_searches = 0
     for attempt in attempts:
         attempt_id = attempt["attempt_id"]
-        merged_calls: dict[tuple[str, str], tuple[dict[str, Any], str, set[str]]] = {}
         observed_options: set[str] = set()
         observed_evidence: set[str] = set()
         search_count = 0
         assessment_search_count = 0
+        operations: list[dict[str, Any]] = []
         for spec in grouped[attempt_id]:
             transcript_id = _string(spec.get("transcript_id"), "transcript mapping.transcript_id")
             session_id = _string(
                 spec.get("session_id", transcript_id), f"transcript {transcript_id}.session_id"
             )
             calls, records, imported = _read_transcript(
-                _manifest_transcript_bytes(spec, transcripts), transcript_id, session_id
+                _manifest_transcript_bytes(spec, transcripts), transcript_id
             )
             total_records += records
             imported_records += imported
             for item in calls:
-                key = (session_id, item["id"])
-                phase = spec.get("phase")
-                if key in merged_calls:
-                    previous, first_transcript, phases = merged_calls[key]
-                    merged_calls[key] = (
-                        _merge_call(previous, item, f"{transcript_id}:{item['id']}"),
-                        first_transcript,
-                        phases | ({phase} if isinstance(phase, str) else set()),
-                    )
-                else:
-                    merged_calls[key] = (
-                        item,
-                        transcript_id,
-                        {phase} if isinstance(phase, str) else set(),
-                    )
-        operations: list[dict[str, Any]] = []
-        for (session_id, _), (item, transcript_id, phases) in merged_calls.items():
-            operation = _operation(
-                item,
-                attempt_id,
-                transcript_id,
-                session_id,
-                observed_options,
-                observed_evidence,
-            )
-            operations.append(operation)
-            if operation["tool"] == "search_sources":
-                search_count += 1
-                if phases & {"assessment", "correction"}:
-                    assessment_search_count += 1
+                operation = _operation(
+                    item,
+                    transcript_id,
+                    session_id,
+                    observed_options,
+                    observed_evidence,
+                )
+                operations.append(operation)
+                if operation["tool"] == "search_sources":
+                    search_count += 1
+                    if spec.get("phase") in {"assessment", "correction"}:
+                        assessment_search_count += 1
         operations.sort(key=lambda row: row["operation_id"])
         all_operations += len(operations)
         all_searches += search_count
