@@ -1041,7 +1041,9 @@ def get_domain_context(
     description=(
         "Atomically save answers for one Domain of the Trial's approved Result. Complete the "
         "post-approval bounded main-report text pass before the first Domain save. Supply a "
-        "current option ID and bases for every active question. Inactive answers are ignored. "
+        "current option ID and supported bases for every active question. If the complete "
+        "active path is uncertain, answer every returned Domain question using current option "
+        "IDs and supported bases. The server commits only active answers. "
         "Invalid input returns grouped repairs without "
         "committing. Before saving, check each basis against the approved Result and literal "
         "question; justify any inference or unresolved linkage. "

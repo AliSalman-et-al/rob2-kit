@@ -1,5 +1,79 @@
 # Evaluate a release
 
+## Import captured MCP observations
+
+Freeze a manifest and the captured Codex JSONL transcripts, then run:
+
+```powershell
+uv run python scripts/import_mcp_observations.py --manifest import-manifest.json --transcript trace-a=capture.jsonl --output observations.json
+```
+
+Repeat `--transcript ID=PATH` for each capture. Use explicit mappings rather
+than deriving Trial or Result identity from filenames. This minimal manifest
+maps one transcript to one workflow attempt and host session:
+
+```json
+{
+  "schema": "rob2-kit.observation-import-manifest.v1",
+  "attempts": [
+    {
+      "attempt_id": "attempt-a",
+      "transcripts": ["trace-a"]
+    }
+  ],
+  "transcripts": [
+    {
+      "transcript_id": "trace-a",
+      "attempt_id": "attempt-a",
+      "session_id": "session-a",
+      "phase": "assessment"
+    }
+  ]
+}
+```
+
+Add frozen `trial_id`, `result_id`, `intervention_id`, `model` (with `family`
+and `version`), and `kit_revision` to each attempt when known. Missing metadata
+remains unknown. Split captures from the same session share `session_id`;
+different sessions use different IDs so local call IDs cannot collide.
+Declare phases consistently: `assessment` and `correction` searches contribute
+to assessment-search reconciliation. When phases are supplied, the top-level
+`searches` count uses those phases; otherwise it counts all observed searches.
+
+The importer supports captured Codex MCP JSONL records for the documented
+`rob2` tools. It is not a general transcript adapter. It emits
+`rob2-kit.mcp-observations.v1`; identical manifest and transcript bytes produce
+identical output. Repeated records for one session-local call reconcile to one
+operation. Unmatched calls remain unmatched.
+
+The observer is the captured transcript, supplemented by explicit manifest
+metadata. Interpret its observation families as follows:
+
+| Observation | What it establishes and its limit |
+| --- | --- |
+| Operation and request shape | A recorded tool call, known scope, and structural request facts. Query presence, cursor presence, and argument counts do not establish discovery quality. |
+| Response identities and counts | Recorded delivery of recoverable response content, identities, hit counts, and truncation facts. These do not establish inspection, comprehension, or the unseen candidate cache. |
+| Selection | Recorded Evidence selection, distinct from citation in an accepted answer. Selection does not establish premise support. |
+| Attempted mutation | A recorded save request. Rejected or unmatched requests do not establish a commit. |
+| Accepted commit and checkpoint | An observed accepted save and any captured checkpoint identity or supersession. These establish recorded state changes, not scientific correctness; absent canonical answer details leave citation scope unresolved. |
+| Reconciliation | Counts of attempts, records, imported MCP records, ignored host records, and unique calls. Counts measure capture and workflow activity, not reasoning quality. |
+| Terminal disposition | An explicit manifest disposition or observed disposition. It remains `unknown` when neither is available. |
+| Capture status | The importer's completion classification from captured workflow events. It does not establish complete source coverage or successful scientific assessment. |
+| Metrics | `response_bytes` measures recoverable captured JSON bytes, not wire bytes or model context. Unavailable cost, tokens, context bytes, and latency remain null. |
+
+Output uses allowlisted structural fields and validated identities or hashes.
+It excludes prompts, source text, quotations, rationales, raw queries, paths,
+and reviewer identities. Structural errors identify the manifest field or
+transcript record without echoing payloads. Keep the raw captures restricted.
+
+This artifact is not input for the held-out v0.5 scorer. Expert premise
+annotations and the restricted attempt, Result, Domain, and question mapping
+remain external. Resolve that join explicitly under #282; do not fabricate
+missing fields to fit the v0.5 schema. The importer implements the bounded
+observation-capture slice in #295.
+
+## Score and qualify a release
+
 The provider-independent scorer is rerunnable without paid model calls:
 
 ```powershell

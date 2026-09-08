@@ -1,0 +1,1 @@
+{"type":"item.completed","item":{"id":"proposal_save","type":"mcp_tool_call","server":"rob2","tool":"save_proposal","arguments":{"expected_revision":1},"result":{"structured_content":{"outcome":"review_required","data":{"review":{"identity":"sha256:4444444444444444444444444444444444444444444444444444444444444444"}}}}}}
