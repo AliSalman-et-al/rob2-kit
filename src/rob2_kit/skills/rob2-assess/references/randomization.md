@@ -12,9 +12,9 @@ Keep three propositions separate:
    randomization process rather than chance?
 
 Sequence methods such as computer generation, random-number tables, lots, or
-minimization may support the first proposition. Stratification, block size, a
-registration system, or a numbered sequence does not by itself establish
-concealment. Assess the pre-assignment mechanism and who could access the next
+minimization may support the first proposition. Identify the random component;
+concealing a predictable formula does not make it random.
+For concealment, assess the pre-assignment mechanism and who could access the next
 assignment. When reported facts support a probable judgment, state the inferred
 safeguard or weakness. Preserve `no_information` when the details and trial
 circumstances do not support that judgment.
@@ -24,5 +24,5 @@ list and any explanation. Different values are not automatically evidence of a
 randomization problem. Missing reporting is not evidence that randomization
 failed.
 
-Select complete premises. A Methods heading, the word “randomized,” or a
+Select complete premises. A Methods heading, the word "randomized," or a
 list-introducing sentence alone does not answer these questions.

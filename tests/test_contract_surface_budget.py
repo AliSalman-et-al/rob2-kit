@@ -96,9 +96,11 @@ def test_public_output_surface_is_closed_and_within_budget() -> None:
     assert search_parameters["properties"]["query"]["examples"] == ["central randomization"]
     source_scope = search_parameters["properties"]["source_id"]
     assert source_scope["default"] is None
-    assert source_scope["anyOf"][0]["pattern"] == r"^source_[0-9a-f]{64}$"
+    assert source_scope["anyOf"][0]["pattern"] == r"^sh_[0-9a-f]{16}$"
     assert "not printed labels" in read_description
     assert "numbered lines" in read_description
+    assert "data.remaining_windows" in read_description
+    assert "single oversized line is returned intact" in read_description
     assert "required for every read" in read_parameters["properties"]["trial_id"]["description"]
     assert "integer source-page indexes" in read_parameters["properties"]["pages"]["description"]
     assert read_parameters["properties"]["pages"]["examples"] == [[1, 3]]
@@ -110,7 +112,10 @@ def test_public_output_surface_is_closed_and_within_budget() -> None:
     assert "Supply trial_id and windows" in windows_description
     assert "top-level start_line" in windows_description
     read_window = read_parameters["properties"]["windows"]["anyOf"][0]["items"]
-    assert "Captured Source ID" in read_window["properties"]["source_id"]["description"]
+    assert (
+        "Copy the returned source_id exactly"
+        in read_window["properties"]["source_id"]["description"]
+    )
     assert "One-based Source-page index" in read_window["properties"]["page"]["description"]
     domain_tool = by_name["save_domain_judgment"]
     context_tool = by_name["get_domain_context"]
@@ -134,7 +139,10 @@ def test_public_output_surface_is_closed_and_within_budget() -> None:
         "outside the recoverable narrative budget"
         in workspace_properties["unrecoverable_inline_text_bytes"]["description"]
     )
-    assert "for every active question" in (domain_tool.description or "")
+    assert "for every returned Domain question" in (domain_tool.description or "")
+    assert "including currently inactive questions" in (domain_tool.description or "")
+    assert "Include every returned question before resubmitting" in (domain_tool.description or "")
+    assert "current option ID copied exactly from its card" in (domain_tool.description or "")
     assert "check each basis against the approved Result" in (domain_tool.description or "")
     assert "grouped repairs without committing" in (domain_tool.description or "")
     answer_example = domain_tool.parameters["properties"]["answers"]["examples"][0][0]
@@ -147,6 +155,8 @@ def test_public_output_surface_is_closed_and_within_budget() -> None:
     }
     assert "Omit unless a repair requests" in multiple_concerns["description"]
     assert "never boolean/string" in multiple_concerns["description"]
+    approval_description = by_name["request_proposal_approval"].description or ""
+    assert "has no approval arguments" in approval_description
 
 
 def test_server_and_resource_metadata_are_explicit() -> None:

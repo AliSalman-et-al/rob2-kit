@@ -6,13 +6,55 @@ from ._state import _ensure, _result, _root, _state
 from .contracts import COUNTERS
 from .evidence import _evidence_catalog, main_report_reading_status
 
+_STATUS_RECOVERABLE_NARRATIVE_TEXT_BUDGET = 12_288
+
 
 def _selected_evidence(workspace: Path) -> list[dict[str, Any]]:
     """Expose only the selected-material records needed to resume a proposal."""
     selected: list[dict[str, Any]] = []
+    remaining = _STATUS_RECOVERABLE_NARRATIVE_TEXT_BUDGET
     for item in _evidence_catalog(workspace).values():
         if item.get("kind") == "narrative":
-            keys = ("handle", "identity", "kind", "trial_id", "source_id", "page", "quote")
+            keys = (
+                "handle",
+                "identity",
+                "kind",
+                "trial_id",
+                "source_id",
+                "page",
+                "start_line",
+                "end_line",
+                "quote",
+            )
+            value = {key: item[key] for key in keys if key in item}
+            has_exact_recovery = all(
+                isinstance(item.get(key), int) for key in ("page", "start_line", "end_line")
+            ) and all(isinstance(item.get(key), str) for key in ("trial_id", "source_id"))
+            quote = item.get("quote")
+            if has_exact_recovery and isinstance(quote, str):
+                size = len(quote.encode("utf-8"))
+                if size <= remaining:
+                    remaining -= size
+                    value["text_status"] = "complete"
+                else:
+                    value.pop("quote", None)
+                    value["text_status"] = "omitted"
+                    value["recovery"] = {
+                        "operation": "read_pages",
+                        "trial_id": item["trial_id"],
+                        "windows": [
+                            {
+                                "source_id": item["source_id"],
+                                "page": item["page"],
+                                "start_line": item["start_line"],
+                                "end_line": item["end_line"],
+                            }
+                        ],
+                    }
+            else:
+                value["text_status"] = "complete"
+            selected.append(value)
+            continue
         elif item.get("kind") == "figure":
             keys = (
                 "handle",

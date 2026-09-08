@@ -155,7 +155,17 @@ _SCIENTIFIC_PACK = {
     "id": "rob2.parallel.assignment",
     "version": "2019.1",
     "result_semantics_version": "rob2-kit.result-semantics.v0.7",
-    "content_hash": "sha256:3ef492b34a81c19e3f75d72fea2b92c40aebde80c06e24e44c36cd76dc4cf3d4",
+    "content_hash": "sha256:f1cc5e7e0c06a26b351e455797d8936256b01388fdb446c1ef7cc926ab29613b",
+    "official_source": {
+        "version": "22 August 2019",
+        "source_sha256": "A9E9C4FDC4BE2D29B5C0A1A6B828E09F2014A34F6D5C302A532F6153EA0FD670",
+    },
+}
+_PREVIOUS_SCIENTIFIC_PACK = {
+    "id": "rob2.parallel.assignment",
+    "version": "2019.1",
+    "result_semantics_version": "rob2-kit.result-semantics.v0.7",
+    "content_hash": "sha256:9c293fbfaf1b10b82682a90d2e90986c3283fa1412f2c8b62a4d82a14a795dc8",
     "official_source": {
         "version": "22 August 2019",
         "source_sha256": "A9E9C4FDC4BE2D29B5C0A1A6B828E09F2014A34F6D5C302A532F6153EA0FD670",
@@ -175,6 +185,16 @@ _HISTORICAL_SCIENTIFIC_PACK = {
     "id": "rob2.parallel.assignment",
     "version": "2019.1",
     "content_hash": "sha256:4bfd30a3d997e9eab0354ef7148726c5b112004a64b59dd57f02ac1493b61597",
+    "official_source": {
+        "version": "22 August 2019",
+        "source_sha256": "A9E9C4FDC4BE2D29B5C0A1A6B828E09F2014A34F6D5C302A532F6153EA0FD670",
+    },
+}
+_OLDER_SCIENTIFIC_PACK = {
+    "id": "rob2.parallel.assignment",
+    "version": "2019.1",
+    "result_semantics_version": "rob2-kit.result-semantics.v0.7",
+    "content_hash": "sha256:3ef492b34a81c19e3f75d72fea2b92c40aebde80c06e24e44c36cd76dc4cf3d4",
     "official_source": {
         "version": "22 August 2019",
         "source_sha256": "A9E9C4FDC4BE2D29B5C0A1A6B828E09F2014A34F6D5C302A532F6153EA0FD670",
@@ -2419,8 +2439,10 @@ def verify(path: Path) -> tuple[bool, str]:
             scientific_pack = canonical.get("scientific_pack")
             if scientific_pack not in (
                 _SCIENTIFIC_PACK,
+                _PREVIOUS_SCIENTIFIC_PACK,
                 _LEGACY_SCIENTIFIC_PACK,
                 _HISTORICAL_SCIENTIFIC_PACK,
+                _OLDER_SCIENTIFIC_PACK,
             ):
                 return False, "scientific pack descriptor differs"
             semantics_version = (

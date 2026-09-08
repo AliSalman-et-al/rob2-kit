@@ -163,7 +163,7 @@ def test_evidence_recovery_shape_stays_compatible_with_older_projections() -> No
     recovery = EvidenceRecovery(
         operation="read_pages",
         trial_id="trial",
-        windows=[{"source_id": "source_" + "c" * 64, "page": 1, "start_line": 1, "end_line": 1}],
+        windows=[{"source_id": "sh_" + "c" * 16, "page": 1, "start_line": 1, "end_line": 1}],
     )
     assert set(recovery.model_dump()) == {"operation", "trial_id", "windows"}
     with pytest.raises(ValidationError):

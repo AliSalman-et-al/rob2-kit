@@ -618,7 +618,11 @@ def test_assessment_skill_preserves_result_choice_and_completion_guards() -> Non
     result = (root / "references/result.md").read_text(encoding="utf-8")
     missing = (root / "references/missing.md").read_text(encoding="utf-8")
     randomization = (root / "references/randomization.md").read_text(encoding="utf-8")
-    instructions = " ".join((skill + result + missing + randomization).split())
+    read_main = (root / "references/read-main-report.md").read_text(encoding="utf-8")
+    selection = (root / "references/selection.md").read_text(encoding="utf-8")
+    instructions = " ".join(
+        (skill + result + missing + randomization + read_main + selection).split()
+    )
 
     assert "an exact assessable Result" in instructions
     assert "closest complete non-exact assessable candidate or profile" in instructions
@@ -642,6 +646,13 @@ def test_assessment_skill_preserves_result_choice_and_completion_guards() -> Non
     assert "do not read every Source mechanically" in instructions
     assert "Proposal Review is the only researcher gate" in instructions
     assert "continue without asking" in instructions
+    assert "request_proposal_approval` with the empty arguments object `{}`" in instructions
+    assert "data.remaining_windows" in instructions
+    assert "Draft an answer for every question returned for the Domain" in instructions
+    assert "including questions whose `active` flag is currently false" in instructions
+    assert "For 5.3, identify both the eligible alternatives" in instructions
+    assert '"kind": "quantified"' in instructions
+    assert '"15 days after randomization"' in instructions
     assert "fifth accepted checkpoint freezes the Trial snapshot" in instructions
     assert "`ready_to_finalize` is not completion" in instructions
     assert "`probably_no` or `no`" in instructions
@@ -803,6 +814,12 @@ def test_save_proposal_schema_is_closed_and_discriminated() -> None:
         "described",
         "quantified",
     ]
+    quantified = next(
+        item for item in timing["oneOf"] if item["properties"]["kind"]["const"] == "quantified"
+    )
+    timing_description = quantified["properties"]["description"]["description"]
+    assert "for example, '15 days after randomization'" in timing_description
+    assert "alongside value and unit" in timing_description
     comparison_group = target["properties"]["comparison_groups"]["items"]
     assert "label" not in comparison_group["properties"]
     assert "assignment" in comparison_group["properties"]

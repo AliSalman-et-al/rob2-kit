@@ -20,6 +20,13 @@ The following do not establish affirmative availability on their own:
 - treatment continuation or discontinuation; or
 - a generic censoring rule without actual rates or follow-up accounting.
 
+For mortality, recovery or discharge does not establish vital status at a later
+time point. A total combining completed follow-up, recovery, and death does not
+establish mortality availability. If availability remains unresolved, inspect
+outcome-status or missing-value tables, including supplements. Match their
+outcome and time window to the approved Result. Recovery may inform bias from
+missingness, but does not make unknown vital status observed.
+
 ## Reconcile availability
 
 Keep these quantities distinct for each arm and time point:
@@ -36,8 +43,9 @@ outcome data when follow-up and outcome ascertainment continued.
 
 If some outcomes are missing, assess whether data remain available for nearly
 all randomized participants. Consider whether the missing outcomes could make
-an important difference to this Result, including event rarity for dichotomous
-outcomes. A count below the randomized total does not settle that question.
+an important difference to this Result. For dichotomous outcomes, compare the
+missing count with observed events, not only the randomized denominator.
+A count below the randomized total does not settle that question.
 
 Distinguish administrative censoring at a common data cutoff from censoring
 caused by missing follow-up before the outcome could be observed. For time-to-event Results,

@@ -17,8 +17,9 @@ without asking for signalling answers, progress confirmation, or final approval.
 
 ### 1. Recover or prepare the Batch
 
-Call `get_status` first. Follow `head.next_action`; it is the authoritative next
-operation. Pass its server-owned IDs and `expected_revision` unchanged.
+Call `get_status` first. Follow `head.next_action` and complete any required
+reading before scientific work. Pass server-owned IDs and `expected_revision`
+unchanged.
 
 When the Batch is empty, call `prepare_batch` with only the clinical outcome
 concept from the request. Do not include the Trial name, population, comparison,
@@ -52,13 +53,10 @@ to compare complete reported candidates and resolve gaps from the main report.
 Establish pack applicability from this Trial's source Evidence before proposing
 an assessment. Follow [Establish pack applicability](references/result.md#establish-pack-applicability)
 for unsupported or unresolved designs.
-`search_sources` returns a stable session and opaque `next_cursor`; continue
-that session before treating a bounded result as complete. Query suggestions are
-alternatives and vocabulary, not a checklist: choose relevant wording from
-inspected Sources. A zero-hit receipt describes only that lexical query and
-never proves scientific absence.
 Use registry, protocol, SAP, or supplement Sources for material competing
-definitions and missing context after the main-report reading.
+definitions and missing context after the main-report reading. For search modes,
+continuation, and no-hit recovery, follow
+[Reuse inspected passage handles](references/evidence.md#reuse-inspected-passage-handles).
 
 Choose in this order:
 
@@ -99,12 +97,14 @@ Present the exact immutable Proposal Review and stop for the researcher. If the
 researcher corrects a Result, use it as source-review direction and save a
 complete replacement card. Present the fresh Review.
 
-After explicit approval in conversation, call `request_proposal_approval`. Its
+After explicit approval in conversation, call `request_proposal_approval` with
+the empty arguments object `{}`. Its
 client elicitation binds approval to that Review. Then call `get_status`.
 For each approved assessable Trial, recover its approved Result and repeat the
 [bounded text reading](references/read-main-report.md) when the Trial
-becomes active, before answering its first Domain. Researcher messages after
-approval do not set or revise signalling answers.
+becomes active. Finish when reading status is `complete` or `budget_limited`,
+before answering its first Domain. Researcher messages after approval do not
+set or revise signalling answers.
 
 ### 5. Assess the next Domain
 
@@ -133,8 +133,9 @@ premise, use bounded discovery across the relevant Sources. Follow
 lexical no-hit recovery. Stop when the proposition and remaining uncertainty
 are grounded, or bounded discovery leaves a stated information limit.
 
-For each active answer, select exactly one server-issued `options[].id` from
-the current question card and submit it as `answers[].option_id`. The server
+For each answer, copy exactly one server-issued `options[].id` from
+the current question card into `answers[].option_id`, character for character.
+Treat it as opaque text; do not reconstruct it from memory. The server
 resolves that identity to the official RoB 2 code before constructing the
 checkpoint. Do not submit both an option ID and a separate answer code, and do
 not invent option IDs after a card or pack version changes. The checkpoint and
@@ -162,11 +163,12 @@ invent affirmative Evidence.
 
 ### 6. Audit and commit the Domain once
 
-Derive the complete active path from the returned activation predicates and your
-answers. If you cannot reliably resolve that path, answer every question returned
-for the Domain. Use current card option IDs and supported bases for every answer
-you draft. Submit the complete set in one `save_domain_judgment` call. The server
-resolves activation from your answers and commits only active answers.
+Draft an answer for every question returned for the Domain, including questions
+whose `active` flag is currently false. That flag reflects the saved state;
+your new answers can activate further questions in the same call. Use current
+card option IDs and supported bases for every answer. Submit the complete set
+in one `save_domain_judgment` call. The server resolves activation from your
+answers and commits only active answers.
 
 Before saving, compare each active answer with the approved Result in the
 current Domain context: outcome definition, population, comparison, and time
@@ -180,8 +182,9 @@ and its bases support the claims attributed to them.
 For D3.1, run the **availability audit** before saving: Yes/Probably Yes needs
 actual outcome-availability evidence; analysis membership, planned or scheduled
 follow-up, treatment continuation or discontinuation, and a generic censoring
-rule alone do not suffice. Use [Missing outcome data](references/missing.md) for
-the detailed audit and the administrative-cutoff/missing-follow-up distinction.
+rule alone do not suffice. For mortality, recovery or discharge alone does not
+establish later vital status. Use [Missing outcome data](references/missing.md)
+to reconcile outcome-specific counts, follow-up, and censoring.
 
 Only question 3.1 may carry `missing_data` rows. Keep randomized, observed,
 analyzed, imputed, and excluded counts distinct. The server reuses answer
@@ -190,10 +193,10 @@ For an optional count preview before saving D3, follow
 [Reconcile availability](references/missing.md#reconcile-availability).
 
 Apply every reported repair and retain other drafted answers. Add missing
-questions to the existing answer set. Resolve any further activation from the
-repaired answers before resubmitting. The server ignores inactive answers.
-When the final Domain triggers a
-`multiple_concerns` Repair, supply the requested object and rationale. Do not
+questions to the existing answer set; include every returned question before
+resubmitting. The server ignores inactive answers.
+When the final Domain triggers a `multiple_concerns` Repair, supply the
+requested object and rationale. Do not
 send that field otherwise.
 
 ### 7. Continue every Trial

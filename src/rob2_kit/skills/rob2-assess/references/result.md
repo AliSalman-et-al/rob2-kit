@@ -48,6 +48,11 @@ Evidence support or scientific correctness.
 }
 ```
 
+For numeric timing, include the description as well as the value and unit. It
+preserves the time origin or window, for example:
+
+`{"kind": "quantified", "description": "15 days after randomization", "value": "15", "unit": "days"}`
+
 ## Establish pack applicability
 
 Identify the unit of randomization and whether the trial uses a parallel or
@@ -142,7 +147,9 @@ statistic/value/unit group value, or complete category axes plus cell value.
 Precision is supported separately. Do not splice an endpoint name from one
 passage with all quantities from another.
 
-Keep quantities as Source strings. Do not invent statistics or units. For a
+Keep quantities as Source strings. Put a comparative estimate's reported
+interval in `precision`. Keep a group statistic's label, value, and unit in
+their separate fields. Do not invent statistics or units. For a
 comparative effect, omit optional `group_values` unless the Source states one
 unambiguous statistic and unit for every target group. Reported group IDs are
 structural references and must match target group IDs.

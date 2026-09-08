@@ -6,7 +6,8 @@ Read each Trial's main report at two checkpoints:
 2. After approval, when that Trial becomes active, before answering its first
    Domain. Recover the approved Result first, then repeat the bounded reading.
 
-Use the same full captured Source for both reads. Both passes
+Use the same full captured Source for both reads. Copy the returned `source_id`
+exactly. Use it with the same `trial_id`. Both passes
 use text only and the same source-order prefix, up to 65,536 UTF-8 bytes of
 source text per report per pass, stopping at whole-line boundaries. When the
 Source text fits, read all of it.
@@ -20,15 +21,32 @@ Proposal Review remains the only researcher gate.
    `trial_id` and `windows` set to the returned `required_ranges`. The server
    computes this bounded batch of prefix windows; do not tally UTF-8 bytes or
    model tokens yourself.
-3. Call `get_status` again after reading the returned windows to obtain the
-   remaining required ranges. A partial page remains unfinished until its
-   required lines have been returned.
+3. If `read_pages` returns nonempty `data.remaining_windows`, call it again
+   with the same `trial_id` and `windows` set to that list. Omit `source_id`,
+   `pages`, and top-level `start_line`. Repeat until no windows remain, then
+   call `get_status` for further required ranges. A partial page remains
+   unfinished until its required lines have been returned.
 4. Stop the mandatory pass when `get_status` reports `complete` or
    `budget_limited`. At the ceiling, preserve the partial-coverage status and
    unread-range navigation, then continue the workflow.
 
 Preserve exact page and line coordinates for unfinished ranges after an
 interruption.
+
+The `read_pages` arguments have this shape; replace the example identifiers
+and range with the returned recovery values:
+
+```json
+{"trial_id": "fictional_trial", "windows": [{"source_id": "sh_0123456789abcdef", "page": 1, "start_line": 1, "end_line": 40}]}
+```
+
+For an independent read using `source_id` and `pages`, split page lists longer
+than 10 into separate calls. For recovery, use the returned `windows` and
+`remaining_windows` continuation instead.
+
+`read_pages` packs windows into bounded responses and preserves whole lines.
+A single line larger than its ordinary transport budget is returned intact.
+The transport budget does not change the source-byte ceiling for either pass.
 
 Inspect each returned window. `budget_limited` does not mean the full report was
 read. Recorded delivery does not establish comprehension.
@@ -48,15 +66,27 @@ If a repair reports incomplete reading, call `get_status` and read the Trial's
 `required_ranges` before resubmitting. Selecting a search hit or an abstract
 does not satisfy the required prefix.
 
+`get_domain_context` also returns `reading_recovery`. When its status is
+`required`, read its issued windows before answering. When it is
+`budget_limited`, its windows navigate omitted text for targeted discovery;
+they do not extend the mandatory pass.
+
+Status may omit selected Evidence quotations to keep progress checks compact.
+Recover an unfamiliar omitted passage with its `recovery.trial_id` and
+`recovery.windows` before using it. An Evidence handle does not establish that
+its text remains available in the current context.
+
 ## Keep the factual orientation
 
 Identify the design, randomized groups, population and flow, ascertainment,
-reported Results, and pointers to a protocol or SAP. Keep a brief factual
-orientation with source coordinates and unresolved facts. Retain useful passages
-through the existing Evidence-selection operations.
+reported Results, and pointers to a protocol or SAP. Keep the orientation brief:
+record useful Source terms beside their page/line references and unresolved
+facts. Use these notes to guide targeted searches and recover exact passages.
+Answers still need inspected Evidence. Retain useful passages through the
+existing Evidence-selection operations.
 
 After the first read, choose the Result. After the second, use the approved
-Result to assess the Domains. Use Source terminology for targeted discovery.
+Result to assess the Domains.
 Inspect omitted methods, flow, tables, or other relevant passages when they could
 resolve a needed premise. Include relevant supplements and plans in that discovery.
 The reading ceiling limits the mandatory pass, not later targeted reads or

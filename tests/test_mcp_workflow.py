@@ -221,6 +221,55 @@ def test_domain_query_suggestions_include_executable_alternative_wording(tmp_pat
     )
 
 
+def test_d3_availability_suggestions_find_unknown_mortality_status_in_supplement(
+    tmp_path: Path,
+) -> None:
+    workspace = _workspace(tmp_path)
+    trial = workspace / "input" / "trial"
+    (trial / "supplement.txt").write_text(
+        "Table S5: mortality status unknown at day 29.\n",
+        encoding="utf-8",
+    )
+    (trial / "sources.toml").write_text(
+        'roles = { "supplement.txt" = "supplement" }\n',
+        encoding="utf-8",
+    )
+    evidence = _prepared_evidence(workspace)
+    _call(workspace, "save_proposal", _proposal_args(workspace, [_result(evidence)]))
+    _review(workspace)
+    _read_required_main_reports(workspace)
+
+    revision = int(_call(workspace, "get_status", {})["head"]["state_revision"])
+    for domain_id in ("domain:randomization", "domain:deviations"):
+        saved = _call(
+            workspace,
+            "save_domain_judgment",
+            _domain_draft("trial", domain_id, revision, evidence),
+        )
+        assert saved["outcome"] == "success", saved
+        revision = int(saved["head"]["state_revision"])
+
+    context = _call(workspace, "get_domain_context", {})["data"]
+    question = next(
+        item for item in context["questions"] if item["id"] == "sq:missing:data-available"
+    )
+    unknown = next(
+        item
+        for item in question["query_suggestions"]
+        if item["query"] == "mortality status unknown"
+    )
+    assert unknown["mode"] == "all"
+    assert unknown["source_role"] == "supplement"
+    result = _call(
+        workspace,
+        "search_sources",
+        {"trial_id": "trial", "query": unknown["query"], "mode": unknown["mode"]},
+    )
+    assert result["outcome"] == "success"
+    assert result["data"]["hits"]
+    assert result["data"]["hits"][0]["source_id"] != evidence["source_id"]
+
+
 def test_domain_query_suggestions_execute_alternative_wording_after_exact_no_hit(
     tmp_path: Path,
 ) -> None:

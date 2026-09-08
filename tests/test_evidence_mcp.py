@@ -23,6 +23,7 @@ from rob2_kit.application.evidence import (
     _normalized_contains,
     _search_receipt,
 )
+from rob2_kit.application.source_handles import resolve_source_handle
 from rob2_kit.packs import SCIENTIFIC_PACK
 
 
@@ -130,7 +131,9 @@ def test_initial_multi_token_narrow_no_hit_offers_same_scoped_any_search(
         {key: value for key, value in action.items() if key not in {"kind", "operation"}},
     )["data"]
     assert widened["mode"] == "any"
-    assert _search_receipt(workspace, widened["search_receipt"])["sources"][0]["id"] == source_id
+    assert _search_receipt(workspace, widened["search_receipt"])["sources"][0]["id"] == (
+        resolve_source_handle(workspace, "trial", source_id)
+    )
 
 
 def test_narrow_no_hit_diagnostic_excludes_ineligible_searches(tmp_path: Path) -> None:
@@ -241,8 +244,14 @@ def test_search_returns_multiple_source_windows_for_one_matching_page(
     assert [hit["end_line"] for hit in result["hits"]] == [1, 4]
     receipt = _search_receipt(workspace, result["search_receipt"])
     assert receipt["hits"] == [
-        {"source_id": result["hits"][0]["source_id"], "page": 1},
-        {"source_id": result["hits"][1]["source_id"], "page": 1},
+        {
+            "source_id": resolve_source_handle(workspace, "trial", result["hits"][0]["source_id"]),
+            "page": 1,
+        },
+        {
+            "source_id": resolve_source_handle(workspace, "trial", result["hits"][1]["source_id"]),
+            "page": 1,
+        },
     ]
 
 
@@ -592,7 +601,7 @@ def test_search_interleaves_sources_then_uses_fts_bm25_within_source(
         article_ranks = connection.execute(
             "SELECT page,bm25(pages_fts) FROM pages_fts "
             "WHERE pages_fts MATCH ? AND source_id=? ORDER BY bm25(pages_fts),page",
-            ('"alpha" AND "beta"', article["id"]),
+            ('"alpha" AND "beta"', resolve_source_handle(workspace, "trial", article["id"])),
         ).fetchall()
     assert article_ranks[0][0] != 1
 
@@ -668,7 +677,13 @@ def test_search_reserves_one_hit_per_matching_source_within_limit(tmp_path: Path
     assert result["data"]["truncated"] is True
     assert pairs[0][0] == article_source["id"]
     assert pairs[1] == (protocol_source["id"], 1)
-    expected_hits = [{"source_id": source_id, "page": page} for source_id, page in pairs]
+    expected_hits = [
+        {
+            "source_id": resolve_source_handle(workspace, "trial", source_id),
+            "page": page,
+        }
+        for source_id, page in pairs
+    ]
     receipt = _search_receipt(workspace, result["data"]["search_receipt"])
     assert receipt["hits"] == expected_hits
     state = _state(workspace)
@@ -745,7 +760,13 @@ def test_search_replays_bm25_order_from_the_selected_trial_only(tmp_path: Path) 
     assert result["data"]["total_matches"] == 2
 
     receipt = _search_receipt(workspace, result["data"]["search_receipt"])
-    assert receipt["hits"] == [{"source_id": source_id, "page": page} for source_id, page in pairs]
+    assert receipt["hits"] == [
+        {
+            "source_id": resolve_source_handle(workspace, "trial", source_id),
+            "page": page,
+        }
+        for source_id, page in pairs
+    ]
 
 
 def test_numbered_page_lines_select_exact_source_text(tmp_path: Path) -> None:
@@ -964,6 +985,101 @@ def test_read_pages_returns_bounded_line_windows_with_continuation(tmp_path: Pat
     assert next_page["numbered_text"].startswith(f"{next_page['returned_start_line']}|")
 
 
+def test_read_pages_packs_request_order_and_returns_remaining_windows(tmp_path: Path) -> None:
+    workspace = _workspace(tmp_path)
+    trial = workspace / "input" / "trial"
+    (trial / "main.txt").write_text("short\n", encoding="utf-8")
+    (trial / "supplement.txt").write_text(
+        "\n".join("é" * 30 for _ in range(1_000)) + "\n",
+        encoding="utf-8",
+    )
+    (trial / "protocol.txt").write_text("later requested text " * 10 + "\n", encoding="utf-8")
+    _call(
+        workspace,
+        "prepare_batch",
+        {"requested_outcome": "requested outcome", "expected_revision": 0},
+    )
+    sources = _call(workspace, "list_sources", {"trial_id": "trial"})["data"]["sources"]
+    main = next(source for source in sources if source["label"] == "main.txt")
+    supplement = next(source for source in sources if source["label"] == "supplement.txt")
+    protocol = next(source for source in sources if source["label"] == "protocol.txt")
+
+    first = _call(
+        workspace,
+        "read_pages",
+        {
+            "trial_id": "trial",
+            "windows": [
+                {"source_id": main["id"], "page": 1, "start_line": 1, "end_line": 1},
+                {
+                    "source_id": supplement["id"],
+                    "page": 1,
+                    "start_line": 1,
+                    "end_line": 1_000,
+                },
+                {"source_id": protocol["id"], "page": 1, "start_line": 1, "end_line": 1},
+            ],
+        },
+    )
+    assert first["outcome"] == "success"
+    pages = first["data"]["pages"]
+    assert [page["source_id"] for page in pages] == [main["id"], supplement["id"]]
+    supplement_page = pages[1]
+    assert len(supplement_page["numbered_text"]) > 12_000
+    assert sum(len(page["numbered_text"]) for page in pages) <= 24_000
+    remaining = first["data"]["remaining_windows"]
+    assert remaining == [
+        {
+            "source_id": supplement["id"],
+            "page": 1,
+            "start_line": supplement_page["returned_end_line"] + 1,
+            "end_line": 1_000,
+        },
+        {"source_id": protocol["id"], "page": 1, "start_line": 1, "end_line": 1},
+    ]
+    with sqlite3.connect(workspace / ".rob2-kit" / "derivative.sqlite3") as connection:
+        assert (
+            connection.execute(
+                "SELECT 1 FROM page_reads WHERE source_id=?", (protocol["id"],)
+            ).fetchone()
+            is None
+        )
+
+    seen = list(range(1, supplement_page["returned_end_line"] + 1))
+    while remaining:
+        continuation = _call(
+            workspace,
+            "read_pages",
+            {"trial_id": "trial", "windows": remaining},
+        )
+        assert continuation["outcome"] == "success"
+        for page in continuation["data"]["pages"]:
+            assert page["source_id"] in {supplement["id"], protocol["id"]}
+            if page["source_id"] == supplement["id"]:
+                seen.extend(range(page["returned_start_line"], page["returned_end_line"] + 1))
+        remaining = continuation["data"]["remaining_windows"]
+    assert seen == list(range(1, 1_001))
+
+
+def test_read_pages_oversized_single_line_makes_progress(tmp_path: Path) -> None:
+    workspace = _workspace(tmp_path)
+    (workspace / "input" / "trial" / "main.txt").write_text("x" * 30_000, encoding="utf-8")
+    _call(
+        workspace,
+        "prepare_batch",
+        {"requested_outcome": "requested outcome", "expected_revision": 0},
+    )
+    source = _call(workspace, "list_sources", {"trial_id": "trial"})["data"]["sources"][0]
+    result = _call(
+        workspace,
+        "read_pages",
+        {"trial_id": "trial", "source_id": source["id"], "pages": [1]},
+    )
+    page = result["data"]["pages"][0]
+    assert page["returned_end_line"] >= 1
+    assert page["passage_ref"] is not None
+
+
 @pytest.mark.parametrize(
     "source_text, end_line",
     (
@@ -1151,7 +1267,10 @@ def test_search_source_scope_preserves_broad_order_and_receipt_auditability(
     ]
     receipt = _search_receipt(workspace, scoped["data"]["search_receipt"])
     assert receipt["sources"] == [
-        {"id": protocol_source["id"], "projection_hash": protocol_source["projection_hash"]}
+        {
+            "id": resolve_source_handle(workspace, "trial", protocol_source["id"]),
+            "projection_hash": protocol_source["projection_hash"],
+        }
     ]
     state = _state(workspace)
     trial_record = next(item for item in state["batch"]["trials"] if item["id"] == "trial")
@@ -1191,7 +1310,7 @@ def test_search_source_scope_preserves_broad_order_and_receipt_auditability(
             "trial_id": "trial",
             "query": "randomization",
             "mode": "any",
-            "source_id": "source_" + "0" * 64,
+            "source_id": "sh_" + "0" * 16,
         },
     )
     assert unknown["outcome"] == "condition"
