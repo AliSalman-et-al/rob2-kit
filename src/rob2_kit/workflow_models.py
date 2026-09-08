@@ -419,7 +419,10 @@ class DescribedTiming(StrictModel):
 class QuantifiedTiming(StrictModel):
     kind: Literal["quantified"] = Field(description="Use when timing has a numeric value and unit.")
     description: NonBlankText = Field(
-        description="Source-supported description of the target time point or window.",
+        description=(
+            "Required source-supported timing description, including the time origin or window; "
+            "for example, '15 days after randomization'. Supply alongside value and unit."
+        ),
     )
     value: NonBlankText = Field(description="Source-reported timing value.")
     unit: NonBlankText = Field(description="Source-reported timing unit.")
@@ -937,7 +940,8 @@ class AssessableResultDraft(StrictModel):
         Field(
             discriminator="form",
             description=(
-                "One reported-result object with required form. For example, a minimal "
+                "One reported-result object with required form, alongside target in the "
+                "Result card. For example, a minimal "
                 "comparative object has form, effect_measure, estimate, and endpoint.name. "
                 "Never place selected Evidence, an Evidence handle, a render, table metadata, "
                 "or a figure object here."
@@ -1147,7 +1151,10 @@ class DomainAnswer(StrictModel):
     question_id: QuestionId = Field(description="Question ID from the current Domain card.")
     option_id: str = Field(
         min_length=1,
-        description="Exactly one server-issued option identity from the current question card.",
+        description=(
+            "Copy one options[].id from the current question card character for character. "
+            "This is an opaque identity, not an answer code."
+        ),
     )
     bases: tuple[DomainBasis, ...] = Field(
         min_length=1,

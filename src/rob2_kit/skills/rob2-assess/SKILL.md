@@ -97,7 +97,8 @@ Present the exact immutable Proposal Review and stop for the researcher. If the
 researcher corrects a Result, use it as source-review direction and save a
 complete replacement card. Present the fresh Review.
 
-After explicit approval in conversation, call `request_proposal_approval`. Its
+After explicit approval in conversation, call `request_proposal_approval` with
+the empty arguments object `{}`. Its
 client elicitation binds approval to that Review. Then call `get_status`.
 For each approved assessable Trial, recover its approved Result and repeat the
 [bounded text reading](references/read-main-report.md) when the Trial
@@ -132,8 +133,9 @@ premise, use bounded discovery across the relevant Sources. Follow
 lexical no-hit recovery. Stop when the proposition and remaining uncertainty
 are grounded, or bounded discovery leaves a stated information limit.
 
-For each active answer, select exactly one server-issued `options[].id` from
-the current question card and submit it as `answers[].option_id`. The server
+For each answer, copy exactly one server-issued `options[].id` from
+the current question card into `answers[].option_id`, character for character.
+Treat it as opaque text; do not reconstruct it from memory. The server
 resolves that identity to the official RoB 2 code before constructing the
 checkpoint. Do not submit both an option ID and a separate answer code, and do
 not invent option IDs after a card or pack version changes. The checkpoint and
@@ -161,11 +163,12 @@ invent affirmative Evidence.
 
 ### 6. Audit and commit the Domain once
 
-Derive the complete active path from the returned activation predicates and your
-answers. If you cannot reliably resolve that path, answer every question returned
-for the Domain. Use current card option IDs and supported bases for every answer
-you draft. Submit the complete set in one `save_domain_judgment` call. The server
-resolves activation from your answers and commits only active answers.
+Draft an answer for every question returned for the Domain, including questions
+whose `active` flag is currently false. That flag reflects the saved state;
+your new answers can activate further questions in the same call. Use current
+card option IDs and supported bases for every answer. Submit the complete set
+in one `save_domain_judgment` call. The server resolves activation from your
+answers and commits only active answers.
 
 Before saving, compare each active answer with the approved Result in the
 current Domain context: outcome definition, population, comparison, and time
@@ -190,8 +193,8 @@ For an optional count preview before saving D3, follow
 [Reconcile availability](references/missing.md#reconcile-availability).
 
 Apply every reported repair and retain other drafted answers. Add missing
-questions to the existing answer set. Resolve any further activation from the
-repaired answers before resubmitting. The server ignores inactive answers.
+questions to the existing answer set; include every returned question before
+resubmitting. The server ignores inactive answers.
 When the final Domain triggers a `multiple_concerns` Repair, supply the
 requested object and rationale. Do not
 send that field otherwise.

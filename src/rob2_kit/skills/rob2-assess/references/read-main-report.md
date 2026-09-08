@@ -32,6 +32,17 @@ Proposal Review remains the only researcher gate.
 Preserve exact page and line coordinates for unfinished ranges after an
 interruption.
 
+The `read_pages` arguments have this shape; replace the example identifiers
+and range with the returned recovery values:
+
+```json
+{"trial_id": "fictional_trial", "windows": [{"source_id": "source_from_response", "page": 1, "start_line": 1, "end_line": 40}]}
+```
+
+For an independent read using `source_id` and `pages`, split page lists longer
+than 10 into separate calls. For recovery, use the returned `windows` and
+`remaining_windows` continuation instead.
+
 `read_pages` packs windows into bounded responses and preserves whole lines.
 A single line larger than its ordinary transport budget is returned intact.
 The transport budget does not change the source-byte ceiling for either pass.

@@ -48,6 +48,11 @@ Evidence support or scientific correctness.
 }
 ```
 
+For numeric timing, include the description as well as the value and unit. It
+preserves the time origin or window, for example:
+
+`{"kind": "quantified", "description": "15 days after randomization", "value": "15", "unit": "days"}`
+
 ## Establish pack applicability
 
 Identify the unit of randomization and whether the trial uses a parallel or

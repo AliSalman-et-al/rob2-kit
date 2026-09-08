@@ -147,3 +147,84 @@ The next evaluation work remains under
 conditions with premise-level annotations and multiple acceptable Evidence
 sets. This cycle implements only the transport, sequencing, and mortality
 guidance defects directly observed here.
+
+## Candidate validation after the changes
+
+Commit `4782085346395b800d6bb84d4b5b300b834001d0` was then evaluated in a
+new isolated runtime. A recorded random draw from the remaining poorly
+performing SUSTER candidates selected Ader 2022, Chalmers 2020, and Spencer
+2020. The abstract-defined Results were day-15 WHO ordinal clinical status,
+eczema at age two years, and posttest English proximal receptive vocabulary.
+Each Proposal was manually checked before approval. Spencer required a
+researcher correction because the first Proposal mislabeled an adjusted mean
+difference as Hedges' g. After correction, the kit correctly classified the
+cluster-randomized design as unsupported and stopped with `needs_input` rather
+than forcing an individual-randomized assessment. A recorded replacement draw
+selected Edalatifard 2020 mortality so that the validation still contained
+three completed five-Domain assessments.
+
+| Trial | D1 | D2 | D3 | D4 | D5 |
+| --- | --- | --- | --- | --- | --- |
+| Ader 2022 | Low | Low | Low | High | Low |
+| Chalmers 2020 | Low | Some concerns | Some concerns | Low | Low |
+| Edalatifard 2020 | Some concerns | High | High | Low | High |
+
+Ader's high D4 judgment is defensible for an open-label ordinal clinical-status
+outcome whose components include care decisions. Chalmers' records identify
+incomplete adherence and control contamination without treating them as proof
+of a substantial outcome effect; the D3 record also keeps roughly 13% missing
+outcome data distinct from reassuring sensitivity analyses. Both assessments
+are coherent with the inspected reports.
+
+Edalatifard correctly kept the randomized population of 34 participants per
+arm separate from the reported subset of 34 versus 28. Six standard-care
+participants received corticosteroids and were excluded from the displayed
+mortality analysis. The high D2 and D3 judgments therefore have direct
+result-specific support, and the low D4 judgment is appropriate for death. Its
+D5 judgment is overconfident. The record answered that analysis selection was
+probably result-driven because ITT, per-protocol, imputed, and survival
+analyses were available, while also stating that no pre-unblinding plan had
+been established. The existence of alternatives alone does not show
+result-based selection; `no_information` and a lower D5 judgment are better
+supported. The Domain 5 reference already states this rule, so this is a model
+reasoning error rather than evidence for more server machinery.
+
+| Trial | Proposal repairs | Domain/final repairs | Input / cached / output tokens |
+| --- | ---: | ---: | ---: |
+| Ader 2022 | 2 | 1 | 4,415,815 / 4,229,632 / 9,440 |
+| Chalmers 2020 | 3 | 9 | 5,297,020 / 5,076,736 / 14,191 |
+| Edalatifard 2020 | 1 | 6 | 4,006,227 / 3,860,224 / 12,433 |
+
+Neither Ader nor Chalmers hit the post-approval reading gate, compared with all
+three cycle-04 runs. Edalatifard hit it once after attempting D1 before
+finishing the second pass, then recovered through the prominent typed windows.
+This supports the sequencing change while showing that the server guard is
+still necessary. The remaining Domain retries came mostly from submitting only
+the currently visible branch question, plus three mistyped opaque option IDs
+and one required overall-judgment decision. Valid answers were retained across
+the activation retries. Chalmers accounted for eight activation retries. The
+optional all-question fallback already supplied the needed cards, but the model
+repeatedly chose incremental saves. The final instructions therefore make one
+answer for every returned Domain question the default and tell the caller to
+copy each opaque option identity character for character. The server continues
+to commit only the active path; no new state layer or relaxed validation was
+added.
+
+Five failed tool calls were schema-shape errors rather than typed repairs. Ader
+first nested `target` inside `reported`, then omitted the required description
+from quantified timing. Chalmers also omitted that description and separately
+requested 12 pages through an input limited to 10. Edalatifard supplied
+`expected_revision` to the zero-argument approval tool. The final guidance adds
+a quantified timing example that preserves the time origin, an executable
+windowed-reading example and page-list limit, and the literal empty approval
+arguments. The timing description remains required because a value and unit do
+not distinguish, for example, time since randomization from time since symptom
+onset.
+
+All three assessed bundles and Spencer's `needs_input` bundle passed the
+product and standalone verifiers. The deterministic observation importer
+reconciled the ten proposal, correction, and assessment transcripts as four
+complete attempts: 341 records, 274 MCP records, 137 unique calls, and no
+source searches. Repeated import produced byte-identical output. These are
+selected development cases with one stochastic run each. The DOI-level label
+sets remain unsuitable as Result-specific accuracy scores.

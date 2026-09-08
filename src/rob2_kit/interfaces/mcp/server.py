@@ -1068,12 +1068,12 @@ def get_domain_context(
     description=(
         "Atomically save answers for one Domain of the Trial's approved Result. Complete the "
         "post-approval bounded main-report text pass before the first Domain save. Supply a "
-        "current option ID and supported bases for every active question. If the complete "
-        "active path is uncertain, answer every returned Domain question using current option "
-        "IDs and supported bases. The server commits only active answers. "
+        "current option ID copied exactly from its card and supported bases for every returned "
+        "Domain question, including currently inactive questions. Draft answers can activate "
+        "further questions in this same save; the server commits only active answers. "
         "Invalid input returns grouped repairs without committing. Apply every reported repair "
         "and retain other drafted answers. Add missing questions to the existing answer set. "
-        "Resolve any further activation from the repaired answers before resubmitting. "
+        "Include every returned question before resubmitting. "
         "The server ignores inactive answers. "
         "Before saving, check each basis against the approved Result and literal "
         "question; justify any inference or unresolved linkage. "
@@ -1094,7 +1094,7 @@ def save_domain_judgment(
         Field(
             min_length=1,
             description=(
-                "A list of question_id, option_id, and bases objects for every active question. "
+                "A list of question_id, option_id, and bases objects for every returned question. "
                 "Definitive "
                 "yes/no needs direct/indirect/contradictory Evidence; probable answers may use "
                 "limitation, absence receipt, context, or inference. Inactive extras are ignored."

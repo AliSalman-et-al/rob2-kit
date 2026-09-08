@@ -58,6 +58,13 @@ For eligible analyses, compare alternative adjustment sets, transformations,
 models, composite definitions, censoring rules, missing-data methods,
 populations, or effect estimates. Apply the same selection question separately.
 
+For 5.3, identify both the eligible alternatives and evidence that reporting
+favoured a subset because of its results. Reporting ITT, per-protocol, imputed,
+and survival analyses together establishes multiplicity, not that selection
+occurred. An inability to rule out selection does not support Yes/Probably Yes.
+When intentions are insufficiently detailed and multiple analyses were possible,
+use No information unless other evidence resolves the selection question.
+
 A detailed reported endpoint or estimate proves neither prespecification nor the
 absence of alternatives. For a non-exact Result, compare the exact approved
 definition and relation rationale with the plan; do not silently assess a more

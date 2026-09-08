@@ -99,6 +99,8 @@ def test_public_output_surface_is_closed_and_within_budget() -> None:
     assert source_scope["anyOf"][0]["pattern"] == r"^source_[0-9a-f]{64}$"
     assert "not printed labels" in read_description
     assert "numbered lines" in read_description
+    assert "data.remaining_windows" in read_description
+    assert "single oversized line is returned intact" in read_description
     assert "required for every read" in read_parameters["properties"]["trial_id"]["description"]
     assert "integer source-page indexes" in read_parameters["properties"]["pages"]["description"]
     assert read_parameters["properties"]["pages"]["examples"] == [[1, 3]]
@@ -134,7 +136,10 @@ def test_public_output_surface_is_closed_and_within_budget() -> None:
         "outside the recoverable narrative budget"
         in workspace_properties["unrecoverable_inline_text_bytes"]["description"]
     )
-    assert "for every active question" in (domain_tool.description or "")
+    assert "for every returned Domain question" in (domain_tool.description or "")
+    assert "including currently inactive questions" in (domain_tool.description or "")
+    assert "Include every returned question before resubmitting" in (domain_tool.description or "")
+    assert "current option ID copied exactly from its card" in (domain_tool.description or "")
     assert "check each basis against the approved Result" in (domain_tool.description or "")
     assert "grouped repairs without committing" in (domain_tool.description or "")
     answer_example = domain_tool.parameters["properties"]["answers"]["examples"][0][0]
@@ -147,6 +152,8 @@ def test_public_output_surface_is_closed_and_within_budget() -> None:
     }
     assert "Omit unless a repair requests" in multiple_concerns["description"]
     assert "never boolean/string" in multiple_concerns["description"]
+    approval_description = by_name["request_proposal_approval"].description or ""
+    assert "has no approval arguments" in approval_description
 
 
 def test_server_and_resource_metadata_are_explicit() -> None:

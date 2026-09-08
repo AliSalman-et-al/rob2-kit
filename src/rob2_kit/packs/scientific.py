@@ -644,7 +644,10 @@ _GUIDANCE: dict[str, QuestionGuidance] = {
                 "Analysis intentions are insufficiently reported despite multiple possible analyses.",
             ),
         ),
-        ("Restrict the assessment to analyses eligible for the reviewer's synthesis.",),
+        (
+            "Restrict the assessment to analyses eligible for the reviewer's synthesis.",
+            "Reporting several analyses together establishes multiplicity, not result-based selection. Inability to rule out selection does not establish that it probably occurred.",
+        ),
         (
             "an endpoint definition",
             "a single ITT analysis",
