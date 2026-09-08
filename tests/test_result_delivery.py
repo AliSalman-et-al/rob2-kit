@@ -15,6 +15,7 @@ from support.rob2 import (
     _domain_draft,
     _prepared_evidence,
     _proposal_args,
+    _read_required_main_reports,
     _result,
     _review,
     _workspace,
@@ -86,6 +87,7 @@ def test_text_only_and_structured_consumers_receive_the_same_workflow_results(
         _proposal_args(workspace, [_result(evidence)]),
     )
     _review(workspace)
+    _read_required_main_reports(workspace)
     context = _assert_text_structured_parity(_wire_call(workspace, "get_domain_context", {}))
     assert context["data"]["trial_id"] == "trial"
     revision = int(context["head"]["state_revision"])

@@ -3,7 +3,14 @@ from __future__ import annotations
 from pathlib import Path
 
 from support.proposal import _state_proposal
-from support.rob2 import _call, _prepared_evidence, _proposal_args, _unavailable_result, _workspace
+from support.rob2 import (
+    _call,
+    _prepared_evidence,
+    _proposal_args,
+    _read_required_main_reports,
+    _unavailable_result,
+    _workspace,
+)
 
 
 def test_unavailable_result_uses_captured_requested_outcome(tmp_path: Path) -> None:
@@ -65,6 +72,7 @@ def test_unavailable_basis_is_not_limited_to_english_phrasing(tmp_path: Path) ->
         "prepare_batch",
         {"requested_outcome": "requested outcome", "expected_revision": 0},
     )
+    _read_required_main_reports(workspace)
     source = _call(workspace, "list_sources", {"trial_id": "trial"})["data"]["sources"][0]
     evidence = _call(
         workspace,

@@ -3,6 +3,8 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
+from rob2_kit.workflow_models import ProposalDraft
+
 MODEL_FACING_PATHS = (
     Path("README.md"),
     Path("CONTEXT.md"),
@@ -56,6 +58,16 @@ def test_domain_references_use_current_handle_only_evidence_contract() -> None:
         )
     }
     assert stale == {}
+
+
+def test_result_reference_contains_a_valid_save_proposal_example() -> None:
+    reference = Path("src/rob2_kit/skills/rob2-assess/references/result.md").read_text(
+        encoding="utf-8"
+    )
+    examples = re.findall(r"```json\s*(.*?)\s*```", reference, flags=re.DOTALL)
+
+    assert len(examples) == 1
+    ProposalDraft.model_validate_json(examples[0])
 
 
 def test_measurement_reference_keeps_ordered_outcome_specific_audit() -> None:

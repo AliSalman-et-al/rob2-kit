@@ -287,6 +287,11 @@ def _acceptance_result(_evidence: dict[str, Any]) -> dict[str, Any]:
         "kind": "assessable",
         "trial_id": "trial",
         "relation": "exact",
+        "applicability": {
+            "design": "individual_parallel",
+            "rationale": "The fixture represents an individually randomized parallel trial.",
+            "evidence": [_evidence["handle"]],
+        },
         "target": {
             "measurement": {"method": phrase},
             "time_point_or_window": {"kind": "described", "description": phrase},
@@ -325,6 +330,9 @@ async def _verify_proposal(client: Client) -> None:
     rows = sources.get("sources")
     if not isinstance(rows, list) or len(rows) != 1:
         raise ValueError("acceptance source catalog differs")
+    await _call(
+        client, "read_pages", {"trial_id": "trial", "source_id": rows[0]["id"], "pages": [1]}
+    )
     selected = await _call(
         client,
         "select_text_evidence",
@@ -413,6 +421,7 @@ async def _verify_domains(client: Client, evidence: dict[str, Any], domains: lis
     source_id = source_rows[0].get("id")
     if not isinstance(source_id, str):
         raise ValueError("acceptance narrow-search Source ID is unavailable")
+    await _call(client, "read_pages", {"trial_id": "trial", "source_id": source_id, "pages": [1]})
     narrow = await _call(
         client,
         "search_sources",

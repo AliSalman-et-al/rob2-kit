@@ -27,6 +27,7 @@ from rob2_kit.application.domains import get_domain_context as _get_domain_conte
 from rob2_kit.application.domains import save_domain_judgment as _save_domain_judgment
 from rob2_kit.application.evidence import list_sources as _list_sources
 from rob2_kit.application.evidence import read_pages as _read_pages
+from rob2_kit.application.evidence import record_read_coverage as _record_read_coverage
 from rob2_kit.application.evidence import render_page as _render_page
 from rob2_kit.application.evidence import search_sources as _search_sources
 from rob2_kit.application.evidence import (
@@ -48,6 +49,7 @@ from rob2_kit.workflow_models import (
     DomainRevisionBasis,
     ExpectedRevision,
     Identity,
+    MissingDataRow,
     MultipleConcernsDecision,
     NormalizedCoordinate,
     PageNumber,
@@ -135,6 +137,7 @@ def _compact_domain_context_transport(value: dict[str, Any]) -> dict[str, Any]:
             "comparison_cards",
             "evidence",
             "evidence_workspace",
+            "reading_recovery",
         )
         if key in data
     }
@@ -366,7 +369,10 @@ def prepare_batch(
 @mcp.tool(
     name="get_status",
     title="Get workflow status",
-    description="Read workflow status. Returns phase, revision, dispositions, and next action.",
+    description=(
+        "Read phase, revision, dispositions, next action, and main-report reading status. "
+        "Check after bounded reads to determine whether the required pass is finished."
+    ),
     annotations=_READ_ONLY,
     output_schema=output_schema("get_status"),
 )
@@ -531,6 +537,14 @@ def read_pages(
             requested_start = item["requested_start"]
             requested_end = item["requested_end"]
             if not lines:
+                _record_read_coverage(
+                    _workspace(),
+                    request_trial,
+                    item["source_id"],
+                    item["page"],
+                    0,
+                    0,
+                )
                 numbered_pages.append(
                     {
                         **({"source_id": item["source_id"]} if include_source else {}),
@@ -590,6 +604,15 @@ def read_pages(
                     "passage_ref": passage_ref,
                 }
             )
+            if end_line >= requested_start:
+                _record_read_coverage(
+                    _workspace(),
+                    request_trial,
+                    item["source_id"],
+                    item["page"],
+                    requested_start,
+                    end_line,
+                )
         return {"outcome": "success", "pages": numbered_pages}
 
     return _invoke("read_pages", read)
@@ -718,7 +741,9 @@ def select_visual_evidence(
     name="save_proposal",
     title="Save Result proposal",
     description=(
-        "Submit typed Result cards after selecting supporting Evidence. The first save needs one "
+        "Submit typed Result cards after the required bounded full-Source text pass for each main "
+        "report and selecting "
+        "supporting Evidence. The first save needs one "
         "card per Trial; a pending Review accepts only cards being replaced and preserves the "
         "rest. Each card is assessable or unavailable (Evidence is separate). Assessable cards "
         "require target facets, at least two randomized groups, intended population/effect "
@@ -745,7 +770,10 @@ def save_proposal(
         Field(description="Current revision from get_status; required for a non-stale proposal."),
     ],
 ) -> ToolResult:
-    proposal = ProposalDraft(results=tuple(results), expected_revision=expected_revision)
+    proposal = ProposalDraft(
+        results=tuple(results),
+        expected_revision=expected_revision,
+    )
     return _invoke("save_proposal", lambda: _save_proposal(_workspace(), proposal))
 
 
@@ -957,11 +985,12 @@ async def request_proposal_approval(ctx: Context) -> ToolResult:
         "Read the approved Result, current checkpoint, Evidence workspace, comparison cards, "
         "and questions for a Domain. Question cards contain scientific guidance, activation "
         "predicates, server-issued answer options, and executable search suggestions. "
-        "Choose wording from inspected Sources. If complete passage text is unfamiliar or "
-        "uncertain after a restart or context compaction, and Evidence text is omitted, call "
+        "Before the first Domain answer, repeat the bounded main-report text pass after approval. "
+        "Reuse adequate Evidence. Search unresolved premises with wording from inspected Sources. "
+        "For a D3 count preview, pass missing_data; the call does not commit those rows. "
+        "If omitted Evidence is unfamiliar or uncertain after a restart or compaction, call "
         "read_pages with recovery.trial_id and recovery.windows. Use the returned revision and "
-        "option IDs when "
-        "saving active answers."
+        "option IDs when saving active answers."
     ),
     annotations=_READ_ONLY,
     output_schema=output_schema("get_domain_context"),
@@ -979,9 +1008,30 @@ def get_domain_context(
         DomainId | None,
         Field(description="RoB 2 Domain ID; omit to receive the current active Domain."),
     ] = None,
+    missing_data: Annotated[
+        list[MissingDataRow] | None,
+        Field(
+            description=(
+                "Optional D3.1 count rows to preview scope-matched arithmetic before answering. "
+                "Each preview row requires a nonempty basis of current-Trial Evidence references; "
+                "there is no answer Evidence to inherit. "
+                "The preview neither commits rows nor establishes that counts were extracted "
+                "correctly. Submit chosen rows with D3.1 when saving; row basis may then be "
+                "omitted to reuse the answer Evidence."
+            )
+        ),
+    ] = None,
 ) -> ToolResult:
     return _invoke(
-        "get_domain_context", lambda: _get_domain_context(_workspace(), trial_id, domain_id)
+        "get_domain_context",
+        lambda: _get_domain_context(
+            _workspace(),
+            trial_id,
+            domain_id,
+            [row.model_dump(mode="json", exclude_none=True) for row in missing_data]
+            if missing_data is not None
+            else None,
+        ),
     )
 
 
@@ -989,9 +1039,10 @@ def get_domain_context(
     name="save_domain_judgment",
     title="Save Domain judgment",
     description=(
-        "Atomically save answers for one Domain of the Trial's approved Result. Supply one "
-        "current option ID and bases for every question activated by the selected options; "
-        "inactive extra answers are ignored. Invalid input returns grouped repairs without "
+        "Atomically save answers for one Domain of the Trial's approved Result. Complete the "
+        "post-approval bounded main-report text pass before the first Domain save. Supply a "
+        "current option ID and bases for every active question. Inactive answers are ignored. "
+        "Invalid input returns grouped repairs without "
         "committing. Before saving, check each basis against the approved Result and literal "
         "question; justify any inference or unresolved linkage. "
         "The fifth accepted Domain freezes the Trial snapshot and advances "

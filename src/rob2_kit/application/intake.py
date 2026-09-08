@@ -634,6 +634,7 @@ def _clear_discarded_derivatives(root: Path) -> None:
             "evidence_handles",
             "search_receipts",
             "renders",
+            "page_reads",
         ):
             connection.execute(f"DELETE FROM {table}")
         connection.execute("DELETE FROM pages_fts")
@@ -705,15 +706,44 @@ def approve_review(
         terminals = dict(state.get("terminals", {}))
         terminal_records: dict[str, dict[str, Any]] = {}
         for result in state["proposal"]["payload"]["results"]:
-            if result.get("kind") == "unavailable":
+            applicability = result.get("applicability")
+            design = applicability.get("design") if isinstance(applicability, dict) else None
+            unsupported_design = result.get("kind") == "assessable" and design in {
+                "cluster_randomized",
+                "crossover",
+                "unclear",
+            }
+            if result.get("kind") == "unavailable" or unsupported_design:
+                if unsupported_design:
+                    rationale = str(applicability.get("rationale", "")).strip()
+                    reason = (
+                        "The captured Trial design is unsupported by the installed "
+                        f"parallel-assignment pack ({design})."
+                        if design in {"cluster_randomized", "crossover"}
+                        else "The captured Trial design could not be established for the installed "
+                        f"parallel-assignment pack ({design})."
+                    )
+                    missing_facts = (
+                        "A RoB 2 pack supporting the documented Trial design is required."
+                        if design in {"cluster_randomized", "crossover"}
+                        else (
+                            "Source information establishing the Trial design and unit of "
+                            "randomization is required."
+                        ),
+                    )
+                    if rationale:
+                        missing_facts = (f"Applicability rationale: {rationale}", *missing_facts)
+                else:
+                    reason = "The requested Result is not assessable from the captured Sources."
+                    missing_facts = tuple(
+                        item.get("fact", "") if isinstance(item, dict) else item
+                        for item in result.get("missing_facts", [])
+                    )
                 terminal = {
                     "trial_id": result["trial_id"],
                     "disposition": "needs_input",
-                    "reason": "The requested Result is not assessable from the captured Sources.",
-                    "missing_facts": [
-                        item.get("fact", "") if isinstance(item, dict) else item
-                        for item in result.get("missing_facts", [])
-                    ],
+                    "reason": reason,
+                    "missing_facts": list(missing_facts),
                 }
                 terminal["identity"] = _identity(terminal)
                 terminals[terminal["identity"]] = terminal

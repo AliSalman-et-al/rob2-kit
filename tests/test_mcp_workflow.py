@@ -236,6 +236,7 @@ def test_domain_query_suggestions_execute_alternative_wording_after_exact_no_hit
     evidence = _prepared_evidence(workspace)
     _call(workspace, "save_proposal", _proposal_args(workspace, [_result(evidence)]))
     _review(workspace)
+    _read_required_main_reports(workspace)
     revision = int(_call(workspace, "get_domain_context", {})["head"]["state_revision"])
     first_domain = SCIENTIFIC_PACK.domains[0].id
     saved = _call(
@@ -308,6 +309,7 @@ def test_fastmcp_resolves_text_and_figure_evidence_handles(tmp_path: Path) -> No
         "prepare_batch",
         {"requested_outcome": "requested outcome", "expected_revision": 0},
     )
+    _read_required_main_reports(workspace)
     sources = _call(workspace, "list_sources", {"trial_id": "trial"})["data"]["sources"]
     main_source = next(source for source in sources if source["label"] == "main.txt")
     narrative = _call(
@@ -383,6 +385,7 @@ def test_proposal_cannot_use_another_trials_selected_evidence(tmp_path: Path) ->
         "prepare_batch",
         {"requested_outcome": "requested outcome", "expected_revision": 0},
     )
+    _read_required_main_reports(workspace)
     source = _call(workspace, "list_sources", {"trial_id": "second"})["data"]["sources"][0]
     foreign = _call(
         workspace,
@@ -400,7 +403,13 @@ def test_proposal_cannot_use_another_trials_selected_evidence(tmp_path: Path) ->
     unavailable["trial_id"] = "second"
     repair = _call(workspace, "save_proposal", _proposal_args(workspace, [result, unavailable]))
     assert repair["outcome"] == "repair"
-    assert any(item["code"] == "result_value_not_supported" for item in repair["repairs"])
+    assert repair["repairs"] == [
+        {
+            "path": "/results/0/applicability/evidence/0",
+            "code": "cross_trial_evidence",
+            "detail": "applicability Evidence must resolve to this Trial",
+        }
+    ]
 
 
 def test_counters_capture_structural_work(tmp_path: Path) -> None:

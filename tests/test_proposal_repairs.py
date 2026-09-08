@@ -10,6 +10,7 @@ from support.rob2 import (
     _call,
     _prepared_evidence,
     _proposal_args,
+    _read_required_main_reports,
     _result,
     _result_for_trial,
     _workspace,
@@ -43,6 +44,7 @@ def _multi_trial_evidence(workspace: Path) -> dict[str, dict[str, object]]:
         "prepare_batch",
         {"requested_outcome": "requested outcome", "expected_revision": 0},
     )
+    _read_required_main_reports(workspace)
     evidence: dict[str, dict[str, object]] = {}
     for trial_id in ("trial-a", "trial-b"):
         source = next(

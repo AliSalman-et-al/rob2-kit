@@ -3,6 +3,74 @@
 Use this reference while choosing and constructing each Proposal Result. Use the
 live `save_proposal` schema for field shapes.
 
+## Construct the request
+
+This fictional example shows the shape of one complete `save_proposal` request
+for an assessable comparative Result. It assumes supporting Evidence has already
+been selected. Replace every example fact and identifier with information from
+the current Trial. Use the current `expected_revision` from `get_status` and
+same-Trial Evidence handles returned by the tools. Choose `relation` and
+`applicability` from inspected Sources; the example values are not defaults.
+The live schema remains authoritative. Schema validity alone does not establish
+Evidence support or scientific correctness.
+
+```json
+{
+	"expected_revision": 7,
+	"results": [
+		{
+			"kind": "assessable",
+			"trial_id": "fictional_quiz_trial",
+			"relation": "exact",
+			"applicability": {
+				"design": "individual_parallel",
+				"rationale": "Learners were individually randomized to two parallel teaching groups.",
+				"evidence": ["eh_0000000000000001"]
+			},
+			"target": {
+				"measurement": {"method": "Number of correct answers on the course quiz"},
+				"time_point_or_window": {"kind": "described", "description": "At course completion"},
+				"comparison_groups": [
+					{"id": "practice", "assignment": "Spaced practice"},
+					{"id": "review", "assignment": "Single review session"}
+				],
+				"intended_analysis_population": "All randomized learners",
+				"intended_effect_measure": "Mean difference"
+			},
+			"reported": {
+				"form": "comparative_effect",
+				"effect_measure": "Mean difference",
+				"estimate": "2.3",
+				"endpoint": {"name": "Course quiz score"}
+			}
+		}
+	]
+}
+```
+
+## Establish pack applicability
+
+Identify the unit of randomization and whether the trial uses a parallel or
+crossover design. Record `applicability` with a concise rationale and inspected
+Evidence from this Trial. Set `design` to `individual_parallel`,
+`cluster_randomized`, or `crossover` when Sources establish that design. Each
+known design requires same-Trial Evidence handles. Use `design:"unclear"` when
+the design remains unresolved. The server determines pack support from `design`.
+
+If design is unclear, use bounded discovery in the main report and relevant
+methods Sources. Keep unresolved applicability explicit after that discovery;
+it must remain unassessed. A word such as "group" or "site" alone does not
+establish a randomization unit. Classify support from source facts, without a
+default assumption of individual randomization.
+
+Present a complete available Result with its unsupported or unresolved
+applicability in the existing Proposal Review. Approval records an unassessed
+disposition; it does not authorize the parallel pack for that design. Keep this
+distinct from an unavailable Result, which means Result facts are missing.
+For a known unsupported design, the missing requirement is the appropriate
+RoB 2 pack. For unresolved design, the missing requirement is source information
+establishing the design and unit of randomization.
+
 ## Choose the closest complete Result
 
 Choose an exact assessable Result first. If none exists, choose the closest
@@ -39,16 +107,20 @@ The reported object records the Source endpoint and quantities. Keep its
 endpoint distinct from the captured requested outcome. The server supplies the
 captured outcome, target metric, and `effect_of_interest:"assignment"`.
 
-Use `relation:"exact"` only when the requested outcome name and reported
-endpoint name match after the server's Unicode, whitespace, case, and hyphen
-normalization. Omit `relation_rationale` for exact. For other assessable Results:
+Use `relation:"exact"` when the complete requested and reported Result scopes
+are scientifically equivalent. Compare the event definition, measurement, time,
+population, comparison, and analysis or effect scope. If names differ, provide
+a source-grounded correspondence explanation in `relation_rationale`. A matching
+name alone does not establish equivalence. For other assessable Results:
 
 - `broader`: the reported event, population, or time scope is a superset;
 - `narrower`: it is a subset or adds restrictions;
 - `component`: it is one constituent of the requested composite or category;
 - `related`: the constructs overlap without one of those ordered relations.
 
-State the material difference in `relation_rationale`. Do not infer synonyms.
+State the material difference in `relation_rationale`. Keep Source-owned endpoint
+names and quantities bound to exact selected Evidence even when their scientific
+scope is equivalent.
 
 ## Preserve the Source-owned quantities
 

@@ -14,8 +14,10 @@ Keep three propositions separate:
 Sequence methods such as computer generation, random-number tables, lots, or
 minimization may support the first proposition. Stratification, block size, a
 registration system, or a numbered sequence does not by itself establish
-concealment. Concealment needs the pre-assignment mechanism and who controlled
-access to it.
+concealment. Assess the pre-assignment mechanism and who could access the next
+assignment. When reported facts support a probable judgment, state the inferred
+safeguard or weakness. Preserve `no_information` when the details and trial
+circumstances do not support that judgment.
 
 For baseline differences, inspect the complete arm-specific baseline table or
 list and any explanation. Different values are not automatically evidence of a

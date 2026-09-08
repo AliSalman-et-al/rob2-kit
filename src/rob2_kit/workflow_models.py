@@ -9,6 +9,7 @@ content identity derived from its other fields; callers cannot choose an identit
 from __future__ import annotations
 
 import hashlib
+import unicodedata
 from datetime import UTC, datetime
 from enum import StrEnum
 from pathlib import PurePosixPath
@@ -118,8 +119,9 @@ class MissingDataRow(StrictModel):
     basis: tuple[EvidenceHandle, ...] = Field(
         default=(),
         description=(
-            "Evidence handles supporting this row. Omit to reuse all Evidence handles "
-            "already attached to the same answer."
+            "Evidence handles supporting this row. When saving an answer, omit to reuse "
+            "all Evidence handles attached to that answer. A get_domain_context preview "
+            "requires explicit current-Trial Evidence handles for every row."
         ),
     )
 
@@ -467,6 +469,40 @@ class ResultTargetDraft(StrictModel):
     intended_effect_measure: NonBlankText = Field(
         description="Effect measure intended for the target comparison.",
     )
+
+
+def _same_relation_name(left: str, right: str) -> bool:
+    def normalize(value: str) -> str:
+        value = unicodedata.normalize("NFKC", value)
+        for character in "‐‑‒–—":
+            value = value.replace(character, "-")
+        return " ".join(value.casefold().replace("-", " ").split())
+
+    return normalize(left) == normalize(right)
+
+
+class ResultApplicability(StrictModel):
+    """Host's source-grounded applicability assessment for the installed pack."""
+
+    design: Literal[
+        "individual_parallel",
+        "cluster_randomized",
+        "crossover",
+        "unclear",
+    ] = Field(description="Source-grounded randomization and trial design.")
+    rationale: NonBlankText = Field(
+        description="Source facts supporting the design, or the unresolved design information."
+    )
+    evidence: tuple[EvidenceHandle, ...] = Field(
+        default=(),
+        description="Inspected same-Trial Evidence handles; required when the design is known.",
+    )
+
+    @model_validator(mode="after")
+    def known_design_needs_basis(self) -> ResultApplicability:
+        if self.design != "unclear" and not self.evidence:
+            raise ValueError("known trial design requires source Evidence")
+        return self
 
 
 class TargetRelation(StrEnum):
@@ -825,7 +861,7 @@ class AssessableResult(StrictModel):
     requested_outcome: NonBlankText
     relation: AssessableTargetRelation = Field(
         description=(
-            "Relation to the requested target: exact requires a server-normalized name match; "
+            "Relation to the complete requested target: exact means equivalent scientific scope; "
             "broader is a superset, narrower is a subset or has additional restrictions, "
             "component is one constituent, and related is other overlap. Added criteria make "
             "a candidate narrower. Explain material differences; matching numbers do not prove "
@@ -833,6 +869,7 @@ class AssessableResult(StrictModel):
         ),
     )
     relation_rationale: NonBlankText
+    applicability: ResultApplicability | None = None
     target: ResultTarget
     reported: Annotated[
         ComparativeEffectResult | GroupBoundValuesResult | CategoryProfileResult,
@@ -846,7 +883,9 @@ class AssessableResult(StrictModel):
     def complete_bindings(self) -> AssessableResult:
         keys = tuple(item.field.path for item in self.bindings)
         _unique(keys, "result field bindings")
-        if self.relation == AssessableTargetRelation.EXACT:
+        if self.relation == AssessableTargetRelation.EXACT and _same_relation_name(
+            self.target.outcome_definition, self.reported.endpoint.name
+        ):
             expected = exact_relation_rationale(
                 self.target.outcome_definition, self.reported.endpoint.name
             )
@@ -867,18 +906,26 @@ class AssessableResultDraft(StrictModel):
     trial_id: TrialId = Field(description="Server-issued Trial ID for this Result card.")
     relation: AssessableTargetRelation = Field(
         description=(
-            "Use exact only for a server-normalized name match. Broader when scope is a "
+            "Use exact for equivalent complete Result scope. Broader when scope is a "
             "superset; narrower "
             "is a subset or has additional restrictions; component is one constituent; related "
             "is other overlap. Added criteria make a candidate narrower. Compare event set, time, "
-            "population, measurement, and state criteria; matching numbers do not prove "
+            "population, measurement, state criteria, comparison, analysis, and effect scope; "
+            "matching numbers do not prove "
             "equivalence. Resubmit if another candidate is better."
         ),
     )
     relation_rationale: NonBlankText | None = Field(
         default=None,
         description=(
-            "Material source-supported difference from the requested target; omit for exact."
+            "Source-grounded correspondence when exact names differ, or material scope "
+            "differences for a non-exact relation."
+        ),
+    )
+    applicability: ResultApplicability = Field(
+        description=(
+            "Required pack applicability. Unsupported or unresolved designs remain unassessed "
+            "after Proposal Review."
         ),
     )
     target: ResultTargetDraft = Field(description="Requested target Result for this Trial.")

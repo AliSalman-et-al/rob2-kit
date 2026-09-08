@@ -23,6 +23,7 @@ from ..workflow_models import (
     AssessableResult,
     CapturedBatch,
     ExpectedRevision,
+    ResultApplicability,
     exact_relation_rationale,
 )
 from ._state import (
@@ -58,6 +59,10 @@ _FORBIDDEN_PATH_FIELDS = frozenset(
         "workspace_path",
     }
 )
+
+_RESULT_SEMANTICS_VERSION = "rob2-kit.result-semantics.v0.7"
+_LEGACY_RESULT_SEMANTICS_VERSION = "rob2-kit.result-semantics.v0.6"
+_HISTORICAL_RESULT_SEMANTICS_VERSION = "rob2-kit.result-semantics.v0.5"
 
 
 def _nonblank(value: object) -> bool:
@@ -339,6 +344,103 @@ def _valid_batch(batch: object) -> bool:
     except (TypeError, ValueError, ValidationError):
         return False
     return True
+
+
+def _valid_main_report_scopes(
+    value: object, batch: dict[str, object], evidence: dict[str, object]
+) -> bool:
+    if not isinstance(value, list):
+        return False
+    sources: dict[tuple[object, object], dict[str, object]] = {}
+    priority = {"protocol": 0, "sap": 1, "supplement": 2, "other": 3, "registry": 4}
+    raw_trials = batch.get("trials", [])
+    trials = raw_trials if isinstance(raw_trials, list) else []
+    for trial in trials:
+        if not isinstance(trial, dict):
+            continue
+        candidates = [
+            item
+            for item in trial.get("sources", [])
+            if isinstance(item, dict) and item.get("role") == "main_article"
+        ]
+        if not candidates:
+            candidates = sorted(
+                (item for item in trial.get("sources", []) if isinstance(item, dict)),
+                key=lambda item: (priority.get(str(item.get("role")), 5), str(item.get("id"))),
+            )[:1]
+        for item in candidates:
+            sources[(trial.get("id"), item.get("id"))] = item
+    if not sources:
+        return not value
+    seen: set[tuple[object, object]] = set()
+    for item in value:
+        if not isinstance(item, dict) or set(item) != {
+            "trial_id",
+            "source_id",
+            "source_sha256",
+            "projection_hash",
+            "end_page",
+            "boundary_evidence",
+            "excluded_ranges",
+        }:
+            return False
+        key = (item.get("trial_id"), item.get("source_id"))
+        source = sources.get(key)
+        if key in seen or not isinstance(source, dict):
+            return False
+        seen.add(key)
+        end_page = item.get("end_page")
+        page_count = source.get("page_count")
+        if item.get("source_sha256") != source.get("sha256") or item.get(
+            "projection_hash"
+        ) != source.get("projection_hash"):
+            return False
+        if (
+            not isinstance(end_page, int)
+            or isinstance(end_page, bool)
+            or not isinstance(page_count, int)
+            or not 1 <= end_page <= page_count
+        ):
+            return False
+        boundary = item.get("boundary_evidence")
+        ranges = item.get("excluded_ranges")
+        if not isinstance(boundary, list) or not isinstance(ranges, list):
+            return False
+        for handle in boundary:
+            selected = next(
+                (
+                    entry
+                    for entry in evidence.values()
+                    if isinstance(entry, dict) and entry.get("handle") == handle
+                ),
+                None,
+            )
+            if (
+                not isinstance(selected, dict)
+                or selected.get("kind") != "narrative"
+                or selected.get("trial_id") != key[0]
+                or selected.get("source_id") != key[1]
+                or selected.get("page") not in {end_page, end_page + 1}
+            ):
+                return False
+        if end_page == page_count:
+            if ranges:
+                return False
+        elif len(ranges) != 1:
+            return False
+        else:
+            excluded = ranges[0]
+            if (
+                not isinstance(excluded, dict)
+                or set(excluded) != {"start_page", "end_page", "reason"}
+                or excluded.get("start_page") != end_page + 1
+                or excluded.get("end_page") != page_count
+                or not isinstance(excluded.get("reason"), str)
+                or not excluded["reason"].strip()
+                or not boundary
+            ):
+                return False
+    return seen == set(sources)
 
 
 def _valid_omission(value: object) -> bool:
@@ -896,14 +998,26 @@ def _valid_selected_evidence(
     )
 
 
-def _valid_requested_result(result: object, requested_outcome: str) -> bool:
+def _valid_requested_result(
+    result: object, requested_outcome: str, semantics_version: str | None = None
+) -> bool:
     if not isinstance(result, dict) or _relation_name(
         result.get("requested_outcome")
     ) != _relation_name(requested_outcome):
         return False
     if result.get("kind") == "assessable":
+        validation_value = result
+        if semantics_version == _LEGACY_RESULT_SEMANTICS_VERSION:
+            applicability = result.get("applicability")
+            if isinstance(applicability, dict):
+                validation_value = {
+                    **result,
+                    "applicability": {
+                        key: value for key, value in applicability.items() if key != "status"
+                    },
+                }
         try:
-            AssessableResult.model_validate(result)
+            AssessableResult.model_validate(validation_value)
         except (TypeError, ValueError, ValidationError):
             return False
         target = result.get("target")
@@ -918,10 +1032,14 @@ def _valid_requested_result(result: object, requested_outcome: str) -> bool:
     return True
 
 
-def _valid_result_shape(result: dict[str, object], requested_outcome: str) -> bool:
-    if not _valid_requested_result(result, requested_outcome):
+def _valid_result_shape(
+    result: dict[str, object],
+    requested_outcome: str,
+    semantics_version: str = _RESULT_SEMANTICS_VERSION,
+) -> bool:
+    if not _valid_requested_result(result, requested_outcome, semantics_version):
         return False
-    if set(result) != {
+    base_keys = {
         "kind",
         "trial_id",
         "requested_outcome",
@@ -932,8 +1050,42 @@ def _valid_result_shape(result: dict[str, object], requested_outcome: str) -> bo
         "clarity",
         "evidence",
         "bindings",
-    }:
+    }
+    expected_keys = (
+        base_keys
+        if semantics_version == _HISTORICAL_RESULT_SEMANTICS_VERSION
+        else base_keys | {"applicability"}
+    )
+    if set(result) != expected_keys:
         return False
+    if (
+        semantics_version != _HISTORICAL_RESULT_SEMANTICS_VERSION
+        and result.get("applicability") is None
+    ):
+        return False
+    if "applicability" in result:
+        applicability = result["applicability"]
+        expected_applicability_keys = (
+            {"design", "status", "rationale", "evidence"}
+            if semantics_version == _LEGACY_RESULT_SEMANTICS_VERSION
+            else {"design", "rationale", "evidence"}
+        )
+        if not isinstance(applicability, dict) or set(applicability) != expected_applicability_keys:
+            return False
+        if semantics_version == _LEGACY_RESULT_SEMANTICS_VERSION:
+            status_by_design = {
+                "individual_parallel": "supported",
+                "cluster_randomized": "unsupported",
+                "crossover": "unsupported",
+                "unclear": "uncertain",
+            }
+            if applicability.get("status") != status_by_design.get(applicability.get("design")):
+                return False
+            applicability = {key: value for key, value in applicability.items() if key != "status"}
+        try:
+            ResultApplicability.model_validate(applicability)
+        except (TypeError, ValueError, ValidationError):
+            return False
     target = result.get("target")
     reported = result.get("reported")
     if not isinstance(target, dict) or not isinstance(reported, dict):
@@ -982,11 +1134,25 @@ def _valid_result_shape(result: dict[str, object], requested_outcome: str) -> bo
         or (
             result.get("relation") == "exact"
             and (
-                _relation_name(target.get("outcome_definition"))
-                != _relation_name(reported["endpoint"].get("name"))
-                or result.get("relation_rationale")
-                != exact_relation_rationale(
-                    target.get("outcome_definition", ""), reported["endpoint"]["name"]
+                (
+                    semantics_version == _HISTORICAL_RESULT_SEMANTICS_VERSION
+                    and (
+                        _relation_name(target.get("outcome_definition"))
+                        != _relation_name(reported["endpoint"].get("name"))
+                        or result.get("relation_rationale")
+                        != exact_relation_rationale(
+                            target.get("outcome_definition", ""), reported["endpoint"]["name"]
+                        )
+                    )
+                )
+                or (
+                    semantics_version != _HISTORICAL_RESULT_SEMANTICS_VERSION
+                    and _relation_name(target.get("outcome_definition"))
+                    == _relation_name(reported["endpoint"].get("name"))
+                    and result.get("relation_rationale")
+                    != exact_relation_rationale(
+                        target.get("outcome_definition", ""), reported["endpoint"]["name"]
+                    )
                 )
             )
         )
@@ -1191,12 +1357,15 @@ def _verify_result_evidence(
     identity: Callable[[object], str],
     requested_outcomes: dict[str, str],
     batch: object = None,
+    semantics_version: str = _RESULT_SEMANTICS_VERSION,
 ) -> bool:
     """Replay Result Evidence bindings from only the exported Canonical data."""
     if not isinstance(result, dict) or not isinstance(result.get("trial_id"), str):
         return False
     requested_outcome = requested_outcomes.get(result["trial_id"])
-    if requested_outcome is None or not _valid_requested_result(result, requested_outcome):
+    if requested_outcome is None or not _valid_requested_result(
+        result, requested_outcome, semantics_version
+    ):
         return False
     if result.get("kind") == "unavailable":
         facts = result.get("missing_facts")
@@ -1272,7 +1441,7 @@ def _verify_result_evidence(
         "related",
     }:
         return False
-    if not _valid_result_shape(result, requested_outcome):
+    if not _valid_result_shape(result, requested_outcome, semantics_version):
         return False
     evidence = result.get("evidence")
     if (
@@ -1286,6 +1455,13 @@ def _verify_result_evidence(
     endpoint = cast(dict[str, object], reported["endpoint"])
     endpoint_definition = endpoint.get("definition")
     by_handle = {item.get("handle"): item for item in catalog.values() if isinstance(item, dict)}
+    applicability = result.get("applicability")
+    if isinstance(applicability, dict) and any(
+        not isinstance(by_handle.get(handle), dict)
+        or by_handle[handle].get("trial_id") != result["trial_id"]
+        for handle in applicability.get("evidence", [])
+    ):
+        return False
     groups = {
         item.get("id")
         for item in result["target"].get("comparison_groups", [])
@@ -1326,8 +1502,10 @@ def _verify_result_evidence(
             return False
         if kind == "derived":
             inputs = reference.get("inputs")
-            if reference.get("operation") not in {"difference", "ratio", "sum"} or not isinstance(
-                inputs, list
+            if (
+                reference.get("operation") not in {"difference", "ratio", "sum"}
+                or not isinstance(inputs, list)
+                or not inputs
             ):
                 return False
             try:
@@ -1610,6 +1788,11 @@ def _valid_proposal_gate(
             evidence_identity = value.get("evidence")
             if isinstance(evidence_identity, str):
                 handles.add(evidence_identity)
+            elif isinstance(evidence_identity, list):
+                handles.update(item for item in evidence_identity if isinstance(item, str))
+            boundary_evidence = value.get("boundary_evidence")
+            if isinstance(boundary_evidence, list):
+                handles.update(item for item in boundary_evidence if isinstance(item, str))
             for child in value.values():
                 collect_handles(child)
         elif isinstance(value, list):
@@ -1793,6 +1976,7 @@ def _scientific_contract_descriptor() -> dict[str, Any]:
     return {
         "id": SCIENTIFIC_PACK.id,
         "version": SCIENTIFIC_PACK.version,
+        "result_semantics_version": _RESULT_SEMANTICS_VERSION,
         "content_hash": SCIENTIFIC_PACK.content_hash,
         "official_source": {
             "version": official_version,
@@ -1807,7 +1991,22 @@ def _valid_scientific_contract_descriptor(value: object) -> bool:
         expected = _scientific_contract_descriptor()
     except (AttributeError, StopIteration, ValueError):
         return False
-    return isinstance(value, dict) and value == expected
+    if isinstance(value, dict) and value == expected:
+        return True
+    historical = {
+        "id": "rob2.parallel.assignment",
+        "version": "2019.1",
+        "content_hash": "sha256:4bfd30a3d997e9eab0354ef7148726c5b112004a64b59dd57f02ac1493b61597",
+        "official_source": expected["official_source"],
+    }
+    legacy = {
+        "id": "rob2.parallel.assignment",
+        "version": "2019.1",
+        "result_semantics_version": _LEGACY_RESULT_SEMANTICS_VERSION,
+        "content_hash": "sha256:3ef492b34a81c19e3f75d72fea2b92c40aebde80c06e24e44c36cd76dc4cf3d4",
+        "official_source": expected["official_source"],
+    }
+    return value in (historical, legacy)
 
 
 def _assessment_summary(state: dict[str, Any]) -> dict[str, dict[str, Any]]:
@@ -2319,8 +2518,16 @@ def verify_bundle(path: str | Path) -> bool:
                 "scientific_pack",
             }:
                 return False
-            if not _valid_scientific_contract_descriptor(canonical_value.get("scientific_pack")):
+            scientific_pack = canonical_value.get("scientific_pack")
+            if not _valid_scientific_contract_descriptor(scientific_pack):
                 return False
+            semantics_version = (
+                scientific_pack.get(
+                    "result_semantics_version", _HISTORICAL_RESULT_SEMANTICS_VERSION
+                )
+                if isinstance(scientific_pack, dict)
+                else _HISTORICAL_RESULT_SEMANTICS_VERSION
+            )
             if not _valid_batch(canonical_value["batch"]):
                 return False
             dispositions = canonical_value.get("dispositions")
@@ -3019,7 +3226,12 @@ def verify_bundle(path: str | Path) -> bool:
                 not isinstance(proposal, dict)
                 or not isinstance(payload, dict)
                 or set(proposal) != {"identity", "payload", "evidence"}
-                or set(payload) != {"results"}
+                or set(payload)
+                != (
+                    {"results"}
+                    if semantics_version != _LEGACY_RESULT_SEMANTICS_VERSION
+                    else {"results", "main_report_scopes"}
+                )
                 or proposal.get("identity") != independent_identity(payload)
                 or not isinstance(bound_catalog, dict)
                 or not _valid_proposal_gate(
@@ -3027,6 +3239,13 @@ def verify_bundle(path: str | Path) -> bool:
                     proposal_acknowledgment,
                     proposal,
                     independent_identity,
+                )
+            ):
+                return False
+            if (
+                semantics_version == _LEGACY_RESULT_SEMANTICS_VERSION
+                and not _valid_main_report_scopes(
+                    payload.get("main_report_scopes"), canonical_value["batch"], bound_catalog
                 )
             ):
                 return False
@@ -3113,6 +3332,7 @@ def verify_bundle(path: str | Path) -> bool:
                         independent_identity,
                         requested_outcomes,
                         canonical_value["batch"],
+                        semantics_version,
                     )
                     for item in results
                 )
@@ -3133,6 +3353,12 @@ def verify_bundle(path: str | Path) -> bool:
                         or terminal.get("missing_facts") != facts
                     ):
                         return False
+                applicability = result.get("applicability")
+                unsupported_design = isinstance(applicability, dict) and applicability.get(
+                    "design"
+                ) in {"cluster_randomized", "crossover", "unclear"}
+                if unsupported_design and disposition != "needs_input":
+                    return False
             # verification.json is informational only; this verifier recomputes
             # hashes and derivations itself and never trusts a producer claim.
             verification = json.loads(archive.read("verification.json"))

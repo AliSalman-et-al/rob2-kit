@@ -20,6 +20,7 @@ from support.rob2 import (
     _option_for,
     _prepared_evidence,
     _proposal_args,
+    _read_required_main_reports,
     _result,
     _review,
     _standalone_verify,
@@ -156,6 +157,7 @@ def test_probable_limitation_domain_basis_finalizes_after_derivative_restart(
     proposed = _call(workspace, "save_proposal", _proposal_args(workspace, [_result(evidence)]))
     assert proposed["outcome"] == "review_required"
     _review(workspace)
+    _read_required_main_reports(workspace)
     revision = int(_call(workspace, "get_domain_context", {})["head"]["state_revision"])
     search = _call(
         workspace,
@@ -458,6 +460,7 @@ def test_finalized_bundle_binds_the_scientific_contract(tmp_path: Path) -> None:
             "version": official_version,
             "source_sha256": official_sha256,
         },
+        "result_semantics_version": "rob2-kit.result-semantics.v0.7",
     }
     assert _standalone_verify(artifact).returncode == 0
 
@@ -588,6 +591,75 @@ def test_rehashed_proposal_acknowledgment_tampering_fails_both_verifiers(tmp_pat
 
     tampered = tmp_path / "ack-tamper.rob2.zip"
     _rewrite_rehashed(artifact, tampered, tamper)
+    assert not verify_bundle(tampered)
+    assert (
+        subprocess.run(
+            [sys.executable, "scripts/verify_bundle.py", str(tampered)], check=False
+        ).returncode
+        == 1
+    )
+
+
+def test_rehashed_v06_empty_derived_inputs_fail_both_verifiers(tmp_path: Path) -> None:
+    source = _artifact(tmp_path / "source")
+
+    def convert_to_v06(canonical: dict[str, Any]) -> None:
+        canonical["scientific_pack"]["result_semantics_version"] = "rob2-kit.result-semantics.v0.6"
+        proposal = canonical["proposal"]
+        payload = proposal["payload"]
+        trial = canonical["batch"]["trials"][0]
+        source = trial["sources"][0]
+        payload["main_report_scopes"] = [
+            {
+                "trial_id": trial["id"],
+                "source_id": source["id"],
+                "source_sha256": source["sha256"],
+                "projection_hash": source["projection_hash"],
+                "end_page": source["page_count"],
+                "boundary_evidence": [],
+                "excluded_ranges": [],
+            }
+        ]
+        payload["results"][0]["applicability"]["status"] = "supported"
+        proposal["identity"] = _identity(payload)
+        review = canonical["proposal_review"]
+        review["candidate"]["proposal"] = payload
+        review["candidate"]["identity"] = proposal["identity"]
+        review["identity"] = _identity(
+            {key: value for key, value in review.items() if key != "identity"}
+        )
+        acknowledgment = canonical["proposal_acknowledgment"]
+        acknowledgment["review_identity"] = review["identity"]
+        acknowledgment["identity"] = _identity(
+            {key: value for key, value in acknowledgment.items() if key != "identity"}
+        )
+
+    legacy = tmp_path / "v06-base.rob2.zip"
+    _rewrite_rehashed(source, legacy, convert_to_v06)
+    assert verify_bundle(legacy)
+    assert _standalone_verify(legacy).returncode == 0
+
+    def tamper(canonical: dict[str, Any]) -> None:
+        proposal = canonical["proposal"]
+        payload = proposal["payload"]
+        payload["results"][0]["evidence"].append(
+            {"kind": "derived", "operation": "sum", "inputs": [], "value": "0"}
+        )
+        proposal["identity"] = _identity(payload)
+        review = canonical["proposal_review"]
+        review["candidate"]["proposal"] = payload
+        review["candidate"]["identity"] = proposal["identity"]
+        review["identity"] = _identity(
+            {key: value for key, value in review.items() if key != "identity"}
+        )
+        acknowledgment = canonical["proposal_acknowledgment"]
+        acknowledgment["review_identity"] = review["identity"]
+        acknowledgment["identity"] = _identity(
+            {key: value for key, value in acknowledgment.items() if key != "identity"}
+        )
+
+    tampered = tmp_path / "v06-empty-derived-inputs.rob2.zip"
+    _rewrite_rehashed(legacy, tampered, tamper)
     assert not verify_bundle(tampered)
     assert (
         subprocess.run(

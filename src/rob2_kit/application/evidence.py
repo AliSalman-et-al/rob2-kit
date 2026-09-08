@@ -25,9 +25,12 @@ from ._state import (
     _projection_hash,
     _read,
     _root,
+    _state,
     internal_path,
 )
 from .contracts import COUNTERS
+
+MAIN_REPORT_TEXT_BUDGET = 65_536
 
 _SEARCH_SESSION_VERSION = "rob2-kit.search-session.v0.5"
 _SEARCH_CANDIDATE_VERSION = "rob2-kit.search-candidates.v0.5"
@@ -1524,6 +1527,302 @@ def read_pages(
         "outcome": "success",
         "pages": selected,
     }
+
+
+def record_read_coverage(
+    workspace: str | Path,
+    trial_id: str,
+    source_id: str,
+    page: int,
+    start_line: int,
+    end_line: int,
+) -> None:
+    """Persist only the numbered range actually delivered by ``read_pages``."""
+
+    root = _root(workspace)
+    _ensure(root)
+    source = _find_source(root, trial_id, source_id)
+    if not all(
+        isinstance(value, int) and not isinstance(value, bool)
+        for value in (page, start_line, end_line)
+    ):
+        raise ValueError("read coverage coordinates are invalid")
+    if page < 1 or page > int(source["page_count"]):
+        raise ValueError("read coverage coordinates are outside Source")
+    if (start_line, end_line) == (0, 0):
+        pass
+    elif start_line < 1 or end_line < start_line:
+        raise ValueError("read coverage coordinates are outside Source")
+    phase = _state(root).get("phase")
+    if phase not in {"proposal", "assessment"}:
+        return
+    batch = _read(root, "batch") or {}
+    batch_id = batch.get("identity")
+    if not isinstance(batch_id, str):
+        raise ValueError("active Batch identity is unavailable")
+    with _db(root, "derivative.sqlite3") as connection:
+        connection.execute(
+            "INSERT OR IGNORE INTO page_reads "
+            "(batch_id,phase,trial_id,source_id,page,start_line,end_line) "
+            "VALUES (?,?,?,?,?,?,?)",
+            (batch_id, phase, trial_id, source_id, page, start_line, end_line),
+        )
+
+
+def _main_report_sources(trial: dict[str, Any]) -> list[dict[str, Any]]:
+    sources = [item for item in trial.get("sources", []) if isinstance(item, dict)]
+    main = [item for item in sources if item.get("role") == "main_article"]
+    if main:
+        return sorted(
+            main, key=lambda item: (str(item.get("logical_path", "")), str(item.get("id", "")))
+        )
+    priority = {"protocol": 0, "sap": 1, "supplement": 2, "other": 3, "registry": 4}
+    return sorted(
+        sources, key=lambda item: (priority.get(str(item.get("role")), 5), str(item.get("id", "")))
+    )[:1]
+
+
+def _main_report_layout(
+    connection: Any, trial: dict[str, Any]
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    """Compute one deterministic, whole-line UTF-8 prefix for a Trial report."""
+
+    layout: list[dict[str, Any]] = []
+    unread: list[dict[str, Any]] = []
+    for source in _main_report_sources(trial):
+        budget = MAIN_REPORT_TEXT_BUDGET
+        prefix_open = True
+        source_id = source.get("id")
+        end_page = int(source.get("page_count", 0))
+        rows = connection.execute(
+            "SELECT page,text FROM pages WHERE source_id=? AND page<=? ORDER BY page",
+            (source_id, end_page),
+        ).fetchall()
+        for row in rows:
+            page = int(row["page"])
+            lines = str(row["text"]).splitlines(keepends=True)
+            required_count = 0
+            if prefix_open and not lines:
+                layout.append(
+                    {
+                        "source_id": source_id,
+                        "page": page,
+                        "lines": lines,
+                        "required_count": 0,
+                        "no_readable_text": True,
+                    }
+                )
+            elif prefix_open:
+                for index, line in enumerate(lines, 1):
+                    size = len(line.encode("utf-8"))
+                    if size > budget:
+                        prefix_open = False
+                        unread.append(
+                            {
+                                "source_id": source_id,
+                                "page": page,
+                                "start_line": index,
+                                "end_line": len(lines),
+                            }
+                        )
+                        break
+                    budget -= size
+                    required_count = index
+                layout.append(
+                    {
+                        "source_id": source_id,
+                        "page": page,
+                        "lines": lines,
+                        "required_count": required_count,
+                        "no_readable_text": False,
+                    }
+                )
+            else:
+                if lines:
+                    unread.append(
+                        {
+                            "source_id": source_id,
+                            "page": page,
+                            "start_line": 1,
+                            "end_line": len(lines),
+                        }
+                    )
+                layout.append(
+                    {
+                        "source_id": source_id,
+                        "page": page,
+                        "lines": lines,
+                        "required_count": 0,
+                        "no_readable_text": False,
+                    }
+                )
+    return layout, unread
+
+
+def main_report_read_gaps(
+    workspace: str | Path,
+    trials: list[dict[str, Any]],
+    *,
+    phase: str | None = None,
+) -> list[dict[str, Any]]:
+    """Return bounded read_pages windows for uncovered report-prefix lines."""
+
+    root = _root(workspace)
+    _ensure(root)
+    state = _state(root)
+    phase = phase or state.get("phase")
+    if phase not in {"proposal", "assessment"}:
+        return []
+    batch = _read(root, "batch") or {}
+    batch_id = batch.get("identity")
+    if not isinstance(batch_id, str):
+        return []
+    gaps: list[dict[str, Any]] = []
+    with _db(root, "derivative.sqlite3") as connection:
+        for trial in trials:
+            if not isinstance(trial, dict) or not isinstance(trial.get("id"), str):
+                continue
+            for item in _main_report_layout(connection, trial)[0]:
+                page = item["page"]
+                required_count = item["required_count"]
+                covered = connection.execute(
+                    "SELECT start_line,end_line FROM page_reads "
+                    "WHERE batch_id=? AND phase=? AND trial_id=? "
+                    "AND source_id=? AND page=? ORDER BY start_line,end_line",
+                    (batch_id, phase, trial["id"], item["source_id"], page),
+                ).fetchall()
+                if item["no_readable_text"]:
+                    if not any(int(row[0]) == 0 and int(row[1]) == 0 for row in covered):
+                        gaps.append(
+                            {
+                                "trial_id": trial["id"],
+                                "source_id": item["source_id"],
+                                "page": page,
+                                "start_line": 1,
+                                "end_line": 1,
+                                "no_readable_text": True,
+                            }
+                        )
+                    continue
+                cursor = 1
+                for row in covered:
+                    start = max(1, int(row[0]))
+                    end = min(required_count, int(row[1]))
+                    if end < cursor:
+                        continue
+                    if start > cursor:
+                        gaps.append(
+                            {
+                                "trial_id": trial["id"],
+                                "source_id": item["source_id"],
+                                "page": page,
+                                "start_line": cursor,
+                                "end_line": start - 1,
+                            }
+                        )
+                    cursor = max(cursor, end + 1)
+                if cursor <= required_count:
+                    gaps.append(
+                        {
+                            "trial_id": trial["id"],
+                            "source_id": item["source_id"],
+                            "page": page,
+                            "start_line": cursor,
+                            "end_line": required_count,
+                        }
+                    )
+    return gaps
+
+
+def main_report_reading_status(
+    workspace: str | Path,
+    trials: list[dict[str, Any]],
+    *,
+    phase: str,
+) -> dict[str, dict[str, Any]]:
+    """Report complete, required, or budget-limited text coverage per Trial."""
+
+    root = _root(workspace)
+    _ensure(root)
+    gaps = main_report_read_gaps(root, trials, phase=phase)
+    batch = _read(root, "batch") or {}
+    batch_id = batch.get("identity")
+    result: dict[str, dict[str, Any]] = {}
+    with _db(root, "derivative.sqlite3") as connection:
+        for trial in trials:
+            if not isinstance(trial, dict) or not isinstance(trial.get("id"), str):
+                continue
+            layout, unread = _main_report_layout(connection, trial)
+            covered_prefix = 0
+            covered_unread: list[dict[str, Any]] = []
+            unread_by_page: dict[tuple[str, int], list[dict[str, Any]]] = {}
+            for pending in unread:
+                unread_by_page.setdefault((pending["source_id"], pending["page"]), []).append(
+                    pending
+                )
+            if isinstance(batch_id, str):
+                prefix_open = True
+                current_source: str | None = None
+                for item in layout:
+                    if item["source_id"] != current_source:
+                        current_source = item["source_id"]
+                        prefix_open = True
+                    rows = connection.execute(
+                        "SELECT start_line,end_line FROM page_reads "
+                        "WHERE batch_id=? AND phase=? AND trial_id=? "
+                        "AND source_id=? AND page=? ORDER BY start_line,end_line",
+                        (batch_id, phase, trial["id"], item["source_id"], item["page"]),
+                    ).fetchall()
+                    for pending in unread_by_page.get((item["source_id"], item["page"]), ()):
+                        cursor = pending["start_line"]
+                        for row in rows:
+                            start = max(cursor, int(row[0]), pending["start_line"])
+                            end = min(pending["end_line"], int(row[1]))
+                            if end < start:
+                                continue
+                            if cursor < start:
+                                covered_unread.append(
+                                    {
+                                        **pending,
+                                        "start_line": cursor,
+                                        "end_line": start - 1,
+                                    }
+                                )
+                            cursor = max(cursor, end + 1)
+                        if cursor <= pending["end_line"]:
+                            covered_unread.append(
+                                {**pending, "start_line": cursor, "end_line": pending["end_line"]}
+                            )
+                    if not prefix_open:
+                        continue
+                    if item["no_readable_text"]:
+                        if not any(int(row[0]) == 0 and int(row[1]) == 0 for row in rows):
+                            prefix_open = False
+                        continue
+                    line = 1
+                    while line <= item["required_count"]:
+                        covering = next(
+                            (row for row in rows if int(row[0]) <= line <= int(row[1])),
+                            None,
+                        )
+                        if covering is None:
+                            prefix_open = False
+                            break
+                        covered_prefix += len(item["lines"][line - 1].encode("utf-8"))
+                        line += 1
+            else:
+                covered_unread = list(unread)
+            trial_gaps = [item for item in gaps if item.get("trial_id") == trial["id"]]
+            result[trial["id"]] = {
+                "status": (
+                    "required" if trial_gaps else "budget_limited" if covered_unread else "complete"
+                ),
+                "budget_bytes": MAIN_REPORT_TEXT_BUDGET,
+                "covered_prefix_bytes": covered_prefix,
+                "unread_ranges": covered_unread,
+                "required_ranges": trial_gaps,
+            }
+    return result
 
 
 def _evidence(

@@ -41,15 +41,24 @@ scope.
 
 ### 2. Discover and choose one Result per Trial
 
-Read [Specify the Result](references/result.md). Use `list_sources`,
-`search_sources`, and `read_pages` to compare complete reported candidates.
+Before choosing a Result, [read the main report](references/read-main-report.md)
+in bounded consecutive text windows from the full captured Source. Finish the
+required pass before targeted discovery and Proposal submission. At the reading
+ceiling, preserve partial coverage and inspect relevant omitted passages during
+targeted discovery.
+
+Read [Specify the Result](references/result.md). Use targeted searches and reads
+to compare complete reported candidates and resolve gaps from the main report.
+Establish pack applicability from this Trial's source Evidence before proposing
+an assessment. Follow [Establish pack applicability](references/result.md#establish-pack-applicability)
+for unsupported or unresolved designs.
 `search_sources` returns a stable session and opaque `next_cursor`; continue
 that session before treating a bounded result as complete. Query suggestions are
 alternatives and vocabulary, not a checklist: choose relevant wording from
 inspected Sources. A zero-hit receipt describes only that lexical query and
 never proves scientific absence.
-Search the main article first, then use registry, protocol, SAP, or supplement
-Sources for material competing definitions and missing context.
+Use registry, protocol, SAP, or supplement Sources for material competing
+definitions and missing context after the main-report reading.
 
 Choose in this order:
 
@@ -91,9 +100,11 @@ researcher corrects a Result, use it as source-review direction and save a
 complete replacement card. Present the fresh Review.
 
 After explicit approval in conversation, call `request_proposal_approval`. Its
-client elicitation binds approval to that Review. Then call `get_status` and
-continue. Researcher messages after approval do not set or revise signalling
-answers.
+client elicitation binds approval to that Review. Then call `get_status`.
+For each approved assessable Trial, recover its approved Result and repeat the
+[bounded text reading](references/read-main-report.md) when the Trial
+becomes active, before answering its first Domain. Researcher messages after
+approval do not set or revise signalling answers.
 
 ### 5. Assess the next Domain
 
@@ -115,17 +126,12 @@ the passage is unfamiliar or its content is uncertain after a restart or
 compaction, follow
 [Recover omitted Evidence](references/evidence.md#recover-omitted-evidence).
 
-Perform bounded, question-specific discovery across the relevant Sources. Read
-positive passages that could resolve the active proposition and check material
-contradictions. Stop when the proposition and any remaining uncertainty are
-grounded; an untruncated search is a retrieval fact, not proof of scientific
-exhaustion. After an eligible initial multi-token `all` or `phrase` no-hit,
-follow the returned one-step `mode:"any"` action and inspect its passages. If
-that widening remains unhelpful, inspect the relevant section of an available
-Source and check other relevant Sources before recording the unresolved fact.
-One widening step is not adequate discovery by itself. Stop when the proposition
-and material contradictions are grounded or bounded discovery remains
-unresolved.
+Review inspected passages against each active proposition and check material
+contradictions. Reuse adequate Evidence without another search. For an unresolved
+premise, use bounded discovery across the relevant Sources. Follow
+[Select Evidence](references/evidence.md#reuse-inspected-passage-handles) for
+lexical no-hit recovery. Stop when the proposition and remaining uncertainty
+are grounded, or bounded discovery leaves a stated information limit.
 
 For each active answer, select exactly one server-issued `options[].id` from
 the current question card and submit it as `answers[].option_id`. The server
@@ -145,7 +151,11 @@ Selected Evidence must contain the complete premise. A relationship kind adds
 no facts. Definitive `yes` or `no` requires direct,
 indirect, or contradictory Evidence. Probable answers may instead rest on a
 limitation, absence receipt, or exact context/inference premise when the card
-allows that answer. Use `no_information` only under the card's rule. For D3.2,
+allows that answer. Apply `response_framework.no_information_rule`: consider
+`probably_yes` and `probably_no` from the available facts and trial circumstances
+before choosing `no_information`, subject to the card's rule. State any inference
+in `justification`. Missing explicit text alone does not establish
+`no_information`; silence alone does not establish `probably_no`. For D3.2,
 `no_information` is unavailable, but `probably_no` or `no` may express that the
 available evidence does not demonstrate freedom from missing-data bias; do not
 invent affirmative Evidence.
@@ -174,6 +184,8 @@ the detailed audit and the administrative-cutoff/missing-follow-up distinction.
 Only question 3.1 may carry `missing_data` rows. Keep randomized, observed,
 analyzed, imputed, and excluded counts distinct. The server reuses answer
 Evidence as row provenance and performs only scope-matched arithmetic.
+For an optional count preview before saving D3, follow
+[Reconcile availability](references/missing.md#reconcile-availability).
 
 Apply the complete Repair set and resubmit. When the final Domain triggers a
 `multiple_concerns` Repair, supply the requested object and rationale. Do not
@@ -203,6 +215,10 @@ after the receipt says `phase:"finalized"`, copying judgments from
   workflow call and resume its exact next action. Use `get_domain_context` to
   restore Domain Evidence and the active checkpoint. Do not recreate completed
   work from memory.
+- Earlier read coverage proves delivery in that read checkpoint, not retained
+  context. Recover needed passages whose content is missing or uncertain, and
+  resume any unfinished main-report read. Follow
+  [Recover after a later restart](references/read-main-report.md#recover-after-a-later-restart).
 - If a text passage handle was lost before commit, read the exact window again.
   Canonical checkpoint Evidence remains recoverable.
 - On a workflow conflict, discard the stale draft, call `get_status`, and rebuild

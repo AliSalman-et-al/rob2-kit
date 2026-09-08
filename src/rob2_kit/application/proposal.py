@@ -24,6 +24,7 @@ from .evidence import (
     _evidence_catalog,
     _normalized_contains,
     _normalized_with_spans,
+    main_report_read_gaps,
 )
 
 
@@ -156,15 +157,19 @@ def _proposal_shape_repairs(
         if result.relation == AssessableTargetRelation.EXACT:
             target_name = requested_outcomes.get(result.trial_id, "")
             reported_name = result.reported.endpoint.name
-            if _relation_name(target_name) != _relation_name(reported_name):
+            if (
+                _relation_name(target_name) != _relation_name(reported_name)
+                and not (result.relation_rationale or "").strip()
+            ):
                 result_repairs.append(
                     {
                         "path": f"{path}/relation",
                         "code": "exact_relation_name_mismatch",
                         "detail": (
-                            f"exact relation requires captured target '{target_name}' to match "
-                            f"the source-reported endpoint '{reported_name}'; "
-                            "use a non-exact relation"
+                            f"exact relation needs a source-grounded correspondence rationale "
+                            f"when target '{target_name}' and reported endpoint '{reported_name}' "
+                            "use different names; use a non-exact relation when their scientific "
+                            "scope differs"
                         ),
                     }
                 )
@@ -278,6 +283,8 @@ def _canonical_result(
     requested_outcome: str,
 ) -> tuple[dict[str, Any], list[dict[str, Any]]]:
     raw = result.model_dump(mode="json")
+    if raw.get("applicability") is None:
+        raw.pop("applicability", None)
     # Passage references are an input-only convenience. Canonical Result
     # records retain the materialized Evidence items, not the caller's
     # navigation list.
@@ -328,6 +335,7 @@ def _canonical_result(
     raw["relation_rationale"] = (
         exact_relation_rationale(requested_outcome, result.reported.endpoint.name)
         if result.relation == AssessableTargetRelation.EXACT
+        and _relation_name(requested_outcome) == _relation_name(result.reported.endpoint.name)
         else result.relation_rationale
     )
     target = dict(raw["target"])
@@ -926,6 +934,18 @@ def _bind_result(
     semantic_defects: list[dict[str, Any]],
 ) -> tuple[list[dict[str, Any]], set[str]]:
     defects, _ = _validate_evidence(result, catalog, index, path)
+    applicability = result.get("applicability")
+    if isinstance(applicability, dict):
+        for evidence_index, handle in enumerate(applicability.get("evidence", [])):
+            selected = _selected(catalog, str(handle))
+            if selected is None or selected.get("trial_id") != result.get("trial_id"):
+                defects.append(
+                    {
+                        "path": f"{path}/applicability/evidence/{evidence_index}",
+                        "code": "cross_trial_evidence",
+                        "detail": "applicability Evidence must resolve to this Trial",
+                    }
+                )
     # Keep independent binding defects visible alongside claim defects.  Only
     # unresolved, wrong-kind, or cross-Trial handles make binding impossible;
     # an overreaching clause or stale figure claim must not hide unrelated
@@ -989,6 +1009,10 @@ def _bind_result(
         if item.get("kind") == "derived"
         for input_item in item["inputs"]
     )
+    if isinstance(applicability, dict):
+        handles.update(
+            handle for handle in applicability.get("evidence", []) if isinstance(handle, str)
+        )
     defects.extend(result.pop("_binding_defects", []))
     result.pop("_evidence_defects", None)
     return defects, handles
@@ -1009,6 +1033,11 @@ def _result_handles(result: dict[str, Any], catalog: dict[str, dict[str, Any]]) 
                 for input_item in item.get("inputs", [])
                 if isinstance(input_item, dict) and isinstance(input_item.get("handle"), str)
             )
+    applicability = result.get("applicability")
+    if isinstance(applicability, dict):
+        handles.update(
+            handle for handle in applicability.get("evidence", []) if isinstance(handle, str)
+        )
     for missing in result.get("missing_facts", []):
         if not isinstance(missing, dict):
             continue
@@ -1108,6 +1137,27 @@ def save_proposal(
         and state["review"].get("purpose") == "proposal"
         and isinstance(prior_proposal, dict)
     )
+    read_gaps = main_report_read_gaps(
+        root,
+        batch.get("trials", []) if isinstance(batch, dict) else [],
+        phase="proposal",
+    )
+    if read_gaps:
+        return _result(
+            "repair",
+            state,
+            repairs=[
+                {
+                    "path": "/results",
+                    "code": "main_report_reading_required",
+                    "detail": (
+                        "Finish the required bounded text pass before submitting the Proposal. "
+                        "Call get_status, read the returned main_report_reading.required_ranges "
+                        "with read_pages, then retry save_proposal."
+                    ),
+                }
+            ],
+        )
     shape_defects = _proposal_shape_repairs(draft, requested_outcomes)
     canonical_results, draft_defects, used = _canonical_results(
         draft, catalog, requested_outcomes, batch

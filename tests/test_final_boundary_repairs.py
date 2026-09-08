@@ -10,6 +10,7 @@ from support.rob2 import (
     _call,
     _domain_draft,
     _proposal_args,
+    _read_required_main_reports,
     _result,
     _workspace,
 )
@@ -263,6 +264,7 @@ def test_discarded_identical_run_reuses_domain_checkpoint_content(tmp_path: Path
         },
     )
     assert prepared["outcome"] == "success", prepared
+    _read_required_main_reports(workspace)
     source = _call(workspace, "list_sources", {"trial_id": "trial"})["data"]["sources"][0]
     evidence = _call(
         workspace,
@@ -279,6 +281,7 @@ def test_discarded_identical_run_reuses_domain_checkpoint_content(tmp_path: Path
     from support.rob2 import _review
 
     _review(workspace)
+    _read_required_main_reports(workspace)
     revision = int(_call(workspace, "get_domain_context", {})["head"]["state_revision"])
     second = _call(
         workspace,

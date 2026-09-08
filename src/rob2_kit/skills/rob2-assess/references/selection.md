@@ -11,14 +11,42 @@ before unblinded outcome data were available, or that later changes were
 unrelated to the results. Then compare the plan with the approved reported
 Result.
 
-Document metadata can establish a Source's date and scope. The selected plan
-passage establishes its content. A registry identifier, endpoint label, or
-results-paper statement that an analysis was “prespecified” does not by itself
-establish the complete plan, timing, and correspondence. A protocol or SAP
+Use captured Source provenance to locate the applicable plan passages. Compare
+their version, date, intervention groups, and cohort with the approved Result.
+In `comparison_cards[].passage_groups`, inspect the Source label, role, logical
+path, page count, and content and projection hashes. A protocol, SAP, or registry
+group may have no selected passages yet. Use the Source to resolve missing
+premises; an empty passage list does not establish absent plan content.
+`source_origin`, `registry_url`, and `registry_retrieved_at` describe captured
+provenance; they do not establish when a plan was finalized or which Trial
+comparison it covered.
+
+For a registry group with `registry_recovery`, call `read_pages` with that
+object's `trial_id` and `windows`. Inspect the captured fields identified by
+`registry_field_paths`. These are navigation paths into the immutable projection,
+not a historical plan or an applicability judgment. `windows` contains at most
+20 windows; `registry_window_count` reports the total. If more remain, navigate
+the captured Source using its page count and `search_sources` with the field
+paths. Refreshing context does not advance these registry windows. For omitted selected
+passages, follow [Recover omitted Evidence](evidence.md#recover-omitted-evidence).
+
+Keep record posting, record update, retrieval, plan finalization, recruitment,
+and unblinded access dates distinct. A registry's first-posted date does not
+date the endpoint content in its current record.
+
+The selected plan passage establishes plan content. A registry identifier,
+endpoint label, or report-level prespecification claim alone leaves plan timing
+and correspondence unresolved. A probable answer still needs a stated basis for
+the timing judgment; the report's "a priori" label alone does not supply it.
+For a platform trial, establish that the plan applies to the approved intervention
+comparison and cohort. A protocol or SAP
 describes intent; check the report for what was actually done.
 
 If the plan is unavailable after bounded source-specific discovery, record that
 information limit. Missing plans do not prove selective reporting.
+Keep unknown dates and historical applicability explicit. Use captured versions
+and exact recovery windows. Obtain historical material only through a supported
+source-capture action; a current record cannot stand in for an unseen past version.
 
 ## Separate the two selection mechanisms
 

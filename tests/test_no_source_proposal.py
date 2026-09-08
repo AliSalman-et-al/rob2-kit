@@ -4,6 +4,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+from support.rob2 import _read_required_main_reports
+
 from rob2_kit.application._state import _state
 from rob2_kit.application.finalization import finalize_batch, verify_bundle
 from rob2_kit.application.intake import approve_review, prepare_batch_for_outcome
@@ -70,6 +72,7 @@ def test_intake_condition_basis_is_repaired_for_a_trial_with_sources(tmp_path: P
     trial.mkdir(parents=True)
     (trial / "source.txt").write_text("A captured source.", encoding="utf-8")
     prepare_batch_for_outcome(tmp_path, "requested outcome", 0)
+    _read_required_main_reports(tmp_path)
 
     repaired = save_proposal(
         tmp_path,

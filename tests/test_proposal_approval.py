@@ -14,7 +14,13 @@ from fastmcp.client import Client
 from fastmcp.client.elicitation import ElicitResult
 from fastmcp.tools import InputRequiredToolResult, ToolResult
 from mcp import types as mcp_types
-from support.rob2 import _call, _proposal_args, _result, _workspace
+from support.rob2 import (
+    _call,
+    _proposal_args,
+    _read_required_main_reports,
+    _result,
+    _workspace,
+)
 
 from rob2_kit.interfaces.mcp import server
 from rob2_kit.interfaces.mcp.server import mcp
@@ -27,6 +33,7 @@ def _pending_workspace(tmp_path: Path) -> Path:
         "prepare_batch",
         {"requested_outcome": "requested outcome", "expected_revision": 0},
     )
+    _read_required_main_reports(workspace)
     source = _call(workspace, "list_sources", {"trial_id": "trial"})["data"]["sources"][0]
     evidence = _call(
         workspace,
