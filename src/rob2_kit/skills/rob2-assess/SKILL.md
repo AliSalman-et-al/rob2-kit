@@ -162,9 +162,11 @@ invent affirmative Evidence.
 
 ### 6. Audit and commit the Domain once
 
-Derive the dependency-closed active path from the returned activation predicates
-and your earlier answers. Submit every active answer in one
-`save_domain_judgment` call. Inactive branch answers are unnecessary and ignored.
+Derive the complete active path from the returned activation predicates and your
+answers. If you cannot reliably resolve that path, answer every question returned
+for the Domain. Use current card option IDs and supported bases for every answer
+you draft. Submit the complete set in one `save_domain_judgment` call. The server
+resolves activation from your answers and commits only active answers.
 
 Before saving, compare each active answer with the approved Result in the
 current Domain context: outcome definition, population, comparison, and time
@@ -187,7 +189,10 @@ Evidence as row provenance and performs only scope-matched arithmetic.
 For an optional count preview before saving D3, follow
 [Reconcile availability](references/missing.md#reconcile-availability).
 
-Apply the complete Repair set and resubmit. When the final Domain triggers a
+Apply every reported repair and retain other drafted answers. Add missing
+questions to the existing answer set. Resolve any further activation from the
+repaired answers before resubmitting. The server ignores inactive answers.
+When the final Domain triggers a
 `multiple_concerns` Repair, supply the requested object and rationale. Do not
 send that field otherwise.
 

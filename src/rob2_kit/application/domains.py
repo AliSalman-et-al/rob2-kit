@@ -277,6 +277,12 @@ def _compact_domain_evidence(context: dict[str, Any]) -> dict[str, Any]:
 
 
 _DOMAIN_GUIDANCE = (
+    "If you cannot reliably resolve the complete active path, answer every question returned "
+    "for this Domain. Use current card option IDs and supported bases for every drafted answer. "
+    "Submit the complete set in one save. The server commits only active answers.",
+    "Apply every reported repair and retain other drafted answers. Add missing questions to "
+    "the existing answer set. Resolve any further activation from the repaired answers before "
+    "resubmitting. The server ignores inactive answers.",
     "For each active question, review the inspected passages against its exact proposition "
     "and check material contradictions. Reuse adequate Evidence. When a premise remains "
     "unresolved, use bounded discovery across relevant Sources, including a protocol or SAP "

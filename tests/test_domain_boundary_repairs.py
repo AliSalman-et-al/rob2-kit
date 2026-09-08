@@ -153,6 +153,87 @@ def test_stale_inactive_option_and_evidence_are_ignored(tmp_path: Path) -> None:
     assert "sq:deviations:context-deviations" not in stored_questions
 
 
+@pytest.mark.parametrize(
+    ("domain_id", "prior_domains", "answers", "expected_active"),
+    [
+        pytest.param(
+            "domain:missing",
+            ("domain:randomization", "domain:deviations"),
+            {
+                "sq:missing:data-available": "no",
+                "sq:missing:evidence-unbiased": "no",
+                "sq:missing:true-value-dependent": "no",
+                "sq:missing:likely-dependent": "yes",
+            },
+            (
+                "sq:missing:data-available",
+                "sq:missing:evidence-unbiased",
+                "sq:missing:true-value-dependent",
+            ),
+            id="D3-dependent-path",
+        ),
+        pytest.param(
+            "domain:measurement",
+            ("domain:randomization", "domain:deviations", "domain:missing"),
+            {
+                "sq:measurement:method-inappropriate": "no",
+                "sq:measurement:differential": "no",
+                "sq:measurement:assessor-aware": "yes",
+                "sq:measurement:influence-possible": "no",
+                "sq:measurement:influence-likely": "yes",
+            },
+            (
+                "sq:measurement:method-inappropriate",
+                "sq:measurement:differential",
+                "sq:measurement:assessor-aware",
+                "sq:measurement:influence-possible",
+            ),
+            id="D4-dependent-path",
+        ),
+    ],
+)
+def test_all_question_submission_resolves_dependent_path_once(
+    tmp_path: Path,
+    domain_id: str,
+    prior_domains: tuple[str, ...],
+    answers: dict[str, str],
+    expected_active: tuple[str, ...],
+) -> None:
+    workspace, evidence, revision = _assessment_workspace(tmp_path)
+    for prior_domain in prior_domains:
+        saved = _call(
+            workspace,
+            "save_domain_judgment",
+            _domain_draft("trial", prior_domain, revision, evidence),
+        )
+        assert saved["outcome"] == "success", saved
+        revision = int(saved["head"]["state_revision"])
+
+    context = _call(workspace, "get_domain_context", {"domain_id": domain_id})["data"]
+    cards = context["questions"]
+    assert {card["id"] for card in cards} == set(answers)
+    draft = _domain_draft("trial", domain_id, revision, evidence)
+    draft["answers"] = [
+        {
+            "question_id": card["id"],
+            "option_id": next(
+                option["id"]
+                for option in card["options"]
+                if option["official_answer"] == answers[card["id"]]
+            ),
+            "bases": [{"kind": "direct_support", "evidence": evidence["handle"]}],
+        }
+        for card in cards
+    ]
+
+    saved = _call(workspace, "save_domain_judgment", draft)
+
+    assert saved["outcome"] == "success", saved
+    checkpoint = _stored_checkpoint(workspace, domain_id)
+    assert checkpoint["active_questions"] == list(expected_active)
+    assert [item["question_id"] for item in checkpoint["answers"]] == list(expected_active)
+
+
 def test_missing_data_is_typed_and_only_allowed_for_domain_3_1() -> None:
     row = {
         "arm": "intervention",
