@@ -39,6 +39,12 @@ from rob2_kit.application.intake import approve_review as _approve_review
 from rob2_kit.application.intake import prepare_batch_for_outcome as _prepare_batch
 from rob2_kit.application.intake import proposal_approval_context as _proposal_approval_context
 from rob2_kit.application.proposal import save_proposal as _save_proposal
+from rob2_kit.application.source_handles import (
+    public_source_references as _public_source_references,
+)
+from rob2_kit.application.source_handles import (
+    resolve_source_handle as _resolve_source_handle,
+)
 from rob2_kit.application.status import get_status as _get_status
 from rob2_kit.application.status import get_status_head as _get_status_head
 from rob2_kit.application.trials import request_trial_terminal as _request_trial_terminal
@@ -55,7 +61,7 @@ from rob2_kit.workflow_models import (
     PageNumber,
     ProposalDraft,
     ResultChoiceDraft,
-    SourceId,
+    SourceHandle,
     StrictModel,
     TerminalRequest,
     TerminalRequestEnvelope,
@@ -172,7 +178,9 @@ RequestedOutcome = Annotated[
 class ReadWindow(StrictModel):
     """One independent source-page window."""
 
-    source_id: SourceId = Field(description="Captured Source ID.")
+    source_id: SourceHandle = Field(
+        description="Copy the returned source_id exactly. Use it with the same trial_id."
+    )
     page: PageNumber = Field(description="One-based Source-page index.")
     start_line: StrictInt = Field(
         ge=1, default=1, description="First one-based numbered line to return."
@@ -209,6 +217,7 @@ def _content(tool: str, value: dict[str, Any]) -> ToolResult:
     # Pixel bytes are transport content, never part of the typed JSON receipt.
     png_bytes = value.get("_png_bytes")
     value = {key: item for key, item in value.items() if key != "_png_bytes"}
+    value = _public_source_references(value)
     if tool != "get_status":
         current = _get_status_head(_workspace())
         value = {
@@ -385,7 +394,10 @@ def get_status() -> ToolResult:
 @mcp.tool(
     name="list_sources",
     title="List Trial sources",
-    description="List captured sources. Requires a Trial ID for multi-Trial batches.",
+    description=(
+        "List captured sources and their short source_id handles. Requires a Trial ID for "
+        "multi-Trial batches. Copy a returned source_id exactly and use it with the same trial_id."
+    ),
     annotations=_READ_ONLY,
     output_schema=output_schema("list_sources"),
 )
@@ -411,7 +423,8 @@ def list_sources(
         "An initial multi-token all or phrase no-hit includes one "
         "executable any broadening step. Broad truncated any results include refinement advice. "
         "Inspect passages before citing them. Zero hits establish only that the issued lexical "
-        "query matched no captured text."
+        "query matched no captured text. Copy a returned source_id exactly and use it with the "
+        "same trial_id."
     ),
     annotations=_READ_ONLY,
     output_schema=output_schema("search_sources"),
@@ -438,8 +451,13 @@ def search_sources(
         ),
     ],
     source_id: Annotated[
-        SourceId | None,
-        Field(description="Optional Source ID; omit for all Trial sources in priority order."),
+        SourceHandle | None,
+        Field(
+            description=(
+                "Optional source_id from this Trial; copy the returned source_id exactly. "
+                "Use it with the same trial_id. Omit for all Trial sources in priority order."
+            )
+        ),
     ] = None,
     limit: Annotated[
         SearchLimit,
@@ -452,7 +470,19 @@ def search_sources(
 ) -> ToolResult:
     return _invoke(
         "search_sources",
-        lambda: _search_sources(_workspace(), trial_id, query, mode, limit, source_id, cursor),
+        lambda: _search_sources(
+            _workspace(),
+            trial_id,
+            query,
+            mode,
+            limit,
+            (
+                _resolve_source_handle(_workspace(), trial_id, source_id)
+                if source_id is not None
+                else None
+            ),
+            cursor,
+        ),
     )
 
 
@@ -465,7 +495,8 @@ def search_sources(
         "To finish a partial batch, call read_pages with the same trial_id and windows set to "
         "data.remaining_windows, omitting source_id, pages, and start_line. Repeat until no "
         "windows remain. Returned numbered text normally fits 24000 characters; a single "
-        "oversized line is returned intact. JSON metadata is additional."
+        "oversized line is returned intact. JSON metadata is additional. Copy a returned "
+        "source_id exactly and use it with the same trial_id."
     ),
     annotations=_READ_ONLY,
     output_schema=output_schema("read_pages"),
@@ -476,7 +507,13 @@ def read_pages(
         Field(description="Captured Trial that owns the Source pages; required for every read."),
     ],
     source_id: Annotated[
-        SourceId | None, Field(description="Source ID for a single-source read.")
+        SourceHandle | None,
+        Field(
+            description=(
+                "source_id from this Trial for a single-source read; copy the returned "
+                "source_id exactly. Use it with the same trial_id."
+            )
+        ),
     ] = None,
     pages: Annotated[
         list[PageNumber] | None,
@@ -517,8 +554,24 @@ def read_pages(
             if source_id is not None or pages is not None or start_line != 1:
                 raise ValueError("use windows alone for independent reads")
             requests = [
-                (trial_id, item.source_id, [item.page], item.start_line, item.end_line)
+                (
+                    trial_id,
+                    _resolve_source_handle(_workspace(), trial_id, item.source_id),
+                    [item.page],
+                    item.start_line,
+                    item.end_line,
+                )
                 for item in windows
+            ]
+        elif source_id is not None:
+            requests = [
+                (
+                    trial_id,
+                    _resolve_source_handle(_workspace(), trial_id, source_id),
+                    pages,
+                    start_line,
+                    None,
+                )
             ]
         raw_pages: list[dict[str, Any]] = []
         include_source = True
@@ -663,7 +716,10 @@ def select_text_evidence(
         TrialId,
         Field(description="Captured Trial containing the source.", examples=["trial-a"]),
     ],
-    source_id: Annotated[SourceId, Field(description="Server-issued source ID from list_sources.")],
+    source_id: Annotated[
+        SourceHandle,
+        Field(description="Copy the returned source_id exactly. Use it with the same trial_id."),
+    ],
     page: Annotated[
         PageNumber, Field(description="1-based page containing the passage.", examples=[7])
     ],
@@ -685,7 +741,7 @@ def select_text_evidence(
         lambda: _select_text_evidence_by_lines(
             _workspace(),
             trial_id,
-            source_id,
+            _resolve_source_handle(_workspace(), trial_id, source_id),
             page,
             start_line,
             end_line,
@@ -705,7 +761,10 @@ def select_text_evidence(
 )
 def render_page(
     trial_id: Annotated[TrialId, Field(description="Captured Trial containing the source.")],
-    source_id: Annotated[SourceId, Field(description="Server-issued source ID from list_sources.")],
+    source_id: Annotated[
+        SourceHandle,
+        Field(description="Copy the returned source_id exactly. Use it with the same trial_id."),
+    ],
     page: Annotated[PageNumber, Field(description="1-based PDF page to render.")],
     inline: Annotated[
         Inline,
@@ -718,7 +777,14 @@ def render_page(
     ] = True,
 ) -> ToolResult:
     return _invoke(
-        "render_page", lambda: _render_page(_workspace(), trial_id, source_id, page, inline)
+        "render_page",
+        lambda: _render_page(
+            _workspace(),
+            trial_id,
+            _resolve_source_handle(_workspace(), trial_id, source_id),
+            page,
+            inline,
+        ),
     )
 
 
@@ -735,7 +801,10 @@ def render_page(
 )
 def select_visual_evidence(
     trial_id: Annotated[TrialId, Field(description="Captured Trial containing the source.")],
-    source_id: Annotated[SourceId, Field(description="Server-issued source ID from list_sources.")],
+    source_id: Annotated[
+        SourceHandle,
+        Field(description="Copy the returned source_id exactly. Use it with the same trial_id."),
+    ],
     render_identity: Annotated[
         Identity, Field(description="Render identity returned by render_page.")
     ],
@@ -758,7 +827,12 @@ def select_visual_evidence(
     return _invoke(
         "select_visual_evidence",
         lambda: _select_visual_evidence(
-            _workspace(), trial_id, source_id, render_identity, transcription, list(region)
+            _workspace(),
+            trial_id,
+            _resolve_source_handle(_workspace(), trial_id, source_id),
+            render_identity,
+            transcription,
+            list(region),
         ),
     )
 

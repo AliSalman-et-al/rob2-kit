@@ -61,6 +61,7 @@ VisualTranscription = Annotated[
 ]
 TrialId = Annotated[str, StringConstraints(pattern=r"^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$")]
 SourceId = Annotated[str, StringConstraints(pattern=r"^source_[0-9a-f]{64}$")]
+SourceHandle = Annotated[str, StringConstraints(pattern=r"^sh_[0-9a-f]{16}$")]
 DomainId = Literal[
     "domain:randomization",
     "domain:deviations",

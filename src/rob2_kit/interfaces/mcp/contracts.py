@@ -21,6 +21,7 @@ from pydantic import (
 from pydantic.types import PositiveInt
 
 from rob2_kit.application.contracts import TOOL_NAMES
+from rob2_kit.application.source_handles import public_source_references
 from rob2_kit.models import Answer, Judgment, QuerySuggestion, ResponseFramework
 from rob2_kit.workflow_models import (
     AssessableTargetRelation,
@@ -33,13 +34,13 @@ from rob2_kit.workflow_models import (
     OmissionDecision,
     QuestionId,
     RegistryOutcome,
+    RelativePath,
     ReportedEndpoint,
     ResultClarity,
     ResultTarget,
     ReviewPurpose,
     SearchReceiptHandle,
-    Source,
-    SourceId,
+    SourceHandle,
     SourceOrigin,
     SourceRole,
     TrialId,
@@ -285,11 +286,24 @@ IntakeCondition = Annotated[
 ]
 
 
+class PublicSource(PublicModel):
+    id: SourceHandle
+    trial_id: TrialId
+    role: SourceRole
+    label: str = Field(min_length=1)
+    logical_path: RelativePath
+    sha256: Identity
+    media_type: str = Field(min_length=1)
+    page_count: PageNumber
+    projection_hash: Identity
+    origin: SourceOrigin = SourceOrigin.LOCAL_DOSSIER
+
+
 class PublicCapturedTrial(PublicModel):
     id: TrialId
     label: str = Field(min_length=1)
     requested_outcome: str = Field(min_length=1)
-    sources: tuple[Source, ...]
+    sources: tuple[PublicSource, ...]
     registry: RegistryOutcome
     omissions: tuple[OmissionDecision, ...] = ()
     identity: Identity
@@ -314,7 +328,7 @@ class SelectedNarrativeEvidence(PublicModel):
     handle: str = Field(pattern=r"^eh_[0-9a-f]{16}$")
     identity: Identity
     trial_id: TrialId
-    source_id: str = Field(pattern=r"^source_[0-9a-f]{64}$")
+    source_id: SourceHandle
     page: PageNumber
     # Exact line bounds are emitted for new search- and read-derived passages.
     # They remain optional for canonical evidence created by an older contract.
@@ -367,7 +381,7 @@ class SelectedNarrativeEvidence(PublicModel):
 
 class RenderProjection(PublicModel):
     identity: Identity
-    source_id: str = Field(pattern=r"^source_[0-9a-f]{64}$")
+    source_id: SourceHandle
     page: PageNumber
     png_sha256: Identity
     recipe: str = Field(min_length=1)
@@ -378,7 +392,7 @@ class SelectedFigureEvidence(PublicModel):
     handle: str = Field(pattern=r"^eh_[0-9a-f]{16}$")
     identity: Identity
     trial_id: TrialId
-    source_id: str = Field(pattern=r"^source_[0-9a-f]{64}$")
+    source_id: SourceHandle
     render: RenderProjection
     transcription: str = Field(min_length=1)
     provenance: Literal["text_corroborated", "host_visual"]
@@ -396,7 +410,7 @@ class SelectedFigureEvidence(PublicModel):
 
 
 class EvidenceReadWindow(PublicModel):
-    source_id: str = Field(pattern=r"^source_[0-9a-f]{64}$")
+    source_id: SourceHandle
     page: PageNumber
     start_line: PageNumber
     end_line: PageNumber
@@ -446,7 +460,7 @@ class StatusData(PublicModel):
 
 
 class SourcesData(PublicModel):
-    sources: tuple[Source, ...]
+    sources: tuple[PublicSource, ...]
 
 
 class SearchRange(PublicModel):
@@ -455,7 +469,7 @@ class SearchRange(PublicModel):
 
 
 class SearchHit(PublicModel):
-    source_id: str = Field(pattern=r"^source_[0-9a-f]{64}$")
+    source_id: SourceHandle
     source_role: SourceRole
     source_label: str = Field(min_length=1)
     page: PageNumber
@@ -502,7 +516,7 @@ class SearchNextAction(PublicModel):
     trial_id: TrialId
     query: str = Field(min_length=1)
     mode: Literal["all", "phrase", "any", "prefix"]
-    source_id: SourceId | None = None
+    source_id: SourceHandle | None = None
     limit: PositiveInt
     cursor: str | None = None
 
@@ -548,10 +562,7 @@ class SearchData(PublicModel):
 
 
 class PageData(PublicModel):
-    source_id: str = Field(
-        pattern=r"^source_[0-9a-f]{64}$",
-        description="Source.",
-    )
+    source_id: SourceHandle = Field(description="Source handle.")
     page: PageNumber
     numbered_text: str
     line_count: NonNegativeInt
@@ -744,7 +755,7 @@ class DomainNarrativeEvidence(PublicModel):
     handle: str = Field(pattern=r"^eh_[0-9a-f]{16}$")
     identity: Identity
     trial_id: TrialId
-    source_id: SourceId
+    source_id: SourceHandle
     page: PageNumber
     # Canonical Evidence from older checkpoints may have a complete quote but
     # no line coordinates.  Coordinates are required only when text is omitted
@@ -862,7 +873,7 @@ class SearchEvidenceContinuation(PublicModel):
     trial_id: TrialId
     query: str = Field(min_length=1)
     mode: Literal["all", "phrase", "any", "prefix"]
-    source_id: str | None = None
+    source_id: SourceHandle | None = None
     limit: PositiveInt
     cursor: str = Field(pattern=r"^sc_[0-9a-f]{16}_[0-9]+$")
 
@@ -990,14 +1001,14 @@ class DomainContextData(PublicModel):
 
 class ComparisonPassageRef(PublicModel):
     handle: str = Field(pattern=r"^eh_[0-9a-f]{16}$")
-    source_id: str = Field(pattern=r"^source_[0-9a-f]{64}$")
+    source_id: SourceHandle
     page: PageNumber
     start_line: PageNumber
     end_line: PageNumber
 
 
 class ComparisonPassageGroup(PublicModel):
-    source_id: str = Field(pattern=r"^source_[0-9a-f]{64}$")
+    source_id: SourceHandle
     source_role: SourceRole
     source_label: str = Field(min_length=1)
     logical_path: str = Field(min_length=1)
@@ -1383,6 +1394,7 @@ def _condition(tool: str, value: dict[str, Any]) -> dict[str, Any]:
 
 
 def normalize(tool: str, value: dict[str, Any]) -> dict[str, Any]:
+    value = public_source_references(value)
     outcome = str(value.get("outcome", "success"))
     head = PublicHead.model_validate(_head(value)).model_dump(mode="json")
     if outcome in {"success", "review_required"}:

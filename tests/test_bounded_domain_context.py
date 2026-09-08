@@ -78,7 +78,7 @@ def test_oversized_narrative_has_exact_read_recovery_and_utf8_accounting() -> No
         "handle": "eh_0123456789abcdef",
         "identity": "sha256:" + "1" * 64,
         "trial_id": "trial",
-        "source_id": "source_" + "2" * 64,
+        "source_id": "sh_" + "2" * 16,
         "page": 3,
         "start_line": 12,
         "end_line": 80,
@@ -100,7 +100,7 @@ def test_oversized_narrative_has_exact_read_recovery_and_utf8_accounting() -> No
         "trial_id": "trial",
         "windows": [
             {
-                "source_id": "source_" + "2" * 64,
+                "source_id": "sh_" + "2" * 16,
                 "page": 3,
                 "start_line": 12,
                 "end_line": 80,
@@ -123,7 +123,7 @@ def test_coordinate_less_legacy_narrative_is_reported_outside_recoverable_budget
                     "handle": "eh_0123456789abcdef",
                     "identity": "sha256:" + "1" * 64,
                     "trial_id": "trial",
-                    "source_id": "source_" + "2" * 64,
+                    "source_id": "sh_" + "2" * 16,
                     "page": 3,
                     "quote": quote,
                 }
@@ -181,7 +181,7 @@ def test_multiple_narratives_accumulate_recoverable_text_bytes() -> None:
             "handle": "eh_0123456789abcdef",
             "identity": "sha256:" + "1" * 64,
             "trial_id": "trial",
-            "source_id": "source_" + "2" * 64,
+            "source_id": "sh_" + "2" * 16,
             "page": 1,
             "start_line": 1,
             "end_line": 1,
@@ -192,7 +192,7 @@ def test_multiple_narratives_accumulate_recoverable_text_bytes() -> None:
             "handle": "eh_abcdef0123456789",
             "identity": "sha256:" + "3" * 64,
             "trial_id": "trial",
-            "source_id": "source_" + "4" * 64,
+            "source_id": "sh_" + "4" * 16,
             "page": 2,
             "start_line": 2,
             "end_line": 3,
@@ -217,7 +217,7 @@ def test_explicit_carry_forward_has_priority_over_active_candidate_budget() -> N
         "handle": "eh_0123456789abcdef",
         "identity": "sha256:" + "1" * 64,
         "trial_id": "trial",
-        "source_id": "source_" + "2" * 64,
+        "source_id": "sh_" + "2" * 16,
         "page": 1,
         "start_line": 1,
         "end_line": 20,
@@ -229,7 +229,7 @@ def test_explicit_carry_forward_has_priority_over_active_candidate_budget() -> N
         "handle": "eh_abcdef0123456789",
         "identity": "sha256:" + "3" * 64,
         "trial_id": "trial",
-        "source_id": "source_" + "4" * 64,
+        "source_id": "sh_" + "4" * 16,
         "page": 2,
         "start_line": 1,
         "end_line": 1,
@@ -249,7 +249,7 @@ def test_explicit_carry_forward_has_priority_over_active_candidate_budget() -> N
 
 
 def test_non_narrative_evidence_stays_valid_in_compact_projection() -> None:
-    source_id = "source_" + "2" * 64
+    source_id = "sh_" + "2" * 16
     figure = {
         "kind": "figure",
         "handle": "eh_0123456789abcdef",
@@ -341,7 +341,7 @@ def test_narrative_projection_requires_matching_text_and_recovery_state() -> Non
         "handle": "eh_0123456789abcdef",
         "identity": "sha256:" + "1" * 64,
         "trial_id": "trial",
-        "source_id": "source_" + "2" * 64,
+        "source_id": "sh_" + "2" * 16,
         "page": 3,
         "start_line": 1,
         "end_line": 1,
@@ -377,7 +377,7 @@ def test_complete_legacy_narrative_allows_missing_coordinates_but_recovery_is_ex
         "handle": "eh_0123456789abcdef",
         "identity": "sha256:" + "1" * 64,
         "trial_id": "trial",
-        "source_id": "source_" + "2" * 64,
+        "source_id": "sh_" + "2" * 16,
         "page": 3,
         "quote": "exact text",
         "text_status": "complete",

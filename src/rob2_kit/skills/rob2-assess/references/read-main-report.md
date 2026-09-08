@@ -6,7 +6,8 @@ Read each Trial's main report at two checkpoints:
 2. After approval, when that Trial becomes active, before answering its first
    Domain. Recover the approved Result first, then repeat the bounded reading.
 
-Use the same full captured Source for both reads. Both passes
+Use the same full captured Source for both reads. Copy the returned `source_id`
+exactly. Use it with the same `trial_id`. Both passes
 use text only and the same source-order prefix, up to 65,536 UTF-8 bytes of
 source text per report per pass, stopping at whole-line boundaries. When the
 Source text fits, read all of it.
@@ -36,7 +37,7 @@ The `read_pages` arguments have this shape; replace the example identifiers
 and range with the returned recovery values:
 
 ```json
-{"trial_id": "fictional_trial", "windows": [{"source_id": "source_from_response", "page": 1, "start_line": 1, "end_line": 40}]}
+{"trial_id": "fictional_trial", "windows": [{"source_id": "sh_0123456789abcdef", "page": 1, "start_line": 1, "end_line": 40}]}
 ```
 
 For an independent read using `source_id` and `pages`, split page lists longer

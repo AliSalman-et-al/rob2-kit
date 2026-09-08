@@ -96,7 +96,7 @@ def test_public_output_surface_is_closed_and_within_budget() -> None:
     assert search_parameters["properties"]["query"]["examples"] == ["central randomization"]
     source_scope = search_parameters["properties"]["source_id"]
     assert source_scope["default"] is None
-    assert source_scope["anyOf"][0]["pattern"] == r"^source_[0-9a-f]{64}$"
+    assert source_scope["anyOf"][0]["pattern"] == r"^sh_[0-9a-f]{16}$"
     assert "not printed labels" in read_description
     assert "numbered lines" in read_description
     assert "data.remaining_windows" in read_description
@@ -112,7 +112,10 @@ def test_public_output_surface_is_closed_and_within_budget() -> None:
     assert "Supply trial_id and windows" in windows_description
     assert "top-level start_line" in windows_description
     read_window = read_parameters["properties"]["windows"]["anyOf"][0]["items"]
-    assert "Captured Source ID" in read_window["properties"]["source_id"]["description"]
+    assert (
+        "Copy the returned source_id exactly"
+        in read_window["properties"]["source_id"]["description"]
+    )
     assert "One-based Source-page index" in read_window["properties"]["page"]["description"]
     domain_tool = by_name["save_domain_judgment"]
     context_tool = by_name["get_domain_context"]

@@ -4,7 +4,8 @@ Use this reference while locating Result support and answering Domain questions.
 
 ## Reuse inspected passage handles
 
-`search_sources` locates candidate pages. A hit is navigation, not scientific
+`search_sources` locates candidate pages. Copy each returned `source_id` exactly
+and use it with the same `trial_id`. A hit is navigation, not scientific
 proof, but its `passage_ref` already identifies the exact returned passage.
 Choose short Source wording or a returned query suggestion. Use `all` for every
 token on one page, `phrase` for contiguous wording, `any` for broad discovery,
