@@ -246,10 +246,37 @@ not a Result-specific accuracy estimate.
 
 One Proposal call still mistyped a character in a 71-character source identity,
 and the server rejected it before reading. The model recovered by copying the
-identity correctly. Relaxing source-identity validation or adding an ambiguous
-shortcut would weaken provenance for a single observed transcription error, so
-the implementation keeps exact validation. The Proposal required one ordinary
-typed repair to add an exact-relation rationale and remove an unsupported
-endpoint definition. The final bundle passed both the product and standalone
-verifiers. The confirmation used 3,516,091 input tokens, of which 3,267,328
-were reported as cached, and 10,838 output tokens.
+identity correctly. The Proposal required one ordinary typed repair to add an
+exact-relation rationale and remove an unsupported endpoint definition. The
+final bundle passed both the product and standalone verifiers. The confirmation
+used 3,516,091 input tokens, of which 3,267,328 were reported as cached, and
+10,838 output tokens.
+
+That transcription failure motivated
+[#313](https://github.com/AliSalman-et-al/rob2-kit/issues/313). The MCP boundary
+now exposes a 19-character source handle while storage, Evidence identities,
+database keys, and bundles retain the full canonical source identity. Handles
+resolve against the prepared Trial and fail closed when unknown, used with the
+wrong Trial, or ambiguous. This shortens the reference without fuzzy matching
+or weakening provenance.
+
+The same frozen Chalmers prompt and sources were rerun from commit
+`fb24eba9b6b16c3abfade72d0d70e59307661d00`. All six main-report read calls
+completed without a source-handle error. A valid 12-window argument object
+shrunk from 1,564 to 940 serialized UTF-8 bytes, exactly 52 bytes per source
+reference. Across the same 48 successful read references, the argument objects
+shrunk from 6,348 to 3,852 bytes. The earlier malformed call had added another
+1,549 bytes and a failed round trip.
+
+The second rerun also illustrates stochastic variation outside the handle
+change. Researcher review corrected a Proposal that restricted the target
+population to observed cases, restoring all 1,394 randomized infants while
+keeping 598 and 612 as reported analysis denominators. One Domain save then
+mistyped an opaque answer-option identity and recovered through a typed repair.
+The finalized vector was Low, Low, Low, Some concerns, Low; the D4 caution is
+defensible because accidental unmasking occurred for 3% of two-year visits and
+the diagnostic criteria could be influenced in principle, although material
+influence was judged unlikely. The bundle passed both verifiers. This run used
+3,360,386 input tokens, of which 3,206,656 were reported as cached, and 11,100
+output tokens. These runs establish transport behavior, not a change in
+Result-specific accuracy.
