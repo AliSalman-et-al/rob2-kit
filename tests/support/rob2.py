@@ -85,7 +85,6 @@ def _result(_evidence: dict[str, Any]) -> dict[str, Any]:
         "relation": "exact",
         "applicability": {
             "design": "individual_parallel",
-            "status": "supported",
             "rationale": (
                 "The captured allocation describes an individually randomized parallel comparison."
             ),

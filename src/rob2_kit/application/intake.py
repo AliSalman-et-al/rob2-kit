@@ -707,26 +707,25 @@ def approve_review(
         terminal_records: dict[str, dict[str, Any]] = {}
         for result in state["proposal"]["payload"]["results"]:
             applicability = result.get("applicability")
-            unsupported_design = (
-                result.get("kind") == "assessable"
-                and isinstance(applicability, dict)
-                and applicability.get("status") in {"unsupported", "uncertain"}
-            )
+            design = applicability.get("design") if isinstance(applicability, dict) else None
+            unsupported_design = result.get("kind") == "assessable" and design in {
+                "cluster_randomized",
+                "crossover",
+                "unclear",
+            }
             if result.get("kind") == "unavailable" or unsupported_design:
                 if unsupported_design:
                     rationale = str(applicability.get("rationale", "")).strip()
-                    design = str(applicability.get("design", "unclear"))
-                    status = str(applicability.get("status"))
                     reason = (
                         "The captured Trial design is unsupported by the installed "
                         f"parallel-assignment pack ({design})."
-                        if status == "unsupported"
+                        if design in {"cluster_randomized", "crossover"}
                         else "The captured Trial design could not be established for the installed "
                         f"parallel-assignment pack ({design})."
                     )
                     missing_facts = (
                         "A RoB 2 pack supporting the documented Trial design is required."
-                        if status == "unsupported"
+                        if design in {"cluster_randomized", "crossover"}
                         else (
                             "Source information establishing the Trial design and unit of "
                             "randomization is required."

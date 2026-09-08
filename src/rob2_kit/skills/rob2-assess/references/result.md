@@ -3,15 +3,59 @@
 Use this reference while choosing and constructing each Proposal Result. Use the
 live `save_proposal` schema for field shapes.
 
+## Construct the request
+
+This fictional example shows the shape of one complete `save_proposal` request
+for an assessable comparative Result. It assumes supporting Evidence has already
+been selected. Replace every example fact and identifier with information from
+the current Trial. Use the current `expected_revision` from `get_status` and
+same-Trial Evidence handles returned by the tools. Choose `relation` and
+`applicability` from inspected Sources; the example values are not defaults.
+The live schema remains authoritative. Schema validity alone does not establish
+Evidence support or scientific correctness.
+
+```json
+{
+	"expected_revision": 7,
+	"results": [
+		{
+			"kind": "assessable",
+			"trial_id": "fictional_quiz_trial",
+			"relation": "exact",
+			"applicability": {
+				"design": "individual_parallel",
+				"rationale": "Learners were individually randomized to two parallel teaching groups.",
+				"evidence": ["eh_0000000000000001"]
+			},
+			"target": {
+				"measurement": {"method": "Number of correct answers on the course quiz"},
+				"time_point_or_window": {"kind": "described", "description": "At course completion"},
+				"comparison_groups": [
+					{"id": "practice", "assignment": "Spaced practice"},
+					{"id": "review", "assignment": "Single review session"}
+				],
+				"intended_analysis_population": "All randomized learners",
+				"intended_effect_measure": "Mean difference"
+			},
+			"reported": {
+				"form": "comparative_effect",
+				"effect_measure": "Mean difference",
+				"estimate": "2.3",
+				"endpoint": {"name": "Course quiz score"}
+			}
+		}
+	]
+}
+```
+
 ## Establish pack applicability
 
 Identify the unit of randomization and whether the trial uses a parallel or
 crossover design. Record `applicability` with a concise rationale and inspected
-Evidence from this Trial. Set `design:"individual_parallel"` with
-`status:"supported"` for individually randomized parallel trials. Use
-`status:"unsupported"` for `cluster_randomized` or `crossover`, and
-`design:"unclear"` with `status:"uncertain"` for unresolved design. A supported
-or unsupported classification requires same-Trial Evidence handles.
+Evidence from this Trial. Set `design` to `individual_parallel`,
+`cluster_randomized`, or `crossover` when Sources establish that design. Each
+known design requires same-Trial Evidence handles. Use `design:"unclear"` when
+the design remains unresolved. The server determines pack support from `design`.
 
 If design is unclear, use bounded discovery in the main report and relevant
 methods Sources. Keep unresolved applicability explicit after that discovery;

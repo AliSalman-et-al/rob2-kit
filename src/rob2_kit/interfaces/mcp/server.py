@@ -49,7 +49,6 @@ from rob2_kit.workflow_models import (
     DomainRevisionBasis,
     ExpectedRevision,
     Identity,
-    MainReportScopeDraft,
     MissingDataRow,
     MultipleConcernsDecision,
     NormalizedCoordinate,
@@ -742,7 +741,8 @@ def select_visual_evidence(
     name="save_proposal",
     title="Save Result proposal",
     description=(
-        "Submit typed Result cards after the required bounded main-article text pass and selecting "
+        "Submit typed Result cards after the required bounded full-Source text pass for each main "
+        "report and selecting "
         "supporting Evidence. The first save needs one "
         "card per Trial; a pending Review accepts only cards being replaced and preserves the "
         "rest. Each card is assessable or unavailable (Evidence is separate). Assessable cards "
@@ -769,19 +769,9 @@ def save_proposal(
         ExpectedRevision,
         Field(description="Current revision from get_status; required for a non-stale proposal."),
     ],
-    main_report_scopes: Annotated[
-        list[MainReportScopeDraft] | None,
-        Field(
-            description=(
-                "Optional per-Trial suffix scope. Omit for full main-Source scope. A shortened "
-                "scope needs boundary Evidence and a reason; the reading ceiling still applies."
-            )
-        ),
-    ] = None,
 ) -> ToolResult:
     proposal = ProposalDraft(
         results=tuple(results),
-        main_report_scopes=tuple(main_report_scopes or ()),
         expected_revision=expected_revision,
     )
     return _invoke("save_proposal", lambda: _save_proposal(_workspace(), proposal))

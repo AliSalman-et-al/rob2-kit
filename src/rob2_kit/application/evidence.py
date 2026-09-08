@@ -1583,28 +1583,17 @@ def _main_report_sources(trial: dict[str, Any]) -> list[dict[str, Any]]:
 
 
 def _main_report_layout(
-    connection: Any, trial: dict[str, Any], scopes: list[dict[str, Any]] | None
+    connection: Any, trial: dict[str, Any]
 ) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
     """Compute one deterministic, whole-line UTF-8 prefix for a Trial report."""
 
-    trial_id = trial["id"]
-    scope_by_source = {
-        (item.get("trial_id"), item.get("source_id")): item
-        for item in (scopes or [])
-        if isinstance(item, dict)
-    }
     layout: list[dict[str, Any]] = []
     unread: list[dict[str, Any]] = []
     for source in _main_report_sources(trial):
         budget = MAIN_REPORT_TEXT_BUDGET
         prefix_open = True
         source_id = source.get("id")
-        scope = scope_by_source.get((trial_id, source_id))
-        end_page = (
-            int(scope["end_page"])
-            if scope and scope.get("end_page")
-            else int(source.get("page_count", 0))
-        )
+        end_page = int(source.get("page_count", 0))
         rows = connection.execute(
             "SELECT page,text FROM pages WHERE source_id=? AND page<=? ORDER BY page",
             (source_id, end_page),
@@ -1675,7 +1664,6 @@ def main_report_read_gaps(
     trials: list[dict[str, Any]],
     *,
     phase: str | None = None,
-    scopes: list[dict[str, Any]] | None = None,
 ) -> list[dict[str, Any]]:
     """Return bounded read_pages windows for uncovered report-prefix lines."""
 
@@ -1694,7 +1682,7 @@ def main_report_read_gaps(
         for trial in trials:
             if not isinstance(trial, dict) or not isinstance(trial.get("id"), str):
                 continue
-            for item in _main_report_layout(connection, trial, scopes)[0]:
+            for item in _main_report_layout(connection, trial)[0]:
                 page = item["page"]
                 required_count = item["required_count"]
                 covered = connection.execute(
@@ -1751,13 +1739,12 @@ def main_report_reading_status(
     trials: list[dict[str, Any]],
     *,
     phase: str,
-    scopes: list[dict[str, Any]] | None = None,
 ) -> dict[str, dict[str, Any]]:
     """Report complete, required, or budget-limited text coverage per Trial."""
 
     root = _root(workspace)
     _ensure(root)
-    gaps = main_report_read_gaps(root, trials, phase=phase, scopes=scopes)
+    gaps = main_report_read_gaps(root, trials, phase=phase)
     batch = _read(root, "batch") or {}
     batch_id = batch.get("identity")
     result: dict[str, dict[str, Any]] = {}
@@ -1765,7 +1752,7 @@ def main_report_reading_status(
         for trial in trials:
             if not isinstance(trial, dict) or not isinstance(trial.get("id"), str):
                 continue
-            layout, unread = _main_report_layout(connection, trial, scopes)
+            layout, unread = _main_report_layout(connection, trial)
             covered_prefix = 0
             covered_unread: list[dict[str, Any]] = []
             unread_by_page: dict[tuple[str, int], list[dict[str, Any]]] = {}

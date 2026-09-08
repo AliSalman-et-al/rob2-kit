@@ -289,7 +289,6 @@ def _acceptance_result(_evidence: dict[str, Any]) -> dict[str, Any]:
         "relation": "exact",
         "applicability": {
             "design": "individual_parallel",
-            "status": "supported",
             "rationale": "The fixture represents an individually randomized parallel trial.",
             "evidence": [_evidence["handle"]],
         },

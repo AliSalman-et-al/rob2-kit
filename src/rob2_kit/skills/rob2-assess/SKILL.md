@@ -42,9 +42,10 @@ scope.
 ### 2. Discover and choose one Result per Trial
 
 Before choosing a Result, [read the main report](references/read-main-report.md)
-in bounded consecutive text windows. Finish the required pass before targeted
-discovery and Proposal submission. At the reading ceiling, preserve partial
-coverage and inspect relevant omitted passages during targeted discovery.
+in bounded consecutive text windows from the full captured Source. Finish the
+required pass before targeted discovery and Proposal submission. At the reading
+ceiling, preserve partial coverage and inspect relevant omitted passages during
+targeted discovery.
 
 Read [Specify the Result](references/result.md). Use targeted searches and reads
 to compare complete reported candidates and resolve gaps from the main report.

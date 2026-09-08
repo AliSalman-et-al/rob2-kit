@@ -498,7 +498,7 @@ def test_receipt_head_uses_authoritative_post_operation_status(tmp_path: Path) -
         "operation": "save_proposal",
         "authority": "host",
         "expected_revision": prepared["head"]["state_revision"],
-        "caller_inputs": ["results", "main_report_scopes"],
+        "caller_inputs": ["results"],
     }
 
 
@@ -822,8 +822,8 @@ def test_save_proposal_schema_is_closed_and_discriminated() -> None:
         if definition.get("type") == "object":
             assert definition["additionalProperties"] is False, name
     # Every nested caller field is self-describing; keep the complete proposal
-    # schema, including design applicability and report scope, compact enough for one definition.
-    assert len(json.dumps(schema, separators=(",", ":")).encode()) < 17000
+    # schema, including design applicability, compact enough for one definition.
+    assert len(json.dumps(schema, separators=(",", ":")).encode()) < 16000
     assert len(_walk_schema(schema)) <= 22
 
 
@@ -929,7 +929,6 @@ def test_selected_evidence_and_typed_proposal_survive_host_restart(tmp_path: Pat
         "relation_rationale": ("Related endpoints use different captured names and definitions."),
         "applicability": {
             "design": "individual_parallel",
-            "status": "supported",
             "rationale": (
                 "The captured allocation describes an individually randomized parallel comparison."
             ),

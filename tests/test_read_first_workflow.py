@@ -7,16 +7,10 @@ from support.rob2 import (
     _call,
     _domain_draft,
     _proposal_args,
-    _read_required_main_reports,
     _result,
     _review,
-    _standalone_verify,
     _workspace,
 )
-
-from rob2_kit.application._state import _state
-from rob2_kit.application.finalization import verify_bundle
-from rob2_kit.packs import SCIENTIFIC_PACK
 
 
 def _source(workspace: Path, label: str) -> dict:
@@ -89,17 +83,6 @@ def _read_window_to_end(
         start_line = next_start
 
 
-def _write_pdf(path: Path, pages: list[str]) -> None:
-    document = pymupdf.open()
-    try:
-        for text in pages:
-            page = document.new_page()
-            page.insert_text((36, 60), text)
-        path.write_bytes(document.tobytes())
-    finally:
-        document.close()
-
-
 def _write_large_pdf(path: Path, pages: list[str]) -> None:
     document = pymupdf.open()
     try:
@@ -126,6 +109,38 @@ def test_first_proposal_save_requires_bounded_main_report_read(tmp_path: Path) -
     )
     accepted = _call(workspace, "save_proposal", _proposal_args(workspace, [_result(evidence)]))
     assert accepted["outcome"] == "review_required", accepted
+
+
+def test_main_report_pass_includes_appended_pages_below_cap(tmp_path: Path) -> None:
+    workspace = _workspace(tmp_path)
+    trial = workspace / "input" / "trial"
+    (trial / "main.txt").unlink()
+    _write_large_pdf(trial / "article.pdf", ["main article\n", "appended material\n"])
+    (trial / "sources.toml").write_text(
+        'roles = { "article.pdf" = "main_article" }\n',
+        encoding="utf-8",
+    )
+
+    _call(
+        workspace,
+        "prepare_batch",
+        {"requested_outcome": "requested outcome", "expected_revision": 0},
+    )
+    article = _source(workspace, "article.pdf")
+    initial = _call(workspace, "get_status", {})["data"]["main_report_reading"]["trial"]
+    assert {window["page"] for window in initial["required_ranges"]} == {1, 2}
+    assert initial["unread_ranges"] == []
+
+    for window in initial["required_ranges"]:
+        _read_window_to_end(
+            workspace,
+            article,
+            page=window["page"],
+            start_line=window["start_line"],
+            end_line=window["end_line"],
+        )
+    complete = _call(workspace, "get_status", {})["data"]["main_report_reading"]["trial"]
+    assert complete["status"] == "complete"
 
 
 def test_first_domain_save_requires_fresh_post_approval_read_and_context_recovers(
@@ -340,201 +355,3 @@ def test_budget_deferred_ranges_cover_later_pages_and_overlap_replays(
     complete = _call(workspace, "get_status", {})["data"]["main_report_reading"]["trial"]
     assert complete["status"] == "complete"
     assert complete["unread_ranges"] == []
-
-
-def test_suffix_scope_accepts_same_source_boundary_and_rejects_unsupported_boundary(
-    tmp_path: Path,
-) -> None:
-    workspace = _workspace(tmp_path)
-    trial = workspace / "input" / "trial"
-    protocol_text = (trial / "main.txt").read_text(encoding="utf-8")
-    (trial / "main.txt").unlink()
-    (trial / "protocol.txt").write_text(protocol_text, encoding="utf-8")
-    article_text = (
-        "requested outcome; death ascertainment; end of follow-up; assigned to intervention; "
-        "assigned to control; randomized population; risk ratio; The requested outcome was "
-        "measured in the analyzed population.; risk; 1; events; 2."
-    )
-    _write_pdf(trial / "article.pdf", [article_text, "excluded appendix", "later suffix"])
-    (trial / "sources.toml").write_text(
-        'roles = { "article.pdf" = "main_article", "protocol.txt" = "protocol" }\n',
-        encoding="utf-8",
-    )
-    _call(
-        workspace,
-        "prepare_batch",
-        {"requested_outcome": "requested outcome", "expected_revision": 0},
-    )
-    article = _source(workspace, "article.pdf")
-    protocol = _source(workspace, "protocol.txt")
-    _call(
-        workspace,
-        "read_pages",
-        {"trial_id": "trial", "source_id": article["id"], "pages": [1]},
-    )
-    _call(
-        workspace,
-        "read_pages",
-        {"trial_id": "trial", "source_id": protocol["id"], "pages": [1]},
-    )
-    result_evidence = _call(
-        workspace,
-        "select_text_evidence",
-        {
-            "trial_id": "trial",
-            "source_id": protocol["id"],
-            "page": 1,
-            "start_line": 1,
-            "end_line": 1,
-        },
-    )["data"]["evidence"]
-    design_evidence = _call(
-        workspace,
-        "select_text_evidence",
-        {
-            "trial_id": "trial",
-            "source_id": article["id"],
-            "page": 1,
-            "start_line": 1,
-            "end_line": 1,
-        },
-    )["data"]["evidence"]
-    boundary = _call(
-        workspace,
-        "select_text_evidence",
-        {
-            "trial_id": "trial",
-            "source_id": article["id"],
-            "page": 2,
-            "start_line": 1,
-            "end_line": 1,
-        },
-    )["data"]["evidence"]
-    wrong_source = _call(
-        workspace,
-        "select_text_evidence",
-        {
-            "trial_id": "trial",
-            "source_id": protocol["id"],
-            "page": 1,
-            "start_line": 1,
-            "end_line": 1,
-        },
-    )["data"]["evidence"]
-    wrong_page = _call(
-        workspace,
-        "select_text_evidence",
-        {
-            "trial_id": "trial",
-            "source_id": article["id"],
-            "page": 3,
-            "start_line": 1,
-            "end_line": 1,
-        },
-    )["data"]["evidence"]
-    base = _result(result_evidence)
-    base["applicability"]["evidence"] = [design_evidence["handle"]]
-    base["passage_refs"] = [result_evidence["handle"]]
-
-    invalid = _call(
-        workspace,
-        "save_proposal",
-        {
-            **_proposal_args(workspace, [base]),
-            "main_report_scopes": [
-                {
-                    "trial_id": "trial",
-                    "source_id": article["id"],
-                    "end_page": 1,
-                    "boundary_evidence": [wrong_source["handle"]],
-                    "exclusion_reason": "The appendix is outside the report scope.",
-                }
-            ],
-        },
-    )
-    assert invalid["outcome"] == "repair", invalid
-    assert any(
-        repair["code"] == "invalid_main_report_boundary_evidence" for repair in invalid["repairs"]
-    )
-
-    invalid_page = _call(
-        workspace,
-        "save_proposal",
-        {
-            **_proposal_args(workspace, [base]),
-            "main_report_scopes": [
-                {
-                    "trial_id": "trial",
-                    "source_id": article["id"],
-                    "end_page": 1,
-                    "boundary_evidence": [wrong_page["handle"]],
-                    "exclusion_reason": "The appendix is outside the report scope.",
-                }
-            ],
-        },
-    )
-    assert invalid_page["outcome"] == "repair", invalid_page
-    assert any(
-        repair["code"] == "invalid_main_report_boundary_evidence"
-        for repair in invalid_page["repairs"]
-    )
-
-    accepted = _call(
-        workspace,
-        "save_proposal",
-        {
-            **_proposal_args(workspace, [base]),
-            "main_report_scopes": [
-                {
-                    "trial_id": "trial",
-                    "source_id": article["id"],
-                    "end_page": 1,
-                    "boundary_evidence": [boundary["handle"]],
-                    "exclusion_reason": "The appendix is outside the report scope.",
-                }
-            ],
-        },
-    )
-    assert accepted["outcome"] == "review_required", accepted
-
-    initial_state = _state(workspace)
-    initial_review = initial_state["review"]
-    initial_scopes = initial_state["proposal"]["payload"]["main_report_scopes"]
-    initial_review_identity = initial_review["identity"]
-
-    revised = _result(result_evidence)
-    revised["applicability"]["evidence"] = [design_evidence["handle"]]
-    revised["passage_refs"] = [result_evidence["handle"]]
-    revised["target"]["time_point_or_window"]["description"] = "a corrected analysis window"
-    replaced = _call(workspace, "save_proposal", _proposal_args(workspace, [revised]))
-    assert replaced["outcome"] == "review_required", replaced
-    revised_state = _state(workspace)
-    assert revised_state["review"]["identity"] != initial_review_identity
-    assert revised_state["review"]["candidate"]["proposal"] == revised_state["proposal"]["payload"]
-    assert revised_state["proposal"]["payload"]["main_report_scopes"] == initial_scopes
-    assert {item["handle"] for item in revised_state["proposal"]["evidence"].values()} == {
-        result_evidence["handle"],
-        design_evidence["handle"],
-        boundary["handle"],
-    }
-
-    _review(workspace)
-    _read_required_main_reports(workspace)
-    context = _call(workspace, "get_domain_context", {})
-    assert boundary["handle"] in {item["handle"] for item in context["data"]["evidence"]}
-    revision = int(context["head"]["state_revision"])
-    for domain in SCIENTIFIC_PACK.domains:
-        saved = _call(
-            workspace,
-            "save_domain_judgment",
-            _domain_draft("trial", domain.id, revision, result_evidence),
-        )
-        assert saved["outcome"] == "success", saved
-        revision = int(saved["head"]["state_revision"])
-
-    (workspace / ".rob2-kit" / "derivative.sqlite3").unlink()
-    finalized = _call(workspace, "finalize_batch", {"expected_revision": revision})
-    assert finalized["outcome"] == "success", finalized
-    artifact = workspace / str(finalized["data"]["artifact"]["path"])
-    assert verify_bundle(artifact)
-    assert _standalone_verify(artifact).returncode == 0

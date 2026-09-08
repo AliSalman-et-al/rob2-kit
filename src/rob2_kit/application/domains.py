@@ -43,14 +43,10 @@ def _main_report_recovery(
     )
     if trial is None:
         return None
-    proposal = state.get("proposal")
-    payload = proposal.get("payload", {}) if isinstance(proposal, dict) else {}
-    scopes = payload.get("main_report_scopes", []) if isinstance(payload, dict) else []
     status = main_report_reading_status(
         root,
         [trial],
         phase="assessment",
-        scopes=scopes if isinstance(scopes, list) else None,
     ).get(trial_id, {})
     gaps = status.get("required_ranges", [])
     if not gaps and not (include_budget and status.get("status") == "budget_limited"):

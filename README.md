@@ -15,11 +15,11 @@ assessment bundles.
 
 ## Install
 
-The workflow with Result semantics v0.6, bounded main-report reading, and pack
-applicability requires a fresh assessment workspace. Before upgrading, finish active
-v0.5 assessments with the previously installed version. Alternatively, start a
-new workspace from the original inputs. Historical finalized v0.5 bundles still
-verify unchanged. See the [upgrade boundary](docs/adr/0031-v0-4-evidence-first-interaction.md#upgrade-boundary).
+The workflow with Result semantics v0.7 and bounded full-Source reading requires
+a fresh assessment workspace. Before upgrading, finish active v0.5 and v0.6
+assessments with the previously installed version. Alternatively, start a new
+workspace from the original inputs. Historical finalized v0.5 and v0.6 bundles
+still verify unchanged. See the [upgrade boundary](docs/adr/0031-v0-4-evidence-first-interaction.md#upgrade-boundary).
 
 Install the command from a source checkout with `uv`:
 
@@ -206,9 +206,10 @@ requested outcomes across Trials.
 
 The host reads main-report text at two checkpoints: before Proposal submission,
 then after approval before the Trial's first Domain save. Each pass covers the
-same scoped prefix up to 65,536 UTF-8 source-text bytes per report. Longer reports
-retain explicit partial coverage and navigation to unread material. The host
-uses targeted reads to resolve relevant premises beyond that prefix.
+same prefix of the full captured Source, up to 65,536 UTF-8 source-text bytes per
+report at whole-line boundaries. Longer reports retain explicit partial coverage
+and navigation to unread material. The host uses targeted reads to resolve
+relevant premises beyond that prefix.
 
 rob2-kit stores approved Proposals and Domain checkpoints durably. After
 compaction, the host calls `get_status` and recovers the approved Result and

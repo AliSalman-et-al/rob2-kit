@@ -31,14 +31,13 @@ The closed workflow phases are `empty`, `proposal`, `assessment`,
    it `assessed`. `finalize_batch` packages the terminal Trial records into the
    verified bundle. There is no Assessment Review or final approval.
 
-Each text pass covers the same source-order prefix of the approved report scope,
+Each text pass covers the same source-order prefix of the full captured Source,
 up to 65,536 UTF-8 source-text bytes per report at whole-line boundaries. A
 `budget_limited` pass permits progression with explicit partial coverage and
 unread-range navigation. Relevant omitted passages remain subject to targeted
-discovery. A source-backed Proposal scope may exclude a separate appended
-document after the last article page; shared article/appendix pages remain in
-scope. Uncertain boundaries leave the whole Source in scope. Coverage records
-prove delivery, not comprehension or retention in a later host context.
+discovery. Appended material remains part of the captured Source; the host does
+not select a report boundary. Coverage records prove delivery, not comprehension
+or retention in a later host context.
 
 A **State revision** is the optimistic-concurrency basis for one mutation. A
 stale revision returns a typed conflict and never adopts newer state silently.
@@ -134,10 +133,10 @@ An assessable Reported result is a comparative effect, group-bound values, or a
 single-group category profile. Selected Evidence is durable workspace state,
 not caller-supplied Proposal structure. On Proposal submission, the server binds
 the Result to selected Evidence and derives canonical field bindings. Canonical
-records retain Evidence used by the Result, its applicability assessment, and
-any declared main-report boundary. Structural identifiers such as `group_id` and
-`category_axis_names` connect typed fields but are not Source claims. Source-owned
-reported labels, values, units, denominators, endpoint definitions, and category
+records retain Evidence used by the Result and its applicability assessment.
+Structural identifiers such as `group_id` and `category_axis_names` connect typed
+fields but are not Source claims. Source-owned reported labels, values, units,
+denominators, endpoint definitions, and category
 cells must remain bound to exact selected Evidence. Target method, timing,
 population, effect measure, and arm assignments are researcher-reviewed
 interpretation fields and do not require duplicate bindings. An unavailable Result requires one typed
@@ -148,8 +147,10 @@ Both forms still pass through Proposal Review.
 
 The Proposal is atomic across the Batch. A researcher-approved unavailable Result
 becomes a `needs_input` terminal automatically; it does not enter Domain assessment.
-Every assessable Result also records source-grounded pack applicability. The
-installed pack supports individually randomized parallel trials. After Proposal
+Every assessable Result also records source-grounded pack applicability through
+`design`, `rationale`, and `evidence`. The server determines pack support from
+`design`; the installed pack supports individually randomized parallel trials.
+Known designs require same-Trial Evidence. After Proposal
 Review, known unsupported designs become unassessed `needs_input` terminals for
 the appropriate pack; unresolved designs need source information establishing
 the design and unit of randomization. Neither condition makes an available
@@ -261,6 +262,10 @@ Canonical JSON, static HTML, selected Evidence records, claims, content hashes,
 and independent-verifier input. It excludes Source files, credentials, prompts,
 host traces, and absolute paths. The product verifier and standalone verifier
 replay the same scientific and integrity invariants independently.
+
+Fresh v0.7 Proposals contain Result cards without caller-selected report scopes.
+Historical v0.5 and v0.6 bundles retain their recorded semantics for verification,
+including v0.6 report scopes and boundary Evidence.
 
 Canonical state lives in SQLite. Rebuildable text, search, render, and handle
 indexes live in a separate derivative SQLite store. Losing derivatives cannot

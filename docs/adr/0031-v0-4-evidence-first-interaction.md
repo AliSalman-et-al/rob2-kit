@@ -6,6 +6,10 @@ Amended for the v0.5 successor contract by issues 283-286, 288, 290, and 291.
 
 Amended by issues 298-303 for bounded main-report reading and Result semantics v0.6.
 
+Amended for Result semantics v0.7 by issue 305 for bounded full-Source reading
+without caller-selected report scopes, and issue 306 for pack support determined
+by trial design.
+
 ## Bounded reading and scientific judgment amendment
 
 Keep the existing public tools and Proposal Review gate. Require main-report
@@ -15,17 +19,22 @@ first Domain save. Each pass covers a consecutive whole-line prefix of at most
 required windows and reports `budget_limited` with navigation to unread text.
 Long reports still require targeted discovery for relevant omitted premises.
 
-The host may declare a source-backed suffix boundary in the Proposal for a
-separate appended document. The last page containing article content stays in
-scope. Proposal submission checks the first pass against that proposed scope;
-the second pass uses the approved scope and same captured Source. Reading receipts
-are derivative delivery records, not proof of comprehension or retained context;
-after a restart, recover current progress and any needed passages.
+Both passes use the same full captured Source, including any appended material.
+The byte ceiling bounds mandatory delivery without a separate boundary-discovery
+step. Proposal submission accepts no caller-defined report scope. This replaces
+the suffix-boundary option introduced by issue 300. Historical bundles retain
+their recorded report scopes and boundary Evidence for verification.
+Reading receipts are derivative delivery records, not proof of comprehension or
+retained context; after a restart, recover current progress and any needed passages.
 
-Every assessable Result records pack applicability. Unsupported or unresolved
-designs remain unassessed after approval. Result relation `exact` means equivalent
-scientific scope; different endpoint names require a correspondence rationale.
-Canonical provenance retains applicability and report-boundary Evidence.
+Every assessable Result records pack applicability. In v0.7, the caller supplies
+`design`, `rationale`, and `evidence`; the server determines pack support from
+`design`. Known designs require Evidence. Historical v0.6 verification retains
+the recorded `status` field and its required correspondence with `design`.
+Unsupported or unresolved designs remain unassessed after approval. Result
+relation `exact` means equivalent scientific scope; different endpoint names
+require a correspondence rationale.
+Canonical provenance retains applicability Evidence.
 Historical bundles retain their recorded relation semantics.
 
 The host applies the existing RoB 2 response framework before selecting an
@@ -38,11 +47,13 @@ without establishing historical plan timing or applicability.
 
 ### Upgrade boundary
 
-This amendment applies to fresh assessment workspaces. Active v0.5 assessments
+This amendment applies to fresh v0.7 assessment workspaces. Active v0.5 and v0.6 assessments
 must finish with the previously installed version before upgrading, or restart
 in a new workspace from the original inputs. Migration of active workspaces to
-the amended workflow is untested and unsupported. Historical finalized v0.5
-bundles still verify unchanged and retain their recorded semantics.
+the amended workflow is untested and unsupported. Historical finalized v0.5 and
+v0.6 bundles still verify unchanged and retain their recorded semantics. Fresh
+v0.7 canonical Proposal payloads contain only `results`; v0.6 scope records remain
+part of historical bundle verification.
 
 ## Context
 

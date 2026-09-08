@@ -87,10 +87,6 @@ def get_status(workspace: str | Path) -> dict[str, Any]:
     public = presentation(state)
     batch_value = state.get("batch")
     batch = batch_value if isinstance(batch_value, dict) else {}
-    proposal_value = state.get("proposal")
-    proposal = proposal_value if isinstance(proposal_value, dict) else {}
-    payload_value = proposal.get("payload")
-    payload = payload_value if isinstance(payload_value, dict) else {}
     reading_trials = batch.get("trials", [])
     if state.get("phase") == "assessment":
         active_trial, _active_domain = _active_trial_and_domain(state)
@@ -104,7 +100,6 @@ def get_status(workspace: str | Path) -> dict[str, Any]:
             root,
             reading_trials,
             phase=str(state.get("phase")),
-            scopes=payload.get("main_report_scopes", []),
         )
         if state.get("phase") in {"proposal", "assessment"}
         else {}
@@ -192,7 +187,7 @@ def _continuation(state: dict[str, Any]) -> dict[str, Any] | None:
             "operation": "save_proposal",
             "authority": "host",
             "expected_revision": int(state.get("revision", 0)),
-            "caller_inputs": ["results", "main_report_scopes"],
+            "caller_inputs": ["results"],
         }
     if phase == "assessment":
         trial_id, domain_id = _active_trial_and_domain(state)

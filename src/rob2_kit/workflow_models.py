@@ -490,35 +490,18 @@ class ResultApplicability(StrictModel):
         "crossover",
         "unclear",
     ] = Field(description="Source-grounded randomization and trial design.")
-    status: Literal["supported", "unsupported", "uncertain"] = Field(
-        description=(
-            "supported for individual_parallel; unsupported for cluster_randomized or crossover; "
-            "uncertain for unclear after bounded discovery."
-        )
-    )
     rationale: NonBlankText = Field(
         description="Source facts supporting the design, or the unresolved design information."
     )
     evidence: tuple[EvidenceHandle, ...] = Field(
         default=(),
-        description="Inspected same-Trial Evidence handles; required for supported or unsupported.",
+        description="Inspected same-Trial Evidence handles; required when the design is known.",
     )
 
     @model_validator(mode="after")
-    def unsupported_needs_basis(self) -> ResultApplicability:
-        if self.status == "supported" and self.design != "individual_parallel":
-            raise ValueError("supported applicability requires individual_parallel design")
-        if self.status == "unsupported" and self.design not in {
-            "cluster_randomized",
-            "crossover",
-        }:
-            raise ValueError("unsupported applicability requires an unsupported design")
-        if self.status == "uncertain" and self.design != "unclear":
-            raise ValueError("uncertain applicability requires unclear design")
-        if self.status == "unsupported" and not self.evidence:
-            raise ValueError("unsupported applicability requires source Evidence")
-        if self.status == "supported" and not self.evidence:
-            raise ValueError("supported applicability requires source Evidence")
+    def known_design_needs_basis(self) -> ResultApplicability:
+        if self.design != "unclear" and not self.evidence:
+            raise ValueError("known trial design requires source Evidence")
         return self
 
 
@@ -1254,37 +1237,6 @@ class DomainContext(StrictModel):
     state_revision: NonNegativeInt
 
 
-class MainReportScopeDraft(StrictModel):
-    """Optional suffix boundary for the captured main report of one Trial."""
-
-    trial_id: TrialId = Field(description="Trial whose main-report reading scope is declared.")
-    source_id: SourceId = Field(description="Captured main-article Source for this Trial.")
-    end_page: PageNumber | None = Field(
-        default=None,
-        description="Last in-scope page; omit for full Source scope.",
-    )
-    boundary_evidence: tuple[EvidenceHandle, ...] = Field(
-        default=(),
-        description="Same-Source text Evidence locating the suffix boundary.",
-    )
-    exclusion_reason: NonBlankText | None = Field(
-        default=None,
-        description="Reason for excluding the suffix after end_page.",
-    )
-
-    @model_validator(mode="after")
-    def boundary_fields_are_paired(self) -> MainReportScopeDraft:
-        if self.end_page is None and (self.boundary_evidence or self.exclusion_reason is not None):
-            raise ValueError("boundary Evidence and exclusion_reason require end_page")
-        if self.end_page is not None and (
-            bool(self.boundary_evidence) != (self.exclusion_reason is not None)
-        ):
-            raise ValueError(
-                "a shortened main report requires both boundary Evidence and exclusion_reason"
-            )
-        return self
-
-
 class NeedsInputTerminalRequest(StrictModel):
     disposition: Literal["needs_input"] = Field(
         description="Use only when specific researcher-supplied facts are required to continue.",
@@ -1349,10 +1301,6 @@ class ProposalDraft(StrictModel):
             "Result cards only: each item is either kind=assessable or kind=unavailable. "
             "Selected Evidence is durable server state and is never an item in this array."
         ),
-    )
-    main_report_scopes: tuple[MainReportScopeDraft, ...] = Field(
-        default=(),
-        description="Optional suffix-only Source scope; omitted scopes cover the complete Source.",
     )
     expected_revision: ExpectedRevision
 

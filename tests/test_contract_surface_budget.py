@@ -67,7 +67,7 @@ def test_public_output_surface_is_closed_and_within_budget() -> None:
         for tool, schema in zip(tools, closed_schemas, strict=True)
     )
     # This is a ceiling, not a target. Smaller closed schemas are better.
-    # Reading recovery, Result applicability/scope, and D3 preview rows add
+    # Reading recovery, Result applicability, and D3 preview rows add
     # about 10 KB to the previous 264 KB ceiling without adding public tools.
     assert total_bytes < 280_000
 

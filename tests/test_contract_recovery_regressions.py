@@ -75,8 +75,11 @@ def _result(applicability: object = None, *, include_applicability: bool = True)
 
 def test_v06_verifier_requires_nonnull_applicability_and_source_basis() -> None:
     verifier = _verifier()
-    assert not verifier._valid_result_shape(_result(include_applicability=False), "mortality")
-    assert not verifier._valid_result_shape(_result(None), "mortality")
+    version = "rob2-kit.result-semantics.v0.6"
+    assert not verifier._valid_result_shape(
+        _result(include_applicability=False), "mortality", version
+    )
+    assert not verifier._valid_result_shape(_result(None), "mortality", version)
     assert not verifier._valid_result_shape(
         _result(
             {
@@ -87,6 +90,7 @@ def test_v06_verifier_requires_nonnull_applicability_and_source_basis() -> None:
             }
         ),
         "mortality",
+        version,
     )
     assert verifier._valid_result_shape(
         _result(
@@ -98,6 +102,7 @@ def test_v06_verifier_requires_nonnull_applicability_and_source_basis() -> None:
             }
         ),
         "mortality",
+        version,
     )
 
 

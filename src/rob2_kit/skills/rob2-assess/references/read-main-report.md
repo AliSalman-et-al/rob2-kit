@@ -6,40 +6,11 @@ Read each Trial's main report at two checkpoints:
 2. After approval, when that Trial becomes active, before answering its first
    Domain. Recover the approved Result first, then repeat the bounded reading.
 
-Use the same captured Source and main-report scope for both reads. Both passes
+Use the same full captured Source for both reads. Both passes
 use text only and the same source-order prefix, up to 65,536 UTF-8 bytes of
 source text per report per pass, stopping at whole-line boundaries. When the
-scoped text fits, read all of it.
+Source text fits, read all of it.
 Proposal Review remains the only researcher gate.
-
-## Establish the report scope
-
-Keep the complete article, including its tables, figures, methods, results, and
-participant flow, in scope. The reading ceiling limits the initial text delivered;
-it does not remove the rest of a long article from consideration.
-
-For a combined PDF, exclude only a clearly separate appended supplement after
-the article content. In `save_proposal.main_report_scopes`, record `trial_id`,
-`source_id`, `end_page`, `boundary_evidence`, and `exclusion_reason`. Set
-`end_page` to the last page containing main-article content, including any page
-shared with the supplement. Only the following suffix is excluded; leave no
-gaps within the report.
-
-Boundary Evidence may be on `end_page` or the first fully separate appended page,
-`end_page + 1`. Inspecting that boundary snippet does not require reading the
-whole first appendix page.
-
-Use boundary Evidence from the same-Trial captured Source. A filename or page
-count alone does not establish an appendix boundary. The approved scope applies
-to the second read.
-
-Identify the boundary from the document's structure and inspected text. Length
-or apparent usefulness is not a boundary. You interpret the boundary; the server
-checks its coordinates, Evidence, and read coverage, not its scientific correctness.
-
-If the boundary is unclear, keep the whole PDF in scope and apply the reading
-ceiling. A fixed page cutoff cannot define the report. Once an appended supplement
-is identified, inspect it later for unresolved premises and material contradictions.
 
 ## Read consecutive windows
 
@@ -52,19 +23,12 @@ is identified, inspect it later for unresolved premises and material contradicti
 3. Call `get_status` again after reading the returned windows to obtain the
    remaining required ranges. A partial page remains unfinished until its
    required lines have been returned.
-4. Normally stop the mandatory pass when `get_status` reports `complete` or
+4. Stop the mandatory pass when `get_status` reports `complete` or
    `budget_limited`. At the ceiling, preserve the partial-coverage status and
    unread-range navigation, then continue the workflow.
 
-Before the first Proposal, `get_status` uses the full captured Source. If an
-inspected boundary supports an appended-suffix exclusion, read the required
-article prefix and submit the complete Result with `main_report_scopes`.
-`save_proposal` checks coverage against that proposed scope; the earlier
-full-Source status does not require reading the excluded appendix first.
-
-Use the captured Source page count and established report scope, not a fixed
-first-pages limit. Preserve exact page and line coordinates for unfinished ranges
-after an interruption.
+Preserve exact page and line coordinates for unfinished ranges after an
+interruption.
 
 Inspect each returned window. `budget_limited` does not mean the full report was
 read. Recorded delivery does not establish comprehension.

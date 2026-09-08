@@ -154,6 +154,16 @@ _QUESTION_ALLOWED_ANSWERS = {
 _SCIENTIFIC_PACK = {
     "id": "rob2.parallel.assignment",
     "version": "2019.1",
+    "result_semantics_version": "rob2-kit.result-semantics.v0.7",
+    "content_hash": "sha256:3ef492b34a81c19e3f75d72fea2b92c40aebde80c06e24e44c36cd76dc4cf3d4",
+    "official_source": {
+        "version": "22 August 2019",
+        "source_sha256": "A9E9C4FDC4BE2D29B5C0A1A6B828E09F2014A34F6D5C302A532F6153EA0FD670",
+    },
+}
+_LEGACY_SCIENTIFIC_PACK = {
+    "id": "rob2.parallel.assignment",
+    "version": "2019.1",
     "result_semantics_version": "rob2-kit.result-semantics.v0.6",
     "content_hash": "sha256:3ef492b34a81c19e3f75d72fea2b92c40aebde80c06e24e44c36cd76dc4cf3d4",
     "official_source": {
@@ -1634,7 +1644,7 @@ def _valid_requested_result(result: object, requested_outcome: str) -> bool:
 def _valid_result_shape(
     result: dict[str, object],
     requested_outcome: str,
-    semantics_version: str = "rob2-kit.result-semantics.v0.6",
+    semantics_version: str = "rob2-kit.result-semantics.v0.7",
 ) -> bool:
     if not _valid_requested_result(result, requested_outcome):
         return False
@@ -1661,39 +1671,37 @@ def _valid_result_shape(
     if semantics_version != "rob2-kit.result-semantics.v0.5" and applicability is None:
         return False
     if applicability is not None:
+        expected_keys = (
+            {"design", "status", "rationale", "evidence"}
+            if semantics_version == "rob2-kit.result-semantics.v0.6"
+            else {"design", "rationale", "evidence"}
+        )
+        if not isinstance(applicability, dict) or set(applicability) != expected_keys:
+            return False
+        designs = {"individual_parallel", "cluster_randomized", "crossover", "unclear"}
+        if applicability.get("design") not in designs:
+            return False
         if (
-            not isinstance(applicability, dict)
-            or set(applicability) != {"design", "status", "rationale", "evidence"}
-            or applicability.get("design")
-            not in {
-                "individual_parallel",
-                "cluster_randomized",
-                "crossover",
-                "unclear",
-            }
-            or applicability.get("status") not in {"supported", "unsupported", "uncertain"}
-            or not isinstance(applicability.get("rationale"), str)
+            not isinstance(applicability.get("rationale"), str)
             or not applicability["rationale"].strip()
-            or not isinstance(applicability.get("evidence"), list)
-            or (
-                applicability.get("status") in {"supported", "unsupported"}
-                and not applicability["evidence"]
-            )
-            or (
-                applicability.get("status") == "supported"
-                and applicability.get("design") != "individual_parallel"
-            )
-            or (
-                applicability.get("status") == "unsupported"
-                and applicability.get("design") not in {"cluster_randomized", "crossover"}
-            )
-            or (
-                applicability.get("status") == "uncertain"
-                and applicability.get("design") != "unclear"
-            )
-            or any(not isinstance(item, str) or not item for item in applicability["evidence"])
         ):
             return False
+        evidence = applicability.get("evidence")
+        if not isinstance(evidence, list) or any(
+            not isinstance(item, str) or not item for item in evidence
+        ):
+            return False
+        if applicability["design"] != "unclear" and not evidence:
+            return False
+        if semantics_version == "rob2-kit.result-semantics.v0.6":
+            status_by_design = {
+                "individual_parallel": "supported",
+                "cluster_randomized": "unsupported",
+                "crossover": "unsupported",
+                "unclear": "uncertain",
+            }
+            if applicability.get("status") != status_by_design[applicability["design"]]:
+                return False
     target = result.get("target")
     reported = result.get("reported")
     if not isinstance(target, dict) or not isinstance(reported, dict):
@@ -1959,7 +1967,7 @@ def _valid_result_evidence(
     sources: dict[str, dict[str, object]],
     requested_outcomes: dict[str, str],
     batch: object = None,
-    semantics_version: str = "rob2-kit.result-semantics.v0.6",
+    semantics_version: str = "rob2-kit.result-semantics.v0.7",
 ) -> bool:
     """Replay the closed Result Evidence contract from exported selections."""
     if not isinstance(result, dict) or not isinstance(result.get("trial_id"), str):
@@ -2105,8 +2113,10 @@ def _valid_result_evidence(
             return False
         if item_kind == "derived":
             inputs = reference.get("inputs")
-            if reference.get("operation") not in {"difference", "ratio", "sum"} or not isinstance(
-                inputs, list
+            if (
+                reference.get("operation") not in {"difference", "ratio", "sum"}
+                or not isinstance(inputs, list)
+                or not inputs
             ):
                 return False
             try:
@@ -2407,7 +2417,11 @@ def verify(path: Path) -> tuple[bool, str]:
             }:
                 return False, "canonical envelope is not closed"
             scientific_pack = canonical.get("scientific_pack")
-            if scientific_pack not in (_SCIENTIFIC_PACK, _HISTORICAL_SCIENTIFIC_PACK):
+            if scientific_pack not in (
+                _SCIENTIFIC_PACK,
+                _LEGACY_SCIENTIFIC_PACK,
+                _HISTORICAL_SCIENTIFIC_PACK,
+            ):
                 return False, "scientific pack descriptor differs"
             semantics_version = (
                 scientific_pack.get("result_semantics_version", "rob2-kit.result-semantics.v0.5")
@@ -2495,9 +2509,9 @@ def verify(path: Path) -> tuple[bool, str]:
                     or not isinstance(proposal.get("payload"), dict)
                     or set(proposal["payload"])
                     != (
-                        {"results"}
-                        if semantics_version == "rob2-kit.result-semantics.v0.5"
-                        else {"results", "main_report_scopes"}
+                        {"results", "main_report_scopes"}
+                        if semantics_version == "rob2-kit.result-semantics.v0.6"
+                        else {"results"}
                     )
                 ):
                     return False, "proposal is malformed"
@@ -2559,7 +2573,7 @@ def verify(path: Path) -> tuple[bool, str]:
                 ):
                     return False, "Evidence record is not a closed authoritative Source selection"
                 if (
-                    semantics_version != "rob2-kit.result-semantics.v0.5"
+                    semantics_version == "rob2-kit.result-semantics.v0.6"
                     and not _valid_main_report_scopes(
                         proposal["payload"].get("main_report_scopes"), batch, proposal_evidence
                     )
@@ -2624,11 +2638,10 @@ def verify(path: Path) -> tuple[bool, str]:
                         ):
                             return False, "unavailable Result does not match its terminal"
                     applicability = result.get("applicability")
-                    if (
-                        isinstance(applicability, dict)
-                        and applicability.get("status") in {"unsupported", "uncertain"}
-                        and disposition != "needs_input"
-                    ):
+                    unsupported_design = isinstance(applicability, dict) and applicability.get(
+                        "design"
+                    ) in {"cluster_randomized", "crossover", "unclear"}
+                    if unsupported_design and disposition != "needs_input":
                         return False, "unsupported or uncertain design must remain unassessed"
             domains = canonical.get("domain_records")
             if not isinstance(domains, dict):

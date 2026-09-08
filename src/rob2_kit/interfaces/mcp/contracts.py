@@ -59,7 +59,7 @@ class SaveProposalAction(PublicModel):
     operation: Literal["save_proposal"]
     authority: Literal["host"]
     expected_revision: NonNegativeInt
-    caller_inputs: tuple[Literal["results", "main_report_scopes"], ...]
+    caller_inputs: tuple[Literal["results"], ...]
 
 
 class PrepareBatchAction(PublicModel):

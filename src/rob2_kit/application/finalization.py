@@ -60,7 +60,8 @@ _FORBIDDEN_PATH_FIELDS = frozenset(
     }
 )
 
-_RESULT_SEMANTICS_VERSION = "rob2-kit.result-semantics.v0.6"
+_RESULT_SEMANTICS_VERSION = "rob2-kit.result-semantics.v0.7"
+_LEGACY_RESULT_SEMANTICS_VERSION = "rob2-kit.result-semantics.v0.6"
 _HISTORICAL_RESULT_SEMANTICS_VERSION = "rob2-kit.result-semantics.v0.5"
 
 
@@ -997,14 +998,26 @@ def _valid_selected_evidence(
     )
 
 
-def _valid_requested_result(result: object, requested_outcome: str) -> bool:
+def _valid_requested_result(
+    result: object, requested_outcome: str, semantics_version: str | None = None
+) -> bool:
     if not isinstance(result, dict) or _relation_name(
         result.get("requested_outcome")
     ) != _relation_name(requested_outcome):
         return False
     if result.get("kind") == "assessable":
+        validation_value = result
+        if semantics_version == _LEGACY_RESULT_SEMANTICS_VERSION:
+            applicability = result.get("applicability")
+            if isinstance(applicability, dict):
+                validation_value = {
+                    **result,
+                    "applicability": {
+                        key: value for key, value in applicability.items() if key != "status"
+                    },
+                }
         try:
-            AssessableResult.model_validate(result)
+            AssessableResult.model_validate(validation_value)
         except (TypeError, ValueError, ValidationError):
             return False
         target = result.get("target")
@@ -1024,7 +1037,7 @@ def _valid_result_shape(
     requested_outcome: str,
     semantics_version: str = _RESULT_SEMANTICS_VERSION,
 ) -> bool:
-    if not _valid_requested_result(result, requested_outcome):
+    if not _valid_requested_result(result, requested_outcome, semantics_version):
         return False
     base_keys = {
         "kind",
@@ -1051,8 +1064,26 @@ def _valid_result_shape(
     ):
         return False
     if "applicability" in result:
+        applicability = result["applicability"]
+        expected_applicability_keys = (
+            {"design", "status", "rationale", "evidence"}
+            if semantics_version == _LEGACY_RESULT_SEMANTICS_VERSION
+            else {"design", "rationale", "evidence"}
+        )
+        if not isinstance(applicability, dict) or set(applicability) != expected_applicability_keys:
+            return False
+        if semantics_version == _LEGACY_RESULT_SEMANTICS_VERSION:
+            status_by_design = {
+                "individual_parallel": "supported",
+                "cluster_randomized": "unsupported",
+                "crossover": "unsupported",
+                "unclear": "uncertain",
+            }
+            if applicability.get("status") != status_by_design.get(applicability.get("design")):
+                return False
+            applicability = {key: value for key, value in applicability.items() if key != "status"}
         try:
-            ResultApplicability.model_validate(result["applicability"])
+            ResultApplicability.model_validate(applicability)
         except (TypeError, ValueError, ValidationError):
             return False
     target = result.get("target")
@@ -1332,7 +1363,9 @@ def _verify_result_evidence(
     if not isinstance(result, dict) or not isinstance(result.get("trial_id"), str):
         return False
     requested_outcome = requested_outcomes.get(result["trial_id"])
-    if requested_outcome is None or not _valid_requested_result(result, requested_outcome):
+    if requested_outcome is None or not _valid_requested_result(
+        result, requested_outcome, semantics_version
+    ):
         return False
     if result.get("kind") == "unavailable":
         facts = result.get("missing_facts")
@@ -1469,8 +1502,10 @@ def _verify_result_evidence(
             return False
         if kind == "derived":
             inputs = reference.get("inputs")
-            if reference.get("operation") not in {"difference", "ratio", "sum"} or not isinstance(
-                inputs, list
+            if (
+                reference.get("operation") not in {"difference", "ratio", "sum"}
+                or not isinstance(inputs, list)
+                or not inputs
             ):
                 return False
             try:
@@ -1964,7 +1999,14 @@ def _valid_scientific_contract_descriptor(value: object) -> bool:
         "content_hash": "sha256:4bfd30a3d997e9eab0354ef7148726c5b112004a64b59dd57f02ac1493b61597",
         "official_source": expected["official_source"],
     }
-    return value == historical
+    legacy = {
+        "id": "rob2.parallel.assignment",
+        "version": "2019.1",
+        "result_semantics_version": _LEGACY_RESULT_SEMANTICS_VERSION,
+        "content_hash": "sha256:3ef492b34a81c19e3f75d72fea2b92c40aebde80c06e24e44c36cd76dc4cf3d4",
+        "official_source": expected["official_source"],
+    }
+    return value in (historical, legacy)
 
 
 def _assessment_summary(state: dict[str, Any]) -> dict[str, dict[str, Any]]:
@@ -3187,7 +3229,7 @@ def verify_bundle(path: str | Path) -> bool:
                 or set(payload)
                 != (
                     {"results"}
-                    if semantics_version == _HISTORICAL_RESULT_SEMANTICS_VERSION
+                    if semantics_version != _LEGACY_RESULT_SEMANTICS_VERSION
                     else {"results", "main_report_scopes"}
                 )
                 or proposal.get("identity") != independent_identity(payload)
@@ -3201,7 +3243,7 @@ def verify_bundle(path: str | Path) -> bool:
             ):
                 return False
             if (
-                semantics_version != _HISTORICAL_RESULT_SEMANTICS_VERSION
+                semantics_version == _LEGACY_RESULT_SEMANTICS_VERSION
                 and not _valid_main_report_scopes(
                     payload.get("main_report_scopes"), canonical_value["batch"], bound_catalog
                 )
@@ -3312,11 +3354,10 @@ def verify_bundle(path: str | Path) -> bool:
                     ):
                         return False
                 applicability = result.get("applicability")
-                if (
-                    isinstance(applicability, dict)
-                    and applicability.get("status") in {"unsupported", "uncertain"}
-                    and disposition != "needs_input"
-                ):
+                unsupported_design = isinstance(applicability, dict) and applicability.get(
+                    "design"
+                ) in {"cluster_randomized", "crossover", "unclear"}
+                if unsupported_design and disposition != "needs_input":
                     return False
             # verification.json is informational only; this verifier recomputes
             # hashes and derivations itself and never trusts a producer claim.
