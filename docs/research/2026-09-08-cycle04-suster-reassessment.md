@@ -228,3 +228,28 @@ complete attempts: 341 records, 274 MCP records, 137 unique calls, and no
 source searches. Repeated import produced byte-identical output. These are
 selected development cases with one stochastic run each. The DOI-level label
 sets remain unsuitable as Result-specific accuracy scores.
+
+## Targeted repair confirmation
+
+The final model-facing guidance was evaluated from commit
+`b34745310b4dab2ddd77c05dfa654e31c3e40dbd` in another isolated Chalmers
+runtime. The Proposal matched the same eczema Result and was approved without
+researcher correction. The model then submitted every Domain answer needed by
+the active path on its first attempt. All five Domain judgments were accepted
+without a repair or failed assessment call, compared with eight activation
+repairs in the preceding Chalmers assessment. The finalized vector was Low,
+Low, Low, Low, Low. The change from Some concerns to Low in D2 and D3 is
+scientifically defensible: deviations were consistent with a pragmatic trial
+and the balanced missingness analyses included reassuring GP-record and
+multiple-imputation sensitivity analyses. It also illustrates why one run is
+not a Result-specific accuracy estimate.
+
+One Proposal call still mistyped a character in a 71-character source identity,
+and the server rejected it before reading. The model recovered by copying the
+identity correctly. Relaxing source-identity validation or adding an ambiguous
+shortcut would weaken provenance for a single observed transcription error, so
+the implementation keeps exact validation. The Proposal required one ordinary
+typed repair to add an exact-relation rationale and remove an unsupported
+endpoint definition. The final bundle passed both the product and standalone
+verifiers. The confirmation used 3,516,091 input tokens, of which 3,267,328
+were reported as cached, and 10,838 output tokens.
