@@ -67,9 +67,9 @@ def test_public_output_surface_is_closed_and_within_budget() -> None:
         for tool, schema in zip(tools, closed_schemas, strict=True)
     )
     # This is a ceiling, not a target. Smaller closed schemas are better.
-    # v0.6 adds bounded Domain Evidence, complete approved category profiles,
-    # and explicit recovery/unavailable states to the closed output contract.
-    assert total_bytes < 264_000
+    # Reading recovery, Result applicability/scope, and D3 preview rows add
+    # about 10 KB to the previous 264 KB ceiling without adding public tools.
+    assert total_bytes < 280_000
 
     by_name = {tool.name: tool for tool in tools}
     search_annotations = by_name["search_sources"].annotations
@@ -134,7 +134,7 @@ def test_public_output_surface_is_closed_and_within_budget() -> None:
         "outside the recoverable narrative budget"
         in workspace_properties["unrecoverable_inline_text_bytes"]["description"]
     )
-    assert "activated by the selected options" in (domain_tool.description or "")
+    assert "for every active question" in (domain_tool.description or "")
     assert "check each basis against the approved Result" in (domain_tool.description or "")
     assert "grouped repairs without committing" in (domain_tool.description or "")
     answer_example = domain_tool.parameters["properties"]["answers"]["examples"][0][0]

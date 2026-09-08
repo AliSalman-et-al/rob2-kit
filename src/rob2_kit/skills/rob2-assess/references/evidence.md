@@ -85,7 +85,7 @@ Attach each basis to the active question it informs:
 - `indirect_support`: the passage establishes it through an explicit link;
 - `contradiction`: the passage conflicts with the premise;
 - `context`: the passage fixes scope or meaning;
-- `inference`: the exact premise directly warrants the conclusion;
+- `inference`: the passage supplies facts from which you draw a stated conclusion;
 - `absence`: an untruncated scoped search found no hits;
 - `limitation`: a concise unresolved information limit plus an untruncated
   current-Trial search receipt.
@@ -100,6 +100,9 @@ A relationship label never expands what the passage says. Keep plans separate
 from conduct, analysis populations from observed outcomes, endpoint definitions
 from measurement properties, and absence of reporting from absence of bias.
 Reuse Result Evidence only when its exact premise answers the Domain question.
+State inferred conclusions in the answer's `justification`, with the source
+facts and any unresolved link. The server checks Evidence identity and structure;
+you judge whether those facts support the answer.
 
 Completion: each Source-owned assessable Result leaf has exact support, and each
 active Domain answer has a valid basis for its stated premise and uncertainty.

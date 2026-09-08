@@ -120,6 +120,7 @@ def test_finalization_preserves_trailing_pdf_format_characters(tmp_path: Path) -
     proposed = _call(workspace, "save_proposal", _proposal_args(workspace, [_result(evidence)]))
     assert proposed["outcome"] == "review_required", proposed
     _review(workspace)
+    _read_required_main_reports(workspace)
     revision = int(_call(workspace, "get_domain_context", {})["head"]["state_revision"])
     for domain in SCIENTIFIC_PACK.domains:
         saved = _call(
@@ -154,6 +155,7 @@ def test_batch_domains_cannot_advance_a_later_trial(tmp_path: Path) -> None:
     assert {trial["requested_outcome"] for trial in prepared["data"]["trials"]} == {
         "requested outcome"
     }
+    _read_required_main_reports(tmp_path)
 
     evidence_by_trial: dict[str, dict[str, Any]] = {}
     for trial_id in ("trial-a", "trial-b"):
@@ -182,6 +184,7 @@ def test_batch_domains_cannot_advance_a_later_trial(tmp_path: Path) -> None:
     )
     assert proposal["outcome"] == "review_required", proposal
     _review(tmp_path)
+    _read_required_main_reports(tmp_path)
     context = _call(tmp_path, "get_domain_context", {})
     domain_id = SCIENTIFIC_PACK.domains[0].id
     assert context["data"]["trial_id"] == "trial-a"
@@ -285,6 +288,7 @@ def test_real_fastmcp_assessed_path_restart_derivative_rebuild_and_freeze(tmp_pa
         },
     )
     assert prepared["head"]["phase"] == "proposal"
+    _read_required_main_reports(workspace)
     source = _call(workspace, "list_sources", {"trial_id": "trial"})["data"]["sources"][0]
     source_id = str(source["id"])
     selected = _call(
@@ -305,6 +309,7 @@ def test_real_fastmcp_assessed_path_restart_derivative_rebuild_and_freeze(tmp_pa
     )
     assert proposal["outcome"] == "review_required"
     _review(workspace)
+    _read_required_main_reports(workspace)
 
     context = _call(workspace, "get_domain_context", {})
     revision = int(context["head"]["state_revision"])
@@ -456,6 +461,7 @@ def test_needs_input_and_repairs_are_authoritative(tmp_path: Path) -> None:
         },
     )
     assert prepared["head"]["phase"] == "proposal"
+    _read_required_main_reports(workspace)
     source = _call(workspace, "list_sources", {"trial_id": "trial"})["data"]["sources"][0]
     evidence = _call(
         workspace,
@@ -721,6 +727,7 @@ def test_mixed_batch_has_authoritative_needs_input_and_assessed_dispositions(
         },
     )
     assert prepared["head"]["phase"] == "proposal"
+    _read_required_main_reports(workspace)
     evidence: dict[str, dict[str, Any]] = {}
     for trial_id in ("trial", "trial-2"):
         source = _call(workspace, "list_sources", {"trial_id": trial_id})["data"]["sources"][0]
@@ -746,6 +753,7 @@ def test_mixed_batch_has_authoritative_needs_input_and_assessed_dispositions(
     assert saved["outcome"] == "review_required"
     assert saved["head"]["next_action"]["purpose"] == "proposal"
     _review(workspace)
+    _read_required_main_reports(workspace)
     status = _call(workspace, "get_status", {})
     assert status["data"]["trial_dispositions"] == {"trial": "needs_input", "trial-2": "pending"}
     assert status["head"]["next_action"]["operation"] == "get_domain_context"
@@ -782,6 +790,7 @@ def test_domain_save_query_work_is_bounded_by_irrelevant_evidence_handles(tmp_pa
             "expected_revision": 0,
         },
     )
+    _read_required_main_reports(workspace)
     for source in _call(workspace, "list_sources", {"trial_id": "trial"})["data"]["sources"]:
         _call(
             workspace,
@@ -812,6 +821,7 @@ def test_domain_save_query_work_is_bounded_by_irrelevant_evidence_handles(tmp_pa
     )["data"]["evidence"]
     _call(workspace, "save_proposal", _proposal_args(workspace, [_result(selected)]))
     _review(workspace)
+    _read_required_main_reports(workspace)
     for name in COUNTERS:
         COUNTERS[name] = 0
     context = _call(workspace, "get_domain_context", {})
@@ -824,4 +834,6 @@ def test_domain_save_query_work_is_bounded_by_irrelevant_evidence_handles(tmp_pa
     )
     assert saved["outcome"] == "success"
     counters = COUNTERS
-    assert counters["database_queries"] < 30
+    # The mandatory post-approval report pass adds fixed status/read metadata queries;
+    # the bound still catches work that scales with the 32 irrelevant handles.
+    assert counters["database_queries"] < 60

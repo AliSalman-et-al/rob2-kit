@@ -14,6 +14,7 @@ from ..workflow_models import (
     CategoryProfileResult,
     ComparativeEffectResult,
     GroupBoundValuesResult,
+    MainReportScopeDraft,
     ProposalDraft,
     UnavailableIntakeConditionBasisDraft,
     exact_relation_rationale,
@@ -24,7 +25,145 @@ from .evidence import (
     _evidence_catalog,
     _normalized_contains,
     _normalized_with_spans,
+    main_report_read_gaps,
 )
+
+
+def _main_report_scope_records(
+    batch: dict[str, Any] | None,
+    requested: tuple[MainReportScopeDraft, ...],
+    catalog: dict[str, dict[str, Any]],
+    prior: list[dict[str, Any]] | None = None,
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    """Resolve one immutable full-or-suffix scope for every main Source."""
+
+    trials = batch.get("trials", []) if isinstance(batch, dict) else []
+    supplied = {(item.trial_id, item.source_id): item for item in requested}
+    if len(supplied) != len(requested):
+        return [], [
+            {
+                "path": "/main_report_scopes",
+                "code": "duplicate_main_report_scope",
+                "detail": "one scope per Trial and Source is allowed",
+            }
+        ]
+    prior_by_source = {
+        (item.get("trial_id"), item.get("source_id")): item
+        for item in (prior or [])
+        if isinstance(item, dict)
+    }
+    records: list[dict[str, Any]] = []
+    defects: list[dict[str, Any]] = []
+    for trial in trials:
+        if not isinstance(trial, dict):
+            continue
+        trial_id = trial.get("id")
+        sources = [
+            item
+            for item in trial.get("sources", [])
+            if isinstance(item, dict) and item.get("role") == "main_article"
+        ]
+        if not sources:
+            priority = {"protocol": 0, "sap": 1, "supplement": 2, "other": 3, "registry": 4}
+            sources = sorted(
+                (item for item in trial.get("sources", []) if isinstance(item, dict)),
+                key=lambda item: (priority.get(str(item.get("role")), 5), str(item.get("id"))),
+            )[:1]
+        for source in sources:
+            source_id = source.get("id")
+            if not isinstance(trial_id, str) or not isinstance(source_id, str):
+                continue
+            item = supplied.get((trial_id, source_id))
+            prior_item = prior_by_source.get((trial_id, source_id))
+            if item is None and prior_item is not None:
+                record = dict(prior_item)
+                records.append(record)
+                continue
+            end_page = (
+                item.end_page
+                if item is not None and item.end_page is not None
+                else int(source.get("page_count", 0))
+            )
+            path = f"/main_report_scopes/{len(records)}"
+            if item is not None and (end_page < 1 or end_page > int(source.get("page_count", 0))):
+                defects.append(
+                    {
+                        "path": f"{path}/end_page",
+                        "code": "main_report_scope_out_of_range",
+                        "detail": "end_page must be within the captured Source",
+                    }
+                )
+                continue
+            boundary = tuple(item.boundary_evidence) if item is not None else ()
+            reason = item.exclusion_reason if item is not None else None
+            if end_page < int(source.get("page_count", 0)) and (not boundary or not reason):
+                defects.append(
+                    {
+                        "path": path,
+                        "code": "main_report_boundary_required",
+                        "detail": (
+                            "excluding a suffix requires same-Source boundary Evidence and "
+                            "exclusion_reason"
+                        ),
+                    }
+                )
+                continue
+            boundary_items = []
+            for index, handle in enumerate(boundary):
+                evidence = _selected(catalog, handle)
+                if (
+                    not isinstance(evidence, dict)
+                    or evidence.get("trial_id") != trial_id
+                    or evidence.get("source_id") != source_id
+                    or evidence.get("kind") != "narrative"
+                    or evidence.get("page") not in {end_page, end_page + 1}
+                ):
+                    defects.append(
+                        {
+                            "path": f"{path}/boundary_evidence/{index}",
+                            "code": "invalid_main_report_boundary_evidence",
+                            "detail": (
+                                "boundary Evidence must be text from this Source on end_page "
+                                "or the first excluded page"
+                            ),
+                        }
+                    )
+                else:
+                    boundary_items.append(handle)
+            if defects and any(defect["path"].startswith(path) for defect in defects):
+                continue
+            record = {
+                "trial_id": trial_id,
+                "source_id": source_id,
+                "source_sha256": source.get("sha256"),
+                "projection_hash": source.get("projection_hash"),
+                "end_page": end_page,
+                "boundary_evidence": boundary_items,
+                "excluded_ranges": (
+                    [
+                        {
+                            "start_page": end_page + 1,
+                            "end_page": int(source["page_count"]),
+                            "reason": reason,
+                        }
+                    ]
+                    if end_page < int(source["page_count"])
+                    else []
+                ),
+            }
+            records.append(record)
+    if requested:
+        known = {(item.get("trial_id"), item.get("source_id")) for item in records}
+        for item in requested:
+            if (item.trial_id, item.source_id) not in known:
+                defects.append(
+                    {
+                        "path": "/main_report_scopes",
+                        "code": "main_report_source_not_found",
+                        "detail": "scope source_id is not a captured main Source",
+                    }
+                )
+    return records, defects
 
 
 def _leaves(value: Any, path: str) -> dict[str, Any]:
@@ -156,15 +295,19 @@ def _proposal_shape_repairs(
         if result.relation == AssessableTargetRelation.EXACT:
             target_name = requested_outcomes.get(result.trial_id, "")
             reported_name = result.reported.endpoint.name
-            if _relation_name(target_name) != _relation_name(reported_name):
+            if (
+                _relation_name(target_name) != _relation_name(reported_name)
+                and not (result.relation_rationale or "").strip()
+            ):
                 result_repairs.append(
                     {
                         "path": f"{path}/relation",
                         "code": "exact_relation_name_mismatch",
                         "detail": (
-                            f"exact relation requires captured target '{target_name}' to match "
-                            f"the source-reported endpoint '{reported_name}'; "
-                            "use a non-exact relation"
+                            f"exact relation needs a source-grounded correspondence rationale "
+                            f"when target '{target_name}' and reported endpoint '{reported_name}' "
+                            "use different names; use a non-exact relation when their scientific "
+                            "scope differs"
                         ),
                     }
                 )
@@ -278,6 +421,8 @@ def _canonical_result(
     requested_outcome: str,
 ) -> tuple[dict[str, Any], list[dict[str, Any]]]:
     raw = result.model_dump(mode="json")
+    if raw.get("applicability") is None:
+        raw.pop("applicability", None)
     # Passage references are an input-only convenience. Canonical Result
     # records retain the materialized Evidence items, not the caller's
     # navigation list.
@@ -328,6 +473,7 @@ def _canonical_result(
     raw["relation_rationale"] = (
         exact_relation_rationale(requested_outcome, result.reported.endpoint.name)
         if result.relation == AssessableTargetRelation.EXACT
+        and _relation_name(requested_outcome) == _relation_name(result.reported.endpoint.name)
         else result.relation_rationale
     )
     target = dict(raw["target"])
@@ -926,6 +1072,18 @@ def _bind_result(
     semantic_defects: list[dict[str, Any]],
 ) -> tuple[list[dict[str, Any]], set[str]]:
     defects, _ = _validate_evidence(result, catalog, index, path)
+    applicability = result.get("applicability")
+    if isinstance(applicability, dict):
+        for evidence_index, handle in enumerate(applicability.get("evidence", [])):
+            selected = _selected(catalog, str(handle))
+            if selected is None or selected.get("trial_id") != result.get("trial_id"):
+                defects.append(
+                    {
+                        "path": f"{path}/applicability/evidence/{evidence_index}",
+                        "code": "cross_trial_evidence",
+                        "detail": "applicability Evidence must resolve to this Trial",
+                    }
+                )
     # Keep independent binding defects visible alongside claim defects.  Only
     # unresolved, wrong-kind, or cross-Trial handles make binding impossible;
     # an overreaching clause or stale figure claim must not hide unrelated
@@ -989,6 +1147,10 @@ def _bind_result(
         if item.get("kind") == "derived"
         for input_item in item["inputs"]
     )
+    if isinstance(applicability, dict):
+        handles.update(
+            handle for handle in applicability.get("evidence", []) if isinstance(handle, str)
+        )
     defects.extend(result.pop("_binding_defects", []))
     result.pop("_evidence_defects", None)
     return defects, handles
@@ -1009,6 +1171,11 @@ def _result_handles(result: dict[str, Any], catalog: dict[str, dict[str, Any]]) 
                 for input_item in item.get("inputs", [])
                 if isinstance(input_item, dict) and isinstance(input_item.get("handle"), str)
             )
+    applicability = result.get("applicability")
+    if isinstance(applicability, dict):
+        handles.update(
+            handle for handle in applicability.get("evidence", []) if isinstance(handle, str)
+        )
     for missing in result.get("missing_facts", []):
         if not isinstance(missing, dict):
             continue
@@ -1108,13 +1275,59 @@ def save_proposal(
         and state["review"].get("purpose") == "proposal"
         and isinstance(prior_proposal, dict)
     )
+    prior_payload = prior_proposal.get("payload", {}) if isinstance(prior_proposal, dict) else {}
+    prior_scopes = (
+        prior_payload.get("main_report_scopes", []) if isinstance(prior_payload, dict) else []
+    )
+    requested_scopes = draft.main_report_scopes
+    if pending_review and not requested_scopes and isinstance(prior_scopes, list):
+        requested_scopes = tuple(
+            MainReportScopeDraft(
+                trial_id=item["trial_id"],
+                source_id=item["source_id"],
+                end_page=item.get("end_page"),
+                boundary_evidence=tuple(item.get("boundary_evidence", [])),
+                exclusion_reason=(item.get("excluded_ranges") or [{}])[0].get("reason")
+                if item.get("excluded_ranges")
+                else None,
+            )
+            for item in prior_scopes
+            if isinstance(item, dict)
+        )
+    scope_records, scope_defects = _main_report_scope_records(
+        batch, requested_scopes, catalog, prior_scopes
+    )
+    if scope_defects:
+        return _result("repair", state, repairs=scope_defects)
+    read_gaps = main_report_read_gaps(
+        root,
+        batch.get("trials", []) if isinstance(batch, dict) else [],
+        phase="proposal",
+        scopes=scope_records,
+    )
+    if read_gaps:
+        return _result(
+            "repair",
+            state,
+            repairs=[
+                {
+                    "path": "/results",
+                    "code": "main_report_reading_required",
+                    "detail": (
+                        "Finish the required bounded text pass before submitting the Proposal. "
+                        "Call get_status, read the returned main_report_reading.required_ranges "
+                        "with read_pages, then retry save_proposal."
+                    ),
+                }
+            ],
+        )
     shape_defects = _proposal_shape_repairs(draft, requested_outcomes)
     canonical_results, draft_defects, used = _canonical_results(
         draft, catalog, requested_outcomes, batch
     )
     if canonical_results is None:
         return _result("repair", state, repairs=shape_defects + draft_defects)
-    raw = {"results": canonical_results}
+    raw = {"results": canonical_results, "main_report_scopes": scope_records}
     defects: list[dict[str, Any]] = []
     if not pending_review and {item["trial_id"] for item in raw["results"]} != expected_trials:
         defects.append(
@@ -1199,6 +1412,13 @@ def save_proposal(
         raise WorkflowConflict(draft.expected_revision, int(state.get("revision", 0)))
     if pending_review:
         used = set().union(*(_result_handles(result, catalog) for result in raw["results"]))
+    used.update(
+        handle
+        for scope in scope_records
+        if isinstance(scope, dict)
+        for handle in scope.get("boundary_evidence", [])
+        if isinstance(handle, str)
+    )
     bound = _bound_proposal_evidence(catalog, used, prior_proposal)
     proposal_record = {"identity": identity, "payload": raw, "evidence": bound}
     review = {

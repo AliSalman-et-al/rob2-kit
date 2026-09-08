@@ -10,7 +10,14 @@ import pytest
 from fastmcp import Client
 from fastmcp.exceptions import ToolError
 from pydantic import ValidationError
-from support.rob2 import _prepared_evidence, _proposal_args, _result, _review, _workspace
+from support.rob2 import (
+    _prepared_evidence,
+    _proposal_args,
+    _read_required_main_reports,
+    _result,
+    _review,
+    _workspace,
+)
 
 from rob2_kit.application._state import _state
 from rob2_kit.application.contracts import TOOL_NAMES
@@ -491,7 +498,7 @@ def test_receipt_head_uses_authoritative_post_operation_status(tmp_path: Path) -
         "operation": "save_proposal",
         "authority": "host",
         "expected_revision": prepared["head"]["state_revision"],
-        "caller_inputs": ["results"],
+        "caller_inputs": ["results", "main_report_scopes"],
     }
 
 
@@ -815,9 +822,9 @@ def test_save_proposal_schema_is_closed_and_discriminated() -> None:
         if definition.get("type") == "object":
             assert definition["additionalProperties"] is False, name
     # Every nested caller field is self-describing; keep the complete proposal
-    # schema compact enough to inspect in one tool definition.
-    assert len(json.dumps(schema, separators=(",", ":")).encode()) < 16000
-    assert len(_walk_schema(schema)) < 22
+    # schema, including design applicability and report scope, compact enough for one definition.
+    assert len(json.dumps(schema, separators=(",", ":")).encode()) < 17000
+    assert len(_walk_schema(schema)) <= 22
 
 
 def test_save_domain_judgment_schema_is_closed_and_typed() -> None:
@@ -871,6 +878,7 @@ def test_selected_evidence_and_typed_proposal_survive_host_restart(tmp_path: Pat
         {"requested_outcome": "requested outcome", "expected_revision": 0},
     )
     assert prepared["head"]["phase"] == "proposal"
+    _read_required_main_reports(tmp_path)
     source = _call(tmp_path, "list_sources", {"trial_id": "trial"})["data"]["sources"][0]
     selected = _call(
         tmp_path,
@@ -919,6 +927,14 @@ def test_selected_evidence_and_typed_proposal_survive_host_restart(tmp_path: Pat
         "trial_id": "trial",
         "relation": "related",
         "relation_rationale": ("Related endpoints use different captured names and definitions."),
+        "applicability": {
+            "design": "individual_parallel",
+            "status": "supported",
+            "rationale": (
+                "The captured allocation describes an individually randomized parallel comparison."
+            ),
+            "evidence": [selected["handle"]],
+        },
         "target": target,
         "reported": reported,
     }

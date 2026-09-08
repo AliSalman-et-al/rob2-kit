@@ -16,6 +16,7 @@ from support.rob2 import (
     _option_for,
     _prepared_evidence,
     _proposal_args,
+    _read_required_main_reports,
     _result,
     _result_for_trial,
     _review,
@@ -270,6 +271,7 @@ def test_domain_context_recovers_uncommitted_trial_evidence(tmp_path: Path) -> N
         _proposal_args(workspace, [_result(proposal_evidence)]),
     )
     _review(workspace)
+    _read_required_main_reports(workspace)
     domain_evidence = _call(
         workspace,
         "select_text_evidence",
@@ -306,6 +308,7 @@ def test_domain_context_recovers_prior_checkpoint_evidence_after_cache_loss(
         _proposal_args(workspace, [_result(proposal_evidence)]),
     )
     _review(workspace)
+    _read_required_main_reports(workspace)
     domain_evidence = _call(
         workspace,
         "select_text_evidence",
@@ -351,10 +354,15 @@ def test_domain_context_scopes_candidates_before_applying_the_budget(tmp_path: P
         page.insert_text((72, 72), f"later deviation noise {index}")
     (workspace / "input" / "trial" / "domain-noise.pdf").write_bytes(document.tobytes())
     document.close()
+    (workspace / "input" / "trial" / "sources.toml").write_text(
+        'roles = { "main.txt" = "main_article", "domain-noise.pdf" = "supplement" }\n',
+        encoding="utf-8",
+    )
 
     proposal_evidence = _prepared_evidence(workspace)
     _call(workspace, "save_proposal", _proposal_args(workspace, [_result(proposal_evidence)]))
     _review(workspace)
+    _read_required_main_reports(workspace)
     source = next(
         item
         for item in _call(workspace, "list_sources", {"trial_id": "trial"})["data"]["sources"]
@@ -438,6 +446,7 @@ def test_proposal_search_candidates_do_not_leak_into_first_domain(tmp_path: Path
     )["data"]["hits"][0]
     _call(workspace, "save_proposal", _proposal_args(workspace, [_result(proposal_evidence)]))
     _review(workspace)
+    _read_required_main_reports(workspace)
 
     context = _call(workspace, "get_domain_context", {})["data"]
 
@@ -457,6 +466,7 @@ def test_domain_context_continuation_reaches_omissions_across_sessions(tmp_path:
     proposal_evidence = _prepared_evidence(workspace)
     _call(workspace, "save_proposal", _proposal_args(workspace, [_result(proposal_evidence)]))
     _review(workspace)
+    _read_required_main_reports(workspace)
     source = next(
         item
         for item in _call(workspace, "list_sources", {"trial_id": "trial"})["data"]["sources"]
@@ -498,6 +508,7 @@ def test_saved_contradiction_is_projected_in_contradiction_group(tmp_path: Path)
     result_evidence = _prepared_evidence(workspace)
     _call(workspace, "save_proposal", _proposal_args(workspace, [_result(result_evidence)]))
     _review(workspace)
+    _read_required_main_reports(workspace)
     revision = int(_call(workspace, "get_domain_context", {})["head"]["state_revision"])
     draft = _domain_draft("trial", "domain:randomization", revision, result_evidence)
     for answer in draft["answers"]:
@@ -535,9 +546,14 @@ def test_domain_context_continuation_reaches_unreturned_session_candidates(
         page.insert_text((72, 72), f"deep candidate {index}")
     (trial / "deep.pdf").write_bytes(document.tobytes())
     document.close()
+    (trial / "sources.toml").write_text(
+        'roles = { "main.txt" = "main_article", "deep.pdf" = "supplement" }\n',
+        encoding="utf-8",
+    )
     proposal_evidence = _prepared_evidence(workspace)
     _call(workspace, "save_proposal", _proposal_args(workspace, [_result(proposal_evidence)]))
     _review(workspace)
+    _read_required_main_reports(workspace)
     source = next(
         item
         for item in _call(workspace, "list_sources", {"trial_id": "trial"})["data"]["sources"]
@@ -575,9 +591,14 @@ def test_domain_context_reports_unavailable_search_session_after_cache_loss(
         page.insert_text((72, 72), f"lost candidate {index}")
     (workspace / "input" / "trial" / "lost.pdf").write_bytes(document.tobytes())
     document.close()
+    (workspace / "input" / "trial" / "sources.toml").write_text(
+        'roles = { "main.txt" = "main_article", "lost.pdf" = "supplement" }\n',
+        encoding="utf-8",
+    )
     proposal_evidence = _prepared_evidence(workspace)
     _call(workspace, "save_proposal", _proposal_args(workspace, [_result(proposal_evidence)]))
     _review(workspace)
+    _read_required_main_reports(workspace)
     source = next(
         item
         for item in _call(workspace, "list_sources", {"trial_id": "trial"})["data"]["sources"]
@@ -630,9 +651,14 @@ def test_explicit_carry_forward_has_budget_priority_and_exact_read_continuation(
     extra.write_text(
         "".join(f"explicit evidence {index}\n" for index in range(130)), encoding="utf-8"
     )
+    (workspace / "input" / "trial" / "sources.toml").write_text(
+        'roles = { "main.txt" = "main_article", "explicit.txt" = "supplement" }\n',
+        encoding="utf-8",
+    )
     proposal_evidence = _prepared_evidence(workspace)
     _call(workspace, "save_proposal", _proposal_args(workspace, [_result(proposal_evidence)]))
     _review(workspace)
+    _read_required_main_reports(workspace)
     source = next(
         item
         for item in _call(workspace, "list_sources", {"trial_id": "trial"})["data"]["sources"]
@@ -684,6 +710,7 @@ def test_domain_context_does_not_expose_another_trials_uncommitted_evidence(
         "prepare_batch",
         {"requested_outcome": "requested outcome", "expected_revision": 0},
     )
+    _read_required_main_reports(workspace)
     selected: dict[str, dict[str, Any]] = {}
     for trial_id in ("trial", "trial-b"):
         source = _call(workspace, "list_sources", {"trial_id": trial_id})["data"]["sources"][0]
@@ -698,7 +725,7 @@ def test_domain_context_does_not_expose_another_trials_uncommitted_evidence(
                 "end_line": 1,
             },
         )["data"]["evidence"]
-    _call(
+    saved = _call(
         workspace,
         "save_proposal",
         _proposal_args(
@@ -709,7 +736,9 @@ def test_domain_context_does_not_expose_another_trials_uncommitted_evidence(
             ],
         ),
     )
+    assert saved["outcome"] == "review_required", saved
     _review(workspace)
+    _read_required_main_reports(workspace)
     other = _call(
         workspace,
         "select_text_evidence",
@@ -736,6 +765,7 @@ def test_domain_context_result_projection_omits_canonical_bindings(tmp_path: Pat
     saved = _call(workspace, "save_proposal", _proposal_args(workspace, [_result(evidence)]))
     assert saved["outcome"] == "review_required"
     _review(workspace)
+    _read_required_main_reports(workspace)
 
     context = _call(workspace, "get_domain_context", {})
     data = context["data"]
@@ -743,7 +773,10 @@ def test_domain_context_result_projection_omits_canonical_bindings(tmp_path: Pat
     assert "bindings" not in result
     assert set(result["evidence"][0]) == {"kind", "handle", "identity"}
     assert "alternatives" not in result
-    assert "complete bounded question-specific discovery" in data["completion_rule"]
+    assert (
+        "Ground each active proposition and its uncertainty in inspected Evidence or bounded "
+        "discovery" in data["completion_rule"]
+    )
     assert any("protocol or SAP" in item for item in data["guidance"])
     assert any("does not by itself prove" in item for item in data["traps"])
     question_card = data["questions"][0]
@@ -899,6 +932,7 @@ def test_domain_two_judgment_with_itt_premise_advances_to_domain_three(
     evidence = _prepared_evidence(workspace)
     _call(workspace, "save_proposal", _proposal_args(workspace, [_result(evidence)]))
     _review(workspace)
+    _read_required_main_reports(workspace)
     revision = int(_call(workspace, "get_domain_context", {})["head"]["state_revision"])
     first = _call(
         workspace,
@@ -1112,6 +1146,7 @@ def test_domain_rejects_truncated_search_as_absence_basis(tmp_path: Path) -> Non
     evidence = _prepared_evidence(workspace)
     _call(workspace, "save_proposal", _proposal_args(workspace, [_result(evidence)]))
     _review(workspace)
+    _read_required_main_reports(workspace)
     revision = int(_call(workspace, "get_domain_context", {})["head"]["state_revision"])
     search = _call(
         workspace,

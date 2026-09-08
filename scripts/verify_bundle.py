@@ -154,6 +154,16 @@ _QUESTION_ALLOWED_ANSWERS = {
 _SCIENTIFIC_PACK = {
     "id": "rob2.parallel.assignment",
     "version": "2019.1",
+    "result_semantics_version": "rob2-kit.result-semantics.v0.6",
+    "content_hash": "sha256:3ef492b34a81c19e3f75d72fea2b92c40aebde80c06e24e44c36cd76dc4cf3d4",
+    "official_source": {
+        "version": "22 August 2019",
+        "source_sha256": "A9E9C4FDC4BE2D29B5C0A1A6B828E09F2014A34F6D5C302A532F6153EA0FD670",
+    },
+}
+_HISTORICAL_SCIENTIFIC_PACK = {
+    "id": "rob2.parallel.assignment",
+    "version": "2019.1",
     "content_hash": "sha256:4bfd30a3d997e9eab0354ef7148726c5b112004a64b59dd57f02ac1493b61597",
     "official_source": {
         "version": "22 August 2019",
@@ -220,6 +230,103 @@ def _valid_batch(batch: object) -> bool:
                 return False
             source_ids.add(source["id"])
     return _valid_conditions(batch["conditions"], trial_ids)
+
+
+def _valid_main_report_scopes(
+    value: object, batch: dict[str, object], evidence: dict[str, object]
+) -> bool:
+    if not isinstance(value, list):
+        return False
+    sources: dict[tuple[object, object], dict[str, object]] = {}
+    priority = {"protocol": 0, "sap": 1, "supplement": 2, "other": 3, "registry": 4}
+    raw_trials = batch.get("trials", [])
+    trials = raw_trials if isinstance(raw_trials, list) else []
+    for trial in trials:
+        if not isinstance(trial, dict):
+            continue
+        candidates = [
+            item
+            for item in trial.get("sources", [])
+            if isinstance(item, dict) and item.get("role") == "main_article"
+        ]
+        if not candidates:
+            candidates = sorted(
+                (item for item in trial.get("sources", []) if isinstance(item, dict)),
+                key=lambda item: (priority.get(str(item.get("role")), 5), str(item.get("id"))),
+            )[:1]
+        for item in candidates:
+            sources[(trial.get("id"), item.get("id"))] = item
+    if not sources:
+        return not value
+    seen: set[tuple[object, object]] = set()
+    for item in value:
+        if not isinstance(item, dict) or set(item) != {
+            "trial_id",
+            "source_id",
+            "source_sha256",
+            "projection_hash",
+            "end_page",
+            "boundary_evidence",
+            "excluded_ranges",
+        }:
+            return False
+        key = (item.get("trial_id"), item.get("source_id"))
+        source = sources.get(key)
+        if key in seen or not isinstance(source, dict):
+            return False
+        seen.add(key)
+        end_page = item.get("end_page")
+        page_count = source.get("page_count")
+        if item.get("source_sha256") != source.get("sha256") or item.get(
+            "projection_hash"
+        ) != source.get("projection_hash"):
+            return False
+        if (
+            not isinstance(end_page, int)
+            or isinstance(end_page, bool)
+            or not isinstance(page_count, int)
+            or not 1 <= end_page <= page_count
+        ):
+            return False
+        boundary = item.get("boundary_evidence")
+        ranges = item.get("excluded_ranges")
+        if not isinstance(boundary, list) or not isinstance(ranges, list):
+            return False
+        for handle in boundary:
+            selected = next(
+                (
+                    entry
+                    for entry in evidence.values()
+                    if isinstance(entry, dict) and entry.get("handle") == handle
+                ),
+                None,
+            )
+            if (
+                not isinstance(selected, dict)
+                or selected.get("kind") != "narrative"
+                or selected.get("trial_id") != key[0]
+                or selected.get("source_id") != key[1]
+                or selected.get("page") not in {end_page, end_page + 1}
+            ):
+                return False
+        if end_page == page_count:
+            if ranges:
+                return False
+        elif len(ranges) != 1:
+            return False
+        else:
+            excluded = ranges[0]
+            if (
+                not isinstance(excluded, dict)
+                or set(excluded) != {"start_page", "end_page", "reason"}
+                or excluded.get("start_page") != end_page + 1
+                or excluded.get("end_page") != page_count
+                or not isinstance(excluded.get("reason"), str)
+                or not excluded["reason"].strip()
+                or not boundary
+            ):
+                return False
+    return seen == set(sources)
 
 
 def _valid_omission(value: object) -> bool:
@@ -1090,6 +1197,12 @@ def _proposal_evidence_handles(value: object) -> set[str]:
                 handles.add(item["handle"])
             if isinstance(item.get("evidence"), str):
                 handles.add(item["evidence"])
+            elif isinstance(item.get("evidence"), list):
+                handles.update(value for value in item["evidence"] if isinstance(value, str))
+            if isinstance(item.get("boundary_evidence"), list):
+                handles.update(
+                    value for value in item["boundary_evidence"] if isinstance(value, str)
+                )
             for child in item.values():
                 visit(child)
         elif isinstance(item, list):
@@ -1518,10 +1631,14 @@ def _valid_requested_result(result: object, requested_outcome: str) -> bool:
     return True
 
 
-def _valid_result_shape(result: dict[str, object], requested_outcome: str) -> bool:
+def _valid_result_shape(
+    result: dict[str, object],
+    requested_outcome: str,
+    semantics_version: str = "rob2-kit.result-semantics.v0.6",
+) -> bool:
     if not _valid_requested_result(result, requested_outcome):
         return False
-    if set(result) != {
+    base_keys = {
         "kind",
         "trial_id",
         "requested_outcome",
@@ -1532,8 +1649,51 @@ def _valid_result_shape(result: dict[str, object], requested_outcome: str) -> bo
         "clarity",
         "evidence",
         "bindings",
-    }:
+    }
+    expected_keys = (
+        base_keys
+        if semantics_version == "rob2-kit.result-semantics.v0.5"
+        else base_keys | {"applicability"}
+    )
+    if set(result) != expected_keys:
         return False
+    applicability = result.get("applicability")
+    if semantics_version != "rob2-kit.result-semantics.v0.5" and applicability is None:
+        return False
+    if applicability is not None:
+        if (
+            not isinstance(applicability, dict)
+            or set(applicability) != {"design", "status", "rationale", "evidence"}
+            or applicability.get("design")
+            not in {
+                "individual_parallel",
+                "cluster_randomized",
+                "crossover",
+                "unclear",
+            }
+            or applicability.get("status") not in {"supported", "unsupported", "uncertain"}
+            or not isinstance(applicability.get("rationale"), str)
+            or not applicability["rationale"].strip()
+            or not isinstance(applicability.get("evidence"), list)
+            or (
+                applicability.get("status") in {"supported", "unsupported"}
+                and not applicability["evidence"]
+            )
+            or (
+                applicability.get("status") == "supported"
+                and applicability.get("design") != "individual_parallel"
+            )
+            or (
+                applicability.get("status") == "unsupported"
+                and applicability.get("design") not in {"cluster_randomized", "crossover"}
+            )
+            or (
+                applicability.get("status") == "uncertain"
+                and applicability.get("design") != "unclear"
+            )
+            or any(not isinstance(item, str) or not item for item in applicability["evidence"])
+        ):
+            return False
     target = result.get("target")
     reported = result.get("reported")
     if not isinstance(target, dict) or not isinstance(reported, dict):
@@ -1580,10 +1740,26 @@ def _valid_result_shape(result: dict[str, object], requested_outcome: str) -> bo
         or (
             result.get("relation") == "exact"
             and (
-                _relation_name(target.get("outcome_definition"))
-                != _relation_name(endpoint.get("name"))
-                or result.get("relation_rationale")
-                != _exact_relation_rationale(target.get("outcome_definition", ""), endpoint["name"])
+                (
+                    semantics_version == "rob2-kit.result-semantics.v0.5"
+                    and (
+                        _relation_name(target.get("outcome_definition"))
+                        != _relation_name(endpoint.get("name"))
+                        or result.get("relation_rationale")
+                        != _exact_relation_rationale(
+                            target.get("outcome_definition", ""), endpoint["name"]
+                        )
+                    )
+                )
+                or (
+                    semantics_version != "rob2-kit.result-semantics.v0.5"
+                    and _relation_name(target.get("outcome_definition"))
+                    == _relation_name(endpoint.get("name"))
+                    and result.get("relation_rationale")
+                    != _exact_relation_rationale(
+                        target.get("outcome_definition", ""), endpoint["name"]
+                    )
+                )
             )
         )
     ):
@@ -1783,6 +1959,7 @@ def _valid_result_evidence(
     sources: dict[str, dict[str, object]],
     requested_outcomes: dict[str, str],
     batch: object = None,
+    semantics_version: str = "rob2-kit.result-semantics.v0.6",
 ) -> bool:
     """Replay the closed Result Evidence contract from exported selections."""
     if not isinstance(result, dict) or not isinstance(result.get("trial_id"), str):
@@ -1866,7 +2043,7 @@ def _valid_result_evidence(
         "related",
     }:
         return False
-    if not _valid_result_shape(result, requested_outcome):
+    if not _valid_result_shape(result, requested_outcome, semantics_version):
         return False
     if not isinstance(result.get("target"), dict) or not isinstance(result.get("reported"), dict):
         return False
@@ -1881,6 +2058,13 @@ def _valid_result_evidence(
         for item in catalog.values()
         if isinstance(item, dict) and isinstance(item.get("handle"), str)
     }
+    applicability = result.get("applicability")
+    if isinstance(applicability, dict) and any(
+        not isinstance(by_handle.get(handle), dict)
+        or by_handle[handle].get("trial_id") != result["trial_id"]
+        for handle in applicability.get("evidence", [])
+    ):
+        return False
     target_groups = {
         group.get("id")
         for group in result["target"].get("comparison_groups", [])
@@ -2222,8 +2406,14 @@ def verify(path: Path) -> tuple[bool, str]:
                 "scientific_pack",
             }:
                 return False, "canonical envelope is not closed"
-            if canonical.get("scientific_pack") != _SCIENTIFIC_PACK:
+            scientific_pack = canonical.get("scientific_pack")
+            if scientific_pack not in (_SCIENTIFIC_PACK, _HISTORICAL_SCIENTIFIC_PACK):
                 return False, "scientific pack descriptor differs"
+            semantics_version = (
+                scientific_pack.get("result_semantics_version", "rob2-kit.result-semantics.v0.5")
+                if isinstance(scientific_pack, dict)
+                else "rob2-kit.result-semantics.v0.5"
+            )
             batch = canonical.get("batch")
             dispositions = canonical.get("dispositions")
             snapshots = canonical.get("snapshots")
@@ -2303,7 +2493,12 @@ def verify(path: Path) -> tuple[bool, str]:
                     not isinstance(proposal, dict)
                     or set(proposal) != {"identity", "payload", "evidence"}
                     or not isinstance(proposal.get("payload"), dict)
-                    or set(proposal["payload"]) != {"results"}
+                    or set(proposal["payload"])
+                    != (
+                        {"results"}
+                        if semantics_version == "rob2-kit.result-semantics.v0.5"
+                        else {"results", "main_report_scopes"}
+                    )
                 ):
                     return False, "proposal is malformed"
                 if proposal.get("identity") != identity(proposal["payload"]):
@@ -2363,6 +2558,13 @@ def verify(path: Path) -> tuple[bool, str]:
                     for item in proposal_evidence.values()
                 ):
                     return False, "Evidence record is not a closed authoritative Source selection"
+                if (
+                    semantics_version != "rob2-kit.result-semantics.v0.5"
+                    and not _valid_main_report_scopes(
+                        proposal["payload"].get("main_report_scopes"), batch, proposal_evidence
+                    )
+                ):
+                    return False, "main-report scope is malformed"
                 expected_visual_paths = {
                     f"visual/{str(item['render']['identity']).removeprefix('sha256:')}.png"
                     for item in proposal_evidence.values()
@@ -2398,6 +2600,7 @@ def verify(path: Path) -> tuple[bool, str]:
                             sources,
                             requested_outcomes,
                             batch,
+                            semantics_version,
                         )
                         for result in results
                     )
@@ -2420,6 +2623,13 @@ def verify(path: Path) -> tuple[bool, str]:
                             or terminal.get("missing_facts") != facts
                         ):
                             return False, "unavailable Result does not match its terminal"
+                    applicability = result.get("applicability")
+                    if (
+                        isinstance(applicability, dict)
+                        and applicability.get("status") in {"unsupported", "uncertain"}
+                        and disposition != "needs_input"
+                    ):
+                        return False, "unsupported or uncertain design must remain unassessed"
             domains = canonical.get("domain_records")
             if not isinstance(domains, dict):
                 return False, "Domain records are missing"

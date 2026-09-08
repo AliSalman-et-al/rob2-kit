@@ -8,10 +8,11 @@ strict validation, deterministic RoB 2 logic, and verified artifact export.
 ## Workflow
 
 A **Batch** contains one or more **Trials**. Researcher-authorized dossiers use
-the fixed `input/{TRIAL NAME}/` layout. `prepare_batch` receives only the exact
-requested outcome; the server discovers every immediate non-hidden, non-link
-Trial directory, derives a stable Trial ID from its name, and captures all
-supported Sources in that directory. Intake records their content and
+the fixed `input/{TRIAL NAME}/` layout. `prepare_batch` receives the requested
+outcome and optional exact Trial labels. The server discovers immediate
+non-hidden, non-link Trial directories, limits the Batch to named Trials when
+provided, and derives stable Trial IDs from their names. It captures all
+supported Sources in each selected directory. Intake records their content and
 projection identities and attempts registry resolution. A typed Intake condition
 remains visible to the model but does not create a researcher gate.
 
@@ -19,15 +20,25 @@ The closed workflow phases are `empty`, `proposal`, `assessment`,
 `ready_to_finalize`, and `finalized`.
 
 1. `prepare_batch` captures the Batch and advances to Proposal construction.
-2. The model retrieves Source material, selects Evidence, and saves one complete
-   Result proposal per Trial.
+2. The model completes the required bounded main-report text pass, selects
+   Evidence, and saves one complete Result proposal per Trial.
 3. **Proposal Review** is the only researcher gate. The researcher may approve,
    reject, or replace the chosen Result mapping.
-4. After approval, the model answers all active signaling questions and the
-   server derives Domain and overall judgments.
+4. For each approved Trial with a supported design, the model repeats the bounded
+   text pass before its first Domain save. It answers active signaling questions,
+   and the server derives Domain and overall judgments.
 5. Accepting the fifth Domain freezes that Trial's AssessmentSnapshot and marks
    it `assessed`. `finalize_batch` packages the terminal Trial records into the
    verified bundle. There is no Assessment Review or final approval.
+
+Each text pass covers the same source-order prefix of the approved report scope,
+up to 65,536 UTF-8 source-text bytes per report at whole-line boundaries. A
+`budget_limited` pass permits progression with explicit partial coverage and
+unread-range navigation. Relevant omitted passages remain subject to targeted
+discovery. A source-backed Proposal scope may exclude a separate appended
+document after the last article page; shared article/appendix pages remain in
+scope. Uncertain boundaries leave the whole Source in scope. Coverage records
+prove delivery, not comprehension or retention in a later host context.
 
 A **State revision** is the optimistic-concurrency basis for one mutation. A
 stale revision returns a typed conflict and never adopts newer state silently.
@@ -109,19 +120,22 @@ window, effect of assignment, comparison groups, analysis population, and effect
 measure. A **Reported result** separately records what a Source actually reports.
 
 The closed Target relation is `exact`, `broader`, `narrower`, `component`,
-`related`, `ambiguous`, or `unavailable`. `exact` is
-reserved for a normalization-equivalent target and reported endpoint name. When
-the requested endpoint is absent, the model proposes the closest complete
-Source-defined candidate with a visible non-exact rationale. It must compare
-scientific definitions, not names or effect sizes. The Proposal contains the
+`related`, `ambiguous`, or `unavailable`. `exact` means equivalent scientific
+scope across the complete requested and reported Result. Different names require
+a source-grounded correspondence rationale; matching names or effect sizes alone
+do not establish equivalence. When no equivalent Result exists, the model proposes
+the closest complete Source-defined candidate with a visible non-exact rationale.
+Historical bundles retain their recorded relation semantics, including the older
+normalization-equivalent-name rule. The Proposal contains the
 single best complete candidate per Trial; competing candidates inform the
 choice but are not serialized as alternatives.
 
 An assessable Reported result is a comparative effect, group-bound values, or a
 single-group category profile. Selected Evidence is durable workspace state,
 not caller-supplied Proposal structure. On Proposal submission, the server binds
-the Result to selected Evidence, retains only material used by the Result, and
-derives canonical field bindings. Structural identifiers such as `group_id` and
+the Result to selected Evidence and derives canonical field bindings. Canonical
+records retain Evidence used by the Result, its applicability assessment, and
+any declared main-report boundary. Structural identifiers such as `group_id` and
 `category_axis_names` connect typed fields but are not Source claims. Source-owned
 reported labels, values, units, denominators, endpoint definitions, and category
 cells must remain bound to exact selected Evidence. Target method, timing,
@@ -134,6 +148,12 @@ Both forms still pass through Proposal Review.
 
 The Proposal is atomic across the Batch. A researcher-approved unavailable Result
 becomes a `needs_input` terminal automatically; it does not enter Domain assessment.
+Every assessable Result also records source-grounded pack applicability. The
+installed pack supports individually randomized parallel trials. After Proposal
+Review, known unsupported designs become unassessed `needs_input` terminals for
+the appropriate pack; unresolved designs need source information establishing
+the design and unit of randomization. Neither condition makes an available
+Result unavailable.
 
 ## Domain assessment and revision
 

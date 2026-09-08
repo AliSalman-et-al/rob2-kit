@@ -40,6 +40,7 @@ from rob2_kit.workflow_models import (
     SearchReceiptHandle,
     Source,
     SourceId,
+    SourceOrigin,
     SourceRole,
     TrialId,
     UnavailableResult,
@@ -58,7 +59,7 @@ class SaveProposalAction(PublicModel):
     operation: Literal["save_proposal"]
     authority: Literal["host"]
     expected_revision: NonNegativeInt
-    caller_inputs: tuple[Literal["results"], ...]
+    caller_inputs: tuple[Literal["results", "main_report_scopes"], ...]
 
 
 class PrepareBatchAction(PublicModel):
@@ -385,16 +386,39 @@ class EvidenceRecovery(PublicModel):
     windows: tuple[EvidenceReadWindow, ...] = Field(min_length=1, max_length=20)
 
 
+class MainReportRecovery(EvidenceRecovery):
+    """Bounded recovery metadata for the mandatory report text pass."""
+
+    window_count: NonNegativeInt = 0
+    status: Literal["required", "budget_limited"] = "required"
+    unread_ranges: tuple[EvidenceReadWindow, ...] = ()
+    unread_range_count: NonNegativeInt = 0
+
+
 SelectedEvidence = Annotated[
     SelectedNarrativeEvidence | SelectedFigureEvidence,
     Field(discriminator="kind"),
 ]
 
 
+class MainReportReadingStatus(PublicModel):
+    status: Literal["required", "complete", "budget_limited"]
+    budget_bytes: NonNegativeInt
+    covered_prefix_bytes: NonNegativeInt
+    required_ranges: tuple[EvidenceReadWindow, ...] = Field(
+        default=(),
+        description="Next bounded text windows required to complete the fixed report prefix.",
+    )
+    required_range_count: NonNegativeInt = 0
+    unread_ranges: tuple[EvidenceReadWindow, ...] = ()
+    unread_range_count: NonNegativeInt = 0
+
+
 class StatusData(PublicModel):
     trial_dispositions: dict[TrialId, Literal["pending", "assessed", "needs_input", "failed"]]
     terminal_counts: TerminalCounts
     selected_evidence: tuple[SelectedEvidence, ...]
+    main_report_reading: dict[TrialId, MainReportReadingStatus] = {}
 
 
 class SourcesData(PublicModel):
@@ -923,6 +947,10 @@ class DomainContextData(PublicModel):
     completion_rule: str = Field(min_length=1)
     evidence_workspace: EvidenceWorkspace
     comparison_cards: tuple[ComparisonCard, ...] = ()
+    reading_recovery: MainReportRecovery | None = Field(
+        default=None,
+        description="Mandatory post-approval text-read recovery before the first Domain save.",
+    )
 
 
 class ComparisonPassageRef(PublicModel):
@@ -937,6 +965,16 @@ class ComparisonPassageGroup(PublicModel):
     source_id: str = Field(pattern=r"^source_[0-9a-f]{64}$")
     source_role: SourceRole
     source_label: str = Field(min_length=1)
+    logical_path: str = Field(min_length=1)
+    page_count: PageNumber
+    sha256: Identity
+    projection_hash: Identity
+    source_origin: SourceOrigin
+    registry_url: str | None = None
+    registry_retrieved_at: str | None = None
+    registry_field_paths: tuple[str, ...] = ()
+    registry_recovery: EvidenceRecovery | None = None
+    registry_window_count: NonNegativeInt = 0
     passages: tuple[ComparisonPassageRef, ...] = ()
 
 
@@ -1251,6 +1289,7 @@ def _payload(tool: str, value: dict[str, Any]) -> dict[str, Any]:
                 "trial_dispositions",
                 "terminal_counts",
                 "selected_evidence",
+                "main_report_reading",
             )
             if key in value
         }

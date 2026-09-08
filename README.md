@@ -183,8 +183,11 @@ rob2 review --workspace C:/path/to/my-assessment
 - Enter `no` when it is wrong or ambiguous, then give the host the same natural
   correction in conversation.
 
-After approval, the host owns signaling answers and follows the server through
-all five domains and finalization. Do not direct individual signaling answers.
+After approval, the host owns signaling answers for supported trial designs and
+follows the server through all five domains and finalization. Unsupported or
+unresolved designs remain unassessed: they require the appropriate pack or source
+information establishing the design, respectively. Do not direct individual
+signaling answers.
 The workflow completes one Trial at a time, in captured Batch order, and one
 Domain at a time within that Trial. The server rejects attempts to start a
 later Trial or new Domain before the current one is complete. Accepting the
@@ -195,15 +198,20 @@ packages the already-terminal Trial records. Every Trial in a Batch shares the
 one outcome concept supplied to `prepare_batch`; a Batch cannot mix different
 requested outcomes across Trials.
 
-Long batches do not depend on one conversation fitting in one context window.
-rob2-kit stores every approved Proposal and Domain checkpoint durably. After
-automatic compaction, the host calls `get_status` and continues the exact next
-action without replaying completed work. After a host restart, invoke the skill
-again to do the same. Do not clear context manually at Proposal or Trial
-boundaries: retained source knowledge remains useful, while normal automatic
-compaction handles capacity. No context-management MCP tool is involved. Low
-remaining context must never cause the host to skip searches, infer unfinished
-judgments, or finalize early.
+The host reads main-report text at two checkpoints: before Proposal submission,
+then after approval before the Trial's first Domain save. Each pass covers the
+same scoped prefix up to 65,536 UTF-8 source-text bytes per report. Longer reports
+retain explicit partial coverage and navigation to unread material. The host
+uses targeted reads to resolve relevant premises beyond that prefix.
+
+rob2-kit stores approved Proposals and Domain checkpoints durably. After
+compaction, the host calls `get_status` and recovers the approved Result and
+current progress. After a host restart, invoke the skill to resume that process.
+The host resumes an unfinished read pass and recovers needed passages that are
+missing or uncertain in its current context. Earlier coverage proves earlier
+delivery, not retained context; it does not trigger a full report reread for
+every Domain. Low remaining context must never cause the host to infer unfinished
+judgments or finalize early.
 
 For each active question, the host performs a bounded, question-specific search
 across the relevant sources before it claims that information is absent. A

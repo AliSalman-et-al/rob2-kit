@@ -15,6 +15,7 @@ from support.rob2 import (
     _domain_draft,
     _prepared_evidence,
     _proposal_args,
+    _read_required_main_reports,
     _result,
     _review,
     _standalone_verify,
@@ -46,6 +47,7 @@ def test_figure_transcription_cannot_prove_invented_result_leaf(tmp_path: Path) 
         "prepare_batch",
         {"requested_outcome": "requested outcome", "expected_revision": 0},
     )
+    _read_required_main_reports(workspace)
     source = next(
         item
         for item in _call(workspace, "list_sources", {"trial_id": "trial"})["data"]["sources"]
@@ -86,6 +88,7 @@ def test_figure_transcription_cannot_prove_invented_result_leaf(tmp_path: Path) 
         "prepare_batch",
         {"requested_outcome": "requested outcome", "expected_revision": 0},
     )
+    _read_required_main_reports(invented_root)
     invented_source = next(
         item
         for item in _call(invented_root, "list_sources", {"trial_id": "trial"})["data"]["sources"]
@@ -134,12 +137,13 @@ def test_reported_result_rejects_cross_evidence_endpoint_numeric_splice(tmp_path
         "prepare_batch",
         {"requested_outcome": "requested outcome", "expected_revision": 0},
     )
+    _read_required_main_reports(workspace)
     source = next(
         item
         for item in _call(workspace, "list_sources", {"trial_id": "trial"})["data"]["sources"]
         if item["label"] == "main.txt"
     )
-    _call(
+    first_evidence = _call(
         workspace,
         "select_text_evidence",
         {
@@ -149,7 +153,7 @@ def test_reported_result_rejects_cross_evidence_endpoint_numeric_splice(tmp_path
             "start_line": 1,
             "end_line": 1,
         },
-    )
+    )["data"]["evidence"]
     endpoint_evidence = _call(
         workspace,
         "select_text_evidence",
@@ -161,7 +165,7 @@ def test_reported_result_rejects_cross_evidence_endpoint_numeric_splice(tmp_path
             "end_line": 2,
         },
     )["data"]["evidence"]
-    _call(
+    third_evidence = _call(
         workspace,
         "select_text_evidence",
         {
@@ -171,9 +175,14 @@ def test_reported_result_rejects_cross_evidence_endpoint_numeric_splice(tmp_path
             "start_line": 3,
             "end_line": 3,
         },
-    )
+    )["data"]["evidence"]
     result = _result(endpoint_evidence)
     result["reported"]["endpoint"]["definition"] = endpoint_evidence["quote"]
+    result["passage_refs"] = [
+        first_evidence["handle"],
+        endpoint_evidence["handle"],
+        third_evidence["handle"],
+    ]
     repair = _call(workspace, "save_proposal", _proposal_args(workspace, [result]))
     assert repair["outcome"] == "repair"
     assert [item["code"] for item in repair["repairs"]].count("incoherent_reported_result") == 1
@@ -270,6 +279,7 @@ def test_revised_result_binds_reported_leaves_to_its_coherent_evidence_and_final
     assert reported_handles == {candidate_b_evidence["handle"]}
 
     _review(workspace)
+    _read_required_main_reports(workspace)
     revision = int(_call(workspace, "get_domain_context", {})["head"]["state_revision"])
     for domain in SCIENTIFIC_PACK.domains:
         receipt = _call(
@@ -523,6 +533,7 @@ def test_lowest_supporting_evidence_is_selected_deterministically(tmp_path: Path
         "prepare_batch",
         {"requested_outcome": "beta", "expected_revision": 0},
     )
+    _read_required_main_reports(workspace)
     sources = _call(workspace, "list_sources", {"trial_id": "trial"})["data"]["sources"]
     first = next(item for item in sources if item["label"] == "main.txt")
     second = next(item for item in sources if item["label"] == "other.txt")
@@ -601,6 +612,7 @@ def test_component_definition_is_repaired_but_nullable_definition_finalizes(
         "prepare_batch",
         {"requested_outcome": "requested outcome", "expected_revision": 0},
     )
+    _read_required_main_reports(workspace)
     source = next(
         item
         for item in _call(workspace, "list_sources", {"trial_id": "trial"})["data"]["sources"]
@@ -617,7 +629,7 @@ def test_component_definition_is_repaired_but_nullable_definition_finalizes(
             "end_line": 1,
         },
     )["data"]["evidence"]
-    _call(
+    definition_evidence = _call(
         workspace,
         "select_text_evidence",
         {
@@ -633,6 +645,10 @@ def test_component_definition_is_repaired_but_nullable_definition_finalizes(
         "name": "composite requested outcome",
         "definition": "Hospitalization alone was defined as an admission to hospital.",
     }
+    result["passage_refs"] = [
+        quantitative_evidence["handle"],
+        definition_evidence["handle"],
+    ]
     result["relation"] = "related"
     result["relation_rationale"] = "The reported composite overlaps the requested outcome."
     repair = _call(workspace, "save_proposal", _proposal_args(workspace, [result]))
@@ -653,6 +669,7 @@ def test_component_definition_is_repaired_but_nullable_definition_finalizes(
         for binding in stored["bindings"]
     )
     _review(workspace)
+    _read_required_main_reports(workspace)
     revision = int(_call(workspace, "get_domain_context", {})["head"]["state_revision"])
     for domain in SCIENTIFIC_PACK.domains:
         receipt = _call(
@@ -685,6 +702,7 @@ def test_proposal_support_uses_the_same_presentation_normalization_as_selection(
         "prepare_batch",
         {"requested_outcome": "requested outcome", "expected_revision": 0},
     )
+    _read_required_main_reports(workspace)
     source = _call(workspace, "list_sources", {"trial_id": "trial"})["data"]["sources"][0]
     evidence = _call(
         workspace,
@@ -721,6 +739,7 @@ def test_endpoint_bindings_prefer_later_common_evidence_item(tmp_path: Path) -> 
         "prepare_batch",
         {"requested_outcome": "requested outcome", "expected_revision": 0},
     )
+    _read_required_main_reports(workspace)
     sources = _call(workspace, "list_sources", {"trial_id": "trial"})["data"]["sources"]
 
     def select(label: str) -> dict[str, Any]:

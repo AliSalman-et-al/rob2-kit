@@ -4,6 +4,38 @@ Status: accepted
 
 Amended for the v0.5 successor contract by issues 283-286, 288, 290, and 291.
 
+Amended by issues 298-303 for bounded main-report reading and Result semantics v0.6.
+
+## Bounded reading and scientific judgment amendment
+
+Keep the existing public tools and Proposal Review gate. Require main-report
+text delivery before Proposal submission and again after approval before the
+first Domain save. Each pass covers a consecutive whole-line prefix of at most
+65,536 UTF-8 source-text bytes per main report. `get_status` returns the next
+required windows and reports `budget_limited` with navigation to unread text.
+Long reports still require targeted discovery for relevant omitted premises.
+
+The host may declare a source-backed suffix boundary in the Proposal for a
+separate appended document. The last page containing article content stays in
+scope. Proposal submission checks the first pass against that proposed scope;
+the second pass uses the approved scope and same captured Source. Reading receipts
+are derivative delivery records, not proof of comprehension or retained context;
+after a restart, recover current progress and any needed passages.
+
+Every assessable Result records pack applicability. Unsupported or unresolved
+designs remain unassessed after approval. Result relation `exact` means equivalent
+scientific scope; different endpoint names require a correspondence rationale.
+Canonical provenance retains applicability and report-boundary Evidence.
+Historical bundles retain their recorded relation semantics.
+
+The host applies the existing RoB 2 response framework before selecting an
+answer: consider defensible probable judgments from source facts and trial
+circumstances before `no_information`. Question-specific evidence requirements
+remain in force. The server validates structure and provenance, without a new
+answer-order state machine or semantic classifier. D3 arithmetic can be previewed
+through `get_domain_context`; captured plan metadata supplies navigation for D5,
+without establishing historical plan timing or applicability.
+
 ## Context
 
 The v0.3 boundary exposed exact Evidence, but ordinary Proposal and Domain work

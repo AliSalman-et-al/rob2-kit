@@ -203,7 +203,8 @@ _GUIDANCE: dict[str, QuestionGuidance] = {
         (
             "A direct report of participant blinding, open-label conduct, or participant knowledge during the trial.",
         ),
-        "Use no_information only when participant awareness cannot be determined from the available report.",
+        "Use no_information only after considering direct facts, indirect evidence, and trial circumstances; "
+        "an absent explicit awareness statement alone is insufficient when those facts support a probable judgment.",
         (
             _anchor(Answer.YES, "Participants were aware of their assigned intervention."),
             _anchor(Answer.NO, "Participants were blinded to their assigned intervention."),
@@ -235,19 +236,19 @@ _GUIDANCE: dict[str, QuestionGuidance] = {
     "sq:deviations:context-deviations": _guidance(
         "Full guidance p. 28, Box 6, signalling question 2.3",
         "Whether deviations inconsistent with protocol arose because of the trial context.",
-        "Answer yes or probably yes only with evidence or strong reason that recruitment, engagement, or trial personnel caused failure to implement protocol interventions or implementation of interventions not allowed by protocol. Answer no or probably no for ordinary non-adherence or protocol-consistent changes. No_information may be appropriate.",
+        "Answer yes or probably yes with evidence or strong reason that the trial context caused failure to implement protocol interventions or implementation of prohibited interventions. Answer no or probably no when no such deviation occurred, including ordinary non-adherence outside the trial context or protocol-consistent changes.",
         (
             "Evidence linking the deviation to recruitment, engagement, or trial personnel and showing it was inconsistent with the protocol.",
         ),
-        "No_information is appropriate when the report does not say whether deviations arose because of trial context.",
+        "Use no_information when reported details are insufficient and trial circumstances do not support a reasonable probable judgment about trial-context-caused deviations.",
         (
             _anchor(Answer.YES, "The trial context caused protocol-inconsistent deviations."),
             _anchor(
-                Answer.NO, "Changes were ordinary non-adherence or consistent with the protocol."
+                Answer.NO, "No protocol-inconsistent deviation arose because of the trial context."
             ),
             _anchor(
                 Answer.NO_INFORMATION,
-                "The report does not state whether deviations arose because of trial context.",
+                "Reported details and trial circumstances do not support a judgment about trial-context-caused deviations.",
             ),
         ),
         (
@@ -306,7 +307,9 @@ _GUIDANCE: dict[str, QuestionGuidance] = {
         (
             "The analysis population and grouping rule, including whether participants remained grouped by assignment and which post-randomization exclusions occurred.",
         ),
-        "Use no_information when the analysis population or grouping rule is not reported well enough to assess appropriateness.",
+        "Use no_information only after considering direct facts, indirect evidence, and trial circumstances; "
+        "an incomplete analysis description alone is insufficient when those facts support a probable judgment "
+        "about appropriateness.",
         (
             _anchor(
                 Answer.YES,
@@ -422,7 +425,7 @@ _GUIDANCE: dict[str, QuestionGuidance] = {
             _anchor(Answer.NO, "Documented missingness reasons are unrelated to the outcome."),
         ),
         (
-            "Censored participants remain missing outcome data even when some follow-up is included.",
+            "For time-to-event outcomes, inspect censoring reasons and timing to identify missing follow-up. A common administrative cutoff does not by itself establish outcome-dependent missingness.",
         ),
         (
             "complete follow-up claims",
@@ -446,7 +449,7 @@ _GUIDANCE: dict[str, QuestionGuidance] = {
             ),
         ),
         (
-            "This distinguishes possible dependence (3.3) from likely dependence and drives the high-risk branch.",
+            "Possible dependence in 3.3 does not establish likely dependence in 3.4. Judge likelihood from missingness reasons and trial circumstances; absent contrary evidence alone does not establish likelihood.",
         ),
         ("different group sizes alone", "an ITT analysis", "a generic loss-to-follow-up statement"),
     ),
@@ -489,7 +492,9 @@ _GUIDANCE: dict[str, QuestionGuidance] = {
                 "The same comparable measurement or ascertainment was used between groups.",
             ),
         ),
-        ("Pre-specification often supports comparable methods but does not prove conduct.",),
+        (
+            "Compare actual methods and detection opportunities. Assessor awareness or possible reporting influence alone does not establish a between-group method difference; assess awareness and influence in 4.3 to 4.5.",
+        ),
         ("a common endpoint label", "an equal number randomized", "an ITT analysis"),
     ),
     "sq:measurement:assessor-aware": _guidance(
@@ -534,7 +539,7 @@ _GUIDANCE: dict[str, QuestionGuidance] = {
     ),
     "sq:measurement:influence-likely": _guidance(
         "Full guidance p. 54, Box 10, signalling question 4.5",
-        "Whether knowledge of intervention likely influenced outcome assessment. Require evidence or strong beliefs plus a judgement opportunity; awareness alone establishes possibility, not likelihood.",
+        "Whether knowledge of intervention likely influenced outcome assessment. Require evidence or strong beliefs plus a judgement opportunity; awareness alone does not establish influence.",
         "Distinguish possible influence without reason to believe it occurred from likely influence. Strong beliefs about benefits or harms make influence more likely, for example patient-reported symptoms in homeopathy or recovery assessed by an intervention physiotherapist.",
         (
             "Evidence of actual influence or strong beliefs and judgement opportunities that make influence likely, given the assessor and outcome.",
@@ -559,7 +564,10 @@ _GUIDANCE: dict[str, QuestionGuidance] = {
         (
             "A sufficiently detailed protocol or SAP, its finalization date relative to unblinded outcome data, and the reported analysis.",
         ),
-        "Use no_information when analysis intentions are unavailable or insufficiently detailed to assess timing and correspondence.",
+        "Use no_information only after considering direct facts, indirect evidence, and trial circumstances; "
+        "an unavailable or incomplete intention statement alone is insufficient when those facts support a "
+        "probable judgment about timing and correspondence. Use no_information when genuine timing evidence "
+        "cannot support a defensible yes or no judgment.",
         (
             _anchor(
                 Answer.YES,

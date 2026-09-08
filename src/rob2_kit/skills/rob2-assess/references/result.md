@@ -3,6 +3,30 @@
 Use this reference while choosing and constructing each Proposal Result. Use the
 live `save_proposal` schema for field shapes.
 
+## Establish pack applicability
+
+Identify the unit of randomization and whether the trial uses a parallel or
+crossover design. Record `applicability` with a concise rationale and inspected
+Evidence from this Trial. Set `design:"individual_parallel"` with
+`status:"supported"` for individually randomized parallel trials. Use
+`status:"unsupported"` for `cluster_randomized` or `crossover`, and
+`design:"unclear"` with `status:"uncertain"` for unresolved design. A supported
+or unsupported classification requires same-Trial Evidence handles.
+
+If design is unclear, use bounded discovery in the main report and relevant
+methods Sources. Keep unresolved applicability explicit after that discovery;
+it must remain unassessed. A word such as "group" or "site" alone does not
+establish a randomization unit. Classify support from source facts, without a
+default assumption of individual randomization.
+
+Present a complete available Result with its unsupported or unresolved
+applicability in the existing Proposal Review. Approval records an unassessed
+disposition; it does not authorize the parallel pack for that design. Keep this
+distinct from an unavailable Result, which means Result facts are missing.
+For a known unsupported design, the missing requirement is the appropriate
+RoB 2 pack. For unresolved design, the missing requirement is source information
+establishing the design and unit of randomization.
+
 ## Choose the closest complete Result
 
 Choose an exact assessable Result first. If none exists, choose the closest
@@ -39,16 +63,20 @@ The reported object records the Source endpoint and quantities. Keep its
 endpoint distinct from the captured requested outcome. The server supplies the
 captured outcome, target metric, and `effect_of_interest:"assignment"`.
 
-Use `relation:"exact"` only when the requested outcome name and reported
-endpoint name match after the server's Unicode, whitespace, case, and hyphen
-normalization. Omit `relation_rationale` for exact. For other assessable Results:
+Use `relation:"exact"` when the complete requested and reported Result scopes
+are scientifically equivalent. Compare the event definition, measurement, time,
+population, comparison, and analysis or effect scope. If names differ, provide
+a source-grounded correspondence explanation in `relation_rationale`. A matching
+name alone does not establish equivalence. For other assessable Results:
 
 - `broader`: the reported event, population, or time scope is a superset;
 - `narrower`: it is a subset or adds restrictions;
 - `component`: it is one constituent of the requested composite or category;
 - `related`: the constructs overlap without one of those ordered relations.
 
-State the material difference in `relation_rationale`. Do not infer synonyms.
+State the material difference in `relation_rationale`. Keep Source-owned endpoint
+names and quantities bound to exact selected Evidence even when their scientific
+scope is equivalent.
 
 ## Preserve the Source-owned quantities
 

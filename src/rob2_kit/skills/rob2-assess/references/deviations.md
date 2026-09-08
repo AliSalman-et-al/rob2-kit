@@ -10,7 +10,10 @@ Build the conduct chain in order:
 3. Did the trial context cause that change?
 4. Could it affect the outcome, and was it balanced between groups?
 
-Ordinary non-adherence is not a trial-context deviation without a source link.
+For 2.3, a negative answer covers no relevant deviation as well as changes that
+were protocol-consistent or could occur outside the trial context. An affirmative
+answer needs evidence or strong reason linking a protocol-inconsistent deviation
+to the trial context. State that link when it is an inference.
 A protocol establishes the plan, not conduct. Different assigned treatments or
 visible schedules do not by themselves prove that participants or carers knew
 the assignment.
@@ -23,6 +26,5 @@ inappropriate assignment-effect analysis; keep that issue distinct for Domain
 3. If an analysis defect activates the impact question, consider outcome rarity
 and prognostic exclusions as well as the percentage affected.
 
-Do not use one passage to claim awareness, deviation, trial-context cause,
-outcome effect, balance, and analysis integrity unless it explicitly establishes
-each proposition.
+Support each conduct-chain proposition with source facts and any stated
+inference. A passage supporting one proposition does not settle the others.

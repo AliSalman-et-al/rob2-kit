@@ -46,6 +46,9 @@ def test_every_pack_answer_has_one_stable_literal_option() -> None:
         )
         assert question.wording not in option["meaning"]
         assert option["anchor"]
+        if answer.value == "no_information":
+            assert "neither probable answer is reasonable" in option["anchor"]
+            assert option["anchor"].endswith(question.guidance.operational.no_information_rule)
         assert "complete active answer path" in option["consequence"]
 
 

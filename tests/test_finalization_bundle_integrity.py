@@ -20,6 +20,7 @@ from support.rob2 import (
     _option_for,
     _prepared_evidence,
     _proposal_args,
+    _read_required_main_reports,
     _result,
     _review,
     _standalone_verify,
@@ -156,6 +157,7 @@ def test_probable_limitation_domain_basis_finalizes_after_derivative_restart(
     proposed = _call(workspace, "save_proposal", _proposal_args(workspace, [_result(evidence)]))
     assert proposed["outcome"] == "review_required"
     _review(workspace)
+    _read_required_main_reports(workspace)
     revision = int(_call(workspace, "get_domain_context", {})["head"]["state_revision"])
     search = _call(
         workspace,
@@ -458,6 +460,7 @@ def test_finalized_bundle_binds_the_scientific_contract(tmp_path: Path) -> None:
             "version": official_version,
             "source_sha256": official_sha256,
         },
+        "result_semantics_version": "rob2-kit.result-semantics.v0.6",
     }
     assert _standalone_verify(artifact).returncode == 0
 

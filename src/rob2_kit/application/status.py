@@ -4,7 +4,7 @@ from typing import Any
 from ..packs import SCIENTIFIC_PACK
 from ._state import _ensure, _result, _root, _state
 from .contracts import COUNTERS
-from .evidence import _evidence_catalog
+from .evidence import _evidence_catalog, main_report_reading_status
 
 
 def _selected_evidence(workspace: Path) -> list[dict[str, Any]]:
@@ -85,6 +85,53 @@ def get_status(workspace: str | Path) -> dict[str, Any]:
     state = _state(root)
     dispositions = dict(state.get("trial_dispositions", {}))
     public = presentation(state)
+    batch_value = state.get("batch")
+    batch = batch_value if isinstance(batch_value, dict) else {}
+    proposal_value = state.get("proposal")
+    proposal = proposal_value if isinstance(proposal_value, dict) else {}
+    payload_value = proposal.get("payload")
+    payload = payload_value if isinstance(payload_value, dict) else {}
+    reading_trials = batch.get("trials", [])
+    if state.get("phase") == "assessment":
+        active_trial, _active_domain = _active_trial_and_domain(state)
+        reading_trials = [
+            trial
+            for trial in reading_trials
+            if isinstance(trial, dict) and trial.get("id") == active_trial
+        ]
+    raw_reading = (
+        main_report_reading_status(
+            root,
+            reading_trials,
+            phase=str(state.get("phase")),
+            scopes=payload.get("main_report_scopes", []),
+        )
+        if state.get("phase") in {"proposal", "assessment"}
+        else {}
+    )
+
+    def public_windows(windows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+        return [
+            {
+                key: value
+                for key, value in item.items()
+                if key in {"source_id", "page", "start_line", "end_line"}
+            }
+            for item in windows
+        ]
+
+    main_report_reading = {
+        trial_id: {
+            "status": item["status"],
+            "budget_bytes": item["budget_bytes"],
+            "covered_prefix_bytes": item["covered_prefix_bytes"],
+            "required_ranges": public_windows(item["required_ranges"][:20]),
+            "required_range_count": len(item["required_ranges"]),
+            "unread_ranges": public_windows(item["unread_ranges"][:20]),
+            "unread_range_count": len(item["unread_ranges"]),
+        }
+        for trial_id, item in raw_reading.items()
+    }
     return _result(
         "success",
         state,
@@ -92,6 +139,7 @@ def get_status(workspace: str | Path) -> dict[str, Any]:
         terminal_counts=public["counts"],
         continuation=_continuation(state),
         selected_evidence=_selected_evidence(root) if state.get("phase") == "proposal" else [],
+        main_report_reading=main_report_reading,
         authoritative_wording=public["wording"],
         counters=dict(COUNTERS),
     )
@@ -144,7 +192,7 @@ def _continuation(state: dict[str, Any]) -> dict[str, Any] | None:
             "operation": "save_proposal",
             "authority": "host",
             "expected_revision": int(state.get("revision", 0)),
-            "caller_inputs": ["results"],
+            "caller_inputs": ["results", "main_report_scopes"],
         }
     if phase == "assessment":
         trial_id, domain_id = _active_trial_and_domain(state)

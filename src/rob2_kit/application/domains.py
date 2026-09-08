@@ -26,10 +26,115 @@ from .evidence import (
     _evidence_for_handles,
     _search_continuation,
     _search_receipt,
+    main_report_reading_status,
 )
 from .status import _active_trial_and_domain, _continuation
 
 _DOMAIN_RECOVERABLE_NARRATIVE_TEXT_BUDGET = 12_288
+
+
+def _main_report_recovery(
+    root: Path, state: dict[str, Any], trial_id: str, *, include_budget: bool = False
+) -> dict[str, Any] | None:
+    batch = state.get("batch")
+    trials = batch.get("trials", []) if isinstance(batch, dict) else []
+    trial = next(
+        (item for item in trials if isinstance(item, dict) and item.get("id") == trial_id), None
+    )
+    if trial is None:
+        return None
+    proposal = state.get("proposal")
+    payload = proposal.get("payload", {}) if isinstance(proposal, dict) else {}
+    scopes = payload.get("main_report_scopes", []) if isinstance(payload, dict) else []
+    status = main_report_reading_status(
+        root,
+        [trial],
+        phase="assessment",
+        scopes=scopes if isinstance(scopes, list) else None,
+    ).get(trial_id, {})
+    gaps = status.get("required_ranges", [])
+    if not gaps and not (include_budget and status.get("status") == "budget_limited"):
+        return None
+    candidate_windows = gaps or status.get("unread_ranges", [])
+    return {
+        "operation": "read_pages",
+        "trial_id": trial_id,
+        "windows": [
+            {key: item[key] for key in ("source_id", "page", "start_line", "end_line")}
+            for item in candidate_windows[:20]
+        ],
+        "window_count": len(candidate_windows),
+        "status": status.get("status", "required"),
+        "unread_ranges": [
+            {key: item[key] for key in ("source_id", "page", "start_line", "end_line")}
+            for item in status.get("unread_ranges", [])[:20]
+        ],
+        "unread_range_count": len(status.get("unread_ranges", [])),
+    }
+
+
+_REGISTRY_FIELD_PATHS = {
+    "studyFirstPostDateStruct": "protocolSection.statusModule.studyFirstPostDateStruct",
+    "lastUpdatePostDateStruct": "protocolSection.statusModule.lastUpdatePostDateStruct",
+    "startDateStruct": "protocolSection.statusModule.startDateStruct",
+    "armsInterventionsModule": "protocolSection.armsInterventionsModule",
+}
+
+
+def _registry_navigation(
+    root: Path, trial_id: str, sources: list[dict[str, Any]]
+) -> dict[str, dict[str, Any]]:
+    """Expose captured JSON leaf paths with exact read-pages recovery windows."""
+
+    registry_sources = {
+        item["id"]
+        for item in sources
+        if isinstance(item, dict)
+        and item.get("role") == "registry"
+        and isinstance(item.get("id"), str)
+    }
+    if not registry_sources:
+        return {}
+    found: dict[str, dict[str, Any]] = {}
+    with _db(root, "derivative.sqlite3") as connection:
+        for source_id in sorted(registry_sources):
+            rows = connection.execute(
+                "SELECT page, text FROM pages WHERE source_id=? ORDER BY page",
+                (source_id,),
+            ).fetchall()
+            paths: set[str] = set()
+            ranges: dict[tuple[str, int], list[int]] = {}
+            for row in rows:
+                page = int(row["page"])
+                for line_number, line in enumerate(str(row["text"]).splitlines(), 1):
+                    for path in _REGISTRY_FIELD_PATHS.values():
+                        if line.startswith(path + ".") or line.startswith(path + ":"):
+                            paths.add(path)
+                            bounds = ranges.setdefault((path, page), [line_number, line_number])
+                            bounds[0] = min(bounds[0], line_number)
+                            bounds[1] = max(bounds[1], line_number)
+                            break
+            if paths:
+                all_windows = [
+                    {
+                        "source_id": source_id,
+                        "page": page,
+                        "start_line": bounds[0],
+                        "end_line": bounds[1],
+                    }
+                    for (path, page), bounds in sorted(ranges.items())
+                ]
+                windows = tuple(all_windows[:20])
+                found[source_id] = {
+                    "paths": tuple(sorted(paths)),
+                    "recovery": {
+                        "operation": "read_pages",
+                        "trial_id": trial_id,
+                        "windows": windows,
+                    },
+                    "window_count": len(all_windows),
+                }
+    return found
 
 
 def _evidence_text_bytes(item: dict[str, Any]) -> int:
@@ -176,24 +281,27 @@ def _compact_domain_evidence(context: dict[str, Any]) -> dict[str, Any]:
 
 
 _DOMAIN_GUIDANCE = (
-    "Before the first save for this Domain, run bounded searches for every active question "
-    "using the retrieval concepts in its operational guidance. Search method Sources such "
-    "as the protocol or SAP when present. Read positive hits before answering. Do not write "
-    "a limitation or no_information answer from currently selected Result Evidence alone; "
-    "attach an exact Trial-scoped, non-truncated search receipt to every limitation (positive "
-    "or no-hit), and use a scoped untruncated no-hit receipt when the search finds nothing.",
-    "For every non-absence use, cite one or more Evidence items containing the complete exact "
+    "For each active question, review the inspected passages against its exact proposition "
+    "and check material contradictions. Reuse adequate Evidence. When a premise remains "
+    "unresolved, use bounded discovery across relevant Sources, including a protocol or SAP "
+    "when available. Read positive hits before using them. A limitation requires an exact "
+    "Trial-scoped, untruncated search receipt. Absence requires a scoped untruncated "
+    "no-hit receipt.",
+    "For each selected Evidence basis, cite items containing the complete exact "
     "premises that support the active question. One passage may support several facts; combine "
     "separate passages when the answer depends on separate facts, and keep their boundaries "
     "distinct.",
-    "Include a concise question-specific justification with each answer: state what the cited "
+    "When inference, conflict, or uncertainty connects Evidence to an answer, include a concise "
+    "question-specific justification. State what the cited "
     "passages establish, what remains unresolved or conflicting, and why the selected answer "
     "follows. This is a scientific explanation, not a reasoning transcript or a duplicate ledger.",
     "A definitive yes or no needs direct_support, indirect_support, or contradiction; "
     "a limitation or absence alone supports uncertainty, not a definitive answer.",
     "A relationship kind describes how the premise relates to the answer; it never adds "
     "an explanation or scientific fact.",
-    "A missing premise needs a limitation or scoped absence receipt, not a low-risk claim.",
+    "You make the scientific judgment from reported facts and trial circumstances. The server "
+    "checks structure and Evidence identity. State the inference connecting source facts to "
+    "the answer and preserve unresolved facts under the question's uncertainty rule.",
 )
 _DOMAIN_TRAPS = (
     "A relationship label never permits a broader clause than the selected source supports.",
@@ -241,7 +349,7 @@ _RESPONSE_FRAMEWORK = ResponseFramework(
 )
 
 
-_OPTION_SEMANTICS_VERSION = "rob2-kit.answer-option.v0.5"
+_OPTION_SEMANTICS_VERSION = "rob2-kit.answer-option.v0.6"
 
 
 def _answer_option(question: Any, answer: Any) -> dict[str, Any]:
@@ -278,6 +386,13 @@ def _answer_option(question: Any, answer: Any) -> dict[str, Any]:
             if item.answer == anchor_answer
         )
     )
+    if certainty == "probable":
+        anchor = "Probable judgment from the reported facts and trial circumstances: " + anchor
+    elif value == "no_information":
+        anchor = (
+            "Use only when neither probable answer is reasonable from the available facts "
+            "and trial circumstances. " + anchor
+        )
     dependents = tuple(
         candidate.id
         for candidate in SCIENTIFIC_PACK.questions
@@ -335,6 +450,9 @@ def _comparison_cards(
     catalog: dict[str, dict[str, Any]],
     checkpoint_answers: list[dict[str, Any]],
     sources: list[dict[str, Any]],
+    preview_missing_data: list[dict[str, Any]] | None = None,
+    registry_navigation: dict[str, dict[str, Any]] | None = None,
+    registry_capture: dict[str, Any] | None = None,
 ) -> list[dict[str, Any]]:
     """Return a small deterministic read projection for D2/D3/D5.
 
@@ -431,8 +549,17 @@ def _comparison_cards(
         for item in sources
         if isinstance(item, dict) and isinstance(item.get("id"), str)
     }
+    source_ids = {item["source_id"] for item in refs}
+    if domain_id == "domain:selection":
+        source_ids.update(
+            item["id"]
+            for item in sources
+            if isinstance(item, dict)
+            and isinstance(item.get("id"), str)
+            and item.get("role") in {"registry", "protocol", "sap"}
+        )
     passage_groups = []
-    for source_id in sorted({item["source_id"] for item in refs}):
+    for source_id in sorted(source_ids):
         source = source_by_id.get(source_id, {})
         passages = []
         seen_ranges: set[tuple[int, int, int]] = set()
@@ -447,6 +574,32 @@ def _comparison_cards(
                 "source_id": source_id,
                 "source_role": source.get("role", "other"),
                 "source_label": source.get("label", source_id),
+                "logical_path": source.get("logical_path", source_id),
+                "page_count": source.get("page_count", 1),
+                "sha256": source.get("sha256"),
+                "projection_hash": source.get("projection_hash"),
+                "source_origin": source.get("origin", "local_dossier"),
+                "registry_url": (
+                    registry_capture.get("url")
+                    if source.get("origin") == "registry"
+                    and isinstance(registry_capture, dict)
+                    and registry_capture.get("kind") == "matched"
+                    else None
+                ),
+                "registry_retrieved_at": (
+                    registry_capture.get("retrieved_at")
+                    if source.get("origin") == "registry"
+                    and isinstance(registry_capture, dict)
+                    and registry_capture.get("kind") == "matched"
+                    else None
+                ),
+                "registry_field_paths": tuple(
+                    (registry_navigation or {}).get(source_id, {}).get("paths", ())
+                ),
+                "registry_recovery": (registry_navigation or {}).get(source_id, {}).get("recovery"),
+                "registry_window_count": (registry_navigation or {})
+                .get(source_id, {})
+                .get("window_count", 0),
                 "passages": passages,
             }
         )
@@ -517,6 +670,9 @@ def _comparison_cards(
             ),
             None,
         )
+        if preview_missing_data is not None:
+            missing_data = reconcile_missing_data(preview_missing_data)
+            answer = {"missing_data": missing_data}
         if isinstance(answer, dict) and isinstance(answer.get("missing_data"), dict):
             missing_data = answer["missing_data"]
             for field in ("randomized", "observed"):
@@ -587,7 +743,7 @@ def _comparison_cards(
 
 
 def reconcile_missing_data(rows: list[dict[str, Any]]) -> dict[str, Any]:
-    """Reconcile comparable randomized/observed counts without guessing scope.
+    """Reconcile comparable participant-flow reports without guessing scope.
 
     This bounded clerical helper is deliberately not a scientific classifier.
     A difference is calculated only for rows sharing arm, population, unit,
@@ -644,6 +800,37 @@ def reconcile_missing_data(rows: list[dict[str, Any]]) -> dict[str, Any]:
             item["missing_fraction"] = None
         normalized.append(item)
     return {"rows": normalized, "conflicts": conflicts}
+
+
+def _canonical_preview_rows(
+    rows: list[dict[str, Any]], catalog: dict[str, dict[str, Any]], trial_id: str
+) -> list[dict[str, Any]]:
+    """Resolve preview Evidence handles to same-Trial canonical identities."""
+
+    if not rows:
+        return []
+    by_handle = {
+        item["handle"]: item
+        for item in catalog.values()
+        if isinstance(item, dict) and isinstance(item.get("handle"), str)
+    }
+    normalized: list[dict[str, Any]] = []
+    for index, row in enumerate(rows):
+        if not isinstance(row, dict):
+            raise ValueError(f"missing_data preview row {index} is invalid")
+        basis = row.get("basis")
+        if not isinstance(basis, list) or not basis:
+            raise ValueError(f"missing_data preview row {index} requires Evidence basis")
+        identities: list[str] = []
+        for reference in basis:
+            selected = by_handle.get(reference)
+            if not isinstance(selected, dict) or selected.get("trial_id") != trial_id:
+                raise ValueError(
+                    f"missing_data preview row {index} has unknown or cross-Trial Evidence"
+                )
+            identities.append(str(selected["identity"]))
+        normalized.append({**row, "basis": identities})
+    return normalized
 
 
 def _repairs(error: ValidationError) -> list[dict[str, Any]]:
@@ -742,6 +929,9 @@ def save_domain_judgment(
     is_revision = parsed.supersedes is not None
     records = state.get("domain_records") or {}
     existing_domain = f"{parsed.trial_id}:{parsed.domain_id}" in records
+    trial_has_checkpoint = any(
+        isinstance(key, str) and key.startswith(f"{parsed.trial_id}:") for key in records
+    )
     disposition = state.get("trial_dispositions", {}).get(parsed.trial_id)
     if disposition == "assessed" and (is_revision or not existing_domain):
         raise ValueError("Trial AssessmentSnapshot is final; Domain revisions are closed")
@@ -772,6 +962,24 @@ def save_domain_judgment(
         )
     if disposition not in {"pending", "assessed"}:
         raise ValueError("Trial is not available for Domain assessment")
+    if state.get("phase") == "assessment" and not trial_has_checkpoint:
+        recovery = _main_report_recovery(root, state, parsed.trial_id)
+        if recovery is not None:
+            return _result(
+                "repair",
+                state,
+                repairs=[
+                    {
+                        "path": "/answers",
+                        "code": "post_approval_main_report_reading_required",
+                        "detail": (
+                            "Finish the post-approval bounded text pass before saving this Trial's "
+                            "first Domain. Call get_domain_context to receive the typed "
+                            "reading_recovery windows, use them with read_pages, then retry."
+                        ),
+                    }
+                ],
+            )
     if parsed.domain_id not in {item.id for item in SCIENTIFIC_PACK.domains}:
         raise ValueError("unknown Domain")
 
@@ -1341,7 +1549,10 @@ def save_domain_judgment(
 
 
 def get_domain_context(
-    workspace: str | Path, trial_id: str | None = None, domain_id: str | None = None
+    workspace: str | Path,
+    trial_id: str | None = None,
+    domain_id: str | None = None,
+    preview_missing_data: list[dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
     root = _root(workspace)
     _ensure(root)
@@ -1381,7 +1592,19 @@ def get_domain_context(
         ),
         [],
     )
+    trial_registry = next(
+        (
+            item.get("registry")
+            for item in (state.get("batch") or {}).get("trials", [])
+            if isinstance(item, dict) and item.get("id") == trial_id
+        ),
+        None,
+    )
     existing = (state.get("domain_records") or {}).get(f"{trial_id}:{domain_id}", {})
+    trial_has_checkpoint = any(
+        isinstance(key, str) and key.startswith(f"{trial_id}:")
+        for key in (state.get("domain_records") or {})
+    )
     answer_rows = existing.get("answers", []) if isinstance(existing, dict) else []
     answers = {
         item["question_id"]: item["answer"]
@@ -1579,6 +1802,16 @@ def get_domain_context(
     # the active checkpoint. Those records are canonical and can be recovered
     # even when the disposable handle cache was rebuilt.
     catalog.update(_canonical_evidence_records(root, checkpoint_identities))
+
+    preview_handles = {
+        reference
+        for row in (preview_missing_data or [])
+        if isinstance(row, dict)
+        for reference in row.get("basis", [])
+        if isinstance(reference, str) and reference.startswith("eh_")
+    }
+    if preview_handles:
+        catalog.update(_evidence_for_handles(root, preview_handles, trial_id))
 
     canonical_handles = {
         item.get("handle")
@@ -1813,6 +2046,11 @@ def get_domain_context(
             "multiple_concerns",
             "revision_basis",
         ]
+    canonical_preview = (
+        _canonical_preview_rows(preview_missing_data, catalog, trial_id)
+        if preview_missing_data
+        else None
+    )
     context = {
         "outcome": "success",
         "trial_id": trial_id,
@@ -1832,7 +2070,7 @@ def get_domain_context(
         ],
         "response_framework": _RESPONSE_FRAMEWORK.model_dump(mode="json"),
         "traps": [
-            "Do not infer semantic entailment or treat a no-hit search as scientific absence.",
+            "A no-hit search describes one lexical query, not scientific absence.",
             *_DOMAIN_TRAPS,
         ],
         "questions": [
@@ -1858,9 +2096,10 @@ def get_domain_context(
             if item.domain_id == domain_id
         ],
         "completion_rule": (
-            "complete bounded question-specific discovery, then supply every question activated "
-            "by the submitted answer path and link each active answer to at least one Evidence "
-            "use, scoped absence receipt, or limitation; inactive extras are ignored"
+            "Ground each active proposition and its uncertainty in inspected Evidence or bounded "
+            "discovery for unresolved premises. Supply every question activated by the submitted "
+            "answer path with an Evidence use, scoped absence receipt, or limitation. "
+            "Inactive extras are ignored."
         ),
         "evidence_workspace": {
             "selection_policy_version": "rob2-kit.domain-projection.v0.6",
@@ -1876,6 +2115,16 @@ def get_domain_context(
             catalog,
             checkpoint_answers,
             trial_sources,
+            canonical_preview,
+            _registry_navigation(root, trial_id, trial_sources)
+            if domain_id == "domain:selection"
+            else None,
+            trial_registry if isinstance(trial_registry, dict) else None,
+        ),
+        "reading_recovery": (
+            _main_report_recovery(root, state, trial_id, include_budget=True)
+            if not trial_has_checkpoint
+            else None
         ),
         "continuation": continuation,
     }

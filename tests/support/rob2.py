@@ -83,6 +83,14 @@ def _result(_evidence: dict[str, Any]) -> dict[str, Any]:
         "kind": "assessable",
         "trial_id": "trial",
         "relation": "exact",
+        "applicability": {
+            "design": "individual_parallel",
+            "status": "supported",
+            "rationale": (
+                "The captured allocation describes an individually randomized parallel comparison."
+            ),
+            "evidence": [_evidence["handle"]],
+        },
         "target": {
             "measurement": {"method": "death ascertainment"},
             "time_point_or_window": {
@@ -185,6 +193,7 @@ def _prepared_evidence(workspace: Path) -> dict[str, Any]:
         "prepare_batch",
         {"requested_outcome": "requested outcome", "expected_revision": 0},
     )
+    _read_required_main_reports(workspace)
     source = next(
         item
         for item in _call(workspace, "list_sources", {"trial_id": "trial"})["data"]["sources"]
@@ -208,6 +217,7 @@ def _assessment_workspace(tmp_path: Path) -> tuple[Path, dict[str, Any], int]:
     evidence = _prepared_evidence(workspace)
     _call(workspace, "save_proposal", _proposal_args(workspace, [_result(evidence)]))
     _review(workspace)
+    _read_required_main_reports(workspace)
     revision = int(_call(workspace, "get_domain_context", {})["head"]["state_revision"])
     return workspace, evidence, revision
 
@@ -217,6 +227,30 @@ def _finalize_assessment(workspace: Path, expected_revision: int) -> dict[str, A
     finalized = _call(workspace, "finalize_batch", {"expected_revision": expected_revision})
     assert finalized["outcome"] == "success"
     return finalized
+
+
+def _read_required_main_reports(workspace: Path) -> None:
+    """Complete each Trial's bounded main-report pass for the active phase."""
+    while True:
+        status = _call(workspace, "get_status", {})
+        readings = status["data"].get("main_report_reading", {})
+        pending = [
+            (trial_id, item)
+            for trial_id, item in readings.items()
+            if item.get("status") == "required"
+        ]
+        if not pending:
+            return
+        for trial_id, item in pending:
+            ranges = item.get("required_ranges", [])
+            if not ranges:
+                raise AssertionError(f"required reading has no ranges for {trial_id}")
+            response = _call(
+                workspace,
+                "read_pages",
+                {"trial_id": trial_id, "windows": ranges},
+            )
+            assert response["outcome"] == "success", response
 
 
 def _proposal_args(workspace: Path, results: list[dict[str, Any]]) -> dict[str, object]:
@@ -247,6 +281,7 @@ def _assessed_artifact(workspace: Path) -> Path:
     proposed = _call(workspace, "save_proposal", _proposal_args(workspace, [_result(evidence)]))
     assert proposed["outcome"] == "review_required"
     _review(workspace)
+    _read_required_main_reports(workspace)
     revision = int(_call(workspace, "get_domain_context", {})["head"]["state_revision"])
     for domain in SCIENTIFIC_PACK.domains:
         saved = _call(
@@ -269,6 +304,7 @@ def _absence_assessed_artifact(workspace: Path) -> Path:
     proposed = _call(workspace, "save_proposal", _proposal_args(workspace, [_result(evidence)]))
     assert proposed["outcome"] == "review_required"
     _review(workspace)
+    _read_required_main_reports(workspace)
     revision = int(_call(workspace, "get_domain_context", {})["head"]["state_revision"])
     for domain in SCIENTIFIC_PACK.domains:
         receipt = _search_receipt(

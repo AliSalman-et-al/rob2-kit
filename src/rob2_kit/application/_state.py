@@ -339,6 +339,13 @@ def _ensure(root: Path) -> None:
             "trial_id TEXT, "
             "PRIMARY KEY(session_identity,rank,domain_id))"
         )
+        connection.execute(
+            "CREATE TABLE IF NOT EXISTS page_reads ("
+            "batch_id TEXT NOT NULL, phase TEXT NOT NULL, "
+            "trial_id TEXT NOT NULL, source_id TEXT NOT NULL, "
+            "page INTEGER NOT NULL, start_line INTEGER NOT NULL, end_line INTEGER NOT NULL, "
+            "PRIMARY KEY(batch_id,phase,source_id,page,start_line,end_line))"
+        )
         association_columns = {
             str(row[1])
             for row in connection.execute("PRAGMA table_info(search_domain_associations)")
