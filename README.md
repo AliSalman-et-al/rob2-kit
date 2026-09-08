@@ -15,6 +15,12 @@ assessment bundles.
 
 ## Install
 
+The workflow with Result semantics v0.6, bounded main-report reading, and pack
+applicability requires a fresh assessment workspace. Before upgrading, finish active
+v0.5 assessments with the previously installed version. Alternatively, start a
+new workspace from the original inputs. Historical finalized v0.5 bundles still
+verify unchanged. See the [upgrade boundary](docs/adr/0031-v0-4-evidence-first-interaction.md#upgrade-boundary).
+
 Install the command from a source checkout with `uv`:
 
 ```powershell

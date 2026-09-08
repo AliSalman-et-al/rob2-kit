@@ -36,6 +36,14 @@ answer-order state machine or semantic classifier. D3 arithmetic can be previewe
 through `get_domain_context`; captured plan metadata supplies navigation for D5,
 without establishing historical plan timing or applicability.
 
+### Upgrade boundary
+
+This amendment applies to fresh assessment workspaces. Active v0.5 assessments
+must finish with the previously installed version before upgrading, or restart
+in a new workspace from the original inputs. Migration of active workspaces to
+the amended workflow is untested and unsupported. Historical finalized v0.5
+bundles still verify unchanged and retain their recorded semantics.
+
 ## Context
 
 The v0.3 boundary exposed exact Evidence, but ordinary Proposal and Domain work
