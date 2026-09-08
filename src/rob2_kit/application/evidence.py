@@ -1519,8 +1519,8 @@ def read_pages(
         rows = connection.execute(
             "SELECT page,text FROM pages WHERE source_id=? ORDER BY page", (source_id,)
         ).fetchall()
-    wanted = set(requested_pages)
-    selected = [{"page": row[0], "text": row[1]} for row in rows if row[0] in wanted]
+    by_page = {int(row[0]): {"page": row[0], "text": row[1]} for row in rows}
+    selected = [by_page[page] for page in requested_pages if page in by_page]
     if not selected:
         raise ValueError("requested pages are outside Source")
     return {

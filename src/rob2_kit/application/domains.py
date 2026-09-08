@@ -277,36 +277,30 @@ def _compact_domain_evidence(context: dict[str, Any]) -> dict[str, Any]:
 
 
 _DOMAIN_GUIDANCE = (
-    "If you cannot reliably resolve the complete active path, answer every question returned "
-    "for this Domain. Use current card option IDs and supported bases for every drafted answer. "
-    "Submit the complete set in one save. The server commits only active answers.",
-    "Apply every reported repair and retain other drafted answers. Add missing questions to "
-    "the existing answer set. Resolve any further activation from the repaired answers before "
-    "resubmitting. The server ignores inactive answers.",
     "For each active question, review the inspected passages against its exact proposition "
     "and check material contradictions. Reuse adequate Evidence. When a premise remains "
     "unresolved, use bounded discovery across relevant Sources, including a protocol or SAP "
-    "when available. Read positive hits before using them. A limitation requires an exact "
+    "when relevant. Inspect returned passages before using them. A limitation requires a "
     "Trial-scoped, untruncated search receipt. Absence requires a scoped untruncated "
     "no-hit receipt.",
-    "For each selected Evidence basis, cite items containing the complete exact "
-    "premises that support the active question. One passage may support several facts; combine "
-    "separate passages when the answer depends on separate facts, and keep their boundaries "
-    "distinct.",
+    "Cite complete premises for the active question. One passage may support several facts. "
+    "When an answer depends on separate passages, cite each with its own boundaries. "
+    "A relationship kind describes the use of Evidence; it adds no scientific fact.",
     "When inference, conflict, or uncertainty connects Evidence to an answer, include a concise "
-    "question-specific justification. State what the cited "
-    "passages establish, what remains unresolved or conflicting, and why the selected answer "
-    "follows. This is a scientific explanation, not a reasoning transcript or a duplicate ledger.",
+    "question-specific justification. State what the passages establish, what remains unresolved, "
+    "and why the selected option follows. The server checks structure and Evidence identity; "
+    "you judge whether the cited facts support the answer.",
     "A definitive yes or no needs direct_support, indirect_support, or contradiction; "
     "a limitation or absence alone supports uncertainty, not a definitive answer.",
-    "A relationship kind describes how the premise relates to the answer; it never adds "
-    "an explanation or scientific fact.",
-    "You make the scientific judgment from reported facts and trial circumstances. The server "
-    "checks structure and Evidence identity. State the inference connecting source facts to "
-    "the answer and preserve unresolved facts under the question's uncertainty rule.",
+    "Evaluate activation against your draft answers. If you cannot reliably resolve the "
+    "complete active path, answer every returned Domain question using current card option IDs "
+    "and supported bases. Submit the complete set in one save. The server commits only "
+    "active answers.",
+    "Apply every reported repair and retain other drafted answers. Add missing questions to "
+    "the existing answer set. Resolve further activation from the repaired answers before "
+    "resubmitting. The server ignores inactive answers.",
 )
 _DOMAIN_TRAPS = (
-    "A relationship label never permits a broader clause than the selected source supports.",
     "A planned method does not prove conduct; a time origin or analysis population does "
     "not prove complete follow-up or equal assessment.",
     "An endpoint label or definition does not prove objectivity, blinding, "
@@ -315,8 +309,6 @@ _DOMAIN_TRAPS = (
     "that participants or personnel knew the assignment.",
     "Different treatment or visit schedules do not by themselves prove that outcome "
     "measurement differed between groups.",
-    "One endpoint definition does not prove that there were no multiple eligible "
-    "measurements or analyses.",
     "Stratification does not prove allocation concealment.",
 )
 
@@ -408,9 +400,11 @@ def _answer_option(question: Any, answer: Any) -> dict[str, Any]:
     consequence = (
         f"The Domain decision table treats this as {decision_table_value}. "
         + (
-            "It activates dependent questions: " + ", ".join(dependents) + "."
+            "Check the full activation rules for dependent questions: "
+            + ", ".join(dependents)
+            + "."
             if dependents
-            else "It activates no dependent questions."
+            else "This option satisfies no dependent-question predicate."
         )
         + " The Domain judgment is derived only from the complete active answer path."
     )

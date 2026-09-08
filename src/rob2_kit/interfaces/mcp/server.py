@@ -127,6 +127,7 @@ def _compact_domain_context_transport(value: dict[str, Any]) -> dict[str, Any]:
             "trial_id",
             "domain_id",
             "result",
+            "reading_recovery",
             "answers",
             "current_checkpoint",
             "guidance",
@@ -137,7 +138,6 @@ def _compact_domain_context_transport(value: dict[str, Any]) -> dict[str, Any]:
             "comparison_cards",
             "evidence",
             "evidence_workspace",
-            "reading_recovery",
         )
         if key in data
     }
@@ -371,7 +371,9 @@ def prepare_batch(
     title="Get workflow status",
     description=(
         "Read phase, revision, dispositions, next action, and main-report reading status. "
-        "Check after bounded reads to determine whether the required pass is finished."
+        "When reading status is required, read its required_ranges before scientific work. "
+        "Check again after finishing the returned windows. Omitted Evidence quotes retain exact "
+        "read_pages recovery; recover unfamiliar passages before using them."
     ),
     annotations=_READ_ONLY,
     output_schema=output_schema("get_status"),
@@ -402,15 +404,14 @@ def list_sources(
     description=(
         "Search captured source pages (1-based source indexes). Required: trial_id, query, mode. "
         "Choose all for every token, phrase for known contiguous wording, any for broad OR "
-        "discovery, or prefix for token-prefix matching. Optional: source_id, limit, cursor. "
-        "Returns a "
-        "bounded first batch with a stable session, counts, truncation, and opaque receipt; "
-        "continue with next_cursor for the same ranking. Valid no-hit searches are returned; "
-        "zero hits are specific only to the issued lexical query and never establish scientific "
-        "absence; "
-        "an initial multi-token all or phrase no-hit includes one executable any broadening "
-        "step, while a broad truncated any response includes observable refinement advice; "
-        "neither is a scientific conclusion."
+        "discovery, or prefix for token-prefix matching. Use wording from Sources or the "
+        "returned query suggestions. Results carry passage_refs and a stable ranking. "
+        "Pass next_cursor as cursor with the same query, mode, Source scope, and limit to "
+        "continue that ranking; counts and truncation show whether the batch is complete. "
+        "An initial multi-token all or phrase no-hit includes one "
+        "executable any broadening step. Broad truncated any results include refinement advice. "
+        "Inspect passages before citing them. Zero hits establish only that the issued lexical "
+        "query matched no captured text."
     ),
     annotations=_READ_ONLY,
     output_schema=output_schema("search_sources"),
@@ -423,7 +424,7 @@ def search_sources(
         str,
         Field(
             min_length=1,
-            description="Concept or wording to search; must be non-empty.",
+            description="Non-empty lexical wording from Sources or query suggestions.",
             examples=["central randomization"],
         ),
     ],
@@ -446,7 +447,7 @@ def search_sources(
     ] = 10,
     cursor: Annotated[
         str | None,
-        Field(description="Opaque continuation cursor returned by the prior search response."),
+        Field(description="Prior next_cursor; retain its query, mode, Source scope, and limit."),
     ] = None,
 ) -> ToolResult:
     return _invoke(
@@ -460,8 +461,11 @@ def search_sources(
     title="Read source pages",
     description=(
         "Read source text as numbered lines. Pages are 1-based source indexes, not printed "
-        "labels; continue large pages with next_start_line. Use windows across sources; each "
-        "item preserves its source and line bounds."
+        "labels. Use windows across sources; each item preserves its source and line bounds. "
+        "To finish a partial batch, call read_pages with the same trial_id and windows set to "
+        "data.remaining_windows, omitting source_id, pages, and start_line. Repeat until no "
+        "windows remain. Returned numbered text normally fits 24000 characters; a single "
+        "oversized line is returned intact. JSON metadata is additional."
     ),
     annotations=_READ_ONLY,
     output_schema=output_schema("read_pages"),
@@ -530,8 +534,9 @@ def read_pages(
                 }
                 for item in result["pages"]
             )
-        page_budget = max(1, _READ_PAGES_RESPONSE_CHARS // max(1, len(raw_pages)))
         numbered_pages = []
+        remaining_windows: list[dict[str, Any]] = []
+        used_response_chars = 0
         for item in raw_pages:
             lines = item["text"].splitlines()
             requested_start = item["requested_start"]
@@ -565,21 +570,26 @@ def read_pages(
                     f"choose 1 <= start_line <= {len(lines)}"
                 )
             returned: list[str] = []
-            used = 0
             end_line = requested_start - 1
+            available_end = min(
+                len(lines), requested_end if requested_end is not None else len(lines)
+            )
             for line_number in range(requested_start, len(lines) + 1):
-                if requested_end is not None and line_number > requested_end:
+                if line_number > available_end:
                     break
                 numbered = f"{line_number}|{lines[line_number - 1]}"
                 additional = len(numbered) + (1 if returned else 0)
-                if returned and used + additional > page_budget:
-                    break
+                remaining = _READ_PAGES_RESPONSE_CHARS - used_response_chars
+                if additional > remaining:
+                    # A single line larger than the ordinary budget still needs
+                    # to make progress.  Emit it only when this response has
+                    # no text yet; later requests continue in the next call.
+                    if returned or used_response_chars:
+                        break
                 returned.append(numbered)
-                used += additional
+                used_response_chars += additional
                 end_line = line_number
-            truncated = end_line < len(lines) and (
-                requested_end is None or end_line < requested_end
-            )
+            truncated = end_line < available_end
             passage_ref = None
             if end_line >= requested_start:
                 passage = _select_text_evidence_by_lines(
@@ -591,19 +601,31 @@ def read_pages(
                     end_line,
                 )
                 passage_ref = passage.get("evidence", {}).get("handle")
-            numbered_pages.append(
-                {
-                    **({"source_id": item["source_id"]} if include_source else {}),
-                    "page": item["page"],
-                    "numbered_text": "\n".join(returned),
-                    "line_count": len(lines),
-                    "returned_start_line": requested_start,
-                    "returned_end_line": end_line,
-                    "truncated": truncated,
-                    "next_start_line": end_line + 1 if truncated else None,
-                    "passage_ref": passage_ref,
-                }
-            )
+            if returned:
+                numbered_pages.append(
+                    {
+                        **({"source_id": item["source_id"]} if include_source else {}),
+                        "page": item["page"],
+                        "numbered_text": "\n".join(returned),
+                        "line_count": len(lines),
+                        "returned_start_line": requested_start,
+                        "returned_end_line": end_line,
+                        "truncated": truncated,
+                        "next_start_line": end_line + 1 if truncated else None,
+                        "passage_ref": passage_ref,
+                    }
+                )
+            if truncated:
+                remaining_windows.append(
+                    {
+                        "source_id": item["source_id"],
+                        "page": item["page"],
+                        "start_line": (
+                            end_line + 1 if end_line >= requested_start else requested_start
+                        ),
+                        "end_line": available_end,
+                    }
+                )
             if end_line >= requested_start:
                 _record_read_coverage(
                     _workspace(),
@@ -613,7 +635,11 @@ def read_pages(
                     requested_start,
                     end_line,
                 )
-        return {"outcome": "success", "pages": numbered_pages}
+        return {
+            "outcome": "success",
+            "pages": numbered_pages,
+            "remaining_windows": remaining_windows,
+        }
 
     return _invoke("read_pages", read)
 
@@ -622,8 +648,8 @@ def read_pages(
     name="select_text_evidence",
     title="Select text Evidence",
     description=(
-        "Select one contiguous range of numbered lines from one read_pages page. The usual call "
-        "needs only trial_id, source_id, page, start_line, and end_line. Use the "
+        "Select one contiguous range after inspecting its source text. Reuse an existing "
+        "passage_ref when its boundaries already cover the premise. Use the "
         "1-based source page and line numbers exactly as issued; split a page-boundary passage "
         "into one selection per page; never reconstruct text from a preview. "
         "The server stores the exact unnumbered source text. Use visual Evidence when layout, "
@@ -741,14 +767,12 @@ def select_visual_evidence(
     name="save_proposal",
     title="Save Result proposal",
     description=(
-        "Submit typed Result cards after the required bounded full-Source text pass for each main "
-        "report and selecting "
-        "supporting Evidence. The first save needs one "
-        "card per Trial; a pending Review accepts only cards being replaced and preserves the "
-        "rest. Each card is assessable or unavailable (Evidence is separate). Assessable cards "
-        "require target facets, at least two randomized groups, intended population/effect "
-        "measure, and one complete "
-        "reported quantitative tuple. Keep source numbers as strings; revise before approval."
+        "Submit typed Result cards after the pre-Proposal main-report text pass for each Trial. "
+        "Include inspected passage_refs for supporting Evidence from search or read passages. "
+        "The first save needs one card per Trial. A pending Review accepts complete replacement "
+        "cards for changed Trials and preserves the rest. Each card is assessable or unavailable. "
+        "An assessable card pairs the requested target with one Source-reported quantitative "
+        "Result; use the live nested schema. Keep source numbers as strings."
     ),
     annotations=_MUTATION,
     output_schema=output_schema("save_proposal"),
@@ -985,7 +1009,10 @@ async def request_proposal_approval(ctx: Context) -> ToolResult:
         "Read the approved Result, current checkpoint, Evidence workspace, comparison cards, "
         "and questions for a Domain. Question cards contain scientific guidance, activation "
         "predicates, server-issued answer options, and executable search suggestions. "
-        "Before the first Domain answer, repeat the bounded main-report text pass after approval. "
+        "When reading_recovery.status is required, read its windows before scientific work. "
+        "Use get_status to recover further required ranges until complete or budget_limited. "
+        "The post-approval pass must finish before the first Domain answer. At budget_limited, "
+        "inspect omitted passages when needed for an unresolved premise. "
         "Reuse adequate Evidence. Search unresolved premises with wording from inspected Sources. "
         "For a D3 count preview, pass missing_data; the call does not commit those rows. "
         "If omitted Evidence is unfamiliar or uncertain after a restart or compaction, call "
@@ -1067,10 +1094,10 @@ def save_domain_judgment(
         Field(
             min_length=1,
             description=(
-                "One typed answer per active question: question_id, option_id, bases. Definitive "
+                "A list of question_id, option_id, and bases objects for every active question. "
+                "Definitive "
                 "yes/no needs direct/indirect/contradictory Evidence; probable answers may use "
-                "limitation, absence receipt, context, or inference. List, not map; inactive "
-                "branches ignored."
+                "limitation, absence receipt, context, or inference. Inactive extras are ignored."
             ),
             examples=[
                 [

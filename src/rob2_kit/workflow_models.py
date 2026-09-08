@@ -410,16 +410,16 @@ class OutcomeMeasurementDraft(StrictModel):
 
 
 class DescribedTiming(StrictModel):
-    kind: Literal["described"] = Field(description="Use when timing is stated without a number.")
+    kind: Literal["described"] = Field(description="Timing expressed as a descriptive window.")
     description: NonBlankText = Field(
-        description="Exact or normalization-equivalent source wording for the timing or window.",
+        description="Source-supported description of the target time point or window.",
     )
 
 
 class QuantifiedTiming(StrictModel):
     kind: Literal["quantified"] = Field(description="Use when timing has a numeric value and unit.")
     description: NonBlankText = Field(
-        description="Exact or normalization-equivalent source wording for the timing or window.",
+        description="Source-supported description of the target time point or window.",
     )
     value: NonBlankText = Field(description="Source-reported timing value.")
     unit: NonBlankText = Field(description="Source-reported timing unit.")
@@ -436,7 +436,7 @@ class ComparisonGroup(StrictModel):
         description="Caller-owned structural identifier used to reference this comparison group.",
     )
     assignment: NonBlankText = Field(
-        description="Exact or normalization-equivalent randomized-group assignment wording.",
+        description="Source-supported description of the intervention assigned to this group.",
     )
 
 
@@ -551,8 +551,9 @@ class GroupResultValue(StrictModel):
 class ReportedEndpoint(StrictModel):
     name: NonBlankText = Field(
         description=(
-            "Source-reported endpoint label. Prefer direct event-construct wording over "
-            "named disease-state transitions or surrogate labels."
+            "Source-reported endpoint label supported by selected Evidence. Keep the reported "
+            "label distinct from the requested outcome. Explain correspondence in "
+            "relation_rationale."
         ),
     )
     definition: NonBlankText | None = Field(
@@ -571,7 +572,9 @@ class ComparativeEffectResult(StrictModel):
         description="A source-reported between-group effect estimate.",
     )
     effect_measure: NonBlankText = Field(description="Source-reported effect-measure label.")
-    estimate: NonBlankText = Field(description="Source-reported comparative estimate.")
+    estimate: NonBlankText = Field(
+        description="Source-reported comparative estimate; put its interval in precision."
+    )
     precision: NonBlankText | None = Field(
         default=None,
         description="Source-reported precision interval or uncertainty; omit when absent.",
@@ -943,7 +946,7 @@ class AssessableResultDraft(StrictModel):
     ]
     passage_refs: tuple[EvidenceHandle, ...] = Field(
         default=(),
-        description="Optional search/read passage references.",
+        description="Inspected passage_ref handles from search_sources or read_pages, when needed.",
     )
 
     @model_validator(mode="after")
@@ -1084,11 +1087,13 @@ class RenderIdentity(StrictModel):
 
 class DomainLimitationBasis(StrictModel):
     kind: Literal["limitation"] = Field(
-        description="Use for an exact limitation found during a scoped search.",
+        description="Use for a specific information limit remaining after scoped discovery.",
     )
-    text: str = Field(min_length=1, description="Exact limitation relevant to this question.")
+    text: str = Field(
+        min_length=1, description="What remains unresolved for this question after discovery."
+    )
     search_receipt: SearchReceiptHandle = Field(
-        description="Search receipt from the scoped discovery that exposed this limitation.",
+        description="Current-Trial untruncated search receipt supporting this information limit.",
     )
 
     @field_validator("text")
@@ -1101,7 +1106,7 @@ class DomainLimitationBasis(StrictModel):
 
 class MultipleConcernsDecision(StrictModel):
     raises_overall_to_high: StrictBool = Field(
-        description="Whether multiple Domain 2 concerns together raise its judgment to high.",
+        description="Whether Some concerns across Domains together raise overall risk to high.",
     )
     rationale: str = Field(
         min_length=1,
@@ -1125,7 +1130,7 @@ class DirectEvidenceUse(StrictModel):
 
 class AbsenceEvidenceUse(StrictModel):
     kind: Literal["absence"] = Field(
-        description="Use for a valid scoped search that found no relevant information.",
+        description="Use for an untruncated scoped search with zero hits, not irrelevant hits.",
     )
     search_receipt: SearchReceiptHandle = Field(
         description="No-hit search receipt scoped to this question and Trial.",
@@ -1139,7 +1144,7 @@ DomainBasis = Annotated[
 
 
 class DomainAnswer(StrictModel):
-    question_id: QuestionId = Field(description="Active question ID from get_domain_context.")
+    question_id: QuestionId = Field(description="Question ID from the current Domain card.")
     option_id: str = Field(
         min_length=1,
         description="Exactly one server-issued option identity from the current question card.",
@@ -1162,7 +1167,10 @@ class DomainAnswer(StrictModel):
     )
     justification: str | None = Field(
         default=None,
-        description="Concise scientific justification.",
+        description=(
+            "Explain how cited facts support this answer when inference, conflict, or "
+            "uncertainty matters."
+        ),
     )
 
     @field_validator("justification")

@@ -3,7 +3,7 @@
 Use this reference for Domain 2, which assesses the effect of assignment to
 intervention. The returned question cards are authoritative.
 
-Build the conduct chain in order:
+For active conduct questions, build the chain in order:
 
 1. What intervention was intended in each randomized group?
 2. What change, non-adherence, or additional intervention occurred?
@@ -18,7 +18,7 @@ A protocol establishes the plan, not conduct. Different assigned treatments or
 visible schedules do not by themselves prove that participants or carers knew
 the assignment.
 
-Assess the analysis separately. Compare randomized assignment with the analyzed
+For 2.6, assess the analysis separately. Compare randomized assignment with the analyzed
 population, exclusions, reassignment, and reasons. An ITT label is not proof
 that all randomized participants were analyzed as assigned. Excluding only
 participants with missing outcome data is not automatically the same as an

@@ -6,7 +6,12 @@ Use this reference while locating Result support and answering Domain questions.
 
 `search_sources` locates candidate pages. A hit is navigation, not scientific
 proof, but its `passage_ref` already identifies the exact returned passage.
-Suggestions are alternative wording, not a checklist. A zero-hit receipt
+Choose short Source wording or a returned query suggestion. Use `all` for every
+token on one page, `phrase` for contiguous wording, `any` for broad discovery,
+and `prefix` for token prefixes. Suggestions are alternatives, not a checklist.
+To inspect further candidates, pass `next_cursor` as `cursor` with the same
+query, mode, Source scope, and limit. A truncated batch is not the full ranking.
+A zero-hit receipt
 establishes only that the issued lexical query matched nothing. For an eligible
 initial multi-token `all` or `phrase` no-hit, broaden once with the returned
 `mode:"any"` action and inspect the passages; if retrieval remains unhelpful,
@@ -23,24 +28,23 @@ Use this procedure when an omitted passage needs inspection or its content is
 no longer available to you.
 
 1. Call `read_pages` with `recovery.trial_id` and `recovery.windows`.
-2. If a returned page has `next_start_line`, repeat that window with
-   `start_line` set to `next_start_line`. Keep the Source, page, and original
-   `end_line`.
-3. Continue until the returned lines cover every requested window through its
-   `end_line`.
+2. If `data.remaining_windows` is nonempty, call `read_pages` with the same
+   `trial_id` and `windows` set to that list. Omit `source_id`, `pages`, and
+   top-level `start_line`.
+3. Repeat until no windows remain. The returned lines then cover every requested
+   window through its original `end_line`.
 4. Inspect the complete passage before citing it.
 
 The original Evidence handle identifies the complete passage. A partial
 `passage_ref` from `read_pages` identifies only the range returned in that call.
 
 Tool page numbers are 1-based Source indexes, not printed page labels. Read the
-numbered Source text; never reconstruct PDF text from a preview. If a page is
-truncated, continue with its issued `next_start_line`. For comparison across
-Sources, use independent `windows`. A passage crossing a page boundary needs one
+numbered Source text; never reconstruct PDF text from a preview. For comparison
+across Sources, use independent `windows`. A passage crossing a page boundary needs one
 selection on each page.
 
-Use `select_text_evidence` when the prepared passage is too broad, truncated, or
-misses required context. Select one contiguous inclusive line range containing
+Use `select_text_evidence` after inspecting the source text when the prepared
+passage needs different boundaries. Select one contiguous inclusive line range containing
 the complete premise and its needed header, list, cohort, denominator, unit, or
 footnote. A heading or list-introducing lead-in alone is incomplete.
 
@@ -61,10 +65,10 @@ Domain justification, not in the transcription.
 
 ## Ground a Result
 
-Do not send an `evidence` field, copied clauses, bindings, digests, table
-wrappers, or figure objects in an assessable Result card. Pass inspected handles
-through `passage_refs`. The server retains only Evidence that supports the
-Result and derives canonical bindings.
+Do not send an `evidence` field at the top level of an assessable Result card,
+or place Evidence objects in `reported`. Use `passage_refs` for Result support
+and `applicability.evidence` for design support. The server retains supporting
+Evidence and derives canonical bindings.
 
 Every Source-owned reported leaf must have exact or normalization-equivalent
 support. Caller-owned target interpretation, timing and arm assignments do not

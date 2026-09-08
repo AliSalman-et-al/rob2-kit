@@ -101,7 +101,6 @@ def test_first_proposal_save_requires_bounded_main_report_read(tmp_path: Path) -
     blocked = _call(workspace, "save_proposal", _proposal_args(workspace, [_result(evidence)]))
     assert blocked["outcome"] == "repair", blocked
     assert any(repair["code"] == "main_report_reading_required" for repair in blocked["repairs"])
-
     _call(
         workspace,
         "read_pages",
@@ -109,6 +108,54 @@ def test_first_proposal_save_requires_bounded_main_report_read(tmp_path: Path) -
     )
     accepted = _call(workspace, "save_proposal", _proposal_args(workspace, [_result(evidence)]))
     assert accepted["outcome"] == "review_required", accepted
+
+
+def test_status_bounds_selected_narrative_text_with_exact_recovery(tmp_path: Path) -> None:
+    workspace = _workspace(tmp_path)
+    (workspace / "input" / "trial" / "main.txt").write_text(
+        ("selected evidence " * 1_000).strip() + "\n",
+        encoding="utf-8",
+    )
+    _call(
+        workspace,
+        "prepare_batch",
+        {"requested_outcome": "requested outcome", "expected_revision": 0},
+    )
+    source = _source(workspace, "main.txt")
+    page = _call(
+        workspace,
+        "read_pages",
+        {"trial_id": "trial", "source_id": source["id"], "pages": [1]},
+    )["data"]["pages"][0]
+    _call(
+        workspace,
+        "select_text_evidence",
+        {
+            "trial_id": "trial",
+            "source_id": source["id"],
+            "page": 1,
+            "start_line": 1,
+            "end_line": page["line_count"],
+        },
+    )
+
+    selected = _call(workspace, "get_status", {})["data"]["selected_evidence"]
+    assert len(selected) == 1
+    item = selected[0]
+    assert item["text_status"] == "omitted"
+    assert item["quote"] is None
+    assert item["recovery"] == {
+        "operation": "read_pages",
+        "trial_id": "trial",
+        "windows": [
+            {
+                "source_id": source["id"],
+                "page": 1,
+                "start_line": 1,
+                "end_line": page["line_count"],
+            }
+        ],
+    }
 
 
 def test_main_report_pass_includes_appended_pages_below_cap(tmp_path: Path) -> None:

@@ -135,8 +135,8 @@ class QuerySuggestion(StrictModel):
     source_role: QuerySourceRole | None = Field(
         default=None,
         description=(
-            "Recommended Source role. Resolve a matching Source ID with list_sources, or search "
-            "all Trial Sources when this field is null or no matching role is available."
+            "Suggested Source role, not a search argument. Use a known matching Source ID or "
+            "resolve one with list_sources. Omit source_id to search all Trial Sources."
         ),
     )
     purpose: str = Field(

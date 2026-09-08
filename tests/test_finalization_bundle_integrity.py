@@ -465,6 +465,20 @@ def test_finalized_bundle_binds_the_scientific_contract(tmp_path: Path) -> None:
     assert _standalone_verify(artifact).returncode == 0
 
 
+def test_previous_v07_scientific_pack_remains_verifiable(tmp_path: Path) -> None:
+    source = _artifact(tmp_path / "source")
+
+    def use_previous_pack(canonical: dict[str, Any]) -> None:
+        canonical["scientific_pack"]["content_hash"] = (
+            "sha256:3ef492b34a81c19e3f75d72fea2b92c40aebde80c06e24e44c36cd76dc4cf3d4"
+        )
+
+    previous = tmp_path / "previous-v07.rob2.zip"
+    _rewrite_rehashed(source, previous, use_previous_pack)
+    assert verify_bundle(previous)
+    assert _standalone_verify(previous).returncode == 0
+
+
 @pytest.mark.parametrize("mutation", ["missing", "pack_hash", "source_hash"])
 def test_scientific_contract_tampering_is_rejected(tmp_path: Path, mutation: str) -> None:
     artifact = _artifact(tmp_path)
@@ -605,6 +619,9 @@ def test_rehashed_v06_empty_derived_inputs_fail_both_verifiers(tmp_path: Path) -
 
     def convert_to_v06(canonical: dict[str, Any]) -> None:
         canonical["scientific_pack"]["result_semantics_version"] = "rob2-kit.result-semantics.v0.6"
+        canonical["scientific_pack"]["content_hash"] = (
+            "sha256:3ef492b34a81c19e3f75d72fea2b92c40aebde80c06e24e44c36cd76dc4cf3d4"
+        )
         proposal = canonical["proposal"]
         payload = proposal["payload"]
         trial = canonical["batch"]["trials"][0]

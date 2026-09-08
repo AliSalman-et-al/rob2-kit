@@ -128,7 +128,7 @@ _GUIDANCE: dict[str, QuestionGuidance] = {
         (
             "Minimization should generally be considered random when it includes a random element.",
             "The baseline-imbalance answer must not change this answer.",
-            "For retrieval, search terms from the official guidance such as 'computer-generated random numbers', 'random number table', 'coin tossing', and 'minimization', plus the generic concept 'sequence generation'. A truncated broad any-term search is discovery, not evidence that the method is absent.",
+            "Use the returned query suggestions or wording from the report to locate the sequence method. A truncated search does not establish that the method is absent.",
         ),
         (
             "underwent randomization",
@@ -158,7 +158,7 @@ _GUIDANCE: dict[str, QuestionGuidance] = {
         (
             "Allocation concealment concerns the process before assignment, not blinding after assignment.",
             "The reported sequence-generation method does not establish concealment.",
-            "For retrieval, search compact concealment concepts such as 'central randomization', 'interactive voice response', 'web response', and 'opaque sealed envelopes'. A truncated broad any-term search is discovery, not evidence that concealment details are absent.",
+            "Use the returned query suggestions or wording from the report to locate the allocation safeguards. A truncated search does not establish that concealment details are absent.",
         ),
         (
             "stratification",
@@ -376,6 +376,7 @@ _GUIDANCE: dict[str, QuestionGuidance] = {
         (
             "The appropriate population is all randomized participants, not only participants included in a final analysis. Keep outcome availability distinct from exclusions for analysis or conduct; the same passage may inform both Domains for different scientific reasons.",
             "Distinguish administrative censoring at a common data cutoff from censoring caused by missing follow-up; inspect actual rates and follow-up accounting rather than treating a generic censoring rule as outcome-availability evidence.",
+            "For mortality, recovery or discharge does not establish vital status at a later time point. A total combining completed follow-up, recovery, and death does not establish mortality availability. If availability remains unresolved, inspect outcome-status or missing-value tables, including supplements. Match their outcome and time window to the approved Result. For dichotomous outcomes, compare unknown outcomes with observed events. Recovery may inform bias from missingness, but does not make unknown vital status observed.",
         ),
         (
             "a complete-case analysis label",
@@ -530,7 +531,9 @@ _GUIDANCE: dict[str, QuestionGuidance] = {
                 "The outcome assessment could not be influenced by knowledge of intervention.",
             ),
         ),
-        ("Applicability is determined by the preceding assessor-awareness answer.",),
+        (
+            "Assess whether knowledge could influence this outcome. Evidence that influence actually occurred belongs to 4.5; its absence does not resolve 4.4.",
+        ),
         (
             "an objective endpoint label",
             "assessor awareness without outcome type",
@@ -564,10 +567,10 @@ _GUIDANCE: dict[str, QuestionGuidance] = {
         (
             "A sufficiently detailed protocol or SAP, its finalization date relative to unblinded outcome data, and the reported analysis.",
         ),
-        "Use no_information only after considering direct facts, indirect evidence, and trial circumstances; "
-        "an unavailable or incomplete intention statement alone is insufficient when those facts support a "
-        "probable judgment about timing and correspondence. Use no_information when genuine timing evidence "
-        "cannot support a defensible yes or no judgment.",
+        "Use a definitive answer when firm evidence establishes timing and correspondence. "
+        "Use a probable answer when source facts and trial circumstances support only an inference. "
+        "Use no_information when neither is supported. A plan mention or matching endpoint alone "
+        "does not establish timing.",
         (
             _anchor(
                 Answer.YES,
@@ -698,7 +701,9 @@ _QUERY_SUGGESTIONS: dict[str, tuple[QuerySuggestion, ...]] = {
     "sq:deviations:context-deviations": (
         _suggestion("nonadherence", "any", "deviations from assigned intervention"),
         _suggestion("treatment contamination", "phrase", "cross-group intervention"),
-        _suggestion("protocol deviation", "phrase", "trial-context deviation", "protocol"),
+        _suggestion(
+            "protocol deviation", "phrase", "reported deviations and their causes", "protocol"
+        ),
     ),
     "sq:deviations:affected-outcome": (
         _suggestion("effect estimate", "phrase", "deviation impact on outcome"),
@@ -711,8 +716,8 @@ _QUERY_SUGGESTIONS: dict[str, tuple[QuerySuggestion, ...]] = {
     "sq:deviations:appropriate-analysis": (
         _suggestion("intention-to-treat", "phrase", "analysis by assignment"),
         _suggestion("intent-to-treat", "phrase", "alternative analysis-by-assignment wording"),
-        _suggestion("all randomized patients", "all", "equivalent assignment-population wording"),
-        _suggestion("per protocol", "phrase", "non-assignment analysis"),
+        _suggestion("all randomized patients", "all", "reported analysis population"),
+        _suggestion("per protocol", "phrase", "analysis restrictions"),
     ),
     "sq:deviations:substantial-impact": (
         _suggestion("excluded participants", "all", "post-randomization exclusions"),
@@ -722,6 +727,8 @@ _QUERY_SUGGESTIONS: dict[str, tuple[QuerySuggestion, ...]] = {
         _suggestion("missing outcome data", "all", "outcome availability"),
         _suggestion("loss to follow-up", "phrase", "follow-up completeness"),
         _suggestion("outcome data available", "all", "observed outcome reporting"),
+        _suggestion("mortality status unknown", "all", "unknown mortality status", "supplement"),
+        _suggestion("missing values", "all", "missing outcome counts", "supplement"),
     ),
     "sq:missing:evidence-unbiased": (
         _suggestion("sensitivity analysis", "phrase", "missing-data sensitivity analysis", "sap"),

@@ -964,6 +964,101 @@ def test_read_pages_returns_bounded_line_windows_with_continuation(tmp_path: Pat
     assert next_page["numbered_text"].startswith(f"{next_page['returned_start_line']}|")
 
 
+def test_read_pages_packs_request_order_and_returns_remaining_windows(tmp_path: Path) -> None:
+    workspace = _workspace(tmp_path)
+    trial = workspace / "input" / "trial"
+    (trial / "main.txt").write_text("short\n", encoding="utf-8")
+    (trial / "supplement.txt").write_text(
+        "\n".join("é" * 30 for _ in range(1_000)) + "\n",
+        encoding="utf-8",
+    )
+    (trial / "protocol.txt").write_text("later requested text " * 10 + "\n", encoding="utf-8")
+    _call(
+        workspace,
+        "prepare_batch",
+        {"requested_outcome": "requested outcome", "expected_revision": 0},
+    )
+    sources = _call(workspace, "list_sources", {"trial_id": "trial"})["data"]["sources"]
+    main = next(source for source in sources if source["label"] == "main.txt")
+    supplement = next(source for source in sources if source["label"] == "supplement.txt")
+    protocol = next(source for source in sources if source["label"] == "protocol.txt")
+
+    first = _call(
+        workspace,
+        "read_pages",
+        {
+            "trial_id": "trial",
+            "windows": [
+                {"source_id": main["id"], "page": 1, "start_line": 1, "end_line": 1},
+                {
+                    "source_id": supplement["id"],
+                    "page": 1,
+                    "start_line": 1,
+                    "end_line": 1_000,
+                },
+                {"source_id": protocol["id"], "page": 1, "start_line": 1, "end_line": 1},
+            ],
+        },
+    )
+    assert first["outcome"] == "success"
+    pages = first["data"]["pages"]
+    assert [page["source_id"] for page in pages] == [main["id"], supplement["id"]]
+    supplement_page = pages[1]
+    assert len(supplement_page["numbered_text"]) > 12_000
+    assert sum(len(page["numbered_text"]) for page in pages) <= 24_000
+    remaining = first["data"]["remaining_windows"]
+    assert remaining == [
+        {
+            "source_id": supplement["id"],
+            "page": 1,
+            "start_line": supplement_page["returned_end_line"] + 1,
+            "end_line": 1_000,
+        },
+        {"source_id": protocol["id"], "page": 1, "start_line": 1, "end_line": 1},
+    ]
+    with sqlite3.connect(workspace / ".rob2-kit" / "derivative.sqlite3") as connection:
+        assert (
+            connection.execute(
+                "SELECT 1 FROM page_reads WHERE source_id=?", (protocol["id"],)
+            ).fetchone()
+            is None
+        )
+
+    seen = list(range(1, supplement_page["returned_end_line"] + 1))
+    while remaining:
+        continuation = _call(
+            workspace,
+            "read_pages",
+            {"trial_id": "trial", "windows": remaining},
+        )
+        assert continuation["outcome"] == "success"
+        for page in continuation["data"]["pages"]:
+            assert page["source_id"] in {supplement["id"], protocol["id"]}
+            if page["source_id"] == supplement["id"]:
+                seen.extend(range(page["returned_start_line"], page["returned_end_line"] + 1))
+        remaining = continuation["data"]["remaining_windows"]
+    assert seen == list(range(1, 1_001))
+
+
+def test_read_pages_oversized_single_line_makes_progress(tmp_path: Path) -> None:
+    workspace = _workspace(tmp_path)
+    (workspace / "input" / "trial" / "main.txt").write_text("x" * 30_000, encoding="utf-8")
+    _call(
+        workspace,
+        "prepare_batch",
+        {"requested_outcome": "requested outcome", "expected_revision": 0},
+    )
+    source = _call(workspace, "list_sources", {"trial_id": "trial"})["data"]["sources"][0]
+    result = _call(
+        workspace,
+        "read_pages",
+        {"trial_id": "trial", "source_id": source["id"], "pages": [1]},
+    )
+    page = result["data"]["pages"][0]
+    assert page["returned_end_line"] >= 1
+    assert page["passage_ref"] is not None
+
+
 @pytest.mark.parametrize(
     "source_text, end_line",
     (

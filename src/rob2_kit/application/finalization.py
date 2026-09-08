@@ -2006,7 +2006,14 @@ def _valid_scientific_contract_descriptor(value: object) -> bool:
         "content_hash": "sha256:3ef492b34a81c19e3f75d72fea2b92c40aebde80c06e24e44c36cd76dc4cf3d4",
         "official_source": expected["official_source"],
     }
-    return value in (historical, legacy)
+    previous = {
+        "id": "rob2.parallel.assignment",
+        "version": "2019.1",
+        "result_semantics_version": _RESULT_SEMANTICS_VERSION,
+        "content_hash": "sha256:3ef492b34a81c19e3f75d72fea2b92c40aebde80c06e24e44c36cd76dc4cf3d4",
+        "official_source": expected["official_source"],
+    }
+    return value in (historical, legacy, previous)
 
 
 def _assessment_summary(state: dict[str, Any]) -> dict[str, dict[str, Any]]:

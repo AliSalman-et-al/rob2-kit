@@ -322,7 +322,7 @@ class SelectedNarrativeEvidence(PublicModel):
     end_line: PageNumber | None = None
     start: NonNegativeInt | None = None
     end: NonNegativeInt | None = None
-    quote: str = Field(min_length=1)
+    quote: str | None = Field(default=None, min_length=1)
     inclusion_reason: (
         Literal[
             "result",
@@ -339,6 +339,30 @@ class SelectedNarrativeEvidence(PublicModel):
     search_session: Identity | None = None
     candidate_rank: PositiveInt | None = None
     returned_previously: StrictBool | None = None
+    text_status: Literal["complete", "omitted"] = "complete"
+    recovery: EvidenceRecovery | None = None
+
+    @model_validator(mode="after")
+    def text_projection_shape(self) -> SelectedNarrativeEvidence:
+        if self.text_status == "omitted":
+            if self.quote is not None or self.recovery is None:
+                raise ValueError("omitted narrative text requires recovery and no quote")
+            if self.start_line is None or self.end_line is None:
+                raise ValueError("omitted narrative text requires exact line coordinates")
+            if len(self.recovery.windows) != 1:
+                raise ValueError("omitted narrative text requires one exact recovery window")
+            window = self.recovery.windows[0]
+            if (
+                self.recovery.trial_id != self.trial_id
+                or window.source_id != self.source_id
+                or window.page != self.page
+                or window.start_line != self.start_line
+                or window.end_line != self.end_line
+            ):
+                raise ValueError("recovery window does not match narrative coordinates")
+        elif self.quote is None or self.recovery is not None:
+            raise ValueError("complete narrative text requires a quote and no recovery")
+        return self
 
 
 class RenderProjection(PublicModel):
@@ -544,6 +568,10 @@ class PageData(PublicModel):
 
 class PagesData(PublicModel):
     pages: tuple[PageData, ...] = Field(min_length=1)
+    remaining_windows: tuple[EvidenceReadWindow, ...] = Field(
+        default=(),
+        description="Exact requested line windows not returned in this response, in request order.",
+    )
 
 
 class TextEvidenceData(PublicModel):
@@ -645,7 +673,10 @@ class CompactAnswerOption(PublicModel):
     certainty: Literal["certain", "probable", "unknown"]
     decision_table_value: Literal["yes", "no", "no_information"]
     anchor: str = Field(min_length=1)
-    activates: tuple[str, ...] = ()
+    activates: tuple[str, ...] = Field(
+        default=(),
+        description="Dependent questions to check against their full activation rules.",
+    )
     meaning: str | None = None
     consequence: str | None = None
 
@@ -656,8 +687,12 @@ class DomainQuestionCard(PublicModel):
     id: QuestionId
     wording: str = Field(min_length=1)
     options: tuple[CompactAnswerOption, ...] = Field(min_length=1)
-    active: StrictBool
-    activation: QuestionActivation
+    active: StrictBool = Field(
+        description="Active under saved answers. Draft answers may activate further questions.",
+    )
+    activation: QuestionActivation = Field(
+        description="Evaluate against earlier draft answers to derive the complete active path.",
+    )
     official_guidance: str = Field(min_length=1)
     source_locator: str = Field(min_length=1)
     decision_rule: str = Field(min_length=1)
@@ -666,8 +701,8 @@ class DomainQuestionCard(PublicModel):
     considerations: tuple[str, ...] = Field(
         min_length=1,
         description=(
-            "Optional operational considerations and retrieval examples. Adapt, combine, "
-            "or ignore them; they are examples, not a required query list."
+            "Operational guidance for this question. Retrieval examples are optional alternatives, "
+            "not a required query list."
         ),
     )
     invalid_shortcuts: tuple[str, ...] = Field(min_length=1)
@@ -949,7 +984,7 @@ class DomainContextData(PublicModel):
     comparison_cards: tuple[ComparisonCard, ...] = ()
     reading_recovery: MainReportRecovery | None = Field(
         default=None,
-        description="Mandatory post-approval text-read recovery before the first Domain save.",
+        description="Required read windows, or optional unread ranges when budget_limited.",
     )
 
 
