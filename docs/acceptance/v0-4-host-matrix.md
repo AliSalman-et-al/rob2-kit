@@ -76,6 +76,14 @@ If the server returns `domain_context_header_oversized` or
 reported larger `required_page_size`; an unrecoverable condition requires
 review without omitting the record.
 
+Pass `context_page.next_cursor` unchanged. When the host supports variables,
+reuse the returned value directly instead of retyping an opaque cursor. If it
+is invalid, recapture the preceding page and reuse its exact cursor; if stale,
+restart the initial scoped call with the same Trial, Domain, page size, and D3
+preview when used. On a continuation condition or error, preserve the stored
+cursor and advance or clear it only after a successful `context_page` response.
+Never assess page zero while continuation remains.
+
 In the Kalil r81 baseline replay, six Domain-context responses measured
 88–123 KB as the raw MCP envelope and 43–61 KB as one structured/text
 representation; each text/structured pair was byte-equal. The recovery run's
