@@ -848,7 +848,7 @@ def test_save_proposal_schema_is_closed_and_discriminated() -> None:
             assert definition["additionalProperties"] is False, name
     # Every nested caller field is self-describing; keep the complete proposal
     # schema, including design applicability, compact enough for one definition.
-    assert len(json.dumps(schema, separators=(",", ":")).encode()) < 16000
+    assert len(json.dumps(schema, separators=(",", ":")).encode()) < 16500
     assert len(_walk_schema(schema)) <= 22
 
 
@@ -996,6 +996,7 @@ def test_selected_evidence_and_typed_proposal_survive_host_restart(tmp_path: Pat
         "/target/comparison_groups/0/assignment",
         "/target/comparison_groups/1/id",
         "/target/comparison_groups/1/assignment",
+        "/reported/analysis_population",
         "/reported/values/0/group_id",
         "/reported/values/1/group_id",
     }
