@@ -340,6 +340,15 @@ def _canonical_result(
     )
     target = dict(raw["target"])
     measurement = dict(target["measurement"])
+    baseline_subgroup = target.pop("baseline_subgroup")
+    target["intended_analysis_population"] = (
+        "All randomized participants in the comparison groups"
+        if baseline_subgroup is None
+        else (
+            "All randomized participants in the comparison groups; baseline subgroup: "
+            + baseline_subgroup
+        )
+    )
     target["outcome_definition"] = requested_outcome
     target["measurement"] = {"metric": requested_outcome, "method": measurement["method"]}
     target["effect_of_interest"] = "assignment"

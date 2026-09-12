@@ -855,6 +855,7 @@ class DomainCategoryProfileResult(PublicModel):
     """Complete approved category profile without proof-oriented bindings."""
 
     form: Literal["single_group_category_profile"]
+    analysis_population: str = Field(min_length=1)
     endpoint: ReportedEndpoint
     group_id: str = Field(min_length=1)
     denominator_basis: str = Field(min_length=1)

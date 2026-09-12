@@ -78,6 +78,27 @@ def test_canonical_target_is_reconstructed_from_captured_outcome(tmp_path: Path)
     assert canonical["requested_outcome"] == "requested outcome"
     assert canonical["target"]["outcome_definition"] == "requested outcome"
     assert canonical["target"]["measurement"]["metric"] == "requested outcome"
+    assert canonical["target"]["intended_analysis_population"] == (
+        "All randomized participants in the comparison groups"
+    )
+    assert "baseline_subgroup" not in canonical["target"]
+
+
+def test_baseline_subgroup_is_appended_to_canonical_target_population(tmp_path: Path) -> None:
+    workspace = _workspace(tmp_path)
+    evidence = _prepared_evidence(workspace)
+    result = _result(evidence)
+    result["target"]["baseline_subgroup"] = "participants aged 65 years or older"
+
+    saved = _call(workspace, "save_proposal", _proposal_args(workspace, [result]))
+
+    assert saved["outcome"] == "review_required", saved
+    canonical = _state_proposal(workspace)["results"][0]
+    assert canonical["target"]["intended_analysis_population"] == (
+        "All randomized participants in the comparison groups; baseline subgroup: "
+        "participants aged 65 years or older"
+    )
+    assert "baseline_subgroup" not in canonical["target"]
 
 
 def test_absent_comparative_precision_is_not_source_bound(tmp_path: Path) -> None:
@@ -89,6 +110,7 @@ def test_absent_comparative_precision_is_not_source_bound(tmp_path: Path) -> Non
         "effect_measure": "risk ratio",
         "estimate": "1",
         "precision": None,
+        "analysis_population": "analyzed population",
         "endpoint": result["reported"]["endpoint"],
         "group_values": result["reported"]["values"],
     }
@@ -110,6 +132,7 @@ def test_complete_comparative_effect_does_not_require_group_values(tmp_path: Pat
         "effect_measure": "risk ratio",
         "estimate": "1",
         "precision": None,
+        "analysis_population": "analyzed population",
         "endpoint": result["reported"]["endpoint"],
     }
 
@@ -170,6 +193,7 @@ def test_structural_category_dimensions_need_no_mapping_but_labels_do(
     result = _result(evidence)
     result["reported"] = {
         "form": "single_group_category_profile",
+        "analysis_population": "randomized population",
         "endpoint": {
             "name": "requested outcome",
             "definition": "reported by event and grade",

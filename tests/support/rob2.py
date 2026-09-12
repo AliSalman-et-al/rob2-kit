@@ -157,11 +157,12 @@ def _result(_evidence: dict[str, Any]) -> dict[str, Any]:
                 {"id": "a", "assignment": "assigned to intervention"},
                 {"id": "b", "assignment": "assigned to control"},
             ],
-            "intended_analysis_population": "randomized population",
+            "baseline_subgroup": None,
             "intended_effect_measure": "risk ratio",
         },
         "reported": {
             "form": "group_bound_values",
+            "analysis_population": "randomized population",
             "endpoint": {
                 "name": "requested outcome",
                 "definition": "The requested outcome was measured in the analyzed population.",

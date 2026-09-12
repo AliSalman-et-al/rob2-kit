@@ -995,6 +995,7 @@ def test_domain_context_preserves_complete_category_profile_result(tmp_path: Pat
     reported.update(
         {
             "form": "single_group_category_profile",
+            "analysis_population": "randomized population",
             "endpoint": {"name": "requested outcome", "definition": None},
             "group_id": "a",
             "denominator_basis": "randomized population",

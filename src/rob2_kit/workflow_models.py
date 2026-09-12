@@ -467,8 +467,12 @@ class ResultTargetDraft(StrictModel):
         min_length=2,
         description="Every randomized group compared by the target Result.",
     )
-    intended_analysis_population: NonBlankText = Field(
-        description="Source-supported population intended for this target Result.",
+    baseline_subgroup: NonBlankText | None = Field(
+        description=(
+            "Baseline-defined restriction identifying the target subgroup, or null for the "
+            "full randomized comparison population. Analysis exclusions are recorded under "
+            "reported.analysis_population."
+        ),
     )
     intended_effect_measure: NonBlankText = Field(
         description="Effect measure intended for the target comparison.",
@@ -583,6 +587,13 @@ class ComparativeEffectResult(StrictModel):
         default=None,
         description="Source-reported precision interval or uncertainty; omit when absent.",
     )
+    analysis_population: NonBlankText = Field(
+        description=(
+            "Describe who was included in this estimate and any reported exclusions. An analysis "
+            "label alone is insufficient when participant inclusion or exclusion details are "
+            "available."
+        ),
+    )
     endpoint: ReportedEndpoint = Field(
         description="Endpoint identified by the same Evidence as the quantitative tuple.",
     )
@@ -605,6 +616,13 @@ class ComparativeEffectResult(StrictModel):
 class GroupBoundValuesResult(StrictModel):
     form: Literal["group_bound_values"] = Field(
         description="Source-reported values bound to each randomized group.",
+    )
+    analysis_population: NonBlankText = Field(
+        description=(
+            "Describe who was included in this estimate and any reported exclusions. An analysis "
+            "label alone is insufficient when participant inclusion or exclusion details are "
+            "available."
+        ),
     )
     endpoint: ReportedEndpoint = Field(
         description="Endpoint identified by the same Evidence as the group values.",
@@ -654,6 +672,13 @@ class CategoryProfileResult(StrictModel):
 
     form: Literal["single_group_category_profile"] = Field(
         description="A complete source-reported category profile for one randomized group.",
+    )
+    analysis_population: NonBlankText = Field(
+        description=(
+            "Describe who was included in this estimate and any reported exclusions. An analysis "
+            "label alone is insufficient when participant inclusion or exclusion details are "
+            "available."
+        ),
     )
     endpoint: ReportedEndpoint = Field(
         description="Endpoint identified by the same Evidence as the category profile.",

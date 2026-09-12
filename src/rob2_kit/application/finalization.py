@@ -1125,6 +1125,7 @@ def _valid_result_shape(
         or not target["intended_effect_measure"].strip()
         or not _nonblank(result.get("relation_rationale"))
         or not isinstance(reported.get("endpoint"), dict)
+        or not _nonblank(reported.get("analysis_population"))
         or set(reported["endpoint"]) != {"name", "definition"}
         or not _nonblank(reported["endpoint"].get("name"))
         or (
@@ -1222,6 +1223,7 @@ def _valid_result_shape(
                 "effect_measure",
                 "estimate",
                 "precision",
+                "analysis_population",
                 "endpoint",
                 "group_values",
             }
@@ -1231,12 +1233,13 @@ def _valid_result_shape(
             return False
         valid, reported_ids = valid_values(reported["group_values"], optional=True)
     elif form == "group_bound_values":
-        if set(reported) != {"form", "endpoint", "values"}:
+        if set(reported) != {"form", "analysis_population", "endpoint", "values"}:
             return False
         valid, reported_ids = valid_values(reported["values"])
     elif form == "single_group_category_profile":
         if set(reported) != {
             "form",
+            "analysis_population",
             "endpoint",
             "group_id",
             "denominator_basis",

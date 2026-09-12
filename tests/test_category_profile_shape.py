@@ -19,6 +19,7 @@ def _category(**overrides: object) -> dict[str, object]:
 def _profile(categories: list[dict[str, object]]) -> dict[str, object]:
     return {
         "form": "single_group_category_profile",
+        "analysis_population": "follow-up participants",
         "endpoint": {"name": "adverse events", "definition": "grade 3 or higher"},
         "group_id": "intervention",
         "denominator_basis": "follow-up participants",

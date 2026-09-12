@@ -301,6 +301,7 @@ def test_comparative_anchor_allows_precision_in_a_separate_evidence_item() -> No
             "effect_measure": "risk ratio",
             "estimate": "1",
             "precision": "95% CI 0.5 to 2",
+            "analysis_population": "analyzed population",
             "endpoint": {"name": "requested outcome", "definition": "event risk"},
             "group_values": [
                 {"group_id": "a", "statistic": "risk", "value": "1", "unit": "events"},
@@ -347,6 +348,7 @@ def test_comparative_anchor_accepts_derived_estimate_when_group_tuple_is_source_
             "effect_measure": "risk ratio",
             "estimate": "3",
             "precision": None,
+            "analysis_population": "analyzed population",
             "endpoint": {"name": "requested outcome", "definition": "event risk"},
             "group_values": [
                 {"group_id": "a", "statistic": "risk", "value": "1", "unit": "events"},
@@ -408,6 +410,7 @@ def test_replay_binding_accepts_repeated_values_in_table_and_figure(
     selected_item["quote"] = material + " " + material
     result["reported"] = {
         "form": "single_group_category_profile",
+        "analysis_population": "randomized population",
         "endpoint": result["reported"]["endpoint"],
         "group_id": "a",
         "denominator_basis": "randomized population",

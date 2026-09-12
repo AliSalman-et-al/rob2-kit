@@ -34,13 +34,14 @@ Evidence support or scientific correctness.
 					{"id": "practice", "assignment": "Spaced practice"},
 					{"id": "review", "assignment": "Single review session"}
 				],
-				"intended_analysis_population": "All randomized learners",
+				"baseline_subgroup": null,
 				"intended_effect_measure": "Mean difference"
 			},
 			"reported": {
 				"form": "comparative_effect",
 				"effect_measure": "Mean difference",
 				"estimate": "2.3",
+				"analysis_population": "Randomized learners with observed course quiz scores; handling of learners without observed scores is not reported.",
 				"endpoint": {"name": "Course quiz score"}
 			}
 		}
@@ -103,10 +104,13 @@ review identifies a better candidate.
 
 ## Separate target from report
 
-The target records the requested measurement, time, randomized groups, intended
-analysis population, and intended effect measure. Describe every complete
-randomized arm in `comparison_groups`. `measurement.method` is ascertainment or
-definition, not a summary statistic.
+The target records the requested measurement, time, randomized groups, an
+optional baseline-defined subgroup, and intended effect measure. The server
+anchors target to randomized participants, qualified by `baseline_subgroup` when
+supplied. `reported.analysis_population` holds estimate participants and
+reported exclusions. Describe every complete randomized arm in
+`comparison_groups`. `measurement.method` is ascertainment or definition, not a
+summary statistic.
 
 The reported object records the Source endpoint and quantities. Keep its
 endpoint distinct from the captured requested outcome. The server supplies the
