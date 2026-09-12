@@ -20,7 +20,7 @@ from fastmcp.server.context import (
 from fastmcp.tools import InputRequiredToolResult, ToolResult
 from mcp.shared.exceptions import MCPError
 from mcp.types import ImageContent, TextContent, ToolAnnotations
-from pydantic import Field, StrictBool, StrictInt, StrictStr, model_validator
+from pydantic import ConfigDict, Field, StrictBool, StrictInt, StrictStr, model_validator
 from pydantic.functional_validators import AfterValidator, BeforeValidator
 
 from rob2_kit import __version__
@@ -1357,7 +1357,14 @@ def save_proposal(
     return _invoke("save_proposal", lambda: _save_proposal(_workspace(), proposal))
 
 
+def _proposal_approval_json_schema_extra(schema: dict[str, Any]) -> None:
+    schema.pop("title", None)
+    schema.pop("additionalProperties", None)
+
+
 class ProposalApprovalDecision(StrictModel):
+    model_config = ConfigDict(json_schema_extra=_proposal_approval_json_schema_extra)
+
     approved: StrictBool = Field(
         title="Approve Proposal Review",
         description=(

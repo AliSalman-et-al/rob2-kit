@@ -62,6 +62,7 @@ def _approval_call(
     *,
     with_handler: bool = True,
     messages: list[str] | None = None,
+    elicitation_params: list[Any] | None = None,
 ) -> dict[str, Any]:
     async def elicit(
         message: str, _response_type: type[Any] | None, _params: Any, _context: Any
@@ -69,6 +70,8 @@ def _approval_call(
         assert _response_type is not None
         if messages is not None:
             messages.append(message)
+        if elicitation_params is not None:
+            elicitation_params.append(_params)
         return response
 
     async def run() -> dict[str, Any]:
@@ -154,6 +157,45 @@ def test_modern_proposal_approval_binds_input_request_to_exact_review(
     request = result.input_required.input_requests["proposal_review"]
     assert isinstance(request, mcp_types.ElicitRequest)
     assert review_reference in request.params.message
+
+
+def test_modern_proposal_approval_emits_codex_compatible_schema(tmp_path: Path) -> None:
+    workspace = _pending_workspace(tmp_path)
+
+    result = _modern_approval_call(workspace)
+
+    assert isinstance(result, InputRequiredToolResult)
+    assert result.input_required.input_requests is not None
+    request = result.input_required.input_requests["proposal_review"]
+    assert isinstance(request, mcp_types.ElicitRequest)
+    assert isinstance(request.params, mcp_types.ElicitRequestFormParams)
+    schema = request.params.requested_schema
+    assert set(schema) == {"type", "properties", "required"}
+    assert schema["type"] == "object"
+    assert schema["properties"]["approved"]["type"] == "boolean"
+    assert schema["properties"]["approved"]["title"] == "Approve Proposal Review"
+    assert schema["properties"]["approved"]["description"]
+    assert schema["required"] == ["approved"]
+
+
+def test_legacy_proposal_approval_emits_codex_compatible_schema(tmp_path: Path) -> None:
+    workspace = _pending_workspace(tmp_path)
+    params: list[Any] = []
+
+    _approval_call(
+        workspace,
+        ElicitResult(action="decline"),
+        elicitation_params=params,
+    )
+
+    assert len(params) == 1
+    schema = params[0].requested_schema
+    assert set(schema) == {"type", "properties", "required"}
+    assert schema["type"] == "object"
+    assert schema["properties"]["approved"]["type"] == "boolean"
+    assert schema["properties"]["approved"]["title"] == "Approve Proposal Review"
+    assert schema["properties"]["approved"]["description"]
+    assert schema["required"] == ["approved"]
 
 
 def test_modern_proposal_approval_accepts_only_bound_researcher_response(
