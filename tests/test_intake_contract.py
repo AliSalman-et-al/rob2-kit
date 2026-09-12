@@ -803,7 +803,7 @@ def test_save_proposal_schema_is_closed_and_discriminated() -> None:
     assert "clarity" not in assessable["properties"]
     assert "alternatives" not in assessable["properties"]
     assert "evidence" not in assessable["properties"]
-    assert "relation_rationale" not in assessable["required"]
+    assert "relation_rationale" in assessable["required"]
     target = cast(dict[str, Any], assessable["properties"]["target"])
     assert "effect_of_interest" not in target["properties"]
     assert "outcome_definition" not in target["properties"]

@@ -1414,13 +1414,6 @@ def _relation_name(value: object) -> str:
     return " ".join(normalized.casefold().replace("-", " ").split())
 
 
-def _exact_relation_rationale(target_name: str, reported_name: str) -> str:
-    return (
-        f"Exact relation: target outcome '{target_name}' and reported endpoint "
-        f"'{reported_name}' match after Unicode, whitespace, case, and hyphen normalization."
-    )
-
-
 def _domain_judgment(domain_id: str, answers: dict[str, str]) -> str:
     y = {"yes", "probably_yes"}
     no = {"probably_no", "no"}
@@ -1767,31 +1760,6 @@ def _valid_result_shape(
         or set(endpoint) != {"name", "definition"}
         or not _nonblank(endpoint.get("name"))
         or (endpoint.get("definition") is not None and not _nonblank(endpoint.get("definition")))
-        or (
-            result.get("relation") == "exact"
-            and (
-                (
-                    semantics_version == "rob2-kit.result-semantics.v0.5"
-                    and (
-                        _relation_name(target.get("outcome_definition"))
-                        != _relation_name(endpoint.get("name"))
-                        or result.get("relation_rationale")
-                        != _exact_relation_rationale(
-                            target.get("outcome_definition", ""), endpoint["name"]
-                        )
-                    )
-                )
-                or (
-                    semantics_version != "rob2-kit.result-semantics.v0.5"
-                    and _relation_name(target.get("outcome_definition"))
-                    == _relation_name(endpoint.get("name"))
-                    and result.get("relation_rationale")
-                    != _exact_relation_rationale(
-                        target.get("outcome_definition", ""), endpoint["name"]
-                    )
-                )
-            )
-        )
     ):
         return False
     measurement = target.get("measurement")

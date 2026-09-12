@@ -140,6 +140,9 @@ def _result(_evidence: dict[str, Any]) -> dict[str, Any]:
         "kind": "assessable",
         "trial_id": "trial",
         "relation": "exact",
+        "relation_rationale": (
+            "The selected Evidence supports the requested endpoint correspondence."
+        ),
         "applicability": {
             "design": "individual_parallel",
             "rationale": (

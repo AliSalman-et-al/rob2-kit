@@ -78,7 +78,7 @@
 "destructive":false,
 "idempotent":true,
 "open_world":false,
-"schema_sha256":"sha256:75b57cee532de38530f0e6b453a61a5b96f0f33dc16317df67eb5249168aa927",
+"schema_sha256":"sha256:cd76fb6e3418ca12a3d558c246d98ebb209625e8b580c87b866009272dbea921",
 "output_schema_sha256":"sha256:b547a6b1022c7fea33d7c0f51c0fefb8f0ef075fca730d490b43105c761ae181"},
 {"name":"request_proposal_approval",
 "title":"Request Proposal approval",

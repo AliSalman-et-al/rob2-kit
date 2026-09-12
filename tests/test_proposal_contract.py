@@ -52,17 +52,19 @@ def test_removed_equivalence_relation_is_rejected_at_typed_boundary(
         _call(workspace, "save_proposal", _proposal_args(workspace, [result]))
 
 
-def test_exact_relation_rationale_is_server_derived(tmp_path: Path) -> None:
+def test_exact_relation_rationale_is_preserved(tmp_path: Path) -> None:
     workspace = _workspace(tmp_path)
     evidence = _prepared_evidence(workspace)
     result = _result(evidence)
-    result["relation_rationale"] = "caller text is ignored for exact relations"
+    result["relation_rationale"] = (
+        "The selected Evidence supports this exact endpoint correspondence."
+    )
 
-    repair = _call(workspace, "save_proposal", _proposal_args(workspace, [result]))
+    saved = _call(workspace, "save_proposal", _proposal_args(workspace, [result]))
 
-    assert repair["outcome"] == "review_required"
+    assert saved["outcome"] == "review_required"
     canonical = _state_proposal(workspace)["results"][0]
-    assert canonical["relation_rationale"].startswith("Exact relation: target outcome")
+    assert canonical["relation_rationale"] == result["relation_rationale"]
 
 
 def test_canonical_target_is_reconstructed_from_captured_outcome(tmp_path: Path) -> None:

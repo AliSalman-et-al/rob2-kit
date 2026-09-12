@@ -24,7 +24,6 @@ from ..workflow_models import (
     CapturedBatch,
     ExpectedRevision,
     ResultApplicability,
-    exact_relation_rationale,
 )
 from ._state import (
     _canonical_evidence_records,
@@ -1132,31 +1131,6 @@ def _valid_result_shape(
         or (
             reported["endpoint"].get("definition") is not None
             and not _nonblank(reported["endpoint"].get("definition"))
-        )
-        or (
-            result.get("relation") == "exact"
-            and (
-                (
-                    semantics_version == _HISTORICAL_RESULT_SEMANTICS_VERSION
-                    and (
-                        _relation_name(target.get("outcome_definition"))
-                        != _relation_name(reported["endpoint"].get("name"))
-                        or result.get("relation_rationale")
-                        != exact_relation_rationale(
-                            target.get("outcome_definition", ""), reported["endpoint"]["name"]
-                        )
-                    )
-                )
-                or (
-                    semantics_version != _HISTORICAL_RESULT_SEMANTICS_VERSION
-                    and _relation_name(target.get("outcome_definition"))
-                    == _relation_name(reported["endpoint"].get("name"))
-                    and result.get("relation_rationale")
-                    != exact_relation_rationale(
-                        target.get("outcome_definition", ""), reported["endpoint"]["name"]
-                    )
-                )
-            )
         )
     ):
         return False

@@ -492,7 +492,7 @@ def test_needs_input_and_repairs_are_authoritative(tmp_path: Path) -> None:
         ),
     )
     assert table_repair["outcome"] == "repair"
-    assert any(item["code"] == "exact_relation_name_mismatch" for item in table_repair["repairs"])
+    assert any(item["code"] == "result_value_not_supported" for item in table_repair["repairs"])
     third_repair_result = _result(evidence)
     third_repair_result["reported"]["values"][0]["value"] = "unsupported value"
     truncated = application_save_proposal(
