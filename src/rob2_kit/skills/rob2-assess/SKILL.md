@@ -13,6 +13,86 @@ own source interpretation, Result selection, Evidence selection, and signalling
 answers. Proposal Review is the only researcher gate. After approval, continue
 without asking for signalling answers, progress confirmation, or final approval.
 
+## Read one complete MCP receipt
+
+Hosts may expose a tool result as `structured_content`, `structuredContent`, or
+one JSON text content block. Use the structured object when it is available; if
+it is not, parse the single JSON text block once. Keep that complete receipt as
+working context, including `head`, `data.result`, `questions`,
+`comparison_cards`, `evidence`, `evidence_workspace`, `reading_recovery`, and
+any `recovery` or `next_action` fields. Do not render only `questions` (or a
+`questions.map(...)` projection), and do not concatenate the structured and
+text representations. Keep `render_page` image content blocks separate from
+the deduplicated JSON; render and inspect the image when layout carries
+meaning.
+
+If the host reports `Warning: truncated output`, treat the receipt as
+delivery incomplete. On a Codex host, repeat the identical context or read
+request with a `functions.exec` `max_output_tokens` value large enough for the
+measured output. Keep explicit `trial_id`, `domain_id`, and page/window
+scope arguments applicable to that tool unchanged on every retry: Trial and
+Domain for context, or source and page/window ranges for reads. Inspect the rendered output for truncation and
+confirm that the decision-critical sections are visibly present before
+interpreting evidence; parsing JSON alone does not establish complete host
+delivery. If the cap persists, retry smaller exact page windows or render a
+lossless section that preserves the same scope and fields. A truncated receipt
+is a transport failure, not a no-hit or absence result. A Codex
+`functions.exec` probe can render one copy:
+
+```javascript
+// @exec: {"max_output_tokens": 20000}
+const r = await tools.mcp__rob2__get_domain_context({
+  trial_id: "trial-id-from-head.next_action",
+  domain_id: "domain-id-from-head.next_action",
+  page_size: 32768,
+});
+const textPart = r?.content?.find((part) => part?.type === "text")?.text;
+const receipt = r?.structuredContent ?? r?.structured_content ?? (textPart ? JSON.parse(textPart) : null);
+if (!receipt) throw new Error("MCP receipt unavailable; delivery incomplete");
+text(receipt);
+```
+
+For paged Domain context, pass `data.context_page.next_cursor` unchanged. When
+the host supports variables, reuse the returned value directly; never manually
+retype an opaque cursor. Render each page separately so a combined transcript
+does not truncate the receipt. If a cursor is invalid, recapture the preceding
+page and reuse its exact cursor; if it is stale, restart the initial scoped call
+with the same explicit Trial, Domain, page size, and D3 preview when used.
+Never assess from page zero while a continuation remains. On a continuation
+condition or error, preserve the stored cursor; advance or clear it only after
+a successful response containing `context_page`. In Codex, use separate
+`functions.exec` calls so each page is rendered alone; redefine the small
+receipt extraction inline because exec locals do not persist:
+
+```javascript
+// First functions.exec call: use Trial/Domain from head.next_action.
+const r = await tools.mcp__rob2__get_domain_context({
+  trial_id: "trial-id-from-head.next_action",
+  domain_id: "domain-id-from-head.next_action",
+  page_size: 32768,
+});
+const textPart = r?.content?.find((part) => part?.type === "text")?.text;
+const page = r?.structuredContent ?? r?.structured_content ?? (textPart ? JSON.parse(textPart) : null);
+if (!page?.data?.context_page) throw new Error("Context page unavailable; keep stored cursor");
+text(page);
+store("domain-next-cursor", page.data.context_page.next_cursor ?? null);
+```
+
+```javascript
+// Separate functions.exec call: load and pass the cursor unchanged.
+const cursor = load("domain-next-cursor");
+if (!cursor) throw new Error("No stored Domain cursor");
+const r = await tools.mcp__rob2__get_domain_context({ cursor });
+const textPart = r?.content?.find((part) => part?.type === "text")?.text;
+const page = r?.structuredContent ?? r?.structured_content ?? (textPart ? JSON.parse(textPart) : null);
+if (page?.outcome !== "success" || !page?.data?.context_page) {
+  text(page);
+  throw new Error("Continuation failed; stored cursor unchanged");
+}
+text(page);
+store("domain-next-cursor", page.data.context_page.next_cursor ?? null);
+```
+
 ## Follow the workflow
 
 ### 1. Recover or prepare the Batch
@@ -108,7 +188,8 @@ set or revise signalling answers.
 
 ### 5. Assess the next Domain
 
-Call `get_domain_context` for the Trial and Domain in `head.next_action`. Treat
+Call `get_domain_context` for the Trial and Domain in `head.next_action`, using
+`page_size: 32768` on the initial call. Treat
 each returned question card as authoritative for wording, server-issued options,
 activation, official guidance, decision rules, and uncertainty. Open
 the matching scientific reference when working on that Domain:
@@ -119,6 +200,22 @@ the matching scientific reference when working on that Domain:
 - [Outcome measurement](references/measurement.md)
 - [Selection of the reported result](references/selection.md)
 
+If `data.context_page` is present, follow `next_cursor` until every page in its
+ordered range has been fetched before deciding. Verify the same Trial, Domain,
+revision, page count, and contiguous page indexes across the pages, then
+reconstruct all question cards, comparison cards, Evidence, and recovery fields.
+Pass each `next_cursor` unchanged; never manually retype it. An invalid cursor
+requires recapturing the preceding page and reusing its emitted cursor. A stale
+cursor requires restarting the initial scoped call. Do not assess from page zero
+while continuation remains.
+Pagination bounds each server response; verify the host-visible rendering and
+do not claim that delivery proves host or model comprehension. If the server
+returns a header/item oversized condition, retry the same explicit scope with
+the larger `required_page_size`; an unrecoverable condition requires review
+without dropping a field. Recover the Evidence
+needed for each premise with `read_pages`, and render `render_page` image
+blocks separately when layout matters.
+
 For a comparison card, use `question_id` to find its wording and options in
 `questions`. Before citing Evidence with `text_status:"omitted"`, confirm that
 you have inspected its complete passage and can assess the cited premise. If
@@ -127,11 +224,21 @@ compaction, follow
 [Recover omitted Evidence](references/evidence.md#recover-omitted-evidence).
 
 Review inspected passages against each active proposition and check material
-contradictions. Reuse adequate Evidence without another search. For an unresolved
-premise, use bounded discovery across the relevant Sources. Follow
-[Select Evidence](references/evidence.md#reuse-inspected-passage-handles) for
-lexical no-hit recovery. Stop when the proposition and remaining uncertainty
-are grounded, or bounded discovery leaves a stated information limit.
+contradictions. Reuse adequate Evidence without another search. For an
+unresolved premise, use bounded, premise-specific discovery across the
+relevant Sources. Start with concrete wording from the study, call `list_sources`
+only when the active context has no complete Source inventory. When a
+comparison card is returned, use its inventory first to find unopened
+supplements or combined documents. Treat Source roles as navigation hints
+rather than proof of what a document contains. If a narrow search returns no useful
+passage, broaden once with concrete study language and widen the Source scope
+when the premise may be elsewhere. Continue an existing cursor when deeper
+cached results are needed, then read the returned page windows before citing
+them. Follow [Select Evidence](references/evidence.md#recover-an-unresolved-premise)
+for the full recovery loop. Stop when the complete premise is grounded or
+when the relevant captured Sources and bounded cursor/page windows have been
+checked and the remaining information limit is documented with a current,
+untruncated receipt. Do not search every question mechanically.
 
 For each answer, copy exactly one server-issued `options[].id` from
 the current question card into `answers[].option_id`, character for character.
@@ -178,6 +285,10 @@ those passages and any stated uncertainty. Add a concise `justification` when
 an inference, conflicting evidence, or uncertainty connects the passages to the
 answer. The audit is complete when every active answer addresses that Result
 and its bases support the claims attributed to them.
+
+Do not make `save_domain_judgment` the primary next action while
+`head.next_action`, `reading_recovery`, or another continuation still requires
+status recovery or Evidence reading. Follow that continuation first.
 
 For D3.1, run the **availability audit** before saving: Yes/Probably Yes needs
 actual outcome-availability evidence; analysis membership, planned or scheduled

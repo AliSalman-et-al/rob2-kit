@@ -1539,20 +1539,35 @@ def record_read_coverage(
 ) -> None:
     """Persist only the numbered range actually delivered by ``read_pages``."""
 
+    record_read_coverage_batch(
+        workspace,
+        [(trial_id, source_id, page, start_line, end_line)],
+    )
+
+
+def record_read_coverage_batch(
+    workspace: str | Path,
+    ranges: list[tuple[str, str, int, int, int]],
+) -> None:
+    """Persist delivered read ranges atomically after a successful response."""
+
     root = _root(workspace)
     _ensure(root)
-    source = _find_source(root, trial_id, source_id)
-    if not all(
-        isinstance(value, int) and not isinstance(value, bool)
-        for value in (page, start_line, end_line)
-    ):
-        raise ValueError("read coverage coordinates are invalid")
-    if page < 1 or page > int(source["page_count"]):
-        raise ValueError("read coverage coordinates are outside Source")
-    if (start_line, end_line) == (0, 0):
-        pass
-    elif start_line < 1 or end_line < start_line:
-        raise ValueError("read coverage coordinates are outside Source")
+    validated: list[tuple[str, str, int, int, int]] = []
+    for trial_id, source_id, page, start_line, end_line in ranges:
+        source = _find_source(root, trial_id, source_id)
+        if not all(
+            isinstance(value, int) and not isinstance(value, bool)
+            for value in (page, start_line, end_line)
+        ):
+            raise ValueError("read coverage coordinates are invalid")
+        if page < 1 or page > int(source["page_count"]):
+            raise ValueError("read coverage coordinates are outside Source")
+        if (start_line, end_line) != (0, 0) and (start_line < 1 or end_line < start_line):
+            raise ValueError("read coverage coordinates are outside Source")
+        validated.append((trial_id, source_id, page, start_line, end_line))
+    if not validated:
+        return
     phase = _state(root).get("phase")
     if phase not in {"proposal", "assessment"}:
         return
@@ -1561,11 +1576,14 @@ def record_read_coverage(
     if not isinstance(batch_id, str):
         raise ValueError("active Batch identity is unavailable")
     with _db(root, "derivative.sqlite3") as connection:
-        connection.execute(
+        connection.executemany(
             "INSERT OR IGNORE INTO page_reads "
             "(batch_id,phase,trial_id,source_id,page,start_line,end_line) "
             "VALUES (?,?,?,?,?,?,?)",
-            (batch_id, phase, trial_id, source_id, page, start_line, end_line),
+            [
+                (batch_id, phase, trial_id, source_id, page, start_line, end_line)
+                for trial_id, source_id, page, start_line, end_line in validated
+            ],
         )
 
 

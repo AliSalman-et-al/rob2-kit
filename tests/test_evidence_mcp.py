@@ -8,11 +8,13 @@ from __future__ import annotations
 import runpy
 import sqlite3
 from pathlib import Path
+from typing import Any
 
 import pymupdf
 import pytest
 from support.rob2 import *  # noqa: F401,F403
 
+import rob2_kit.interfaces.mcp.server as mcp_server
 from rob2_kit.application import finalization
 from rob2_kit.application._state import _identity, _state
 from rob2_kit.application.contracts import COUNTERS
@@ -940,6 +942,137 @@ def test_read_pages_passage_uses_trimmed_line_bounds(tmp_path: Path) -> None:
     assert passage["quote"] == "first line\nsecond line"
     assert passage["start_line"] == 1
     assert passage["end_line"] == 2
+
+
+def test_read_pages_blank_fragment_has_no_passage_or_empty_evidence(
+    tmp_path: Path,
+) -> None:
+    workspace = _workspace(tmp_path)
+    (workspace / "input" / "trial" / "main.txt").write_text(
+        "first line\n\nlast line\n", encoding="utf-8"
+    )
+    _call(
+        workspace,
+        "prepare_batch",
+        {"requested_outcome": "requested outcome", "expected_revision": 0},
+    )
+    source = _call(workspace, "list_sources", {"trial_id": "trial"})["data"]["sources"][0]
+    before = set(_evidence_catalog(workspace))
+
+    page = _call(
+        workspace,
+        "read_pages",
+        {
+            "trial_id": "trial",
+            "windows": [
+                {
+                    "source_id": source["id"],
+                    "page": 1,
+                    "start_line": 2,
+                    "end_line": 2,
+                }
+            ],
+        },
+    )["data"]["pages"][0]
+
+    assert page["numbered_text"] == "2|"
+    assert page["passage_ref"] is None
+    assert set(_evidence_catalog(workspace)) == before
+
+
+def test_read_pages_two_pages_commits_coverage_after_valid_response(tmp_path: Path) -> None:
+    workspace = _workspace(tmp_path)
+    main = workspace / "input" / "trial" / "main.txt"
+    main.unlink()
+    document = pymupdf.open()
+    for text in ("first page", "second page"):
+        document.new_page().insert_text((72, 72), text)
+    (main.with_suffix(".pdf")).write_bytes(document.tobytes())
+    document.close()
+    _call(
+        workspace,
+        "prepare_batch",
+        {"requested_outcome": "requested outcome", "expected_revision": 0},
+    )
+    source = _call(workspace, "list_sources", {"trial_id": "trial"})["data"]["sources"][0]
+
+    result = _call(
+        workspace,
+        "read_pages",
+        {
+            "trial_id": "trial",
+            "windows": [
+                {"source_id": source["id"], "page": 1, "start_line": 1, "end_line": 1},
+                {"source_id": source["id"], "page": 2, "start_line": 1, "end_line": 1},
+            ],
+        },
+    )
+
+    assert result["outcome"] == "success"
+    assert [page["numbered_text"] for page in result["data"]["pages"]] == [
+        "1|first page",
+        "1|second page",
+    ]
+    with sqlite3.connect(workspace / ".rob2-kit" / "derivative.sqlite3") as connection:
+        rows = connection.execute(
+            "SELECT page,start_line,end_line FROM page_reads WHERE source_id=? ORDER BY page",
+            (resolve_source_handle(workspace, "trial", source["id"]),),
+        ).fetchall()
+    assert rows == [(1, 1, 1), (2, 1, 1)]
+
+
+def test_read_pages_late_failure_does_not_commit_prior_coverage(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    workspace = _workspace(tmp_path)
+    main = workspace / "input" / "trial" / "main.txt"
+    main.unlink()
+    document = pymupdf.open()
+    for text in ("first page", "second page"):
+        document.new_page().insert_text((72, 72), text)
+    (main.with_suffix(".pdf")).write_bytes(document.tobytes())
+    document.close()
+    _call(
+        workspace,
+        "prepare_batch",
+        {"requested_outcome": "requested outcome", "expected_revision": 0},
+    )
+    source = _call(workspace, "list_sources", {"trial_id": "trial"})["data"]["sources"][0]
+    original = mcp_server._select_text_evidence_by_lines
+    calls = 0
+
+    def fail_on_second(
+        workspace: str | Path,
+        trial_id: str,
+        source_id: str,
+        page: int,
+        start_line: int,
+        end_line: int,
+    ) -> dict[str, Any]:
+        nonlocal calls
+        calls += 1
+        if calls == 2:
+            raise ValueError("synthetic late read failure")
+        return original(workspace, trial_id, source_id, page, start_line, end_line)
+
+    monkeypatch.setattr(mcp_server, "_select_text_evidence_by_lines", fail_on_second)
+    result = _call(
+        workspace,
+        "read_pages",
+        {
+            "trial_id": "trial",
+            "windows": [
+                {"source_id": source["id"], "page": 1, "start_line": 1, "end_line": 1},
+                {"source_id": source["id"], "page": 2, "start_line": 1, "end_line": 1},
+            ],
+        },
+    )
+
+    assert calls == 2
+    assert result["outcome"] == "condition"
+    assert result["condition"]["code"] == "invalid_request"
+    with sqlite3.connect(workspace / ".rob2-kit" / "derivative.sqlite3") as connection:
+        assert connection.execute("SELECT 1 FROM page_reads LIMIT 1").fetchone() is None
 
 
 def test_read_pages_returns_bounded_line_windows_with_continuation(tmp_path: Path) -> None:

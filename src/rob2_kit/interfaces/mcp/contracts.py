@@ -997,6 +997,27 @@ class DomainContextData(PublicModel):
         default=None,
         description="Required read windows, or optional unread ranges when budget_limited.",
     )
+    context_page: DomainContextPage | None = Field(
+        default=None,
+        description=(
+            "Optional bounded transport page. When present, fetch every page in order before "
+            "interpreting the Domain; page identity is bound to the Trial, Domain, and revision."
+        ),
+    )
+
+
+class DomainContextPage(PublicModel):
+    trial_id: TrialId
+    domain_id: DomainId
+    state_revision: NonNegativeInt
+    index: NonNegativeInt
+    count: PositiveInt
+    section: Literal["complete", "questions", "comparison_cards", "evidence"]
+    item_start: NonNegativeInt = 0
+    item_count: NonNegativeInt = 0
+    page_size: PositiveInt
+    cursor: str | None = Field(default=None, min_length=1)
+    next_cursor: str | None = Field(default=None, min_length=1)
 
 
 class ComparisonPassageRef(PublicModel):
