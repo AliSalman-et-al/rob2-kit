@@ -321,11 +321,12 @@ def _acceptance_result(_evidence: dict[str, Any]) -> dict[str, Any]:
                 {"id": "a", "assignment": phrase},
                 {"id": "b", "assignment": phrase},
             ],
-            "intended_analysis_population": phrase,
+            "baseline_subgroup": None,
             "intended_effect_measure": phrase,
         },
         "reported": {
             "form": "group_bound_values",
+            "analysis_population": phrase,
             "endpoint": {"name": phrase, "definition": phrase},
             "values": [
                 {"group_id": "a", "statistic": phrase, "value": phrase, "unit": phrase},

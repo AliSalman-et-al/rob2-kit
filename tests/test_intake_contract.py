@@ -809,6 +809,9 @@ def test_save_proposal_schema_is_closed_and_discriminated() -> None:
     assert "outcome_definition" not in target["properties"]
     measurement = cast(dict[str, Any], target["properties"]["measurement"])
     assert measurement["required"] == ["method"]
+    assert "baseline_subgroup" in target["properties"]
+    assert "baseline_subgroup" in target["required"]
+    assert "intended_analysis_population" not in target["properties"]
     timing = cast(dict[str, Any], target["properties"]["time_point_or_window"])
     assert [item["properties"]["kind"]["const"] for item in timing["oneOf"]] == [
         "described",
@@ -823,11 +826,12 @@ def test_save_proposal_schema_is_closed_and_discriminated() -> None:
     comparison_group = target["properties"]["comparison_groups"]["items"]
     assert "label" not in comparison_group["properties"]
     assert "assignment" in comparison_group["properties"]
-    comparative = next(
-        item["properties"]
+    comparative_variant = next(
+        item
         for item in reported["oneOf"]
         if item["properties"]["form"]["const"] == "comparative_effect"
     )
+    comparative = comparative_variant["properties"]
     assert "endpoint" in comparative
     endpoint = comparative["endpoint"]
     assert endpoint["required"] == ["name"]
@@ -835,12 +839,16 @@ def test_save_proposal_schema_is_closed_and_discriminated() -> None:
     assert "group_values" in comparative
     assert "quantities" not in comparative
     assert "comparison_groups" not in comparative
+    assert "analysis_population" in comparative_variant["required"]
+    assert "analysis_population" in comparative
+    for form in reported["oneOf"]:
+        assert "analysis_population" in form["required"]
     for name, definition in _walk_schema(schema):
         if definition.get("type") == "object":
             assert definition["additionalProperties"] is False, name
     # Every nested caller field is self-describing; keep the complete proposal
     # schema, including design applicability, compact enough for one definition.
-    assert len(json.dumps(schema, separators=(",", ":")).encode()) < 16000
+    assert len(json.dumps(schema, separators=(",", ":")).encode()) < 16500
     assert len(_walk_schema(schema)) <= 22
 
 
@@ -925,11 +933,12 @@ def test_selected_evidence_and_typed_proposal_survive_host_restart(tmp_path: Pat
             {"id": "A", "assignment": "assigned intervention"},
             {"id": "B", "assignment": "assigned control"},
         ],
-        "intended_analysis_population": "randomized",
+        "baseline_subgroup": None,
         "intended_effect_measure": "risk ratio",
     }
     reported = {
         "form": "group_bound_values",
+        "analysis_population": "randomized population",
         "endpoint": {
             "name": "reported endpoint",
             "definition": "measured endpoint definition",
@@ -987,6 +996,7 @@ def test_selected_evidence_and_typed_proposal_survive_host_restart(tmp_path: Pat
         "/target/comparison_groups/0/assignment",
         "/target/comparison_groups/1/id",
         "/target/comparison_groups/1/assignment",
+        "/reported/analysis_population",
         "/reported/values/0/group_id",
         "/reported/values/1/group_id",
     }

@@ -46,6 +46,7 @@ def _result(applicability: object = None, *, include_applicability: bool = True)
         },
         "reported": {
             "form": "group_bound_values",
+            "analysis_population": "analyzed participants",
             "endpoint": {"name": "all-cause mortality", "definition": "death"},
             "values": [
                 {"group_id": "a", "statistic": "risk", "value": "1", "unit": "%"},

@@ -211,6 +211,14 @@ def test_result_and_applicability_evidence_survive_review_replacement_and_deriva
     assert proposed["outcome"] == "review_required", proposed
     initial = _state(workspace)
     initial_result = initial["proposal"]["payload"]["results"][0]
+    assert (
+        initial_result["reported"]["analysis_population"]
+        == result["reported"]["analysis_population"]
+    )
+    assert (
+        initial["review"]["candidate"]["proposal"]["results"][0]["reported"]["analysis_population"]
+        == result["reported"]["analysis_population"]
+    )
     assert [item["handle"] for item in initial_result["evidence"]] == [result_evidence["handle"]]
     assert initial_result["applicability"]["evidence"] == [design_evidence["handle"]]
     assert "passage_refs" not in initial_result

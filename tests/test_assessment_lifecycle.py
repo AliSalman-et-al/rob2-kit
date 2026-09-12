@@ -615,6 +615,7 @@ def test_adverse_event_grades_are_categories_and_grade_five_is_retained(tmp_path
     result = _result(evidence)
     result["reported"] = {
         "form": "single_group_category_profile",
+        "analysis_population": "randomized population",
         "endpoint": {
             "name": "requested outcome",
             "definition": "Treatment-emergent adverse events by grade.",

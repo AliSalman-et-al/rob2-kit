@@ -72,6 +72,7 @@ def _source_bound_leaves(value: Any, path: str) -> dict[str, Any]:
                 "/target/intended_analysis_population",
                 "/target/intended_effect_measure",
                 "/reported/group_id",
+                "/reported/analysis_population",
             }
             or leaf_path.startswith("/target/time_point_or_window/")
             or (leaf_path == "/reported/precision" and leaf is None)
@@ -340,6 +341,15 @@ def _canonical_result(
     )
     target = dict(raw["target"])
     measurement = dict(target["measurement"])
+    baseline_subgroup = target.pop("baseline_subgroup")
+    target["intended_analysis_population"] = (
+        "All randomized participants in the comparison groups"
+        if baseline_subgroup is None
+        else (
+            "All randomized participants in the comparison groups; baseline subgroup: "
+            + baseline_subgroup
+        )
+    )
     target["outcome_definition"] = requested_outcome
     target["measurement"] = {"metric": requested_outcome, "method": measurement["method"]}
     target["effect_of_interest"] = "assignment"
@@ -736,6 +746,7 @@ def _derive_bindings(
     result: dict[str, Any],
     catalog: dict[str, dict[str, Any]],
     path: str,
+    preserve_handles: set[str] | None = None,
 ) -> list[dict[str, Any]]:
     leaves = {
         **_source_bound_leaves(result["target"], "/target"),
@@ -907,9 +918,14 @@ def _derive_bindings(
                 ),
             }
         )
-    # Selection is durable server state. Keep only material that actually
-    # supports this Result instead of making the caller curate a second list.
-    kept_indices = sorted(bound_evidence)
+    # Selection is durable server state. Keep bound material and explicitly
+    # selected passages that preserve provenance for population summaries.
+    preserved_indices = {
+        index
+        for index, item in enumerate(result["evidence"])
+        if item.get("handle") in (preserve_handles or set())
+    }
+    kept_indices = sorted(bound_evidence | preserved_indices)
     remap = {old: new for new, old in enumerate(kept_indices)}
     result["evidence"] = [result["evidence"][index] for index in kept_indices]
     for binding in bindings:
@@ -932,6 +948,7 @@ def _bind_result(
     index: int,
     path: str,
     semantic_defects: list[dict[str, Any]],
+    preserve_handles: set[str] | None = None,
 ) -> tuple[list[dict[str, Any]], set[str]]:
     defects, _ = _validate_evidence(result, catalog, index, path)
     applicability = result.get("applicability")
@@ -997,7 +1014,7 @@ def _bind_result(
                 "detail": detail,
             }
         )
-    _derive_bindings(result, catalog, path)
+    _derive_bindings(result, catalog, path, preserve_handles)
     handles = {
         item["handle"]
         for item in result["evidence"]
@@ -1176,6 +1193,11 @@ def save_proposal(
         )
     defects.extend(shape_defects)
     defects.extend(draft_defects)
+    preserve_handles_by_trial = {
+        result.trial_id: set(result.passage_refs)
+        for result in draft.results
+        if isinstance(result, AssessableResultDraft)
+    }
     for index, result in enumerate(raw["results"]):
         if result["kind"] == "unavailable":
             continue
@@ -1185,6 +1207,7 @@ def save_proposal(
             index,
             f"/results/{index}",
             shape_defects + draft_defects,
+            preserve_handles_by_trial.get(result["trial_id"]),
         )
         defects.extend(result_defects)
         used |= handles
