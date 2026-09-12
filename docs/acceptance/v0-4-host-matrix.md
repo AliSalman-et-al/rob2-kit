@@ -33,7 +33,7 @@ The Codex probe used `get_status` once in a fresh empty workspace and observed
 both representations. The Claude probe incurred no model usage or cost.
 
 The release is not scientifically qualified by this matrix. Real image
-delivery, restart across Proposal Review, skill discovery, oversized marker
+delivery, restart across Proposal Review, skill discovery, bounded Domain page
 survival, and blinded multi-model assessment remain incomplete until recorded
 with synthetic public fixtures. Server-produced output and in-process client
 success do not count as host-observed delivery.
@@ -50,6 +50,7 @@ recovery state.
 const raw = await tools.mcp__rob2__get_domain_context({
   trial_id: "trial-id-from-head.next_action",
   domain_id: "domain-id-from-head.next_action",
+  page_size: 32768,
 });
 const structured = raw?.structuredContent ?? raw?.structured_content;
 const textPart = raw?.content?.find((part) => part?.type === "text")?.text;
@@ -62,13 +63,18 @@ On Codex, set `functions.exec` `max_output_tokens` high enough for the measured
 complete JSON object, and retry the identical scoped call with a larger value
 after `Warning: truncated output`. Keep explicit Trial, Domain, and page/window
 scope arguments applicable to that tool unchanged on every retry: Trial and
-Domain for context, or source and page/window ranges for reads. If the cap persists, use smaller exact page windows
-or lossless section rendering while preserving the same fields. Inspect the
-rendered output for truncation; a JSON parse alone does not prove complete host
-delivery. Keep the full receipt, including `head`, `data.result`, `questions`,
-`comparison_cards`, `evidence`, `evidence_workspace`, and recovery fields.
+Domain for context, or source and page/window ranges for reads. If the cap
+persists, use smaller exact page windows or lossless section rendering while
+preserving the same fields. Inspect the rendered output for truncation; a JSON
+parse alone does not prove complete host delivery. Keep the full receipt,
+including `head`, `data.result`, `questions`, `comparison_cards`, `evidence`,
+`evidence_workspace`, and recovery fields.
 For `render_page`, keep image content blocks separate from deduplicated JSON and
 render/inspect the image when layout carries meaning.
+If the server returns `domain_context_header_oversized` or
+`domain_context_item_oversized`, retry the same Trial/Domain scope with the
+reported larger `required_page_size`; an unrecoverable condition requires
+review without omitting the record.
 
 In the Kalil r81 baseline replay, six Domain-context responses measured
 88–123 KB as the raw MCP envelope and 43–61 KB as one structured/text

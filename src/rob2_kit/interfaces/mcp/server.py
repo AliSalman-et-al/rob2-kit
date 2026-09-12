@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import base64
+import binascii
+import hashlib
 import json
 import os
 from typing import Annotated, Any, Literal
@@ -108,6 +110,12 @@ _INTAKE = ToolAnnotations(
 # tool-result limits.  The application still owns the complete captured
 # projection; this is only a transport window.
 _READ_PAGES_RESPONSE_CHARS = 24_000
+_DOMAIN_CONTEXT_DEFAULT_PAGE_BYTES = 32_768
+_DOMAIN_CONTEXT_MIN_PAGE_BYTES = 4_096
+_DOMAIN_CONTEXT_MAX_PAGE_BYTES = 131_072
+_DOMAIN_CONTEXT_PAGE_HEADROOM_BYTES = 1_024
+_DOMAIN_CONTEXT_RETRY_MARGIN_BYTES = 64
+_DOMAIN_CONTEXT_PAGE_SECTIONS = ("questions", "comparison_cards", "evidence")
 
 
 def _compact_domain_context_transport(value: dict[str, Any]) -> dict[str, Any]:
@@ -149,6 +157,309 @@ def _compact_domain_context_transport(value: dict[str, Any]) -> dict[str, Any]:
     }
     copied["data"] = ordered
     return copied
+
+
+def _domain_context_cursor(payload: dict[str, Any]) -> str:
+    encoded = json.dumps(payload, ensure_ascii=False, separators=(",", ":")).encode("utf-8")
+    return "dcp1." + base64.urlsafe_b64encode(encoded).decode("ascii").rstrip("=")
+
+
+def _domain_context_digest(data: dict[str, Any]) -> str:
+    canonical = json.dumps(data, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+    return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
+
+
+def _decode_domain_context_cursor(cursor: str) -> dict[str, Any]:
+    if not cursor.startswith("dcp1."):
+        raise ValueError("domain_context_cursor_invalid: unsupported cursor")
+    encoded = cursor.removeprefix("dcp1.")
+    try:
+        padding = "=" * (-len(encoded) % 4)
+        payload = json.loads(base64.urlsafe_b64decode(encoded + padding))
+    except (
+        binascii.Error,
+        ValueError,
+        TypeError,
+        json.JSONDecodeError,
+        UnicodeDecodeError,
+    ) as error:
+        raise ValueError("domain_context_cursor_invalid: malformed cursor") from error
+    if not isinstance(payload, dict) or not all(
+        isinstance(payload.get(key), expected)
+        for key, expected in (
+            ("trial_id", str),
+            ("domain_id", str),
+            ("state_revision", int),
+            ("page_index", int),
+            ("page_size", int),
+            ("digest", str),
+        )
+    ):
+        raise ValueError("domain_context_cursor_invalid: incomplete cursor")
+    if payload["state_revision"] < 0 or payload["page_index"] < 0:
+        raise ValueError("domain_context_cursor_invalid: invalid cursor position")
+    if not _DOMAIN_CONTEXT_MIN_PAGE_BYTES <= payload["page_size"] <= _DOMAIN_CONTEXT_MAX_PAGE_BYTES:
+        raise ValueError("domain_context_cursor_invalid: invalid page size")
+    return payload
+
+
+def _domain_context_transport_bytes(value: dict[str, Any]) -> int:
+    text = json.dumps(value, ensure_ascii=False, separators=(",", ":"))
+    envelope = {
+        "content": [{"type": "text", "text": text}],
+        "structured_content": value,
+    }
+    return len(json.dumps(envelope, ensure_ascii=False, separators=(",", ":")).encode("utf-8"))
+
+
+def _domain_context_page_data(
+    data: dict[str, Any],
+    section: str,
+    items: list[dict[str, Any]],
+    page: dict[str, Any],
+) -> dict[str, Any]:
+    result = dict(data)
+    for name in _DOMAIN_CONTEXT_PAGE_SECTIONS:
+        result[name] = items if name == section else []
+    result["context_page"] = page
+    return result
+
+
+def _domain_context_page_template(data: dict[str, Any], index: int) -> dict[str, Any]:
+    result = dict(data)
+    if index:
+        # Result, Evidence workspace, and recovery stay on every page. The
+        # long prose header is delivered on page zero and reconstructed once.
+        result["guidance"] = []
+        result["traps"] = []
+    return result
+
+
+def _paginate_domain_context_transport(
+    value: dict[str, Any],
+    cursor: str | None,
+    requested_page_size: int | None,
+    preview_missing_data: list[dict[str, Any]] | None = None,
+) -> dict[str, Any]:
+    data = value.get("data")
+    head = value.get("head")
+    if not isinstance(data, dict) or not isinstance(head, dict):
+        return value
+    trial_id = data.get("trial_id")
+    domain_id = data.get("domain_id")
+    state_revision = head.get("state_revision")
+    if not isinstance(trial_id, str) or not isinstance(domain_id, str) or not isinstance(
+        state_revision, int
+    ):
+        return value
+    digest = _domain_context_digest(data)
+
+    if cursor is None:
+        page_size = requested_page_size or _DOMAIN_CONTEXT_DEFAULT_PAGE_BYTES
+        page_index = 0
+    else:
+        decoded = _decode_domain_context_cursor(cursor)
+        if (
+            decoded["trial_id"] != trial_id
+            or decoded["domain_id"] != domain_id
+            or decoded["state_revision"] != state_revision
+            or decoded["digest"] != digest
+        ):
+            raise ValueError("domain_context_cursor_stale: context identity or projection changed")
+        if requested_page_size is not None and requested_page_size != decoded["page_size"]:
+            raise ValueError("domain_context_cursor_invalid: page size differs from cursor")
+        page_size = decoded["page_size"]
+        page_index = decoded["page_index"]
+
+    data_template = dict(data)
+    sections: list[tuple[str, list[dict[str, Any]]]] = []
+    for section in _DOMAIN_CONTEXT_PAGE_SECTIONS:
+        items = data.get(section)
+        if isinstance(items, list) and items:
+            sections.append((section, items))
+        data_template[section] = []
+
+    if not sections:
+        sections = [("complete", [])]
+
+    # Leave room for page metadata and the opaque cursor in the full
+    # text+structured envelope. Items remain indivisible.
+    working_budget = page_size - _DOMAIN_CONTEXT_PAGE_HEADROOM_BYTES
+    cursor_placeholder = _domain_context_cursor(
+        {
+            "trial_id": trial_id,
+            "domain_id": domain_id,
+            "state_revision": state_revision,
+            "page_index": 999_999,
+            "page_size": page_size,
+            "digest": digest,
+            "missing_data": preview_missing_data,
+        }
+    )
+    header_probe = _domain_context_page_data(
+        _domain_context_page_template(data_template, 0),
+        "complete",
+        [],
+        {
+            "trial_id": trial_id,
+            "domain_id": domain_id,
+            "state_revision": state_revision,
+            "index": 0,
+            "count": 1,
+            "section": "complete",
+            "item_start": 0,
+            "item_count": 0,
+            "page_size": page_size,
+            "cursor": cursor_placeholder,
+            "next_cursor": cursor_placeholder,
+        },
+    )
+    header_bytes = _domain_context_transport_bytes({**value, "data": header_probe})
+    if header_bytes > working_budget:
+        required_page_size = (
+            header_bytes + _DOMAIN_CONTEXT_PAGE_HEADROOM_BYTES + _DOMAIN_CONTEXT_RETRY_MARGIN_BYTES
+        )
+        if required_page_size > _DOMAIN_CONTEXT_MAX_PAGE_BYTES:
+            raise ValueError(
+                "domain_context_header_unrecoverable: "
+                f"required_page_size={required_page_size};maximum_page_size="
+                f"{_DOMAIN_CONTEXT_MAX_PAGE_BYTES}"
+            )
+        raise ValueError(
+            "domain_context_header_oversized: "
+            f"required_page_size={required_page_size};retry with a larger page_size"
+        )
+    records: list[tuple[str, int, list[dict[str, Any]]]] = []
+    for section, section_items in sections:
+        start = 0
+        while start < len(section_items) or (not section_items and start == 0):
+            if not section_items:
+                records.append((section, 0, []))
+                break
+            end = start + 1
+            while end <= len(section_items):
+                candidate = section_items[start:end]
+                probe = _domain_context_page_data(
+                    _domain_context_page_template(data_template, len(records)),
+                    section,
+                    candidate,
+                    {
+                        "trial_id": trial_id,
+                        "domain_id": domain_id,
+                        "state_revision": state_revision,
+                        "index": 0,
+                        "count": 1,
+                        "section": section,
+                        "item_start": start,
+                        "item_count": len(candidate),
+                        "page_size": page_size,
+                        "cursor": cursor_placeholder,
+                        "next_cursor": cursor_placeholder,
+                    },
+                )
+                probe_value = {**value, "data": probe}
+                if _domain_context_transport_bytes(probe_value) <= working_budget:
+                    end += 1
+                    continue
+                if end == start + 1:
+                    required = (
+                        _domain_context_transport_bytes(probe_value)
+                        + _DOMAIN_CONTEXT_PAGE_HEADROOM_BYTES
+                        + _DOMAIN_CONTEXT_RETRY_MARGIN_BYTES
+                    )
+                    if required > _DOMAIN_CONTEXT_MAX_PAGE_BYTES:
+                        raise ValueError(
+                            "domain_context_item_unrecoverable: "
+                            f"section={section};item_start={start};required_page_size="
+                            f"{required};maximum_page_size={_DOMAIN_CONTEXT_MAX_PAGE_BYTES}"
+                        )
+                    raise ValueError(
+                        "domain_context_item_oversized: "
+                        f"section={section};item_start={start};required_page_size={required}"
+                    )
+                break
+            chosen_end = max(start + 1, end - 1)
+            records.append((section, start, section_items[start:chosen_end]))
+            start = chosen_end
+
+    if page_index >= len(records):
+        raise ValueError("domain_context_cursor_invalid: page is outside this context")
+
+    page_count = len(records)
+    section, item_start, items = records[page_index]
+    current_cursor = (
+        _domain_context_cursor(
+            {
+                "trial_id": trial_id,
+                "domain_id": domain_id,
+                "state_revision": state_revision,
+                "page_index": page_index,
+                "page_size": page_size,
+                "digest": digest,
+                "missing_data": preview_missing_data,
+            }
+        )
+        if page_index
+        else None
+    )
+    next_cursor = (
+        _domain_context_cursor(
+            {
+                "trial_id": trial_id,
+                "domain_id": domain_id,
+                "state_revision": state_revision,
+                "page_index": page_index + 1,
+                "page_size": page_size,
+                "digest": digest,
+                "missing_data": preview_missing_data,
+            }
+        )
+        if page_index + 1 < page_count
+        else None
+    )
+    page = {
+        "trial_id": trial_id,
+        "domain_id": domain_id,
+        "state_revision": state_revision,
+        "index": page_index,
+        "count": page_count,
+        "section": section,
+        "item_start": item_start,
+        "item_count": len(items),
+        "page_size": page_size,
+        "cursor": current_cursor,
+        "next_cursor": next_cursor,
+    }
+    paged = {
+        **value,
+        "data": _domain_context_page_data(
+            _domain_context_page_template(data_template, page_index), section, items, page
+        ),
+    }
+    if next_cursor is not None:
+        paged["head"] = {
+            **value["head"],
+            "next_action": {
+                "operation": "get_domain_context",
+                "authority": "host",
+                "trial_id": trial_id,
+                "domain_id": domain_id,
+            },
+        }
+    actual_bytes = _domain_context_transport_bytes(paged)
+    if actual_bytes > page_size:
+        required_page_size = actual_bytes + _DOMAIN_CONTEXT_RETRY_MARGIN_BYTES
+        if required_page_size > _DOMAIN_CONTEXT_MAX_PAGE_BYTES:
+            raise ValueError(
+                "domain_context_page_unrecoverable: "
+                f"required_page_size={required_page_size};maximum_page_size="
+                f"{_DOMAIN_CONTEXT_MAX_PAGE_BYTES}"
+            )
+        raise ValueError(
+            "domain_context_page_oversized: "
+            f"required_page_size={required_page_size};restart with a larger page_size"
+        )
+    return paged
 
 
 def _workspace() -> str:
@@ -213,7 +524,14 @@ TrialLabels = Annotated[
 ]
 
 
-def _content(tool: str, value: dict[str, Any]) -> ToolResult:
+def _content(
+    tool: str,
+    value: dict[str, Any],
+    *,
+    domain_cursor: str | None = None,
+    domain_page_size: int | None = None,
+    domain_preview_missing_data: list[dict[str, Any]] | None = None,
+) -> ToolResult:
     # Pixel bytes are transport content, never part of the typed JSON receipt.
     png_bytes = value.get("_png_bytes")
     value = {key: item for key, item in value.items() if key != "_png_bytes"}
@@ -233,6 +551,13 @@ def _content(tool: str, value: dict[str, Any]) -> ToolResult:
         # projection.  This keeps structured and text consumers on one typed
         # contract while allowing the transport-only option prose omission.
         normalized = _compact_domain_context_transport(normalized)
+        if domain_cursor is not None or domain_page_size is not None:
+            normalized = _paginate_domain_context_transport(
+                normalized,
+                domain_cursor,
+                domain_page_size,
+                domain_preview_missing_data,
+            )
         validate_output(tool, normalized)
     # MCP clients are allowed to expose only ``content`` to a model.  Carry
     # the same validated object in a compact JSON text block so text-only and
@@ -260,9 +585,22 @@ def _content(tool: str, value: dict[str, Any]) -> ToolResult:
     return ToolResult(content=content, structured_content=normalized)
 
 
-def _invoke(tool: str, operation: Any) -> ToolResult:
+def _invoke(
+    tool: str,
+    operation: Any,
+    *,
+    domain_cursor: str | None = None,
+    domain_page_size: int | None = None,
+    domain_preview_missing_data: list[dict[str, Any]] | None = None,
+) -> ToolResult:
     try:
-        return _content(tool, operation())
+        return _content(
+            tool,
+            operation(),
+            domain_cursor=domain_cursor,
+            domain_page_size=domain_page_size,
+            domain_preview_missing_data=domain_preview_missing_data,
+        )
     except WorkflowConflict as error:
         return _content(
             tool,
@@ -291,6 +629,78 @@ def _invoke(tool: str, operation: Any) -> ToolResult:
                     "outcome": "condition",
                     "code": "search_cursor_expired",
                     "condition": condition.removeprefix("search_cursor_expired:"),
+                },
+            )
+        if condition.startswith("domain_context_cursor_stale:"):
+            return _content(
+                tool,
+                {
+                    "outcome": "condition",
+                    "code": "domain_context_cursor_stale",
+                    "condition": condition.removeprefix("domain_context_cursor_stale:"),
+                },
+            )
+        if condition.startswith("domain_context_cursor_invalid:"):
+            return _content(
+                tool,
+                {
+                    "outcome": "condition",
+                    "code": "domain_context_cursor_invalid",
+                    "condition": condition.removeprefix("domain_context_cursor_invalid:"),
+                },
+            )
+        if condition.startswith("domain_context_header_oversized:"):
+            return _content(
+                tool,
+                {
+                    "outcome": "condition",
+                    "code": "domain_context_header_oversized",
+                    "condition": condition.removeprefix("domain_context_header_oversized:"),
+                },
+            )
+        if condition.startswith("domain_context_header_unrecoverable:"):
+            return _content(
+                tool,
+                {
+                    "outcome": "condition",
+                    "code": "domain_context_header_unrecoverable",
+                    "condition": condition.removeprefix("domain_context_header_unrecoverable:"),
+                },
+            )
+        if condition.startswith("domain_context_item_oversized:"):
+            return _content(
+                tool,
+                {
+                    "outcome": "condition",
+                    "code": "domain_context_item_oversized",
+                    "condition": condition.removeprefix("domain_context_item_oversized:"),
+                },
+            )
+        if condition.startswith("domain_context_item_unrecoverable:"):
+            return _content(
+                tool,
+                {
+                    "outcome": "condition",
+                    "code": "domain_context_item_unrecoverable",
+                    "condition": condition.removeprefix("domain_context_item_unrecoverable:"),
+                },
+            )
+        if condition.startswith("domain_context_page_oversized:"):
+            return _content(
+                tool,
+                {
+                    "outcome": "condition",
+                    "code": "domain_context_page_oversized",
+                    "condition": condition.removeprefix("domain_context_page_oversized:"),
+                },
+            )
+        if condition.startswith("domain_context_page_unrecoverable:"):
+            return _content(
+                tool,
+                {
+                    "outcome": "condition",
+                    "code": "domain_context_page_unrecoverable",
+                    "condition": condition.removeprefix("domain_context_page_unrecoverable:"),
                 },
             )
         if tool in {
@@ -1091,7 +1501,14 @@ async def request_proposal_approval(ctx: Context) -> ToolResult:
         "For a D3 count preview, pass missing_data; the call does not commit those rows. "
         "If omitted Evidence is unfamiliar or uncertain after a restart or compaction, call "
         "read_pages with recovery.trial_id and recovery.windows. Use the returned revision and "
-        "option IDs when saving active answers."
+        "option IDs when saving active answers. For a large receipt, pass page_size as the "
+        "full text-plus-structured transport byte budget, then follow context_page.next_cursor "
+        "until every page is fetched. Keep the Trial, Domain, and revision from each page "
+        "bound together; an item larger than the budget returns a retry condition, or an "
+        "explicit unrecoverable condition when it exceeds the maximum page size. "
+        "Pagination bounds each server response; verify host-visible delivery and do not "
+        "claim it proves host or model comprehension. Recover "
+        "premise Evidence with read_pages and keep render_page image blocks separate."
     ),
     annotations=_READ_ONLY,
     output_schema=output_schema("get_domain_context"),
@@ -1122,7 +1539,53 @@ def get_domain_context(
             )
         ),
     ] = None,
+    cursor: Annotated[
+        StrictStr | None,
+        Field(
+            default=None,
+            description=(
+                "Opaque context_page.next_cursor from the immediately preceding page. It is "
+                "bound to the same Trial, Domain, revision, and page_size."
+            ),
+        ),
+    ] = None,
+    page_size: Annotated[
+        StrictJsonInt | None,
+        Field(
+            default=None,
+            ge=_DOMAIN_CONTEXT_MIN_PAGE_BYTES,
+            le=_DOMAIN_CONTEXT_MAX_PAGE_BYTES,
+            description=(
+                "Optional full text-plus-structured transport byte budget for bounded pages. "
+                "Use with the first call; subsequent calls follow cursor."
+            ),
+        ),
+    ] = None,
 ) -> ToolResult:
+    cursor_scope: dict[str, Any] | None = None
+    if cursor is not None:
+        try:
+            cursor_scope = _decode_domain_context_cursor(cursor)
+        except ValueError:
+            # _invoke will return the typed cursor condition after the normal
+            # workflow operation has supplied its current head.
+            cursor_scope = None
+    if cursor_scope is not None:
+        trial_id = trial_id or cursor_scope["trial_id"]
+        domain_id = domain_id or cursor_scope["domain_id"]
+        if missing_data is None and isinstance(cursor_scope.get("missing_data"), list):
+            try:
+                missing_data = [
+                    MissingDataRow.model_validate(row)
+                    for row in cursor_scope["missing_data"]
+                ]
+            except (TypeError, ValueError):
+                missing_data = None
+    preview_rows = (
+        [row.model_dump(mode="json", exclude_none=True) for row in missing_data]
+        if missing_data is not None
+        else None
+    )
     return _invoke(
         "get_domain_context",
         lambda: _get_domain_context(
@@ -1133,6 +1596,9 @@ def get_domain_context(
             if missing_data is not None
             else None,
         ),
+        domain_cursor=cursor,
+        domain_page_size=page_size,
+        domain_preview_missing_data=preview_rows,
     )
 
 

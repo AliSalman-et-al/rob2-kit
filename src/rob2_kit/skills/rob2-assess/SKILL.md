@@ -44,6 +44,7 @@ is a transport failure, not a no-hit or absence result. A Codex
 const r = await tools.mcp__rob2__get_domain_context({
   trial_id: "trial-id-from-head.next_action",
   domain_id: "domain-id-from-head.next_action",
+  page_size: 32768,
 });
 const textPart = r?.content?.find((part) => part?.type === "text")?.text;
 const receipt = r?.structuredContent ?? r?.structured_content ?? (textPart ? JSON.parse(textPart) : null);
@@ -146,7 +147,8 @@ set or revise signalling answers.
 
 ### 5. Assess the next Domain
 
-Call `get_domain_context` for the Trial and Domain in `head.next_action`. Treat
+Call `get_domain_context` for the Trial and Domain in `head.next_action`, using
+`page_size: 32768` on the initial call. Treat
 each returned question card as authoritative for wording, server-issued options,
 activation, official guidance, decision rules, and uncertainty. Open
 the matching scientific reference when working on that Domain:
@@ -156,6 +158,18 @@ the matching scientific reference when working on that Domain:
 - [Missing outcome data](references/missing.md)
 - [Outcome measurement](references/measurement.md)
 - [Selection of the reported result](references/selection.md)
+
+If `data.context_page` is present, follow `next_cursor` until every page in its
+ordered range has been fetched before deciding. Verify the same Trial, Domain,
+revision, page count, and contiguous page indexes across the pages, then
+reconstruct all question cards, comparison cards, Evidence, and recovery fields.
+Pagination bounds each server response; verify the host-visible rendering and
+do not claim that delivery proves host or model comprehension. If the server
+returns a header/item oversized condition, retry the same explicit scope with
+the larger `required_page_size`; an unrecoverable condition requires review
+without dropping a field. Recover the Evidence
+needed for each premise with `read_pages`, and render `render_page` image
+blocks separately when layout matters.
 
 For a comparison card, use `question_id` to find its wording and options in
 `questions`. Before citing Evidence with `text_status:"omitted"`, confirm that
@@ -226,6 +240,10 @@ those passages and any stated uncertainty. Add a concise `justification` when
 an inference, conflicting evidence, or uncertainty connects the passages to the
 answer. The audit is complete when every active answer addresses that Result
 and its bases support the claims attributed to them.
+
+Do not make `save_domain_judgment` the primary next action while
+`head.next_action`, `reading_recovery`, or another continuation still requires
+status recovery or Evidence reading. Follow that continuation first.
 
 For D3.1, run the **availability audit** before saving: Yes/Probably Yes needs
 actual outcome-availability evidence; analysis membership, planned or scheduled

@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio
 import json
 import os
+import re
 from pathlib import Path
 
 import pytest
@@ -12,6 +13,7 @@ from pydantic import ValidationError
 from support.rob2 import (
     _assessment_workspace,
     _call,
+    _domain_draft,
     _prepared_evidence,
     _proposal_args,
     _result,
@@ -32,16 +34,19 @@ from rob2_kit.interfaces.mcp.contracts import (
     DomainTableEvidence,
     SelectedFigureEvidence,
 )
-from rob2_kit.interfaces.mcp.server import mcp
+from rob2_kit.interfaces.mcp.server import _paginate_domain_context_transport, mcp
+from rob2_kit.packs import SCIENTIFIC_PACK
 
 
-def _wire_context(workspace: Path) -> tuple[dict, str]:
+def _wire_context(
+    workspace: Path, arguments: dict[str, object] | None = None
+) -> tuple[dict, str]:
     async def invoke() -> mcp_types.CallToolResult:
         previous = os.environ.get("ROB2_WORKSPACE")
         os.environ["ROB2_WORKSPACE"] = str(workspace)
         try:
             async with Client(mcp) as client:
-                return await client.call_tool("get_domain_context", {})
+                return await client.call_tool("get_domain_context", arguments or {})
         finally:
             if previous is None:
                 os.environ.pop("ROB2_WORKSPACE", None)
@@ -54,6 +59,278 @@ def _wire_context(workspace: Path) -> tuple[dict, str]:
     parsed = json.loads(text)
     assert parsed == result.structured_content
     return parsed, text
+
+
+def test_domain_context_pages_retain_scope_and_all_conditional_questions(
+    tmp_path: Path,
+) -> None:
+    workspace, evidence, revision = _assessment_workspace(tmp_path)
+    saved = _call(
+        workspace,
+        "save_domain_judgment",
+        _domain_draft("trial", "domain:randomization", revision, evidence),
+    )
+    assert saved["outcome"] == "success"
+
+    pages: list[dict] = []
+    arguments: dict[str, object] = {
+        "trial_id": "trial",
+        "domain_id": "domain:deviations",
+        "page_size": 32_768,
+    }
+    while True:
+        page, text = _wire_context(workspace, arguments)
+        pages.append(page)
+        metadata = page["data"]["context_page"]
+        assert metadata["trial_id"] == "trial"
+        assert metadata["domain_id"] == "domain:deviations"
+        assert metadata["state_revision"] == page["head"]["state_revision"]
+        assert page["data"]["result"]
+        assert page["data"]["evidence_workspace"]
+        transport_bytes = len(
+            json.dumps(
+                {
+                    "content": [{"type": "text", "text": text}],
+                    "structured_content": page,
+                },
+                ensure_ascii=False,
+                separators=(",", ":"),
+            ).encode("utf-8")
+        )
+        assert transport_bytes <= metadata["page_size"]
+        cursor = metadata["next_cursor"]
+        if cursor is not None:
+            assert page["head"]["next_action"]["operation"] == "get_domain_context"
+        if cursor is None:
+            break
+        arguments = {"cursor": cursor}
+
+    assert len(pages) > 1
+    assert [page["data"]["context_page"]["index"] for page in pages] == list(
+        range(len(pages))
+    )
+    assert all(page["data"]["context_page"]["count"] == len(pages) for page in pages)
+    assert pages[-1]["head"]["next_action"]["operation"] == "save_domain_judgment"
+    question_ids = {
+        question["id"]
+        for page in pages
+        for question in page["data"]["questions"]
+    }
+    expected_ids = {
+        question.id
+        for question in SCIENTIFIC_PACK.questions
+        if question.domain_id == "domain:deviations"
+    }
+    assert question_ids == expected_ids
+    assert "sq:deviations:substantial-impact" in question_ids
+
+    reconstructed = dict(pages[0]["data"])
+    for section in ("questions", "comparison_cards", "evidence"):
+        reconstructed[section] = [
+            item for page in pages for item in page["data"][section]
+        ]
+    reconstructed.pop("context_page")
+    full, _text = _wire_context(
+        workspace,
+        {"trial_id": "trial", "domain_id": "domain:deviations"},
+    )
+    assert reconstructed == full["data"]
+
+
+def test_domain_context_cursor_rejects_revision_change(tmp_path: Path) -> None:
+    workspace, evidence, revision = _assessment_workspace(tmp_path)
+    first, _text = _wire_context(workspace, {"page_size": 32_768})
+    cursor = first["data"]["context_page"]["next_cursor"]
+    assert cursor
+
+    saved = _call(
+        workspace,
+        "save_domain_judgment",
+        _domain_draft("trial", "domain:randomization", revision, evidence),
+    )
+    assert saved["outcome"] == "success"
+    stale, _text = _wire_context(workspace, {"cursor": cursor})
+    assert stale["outcome"] == "condition"
+    assert stale["condition"]["code"] == "domain_context_cursor_stale"
+
+
+def test_domain_context_cursor_only_continuation_keeps_nonactive_domain(tmp_path: Path) -> None:
+    workspace, evidence, revision = _assessment_workspace(tmp_path)
+    saved = _call(
+        workspace,
+        "save_domain_judgment",
+        _domain_draft("trial", "domain:randomization", revision, evidence),
+    )
+    assert saved["outcome"] == "success"
+    first, _text = _wire_context(
+        workspace,
+        {
+            "trial_id": "trial",
+            "domain_id": "domain:randomization",
+            "page_size": 32_768,
+        },
+    )
+    cursor = first["data"]["context_page"]["next_cursor"]
+    assert cursor
+
+    continuation, _text = _wire_context(workspace, {"cursor": cursor})
+
+    assert continuation["data"]["domain_id"] == "domain:randomization"
+    assert continuation["data"]["context_page"]["domain_id"] == "domain:randomization"
+
+
+def test_domain_context_cursor_rejects_changed_missing_data_preview(tmp_path: Path) -> None:
+    workspace, evidence, revision = _assessment_workspace(tmp_path)
+    first_save = _call(
+        workspace,
+        "save_domain_judgment",
+        _domain_draft("trial", "domain:randomization", revision, evidence),
+    )
+    assert first_save["outcome"] == "success"
+    second_save = _call(
+        workspace,
+        "save_domain_judgment",
+        _domain_draft(
+            "trial",
+            "domain:deviations",
+            int(first_save["head"]["state_revision"]),
+            evidence,
+        ),
+    )
+    assert second_save["outcome"] == "success"
+    preview = {
+        "arm": "intervention",
+        "population": "randomized participants",
+        "unit": "participants",
+        "time_point": "week 12",
+        "randomized": 1,
+        "observed": 1,
+        "basis": [evidence["handle"]],
+    }
+    first, _text = _wire_context(
+        workspace,
+        {"missing_data": [preview], "page_size": 32_768},
+    )
+    cursor = first["data"]["context_page"]["next_cursor"]
+    assert cursor
+    changed = preview | {"observed": 0}
+
+    stale, _text = _wire_context(
+        workspace,
+        {"cursor": cursor, "missing_data": [changed]},
+    )
+
+    assert stale["outcome"] == "condition"
+    assert stale["condition"]["code"] == "domain_context_cursor_stale"
+
+
+def test_domain_context_intermediate_page_bounds_large_missing_preview(tmp_path: Path) -> None:
+    workspace, evidence, revision = _assessment_workspace(tmp_path)
+    first_save = _call(
+        workspace,
+        "save_domain_judgment",
+        _domain_draft("trial", "domain:randomization", revision, evidence),
+    )
+    assert first_save["outcome"] == "success"
+    second_save = _call(
+        workspace,
+        "save_domain_judgment",
+        _domain_draft(
+            "trial",
+            "domain:deviations",
+            int(first_save["head"]["state_revision"]),
+            evidence,
+        ),
+    )
+    assert second_save["outcome"] == "success"
+    preview = [
+        {
+            "arm": f"intervention-{index}-" + ("a" * 160),
+            "population": "randomized participants " + ("p" * 160),
+            "unit": "participants",
+            "time_point": f"week-{index + 1}",
+            "randomized": 100 + index,
+            "observed": 90 + index,
+            "basis": [evidence["handle"]],
+        }
+        for index in range(18)
+    ]
+    arguments: dict[str, object] = {"missing_data": preview, "page_size": 131_072}
+    pages: list[tuple[dict, str]] = []
+    while True:
+        page, text = _wire_context(workspace, arguments)
+        assert page["outcome"] == "success"
+        pages.append((page, text))
+        metadata = page["data"]["context_page"]
+        transport_bytes = len(
+            json.dumps(
+                {
+                    "content": [{"type": "text", "text": text}],
+                    "structured_content": page,
+                },
+                ensure_ascii=False,
+                separators=(",", ":"),
+            ).encode("utf-8")
+        )
+        assert transport_bytes <= metadata["page_size"]
+        if metadata["next_cursor"] is None:
+            break
+        arguments = {"cursor": metadata["next_cursor"]}
+
+    assert len(pages) > 2
+    intermediate = pages[1][0]["data"]["context_page"]
+    assert intermediate["cursor"] is not None
+    assert intermediate["next_cursor"] is not None
+
+
+def test_domain_context_pagination_rejects_oversized_unicode_evidence(
+    tmp_path: Path,
+) -> None:
+    quote = "é" * 20_000
+    workspace, _evidence, _revision = _assessment_workspace(tmp_path)
+    value, _text = _wire_context(workspace)
+    value["data"]["evidence"][0]["quote"] = quote
+
+    with pytest.raises(ValueError, match="domain_context_item_oversized: section=evidence") as error:
+        _paginate_domain_context_transport(value, None, 32_768)
+    required = int(re.search(r"required_page_size=(\d+)", str(error.value)).group(1))
+    page = _paginate_domain_context_transport(value, None, required)
+    assert page["data"]["context_page"]["page_size"] == required
+
+
+def test_domain_context_page_digest_rejects_same_revision_evidence_change(
+    tmp_path: Path,
+) -> None:
+    workspace, _evidence, _revision = _assessment_workspace(tmp_path)
+    value, _text = _wire_context(workspace)
+    first = _paginate_domain_context_transport(value, None, 32_768)
+    cursor = first["data"]["context_page"]["next_cursor"]
+    assert cursor
+    value["data"]["evidence"][0]["quote"] = "changed"
+
+    with pytest.raises(ValueError, match="domain_context_cursor_stale"):
+        _paginate_domain_context_transport(value, cursor, None)
+
+
+def test_domain_context_small_budget_returns_header_condition(tmp_path: Path) -> None:
+    workspace, _evidence, _revision = _assessment_workspace(tmp_path)
+    page_size = 4_096
+    context, _text = _wire_context(workspace, {"page_size": page_size})
+
+    assert context["outcome"] == "condition"
+    assert context["condition"]["code"] == "domain_context_header_oversized"
+    for _ in range(3):
+        page_size = int(
+            re.search(r"required_page_size=(\d+)", context["condition"]["detail"]).group(1)
+        )
+        context, _text = _wire_context(workspace, {"page_size": page_size})
+        if context["outcome"] == "success":
+            break
+        assert context["condition"]["code"] in {
+            "domain_context_header_oversized",
+            "domain_context_item_oversized",
+        }
+    assert context["outcome"] == "success"
 
 
 def test_domain_context_text_is_compact_and_ordered(tmp_path: Path) -> None:
