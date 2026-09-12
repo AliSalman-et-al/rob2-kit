@@ -117,13 +117,13 @@ material premise for the active question:
 1. Name the exact unresolved proposition and the concrete study language that
    could establish it. Prefer wording from an inspected passage over a
    methodological label from the question card.
-2. Call `list_sources` and inspect the active comparison card's complete
-   `passage_groups` inventory when one is returned. Every captured Source
-   remains listed in the inventory even when it has no selected passages; use
-   its `source_id`, `page_count`, and `logical_path` to navigate it. A
-   supplement, `other` document, or combined protocol can contain the needed
-   plan or participant-flow detail. A Source role is a routing hint, never
-   evidence about its contents or applicability.
+2. Inspect the active comparison card's complete `passage_groups` inventory
+   when one is returned; call `list_sources` only when no complete inventory is
+   present. Every captured Source remains listed in the inventory even when it
+   has no selected passages; use its `source_id`, `page_count`, and
+   `logical_path` to navigate it. A supplement, `other` document, or combined
+   protocol can contain the needed plan or participant-flow detail. A Source
+   role is a routing hint, never evidence about its contents or applicability.
 3. Search the likely Source with the concrete wording. If the query is a
    multi-token `all` or `phrase` no-hit, use the one returned `any` widening
    action and inspect its passages. If the returned batch is truncated or has

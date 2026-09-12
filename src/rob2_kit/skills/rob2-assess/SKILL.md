@@ -130,10 +130,10 @@ Review inspected passages against each active proposition and check material
 contradictions. Reuse adequate Evidence without another search. For an
 unresolved premise, use bounded, premise-specific discovery across the
 relevant Sources. Start with concrete wording from the study, call `list_sources`
-to inspect the complete captured Source inventory, and use the active
-comparison card's inventory when one is returned to find unopened supplements
-or combined documents. Treat Source roles as navigation hints rather than
-proof of what a document contains. If a narrow search returns no useful
+only when the active context has no complete Source inventory. When a
+comparison card is returned, use its inventory first to find unopened
+supplements or combined documents. Treat Source roles as navigation hints
+rather than proof of what a document contains. If a narrow search returns no useful
 passage, broaden once with concrete study language and widen the Source scope
 when the premise may be elsewhere. Continue an existing cursor when deeper
 cached results are needed, then read the returned page windows before citing
