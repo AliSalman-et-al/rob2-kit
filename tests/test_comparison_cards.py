@@ -4,9 +4,22 @@ import json
 from pathlib import Path
 from typing import Any
 
-from support.rob2 import _assessment_workspace, _call, _domain_draft
+import pytest
+from support.rob2 import (
+    _assessment_workspace,
+    _call,
+    _domain_draft,
+    _prepared_evidence,
+    _proposal_args,
+    _read_required_main_reports,
+    _result,
+    _review,
+    _workspace,
+)
 
+from rob2_kit.application._state import internal_path
 from rob2_kit.application.domains import _comparison_cards, reconcile_missing_data
+from rob2_kit.application.evidence import _source_search_previews, list_sources
 from rob2_kit.logic.evaluator import evaluate_domain
 from rob2_kit.workflow_models import SourceRole
 
@@ -78,6 +91,119 @@ def test_deviation_card_exposes_provenance_without_classifying_prose(tmp_path: P
     )
     assert all(group["source_role"] for group in first_card["passage_groups"])
     assert "do not infer causation" in first_card["prompt"]
+
+
+def _preview_workspace(tmp_path: Path) -> tuple[Path, dict[str, Any], int]:
+    workspace = _workspace(tmp_path)
+    trial = workspace / "input" / "trial"
+    (trial / "supplement.txt").write_text(
+        "The intention-to-treat analysis included all randomized patients.\n",
+        encoding="utf-8",
+    )
+    (trial / "protocol.txt").write_text(
+        "The per protocol analysis was a sensitivity analysis.\n",
+        encoding="utf-8",
+    )
+    (trial / "analysis-plan.txt").write_text(
+        "The per protocol analysis was prespecified.\n",
+        encoding="utf-8",
+    )
+    (trial / "sources.toml").write_text(
+        'roles = { "supplement.txt" = "supplement", "protocol.txt" = "protocol", '
+        '"analysis-plan.txt" = "sap" }\n',
+        encoding="utf-8",
+    )
+    evidence = _prepared_evidence(workspace)
+    _call(workspace, "save_proposal", _proposal_args(workspace, [_result(evidence)]))
+    _review(workspace)
+    _read_required_main_reports(workspace)
+    revision = int(_call(workspace, "get_domain_context", {})["head"]["state_revision"])
+    return workspace, evidence, revision
+
+
+def test_active_d2_question_gets_bounded_uninspected_source_previews(tmp_path: Path) -> None:
+    workspace, evidence, revision = _preview_workspace(tmp_path)
+    saved = _call(
+        workspace,
+        "save_domain_judgment",
+        _domain_draft("trial", "domain:randomization", revision, evidence),
+    )
+    assert saved["outcome"] == "success", saved
+
+    context = _call(workspace, "get_domain_context", {})["data"]
+    question = next(
+        item for item in context["questions"] if item["id"] == "sq:deviations:appropriate-analysis"
+    )
+    previews = question["search_previews"]
+    assert 1 <= len(previews) <= 3
+    assert len({item["source_id"] for item in previews}) == len(previews)
+    assert all(item["notice"] == "search preview—inspect before citing" for item in previews)
+    assert all(item["source_sha256"].startswith("sha256:") for item in previews)
+    assert all(item["projection_hash"].startswith("sha256:") for item in previews)
+    assert all(len(item["preview"]) <= 512 for item in previews)
+
+
+def test_source_preview_disappears_after_corresponding_passages_are_inspected(
+    tmp_path: Path,
+) -> None:
+    workspace, evidence, revision = _preview_workspace(tmp_path)
+    saved = _call(
+        workspace,
+        "save_domain_judgment",
+        _domain_draft("trial", "domain:randomization", revision, evidence),
+    )
+    assert saved["outcome"] == "success", saved
+    context = _call(workspace, "get_domain_context", {})["data"]
+    question = next(
+        item for item in context["questions"] if item["id"] == "sq:deviations:appropriate-analysis"
+    )
+    for preview in question["search_previews"]:
+        response = _call(
+            workspace,
+            "read_pages",
+            {
+                "trial_id": "trial",
+                "windows": [
+                    {
+                        "source_id": preview["source_id"],
+                        "page": preview["page"],
+                        "start_line": preview["start_line"],
+                        "end_line": preview["end_line"],
+                    }
+                ],
+            },
+        )
+        assert response["outcome"] == "success", response
+    refreshed = _call(workspace, "get_domain_context", {})["data"]
+    refreshed_question = next(
+        item
+        for item in refreshed["questions"]
+        if item["id"] == "sq:deviations:appropriate-analysis"
+    )
+    assert refreshed_question["search_previews"] == []
+
+
+def test_source_preview_fails_closed_when_captured_source_version_is_stale(
+    tmp_path: Path,
+) -> None:
+    workspace, _evidence, _revision = _preview_workspace(tmp_path)
+    source = next(
+        item
+        for item in list_sources(workspace, "trial")["sources"]
+        if item["label"] == "supplement.txt"
+    )
+    internal_path(
+        workspace.resolve(),
+        "sources",
+        "trial",
+        f"{source['id']}.bin",
+    ).write_bytes(b"stale")
+    with pytest.raises(ValueError, match="captured Source bytes do not match"):
+        _source_search_previews(
+            workspace,
+            "trial",
+            [{"query": "intention-to-treat", "mode": "phrase"}],
+        )
 
 
 def test_missing_data_card_marks_conflicting_typed_counts(tmp_path: Path) -> None:

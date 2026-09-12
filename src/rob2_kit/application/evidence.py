@@ -36,6 +36,131 @@ _SEARCH_SESSION_VERSION = "rob2-kit.search-session.v0.5"
 _SEARCH_CANDIDATE_VERSION = "rob2-kit.search-candidates.v0.5"
 
 
+def _read_coverage_by_page(
+    root: Path, trial_id: str
+) -> dict[tuple[str, int], tuple[tuple[int, int], ...]]:
+    """Return assessment-phase line coverage for one Trial's captured Sources."""
+    batch = _read(root, "batch") or {}
+    batch_id = batch.get("identity") if isinstance(batch, dict) else None
+    if not isinstance(batch_id, str):
+        return {}
+    with _db(root, "derivative.sqlite3") as connection:
+        rows = connection.execute(
+            "SELECT source_id,page,start_line,end_line FROM page_reads "
+            "WHERE batch_id=? AND phase='assessment' AND trial_id=? "
+            "ORDER BY source_id,page,start_line,end_line",
+            (batch_id, trial_id),
+        ).fetchall()
+    grouped: dict[tuple[str, int], list[tuple[int, int]]] = {}
+    for row in rows:
+        source_id = str(row[0])
+        page = int(row[1])
+        start_line = int(row[2])
+        end_line = int(row[3])
+        # A zero/zero row is the explicit receipt for an empty page. It does
+        # not cover a searchable passage, so it is intentionally ignored.
+        if start_line < 1 or end_line < start_line:
+            continue
+        grouped.setdefault((source_id, page), []).append((start_line, end_line))
+    covered: dict[tuple[str, int], tuple[tuple[int, int], ...]] = {}
+    for key, ranges in grouped.items():
+        merged: list[list[int]] = []
+        for start_line, end_line in ranges:
+            if merged and start_line <= merged[-1][1] + 1:
+                merged[-1][1] = max(merged[-1][1], end_line)
+            else:
+                merged.append([start_line, end_line])
+        covered[key] = tuple((start, end) for start, end in merged)
+    return covered
+
+
+def _source_search_previews(
+    workspace: str | Path,
+    trial_id: str,
+    suggestions: list[dict[str, Any]],
+    *,
+    limit: int = 3,
+) -> list[dict[str, Any]]:
+    """Return bounded lexical previews for uninspected passages in captured Sources."""
+    root = _root(workspace)
+    _ensure(root)
+    if limit < 1 or not suggestions:
+        return []
+    sources = list_sources(workspace, trial_id)["sources"]
+    source_by_id = {str(source["id"]): source for source in sources}
+    coverage = _read_coverage_by_page(root, trial_id)
+    selected: list[dict[str, Any]] = []
+    selected_sources: set[str] = set()
+    for suggestion in suggestions:
+        query = suggestion.get("query")
+        mode = suggestion.get("mode")
+        if (
+            not isinstance(query, str)
+            or not query.strip()
+            or mode
+            not in {
+                "all",
+                "phrase",
+                "any",
+                "prefix",
+            }
+        ):
+            continue
+        result = search_sources(
+            root,
+            trial_id,
+            query,
+            mode=mode,
+            limit=100,
+            associate_domain=False,
+        )
+        hits = sorted(
+            (hit for hit in result.get("hits", []) if isinstance(hit, dict)),
+            key=lambda hit: int(hit.get("rank", 2**31 - 1)),
+        )
+        for hit in hits:
+            if not isinstance(hit, dict):
+                continue
+            source_id = hit.get("source_id")
+            page = hit.get("page")
+            start_line = hit.get("start_line")
+            end_line = hit.get("end_line")
+            if not all(
+                isinstance(value, int) and not isinstance(value, bool)
+                for value in (page, start_line, end_line)
+            ) or not isinstance(source_id, str):
+                continue
+            inspected = any(
+                start <= start_line and end >= end_line
+                for start, end in coverage.get((source_id, page), ())
+            )
+            source = source_by_id.get(source_id)
+            if inspected or source_id in selected_sources or source is None:
+                continue
+            selected.append(
+                {
+                    "query": str(suggestion["query"]),
+                    "mode": str(suggestion["mode"]),
+                    "source_id": source_id,
+                    "source_role": hit["source_role"],
+                    "source_label": hit["source_label"],
+                    "logical_path": source["logical_path"],
+                    "source_origin": source.get("origin", "local_dossier"),
+                    "source_sha256": source["sha256"],
+                    "projection_hash": source["projection_hash"],
+                    "page": int(hit["page"]),
+                    "start_line": int(hit["start_line"]),
+                    "end_line": int(hit["end_line"]),
+                    "preview": str(hit["preview"]),
+                    "notice": "search preview—inspect before citing",
+                }
+            )
+            selected_sources.add(source_id)
+            if len(selected) >= min(limit, 3):
+                return selected
+    return selected
+
+
 def list_sources(workspace: str | Path, trial_id: str | None = None) -> dict[str, Any]:
     root = _root(workspace)
     _ensure(root)
@@ -257,6 +382,7 @@ def search_sources(
     limit: int = 10,
     source_id: str | None = None,
     cursor: str | None = None,
+    associate_domain: bool = True,
 ) -> dict[str, Any]:
     root = _root(workspace)
     _ensure(root)
@@ -472,7 +598,7 @@ def search_sources(
 
     state = _read(root, "state") or {}
     active_trial_id, active_domain_id = _active_trial_and_domain(state)
-    if (
+    if associate_domain and (
         state.get("phase") == "assessment"
         and active_trial_id == trial_id
         and active_domain_id is not None

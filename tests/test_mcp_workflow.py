@@ -144,6 +144,7 @@ def test_domain_questions_include_typed_premise_rules_and_shortcuts(tmp_path: Pa
         "considerations",
         "invalid_shortcuts",
         "query_suggestions",
+        "search_previews",
     }
     assert all(set(question) == compact_fields for question in questions.values())
     for question_id, shortcut in expected.items():
