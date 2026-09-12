@@ -97,7 +97,7 @@
 "idempotent":true,
 "open_world":false,
 "schema_sha256":"sha256:faecf2bb09b2f29372bc816b5bde757faf7bc111ac1c2f59e808b7315d776adc",
-"output_schema_sha256":"sha256:998daf697f034b71897d96c56adc2bef6f94d26c8907cacc2f48670b1660bcfa"},
+"output_schema_sha256":"sha256:50e52190cb573b458fce84b9821ee570b92de78c886f697e12b7fa9fc5337933"},
 {"name":"save_domain_judgment",
 "title":"Save Domain judgment",
 "description":"Atomically save answers for one Domain of the Trial's approved Result. Complete the post-approval bounded main-report text pass before the first Domain save. Supply a current option ID copied exactly from its card and supported bases for every returned Domain question, including currently inactive questions. Draft answers can activate further questions in this same save; the server commits only active answers. Invalid input returns grouped repairs without committing. Apply every reported repair and retain other drafted answers. Add missing questions to the existing answer set. Include every returned question before resubmitting. Fetch every Domain context page before saving; a pending delivery condition includes an exact executable recovery action. The server ignores inactive answers. Before saving, check each basis against the approved Result and literal question; justify any inference or unresolved linkage. The fifth accepted Domain freezes the Trial snapshot and advances next_action; no separate Trial-finalization call is required.",

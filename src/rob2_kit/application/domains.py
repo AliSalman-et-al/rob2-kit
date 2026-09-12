@@ -26,7 +26,6 @@ from .evidence import (
     _evidence_for_handles,
     _search_continuation,
     _search_receipt,
-    _source_search_previews,
     main_report_reading_status,
 )
 from .status import _active_trial_and_domain, _continuation
@@ -1947,25 +1946,6 @@ def get_domain_context(
     domain_question_ids = tuple(
         item.id for item in SCIENTIFIC_PACK.questions if item.domain_id == domain_id
     )
-    preview_question_ids = {
-        "domain:deviations": "sq:deviations:appropriate-analysis",
-        "domain:selection": "sq:selection:prespecified-analysis",
-    }
-    preview_question_id = preview_question_ids.get(domain_id)
-    search_previews = (
-        _source_search_previews(
-            root,
-            trial_id,
-            [
-                suggestion.model_dump(mode="json")
-                for question in SCIENTIFIC_PACK.questions
-                if question.id == preview_question_id and question.id in active
-                for suggestion in question.guidance.operational.query_suggestions
-            ],
-        )
-        if preview_question_id in active
-        else []
-    )
     questions_by_evidence: dict[str, set[str]] = {}
     for answer in checkpoint_answers:
         question_id = answer.get("question_id")
@@ -2206,7 +2186,6 @@ def get_domain_context(
                     suggestion.model_dump(mode="json")
                     for suggestion in item.guidance.operational.query_suggestions
                 ),
-                "search_previews": tuple(search_previews) if item.id == preview_question_id else (),
             }
             for item in SCIENTIFIC_PACK.questions
             if item.domain_id == domain_id

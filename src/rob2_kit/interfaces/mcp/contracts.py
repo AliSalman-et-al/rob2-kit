@@ -709,25 +709,6 @@ class CompactAnswerOption(PublicModel):
     consequence: str | None = None
 
 
-class ComparisonSearchPreview(PublicModel):
-    """Short local-search navigation material; never scientific Evidence."""
-
-    query: str = Field(min_length=1)
-    mode: Literal["all", "phrase", "any", "prefix"]
-    source_id: SourceHandle
-    source_role: SourceRole
-    source_label: str = Field(min_length=1)
-    logical_path: str = Field(min_length=1)
-    source_origin: SourceOrigin
-    source_sha256: Identity
-    projection_hash: Identity
-    page: PageNumber
-    start_line: PageNumber
-    end_line: PageNumber
-    preview: str = Field(min_length=1, max_length=512)
-    notice: Literal["search preview—inspect before citing"]
-
-
 class DomainQuestionCard(PublicModel):
     """Compact model-facing card for one scientific-pack question."""
 
@@ -754,7 +735,6 @@ class DomainQuestionCard(PublicModel):
     )
     invalid_shortcuts: tuple[str, ...] = Field(min_length=1)
     query_suggestions: tuple[QuerySuggestion, ...] = Field(min_length=1, max_length=8)
-    search_previews: tuple[ComparisonSearchPreview, ...] = ()
 
 
 class DomainTableEvidence(PublicModel):

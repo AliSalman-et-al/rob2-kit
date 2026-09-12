@@ -875,7 +875,6 @@ def test_domain_context_result_projection_omits_canonical_bindings(tmp_path: Pat
         "considerations",
         "invalid_shortcuts",
         "query_suggestions",
-        "search_previews",
     }
     assert question_card["official_guidance"]
     assert question_card["source_locator"].startswith("Full guidance ")
