@@ -21,7 +21,8 @@ Evidence support or scientific correctness.
 		{
 			"kind": "assessable",
 			"trial_id": "fictional_quiz_trial",
-			"relation": "exact",
+			"relation": "narrower",
+			"relation_rationale": "The reported mean difference is limited to learners with observed quiz scores, while the assignment target includes all randomized learners.",
 			"applicability": {
 				"design": "individual_parallel",
 				"rationale": "Learners were individually randomized to two parallel teaching groups.",
@@ -119,20 +120,18 @@ The reported object records the Source endpoint and quantities. Keep its
 endpoint distinct from the captured requested outcome. The server supplies the
 captured outcome, target metric, and `effect_of_interest:"assignment"`.
 
-Use `relation:"exact"` when the complete requested and reported Result scopes
-are scientifically equivalent. Compare the event definition, measurement, time,
-population, comparison, and analysis or effect scope. If names differ, provide
-a source-grounded correspondence explanation in `relation_rationale`. A matching
-name alone does not establish equivalence. For other assessable Results:
+For every assessable Result, explain the complete correspondence in
+`relation_rationale`, including population, outcome, measurement, time,
+comparison, and analysis scope. Matching endpoint names alone do not establish
+exactness. State any material difference. For other assessable Results:
 
 - `broader`: the reported event, population, or time scope is a superset;
 - `narrower`: it is a subset or adds restrictions;
 - `component`: it is one constituent of the requested composite or category;
 - `related`: the constructs overlap without one of those ordered relations.
 
-State the material difference in `relation_rationale`. Keep Source-owned endpoint
-names and quantities bound to exact selected Evidence even when their scientific
-scope is equivalent.
+Keep Source-owned endpoint names and quantities bound to exact selected Evidence
+even when their scientific scope is equivalent.
 
 ## Preserve the Source-owned quantities
 
