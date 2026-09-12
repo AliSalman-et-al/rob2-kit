@@ -1563,9 +1563,7 @@ def record_read_coverage_batch(
             raise ValueError("read coverage coordinates are invalid")
         if page < 1 or page > int(source["page_count"]):
             raise ValueError("read coverage coordinates are outside Source")
-        if (start_line, end_line) != (0, 0) and (
-            start_line < 1 or end_line < start_line
-        ):
+        if (start_line, end_line) != (0, 0) and (start_line < 1 or end_line < start_line):
             raise ValueError("read coverage coordinates are outside Source")
         validated.append((trial_id, source_id, page, start_line, end_line))
     if not validated:

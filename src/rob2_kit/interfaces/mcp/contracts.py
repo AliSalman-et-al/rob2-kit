@@ -997,7 +997,7 @@ class DomainContextData(PublicModel):
         default=None,
         description="Required read windows, or optional unread ranges when budget_limited.",
     )
-    context_page: "DomainContextPage | None" = Field(
+    context_page: DomainContextPage | None = Field(
         default=None,
         description=(
             "Optional bounded transport page. When present, fetch every page in order before "

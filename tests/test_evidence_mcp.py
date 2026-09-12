@@ -8,11 +8,13 @@ from __future__ import annotations
 import runpy
 import sqlite3
 from pathlib import Path
+from typing import Any
 
 import pymupdf
 import pytest
 from support.rob2 import *  # noqa: F401,F403
 
+import rob2_kit.interfaces.mcp.server as mcp_server
 from rob2_kit.application import finalization
 from rob2_kit.application._state import _identity, _state
 from rob2_kit.application.contracts import COUNTERS
@@ -25,7 +27,6 @@ from rob2_kit.application.evidence import (
 )
 from rob2_kit.application.source_handles import resolve_source_handle
 from rob2_kit.packs import SCIENTIFIC_PACK
-import rob2_kit.interfaces.mcp.server as mcp_server
 
 
 def test_broad_truncated_any_search_exposes_observable_refinement_only(tmp_path: Path) -> None:
@@ -1040,12 +1041,19 @@ def test_read_pages_late_failure_does_not_commit_prior_coverage(
     original = mcp_server._select_text_evidence_by_lines
     calls = 0
 
-    def fail_on_second(*args: object, **kwargs: object) -> dict[str, object]:
+    def fail_on_second(
+        workspace: str | Path,
+        trial_id: str,
+        source_id: str,
+        page: int,
+        start_line: int,
+        end_line: int,
+    ) -> dict[str, Any]:
         nonlocal calls
         calls += 1
         if calls == 2:
             raise ValueError("synthetic late read failure")
-        return original(*args, **kwargs)
+        return original(workspace, trial_id, source_id, page, start_line, end_line)
 
     monkeypatch.setattr(mcp_server, "_select_text_evidence_by_lines", fail_on_second)
     result = _call(

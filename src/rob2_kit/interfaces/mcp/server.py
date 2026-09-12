@@ -250,8 +250,10 @@ def _paginate_domain_context_transport(
     trial_id = data.get("trial_id")
     domain_id = data.get("domain_id")
     state_revision = head.get("state_revision")
-    if not isinstance(trial_id, str) or not isinstance(domain_id, str) or not isinstance(
-        state_revision, int
+    if (
+        not isinstance(trial_id, str)
+        or not isinstance(domain_id, str)
+        or not isinstance(state_revision, int)
     ):
         return value
     digest = _domain_context_digest(data)
@@ -1014,9 +1016,7 @@ def read_pages(
             requested_start = item["requested_start"]
             requested_end = item["requested_end"]
             if not lines:
-                read_coverage.append(
-                    (request_trial, item["source_id"], item["page"], 0, 0)
-                )
+                read_coverage.append((request_trial, item["source_id"], item["page"], 0, 0))
                 numbered_pages.append(
                     {
                         **({"source_id": item["source_id"]} if include_source else {}),
@@ -1584,8 +1584,7 @@ def get_domain_context(
         if missing_data is None and isinstance(cursor_scope.get("missing_data"), list):
             try:
                 missing_data = [
-                    MissingDataRow.model_validate(row)
-                    for row in cursor_scope["missing_data"]
+                    MissingDataRow.model_validate(row) for row in cursor_scope["missing_data"]
                 ]
             except (TypeError, ValueError):
                 missing_data = None

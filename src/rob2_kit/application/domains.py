@@ -551,9 +551,7 @@ def _comparison_cards(
     # Source addressable from the card while leaving passage selection and
     # slot classification evidence-bound.
     source_ids = {
-        item["id"]
-        for item in sources
-        if isinstance(item, dict) and isinstance(item.get("id"), str)
+        item["id"] for item in sources if isinstance(item, dict) and isinstance(item.get("id"), str)
     }
     passage_groups = []
     for source_id in sorted(source_ids):

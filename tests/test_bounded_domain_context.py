@@ -38,9 +38,7 @@ from rob2_kit.interfaces.mcp.server import _paginate_domain_context_transport, m
 from rob2_kit.packs import SCIENTIFIC_PACK
 
 
-def _wire_context(
-    workspace: Path, arguments: dict[str, object] | None = None
-) -> tuple[dict, str]:
+def _wire_context(workspace: Path, arguments: dict[str, object] | None = None) -> tuple[dict, str]:
     async def invoke() -> mcp_types.CallToolResult:
         previous = os.environ.get("ROB2_WORKSPACE")
         os.environ["ROB2_WORKSPACE"] = str(workspace)
@@ -106,16 +104,10 @@ def test_domain_context_pages_retain_scope_and_all_conditional_questions(
         arguments = {"cursor": cursor}
 
     assert len(pages) > 1
-    assert [page["data"]["context_page"]["index"] for page in pages] == list(
-        range(len(pages))
-    )
+    assert [page["data"]["context_page"]["index"] for page in pages] == list(range(len(pages)))
     assert all(page["data"]["context_page"]["count"] == len(pages) for page in pages)
     assert pages[-1]["head"]["next_action"]["operation"] == "save_domain_judgment"
-    question_ids = {
-        question["id"]
-        for page in pages
-        for question in page["data"]["questions"]
-    }
+    question_ids = {question["id"] for page in pages for question in page["data"]["questions"]}
     expected_ids = {
         question.id
         for question in SCIENTIFIC_PACK.questions
@@ -126,9 +118,7 @@ def test_domain_context_pages_retain_scope_and_all_conditional_questions(
 
     reconstructed = dict(pages[0]["data"])
     for section in ("questions", "comparison_cards", "evidence"):
-        reconstructed[section] = [
-            item for page in pages for item in page["data"][section]
-        ]
+        reconstructed[section] = [item for page in pages for item in page["data"][section]]
     reconstructed.pop("context_page")
     full, _text = _wire_context(
         workspace,
@@ -291,9 +281,13 @@ def test_domain_context_pagination_rejects_oversized_unicode_evidence(
     value, _text = _wire_context(workspace)
     value["data"]["evidence"][0]["quote"] = quote
 
-    with pytest.raises(ValueError, match="domain_context_item_oversized: section=evidence") as error:
+    with pytest.raises(
+        ValueError, match="domain_context_item_oversized: section=evidence"
+    ) as error:
         _paginate_domain_context_transport(value, None, 32_768)
-    required = int(re.search(r"required_page_size=(\d+)", str(error.value)).group(1))
+    required_match = re.search(r"required_page_size=(\d+)", str(error.value))
+    assert required_match is not None
+    required = int(required_match.group(1))
     page = _paginate_domain_context_transport(value, None, required)
     assert page["data"]["context_page"]["page_size"] == required
 
@@ -320,9 +314,9 @@ def test_domain_context_small_budget_returns_header_condition(tmp_path: Path) ->
     assert context["outcome"] == "condition"
     assert context["condition"]["code"] == "domain_context_header_oversized"
     for _ in range(3):
-        page_size = int(
-            re.search(r"required_page_size=(\d+)", context["condition"]["detail"]).group(1)
-        )
+        required_match = re.search(r"required_page_size=(\d+)", context["condition"]["detail"])
+        assert required_match is not None
+        page_size = int(required_match.group(1))
         context, _text = _wire_context(workspace, {"page_size": page_size})
         if context["outcome"] == "success":
             break
