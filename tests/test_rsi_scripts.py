@@ -1,8 +1,12 @@
 from __future__ import annotations
 
 import json
+import runpy
+from pathlib import Path
 
-from scripts.summarize_rsi_case import _structured_response
+_structured_response = runpy.run_path(
+    str(Path(__file__).parents[1] / "scripts" / "summarize_rsi_case.py")
+)["_structured_response"]
 
 
 def _receipt() -> dict[str, object]:
