@@ -50,7 +50,6 @@ recovery state.
 const raw = await tools.mcp__rob2__get_domain_context({
   trial_id: "trial-id-from-head.next_action",
   domain_id: "domain-id-from-head.next_action",
-  page_size: 32768,
 });
 const structured = raw?.structuredContent ?? raw?.structured_content;
 const textPart = raw?.content?.find((part) => part?.type === "text")?.text;
@@ -58,6 +57,11 @@ const receipt = structured ?? (typeof textPart === "string" ? JSON.parse(textPar
 if (!receipt) throw new Error("MCP receipt unavailable; delivery incomplete");
 text(receipt);
 ```
+
+The server auto-pages a full Domain receipt above 32 KB. Fetch every returned
+`context_page.next_cursor` before deciding or saving; a pending save returns the
+exact cursor to continue. Delivery completion records successful response generation
+only, so verify the host-visible content and inspect Evidence as needed.
 
 On Codex, set `functions.exec` `max_output_tokens` high enough for the measured
 complete JSON object, and retry the identical scoped call with a larger value

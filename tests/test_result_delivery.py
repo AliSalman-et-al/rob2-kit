@@ -89,6 +89,15 @@ def test_text_only_and_structured_consumers_receive_the_same_workflow_results(
     _review(workspace)
     _read_required_main_reports(workspace)
     context = _assert_text_structured_parity(_wire_call(workspace, "get_domain_context", {}))
+    while (
+        isinstance(context.get("data"), dict)
+        and isinstance(context["data"].get("context_page"), dict)
+        and context["data"]["context_page"].get("next_cursor") is not None
+    ):
+        cursor = context["data"]["context_page"]["next_cursor"]
+        context = _assert_text_structured_parity(
+            _wire_call(workspace, "get_domain_context", {"cursor": cursor})
+        )
     assert context["data"]["trial_id"] == "trial"
     revision = int(context["head"]["state_revision"])
     draft = _domain_draft("trial", "domain:randomization", revision, evidence=evidence)

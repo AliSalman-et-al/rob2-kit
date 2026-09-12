@@ -33,6 +33,106 @@ from .status import _active_trial_and_domain, _continuation
 _DOMAIN_RECOVERABLE_NARRATIVE_TEXT_BUDGET = 12_288
 
 
+def _domain_context_delivery(
+    root: Path, trial_id: str, domain_id: str, state_revision: int
+) -> dict[str, Any] | None:
+    state = _state(root)
+    batch = state.get("batch")
+    batch_id = batch.get("identity") if isinstance(batch, dict) else None
+    if not isinstance(batch_id, str):
+        return None
+    with _db(root, "derivative.sqlite3") as connection:
+        row = connection.execute(
+            "SELECT batch_id,trial_id,domain_id,state_revision,digest,page_size,page_count,"
+            "next_index,next_cursor,complete FROM domain_context_delivery "
+            "WHERE batch_id=? AND trial_id=? AND domain_id=? AND state_revision=?",
+            (batch_id, trial_id, domain_id, state_revision),
+        ).fetchone()
+    return {key: row[key] for key in row.keys()} if row is not None else None
+
+
+def _record_domain_context_delivery(
+    root: Path,
+    trial_id: str,
+    domain_id: str,
+    state_revision: int,
+    digest: str,
+    page_size: int,
+    page_count: int,
+    page_index: int,
+    next_cursor: str | None,
+    cursor: str | None,
+) -> None:
+    state = _state(root)
+    batch = state.get("batch")
+    batch_id = batch.get("identity") if isinstance(batch, dict) else None
+    if not isinstance(batch_id, str):
+        raise ValueError("domain_context_delivery_unavailable: Batch identity is missing")
+    with _db(root, "derivative.sqlite3") as connection:
+        row = connection.execute(
+            "SELECT digest,page_size,page_count,next_index,next_cursor,complete "
+            "FROM domain_context_delivery WHERE batch_id=? AND trial_id=? AND domain_id=? "
+            "AND state_revision=?",
+            (batch_id, trial_id, domain_id, state_revision),
+        ).fetchone()
+        if cursor is None:
+            if row is not None and bool(row["complete"]):
+                return
+            connection.execute(
+                "INSERT OR REPLACE INTO domain_context_delivery "
+                "(batch_id,trial_id,domain_id,state_revision,digest,page_size,page_count,"
+                "next_index,next_cursor,complete) VALUES (?,?,?,?,?,?,?,?,?,?)",
+                (
+                    batch_id,
+                    trial_id,
+                    domain_id,
+                    state_revision,
+                    digest,
+                    page_size,
+                    page_count,
+                    page_index + 1,
+                    next_cursor,
+                    int(page_index + 1 >= page_count),
+                ),
+            )
+            return
+        if row is None:
+            raise ValueError("domain_context_delivery_unavailable: restart with the first page")
+        if (
+            row["digest"] != digest
+            or int(row["page_size"]) != page_size
+            or int(row["page_count"]) != page_count
+        ):
+            if bool(row["complete"]):
+                return
+            raise ValueError("domain_context_delivery_stale: restart with the first page")
+        expected_index = int(row["next_index"])
+        if page_index > expected_index:
+            expected_cursor = row["next_cursor"]
+            raise ValueError(
+                f"domain_context_delivery_out_of_order: expected_cursor={expected_cursor}"
+            )
+        if page_index < expected_index:
+            return
+        if row["next_cursor"] != cursor:
+            raise ValueError(
+                f"domain_context_delivery_out_of_order: expected_cursor={row['next_cursor']}"
+            )
+        connection.execute(
+            "UPDATE domain_context_delivery SET next_index=?,next_cursor=?,complete=? "
+            "WHERE batch_id=? AND trial_id=? AND domain_id=? AND state_revision=?",
+            (
+                page_index + 1,
+                next_cursor,
+                int(page_index + 1 >= page_count),
+                batch_id,
+                trial_id,
+                domain_id,
+                state_revision,
+            ),
+        )
+
+
 def _main_report_recovery(
     root: Path, state: dict[str, Any], trial_id: str, *, include_budget: bool = False
 ) -> dict[str, Any] | None:

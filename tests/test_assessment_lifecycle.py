@@ -822,9 +822,9 @@ def test_domain_save_query_work_is_bounded_by_irrelevant_evidence_handles(tmp_pa
     _call(workspace, "save_proposal", _proposal_args(workspace, [_result(selected)]))
     _review(workspace)
     _read_required_main_reports(workspace)
+    context = _call(workspace, "get_domain_context", {})
     for name in COUNTERS:
         COUNTERS[name] = 0
-    context = _call(workspace, "get_domain_context", {})
     saved = _call(
         workspace,
         "save_domain_judgment",

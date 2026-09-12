@@ -635,6 +635,7 @@ def _clear_discarded_derivatives(root: Path) -> None:
             "search_receipts",
             "renders",
             "page_reads",
+            "domain_context_delivery",
         ):
             connection.execute(f"DELETE FROM {table}")
         connection.execute("DELETE FROM pages_fts")
