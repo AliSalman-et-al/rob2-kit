@@ -13,6 +13,44 @@ own source interpretation, Result selection, Evidence selection, and signalling
 answers. Proposal Review is the only researcher gate. After approval, continue
 without asking for signalling answers, progress confirmation, or final approval.
 
+## Read one complete MCP receipt
+
+Hosts may expose a tool result as `structured_content`, `structuredContent`, or
+one JSON text content block. Use the structured object when it is available; if
+it is not, parse the single JSON text block once. Keep that complete receipt as
+working context, including `head`, `data.result`, `questions`,
+`comparison_cards`, `evidence`, `evidence_workspace`, `reading_recovery`, and
+any `recovery` or `next_action` fields. Do not render only `questions` (or a
+`questions.map(...)` projection), and do not concatenate the structured and
+text representations. Keep `render_page` image content blocks separate from
+the deduplicated JSON; render and inspect the image when layout carries
+meaning.
+
+If the host reports `Warning: truncated output`, treat the receipt as
+delivery incomplete. On a Codex host, repeat the identical context or read
+request with a `functions.exec` `max_output_tokens` value large enough for the
+measured output. Keep explicit `trial_id`, `domain_id`, and page/window
+scope arguments applicable to that tool unchanged on every retry: Trial and
+Domain for context, or source and page/window ranges for reads. Inspect the rendered output for truncation and
+confirm that the decision-critical sections are visibly present before
+interpreting evidence; parsing JSON alone does not establish complete host
+delivery. If the cap persists, retry smaller exact page windows or render a
+lossless section that preserves the same scope and fields. A truncated receipt
+is a transport failure, not a no-hit or absence result. A Codex
+`functions.exec` probe can render one copy:
+
+```javascript
+// @exec: {"max_output_tokens": 20000}
+const r = await tools.mcp__rob2__get_domain_context({
+  trial_id: "trial-id-from-head.next_action",
+  domain_id: "domain-id-from-head.next_action",
+});
+const textPart = r?.content?.find((part) => part?.type === "text")?.text;
+const receipt = r?.structuredContent ?? r?.structured_content ?? (textPart ? JSON.parse(textPart) : null);
+if (!receipt) throw new Error("MCP receipt unavailable; delivery incomplete");
+text(receipt);
+```
+
 ## Follow the workflow
 
 ### 1. Recover or prepare the Batch
