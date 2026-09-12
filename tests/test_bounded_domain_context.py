@@ -4,6 +4,7 @@ import asyncio
 import json
 import os
 import re
+import sqlite3
 from pathlib import Path
 
 import pytest
@@ -16,12 +17,14 @@ from support.rob2 import (
     _domain_draft,
     _prepared_evidence,
     _proposal_args,
+    _read_required_main_reports,
     _result,
     _review,
     _workspace,
 )
 
 import rob2_kit.application.domains as domain_application
+import rob2_kit.interfaces.mcp.server as mcp_server
 from rob2_kit.application._state import _commit, _identity, _state
 from rob2_kit.application.domains import (
     _DOMAIN_RECOVERABLE_NARRATIVE_TEXT_BUDGET,
@@ -34,17 +37,62 @@ from rob2_kit.interfaces.mcp.contracts import (
     DomainTableEvidence,
     SelectedFigureEvidence,
 )
-from rob2_kit.interfaces.mcp.server import _paginate_domain_context_transport, mcp
+from rob2_kit.interfaces.mcp.server import (
+    _decode_domain_context_cursor,
+    _domain_context_cursor,
+    _paginate_domain_context_transport,
+    mcp,
+)
 from rob2_kit.packs import SCIENTIFIC_PACK
 
 
-def _wire_context(workspace: Path, arguments: dict[str, object] | None = None) -> tuple[dict, str]:
+def _wire_context(
+    workspace: Path,
+    arguments: dict[str, object] | None = None,
+    *,
+    drain: bool = True,
+) -> tuple[dict, str]:
     async def invoke() -> mcp_types.CallToolResult:
         previous = os.environ.get("ROB2_WORKSPACE")
         os.environ["ROB2_WORKSPACE"] = str(workspace)
         try:
             async with Client(mcp) as client:
-                return await client.call_tool("get_domain_context", arguments or {})
+                request = arguments or {}
+                result = await client.call_tool("get_domain_context", request)
+                if drain and "cursor" not in request and "page_size" not in request:
+                    pages = [result]
+                    structured = dict(result.structured_content or {})
+                    while (
+                        isinstance(structured.get("data"), dict)
+                        and isinstance(structured["data"].get("context_page"), dict)
+                        and structured["data"]["context_page"].get("next_cursor") is not None
+                    ):
+                        cursor = structured["data"]["context_page"]["next_cursor"]
+                        result = await client.call_tool("get_domain_context", {"cursor": cursor})
+                        pages.append(result)
+                        structured = dict(result.structured_content or {})
+                    if len(pages) > 1 and all(
+                        isinstance(page.structured_content, dict)
+                        and isinstance(page.structured_content.get("data"), dict)
+                        for page in pages
+                    ):
+                        merged = dict(pages[0].structured_content or {})
+                        data = dict(pages[0].structured_content["data"])
+                        for section in ("questions", "comparison_cards", "evidence"):
+                            data[section] = [
+                                item
+                                for page in pages
+                                for item in page.structured_content["data"].get(section, [])
+                            ]
+                        data.pop("context_page", None)
+                        merged["data"] = data
+                        merged["head"] = pages[-1].structured_content.get("head")
+                        text = json.dumps(merged, ensure_ascii=False, separators=(",", ":"))
+                        return mcp_types.CallToolResult(
+                            content=[mcp_types.TextContent(type="text", text=text)],
+                            structured_content=merged,
+                        )
+                return result
         finally:
             if previous is None:
                 os.environ.pop("ROB2_WORKSPACE", None)
@@ -57,6 +105,147 @@ def _wire_context(workspace: Path, arguments: dict[str, object] | None = None) -
     parsed = json.loads(text)
     assert parsed == result.structured_content
     return parsed, text
+
+
+def _pending_assessment_workspace(tmp_path: Path) -> tuple[Path, dict, int]:
+    workspace = _workspace(tmp_path)
+    evidence = _prepared_evidence(workspace)
+    _call(workspace, "save_proposal", _proposal_args(workspace, [_result(evidence)]))
+    _review(workspace)
+    _read_required_main_reports(workspace)
+    revision = int(_call(workspace, "get_status", {})["head"]["state_revision"])
+    return workspace, evidence, revision
+
+
+def test_auto_domain_context_delivery_is_sequential_and_restartable(tmp_path: Path) -> None:
+    workspace, evidence, revision = _pending_assessment_workspace(tmp_path)
+    first, text = _wire_context(workspace, {}, drain=False)
+    page = first["data"]["context_page"]
+    assert page["index"] == 0
+    assert page["next_cursor"]
+    assert first["head"]["next_action"]["operation"] == "get_domain_context"
+    transport = {
+        "content": [{"type": "text", "text": text}],
+        "structured_content": first,
+    }
+    assert len(json.dumps(transport, ensure_ascii=False, separators=(",", ":")).encode()) <= 32_768
+    first_cursor = page["next_cursor"]
+
+    with sqlite3.connect(workspace / ".rob2-kit" / "derivative.sqlite3") as connection:
+        row = connection.execute(
+            "SELECT next_index,complete FROM domain_context_delivery"
+        ).fetchone()
+    assert row == (1, 0)
+
+    blocked = _call(
+        workspace,
+        "save_domain_judgment",
+        _domain_draft("trial", "domain:randomization", revision, evidence),
+    )
+    assert blocked["outcome"] == "condition"
+    assert blocked["condition"]["code"] == "domain_context_delivery_pending"
+    recovery = blocked["condition"]["recovery"]
+    assert recovery["operation"] == "get_domain_context"
+    assert recovery["arguments"]["cursor"] == first_cursor
+    assert recovery["arguments"]["page_size"] == page["page_size"]
+    pending_text = json.dumps(blocked, ensure_ascii=False, separators=(",", ":"), sort_keys=True)
+    assert (
+        len(
+            json.dumps(
+                {
+                    "content": [{"type": "text", "text": pending_text}],
+                    "structured_content": blocked,
+                },
+                ensure_ascii=False,
+                separators=(",", ":"),
+            ).encode()
+        )
+        <= 32_768
+    )
+
+    stale_revision = _call(
+        workspace,
+        "save_domain_judgment",
+        _domain_draft("trial", "domain:randomization", revision + 1, evidence),
+    )
+    assert stale_revision["outcome"] == "conflict"
+    with sqlite3.connect(workspace / ".rob2-kit" / "derivative.sqlite3") as connection:
+        assert connection.execute(
+            "SELECT next_index,complete FROM domain_context_delivery"
+        ).fetchone() == (1, 0)
+
+    if page["count"] > 2:
+        skipped_payload = _decode_domain_context_cursor(first_cursor)
+        skipped_payload["page_index"] = page["count"] - 1
+        skipped = _domain_context_cursor(skipped_payload)
+        out_of_order, _text = _wire_context(workspace, {"cursor": skipped}, drain=False)
+        assert out_of_order["outcome"] == "condition"
+        assert out_of_order["condition"]["code"] == "domain_context_delivery_out_of_order"
+        assert first_cursor in out_of_order["condition"]["detail"]
+
+    continued, continued_text = _wire_context(workspace, recovery["arguments"], drain=False)
+    assert continued["data"]["context_page"]["index"] == 1
+    assert (
+        len(
+            json.dumps(
+                {
+                    "content": [{"type": "text", "text": continued_text}],
+                    "structured_content": continued,
+                },
+                ensure_ascii=False,
+                separators=(",", ":"),
+            ).encode()
+        )
+        <= 32_768
+    )
+
+    repeated, _text = _wire_context(workspace, {"cursor": first_cursor}, drain=False)
+    repeated_again, _text = _wire_context(workspace, {"cursor": first_cursor}, drain=False)
+    assert repeated == repeated_again
+    with sqlite3.connect(workspace / ".rob2-kit" / "derivative.sqlite3") as connection:
+        assert connection.execute("SELECT next_index FROM domain_context_delivery").fetchone() == (
+            2,
+        )
+
+    cursor = repeated["data"]["context_page"]["next_cursor"]
+    while cursor is not None:
+        next_page, _text = _wire_context(workspace, {"cursor": cursor}, drain=False)
+        cursor = next_page["data"]["context_page"]["next_cursor"]
+    with sqlite3.connect(workspace / ".rob2-kit" / "derivative.sqlite3") as connection:
+        assert connection.execute(
+            "SELECT complete,next_cursor FROM domain_context_delivery"
+        ).fetchone() == (1, None)
+        completed_delivery = connection.execute(
+            "SELECT digest,page_size,page_count,next_index,next_cursor,complete "
+            "FROM domain_context_delivery"
+        ).fetchone()
+
+    refreshed, _text = _wire_context(workspace, {}, drain=False)
+    assert refreshed["data"]["context_page"]["index"] == 0
+    with sqlite3.connect(workspace / ".rob2-kit" / "derivative.sqlite3") as connection:
+        assert (
+            connection.execute(
+                "SELECT digest,page_size,page_count,next_index,next_cursor,complete "
+                "FROM domain_context_delivery"
+            ).fetchone()
+            == completed_delivery
+        )
+
+    saved = _call(
+        workspace,
+        "save_domain_judgment",
+        _domain_draft("trial", "domain:randomization", revision, evidence),
+    )
+    assert saved["outcome"] == "success"
+
+
+def test_small_domain_context_receipt_remains_unpaged(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    workspace, _evidence, _revision = _pending_assessment_workspace(tmp_path)
+    monkeypatch.setattr(mcp_server, "_DOMAIN_CONTEXT_DEFAULT_PAGE_BYTES", 131_072)
+    context, _text = _wire_context(workspace, {}, drain=False)
+    assert "context_page" not in context["data"]
 
 
 def test_domain_context_pages_retain_scope_and_all_conditional_questions(
@@ -139,9 +328,43 @@ def test_domain_context_cursor_rejects_revision_change(tmp_path: Path) -> None:
         _domain_draft("trial", "domain:randomization", revision, evidence),
     )
     assert saved["outcome"] == "success"
+    with sqlite3.connect(workspace / ".rob2-kit" / "derivative.sqlite3") as connection:
+        delivery_before = connection.execute(
+            "SELECT next_index,complete FROM domain_context_delivery"
+        ).fetchone()
     stale, _text = _wire_context(workspace, {"cursor": cursor})
     assert stale["outcome"] == "condition"
     assert stale["condition"]["code"] == "domain_context_cursor_stale"
+    with sqlite3.connect(workspace / ".rob2-kit" / "derivative.sqlite3") as connection:
+        assert (
+            connection.execute("SELECT next_index,complete FROM domain_context_delivery").fetchone()
+            == delivery_before
+        )
+
+
+def test_domain_context_delivery_does_not_advance_on_validation_failure(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    workspace, _evidence, _revision = _pending_assessment_workspace(tmp_path)
+    monkeypatch.setenv("ROB2_WORKSPACE", str(workspace))
+    value = domain_application.get_domain_context(workspace)
+
+    original_validate = mcp_server.validate_output
+
+    def fail_get_domain_context(tool: str, candidate: dict) -> dict:
+        if tool == "get_domain_context":
+            raise ValueError("synthetic validation failure")
+        return original_validate(tool, candidate)
+
+    monkeypatch.setattr(mcp_server, "validate_output", fail_get_domain_context)
+    with pytest.raises(ValueError, match="synthetic validation failure"):
+        mcp_server._content("get_domain_context", value)
+
+    with sqlite3.connect(workspace / ".rob2-kit" / "derivative.sqlite3") as connection:
+        assert (
+            connection.execute("SELECT next_index,complete FROM domain_context_delivery").fetchone()
+            is None
+        )
 
 
 def test_domain_context_cursor_only_continuation_keeps_nonactive_domain(tmp_path: Path) -> None:
@@ -188,6 +411,7 @@ def test_domain_context_cursor_rejects_changed_missing_data_preview(tmp_path: Pa
         ),
     )
     assert second_save["outcome"] == "success"
+    state_revision = int(second_save["head"]["state_revision"])
     preview = {
         "arm": "intervention",
         "population": "randomized participants",
@@ -201,6 +425,7 @@ def test_domain_context_cursor_rejects_changed_missing_data_preview(tmp_path: Pa
         workspace,
         {"missing_data": [preview], "page_size": 32_768},
     )
+    context_domain = first["data"]["domain_id"]
     cursor = first["data"]["context_page"]["next_cursor"]
     assert cursor
     changed = preview | {"observed": 0}
@@ -212,6 +437,26 @@ def test_domain_context_cursor_rejects_changed_missing_data_preview(tmp_path: Pa
 
     assert stale["outcome"] == "condition"
     assert stale["condition"]["code"] == "domain_context_cursor_stale"
+    with sqlite3.connect(workspace / ".rob2-kit" / "derivative.sqlite3") as connection:
+        pending_digest = connection.execute(
+            "SELECT digest FROM domain_context_delivery "
+            "WHERE trial_id=? AND domain_id=? AND state_revision=?",
+            ("trial", context_domain, state_revision),
+        ).fetchone()[0]
+    restarted, _text = _wire_context(
+        workspace,
+        {"missing_data": [changed], "page_size": 32_768},
+        drain=False,
+    )
+    assert restarted["data"]["context_page"]["index"] == 0
+    with sqlite3.connect(workspace / ".rob2-kit" / "derivative.sqlite3") as connection:
+        delivery = connection.execute(
+            "SELECT digest,next_index,complete FROM domain_context_delivery "
+            "WHERE trial_id=? AND domain_id=? AND state_revision=?",
+            ("trial", context_domain, state_revision),
+        ).fetchone()
+    assert delivery[0] != pending_digest
+    assert delivery[1:] == (1, 0)
 
 
 def test_domain_context_intermediate_page_bounds_large_missing_preview(tmp_path: Path) -> None:

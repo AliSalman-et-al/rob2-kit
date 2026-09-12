@@ -44,7 +44,6 @@ is a transport failure, not a no-hit or absence result. A Codex
 const r = await tools.mcp__rob2__get_domain_context({
   trial_id: "trial-id-from-head.next_action",
   domain_id: "domain-id-from-head.next_action",
-  page_size: 32768,
 });
 const textPart = r?.content?.find((part) => part?.type === "text")?.text;
 const receipt = r?.structuredContent ?? r?.structured_content ?? (textPart ? JSON.parse(textPart) : null);
@@ -52,7 +51,11 @@ if (!receipt) throw new Error("MCP receipt unavailable; delivery incomplete");
 text(receipt);
 ```
 
-For paged Domain context, pass `data.context_page.next_cursor` unchanged. When
+The server auto-pages a full Domain receipt above 32 KB. For paged Domain context,
+pass `data.context_page.next_cursor` unchanged and fetch every page before deciding
+or saving. A pending save returns the exact cursor to continue; delivery completion
+records successful response generation only, so verify the host-visible content and
+inspect Evidence as needed. When
 the host supports variables, reuse the returned value directly; never manually
 retype an opaque cursor. Render each page separately so a combined transcript
 does not truncate the receipt. If a cursor is invalid, recapture the preceding
@@ -69,28 +72,33 @@ receipt extraction inline because exec locals do not persist:
 const r = await tools.mcp__rob2__get_domain_context({
   trial_id: "trial-id-from-head.next_action",
   domain_id: "domain-id-from-head.next_action",
-  page_size: 32768,
 });
 const textPart = r?.content?.find((part) => part?.type === "text")?.text;
 const page = r?.structuredContent ?? r?.structured_content ?? (textPart ? JSON.parse(textPart) : null);
-if (!page?.data?.context_page) throw new Error("Context page unavailable; keep stored cursor");
+if (!page || page.outcome !== "success") {
+  text(page);
+  throw new Error("Domain context condition; keep stored cursor");
+}
 text(page);
-store("domain-next-cursor", page.data.context_page.next_cursor ?? null);
+store("domain-next-cursor", page.data?.context_page?.next_cursor ?? null);
 ```
 
 ```javascript
 // Separate functions.exec call: load and pass the cursor unchanged.
 const cursor = load("domain-next-cursor");
-if (!cursor) throw new Error("No stored Domain cursor");
-const r = await tools.mcp__rob2__get_domain_context({ cursor });
-const textPart = r?.content?.find((part) => part?.type === "text")?.text;
-const page = r?.structuredContent ?? r?.structured_content ?? (textPart ? JSON.parse(textPart) : null);
-if (page?.outcome !== "success" || !page?.data?.context_page) {
+if (!cursor) {
+  text("No continuation cursor is stored.");
+} else {
+  const r = await tools.mcp__rob2__get_domain_context({ cursor });
+  const textPart = r?.content?.find((part) => part?.type === "text")?.text;
+  const page = r?.structuredContent ?? r?.structured_content ?? (textPart ? JSON.parse(textPart) : null);
+  if (page?.outcome !== "success" || !page?.data?.context_page) {
+    text(page ?? { outcome: "condition", detail: "MCP receipt unavailable" });
+    throw new Error("Continuation failed; stored cursor unchanged");
+  }
   text(page);
-  throw new Error("Continuation failed; stored cursor unchanged");
+  store("domain-next-cursor", page.data.context_page.next_cursor ?? null);
 }
-text(page);
-store("domain-next-cursor", page.data.context_page.next_cursor ?? null);
 ```
 
 ## Follow the workflow
@@ -189,7 +197,7 @@ set or revise signalling answers.
 ### 5. Assess the next Domain
 
 Call `get_domain_context` for the Trial and Domain in `head.next_action`, using
-`page_size: 32768` on the initial call. Treat
+the server's automatic full-receipt pagination when it exceeds 32 KB. Treat
 each returned question card as authoritative for wording, server-issued options,
 activation, official guidance, decision rules, and uncertainty. Open
 the matching scientific reference when working on that Domain:

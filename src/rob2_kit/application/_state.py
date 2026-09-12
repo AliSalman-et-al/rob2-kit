@@ -346,6 +346,14 @@ def _ensure(root: Path) -> None:
             "page INTEGER NOT NULL, start_line INTEGER NOT NULL, end_line INTEGER NOT NULL, "
             "PRIMARY KEY(batch_id,phase,source_id,page,start_line,end_line))"
         )
+        connection.execute(
+            "CREATE TABLE IF NOT EXISTS domain_context_delivery ("
+            "batch_id TEXT NOT NULL, trial_id TEXT NOT NULL, domain_id TEXT NOT NULL, "
+            "state_revision INTEGER NOT NULL, digest TEXT NOT NULL, page_size INTEGER NOT NULL, "
+            "page_count INTEGER NOT NULL, next_index INTEGER NOT NULL, "
+            "next_cursor TEXT, complete INTEGER NOT NULL, "
+            "PRIMARY KEY(batch_id,trial_id,domain_id,state_revision))"
+        )
         association_columns = {
             str(row[1])
             for row in connection.execute("PRAGMA table_info(search_domain_associations)")

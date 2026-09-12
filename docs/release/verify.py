@@ -261,13 +261,35 @@ async def _verify_client(client: Client, contract: dict[str, Any]) -> None:
 
 
 async def _call(client: Client, name: str, arguments: dict[str, Any]) -> dict[str, Any]:
-    result = await client.call_tool(name, arguments)
-    value = result.structured_content
-    if not isinstance(value, dict):
-        raise ValueError(f"{name} did not return structured content")
-    text = [item.text for item in result.content if isinstance(item, TextContent)]
-    if len(text) != 1 or json.loads(text[0]) != value:
-        raise ValueError(f"{name} text and structured content differ")
+    async def one(request: dict[str, Any]) -> dict[str, Any]:
+        result = await client.call_tool(name, request)
+        value = result.structured_content
+        if not isinstance(value, dict):
+            raise ValueError(f"{name} did not return structured content")
+        text = [item.text for item in result.content if isinstance(item, TextContent)]
+        if len(text) != 1 or json.loads(text[0]) != value:
+            raise ValueError(f"{name} text and structured content differ")
+        return value
+
+    value = await one(arguments)
+    if name == "get_domain_context" and "cursor" not in arguments:
+        pages = [value]
+        while (
+            isinstance(value.get("data"), dict)
+            and isinstance(value["data"].get("context_page"), dict)
+            and value["data"]["context_page"].get("next_cursor") is not None
+        ):
+            value = await one({"cursor": value["data"]["context_page"]["next_cursor"]})
+            pages.append(value)
+        if len(pages) > 1 and all(isinstance(page.get("data"), dict) for page in pages):
+            merged = dict(pages[0])
+            data = dict(pages[0]["data"])
+            for section in ("questions", "comparison_cards", "evidence"):
+                data[section] = [item for page in pages for item in page["data"].get(section, [])]
+            data.pop("context_page", None)
+            merged["data"] = data
+            merged["head"] = pages[-1].get("head", merged.get("head"))
+            value = merged
     flat = dict(value)
     head = flat.get("head")
     if isinstance(head, dict):
@@ -466,7 +488,9 @@ async def _verify_domains(client: Client, evidence: dict[str, Any], domains: lis
         raise ValueError(f"acceptance narrow-search action execution differs: {widened}")
     for domain_id in domains:
         context = await _call(
-            client, "get_domain_context", {"trial_id": "trial", "domain_id": domain_id}
+            client,
+            "get_domain_context",
+            {"trial_id": "trial", "domain_id": domain_id, "page_size": 131_072},
         )
         if context.get("domain_id") != domain_id:
             raise ValueError(f"acceptance Domain context differs: {domain_id}")
@@ -613,7 +637,11 @@ def verify(wheel: Path | None = None, bundle: Path | None = None) -> None:
                 context = await _call(
                     client,
                     "get_domain_context",
-                    {"trial_id": "trial", "domain_id": "domain:randomization"},
+                    {
+                        "trial_id": "trial",
+                        "domain_id": "domain:randomization",
+                        "page_size": 131_072,
+                    },
                 )
                 evidence_rows = context.get("evidence")
                 if not isinstance(evidence_rows, list):

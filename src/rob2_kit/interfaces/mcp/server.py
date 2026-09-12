@@ -24,8 +24,15 @@ from pydantic import Field, StrictBool, StrictInt, StrictStr, model_validator
 from pydantic.functional_validators import AfterValidator, BeforeValidator
 
 from rob2_kit import __version__
+from rob2_kit.application._state import _root
 from rob2_kit.application.contracts import TOOL_NAMES, WorkflowConflict
-from rob2_kit.application.domains import get_domain_context as _get_domain_context
+from rob2_kit.application.domains import (
+    _domain_context_delivery,
+    _record_domain_context_delivery,
+)
+from rob2_kit.application.domains import (
+    get_domain_context as _get_domain_context,
+)
 from rob2_kit.application.domains import save_domain_judgment as _save_domain_judgment
 from rob2_kit.application.evidence import list_sources as _list_sources
 from rob2_kit.application.evidence import read_pages as _read_pages
@@ -542,6 +549,7 @@ def _content(
     value = {
         key: item for key, item in value.items() if key not in {"_png_bytes", "_read_coverage"}
     }
+    domain_context_digest: str | None = None
     value = _public_source_references(value)
     if tool != "get_status":
         current = _get_status_head(_workspace())
@@ -558,7 +566,14 @@ def _content(
         # projection.  This keeps structured and text consumers on one typed
         # contract while allowing the transport-only option prose omission.
         normalized = _compact_domain_context_transport(normalized)
-        if domain_cursor is not None or domain_page_size is not None:
+        data = normalized.get("data")
+        if isinstance(data, dict):
+            domain_context_digest = _domain_context_digest(data)
+        if (
+            domain_cursor is not None
+            or domain_page_size is not None
+            or _domain_context_transport_bytes(normalized) > _DOMAIN_CONTEXT_DEFAULT_PAGE_BYTES
+        ):
             normalized = _paginate_domain_context_transport(
                 normalized,
                 domain_cursor,
@@ -572,6 +587,38 @@ def _content(
         separators=(",", ":"),
         sort_keys=tool != "get_domain_context",
     )
+    if tool == "get_domain_context" and domain_context_digest is not None:
+        data = normalized.get("data")
+        head = normalized.get("head")
+        page = data.get("context_page") if isinstance(data, dict) else None
+        state_revision = head.get("state_revision") if isinstance(head, dict) else None
+        if isinstance(data, dict) and isinstance(state_revision, int):
+            if isinstance(page, dict):
+                _record_domain_context_delivery(
+                    _root(_workspace()),
+                    str(data["trial_id"]),
+                    str(data["domain_id"]),
+                    state_revision,
+                    domain_context_digest,
+                    int(page["page_size"]),
+                    int(page["count"]),
+                    int(page["index"]),
+                    page.get("next_cursor") if isinstance(page.get("next_cursor"), str) else None,
+                    domain_cursor,
+                )
+            else:
+                _record_domain_context_delivery(
+                    _root(_workspace()),
+                    str(data["trial_id"]),
+                    str(data["domain_id"]),
+                    state_revision,
+                    domain_context_digest,
+                    _DOMAIN_CONTEXT_DEFAULT_PAGE_BYTES,
+                    1,
+                    0,
+                    None,
+                    None,
+                )
     if tool == "read_pages" and isinstance(read_coverage, list):
         _record_read_coverage_batch(_workspace(), read_coverage)
     # MCP clients are allowed to expose only ``content`` to a model.  Carry
@@ -713,6 +760,23 @@ def _invoke(
                     "condition": condition.removeprefix("domain_context_page_unrecoverable:"),
                 },
             )
+        for prefix, code in (
+            ("domain_context_delivery_unavailable:", "domain_context_delivery_unavailable"),
+            ("domain_context_delivery_stale:", "domain_context_delivery_stale"),
+            (
+                "domain_context_delivery_out_of_order:",
+                "domain_context_delivery_out_of_order",
+            ),
+        ):
+            if condition.startswith(prefix):
+                return _content(
+                    tool,
+                    {
+                        "outcome": "condition",
+                        "code": code,
+                        "condition": condition.removeprefix(prefix),
+                    },
+                )
         if tool in {
             "get_domain_context",
             "save_domain_judgment",
@@ -1509,13 +1573,16 @@ async def request_proposal_approval(ctx: Context) -> ToolResult:
         "For a D3 count preview, pass missing_data; the call does not commit those rows. "
         "If omitted Evidence is unfamiliar or uncertain after a restart or compaction, call "
         "read_pages with recovery.trial_id and recovery.windows. Use the returned revision and "
-        "option IDs when saving active answers. For a large receipt, pass page_size as the "
-        "full text-plus-structured transport byte budget, then follow context_page.next_cursor "
-        "until every page is fetched. Keep the Trial, Domain, and revision from each page "
+        "option IDs when saving active answers. When the full text-plus-structured receipt "
+        "exceeds 32 KB, the server returns bounded context_page responses; fetch every "
+        "context_page.next_cursor before deciding or saving. A pending save returns the "
+        "exact cursor to continue. Delivery completion records successful response generation "
+        "only; verify host-visible delivery and inspect Evidence as needed. Keep the Trial, "
+        "Domain, and revision from each page "
         "bound together; an item larger than the budget returns a retry condition, or an "
         "explicit unrecoverable condition when it exceeds the maximum page size. "
-        "Pagination bounds each server response; verify host-visible delivery and do not "
-        "claim it proves host or model comprehension. Recover "
+        "Pagination bounds each server response; do not claim it proves host or model "
+        "comprehension. Recover "
         "premise Evidence with read_pages and keep render_page image blocks separate."
     ),
     annotations=_READ_ONLY,
@@ -1564,8 +1631,9 @@ def get_domain_context(
             ge=_DOMAIN_CONTEXT_MIN_PAGE_BYTES,
             le=_DOMAIN_CONTEXT_MAX_PAGE_BYTES,
             description=(
-                "Optional full text-plus-structured transport byte budget for bounded pages. "
-                "Use with the first call; subsequent calls follow cursor."
+                "Optional full text-plus-structured transport byte budget override for bounded "
+                "pages. The server auto-pages receipts above 32768 bytes; subsequent calls "
+                "follow the returned cursor."
             ),
         ),
     ] = None,
@@ -1620,7 +1688,9 @@ def get_domain_context(
         "further questions in this same save; the server commits only active answers. "
         "Invalid input returns grouped repairs without committing. Apply every reported repair "
         "and retain other drafted answers. Add missing questions to the existing answer set. "
-        "Include every returned question before resubmitting. "
+        "Include every returned question before resubmitting. Fetch every Domain context page "
+        "before saving; a pending delivery condition includes an exact executable recovery "
+        "action. "
         "The server ignores inactive answers. "
         "Before saving, check each basis against the approved Result and literal "
         "question; justify any inference or unresolved linkage. "
@@ -1695,6 +1765,42 @@ def save_domain_judgment(
         supersedes=supersedes,
         revision_basis=revision_basis,
     )
+    root = _root(_workspace())
+    head = _get_status_head(_workspace())
+    if expected_revision == head.get("state_revision"):
+        delivery = _domain_context_delivery(root, trial_id, domain_id, expected_revision)
+        if delivery is not None and not bool(delivery.get("complete")):
+            next_cursor = delivery.get("next_cursor")
+            if not isinstance(next_cursor, str) or not next_cursor:
+                return _content(
+                    "save_domain_judgment",
+                    {
+                        "outcome": "condition",
+                        "code": "domain_context_delivery_invalid",
+                        "condition": (
+                            "Domain context delivery state is corrupt; restart the Domain."
+                        ),
+                    },
+                )
+            return _content(
+                "save_domain_judgment",
+                {
+                    "outcome": "condition",
+                    "condition": {
+                        "code": "domain_context_delivery_pending",
+                        "detail": ("Fetch the next Domain context page before saving, then retry."),
+                        "recovery": {
+                            "operation": "get_domain_context",
+                            "arguments": {
+                                "trial_id": trial_id,
+                                "domain_id": domain_id,
+                                "cursor": next_cursor,
+                                "page_size": delivery["page_size"],
+                            },
+                        },
+                    },
+                },
+            )
     return _invoke("save_domain_judgment", lambda: _save_domain_judgment(_workspace(), draft))
 
 

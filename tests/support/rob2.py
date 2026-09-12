@@ -6,6 +6,7 @@ import asyncio
 import hashlib
 import json
 import os
+import re
 import runpy
 import subprocess
 import sys
@@ -34,8 +35,64 @@ def _call(workspace: Path, tool: str, arguments: dict[str, object]) -> dict[str,
     async def invoke() -> dict[str, Any]:
         os.environ["ROB2_WORKSPACE"] = str(workspace)
         async with Client(mcp) as client:
-            result = await client.call_tool(tool, arguments)
+            auto_drain = (
+                tool == "get_domain_context"
+                and "cursor" not in arguments
+                and "page_size" not in arguments
+            )
+            request = dict(arguments)
+            result = await client.call_tool(tool, request)
             value = dict(result.structured_content or {})
+            for _ in range(3):
+                if not auto_drain or "data" in value:
+                    break
+                condition = value.get("condition")
+                detail = condition.get("detail") if isinstance(condition, dict) else ""
+                code = condition.get("code") if isinstance(condition, dict) else None
+                match = re.search(r"required_page_size=(\d+)", detail)
+                if (
+                    code
+                    not in {
+                        "domain_context_header_oversized",
+                        "domain_context_item_oversized",
+                        "domain_context_page_oversized",
+                    }
+                    or not match
+                ):
+                    break
+                required_page_size = int(match.group(1))
+                current_page_size = request.get("page_size")
+                if isinstance(current_page_size, int) and required_page_size <= current_page_size:
+                    break
+                request = {**arguments, "page_size": required_page_size}
+                result = await client.call_tool(tool, request)
+                value = dict(result.structured_content or {})
+            if auto_drain:
+                pages = [value]
+                while (
+                    isinstance(value.get("data"), dict)
+                    and isinstance(value["data"].get("context_page"), dict)
+                    and value["data"]["context_page"].get("next_cursor") is not None
+                ):
+                    cursor = value["data"]["context_page"]["next_cursor"]
+                    continuation = {"cursor": cursor}
+                    for scope in ("trial_id", "domain_id", "missing_data"):
+                        if scope in request:
+                            continuation[scope] = request[scope]
+                    result = await client.call_tool(tool, continuation)
+                    value = dict(result.structured_content or {})
+                    pages.append(value)
+                if len(pages) > 1 and all(isinstance(page.get("data"), dict) for page in pages):
+                    merged = dict(pages[0])
+                    data = dict(pages[0]["data"])
+                    for section in ("questions", "comparison_cards", "evidence"):
+                        data[section] = [
+                            item for page in pages for item in page["data"].get(section, [])
+                        ]
+                    data.pop("context_page", None)
+                    merged["data"] = data
+                    merged["head"] = pages[-1].get("head", merged.get("head"))
+                    value = merged
             value["_image_content"] = [
                 item for item in result.content if getattr(item, "type", None) == "image"
             ]

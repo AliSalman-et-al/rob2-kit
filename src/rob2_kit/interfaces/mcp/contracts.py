@@ -15,6 +15,7 @@ from pydantic import (
     Field,
     StrictBool,
     StrictInt,
+    StrictStr,
     TypeAdapter,
     model_validator,
 )
@@ -146,9 +147,25 @@ class ConflictData(PublicModel):
     current_revision: NonNegativeInt
 
 
+class DomainContextRecoveryArguments(PublicModel):
+    trial_id: TrialId
+    domain_id: DomainId
+    cursor: StrictStr = Field(min_length=1)
+    page_size: StrictInt = Field(ge=4096, le=131_072)
+
+
+class DomainContextRecovery(PublicModel):
+    operation: Literal["get_domain_context"]
+    arguments: DomainContextRecoveryArguments
+
+
 class ConditionData(PublicModel):
     code: str = Field(min_length=1)
     detail: str = Field(min_length=1)
+
+
+class DomainContextDeliveryCondition(ConditionData):
+    recovery: DomainContextRecovery | None = None
 
 
 class SearchCursorStaleCondition(PublicModel):
@@ -1257,6 +1274,7 @@ ConditionByTool: Final = {
     "search_sources": SearchCursorCondition,
     "finalize_batch": ConditionData,
     "request_proposal_approval": ProposalApprovalCondition,
+    "save_domain_judgment": DomainContextDeliveryCondition,
 }
 
 
