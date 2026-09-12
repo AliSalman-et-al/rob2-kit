@@ -29,7 +29,9 @@ from rob2_kit.application.domains import get_domain_context as _get_domain_conte
 from rob2_kit.application.domains import save_domain_judgment as _save_domain_judgment
 from rob2_kit.application.evidence import list_sources as _list_sources
 from rob2_kit.application.evidence import read_pages as _read_pages
-from rob2_kit.application.evidence import record_read_coverage as _record_read_coverage
+from rob2_kit.application.evidence import (
+    record_read_coverage_batch as _record_read_coverage_batch,
+)
 from rob2_kit.application.evidence import render_page as _render_page
 from rob2_kit.application.evidence import search_sources as _search_sources
 from rob2_kit.application.evidence import (
@@ -534,7 +536,10 @@ def _content(
 ) -> ToolResult:
     # Pixel bytes are transport content, never part of the typed JSON receipt.
     png_bytes = value.get("_png_bytes")
-    value = {key: item for key, item in value.items() if key != "_png_bytes"}
+    read_coverage = value.get("_read_coverage")
+    value = {
+        key: item for key, item in value.items() if key not in {"_png_bytes", "_read_coverage"}
+    }
     value = _public_source_references(value)
     if tool != "get_status":
         current = _get_status_head(_workspace())
@@ -559,6 +564,14 @@ def _content(
                 domain_preview_missing_data,
             )
         validate_output(tool, normalized)
+    serialized = json.dumps(
+        normalized,
+        ensure_ascii=False,
+        separators=(",", ":"),
+        sort_keys=tool != "get_domain_context",
+    )
+    if tool == "read_pages" and isinstance(read_coverage, list):
+        _record_read_coverage_batch(_workspace(), read_coverage)
     # MCP clients are allowed to expose only ``content`` to a model.  Carry
     # the same validated object in a compact JSON text block so text-only and
     # structured consumers receive identical workflow state.  Images remain
@@ -566,12 +579,7 @@ def _content(
     content: list[TextContent | ImageContent] = [
         TextContent(
             type="text",
-            text=json.dumps(
-                normalized,
-                ensure_ascii=False,
-                separators=(",", ":"),
-                sort_keys=tool != "get_domain_context",
-            ),
+            text=serialized,
         )
     ]
     if isinstance(png_bytes, bytes):
@@ -998,6 +1006,7 @@ def read_pages(
                 for item in result["pages"]
             )
         numbered_pages = []
+        read_coverage: list[tuple[str, str, int, int, int]] = []
         remaining_windows: list[dict[str, Any]] = []
         used_response_chars = 0
         for item in raw_pages:
@@ -1005,13 +1014,8 @@ def read_pages(
             requested_start = item["requested_start"]
             requested_end = item["requested_end"]
             if not lines:
-                _record_read_coverage(
-                    _workspace(),
-                    request_trial,
-                    item["source_id"],
-                    item["page"],
-                    0,
-                    0,
+                read_coverage.append(
+                    (request_trial, item["source_id"], item["page"], 0, 0)
                 )
                 numbered_pages.append(
                     {
@@ -1054,7 +1058,9 @@ def read_pages(
                 end_line = line_number
             truncated = end_line < available_end
             passage_ref = None
-            if end_line >= requested_start:
+            if end_line >= requested_start and any(
+                line.strip() for line in lines[requested_start - 1 : end_line]
+            ):
                 passage = _select_text_evidence_by_lines(
                     _workspace(),
                     request_trial,
@@ -1090,18 +1096,20 @@ def read_pages(
                     }
                 )
             if end_line >= requested_start:
-                _record_read_coverage(
-                    _workspace(),
-                    request_trial,
-                    item["source_id"],
-                    item["page"],
-                    requested_start,
-                    end_line,
+                read_coverage.append(
+                    (
+                        request_trial,
+                        item["source_id"],
+                        item["page"],
+                        requested_start,
+                        end_line,
+                    )
                 )
         return {
             "outcome": "success",
             "pages": numbered_pages,
             "remaining_windows": remaining_windows,
+            "_read_coverage": read_coverage,
         }
 
     return _invoke("read_pages", read)
