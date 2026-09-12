@@ -32,8 +32,8 @@ from .contracts import COUNTERS
 
 MAIN_REPORT_TEXT_BUDGET = 65_536
 
-_SEARCH_SESSION_VERSION = "rob2-kit.search-session.v0.5"
-_SEARCH_CANDIDATE_VERSION = "rob2-kit.search-candidates.v0.5"
+_SEARCH_SESSION_VERSION = "rob2-kit.search-session.v0.6"
+_SEARCH_CANDIDATE_VERSION = "rob2-kit.search-candidates.v0.6"
 
 
 def list_sources(workspace: str | Path, trial_id: str | None = None) -> dict[str, Any]:

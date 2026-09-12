@@ -997,12 +997,18 @@ def _normalized_with_spans(
             whitespace = (
                 value[spans[index][1] : spans[next_index][0]] if next_index < len(spans) else ""
             )
+            # Preserve numeric ranges' hyphens across the line break.
             if (
                 next_index > index + 1
                 and any(character in "\r\n" for character in whitespace)
                 and next_index < len(characters)
                 and (characters[next_index].isalnum() or characters[next_index] == "_")
             ):
+                if output[-1].isdigit() and characters[next_index].isdigit():
+                    output.append(characters[index])
+                    output_spans.append(spans[index])
+                    index = next_index
+                    continue
                 if dehyphenate_line_ends:
                     output_spans[-1] = (output_spans[-1][0], spans[next_index][0])
                 else:
