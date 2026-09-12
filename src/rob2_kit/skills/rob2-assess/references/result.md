@@ -112,6 +112,9 @@ reported exclusions. Describe every complete randomized arm in
 `comparison_groups`. `measurement.method` is ascertainment or definition, not a
 summary statistic.
 
+Include the passages supporting the population summary in passage_refs,
+including separate passages for eligibility criteria and analyzed denominators.
+
 The reported object records the Source endpoint and quantities. Keep its
 endpoint distinct from the captured requested outcome. The server supplies the
 captured outcome, target metric, and `effect_of_interest:"assignment"`.

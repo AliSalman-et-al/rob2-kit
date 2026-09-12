@@ -194,6 +194,107 @@ def test_reported_result_rejects_cross_evidence_endpoint_numeric_splice(tmp_path
     assert "endpoint identifier exactly as it appears" in coherence["detail"]
 
 
+def test_population_summary_keeps_two_selected_passages_without_exact_binding(
+    tmp_path: Path,
+) -> None:
+    workspace = _workspace(tmp_path)
+    (workspace / "input" / "trial" / "main.txt").write_text(
+        "Adults aged 65 years or older were eligible at baseline.\n"
+        "The requested outcome was measured in the analyzed population.; death ascertainment; "
+        "end of follow-up; assigned to intervention; assigned to control; randomized population "
+        "denominators; risk ratio; risk; 1; events; 2.",
+        encoding="utf-8",
+    )
+    _call(
+        workspace,
+        "prepare_batch",
+        {"requested_outcome": "requested outcome", "expected_revision": 0},
+    )
+    _read_required_main_reports(workspace)
+    source = next(
+        item
+        for item in _call(workspace, "list_sources", {"trial_id": "trial"})["data"]["sources"]
+        if item["label"] == "main.txt"
+    )
+    eligibility = _call(
+        workspace,
+        "select_text_evidence",
+        {
+            "trial_id": "trial",
+            "source_id": source["id"],
+            "page": 1,
+            "start_line": 1,
+            "end_line": 1,
+        },
+    )["data"]["evidence"]
+    quantitative = _call(
+        workspace,
+        "select_text_evidence",
+        {
+            "trial_id": "trial",
+            "source_id": source["id"],
+            "page": 1,
+            "start_line": 2,
+            "end_line": 2,
+        },
+    )["data"]["evidence"]
+    result = _result(quantitative)
+    result["reported"]["analysis_population"] = (
+        "Adults aged 65 years or older were eligible at baseline; the estimate reports "
+        "randomized population denominators."
+    )
+    result["passage_refs"] = [eligibility["handle"], quantitative["handle"]]
+
+    saved = _call(workspace, "save_proposal", _proposal_args(workspace, [result]))
+    assert saved["outcome"] == "review_required", saved
+    state = _state(workspace)
+    stored = state["proposal"]["payload"]["results"][0]
+    assert {item["handle"] for item in stored["evidence"]} == {
+        eligibility["handle"],
+        quantitative["handle"],
+    }
+    assert (
+        stored["reported"]["analysis_population"]
+        == result["reported"]["analysis_population"]
+    )
+    assert all(
+        binding["field"]["path"] != "/reported/analysis_population"
+        for binding in stored["bindings"]
+    )
+    review_result = state["review"]["candidate"]["proposal"]["results"][0]
+    assert review_result["reported"]["analysis_population"] == stored["reported"][
+        "analysis_population"
+    ]
+    assert {item["handle"] for item in state["review"]["candidate"]["evidence"].values()} == {
+        eligibility["handle"],
+        quantitative["handle"],
+    }
+
+    unsupported = copy.deepcopy(result)
+    unsupported["reported"]["analysis_population"] += " Everyone completed follow-up."
+    reviewed = _call(workspace, "save_proposal", _proposal_args(workspace, [unsupported]))
+    assert reviewed["outcome"] == "review_required", reviewed
+    state = _state(workspace)
+    reviewed_result = state["review"]["candidate"]["proposal"]["results"][0]
+    assert reviewed_result["reported"]["analysis_population"] == unsupported["reported"][
+        "analysis_population"
+    ]
+    assert all(
+        binding["field"]["path"] != "/reported/analysis_population"
+        for binding in reviewed_result["bindings"]
+    )
+
+    mutated = copy.deepcopy(unsupported)
+    mutated["reported"]["values"][0]["value"] = "999"
+    repaired = _call(workspace, "save_proposal", _proposal_args(workspace, [mutated]))
+    assert repaired["outcome"] == "repair"
+    assert any(
+        repair["code"] == "result_value_not_supported"
+        and repair["path"] == "/results/0/reported/values/0/value"
+        for repair in repaired["repairs"]
+    )
+
+
 def test_revised_result_binds_reported_leaves_to_its_coherent_evidence_and_finalizes(
     tmp_path: Path,
 ) -> None:

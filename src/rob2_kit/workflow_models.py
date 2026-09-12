@@ -589,9 +589,10 @@ class ComparativeEffectResult(StrictModel):
     )
     analysis_population: NonBlankText = Field(
         description=(
-            "Describe who was included in this estimate and any reported exclusions. An analysis "
-            "label alone is insufficient when participant inclusion or exclusion details are "
-            "available."
+            "Summarize who was included in this estimate and any reported exclusions, using the "
+            "selected passages. You may combine and paraphrase information across passages. "
+            "Include participant inclusion or exclusion details when available; an analysis "
+            "label alone is insufficient."
         ),
     )
     endpoint: ReportedEndpoint = Field(
@@ -619,9 +620,10 @@ class GroupBoundValuesResult(StrictModel):
     )
     analysis_population: NonBlankText = Field(
         description=(
-            "Describe who was included in this estimate and any reported exclusions. An analysis "
-            "label alone is insufficient when participant inclusion or exclusion details are "
-            "available."
+            "Summarize who was included in this estimate and any reported exclusions, using the "
+            "selected passages. You may combine and paraphrase information across passages. "
+            "Include participant inclusion or exclusion details when available; an analysis "
+            "label alone is insufficient."
         ),
     )
     endpoint: ReportedEndpoint = Field(
@@ -675,9 +677,10 @@ class CategoryProfileResult(StrictModel):
     )
     analysis_population: NonBlankText = Field(
         description=(
-            "Describe who was included in this estimate and any reported exclusions. An analysis "
-            "label alone is insufficient when participant inclusion or exclusion details are "
-            "available."
+            "Summarize who was included in this estimate and any reported exclusions, using the "
+            "selected passages. You may combine and paraphrase information across passages. "
+            "Include participant inclusion or exclusion details when available; an analysis "
+            "label alone is insufficient."
         ),
     )
     endpoint: ReportedEndpoint = Field(

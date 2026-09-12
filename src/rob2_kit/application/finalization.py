@@ -235,6 +235,7 @@ def _source_bound_leaves(value: object, path: str) -> dict[str, object]:
         "/target/intended_analysis_population",
         "/target/intended_effect_measure",
         "/reported/group_id",
+        "/reported/analysis_population",
     }
 
     return {
