@@ -253,18 +253,16 @@ def test_population_summary_keeps_two_selected_passages_without_exact_binding(
         eligibility["handle"],
         quantitative["handle"],
     }
-    assert (
-        stored["reported"]["analysis_population"]
-        == result["reported"]["analysis_population"]
-    )
+    assert stored["reported"]["analysis_population"] == result["reported"]["analysis_population"]
     assert all(
         binding["field"]["path"] != "/reported/analysis_population"
         for binding in stored["bindings"]
     )
     review_result = state["review"]["candidate"]["proposal"]["results"][0]
-    assert review_result["reported"]["analysis_population"] == stored["reported"][
-        "analysis_population"
-    ]
+    assert (
+        review_result["reported"]["analysis_population"]
+        == stored["reported"]["analysis_population"]
+    )
     assert {item["handle"] for item in state["review"]["candidate"]["evidence"].values()} == {
         eligibility["handle"],
         quantitative["handle"],
@@ -276,9 +274,10 @@ def test_population_summary_keeps_two_selected_passages_without_exact_binding(
     assert reviewed["outcome"] == "review_required", reviewed
     state = _state(workspace)
     reviewed_result = state["review"]["candidate"]["proposal"]["results"][0]
-    assert reviewed_result["reported"]["analysis_population"] == unsupported["reported"][
-        "analysis_population"
-    ]
+    assert (
+        reviewed_result["reported"]["analysis_population"]
+        == unsupported["reported"]["analysis_population"]
+    )
     assert all(
         binding["field"]["path"] != "/reported/analysis_population"
         for binding in reviewed_result["bindings"]

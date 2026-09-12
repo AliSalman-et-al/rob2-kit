@@ -216,9 +216,7 @@ def test_result_and_applicability_evidence_survive_review_replacement_and_deriva
         == result["reported"]["analysis_population"]
     )
     assert (
-        initial["review"]["candidate"]["proposal"]["results"][0]["reported"][
-            "analysis_population"
-        ]
+        initial["review"]["candidate"]["proposal"]["results"][0]["reported"]["analysis_population"]
         == result["reported"]["analysis_population"]
     )
     assert [item["handle"] for item in initial_result["evidence"]] == [result_evidence["handle"]]
