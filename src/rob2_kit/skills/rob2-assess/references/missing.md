@@ -27,6 +27,17 @@ outcome-status or missing-value tables, including supplements. Match their
 outcome and time window to the approved Result. Recovery may inform bias from
 missingness, but does not make unknown vital status observed.
 
+When the availability premise remains unresolved, use the active comparison
+card's full Source inventory to inspect unopened supplements or combined
+protocol documents. Search for concrete study wording such as the outcome
+status, withdrawal or loss-to-follow-up labels, and the reported time point;
+`missing outcome data` alone may not occur in the report. Widen the Source
+scope or continue a cached cursor only as needed, and stop when comparable
+observed counts or complete follow-up accounting are inspected. If the
+captured Sources and bounded page windows do not establish availability,
+document that limit instead of treating an empty Source group or a no-hit
+search as evidence of missing outcomes.
+
 ## Reconcile availability
 
 Keep these quantities distinct for each arm and time point:

@@ -545,15 +545,16 @@ def _comparison_cards(
         for item in sources
         if isinstance(item, dict) and isinstance(item.get("id"), str)
     }
-    source_ids = {item["source_id"] for item in refs}
-    if domain_id == "domain:selection":
-        source_ids.update(
-            item["id"]
-            for item in sources
-            if isinstance(item, dict)
-            and isinstance(item.get("id"), str)
-            and item.get("role") in {"registry", "protocol", "sap"}
-        )
+    # Source roles are navigation hints, not an exhaustive description of a
+    # document. A supplement or combined document may contain the needed
+    # premise even when no passage has been selected yet. Keep every captured
+    # Source addressable from the card while leaving passage selection and
+    # slot classification evidence-bound.
+    source_ids = {
+        item["id"]
+        for item in sources
+        if isinstance(item, dict) and isinstance(item.get("id"), str)
+    }
     passage_groups = []
     for source_id in sorted(source_ids):
         source = source_by_id.get(source_id, {})

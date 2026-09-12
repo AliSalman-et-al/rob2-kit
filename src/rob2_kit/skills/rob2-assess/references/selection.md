@@ -11,7 +11,9 @@ before unblinded outcome data were available, or that later changes were
 unrelated to the results. Then compare the plan with the approved reported
 Result.
 
-Use captured Source provenance to locate the applicable plan passages. Compare
+Use captured Source provenance to locate the applicable plan passages. The
+active comparison card lists every captured Source, including supplements and
+combined protocol documents with no selected passages. Compare
 their version, date, intervention groups, and cohort with the approved Result.
 In `comparison_cards[].passage_groups`, inspect the Source label, role, logical
 path, page count, and content and projection hashes. A protocol, SAP, or registry
@@ -47,6 +49,17 @@ information limit. Missing plans do not prove selective reporting.
 Keep unknown dates and historical applicability explicit. Use captured versions
 and exact recovery windows. Obtain historical material only through a supported
 source-capture action; a current record cannot stand in for an unseen past version.
+
+For an unresolved plan premise, search with concrete wording from the report or
+plan (for example, the endpoint label, analysis population, time point, or
+section heading). If the likely Source has no useful hit, use one bounded
+broadened query and then widen to the relevant captured Sources; continue an
+existing cursor before changing wording when deeper cached results may contain
+the plan. Read the complete returned window, including its date and cohort
+context, before treating it as a plan passage. Stop on a complete applicable
+comparison or document the bounded information limit with an untruncated
+receipt. A Source role or an empty passage list cannot establish either plan
+presence or plan absence.
 
 ## Separate the two selection mechanisms
 

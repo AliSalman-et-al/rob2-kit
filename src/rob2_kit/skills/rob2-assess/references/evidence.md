@@ -109,5 +109,40 @@ State inferred conclusions in the answer's `justification`, with the source
 facts and any unresolved link. The server checks Evidence identity and structure;
 you judge whether those facts support the answer.
 
+## Recover an unresolved premise
+
+Use this bounded loop only when the inspected Evidence does not resolve a
+material premise for the active question:
+
+1. Name the exact unresolved proposition and the concrete study language that
+   could establish it. Prefer wording from an inspected passage over a
+   methodological label from the question card.
+2. Call `list_sources` and inspect the active comparison card's complete
+   `passage_groups` inventory when one is returned. Every captured Source
+   remains listed in the inventory even when it has no selected passages; use
+   its `source_id`, `page_count`, and `logical_path` to navigate it. A
+   supplement, `other` document, or combined protocol can contain the needed
+   plan or participant-flow detail. A Source role is a routing hint, never
+   evidence about its contents or applicability.
+3. Search the likely Source with the concrete wording. If the query is a
+   multi-token `all` or `phrase` no-hit, use the one returned `any` widening
+   action and inspect its passages. If the returned batch is truncated or has
+   a continuation cursor, continue that same query when deeper cached results
+   could resolve the premise. Do not treat a no-hit or an uninspected hit as
+   scientific absence.
+4. If the likely Source does not resolve the premise, repeat one bounded
+   search with the same concrete wording over the relevant captured Sources,
+   then read the returned page windows or the relevant contents/front-matter
+   pages. Do not run every query suggestion or read every appendix by default.
+5. Stop as soon as an inspected passage contains the complete premise and
+   select its exact boundaries. Otherwise stop after the relevant captured
+   Source scope and available cursor/page windows have been bounded; record a
+   concise limitation with a current-Trial, untruncated search receipt. The
+   limitation documents the information reached, not absence of the fact.
+
+This loop separates four observations: a page was retrieved, a useful
+candidate was surfaced, a complete source window was read, and the premise was
+actually supported. Only the last two can ground a Domain answer.
+
 Completion: each Source-owned assessable Result leaf has exact support, and each
 active Domain answer has a valid basis for its stated premise and uncertainty.

@@ -210,6 +210,65 @@ def test_result_slot_uses_only_field_bound_passages() -> None:
     assert [item["handle"] for item in slot["passages"]] == [evidence_b["handle"]]
 
 
+def test_selection_card_keeps_unopened_supplement_and_combined_protocol_navigable() -> None:
+    def source(source_id: str, role: str, logical_path: str) -> dict[str, object]:
+        return {
+            "id": source_id,
+            "role": role,
+            "label": logical_path,
+            "logical_path": logical_path,
+            "page_count": 12,
+            "sha256": "sha256:" + source_id[-1] * 64,
+            "projection_hash": "sha256:" + source_id[-1] * 64,
+        }
+
+    sources = [
+        source("source_main", "main_article", "main.txt"),
+        source("source_supplement", "supplement", "supplement.pdf"),
+        source("source_protocol", "protocol", "combined-protocol.pdf"),
+    ]
+    card = _comparison_cards(
+        "domain:selection",
+        {"kind": "assessable", "target": {}, "reported": {}, "evidence": []},
+        {},
+        [],
+        sources,
+    )[0]
+
+    groups = {item["source_id"]: item for item in card["passage_groups"]}
+    assert set(groups) == {item["id"] for item in sources}
+    assert groups["source_supplement"]["logical_path"] == "supplement.pdf"
+    assert groups["source_protocol"]["logical_path"] == "combined-protocol.pdf"
+    assert all(not item["passages"] for item in groups.values())
+    # The inventory adds bounded metadata, not captured source text.
+    serialized = json.dumps(card, ensure_ascii=False, separators=(",", ":"))
+    assert len(serialized) < 5_000
+
+
+def test_unopened_irrelevant_source_is_a_control_not_evidence() -> None:
+    source = {
+        "id": "source_irrelevant",
+        "role": "supplement",
+        "label": "unrelated-supplement.pdf",
+        "logical_path": "unrelated-supplement.pdf",
+        "page_count": 4,
+        "sha256": "sha256:" + "a" * 64,
+        "projection_hash": "sha256:" + "b" * 64,
+    }
+    card = _comparison_cards(
+        "domain:selection",
+        {"kind": "assessable", "target": {}, "reported": {}, "evidence": []},
+        {},
+        [],
+        [source],
+    )[0]
+
+    group = card["passage_groups"][0]
+    assert group["source_id"] == source["id"]
+    assert group["passages"] == []
+    assert all(slot["status"] == "unknown" for slot in card["slots"])
+
+
 def test_contrast_fixture_is_paired_traceable_and_development_only() -> None:
     fixture = json.loads(Path("eval/synthetic-contrast-cards.json").read_text(encoding="utf-8"))
     assert fixture["schema"] == "rob2-kit.contrast-fixtures.v0.5"

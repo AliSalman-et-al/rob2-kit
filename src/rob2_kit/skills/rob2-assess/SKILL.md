@@ -127,11 +127,21 @@ compaction, follow
 [Recover omitted Evidence](references/evidence.md#recover-omitted-evidence).
 
 Review inspected passages against each active proposition and check material
-contradictions. Reuse adequate Evidence without another search. For an unresolved
-premise, use bounded discovery across the relevant Sources. Follow
-[Select Evidence](references/evidence.md#reuse-inspected-passage-handles) for
-lexical no-hit recovery. Stop when the proposition and remaining uncertainty
-are grounded, or bounded discovery leaves a stated information limit.
+contradictions. Reuse adequate Evidence without another search. For an
+unresolved premise, use bounded, premise-specific discovery across the
+relevant Sources. Start with concrete wording from the study, call `list_sources`
+to inspect the complete captured Source inventory, and use the active
+comparison card's inventory when one is returned to find unopened supplements
+or combined documents. Treat Source roles as navigation hints rather than
+proof of what a document contains. If a narrow search returns no useful
+passage, broaden once with concrete study language and widen the Source scope
+when the premise may be elsewhere. Continue an existing cursor when deeper
+cached results are needed, then read the returned page windows before citing
+them. Follow [Select Evidence](references/evidence.md#recover-an-unresolved-premise)
+for the full recovery loop. Stop when the complete premise is grounded or
+when the relevant captured Sources and bounded cursor/page windows have been
+checked and the remaining information limit is documented with a current,
+untruncated receipt. Do not search every question mechanically.
 
 For each answer, copy exactly one server-issued `options[].id` from
 the current question card into `answers[].option_id`, character for character.
