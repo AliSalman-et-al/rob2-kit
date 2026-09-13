@@ -3,6 +3,7 @@ from __future__ import annotations
 import io
 import zipfile
 from pathlib import Path
+from typing import Any
 
 import pymupdf
 
@@ -66,7 +67,7 @@ def _encrypted_zip(data: bytes) -> bytes:
     return bytes(output)
 
 
-def _prepare(tmp_path: Path) -> dict[str, object]:
+def _prepare(tmp_path: Path) -> dict[str, Any]:
     return prepare_batch(
         tmp_path,
         [TrialDeclaration(id="trial", label="trial", requested_outcome="outcome")],

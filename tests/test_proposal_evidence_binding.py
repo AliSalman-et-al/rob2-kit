@@ -496,7 +496,7 @@ def test_numeric_result_anchor_rejects_substrings_in_both_verifiers() -> None:
             "form": "group_bound_values",
             "analysis_population": "analyzed population",
             "endpoint": {"name": "requested outcome", "definition": None},
-        "group_values": [
+            "group_values": [
                 {"group_id": "a", "statistic": "events", "value": "4", "unit": "events"},
                 {"group_id": "b", "statistic": "events", "value": "5", "unit": "events"},
             ],
