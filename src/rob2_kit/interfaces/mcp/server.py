@@ -976,6 +976,8 @@ def search_sources(
     description=(
         "Read source text as numbered lines. Pages are 1-based source indexes, not printed "
         "labels. Use windows across sources; each item preserves its source and line bounds. "
+        "Each page includes page_remainder for unread physical lines after returned_end_line; "
+        "truncated, next_start_line, and remaining_windows retain requested-window semantics. "
         "To finish a partial batch, call read_pages with the same trial_id and windows set to "
         "data.remaining_windows, omitting source_id, pages, and start_line. Repeat until no "
         "windows remain. Returned numbered text normally fits 24000 characters; a single "
@@ -1089,6 +1091,7 @@ def read_pages(
                         "line_count": 0,
                         "returned_start_line": requested_start,
                         "returned_end_line": 0,
+                        "page_remainder": None,
                         "truncated": False,
                         "next_start_line": None,
                         "passage_ref": None,
@@ -1143,6 +1146,16 @@ def read_pages(
                         "line_count": len(lines),
                         "returned_start_line": requested_start,
                         "returned_end_line": end_line,
+                        "page_remainder": (
+                            {
+                                "source_id": item["source_id"],
+                                "page": item["page"],
+                                "start_line": end_line + 1,
+                                "end_line": len(lines),
+                            }
+                            if end_line < len(lines)
+                            else None
+                        ),
                         "truncated": truncated,
                         "next_start_line": end_line + 1 if truncated else None,
                         "passage_ref": passage_ref,

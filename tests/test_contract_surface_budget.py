@@ -69,7 +69,7 @@ def test_public_output_surface_is_closed_and_within_budget() -> None:
     # This is a ceiling, not a target. Smaller closed schemas are better.
     # SearchHit candidate-truncation and recovery fields add about 2 KB
     # to the previous ceiling without adding a public tool.
-    assert total_bytes < 282_000
+    assert total_bytes < 283_000
 
     by_name = {tool.name: tool for tool in tools}
     search_annotations = by_name["search_sources"].annotations
