@@ -99,6 +99,6 @@ def test_structured_consumer_receives_the_complete_workflow_result(
     draft = _domain_draft("trial", "domain:randomization", revision, evidence=evidence)
     duplicated = dict(draft["answers"][0]["bases"][0])
     draft["answers"][0]["bases"].append(duplicated)
-    repair = _assert_structured_result(_wire_call(workspace, "save_domain_judgment", draft))
+    repair = _assert_structured_result(_wire_call(workspace, "reason_domain_assessment", draft))
     assert repair["outcome"] == "repair"
     assert repair["repairs"][0]["code"] == "duplicate_answer_basis"

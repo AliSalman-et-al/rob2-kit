@@ -74,6 +74,31 @@ def _artifact(workspace: Path) -> Path:
     return workspace / result["artifact"]["path"]
 
 
+def _convert_group_bound_result_to_legacy(canonical: dict[str, Any]) -> None:
+    payload = canonical["proposal"]["payload"]
+    result = payload["results"][0]
+    reported = result["reported"]
+    if reported.get("form") != "group_bound_values":
+        return
+    reported["values"] = reported.pop("group_values")
+    for binding in result["bindings"]:
+        path = binding["field"]["path"]
+        binding["field"]["path"] = path.replace("/reported/group_values/", "/reported/values/")
+    proposal = canonical["proposal"]
+    proposal["identity"] = _identity(payload)
+    review = canonical["proposal_review"]
+    review["candidate"]["proposal"] = payload
+    review["candidate"]["identity"] = proposal["identity"]
+    review["identity"] = _identity(
+        {key: value for key, value in review.items() if key != "identity"}
+    )
+    acknowledgment = canonical["proposal_acknowledgment"]
+    acknowledgment["review_identity"] = review["identity"]
+    acknowledgment["identity"] = _identity(
+        {key: value for key, value in acknowledgment.items() if key != "identity"}
+    )
+
+
 def test_search_receipt_verifiers_accept_within_source_bm25_order(tmp_path: Path) -> None:
     trial = tmp_path / "input" / "trial"
     trial.mkdir(parents=True)
@@ -479,6 +504,7 @@ def test_previous_v07_scientific_packs_remain_verifiable(tmp_path: Path, content
     def use_previous_pack(canonical: dict[str, Any]) -> None:
         canonical["scientific_pack"]["result_semantics_version"] = "rob2-kit.result-semantics.v0.7"
         canonical["scientific_pack"]["content_hash"] = content_hash
+        _convert_group_bound_result_to_legacy(canonical)
 
     previous = tmp_path / "previous-v07.rob2.zip"
     _rewrite_rehashed(source, previous, use_previous_pack)
@@ -645,6 +671,7 @@ def test_rehashed_v06_empty_derived_inputs_fail_both_verifiers(tmp_path: Path) -
             }
         ]
         payload["results"][0]["applicability"]["status"] = "supported"
+        _convert_group_bound_result_to_legacy(canonical)
         proposal["identity"] = _identity(payload)
         review = canonical["proposal_review"]
         review["candidate"]["proposal"] = payload

@@ -454,9 +454,9 @@ def test_proposal_cannot_use_another_trials_selected_evidence(tmp_path: Path) ->
     assert repair["outcome"] == "repair"
     assert repair["repairs"] == [
         {
-            "path": "/results/0/applicability/evidence/0",
+            "path": "/assessments/0/evidence_basis/0",
             "code": "cross_trial_evidence",
-            "detail": "applicability Evidence must resolve to this Trial",
+            "detail": "Reasoning Evidence must resolve to selected material from this Trial.",
         }
     ]
 

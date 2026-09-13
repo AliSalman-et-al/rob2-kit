@@ -143,9 +143,9 @@ def test_applicability_evidence_must_be_selected_from_the_same_trial(tmp_path: P
     assert repair["outcome"] == "repair", repair
     assert repair["repairs"] == [
         {
-            "path": "/results/0/applicability/evidence/0",
+            "path": "/assessments/0/evidence_basis/0",
             "code": "cross_trial_evidence",
-            "detail": "applicability Evidence must resolve to this Trial",
+            "detail": "Reasoning Evidence must resolve to selected material from this Trial.",
         }
     ]
 

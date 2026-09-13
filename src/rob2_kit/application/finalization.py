@@ -1116,18 +1116,19 @@ def _valid_requested_result(
                 and reported.get("form") == "group_bound_values"
                 and "values" in reported
             ):
+                normalized_reported = {
+                    key: value for key, value in reported.items() if key != "values"
+                }
+                normalized_reported["group_values"] = reported["values"]
                 validation_value = {
                     **result,
-                    "reported": {
-                        **reported,
-                        "group_values": reported["values"],
-                    },
+                    "reported": normalized_reported,
                 }
         if semantics_version == _LEGACY_RESULT_SEMANTICS_VERSION:
             applicability = validation_value.get("applicability")
             if isinstance(applicability, dict):
                 validation_value = {
-                    **result,
+                    **validation_value,
                     "applicability": {
                         key: value for key, value in applicability.items() if key != "status"
                     },
