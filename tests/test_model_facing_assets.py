@@ -4,7 +4,12 @@ import json
 import re
 from pathlib import Path
 
-from rob2_kit.workflow_models import CategoryProfileResult, DescribedTiming, ProposalReasoningDraft
+from rob2_kit.workflow_models import (
+    CategoryProfileResult,
+    DescribedTiming,
+    DomainLimitationBasis,
+    ProposalReasoningDraft,
+)
 
 MODEL_FACING_PATHS = (
     Path("README.md"),
@@ -59,6 +64,19 @@ def test_domain_references_use_current_handle_only_evidence_contract() -> None:
         )
     }
     assert stale == {}
+
+
+def test_evidence_reference_contains_closed_limitation_example() -> None:
+    reference = Path("src/rob2_kit/skills/rob2-assess/references/evidence.md").read_text(
+        encoding="utf-8"
+    )
+    examples = re.findall(r"```json\s*(.*?)\s*```", reference, flags=re.DOTALL)
+    limitation = next(
+        json.loads(example) for example in examples if '"kind":"limitation"' in example
+    )
+    assert set(limitation) == {"kind", "text", "search_receipt"}
+    DomainLimitationBasis.model_validate(limitation)
+    assert "actual returned untruncated search receipt" in reference
 
 
 def test_result_reference_contains_valid_reasoning_and_receipt_examples() -> None:

@@ -101,6 +101,15 @@ report `truncated:false`, `total_matches:0`, and `condition:"no_hits"`. A
 positive untruncated search may support a limitation after you inspect the
 relevant material, but it cannot support absence.
 
+For example:
+
+```json
+{"kind":"limitation","text":"The report leaves the outcome ascertainment process unresolved after scoped discovery.","search_receipt":"sr_0123456789abcdef"}
+```
+
+Use the actual returned untruncated search receipt for the current Trial; the
+handle above is fictional.
+
 A relationship label never expands what the passage says. Keep plans separate
 from conduct, analysis populations from observed outcomes, endpoint definitions
 from measurement properties, and absence of reporting from absence of bias.

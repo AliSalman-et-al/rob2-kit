@@ -114,7 +114,7 @@
 "destructive":false,
 "idempotent":true,
 "open_world":false,
-"schema_sha256":"sha256:468b3cc996afcc4dd5a79fa664566717eef119189224f6226b8adcf1f37a7b63",
+"schema_sha256":"sha256:2d6afcf6b156e38270a47108b287e312fa82d24b3b012e8d120d4dc3a441ebf5",
 "output_schema_sha256":"sha256:cc365a3512d86780c5b67bc5f0d702046cfc52ca2a0f48ec32518343adfb2c49"},
 {"name":"save_domain_judgment",
 "title":"Save Domain judgment",

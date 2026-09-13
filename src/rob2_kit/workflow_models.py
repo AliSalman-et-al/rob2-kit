@@ -1102,7 +1102,10 @@ class RenderIdentity(StrictModel):
 
 class DomainLimitationBasis(StrictModel):
     kind: Literal["limitation"] = Field(
-        description="Use for a specific information limit remaining after scoped discovery.",
+        description=(
+            "An unresolved information limit after scoped discovery. Supply only kind, text, "
+            "and search_receipt. Put any cited Evidence in a separate bases item."
+        ),
     )
     text: str = Field(
         min_length=1, description="What remains unresolved for this question after discovery."
