@@ -297,7 +297,7 @@ def test_exact_relation_with_different_source_name_requires_rationale_and_keeps_
     assert canonical["evidence"][endpoint_binding["evidence_index"]]["handle"] == evidence["handle"]
 
 
-def test_exact_relation_repairs_missing_rationale_and_fabricated_endpoint(tmp_path: Path) -> None:
+def test_exact_relation_requires_rationale_and_repairs_fabricated_endpoint(tmp_path: Path) -> None:
     workspace = _workspace(tmp_path)
     (workspace / "input" / "trial" / "main.txt").write_text(
         "The source endpoint was measured in the analyzed population; source endpoint; "
@@ -312,15 +312,10 @@ def test_exact_relation_repairs_missing_rationale_and_fabricated_endpoint(tmp_pa
         "The source endpoint was measured in the analyzed population"
     )
 
-    missing_rationale = _call(
-        workspace,
-        "save_proposal",
-        _proposal_args(workspace, [result]),
-    )
-    assert missing_rationale["outcome"] == "repair"
-    assert any(
-        repair["code"] == "exact_relation_name_mismatch" for repair in missing_rationale["repairs"]
-    )
+    missing_rationale = dict(result)
+    missing_rationale.pop("relation_rationale")
+    with pytest.raises(ValidationError):
+        AssessableResultDraft.model_validate(missing_rationale)
 
     result["reported"]["endpoint"]["name"] = "fabricated source endpoint"
     result["relation_rationale"] = "The source establishes the reported endpoint correspondence."

@@ -10,20 +10,17 @@ from pydantic import ValidationError
 from ..workflow_models import (
     AssessableResult,
     AssessableResultDraft,
-    AssessableTargetRelation,
     CategoryProfileResult,
     ComparativeEffectResult,
     GroupBoundValuesResult,
     ProposalDraft,
     UnavailableIntakeConditionBasisDraft,
-    exact_relation_rationale,
 )
 from ._state import _commit_records, _ensure, _identity, _result, _root, _state
 from .contracts import WorkflowConflict
 from .evidence import (
     _evidence_catalog,
     _normalized_contains,
-    _normalized_with_spans,
     main_report_read_gaps,
 )
 
@@ -155,27 +152,6 @@ def _proposal_shape_repairs(
 
     def assessable_repairs(result: AssessableResultDraft, path: str) -> list[dict[str, str]]:
         result_repairs: list[dict[str, str]] = []
-        if result.relation == AssessableTargetRelation.EXACT:
-            target_name = requested_outcomes.get(result.trial_id, "")
-            reported_name = result.reported.endpoint.name
-            if (
-                _relation_name(target_name) != _relation_name(reported_name)
-                and not (result.relation_rationale or "").strip()
-            ):
-                result_repairs.append(
-                    {
-                        "path": f"{path}/relation",
-                        "code": "exact_relation_name_mismatch",
-                        "detail": (
-                            f"exact relation needs a source-grounded correspondence rationale "
-                            f"when target '{target_name}' and reported endpoint '{reported_name}' "
-                            "use different names; use a non-exact relation when their scientific "
-                            "scope differs"
-                        ),
-                    }
-                )
-        else:
-            pass
         result_repairs.extend(
             _duplicate_values(
                 [group.id for group in result.target.comparison_groups],
@@ -269,13 +245,6 @@ def _proposal_shape_repairs(
     return repairs
 
 
-def _relation_name(value: str) -> str:
-    normalized, _ = _normalized_with_spans(value)
-    for character in "‐‑‒–—":
-        normalized = normalized.replace(character, "-")
-    return " ".join(normalized.casefold().replace("-", " ").split())
-
-
 def _canonical_result(
     result: AssessableResultDraft,
     index: int,
@@ -333,12 +302,7 @@ def _canonical_result(
         )
     }
     raw["requested_outcome"] = requested_outcome
-    raw["relation_rationale"] = (
-        exact_relation_rationale(requested_outcome, result.reported.endpoint.name)
-        if result.relation == AssessableTargetRelation.EXACT
-        and _relation_name(requested_outcome) == _relation_name(result.reported.endpoint.name)
-        else result.relation_rationale
-    )
+    raw["relation_rationale"] = result.relation_rationale
     target = dict(raw["target"])
     measurement = dict(target["measurement"])
     baseline_subgroup = target.pop("baseline_subgroup")

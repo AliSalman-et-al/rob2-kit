@@ -20,7 +20,7 @@ from ..models import canonical_json_bytes, sha256
 from ..workflow_models import SourceRole
 from .contracts import COUNTERS, WorkflowConflict
 
-_SEARCH_DERIVATIVE_VERSION = "rob2-kit.search-projection.v5"
+_SEARCH_DERIVATIVE_VERSION = "rob2-kit.search-projection.v6"
 _PAGE_PROJECTION_VERSION = "rob2-kit.page-projection.v4"
 
 # A physical source line can be arbitrarily long (for example, compact JSON
@@ -177,12 +177,18 @@ def _normalized_text_with_spans(
             whitespace = (
                 value[spans[index][1] : spans[next_index][0]] if next_index < len(spans) else ""
             )
+            # Preserve numeric ranges' hyphens across the line break.
             if (
                 next_index > index + 1
                 and any(character in "\r\n" for character in whitespace)
                 and next_index < len(characters)
                 and (characters[next_index].isalnum() or characters[next_index] == "_")
             ):
+                if output[-1].isdigit() and characters[next_index].isdigit():
+                    output.append(characters[index])
+                    output_spans.append(spans[index])
+                    index = next_index
+                    continue
                 if dehyphenate_line_ends:
                     output_spans[-1] = (output_spans[-1][0], spans[next_index][0])
                 else:

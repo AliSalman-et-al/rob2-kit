@@ -16,13 +16,15 @@ from support.rob2 import *  # noqa: F401,F403
 
 import rob2_kit.interfaces.mcp.server as mcp_server
 from rob2_kit.application import finalization
-from rob2_kit.application._state import _identity, _state
+from rob2_kit.application._state import _identity, _normalized_text_with_spans, _state
 from rob2_kit.application.contracts import COUNTERS
 from rob2_kit.application.evidence import (
     _associated_search_ranks,
     _cached_normalized_search_text,
     _evidence_catalog,
     _normalized_contains,
+    _normalized_match,
+    _preview_window_bounds,
     _search_receipt,
 )
 from rob2_kit.application.source_handles import resolve_source_handle
@@ -242,8 +244,8 @@ def test_search_returns_multiple_source_windows_for_one_matching_page(
     )["data"]
     assert len(result["hits"]) == 2
     assert [hit["rank"] for hit in result["hits"]] == [1, 2]
-    assert [hit["start_line"] for hit in result["hits"]] == [1, 4]
-    assert [hit["end_line"] for hit in result["hits"]] == [1, 4]
+    assert [hit["start_line"] for hit in result["hits"]] == [1, 1]
+    assert [hit["end_line"] for hit in result["hits"]] == [4, 4]
     receipt = _search_receipt(workspace, result["search_receipt"])
     assert receipt["hits"] == [
         {
@@ -272,8 +274,143 @@ def test_all_mode_keeps_two_separated_complete_clusters_on_one_page(tmp_path: Pa
     )["data"]
 
     assert [hit["rank"] for hit in result["hits"]] == [1, 2]
-    assert [hit["start_line"] for hit in result["hits"]] == [1, 4]
-    assert [hit["end_line"] for hit in result["hits"]] == [1, 4]
+    assert [hit["start_line"] for hit in result["hits"]] == [1, 1]
+    assert [hit["end_line"] for hit in result["hits"]] == [4, 4]
+
+
+def test_search_preview_and_passage_ref_share_one_bounded_window(tmp_path: Path) -> None:
+    workspace = _workspace(tmp_path)
+    lines = ["target early", *(["unrelated context"] * 200), "target late"]
+    (workspace / "input" / "trial" / "main.txt").write_text(
+        "\n".join(lines) + "\n", encoding="utf-8"
+    )
+    _call(workspace, "prepare_batch", {"requested_outcome": "outcome", "expected_revision": 0})
+
+    result = _call(
+        workspace,
+        "search_sources",
+        {"trial_id": "trial", "query": "target", "mode": "any", "limit": 10},
+    )["data"]
+    assert len(result["hits"]) == 2
+    catalog = _evidence_catalog(workspace, "trial")
+    evidence_by_handle = {item["handle"]: item for item in catalog.values()}
+    for hit in result["hits"]:
+        evidence = evidence_by_handle[hit["passage_ref"]]
+        assert hit["preview"] == evidence["quote"]
+        assert hit["start_line"] == evidence["start_line"]
+        assert hit["end_line"] == evidence["end_line"]
+        assert hit["candidate_truncated"] is False
+        assert hit["candidate_recovery"] is None
+        assert len(hit["preview"].encode("utf-8")) <= 512
+    assert "target early" in result["hits"][0]["preview"]
+    assert "target late" not in result["hits"][0]["preview"]
+    assert "target late" in result["hits"][1]["preview"]
+    assert "target early" not in result["hits"][1]["preview"]
+
+
+def test_explicit_preview_anchor_does_not_reselect_an_earlier_occurrence() -> None:
+    text = "target early\n" + "unrelated context\n" * 200 + "target late\n"
+    late_start = text.rindex("target late")
+    left, right = _preview_window_bounds(
+        text, [(late_start, late_start + len("target late"))], radius=20
+    )
+    preview = text[left:right]
+    assert "target late" in preview
+    assert "target early" not in preview
+
+
+def test_long_candidate_clusters_remain_complete_under_hard_cap(tmp_path: Path) -> None:
+    workspace = _workspace(tmp_path)
+    for index in range(9):
+        (workspace / "input" / "trial" / f"cluster-{index}.txt").write_text(
+            f"target {'x ' * 350}needle\n", encoding="utf-8"
+        )
+    _call(workspace, "prepare_batch", {"requested_outcome": "outcome", "expected_revision": 0})
+
+    result = _call(
+        workspace,
+        "search_sources",
+        {"trial_id": "trial", "query": "target needle", "mode": "all", "limit": 10},
+    )["data"]
+
+    assert len(result["hits"]) == 9
+    for hit in result["hits"]:
+        assert hit["candidate_truncated"] is False
+        assert hit["candidate_recovery"] is None
+        assert hit["preview"].startswith("target ")
+        assert hit["preview"].rstrip().endswith("needle")
+        assert len(hit["preview"].encode("utf-8")) <= 2_048
+
+
+def test_oversized_candidate_exposes_read_pages_recovery(tmp_path: Path) -> None:
+    workspace = _workspace(tmp_path)
+    text = "target " + ("é" * 1_980) + " needle\n"
+    (workspace / "input" / "trial" / "main.txt").write_text(text, encoding="utf-8")
+    _call(workspace, "prepare_batch", {"requested_outcome": "outcome", "expected_revision": 0})
+
+    result = _call(
+        workspace,
+        "search_sources",
+        {"trial_id": "trial", "query": "target needle", "mode": "all", "limit": 10},
+    )["data"]
+    [hit] = result["hits"]
+
+    assert hit["candidate_truncated"] is True
+    recovery = hit["candidate_recovery"]
+    assert recovery["operation"] == "read_pages"
+    assert recovery["trial_id"] == "trial"
+    assert recovery["windows"] == [
+        {
+            "source_id": hit["source_id"],
+            "page": hit["page"],
+            "start_line": 1,
+            "end_line": 1,
+        }
+    ]
+    assert len(hit["preview"].encode("utf-8")) <= 2_048
+    assert hit["preview"].startswith("target ")
+    catalog = _evidence_catalog(workspace, "trial")
+    assert any(
+        item["handle"] == hit["passage_ref"] and item["quote"] == hit["preview"]
+        for item in catalog.values()
+    )
+
+
+def test_search_premise_windows_retain_huhn_and_blalock_qualifiers(tmp_path: Path) -> None:
+    workspace = _workspace(tmp_path)
+    text = (
+        "\n".join(
+            [
+                "Huhn analysis plan",
+                "The primary statistical analysis followed the intention-to-treat principle.",
+                "The analysis used all randomized participants (ITT).",
+                "Secondary outcomes were exploratory.",
+                "Blalock analysis",
+                "The CES-D was the depression measure.",
+                "A mixed models regression approach was the primary analytic strategy.",
+            ]
+        )
+        + "\n"
+    )
+    (workspace / "input" / "trial" / "main.txt").write_text(text, encoding="utf-8")
+    _call(workspace, "prepare_batch", {"requested_outcome": "outcome", "expected_revision": 0})
+
+    huhn = _call(
+        workspace,
+        "search_sources",
+        {"trial_id": "trial", "query": "analysis plan", "mode": "any", "limit": 10},
+    )["data"]["hits"]
+    blalock = _call(
+        workspace,
+        "search_sources",
+        {"trial_id": "trial", "query": "CES-D", "mode": "phrase", "limit": 10},
+    )["data"]["hits"]
+
+    huhn_preview = next(hit["preview"] for hit in huhn if "primary statistical" in hit["preview"])
+    blalock_preview = next(hit["preview"] for hit in blalock if "CES-D" in hit["preview"])
+    assert "randomized participants" in huhn_preview
+    assert "Secondary outcomes" in huhn_preview
+    assert "mixed models" in blalock_preview
 
 
 def test_search_session_identity_uses_normalized_query(tmp_path: Path) -> None:
@@ -1339,11 +1476,65 @@ def test_product_and_standalone_text_normalization_match() -> None:
         ),
         ("(-\nvalue", "(value", False),
         ("x-\n_axis", "x_axis", True),
+        ("A1-\nB2", "A1B2", True),
     )
 
     for material, claim, expected in cases:
         assert _normalized_contains(material, claim) is expected
         assert standalone_normalized_contains(material, claim) is expected
+
+
+def test_numeric_line_wrap_does_not_create_scalar_matches_or_invalid_spans() -> None:
+    standalone = runpy.run_path("scripts/verify_bundle.py")
+    standalone_normalized_with_spans = standalone["_normalized_with_spans"]
+    cases = (
+        ("Age 1-\n3 years", "13", "1-3", "1-\n3"),
+        ("Age 50-\r\n69 years", "5069", "50-69", "50-\r\n69"),
+        ("D-dimer 0.8-\n1.2", "0.81.2", "0.8-1.2", "0.8-\n1.2"),
+    )
+
+    for material, scalar, numeric_range, expected_raw in cases:
+        assert _normalized_contains(material, scalar) is False
+        assert _normalized_match(material, scalar) == (None, "absent")
+        assert standalone_normalized_contains(material, scalar) is False
+        assert _normalized_contains(material, numeric_range) is True
+        assert standalone_normalized_contains(material, numeric_range) is True
+        assert _normalized_match(material, numeric_range) == (expected_raw, None)
+        for normalize in (_normalized_text_with_spans, standalone_normalized_with_spans):
+            for dehyphenate in (True, False):
+                normalized, spans = normalize(material, dehyphenate_line_ends=dehyphenate)
+                assert scalar not in normalized
+                assert numeric_range in normalized
+                assert len(normalized) == len(spans)
+                assert all(0 <= start <= end <= len(material) for start, end in spans)
+
+
+def test_search_sources_finds_numeric_range_without_scalar_match(tmp_path: Path) -> None:
+    workspace = _workspace(tmp_path)
+    (workspace / "input" / "trial" / "main.txt").write_text("Age 1-\n3 years\n", encoding="utf-8")
+    _call(
+        workspace,
+        "prepare_batch",
+        {"requested_outcome": "requested outcome", "expected_revision": 0},
+    )
+
+    numeric_range = _call(
+        workspace,
+        "search_sources",
+        {"trial_id": "trial", "query": "1-3", "mode": "phrase"},
+    )
+    assert numeric_range["outcome"] == "success"
+    assert numeric_range["data"]["total_matches"] == 1
+    assert numeric_range["data"]["hits"][0]["page"] == 1
+
+    scalar = _call(
+        workspace,
+        "search_sources",
+        {"trial_id": "trial", "query": "13", "mode": "phrase"},
+    )
+    assert scalar["outcome"] == "success"
+    assert scalar["data"]["total_matches"] == 0
+    assert scalar["data"]["condition"] == "no_hits"
 
 
 def test_search_source_scope_preserves_broad_order_and_receipt_auditability(

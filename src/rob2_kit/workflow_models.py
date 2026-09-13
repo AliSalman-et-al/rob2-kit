@@ -9,7 +9,6 @@ content identity derived from its other fields; callers cannot choose an identit
 from __future__ import annotations
 
 import hashlib
-import unicodedata
 from datetime import UTC, datetime
 from enum import StrEnum
 from pathlib import PurePosixPath
@@ -170,13 +169,6 @@ def _identity(model: _ModelT, supplied: str | None) -> _ModelT:
     if supplied is not None and supplied != expected:
         raise ValueError("identity does not match canonical content")
     return model.model_copy(update={"identity": expected})
-
-
-def exact_relation_rationale(target_name: str, reported_name: str) -> str:
-    return (
-        f"Exact relation: target outcome '{target_name}' and reported endpoint "
-        f"'{reported_name}' match after Unicode, whitespace, case, and hyphen normalization."
-    )
 
 
 def _unique(values: tuple[Any, ...], label: str = "items") -> tuple[Any, ...]:
@@ -477,16 +469,6 @@ class ResultTargetDraft(StrictModel):
     intended_effect_measure: NonBlankText = Field(
         description="Effect measure intended for the target comparison.",
     )
-
-
-def _same_relation_name(left: str, right: str) -> bool:
-    def normalize(value: str) -> str:
-        value = unicodedata.normalize("NFKC", value)
-        for character in "‐‑‒–—":
-            value = value.replace(character, "-")
-        return " ".join(value.casefold().replace("-", " ").split())
-
-    return normalize(left) == normalize(right)
 
 
 class ResultApplicability(StrictModel):
@@ -918,17 +900,6 @@ class AssessableResult(StrictModel):
     def complete_bindings(self) -> AssessableResult:
         keys = tuple(item.field.path for item in self.bindings)
         _unique(keys, "result field bindings")
-        if self.relation == AssessableTargetRelation.EXACT and _same_relation_name(
-            self.target.outcome_definition, self.reported.endpoint.name
-        ):
-            expected = exact_relation_rationale(
-                self.target.outcome_definition, self.reported.endpoint.name
-            )
-            if self.relation_rationale != expected:
-                raise ValueError(
-                    "exact relation_rationale must use the server-provable "
-                    "normalized-match sentence"
-                )
         return self
 
 
@@ -950,11 +921,11 @@ class AssessableResultDraft(StrictModel):
             "equivalence. Resubmit if another candidate is better."
         ),
     )
-    relation_rationale: NonBlankText | None = Field(
-        default=None,
+    relation_rationale: NonBlankText = Field(
         description=(
-            "Source-grounded correspondence when exact names differ, or material scope "
-            "differences for a non-exact relation."
+            "Explain how the reported Result relates to the complete target, including material "
+            "differences in outcome, measurement, time, population, comparison, or analysis "
+            "scope. Matching endpoint names alone do not establish exact correspondence."
         ),
     )
     applicability: ResultApplicability = Field(
@@ -981,15 +952,6 @@ class AssessableResultDraft(StrictModel):
         default=(),
         description="Inspected passage_ref handles from search_sources or read_pages, when needed.",
     )
-
-    @model_validator(mode="after")
-    def rationale_for_non_exact_relation(self) -> AssessableResultDraft:
-        if (
-            self.relation != AssessableTargetRelation.EXACT
-            and not (self.relation_rationale or "").strip()
-        ):
-            raise ValueError("non-exact relation requires relation_rationale")
-        return self
 
 
 class UnavailableEvidenceBasis(StrictModel):

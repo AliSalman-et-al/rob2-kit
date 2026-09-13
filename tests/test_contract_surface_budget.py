@@ -67,9 +67,9 @@ def test_public_output_surface_is_closed_and_within_budget() -> None:
         for tool, schema in zip(tools, closed_schemas, strict=True)
     )
     # This is a ceiling, not a target. Smaller closed schemas are better.
-    # Reading recovery, Result applicability, and D3 preview rows add
-    # about 10 KB to the previous 264 KB ceiling without adding public tools.
-    assert total_bytes < 280_000
+    # SearchHit candidate-truncation and recovery fields add about 2 KB
+    # to the previous ceiling without adding a public tool.
+    assert total_bytes < 282_000
 
     by_name = {tool.name: tool for tool in tools}
     search_annotations = by_name["search_sources"].annotations
