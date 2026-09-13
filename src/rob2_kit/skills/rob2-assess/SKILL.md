@@ -15,14 +15,13 @@ without asking for signalling answers, progress confirmation, or final approval.
 
 ## Read one complete MCP receipt
 
-Codex CLI and Claude Code expose the canonical tool result as
-`structuredContent`. Use that structured object directly. Keep the complete
-receipt as working context, including `head`, `data.result`, `questions`,
-`comparison_cards`, `evidence`, `evidence_workspace`, `reading_recovery`, and
-any `recovery` or `next_action` fields. Do not render only `questions` (or a
-`questions.map(...)` projection). Keep `render_page` image content blocks
-separate from the structured result; render and inspect the image when layout
-carries meaning.
+The server returns JSON tool results in `structuredContent`, with an empty `content` array, except for `render_page`. Use that object directly; do not look
+for or reconstruct a duplicate text representation. Keep the complete receipt as working context, including `head`, `data.result`,
+`questions`, `comparison_cards`, `evidence`, `evidence_workspace`,
+`reading_recovery`, and any `recovery` or `next_action` fields. Do not render
+only `questions` (or a `questions.map(...)` projection). Keep `render_page`
+image content blocks separate from the structured result; render and inspect
+the image when layout carries meaning.
 
 If the host reports `Warning: truncated output`, treat the receipt as
 delivery incomplete. On a Codex host, repeat the identical context or read
@@ -49,15 +48,20 @@ text(receipt);
 ```
 
 The server auto-pages a full Domain receipt above 32 KB. For paged Domain context,
-pass `data.context_page.next_cursor` unchanged and fetch every page before deciding
-or saving. A pending save returns the exact cursor to continue; delivery completion
-records successful response generation only, so verify the host-visible content and
-inspect Evidence as needed. When
+pass `data.context_page.next_cursor` unchanged. When next_cursor is non-null,
+continue get_domain_context until it is null. Existing cursors preserve the
+original context snapshot across Evidence work at the same revision. Inspect
+subsequent tool responses for updates; Evidence work alone does not require
+re-traversal. A fresh no-cursor request may replace the snapshot; finish any
+returned pages before saving. A pending save returns the exact cursor to continue;
+delivery completion records successful response generation only, so verify the
+host-visible content and inspect Evidence as needed. When
 the host supports variables, reuse the returned value directly; never manually
 retype an opaque cursor. Render each page separately so a combined transcript
 does not truncate the receipt. If a cursor is invalid, recapture the preceding
-page and reuse its exact cursor; if it is stale, restart the initial scoped call
-with the same explicit Trial, Domain, page size, and D3 preview when used.
+page and reuse its exact cursor; if it is stale or its snapshot was replaced,
+restart the initial scoped call with the same explicit Trial, Domain, page size,
+and D3 preview when used.
 Never assess from page zero while a continuation remains. On a continuation
 condition or error, preserve the stored cursor; advance or clear it only after
 a successful response containing `context_page`. In Codex, use separate

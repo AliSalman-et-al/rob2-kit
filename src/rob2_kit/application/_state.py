@@ -357,9 +357,17 @@ def _ensure(root: Path) -> None:
             "batch_id TEXT NOT NULL, trial_id TEXT NOT NULL, domain_id TEXT NOT NULL, "
             "state_revision INTEGER NOT NULL, digest TEXT NOT NULL, page_size INTEGER NOT NULL, "
             "page_count INTEGER NOT NULL, next_index INTEGER NOT NULL, "
-            "next_cursor TEXT, complete INTEGER NOT NULL, "
+            "next_cursor TEXT, complete INTEGER NOT NULL, snapshot BLOB, "
+            "preview_scope BLOB, "
             "PRIMARY KEY(batch_id,trial_id,domain_id,state_revision))"
         )
+        delivery_columns = {
+            str(row[1]) for row in connection.execute("PRAGMA table_info(domain_context_delivery)")
+        }
+        if "snapshot" not in delivery_columns:
+            connection.execute("ALTER TABLE domain_context_delivery ADD COLUMN snapshot BLOB")
+        if "preview_scope" not in delivery_columns:
+            connection.execute("ALTER TABLE domain_context_delivery ADD COLUMN preview_scope BLOB")
         association_columns = {
             str(row[1])
             for row in connection.execute("PRAGMA table_info(search_domain_associations)")

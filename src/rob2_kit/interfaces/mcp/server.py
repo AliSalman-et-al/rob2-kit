@@ -213,6 +213,8 @@ def _decode_domain_context_cursor(cursor: str) -> dict[str, Any]:
 
 
 def _domain_context_transport_bytes(value: dict[str, Any]) -> int:
+    # JSON tools use the single structured MCP payload. Keep the budget tied
+    # to the response that is actually sent, not to a duplicated text copy.
     envelope = {
         "content": [],
         "structured_content": value,
@@ -292,8 +294,8 @@ def _paginate_domain_context_transport(
     if not sections:
         sections = [("complete", [])]
 
-    # Leave room for page metadata and the opaque cursor in the full
-    # text+structured envelope. Items remain indivisible.
+    # Leave room for page metadata and the opaque cursor in the structured
+    # envelope. Items remain indivisible.
     working_budget = page_size - _DOMAIN_CONTEXT_PAGE_HEADROOM_BYTES
     cursor_placeholder = _domain_context_cursor(
         {
@@ -549,6 +551,7 @@ def _content(
         key: item for key, item in value.items() if key not in {"_png_bytes", "_read_coverage"}
     }
     domain_context_digest: str | None = None
+    domain_context_snapshot: dict[str, Any] | None = None
     value = _public_source_references(value)
     if tool != "get_status":
         current = _get_status_head(_workspace())
@@ -562,12 +565,54 @@ def _content(
     normalized = validate_output(tool, normalize(tool, value))
     if tool == "get_domain_context":
         # Validate the compact public variant as well as the application
-        # projection.  This keeps structured and text consumers on one typed
-        # contract while allowing the transport-only option prose omission.
+        # projection while allowing the transport-only option prose omission.
         normalized = _compact_domain_context_transport(normalized)
         data = normalized.get("data")
         if isinstance(data, dict):
             domain_context_digest = _domain_context_digest(data)
+        domain_context_snapshot = normalized
+        if domain_cursor is not None:
+            cursor_scope = _decode_domain_context_cursor(domain_cursor)
+            current_data = normalized.get("data")
+            current_head = normalized.get("head")
+            if (
+                not isinstance(current_data, dict)
+                or not isinstance(current_head, dict)
+                or current_data.get("trial_id") != cursor_scope["trial_id"]
+                or current_data.get("domain_id") != cursor_scope["domain_id"]
+                or current_head.get("state_revision") != cursor_scope["state_revision"]
+                or cursor_scope.get("missing_data") != domain_preview_missing_data
+            ):
+                raise ValueError("domain_context_cursor_stale: context scope or revision changed")
+            delivery = _domain_context_delivery(
+                _root(_workspace()),
+                cursor_scope["trial_id"],
+                cursor_scope["domain_id"],
+                cursor_scope["state_revision"],
+            )
+            if (
+                delivery is None
+                or delivery.get("digest") != cursor_scope["digest"]
+                or delivery.get("preview_scope") != cursor_scope.get("missing_data")
+            ):
+                raise ValueError("domain_context_cursor_stale: context snapshot was replaced")
+            stored_snapshot = delivery.get("snapshot")
+            if not isinstance(stored_snapshot, dict):
+                raise ValueError("domain_context_cursor_stale: context snapshot has expired")
+            stored_data = stored_snapshot.get("data")
+            stored_head = stored_snapshot.get("head")
+            if (
+                not isinstance(stored_data, dict)
+                or not isinstance(stored_head, dict)
+                or stored_data.get("trial_id") != cursor_scope["trial_id"]
+                or stored_data.get("domain_id") != cursor_scope["domain_id"]
+                or stored_head.get("state_revision") != cursor_scope["state_revision"]
+                or _domain_context_digest(stored_data) != cursor_scope["digest"]
+            ):
+                raise ValueError("domain_context_cursor_stale: context snapshot is invalid")
+            domain_context_snapshot = stored_snapshot
+            normalized = stored_snapshot
+            domain_context_digest = cursor_scope["digest"]
         if (
             domain_cursor is not None
             or domain_page_size is not None
@@ -598,6 +643,8 @@ def _content(
                     int(page["index"]),
                     page.get("next_cursor") if isinstance(page.get("next_cursor"), str) else None,
                     domain_cursor,
+                    domain_context_snapshot,
+                    domain_preview_missing_data,
                 )
             else:
                 _record_domain_context_delivery(
@@ -611,6 +658,8 @@ def _content(
                     0,
                     None,
                     None,
+                    domain_context_snapshot,
+                    domain_preview_missing_data,
                 )
     if tool == "read_pages" and isinstance(read_coverage, list):
         _record_read_coverage_batch(_workspace(), read_coverage)
@@ -905,7 +954,7 @@ def list_sources(
         "executable any broadening step. Broad truncated any results include refinement advice. "
         "Inspect passages before citing them. Zero hits establish only that the issued lexical "
         "query matched no captured text. Copy a returned source_id exactly and use it with the "
-        "same trial_id."
+        "same trial_id. Search updates Evidence."
     ),
     annotations=_READ_ONLY,
     output_schema=output_schema("search_sources"),
@@ -1600,8 +1649,12 @@ async def request_proposal_approval(ctx: Context) -> ToolResult:
         "Domain, and revision from each page "
         "bound together; an item larger than the budget returns a retry condition, or an "
         "explicit unrecoverable condition when it exceeds the maximum page size. "
-        "Pagination bounds each server response; do not claim it proves host or model "
-        "comprehension. Recover "
+        "Pagination bounds each server response. When `data.context_page.next_cursor` is non-null, "
+        "pass it unchanged to `get_domain_context` until it is null. Existing cursors preserve the "
+        "original context snapshot across Evidence work at the same revision. Inspect subsequent "
+        "tool responses for updates; Evidence work alone does not require re-traversal. A fresh "
+        "no-cursor request may replace the snapshot; finish any returned pages before saving. Do "
+        "not claim delivery proves host or model comprehension. Recover "
         "premise Evidence with read_pages and keep render_page image blocks separate."
     ),
     annotations=_READ_ONLY,
@@ -1710,7 +1763,8 @@ def get_domain_context(
         "and retain other drafted answers. Add missing questions to the existing answer set. "
         "Include every returned question before resubmitting. Fetch every Domain context page "
         "before saving; a pending delivery condition includes an exact executable recovery "
-        "action. "
+        "action. Evidence work alone does not invalidate completed context delivery. If you "
+        "request fresh context, complete any pending pages before saving. "
         "The server ignores inactive answers. "
         "Before saving, check each basis against the approved Result and literal "
         "question; justify any inference or unresolved linkage. "

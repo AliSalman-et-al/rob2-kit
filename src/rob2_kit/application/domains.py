@@ -44,11 +44,45 @@ def _domain_context_delivery(
     with _db(root, "derivative.sqlite3") as connection:
         row = connection.execute(
             "SELECT batch_id,trial_id,domain_id,state_revision,digest,page_size,page_count,"
-            "next_index,next_cursor,complete FROM domain_context_delivery "
+            "next_index,next_cursor,complete,snapshot,preview_scope "
+            "FROM domain_context_delivery "
             "WHERE batch_id=? AND trial_id=? AND domain_id=? AND state_revision=?",
             (batch_id, trial_id, domain_id, state_revision),
         ).fetchone()
-    return {key: row[key] for key in row.keys()} if row is not None else None
+    if row is None:
+        return None
+    delivery = {key: row[key] for key in row.keys()}
+    raw_snapshot = delivery.get("snapshot")
+    if raw_snapshot is None:
+        delivery["snapshot"] = None
+    else:
+        try:
+            snapshot = json.loads(
+                raw_snapshot if isinstance(raw_snapshot, str) else bytes(raw_snapshot)
+            )
+        except (TypeError, UnicodeDecodeError, json.JSONDecodeError) as error:
+            raise ValueError(
+                "domain_context_delivery_unavailable: context snapshot is corrupt"
+            ) from error
+        if not isinstance(snapshot, dict):
+            raise ValueError("domain_context_delivery_unavailable: context snapshot is corrupt")
+        delivery["snapshot"] = snapshot
+    raw_preview = delivery.get("preview_scope")
+    if raw_preview is None:
+        delivery["preview_scope"] = None
+    else:
+        try:
+            preview = json.loads(
+                raw_preview if isinstance(raw_preview, str) else bytes(raw_preview)
+            )
+        except (TypeError, UnicodeDecodeError, json.JSONDecodeError) as error:
+            raise ValueError(
+                "domain_context_delivery_unavailable: preview scope is corrupt"
+            ) from error
+        if not isinstance(preview, list) or not all(isinstance(row, dict) for row in preview):
+            raise ValueError("domain_context_delivery_unavailable: preview scope is corrupt")
+        delivery["preview_scope"] = preview
+    return delivery
 
 
 def _record_domain_context_delivery(
@@ -62,6 +96,8 @@ def _record_domain_context_delivery(
     page_index: int,
     next_cursor: str | None,
     cursor: str | None,
+    snapshot: dict[str, Any] | None = None,
+    preview_scope: list[dict[str, Any]] | None = None,
 ) -> None:
     state = _state(root)
     batch = state.get("batch")
@@ -70,18 +106,41 @@ def _record_domain_context_delivery(
         raise ValueError("domain_context_delivery_unavailable: Batch identity is missing")
     with _db(root, "derivative.sqlite3") as connection:
         row = connection.execute(
-            "SELECT digest,page_size,page_count,next_index,next_cursor,complete "
+            "SELECT digest,page_size,page_count,next_index,next_cursor,complete,snapshot,"
+            "preview_scope "
             "FROM domain_context_delivery WHERE batch_id=? AND trial_id=? AND domain_id=? "
             "AND state_revision=?",
             (batch_id, trial_id, domain_id, state_revision),
         ).fetchone()
         if cursor is None:
-            if row is not None and bool(row["complete"]):
+            preview_payload = (
+                canonical_json_bytes(preview_scope) if isinstance(preview_scope, list) else None
+            )
+            if (
+                row is not None
+                and bool(row["complete"])
+                and row["digest"] == digest
+                and int(row["page_size"]) == page_size
+                and int(row["page_count"]) == page_count
+                and row["snapshot"] is not None
+                and row["preview_scope"] == preview_payload
+            ):
                 return
+            # Keep one frozen payload per active Domain. Old cursors are
+            # intentionally expired when a newer first page replaces it.
+            connection.execute(
+                "DELETE FROM domain_context_delivery WHERE batch_id=? AND trial_id=? "
+                "AND domain_id=? AND state_revision<>?",
+                (batch_id, trial_id, domain_id, state_revision),
+            )
+            snapshot_payload = (
+                canonical_json_bytes(snapshot) if isinstance(snapshot, dict) else None
+            )
             connection.execute(
                 "INSERT OR REPLACE INTO domain_context_delivery "
                 "(batch_id,trial_id,domain_id,state_revision,digest,page_size,page_count,"
-                "next_index,next_cursor,complete) VALUES (?,?,?,?,?,?,?,?,?,?)",
+                "next_index,next_cursor,complete,snapshot,preview_scope) "
+                "VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",
                 (
                     batch_id,
                     trial_id,
@@ -93,6 +152,8 @@ def _record_domain_context_delivery(
                     page_index + 1,
                     next_cursor,
                     int(page_index + 1 >= page_count),
+                    snapshot_payload,
+                    preview_payload,
                 ),
             )
             return

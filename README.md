@@ -31,7 +31,8 @@ rob2 --help
 If `rob2` is not found, run `uv tool update-shell`, open a new terminal, and
 try `rob2 --help` again. The installed package contains the `rob2` command, the
 14-tool MCP server, and the portable `rob2-assess` skill. The v0.5 boundary
-returns equivalent structured and serialized text results for MCP hosts.
+returns one structured JSON result for MCP hosts; `render_page` may additionally
+return image content.
 
 To install a built release artifact instead, replace `.` with the wheel path:
 

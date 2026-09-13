@@ -284,6 +284,11 @@ def test_domain_context_cursor_rejects_revision_change(tmp_path: Path) -> None:
     first, _transport_bytes = _wire_context(workspace, {"page_size": 32_768})
     cursor = first["data"]["context_page"]["next_cursor"]
     assert cursor
+    first_cursor = cursor
+
+    while cursor is not None:
+        page, _transport_bytes = _wire_context(workspace, {"cursor": cursor}, drain=False)
+        cursor = page["data"]["context_page"]["next_cursor"]
 
     saved = _call(
         workspace,
@@ -295,7 +300,7 @@ def test_domain_context_cursor_rejects_revision_change(tmp_path: Path) -> None:
         delivery_before = connection.execute(
             "SELECT next_index,complete FROM domain_context_delivery"
         ).fetchone()
-    stale, _transport_bytes = _wire_context(workspace, {"cursor": cursor})
+    stale, _transport_bytes = _wire_context(workspace, {"cursor": first_cursor})
     assert stale["outcome"] == "condition"
     assert stale["condition"]["code"] == "domain_context_cursor_stale"
     with sqlite3.connect(workspace / ".rob2-kit" / "derivative.sqlite3") as connection:
@@ -303,6 +308,66 @@ def test_domain_context_cursor_rejects_revision_change(tmp_path: Path) -> None:
             connection.execute("SELECT next_index,complete FROM domain_context_delivery").fetchone()
             == delivery_before
         )
+
+
+def test_domain_context_cursor_keeps_snapshot_after_search_changes_evidence(
+    tmp_path: Path,
+) -> None:
+    workspace, _evidence, _revision = _pending_assessment_workspace(tmp_path)
+    original, _transport_bytes = _wire_context(workspace)
+    first, _transport_bytes = _wire_context(workspace, {"page_size": 16_384}, drain=False)
+    first_page = first["data"]["context_page"]
+    cursor = first_page["next_cursor"]
+    assert cursor
+    first_cursor = cursor
+
+    searched = _call(
+        workspace,
+        "search_sources",
+        {"trial_id": "trial", "query": "randomized", "mode": "any"},
+    )
+    assert searched["outcome"] == "success"
+
+    pages = [first]
+    while cursor is not None:
+        page, _transport_bytes = _wire_context(workspace, {"cursor": cursor}, drain=False)
+        assert page["outcome"] == "success"
+        pages.append(page)
+        cursor = page["data"]["context_page"]["next_cursor"]
+
+    reconstructed = dict(pages[0]["data"])
+    for section in ("questions", "comparison_cards", "evidence"):
+        reconstructed[section] = [item for page in pages for item in page["data"].get(section, [])]
+    reconstructed.pop("context_page")
+    assert reconstructed == original["data"]
+
+    replaced, _transport_bytes = _wire_context(workspace, {"page_size": 16_384}, drain=False)
+    assert replaced["data"]["context_page"]["index"] == 0
+    expired, _transport_bytes = _wire_context(workspace, {"cursor": first_cursor}, drain=False)
+    assert expired["outcome"] == "condition"
+    assert expired["condition"]["code"] == "domain_context_cursor_stale"
+
+
+def test_search_then_complete_domain_context_snapshot_save_succeeds(
+    tmp_path: Path,
+) -> None:
+    workspace, evidence, revision = _pending_assessment_workspace(tmp_path)
+    context, _transport_bytes = _wire_context(workspace)
+    assert "context_page" not in context["data"]
+
+    searched = _call(
+        workspace,
+        "search_sources",
+        {"trial_id": "trial", "query": "randomized", "mode": "any"},
+    )
+    assert searched["outcome"] == "success"
+
+    saved = _call(
+        workspace,
+        "save_domain_judgment",
+        _domain_draft("trial", "domain:randomization", revision, evidence),
+    )
+    assert saved["outcome"] == "success"
 
 
 def test_domain_context_delivery_does_not_advance_on_validation_failure(
@@ -488,20 +553,6 @@ def test_domain_context_pagination_rejects_oversized_unicode_evidence(
     required = int(required_match.group(1))
     page = _paginate_domain_context_transport(value, None, required)
     assert page["data"]["context_page"]["page_size"] == required
-
-
-def test_domain_context_page_digest_rejects_same_revision_evidence_change(
-    tmp_path: Path,
-) -> None:
-    workspace, _evidence, _revision = _assessment_workspace(tmp_path)
-    value, _transport_bytes = _wire_context(workspace)
-    first = _paginate_domain_context_transport(value, None, 32_768)
-    cursor = first["data"]["context_page"]["next_cursor"]
-    assert cursor
-    value["data"]["evidence"][0]["quote"] = "changed"
-
-    with pytest.raises(ValueError, match="domain_context_cursor_stale"):
-        _paginate_domain_context_transport(value, cursor, None)
 
 
 def test_domain_context_small_budget_returns_header_condition(tmp_path: Path) -> None:
