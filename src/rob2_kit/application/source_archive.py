@@ -27,7 +27,9 @@ _SOURCE_FIELDS = {
     "page_count",
     "origin",
     "projection_hash",
+    "declared_role",
 }
+_REQUIRED_SOURCE_FIELDS = _SOURCE_FIELDS - {"declared_role"}
 
 
 def _manifest_for_state(
@@ -43,18 +45,10 @@ def _manifest_for_state(
             raise ValueError("captured Trial metadata is corrupt")
         trial_id = trial["id"]
         for source in trial.get("sources", []):
-            if not isinstance(source, dict) or set(source) != {
-                "id",
-                "trial_id",
-                "role",
-                "label",
-                "logical_path",
-                "sha256",
-                "media_type",
-                "page_count",
-                "origin",
-                "projection_hash",
-            }:
+            if not isinstance(source, dict) or set(source) not in (
+                _REQUIRED_SOURCE_FIELDS,
+                _SOURCE_FIELDS,
+            ):
                 raise ValueError("captured Source metadata is corrupt")
             if source["trial_id"] != trial_id:
                 raise ValueError("captured Source Trial identity is corrupt")
@@ -71,7 +65,7 @@ def _manifest_for_state(
             sources.append(
                 {
                     "trial_id": trial_id,
-                    **{key: source[key] for key in sorted(_SOURCE_FIELDS - {"trial_id"})},
+                    **{key: source.get(key) for key in sorted(_SOURCE_FIELDS - {"trial_id"})},
                     "archive_path": archive_path,
                     "size": len(payload),
                 }
@@ -168,20 +162,12 @@ def verify_source_archive(path: str | Path) -> bool:
             expected_sources: list[dict[str, Any]] = []
             expected_names = {"manifest.json"}
             for source in manifest["sources"]:
-                if not isinstance(source, dict) or set(source) != {
-                    "trial_id",
-                    "id",
-                    "role",
-                    "label",
-                    "logical_path",
-                    "sha256",
-                    "media_type",
-                    "page_count",
-                    "origin",
-                    "projection_hash",
-                    "archive_path",
-                    "size",
-                }:
+                required_fields = _REQUIRED_SOURCE_FIELDS | {"archive_path", "size"}
+                current_fields = _SOURCE_FIELDS | {"archive_path", "size"}
+                if not isinstance(source, dict) or set(source) not in (
+                    required_fields,
+                    current_fields,
+                ):
                     return False
                 trial_id = source["trial_id"]
                 source_id = source["id"]
@@ -201,6 +187,19 @@ def verify_source_archive(path: str | Path) -> bool:
                     }
                     or source.get("origin")
                     not in {"local_dossier", "registry", "researcher_provided"}
+                    or (
+                        "declared_role" in source
+                        and source["declared_role"] is not None
+                        and source["declared_role"]
+                        not in {
+                            "main_article",
+                            "registry",
+                            "supplement",
+                            "sap",
+                            "protocol",
+                            "other",
+                        }
+                    )
                     or "/" in trial_id
                     or "\\" in trial_id
                     or "/" in source_id

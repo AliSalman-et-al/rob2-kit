@@ -14,6 +14,7 @@ from ..workflow_models import (
     ComparativeEffectResult,
     GroupBoundValuesResult,
     ProposalDraft,
+    ProposalReasoningDraft,
     UnavailableIntakeConditionBasisDraft,
 )
 from ._state import _commit_records, _ensure, _identity, _result, _root, _state
@@ -168,8 +169,8 @@ def _proposal_shape_repairs(
                 reported_path = ""
                 reported_ids = []
         elif isinstance(result.reported, GroupBoundValuesResult):
-            reported_path = f"{path}/reported/values"
-            reported_ids = [item.group_id for item in result.reported.values]
+            reported_path = f"{path}/reported/group_values"
+            reported_ids = [item.group_id for item in result.reported.group_values]
         else:
             reported_path = ""
             reported_ids = []
@@ -655,11 +656,11 @@ def _reported_quantitative_paths(
     if reported["form"] == "group_bound_values":
         return [
             (
-                (f"/reported/values/{index}/statistic", item["statistic"]),
-                (f"/reported/values/{index}/value", item["value"]),
-                (f"/reported/values/{index}/unit", item["unit"]),
+                (f"/reported/group_values/{index}/statistic", item["statistic"]),
+                (f"/reported/group_values/{index}/value", item["value"]),
+                (f"/reported/group_values/{index}/unit", item["unit"]),
             )
-            for index, item in enumerate(reported["values"])
+            for index, item in enumerate(reported["group_values"])
         ]
     return [
         tuple(
@@ -1133,6 +1134,8 @@ def _closest_evidence_gap(
 def save_proposal(
     workspace: str | Path,
     proposal: ProposalDraft,
+    *,
+    validate_only: bool = False,
 ) -> dict[str, Any]:
     root = _root(workspace)
     _ensure(root)
@@ -1276,6 +1279,14 @@ def save_proposal(
     if pending_review:
         used = set().union(*(_result_handles(result, catalog) for result in raw["results"]))
     bound = _bound_proposal_evidence(catalog, used, prior_proposal)
+    if validate_only:
+        return _result(
+            "success",
+            state,
+            proposal_payload=raw,
+            proposal_evidence=bound,
+            proposal_identity=identity,
+        )
     proposal_record = {"identity": identity, "payload": raw, "evidence": bound}
     review = {
         "kind": "review",
@@ -1295,4 +1306,189 @@ def save_proposal(
         state,
         proposal_identity=identity,
         review={"reference": review["identity"], "purpose": "proposal", "authority": "researcher"},
+    )
+
+
+def reason_proposal(
+    workspace: str | Path, draft: dict[str, Any] | ProposalReasoningDraft
+) -> dict[str, Any]:
+    """Validate and persist one source-bound Proposal reasoning record."""
+    root = _root(workspace)
+    _ensure(root)
+    state = _state(root)
+    try:
+        parsed = (
+            draft
+            if isinstance(draft, ProposalReasoningDraft)
+            else ProposalReasoningDraft.model_validate(draft)
+        )
+    except ValidationError as error:
+        return _result(
+            "repair",
+            state,
+            repairs=[
+                {
+                    "path": "/" + "/".join(map(str, item["loc"])),
+                    "code": "invalid_reasoning_draft",
+                    "detail": item["msg"],
+                }
+                for item in error.errors()
+            ],
+        )
+
+    result_trials = [item.trial_id for item in parsed.results]
+    assessment_trials = [item.trial_id for item in parsed.assessments]
+    repairs: list[dict[str, Any]] = []
+    if len(set(result_trials)) != len(result_trials):
+        repairs.append(
+            {
+                "path": "/results",
+                "code": "duplicate_trial_result",
+                "detail": "Submit at most one Result card per Trial.",
+            }
+        )
+    if len(set(assessment_trials)) != len(assessment_trials):
+        repairs.append(
+            {
+                "path": "/assessments",
+                "code": "duplicate_trial_assessment",
+                "detail": "Submit at most one reasoning assessment per Trial.",
+            }
+        )
+    if set(result_trials) != set(assessment_trials):
+        repairs.append(
+            {
+                "path": "/assessments",
+                "code": "assessment_coverage_mismatch",
+                "detail": "Submit exactly one reasoning assessment for every Result card.",
+            }
+        )
+    results_by_trial = {item.trial_id: item for item in parsed.results}
+    for index, assessment in enumerate(parsed.assessments):
+        result = results_by_trial.get(assessment.trial_id)
+        if isinstance(result, AssessableResultDraft):
+            if not assessment.evidence_basis:
+                repairs.append(
+                    {
+                        "path": f"/assessments/{index}/evidence_basis",
+                        "code": "reasoning_evidence_required",
+                        "detail": (
+                            "Assessable Result reasoning needs at least one same-Trial Evidence "
+                            "handle."
+                        ),
+                    }
+                )
+            if assessment.scope_justification is None:
+                repairs.append(
+                    {
+                        "path": f"/assessments/{index}/scope_justification",
+                        "code": "scope_justification_required",
+                        "detail": (
+                            "Assessable Result reasoning must explain target relation and time "
+                            "window."
+                        ),
+                    }
+                )
+            if assessment.population_justification is None:
+                repairs.append(
+                    {
+                        "path": f"/assessments/{index}/population_justification",
+                        "code": "population_justification_required",
+                        "detail": (
+                            "Assessable Result reasoning must distinguish eligibility from "
+                            "exclusions or missing observations."
+                        ),
+                    }
+                )
+        elif result is not None and assessment.missing_fact_justification is None:
+            repairs.append(
+                {
+                    "path": f"/assessments/{index}/missing_fact_justification",
+                    "code": "missing_fact_justification_required",
+                    "detail": (
+                        "Unavailable Result reasoning must explain the captured missing fact."
+                    ),
+                }
+            )
+    catalog = _evidence_catalog(root)
+    for index, assessment in enumerate(parsed.assessments):
+        handles = (
+            *assessment.evidence_basis,
+            *(item.evidence for item in assessment.counterevidence),
+        )
+        for handle_index, handle in enumerate(handles):
+            selected = _selected(catalog, handle)
+            if selected is None or selected.get("trial_id") != assessment.trial_id:
+                repairs.append(
+                    {
+                        "path": f"/assessments/{index}/evidence_basis/{handle_index}",
+                        "code": "cross_trial_evidence",
+                        "detail": (
+                            "Reasoning Evidence must resolve to selected material from this Trial."
+                        ),
+                    }
+                )
+    if repairs:
+        return _result("repair", state, repairs=repairs)
+
+    proposal_draft = ProposalDraft(
+        results=parsed.results,
+        expected_revision=parsed.expected_revision,
+    )
+    validation = save_proposal(root, proposal_draft, validate_only=True)
+    if validation.get("outcome") != "success":
+        return validation
+    payload = parsed.model_dump(mode="json")
+    reasoning_id = _identity({"kind": "proposal_reasoning", "draft": payload})
+    records = state.get("reasoning_records")
+    prior = records.get(reasoning_id) if isinstance(records, dict) else None
+    if isinstance(prior, dict):
+        if prior.get("save_revision") != state.get("revision"):
+            return _result(
+                "condition",
+                state,
+                condition={
+                    "code": "reasoning_stale",
+                    "detail": "The reasoning record is stale; request a new reasoning record.",
+                },
+            )
+        return _reasoning_proposal_receipt(state, prior)
+    if parsed.expected_revision != state.get("revision", 0):
+        raise WorkflowConflict(parsed.expected_revision, int(state.get("revision", 0)))
+    record = {
+        "kind": "proposal_reasoning",
+        "identity": reasoning_id,
+        "draft": payload,
+        "proposal_identity": validation.get("proposal_identity"),
+        "save_revision": int(state.get("revision", 0)) + 1,
+    }
+    reasoning_records = dict(records) if isinstance(records, dict) else {}
+    reasoning_records[reasoning_id] = record
+    committed = _commit_records(
+        root,
+        {**state, "reasoning_records": reasoning_records},
+        parsed.expected_revision,
+        {f"reasoning:{reasoning_id}": record},
+    )
+    return _reasoning_proposal_receipt(committed, record)
+
+
+def _reasoning_proposal_receipt(state: dict[str, Any], record: dict[str, Any]) -> dict[str, Any]:
+    next_action = {
+        "expected_revision": state.get("revision", 0),
+        "reasoning_id": record["identity"],
+    }
+    return _result(
+        "success",
+        state,
+        reasoning_id=record["identity"],
+        validation_scope="structure_and_references_only",
+        repairs=[],
+        next_action=next_action,
+        continuation={
+            "operation": "save_proposal",
+            "authority": "host",
+            **next_action,
+            "caller_inputs": ["reasoning_id"],
+        },
     )

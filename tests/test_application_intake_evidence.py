@@ -18,6 +18,7 @@ from rob2_kit.application.evidence import (
     select_text_evidence,
 )
 from rob2_kit.application.intake import prepare_batch
+from rob2_kit.application.status import get_status
 from rob2_kit.workflow_models import TrialDeclaration
 
 
@@ -99,6 +100,110 @@ def _source_for_text(tmp_path: Path, text: str) -> tuple[Path, dict[str, object]
     )
     source = prepared["trials"][0]["sources"][0]
     return tmp_path, source
+
+
+def test_prepare_exposes_supported_and_unsupported_file_dispositions(tmp_path: Path) -> None:
+    trial = tmp_path / "input" / "trial"
+    trial.mkdir(parents=True)
+    (trial / "main.txt").write_text("captured main report", encoding="utf-8")
+    (trial / "declared-protocol.docx").write_bytes(b"not a supported projection")
+    (trial / "undeclared.bin").write_bytes(b"not a supported projection")
+    (trial / "omitted.docx").write_bytes(b"must not be read")
+    (trial / "sources.toml.bak").write_bytes(b"backup config")
+    (trial / "sources.toml.backup").write_bytes(b"backup config")
+    (trial / "sources.toml.orig").write_bytes(b"backup config")
+    (trial / "sources.toml~").write_bytes(b"backup config")
+    (trial / ".hidden.bin").write_bytes(b"hidden")
+    (trial / "sources.toml").write_text(
+        'omissions = ["omitted.docx", "missing.docx"]\n'
+        "[roles]\n"
+        '"main.txt" = "main_article"\n'
+        '"declared-protocol.docx" = "protocol"\n'
+        '"omitted.docx" = "supplement"\n'
+        '"missing.docx" = "protocol"\n',
+        encoding="utf-8",
+    )
+
+    prepared = prepare_batch(
+        tmp_path,
+        [TrialDeclaration(id="trial", label="trial", requested_outcome="outcome")],
+        expected_revision=0,
+    )
+    captured = prepared["trials"][0]
+    [source] = captured["sources"]
+    assert source["logical_path"] == "main.txt"
+    assert source["role"] == "main_article"
+    assert source["declared_role"] == "main_article"
+    assert source["sha256"].startswith("sha256:")
+
+    [omitted, missing] = captured["omissions"]
+    assert omitted == {
+        "path": "omitted.docx",
+        "reason": "other",
+        "rationale": "omitted by sources.toml",
+        "role": "supplement",
+        "declared_role": "supplement",
+        "sha256": None,
+    }
+    assert missing["path"] == "missing.docx"
+    assert missing["role"] == "protocol"
+    assert missing["declared_role"] == "protocol"
+
+    conditions = prepared["conditions"]
+    by_path = {item["path"]: item for item in conditions if "path" in item}
+    assert by_path["declared-protocol.docx"]["code"] == "unreadable_source"
+    assert by_path["declared-protocol.docx"]["role"] == "protocol"
+    assert by_path["declared-protocol.docx"]["declared_role"] == "protocol"
+    assert by_path["undeclared.bin"]["code"] == "unsupported_source"
+    assert by_path["undeclared.bin"]["role"] == "other"
+    assert by_path["undeclared.bin"]["declared_role"] is None
+    assert by_path["missing.docx"]["code"] == "declared_source_missing"
+    assert by_path["missing.docx"]["sha256"] is None
+    assert not any(path.startswith("sources.toml.") or path == "sources.toml~" for path in by_path)
+    assert "omitted.docx" not in by_path
+
+    status = get_status(tmp_path)
+    assert status["phase"] == "proposal"
+    assert status["conditions"] == conditions
+    assert (
+        "Inspect intake conditions before concluding that evidence is unavailable. Search covers "
+        "captured text projections only. Supplied files listed as unsupported, unreadable, or "
+        "missing were not searched. A declared role does not establish document contents."
+        in status["authoritative_wording"]
+    )
+
+
+def test_prepare_separates_read_and_projection_failures_without_global_failure(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    trial = tmp_path / "input" / "trial"
+    trial.mkdir(parents=True)
+    (trial / "main.txt").write_text("captured main report", encoding="utf-8")
+    (trial / "corrupt.txt").write_bytes(b"\xff")
+    (trial / "blocked.txt").write_text("unreadable", encoding="utf-8")
+    original_read_bytes = Path.read_bytes
+
+    def read_bytes(path: Path) -> bytes:
+        if path.name == "blocked.txt":
+            raise PermissionError("test read failure")
+        return original_read_bytes(path)
+
+    monkeypatch.setattr(Path, "read_bytes", read_bytes)
+    prepared = prepare_batch(
+        tmp_path,
+        [TrialDeclaration(id="trial", label="trial", requested_outcome="outcome")],
+        expected_revision=0,
+    )
+
+    assert prepared["trials"][0]["sources"][0]["logical_path"] == "main.txt"
+    conditions = {item["path"]: item for item in prepared["conditions"] if "path" in item}
+    assert conditions["blocked.txt"]["code"] == "unreadable_source"
+    assert conditions["blocked.txt"]["reason"] == "file read failed: PermissionError"
+    assert conditions["blocked.txt"]["sha256"] is None
+    assert conditions["corrupt.txt"]["code"] == "unreadable_source"
+    assert conditions["corrupt.txt"]["reason"].startswith("projection extraction failed:")
+    assert conditions["corrupt.txt"]["sha256"].startswith("sha256:")
+    assert prepared["phase"] == "proposal"
 
 
 def test_search_preview_coordinates_and_passage_reference_share_one_window(

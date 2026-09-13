@@ -11,6 +11,9 @@ from fastmcp import Client
 from fastmcp.exceptions import ToolError
 from pydantic import ValidationError
 from support.rob2 import (
+    _call as workflow_call,
+)
+from support.rob2 import (
     _prepared_evidence,
     _proposal_args,
     _read_required_main_reports,
@@ -53,7 +56,7 @@ def test_domain_context_preserves_nullable_endpoint_definition_in_receipt(tmp_pa
     evidence = _prepared_evidence(workspace)
     result = _result(evidence)
     result["reported"]["endpoint"]["definition"] = None
-    saved = _call(workspace, "save_proposal", _proposal_args(workspace, [result]))
+    saved = workflow_call(workspace, "save_proposal", _proposal_args(workspace, [result]))
     assert saved["outcome"] == "review_required", saved
     _review(workspace)
 
@@ -167,8 +170,10 @@ def test_every_public_tool_publishes_closed_input_and_output_schemas() -> None:
             "select_visual_evidence": 2,
             "get_domain_context": 2,
             "prepare_batch": 3,
+            "reason_proposal": 4,
             "save_proposal": 5,
             "request_proposal_approval": 2,
+            "reason_domain_assessment": 4,
             "save_domain_judgment": 4,
             "request_trial_terminal": 3,
             "finalize_batch": 3,
@@ -495,10 +500,10 @@ def test_receipt_head_uses_authoritative_post_operation_status(tmp_path: Path) -
     }
     assert prepared["head"]["phase"] == "proposal"
     assert prepared["head"]["next_action"] == {
-        "operation": "save_proposal",
+        "operation": "reason_proposal",
         "authority": "host",
         "expected_revision": prepared["head"]["state_revision"],
-        "caller_inputs": ["results"],
+        "caller_inputs": ["results", "assessments"],
     }
 
 
@@ -510,8 +515,10 @@ def test_next_action_is_operation_discriminated_and_closed() -> None:
     assert next_action["discriminator"] == {
         "mapping": {
             "prepare_batch": "#/$defs/PrepareBatchAction",
+            "reason_proposal": "#/$defs/ReasonProposalAction",
             "save_proposal": "#/$defs/SaveProposalAction",
             "get_domain_context": "#/$defs/GetDomainContextAction",
+            "reason_domain_assessment": "#/$defs/ReasonDomainAssessmentAction",
             "save_domain_judgment": "#/$defs/SaveDomainJudgmentAction",
             "finalize_batch": "#/$defs/FinalizeBatchAction",
             "researcher_review": "#/$defs/ResearcherReviewAction",
@@ -520,8 +527,10 @@ def test_next_action_is_operation_discriminated_and_closed() -> None:
     }
     for name in (
         "SaveProposalAction",
+        "ReasonProposalAction",
         "PrepareBatchAction",
         "GetDomainContextAction",
+        "ReasonDomainAssessmentAction",
         "SaveDomainJudgmentAction",
         "FinalizeBatchAction",
         "ResearcherReviewAction",
@@ -648,11 +657,8 @@ def test_assessment_skill_preserves_result_choice_and_completion_guards() -> Non
     assert "continue without asking" in instructions
     assert "request_proposal_approval` with the empty arguments object `{}`" in instructions
     assert "data.remaining_windows" in instructions
-    assert "Draft an answer for every question returned for the Domain" in instructions
-    assert (
-        "including questions whose `activation_status` is `dependent_on_draft_answers`"
-        in instructions
-    )
+    assert "Draft every active question in the dependency-closed path" in instructions
+    assert "Include inactive answers only when they are already available" in instructions
     assert "For 5.3, identify both the eligible alternatives" in instructions
     assert '"kind": "quantified"' in instructions
     assert '"15 days after randomization"' in instructions
@@ -688,7 +694,7 @@ def test_assessment_skill_preserves_rigor_across_context_compaction() -> None:
 
 
 def test_result_relation_schema_has_only_visible_non_exact_categories() -> None:
-    schema = _tool_schema("save_proposal")
+    schema = _tool_schema("reason_proposal")
     result_items = cast(dict[str, Any], schema["properties"]["results"]["items"])
     assessable = cast(dict[str, Any], result_items["oneOf"][0])
     relation = cast(dict[str, Any], assessable["properties"]["relation"])
@@ -705,12 +711,10 @@ def test_result_relation_schema_has_only_visible_non_exact_categories() -> None:
     assert "broader is a superset" in result_items["description"]
     assert "subset or has additional restrictions" in result_items["description"]
     results_description = cast(dict[str, Any], schema["properties"]["results"])["description"]
-    assert "Initial save" in results_description
-    assert "unmentioned cards are preserved" in results_description
-    assert "Select Evidence first" in results_description
-    tool_description = _tool_description("save_proposal")
-    assert "supporting Evidence" in tool_description
-    assert "source numbers as strings" in tool_description
+    assert results_description == "The exact Result cards for this Proposal save."
+    tool_description = _tool_description("reason_proposal")
+    assert "brief evidence-based assessment" in tool_description
+    assert "conflicting evidence and unresolved facts" in tool_description
 
 
 def test_search_contract_exposes_match_summary_and_render_defaults_to_pixels() -> None:
@@ -776,11 +780,12 @@ def test_search_contract_exposes_match_summary_and_render_defaults_to_pixels() -
 
 
 def test_save_proposal_schema_is_closed_and_discriminated() -> None:
-    schema = _tool_schema("save_proposal")
+    schema = _tool_schema("reason_proposal")
     assert schema["additionalProperties"] is False
-    assert schema["required"] == ["results", "expected_revision"]
+    assert schema["required"] == ["results", "assessments", "expected_revision"]
     assert "proposal" not in schema["properties"]
     assert "expected_revision" in schema["properties"]
+    assert "assessments" in schema["properties"]
     result_items = cast(dict[str, Any], schema["properties"]["results"]["items"])
     assert "exact assessable first" in result_items["description"]
     assert "Missing comparator values" in result_items["description"]
@@ -853,23 +858,29 @@ def test_save_proposal_schema_is_closed_and_discriminated() -> None:
             assert definition["additionalProperties"] is False, name
     # Every nested caller field is self-describing; keep the complete proposal
     # schema, including design applicability, compact enough for one definition.
-    assert len(json.dumps(schema, separators=(",", ":")).encode()) < 16500
-    assert len(_walk_schema(schema)) <= 22
+    # Reasoning assessments add a bounded source-bound structure to the Result
+    # cards while keeping the constructible request below one definition.
+    assert len(json.dumps(schema, separators=(",", ":")).encode()) < 19000
+    assert len(_walk_schema(schema)) <= 23
+    save_schema = _tool_schema("save_proposal")
+    assert save_schema["required"] == ["expected_revision", "reasoning_id"]
+    assert set(save_schema["properties"]) == {"expected_revision", "reasoning_id"}
 
 
 def test_save_domain_judgment_schema_is_closed_and_typed() -> None:
     schema = _tool_schema("save_domain_judgment")
     assert schema["additionalProperties"] is False
-    assert schema["required"] == ["trial_id", "domain_id", "expected_revision", "answers"]
-    draft = schema
-    assert draft["additionalProperties"] is False
-    assert "multiple_concerns" in draft["properties"]
-    assert draft["required"] == [
+    assert schema["required"] == ["trial_id", "domain_id", "expected_revision", "reasoning_id"]
+    assert set(schema["properties"]) == {
         "trial_id",
         "domain_id",
         "expected_revision",
-        "answers",
-    ]
+        "reasoning_id",
+    }
+    draft = _tool_schema("reason_domain_assessment")
+    assert draft["additionalProperties"] is False
+    assert "multiple_concerns" in draft["properties"]
+    assert draft["required"] == ["trial_id", "domain_id", "expected_revision", "answers"]
     answers = cast(dict[str, Any], draft["properties"]["answers"])["items"]
     assert answers["additionalProperties"] is False
     assert set(answers["properties"]) == {
@@ -878,6 +889,8 @@ def test_save_domain_judgment_schema_is_closed_and_typed() -> None:
         "bases",
         "justification",
         "missing_data",
+        "unknowns",
+        "counterevidence",
     }
     variants = cast(dict[str, Any], answers["properties"]["bases"]["items"])["oneOf"]
     assert len(variants) == 3
@@ -948,7 +961,7 @@ def test_selected_evidence_and_typed_proposal_survive_host_restart(tmp_path: Pat
             "name": "reported endpoint",
             "definition": "measured endpoint definition",
         },
-        "values": [
+        "group_values": [
             {"group_id": "A", "statistic": "risk", "value": "1", "unit": "events"},
             {"group_id": "B", "statistic": "risk", "value": "2", "unit": "events"},
         ],
@@ -968,7 +981,7 @@ def test_selected_evidence_and_typed_proposal_survive_host_restart(tmp_path: Pat
         "target": target,
         "reported": reported,
     }
-    saved = _call(
+    saved = workflow_call(
         tmp_path,
         "save_proposal",
         {"results": [result], "expected_revision": resumed["head"]["state_revision"]},
@@ -1002,8 +1015,8 @@ def test_selected_evidence_and_typed_proposal_survive_host_restart(tmp_path: Pat
         "/target/comparison_groups/1/id",
         "/target/comparison_groups/1/assignment",
         "/reported/analysis_population",
-        "/reported/values/0/group_id",
-        "/reported/values/1/group_id",
+        "/reported/group_values/0/group_id",
+        "/reported/group_values/1/group_id",
     }
     assert {binding["field"]["path"] for binding in canonical_result["bindings"]} == (
         set(expected_digests) - caller_owned

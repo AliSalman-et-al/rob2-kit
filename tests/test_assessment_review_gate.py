@@ -174,6 +174,7 @@ def test_domain_continuation_names_only_current_checkpoint(tmp_path: Path) -> No
     assert context["data"]["current_checkpoint"] == checkpoint
     action = context["head"]["next_action"]
     assert action["supersedes"] == checkpoint
+    assert action["operation"] == "reason_domain_assessment"
     assert action["caller_inputs"] == ["answers", "multiple_concerns", "revision_basis"]
 
 

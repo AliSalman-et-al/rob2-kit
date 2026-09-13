@@ -27,6 +27,8 @@ DOCUMENTED_TOOLS = frozenset(
         "prepare_batch",
         "read_pages",
         "render_page",
+        "reason_domain_assessment",
+        "reason_proposal",
         "request_proposal_approval",
         "request_trial_terminal",
         "save_domain_judgment",

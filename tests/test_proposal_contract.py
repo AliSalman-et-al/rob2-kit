@@ -5,7 +5,14 @@ from pathlib import Path
 import pytest
 from fastmcp.exceptions import ToolError
 from support.proposal import _state_proposal
-from support.rob2 import _call, _prepared_evidence, _proposal_args, _result, _workspace
+from support.rob2 import (
+    _call,
+    _prepared_evidence,
+    _proposal_args,
+    _proposal_assessments,
+    _result,
+    _workspace,
+)
 
 
 def test_target_interpretation_leaves_do_not_require_exact_source_support(
@@ -36,8 +43,18 @@ def test_assessable_relation_enum_excludes_unavailable_values(
     result["relation"] = "unavailable"
     result["relation_rationale"] = "Use unavailable Result kind instead."
 
-    with pytest.raises(ToolError, match=r"validation error for call\[save_proposal\]"):
-        _call(workspace, "save_proposal", _proposal_args(workspace, [result]))
+    proposal = _proposal_args(workspace, [result])
+    with pytest.raises(ToolError, match=r"validation error for call\[reason_proposal\]"):
+        _call(
+            workspace,
+            "reason_proposal",
+            {
+                "results": proposal["results"],
+                "assessments": _proposal_assessments(proposal["results"]),
+                "expected_revision": proposal["expected_revision"],
+            },
+            _raw=True,
+        )
 
 
 def test_removed_equivalence_relation_is_rejected_at_typed_boundary(
@@ -48,8 +65,18 @@ def test_removed_equivalence_relation_is_rejected_at_typed_boundary(
     result = _result(evidence)
     result["relation"] = "source_defined_equivalent"
 
-    with pytest.raises(ToolError, match=r"validation error for call\[save_proposal\]"):
-        _call(workspace, "save_proposal", _proposal_args(workspace, [result]))
+    proposal = _proposal_args(workspace, [result])
+    with pytest.raises(ToolError, match=r"validation error for call\[reason_proposal\]"):
+        _call(
+            workspace,
+            "reason_proposal",
+            {
+                "results": proposal["results"],
+                "assessments": _proposal_assessments(proposal["results"]),
+                "expected_revision": proposal["expected_revision"],
+            },
+            _raw=True,
+        )
 
 
 def test_exact_relation_rationale_is_preserved(tmp_path: Path) -> None:
@@ -114,7 +141,7 @@ def test_absent_comparative_precision_is_not_source_bound(tmp_path: Path) -> Non
         "precision": None,
         "analysis_population": "analyzed population",
         "endpoint": result["reported"]["endpoint"],
-        "group_values": result["reported"]["values"],
+        "group_values": result["reported"]["group_values"],
     }
 
     saved = _call(workspace, "save_proposal", _proposal_args(workspace, [result]))
@@ -163,7 +190,7 @@ def test_whitespace_reported_scalars_fail_at_typed_boundary(tmp_path: Path, fiel
     workspace = _workspace(tmp_path)
     evidence = _prepared_evidence(workspace)
     result = _result(evidence)
-    result["reported"]["values"][0][field] = "   "
+    result["reported"]["group_values"][0][field] = "   "
 
     with pytest.raises(ToolError):
         _call(workspace, "save_proposal", _proposal_args(workspace, [result]))

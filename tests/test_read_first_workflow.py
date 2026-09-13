@@ -314,23 +314,17 @@ def test_oversized_utf8_prefix_and_empty_page_need_explicit_reads_and_continue_c
 
     empty_workspace = _workspace(tmp_path / "empty")
     (empty_workspace / "input" / "trial" / "main.txt").write_text("", encoding="utf-8")
-    _call(
+    prepared = _call(
         empty_workspace,
         "prepare_batch",
         {"requested_outcome": "requested outcome", "expected_revision": 0},
     )
     empty_before = _call(empty_workspace, "get_status", {})["data"]["main_report_reading"]["trial"]
-    assert empty_before["status"] == "required"
-    empty_source = _source(empty_workspace, "main.txt")
-    read = _call(
-        empty_workspace,
-        "read_pages",
-        {"trial_id": "trial", "source_id": empty_source["id"], "pages": [1]},
+    assert empty_before["status"] == "complete"
+    assert not _call(empty_workspace, "list_sources", {"trial_id": "trial"})["data"]["sources"]
+    assert any(
+        condition.get("code") == "unreadable_source" for condition in prepared["data"]["conditions"]
     )
-    assert read["data"]["pages"][0]["line_count"] == 0
-    assert read["data"]["pages"][0]["page_remainder"] is None
-    empty_after = _call(empty_workspace, "get_status", {})["data"]["main_report_reading"]["trial"]
-    assert empty_after["status"] == "complete"
 
 
 def test_budget_deferred_ranges_cover_later_pages_and_overlap_replays(

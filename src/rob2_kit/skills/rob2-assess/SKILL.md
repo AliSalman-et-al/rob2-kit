@@ -15,16 +15,13 @@ without asking for signalling answers, progress confirmation, or final approval.
 
 ## Read one complete MCP receipt
 
-Hosts may expose a tool result as `structured_content`, `structuredContent`, or
-one JSON text content block. Use the structured object when it is available; if
-it is not, parse the single JSON text block once. Keep that complete receipt as
-working context, including `head`, `data.result`, `questions`,
-`comparison_cards`, `evidence`, `evidence_workspace`, `reading_recovery`, and
-any `recovery` or `next_action` fields. Do not render only `questions` (or a
-`questions.map(...)` projection), and do not concatenate the structured and
-text representations. Keep `render_page` image content blocks separate from
-the deduplicated JSON; render and inspect the image when layout carries
-meaning.
+The server returns JSON tool results in `structuredContent`, with an empty `content` array, except for `render_page`. Use that object directly; do not look
+for or reconstruct a duplicate text representation. Keep the complete receipt as working context, including `head`, `data.result`,
+`questions`, `comparison_cards`, `evidence`, `evidence_workspace`,
+`reading_recovery`, and any `recovery` or `next_action` fields. Do not render
+only `questions` (or a `questions.map(...)` projection). Keep `render_page`
+image content blocks separate from the structured result; render and inspect
+the image when layout carries meaning.
 
 If the host reports `Warning: truncated output`, treat the receipt as
 delivery incomplete. On a Codex host, repeat the identical context or read
@@ -45,22 +42,26 @@ const r = await tools.mcp__rob2__get_domain_context({
   trial_id: "trial-id-from-head.next_action",
   domain_id: "domain-id-from-head.next_action",
 });
-const textPart = r?.content?.find((part) => part?.type === "text")?.text;
-const receipt = r?.structuredContent ?? r?.structured_content ?? (textPart ? JSON.parse(textPart) : null);
+const receipt = r?.structuredContent ?? null;
 if (!receipt) throw new Error("MCP receipt unavailable; delivery incomplete");
 text(receipt);
 ```
 
 The server auto-pages a full Domain receipt above 32 KB. For paged Domain context,
-pass `data.context_page.next_cursor` unchanged and fetch every page before deciding
-or saving. A pending save returns the exact cursor to continue; delivery completion
-records successful response generation only, so verify the host-visible content and
-inspect Evidence as needed. When
+pass `data.context_page.next_cursor` unchanged. When next_cursor is non-null,
+continue get_domain_context until it is null. Existing cursors preserve the
+original context snapshot across Evidence work at the same revision. Inspect
+subsequent tool responses for updates; Evidence work alone does not require
+re-traversal. A fresh no-cursor request may replace the snapshot; finish any
+returned pages before saving. A pending save returns the exact cursor to continue;
+delivery completion records successful response generation only, so verify the
+host-visible content and inspect Evidence as needed. When
 the host supports variables, reuse the returned value directly; never manually
 retype an opaque cursor. Render each page separately so a combined transcript
 does not truncate the receipt. If a cursor is invalid, recapture the preceding
-page and reuse its exact cursor; if it is stale, restart the initial scoped call
-with the same explicit Trial, Domain, page size, and D3 preview when used.
+page and reuse its exact cursor; if it is stale or its snapshot was replaced,
+restart the initial scoped call with the same explicit Trial, Domain, page size,
+and D3 preview when used.
 Never assess from page zero while a continuation remains. On a continuation
 condition or error, preserve the stored cursor; advance or clear it only after
 a successful response containing `context_page`. In Codex, use separate
@@ -73,8 +74,7 @@ const r = await tools.mcp__rob2__get_domain_context({
   trial_id: "trial-id-from-head.next_action",
   domain_id: "domain-id-from-head.next_action",
 });
-const textPart = r?.content?.find((part) => part?.type === "text")?.text;
-const page = r?.structuredContent ?? r?.structured_content ?? (textPart ? JSON.parse(textPart) : null);
+const page = r?.structuredContent ?? null;
 if (!page || page.outcome !== "success") {
   text(page);
   throw new Error("Domain context condition; keep stored cursor");
@@ -90,8 +90,7 @@ if (!cursor) {
   text("No continuation cursor is stored.");
 } else {
   const r = await tools.mcp__rob2__get_domain_context({ cursor });
-  const textPart = r?.content?.find((part) => part?.type === "text")?.text;
-  const page = r?.structuredContent ?? r?.structured_content ?? (textPart ? JSON.parse(textPart) : null);
+  const page = r?.structuredContent ?? null;
   if (page?.outcome !== "success" || !page?.data?.context_page) {
     text(page ?? { outcome: "condition", detail: "MCP receipt unavailable" });
     throw new Error("Continuation failed; stored cursor unchanged");
@@ -126,7 +125,14 @@ Examples:
   `{"requested_outcome":"a requested outcome","expected_revision":0}`.
 
 Confirm from the receipt that the captured Trial labels match the requested
-scope.
+scope. Inspect intake conditions before concluding that evidence is unavailable.
+Search covers captured text projections only. Supplied files listed as
+unsupported, unreadable, or missing were not searched. A declared role does not
+establish document contents. DOCX support covers ordinary paragraphs, table
+headers and cells in order, and footnotes through a synthetic page-1 projection;
+that is not Word pagination and does not extract all embedded content. Legacy
+`.doc` remains unsupported. Image-only PDFs can be recovered with `render_page`
+even when they have no searchable text.
 
 ### 2. Discover and choose one Result per Trial
 
@@ -166,9 +172,10 @@ inspected. Search hits and `read_pages` windows already provide reusable
 `select_text_evidence` only when you need a different line boundary. Use
 `render_page` and `select_visual_evidence` when layout carries meaning.
 
-Build Result cards from the live `save_proposal` schema. The first save contains
-one card for every captured Trial. While Proposal Review is pending, submit only
-complete replacement cards for corrected Trials; the server preserves the rest.
+Build Result cards for the live `reason_proposal` schema. The first reasoning call
+contains one card for every captured Trial. While Proposal Review is pending,
+submit only complete replacement cards for corrected Trials; the server preserves
+the rest.
 
 For an assessable Result, the server reconstructs the captured outcome and
 closed effect of interest, then derives clarity, retained Evidence, and bindings.
@@ -178,6 +185,17 @@ Every Source-owned reported field needs exact or normalization-equivalent suppor
 For an unavailable Result, give each concrete missing fact its closed basis:
 selected missing-reporting Evidence, or `no_supported_sources` only for a
 captured Trial with zero Sources. Unavailable Results still enter Proposal Review.
+
+Before saving a Proposal, submit its Result cards and a brief evidence-based
+assessment for each submitted Trial with `reason_proposal`. For an assessable
+Result, provide separate `scope_justification` and `population_justification`;
+for an unavailable Result, provide `missing_fact_justification`. Explain why the
+reported result supports the target relation and chosen time point or window.
+Distinguish baseline eligibility from exclusions or missing observations in the
+reported analysis. Identify material conflicting evidence and unresolved facts;
+do not infer unavailable facts. The server validates structure, Evidence
+references and workflow requirements, not scientific correctness. Save using the
+returned `reasoning_id`.
 
 ### 4. Complete Proposal Review
 
@@ -278,26 +296,27 @@ invent affirmative Evidence.
 
 ### 6. Audit and commit the Domain once
 
-Draft an answer for every question returned for the Domain, including questions
-whose `activation_status` is `dependent_on_draft_answers` or
-`inactive_in_saved_checkpoint`. An unsaved conditional card is unresolved until
-the submitted draft path is evaluated; a saved-checkpoint status describes only
-that checkpoint. Use current card option IDs and supported bases for every
-answer. Submit the complete set in one `save_domain_judgment` call. The server
-resolves activation from your answers and commits only active answers.
+Draft every active question in the dependency-closed path implied by the drafted
+upstream answers and activation predicates. Include inactive answers only when they are
+already available; they do not need fabricated reasoning fields and the server ignores them. Use current
+card option IDs and supported bases for every submitted answer. Submit the
+complete active set in one `reason_domain_assessment` call. The server resolves
+activation from the draft and commits only active answers after
+`save_domain_judgment` consumes the returned `reasoning_id`.
 
 Before saving, compare each active answer with the approved Result in the
 current Domain context: outcome definition, population, comparison, and time
 point. Check the selected passages against the exact proposition and guidance
 on that question card. Choose the option whose literal meaning follows from
-those passages and any stated uncertainty. Add a concise `justification` when
-an inference, conflicting evidence, or uncertainty connects the passages to the
-answer. The audit is complete when every active answer addresses that Result
-and its bases support the claims attributed to them.
+those passages and any stated uncertainty. Every active answer must include a
+concise `justification`, an `unknowns` array, and a `counterevidence` array. The audit
+is complete when every active answer addresses that Result and its bases support
+the claims attributed to them.
 
-Do not make `save_domain_judgment` the primary next action while
-`head.next_action`, `reading_recovery`, or another continuation still requires
-status recovery or Evidence reading. Follow that continuation first.
+Do not make `save_domain_judgment` the primary next action. The next scientific
+step is `reason_domain_assessment` after `head.next_action`, `reading_recovery`,
+and any required Evidence reading are complete; follow another continuation
+first when it is present.
 
 For D3.1, run the **availability audit** before saving: Yes/Probably Yes needs
 actual outcome-availability evidence; analysis membership, planned or scheduled
@@ -311,6 +330,10 @@ analyzed, imputed, and excluded counts distinct. The server reuses answer
 Evidence as row provenance and performs only scope-matched arithmetic.
 For an optional count preview before saving D3, follow
 [Reconcile availability](references/missing.md#reconcile-availability).
+
+Commit the exact draft stored by the corresponding reasoning call. Supply its
+`reasoning_id` and returned revision. To change the draft, repeat the reasoning
+call with the revised draft.
 
 Apply every reported repair and retain other drafted answers. Add missing
 questions to the existing answer set; include every returned question before

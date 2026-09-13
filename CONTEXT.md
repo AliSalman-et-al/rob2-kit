@@ -21,12 +21,14 @@ The closed workflow phases are `empty`, `proposal`, `assessment`,
 
 1. `prepare_batch` captures the Batch and advances to Proposal construction.
 2. The model completes the required bounded main-report text pass, selects
-   Evidence, and saves one complete Result proposal per Trial.
+   Evidence, submits complete cards and assessments through `reason_proposal`,
+   then saves the exact returned receipt for one complete Result proposal per Trial.
 3. **Proposal Review** is the only researcher gate. The researcher may approve,
    reject, or replace the chosen Result mapping.
 4. For each approved Trial with a supported design, the model repeats the bounded
-   text pass before its first Domain save. It answers active signaling questions,
-   and the server derives Domain and overall judgments.
+   text pass before its first Domain assessment. It submits the complete active
+   answer draft through `reason_domain_assessment`, saves the exact returned
+   receipt, and the server derives Domain and overall judgments.
 5. Accepting the fifth Domain freezes that Trial's AssessmentSnapshot and marks
    it `assessed`. `finalize_batch` packages the terminal Trial records into the
    verified bundle. There is no Assessment Review or final approval.
@@ -263,9 +265,10 @@ and independent-verifier input. It excludes Source files, credentials, prompts,
 host traces, and absolute paths. The product verifier and standalone verifier
 replay the same scientific and integrity invariants independently.
 
-Fresh v0.7 Proposals contain Result cards without caller-selected report scopes.
-Historical v0.5 and v0.6 bundles retain their recorded semantics for verification,
-including v0.6 report scopes and boundary Evidence.
+Fresh v0.8 Proposals contain Result cards without caller-selected report scopes
+and require a source-bound reasoning assessment before the receipt-only save.
+Historical v0.5, v0.6, and v0.7 bundles retain their recorded semantics for
+verification, including v0.6 report scopes and boundary Evidence.
 
 Canonical state lives in SQLite. Rebuildable text, search, render, and handle
 indexes live in a separate derivative SQLite store. Losing derivatives cannot
@@ -273,12 +276,28 @@ change Canonical records or scientific judgments.
 
 ## Public boundary
 
-The v0.5 FastMCP surface preserves exactly 14 strictly typed tools:
+The v0.8 FastMCP surface exposes exactly 16 strictly typed tools:
 
 `prepare_batch`, `get_status`, `list_sources`, `search_sources`, `read_pages`,
-`select_text_evidence`, `render_page`, `select_visual_evidence`, `save_proposal`,
-`request_proposal_approval`, `get_domain_context`, `save_domain_judgment`,
+`select_text_evidence`, `render_page`, `select_visual_evidence`,
+`reason_proposal`, `save_proposal`, `request_proposal_approval`,
+`get_domain_context`, `reason_domain_assessment`, `save_domain_judgment`,
 `request_trial_terminal`, and `finalize_batch`.
+
+`reason_proposal` must validate the complete Proposal draft before
+`save_proposal` consumes its exact receipt. `reason_domain_assessment` must
+validate the complete active Domain draft before `save_domain_judgment`
+consumes its receipt. These calls validate structure, Evidence references, and
+workflow requirements. They do not establish scientific correctness. Proposal
+Review remains the only researcher approval gate.
+
+DOCX Sources project ordinary paragraphs, table rows and cells, and footnotes
+onto synthetic page 1. Legacy `.doc` files remain unsupported, and image-only
+PDFs remain renderable through `render_page` without searchable text. Intake
+conditions are visible in status and current receipts.
+
+The 14-tool v0.5 surface and v0.7 Result semantics are historical contract
+notes. Their finalized bundles remain independently verifiable.
 
 Input and output schemas are closed Pydantic unions. Tool descriptions state the
 single operation, required caller inputs, and server-owned fields. The live

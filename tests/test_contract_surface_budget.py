@@ -29,9 +29,11 @@ def test_public_output_surface_is_closed_and_within_budget() -> None:
         "select_text_evidence",
         "render_page",
         "select_visual_evidence",
+        "reason_proposal",
         "save_proposal",
         "request_proposal_approval",
         "get_domain_context",
+        "reason_domain_assessment",
         "save_domain_judgment",
         "request_trial_terminal",
         "finalize_batch",
@@ -67,9 +69,11 @@ def test_public_output_surface_is_closed_and_within_budget() -> None:
         for tool, schema in zip(tools, closed_schemas, strict=True)
     )
     # This is a ceiling, not a target. Smaller closed schemas are better.
-    # SearchHit candidate-truncation and recovery fields add about 2 KB
-    # to the previous ceiling without adding a public tool.
-    assert total_bytes < 283_000
+    # SearchHit candidate-truncation and recovery fields, mandatory Proposal
+    # and Domain reasoning receipts, and explicit per-file intake conditions
+    # add bounded schema surface; the combined current surface is 406,299
+    # bytes without adding a public tool.
+    assert total_bytes < 410_000
 
     by_name = {tool.name: tool for tool in tools}
     search_annotations = by_name["search_sources"].annotations
@@ -117,7 +121,8 @@ def test_public_output_surface_is_closed_and_within_budget() -> None:
         in read_window["properties"]["source_id"]["description"]
     )
     assert "One-based Source-page index" in read_window["properties"]["page"]["description"]
-    domain_tool = by_name["save_domain_judgment"]
+    domain_tool = by_name["reason_domain_assessment"]
+    save_tool = by_name["save_domain_judgment"]
     context_tool = by_name["get_domain_context"]
     assert "current checkpoint" in (context_tool.description or "")
     assert "recovery.trial_id and recovery.windows" in (context_tool.description or "")
@@ -139,24 +144,15 @@ def test_public_output_surface_is_closed_and_within_budget() -> None:
         "outside the recoverable narrative budget"
         in workspace_properties["unrecoverable_inline_text_bytes"]["description"]
     )
-    assert "for every returned Domain question" in (domain_tool.description or "")
-    assert "including conditional questions and questions inactive in the saved checkpoint" in (
-        domain_tool.description or ""
-    )
-    assert "Include every returned question before resubmitting" in (domain_tool.description or "")
-    assert "current option ID copied exactly from its card" in (domain_tool.description or "")
-    assert "check each basis against the approved Result" in (domain_tool.description or "")
-    assert "grouped repairs without committing" in (domain_tool.description or "")
-    answer_example = domain_tool.parameters["properties"]["answers"]["examples"][0][0]
-    assert set(answer_example) == {"question_id", "option_id", "bases"}
-    assert set(answer_example["bases"][0]) == {"kind", "evidence"}
+    assert "Before saving a Domain" in (domain_tool.description or "")
+    assert "counterevidence and unresolved facts" in (domain_tool.description or "")
+    answer_schema = domain_tool.parameters["properties"]["answers"]["items"]
+    assert set(answer_schema["required"]) >= {"question_id", "option_id", "bases"}
+    assert "active answer" in answer_schema["properties"]["justification"]["description"]
+    assert "inactive branch answers" in answer_schema["properties"]["unknowns"]["description"]
+    assert "exact Domain draft stored" in (save_tool.description or "")
     multiple_concerns = domain_tool.parameters["properties"]["multiple_concerns"]
-    assert set(multiple_concerns["examples"][0]) == {
-        "raises_overall_to_high",
-        "rationale",
-    }
-    assert "Omit unless a repair requests" in multiple_concerns["description"]
-    assert "never boolean/string" in multiple_concerns["description"]
+    assert "supply only when requested" in multiple_concerns["description"]
     approval_description = by_name["request_proposal_approval"].description or ""
     assert "has no approval arguments" in approval_description
 
@@ -173,7 +169,7 @@ def test_server_and_resource_metadata_are_explicit() -> None:
     # exposing the initialize result through its in-process client.
     assert initialization is None
     assert mcp.name == "rob2-kit"
-    assert mcp.version == "0.5.0"
+    assert mcp.version == "0.8.0"
     assert mcp.website_url == "https://github.com/AliSalman-et-al/rob2-kit"
     assert len(resources) == 1
     resource = resources[0]

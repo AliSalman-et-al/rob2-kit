@@ -110,7 +110,7 @@ def test_pending_proposal_can_be_replaced_but_approved_proposal_is_locked(
     )
     stale_request = _proposal_args(workspace, [stale_result])
     stale_request["expected_revision"] = first["head"]["state_revision"]
-    stale = _raw_call(workspace, "save_proposal", stale_request)
+    stale = _call(workspace, "save_proposal", stale_request)
     assert stale["outcome"] == "conflict"
 
     with pytest.raises(ValueError, match="exact displayed Review"):
@@ -120,7 +120,7 @@ def test_pending_proposal_can_be_replaced_but_approved_proposal_is_locked(
     assert approved["outcome"] == "success"
     assert _state(workspace)["phase"] == "assessment"
 
-    locked = _raw_call(workspace, "save_proposal", _proposal_args(workspace, [revised_result]))
+    locked = _call(workspace, "save_proposal", _proposal_args(workspace, [revised_result]))
     assert locked["outcome"] == "condition"
     assert "proposal is not the current operation" in locked["condition"]["detail"]
 

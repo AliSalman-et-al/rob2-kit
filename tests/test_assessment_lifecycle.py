@@ -32,7 +32,7 @@ def test_structured_domain_uses_and_search_receipts(tmp_path: Path) -> None:
     domain_id = SCIENTIFIC_PACK.domains[0].id
     context = _call(workspace, "get_domain_context", {"trial_id": "trial", "domain_id": domain_id})
     assert context["head"]["next_action"] == {
-        "operation": "save_domain_judgment",
+        "operation": "reason_domain_assessment",
         "authority": "host",
         "trial_id": "trial",
         "domain_id": domain_id,
@@ -476,7 +476,7 @@ def test_needs_input_and_repairs_are_authoritative(tmp_path: Path) -> None:
     )["data"]["evidence"]
     revision = int(get_status(workspace)["state_revision"])
     repair_result = _result(evidence)
-    repair_result["reported"]["values"][0]["statistic"] = "unsupported statistic"
+    repair_result["reported"]["group_values"][0]["statistic"] = "unsupported statistic"
     repair = application_save_proposal(
         workspace,
         ProposalDraft.model_validate({"results": [repair_result], "expected_revision": revision}),
@@ -494,7 +494,7 @@ def test_needs_input_and_repairs_are_authoritative(tmp_path: Path) -> None:
     assert table_repair["outcome"] == "repair"
     assert any(item["code"] == "result_value_not_supported" for item in table_repair["repairs"])
     third_repair_result = _result(evidence)
-    third_repair_result["reported"]["values"][0]["value"] = "unsupported value"
+    third_repair_result["reported"]["group_values"][0]["value"] = "unsupported value"
     truncated = application_save_proposal(
         workspace,
         ProposalDraft.model_validate(
@@ -837,4 +837,6 @@ def test_domain_save_query_work_is_bounded_by_irrelevant_evidence_handles(tmp_pa
     counters = COUNTERS
     # The mandatory post-approval report pass adds fixed status/read metadata queries;
     # the bound still catches work that scales with the 32 irrelevant handles.
-    assert counters["database_queries"] < 60
+    # Mandatory reasoning validates the same draft before the receipt save and
+    # therefore adds a bounded second workflow pass.
+    assert counters["database_queries"] < 75

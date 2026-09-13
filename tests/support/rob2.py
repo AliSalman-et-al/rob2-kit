@@ -29,9 +29,20 @@ standalone_valid_selected_evidence = runpy.run_path("scripts/verify_bundle.py")[
 ]
 standalone_valid_batch = runpy.run_path("scripts/verify_bundle.py")["_valid_batch"]
 standalone_normalized_contains = runpy.run_path("scripts/verify_bundle.py")["_normalized_contains"]
+_REASONING_RECEIPTS: dict[tuple[str, str], dict[str, object]] = {}
 
 
-def _call(workspace: Path, tool: str, arguments: dict[str, object]) -> dict[str, Any]:
+def _receipt_key(workspace: Path, tool: str, request: dict[str, object]) -> tuple[str, str]:
+    return str(workspace), f"{tool}:{json.dumps(request, sort_keys=True, default=str)}"
+
+
+def _call(
+    workspace: Path,
+    tool: str,
+    arguments: dict[str, object],
+    *,
+    _raw: bool = False,
+) -> dict[str, Any]:
     async def invoke() -> dict[str, Any]:
         os.environ["ROB2_WORKSPACE"] = str(workspace)
         async with Client(mcp) as client:
@@ -41,6 +52,74 @@ def _call(workspace: Path, tool: str, arguments: dict[str, object]) -> dict[str,
                 and "page_size" not in arguments
             )
             request = dict(arguments)
+            if not _raw and tool == "save_proposal" and "results" in request:
+                cache_key = _receipt_key(workspace, tool, request)
+                cached = _REASONING_RECEIPTS.get(cache_key)
+                if cached is None:
+                    reasoned = await client.call_tool(
+                        "reason_proposal",
+                        {
+                            "results": request["results"],
+                            "assessments": _proposal_assessments(request["results"]),
+                            "expected_revision": request["expected_revision"],
+                        },
+                    )
+                    reasoned_value = dict(reasoned.structured_content or {})
+                    if reasoned_value.get("outcome") != "success":
+                        return reasoned_value
+                    cached = dict(reasoned_value["data"]["next_action"])
+                    _REASONING_RECEIPTS[cache_key] = cached
+                request = dict(cached)
+            elif not _raw and tool == "save_domain_judgment" and "answers" in request:
+                cache_key = _receipt_key(workspace, tool, request)
+                cached = _REASONING_RECEIPTS.get(cache_key)
+                if cached is None:
+                    raw_answers = request["answers"]
+                    if not isinstance(raw_answers, list):
+                        raise TypeError("legacy Domain save helper requires an answers list")
+                    reasoning_answers = []
+                    for answer in raw_answers:
+                        if not isinstance(answer, dict):
+                            reasoning_answers.append(answer)
+                            continue
+                        bases = answer.get("bases", [])
+                        counterevidence = answer.get("counterevidence", [])
+                        if not counterevidence and isinstance(bases, list):
+                            counterevidence = [
+                                {
+                                    "basis_index": index,
+                                    "implication": (
+                                        "This cited contradiction limits the selected conclusion."
+                                    ),
+                                }
+                                for index, basis in enumerate(bases)
+                                if isinstance(basis, dict) and basis.get("kind") == "contradiction"
+                            ]
+                        reasoning_answers.append(
+                            {
+                                **answer,
+                                "justification": answer.get(
+                                    "justification",
+                                    "The cited bases support the selected option for the "
+                                    "approved Result.",
+                                ),
+                                "unknowns": answer.get("unknowns", []),
+                                "counterevidence": counterevidence,
+                            }
+                        )
+                    reasoned = await client.call_tool(
+                        "reason_domain_assessment",
+                        {
+                            **request,
+                            "answers": reasoning_answers,
+                        },
+                    )
+                    reasoned_value = dict(reasoned.structured_content or {})
+                    if reasoned_value.get("outcome") != "success":
+                        return reasoned_value
+                    cached = dict(reasoned_value["data"]["next_action"])
+                    _REASONING_RECEIPTS[cache_key] = cached
+                request = dict(cached)
             result = await client.call_tool(tool, request)
             value = dict(result.structured_content or {})
             for _ in range(3):
@@ -99,6 +178,50 @@ def _call(workspace: Path, tool: str, arguments: dict[str, object]) -> dict[str,
             return value
 
     return asyncio.run(invoke())
+
+
+def _proposal_assessments(results: object) -> list[dict[str, object]]:
+    if not isinstance(results, list):
+        return []
+    assessments: list[dict[str, object]] = []
+    for result in results:
+        if not isinstance(result, dict):
+            continue
+        trial_id = result.get("trial_id")
+        if not isinstance(trial_id, str):
+            continue
+        handles: list[str] = []
+        applicability = result.get("applicability")
+        if isinstance(applicability, dict):
+            handles.extend(
+                item for item in applicability.get("evidence", []) if isinstance(item, str)
+            )
+        handles.extend(item for item in result.get("passage_refs", []) if isinstance(item, str))
+        for missing_fact in result.get("missing_facts", []):
+            if not isinstance(missing_fact, dict):
+                continue
+            basis = missing_fact.get("basis")
+            if isinstance(basis, dict) and isinstance(basis.get("evidence"), str):
+                handles.append(basis["evidence"])
+        assessment: dict[str, object] = {
+            "trial_id": trial_id,
+            "evidence_basis": list(dict.fromkeys(handles)),
+            "unknowns": [],
+            "counterevidence": [],
+        }
+        if result.get("kind") == "unavailable":
+            assessment["missing_fact_justification"] = (
+                "The captured reporting gap prevents a complete assessable Result."
+            )
+        else:
+            assessment["scope_justification"] = (
+                "The reported endpoint and time window match the target relation."
+            )
+            assessment["population_justification"] = (
+                "The reported analysis population is distinguished from baseline eligibility."
+            )
+        assessments.append(assessment)
+    return assessments
 
 
 def _review(workspace: Path) -> None:
@@ -170,7 +293,7 @@ def _result(_evidence: dict[str, Any]) -> dict[str, Any]:
                 "name": "requested outcome",
                 "definition": "The requested outcome was measured in the analyzed population.",
             },
-            "values": [
+            "group_values": [
                 {"group_id": "a", "statistic": "risk", "value": "1", "unit": "events"},
                 {"group_id": "b", "statistic": "risk", "value": "2", "unit": "events"},
             ],
@@ -275,7 +398,32 @@ def _prepared_evidence(workspace: Path) -> dict[str, Any]:
 def _assessment_workspace(tmp_path: Path) -> tuple[Path, dict[str, Any], int]:
     workspace = _workspace(tmp_path)
     evidence = _prepared_evidence(workspace)
-    _call(workspace, "save_proposal", _proposal_args(workspace, [_result(evidence)]))
+    revision = int(_call(workspace, "get_status", {})["head"]["state_revision"])
+    reasoned = _call(
+        workspace,
+        "reason_proposal",
+        {
+            "results": [_result(evidence)],
+            "assessments": [
+                {
+                    "trial_id": "trial",
+                    "evidence_basis": [evidence["handle"]],
+                    "scope_justification": (
+                        "The reported endpoint and time window match the target."
+                    ),
+                    "population_justification": (
+                        "The reported analysis population is distinguished from baseline "
+                        "eligibility."
+                    ),
+                    "unknowns": [],
+                    "counterevidence": [],
+                }
+            ],
+            "expected_revision": revision,
+        },
+    )
+    assert reasoned["outcome"] == "success", reasoned
+    _call(workspace, "save_proposal", reasoned["data"]["next_action"])
     _review(workspace)
     _read_required_main_reports(workspace)
     revision = int(_call(workspace, "get_domain_context", {})["head"]["state_revision"])

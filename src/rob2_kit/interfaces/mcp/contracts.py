@@ -27,6 +27,7 @@ from rob2_kit.models import Answer, Judgment, QuerySuggestion, ResponseFramework
 from rob2_kit.workflow_models import (
     AssessableTargetRelation,
     ComparativeEffectResult,
+    DomainCounterevidence,
     DomainId,
     EvidenceHandle,
     GroupBoundValuesResult,
@@ -61,7 +62,15 @@ class SaveProposalAction(PublicModel):
     operation: Literal["save_proposal"]
     authority: Literal["host"]
     expected_revision: NonNegativeInt
-    caller_inputs: tuple[Literal["results"], ...]
+    caller_inputs: tuple[Literal["reasoning_id"], ...]
+    reasoning_id: Identity
+
+
+class ReasonProposalAction(PublicModel):
+    operation: Literal["reason_proposal"]
+    authority: Literal["host"]
+    expected_revision: NonNegativeInt
+    caller_inputs: tuple[Literal["results", "assessments"], ...]
 
 
 class PrepareBatchAction(PublicModel):
@@ -84,7 +93,8 @@ class SaveDomainJudgmentAction(PublicModel):
     trial_id: TrialId
     domain_id: DomainId
     expected_revision: NonNegativeInt
-    caller_inputs: tuple[Literal["answers", "multiple_concerns", "revision_basis"], ...]
+    caller_inputs: tuple[Literal["reasoning_id"], ...]
+    reasoning_id: Identity
     # Present only when the current Domain has a committed checkpoint that a
     # model-owned correction must replace.  The continuation names that exact
     # content identity; callers must not infer it from the unbounded history.
@@ -95,14 +105,19 @@ class SaveDomainJudgmentAction(PublicModel):
 
     @model_validator(mode="after")
     def caller_inputs_match_phase(self) -> SaveDomainJudgmentAction:
-        expected = (
-            ("answers", "multiple_concerns", "revision_basis")
-            if self.supersedes is not None
-            else ("answers", "multiple_concerns")
-        )
-        if self.caller_inputs != expected:
+        if self.caller_inputs != ("reasoning_id",) or self.supersedes is not None:
             raise ValueError("caller_inputs must name exactly the fields required by this save")
         return self
+
+
+class ReasonDomainAssessmentAction(PublicModel):
+    operation: Literal["reason_domain_assessment"]
+    authority: Literal["host"]
+    trial_id: TrialId
+    domain_id: DomainId
+    expected_revision: NonNegativeInt
+    caller_inputs: tuple[Literal["answers", "multiple_concerns", "revision_basis"], ...]
+    supersedes: Identity | None = None
 
 
 class FinalizeBatchAction(PublicModel):
@@ -121,7 +136,9 @@ class ResearcherReviewAction(PublicModel):
 NextAction = Annotated[
     PrepareBatchAction
     | SaveProposalAction
+    | ReasonProposalAction
     | GetDomainContextAction
+    | ReasonDomainAssessmentAction
     | SaveDomainJudgmentAction
     | FinalizeBatchAction
     | ResearcherReviewAction,
@@ -254,19 +271,36 @@ _RECEIPT_OPTIONS: Final = {
     "select_text_evidence": {},
     "render_page": {},
     "select_visual_evidence": {},
+    "reason_proposal": {"repair": True, "conflict": True},
     "save_proposal": {"review": True, "repair": True, "conflict": True},
     "request_proposal_approval": {},
     "get_domain_context": {},
+    "reason_domain_assessment": {"repair": True, "conflict": True},
     "save_domain_judgment": {"repair": True, "conflict": True},
     "request_trial_terminal": {"conflict": True},
     "finalize_batch": {"conflict": True},
 }
 
 
-class UnreadableSourceCondition(PublicModel):
-    code: Literal["unreadable_source"]
+class FileVisibilityCondition(PublicModel):
     trial_id: TrialId
-    path: str = Field(min_length=1)
+    path: RelativePath
+    role: SourceRole
+    declared_role: SourceRole | None = None
+    reason: str = Field(min_length=1)
+    sha256: Identity | None = None
+
+
+class UnreadableSourceCondition(FileVisibilityCondition):
+    code: Literal["unreadable_source"]
+
+
+class UnsupportedSourceCondition(FileVisibilityCondition):
+    code: Literal["unsupported_source"]
+
+
+class DeclaredSourceMissingCondition(FileVisibilityCondition):
+    code: Literal["declared_source_missing"]
 
 
 class InvalidRegistryCondition(PublicModel):
@@ -294,7 +328,9 @@ class NoSupportedSourcesCondition(PublicModel):
 
 
 IntakeCondition = Annotated[
-    UnreadableSourceCondition
+    UnsupportedSourceCondition
+    | UnreadableSourceCondition
+    | DeclaredSourceMissingCondition
     | InvalidRegistryCondition
     | RegistryReviewCondition
     | OmissionReviewCondition
@@ -314,6 +350,7 @@ class PublicSource(PublicModel):
     page_count: PageNumber
     projection_hash: Identity
     origin: SourceOrigin = SourceOrigin.LOCAL_DOSSIER
+    declared_role: SourceRole | None = None
 
 
 class PublicCapturedTrial(PublicModel):
@@ -474,6 +511,7 @@ class StatusData(PublicModel):
     terminal_counts: TerminalCounts
     selected_evidence: tuple[SelectedEvidence, ...]
     main_report_reading: dict[TrialId, MainReportReadingStatus] = {}
+    conditions: tuple[IntakeCondition, ...] = ()
 
 
 class SourcesData(PublicModel):
@@ -640,6 +678,18 @@ class RenderData(PublicModel):
 class ProposalData(PublicModel):
     proposal_identity: Identity
     retry: StrictBool = False
+
+
+class ReasoningProposalSaveAction(PublicModel):
+    expected_revision: NonNegativeInt
+    reasoning_id: Identity
+
+
+class ReasonProposalData(PublicModel):
+    reasoning_id: Identity
+    validation_scope: Literal["structure_and_references_only"]
+    repairs: tuple[RepairDefect, ...] = ()
+    next_action: ReasoningProposalSaveAction
 
 
 class ProposalApprovalAcknowledgment(PublicModel):
@@ -1175,6 +1225,8 @@ class CheckpointAnswer(PublicModel):
         default=None,
         description="Concise explanation of cited premises and uncertainty.",
     )
+    unknowns: tuple[str, ...] | None = None
+    counterevidence: tuple[DomainCounterevidence, ...] | None = None
 
 
 DomainContextData.model_rebuild()
@@ -1233,6 +1285,21 @@ class DomainJudgmentData(PublicModel):
         ),
     )
     retry: StrictBool = False
+
+
+class ReasoningSaveAction(PublicModel):
+    trial_id: TrialId
+    domain_id: DomainId
+    expected_revision: NonNegativeInt
+    reasoning_id: Identity
+
+
+class ReasonDomainAssessmentData(PublicModel):
+    reasoning_id: Identity
+    active_question_ids: tuple[QuestionId, ...]
+    validation_scope: Literal["structure_and_references_only"]
+    repairs: tuple[RepairDefect, ...] = ()
+    next_action: ReasoningSaveAction
 
 
 class NeedsInputTerminalData(PublicModel):
@@ -1297,8 +1364,10 @@ DataByTool: Final = {
     "render_page": RenderData,
     "select_visual_evidence": VisualEvidenceData,
     "save_proposal": ProposalData,
+    "reason_proposal": ReasonProposalData,
     "request_proposal_approval": ProposalApprovalData,
     "get_domain_context": DomainContextData,
+    "reason_domain_assessment": ReasonDomainAssessmentData,
     "save_domain_judgment": DomainJudgmentData,
     "request_trial_terminal": TerminalReceiptData,
     "finalize_batch": FinalizeData,
@@ -1307,6 +1376,7 @@ ConditionByTool: Final = {
     "search_sources": SearchCursorCondition,
     "finalize_batch": ConditionData,
     "request_proposal_approval": ProposalApprovalCondition,
+    "reason_domain_assessment": DomainContextDeliveryCondition,
     "save_domain_judgment": DomainContextDeliveryCondition,
 }
 
@@ -1336,6 +1406,7 @@ def _head(value: dict[str, Any]) -> dict[str, Any]:
                         "domain_id",
                         "caller_inputs",
                         "supersedes",
+                        "reasoning_id",
                     )
                     if key in continuation
                 }
@@ -1383,7 +1454,6 @@ _META_KEYS = {
     "phase",
     "state_revision",
     "review",
-    "repairs",
     "code",
     "condition",
     "expected_revision",
@@ -1408,6 +1478,7 @@ def _payload(tool: str, value: dict[str, Any]) -> dict[str, Any]:
                 "terminal_counts",
                 "selected_evidence",
                 "main_report_reading",
+                "conditions",
             )
             if key in value
         }

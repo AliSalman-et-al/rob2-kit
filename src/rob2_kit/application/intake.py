@@ -221,6 +221,31 @@ def _trial_directory(root: Path, label: str) -> Path:
 
 
 _TRIAL_ID_PATTERN = re.compile(r"[A-Za-z0-9][A-Za-z0-9_-]{0,127}")
+_CONFIG_FILENAMES = frozenset(
+    {
+        "sources.toml",
+        "sources.toml.bak",
+        "sources.toml.backup",
+        "sources.toml.orig",
+        "sources.toml~",
+    }
+)
+
+
+def _is_config_filename(name: str) -> bool:
+    lowered = name.casefold()
+    if lowered in _CONFIG_FILENAMES:
+        return True
+    return bool(
+        re.fullmatch(
+            r"sources\.toml\.(?:bak|backup|orig)(?:[._-]\d{4}[-_.]\d{2}[-_.]\d{2})?",
+            lowered,
+        )
+        or re.fullmatch(
+            r"sources\.toml\.\d{4}[-_.]\d{2}[-_.]\d{2}(?:[._-](?:bak|backup|orig))?",
+            lowered,
+        )
+    )
 
 
 def _trial_directories(root: Path) -> list[Path]:
@@ -362,6 +387,28 @@ def prepare_batch(
         ):
             raise ValueError(f"sources.toml is outside the Trial directory: input/{directory.name}")
         config = _manifest(directory)
+        role_map = config.get("roles", {})
+        if not isinstance(role_map, dict):
+            raise ValueError("sources.toml roles must be a table")
+        role_map = dict(role_map)
+        if isinstance(config.get("sources"), list):
+            role_map.update(
+                {
+                    str(item.get("path", item.get("file", ""))): item.get("role", "other")
+                    for item in config["sources"]
+                    if isinstance(item, dict)
+                }
+            )
+        declared_role_paths = {
+            str(path) for path in role_map if isinstance(path, str) and path.strip()
+        }
+
+        def roles_for(relative: str) -> tuple[str, str | None]:
+            declared = role_map.get(relative, role_map.get(Path(relative).name))
+            return str(declared or _reserved_role(relative)), (
+                str(declared) if declared is not None else None
+            )
+
         omissions = config.get("omissions", [])
         if not isinstance(omissions, list):
             raise ValueError("sources.toml omissions must be a list")
@@ -369,63 +416,121 @@ def prepare_batch(
             item if isinstance(item, str) else str(item.get("path", "")) for item in omissions
         ]
         omission_records = [
-            item
-            if isinstance(item, dict)
-            else {"path": item, "reason": "other", "rationale": "omitted by sources.toml"}
+            {
+                **(
+                    item
+                    if isinstance(item, dict)
+                    else {"path": item, "reason": "other", "rationale": "omitted by sources.toml"}
+                ),
+                "role": roles_for(item if isinstance(item, str) else str(item.get("path", "")))[0],
+                "declared_role": roles_for(
+                    item if isinstance(item, str) else str(item.get("path", ""))
+                )[1],
+            }
             for item in omissions
         ]
-        role_map = config.get("roles", {})
-        if not isinstance(role_map, dict):
-            raise ValueError("sources.toml roles must be a table")
-        if isinstance(config.get("sources"), list):
-            role_map = {
-                str(item.get("path", item.get("file", ""))): item.get("role", "other")
-                for item in config["sources"]
-                if isinstance(item, dict)
-            }
         nct = _manifest_registry_identifier(config)
         records: list[dict[str, Any]] = []
+        seen_ordinary_paths: set[str] = set()
         for path in sorted(directory.rglob("*"), key=lambda item: item.as_posix().casefold()):
             if (
                 not path.is_file()
-                or path.name == "sources.toml"
+                or _is_config_filename(path.name)
                 or not _is_contained_source(directory, path)
             ):
                 continue
             relative = path.relative_to(directory).as_posix()
             if any(part.startswith(".") for part in Path(relative).parts):
                 continue
-            data = path.read_bytes()
-            if not _supported(path, data):
-                continue
-            digest = "sha256:" + hashlib.sha256(data).hexdigest()
-            source_id = _source_id(trial_id, relative, digest)
+            seen_ordinary_paths.add(relative)
+            role, declared_role = roles_for(relative)
             if relative in omission_paths or path.name in omission_paths:
                 continue
             try:
-                pages = _pages(path, data)
-            except (UnicodeDecodeError, ValueError, pymupdf.FileDataError):
+                data = path.read_bytes()
+            except OSError as error:
                 conditions.append(
-                    {"code": "unreadable_source", "trial_id": trial_id, "path": relative}
+                    {
+                        "code": "unreadable_source",
+                        "trial_id": trial_id,
+                        "path": relative,
+                        "role": role,
+                        "declared_role": declared_role,
+                        "reason": f"file read failed: {type(error).__name__}",
+                        "sha256": None,
+                    }
+                )
+                continue
+            if not _supported(path, data):
+                conditions.append(
+                    {
+                        "code": "unsupported_source",
+                        "trial_id": trial_id,
+                        "path": relative,
+                        "role": role,
+                        "declared_role": declared_role,
+                        "reason": "file type is not supported: "
+                        f"{path.suffix.casefold() or 'no extension'}",
+                        "sha256": "sha256:" + hashlib.sha256(data).hexdigest(),
+                    }
+                )
+                continue
+            digest = "sha256:" + hashlib.sha256(data).hexdigest()
+            source_id = _source_id(trial_id, relative, digest)
+            try:
+                pages = _pages(path, data)
+            except (UnicodeDecodeError, ValueError, pymupdf.FileDataError, OSError) as error:
+                conditions.append(
+                    {
+                        "code": "unreadable_source",
+                        "trial_id": trial_id,
+                        "path": relative,
+                        "role": role,
+                        "declared_role": declared_role,
+                        "reason": f"projection extraction failed: {type(error).__name__}",
+                        "sha256": digest,
+                    }
+                )
+                continue
+            if not any(page.strip() for page in pages) and not data.startswith(b"%PDF-"):
+                conditions.append(
+                    {
+                        "code": "unreadable_source",
+                        "trial_id": trial_id,
+                        "path": relative,
+                        "role": role,
+                        "declared_role": declared_role,
+                        "reason": "projection extraction produced no text",
+                        "sha256": digest,
+                    }
                 )
                 continue
             target = internal_path(root, "sources", trial_id, f"{source_id}.bin")
             target.parent.mkdir(parents=True, exist_ok=True)
             target.write_bytes(data)
-            role = str(role_map.get(relative, role_map.get(path.name, _reserved_role(relative))))
+            media_type = (
+                "application/pdf"
+                if data.startswith(b"%PDF-")
+                else (
+                    "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                    if path.suffix.casefold() == ".docx"
+                    else "text/plain"
+                )
+            )
             record = {
                 "id": source_id,
                 "trial_id": trial_id,
                 "role": role,
+                "declared_role": declared_role,
                 "label": path.name,
                 "logical_path": relative,
                 "sha256": digest,
-                "media_type": "application/pdf" if data.startswith(b"%PDF-") else "text/plain",
+                "media_type": media_type,
                 "page_count": len(pages),
                 "origin": "local_dossier",
                 "projection_hash": _projection_hash(
                     digest,
-                    "application/pdf" if data.startswith(b"%PDF-") else "text/plain",
+                    media_type,
                     pages,
                 ),
             }
@@ -442,6 +547,46 @@ def prepare_batch(
                         (source_id, number, *_search_derivative(text))
                         for number, text in enumerate(pages, 1)
                     ],
+                )
+
+        def path_was_captured(declared_path: str) -> bool:
+            return any(
+                candidate == declared_path or Path(candidate).name == declared_path
+                for candidate in seen_ordinary_paths
+            )
+
+        for declared_path in sorted(declared_role_paths):
+            if not path_was_captured(declared_path) and not any(
+                candidate == declared_path or Path(candidate).name == declared_path
+                for candidate in omission_paths
+            ):
+                role, declared_role = roles_for(declared_path)
+                conditions.append(
+                    {
+                        "code": "declared_source_missing",
+                        "trial_id": trial_id,
+                        "path": declared_path,
+                        "role": role,
+                        "declared_role": declared_role,
+                        "reason": "declared role path was not found among ordinary contained files",
+                        "sha256": None,
+                    }
+                )
+        for omission_path, omission_record in zip(omission_paths, omission_records, strict=True):
+            if not path_was_captured(omission_path):
+                role, declared_role = roles_for(omission_path)
+                conditions.append(
+                    {
+                        "code": "declared_source_missing",
+                        "trial_id": trial_id,
+                        "path": omission_path,
+                        "role": role,
+                        "declared_role": declared_role,
+                        "reason": (
+                            "declared omission path was not found among ordinary contained files"
+                        ),
+                        "sha256": None,
+                    }
                 )
         registry_capture = _registry_record(nct)
         registry_record = registry_capture.outcome

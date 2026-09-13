@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import hashlib
+import io
 import json
 import re
 import sqlite3
@@ -10,9 +11,11 @@ import stat
 import time
 import tomllib
 import unicodedata
+import zipfile
 from contextlib import contextmanager
 from pathlib import Path
 from typing import Any
+from xml.etree import ElementTree
 
 import pymupdf
 
@@ -357,9 +360,17 @@ def _ensure(root: Path) -> None:
             "batch_id TEXT NOT NULL, trial_id TEXT NOT NULL, domain_id TEXT NOT NULL, "
             "state_revision INTEGER NOT NULL, digest TEXT NOT NULL, page_size INTEGER NOT NULL, "
             "page_count INTEGER NOT NULL, next_index INTEGER NOT NULL, "
-            "next_cursor TEXT, complete INTEGER NOT NULL, "
+            "next_cursor TEXT, complete INTEGER NOT NULL, snapshot BLOB, "
+            "preview_scope BLOB, "
             "PRIMARY KEY(batch_id,trial_id,domain_id,state_revision))"
         )
+        delivery_columns = {
+            str(row[1]) for row in connection.execute("PRAGMA table_info(domain_context_delivery)")
+        }
+        if "snapshot" not in delivery_columns:
+            connection.execute("ALTER TABLE domain_context_delivery ADD COLUMN snapshot BLOB")
+        if "preview_scope" not in delivery_columns:
+            connection.execute("ALTER TABLE domain_context_delivery ADD COLUMN preview_scope BLOB")
         association_columns = {
             str(row[1])
             for row in connection.execute("PRAGMA table_info(search_domain_associations)")
@@ -665,7 +676,13 @@ def _result(outcome: str, state: dict[str, Any], **extra: Any) -> dict[str, Any]
 
 
 def _supported(path: Path, data: bytes) -> bool:
-    return data.startswith(b"%PDF-") or path.suffix.lower() in {".txt", ".md", ".csv", ".json"}
+    return data.startswith(b"%PDF-") or path.suffix.lower() in {
+        ".txt",
+        ".md",
+        ".csv",
+        ".json",
+        ".docx",
+    }
 
 
 _JSON_IDENTIFIER = re.compile(r"[A-Za-z_][A-Za-z0-9_]*\Z")
@@ -726,6 +743,104 @@ def _json_pages(path: Path, data: bytes) -> tuple[str, ...]:
     return (_bound_projected_lines("\n".join(lines)),)
 
 
+_DOCX_W_NS = "{http://schemas.openxmlformats.org/wordprocessingml/2006/main}"
+
+
+def _docx_inline_text(element: ElementTree.Element) -> str:
+    """Return Word inline text in document order, retaining explicit breaks."""
+
+    parts: list[str] = []
+    for child in element.iter():
+        if child.tag == _DOCX_W_NS + "t":
+            parts.append(child.text or "")
+        elif child.tag == _DOCX_W_NS + "tab":
+            parts.append("\t")
+        elif child.tag == _DOCX_W_NS + "footnoteReference":
+            note_id = child.get(_DOCX_W_NS + "id")
+            if note_id is not None:
+                parts.append(f"[FOOTNOTE {note_id}]")
+        elif child.tag in {_DOCX_W_NS + "br", _DOCX_W_NS + "cr"}:
+            parts.append("\n")
+    return "".join(parts)
+
+
+def _docx_pages(path: Path, data: bytes) -> tuple[str, ...]:
+    """Project ordinary DOCX text, tables, and footnotes onto synthetic page 1."""
+
+    try:
+        with zipfile.ZipFile(io.BytesIO(data)) as archive:
+            names = set(archive.namelist())
+            if "word/document.xml" not in names:
+                raise ValueError("DOCX is missing word/document.xml")
+            document = ElementTree.fromstring(archive.read("word/document.xml"))
+            footnotes = (
+                ElementTree.fromstring(archive.read("word/footnotes.xml"))
+                if "word/footnotes.xml" in names
+                else None
+            )
+    except (
+        ElementTree.ParseError,
+        KeyError,
+        OSError,
+        RuntimeError,
+        ValueError,
+        zipfile.BadZipFile,
+    ) as error:
+        raise ValueError(f"invalid DOCX package: {type(error).__name__}") from error
+
+    body = document.find(_DOCX_W_NS + "body")
+    if body is None:
+        raise ValueError("DOCX document body is missing")
+    lines: list[str] = []
+    table_number = 0
+    for child in body:
+        if child.tag == _DOCX_W_NS + "p":
+            text = _docx_inline_text(child)
+            if text:
+                lines.extend(text.splitlines() or [text])
+        elif child.tag == _DOCX_W_NS + "tbl":
+            rows = child.findall(_DOCX_W_NS + "tr")
+            if not rows:
+                continue
+            table_number += 1
+            lines.append(f"[TABLE {table_number} START]")
+            for row_index, row in enumerate(rows):
+                cells = row.findall(_DOCX_W_NS + "tc")
+                values = [
+                    " ".join(
+                        part.strip()
+                        for part in _docx_inline_text(cell).splitlines()
+                        if part.strip()
+                    )
+                    for cell in cells
+                ]
+                header = row.find(_DOCX_W_NS + "trPr/" + _DOCX_W_NS + "tblHeader") is not None
+                marker = "HEADER" if header else f"ROW {row_index + 1}"
+                lines.append(f"{marker}: | " + " | ".join(values) + " |")
+            lines.append(f"[TABLE {table_number} END]")
+
+    if footnotes is not None:
+        notes: list[tuple[int, str]] = []
+        for note in footnotes.findall(_DOCX_W_NS + "footnote"):
+            raw_id = note.get(_DOCX_W_NS + "id")
+            try:
+                note_id = int(raw_id) if raw_id is not None else -1
+            except ValueError:
+                continue
+            if note_id < 0:
+                continue
+            text = " ".join(
+                part.strip() for part in _docx_inline_text(note).splitlines() if part.strip()
+            )
+            if text:
+                notes.append((note_id, text))
+        if notes:
+            lines.append("[FOOTNOTES]")
+            lines.extend(f"FOOTNOTE {note_id}: {text}" for note_id, text in sorted(notes))
+
+    return (_bound_projected_lines(_normalize_projected_text("\n".join(lines))),)
+
+
 def _pages(path: Path, data: bytes) -> tuple[str, ...]:
     COUNTERS["extraction_calls"] += 1
     if data.startswith(b"%PDF-"):
@@ -756,6 +871,8 @@ def _pages(path: Path, data: bytes) -> tuple[str, ...]:
             document.close()
     if path.suffix.casefold() == ".json":
         return _json_pages(path, data)
+    if path.suffix.casefold() == ".docx":
+        return _docx_pages(path, data)
     return (_bound_projected_lines(_normalize_projected_text(data.decode("utf-8"))),)
 
 
