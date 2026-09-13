@@ -393,7 +393,11 @@ def _domain_answers(
 
     answers: list[dict[str, Any]] = []
     for question in context.get("questions", []):
-        if not isinstance(question, dict) or (question_ids is None and not question.get("active")):
+        if not isinstance(question, dict) or (
+            question_ids is None
+            and question.get("activation_status")
+            not in {"always_active", "active_in_saved_checkpoint"}
+        ):
             continue
         if question_ids is not None and question.get("id") not in question_ids:
             continue

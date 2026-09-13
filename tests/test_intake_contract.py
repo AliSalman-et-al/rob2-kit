@@ -649,7 +649,10 @@ def test_assessment_skill_preserves_result_choice_and_completion_guards() -> Non
     assert "request_proposal_approval` with the empty arguments object `{}`" in instructions
     assert "data.remaining_windows" in instructions
     assert "Draft an answer for every question returned for the Domain" in instructions
-    assert "including questions whose `active` flag is currently false" in instructions
+    assert (
+        "including questions whose `activation_status` is `dependent_on_draft_answers`"
+        in instructions
+    )
     assert "For 5.3, identify both the eligible alternatives" in instructions
     assert '"kind": "quantified"' in instructions
     assert '"15 days after randomization"' in instructions
