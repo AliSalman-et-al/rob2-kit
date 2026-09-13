@@ -24,6 +24,7 @@ from rob2_kit.application.evidence import (
     _evidence_catalog,
     _normalized_contains,
     _normalized_match,
+    _preview_window_bounds,
     _search_receipt,
 )
 from rob2_kit.application.source_handles import resolve_source_handle
@@ -243,8 +244,8 @@ def test_search_returns_multiple_source_windows_for_one_matching_page(
     )["data"]
     assert len(result["hits"]) == 2
     assert [hit["rank"] for hit in result["hits"]] == [1, 2]
-    assert [hit["start_line"] for hit in result["hits"]] == [1, 4]
-    assert [hit["end_line"] for hit in result["hits"]] == [1, 4]
+    assert [hit["start_line"] for hit in result["hits"]] == [1, 1]
+    assert [hit["end_line"] for hit in result["hits"]] == [4, 4]
     receipt = _search_receipt(workspace, result["search_receipt"])
     assert receipt["hits"] == [
         {
@@ -273,8 +274,143 @@ def test_all_mode_keeps_two_separated_complete_clusters_on_one_page(tmp_path: Pa
     )["data"]
 
     assert [hit["rank"] for hit in result["hits"]] == [1, 2]
-    assert [hit["start_line"] for hit in result["hits"]] == [1, 4]
-    assert [hit["end_line"] for hit in result["hits"]] == [1, 4]
+    assert [hit["start_line"] for hit in result["hits"]] == [1, 1]
+    assert [hit["end_line"] for hit in result["hits"]] == [4, 4]
+
+
+def test_search_preview_and_passage_ref_share_one_bounded_window(tmp_path: Path) -> None:
+    workspace = _workspace(tmp_path)
+    lines = ["target early", *(["unrelated context"] * 200), "target late"]
+    (workspace / "input" / "trial" / "main.txt").write_text(
+        "\n".join(lines) + "\n", encoding="utf-8"
+    )
+    _call(workspace, "prepare_batch", {"requested_outcome": "outcome", "expected_revision": 0})
+
+    result = _call(
+        workspace,
+        "search_sources",
+        {"trial_id": "trial", "query": "target", "mode": "any", "limit": 10},
+    )["data"]
+    assert len(result["hits"]) == 2
+    catalog = _evidence_catalog(workspace, "trial")
+    evidence_by_handle = {item["handle"]: item for item in catalog.values()}
+    for hit in result["hits"]:
+        evidence = evidence_by_handle[hit["passage_ref"]]
+        assert hit["preview"] == evidence["quote"]
+        assert hit["start_line"] == evidence["start_line"]
+        assert hit["end_line"] == evidence["end_line"]
+        assert hit["candidate_truncated"] is False
+        assert hit["candidate_recovery"] is None
+        assert len(hit["preview"].encode("utf-8")) <= 512
+    assert "target early" in result["hits"][0]["preview"]
+    assert "target late" not in result["hits"][0]["preview"]
+    assert "target late" in result["hits"][1]["preview"]
+    assert "target early" not in result["hits"][1]["preview"]
+
+
+def test_explicit_preview_anchor_does_not_reselect_an_earlier_occurrence() -> None:
+    text = "target early\n" + "unrelated context\n" * 200 + "target late\n"
+    late_start = text.rindex("target late")
+    left, right = _preview_window_bounds(
+        text, [(late_start, late_start + len("target late"))], radius=20
+    )
+    preview = text[left:right]
+    assert "target late" in preview
+    assert "target early" not in preview
+
+
+def test_long_candidate_clusters_remain_complete_under_hard_cap(tmp_path: Path) -> None:
+    workspace = _workspace(tmp_path)
+    for index in range(9):
+        (workspace / "input" / "trial" / f"cluster-{index}.txt").write_text(
+            f"target {'x ' * 350}needle\n", encoding="utf-8"
+        )
+    _call(workspace, "prepare_batch", {"requested_outcome": "outcome", "expected_revision": 0})
+
+    result = _call(
+        workspace,
+        "search_sources",
+        {"trial_id": "trial", "query": "target needle", "mode": "all", "limit": 10},
+    )["data"]
+
+    assert len(result["hits"]) == 9
+    for hit in result["hits"]:
+        assert hit["candidate_truncated"] is False
+        assert hit["candidate_recovery"] is None
+        assert hit["preview"].startswith("target ")
+        assert hit["preview"].rstrip().endswith("needle")
+        assert len(hit["preview"].encode("utf-8")) <= 2_048
+
+
+def test_oversized_candidate_exposes_read_pages_recovery(tmp_path: Path) -> None:
+    workspace = _workspace(tmp_path)
+    text = "target " + ("é" * 1_980) + " needle\n"
+    (workspace / "input" / "trial" / "main.txt").write_text(text, encoding="utf-8")
+    _call(workspace, "prepare_batch", {"requested_outcome": "outcome", "expected_revision": 0})
+
+    result = _call(
+        workspace,
+        "search_sources",
+        {"trial_id": "trial", "query": "target needle", "mode": "all", "limit": 10},
+    )["data"]
+    [hit] = result["hits"]
+
+    assert hit["candidate_truncated"] is True
+    recovery = hit["candidate_recovery"]
+    assert recovery["operation"] == "read_pages"
+    assert recovery["trial_id"] == "trial"
+    assert recovery["windows"] == [
+        {
+            "source_id": hit["source_id"],
+            "page": hit["page"],
+            "start_line": 1,
+            "end_line": 1,
+        }
+    ]
+    assert len(hit["preview"].encode("utf-8")) <= 2_048
+    assert hit["preview"].startswith("target ")
+    catalog = _evidence_catalog(workspace, "trial")
+    assert any(
+        item["handle"] == hit["passage_ref"] and item["quote"] == hit["preview"]
+        for item in catalog.values()
+    )
+
+
+def test_search_premise_windows_retain_huhn_and_blalock_qualifiers(tmp_path: Path) -> None:
+    workspace = _workspace(tmp_path)
+    text = (
+        "\n".join(
+            [
+                "Huhn analysis plan",
+                "The primary statistical analysis followed the intention-to-treat principle.",
+                "The analysis used all randomized participants (ITT).",
+                "Secondary outcomes were exploratory.",
+                "Blalock analysis",
+                "The CES-D was the depression measure.",
+                "A mixed models regression approach was the primary analytic strategy.",
+            ]
+        )
+        + "\n"
+    )
+    (workspace / "input" / "trial" / "main.txt").write_text(text, encoding="utf-8")
+    _call(workspace, "prepare_batch", {"requested_outcome": "outcome", "expected_revision": 0})
+
+    huhn = _call(
+        workspace,
+        "search_sources",
+        {"trial_id": "trial", "query": "analysis plan", "mode": "any", "limit": 10},
+    )["data"]["hits"]
+    blalock = _call(
+        workspace,
+        "search_sources",
+        {"trial_id": "trial", "query": "CES-D", "mode": "phrase", "limit": 10},
+    )["data"]["hits"]
+
+    huhn_preview = next(hit["preview"] for hit in huhn if "primary statistical" in hit["preview"])
+    blalock_preview = next(hit["preview"] for hit in blalock if "CES-D" in hit["preview"])
+    assert "randomized participants" in huhn_preview
+    assert "Secondary outcomes" in huhn_preview
+    assert "mixed models" in blalock_preview
 
 
 def test_search_session_identity_uses_normalized_query(tmp_path: Path) -> None:

@@ -490,12 +490,31 @@ class SearchHit(PublicModel):
     source_role: SourceRole
     source_label: str = Field(min_length=1)
     page: PageNumber
-    start_line: PageNumber = Field(description="First matching read_pages line.")
-    end_line: PageNumber = Field(description="Last matching read_pages line.")
-    preview: str = Field(min_length=1)
+    start_line: PageNumber = Field(
+        description="First line of the displayed and citable source window."
+    )
+    end_line: PageNumber = Field(
+        description="Last line of the displayed and citable source window."
+    )
+    preview: str = Field(min_length=1, description="Exact source text identified by passage_ref.")
     passage_ref: str = Field(
         pattern=r"^eh_[0-9a-f]{16}$",
         description="Passage reference.",
+    )
+    candidate_truncated: StrictBool = Field(
+        description=(
+            "True when the displayed and citable window omits part of the matched candidate "
+            "because of the response size limit. Use the supplied read_pages locator to "
+            "inspect the omitted text before relying on the complete match. False means the "
+            "candidate fits; it does not establish that the passage contains a complete "
+            "scientific premise."
+        )
+    )
+    candidate_recovery: EvidenceRecovery | None = Field(
+        description=(
+            "Read_pages locator covering the full matched candidate when candidate_truncated "
+            "is true; null otherwise."
+        )
     )
     rank: PositiveInt = Field(description="Stable underlying candidate rank.")
     within_source_rank: PositiveInt = Field(description="Rank within the Source.")
@@ -1400,6 +1419,8 @@ def _payload(tool: str, value: dict[str, Any]) -> dict[str, Any]:
                     "end_line",
                     "preview",
                     "passage_ref",
+                    "candidate_truncated",
+                    "candidate_recovery",
                     "rank",
                     "within_source_rank",
                     "range",

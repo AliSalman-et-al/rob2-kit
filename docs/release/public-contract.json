@@ -34,7 +34,7 @@
 "idempotent":true,
 "open_world":false,
 "schema_sha256":"sha256:3eefb80bf1e4a202df356091494a6aa64b43e6f962b2bcee10016b35977a97d0",
-"output_schema_sha256":"sha256:626ff81c769ed8c8a7bb3bb15b6f545f19cb7d06da0e190cf11901884edc5a06"},
+"output_schema_sha256":"sha256:824352974d30dfdfe1753058668691246c548b58b51897ab16a543e1150b5a00"},
 {"name":"read_pages",
 "title":"Read source pages",
 "description":"Read source text as numbered lines. Pages are 1-based source indexes, not printed labels. Use windows across sources; each item preserves its source and line bounds. To finish a partial batch, call read_pages with the same trial_id and windows set to data.remaining_windows, omitting source_id, pages, and start_line. Repeat until no windows remain. Returned numbered text normally fits 24000 characters; a single oversized line is returned intact. JSON metadata is additional. Copy a returned source_id exactly and use it with the same trial_id.",

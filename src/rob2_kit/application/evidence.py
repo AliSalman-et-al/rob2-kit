@@ -31,6 +31,8 @@ from ._state import (
 from .contracts import COUNTERS
 
 MAIN_REPORT_TEXT_BUDGET = 65_536
+_SEARCH_PREVIEW_MAX_BYTES = 512
+_SEARCH_CANDIDATE_MAX_BYTES = 2_048
 
 _SEARCH_SESSION_VERSION = "rob2-kit.search-session.v0.6"
 _SEARCH_CANDIDATE_VERSION = "rob2-kit.search-candidates.v0.6"
@@ -492,31 +494,26 @@ def search_sources(
     for candidate in selected_candidates:
         source_id, page = candidate["source_id"], candidate["page"]
         page_text = verified[(trial_id, source_id)][1][page - 1]
-        spans = _search_match_spans(page_text, normalized_query, mode)
-        if not spans or not any(
-            start < candidate["end"] and end > candidate["start"] for start, end in spans
-        ):
+        spans = [
+            (start, end)
+            for start, end in _all_search_match_spans(page_text, normalized_query, mode)
+            if start < candidate["end"] and end > candidate["start"]
+        ]
+        if not spans:
             spans = [(candidate["start"], candidate["end"])]
-        # Use the same local co-occurrence cluster for navigation, preview,
-        # and the reusable passage. Otherwise a preview can mention a nearby
-        # term while passage_ref points at a different line.
-        preview_spans = spans
-        start_line, end_line = candidate["start_line"], candidate["end_line"]
-        # Search hits are navigation results, but giving the host a reusable
-        # exact window removes the error-prone copy/paste/select round trip.
-        # The handle is derivative state; submission still revalidates its
-        # coordinates against the immutable captured projection.
-        line_starts = [0]
-        line_offset = 0
-        for line in page_text.splitlines(keepends=True):
-            line_offset += len(line)
-            line_starts.append(line_offset)
-        quote_start = candidate["start"]
-        quote_end = candidate["end"]
+        # Keep the issued candidate's query span as the anchor. The displayed
+        # source window and its reusable Evidence must cover the same bounds.
+        quote_start, quote_end, hit_candidate_truncated = _search_candidate_window(
+            page_text,
+            spans,
+        )
         if quote_end <= quote_start:
             quote_end = len(page_text)
         while quote_end > quote_start and page_text[quote_end - 1] in "\r\n":
             quote_end -= 1
+        passage_start_line, passage_end_line, _raw_start, _raw_end = _line_bounds(
+            page_text, quote_start, quote_end
+        )
         passage = _evidence(
             root,
             trial_id,
@@ -529,8 +526,8 @@ def search_sources(
                 "quote": page_text[quote_start:quote_end],
                 "search_session": session_identity,
                 "candidate_rank": candidate["rank"],
-                "start_line": start_line,
-                "end_line": end_line,
+                "start_line": passage_start_line,
+                "end_line": passage_end_line,
             },
         )
         hits.append(
@@ -539,12 +536,27 @@ def search_sources(
                 "source_role": source_by_id[source_id]["role"],
                 "source_label": source_by_id[source_id]["label"],
                 "page": page,
-                "start_line": start_line,
-                "end_line": end_line,
-                "preview": _match_centered_preview(
-                    page_text, normalized_query, mode, spans=preview_spans
-                ),
+                "start_line": passage_start_line,
+                "end_line": passage_end_line,
+                "preview": passage["quote"],
                 "passage_ref": passage["handle"],
+                "candidate_truncated": hit_candidate_truncated,
+                "candidate_recovery": (
+                    {
+                        "operation": "read_pages",
+                        "trial_id": trial_id,
+                        "windows": [
+                            {
+                                "source_id": source_id,
+                                "page": page,
+                                "start_line": candidate["start_line"],
+                                "end_line": candidate["end_line"],
+                            }
+                        ],
+                    }
+                    if hit_candidate_truncated
+                    else None
+                ),
                 "query": query,
                 "rank": candidate["rank"],
                 "within_source_rank": candidate["within_source_rank"],
@@ -847,97 +859,96 @@ def _search_match_line_range(
     return start_line, end_line
 
 
-def _match_centered_preview(
+def _preview_window_bounds(
+    text: str, spans: list[tuple[int, int]], radius: int = 120
+) -> tuple[int, int]:
+    """Return bounded whole-line coordinates around an explicit source anchor."""
+    if not spans:
+        return 0, min(len(text), 2 * radius)
+    ordered_spans = sorted(spans)
+    raw_start, raw_end = ordered_spans[0]
+    for start, end in ordered_spans[1:]:
+        if start - raw_start > 2 * radius:
+            break
+        raw_end = max(raw_end, end)
+    line_starts = [0]
+    offset = 0
+    for line in text.splitlines(keepends=True):
+        offset += len(line)
+        line_starts.append(offset)
+    first, last, _line_start, _line_end = _line_bounds(text, raw_start, raw_end)
+    start_line, end_line = first, last
+    start = line_starts[start_line - 1]
+    end = line_starts[end_line] if end_line < len(line_starts) else len(text)
+
+    def fits(left: int, right: int) -> bool:
+        return len(text[left:right].encode("utf-8")) <= _SEARCH_PREVIEW_MAX_BYTES
+
+    if not fits(start, end):
+        left = max(0, raw_start - radius)
+        right = min(len(text), raw_end + radius)
+        while not fits(left, right) and (left < raw_start or right > raw_end):
+            if left < raw_start:
+                left += 1
+            elif right > raw_end:
+                right -= 1
+        while not fits(left, right) and right > left:
+            right -= 1
+        return left, right
+
+    while True:
+        expanded = False
+        if start_line > 1 and fits(line_starts[start_line - 2], end):
+            start_line -= 1
+            start = line_starts[start_line - 1]
+            expanded = True
+        if end_line < len(line_starts) - 1 and fits(start, line_starts[end_line + 1]):
+            end_line += 1
+            end = line_starts[end_line]
+            expanded = True
+        if not expanded:
+            return start, end
+
+
+def _utf8_prefix_end(text: str, start: int, end: int, byte_limit: int) -> int:
+    consumed = 0
+    cursor = start
+    for character in text[start:end]:
+        size = len(character.encode("utf-8"))
+        if consumed + size > byte_limit:
+            break
+        consumed += size
+        cursor += 1
+    return cursor
+
+
+def _search_candidate_window(
     text: str,
-    query: str,
-    mode: str,
-    radius: int = 120,
-    spans: list[tuple[int, int]] | None = None,
-) -> str:
-    """Return a compact discovery preview centered on an actual query match."""
-    # A search hit's coordinate remains anchored to its first match, while
-    # the preview should show nearby distinct query terms when they co-occur.
-    # This is presentation-only and never changes Evidence boundaries.
-    if spans is None:
-        spans = _search_match_spans(text, query, mode)
-    preview_spans = _preview_match_spans(text, query, mode, radius, spans)
-    if not preview_spans:
-        return text[: 2 * radius]
-    raw_start = min(start for start, _end in preview_spans)
-    raw_end = max(end for _start, end in preview_spans)
-    left = max(0, raw_start - radius)
-    right = min(len(text), raw_end + radius)
-    prefix = "…" if left else ""
-    suffix = "…" if right < len(text) else ""
-    return prefix + text[left:right] + suffix
+    spans: list[tuple[int, int]],
+) -> tuple[int, int, bool]:
+    """Keep a complete candidate, or expose its bounded read_pages recovery."""
+    if not spans:
+        start, end = _preview_window_bounds(text, spans)
+        return start, end, False
+    candidate_start = min(start for start, _end in spans)
+    candidate_end = max(end for _start, end in spans)
+    candidate_bytes = len(text[candidate_start:candidate_end].encode("utf-8"))
+    if candidate_bytes > _SEARCH_CANDIDATE_MAX_BYTES:
+        end = _utf8_prefix_end(
+            text,
+            candidate_start,
+            candidate_end,
+            _SEARCH_CANDIDATE_MAX_BYTES,
+        )
+        return candidate_start, end, True
 
-
-def _preview_match_spans(
-    text: str,
-    query: str,
-    mode: str,
-    radius: int,
-    fallback: list[tuple[int, int]],
-) -> list[tuple[int, int]]:
-    """Choose a bounded local cluster of distinct query-term matches."""
-    terms = [term for term in _canonical_search_text(query).split() if term]
-    if not terms or not fallback:
-        return fallback
-    # Search the same normalized stream as FTS and map every occurrence back
-    # to raw coordinates. This lets previews score co-occurring terms even
-    # when punctuation, accents, or a line-end hyphen differs from the query.
-    searchable, character_spans = _normalized_text_with_spans(text)
-    occurrences: list[tuple[int, int, str]] = []
-    for term in terms:
-        variants = tuple(dict.fromkeys((term, term.replace("-", ""), term.replace("-", " "))))
-        for variant in variants:
-            if not variant:
-                continue
-            suffix = "" if mode == "prefix" else r"(?!\w)"
-            pattern = rf"(?<!\w){re.escape(variant)}{suffix}"
-            for match in re.finditer(pattern, searchable, re.IGNORECASE):
-                if not character_spans:
-                    continue
-                start = character_spans[match.start()][0]
-                end = character_spans[min(match.end() - 1, len(character_spans) - 1)][1]
-                occurrences.append((start, end, term.casefold()))
-    if not occurrences:
-        return fallback
-    occurrences = sorted(set(occurrences))
-    anchor = fallback[0][0]
-    candidates = [item for item in occurrences if abs(item[0] - anchor) <= 2 * radius]
-    if not candidates:
-        return fallback
-
-    # Score candidate windows globally: maximize distinct query-term coverage,
-    # then minimize the span and distance from the primary FTS match.
-    def window(item: tuple[int, int, str]) -> list[tuple[int, int, str]]:
-        nearby = [candidate for candidate in candidates if abs(candidate[0] - item[0]) <= radius]
-        closest_by_term: dict[str, tuple[int, int, str]] = {}
-        for candidate in nearby:
-            current = closest_by_term.get(candidate[2])
-            if current is None or (abs(candidate[0] - item[0]), candidate[0]) < (
-                abs(current[0] - item[0]),
-                current[0],
-            ):
-                closest_by_term[candidate[2]] = candidate
-        return list(closest_by_term.values())
-
-    best = min(
-        candidates,
-        key=lambda item: (
-            -len({candidate[2] for candidate in window(item)}),
-            max(candidate[1] for candidate in window(item))
-            - min(candidate[0] for candidate in window(item)),
-            abs(item[0] - anchor),
-            item[0],
-        ),
-    )
-    selected = window(best)
-    distinct = {item[2] for item in selected}
-    if mode in {"all", "phrase"} or len(distinct) > 1:
-        return [(item[0], item[1]) for item in selected]
-    return fallback
+    start, end = _preview_window_bounds(text, spans)
+    if all(start <= span_start and span_end <= end for span_start, span_end in spans):
+        return start, end, False
+    _first, _last, line_start, line_end = _line_bounds(text, candidate_start, candidate_end)
+    if len(text[line_start:line_end].encode("utf-8")) <= _SEARCH_CANDIDATE_MAX_BYTES:
+        return line_start, line_end, False
+    return candidate_start, candidate_end, False
 
 
 def _recomputed_search_hits(

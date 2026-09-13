@@ -118,11 +118,11 @@ def test_search_preview_coordinates_and_passage_reference_share_one_window(
 
     hit = result["hits"][0]
     [passage] = _evidence_for_handles(workspace, {hit["passage_ref"]}, "trial").values()
-    assert (hit["start_line"], hit["end_line"]) == (3, 3)
+    assert (hit["start_line"], hit["end_line"]) == (1, 4)
     assert "prospective analysis plan" in hit["preview"]
     assert passage["source_id"] == source["id"]
     assert passage["page"] == hit["page"]
-    assert passage["quote"] == "prospective analysis plan finalized"
+    assert passage["quote"] == hit["preview"]
 
 
 def test_prepare_batch_ignores_hidden_files_and_directories_but_keeps_nested_docs(
