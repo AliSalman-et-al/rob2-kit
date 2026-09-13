@@ -13,6 +13,7 @@ from rob2_kit.application._state import _db, _reserved_role
 from rob2_kit.application.evidence import (
     _evidence_for_handles,
     _search_receipt,
+    list_sources,
     read_pages,
     search_sources,
     select_text_evidence,
@@ -230,6 +231,48 @@ def test_search_preview_coordinates_and_passage_reference_share_one_window(
     assert passage["quote"] == hit["preview"]
 
 
+def test_search_reports_term_page_counts_by_source_for_a_combined_miss(
+    tmp_path: Path,
+) -> None:
+    trial = tmp_path / "input" / "trial"
+    trial.mkdir(parents=True)
+    (trial / "main.txt").write_text("randomisation procedure\n", encoding="utf-8")
+    (trial / "protocol.txt").write_text("allocation code\n", encoding="utf-8")
+    prepare_batch(
+        tmp_path,
+        [TrialDeclaration(id="trial", label="trial", requested_outcome="outcome")],
+        expected_revision=0,
+    )
+
+    result = search_sources(tmp_path, "trial", "randomisation code", mode="all")
+
+    assert result["total_matches"] == 0
+    assert result["condition"] == "no_hits"
+    by_path = {
+        source["logical_path"]: source["id"]
+        for source in list_sources(tmp_path, "trial")["sources"]
+    }
+    feedback = {source["source_id"]: source for source in result["term_feedback"]}
+    assert set(feedback) == set(by_path.values())
+    for source in feedback.values():
+        assert source["page_count"] == 1
+        assert source["query_matching_page_count"] == 0
+        assert {item["term"] for item in source["term_page_counts"]} == {
+            "randomisation",
+            "code",
+        }
+    main = feedback[by_path["main.txt"]]
+    protocol = feedback[by_path["protocol.txt"]]
+    assert {item["term"]: item["matching_page_count"] for item in main["term_page_counts"]} == {
+        "randomisation": 1,
+        "code": 0,
+    }
+    assert {item["term"]: item["matching_page_count"] for item in protocol["term_page_counts"]} == {
+        "randomisation": 0,
+        "code": 1,
+    }
+
+
 def test_prepare_batch_ignores_hidden_files_and_directories_but_keeps_nested_docs(
     tmp_path: Path,
 ) -> None:
@@ -422,7 +465,7 @@ def test_search_defaults_to_any_for_exploratory_concepts(tmp_path: Path) -> None
     assert result["search_receipt"]["mode"] == "any"
 
 
-def test_broad_search_interleaves_sources_then_prefers_term_coverage(tmp_path: Path) -> None:
+def test_broad_search_prefers_global_bm25_term_coverage(tmp_path: Path) -> None:
     trial = tmp_path / "input" / "trial"
     trial.mkdir(parents=True)
     document = pymupdf.open()
@@ -462,8 +505,8 @@ def test_broad_search_interleaves_sources_then_prefers_term_coverage(tmp_path: P
     assert result["total_matches"] == 3
     assert result["truncated"] is False
     assert [(hit["source_id"], hit["page"]) for hit in result["hits"]] == [
-        (main_id, 2),
         (supplement_id, 1),
+        (main_id, 2),
         (main_id, 1),
     ]
     replayed = _search_receipt(tmp_path, result["search_receipt"]["handle"])
@@ -495,7 +538,7 @@ def test_broad_search_uses_source_priority_for_equal_coverage(tmp_path: Path) ->
     assert result["hits"][0]["source_id"] == main_id
 
 
-def test_prefix_search_prefers_source_priority_then_distinct_prefix_coverage(
+def test_prefix_search_uses_global_bm25_with_distinct_prefix_coverage(
     tmp_path: Path,
 ) -> None:
     trial = tmp_path / "input" / "trial"
@@ -521,15 +564,13 @@ def test_prefix_search_prefers_source_priority_then_distinct_prefix_coverage(
         mode="prefix",
         limit=1,
     )
-    main_id = next(
-        source["id"]
-        for source in prepared["trials"][0]["sources"]
-        if source["role"] == "main_article"
+    protocol_id = next(
+        source["id"] for source in prepared["trials"][0]["sources"] if source["role"] == "protocol"
     )
 
     assert result["total_matches"] == 2
     assert result["truncated"] is True
-    assert result["hits"][0]["source_id"] == main_id
+    assert result["hits"][0]["source_id"] == protocol_id
     replayed = _search_receipt(tmp_path, result["search_receipt"]["handle"])
     assert replayed["hits"] == result["search_receipt"]["hits"]
 

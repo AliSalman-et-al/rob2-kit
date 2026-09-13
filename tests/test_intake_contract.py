@@ -744,6 +744,9 @@ def test_search_contract_exposes_match_summary_and_render_defaults_to_pixels() -
         "returned_rank_end",
         "next_cursor",
         "exhausted",
+        "term_feedback",
+        "term_feedback_truncated",
+        "term_feedback_sources_truncated",
         "diagnostic",
     }
     hit_schema = data_objects[0]["properties"]["hits"]["items"]
@@ -766,6 +769,8 @@ def test_search_contract_exposes_match_summary_and_render_defaults_to_pixels() -
     search_description = _tool_description("search_sources")
     assert "counts" in search_description
     assert "broad truncated any" in search_description.lower()
+    assert "at least one query term on a page" in search_description
+    assert "co-occurrence" in search_description
     render_schema = _tool_schema("render_page")
     assert render_schema["properties"]["inline"]["default"] is True
     assert "pixels as ImageContent by default" in _tool_description("render_page")

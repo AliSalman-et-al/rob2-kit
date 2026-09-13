@@ -615,6 +615,39 @@ class SearchDiagnostic(PublicModel):
     next_action: SearchNextAction
 
 
+class SearchTermPageCount(PublicModel):
+    term: str = Field(
+        min_length=1,
+        description=(
+            "One distinct whitespace-delimited normalized query unit; tokenizer matching may "
+            "map it to more than one FTS token."
+        ),
+    )
+    matching_page_count: NonNegativeInt = Field(
+        description=(
+            "Number of distinct captured pages where this query unit matches under the search "
+            "tokenizer; this is not an occurrence count."
+        )
+    )
+
+
+class SearchSourceTermFeedback(PublicModel):
+    source_id: SourceHandle
+    page_count: PageNumber = Field(
+        description="Total captured pages in this Source, used to interpret term counts."
+    )
+    query_matching_page_count: NonNegativeInt = Field(
+        description=(
+            "Distinct pages in this Source matching the complete issued query under its "
+            "mode; compare with term counts to distinguish term presence from full-query "
+            "matches. Individual term counts do not establish co-occurrence or phrase "
+            "adjacency. The complete-query count follows the issued mode. Prefix counts "
+            "reflect prefix matching."
+        )
+    )
+    term_page_counts: tuple[SearchTermPageCount, ...] = Field(min_length=1)
+
+
 class SearchData(PublicModel):
     hits: tuple[SearchHit, ...]
     query: str = Field(min_length=1)
@@ -632,6 +665,19 @@ class SearchData(PublicModel):
     returned_rank_end: PositiveInt | None
     next_cursor: str | None
     exhausted: StrictBool
+    term_feedback: tuple[SearchSourceTermFeedback, ...]
+    term_feedback_truncated: StrictBool = Field(
+        description=(
+            "True when the query contained more normalized units than the bounded feedback "
+            "list; counts are provided only for the returned units."
+        )
+    )
+    term_feedback_sources_truncated: StrictBool = Field(
+        description=(
+            "True when the Trial had more Sources than the bounded feedback rows; counts are "
+            "provided only for the returned Source rows."
+        )
+    )
     diagnostic: SearchDiagnostic | None = None
 
 

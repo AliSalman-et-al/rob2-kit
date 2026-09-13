@@ -99,7 +99,7 @@ def _convert_group_bound_result_to_legacy(canonical: dict[str, Any]) -> None:
     )
 
 
-def test_search_receipt_verifiers_accept_within_source_bm25_order(tmp_path: Path) -> None:
+def test_search_receipt_verifiers_accept_global_bm25_order(tmp_path: Path) -> None:
     trial = tmp_path / "input" / "trial"
     trial.mkdir(parents=True)
     document = pymupdf.open()
