@@ -284,12 +284,12 @@ def test_population_summary_keeps_two_selected_passages_without_exact_binding(
     )
 
     mutated = copy.deepcopy(unsupported)
-    mutated["reported"]["values"][0]["value"] = "999"
+    mutated["reported"]["group_values"][0]["value"] = "999"
     repaired = _call(workspace, "save_proposal", _proposal_args(workspace, [mutated]))
     assert repaired["outcome"] == "repair"
     assert any(
         repair["code"] == "result_value_not_supported"
-        and repair["path"] == "/results/0/reported/values/0/value"
+        and repair["path"] == "/results/0/reported/group_values/0/value"
         for repair in repaired["repairs"]
     )
 
@@ -496,7 +496,7 @@ def test_numeric_result_anchor_rejects_substrings_in_both_verifiers() -> None:
             "form": "group_bound_values",
             "analysis_population": "analyzed population",
             "endpoint": {"name": "requested outcome", "definition": None},
-            "values": [
+        "group_values": [
                 {"group_id": "a", "statistic": "events", "value": "4", "unit": "events"},
                 {"group_id": "b", "statistic": "events", "value": "5", "unit": "events"},
             ],
@@ -523,8 +523,8 @@ def test_numeric_result_anchor_rejects_substrings_in_both_verifiers() -> None:
         typed_result, typed_evidence, typed_catalog
     )
 
-    result["reported"]["values"][0]["value"] = "34"
-    result["reported"]["values"][1]["value"] = "56"
+    result["reported"]["group_values"][0]["value"] = "34"
+    result["reported"]["group_values"][1]["value"] = "56"
     assert proposal._reported_result_has_coherent_anchor(typed_result, typed_catalog)
     assert finalization._reported_result_has_coherent_anchor(
         typed_result, typed_evidence, typed_catalog

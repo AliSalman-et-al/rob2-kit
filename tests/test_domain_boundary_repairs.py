@@ -35,7 +35,21 @@ def _call_raw(workspace: Path, arguments: dict[str, Any]) -> dict[str, Any]:
     async def invoke() -> dict[str, Any]:
         os.environ["ROB2_WORKSPACE"] = str(workspace)
         async with Client(mcp) as client:
-            result = await client.call_tool("save_domain_judgment", arguments, raise_on_error=False)
+            reasoning = {
+                **arguments,
+                "answers": [
+                    {
+                        **answer,
+                        "justification": "The cited bases support the selected option.",
+                        "unknowns": [],
+                        "counterevidence": [],
+                    }
+                    for answer in arguments["answers"]
+                ],
+            }
+            result = await client.call_tool(
+                "reason_domain_assessment", reasoning, raise_on_error=False
+            )
             return dict(result.structured_content or {})
 
     return asyncio.run(invoke())
@@ -54,7 +68,9 @@ def test_domain_public_shape_is_flat_and_closed() -> None:
     async def inspect() -> dict[str, Any]:
         async with Client(mcp) as client:
             tool = next(
-                tool for tool in await client.list_tools() if tool.name == "save_domain_judgment"
+                tool
+                for tool in await client.list_tools()
+                if tool.name == "reason_domain_assessment"
             )
             return dict(tool.input_schema)
 
@@ -70,6 +86,8 @@ def test_domain_public_shape_is_flat_and_closed() -> None:
         "bases",
         "justification",
         "missing_data",
+        "unknowns",
+        "counterevidence",
     }
     bases = answer["properties"]["bases"]["items"]["oneOf"]
     kinds = {

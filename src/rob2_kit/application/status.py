@@ -226,10 +226,10 @@ def _continuation(state: dict[str, Any]) -> dict[str, Any] | None:
         }
     if phase == "proposal":
         return {
-            "operation": "save_proposal",
+            "operation": "reason_proposal",
             "authority": "host",
             "expected_revision": int(state.get("revision", 0)),
-            "caller_inputs": ["results"],
+            "caller_inputs": ["results", "assessments"],
         }
     if phase == "assessment":
         trial_id, domain_id = _active_trial_and_domain(state)

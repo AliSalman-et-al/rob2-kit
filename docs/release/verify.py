@@ -45,9 +45,11 @@ def _load_contract() -> dict[str, Any]:
         "select_text_evidence",
         "render_page",
         "select_visual_evidence",
+        "reason_proposal",
         "save_proposal",
         "request_proposal_approval",
         "get_domain_context",
+        "reason_domain_assessment",
         "save_domain_judgment",
         "request_trial_terminal",
         "finalize_batch",
@@ -329,7 +331,7 @@ def _acceptance_result(_evidence: dict[str, Any]) -> dict[str, Any]:
             "form": "group_bound_values",
             "analysis_population": phrase,
             "endpoint": {"name": phrase, "definition": phrase},
-            "values": [
+            "group_values": [
                 {"group_id": "a", "statistic": phrase, "value": phrase, "unit": phrase},
                 {"group_id": "b", "statistic": phrase, "value": phrase, "unit": phrase},
             ],
@@ -372,10 +374,35 @@ async def _verify_proposal(client: Client) -> None:
     if not isinstance(evidence, dict):
         raise ValueError("acceptance evidence selection failed")
     result = _acceptance_result(evidence)
+    reasoned = await _call(
+        client,
+        "reason_proposal",
+        {
+            "results": [result],
+            "assessments": [
+                {
+                    "trial_id": "trial",
+                    "evidence_basis": [evidence["handle"]],
+                    "scope_justification": (
+                        "The reported endpoint and time window match the target."
+                    ),
+                    "population_justification": (
+                        "The reported analysis population is distinguished from baseline "
+                        "eligibility."
+                    ),
+                    "unknowns": [],
+                    "counterevidence": [],
+                }
+            ],
+            "expected_revision": prepared["state_revision"],
+        },
+    )
+    if reasoned.get("outcome") != "success":
+        raise ValueError("acceptance proposal reasoning did not succeed")
     proposed = await _call(
         client,
         "save_proposal",
-        {"results": [result], "expected_revision": prepared["state_revision"]},
+        reasoned["next_action"],
     )
     if proposed.get("outcome") != "review_required":
         raise ValueError("acceptance proposal did not request researcher approval")
@@ -433,7 +460,14 @@ def _domain_answers(
             }
         )
         answers.append(
-            {"question_id": question["id"], "option_id": selected["id"], "bases": [basis]}
+            {
+                "question_id": question["id"],
+                "option_id": selected["id"],
+                "bases": [basis],
+                "justification": "The cited basis supports the selected uncertainty option.",
+                "unknowns": [],
+                "counterevidence": [],
+            }
         )
     return answers
 
@@ -523,15 +557,37 @@ async def _verify_domains(client: Client, evidence: dict[str, Any], domains: lis
         search_receipt = search_data["search_receipt"]
         answers = _domain_answers(context, evidence, search_receipt)
         for _attempt in range(5):
-            saved = await _call(
+            reasoned = await _call(
                 client,
-                "save_domain_judgment",
+                "reason_domain_assessment",
                 {
                     "trial_id": "trial",
                     "domain_id": domain_id,
                     "expected_revision": revision,
                     "answers": answers,
                 },
+            )
+            if reasoned.get("outcome") != "success":
+                repair = next(
+                    (
+                        item
+                        for item in reasoned.get("repairs", [])
+                        if isinstance(item, dict)
+                        and item.get("code") == "answers_must_match_active_questions"
+                    ),
+                    None,
+                )
+                detail = repair.get("detail") if isinstance(repair, dict) else None
+                match = re.search(r"active IDs: \[([^]]*)\]", str(detail))
+                if match is None:
+                    raise ValueError(f"acceptance Domain reasoning failed: {domain_id}: {reasoned}")
+                active_ids = {item.strip() for item in match.group(1).split(",") if item.strip()}
+                answers = _domain_answers(context, evidence, search_receipt, active_ids)
+                continue
+            saved = await _call(
+                client,
+                "save_domain_judgment",
+                reasoned["next_action"],
             )
             if saved.get("outcome") == "success":
                 break

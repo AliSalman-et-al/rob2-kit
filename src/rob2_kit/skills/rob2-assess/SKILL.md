@@ -165,7 +165,7 @@ inspected. Search hits and `read_pages` windows already provide reusable
 `select_text_evidence` only when you need a different line boundary. Use
 `render_page` and `select_visual_evidence` when layout carries meaning.
 
-Build Result cards from the live `save_proposal` schema. The first save contains
+Build Result cards for the live `reason_proposal` schema. The first save contains
 one card for every captured Trial. While Proposal Review is pending, submit only
 complete replacement cards for corrected Trials; the server preserves the rest.
 
@@ -177,6 +177,20 @@ Every Source-owned reported field needs exact or normalization-equivalent suppor
 For an unavailable Result, give each concrete missing fact its closed basis:
 selected missing-reporting Evidence, or `no_supported_sources` only for a
 captured Trial with zero Sources. Unavailable Results still enter Proposal Review.
+
+Before saving a Proposal, submit its Result cards and a brief evidence-based
+assessment for each submitted Trial with `reason_proposal`. Explain why the
+reported result supports the target relation and chosen time point or window.
+Distinguish baseline eligibility from exclusions or missing observations in the
+reported analysis. Identify material conflicting evidence and unresolved facts;
+do not infer unavailable facts. The server validates structure, Evidence
+references and workflow requirements, not scientific correctness. Save using the
+returned `reasoning_id`.
+
+Complete the evidence assessment through `reason_proposal` before each Proposal
+save and through `reason_domain_assessment` before each Domain save. Use concise
+explanations of decisive premises, not a reasoning transcript. A successful
+receipt does not establish that your interpretation is correct.
 
 ### 4. Complete Proposal Review
 
@@ -282,8 +296,9 @@ whose `activation_status` is `dependent_on_draft_answers` or
 `inactive_in_saved_checkpoint`. An unsaved conditional card is unresolved until
 the submitted draft path is evaluated; a saved-checkpoint status describes only
 that checkpoint. Use current card option IDs and supported bases for every
-answer. Submit the complete set in one `save_domain_judgment` call. The server
-resolves activation from your answers and commits only active answers.
+answer. Submit the complete set in one `reason_domain_assessment` call. The
+server resolves activation from your answers and commits only active answers
+after `save_domain_judgment` consumes the returned `reasoning_id`.
 
 Before saving, compare each active answer with the approved Result in the
 current Domain context: outcome definition, population, comparison, and time
@@ -291,12 +306,14 @@ point. Check the selected passages against the exact proposition and guidance
 on that question card. Choose the option whose literal meaning follows from
 those passages and any stated uncertainty. Add a concise `justification` when
 an inference, conflicting evidence, or uncertainty connects the passages to the
-answer. The audit is complete when every active answer addresses that Result
-and its bases support the claims attributed to them.
+answer; every active answer must include that concise justification. The audit
+is complete when every active answer addresses that Result and its bases support
+the claims attributed to them.
 
-Do not make `save_domain_judgment` the primary next action while
-`head.next_action`, `reading_recovery`, or another continuation still requires
-status recovery or Evidence reading. Follow that continuation first.
+Do not make `save_domain_judgment` the primary next action. The next scientific
+step is `reason_domain_assessment` after `head.next_action`, `reading_recovery`,
+and any required Evidence reading are complete; follow another continuation
+first when it is present.
 
 For D3.1, run the **availability audit** before saving: Yes/Probably Yes needs
 actual outcome-availability evidence; analysis membership, planned or scheduled
@@ -310,6 +327,10 @@ analyzed, imputed, and excluded counts distinct. The server reuses answer
 Evidence as row provenance and performs only scope-matched arithmetic.
 For an optional count preview before saving D3, follow
 [Reconcile availability](references/missing.md#reconcile-availability).
+
+Commit the exact draft stored by the corresponding reasoning call. Supply its
+`reasoning_id` and returned revision. To change the draft, repeat the reasoning
+call with the revised draft.
 
 Apply every reported repair and retain other drafted answers. Add missing
 questions to the existing answer set; include every returned question before

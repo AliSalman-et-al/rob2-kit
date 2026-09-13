@@ -3,6 +3,17 @@
 Use this reference for Domain 3. The approved Result fixes the outcome and time
 point; the returned question cards fix answer direction and activation.
 
+Every active answer is accompanied by a concise justification, an `unknowns`
+array (use `[]` when none are identified), and a `counterevidence` array. A
+counterpoint refers to the answer's zero-based basis index, for example:
+
+```json
+"counterevidence": [{"basis_index": 0, "implication": "This passage limits the strength of the selected answer."}]
+```
+
+Inactive branch answers may be omitted or retained without fabricated reasoning;
+the server commits only the dependency-closed active path.
+
 ## Availability audit
 
 For D3.1, support Yes or Probably Yes with actual outcome-availability
@@ -76,8 +87,9 @@ current-Trial Evidence references: no answer exists to supply inherited Evidence
 Inspect `comparison_cards[].missing_data`
 for differences, fractions, and conflicting reports. The preview changes no
 checkpoint or State revision. To retain the chosen rows, submit them with the
-3.1 answer in `save_domain_judgment`; there, omit row `basis` to reuse the
-answer's Evidence when it supports those counts.
+3.1 answer in `reason_domain_assessment`; after its receipt, save the exact
+draft with `save_domain_judgment`. Omit row `basis` there to reuse the answer's
+Evidence when it supports those counts.
 
 Check each input against its source passage before using the arithmetic. The
 helper subtracts supplied observed counts from randomized counts; it does not

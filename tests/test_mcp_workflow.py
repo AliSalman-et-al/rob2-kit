@@ -333,7 +333,7 @@ def test_unsupported_result_leaves_are_aggregated_repairs(tmp_path: Path) -> Non
     evidence = _prepared_evidence(workspace)
     result = _result(evidence)
     result["target"]["comparison_groups"][0]["assignment"] = "unsupported assignment"
-    result["reported"]["values"][0]["statistic"] = "unsupported statistic"
+    result["reported"]["group_values"][0]["statistic"] = "unsupported statistic"
     repair = _call(workspace, "save_proposal", _proposal_args(workspace, [result]))
     assert repair["outcome"] == "repair"
     unsupported = [
@@ -341,7 +341,7 @@ def test_unsupported_result_leaves_are_aggregated_repairs(tmp_path: Path) -> Non
     ]
     paths = {item["path"] for item in unsupported}
     assert "/results/0/target/comparison_groups/0/assignment" not in paths
-    assert "/results/0/reported/values/0/statistic" in paths
+    assert "/results/0/reported/group_values/0/statistic" in paths
 
 
 def test_fastmcp_resolves_text_and_figure_evidence_handles(tmp_path: Path) -> None:
@@ -417,7 +417,7 @@ def test_proposal_rejects_object_group_value_fields_in_the_closed_reported_form(
     workspace = _workspace(tmp_path)
     evidence = _prepared_evidence(workspace)
     result = _result(evidence)
-    result["reported"]["values"][0] = {"group_id": "a", "value": "1"}
+    result["reported"]["group_values"][0] = {"group_id": "a", "value": "1"}
     with pytest.raises(ValidationError):
         ProposalDraft.model_validate(
             {"results": [result], "expected_revision": int(get_status(workspace)["state_revision"])}

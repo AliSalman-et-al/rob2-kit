@@ -75,7 +75,7 @@ def test_fastmcp_aggregates_duplicate_result_and_group_repairs(tmp_path: Path) -
         {"id": "a", "assignment": "assigned to intervention"},
         {"id": "a", "assignment": "assigned to intervention duplicate"},
     ]
-    first["reported"]["values"] = [
+    first["reported"]["group_values"] = [
         {"group_id": "a", "statistic": "risk", "value": "1", "unit": "events"},
         {"group_id": "a", "statistic": "risk", "value": "2", "unit": "events"},
     ]
@@ -106,13 +106,13 @@ def test_fastmcp_aggregates_reported_group_set_mismatch(tmp_path: Path) -> None:
     workspace = _workspace(tmp_path)
     evidence = _prepared_evidence(workspace)
     result = _result(evidence)
-    result["reported"]["values"][1]["group_id"] = "unexpected"
+    result["reported"]["group_values"][1]["group_id"] = "unexpected"
     receipt = _call(workspace, "save_proposal", _proposal_args(workspace, [result]))
     assert receipt["outcome"] == "repair"
     mismatch = next(
         item for item in receipt["repairs"] if item["code"] == "reported_group_set_mismatch"
     )
-    assert mismatch["path"] == "/results/0/reported/values"
+    assert mismatch["path"] == "/results/0/reported/group_values"
     assert "missing IDs: b" in mismatch["detail"]
     assert "unexpected IDs: unexpected" in mismatch["detail"]
 

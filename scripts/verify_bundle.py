@@ -1228,6 +1228,35 @@ def _nonblank(value: object) -> bool:
     return isinstance(value, str) and bool(value.strip())
 
 
+def _valid_reasoning_annotations(answer: dict[str, Any]) -> bool:
+    if "unknowns" not in answer and "counterevidence" not in answer:
+        return True
+    unknowns = answer.get("unknowns")
+    counterevidence = answer.get("counterevidence")
+    if not isinstance(unknowns, list) or any(not _nonblank(item) for item in unknowns):
+        return False
+    if not isinstance(counterevidence, list):
+        return False
+    indexes: set[int] = set()
+    for item in counterevidence:
+        if (
+            not isinstance(item, dict)
+            or set(item) != {"basis_index", "implication"}
+            or not isinstance(item.get("basis_index"), int)
+            or isinstance(item["basis_index"], bool)
+            or item["basis_index"] < 0
+            or item["basis_index"] >= len(answer.get("bases", []))
+            or not _nonblank(item.get("implication"))
+        ):
+            return False
+        indexes.add(item["basis_index"])
+    return all(
+        basis.get("kind") != "contradiction" or index in indexes
+        for index, basis in enumerate(answer.get("bases", []))
+        if isinstance(basis, dict)
+    )
+
+
 def _valid_missing_data(
     value: object,
     question_id: object,
@@ -1810,7 +1839,11 @@ def _decimal_text(value: Decimal) -> str:
     return format(value.normalize(), "f") if value else "0"
 
 
-def _valid_requested_result(result: object, requested_outcome: str) -> bool:
+def _valid_requested_result(
+    result: object,
+    requested_outcome: str,
+    semantics_version: str = "rob2-kit.result-semantics.v0.8",
+) -> bool:
     if not isinstance(result, dict) or _relation_name(
         result.get("requested_outcome")
     ) != _relation_name(requested_outcome):
@@ -1833,7 +1866,7 @@ def _valid_result_shape(
     requested_outcome: str,
     semantics_version: str = "rob2-kit.result-semantics.v0.8",
 ) -> bool:
-    if not _valid_requested_result(result, requested_outcome):
+    if not _valid_requested_result(result, requested_outcome, semantics_version):
         return False
     base_keys = {
         "kind",
@@ -2009,9 +2042,12 @@ def _valid_result_shape(
             return False
         valid, reported_ids = valid_values(reported["group_values"], optional=True)
     elif form == "group_bound_values":
-        if set(reported) != {"form", "analysis_population", "endpoint", "values"}:
+        values_key = (
+            "group_values" if semantics_version == "rob2-kit.result-semantics.v0.8" else "values"
+        )
+        if set(reported) != {"form", "analysis_population", "endpoint", values_key}:
             return False
-        valid, reported_ids = valid_values(reported["values"])
+        valid, reported_ids = valid_values(reported[values_key])
     elif form == "single_group_category_profile":
         if (
             set(reported)
@@ -2063,6 +2099,7 @@ def _reported_result_has_coherent_anchor(
     by_handle: dict[str, dict[str, object]],
     *,
     strict_numeric: bool = True,
+    semantics_version: str = "rob2-kit.result-semantics.v0.8",
 ) -> bool:
     reported = cast(dict[str, Any], result["reported"])
     endpoint = reported["endpoint"]
@@ -2103,13 +2140,16 @@ def _reported_result_has_coherent_anchor(
             ),
         ]
     elif reported["form"] == "group_bound_values":
+        values_key = (
+            "group_values" if semantics_version == "rob2-kit.result-semantics.v0.8" else "values"
+        )
         quantitative_tuples = [
             (
-                (f"/reported/values/{index}/statistic", item["statistic"]),
-                (f"/reported/values/{index}/value", item["value"]),
-                (f"/reported/values/{index}/unit", item["unit"]),
+                (f"/reported/{values_key}/{index}/statistic", item["statistic"]),
+                (f"/reported/{values_key}/{index}/value", item["value"]),
+                (f"/reported/{values_key}/{index}/unit", item["unit"]),
             )
-            for index, item in enumerate(reported["values"])
+            for index, item in enumerate(reported[values_key])
         ]
     else:
         quantitative_tuples = [
@@ -2172,7 +2212,9 @@ def _valid_result_evidence(
     kind = result.get("kind")
     relation = result.get("relation")
     requested_outcome = requested_outcomes.get(result["trial_id"])
-    if requested_outcome is None or not _valid_requested_result(result, requested_outcome):
+    if requested_outcome is None or not _valid_requested_result(
+        result, requested_outcome, semantics_version
+    ):
         return False
     if kind == "unavailable":
         facts = result.get("missing_facts")
@@ -2459,6 +2501,7 @@ def _valid_result_evidence(
         evidence,
         cast(dict[str, dict[str, object]], by_handle),
         strict_numeric=strict_numeric,
+        semantics_version=semantics_version,
     ):
         return False
     leaves = {
@@ -2910,6 +2953,32 @@ def verify(path: Path) -> tuple[bool, str]:
                             {"question_id", "answer", "bases", "justification"},
                             {"question_id", "answer", "bases", "missing_data"},
                             {"question_id", "answer", "bases", "justification", "missing_data"},
+                            {"question_id", "answer", "bases", "unknowns", "counterevidence"},
+                            {
+                                "question_id",
+                                "answer",
+                                "bases",
+                                "justification",
+                                "unknowns",
+                                "counterevidence",
+                            },
+                            {
+                                "question_id",
+                                "answer",
+                                "bases",
+                                "missing_data",
+                                "unknowns",
+                                "counterevidence",
+                            },
+                            {
+                                "question_id",
+                                "answer",
+                                "bases",
+                                "justification",
+                                "missing_data",
+                                "unknowns",
+                                "counterevidence",
+                            },
                         )
                         or not isinstance(answer.get("question_id"), str)
                         or not isinstance(answer.get("answer"), str)
@@ -2923,6 +2992,7 @@ def verify(path: Path) -> tuple[bool, str]:
                         )
                         or not isinstance(answer.get("bases"), list)
                         or not answer["bases"]
+                        or not _valid_reasoning_annotations(answer)
                         or (
                             "missing_data" in answer
                             and not _valid_missing_data(
@@ -3148,6 +3218,32 @@ def verify(path: Path) -> tuple[bool, str]:
                                 {"question_id", "answer", "bases", "justification"},
                                 {"question_id", "answer", "bases", "missing_data"},
                                 {"question_id", "answer", "bases", "justification", "missing_data"},
+                                {"question_id", "answer", "bases", "unknowns", "counterevidence"},
+                                {
+                                    "question_id",
+                                    "answer",
+                                    "bases",
+                                    "justification",
+                                    "unknowns",
+                                    "counterevidence",
+                                },
+                                {
+                                    "question_id",
+                                    "answer",
+                                    "bases",
+                                    "missing_data",
+                                    "unknowns",
+                                    "counterevidence",
+                                },
+                                {
+                                    "question_id",
+                                    "answer",
+                                    "bases",
+                                    "justification",
+                                    "missing_data",
+                                    "unknowns",
+                                    "counterevidence",
+                                },
                             )
                             or (
                                 "justification" in answer
@@ -3158,6 +3254,7 @@ def verify(path: Path) -> tuple[bool, str]:
                             )
                             or not isinstance(answer.get("bases"), list)
                             or not answer["bases"]
+                            or not _valid_reasoning_annotations(answer)
                             or (
                                 "missing_data" in answer
                                 and not _valid_missing_data(

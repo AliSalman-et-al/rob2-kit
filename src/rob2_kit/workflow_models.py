@@ -611,7 +611,7 @@ class GroupBoundValuesResult(StrictModel):
     endpoint: ReportedEndpoint = Field(
         description="Endpoint identified by the same Evidence as the group values.",
     )
-    values: tuple[GroupResultValue, ...] = Field(
+    group_values: tuple[GroupResultValue, ...] = Field(
         min_length=2,
         description="One complete source-reported value for every randomized group.",
     )
@@ -1138,7 +1138,89 @@ DomainBasis = Annotated[
 ]
 
 
+class DomainCounterevidence(StrictModel):
+    basis_index: NonNegativeInt = Field(description="Zero-based index into this answer's bases.")
+    implication: str = Field(
+        min_length=1,
+        description="How this cited counterpoint limits or challenges the answer.",
+    )
+
+    @field_validator("implication")
+    @classmethod
+    def implication_is_meaningful(cls, value: str) -> str:
+        if not value.strip():
+            raise ValueError("counterevidence implication must contain non-whitespace text")
+        return value
+
+
 class DomainAnswer(StrictModel):
+    question_id: QuestionId = Field(description="Question ID from the current Domain card.")
+    option_id: str = Field(
+        min_length=1,
+        description=(
+            "Copy one options[].id from the current question card character for character. "
+            "This is an opaque identity, not an answer code."
+        ),
+    )
+    bases: tuple[DomainBasis, ...] = Field(
+        min_length=1,
+        description=(
+            "Evidence premises for this answer. Definitive yes or no needs direct_support, "
+            "indirect_support, or contradiction; probable answers may also use a limitation, "
+            "valid absence receipt, context, or inference."
+        ),
+    )
+    missing_data: tuple[MissingDataRow, ...] | None = Field(
+        default=None,
+        min_length=1,
+        description=(
+            "Optional scope-matched randomized/observed counts for the Domain 3.1 "
+            "outcome-availability question."
+        ),
+    )
+    justification: str | None = Field(
+        default=None,
+        description=(
+            "Explain how cited facts support this answer when inference, conflict, or "
+            "uncertainty matters."
+        ),
+    )
+    unknowns: tuple[str, ...] | None = Field(
+        default=None,
+        description=(
+            "Unresolved facts that affect this answer; use an empty array when none are identified."
+        ),
+    )
+    counterevidence: tuple[DomainCounterevidence, ...] | None = Field(
+        default=None,
+        description=(
+            "Counterpoints by zero-based basis index and their implication for this answer; "
+            "use an empty array when none are identified."
+        ),
+    )
+
+    @field_validator("justification")
+    @classmethod
+    def justification_is_meaningful(cls, value: str | None) -> str | None:
+        if value is not None and not value.strip():
+            raise ValueError("justification must contain non-whitespace text")
+        return value
+
+    @field_validator("unknowns")
+    @classmethod
+    def unknowns_are_meaningful(cls, value: tuple[str, ...] | None) -> tuple[str, ...] | None:
+        if value is not None and any(not item.strip() for item in value):
+            raise ValueError("unknowns must contain non-whitespace text")
+        return value
+
+    @model_validator(mode="after")
+    def missing_data_is_domain_3_only(self) -> DomainAnswer:
+        if self.missing_data is not None and self.question_id != "sq:missing:data-available":
+            raise ValueError("missing_data is only valid for question 'sq:missing:data-available'")
+        return self
+
+
+class DomainSaveAnswer(StrictModel):
     question_id: QuestionId = Field(description="Question ID from the current Domain card.")
     option_id: str = Field(
         min_length=1,
@@ -1179,7 +1261,7 @@ class DomainAnswer(StrictModel):
         return value
 
     @model_validator(mode="after")
-    def missing_data_is_domain_3_only(self) -> DomainAnswer:
+    def missing_data_is_domain_3_only(self) -> DomainSaveAnswer:
         if self.missing_data is not None and self.question_id != "sq:missing:data-available":
             raise ValueError("missing_data is only valid for question 'sq:missing:data-available'")
         return self
@@ -1225,6 +1307,40 @@ class DomainDraft(StrictModel):
     domain_id: DomainId
     expected_revision: ExpectedRevision
     answers: tuple[DomainAnswer, ...]
+    multiple_concerns: MultipleConcernsDecision | None = None
+    supersedes: Identity | None = None
+    revision_basis: DomainRevisionBasis | None = None
+
+
+class DomainReasoningAnswer(DomainAnswer):
+    justification: str | None = Field(
+        default=None,
+        description=(
+            "For an active answer, what the cited bases establish and why they support the "
+            "selected option. Omit for inactive branch answers."
+        ),
+    )
+    unknowns: tuple[str, ...] | None = Field(
+        default=None,
+        description=(
+            "For an active answer, concrete unresolved facts; use [] when none are identified. "
+            "Omit for inactive branch answers."
+        ),
+    )
+    counterevidence: tuple[DomainCounterevidence, ...] | None = Field(
+        default=None,
+        description=(
+            "For an active answer, counterpoints referenced by zero-based basis index; use [] "
+            "when none are identified. Omit for inactive branch answers."
+        ),
+    )
+
+
+class DomainReasoningDraft(StrictModel):
+    trial_id: TrialId
+    domain_id: DomainId
+    expected_revision: ExpectedRevision
+    answers: tuple[DomainReasoningAnswer, ...]
     multiple_concerns: MultipleConcernsDecision | None = None
     supersedes: Identity | None = None
     revision_basis: DomainRevisionBasis | None = None
@@ -1307,6 +1423,66 @@ class ProposalDraft(StrictModel):
             "Result cards only: each item is either kind=assessable or kind=unavailable. "
             "Selected Evidence is durable server state and is never an item in this array."
         ),
+    )
+    expected_revision: ExpectedRevision
+
+
+class ProposalReasoningCounterevidence(StrictModel):
+    evidence: EvidenceHandle = Field(
+        description="Same-Trial Evidence handle for this counterpoint."
+    )
+    implication: NonBlankText = Field(
+        description="How this conflicting Evidence limits or challenges the assessment."
+    )
+
+
+class ProposalReasoningAssessment(StrictModel):
+    trial_id: TrialId = Field(description="Server-issued Trial ID for this assessment.")
+    evidence_basis: tuple[EvidenceHandle, ...] = Field(
+        default=(),
+        description=(
+            "Same-Trial selected Evidence handles supporting this assessment. Use [] only for "
+            "an unavailable Result with a captured intake condition."
+        ),
+    )
+    scope_justification: NonBlankText | None = Field(
+        default=None,
+        description=(
+            "For an assessable Result, why the reported Result supports the target relation and "
+            "chosen time point or window."
+        ),
+    )
+    population_justification: NonBlankText | None = Field(
+        default=None,
+        description=(
+            "For an assessable Result, distinguish baseline eligibility from exclusions or "
+            "missing observations in the reported analysis."
+        ),
+    )
+    missing_fact_justification: NonBlankText | None = Field(
+        default=None,
+        description=(
+            "For an unavailable Result, explain the captured missing fact without inventing "
+            "evidence."
+        ),
+    )
+    unknowns: tuple[NonBlankText, ...] = Field(
+        description="Material unresolved facts; use [] when none are identified."
+    )
+    counterevidence: tuple[ProposalReasoningCounterevidence, ...] = Field(
+        default=(),
+        description="Same-Trial conflicting Evidence and its implication; use [] when none.",
+    )
+
+
+class ProposalReasoningDraft(StrictModel):
+    results: tuple[ResultChoiceDraft, ...] = Field(
+        min_length=1,
+        description="The exact Result cards that the corresponding save will commit.",
+    )
+    assessments: tuple[ProposalReasoningAssessment, ...] = Field(
+        min_length=1,
+        description="One concise evidence assessment for every submitted Trial card.",
     )
     expected_revision: ExpectedRevision
 

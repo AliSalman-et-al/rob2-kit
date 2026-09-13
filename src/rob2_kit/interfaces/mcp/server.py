@@ -24,7 +24,7 @@ from pydantic import ConfigDict, Field, StrictBool, StrictInt, StrictStr, model_
 from pydantic.functional_validators import AfterValidator, BeforeValidator
 
 from rob2_kit import __version__
-from rob2_kit.application._state import _root
+from rob2_kit.application._state import _root, _state
 from rob2_kit.application.contracts import TOOL_NAMES, WorkflowConflict
 from rob2_kit.application.domains import (
     _domain_context_delivery,
@@ -32,6 +32,9 @@ from rob2_kit.application.domains import (
 )
 from rob2_kit.application.domains import (
     get_domain_context as _get_domain_context,
+)
+from rob2_kit.application.domains import (
+    reason_domain_assessment as _reason_domain_assessment,
 )
 from rob2_kit.application.domains import save_domain_judgment as _save_domain_judgment
 from rob2_kit.application.evidence import list_sources as _list_sources
@@ -49,6 +52,7 @@ from rob2_kit.application.finalization import finalize_batch as _finalize_batch
 from rob2_kit.application.intake import approve_review as _approve_review
 from rob2_kit.application.intake import prepare_batch_for_outcome as _prepare_batch
 from rob2_kit.application.intake import proposal_approval_context as _proposal_approval_context
+from rob2_kit.application.proposal import reason_proposal as _reason_proposal
 from rob2_kit.application.proposal import save_proposal as _save_proposal
 from rob2_kit.application.source_handles import (
     public_source_references as _public_source_references,
@@ -60,9 +64,9 @@ from rob2_kit.application.status import get_status as _get_status
 from rob2_kit.application.status import get_status_head as _get_status_head
 from rob2_kit.application.trials import request_trial_terminal as _request_trial_terminal
 from rob2_kit.workflow_models import (
-    DomainAnswer,
     DomainDraft,
     DomainId,
+    DomainReasoningAnswer,
     DomainRevisionBasis,
     ExpectedRevision,
     Identity,
@@ -71,6 +75,7 @@ from rob2_kit.workflow_models import (
     NormalizedCoordinate,
     PageNumber,
     ProposalDraft,
+    ProposalReasoningAssessment,
     ResultChoiceDraft,
     SourceHandle,
     StrictModel,
@@ -825,6 +830,7 @@ def _invoke(
                 )
         if tool in {
             "get_domain_context",
+            "reason_domain_assessment",
             "save_domain_judgment",
             "request_trial_terminal",
             "finalize_batch",
@@ -1379,40 +1385,125 @@ def select_visual_evidence(
 
 
 @mcp.tool(
+    name="reason_proposal",
+    title="Assess Proposal reasoning",
+    description=(
+        "Before saving a Proposal, submit its Result cards and a brief evidence-based assessment "
+        "for each submitted Trial. Explain why the reported result supports the target relation "
+        "and chosen time point or window. Distinguish baseline eligibility from exclusions or "
+        "missing observations in the reported analysis. Identify material conflicting evidence "
+        "and unresolved facts; do not infer unavailable facts. The server validates structure, "
+        "Evidence references and workflow requirements, not scientific correctness. Save using "
+        "the returned reasoning_id."
+    ),
+    annotations=_MUTATION,
+    output_schema=output_schema("reason_proposal"),
+)
+def reason_proposal(
+    results: Annotated[
+        list[ResultChoiceDraft],
+        Field(min_length=1, description="The exact Result cards for this Proposal save."),
+    ],
+    assessments: Annotated[
+        list[ProposalReasoningAssessment],
+        Field(
+            min_length=1,
+            description="One concise source-bound assessment for every submitted Trial card.",
+        ),
+    ],
+    expected_revision: Annotated[
+        ExpectedRevision, Field(description="Current revision from get_status.")
+    ],
+) -> ToolResult:
+    draft = {
+        "results": [item.model_dump(mode="json") for item in results],
+        "assessments": [item.model_dump(mode="json") for item in assessments],
+        "expected_revision": expected_revision,
+    }
+    return _invoke("reason_proposal", lambda: _reason_proposal(_workspace(), draft))
+
+
+@mcp.tool(
     name="save_proposal",
     title="Save Result proposal",
     description=(
-        "Submit typed Result cards after the pre-Proposal main-report text pass for each Trial. "
-        "Include inspected passage_refs for supporting Evidence from search or read passages. "
-        "The first save needs one card per Trial. A pending Review accepts complete replacement "
-        "cards for changed Trials and preserves the rest. Each card is assessable or unavailable. "
-        "An assessable card pairs the requested target with one Source-reported quantitative "
-        "Result; use the live nested schema. Keep source numbers as strings."
+        "Commit the exact Result cards stored by reason_proposal. Supply its reasoning_id and "
+        "returned revision; do not resend Result cards. To change the draft, repeat "
+        "reason_proposal with the revised cards and assessments."
     ),
     annotations=_MUTATION,
     output_schema=output_schema("save_proposal"),
 )
 def save_proposal(
-    results: Annotated[
-        list[ResultChoiceDraft],
-        Field(
-            min_length=1,
-            description=(
-                "Initial save: one typed Result card per Trial. Pending Review: only cards to "
-                "replace; unmentioned cards are preserved. Select Evidence first. Result kind is "
-                "assessable or unavailable; narrative, table, and figure are Evidence kinds."
-            ),
-        ),
-    ],
     expected_revision: Annotated[
         ExpectedRevision,
-        Field(description="Current revision from get_status; required for a non-stale proposal."),
+        Field(description="Revision returned by reason_proposal."),
+    ],
+    reasoning_id: Annotated[
+        Identity,
+        Field(description="Exact reasoning_id returned by reason_proposal."),
     ],
 ) -> ToolResult:
-    proposal = ProposalDraft(
-        results=tuple(results),
-        expected_revision=expected_revision,
-    )
+    root = _root(_workspace())
+    state = _state(root)
+    records = state.get("reasoning_records")
+    record = records.get(reasoning_id) if isinstance(records, dict) else None
+    if not isinstance(record, dict) or record.get("kind") != "proposal_reasoning":
+        return _content(
+            "save_proposal",
+            {
+                "outcome": "condition",
+                "code": "reasoning_stale",
+                "condition": (
+                    "The reasoning_id is unknown or stale; request a new reasoning record."
+                ),
+            },
+        )
+    current_revision = int(state.get("revision", 0))
+    stored_draft = record.get("draft")
+    if not isinstance(stored_draft, dict):
+        return _content(
+            "save_proposal",
+            {
+                "outcome": "condition",
+                "code": "reasoning_stale",
+                "condition": (
+                    "The stored reasoning draft is unavailable; request a new reasoning record."
+                ),
+            },
+        )
+    if record.get("save_revision") != expected_revision or expected_revision != current_revision:
+        proposal_record = state.get("proposal")
+        if not isinstance(proposal_record, dict) or proposal_record.get("identity") != record.get(
+            "proposal_identity"
+        ):
+            return _content(
+                "save_proposal",
+                {
+                    "outcome": "condition",
+                    "code": "reasoning_stale",
+                    "condition": "The reasoning_id is stale; request a new reasoning record.",
+                },
+            )
+        expected_revision = current_revision
+    try:
+        proposal = ProposalDraft.model_validate(
+            {
+                "results": stored_draft["results"],
+                "expected_revision": expected_revision,
+            }
+        )
+    except ValueError:
+        return _content(
+            "save_proposal",
+            {
+                "outcome": "condition",
+                "code": "reasoning_stale",
+                "condition": (
+                    "The stored reasoning draft is unavailable; request a new reasoning record."
+                ),
+            },
+        )
     return _invoke("save_proposal", lambda: _save_proposal(_workspace(), proposal))
 
 
@@ -1750,76 +1841,40 @@ def get_domain_context(
 
 
 @mcp.tool(
-    name="save_domain_judgment",
-    title="Save Domain judgment",
+    name="reason_domain_assessment",
+    title="Check Domain reasoning",
     description=(
-        "Atomically save answers for one Domain of the Trial's approved Result. Complete the "
-        "post-approval bounded main-report text pass before the first Domain save. Supply a "
-        "current option ID copied exactly from its card and supported bases for every returned "
-        "Domain question, including conditional questions and questions inactive in the saved "
-        "checkpoint. Draft answers can activate "
-        "further questions in this same save; the server commits only active answers. "
-        "Invalid input returns grouped repairs without committing. Apply every reported repair "
-        "and retain other drafted answers. Add missing questions to the existing answer set. "
-        "Include every returned question before resubmitting. Fetch every Domain context page "
-        "before saving; a pending delivery condition includes an exact executable recovery "
-        "action. Evidence work alone does not invalidate completed context delivery. If you "
-        "request fresh context, complete any pending pages before saving. "
-        "The server ignores inactive answers. "
-        "Before saving, check each basis against the approved Result and literal "
-        "question; justify any inference or unresolved linkage. "
-        "The fifth accepted Domain freezes the Trial snapshot and advances "
-        "next_action; no separate Trial-finalization call is required."
+        "Before saving a Domain, submit the complete draft. For each active answer, briefly "
+        "explain what its cited bases establish and why that supports the selected option for "
+        "the approved Result. Identify material counterevidence and unresolved facts without "
+        "treating uncertainty as a finding. The server validates structure, references, "
+        "activation and workflow requirements, not scientific correctness. Save using the "
+        "returned reasoning_id."
     ),
     annotations=_MUTATION,
-    output_schema=output_schema("save_domain_judgment"),
+    output_schema=output_schema("reason_domain_assessment"),
 )
-def save_domain_judgment(
+def reason_domain_assessment(
     trial_id: Annotated[TrialId, Field(description="Trial being assessed.")],
     domain_id: Annotated[DomainId, Field(description="RoB 2 Domain being assessed.")],
     expected_revision: Annotated[
         ExpectedRevision, Field(description="Current revision from get_domain_context.")
     ],
     answers: Annotated[
-        list[DomainAnswer],
+        list[DomainReasoningAnswer],
         Field(
             min_length=1,
             description=(
-                "A list of question_id, option_id, and bases objects for every returned question. "
-                "Definitive "
-                "yes/no needs direct/indirect/contradictory Evidence; probable answers may use "
-                "limitation, absence receipt, context, or inference. Inactive extras are ignored."
+                "Complete answers for the current Domain path. Every active answer requires a "
+                "nonblank justification, an unknowns array, and a counterevidence array whose "
+                "basis_index values refer to this answer's bases; inactive branch answers may "
+                "omit those reasoning fields."
             ),
-            examples=[
-                [
-                    {
-                        "question_id": "sq:randomization:sequence",
-                        "option_id": "opt_0123456789abcdef01234567",
-                        "bases": [
-                            {
-                                "kind": "direct_support",
-                                "evidence": "eh_0123456789abcdef",
-                            }
-                        ],
-                    }
-                ]
-            ],
         ),
     ],
     multiple_concerns: Annotated[
         MultipleConcernsDecision | None,
-        Field(
-            description=(
-                "Omit unless a repair requests it. Object only: raises_overall_to_high:boolean, "
-                "rationale:string; never boolean/string."
-            ),
-            examples=[
-                {
-                    "raises_overall_to_high": False,
-                    "rationale": "Concerns remain below threshold.",
-                }
-            ],
-        ),
+        Field(description="Existing multiple-concerns decision; supply only when requested."),
     ] = None,
     supersedes: Annotated[
         Identity | None,
@@ -1830,16 +1885,97 @@ def save_domain_judgment(
         Field(description="Closed new_evidence or self_correction basis for a revision."),
     ] = None,
 ) -> ToolResult:
-    draft = DomainDraft(
-        trial_id=trial_id,
-        domain_id=domain_id,
-        expected_revision=expected_revision,
-        answers=tuple(answers),
-        multiple_concerns=multiple_concerns,
-        supersedes=supersedes,
-        revision_basis=revision_basis,
+    draft = {
+        "trial_id": trial_id,
+        "domain_id": domain_id,
+        "expected_revision": expected_revision,
+        "answers": [answer.model_dump(mode="json") for answer in answers],
+        "multiple_concerns": (
+            multiple_concerns.model_dump(mode="json") if multiple_concerns is not None else None
+        ),
+        "supersedes": supersedes,
+        "revision_basis": (
+            revision_basis.model_dump(mode="json") if revision_basis is not None else None
+        ),
+    }
+    return _invoke(
+        "reason_domain_assessment",
+        lambda: _reason_domain_assessment(_workspace(), draft),
     )
+
+
+@mcp.tool(
+    name="save_domain_judgment",
+    title="Save Domain judgment",
+    description=(
+        "Commit the exact Domain draft stored by reason_domain_assessment. Supply its "
+        "reasoning_id and returned revision; do not resend answers. To change the draft, repeat "
+        "reason_domain_assessment with the revised draft. Complete the post-approval bounded "
+        "main-report text pass and every Domain context page before reasoning. "
+        "The fifth accepted Domain freezes the Trial snapshot and advances "
+        "next_action; no separate Trial-finalization call is required."
+    ),
+    annotations=_MUTATION,
+    output_schema=output_schema("save_domain_judgment"),
+)
+def save_domain_judgment(
+    trial_id: Annotated[TrialId, Field(description="Trial being assessed.")],
+    domain_id: Annotated[DomainId, Field(description="RoB 2 Domain being assessed.")],
+    expected_revision: Annotated[
+        ExpectedRevision, Field(description="Revision returned by reason_domain_assessment.")
+    ],
+    reasoning_id: Annotated[
+        Identity, Field(description="Exact reasoning_id returned by reason_domain_assessment.")
+    ],
+) -> ToolResult:
     root = _root(_workspace())
+    state = _state(root)
+    records = state.get("reasoning_records")
+    record = records.get(reasoning_id) if isinstance(records, dict) else None
+    if (
+        not isinstance(record, dict)
+        or record.get("kind") != "domain_reasoning"
+        or record.get("trial_id") != trial_id
+        or record.get("domain_id") != domain_id
+    ):
+        return _content(
+            "save_domain_judgment",
+            {
+                "outcome": "condition",
+                "code": "reasoning_stale",
+                "condition": (
+                    "The reasoning_id is unknown or stale; request a new reasoning record."
+                ),
+            },
+        )
+    current_revision = int(state.get("revision", 0))
+    stored_draft = record.get("draft")
+    if not isinstance(stored_draft, dict):
+        return _content(
+            "save_domain_judgment",
+            {
+                "outcome": "condition",
+                "code": "reasoning_stale",
+                "condition": (
+                    "The stored reasoning draft is unavailable; request a new reasoning record."
+                ),
+            },
+        )
+    if record.get("save_revision") != expected_revision or expected_revision != current_revision:
+        current = (state.get("domain_records") or {}).get(f"{trial_id}:{domain_id}")
+        if not isinstance(current, dict) or current.get("identity") != record.get(
+            "checkpoint_identity"
+        ):
+            return _content(
+                "save_domain_judgment",
+                {
+                    "outcome": "condition",
+                    "code": "reasoning_stale",
+                    "condition": "The reasoning_id is stale; request a new reasoning record.",
+                },
+            )
+        expected_revision = current_revision
+    draft = DomainDraft.model_validate({**stored_draft, "expected_revision": expected_revision})
     head = _get_status_head(_workspace())
     if expected_revision == head.get("state_revision"):
         delivery = _domain_context_delivery(root, trial_id, domain_id, expected_revision)

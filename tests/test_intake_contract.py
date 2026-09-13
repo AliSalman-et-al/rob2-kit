@@ -860,16 +860,17 @@ def test_save_proposal_schema_is_closed_and_discriminated() -> None:
 def test_save_domain_judgment_schema_is_closed_and_typed() -> None:
     schema = _tool_schema("save_domain_judgment")
     assert schema["additionalProperties"] is False
-    assert schema["required"] == ["trial_id", "domain_id", "expected_revision", "answers"]
-    draft = schema
-    assert draft["additionalProperties"] is False
-    assert "multiple_concerns" in draft["properties"]
-    assert draft["required"] == [
+    assert schema["required"] == ["trial_id", "domain_id", "expected_revision", "reasoning_id"]
+    assert set(schema["properties"]) == {
         "trial_id",
         "domain_id",
         "expected_revision",
-        "answers",
-    ]
+        "reasoning_id",
+    }
+    draft = _tool_schema("reason_domain_assessment")
+    assert draft["additionalProperties"] is False
+    assert "multiple_concerns" in draft["properties"]
+    assert draft["required"] == ["trial_id", "domain_id", "expected_revision", "answers"]
     answers = cast(dict[str, Any], draft["properties"]["answers"])["items"]
     assert answers["additionalProperties"] is False
     assert set(answers["properties"]) == {
@@ -878,6 +879,8 @@ def test_save_domain_judgment_schema_is_closed_and_typed() -> None:
         "bases",
         "justification",
         "missing_data",
+        "unknowns",
+        "counterevidence",
     }
     variants = cast(dict[str, Any], answers["properties"]["bases"]["items"])["oneOf"]
     assert len(variants) == 3
@@ -948,7 +951,7 @@ def test_selected_evidence_and_typed_proposal_survive_host_restart(tmp_path: Pat
             "name": "reported endpoint",
             "definition": "measured endpoint definition",
         },
-        "values": [
+        "group_values": [
             {"group_id": "A", "statistic": "risk", "value": "1", "unit": "events"},
             {"group_id": "B", "statistic": "risk", "value": "2", "unit": "events"},
         ],
@@ -1002,8 +1005,8 @@ def test_selected_evidence_and_typed_proposal_survive_host_restart(tmp_path: Pat
         "/target/comparison_groups/1/id",
         "/target/comparison_groups/1/assignment",
         "/reported/analysis_population",
-        "/reported/values/0/group_id",
-        "/reported/values/1/group_id",
+        "/reported/group_values/0/group_id",
+        "/reported/group_values/1/group_id",
     }
     assert {binding["field"]["path"] for binding in canonical_result["bindings"]} == (
         set(expected_digests) - caller_owned

@@ -1,11 +1,12 @@
 # Specify the Result
 
 Use this reference while choosing and constructing each Proposal Result. Use the
-live `save_proposal` schema for field shapes.
+live `reason_proposal` schema for field shapes; `save_proposal` consumes the
+receipt returned by that call.
 
 ## Construct the request
 
-This fictional example shows the shape of one complete `save_proposal` request
+This fictional example shows the shape of one complete `reason_proposal` request
 for an assessable comparative Result. It assumes supporting Evidence has already
 been selected. Replace every example fact and identifier with information from
 the current Trial. Use the current `expected_revision` from `get_status` and
@@ -16,7 +17,6 @@ Evidence support or scientific correctness.
 
 ```json
 {
-	"expected_revision": 7,
 	"results": [
 		{
 			"kind": "assessable",
@@ -30,7 +30,7 @@ Evidence support or scientific correctness.
 			},
 			"target": {
 				"measurement": {"method": "Number of correct answers on the course quiz"},
-				"time_point_or_window": {"kind": "described", "description": "At course completion"},
+				"time_point_or_window": {"kind": "quantified", "description": "15 days after randomization", "value": "15", "unit": "days"},
 				"comparison_groups": [
 					{"id": "practice", "assignment": "Spaced practice"},
 					{"id": "review", "assignment": "Single review session"}
@@ -44,9 +44,75 @@ Evidence support or scientific correctness.
 				"estimate": "2.3",
 				"analysis_population": "Randomized learners with observed course quiz scores; handling of learners without observed scores is not reported.",
 				"endpoint": {"name": "Course quiz score"}
-			}
+			},
+			"passage_refs": ["eh_0000000000000001"]
 		}
+	],
+	"assessments": [
+		{
+			"trial_id": "fictional_quiz_trial",
+			"evidence_basis": ["eh_0000000000000001"],
+			"scope_justification": "The selected passage supports the reported quiz endpoint at 15 days, which is the target time point; the observed-score restriction makes the relation narrower.",
+			"population_justification": "The target is all randomized learners. The reported analysis includes learners with observed scores, while exclusions and missing observations are not fully reported.",
+			"unknowns": ["The report does not establish how learners without observed scores were handled."],
+			"counterevidence": []
+		}
+	],
+	"expected_revision": 7
+}
+```
+
+After a successful reasoning call, save only its receipt. Do not resend the
+Result cards:
+
+```json
+{"expected_revision": 8, "reasoning_id": "sha256:..."}
+```
+
+For a group-bound Result, use one `group_values` array and keep every value as
+its own source string:
+
+```json
+{
+	"form": "group_bound_values",
+	"analysis_population": "All randomized learners with quiz results at day 15.",
+	"endpoint": {"name": "Course quiz score"},
+	"group_values": [
+		{"group_id": "practice", "statistic": "mean", "value": "18.4", "unit": "points"},
+		{"group_id": "review", "statistic": "mean", "value": "16.1", "unit": "points"}
 	]
+}
+```
+
+For an unavailable Result, provide a concrete missing fact and an assessment
+with a missing-fact justification. Use an intake-condition basis only when the
+captured Trial has no supported Sources:
+
+```json
+{
+	"results": [
+		{
+			"kind": "unavailable",
+			"trial_id": "fictional_quiz_trial",
+			"relation": "unavailable",
+			"missing_facts": [
+				{
+					"fact": "Quiz result at 15 days after randomization",
+					"basis": {"kind": "missing_reporting", "evidence": "eh_0000000000000001"}
+				}
+			]
+		}
+	],
+	"assessments": [
+		{
+			"trial_id": "fictional_quiz_trial",
+			"evidence_basis": ["eh_0000000000000001"],
+			"missing_fact_justification": "The selected passage captures the missing report; it does not support an invented estimate.",
+			"unknowns": [],
+			"counterevidence": []
+		}
+	],
+	"expected_revision": 7
 }
 ```
 
