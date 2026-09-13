@@ -489,6 +489,51 @@ def test_comparative_anchor_accepts_derived_estimate_when_group_tuple_is_source_
     )
 
 
+def test_numeric_result_anchor_rejects_substrings_in_both_verifiers() -> None:
+    result = {
+        "trial_id": "trial",
+        "reported": {
+            "form": "group_bound_values",
+            "analysis_population": "analyzed population",
+            "endpoint": {"name": "requested outcome", "definition": None},
+            "values": [
+                {"group_id": "a", "statistic": "events", "value": "4", "unit": "events"},
+                {"group_id": "b", "statistic": "events", "value": "5", "unit": "events"},
+            ],
+        },
+        "evidence": [{"kind": "narrative", "handle": "anchor"}],
+    }
+    catalog = {
+        "anchor": {
+            "handle": "anchor",
+            "kind": "narrative",
+            "trial_id": "trial",
+            "quote": "requested outcome events 34 events 56",
+        }
+    }
+    typed_result = cast(dict[str, object], result)
+    typed_evidence = cast(list[dict[str, object]], result["evidence"])
+    typed_catalog = cast(dict[str, dict[str, object]], catalog)
+    assert not proposal._reported_result_has_coherent_anchor(typed_result, typed_catalog)
+    assert not finalization._reported_result_has_coherent_anchor(
+        typed_result, typed_evidence, typed_catalog
+    )
+    standalone = runpy.run_path("scripts/verify_bundle.py")
+    assert not standalone["_reported_result_has_coherent_anchor"](
+        typed_result, typed_evidence, typed_catalog
+    )
+
+    result["reported"]["values"][0]["value"] = "34"
+    result["reported"]["values"][1]["value"] = "56"
+    assert proposal._reported_result_has_coherent_anchor(typed_result, typed_catalog)
+    assert finalization._reported_result_has_coherent_anchor(
+        typed_result, typed_evidence, typed_catalog
+    )
+    assert standalone["_reported_result_has_coherent_anchor"](
+        typed_result, typed_evidence, typed_catalog
+    )
+
+
 @pytest.mark.parametrize("evidence_kind", ["table", "figure"])
 def test_replay_binding_accepts_repeated_values_in_table_and_figure(
     tmp_path: Path, evidence_kind: str

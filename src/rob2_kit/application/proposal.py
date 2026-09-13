@@ -20,7 +20,7 @@ from ._state import _commit_records, _ensure, _identity, _result, _root, _state
 from .contracts import WorkflowConflict
 from .evidence import (
     _evidence_catalog,
-    _normalized_contains,
+    _result_value_contains,
     main_report_read_gaps,
 )
 
@@ -454,7 +454,7 @@ def _validate_evidence(
                             ),
                         }
                     )
-                elif not _normalized_contains(
+                elif not _result_value_contains(
                     str(selected.get("quote", selected.get("transcription", ""))),
                     str(input["value"]),
                 ):
@@ -538,7 +538,7 @@ def _validate_evidence(
                 + item["denominators"]
                 + item["footnotes"]
             )
-            if any(not _normalized_contains(material, value) for value in fields):
+            if any(not _result_value_contains(material, value) for value in fields):
                 defects.append(
                     {
                         "path": prefix,
@@ -594,6 +594,7 @@ def _supports_leaf(
     item: dict[str, Any],
     result: dict[str, Any],
     catalog: dict[str, dict[str, Any]],
+    field_path: str | None = None,
 ) -> bool:
     """Return whether one already-validated selected Evidence supports a leaf."""
 
@@ -610,15 +611,15 @@ def _supports_leaf(
     if kind == "narrative":
         material = str(selected.get("quote", ""))
         # Evidence is selected as one immutable passage, not as a character
-        # span for each leaf. Exact normalized containment is therefore the
-        # right proof: requiring a unique occurrence falsely rejects repeated
-        # endpoint names, statistics, and units such as ``months``.
-        return _normalized_contains(material, leaf)
+        # span for each leaf. Numeric fields still need complete expressions;
+        # repeated legitimate endpoint names, statistics, and units remain
+        # acceptable.
+        return _result_value_contains(material, leaf, field_path)
     if kind == "table":
         material = str(selected.get("quote", selected.get("transcription", "")))
-        return _normalized_contains(material, leaf)
+        return _result_value_contains(material, leaf, field_path)
     if kind == "figure":
-        return _normalized_contains(str(item.get("transcription", "")), leaf)
+        return _result_value_contains(str(item.get("transcription", "")), leaf, field_path)
     return False
 
 
@@ -633,20 +634,45 @@ def _host_visual_leaf_allowed(path: str) -> bool:
     )
 
 
-def _reported_quantitative_tuples(reported: dict[str, Any]) -> list[tuple[Any, ...]]:
-    """Return the complete reported-value tuples used by the Evidence contract."""
-
+def _reported_quantitative_paths(
+    reported: dict[str, Any],
+) -> list[tuple[tuple[str, Any], ...]]:
     if reported["form"] == "comparative_effect":
         return [
-            (reported["effect_measure"], reported["estimate"]),
+            (
+                ("/reported/effect_measure", reported["effect_measure"]),
+                ("/reported/estimate", reported["estimate"]),
+            ),
             *(
-                (item["statistic"], item["value"], item["unit"])
-                for item in reported["group_values"]
+                (
+                    (f"/reported/group_values/{index}/statistic", item["statistic"]),
+                    (f"/reported/group_values/{index}/value", item["value"]),
+                    (f"/reported/group_values/{index}/unit", item["unit"]),
+                )
+                for index, item in enumerate(reported["group_values"])
             ),
         ]
     if reported["form"] == "group_bound_values":
-        return [(item["statistic"], item["value"], item["unit"]) for item in reported["values"]]
-    return [(*item["category_axes"], item["value"]) for item in reported["categories"]]
+        return [
+            (
+                (f"/reported/values/{index}/statistic", item["statistic"]),
+                (f"/reported/values/{index}/value", item["value"]),
+                (f"/reported/values/{index}/unit", item["unit"]),
+            )
+            for index, item in enumerate(reported["values"])
+        ]
+    return [
+        tuple(
+            [
+                *(
+                    (f"/reported/categories/{index}/category_axes/{axis}", value)
+                    for axis, value in enumerate(item["category_axes"])
+                ),
+                (f"/reported/categories/{index}/value", item["value"]),
+            ]
+        )
+        for index, item in enumerate(reported["categories"])
+    ]
 
 
 def _coherent_anchor_indices(
@@ -660,13 +686,16 @@ def _coherent_anchor_indices(
         return []
     endpoint_name = reported["endpoint"]["name"]
 
-    quantitative_tuples = _reported_quantitative_tuples(reported)
+    quantitative_tuples = _reported_quantitative_paths(reported)
     anchors = [
         index
         for index, item in enumerate(result["evidence"])
-        if _supports_leaf(endpoint_name, item, result, catalog)
+        if _supports_leaf(endpoint_name, item, result, catalog, "/reported/endpoint/name")
         and any(
-            all(_supports_leaf(value, item, result, catalog) for value in quantitative)
+            all(
+                _supports_leaf(value, item, result, catalog, field_path)
+                for field_path, value in quantitative
+            )
             for quantitative in quantitative_tuples
         )
     ]
@@ -681,6 +710,7 @@ def _coherent_anchor_indices(
                 result["evidence"][index],
                 result,
                 catalog,
+                "/reported/endpoint/definition",
             )
         ),
     )
@@ -700,8 +730,11 @@ def _endpoint_has_joint_support(result: dict[str, Any], catalog: dict[str, dict[
     name = endpoint["name"]
     definition = endpoint.get("definition")
     return any(
-        _supports_leaf(name, item, result, catalog)
-        and (definition is None or _supports_leaf(definition, item, result, catalog))
+        _supports_leaf(name, item, result, catalog, "/reported/endpoint/name")
+        and (
+            definition is None
+            or _supports_leaf(definition, item, result, catalog, "/reported/endpoint/definition")
+        )
         for item in result["evidence"]
     )
 
@@ -722,7 +755,7 @@ def _derive_bindings(
     coherent_anchor_indices = _coherent_anchor_indices(result, catalog)
 
     def supports_eligible(value: object, item: dict[str, Any], leaf_path: str) -> bool:
-        if not _supports_leaf(value, item, result, catalog):
+        if not _supports_leaf(value, item, result, catalog, leaf_path):
             return False
         selected = _selected(catalog, item.get("handle", ""))
         return not (
@@ -767,7 +800,8 @@ def _derive_bindings(
             bound_evidence.add(eligible_index)
             continue
         if any(
-            _supports_leaf(protected_value, item, result, catalog) for item in result["evidence"]
+            _supports_leaf(protected_value, item, result, catalog, protected_path)
+            for item in result["evidence"]
         ):
             result.setdefault("_binding_defects", []).append(
                 {
@@ -793,8 +827,8 @@ def _derive_bindings(
             for index in preferred_indices("/reported/endpoint/name")
             for item in [result["evidence"][index]]
             if all(
-                supports_eligible(value, item, "/reported/endpoint/name")
-                for value in endpoint_values.values()
+                supports_eligible(value, item, leaf_path)
+                for leaf_path, value in endpoint_values.items()
             )
         ),
         None,
@@ -829,7 +863,7 @@ def _derive_bindings(
         )
         if evidence_index is None:
             tier_blocked = any(
-                _supports_leaf(value, item, result, catalog)
+                _supports_leaf(value, item, result, catalog, leaf_path)
                 and not supports_eligible(value, item, leaf_path)
                 for item in result["evidence"]
             )
@@ -1077,12 +1111,17 @@ def _closest_evidence_gap(
             )
         if not isinstance(handle, str):
             continue
-        for quantitative in _reported_quantitative_tuples(reported):
-            required = (endpoint_name, *quantitative)
+        for quantitative in _reported_quantitative_paths(reported):
+            required = (("/reported/endpoint/name", endpoint_name), *quantitative)
             missing = [
-                str(value) for value in required if not _supports_leaf(value, item, result, catalog)
+                str(value)
+                for field_path, value in required
+                if not _supports_leaf(value, item, result, catalog, field_path)
             ]
-            score = sum(_supports_leaf(value, item, result, catalog) for value in required)
+            score = sum(
+                _supports_leaf(value, item, result, catalog, field_path)
+                for field_path, value in required
+            )
             candidate = (score, -len(missing), handle, missing)
             if best is None or candidate[:2] > best[:2]:
                 best = (score, -len(missing), handle, missing)

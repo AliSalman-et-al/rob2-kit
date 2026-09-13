@@ -2303,6 +2303,166 @@ def _normalized_contains(material: str, phrase: str) -> bool:
     return bool(line_wrap_phrase) and line_wrap_phrase in wrapped_material
 
 
+def _numeric_boundary_before(value: str, index: int) -> bool:
+    if index == 0:
+        return True
+    immediate = value[index - 1]
+    if immediate.isspace():
+        cursor = index - 2
+        while cursor >= 0 and value[cursor].isspace():
+            cursor -= 1
+        if cursor < 0 or value[cursor] not in "+-<>≤≥":
+            return True
+        if value[cursor] == "+":
+            return False
+        before_operator = cursor - 1
+        while before_operator >= 0 and value[before_operator].isspace():
+            before_operator -= 1
+        return value[cursor] == "-" and before_operator >= 0 and value[before_operator].isdigit()
+    cursor = index - 1
+    character = value[cursor]
+    if character.isdigit() or character in "+<>≤≥" or character.isalpha() or character == "_":
+        return False
+    if character == "-":
+        return cursor > 0 and value[cursor - 1].isdigit()
+    if character in ".,":
+        return cursor == 0 or not value[cursor - 1].isdigit()
+    if character in "eE":
+        return cursor == 0 or not value[cursor - 1].isdigit()
+    return True
+
+
+def _numeric_boundary_after(value: str, index: int, *, allow_percent_suffix: bool = False) -> bool:
+    if index == len(value):
+        return True
+    immediate = value[index]
+    if immediate.isspace():
+        cursor = index + 1
+        while cursor < len(value) and value[cursor].isspace():
+            cursor += 1
+        if cursor == len(value) or value[cursor] not in "+-":
+            return True
+        if value[cursor] == "+":
+            return False
+        next_cursor = cursor + 1
+        while next_cursor < len(value) and value[next_cursor].isspace():
+            next_cursor += 1
+        return (
+            next_cursor == len(value)
+            or value[next_cursor].isdigit()
+            or value[next_cursor].isalpha()
+        )
+    cursor = index
+    character = value[cursor]
+    if character.isdigit() or character.isalpha() or character == "_":
+        return False
+    if character == "%":
+        return allow_percent_suffix
+    if character in ".,":
+        return cursor + 1 == len(value) or not value[cursor + 1].isdigit()
+    if character in "/:":
+        return cursor + 1 == len(value) or not value[cursor + 1].isdigit()
+    if character == "+":
+        return False
+    if character == "-":
+        next_cursor = cursor + 1
+        while next_cursor < len(value) and value[next_cursor].isspace():
+            next_cursor += 1
+        return next_cursor < len(value) and value[next_cursor].isdigit()
+    if character in "eE":
+        return False
+    if character in "<>≤≥":
+        next_cursor = cursor + 1
+        while next_cursor < len(value) and value[next_cursor].isspace():
+            next_cursor += 1
+        return next_cursor == len(value) or not value[next_cursor].isdigit()
+    return True
+
+
+_NUMERIC_ATOM_PATTERN = r"[+-]?(?:(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?|\d+,\d+)(?:[eE][+-]?\d+)?"
+_NUMERIC_COMPOUND_PATTERN = re.compile(
+    rf"{_NUMERIC_ATOM_PATTERN}\s*(?:\(\s*{_NUMERIC_ATOM_PATTERN}\s*\)|±\s*{_NUMERIC_ATOM_PATTERN})"
+)
+
+
+def _numeric_compound_marker_end(value: str, index: int) -> bool:
+    if index == len(value):
+        return True
+    if not value[index].islower():
+        return False
+    cursor = index + 1
+    while cursor < len(value) and value[cursor] == ",":
+        cursor += 1
+        if cursor == len(value) or not value[cursor].islower():
+            return False
+        cursor += 1
+    return cursor == len(value) or not value[cursor].isalnum() and value[cursor] != "_"
+
+
+def _numeric_contains(material: str, phrase: str, *, allow_percent_suffix: bool = False) -> bool:
+    """Require a complete literal numeric expression after normalization.
+
+    This is deliberately lexical.  It preserves source spelling and does not
+    decide which arm, endpoint, or timepoint a number describes.
+    """
+    normalized_material, _ = _normalized_with_spans(material)
+    normalized_phrase, _ = _normalized_with_spans(phrase)
+    if not normalized_phrase or not any(character.isdigit() for character in normalized_phrase):
+        return _normalized_contains(material, phrase)
+    compound_phrase = _NUMERIC_COMPOUND_PATTERN.fullmatch(normalized_phrase) is not None
+    compound_spans = tuple(
+        match.span()
+        for match in _NUMERIC_COMPOUND_PATTERN.finditer(normalized_material)
+        if match.end() < len(normalized_material)
+        and normalized_material[match.end()].islower()
+        and _numeric_compound_marker_end(normalized_material, match.end())
+    )
+    start = normalized_material.find(normalized_phrase)
+    while start >= 0:
+        end = start + len(normalized_phrase)
+        in_compound = any(
+            start >= compound_start
+            and end <= compound_end
+            and (start, end) != (compound_start, compound_end)
+            for compound_start, compound_end in compound_spans
+        )
+        after_is_valid = _numeric_boundary_after(
+            normalized_material, end, allow_percent_suffix=allow_percent_suffix
+        ) or (compound_phrase and _numeric_compound_marker_end(normalized_material, end))
+        if (
+            not in_compound
+            and _numeric_boundary_before(normalized_material, start)
+            and after_is_valid
+        ):
+            return True
+        start = normalized_material.find(normalized_phrase, start + 1)
+    return False
+
+
+def _result_value_contains(material: str, phrase: str, field_path: str | None = None) -> bool:
+    """Check one Result value with strict lexical boundaries for numeric fields."""
+    numeric_field = field_path is None or field_path in {
+        "/reported/estimate",
+        "/reported/precision",
+        "/reported/denominator_basis",
+    }
+    numeric_field = numeric_field or (
+        field_path is not None
+        and field_path.startswith("/reported/")
+        and field_path.endswith("/value")
+    )
+    allow_percent_suffix = field_path is None or field_path.endswith("/value")
+    return (
+        _numeric_contains(
+            material,
+            phrase,
+            allow_percent_suffix=allow_percent_suffix,
+        )
+        if numeric_field
+        else _normalized_contains(material, phrase)
+    )
+
+
 def _normalized_match(material: str, phrase: str) -> tuple[str | None, str | None]:
     """Resolve one normalization-equivalent phrase to its raw material span."""
     normalized_material, spans = _normalized_with_spans(material)
