@@ -75,10 +75,10 @@ def test_registry_response_is_a_searchable_captured_source(
     assert found["outcome"] == "success"
     hit = found["hits"][0]
     assert hit["source_id"] == source["id"]
-    assert hit["start_line"] == hit["end_line"]
     anchored_page = read_pages(tmp_path, "trial", source["id"], [hit["page"]])["pages"][0]
-    anchored_line = anchored_page["text"].splitlines()[hit["start_line"] - 1]
-    assert 'studyMethod: "The method of permuted blocks' in anchored_line
+    assert (hit["start_line"], hit["end_line"]) == (1, 8)
+    anchored_lines = anchored_page["text"].splitlines()[hit["start_line"] - 1 : hit["end_line"]]
+    assert any('studyMethod: "The method of permuted blocks' in line for line in anchored_lines)
     selected = select_text_evidence(
         tmp_path,
         "trial",
@@ -602,7 +602,7 @@ def test_search_derivative_finds_dehyphenated_and_original_forms(tmp_path: Path)
     assert "bio-\nchemical" in dehyphenated["hits"][0]["preview"]
 
 
-def test_search_hits_issue_read_pages_line_coordinates_from_normalized_span(
+def test_search_hit_line_coordinates_cover_citable_window(
     tmp_path: Path,
 ) -> None:
     raw = "prefix\nThe bio-\nchemical result was retained.\nsuffix"
@@ -612,9 +612,11 @@ def test_search_hits_issue_read_pages_line_coordinates_from_normalized_span(
     hit = result["hits"][0]
     page = read_pages(workspace, "trial", str(source["id"]), [1])["pages"][0]
 
-    assert (hit["start_line"], hit["end_line"]) == (2, 3)
-    assert page["text"].splitlines()[hit["start_line"] - 1] == "The bio-"
-    assert page["text"].splitlines()[hit["end_line"] - 1] == "chemical result was retained."
+    assert (hit["start_line"], hit["end_line"]) == (1, 4)
+    window = page["text"].splitlines()[hit["start_line"] - 1 : hit["end_line"]]
+    assert hit["preview"] == "\n".join(window)
+    assert "The bio-" in window
+    assert "chemical result was retained." in window
 
 
 def test_search_maps_fts_punctuation_tokens_back_to_source_lines(tmp_path: Path) -> None:
@@ -628,7 +630,7 @@ def test_search_maps_fts_punctuation_tokens_back_to_source_lines(tmp_path: Path)
     )
 
     assert len(result["hits"]) == 1
-    assert (result["hits"][0]["start_line"], result["hits"][0]["end_line"]) == (2, 2)
+    assert (result["hits"][0]["start_line"], result["hits"][0]["end_line"]) == (1, 3)
     assert "Computer-generated" in result["hits"][0]["preview"]
 
 
@@ -667,7 +669,7 @@ def test_phrase_search_does_not_cross_search_variant_boundary(tmp_path: Path) ->
 
 
 @pytest.mark.parametrize("query", ["bio-chemical result", "bio chemical result"])
-def test_phrase_preview_centers_on_dehyphenated_line_wrap(tmp_path: Path, query: str) -> None:
+def test_phrase_preview_preserves_bounded_dehyphenated_window(tmp_path: Path, query: str) -> None:
     raw = "prefix " * 80 + "bio-\nchemical result" + " suffix" * 80
     workspace, _ = _source_for_text(tmp_path, raw)
 
@@ -675,7 +677,8 @@ def test_phrase_preview_centers_on_dehyphenated_line_wrap(tmp_path: Path, query:
     preview = result["hits"][0]["preview"]
 
     assert "bio-\nchemical result" in preview
-    assert not preview.startswith("prefix prefix prefix")
+    assert len(preview.encode("utf-8")) <= 2048
+    assert result["hits"][0]["candidate_truncated"] is False
 
 
 def test_preview_uses_token_boundary_not_substring_match(tmp_path: Path) -> None:

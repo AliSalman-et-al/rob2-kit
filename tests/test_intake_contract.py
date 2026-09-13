@@ -749,6 +749,8 @@ def test_search_contract_exposes_match_summary_and_render_defaults_to_pixels() -
         "end_line",
         "preview",
         "passage_ref",
+        "candidate_truncated",
+        "candidate_recovery",
         "rank",
         "within_source_rank",
         "range",
