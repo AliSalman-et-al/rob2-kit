@@ -33,9 +33,11 @@ from .contracts import COUNTERS
 MAIN_REPORT_TEXT_BUDGET = 65_536
 _SEARCH_PREVIEW_MAX_BYTES = 512
 _SEARCH_CANDIDATE_MAX_BYTES = 2_048
+_TERM_FEEDBACK_MAX_TERMS = 16
+_TERM_FEEDBACK_MAX_SOURCES = 64
 
-_SEARCH_SESSION_VERSION = "rob2-kit.search-session.v0.6"
-_SEARCH_CANDIDATE_VERSION = "rob2-kit.search-candidates.v0.6"
+_SEARCH_SESSION_VERSION = "rob2-kit.search-session.v0.7"
+_SEARCH_CANDIDATE_VERSION = "rob2-kit.search-candidates.v0.7"
 
 
 def list_sources(workspace: str | Path, trial_id: str | None = None) -> dict[str, Any]:
@@ -293,7 +295,7 @@ def search_sources(
             "query": " ".join(terms),
             "normalized_query": " ".join(terms),
             "mode": mode,
-            "ranking": "fts5-bm25-source-order-page-cluster",
+            "ranking": "fts5-bm25-global-page-source-tiebreak",
         }
         session_identity = _identity(session_spec)
         session_handle = _session_handle(session_identity)
@@ -370,10 +372,15 @@ def search_sources(
             "returned_rank_end": None,
             "next_cursor": None,
             "exhausted": True,
+            "term_feedback": [],
+            "term_feedback_truncated": False,
+            "term_feedback_sources_truncated": False,
             "diagnostic": diagnostic,
         }
     ordered_sources = _ordered_sources(sources)
     ordered_source_ids = [str(source["id"]) for source in ordered_sources]
+    feedback_source_ids = ordered_source_ids[:_TERM_FEEDBACK_MAX_SOURCES]
+    term_feedback_sources_truncated = len(ordered_source_ids) > _TERM_FEEDBACK_MAX_SOURCES
     placeholders = ",".join("?" for _ in allowed)
     with _db(root, "derivative.sqlite3") as connection:
         cached_rows = connection.execute(
@@ -389,7 +396,22 @@ def search_sources(
         if [tuple(row) for row in cached_rows] != expected_rows:
             raise ValueError("text search projection is corrupt")
     page_map = {source_id: verified[(trial_id, source_id)][1] for source_id in ordered_source_ids}
-    all_pairs = _recomputed_all_pairs(page_map, normalized_query, mode, ordered_source_ids)
+    feedback_terms = list(dict.fromkeys(terms))
+    term_feedback_truncated = len(feedback_terms) > _TERM_FEEDBACK_MAX_TERMS
+    all_pairs, term_pages = _recomputed_search_projection(
+        page_map,
+        normalized_query,
+        mode,
+        ordered_source_ids,
+        tuple(feedback_terms[:_TERM_FEEDBACK_MAX_TERMS]),
+    )
+    term_feedback = _term_page_feedback(
+        page_map,
+        feedback_terms[:_TERM_FEEDBACK_MAX_TERMS],
+        feedback_source_ids,
+        all_pairs,
+        term_pages,
+    )
     total_matches = len(all_pairs)
     session_spec = {
         "version": _SEARCH_SESSION_VERSION,
@@ -402,7 +424,7 @@ def search_sources(
         "query": " ".join(terms),
         "normalized_query": " ".join(terms),
         "mode": mode,
-        "ranking": "fts5-bm25-source-order-page-cluster",
+        "ranking": "fts5-bm25-global-page-source-tiebreak",
     }
     session_identity = _identity(session_spec)
     session_handle = _session_handle(session_identity)
@@ -451,9 +473,8 @@ def search_sources(
                     for item in candidates
                 ],
             )
-    # Candidate rank is the one public ordering.  It already includes the
-    # Source-diversity pass, so receipts, cursors, cached rows, and displayed
-    # hits cannot disagree about what ranks 1..N mean.
+    # Candidate rank is the one public ordering. It is persisted so receipts,
+    # cursors, cached rows, and displayed hits cannot disagree about ranks 1..N.
     presentation = candidates
     offset = 0
     if cursor is not None:
@@ -653,6 +674,9 @@ def search_sources(
         "returned_rank_end": receipt["returned_rank_end"],
         "next_cursor": receipt["next_cursor"],
         "exhausted": receipt["exhausted"],
+        "term_feedback": term_feedback,
+        "term_feedback_truncated": term_feedback_truncated,
+        "term_feedback_sources_truncated": term_feedback_sources_truncated,
         "diagnostic": diagnostic,
     }
 
@@ -701,9 +725,9 @@ def _search_result_order(
     page: int,
     rank: float,
     source_order: dict[str, int],
-) -> tuple[int, float, int]:
-    """Prefer the established Source order, then FTS relevance and page order."""
-    return source_order[source_id], rank, page
+) -> tuple[float, int, int]:
+    """Prefer global FTS relevance, then deterministic Source and page order."""
+    return rank, source_order[source_id], page
 
 
 def _search_match_spans(text: str, query: str, mode: str) -> list[tuple[int, int]]:
@@ -958,39 +982,6 @@ def _recomputed_search_hits(
     return _recomputed_search_summary(pages, query, mode, limit)[0]
 
 
-def _source_diverse_search_hits(
-    pairs: list[tuple[str, int]], limit: int, source_order: list[str]
-) -> list[tuple[str, int]]:
-    """Bound hits while retaining one best hit from every matching Source.
-
-    ``pairs`` is already ordered by Source priority and BM25 rank.  When the
-    bound can cover all matching Sources, return one hit per Source before a
-    second hit from any Source. If there are more matching Sources than slots,
-    the highest-priority Sources receive the slots.
-    """
-    by_source: dict[str, list[tuple[str, int]]] = {}
-    for pair in pairs:
-        by_source.setdefault(pair[0], []).append(pair)
-    matching_sources = [source_id for source_id in source_order if source_id in by_source]
-
-    selected: list[tuple[str, int]] = []
-    depth = 0
-    while len(selected) < limit:
-        added = False
-        for source_id in matching_sources:
-            source_pairs = by_source[source_id]
-            if depth < len(source_pairs):
-                selected.append(source_pairs[depth])
-                added = True
-                if len(selected) >= limit:
-                    break
-        if not added:
-            break
-        depth += 1
-
-    return selected
-
-
 def _recomputed_search_summary(
     pages: dict[str, tuple[str, ...]],
     query: str,
@@ -1020,8 +1011,7 @@ def _recomputed_search_summary(
     hits.sort(key=lambda row: _search_result_order(str(row[0]), int(row[1]), float(row[2]), order))
     all_pairs = [(str(row[0]), int(row[1])) for row in hits]
     bounded_limit = max(1, min(limit, 100))
-    ordered_source_ids = source_order or sorted(pages)
-    selected = _source_diverse_search_hits(all_pairs, bounded_limit, ordered_source_ids)
+    selected = all_pairs[:bounded_limit]
     if span_cache is None:
         return selected, len(all_pairs)
 
@@ -1047,15 +1037,25 @@ def _recomputed_search_summary(
                 mapped.append(pair)
                 if len(mapped) == len(selected):
                     break
-    # Keep the diversity interleaving chosen above. Re-sorting by Source here
-    # silently undoes the one-hit-per-Source guarantee whenever the result is
-    # mapped back to raw coordinates.
+    # Keep the global BM25 ordering chosen above when candidates are mapped back
+    # to raw coordinates.
     return mapped, len(all_pairs)
 
 
 def _recomputed_all_pairs(
     pages: dict[str, tuple[str, ...]], query: str, mode: str, source_order: list[str]
 ) -> list[tuple[str, int]]:
+    all_pairs, _feedback = _recomputed_search_projection(pages, query, mode, source_order, ())
+    return all_pairs
+
+
+def _recomputed_search_projection(
+    pages: dict[str, tuple[str, ...]],
+    query: str,
+    mode: str,
+    source_order: list[str],
+    feedback_terms: tuple[str, ...],
+) -> tuple[list[tuple[str, int]], dict[str, dict[str, set[int]]]]:
     expression = _search_expression(query, mode)
     with sqlite3.connect(":memory:") as connection:
         connection.execute(
@@ -1072,9 +1072,48 @@ def _recomputed_all_pairs(
             "SELECT source_id,page,bm25(pages_fts) FROM pages_fts WHERE pages_fts MATCH ?",
             (expression,),
         ).fetchall()
+        term_pages: dict[str, dict[str, set[int]]] = {
+            term: {source_id: set() for source_id in source_order} for term in feedback_terms
+        }
+        term_mode = "prefix" if mode == "prefix" else "any"
+        for term in feedback_terms:
+            term_expression = _search_expression(term, term_mode)
+            term_rows = connection.execute(
+                "SELECT DISTINCT source_id,page FROM pages_fts WHERE pages_fts MATCH ?",
+                (term_expression,),
+            ).fetchall()
+            for source_id, page in term_rows:
+                term_pages[term][str(source_id)].add(int(page))
     order = {source_id: index for index, source_id in enumerate(source_order)}
     hits.sort(key=lambda row: _search_result_order(str(row[0]), int(row[1]), float(row[2]), order))
-    return [(str(row[0]), int(row[1])) for row in hits]
+    return [(str(row[0]), int(row[1])) for row in hits], term_pages
+
+
+def _term_page_feedback(
+    pages: dict[str, tuple[str, ...]],
+    terms: list[str],
+    source_order: list[str],
+    query_pairs: list[tuple[str, int]],
+    term_pages: dict[str, dict[str, set[int]]],
+) -> list[dict[str, Any]]:
+    """Format distinct page counts from one verified FTS build."""
+    if not pages or not terms:
+        return []
+    query_pages: dict[str, set[int]] = {source_id: set() for source_id in source_order}
+    for source_id, page in query_pairs:
+        query_pages[source_id].add(page)
+    return [
+        {
+            "source_id": source_id,
+            "page_count": len(pages[source_id]),
+            "query_matching_page_count": len(query_pages[source_id]),
+            "term_page_counts": [
+                {"term": term, "matching_page_count": len(term_pages[term][source_id])}
+                for term in terms
+            ],
+        }
+        for source_id in source_order
+    ]
 
 
 def _all_search_match_spans(text: str, query: str, mode: str) -> list[tuple[int, int]]:
@@ -1219,21 +1258,7 @@ def _session_candidates(
             item["cluster"],
         )
     )
-    by_source: dict[str, list[dict[str, Any]]] = {}
-    for item in candidates:
-        by_source.setdefault(item["source_id"], []).append(item)
-    presentation: list[dict[str, Any]] = []
-    depth = 0
-    while len(presentation) < len(candidates):
-        added = False
-        for source_id in ordered_source_ids:
-            rows = by_source.get(source_id, [])
-            if depth < len(rows):
-                presentation.append(rows[depth])
-                added = True
-        if not added:
-            break
-        depth += 1
+    presentation = candidates
     for rank, item in enumerate(presentation, 1):
         item["rank"] = rank
         item["within_source_rank"] = sum(
@@ -1431,7 +1456,7 @@ def _search_receipt(root: Path, handle: SearchReceiptHandle) -> dict[str, Any]:
         "query": receipt["normalized_query"],
         "normalized_query": receipt["normalized_query"],
         "mode": mode,
-        "ranking": "fts5-bm25-source-order-page-cluster",
+        "ranking": "fts5-bm25-global-page-source-tiebreak",
     }
     if (
         not isinstance(session, dict)

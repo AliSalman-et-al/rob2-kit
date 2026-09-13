@@ -250,21 +250,15 @@ compaction, follow
 [Recover omitted Evidence](references/evidence.md#recover-omitted-evidence).
 
 Review inspected passages against each active proposition and check material
-contradictions. Reuse adequate Evidence without another search. For an
-unresolved premise, use bounded, premise-specific discovery across the
-relevant Sources. Start with concrete wording from the study, call `list_sources`
-only when the active context has no complete Source inventory. When a
-comparison card is returned, use its inventory first to find unopened
-supplements or combined documents. Treat Source roles as navigation hints
-rather than proof of what a document contains. If a narrow search returns no useful
-passage, broaden once with concrete study language and widen the Source scope
-when the premise may be elsewhere. Continue an existing cursor when deeper
-cached results are needed, then read the returned page windows before citing
-them. Follow [Select Evidence](references/evidence.md#recover-an-unresolved-premise)
-for the full recovery loop. Stop when the complete premise is grounded or
-when the relevant captured Sources and bounded cursor/page windows have been
-checked and the remaining information limit is documented with a current,
-untruncated receipt. Do not search every question mechanically.
+contradictions. Reuse adequate Evidence without another search.
+
+Before a new material discovery attempt, follow the
+[unresolved-premise loop](references/evidence.md#recover-an-unresolved-premise).
+Use it for material facts realistically discoverable in captured Sources, and
+keep the search or read in the same working assessment. Before
+`reason_domain_assessment` and `save_domain_judgment`, revisit material unknowns
+against the Source inventory, identify the section inspected and facts still
+unavailable, then make one bounded search or read or document a bounded limit.
 
 For each answer, copy exactly one server-issued `options[].id` from
 the current question card into `answers[].option_id`, character for character.
@@ -297,8 +291,9 @@ invent affirmative Evidence.
 ### 6. Audit and commit the Domain once
 
 Draft every active question in the dependency-closed path implied by the drafted
-upstream answers and activation predicates. Include inactive answers only when they are
-already available; they do not need fabricated reasoning fields and the server ignores them. Use current
+upstream answers and activation predicates. Preserve unresolved upstream facts as
+unknown; do not invent a downstream premise or answer. Include inactive answers only when they are already available; they do not need fabricated reasoning fields and the server
+ignores them. Use current
 card option IDs and supported bases for every submitted answer. Submit the
 complete active set in one `reason_domain_assessment` call. The server resolves
 activation from the draft and commits only active answers after

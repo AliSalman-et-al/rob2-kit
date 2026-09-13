@@ -92,6 +92,43 @@ def test_broad_truncated_any_search_exposes_observable_refinement_only(tmp_path:
     assert no_hit["diagnostic"] is None
 
 
+def test_search_term_feedback_uses_source_handles_and_full_query_scope(tmp_path: Path) -> None:
+    workspace = _workspace(tmp_path)
+    (workspace / "input" / "trial" / "main.txt").write_text(
+        "randomisation procedure\n", encoding="utf-8"
+    )
+    (workspace / "input" / "trial" / "protocol.txt").write_text(
+        "allocation code\n", encoding="utf-8"
+    )
+    _call(workspace, "prepare_batch", {"requested_outcome": "outcome", "expected_revision": 0})
+
+    data = _call(
+        workspace,
+        "search_sources",
+        {"trial_id": "trial", "query": "randomisation code", "mode": "all"},
+    )["data"]
+
+    assert data["total_matches"] == 0
+    assert data["term_feedback_truncated"] is False
+    assert data["term_feedback_sources_truncated"] is False
+    assert len(data["term_feedback"]) == 2
+    for source in data["term_feedback"]:
+        assert source["source_id"].startswith("sh_")
+        assert source["page_count"] == 1
+        assert source["query_matching_page_count"] == 0
+        assert {item["term"] for item in source["term_page_counts"]} == {"randomisation", "code"}
+    counts = {
+        source["source_id"]: {
+            item["term"]: item["matching_page_count"] for item in source["term_page_counts"]
+        }
+        for source in data["term_feedback"]
+    }
+    assert sorted(counts.values(), key=lambda value: value["code"]) == [
+        {"randomisation": 1, "code": 0},
+        {"randomisation": 0, "code": 1},
+    ]
+
+
 @pytest.mark.parametrize("mode", ["all", "phrase"])
 def test_initial_multi_token_narrow_no_hit_offers_same_scoped_any_search(
     tmp_path: Path, mode: str
@@ -437,7 +474,7 @@ def test_search_session_identity_uses_normalized_query(tmp_path: Path) -> None:
     assert [hit["rank"] for hit in punctuated["hits"]] == [hit["rank"] for hit in plain["hits"]]
 
 
-def test_search_pagination_is_page_size_independent_and_source_diverse(tmp_path: Path) -> None:
+def test_search_pagination_is_page_size_independent_and_globally_ranked(tmp_path: Path) -> None:
     workspace = _workspace(tmp_path)
     trial = workspace / "input" / "trial"
     (trial / "main.txt").write_text("needle one\nneedle two\nneedle three\n", encoding="utf-8")
@@ -474,8 +511,7 @@ def test_search_pagination_is_page_size_independent_and_source_diverse(tmp_path:
         "search_sources",
         {"trial_id": "trial", "query": "needle", "mode": "any", "limit": 2},
     )["data"]["hits"]
-    assert len({hit["source_id"] for hit in first_two}) == 2
-    assert [hit["rank"] for hit in first_two] == [1, 2]
+    assert [(hit["rank"], hit["passage_ref"]) for hit in first_two] == one[:2]
 
 
 def test_all_mode_matches_widely_separated_terms_without_changing_exact_quote(
@@ -710,7 +746,7 @@ def test_list_sources_uses_the_same_source_priority_as_search(tmp_path: Path) ->
     ]
 
 
-def test_search_interleaves_sources_then_uses_fts_bm25_within_source(
+def test_search_uses_global_fts_bm25_with_deterministic_ties(
     tmp_path: Path,
 ) -> None:
     workspace = _workspace(tmp_path)
@@ -736,12 +772,15 @@ def test_search_interleaves_sources_then_uses_fts_bm25_within_source(
     )
     sources = _call(workspace, "list_sources", {"trial_id": "trial"})["data"]["sources"]
     article = next(source for source in sources if source["label"] == "article.pdf")
-    protocol_source = next(source for source in sources if source["label"] == "protocol.pdf")
     with sqlite3.connect(workspace / ".rob2-kit" / "derivative.sqlite3") as connection:
         article_ranks = connection.execute(
             "SELECT page,bm25(pages_fts) FROM pages_fts "
             "WHERE pages_fts MATCH ? AND source_id=? ORDER BY bm25(pages_fts),page",
             ('"alpha" AND "beta"', resolve_source_handle(workspace, "trial", article["id"])),
+        ).fetchall()
+        global_ranks = connection.execute(
+            "SELECT source_id,page,bm25(pages_fts) FROM pages_fts WHERE pages_fts MATCH ?",
+            ('"alpha" OR "beta"',),
         ).fetchall()
     assert article_ranks[0][0] != 1
 
@@ -751,11 +790,16 @@ def test_search_interleaves_sources_then_uses_fts_bm25_within_source(
         {"trial_id": "trial", "query": "alpha beta", "mode": "any", "limit": 4},
     )
     pairs = [(item["source_id"], item["page"]) for item in result["data"]["hits"]]
+    public_by_internal = {
+        resolve_source_handle(workspace, "trial", source["id"]): source["id"] for source in sources
+    }
+    source_order = {
+        resolve_source_handle(workspace, "trial", source["id"]): index
+        for index, source in enumerate(sources)
+    }
+    global_ranks.sort(key=lambda row: (float(row[2]), source_order[row[0]], int(row[1])))
     assert pairs == [
-        (article["id"], int(article_ranks[0][0])),
-        (protocol_source["id"], 1),
-        (article["id"], int(article_ranks[1][0])),
-        (article["id"], int(article_ranks[2][0])),
+        (public_by_internal[source_id], int(page)) for source_id, page, _rank in global_ranks[:4]
     ]
     receipt = _search_receipt(workspace, result["data"]["search_receipt"])
     state = _state(workspace)
@@ -777,7 +821,7 @@ def test_search_interleaves_sources_then_uses_fts_bm25_within_source(
     )
 
 
-def test_search_reserves_one_hit_per_matching_source_within_limit(tmp_path: Path) -> None:
+def test_search_returns_global_bm25_pages_within_limit(tmp_path: Path) -> None:
     workspace = _workspace(tmp_path)
     trial = workspace / "input" / "trial"
     article = pymupdf.open()
@@ -803,8 +847,22 @@ def test_search_reserves_one_hit_per_matching_source_within_limit(tmp_path: Path
         {"requested_outcome": "requested outcome", "expected_revision": 0},
     )
     sources = _call(workspace, "list_sources", {"trial_id": "trial"})["data"]["sources"]
-    article_source = next(source for source in sources if source["label"] == "article.pdf")
-    protocol_source = next(source for source in sources if source["label"] == "protocol.pdf")
+    public_by_internal = {
+        resolve_source_handle(workspace, "trial", source["id"]): source["id"] for source in sources
+    }
+    with sqlite3.connect(workspace / ".rob2-kit" / "derivative.sqlite3") as connection:
+        global_ranks = connection.execute(
+            "SELECT source_id,page,bm25(pages_fts) FROM pages_fts WHERE pages_fts MATCH ?",
+            ('"alpha" OR "beta"',),
+        ).fetchall()
+    source_order = {
+        resolve_source_handle(workspace, "trial", source["id"]): index
+        for index, source in enumerate(sources)
+    }
+    global_ranks.sort(key=lambda row: (float(row[2]), source_order[row[0]], int(row[1])))
+    expected_pairs = [
+        (public_by_internal[source_id], int(page)) for source_id, page, _rank in global_ranks
+    ]
 
     result = _call(
         workspace,
@@ -815,8 +873,7 @@ def test_search_reserves_one_hit_per_matching_source_within_limit(tmp_path: Path
 
     assert result["data"]["total_matches"] == 4
     assert result["data"]["truncated"] is True
-    assert pairs[0][0] == article_source["id"]
-    assert pairs[1] == (protocol_source["id"], 1)
+    assert pairs == expected_pairs[:2]
     expected_hits = [
         {
             "source_id": resolve_source_handle(workspace, "trial", source_id),
@@ -847,7 +904,9 @@ def test_search_reserves_one_hit_per_matching_source_within_limit(tmp_path: Path
         {"trial_id": "trial", "query": "alpha beta", "mode": "any", "limit": 1},
     )
     assert len(limited["data"]["hits"]) == 1
-    assert limited["data"]["hits"][0]["source_id"] == article_source["id"]
+    assert (limited["data"]["hits"][0]["source_id"], limited["data"]["hits"][0]["page"]) == (
+        expected_pairs[0]
+    )
 
 
 def test_search_normalization_derivatives_are_bounded_and_reused() -> None:

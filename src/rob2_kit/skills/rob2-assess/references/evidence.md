@@ -19,6 +19,13 @@ initial multi-token `all` or `phrase` no-hit, broaden once with the returned
 inspect the relevant section of an available Source and other relevant Sources
 before recording an unresolved limitation. One widening step is not adequate
 discovery by itself.
+Use `term_feedback` after an unhelpful combined search to distinguish absent
+query vocabulary from terms present somewhere in a Source despite no full-query
+match. It reports bounded distinct matching-page counts by Source and the count
+for the complete query under its mode; counts do not establish relevance,
+co-occurrence, or phrase adjacency. Reformulate with inspected study wording or
+inspect the likely Source section when the counts guide the next query or read.
+Per-term searches remain optional.
 `read_pages` likewise prepares a `passage_ref` for each non-empty window. After
 you inspect a complete passage, reuse that handle in Proposal `passage_refs` or
 Domain `bases`; no separate text-selection call is required.
@@ -120,36 +127,55 @@ you judge whether those facts support the answer.
 
 ## Recover an unresolved premise
 
-Use this bounded loop only when the inspected Evidence does not resolve a
-material premise for the active question:
+Use this gap-directed Reason–Act loop when inspected Evidence leaves a material
+fact unresolved. Keep the loop in one working assessment across searches and
+cursors.
 
-1. Name the exact unresolved proposition and the concrete study language that
-   could establish it. Prefer wording from an inspected passage over a
-   methodological label from the question card.
-2. Inspect the active comparison card's complete `passage_groups` inventory
+1. Reason. Start from the approved Result and inspected main-report passages.
+   Record the exact unresolved fact, the named method or section reference and
+   concrete study wording that would distinguish the possible answers, what
+   inspected Evidence leaves open, and the likely Source that could resolve it.
+   Prefer wording from an inspected passage over a methodological label from
+   the question card.
+2. Act. Inspect the active comparison card's complete `passage_groups` inventory
    when one is returned; call `list_sources` only when no complete inventory is
    present. Every captured Source remains listed in the inventory even when it
    has no selected passages; use its `source_id`, `page_count`, and
    `logical_path` to navigate it. A supplement, `other` document, or combined
    protocol can contain the needed plan or participant-flow detail. A Source
    role is a routing hint, never evidence about its contents or applicability.
-3. Search the likely Source with the concrete wording. If the query is a
-   multi-token `all` or `phrase` no-hit, use the one returned `any` widening
-   action and inspect its passages. If the returned batch is truncated or has
-   a continuation cursor, continue that same query when deeper cached results
-   could resolve the premise. Do not treat a no-hit or an uninspected hit as
-   scientific absence.
-4. If the likely Source does not resolve the premise, repeat one bounded
-   search with the same concrete wording over the relevant captured Sources,
-   then read the returned page windows or the relevant contents/front-matter
-   pages. Do not run every query suggestion or read every appendix by default.
-5. Stop as soon as an inspected passage contains the complete premise and
-   select its exact boundaries. Otherwise stop after the relevant captured
-   Source scope and available cursor/page windows have been bounded; record a
-   concise limitation with a current-Trial, untruncated search receipt. The
-   limitation documents the information reached, not absence of the fact.
+3. Search the likely Source with concrete study wording. Use a methodological
+   label only to supplement that wording. If the query is a multi-token `all`
+   or `phrase` no-hit, use the one returned `any` widening action and inspect
+   its passages. If the returned batch is truncated or has a continuation
+   cursor, continue that same query when deeper cached results could resolve
+   the premise. Do not treat a no-hit or an uninspected hit as scientific
+   absence.
+4. After each search or read, update the fact to exactly one state: supported,
+   contradicted, or still unknown. A hit remains a candidate until you inspect
+   the complete passage.
+5. If the returned hits do not address the fact, inspect the relevant section
+   of the likely Source, including its contents or front-matter pages when
+   needed, before recording a limitation. Exhausted query results or ranking
+   pages are not an inspected section. If that section does not resolve the
+   fact, repeat one bounded search with the same concrete wording over the
+   relevant captured Sources. Do not run every query suggestion or read every
+   appendix by default.
+6. Investigate the upstream premise first. If it remains unknown, preserve that
+   uncertainty and follow the question card's activation rules. Before
+   `reason_domain_assessment` and `save_domain_judgment`, revisit every
+   still-material unknown against the Source inventory. Record the relevant
+   section inspected and the facts that remain unavailable. If a fact
+   remains discoverable within captured Sources and bounded cursor or page
+   windows, make the next relevant search or read. Otherwise record a concise
+   limitation with a current-Trial, untruncated search receipt. Stop as soon as
+   an inspected passage contains the complete premise and select its exact
+   boundaries. The limitation documents the information reached, not absence
+   of the fact.
 
-This loop separates four observations: a page was retrieved, a useful
+An unreported result does not show that participant outcomes were unobserved.
+Missing reporting alone does not establish differential measurement or result-based
+selection. This loop separates four observations: a page was retrieved, a useful
 candidate was surfaced, a complete source window was read, and the premise was
 actually supported. Only the last two can ground a Domain answer.
 

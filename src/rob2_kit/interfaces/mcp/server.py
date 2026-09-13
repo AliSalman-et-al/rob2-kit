@@ -956,11 +956,20 @@ def list_sources(
     title="Search Trial sources",
     description=(
         "Search captured source pages (1-based source indexes). Required: trial_id, query, mode. "
-        "Choose all for every token, phrase for known contiguous wording, any for broad OR "
-        "discovery, or prefix for token-prefix matching. Use wording from Sources or the "
-        "returned query suggestions. Results carry passage_refs and a stable ranking. "
+        "Choose all for every token, phrase for known contiguous wording, any when at least one "
+        "query term on a page is enough for broad discovery, or prefix for token-prefix matching. "
+        "Prefer wording from an inspected Source; if none is available, use the question-card "
+        "wording as a fallback. Results carry passage_refs and a stable global BM25 ranking "
+        "with deterministic Source/page tie-breakers. "
         "Pass next_cursor as cursor with the same query, mode, Source scope, and limit to "
         "continue that ranking; counts and truncation show whether the batch is complete. "
+        "Each response includes bounded per-term page counts by Source, the total Source page "
+        "count, and the pages matching the complete query; these are distinct lexical page "
+        "counts, not occurrence counts or scientific conclusions. Compare term counts with "
+        "the complete-query count to distinguish term presence from full-query matches under "
+        "the issued mode; inspect passages because counts do not establish co-occurrence or "
+        "phrase adjacency. The response marks omitted query units or Source rows with the "
+        "corresponding *_truncated field. "
         "An initial multi-token all or phrase no-hit includes one "
         "executable any broadening step. Broad truncated any results include refinement advice. "
         "Inspect passages before citing them. Zero hits establish only that the issued lexical "
@@ -987,7 +996,8 @@ def search_sources(
         Field(
             description=(
                 "Required lexical intent: all=every token on one page; phrase=known contiguous "
-                "wording; any=one token for broad discovery; prefix=token prefix."
+                "wording; any=at least one query term on a page for broad discovery; "
+                "prefix=token prefix."
             )
         ),
     ],
@@ -996,7 +1006,7 @@ def search_sources(
         Field(
             description=(
                 "Optional source_id from this Trial; copy the returned source_id exactly. "
-                "Use it with the same trial_id. Omit for all Trial sources in priority order."
+                "Use it with the same trial_id. Omit to search all captured Sources for this Trial."
             )
         ),
     ] = None,
@@ -1851,9 +1861,11 @@ def get_domain_context(
     description=(
         "Before saving a Domain, submit the complete draft. For each active answer, briefly "
         "explain what its cited bases establish and why that supports the selected option for "
-        "the approved Result. Identify material counterevidence and unresolved facts without "
-        "treating uncertainty as a finding. The server validates structure, references, "
-        "activation and workflow requirements, not scientific correctness. Save using the "
+        "the approved Result. Before submitting, inspect the relevant captured Source section "
+        "for any material unresolved fact, or record a bounded information limit. Identify "
+        "material counterevidence and unresolved facts without treating uncertainty as a finding. "
+        "The server validates structure, references, activation and workflow requirements, not "
+        "scientific correctness. Save using the "
         "returned reasoning_id."
     ),
     annotations=_MUTATION,
