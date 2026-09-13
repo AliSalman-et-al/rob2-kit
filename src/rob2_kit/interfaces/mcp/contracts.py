@@ -734,8 +734,17 @@ class DomainQuestionCard(PublicModel):
     id: QuestionId
     wording: str = Field(min_length=1)
     options: tuple[CompactAnswerOption, ...] = Field(min_length=1)
-    active: StrictBool = Field(
-        description="Active under saved answers. Draft answers may activate further questions.",
+    activation_status: Literal[
+        "always_active",
+        "dependent_on_draft_answers",
+        "active_in_saved_checkpoint",
+        "inactive_in_saved_checkpoint",
+    ] = Field(
+        description=(
+            "Scoped activation status: always_active is unconditional; dependent_on_draft_answers "
+            "awaits the submitted draft path; active_in_saved_checkpoint and "
+            "inactive_in_saved_checkpoint describe only the current saved checkpoint."
+        ),
     )
     activation: QuestionActivation = Field(
         description="Evaluate against earlier draft answers to derive the complete active path.",

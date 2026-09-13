@@ -1696,6 +1696,9 @@ def get_domain_context(
         None,
     )
     existing = (state.get("domain_records") or {}).get(f"{trial_id}:{domain_id}", {})
+    checkpoint_identity = existing.get("identity") if isinstance(existing, dict) else None
+    if not isinstance(checkpoint_identity, str):
+        checkpoint_identity = None
     trial_has_checkpoint = any(
         isinstance(key, str) and key.startswith(f"{trial_id}:")
         for key in (state.get("domain_records") or {})
@@ -2154,7 +2157,7 @@ def get_domain_context(
         "result": result_projection(result),
         "evidence": list(catalog.values()),
         "answers": answer_rows,
-        "current_checkpoint": (existing.get("identity") if isinstance(existing, dict) else None),
+        "current_checkpoint": checkpoint_identity,
         "guidance": [
             (
                 "Answer every initially active question plus each dependent question whose "
@@ -2173,7 +2176,17 @@ def get_domain_context(
                 "id": item.id,
                 "wording": item.wording,
                 "options": [_answer_option(item, answer) for answer in item.allowed_answers],
-                "active": item.id in active,
+                "activation_status": (
+                    "always_active"
+                    if item.activation.kind == "always"
+                    else "dependent_on_draft_answers"
+                    if checkpoint_identity is None
+                    else (
+                        "active_in_saved_checkpoint"
+                        if item.id in active
+                        else "inactive_in_saved_checkpoint"
+                    )
+                ),
                 "activation": item.activation.model_dump(mode="json"),
                 "official_guidance": item.guidance.official.source_excerpt,
                 "source_locator": item.guidance.official.source_locator,

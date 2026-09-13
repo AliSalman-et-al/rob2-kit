@@ -460,7 +460,7 @@ def test_finalized_bundle_binds_the_scientific_contract(tmp_path: Path) -> None:
             "version": official_version,
             "source_sha256": official_sha256,
         },
-        "result_semantics_version": "rob2-kit.result-semantics.v0.7",
+        "result_semantics_version": "rob2-kit.result-semantics.v0.8",
     }
     assert _standalone_verify(artifact).returncode == 0
 
@@ -468,6 +468,7 @@ def test_finalized_bundle_binds_the_scientific_contract(tmp_path: Path) -> None:
 @pytest.mark.parametrize(
     "content_hash",
     (
+        "sha256:f1cc5e7e0c06a26b351e455797d8936256b01388fdb446c1ef7cc926ab29613b",
         "sha256:9c293fbfaf1b10b82682a90d2e90986c3283fa1412f2c8b62a4d82a14a795dc8",
         "sha256:3ef492b34a81c19e3f75d72fea2b92c40aebde80c06e24e44c36cd76dc4cf3d4",
     ),
@@ -476,6 +477,7 @@ def test_previous_v07_scientific_packs_remain_verifiable(tmp_path: Path, content
     source = _artifact(tmp_path / "source")
 
     def use_previous_pack(canonical: dict[str, Any]) -> None:
+        canonical["scientific_pack"]["result_semantics_version"] = "rob2-kit.result-semantics.v0.7"
         canonical["scientific_pack"]["content_hash"] = content_hash
 
     previous = tmp_path / "previous-v07.rob2.zip"

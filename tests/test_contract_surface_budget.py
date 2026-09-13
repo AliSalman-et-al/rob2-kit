@@ -140,7 +140,9 @@ def test_public_output_surface_is_closed_and_within_budget() -> None:
         in workspace_properties["unrecoverable_inline_text_bytes"]["description"]
     )
     assert "for every returned Domain question" in (domain_tool.description or "")
-    assert "including currently inactive questions" in (domain_tool.description or "")
+    assert "including conditional questions and questions inactive in the saved checkpoint" in (
+        domain_tool.description or ""
+    )
     assert "Include every returned question before resubmitting" in (domain_tool.description or "")
     assert "current option ID copied exactly from its card" in (domain_tool.description or "")
     assert "check each basis against the approved Result" in (domain_tool.description or "")

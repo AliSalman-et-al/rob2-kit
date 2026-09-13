@@ -154,6 +154,16 @@ _QUESTION_ALLOWED_ANSWERS = {
 _SCIENTIFIC_PACK = {
     "id": "rob2.parallel.assignment",
     "version": "2019.1",
+    "result_semantics_version": "rob2-kit.result-semantics.v0.8",
+    "content_hash": "sha256:f1cc5e7e0c06a26b351e455797d8936256b01388fdb446c1ef7cc926ab29613b",
+    "official_source": {
+        "version": "22 August 2019",
+        "source_sha256": "A9E9C4FDC4BE2D29B5C0A1A6B828E09F2014A34F6D5C302A532F6153EA0FD670",
+    },
+}
+_CURRENT_PACK_PREVIOUS_PROOF = {
+    "id": "rob2.parallel.assignment",
+    "version": "2019.1",
     "result_semantics_version": "rob2-kit.result-semantics.v0.7",
     "content_hash": "sha256:f1cc5e7e0c06a26b351e455797d8936256b01388fdb446c1ef7cc926ab29613b",
     "official_source": {
@@ -1036,6 +1046,163 @@ def _normalized_contains(material: str, phrase: str) -> bool:
     return bool(line_wrap_phrase) and line_wrap_phrase in wrapped_material
 
 
+def _numeric_boundary_before(value: str, index: int) -> bool:
+    if index == 0:
+        return True
+    immediate = value[index - 1]
+    if immediate.isspace():
+        cursor = index - 2
+        while cursor >= 0 and value[cursor].isspace():
+            cursor -= 1
+        if cursor < 0 or value[cursor] not in "+-<>≤≥":
+            return True
+        if value[cursor] == "+":
+            return False
+        before_operator = cursor - 1
+        while before_operator >= 0 and value[before_operator].isspace():
+            before_operator -= 1
+        return value[cursor] == "-" and before_operator >= 0 and value[before_operator].isdigit()
+    cursor = index - 1
+    character = value[cursor]
+    if character.isdigit() or character in "+<>≤≥" or character.isalpha() or character == "_":
+        return False
+    if character == "-":
+        return cursor > 0 and value[cursor - 1].isdigit()
+    if character in ".,":
+        return cursor == 0 or not value[cursor - 1].isdigit()
+    if character in "eE":
+        return cursor == 0 or not value[cursor - 1].isdigit()
+    return True
+
+
+def _numeric_boundary_after(value: str, index: int, *, allow_percent_suffix: bool = False) -> bool:
+    if index == len(value):
+        return True
+    immediate = value[index]
+    if immediate.isspace():
+        cursor = index + 1
+        while cursor < len(value) and value[cursor].isspace():
+            cursor += 1
+        if cursor == len(value) or value[cursor] not in "+-":
+            return True
+        if value[cursor] == "+":
+            return False
+        next_cursor = cursor + 1
+        while next_cursor < len(value) and value[next_cursor].isspace():
+            next_cursor += 1
+        return (
+            next_cursor == len(value)
+            or value[next_cursor].isdigit()
+            or value[next_cursor].isalpha()
+        )
+    cursor = index
+    character = value[cursor]
+    if character.isdigit() or character.isalpha() or character == "_":
+        return False
+    if character == "%":
+        return allow_percent_suffix
+    if character in ".,":
+        return cursor + 1 == len(value) or not value[cursor + 1].isdigit()
+    if character in "/:":
+        return cursor + 1 == len(value) or not value[cursor + 1].isdigit()
+    if character == "+":
+        return False
+    if character == "-":
+        next_cursor = cursor + 1
+        while next_cursor < len(value) and value[next_cursor].isspace():
+            next_cursor += 1
+        return next_cursor < len(value) and value[next_cursor].isdigit()
+    if character in "eE":
+        next_cursor = cursor + 1
+        if next_cursor < len(value) and value[next_cursor] in "+-":
+            next_cursor += 1
+        return False
+    if character in "<>≤≥":
+        next_cursor = cursor + 1
+        while next_cursor < len(value) and value[next_cursor].isspace():
+            next_cursor += 1
+        return next_cursor == len(value) or not value[next_cursor].isdigit()
+    return True
+
+
+_NUMERIC_ATOM_PATTERN = r"[+-]?(?:(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?|\d+,\d+)(?:[eE][+-]?\d+)?"
+_NUMERIC_COMPOUND_PATTERN = re.compile(
+    rf"{_NUMERIC_ATOM_PATTERN}\s*(?:\(\s*{_NUMERIC_ATOM_PATTERN}\s*\)|±\s*{_NUMERIC_ATOM_PATTERN})"
+)
+
+
+def _numeric_compound_marker_end(value: str, index: int) -> bool:
+    if index == len(value):
+        return True
+    if not value[index].islower():
+        return False
+    cursor = index + 1
+    while cursor < len(value) and value[cursor] == ",":
+        cursor += 1
+        if cursor == len(value) or not value[cursor].islower():
+            return False
+        cursor += 1
+    return cursor == len(value) or not value[cursor].isalnum() and value[cursor] != "_"
+
+
+def _numeric_contains(material: str, phrase: str, *, allow_percent_suffix: bool = False) -> bool:
+    normalized_material, _ = _normalized_with_spans(material)
+    normalized_phrase, _ = _normalized_with_spans(phrase)
+    if not normalized_phrase or not any(character.isdigit() for character in normalized_phrase):
+        return _normalized_contains(material, phrase)
+    compound_phrase = _NUMERIC_COMPOUND_PATTERN.fullmatch(normalized_phrase) is not None
+    compound_spans = tuple(
+        match.span()
+        for match in _NUMERIC_COMPOUND_PATTERN.finditer(normalized_material)
+        if match.end() < len(normalized_material)
+        and normalized_material[match.end()].islower()
+        and _numeric_compound_marker_end(normalized_material, match.end())
+    )
+    start = normalized_material.find(normalized_phrase)
+    while start >= 0:
+        end = start + len(normalized_phrase)
+        in_compound = any(
+            start >= compound_start
+            and end <= compound_end
+            and (start, end) != (compound_start, compound_end)
+            for compound_start, compound_end in compound_spans
+        )
+        after_is_valid = _numeric_boundary_after(
+            normalized_material, end, allow_percent_suffix=allow_percent_suffix
+        ) or (compound_phrase and _numeric_compound_marker_end(normalized_material, end))
+        if (
+            not in_compound
+            and _numeric_boundary_before(normalized_material, start)
+            and after_is_valid
+        ):
+            return True
+        start = normalized_material.find(normalized_phrase, start + 1)
+    return False
+
+
+def _result_value_contains(material: str, phrase: str, field_path: str | None = None) -> bool:
+    numeric_field = field_path is None or field_path in {
+        "/reported/estimate",
+        "/reported/precision",
+        "/reported/denominator_basis",
+    }
+    numeric_field = numeric_field or (
+        field_path is not None
+        and field_path.startswith("/reported/")
+        and field_path.endswith("/value")
+    )
+    allow_percent_suffix = field_path is None or field_path.endswith("/value")
+    return (
+        _numeric_contains(
+            material,
+            phrase,
+            allow_percent_suffix=allow_percent_suffix,
+        )
+        if numeric_field
+        else _normalized_contains(material, phrase)
+    )
+
+
 def _normalized_equal(left: str, right: str) -> bool:
     """Compare mapping values as complete normalized leaves, not substrings."""
     return _normalized_with_spans(left)[0] == _normalized_with_spans(right)[0]
@@ -1664,7 +1831,7 @@ def _valid_requested_result(result: object, requested_outcome: str) -> bool:
 def _valid_result_shape(
     result: dict[str, object],
     requested_outcome: str,
-    semantics_version: str = "rob2-kit.result-semantics.v0.7",
+    semantics_version: str = "rob2-kit.result-semantics.v0.8",
 ) -> bool:
     if not _valid_requested_result(result, requested_outcome):
         return False
@@ -1894,12 +2061,16 @@ def _reported_result_has_coherent_anchor(
     result: dict[str, object],
     evidence: list[dict[str, object]],
     by_handle: dict[str, dict[str, object]],
+    *,
+    strict_numeric: bool = True,
 ) -> bool:
     reported = cast(dict[str, Any], result["reported"])
     endpoint = reported["endpoint"]
     endpoint_name = endpoint["name"]
 
-    def supports(value: object, reference: dict[str, object]) -> bool:
+    def supports(
+        value: object, reference: dict[str, object], field_path: str | None = None
+    ) -> bool:
         selected = by_handle.get(str(reference.get("handle")))
         if not isinstance(selected, dict) or selected.get("trial_id") != result["trial_id"]:
             return False
@@ -1910,28 +2081,56 @@ def _reported_result_has_coherent_anchor(
             if reference.get("kind") == "figure"
             else selected.get("quote", selected.get("transcription", ""))
         )
-        return _normalized_contains(material, str(value))
+        return (
+            _result_value_contains(material, str(value), field_path)
+            if strict_numeric
+            else _normalized_contains(material, str(value))
+        )
 
     if reported["form"] == "comparative_effect":
         quantitative_tuples = [
-            (reported["effect_measure"], reported["estimate"]),
+            (
+                ("/reported/effect_measure", reported["effect_measure"]),
+                ("/reported/estimate", reported["estimate"]),
+            ),
             *(
-                (item["statistic"], item["value"], item["unit"])
-                for item in reported["group_values"]
+                (
+                    (f"/reported/group_values/{index}/statistic", item["statistic"]),
+                    (f"/reported/group_values/{index}/value", item["value"]),
+                    (f"/reported/group_values/{index}/unit", item["unit"]),
+                )
+                for index, item in enumerate(reported["group_values"])
             ),
         ]
     elif reported["form"] == "group_bound_values":
         quantitative_tuples = [
-            (item["statistic"], item["value"], item["unit"]) for item in reported["values"]
+            (
+                (f"/reported/values/{index}/statistic", item["statistic"]),
+                (f"/reported/values/{index}/value", item["value"]),
+                (f"/reported/values/{index}/unit", item["unit"]),
+            )
+            for index, item in enumerate(reported["values"])
         ]
     else:
         quantitative_tuples = [
-            (*item["category_axes"], item["value"]) for item in reported["categories"]
+            tuple(
+                [
+                    *(
+                        (
+                            f"/reported/categories/{index}/category_axes/{axis}",
+                            value,
+                        )
+                        for axis, value in enumerate(item["category_axes"])
+                    ),
+                    (f"/reported/categories/{index}/value", item["value"]),
+                ]
+            )
+            for index, item in enumerate(reported["categories"])
         ]
     return any(
-        supports(endpoint_name, reference)
+        supports(endpoint_name, reference, "/reported/endpoint/name")
         and any(
-            all(supports(value, reference) for value in quantitative)
+            all(supports(value, reference, field_path) for field_path, value in quantitative)
             for quantitative in quantitative_tuples
         )
         for reference in evidence
@@ -1965,7 +2164,7 @@ def _valid_result_evidence(
     sources: dict[str, dict[str, object]],
     requested_outcomes: dict[str, str],
     batch: object = None,
-    semantics_version: str = "rob2-kit.result-semantics.v0.7",
+    semantics_version: str = "rob2-kit.result-semantics.v0.8",
 ) -> bool:
     """Replay the closed Result Evidence contract from exported selections."""
     if not isinstance(result, dict) or not isinstance(result.get("trial_id"), str):
@@ -2051,6 +2250,15 @@ def _valid_result_evidence(
         return False
     if not _valid_result_shape(result, requested_outcome, semantics_version):
         return False
+    strict_numeric = semantics_version == "rob2-kit.result-semantics.v0.8"
+
+    def supports_material(material: str, value: str, field_path: str | None = None) -> bool:
+        return (
+            _result_value_contains(material, value, field_path)
+            if strict_numeric
+            else _normalized_contains(material, value)
+        )
+
     if not isinstance(result.get("target"), dict) or not isinstance(result.get("reported"), dict):
         return False
     evidence = result.get("evidence")
@@ -2146,7 +2354,7 @@ def _valid_result_evidence(
                 if (
                     not isinstance(selected, dict)
                     or selected.get("trial_id") != result["trial_id"]
-                    or not _normalized_contains(material, str(input.get("value", "")))
+                    or not supports_material(material, str(input.get("value", "")))
                 ):
                     return False
             continue
@@ -2192,7 +2400,7 @@ def _valid_result_evidence(
                 or any(
                     not isinstance(value, str)
                     or not value.strip()
-                    or not _normalized_contains(material, value)
+                    or not supports_material(material, value)
                     for value in scalar_fields
                 )
                 or any(
@@ -2206,7 +2414,7 @@ def _valid_result_evidence(
                     for value in values
                 )
                 or any(
-                    not _normalized_contains(material, value)
+                    not supports_material(material, value)
                     for values in array_fields.values()
                     for value in values
                 )
@@ -2250,6 +2458,7 @@ def _valid_result_evidence(
         result,
         evidence,
         cast(dict[str, dict[str, object]], by_handle),
+        strict_numeric=strict_numeric,
     ):
         return False
     leaves = {
@@ -2293,9 +2502,9 @@ def _valid_result_evidence(
                     "quote", by_handle[reference["handle"]].get("transcription", "")
                 )
             )
-            if not _normalized_contains(material, value):
+            if not supports_material(material, value, path):
                 return False
-        if item_kind == "table" and not _normalized_contains(
+        if item_kind == "table" and not supports_material(
             str(
                 by_handle[reference["handle"]].get(
                     "quote", by_handle[reference["handle"]].get("transcription", "")
@@ -2309,7 +2518,7 @@ def _valid_result_evidence(
             if selected.get("provenance") == "host_visual" and not _host_visual_leaf_allowed(path):
                 return False
             figure_material = str(reference.get("transcription", ""))
-            if not _normalized_contains(figure_material, value):
+            if not supports_material(figure_material, value, path):
                 return False
         if item_kind == "derived" and value != reference.get("value"):
             return False
@@ -2417,6 +2626,7 @@ def verify(path: Path) -> tuple[bool, str]:
             scientific_pack = canonical.get("scientific_pack")
             if scientific_pack not in (
                 _SCIENTIFIC_PACK,
+                _CURRENT_PACK_PREVIOUS_PROOF,
                 _PREVIOUS_SCIENTIFIC_PACK,
                 _LEGACY_SCIENTIFIC_PACK,
                 _HISTORICAL_SCIENTIFIC_PACK,

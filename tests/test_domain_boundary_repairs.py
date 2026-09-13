@@ -865,7 +865,7 @@ def test_domain_context_result_projection_omits_canonical_bindings(tmp_path: Pat
         "id",
         "wording",
         "options",
-        "active",
+        "activation_status",
         "activation",
         "official_guidance",
         "source_locator",
@@ -1026,7 +1026,10 @@ def test_domain_two_judgment_with_itt_premise_advances_to_domain_three(
     assert {item["id"] for item in branch_context["questions"]} == {
         item.id for item in SCIENTIFIC_PACK.questions if item.domain_id == "domain:deviations"
     }
-    assert any(not item["active"] for item in branch_context["questions"])
+    assert any(
+        item["activation_status"] == "dependent_on_draft_answers"
+        for item in branch_context["questions"]
+    )
     itt = _call(
         workspace,
         "select_text_evidence",
@@ -1077,8 +1080,63 @@ def test_domain_two_judgment_with_itt_premise_advances_to_domain_three(
     saved = _call(workspace, "save_domain_judgment", draft)
     assert saved["outcome"] == "success", saved
     assert saved["data"]["checkpoint"]["judgment"] == "some_concerns"
+    saved_context = _call(
+        workspace,
+        "get_domain_context",
+        {"domain_id": "domain:deviations"},
+    )["data"]
+    assert any(
+        item["activation_status"] == "active_in_saved_checkpoint"
+        for item in saved_context["questions"]
+        if item["activation"]["kind"] == "rule"
+    )
+    assert any(
+        item["activation_status"] == "inactive_in_saved_checkpoint"
+        for item in saved_context["questions"]
+        if item["activation"]["kind"] == "rule"
+    )
     context = _call(workspace, "get_domain_context", {})
     assert context["head"]["next_action"]["domain_id"] == "domain:missing"
+
+
+def test_d3_activation_status_scopes_unsaved_and_saved_cards(tmp_path: Path) -> None:
+    workspace, evidence, revision = _assessment_workspace(tmp_path)
+    for domain_id in ("domain:randomization", "domain:deviations"):
+        saved = _call(
+            workspace,
+            "save_domain_judgment",
+            _domain_draft("trial", domain_id, revision, evidence),
+        )
+        assert saved["outcome"] == "success", saved
+        revision = int(saved["head"]["state_revision"])
+
+    unsaved = _call(workspace, "get_domain_context", {})["data"]
+    d3_4 = next(
+        item for item in unsaved["questions"] if item["id"] == "sq:missing:likely-dependent"
+    )
+    assert d3_4["activation_status"] == "dependent_on_draft_answers"
+
+    draft = _domain_draft("trial", "domain:missing", revision, evidence)
+    for answer in draft["answers"]:
+        answer["option_id"] = _option_for(
+            answer["question_id"],
+            {
+                "sq:missing:data-available": "no",
+                "sq:missing:evidence-unbiased": "no",
+                "sq:missing:true-value-dependent": "probably_yes",
+            }.get(answer["question_id"], "no_information"),
+        )
+    saved = _call(workspace, "save_domain_judgment", draft)
+    assert saved["outcome"] == "success", saved
+    saved_context = _call(
+        workspace,
+        "get_domain_context",
+        {"domain_id": "domain:missing"},
+    )["data"]
+    d3_4 = next(
+        item for item in saved_context["questions"] if item["id"] == "sq:missing:likely-dependent"
+    )
+    assert d3_4["activation_status"] == "active_in_saved_checkpoint"
 
 
 def test_domain_absence_basis_contains_only_search_receipt(tmp_path: Path) -> None:

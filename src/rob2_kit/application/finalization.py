@@ -42,6 +42,7 @@ from .contracts import WorkflowConflict
 from .evidence import (
     _normalized_contains,
     _render_page_png,
+    _result_value_contains,
 )
 from .status import presentation
 
@@ -59,7 +60,8 @@ _FORBIDDEN_PATH_FIELDS = frozenset(
     }
 )
 
-_RESULT_SEMANTICS_VERSION = "rob2-kit.result-semantics.v0.7"
+_RESULT_SEMANTICS_VERSION = "rob2-kit.result-semantics.v0.8"
+_PREVIOUS_RESULT_SEMANTICS_VERSION = "rob2-kit.result-semantics.v0.7"
 _LEGACY_RESULT_SEMANTICS_VERSION = "rob2-kit.result-semantics.v0.6"
 _HISTORICAL_RESULT_SEMANTICS_VERSION = "rob2-kit.result-semantics.v0.5"
 
@@ -1263,12 +1265,16 @@ def _reported_result_has_coherent_anchor(
     result: dict[str, object],
     evidence: list[dict[str, object]],
     by_handle: dict[str, dict[str, object]],
+    *,
+    strict_numeric: bool = True,
 ) -> bool:
     reported = cast(dict[str, Any], result["reported"])
     endpoint = reported["endpoint"]
     endpoint_name = endpoint["name"]
 
-    def supports(value: object, reference: dict[str, object]) -> bool:
+    def supports(
+        value: object, reference: dict[str, object], field_path: str | None = None
+    ) -> bool:
         selected = by_handle.get(str(reference.get("handle")))
         if not isinstance(selected, dict) or selected.get("trial_id") != result["trial_id"]:
             return False
@@ -1279,28 +1285,56 @@ def _reported_result_has_coherent_anchor(
             if reference.get("kind") == "figure"
             else selected.get("quote", selected.get("transcription", ""))
         )
-        return _normalized_contains(material, str(value))
+        return (
+            _result_value_contains(material, str(value), field_path)
+            if strict_numeric
+            else _normalized_contains(material, str(value))
+        )
 
     if reported["form"] == "comparative_effect":
         quantitative_tuples = [
-            (reported["effect_measure"], reported["estimate"]),
+            (
+                ("/reported/effect_measure", reported["effect_measure"]),
+                ("/reported/estimate", reported["estimate"]),
+            ),
             *(
-                (item["statistic"], item["value"], item["unit"])
-                for item in reported["group_values"]
+                (
+                    (f"/reported/group_values/{index}/statistic", item["statistic"]),
+                    (f"/reported/group_values/{index}/value", item["value"]),
+                    (f"/reported/group_values/{index}/unit", item["unit"]),
+                )
+                for index, item in enumerate(reported["group_values"])
             ),
         ]
     elif reported["form"] == "group_bound_values":
         quantitative_tuples = [
-            (item["statistic"], item["value"], item["unit"]) for item in reported["values"]
+            (
+                (f"/reported/values/{index}/statistic", item["statistic"]),
+                (f"/reported/values/{index}/value", item["value"]),
+                (f"/reported/values/{index}/unit", item["unit"]),
+            )
+            for index, item in enumerate(reported["values"])
         ]
     else:
         quantitative_tuples = [
-            (*item["category_axes"], item["value"]) for item in reported["categories"]
+            tuple(
+                [
+                    *(
+                        (
+                            f"/reported/categories/{index}/category_axes/{axis}",
+                            value,
+                        )
+                        for axis, value in enumerate(item["category_axes"])
+                    ),
+                    (f"/reported/categories/{index}/value", item["value"]),
+                ]
+            )
+            for index, item in enumerate(reported["categories"])
         ]
     return any(
-        supports(endpoint_name, reference)
+        supports(endpoint_name, reference, "/reported/endpoint/name")
         and any(
-            all(supports(value, reference) for value in quantitative)
+            all(supports(value, reference, field_path) for field_path, value in quantitative)
             for quantitative in quantitative_tuples
         )
         for reference in evidence
@@ -1421,6 +1455,15 @@ def _verify_result_evidence(
         return False
     if not _valid_result_shape(result, requested_outcome, semantics_version):
         return False
+    strict_numeric = semantics_version == _RESULT_SEMANTICS_VERSION
+
+    def supports_material(material: str, value: str, field_path: str | None = None) -> bool:
+        return (
+            _result_value_contains(material, value, field_path)
+            if strict_numeric
+            else _normalized_contains(material, value)
+        )
+
     evidence = result.get("evidence")
     if (
         not isinstance(result.get("target"), dict)
@@ -1517,7 +1560,7 @@ def _verify_result_evidence(
                 or set(item) != {"handle", "value"}
                 or not isinstance((selected := by_handle.get(item.get("handle"))), dict)
                 or selected.get("trial_id") != result["trial_id"]
-                or not _normalized_contains(
+                or not supports_material(
                     str(selected.get("quote", selected.get("transcription", ""))),
                     str(item.get("value", "")),
                 )
@@ -1567,7 +1610,7 @@ def _verify_result_evidence(
                 or any(
                     not isinstance(value, str)
                     or not value.strip()
-                    or not _normalized_contains(material, value)
+                    or not supports_material(material, value)
                     for value in scalar_fields
                 )
                 or any(
@@ -1581,7 +1624,7 @@ def _verify_result_evidence(
                     for value in values
                 )
                 or any(
-                    not _normalized_contains(material, value)
+                    not supports_material(material, value)
                     for values in array_fields.values()
                     for value in values
                 )
@@ -1628,6 +1671,7 @@ def _verify_result_evidence(
         result,
         evidence,
         cast(dict[str, dict[str, object]], by_handle),
+        strict_numeric=strict_numeric,
     ):
         return False
     leaves = {
@@ -1670,9 +1714,9 @@ def _verify_result_evidence(
         if reference["kind"] == "narrative":
             selected = by_handle[reference["handle"]]
             material = str(selected.get("quote", selected.get("transcription", "")))
-            if not _normalized_contains(material, value):
+            if not supports_material(material, value, path):
                 return False
-        if reference["kind"] == "table" and not _normalized_contains(
+        if reference["kind"] == "table" and not supports_material(
             str(
                 by_handle[reference["handle"]].get(
                     "quote", by_handle[reference["handle"]].get("transcription", "")
@@ -1686,7 +1730,7 @@ def _verify_result_evidence(
             if selected.get("provenance") == "host_visual" and not _host_visual_leaf_allowed(path):
                 return False
             figure_material = str(reference.get("transcription", ""))
-            if not _normalized_contains(figure_material, value):
+            if not supports_material(figure_material, value, path):
                 return False
         if reference["kind"] == "derived" and value != reference.get("value"):
             return False
@@ -1984,21 +2028,28 @@ def _valid_scientific_contract_descriptor(value: object) -> bool:
         "content_hash": "sha256:3ef492b34a81c19e3f75d72fea2b92c40aebde80c06e24e44c36cd76dc4cf3d4",
         "official_source": expected["official_source"],
     }
+    current_pack_previous_proof = {
+        "id": "rob2.parallel.assignment",
+        "version": "2019.1",
+        "result_semantics_version": _PREVIOUS_RESULT_SEMANTICS_VERSION,
+        "content_hash": expected["content_hash"],
+        "official_source": expected["official_source"],
+    }
     previous = {
         "id": "rob2.parallel.assignment",
         "version": "2019.1",
-        "result_semantics_version": _RESULT_SEMANTICS_VERSION,
+        "result_semantics_version": _PREVIOUS_RESULT_SEMANTICS_VERSION,
         "content_hash": "sha256:9c293fbfaf1b10b82682a90d2e90986c3283fa1412f2c8b62a4d82a14a795dc8",
         "official_source": expected["official_source"],
     }
     older_v07 = {
         "id": "rob2.parallel.assignment",
         "version": "2019.1",
-        "result_semantics_version": _RESULT_SEMANTICS_VERSION,
+        "result_semantics_version": _PREVIOUS_RESULT_SEMANTICS_VERSION,
         "content_hash": "sha256:3ef492b34a81c19e3f75d72fea2b92c40aebde80c06e24e44c36cd76dc4cf3d4",
         "official_source": expected["official_source"],
     }
-    return value in (historical, legacy, previous, older_v07)
+    return value in (historical, legacy, current_pack_previous_proof, previous, older_v07)
 
 
 def _assessment_summary(state: dict[str, Any]) -> dict[str, dict[str, Any]]:

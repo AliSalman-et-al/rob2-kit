@@ -279,11 +279,12 @@ invent affirmative Evidence.
 ### 6. Audit and commit the Domain once
 
 Draft an answer for every question returned for the Domain, including questions
-whose `active` flag is currently false. That flag reflects the saved state;
-your new answers can activate further questions in the same call. Use current
-card option IDs and supported bases for every answer. Submit the complete set
-in one `save_domain_judgment` call. The server resolves activation from your
-answers and commits only active answers.
+whose `activation_status` is `dependent_on_draft_answers` or
+`inactive_in_saved_checkpoint`. An unsaved conditional card is unresolved until
+the submitted draft path is evaluated; a saved-checkpoint status describes only
+that checkpoint. Use current card option IDs and supported bases for every
+answer. Submit the complete set in one `save_domain_judgment` call. The server
+resolves activation from your answers and commits only active answers.
 
 Before saving, compare each active answer with the approved Result in the
 current Domain context: outcome definition, population, comparison, and time

@@ -25,6 +25,7 @@ from rob2_kit.application.evidence import (
     _normalized_contains,
     _normalized_match,
     _preview_window_bounds,
+    _result_value_contains,
     _search_receipt,
 )
 from rob2_kit.application.source_handles import resolve_source_handle
@@ -1507,6 +1508,53 @@ def test_numeric_line_wrap_does_not_create_scalar_matches_or_invalid_spans() -> 
                 assert numeric_range in normalized
                 assert len(normalized) == len(spans)
                 assert all(0 <= start <= end <= len(material) for start, end in spans)
+
+
+def test_numeric_result_binding_requires_complete_literal_expressions() -> None:
+    standalone = runpy.run_path("scripts/verify_bundle.py")
+    standalone_contains = standalone["_result_value_contains"]
+    cases = (
+        ("Deaths: 34; ratio 0.84 (CI 0.64 to 1.14).", "4", "/reported/estimate", False),
+        ("Deaths: 34; ratio 0.84 (CI 0.64 to 1.14).", "0.8", "/reported/estimate", False),
+        ("Deaths: 34; ratio 0.84 (CI 0.64 to 1.14).", "0.84", "/reported/estimate", True),
+        ("Age 1-\n3 years", "13", "/reported/values/0/value", False),
+        ("Age 1-\n3 years", "1-3", "/reported/values/0/value", True),
+        ("Age 1-\n3 years", "1", "/reported/values/0/value", True),
+        ("Age 1-\n3 years", "3", "/reported/values/0/value", True),
+        ("1 2 participants", "1", "/reported/estimate", True),
+        ("NCT003 and 3 patients", "3", "/reported/estimate", True),
+        ("NCT003", "3", "/reported/estimate", False),
+        ("3a", "3", "/reported/estimate", False),
+        ("estimate -2", "2", "/reported/estimate", False),
+        ("estimate -2", "-2", "/reported/estimate", True),
+        ("estimate 3 - marker", "3", "/reported/estimate", True),
+        ("estimate 3-ABC", "3", "/reported/estimate", False),
+        ("Deaths 2 (12)b", "2 (12)", "/reported/estimate", True),
+        ("Deaths 2 (12)a,b", "2 (12)", "/reported/estimate", True),
+        ("Deaths 2 (12)abc", "2 (12)", "/reported/estimate", False),
+        ("Deaths 2 (12)b", "2", "/reported/estimate", False),
+        ("Deaths 2 (12)b", "12", "/reported/estimate", False),
+        ("Change -3.32±0.54a", "-3.32±0.54", "/reported/estimate", True),
+        ("Change -3.32±0.54a,b", "-3.32±0.54", "/reported/estimate", True),
+        ("Change -3.32±0.54abc", "-3.32±0.54", "/reported/estimate", False),
+        ("Change -3.32±0.54a", "0.54", "/reported/estimate", False),
+        ("Change -3.32±0.54a", "3.32±0.54", "/reported/estimate", False),
+        ("Change T-3.32±0.54a", "-3.32±0.54", "/reported/estimate", False),
+        ("Change -3.32±0.54a", "-3.3±0.54", "/reported/estimate", False),
+        ("estimate 1e-3", "1", "/reported/estimate", False),
+        ("estimate 1e-3", "1e-3", "/reported/estimate", True),
+        ("estimate 1,234", "1", "/reported/estimate", False),
+        ("estimate 1,234", "1,234", "/reported/estimate", True),
+        ("estimate 1,5", "1,5", "/reported/estimate", True),
+        ("estimate > 5", "5", "/reported/estimate", False),
+        ("estimate > 5", "> 5", "/reported/estimate", True),
+        ("estimate 5%", "5", "/reported/values/0/value", True),
+        ("estimate 5%", "5", "/reported/estimate", False),
+        ("estimate 5%", "5%", "/reported/estimate", True),
+    )
+    for material, phrase, path, expected in cases:
+        assert _result_value_contains(material, phrase, path) is expected
+        assert standalone_contains(material, phrase, path) is expected
 
 
 def test_search_sources_finds_numeric_range_without_scalar_match(tmp_path: Path) -> None:
