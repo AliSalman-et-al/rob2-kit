@@ -55,7 +55,12 @@ Evidence support or scientific correctness.
 			"scope_justification": "The selected passage supports the reported quiz endpoint at 15 days, which is the target time point; the observed-score restriction makes the relation narrower.",
 			"population_justification": "The target is all randomized learners. The reported analysis includes learners with observed scores, while exclusions and missing observations are not fully reported.",
 			"unknowns": ["The report does not establish how learners without observed scores were handled."],
-			"counterevidence": []
+			"counterevidence": [
+				{
+					"evidence": "eh_0000000000000002",
+					"implication": "A separate fictional report states that learners without observed scores were excluded after randomization, which conflicts with treating the reported population as all randomized learners."
+				}
+			]
 		}
 	],
 	"expected_revision": 7

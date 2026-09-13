@@ -10,6 +10,40 @@ Amended for Result semantics v0.7 by issue 305 for bounded full-Source reading
 without caller-selected report scopes, and issue 306 for pack support determined
 by trial design.
 
+Amended for the v0.8 public contract by issue 342 for mandatory source-bound
+reasoning receipts and issue 316 for visible intake conditions and DOCX
+projection.
+
+## v0.8 release amendment
+
+Fresh v0.8 workspaces expose 16 strictly typed tools. The two scientific save
+operations have a required reasoning step:
+
+- `reason_proposal` receives the complete Result cards and one concise,
+  source-bound assessment for each Trial. `save_proposal` consumes the exact
+  stored draft with its returned `reasoning_id` and revision.
+- `reason_domain_assessment` receives the complete active Domain draft.
+  `save_domain_judgment` consumes the exact stored draft with its returned
+  `reasoning_id` and revision.
+
+The reasoning calls validate structure, Evidence references, activation, and
+workflow requirements. They do not judge scientific correctness. A successful
+receipt is not an approval. Proposal Review remains the only researcher gate;
+there is no additional researcher gate for reasoning.
+
+The v0.8 package and public MCP contract use version `0.8.0`. The internal
+workspace database contract remains `0.5.0`, and v0.8 starts in a fresh
+workspace because active older workflows are not migrated. Historical finalized
+v0.5, v0.6, and v0.7 bundles retain their recorded semantics and remain
+independently verifiable.
+
+Intake captures ordinary DOCX paragraphs, table rows and cells in order, and
+footnotes in a synthetic page-1 text projection. Synthetic page 1 is not Word
+pagination and does not represent every embedded object. Legacy `.doc` files
+are unsupported. Image-only PDFs remain Sources and can be recovered with
+`render_page` even without searchable text. Unsupported, unreadable, and
+declared-missing files remain visible as intake conditions.
+
 ## Bounded reading and scientific judgment amendment
 
 Keep the existing public tools and Proposal Review gate. Require main-report

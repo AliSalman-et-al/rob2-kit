@@ -15,11 +15,10 @@ assessment bundles.
 
 ## Install
 
-The workflow with Result semantics v0.7 and bounded full-Source reading requires
-a fresh assessment workspace. Before upgrading, finish active v0.5 and v0.6
-assessments with the previously installed version. Alternatively, start a new
-workspace from the original inputs. Historical finalized v0.5 and v0.6 bundles
-still verify unchanged. See the [upgrade boundary](docs/adr/0031-v0-4-evidence-first-interaction.md#upgrade-boundary).
+The v0.8 workflow requires a fresh assessment workspace. Finish an active
+assessment with the version that created it, or start a new workspace from the
+original inputs. Historical finalized v0.5, v0.6, and v0.7 bundles still verify
+unchanged. See the [v0.8 upgrade boundary](docs/adr/0031-v0-4-evidence-first-interaction.md#v0-8-release-amendment).
 
 Install the command from a source checkout with `uv`:
 
@@ -30,14 +29,14 @@ rob2 --help
 
 If `rob2` is not found, run `uv tool update-shell`, open a new terminal, and
 try `rob2 --help` again. The installed package contains the `rob2` command, the
-14-tool MCP server, and the portable `rob2-assess` skill. The v0.5 boundary
+16-tool MCP server, and the portable `rob2-assess` skill. The v0.8 boundary
 returns one structured JSON result for MCP hosts; `render_page` may additionally
 return image content.
 
 To install a built release artifact instead, replace `.` with the wheel path:
 
 ```powershell
-uv tool install --force dist/rob2_kit-0.5.0-py3-none-any.whl
+uv tool install --force dist/rob2_kit-0.8.0-py3-none-any.whl
 ```
 
 ## Prepare the workspace
@@ -58,10 +57,16 @@ my-assessment/
         └── main-article.pdf
 ```
 
-Supported source files are PDF, TXT, Markdown, CSV, and JSON. Hidden
-directories, links, and unsupported files are not captured. Trial directory
-names become stable trial identifiers, so keep them meaningful and do not put
-unrelated directories under `input`.
+Supported source files are PDF, DOCX, TXT, Markdown, CSV, and JSON. DOCX
+projection covers ordinary paragraphs, table rows and cells in order, and
+footnotes on synthetic page 1. Synthetic page 1 is not Word pagination, and
+the projection does not extract every embedded object. Legacy `.doc` files are
+reported as unsupported. Image-only PDFs remain Sources and can be recovered
+with `render_page`, even when they have no searchable text. Hidden directories
+and links are excluded by the input policy; ordinary unsupported candidate files
+are reported as intake conditions. Trial directory names become stable trial
+identifiers, so keep them meaningful and do not put unrelated directories under
+`input`.
 
 Filenames provide a simple default role classification. Use an optional
 `sources.toml` when a filename is ambiguous or when you have an authoritative
@@ -166,6 +171,12 @@ captured bytes remain the source authority. Figures, tables, and CONSORT
 diagrams can be selected as visual evidence; text corroboration is preferred
 when available.
 
+Before saving a Proposal, the host calls `reason_proposal` with the complete
+Result cards and one concise evidence assessment for each Trial. The host then
+calls receipt-only `save_proposal` with the returned `reasoning_id` and
+revision. To change a draft, repeat `reason_proposal`; do not resend cards to
+`save_proposal`.
+
 When the proposal is ready, the host pauses at the only researcher gate and
 presents the proposed Result mapping. Respond in the same Claude Code, Codex,
 or other MCP client conversation:
@@ -191,7 +202,12 @@ rob2 review --workspace C:/path/to/my-assessment
   correction in conversation.
 
 After approval, the host owns signaling answers for supported trial designs and
-follows the server through all five domains and finalization. Unsupported or
+follows the server through all five domains and finalization. Before every
+Domain save, the host calls `reason_domain_assessment` with the complete active
+draft and then calls receipt-only `save_domain_judgment` with its returned
+`reasoning_id` and revision. The server checks structure, references, and
+workflow requirements. A successful reasoning receipt does not establish
+scientific correctness. Unsupported or
 unresolved designs remain unassessed: they require the appropriate pack or source
 information establishing the design, respectively. Do not direct individual
 signaling answers.
@@ -230,8 +246,8 @@ query text, lexical mode, an optional recommended Source role, and purpose. Sugg
 are retrieval vocabulary and alternatives, not a mandatory sequence; for
 example, an exact-phrase `intention-to-treat` search is paired with the
 independently executable `all randomized patients` wording.
-The host computes the complete active branch from answers in the same save call;
-the server ignores extra inactive branch answers.
+The host computes the complete active branch from answers in the same reasoning
+call; the server ignores extra inactive branch answers.
 While the current Trial remains pending, the host may revise one of its committed
 Domain checkpoints when new evidence or a documented self-correction requires
 it; the immutable history is retained. Once the fifth Domain freezes the Trial,
@@ -269,8 +285,9 @@ The server exposes exactly these strictly typed FastMCP tools:
 
 `prepare_batch`, `get_status`, `list_sources`, `search_sources`, `read_pages`,
 `select_text_evidence`, `render_page`, `select_visual_evidence`,
-`save_proposal`, `request_proposal_approval`, `get_domain_context`,
-`save_domain_judgment`, `request_trial_terminal`, and `finalize_batch`.
+`reason_proposal`, `save_proposal`, `request_proposal_approval`,
+`get_domain_context`, `reason_domain_assessment`, `save_domain_judgment`,
+`request_trial_terminal`, and `finalize_batch`.
 
 The live `rob2://current-batch` resource is the restart-safe status projection.
 Researcher authority enters through a directly accepted MCP elicitation or the
@@ -291,7 +308,7 @@ wheel verification.
 
 ```powershell
 uv sync --frozen
-./scripts/verify_v05.ps1
+./scripts/verify_v08.ps1
 ```
 
 The verification script runs Ruff, ty, the four-worker pytest suite, runtime

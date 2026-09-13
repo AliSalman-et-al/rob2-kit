@@ -355,7 +355,13 @@ class CapturedTrial(StrictModel):
 
     @model_validator(mode="after")
     def identity_matches(self) -> CapturedTrial:
-        return _identity(self, self.identity)
+        # Captured batches are persisted as JSON dictionaries.  Keep explicit
+        # optional intake fields (for example ``declared_role: null``) in the
+        # Trial identity so the model identity matches that serialized shape.
+        expected = _digest(self.model_dump(mode="python", exclude={"identity"}))
+        if self.identity is not None and self.identity != expected:
+            raise ValueError("identity does not match canonical content")
+        return self.model_copy(update={"identity": expected})
 
 
 class CapturedBatch(StrictModel):

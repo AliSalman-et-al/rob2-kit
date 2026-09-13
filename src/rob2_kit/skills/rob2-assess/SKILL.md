@@ -172,9 +172,10 @@ inspected. Search hits and `read_pages` windows already provide reusable
 `select_text_evidence` only when you need a different line boundary. Use
 `render_page` and `select_visual_evidence` when layout carries meaning.
 
-Build Result cards for the live `reason_proposal` schema. The first save contains
-one card for every captured Trial. While Proposal Review is pending, submit only
-complete replacement cards for corrected Trials; the server preserves the rest.
+Build Result cards for the live `reason_proposal` schema. The first reasoning call
+contains one card for every captured Trial. While Proposal Review is pending,
+submit only complete replacement cards for corrected Trials; the server preserves
+the rest.
 
 For an assessable Result, the server reconstructs the captured outcome and
 closed effect of interest, then derives clarity, retained Evidence, and bindings.
@@ -186,18 +187,15 @@ selected missing-reporting Evidence, or `no_supported_sources` only for a
 captured Trial with zero Sources. Unavailable Results still enter Proposal Review.
 
 Before saving a Proposal, submit its Result cards and a brief evidence-based
-assessment for each submitted Trial with `reason_proposal`. Explain why the
+assessment for each submitted Trial with `reason_proposal`. For an assessable
+Result, provide separate `scope_justification` and `population_justification`;
+for an unavailable Result, provide `missing_fact_justification`. Explain why the
 reported result supports the target relation and chosen time point or window.
 Distinguish baseline eligibility from exclusions or missing observations in the
 reported analysis. Identify material conflicting evidence and unresolved facts;
 do not infer unavailable facts. The server validates structure, Evidence
 references and workflow requirements, not scientific correctness. Save using the
 returned `reasoning_id`.
-
-Complete the evidence assessment through `reason_proposal` before each Proposal
-save and through `reason_domain_assessment` before each Domain save. Use concise
-explanations of decisive premises, not a reasoning transcript. A successful
-receipt does not establish that your interpretation is correct.
 
 ### 4. Complete Proposal Review
 
@@ -298,22 +296,20 @@ invent affirmative Evidence.
 
 ### 6. Audit and commit the Domain once
 
-Draft an answer for every question returned for the Domain, including questions
-whose `activation_status` is `dependent_on_draft_answers` or
-`inactive_in_saved_checkpoint`. An unsaved conditional card is unresolved until
-the submitted draft path is evaluated; a saved-checkpoint status describes only
-that checkpoint. Use current card option IDs and supported bases for every
-answer. Submit the complete set in one `reason_domain_assessment` call. The
-server resolves activation from your answers and commits only active answers
-after `save_domain_judgment` consumes the returned `reasoning_id`.
+Draft every active question in the dependency-closed path implied by the drafted
+upstream answers and activation predicates. Include inactive answers only when they are
+already available; they do not need fabricated reasoning fields and the server ignores them. Use current
+card option IDs and supported bases for every submitted answer. Submit the
+complete active set in one `reason_domain_assessment` call. The server resolves
+activation from the draft and commits only active answers after
+`save_domain_judgment` consumes the returned `reasoning_id`.
 
 Before saving, compare each active answer with the approved Result in the
 current Domain context: outcome definition, population, comparison, and time
 point. Check the selected passages against the exact proposition and guidance
 on that question card. Choose the option whose literal meaning follows from
-those passages and any stated uncertainty. Add a concise `justification` when
-an inference, conflicting evidence, or uncertainty connects the passages to the
-answer; every active answer must include that concise justification. The audit
+those passages and any stated uncertainty. Every active answer must include a
+concise `justification`, an `unknowns` array, and a `counterevidence` array. The audit
 is complete when every active answer addresses that Result and its bases support
 the claims attributed to them.
 

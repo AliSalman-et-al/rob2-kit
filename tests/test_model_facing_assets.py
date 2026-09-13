@@ -3,7 +3,7 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
-from rob2_kit.workflow_models import ProposalDraft
+from rob2_kit.workflow_models import ProposalReasoningDraft
 
 MODEL_FACING_PATHS = (
     Path("README.md"),
@@ -60,14 +60,18 @@ def test_domain_references_use_current_handle_only_evidence_contract() -> None:
     assert stale == {}
 
 
-def test_result_reference_contains_a_valid_save_proposal_example() -> None:
+def test_result_reference_contains_valid_reasoning_and_receipt_examples() -> None:
     reference = Path("src/rob2_kit/skills/rob2-assess/references/result.md").read_text(
         encoding="utf-8"
     )
     examples = re.findall(r"```json\s*(.*?)\s*```", reference, flags=re.DOTALL)
 
-    assert len(examples) == 1
-    ProposalDraft.model_validate_json(examples[0])
+    assert len(examples) >= 3
+    draft = ProposalReasoningDraft.model_validate_json(examples[0])
+    assert (
+        draft.assessments[0].counterevidence[0].evidence != draft.assessments[0].evidence_basis[0]
+    )
+    assert examples[1].find('"reasoning_id"') >= 0
 
 
 def test_measurement_reference_keeps_ordered_outcome_specific_audit() -> None:

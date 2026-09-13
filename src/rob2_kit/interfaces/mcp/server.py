@@ -1,4 +1,4 @@
-"""The exact v0.5 FastMCP boundary."""
+"""The exact v0.8 FastMCP boundary."""
 
 from __future__ import annotations
 

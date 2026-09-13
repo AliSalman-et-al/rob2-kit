@@ -169,7 +169,7 @@ def test_server_and_resource_metadata_are_explicit() -> None:
     # exposing the initialize result through its in-process client.
     assert initialization is None
     assert mcp.name == "rob2-kit"
-    assert mcp.version == "0.5.0"
+    assert mcp.version == "0.8.0"
     assert mcp.website_url == "https://github.com/AliSalman-et-al/rob2-kit"
     assert len(resources) == 1
     resource = resources[0]
