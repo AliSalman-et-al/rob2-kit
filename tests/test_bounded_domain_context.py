@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import asyncio
-import json
 import os
 import re
 import sqlite3
@@ -40,6 +39,7 @@ from rob2_kit.interfaces.mcp.contracts import (
 from rob2_kit.interfaces.mcp.server import (
     _decode_domain_context_cursor,
     _domain_context_cursor,
+    _domain_context_transport_bytes,
     _paginate_domain_context_transport,
     mcp,
 )
@@ -51,7 +51,7 @@ def _wire_context(
     arguments: dict[str, object] | None = None,
     *,
     drain: bool = True,
-) -> tuple[dict, str]:
+) -> tuple[dict, int]:
     async def invoke() -> mcp_types.CallToolResult:
         previous = os.environ.get("ROB2_WORKSPACE")
         os.environ["ROB2_WORKSPACE"] = str(workspace)
@@ -87,9 +87,8 @@ def _wire_context(
                         data.pop("context_page", None)
                         merged["data"] = data
                         merged["head"] = pages[-1].structured_content.get("head")
-                        text = json.dumps(merged, ensure_ascii=False, separators=(",", ":"))
                         return mcp_types.CallToolResult(
-                            content=[mcp_types.TextContent(type="text", text=text)],
+                            content=[],
                             structured_content=merged,
                         )
                 return result
@@ -100,11 +99,10 @@ def _wire_context(
                 os.environ["ROB2_WORKSPACE"] = previous
 
     result = asyncio.run(invoke())
-    text = next(item.text for item in result.content if isinstance(item, mcp_types.TextContent))
-    assert result.structured_content is not None
-    parsed = json.loads(text)
-    assert parsed == result.structured_content
-    return parsed, text
+    assert result.content == []
+    assert isinstance(result.structured_content, dict)
+    parsed = dict(result.structured_content)
+    return parsed, _domain_context_transport_bytes(parsed)
 
 
 def _pending_assessment_workspace(tmp_path: Path) -> tuple[Path, dict, int]:
@@ -119,16 +117,12 @@ def _pending_assessment_workspace(tmp_path: Path) -> tuple[Path, dict, int]:
 
 def test_auto_domain_context_delivery_is_sequential_and_restartable(tmp_path: Path) -> None:
     workspace, evidence, revision = _pending_assessment_workspace(tmp_path)
-    first, text = _wire_context(workspace, {}, drain=False)
+    first, transport_bytes = _wire_context(workspace, {"page_size": 16_384}, drain=False)
     page = first["data"]["context_page"]
     assert page["index"] == 0
     assert page["next_cursor"]
     assert first["head"]["next_action"]["operation"] == "get_domain_context"
-    transport = {
-        "content": [{"type": "text", "text": text}],
-        "structured_content": first,
-    }
-    assert len(json.dumps(transport, ensure_ascii=False, separators=(",", ":")).encode()) <= 32_768
+    assert transport_bytes <= 32_768
     first_cursor = page["next_cursor"]
 
     with sqlite3.connect(workspace / ".rob2-kit" / "derivative.sqlite3") as connection:
@@ -148,20 +142,7 @@ def test_auto_domain_context_delivery_is_sequential_and_restartable(tmp_path: Pa
     assert recovery["operation"] == "get_domain_context"
     assert recovery["arguments"]["cursor"] == first_cursor
     assert recovery["arguments"]["page_size"] == page["page_size"]
-    pending_text = json.dumps(blocked, ensure_ascii=False, separators=(",", ":"), sort_keys=True)
-    assert (
-        len(
-            json.dumps(
-                {
-                    "content": [{"type": "text", "text": pending_text}],
-                    "structured_content": blocked,
-                },
-                ensure_ascii=False,
-                separators=(",", ":"),
-            ).encode()
-        )
-        <= 32_768
-    )
+    assert _domain_context_transport_bytes(blocked) <= 32_768
 
     stale_revision = _call(
         workspace,
@@ -178,29 +159,21 @@ def test_auto_domain_context_delivery_is_sequential_and_restartable(tmp_path: Pa
         skipped_payload = _decode_domain_context_cursor(first_cursor)
         skipped_payload["page_index"] = page["count"] - 1
         skipped = _domain_context_cursor(skipped_payload)
-        out_of_order, _text = _wire_context(workspace, {"cursor": skipped}, drain=False)
+        out_of_order, _transport_bytes = _wire_context(workspace, {"cursor": skipped}, drain=False)
         assert out_of_order["outcome"] == "condition"
         assert out_of_order["condition"]["code"] == "domain_context_delivery_out_of_order"
         assert first_cursor in out_of_order["condition"]["detail"]
 
-    continued, continued_text = _wire_context(workspace, recovery["arguments"], drain=False)
-    assert continued["data"]["context_page"]["index"] == 1
-    assert (
-        len(
-            json.dumps(
-                {
-                    "content": [{"type": "text", "text": continued_text}],
-                    "structured_content": continued,
-                },
-                ensure_ascii=False,
-                separators=(",", ":"),
-            ).encode()
-        )
-        <= 32_768
+    continued, continued_transport_bytes = _wire_context(
+        workspace, recovery["arguments"], drain=False
     )
+    assert continued["data"]["context_page"]["index"] == 1
+    assert continued_transport_bytes <= 32_768
 
-    repeated, _text = _wire_context(workspace, {"cursor": first_cursor}, drain=False)
-    repeated_again, _text = _wire_context(workspace, {"cursor": first_cursor}, drain=False)
+    repeated, _transport_bytes = _wire_context(workspace, {"cursor": first_cursor}, drain=False)
+    repeated_again, _transport_bytes = _wire_context(
+        workspace, {"cursor": first_cursor}, drain=False
+    )
     assert repeated == repeated_again
     with sqlite3.connect(workspace / ".rob2-kit" / "derivative.sqlite3") as connection:
         assert connection.execute("SELECT next_index FROM domain_context_delivery").fetchone() == (
@@ -209,7 +182,7 @@ def test_auto_domain_context_delivery_is_sequential_and_restartable(tmp_path: Pa
 
     cursor = repeated["data"]["context_page"]["next_cursor"]
     while cursor is not None:
-        next_page, _text = _wire_context(workspace, {"cursor": cursor}, drain=False)
+        next_page, _transport_bytes = _wire_context(workspace, {"cursor": cursor}, drain=False)
         cursor = next_page["data"]["context_page"]["next_cursor"]
     with sqlite3.connect(workspace / ".rob2-kit" / "derivative.sqlite3") as connection:
         assert connection.execute(
@@ -220,7 +193,7 @@ def test_auto_domain_context_delivery_is_sequential_and_restartable(tmp_path: Pa
             "FROM domain_context_delivery"
         ).fetchone()
 
-    refreshed, _text = _wire_context(workspace, {}, drain=False)
+    refreshed, _transport_bytes = _wire_context(workspace, {"page_size": 16_384}, drain=False)
     assert refreshed["data"]["context_page"]["index"] == 0
     with sqlite3.connect(workspace / ".rob2-kit" / "derivative.sqlite3") as connection:
         assert (
@@ -244,7 +217,7 @@ def test_small_domain_context_receipt_remains_unpaged(
 ) -> None:
     workspace, _evidence, _revision = _pending_assessment_workspace(tmp_path)
     monkeypatch.setattr(mcp_server, "_DOMAIN_CONTEXT_DEFAULT_PAGE_BYTES", 131_072)
-    context, _text = _wire_context(workspace, {}, drain=False)
+    context, _transport_bytes = _wire_context(workspace, {}, drain=False)
     assert "context_page" not in context["data"]
 
 
@@ -266,7 +239,7 @@ def test_domain_context_pages_retain_scope_and_all_conditional_questions(
         "page_size": 32_768,
     }
     while True:
-        page, text = _wire_context(workspace, arguments)
+        page, transport_bytes = _wire_context(workspace, arguments)
         pages.append(page)
         metadata = page["data"]["context_page"]
         assert metadata["trial_id"] == "trial"
@@ -274,16 +247,6 @@ def test_domain_context_pages_retain_scope_and_all_conditional_questions(
         assert metadata["state_revision"] == page["head"]["state_revision"]
         assert page["data"]["result"]
         assert page["data"]["evidence_workspace"]
-        transport_bytes = len(
-            json.dumps(
-                {
-                    "content": [{"type": "text", "text": text}],
-                    "structured_content": page,
-                },
-                ensure_ascii=False,
-                separators=(",", ":"),
-            ).encode("utf-8")
-        )
         assert transport_bytes <= metadata["page_size"]
         cursor = metadata["next_cursor"]
         if cursor is not None:
@@ -309,7 +272,7 @@ def test_domain_context_pages_retain_scope_and_all_conditional_questions(
     for section in ("questions", "comparison_cards", "evidence"):
         reconstructed[section] = [item for page in pages for item in page["data"][section]]
     reconstructed.pop("context_page")
-    full, _text = _wire_context(
+    full, _transport_bytes = _wire_context(
         workspace,
         {"trial_id": "trial", "domain_id": "domain:deviations"},
     )
@@ -318,7 +281,7 @@ def test_domain_context_pages_retain_scope_and_all_conditional_questions(
 
 def test_domain_context_cursor_rejects_revision_change(tmp_path: Path) -> None:
     workspace, evidence, revision = _assessment_workspace(tmp_path)
-    first, _text = _wire_context(workspace, {"page_size": 32_768})
+    first, _transport_bytes = _wire_context(workspace, {"page_size": 32_768})
     cursor = first["data"]["context_page"]["next_cursor"]
     assert cursor
 
@@ -332,7 +295,7 @@ def test_domain_context_cursor_rejects_revision_change(tmp_path: Path) -> None:
         delivery_before = connection.execute(
             "SELECT next_index,complete FROM domain_context_delivery"
         ).fetchone()
-    stale, _text = _wire_context(workspace, {"cursor": cursor})
+    stale, _transport_bytes = _wire_context(workspace, {"cursor": cursor})
     assert stale["outcome"] == "condition"
     assert stale["condition"]["code"] == "domain_context_cursor_stale"
     with sqlite3.connect(workspace / ".rob2-kit" / "derivative.sqlite3") as connection:
@@ -375,7 +338,7 @@ def test_domain_context_cursor_only_continuation_keeps_nonactive_domain(tmp_path
         _domain_draft("trial", "domain:randomization", revision, evidence),
     )
     assert saved["outcome"] == "success"
-    first, _text = _wire_context(
+    first, _transport_bytes = _wire_context(
         workspace,
         {
             "trial_id": "trial",
@@ -386,7 +349,7 @@ def test_domain_context_cursor_only_continuation_keeps_nonactive_domain(tmp_path
     cursor = first["data"]["context_page"]["next_cursor"]
     assert cursor
 
-    continuation, _text = _wire_context(workspace, {"cursor": cursor})
+    continuation, _transport_bytes = _wire_context(workspace, {"cursor": cursor})
 
     assert continuation["data"]["domain_id"] == "domain:randomization"
     assert continuation["data"]["context_page"]["domain_id"] == "domain:randomization"
@@ -421,7 +384,7 @@ def test_domain_context_cursor_rejects_changed_missing_data_preview(tmp_path: Pa
         "observed": 1,
         "basis": [evidence["handle"]],
     }
-    first, _text = _wire_context(
+    first, _transport_bytes = _wire_context(
         workspace,
         {"missing_data": [preview], "page_size": 32_768},
     )
@@ -430,7 +393,7 @@ def test_domain_context_cursor_rejects_changed_missing_data_preview(tmp_path: Pa
     assert cursor
     changed = preview | {"observed": 0}
 
-    stale, _text = _wire_context(
+    stale, _transport_bytes = _wire_context(
         workspace,
         {"cursor": cursor, "missing_data": [changed]},
     )
@@ -443,7 +406,7 @@ def test_domain_context_cursor_rejects_changed_missing_data_preview(tmp_path: Pa
             "WHERE trial_id=? AND domain_id=? AND state_revision=?",
             ("trial", context_domain, state_revision),
         ).fetchone()[0]
-    restarted, _text = _wire_context(
+    restarted, _transport_bytes = _wire_context(
         workspace,
         {"missing_data": [changed], "page_size": 32_768},
         drain=False,
@@ -491,22 +454,12 @@ def test_domain_context_intermediate_page_bounds_large_missing_preview(tmp_path:
         for index in range(18)
     ]
     arguments: dict[str, object] = {"missing_data": preview, "page_size": 131_072}
-    pages: list[tuple[dict, str]] = []
+    pages: list[tuple[dict, int]] = []
     while True:
-        page, text = _wire_context(workspace, arguments)
+        page, transport_bytes = _wire_context(workspace, arguments)
         assert page["outcome"] == "success"
-        pages.append((page, text))
+        pages.append((page, transport_bytes))
         metadata = page["data"]["context_page"]
-        transport_bytes = len(
-            json.dumps(
-                {
-                    "content": [{"type": "text", "text": text}],
-                    "structured_content": page,
-                },
-                ensure_ascii=False,
-                separators=(",", ":"),
-            ).encode("utf-8")
-        )
         assert transport_bytes <= metadata["page_size"]
         if metadata["next_cursor"] is None:
             break
@@ -523,7 +476,7 @@ def test_domain_context_pagination_rejects_oversized_unicode_evidence(
 ) -> None:
     quote = "é" * 20_000
     workspace, _evidence, _revision = _assessment_workspace(tmp_path)
-    value, _text = _wire_context(workspace)
+    value, _transport_bytes = _wire_context(workspace)
     value["data"]["evidence"][0]["quote"] = quote
 
     with pytest.raises(
@@ -541,7 +494,7 @@ def test_domain_context_page_digest_rejects_same_revision_evidence_change(
     tmp_path: Path,
 ) -> None:
     workspace, _evidence, _revision = _assessment_workspace(tmp_path)
-    value, _text = _wire_context(workspace)
+    value, _transport_bytes = _wire_context(workspace)
     first = _paginate_domain_context_transport(value, None, 32_768)
     cursor = first["data"]["context_page"]["next_cursor"]
     assert cursor
@@ -554,7 +507,7 @@ def test_domain_context_page_digest_rejects_same_revision_evidence_change(
 def test_domain_context_small_budget_returns_header_condition(tmp_path: Path) -> None:
     workspace, _evidence, _revision = _assessment_workspace(tmp_path)
     page_size = 4_096
-    context, _text = _wire_context(workspace, {"page_size": page_size})
+    context, _transport_bytes = _wire_context(workspace, {"page_size": page_size})
 
     assert context["outcome"] == "condition"
     assert context["condition"]["code"] == "domain_context_header_oversized"
@@ -562,7 +515,7 @@ def test_domain_context_small_budget_returns_header_condition(tmp_path: Path) ->
         required_match = re.search(r"required_page_size=(\d+)", context["condition"]["detail"])
         assert required_match is not None
         page_size = int(required_match.group(1))
-        context, _text = _wire_context(workspace, {"page_size": page_size})
+        context, _transport_bytes = _wire_context(workspace, {"page_size": page_size})
         if context["outcome"] == "success":
             break
         assert context["condition"]["code"] in {
@@ -574,7 +527,7 @@ def test_domain_context_small_budget_returns_header_condition(tmp_path: Path) ->
 
 def test_domain_context_text_is_compact_and_ordered(tmp_path: Path) -> None:
     workspace, _evidence, _revision = _assessment_workspace(tmp_path)
-    context, _text = _wire_context(workspace)
+    context, _transport_bytes = _wire_context(workspace)
     data = context["data"]
     keys = list(data)
     assert keys.index("result") < keys.index("questions") < keys.index("evidence")
@@ -1016,7 +969,7 @@ def test_domain_context_preserves_complete_category_profile_result(tmp_path: Pat
 def test_public_boundary_exposes_executable_narrative_recovery(monkeypatch, tmp_path: Path) -> None:
     monkeypatch.setattr(domain_application, "_DOMAIN_RECOVERABLE_NARRATIVE_TEXT_BUDGET", 0)
     workspace, _evidence, _revision = _assessment_workspace(tmp_path)
-    context, _text = _wire_context(workspace)
+    context, _transport_bytes = _wire_context(workspace)
     omitted = [item for item in context["data"]["evidence"] if item.get("text_status") == "omitted"]
     assert omitted
     recovery = omitted[0]["recovery"]

@@ -1,9 +1,8 @@
-"""Wire-level parity for model-visible text and structured tool results."""
+"""Wire-level delivery of complete structured tool results."""
 
 from __future__ import annotations
 
 import asyncio
-import json
 import os
 from pathlib import Path
 from typing import Any
@@ -42,28 +41,25 @@ def _wire_call(
     return asyncio.run(invoke())
 
 
-def _assert_text_structured_parity(result: mcp_types.CallToolResult) -> dict[str, Any]:
-    assert result.structured_content is not None
-    text_blocks = [item for item in result.content if isinstance(item, mcp_types.TextContent)]
-    assert len(text_blocks) == 1
-    parsed = json.loads(text_blocks[0].text)
-    assert parsed == result.structured_content
-    return parsed
+def _assert_structured_result(result: mcp_types.CallToolResult) -> dict[str, Any]:
+    assert result.content == []
+    assert isinstance(result.structured_content, dict)
+    return dict(result.structured_content)
 
 
-def test_text_only_and_structured_consumers_receive_the_same_workflow_results(
+def test_structured_consumer_receives_the_complete_workflow_result(
     tmp_path: Path,
 ) -> None:
     workspace = _workspace(tmp_path)
     assert (
-        _assert_text_structured_parity(_wire_call(workspace, "get_status", {}))["head"][
-            "next_action"
-        ]["operation"]
+        _assert_structured_result(_wire_call(workspace, "get_status", {}))["head"]["next_action"][
+            "operation"
+        ]
         == "prepare_batch"
     )
 
     evidence = _prepared_evidence(workspace)
-    search = _assert_text_structured_parity(
+    search = _assert_structured_result(
         _wire_call(
             workspace,
             "search_sources",
@@ -72,7 +68,7 @@ def test_text_only_and_structured_consumers_receive_the_same_workflow_results(
     )
     assert search["data"]["hits"][0]["passage_ref"].startswith("eh_")
 
-    conflict = _assert_text_structured_parity(
+    conflict = _assert_structured_result(
         _wire_call(
             workspace,
             "prepare_batch",
@@ -88,14 +84,14 @@ def test_text_only_and_structured_consumers_receive_the_same_workflow_results(
     )
     _review(workspace)
     _read_required_main_reports(workspace)
-    context = _assert_text_structured_parity(_wire_call(workspace, "get_domain_context", {}))
+    context = _assert_structured_result(_wire_call(workspace, "get_domain_context", {}))
     while (
         isinstance(context.get("data"), dict)
         and isinstance(context["data"].get("context_page"), dict)
         and context["data"]["context_page"].get("next_cursor") is not None
     ):
         cursor = context["data"]["context_page"]["next_cursor"]
-        context = _assert_text_structured_parity(
+        context = _assert_structured_result(
             _wire_call(workspace, "get_domain_context", {"cursor": cursor})
         )
     assert context["data"]["trial_id"] == "trial"
@@ -103,6 +99,6 @@ def test_text_only_and_structured_consumers_receive_the_same_workflow_results(
     draft = _domain_draft("trial", "domain:randomization", revision, evidence=evidence)
     duplicated = dict(draft["answers"][0]["bases"][0])
     draft["answers"][0]["bases"].append(duplicated)
-    repair = _assert_text_structured_parity(_wire_call(workspace, "save_domain_judgment", draft))
+    repair = _assert_structured_result(_wire_call(workspace, "save_domain_judgment", draft))
     assert repair["outcome"] == "repair"
     assert repair["repairs"][0]["code"] == "duplicate_answer_basis"

@@ -15,16 +15,14 @@ without asking for signalling answers, progress confirmation, or final approval.
 
 ## Read one complete MCP receipt
 
-Hosts may expose a tool result as `structured_content`, `structuredContent`, or
-one JSON text content block. Use the structured object when it is available; if
-it is not, parse the single JSON text block once. Keep that complete receipt as
-working context, including `head`, `data.result`, `questions`,
+Codex CLI and Claude Code expose the canonical tool result as
+`structuredContent`. Use that structured object directly. Keep the complete
+receipt as working context, including `head`, `data.result`, `questions`,
 `comparison_cards`, `evidence`, `evidence_workspace`, `reading_recovery`, and
 any `recovery` or `next_action` fields. Do not render only `questions` (or a
-`questions.map(...)` projection), and do not concatenate the structured and
-text representations. Keep `render_page` image content blocks separate from
-the deduplicated JSON; render and inspect the image when layout carries
-meaning.
+`questions.map(...)` projection). Keep `render_page` image content blocks
+separate from the structured result; render and inspect the image when layout
+carries meaning.
 
 If the host reports `Warning: truncated output`, treat the receipt as
 delivery incomplete. On a Codex host, repeat the identical context or read
@@ -45,8 +43,7 @@ const r = await tools.mcp__rob2__get_domain_context({
   trial_id: "trial-id-from-head.next_action",
   domain_id: "domain-id-from-head.next_action",
 });
-const textPart = r?.content?.find((part) => part?.type === "text")?.text;
-const receipt = r?.structuredContent ?? r?.structured_content ?? (textPart ? JSON.parse(textPart) : null);
+const receipt = r?.structuredContent ?? null;
 if (!receipt) throw new Error("MCP receipt unavailable; delivery incomplete");
 text(receipt);
 ```
@@ -73,8 +70,7 @@ const r = await tools.mcp__rob2__get_domain_context({
   trial_id: "trial-id-from-head.next_action",
   domain_id: "domain-id-from-head.next_action",
 });
-const textPart = r?.content?.find((part) => part?.type === "text")?.text;
-const page = r?.structuredContent ?? r?.structured_content ?? (textPart ? JSON.parse(textPart) : null);
+const page = r?.structuredContent ?? null;
 if (!page || page.outcome !== "success") {
   text(page);
   throw new Error("Domain context condition; keep stored cursor");
@@ -90,8 +86,7 @@ if (!cursor) {
   text("No continuation cursor is stored.");
 } else {
   const r = await tools.mcp__rob2__get_domain_context({ cursor });
-  const textPart = r?.content?.find((part) => part?.type === "text")?.text;
-  const page = r?.structuredContent ?? r?.structured_content ?? (textPart ? JSON.parse(textPart) : null);
+  const page = r?.structuredContent ?? null;
   if (page?.outcome !== "success" || !page?.data?.context_page) {
     text(page ?? { outcome: "condition", detail: "MCP receipt unavailable" });
     throw new Error("Continuation failed; stored cursor unchanged");

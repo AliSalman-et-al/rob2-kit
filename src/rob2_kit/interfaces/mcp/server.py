@@ -213,9 +213,8 @@ def _decode_domain_context_cursor(cursor: str) -> dict[str, Any]:
 
 
 def _domain_context_transport_bytes(value: dict[str, Any]) -> int:
-    text = json.dumps(value, ensure_ascii=False, separators=(",", ":"))
     envelope = {
-        "content": [{"type": "text", "text": text}],
+        "content": [],
         "structured_content": value,
     }
     return len(json.dumps(envelope, ensure_ascii=False, separators=(",", ":")).encode("utf-8"))
@@ -581,12 +580,6 @@ def _content(
                 domain_preview_missing_data,
             )
         validate_output(tool, normalized)
-    serialized = json.dumps(
-        normalized,
-        ensure_ascii=False,
-        separators=(",", ":"),
-        sort_keys=tool != "get_domain_context",
-    )
     if tool == "get_domain_context" and domain_context_digest is not None:
         data = normalized.get("data")
         head = normalized.get("head")
@@ -621,10 +614,14 @@ def _content(
                 )
     if tool == "read_pages" and isinstance(read_coverage, list):
         _record_read_coverage_batch(_workspace(), read_coverage)
-    # MCP clients are allowed to expose only ``content`` to a model.  Carry
-    # the same validated object in a compact JSON text block so text-only and
-    # structured consumers receive identical workflow state.  Images remain
-    # separate binary content and are intentionally not duplicated in JSON.
+    if tool != "render_page":
+        return ToolResult(content=[], structured_content=normalized)
+    serialized = json.dumps(
+        normalized,
+        ensure_ascii=False,
+        separators=(",", ":"),
+        sort_keys=tool != "get_domain_context",
+    )
     content: list[TextContent | ImageContent] = [
         TextContent(
             type="text",
@@ -1595,7 +1592,7 @@ async def request_proposal_approval(ctx: Context) -> ToolResult:
         "For a D3 count preview, pass missing_data; the call does not commit those rows. "
         "If omitted Evidence is unfamiliar or uncertain after a restart or compaction, call "
         "read_pages with recovery.trial_id and recovery.windows. Use the returned revision and "
-        "option IDs when saving active answers. When the full text-plus-structured receipt "
+        "option IDs when saving active answers. When the full structured receipt "
         "exceeds 32 KB, the server returns bounded context_page responses; fetch every "
         "context_page.next_cursor before deciding or saving. A pending save returns the "
         "exact cursor to continue. Delivery completion records successful response generation "
@@ -1653,7 +1650,7 @@ def get_domain_context(
             ge=_DOMAIN_CONTEXT_MIN_PAGE_BYTES,
             le=_DOMAIN_CONTEXT_MAX_PAGE_BYTES,
             description=(
-                "Optional full text-plus-structured transport byte budget override for bounded "
+                "Optional full structured transport byte budget override for bounded "
                 "pages. The server auto-pages receipts above 32768 bytes; subsequent calls "
                 "follow the returned cursor."
             ),

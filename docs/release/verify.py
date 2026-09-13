@@ -17,7 +17,6 @@ from typing import Any
 
 from fastmcp import Client
 from fastmcp.client.transports import StdioTransport
-from mcp.types import TextContent
 
 ROOT = Path(__file__).resolve().parents[2]
 CONTRACT = ROOT / "docs" / "release" / "public-contract.json"
@@ -266,9 +265,8 @@ async def _call(client: Client, name: str, arguments: dict[str, Any]) -> dict[st
         value = result.structured_content
         if not isinstance(value, dict):
             raise ValueError(f"{name} did not return structured content")
-        text = [item.text for item in result.content if isinstance(item, TextContent)]
-        if len(text) != 1 or json.loads(text[0]) != value:
-            raise ValueError(f"{name} text and structured content differ")
+        if name != "render_page" and result.content != []:
+            raise ValueError(f"{name} returned unexpected content")
         return value
 
     value = await one(arguments)
