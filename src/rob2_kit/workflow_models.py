@@ -418,7 +418,9 @@ class OutcomeMeasurementDraft(StrictModel):
 
 
 class DescribedTiming(StrictModel):
-    kind: Literal["described"] = Field(description="Timing expressed as a descriptive window.")
+    kind: Literal["described"] = Field(
+        description="Use `described` for a timing window expressed in words."
+    )
     description: NonBlankText = Field(
         description="Source-supported description of the target time point or window.",
     )
@@ -702,7 +704,10 @@ class CategoryProfileResult(StrictModel):
     )
     categories: tuple[CategoryValue, ...] = Field(
         min_length=1,
-        description="Every source-reported category cell in the selected profile.",
+        description=(
+            "Required nonempty source-reported category cells; each item contains only "
+            "category_axes and value."
+        ),
     )
 
     @model_validator(mode="before")

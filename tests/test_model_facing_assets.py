@@ -4,7 +4,7 @@ import json
 import re
 from pathlib import Path
 
-from rob2_kit.workflow_models import ProposalReasoningDraft
+from rob2_kit.workflow_models import CategoryProfileResult, DescribedTiming, ProposalReasoningDraft
 
 MODEL_FACING_PATHS = (
     Path("README.md"),
@@ -77,6 +77,11 @@ def test_result_reference_contains_valid_reasoning_and_receipt_examples() -> Non
         "expected_revision": 8,
         "reasoning_id": "sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
     }
+    category = CategoryProfileResult.model_validate_json(examples[3])
+    assert all(set(item.model_dump()) == {"category_axes", "value"} for item in category.categories)
+    described = re.search(r"`(\{\"kind\": \"described\".*?\})`", reference)
+    assert described is not None
+    DescribedTiming.model_validate_json(described.group(1))
 
 
 def test_measurement_reference_keeps_ordered_outcome_specific_audit() -> None:

@@ -90,6 +90,28 @@ its own source string:
 }
 ```
 
+For a complete one-arm categorical profile, keep every randomized group in the
+target but report only the supported arm. Include every source-reported category
+cell in the required `categories` array; each cell has only `category_axes` and
+`value`. Put Evidence handles in the enclosing Result's `passage_refs`, never
+inside a category cell, and do not invent comparator categories:
+
+```json
+{
+	"form": "single_group_category_profile",
+	"analysis_population": "Learners randomized to spaced practice with quiz results at day 15.",
+	"endpoint": {"name": "Course quiz performance categories"},
+	"group_id": "practice",
+	"denominator_basis": "Learners randomized to spaced practice with quiz results at day 15.",
+	"category_axis_names": ["Score band"],
+	"categories": [
+		{"category_axes": ["0-9 points"], "value": "4 learners"},
+		{"category_axes": ["10-19 points"], "value": "11 learners"},
+		{"category_axes": ["20-30 points"], "value": "7 learners"}
+	]
+}
+```
+
 For an unavailable Result, provide a concrete missing fact and an assessment
 with a missing-fact justification. Use an intake-condition basis only when the
 captured Trial has no supported Sources:
@@ -126,6 +148,10 @@ For numeric timing, include the description as well as the value and unit. It
 preserves the time origin or window, for example:
 
 `{"kind": "quantified", "description": "15 days after randomization", "value": "15", "unit": "days"}`
+
+Use `described` when the source gives a timing window in words:
+
+`{"kind": "described", "description": "During the course"}`
 
 ## Establish pack applicability
 
