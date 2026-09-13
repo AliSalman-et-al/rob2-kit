@@ -499,22 +499,64 @@ async def _verify_domains(client: Client, evidence: dict[str, Any], domains: lis
     if not isinstance(narrow_data, dict) or narrow_data.get("condition") != "no_hits":
         raise ValueError("acceptance narrow-search no-hit behavior differs")
     diagnostic = narrow_data.get("diagnostic")
+    navigation = diagnostic.get("navigation") if isinstance(diagnostic, dict) else None
+    if (
+        not isinstance(diagnostic, dict)
+        or diagnostic.get("code") != "narrow_no_hits"
+        or not isinstance(navigation, dict)
+        or navigation.get("source_id") != source_id
+        or not isinstance(navigation.get("entries"), list)
+        or not navigation["entries"]
+    ):
+        raise ValueError(f"acceptance narrow-search diagnostic differs: {diagnostic}")
+    navigation_action = diagnostic.get("next_action")
+    if navigation.get("truncated"):
+        if (
+            not isinstance(navigation_action, dict)
+            or navigation_action.get("operation") != "list_sources"
+            or navigation_action.get("source_id") != source_id
+            or navigation_action.get("cursor") != navigation.get("next_cursor")
+        ):
+            raise ValueError(f"acceptance navigation continuation differs: {diagnostic}")
+        await _call(
+            client,
+            "list_sources",
+            {
+                key: value
+                for key, value in navigation_action.items()
+                if key not in {"kind", "operation"}
+            },
+        )
+    elif navigation_action is not None:
+        raise ValueError(f"acceptance complete navigation repeats an action: {diagnostic}")
+
+    unscoped = await _call(
+        client,
+        "search_sources",
+        {
+            "trial_id": "trial",
+            "query": "release acceptance eligible lexical",
+            "mode": "all",
+            "limit": 2,
+        },
+    )
+    unscoped_diagnostic = unscoped.get("diagnostic")
     expected_action = {
         "kind": "refine",
         "operation": "search_sources",
         "trial_id": "trial",
         "query": "release acceptance eligible lexical",
         "mode": "any",
-        "source_id": source_id,
+        "source_id": None,
         "limit": 2,
         "cursor": None,
     }
     if (
-        not isinstance(diagnostic, dict)
-        or diagnostic.get("code") != "narrow_no_hits"
-        or diagnostic.get("next_action") != expected_action
+        not isinstance(unscoped_diagnostic, dict)
+        or unscoped_diagnostic.get("code") != "narrow_no_hits"
+        or unscoped_diagnostic.get("next_action") != expected_action
     ):
-        raise ValueError(f"acceptance narrow-search diagnostic differs: {diagnostic}")
+        raise ValueError(f"acceptance unscoped narrow-search differs: {unscoped_diagnostic}")
     widened = await _call(
         client,
         "search_sources",

@@ -153,29 +153,11 @@ def test_initial_multi_token_narrow_no_hit_offers_same_scoped_any_search(
     )["data"]
     assert no_hit["condition"] == "no_hits"
     assert no_hit["diagnostic"]["code"] == "narrow_no_hits"
-    assert no_hit["diagnostic"]["next_action"] == {
-        "kind": "refine",
-        "operation": "search_sources",
-        "trial_id": "trial",
-        "query": "alpha beta",
-        "mode": "any",
-        "source_id": source_id,
-        "limit": 3,
-        "cursor": None,
-    }
+    assert no_hit["diagnostic"]["next_action"] is None
     assert "matched nothing" in no_hit["diagnostic"]["detail"]
-    assert "scientific completeness" in no_hit["diagnostic"]["detail"]
-
-    action = no_hit["diagnostic"]["next_action"]
-    widened = _call(
-        workspace,
-        "search_sources",
-        {key: value for key, value in action.items() if key not in {"kind", "operation"}},
-    )["data"]
-    assert widened["mode"] == "any"
-    assert _search_receipt(workspace, widened["search_receipt"])["sources"][0]["id"] == (
-        resolve_source_handle(workspace, "trial", source_id)
-    )
+    assert "lexical query" in no_hit["diagnostic"]["detail"]
+    assert no_hit["diagnostic"]["navigation"]["source_id"] == source_id
+    assert no_hit["diagnostic"]["navigation"]["entries"]
 
 
 def test_narrow_no_hit_diagnostic_excludes_ineligible_searches(tmp_path: Path) -> None:
@@ -744,6 +726,148 @@ def test_list_sources_uses_the_same_source_priority_as_search(tmp_path: Path) ->
         "protocol",
         "other",
     ]
+
+
+def test_source_navigation_is_literal_bounded_and_cursor_stable(tmp_path: Path) -> None:
+    workspace = _workspace(tmp_path)
+    document = pymupdf.open()
+    for text in ("Protocol cover" for _ in range(5)):
+        document.new_page().insert_textbox((48, 48, 540, 760), text)
+    document.new_page().insert_textbox(
+        (48, 48, 540, 760),
+        "5. Randomisation",
+    )
+    document.new_page().insert_textbox(
+        (48, 48, 540, 760),
+        "The study will randomise participants using a central process.\n6. Withdrawal of Subjects",
+    )
+    (workspace / "input" / "trial" / "protocol.pdf").write_bytes(document.tobytes())
+    document.close()
+    _call(workspace, "prepare_batch", {"requested_outcome": "outcome", "expected_revision": 0})
+    source = next(
+        item
+        for item in _call(workspace, "list_sources", {"trial_id": "trial"})["data"]["sources"]
+        if item["label"] == "protocol.pdf"
+    )
+
+    first = _call(
+        workspace,
+        "list_sources",
+        {"trial_id": "trial", "source_id": source["id"], "limit": 2},
+    )["data"]["navigation"]
+    assert first["source_id"] == source["id"]
+    assert first["projection_hash"] == source["projection_hash"]
+    assert first["navigation_version"] == "rob2-kit.source-navigation.v0.1"
+    assert first["pages_examined"] == 7
+    assert all(len(entry["text"]) <= 512 for entry in first["entries"])
+
+    entries = list(first["entries"])
+    cursor = first["next_cursor"]
+    while cursor is not None:
+        page = _call(
+            workspace,
+            "list_sources",
+            {"trial_id": "trial", "source_id": source["id"], "limit": 2, "cursor": cursor},
+        )["data"]["navigation"]
+        entries.extend(page["entries"])
+        cursor = page["next_cursor"]
+    assert len({(entry["page"], entry["start_line"], entry["kind"]) for entry in entries}) == len(
+        entries
+    )
+    assert any(
+        entry["kind"] == "heading_candidate" and entry["text"] == "5. Randomisation"
+        for entry in entries
+    )
+    assert any(
+        entry["kind"] == "page_excerpt" and "randomise participants" in entry["text"]
+        for entry in entries
+    )
+
+    other_source = next(
+        item
+        for item in _call(workspace, "list_sources", {"trial_id": "trial"})["data"]["sources"]
+        if item["id"] != source["id"]
+    )
+    wrong_source = _call(
+        workspace,
+        "list_sources",
+        {
+            "trial_id": "trial",
+            "source_id": other_source["id"],
+            "cursor": first["next_cursor"],
+        },
+    )
+    assert wrong_source["outcome"] == "condition"
+    assert wrong_source["condition"]["code"] == "source_navigation_cursor_stale"
+
+    stale = _call(
+        workspace,
+        "list_sources",
+        {
+            "trial_id": "trial",
+            "source_id": source["id"],
+            "cursor": first["next_cursor"].replace("sn1.", "bad.")
+            if first["next_cursor"]
+            else "bad.cursor",
+        },
+    )
+    assert stale["outcome"] == "condition"
+    assert stale["condition"]["code"] == "source_navigation_cursor_invalid"
+
+    no_hit = _call(
+        workspace,
+        "search_sources",
+        {
+            "trial_id": "trial",
+            "query": "allocation concealment",
+            "mode": "all",
+            "source_id": source["id"],
+        },
+    )["data"]
+    preview = no_hit["diagnostic"]["navigation"]
+    assert any(
+        entry["page"] == 6
+        and entry["kind"] == "heading_candidate"
+        and entry["text"] == "5. Randomisation"
+        for entry in preview["entries"]
+    )
+    assert any(
+        entry["page"] == 7
+        and entry["kind"] == "page_excerpt"
+        and "randomise participants" in entry["text"]
+        for entry in preview["entries"]
+    )
+    reformulated = _call(
+        workspace,
+        "search_sources",
+        {
+            "trial_id": "trial",
+            "query": "randomise participants",
+            "mode": "all",
+            "source_id": source["id"],
+        },
+    )["data"]
+    assert reformulated["hits"]
+    assert reformulated["hits"][0]["page"] == 7
+
+
+def test_source_navigation_reports_empty_text_projection(tmp_path: Path) -> None:
+    workspace = _workspace(tmp_path)
+    (workspace / "input" / "trial" / "main.txt").unlink()
+    document = pymupdf.open()
+    document.new_page()
+    (workspace / "input" / "trial" / "image-only.pdf").write_bytes(document.tobytes())
+    document.close()
+    _call(workspace, "prepare_batch", {"requested_outcome": "outcome", "expected_revision": 0})
+    source = _call(workspace, "list_sources", {"trial_id": "trial"})["data"]["sources"][0]
+    navigation = _call(
+        workspace,
+        "list_sources",
+        {"trial_id": "trial", "source_id": source["id"]},
+    )
+    assert navigation["outcome"] == "success"
+    assert navigation["data"]["navigation"]["condition"] == "no_text_projection"
+    assert navigation["data"]["navigation"]["entries"] == []
 
 
 def test_search_uses_global_fts_bm25_with_deterministic_ties(

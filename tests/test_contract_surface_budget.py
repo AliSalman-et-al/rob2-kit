@@ -70,10 +70,10 @@ def test_public_output_surface_is_closed_and_within_budget() -> None:
     )
     # This is a ceiling, not a target. Smaller closed schemas are better.
     # SearchHit candidate-truncation and recovery fields, mandatory Proposal
-    # and Domain reasoning receipts, and explicit per-file intake conditions
-    # add bounded schema surface; the combined current surface is 406,299
-    # bytes without adding a public tool.
-    assert total_bytes < 410_000
+    # and Domain reasoning receipts, explicit per-file intake conditions, and
+    # bounded source navigation add schema surface; the current combined
+    # surface is 413,004 bytes without adding a public tool.
+    assert total_bytes < 414_000
 
     by_name = {tool.name: tool for tool in tools}
     search_annotations = by_name["search_sources"].annotations
@@ -96,7 +96,7 @@ def test_public_output_surface_is_closed_and_within_budget() -> None:
     assert "Required lexical intent" in search_mode_description
     assert "all=every token on one page" in search_mode_description
     assert "phrase=known contiguous wording" in search_mode_description
-    assert "one executable any broadening" in search_description
+    assert "Other narrow misses return an any broadening action" in search_description
     assert search_parameters["properties"]["query"]["examples"] == ["central randomization"]
     source_scope = search_parameters["properties"]["source_id"]
     assert source_scope["default"] is None

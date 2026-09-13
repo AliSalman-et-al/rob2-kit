@@ -12,13 +12,14 @@ token on one page, `phrase` for contiguous wording, `any` for broad discovery,
 and `prefix` for token prefixes. Suggestions are alternatives, not a checklist.
 To inspect further candidates, pass `next_cursor` as `cursor` with the same
 query, mode, Source scope, and limit. A truncated batch is not the full ranking.
-A zero-hit receipt
-establishes only that the issued lexical query matched nothing. For an eligible
-initial multi-token `all` or `phrase` no-hit, broaden once with the returned
-`mode:"any"` action and inspect the passages; if retrieval remains unhelpful,
-inspect the relevant section of an available Source and other relevant Sources
-before recording an unresolved limitation. One widening step is not adequate
-discovery by itself.
+A zero-hit receipt establishes only that the issued lexical query matched
+nothing. For a Source-scoped miss, inspect the returned navigation entries and
+read relevant pages; use the progressive `list_sources` action only when more
+entries remain. For other eligible initial multi-token `all` or `phrase`
+no-hits, broaden once with the returned `mode:"any"` action and inspect the
+passages. If retrieval remains unhelpful, inspect the relevant section of an
+available Source and other relevant Sources before recording an unresolved
+limitation. One widening step is not adequate discovery by itself.
 Use `term_feedback` after an unhelpful combined search to distinguish absent
 query vocabulary from terms present somewhere in a Source despite no full-query
 match. It reports bounded distinct matching-page counts by Source and the count
@@ -149,8 +150,14 @@ cursors.
    or `phrase` no-hit, use the one returned `any` widening action and inspect
    its passages. If the returned batch is truncated or has a continuation
    cursor, continue that same query when deeper cached results could resolve
-   the premise. Do not treat a no-hit or an uninspected hit as scientific
-   absence.
+   the premise. For a Source-scoped miss, inspect the navigation entries. Use
+   the unresolved fact, Trial context, term feedback, and literal Source wording
+   to choose one or two short alternate queries when needed. Read the relevant
+   returned pages. Continue navigation only if the displayed entries do not
+   identify a useful page or query. Navigation entries guide inspection; cite
+   Evidence from the inspected passage. Other narrow no-hits may use the
+   returned `any` broadening action. Do not treat a no-hit or an uninspected hit
+   as scientific absence.
 4. After each search or read, update the fact to exactly one state: supported,
    contradicted, or still unknown. A hit remains a candidate until you inspect
    the complete passage.
