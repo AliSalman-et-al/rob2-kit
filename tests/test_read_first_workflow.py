@@ -328,6 +328,7 @@ def test_oversized_utf8_prefix_and_empty_page_need_explicit_reads_and_continue_c
         {"trial_id": "trial", "source_id": empty_source["id"], "pages": [1]},
     )
     assert read["data"]["pages"][0]["line_count"] == 0
+    assert read["data"]["pages"][0]["page_remainder"] is None
     empty_after = _call(empty_workspace, "get_status", {})["data"]["main_report_reading"]["trial"]
     assert empty_after["status"] == "complete"
 

@@ -932,12 +932,14 @@ def test_numbered_page_lines_select_exact_source_text(tmp_path: Path) -> None:
         "line_count",
         "returned_start_line",
         "returned_end_line",
+        "page_remainder",
         "truncated",
         "next_start_line",
         "passage_ref",
     }
     assert page["returned_start_line"] == 1
     assert page["returned_end_line"] == 4
+    assert page["page_remainder"] is None
     assert page["truncated"] is False
     assert page["next_start_line"] is None
     assert page["numbered_text"] == ("1|first line\n2|middle-\n3|line\n4|last line")
@@ -1055,7 +1057,7 @@ def test_read_pages_passage_uses_trimmed_line_bounds(tmp_path: Path) -> None:
     )
     source = _call(workspace, "list_sources", {"trial_id": "trial"})["data"]["sources"][0]
 
-    page = _call(
+    result = _call(
         workspace,
         "read_pages",
         {
@@ -1069,9 +1071,19 @@ def test_read_pages_passage_uses_trimmed_line_bounds(tmp_path: Path) -> None:
                 }
             ],
         },
-    )["data"]["pages"][0]
+    )
+    page = result["data"]["pages"][0]
 
     assert page["returned_end_line"] == 3
+    assert page["page_remainder"] == {
+        "source_id": source["id"],
+        "page": 1,
+        "start_line": 4,
+        "end_line": 4,
+    }
+    assert page["truncated"] is False
+    assert page["next_start_line"] is None
+    assert result["data"]["remaining_windows"] == []
     passage = next(
         item
         for item in _evidence_catalog(workspace).values()
@@ -1238,6 +1250,12 @@ def test_read_pages_returns_bounded_line_windows_with_continuation(tmp_path: Pat
     assert len(first["data"]["pages"]) == 1
     assert len(page["numbered_text"]) <= 24_000
     assert page["line_count"] > page["returned_end_line"]
+    assert page["page_remainder"] == {
+        "source_id": source["id"],
+        "page": 1,
+        "start_line": page["returned_end_line"] + 1,
+        "end_line": page["line_count"],
+    }
     assert page["truncated"] is True
     assert page["next_start_line"] == page["returned_end_line"] + 1
 
