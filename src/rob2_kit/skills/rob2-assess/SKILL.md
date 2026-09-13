@@ -125,7 +125,14 @@ Examples:
   `{"requested_outcome":"a requested outcome","expected_revision":0}`.
 
 Confirm from the receipt that the captured Trial labels match the requested
-scope.
+scope. Inspect intake conditions before concluding that evidence is unavailable.
+Search covers captured text projections only. Supplied files listed as
+unsupported, unreadable, or missing were not searched. A declared role does not
+establish document contents. DOCX support covers ordinary paragraphs, table
+headers and cells in order, and footnotes through a synthetic page-1 projection;
+that is not Word pagination and does not extract all embedded content. Legacy
+`.doc` remains unsupported. Image-only PDFs can be recovered with `render_page`
+even when they have no searchable text.
 
 ### 2. Discover and choose one Result per Trial
 

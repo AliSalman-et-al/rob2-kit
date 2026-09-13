@@ -118,6 +118,20 @@ def presentation(state: dict[str, Any]) -> dict[str, Any]:
             wording = "Proposal is being prepared or submitted; no Trial is assessable yet."
     else:
         wording = "No active Batch assessment exists."
+    batch = state.get("batch")
+    conditions = batch.get("conditions", []) if isinstance(batch, dict) else []
+    if any(
+        isinstance(condition, dict)
+        and condition.get("code")
+        in {"unsupported_source", "unreadable_source", "declared_source_missing"}
+        for condition in conditions
+    ):
+        wording += (
+            " Inspect intake conditions before concluding that evidence is unavailable. Search "
+            "covers captured text projections only. Supplied files listed as unsupported, "
+            "unreadable, or missing were not searched. A declared role does not establish "
+            "document contents."
+        )
     return {"counts": counts, "wording": wording}
 
 
@@ -129,6 +143,7 @@ def get_status(workspace: str | Path) -> dict[str, Any]:
     public = presentation(state)
     batch_value = state.get("batch")
     batch = batch_value if isinstance(batch_value, dict) else {}
+    conditions = batch.get("conditions", [])
     reading_trials = batch.get("trials", [])
     if state.get("phase") == "assessment":
         active_trial, _active_domain = _active_trial_and_domain(state)
@@ -177,6 +192,7 @@ def get_status(workspace: str | Path) -> dict[str, Any]:
         continuation=_continuation(state),
         selected_evidence=_selected_evidence(root) if state.get("phase") == "proposal" else [],
         main_report_reading=main_report_reading,
+        conditions=conditions,
         authoritative_wording=public["wording"],
         counters=dict(COUNTERS),
     )

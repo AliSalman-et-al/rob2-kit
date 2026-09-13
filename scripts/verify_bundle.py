@@ -370,15 +370,40 @@ def _valid_main_report_scopes(
 
 
 def _valid_omission(value: object) -> bool:
+    base = {"path", "reason", "rationale"}
+    optional = {"role", "declared_role", "sha256"}
+    if (
+        not isinstance(value, dict)
+        or not base.issubset(value)
+        or not set(value).issubset(base | optional)
+    ):
+        return False
     return (
-        isinstance(value, dict)
-        and set(value) == {"path", "reason", "rationale"}
-        and isinstance(value.get("path"), str)
+        isinstance(value.get("path"), str)
         and _valid_relative_path(value["path"])
         and isinstance(value.get("reason"), str)
         and value["reason"] in {"duplicate", "irrelevant", "unreadable", "restricted", "other"}
         and isinstance(value.get("rationale"), str)
         and bool(value["rationale"].strip())
+        and (
+            "role" not in value
+            or value["role"]
+            in {"main_article", "registry", "supplement", "sap", "protocol", "other"}
+        )
+        and (
+            "declared_role" not in value
+            or value["declared_role"] is None
+            or value["declared_role"]
+            in {"main_article", "registry", "supplement", "sap", "protocol", "other"}
+        )
+        and (
+            "sha256" not in value
+            or value["sha256"] is None
+            or (
+                isinstance(value["sha256"], str)
+                and re.fullmatch(r"sha256:[0-9a-f]{64}", value["sha256"]) is not None
+            )
+        )
     )
 
 
@@ -405,18 +430,33 @@ def _valid_timestamp(value: object) -> bool:
 
 
 def _valid_source(source: object, trial_id: str) -> bool:
-    if not isinstance(source, dict) or set(source) != {
-        "id",
-        "trial_id",
-        "role",
-        "label",
-        "logical_path",
-        "sha256",
-        "media_type",
-        "page_count",
-        "projection_hash",
-        "origin",
-    }:
+    if not isinstance(source, dict) or set(source) not in (
+        {
+            "id",
+            "trial_id",
+            "role",
+            "label",
+            "logical_path",
+            "sha256",
+            "media_type",
+            "page_count",
+            "projection_hash",
+            "origin",
+        },
+        {
+            "id",
+            "trial_id",
+            "role",
+            "label",
+            "logical_path",
+            "sha256",
+            "media_type",
+            "page_count",
+            "projection_hash",
+            "origin",
+            "declared_role",
+        },
+    ):
         return False
     strings = (
         "id",
@@ -438,6 +478,12 @@ def _valid_source(source: object, trial_id: str) -> bool:
         or source["origin"] not in {"local_dossier", "registry", "researcher_provided"}
         or source["role"]
         not in {"main_article", "registry", "supplement", "sap", "protocol", "other"}
+        or (
+            "declared_role" in source
+            and source["declared_role"] is not None
+            and source["declared_role"]
+            not in {"main_article", "registry", "supplement", "sap", "protocol", "other"}
+        )
         or not _valid_relative_path(path)
         or not isinstance(source.get("page_count"), int)
         or isinstance(source["page_count"], bool)
@@ -499,11 +545,11 @@ def _valid_conditions(conditions: object, trial_ids: set[str]) -> bool:
         trial_id = condition.get("trial_id")
         if trial_id not in trial_ids:
             return False
-        if code == "unreadable_source":
-            valid = (
-                set(condition) == {"code", "trial_id", "path"}
-                and isinstance(condition.get("path"), str)
-                and bool(condition["path"].strip())
+        if code in {"unsupported_source", "declared_source_missing"}:
+            valid = _valid_visibility_condition(condition)
+        elif code == "unreadable_source":
+            valid = set(condition) == {"code", "trial_id", "path"} or _valid_visibility_condition(
+                condition
             )
         elif code == "invalid_registry_identifier":
             valid = (
@@ -534,6 +580,31 @@ def _valid_conditions(conditions: object, trial_ids: set[str]) -> bool:
         if not valid:
             return False
     return True
+
+
+def _valid_visibility_condition(condition: dict[str, object]) -> bool:
+    reason = condition.get("reason")
+    sha256 = condition.get("sha256")
+    return (
+        set(condition) == {"code", "trial_id", "path", "role", "declared_role", "reason", "sha256"}
+        and isinstance(condition.get("path"), str)
+        and _valid_relative_path(condition["path"])
+        and condition.get("role")
+        in {"main_article", "registry", "supplement", "sap", "protocol", "other"}
+        and (
+            condition.get("declared_role") is None
+            or condition.get("declared_role")
+            in {"main_article", "registry", "supplement", "sap", "protocol", "other"}
+        )
+        and isinstance(reason, str)
+        and bool(reason.strip())
+        and (
+            sha256 is None
+            or (
+                isinstance(sha256, str) and re.fullmatch(r"sha256:[0-9a-f]{64}", sha256) is not None
+            )
+        )
+    )
 
 
 def _valid_source_ref(reference: object, authoritative: object, trial_id: object) -> bool:

@@ -282,10 +282,25 @@ _RECEIPT_OPTIONS: Final = {
 }
 
 
-class UnreadableSourceCondition(PublicModel):
-    code: Literal["unreadable_source"]
+class FileVisibilityCondition(PublicModel):
     trial_id: TrialId
-    path: str = Field(min_length=1)
+    path: RelativePath
+    role: SourceRole
+    declared_role: SourceRole | None = None
+    reason: str = Field(min_length=1)
+    sha256: Identity | None = None
+
+
+class UnreadableSourceCondition(FileVisibilityCondition):
+    code: Literal["unreadable_source"]
+
+
+class UnsupportedSourceCondition(FileVisibilityCondition):
+    code: Literal["unsupported_source"]
+
+
+class DeclaredSourceMissingCondition(FileVisibilityCondition):
+    code: Literal["declared_source_missing"]
 
 
 class InvalidRegistryCondition(PublicModel):
@@ -313,7 +328,9 @@ class NoSupportedSourcesCondition(PublicModel):
 
 
 IntakeCondition = Annotated[
-    UnreadableSourceCondition
+    UnsupportedSourceCondition
+    | UnreadableSourceCondition
+    | DeclaredSourceMissingCondition
     | InvalidRegistryCondition
     | RegistryReviewCondition
     | OmissionReviewCondition
@@ -333,6 +350,7 @@ class PublicSource(PublicModel):
     page_count: PageNumber
     projection_hash: Identity
     origin: SourceOrigin = SourceOrigin.LOCAL_DOSSIER
+    declared_role: SourceRole | None = None
 
 
 class PublicCapturedTrial(PublicModel):
@@ -493,6 +511,7 @@ class StatusData(PublicModel):
     terminal_counts: TerminalCounts
     selected_evidence: tuple[SelectedEvidence, ...]
     main_report_reading: dict[TrialId, MainReportReadingStatus] = {}
+    conditions: tuple[IntakeCondition, ...] = ()
 
 
 class SourcesData(PublicModel):
@@ -1459,6 +1478,7 @@ def _payload(tool: str, value: dict[str, Any]) -> dict[str, Any]:
                 "terminal_counts",
                 "selected_evidence",
                 "main_report_reading",
+                "conditions",
             )
             if key in value
         }

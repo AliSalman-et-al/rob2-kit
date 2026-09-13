@@ -209,6 +209,7 @@ class Source(StrictModel):
     page_count: PageNumber
     projection_hash: Identity
     origin: SourceOrigin = SourceOrigin.LOCAL_DOSSIER
+    declared_role: SourceRole | None = None
 
     @model_validator(mode="after")
     def identity_matches(self) -> Source:
@@ -249,6 +250,9 @@ class OmissionDecision(StrictModel):
     path: RelativePath
     reason: OmissionReason
     rationale: str = Field(min_length=1)
+    role: SourceRole = SourceRole.OTHER
+    declared_role: SourceRole | None = None
+    sha256: Identity | None = None
 
     @field_validator("rationale")
     @classmethod
@@ -320,6 +324,11 @@ class IntakeReviewCondition(StrictModel):
     code: str = Field(min_length=1)
     trial_id: TrialId | None = None
     detail: str = Field(min_length=1)
+    path: RelativePath | None = None
+    role: SourceRole | None = None
+    declared_role: SourceRole | None = None
+    reason: str | None = None
+    sha256: Identity | None = None
 
 
 IntakeCondition = Annotated[IntakeBlocker | IntakeReviewCondition, Field(discriminator="kind")]

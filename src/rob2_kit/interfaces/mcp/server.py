@@ -890,7 +890,12 @@ def current_batch() -> str:
         "Use requested_outcome only for the outcome concept, excluding population, comparison, "
         "effect estimate, follow-up, and other Result facets. If the user names Trials, pass their "
         "exact input directory labels in trial_labels. Omit trial_labels to capture all immediate "
-        "valid Trial directories. The server resolves directories, so no listing is required."
+        "valid Trial directories. The server resolves directories, so no listing is required. "
+        "Inspect returned conditions for supplied files that were not included. DOCX captures "
+        "ordinary paragraphs, table headers/cells in order, and footnotes as a synthetic page-1 "
+        "text projection; that is not Word pagination and does not extract all embedded content. "
+        "Legacy .doc remains unsupported. Image-only PDFs remain renderable through render_page "
+        "even when they have no searchable text."
     ),
     annotations=_INTAKE,
     output_schema=output_schema("prepare_batch"),

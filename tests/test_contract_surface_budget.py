@@ -69,8 +69,10 @@ def test_public_output_surface_is_closed_and_within_budget() -> None:
         for tool, schema in zip(tools, closed_schemas, strict=True)
     )
     # This is a ceiling, not a target. Smaller closed schemas are better.
-    # SearchHit candidate-truncation and recovery fields plus the mandatory
-    # Proposal and Domain reasoning receipts add bounded schema surface.
+    # SearchHit candidate-truncation and recovery fields, mandatory Proposal
+    # and Domain reasoning receipts, and explicit per-file intake conditions
+    # add bounded schema surface; the combined current surface is 406,299
+    # bytes without adding a public tool.
     assert total_bytes < 410_000
 
     by_name = {tool.name: tool for tool in tools}
