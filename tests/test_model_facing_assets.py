@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import re
 from pathlib import Path
 
@@ -71,7 +72,11 @@ def test_result_reference_contains_valid_reasoning_and_receipt_examples() -> Non
     assert (
         draft.assessments[0].counterevidence[0].evidence != draft.assessments[0].evidence_basis[0]
     )
-    assert examples[1].find('"reasoning_id"') >= 0
+    receipt = json.loads(examples[1])
+    assert receipt == {
+        "expected_revision": 8,
+        "reasoning_id": "sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+    }
 
 
 def test_measurement_reference_keeps_ordered_outcome_specific_audit() -> None:

@@ -87,9 +87,9 @@ current-Trial Evidence references: no answer exists to supply inherited Evidence
 Inspect `comparison_cards[].missing_data`
 for differences, fractions, and conflicting reports. The preview changes no
 checkpoint or State revision. To retain the chosen rows, submit them with the
-3.1 answer in `reason_domain_assessment`; after its receipt, save the exact
-draft with `save_domain_judgment`. Omit row `basis` there to reuse the answer's
-Evidence when it supports those counts.
+3.1 answer in `reason_domain_assessment`; omit row `basis` there only to reuse
+the answer's Evidence when it supports those counts. After its receipt, save
+the exact draft with `save_domain_judgment`.
 
 Check each input against its source passage before using the arithmetic. The
 helper subtracts supplied observed counts from randomized counts; it does not
