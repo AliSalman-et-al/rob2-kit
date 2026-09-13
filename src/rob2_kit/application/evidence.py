@@ -1,3 +1,5 @@
+import base64
+import binascii
 import hashlib
 import json
 import math
@@ -35,12 +37,21 @@ _SEARCH_PREVIEW_MAX_BYTES = 512
 _SEARCH_CANDIDATE_MAX_BYTES = 2_048
 _TERM_FEEDBACK_MAX_TERMS = 16
 _TERM_FEEDBACK_MAX_SOURCES = 64
+_SOURCE_NAVIGATION_VERSION = "rob2-kit.source-navigation.v0.1"
+_SOURCE_NAVIGATION_MAX_ENTRIES = 12
+_SOURCE_NAVIGATION_MAX_TEXT = 512
 
 _SEARCH_SESSION_VERSION = "rob2-kit.search-session.v0.7"
 _SEARCH_CANDIDATE_VERSION = "rob2-kit.search-candidates.v0.7"
 
 
-def list_sources(workspace: str | Path, trial_id: str | None = None) -> dict[str, Any]:
+def list_sources(
+    workspace: str | Path,
+    trial_id: str | None = None,
+    source_id: str | None = None,
+    cursor: str | None = None,
+    limit: int = _SOURCE_NAVIGATION_MAX_ENTRIES,
+) -> dict[str, Any]:
     root = _root(workspace)
     _ensure(root)
     batch = _read(root, "batch") or {}
@@ -53,7 +64,163 @@ def list_sources(workspace: str | Path, trial_id: str | None = None) -> dict[str
         trial = next((item for item in trials if item["id"] == trial_id), None)
         if trial is None:
             raise ValueError("unknown captured Trial ID")
-    return {"outcome": "success", "sources": _ordered_sources(trial["sources"])}
+    sources = _ordered_sources(trial["sources"])
+    if source_id is None and cursor is not None:
+        raise ValueError("source_navigation_cursor_invalid: source_id is required")
+    navigation = None
+    if source_id is not None:
+        source = next((item for item in sources if item["id"] == source_id), None)
+        if source is None:
+            raise ValueError("source is outside the active Trial")
+        verified = _verified_source_projections(root, {(trial["id"], source_id)})
+        _, pages = verified[(trial["id"], source_id)]
+        navigation = _source_navigation(
+            source,
+            pages,
+            cursor=cursor,
+            limit=limit,
+        )
+    result: dict[str, Any] = {"outcome": "success", "sources": sources}
+    if navigation is not None:
+        result["navigation"] = navigation
+    return result
+
+
+def _source_navigation(
+    source: dict[str, Any],
+    pages: tuple[str, ...],
+    *,
+    cursor: str | None,
+    limit: int,
+) -> dict[str, Any]:
+    """Return bounded literal navigation over one verified persisted projection."""
+
+    entries = _source_navigation_entries(pages)
+    offset = 0
+    if cursor is not None:
+        payload = _decode_source_navigation_cursor(cursor)
+        if (
+            payload.get("source_id") != source.get("id")
+            or payload.get("projection_hash") != source.get("projection_hash")
+            or payload.get("version") != _SOURCE_NAVIGATION_VERSION
+        ):
+            raise ValueError("source_navigation_cursor_stale: source or projection changed")
+        offset = payload["offset"]
+        if offset < 0 or offset > len(entries):
+            raise ValueError("source_navigation_cursor_expired: request the first page")
+    bounded_limit = max(1, min(limit, _SOURCE_NAVIGATION_MAX_ENTRIES))
+    selected = entries[offset : offset + bounded_limit]
+    next_offset = offset + len(selected)
+    has_more = next_offset < len(entries)
+    return {
+        "source_id": source["id"],
+        "projection_hash": source["projection_hash"],
+        "navigation_version": _SOURCE_NAVIGATION_VERSION,
+        "entries": selected,
+        "page_count": len(pages),
+        "pages_examined": len(pages),
+        "truncated": has_more,
+        "next_cursor": (_source_navigation_cursor(source, next_offset) if has_more else None),
+        "condition": "no_text_projection" if not entries else None,
+    }
+
+
+def _source_navigation_cursor(source: dict[str, Any], offset: int) -> str:
+    payload = {
+        "offset": offset,
+        "projection_hash": source["projection_hash"],
+        "source_id": source["id"],
+        "version": _SOURCE_NAVIGATION_VERSION,
+    }
+    encoded = base64.urlsafe_b64encode(canonical_json_bytes(payload)).decode("ascii")
+    return "sn1." + encoded.rstrip("=")
+
+
+def _decode_source_navigation_cursor(cursor: str) -> dict[str, Any]:
+    if not cursor.startswith("sn1."):
+        raise ValueError("source_navigation_cursor_invalid: unsupported cursor")
+    encoded = cursor[4:]
+    try:
+        raw = base64.urlsafe_b64decode(encoded + "=" * (-len(encoded) % 4))
+        payload = json.loads(raw)
+    except (binascii.Error, UnicodeDecodeError, json.JSONDecodeError) as error:
+        raise ValueError("source_navigation_cursor_invalid: malformed cursor") from error
+    if (
+        not isinstance(payload, dict)
+        or set(payload) != {"offset", "projection_hash", "source_id", "version"}
+        or not isinstance(payload["offset"], int)
+        or isinstance(payload["offset"], bool)
+        or not isinstance(payload["projection_hash"], str)
+        or not isinstance(payload["source_id"], str)
+        or payload["version"] != _SOURCE_NAVIGATION_VERSION
+    ):
+        raise ValueError("source_navigation_cursor_invalid: incomplete cursor")
+    return payload
+
+
+def _source_navigation_entries(pages: tuple[str, ...]) -> list[dict[str, Any]]:
+    """Index literal headings and leading text without inferring section meaning."""
+
+    page_lines = [page.splitlines() for page in pages]
+    first_lines = [
+        next((line.strip() for line in lines if line.strip()), "") for lines in page_lines
+    ]
+    repeated = Counter(line for line in first_lines if line)
+    repeated_furniture = {line for line, count in repeated.items() if count >= 2}
+    page_marker = re.compile(r"^(?:page\s+\d+(?:\s+of\s+\d+)?|version\s+\S+)$", re.I)
+    numbered_heading = re.compile(r"^(?:\d+[.)]\s*|\d+(?:\.\d+)+\s+)[A-Z][^.!?:;]{0,119}$")
+    entries: list[dict[str, Any]] = []
+    for page_number, lines in enumerate(page_lines, 1):
+        useful: list[tuple[int, str]] = []
+        for line_number, raw in enumerate(lines, 1):
+            text = raw.strip()
+            if not text or page_marker.fullmatch(text) or text in repeated_furniture:
+                continue
+            useful.append((line_number, text))
+        if useful:
+            start_line, excerpt = useful[0]
+            excerpt_lines = [(start_line, excerpt)]
+            for candidate_line, candidate_text in useful[1:]:
+                if candidate_line > start_line + 4:
+                    break
+                joined = " ".join(
+                    text for _, text in (*excerpt_lines, (candidate_line, candidate_text))
+                )
+                if len(joined) > _SOURCE_NAVIGATION_MAX_TEXT:
+                    break
+                excerpt_lines.append((candidate_line, candidate_text))
+            entries.append(
+                {
+                    "text": " ".join(text for _, text in excerpt_lines),
+                    "page": page_number,
+                    "start_line": start_line,
+                    "end_line": excerpt_lines[-1][0],
+                    "kind": "page_excerpt",
+                }
+            )
+        for line_number, text in useful:
+            if len(text) > 120 or text.endswith((".", ":", ";", "?", "!")):
+                continue
+            if "@" in text or ";" in text:
+                continue
+            blank_before = line_number == 1 or not lines[line_number - 2].strip()
+            blank_after = line_number == len(lines) or not lines[line_number].strip()
+            if numbered_heading.fullmatch(text):
+                if not (blank_before or blank_after):
+                    continue
+            elif not (blank_before and blank_after and len(text.split()) <= 10):
+                continue
+            entries.append(
+                {
+                    "text": text,
+                    "page": page_number,
+                    "start_line": line_number,
+                    "end_line": line_number,
+                    "kind": "heading_candidate",
+                }
+            )
+    entries.sort(key=lambda item: (item["page"], item["start_line"], item["kind"]))
+    return entries
 
 
 def _verified_source_projections(
@@ -251,6 +418,50 @@ def _narrow_no_hits_diagnostic(
             "cursor": None,
         },
     }
+
+
+def _source_navigation_diagnostic(
+    diagnostic: dict[str, Any] | None,
+    *,
+    source: dict[str, Any] | None,
+    pages: tuple[str, ...] | None,
+    trial_id: str,
+) -> dict[str, Any] | None:
+    """Attach literal source navigation to a scoped lexical miss."""
+
+    if (
+        diagnostic is None
+        or diagnostic.get("code") != "narrow_no_hits"
+        or source is None
+        or pages is None
+    ):
+        return diagnostic
+    navigation = _source_navigation(
+        source,
+        pages,
+        cursor=None,
+        limit=_SOURCE_NAVIGATION_MAX_ENTRIES,
+    )
+    diagnostic["navigation"] = navigation
+    diagnostic["next_action"] = (
+        {
+            "kind": "navigate",
+            "operation": "list_sources",
+            "trial_id": trial_id,
+            "source_id": source["id"],
+            "limit": _SOURCE_NAVIGATION_MAX_ENTRIES,
+            "cursor": navigation["next_cursor"],
+        }
+        if navigation["next_cursor"] is not None
+        else None
+    )
+    diagnostic["detail"] = (
+        "This scoped multi-token narrow search matched nothing. Inspect the literal heading "
+        "and leading-page navigation entries below, then read the cited Source pages or "
+        "reformulate with wording found there. Zero hits establish only that the issued "
+        "lexical query matched no captured text."
+    )
+    return diagnostic
 
 
 def search_sources(
@@ -655,6 +866,17 @@ def search_sources(
             total_matches=total_matches,
             returned_count=len(selected_candidates),
             cursor=cursor,
+        )
+    if requested_source_id is not None and diagnostic is not None:
+        source = next(
+            (item for item in ordered_sources if item["id"] == requested_source_id),
+            None,
+        )
+        diagnostic = _source_navigation_diagnostic(
+            diagnostic,
+            source=source,
+            pages=verified[(trial_id, requested_source_id)][1] if source is not None else None,
+            trial_id=trial_id,
         )
     return {
         "outcome": "success",

@@ -514,8 +514,47 @@ class StatusData(PublicModel):
     conditions: tuple[IntakeCondition, ...] = ()
 
 
+class SourceNavigationEntry(PublicModel):
+    text: str = Field(
+        min_length=1,
+        max_length=512,
+        description=(
+            "Source-derived navigation text. Whitespace may be joined and page furniture "
+            "omitted. Inspect the cited line range before using it as Evidence."
+        ),
+    )
+    page: PageNumber
+    start_line: PageNumber
+    end_line: PageNumber
+    kind: Literal["heading_candidate", "page_excerpt"]
+
+    @model_validator(mode="after")
+    def line_order(self) -> SourceNavigationEntry:
+        if self.end_line < self.start_line:
+            raise ValueError("navigation entry end_line must not precede start_line")
+        return self
+
+
+class SourceNavigationData(PublicModel):
+    source_id: SourceHandle
+    projection_hash: Identity
+    navigation_version: Literal["rob2-kit.source-navigation.v0.1"]
+    entries: tuple[SourceNavigationEntry, ...] = Field(max_length=12)
+    page_count: PageNumber
+    pages_examined: NonNegativeInt = Field(
+        description=(
+            "Number of Source pages scanned to generate navigation. This does not record "
+            "agent reading or comprehension."
+        )
+    )
+    truncated: StrictBool
+    next_cursor: str | None = None
+    condition: Literal["no_text_projection"] | None = None
+
+
 class SourcesData(PublicModel):
     sources: tuple[PublicSource, ...]
+    navigation: SourceNavigationData | None = None
 
 
 class SearchRange(PublicModel):
@@ -603,6 +642,23 @@ class SearchNextAction(PublicModel):
         return self
 
 
+class SourceNavigationAction(PublicModel):
+    """Executable literal navigation after a scoped lexical miss."""
+
+    kind: Literal["navigate"]
+    operation: Literal["list_sources"]
+    trial_id: TrialId
+    source_id: SourceHandle
+    limit: PositiveInt
+    cursor: str | None = None
+
+
+SearchRecoveryAction = Annotated[
+    SearchNextAction | SourceNavigationAction,
+    Field(discriminator="operation"),
+]
+
+
 class SearchDiagnostic(PublicModel):
     """Observable retrieval advice; it is never a scientific conclusion."""
 
@@ -612,7 +668,8 @@ class SearchDiagnostic(PublicModel):
     candidate_count: NonNegativeInt
     returned_count: NonNegativeInt
     detail: str = Field(min_length=1)
-    next_action: SearchNextAction
+    next_action: SearchRecoveryAction | None = None
+    navigation: SourceNavigationData | None = None
 
 
 class SearchTermPageCount(PublicModel):

@@ -151,6 +151,10 @@ Use registry, protocol, SAP, or supplement Sources for material competing
 definitions and missing context after the main-report reading. For search modes,
 continuation, and no-hit recovery, follow
 [Reuse inspected passage handles](references/evidence.md#reuse-inspected-passage-handles).
+For a source-scoped miss, inspect its literal navigation entries, use term
+feedback and captured wording for one or two short reformulations when needed,
+and read the relevant pages before deciding. Continue navigation only when the
+displayed entries do not identify a useful page or query.
 
 Choose in this order:
 

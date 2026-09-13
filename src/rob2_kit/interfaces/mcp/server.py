@@ -109,6 +109,7 @@ def _reject_scalar_coercion(value: Any) -> Any:
 StrictJsonInt = Annotated[StrictInt, BeforeValidator(_reject_scalar_coercion)]
 StrictJsonBool = Annotated[StrictBool, BeforeValidator(_reject_scalar_coercion)]
 SearchLimit = Annotated[StrictJsonInt, Field(ge=1, le=100)]
+SourceNavigationLimit = Annotated[StrictJsonInt, Field(ge=1, le=12)]
 Inline = StrictJsonBool
 _READ_ONLY = ToolAnnotations(
     read_only_hint=True, destructive_hint=False, idempotent_hint=True, open_world_hint=False
@@ -739,6 +740,33 @@ def _invoke(
                     "condition": condition.removeprefix("search_cursor_expired:"),
                 },
             )
+        if condition.startswith("source_navigation_cursor_stale:"):
+            return _content(
+                tool,
+                {
+                    "outcome": "condition",
+                    "code": "source_navigation_cursor_stale",
+                    "condition": condition.removeprefix("source_navigation_cursor_stale:"),
+                },
+            )
+        if condition.startswith("source_navigation_cursor_expired:"):
+            return _content(
+                tool,
+                {
+                    "outcome": "condition",
+                    "code": "source_navigation_cursor_expired",
+                    "condition": condition.removeprefix("source_navigation_cursor_expired:"),
+                },
+            )
+        if condition.startswith("source_navigation_cursor_invalid:"):
+            return _content(
+                tool,
+                {
+                    "outcome": "condition",
+                    "code": "source_navigation_cursor_invalid",
+                    "condition": condition.removeprefix("source_navigation_cursor_invalid:"),
+                },
+            )
         if condition.startswith("domain_context_cursor_stale:"):
             return _content(
                 tool,
@@ -937,7 +965,10 @@ def get_status() -> ToolResult:
     title="List Trial sources",
     description=(
         "List captured sources and their short source_id handles. Requires a Trial ID for "
-        "multi-Trial batches. Copy a returned source_id exactly and use it with the same trial_id."
+        "multi-Trial batches. Copy a returned source_id exactly and use it with the same trial_id. "
+        "For source-scoped navigation, pass source_id and optionally cursor to receive bounded "
+        "literal heading candidates and leading page excerpts from the persisted text projection. "
+        "Navigation is a routing aid, not Evidence; read the cited pages before relying on them."
     ),
     annotations=_READ_ONLY,
     output_schema=output_schema("list_sources"),
@@ -947,8 +978,44 @@ def list_sources(
         TrialId | None,
         Field(description="Captured Trial ID; omit only when the batch has one Trial."),
     ] = None,
+    source_id: Annotated[
+        SourceHandle | None,
+        Field(
+            description=(
+                "Optional source_id from this Trial. Supplying it returns bounded literal "
+                "heading and leading-page navigation entries."
+            )
+        ),
+    ] = None,
+    limit: Annotated[
+        SourceNavigationLimit,
+        Field(description="Maximum navigation entries returned; default 12."),
+    ] = 12,
+    cursor: Annotated[
+        StrictStr | None,
+        Field(description="Opaque navigation cursor returned by the prior response."),
+    ] = None,
 ) -> ToolResult:
-    return _invoke("list_sources", lambda: _list_sources(_workspace(), trial_id))
+    navigation_trial_id = trial_id
+    if source_id is not None and navigation_trial_id is None:
+        batch = (_state(_root(_workspace())) or {}).get("batch", {})
+        trials = batch.get("trials", []) if isinstance(batch, dict) else []
+        if len(trials) == 1 and isinstance(trials[0], dict):
+            navigation_trial_id = trials[0].get("id")
+    return _invoke(
+        "list_sources",
+        lambda: _list_sources(
+            _workspace(),
+            navigation_trial_id,
+            (
+                _resolve_source_handle(_workspace(), navigation_trial_id, source_id)
+                if source_id is not None and navigation_trial_id is not None
+                else source_id
+            ),
+            cursor,
+            limit,
+        ),
+    )
 
 
 @mcp.tool(
@@ -970,8 +1037,12 @@ def list_sources(
         "the issued mode; inspect passages because counts do not establish co-occurrence or "
         "phrase adjacency. The response marks omitted query units or Source rows with the "
         "corresponding *_truncated field. "
-        "An initial multi-token all or phrase no-hit includes one "
-        "executable any broadening step. Broad truncated any results include refinement advice. "
+        "An initial multi-token narrow no-hit returns recovery guidance. A Source-scoped miss "
+        "includes bounded literal navigation entries and, when more entries remain, a "
+        "list_sources continuation. Other narrow misses return an any broadening action. Broad "
+        "truncated any results include refinement advice. "
+        "Use literal wording from navigation entries for at most two short alternate searches; "
+        "related terms guide inspection but do not establish a method or scientific conclusion. "
         "Inspect passages before citing them. Zero hits establish only that the issued lexical "
         "query matched no captured text. Copy a returned source_id exactly and use it with the "
         "same trial_id. Search updates Evidence."
@@ -1744,6 +1815,9 @@ async def request_proposal_approval(ctx: Context) -> ToolResult:
         "The post-approval pass must finish before the first Domain answer. At budget_limited, "
         "inspect omitted passages when needed for an unresolved premise. "
         "Reuse adequate Evidence. Search unresolved premises with wording from inspected Sources. "
+        "For a D1 or D4 scoped search miss, use list_sources with the returned source_id to "
+        "inspect literal headings and leading page excerpts, then read the cited pages; "
+        "navigation text is not Evidence. "
         "For a D3 count preview, pass missing_data; the call does not commit those rows. "
         "If omitted Evidence is unfamiliar or uncertain after a restart or compaction, call "
         "read_pages with recovery.trial_id and recovery.windows. Use the returned revision and "
