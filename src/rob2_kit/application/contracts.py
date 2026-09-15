@@ -5,19 +5,22 @@ from __future__ import annotations
 TOOL_NAMES = (
     "prepare_batch",
     "get_status",
+    "save_working_checkpoint",
     "list_sources",
     "search_sources",
+    "search_sources_batch",
     "read_pages",
     "select_text_evidence",
     "render_page",
     "select_visual_evidence",
-    "reason_proposal",
+    "validate_proposal",
     "save_proposal",
     "request_proposal_approval",
     "get_domain_context",
-    "reason_domain_assessment",
+    "validate_domain_assessment",
     "save_domain_judgment",
-    "request_trial_terminal",
+    "review_trial",
+    "close_trial",
     "finalize_batch",
 )
 COUNTERS = {
@@ -27,6 +30,7 @@ COUNTERS = {
     "database_queries": 0,
     "serialized_bytes": 0,
     "render_bytes": 0,
+    "search_ranking_validations": 0,
     "elapsed_ms": 0.0,
 }
 

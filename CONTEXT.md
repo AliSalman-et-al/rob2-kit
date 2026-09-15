@@ -21,17 +21,27 @@ The closed workflow phases are `empty`, `proposal`, `assessment`,
 
 1. `prepare_batch` captures the Batch and advances to Proposal construction.
 2. The model completes the required bounded main-report text pass, selects
-   Evidence, submits complete cards and assessments through `reason_proposal`,
+   Evidence, submits complete cards and assessments through `validate_proposal`,
    then saves the exact returned receipt for one complete Result proposal per Trial.
 3. **Proposal Review** is the only researcher gate. The researcher may approve,
    reject, or replace the chosen Result mapping.
 4. For each approved Trial with a supported design, the model repeats the bounded
    text pass before its first Domain assessment. It submits the complete active
-   answer draft through `reason_domain_assessment`, saves the exact returned
+   answer draft through `validate_domain_assessment`, saves the exact returned
    receipt, and the server derives Domain and overall judgments.
-5. Accepting the fifth Domain freezes that Trial's AssessmentSnapshot and marks
-   it `assessed`. `finalize_batch` packages the terminal Trial records into the
-   verified bundle. There is no Assessment Review or final approval.
+5. The fifth Domain makes a supported Trial `reviewable`; its checkpoints can
+   still be corrected. `review_trial` binds the approved Result and exact
+   current checkpoint set, then `close_trial` makes that reviewed outcome
+   immutable and advances the Batch. `finalize_batch` packages only closed
+   Trial records. Proposal Review remains the only researcher gate.
+
+An open Trial may have one replaceable **working checkpoint** containing
+source-located observations, interpretations, terminology, unread ranges, open
+questions, and unfinished drafts. It is bound to the Trial's captured Source
+projections and exact current Result. It is resumable working memory, not
+Evidence, a Domain answer, or Canonical state. `get_status` suppresses its
+contents after a Source or Result mismatch; absence or staleness calls for
+reorientation from the current sources.
 
 Each text pass covers the same source-order prefix of the full captured Source,
 up to 65,536 UTF-8 source-text bytes per report at whole-line boundaries. A
@@ -131,8 +141,15 @@ normalization-equivalent-name rule. The Proposal contains the
 single best complete candidate per Trial; competing candidates inform the
 choice but are not serialized as alternatives.
 
-An assessable Reported result is a comparative effect, group-bound values, or a
-single-group category profile. Selected Evidence is durable workspace state,
+An assessable Reported result is a comparative effect or group-bound values
+that contain both comparison groups. A single-group category profile is
+descriptive and cannot support comparative RoB 2 assessment. If an otherwise
+relevant report supplies only one group, use an unavailable Result, retain the
+exact source passage as Evidence, and name the missing comparator or estimate
+explicitly. Do not classify results as ineligible solely because the source
+labels its population mITT, per-protocol, or as-treated; assess the reported
+comparative result on its documented terms. Historical bundles retain their
+recorded one-group semantics. Selected Evidence is durable workspace state,
 not caller-supplied Proposal structure. On Proposal submission, the server binds
 the Result to selected Evidence and derives canonical field bindings. Canonical
 records retain Evidence used by the Result and its applicability assessment.
@@ -147,13 +164,15 @@ explicitly establishes missing reporting. For a Trial with zero captured Sources
 the basis is instead the exact captured `no_supported_sources` Intake condition.
 Both forms still pass through Proposal Review.
 
-The Proposal is atomic across the Batch. A researcher-approved unavailable Result
-becomes a `needs_input` terminal automatically; it does not enter Domain assessment.
+The Proposal is atomic across the Batch. An approved Result that needs no Domain
+assessment, such as an unavailable Result or a known unsupported design, first
+becomes reviewable. `review_trial` records its typed outcome and supporting
+facts; only `close_trial` makes it terminal. It does not enter Domain assessment.
 Every assessable Result also records source-grounded pack applicability through
 `design`, `rationale`, and `evidence`. The server determines pack support from
 `design`; the installed pack supports individually randomized parallel trials.
 Known designs require same-Trial Evidence. After Proposal
-Review, known unsupported designs become unassessed `needs_input` terminals for
+Review, known unsupported designs receive an `unsupported_design` outcome for
 the appropriate pack; unresolved designs need source information establishing
 the design and unit of randomization. Neither condition makes an available
 Result unavailable.
@@ -166,16 +185,18 @@ separately attributed rob2-kit operational guidance. The pack retains each
 question's full nested official and operational guidance for authoritative
 assessment and artifact/audit use. `get_domain_context` returns a compact typed
 question-card projection with the full official excerpt and locator plus the
-actionable operational fields needed to answer that question. Each card also
+actionable operational fields needed to answer that question. The receipt's
+`pack` object names the exact pack ID, version, and content hash. Each card also
 contains a bounded, typed set of executable query suggestions with compact
 query text, explicit lexical mode, an optional recommended Source role, and purpose.
 Suggestions are maintained retrieval vocabulary and alternatives, not claims
 that a Source uses those words or a mandatory search sequence. Operational guidance
 supplements the official source; it never replaces or impersonates it. Cards
-replace bare answer strings with server-issued options that bind the exact
-question and pack version to the official code, literal proposition, certainty,
-anchor, branch activation, and decision-table value. The caller submits only
-`option_id`; the checkpoint retains only the official RoB 2 answer. Each active
+expose the official RoB 2 answer values allowed for each question. The caller
+submits the selected value as `answer`; the server checks it against that
+question's allowed values and the checkpoint retains the official answer. A
+repair echoes the submitted proposition and explains the unmet requirement
+without selecting a replacement answer. Each active
 answer has at least one typed basis: a selected Evidence handle, a scoped
 absence receipt, or an explicit limitation. For selected Evidence, the server
 derives the exact quote or transcription stored in the checkpoint; the caller
@@ -191,6 +212,15 @@ every active answer. The caller evaluates predicates transitively against
 earlier answers in the same Domain save rather than discovering one branch per
 repair cycle.
 
+`search_sources` preserves the requested lexical mode and returns factual
+zero-hit feedback for that mode, including complete-query and bounded per-term
+page counts. Counts do not establish co-occurrence or scientific absence. A
+scoped miss can expose literal Source navigation; `list_sources` also returns
+the captured dossier inventory, intake conditions, declared omissions, and
+bounded heading/page excerpts when given a Source ID. `search_sources_batch`
+runs up to eight independent, already-known queries with separate outcomes and
+cursors. It does not change BM25 ordering or impose a search sequence or count.
+
 The model-facing Domain context is staged: the approved Result, complete
 question semantics, and comparison cards precede bulk Evidence. Comparison
 cards use `question_id` to resolve wording and options in exactly one returned
@@ -203,17 +233,26 @@ table values, and derived values remain inline when the existing tools cannot
 recover their exact canonical text. This projection does not alter canonical
 Evidence, checkpoints, hashes, or final bundles.
 
+Context cursors freeze the approved Result, pack, question view, preview, and
+requested Domain checkpoint. Searches and unrelated Domain commits may advance
+the current workflow revision without changing an existing page chain. A changed
+Result, pack, preview, or same-Domain checkpoint requires a fresh scoped context.
+Recoverable discovery candidates are omitted by default; set
+`include_candidates=true` on a fresh `get_domain_context` request to include them.
+The existing cursor continues its original snapshot, and a fresh opt-in view can
+show newly discovered Evidence.
+
 The Domain Evidence workspace has separate mandatory Result, active-checkpoint,
 and contradiction tiers. Canonical tiers sit outside the 64-item disposable
 selection limit and take priority within the recoverable narrative-text budget.
-Disposable search candidates are included only when their immutable session was
-associated with the requested Trial and Domain. Explicit Evidence without an
-exact recovery operation remains inline outside the 64-item recoverable
-disposable limit; it is never silently dropped to satisfy that limit.
-other-Domain search fragments are excluded before the 64-item disposable
+Opt-in search candidates are included only when their immutable session was
+associated with the requested Trial and Domain. Explicit recoverable passages
+also require `include_candidates=true`; nonrecoverable explicit Evidence remains
+inline outside the 64-item recoverable disposable limit and is never silently
+dropped. Other-Domain search fragments are excluded before the 64-item disposable
 selection limit is applied. Typed groups expose inclusion reasons and question
-scope. Each omission carries an executable session cursor, an exact text
-recovery action, or an explicit unavailable search-session state after
+scope. Candidate omissions carry an executable session cursor or exact text
+recovery action; an unavailable search session is stated explicitly after
 derivative cache loss.
 Explicitly selected unscoped passages take priority as carry-forward material,
 with exact read continuation if they exceed the 64-item selection limit. D2, D3,
@@ -232,7 +271,7 @@ A **Domain checkpoint** is an immutable, content-addressed record of the active
 answers, inactive questions, Evidence uses, search accounts, deterministic
 judgment, and evaluation trace. The first save has no revision basis.
 
-While the Trial remains pending, the model may replace an active checkpoint only
+While the Trial remains open, the model may replace an active checkpoint only
 by naming its exact `supersedes` identity and one closed revision basis:
 
 - `new_evidence` names selected Evidence absent from the prior checkpoint and
@@ -245,19 +284,26 @@ Domain, active snapshot, and overall judgment. Exact retries are idempotent, and
 finalized artifacts cannot be revised. The researcher cannot invoke this mechanism
 to coach an answer; disagreement requires discard and a fresh run.
 
-Five active Domain checkpoints produce an immutable **AssessmentSnapshot**,
-freeze the Trial, and change its disposition to `assessed`. Where multiple
+Five active Domain checkpoints produce an **AssessmentSnapshot** and make the
+Trial `reviewable`; the Trial is still correctable until closed. Where multiple
 `some_concerns` judgments require an overall decision, the model must submit the
 typed `multiple_concerns` decision requested by the server before that fifth
-checkpoint can be accepted. Batch finalization only packages Trial records that
-are already terminal.
+checkpoint can be accepted. `review_trial` binds the approved Result and
+pack-ordered checkpoint identities to an assessed or typed terminal outcome.
+The server rejects closure when that review is stale. `close_trial` accepts only
+the exact current review identity, makes the outcome immutable, and advances to
+the next Trial or Batch finalization.
 
 ## Terminals and artifacts
 
-Each finalized Trial is exactly one of `assessed`, `needs_input`, or `failed`.
-Typed terminal requests commit automatically after Proposal approval and carry
-concrete missing facts or failure facts. A failed terminal cannot be inferred from
-an unsuccessful tool call. Terminal Trials are unassessed.
+Each closed Trial has exactly one of `assessed`, `needs_input`,
+`unsupported_design`, or `failed`. `review_trial` assigns a typed outcome and
+binds its concrete missing facts, design limit, or failure facts to the current
+Result and checkpoints. `close_trial` makes that reviewed outcome terminal.
+Unavailable Results and unclear designs become `needs_input`; designs outside
+the installed pack become `unsupported_design`. A failed terminal cannot be
+inferred from an unsuccessful tool call. Non-assessed Trials have no Domain
+judgment.
 
 A **Finalized artifact bundle** is a deterministic `.rob2.zip` containing
 Canonical JSON, static HTML, selected Evidence records, claims, content hashes,
@@ -265,28 +311,31 @@ and independent-verifier input. It excludes Source files, credentials, prompts,
 host traces, and absolute paths. The product verifier and standalone verifier
 replay the same scientific and integrity invariants independently.
 
-Fresh v0.8 Proposals contain Result cards without caller-selected report scopes
+Fresh v0.9 Proposals contain Result cards without caller-selected report scopes
 and require a source-bound reasoning assessment before the receipt-only save.
-Historical v0.5, v0.6, and v0.7 bundles retain their recorded semantics for
+Historical v0.5 through v0.8 bundles retain their recorded semantics for
 verification, including v0.6 report scopes and boundary Evidence.
 
 Canonical state lives in SQLite. Rebuildable text, search, render, and handle
-indexes live in a separate derivative SQLite store. Losing derivatives cannot
-change Canonical records or scientific judgments.
+indexes live in a separate derivative SQLite store. The small working
+checkpoint has its own durable noncanonical store, so a cold search-cache
+rebuild does not discard it. Losing derivative indexes cannot change Canonical
+records or scientific judgments.
 
 ## Public boundary
 
-The v0.8 FastMCP surface exposes exactly 16 strictly typed tools:
+The v0.9 FastMCP surface exposes exactly 19 strictly typed tools:
 
-`prepare_batch`, `get_status`, `list_sources`, `search_sources`, `read_pages`,
+`prepare_batch`, `get_status`, `save_working_checkpoint`, `list_sources`,
+`search_sources`, `search_sources_batch`, `read_pages`,
 `select_text_evidence`, `render_page`, `select_visual_evidence`,
-`reason_proposal`, `save_proposal`, `request_proposal_approval`,
-`get_domain_context`, `reason_domain_assessment`, `save_domain_judgment`,
-`request_trial_terminal`, and `finalize_batch`.
+`validate_proposal`, `save_proposal`, `request_proposal_approval`,
+`get_domain_context`, `validate_domain_assessment`, `save_domain_judgment`,
+`review_trial`, `close_trial`, and `finalize_batch`.
 
-`reason_proposal` must validate the complete Proposal draft before
-`save_proposal` consumes its exact receipt. `reason_domain_assessment` must
-validate the complete active Domain draft before `save_domain_judgment`
+`validate_proposal` must validate the complete Proposal draft before
+`save_proposal` consumes its exact receipt. `validate_domain_assessment` must
+validate the complete Domain draft before `save_domain_judgment`
 consumes its receipt. These calls validate structure, Evidence references, and
 workflow requirements. They do not establish scientific correctness. Proposal
 Review remains the only researcher approval gate.
@@ -295,6 +344,11 @@ DOCX Sources project ordinary paragraphs, table rows and cells, and footnotes
 onto synthetic page 1. Legacy `.doc` files remain unsupported, and image-only
 PDFs remain renderable through `render_page` without searchable text. Intake
 conditions are visible in status and current receipts.
+
+Visual Evidence requires a `delivery_receipt` issued with a returned MCP
+`ImageContent` block. The receipt binds the Trial, Source, render, and PNG hash;
+it attests that the server returned image pixels, not that a host inspected or
+understood them. Metadata-only renders do not issue a receipt.
 
 The 14-tool v0.5 surface and v0.7 Result semantics are historical contract
 notes. Their finalized bundles remain independently verifiable.

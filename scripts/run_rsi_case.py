@@ -10,29 +10,67 @@ import shutil
 import subprocess
 from pathlib import Path
 
+from prepare_rsi_workspace import approved_scope_record, prepare_workspace
+
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--input", type=Path, required=True, help="One trial dossier directory")
+    parser.add_argument("--case", type=Path, help="Frozen JSON source/scope manifest (phase 1)")
     parser.add_argument("--prompt", type=Path, required=True)
     parser.add_argument("--run-dir", type=Path, required=True)
     parser.add_argument("--phase", type=int, required=True)
     parser.add_argument("--session", help="Codex session ID for a continuation phase")
     parser.add_argument("--model", default="gpt-5.6-luna")
     parser.add_argument("--effort", default="medium")
+    parser.add_argument(
+        "--require-isolated-host",
+        action="store_true",
+        help="Use a deny-by-default filesystem profile for qualification runs",
+    )
     args = parser.parse_args()
     if args.phase < 1 or (args.phase > 1) != bool(args.session):
         parser.error("phase 1 starts a session; later phases require --session")
+    run_dir = args.run_dir.resolve()
+    prompt_file = args.prompt.resolve(strict=True)
+    case_file = args.case.resolve(strict=True) if args.case is not None else None
+    phase_artifacts = tuple(
+        run_dir / f"phase-{args.phase}{suffix}"
+        for suffix in (
+            ".jsonl",
+            ".stderr.txt",
+            ".last-message.txt",
+            ".meta.json",
+        )
+    )
+    if any(path.exists() for path in phase_artifacts):
+        parser.error(
+            f"phase {args.phase} artifacts already exist; choose a new phase or run directory"
+        )
+    isolation_record = run_dir / "host-isolation.json"
+    if args.phase > 1 and isolation_record.is_file():
+        previous_isolation = json.loads(isolation_record.read_text(encoding="utf-8"))
+        if bool(previous_isolation.get("required")) != args.require_isolated_host:
+            parser.error(
+                "host isolation must match phase 1; repeat --require-isolated-host "
+                "for every continuation"
+            )
 
     repository = Path(__file__).resolve().parents[1]
-    workspace = args.run_dir / "workspace"
-    trial_input = workspace / "input" / args.input.name
+    workspace = run_dir / "workspace"
     skill = workspace / ".agents" / "skills" / "rob2-assess"
     if args.phase == 1:
-        if args.run_dir.exists():
+        if case_file is None:
+            parser.error("phase 1 requires --case")
+        if run_dir.exists():
             parser.error("run directory already exists")
-        trial_input.parent.mkdir(parents=True)
-        shutil.copytree(args.input, trial_input)
+        run_inputs = prepare_workspace(case_file, workspace)
+        isolation_record.write_text(
+            json.dumps({"required": args.require_isolated_host}, sort_keys=True) + "\n",
+            encoding="utf-8",
+        )
+        (run_dir / "run-inputs.json").write_text(
+            json.dumps(run_inputs, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+        )
         subprocess.run(
             [
                 str(repository / ".venv" / "Scripts" / "rob2.exe"),
@@ -42,8 +80,10 @@ def main() -> None:
             ],
             check=True,
         )
-    elif not trial_input.exists():
+    elif not (workspace / "input").is_dir():
         parser.error("prepared workspace is missing")
+
+    run_inputs = json.loads((run_dir / "run-inputs.json").read_text(encoding="utf-8"))
 
     rob2_command = repository / ".venv" / "Scripts" / "rob2.exe"
     if args.phase > 1:
@@ -64,33 +104,84 @@ def main() -> None:
                 "Proposal Review is still pending; acknowledge it with rob2 review "
                 "before resuming the Codex session"
             )
+        approved_scope = approved_scope_record(workspace, run_inputs.get("approved_scope"))
+        if approved_scope is not None:
+            (run_dir / "approved-scope.json").write_text(
+                json.dumps(approved_scope, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+            )
 
-    codex_home = args.run_dir / "codex-home"
+    codex_home = run_dir / "codex-home"
     codex_home.mkdir(exist_ok=True)
+    if args.require_isolated_host:
+        profile = [
+            'approval_policy = "never"',
+            'default_permissions = "rob2-rsi"',
+            "",
+            "[permissions.rob2-rsi.filesystem]",
+            '":root" = "deny"',
+            '":minimal" = "read"',
+            '":tmpdir" = "write"',
+            '":slash_tmp" = "write"',
+        ]
+        for path, access in (
+            (workspace, "write"),
+            (run_dir, "write"),
+            (codex_home, "write"),
+            (repository / ".venv", "read"),
+        ):
+            profile.append(f"{json.dumps(path.as_posix())} = {json.dumps(access)}")
+        profile.extend(["", "[permissions.rob2-rsi.network]", "enabled = false"])
+        if os.name == "nt":
+            profile[2:2] = ["[windows]", 'sandbox = "elevated"', ""]
+        (codex_home / "config.toml").write_text("\n".join(profile) + "\n", encoding="utf-8")
     skill_digest = hashlib.sha256()
     for member in sorted(path for path in skill.rglob("*") if path.is_file()):
         skill_digest.update(member.relative_to(skill).as_posix().encode("utf-8"))
         skill_digest.update(member.read_bytes())
+    build_digest = hashlib.sha256()
+    package_root = repository / "src" / "rob2_kit"
+    for member in sorted(
+        path
+        for path in package_root.rglob("*")
+        if path.is_file()
+        and "__pycache__" not in path.parts
+        and path.suffix not in {".pyc", ".pyo"}
+    ):
+        build_digest.update(member.relative_to(repository).as_posix().encode("utf-8"))
+        build_digest.update(member.read_bytes())
+    for member in (
+        Path(__file__).resolve(),
+        Path(__file__).resolve().with_name("prepare_rsi_workspace.py"),
+        repository / "pyproject.toml",
+        repository / "uv.lock",
+        rob2_command,
+    ):
+        build_digest.update(member.relative_to(repository).as_posix().encode("utf-8"))
+        build_digest.update(member.read_bytes())
     auth_source = Path.home() / ".codex" / "auth.json"
     auth_copy = codex_home / "auth.json"
-    shutil.copyfile(auth_source, auth_copy)
     config = [
         "-c",
         "model_reasoning_effort=" + json.dumps(args.effort),
         "-c",
         "mcp_servers.rob2.command=" + json.dumps(str(rob2_command)),
         "-c",
-        "mcp_servers.rob2.args=[\"mcp\"]",
+        'mcp_servers.rob2.args=["mcp"]',
         "-c",
         "mcp_servers.rob2.env={ROB2_WORKSPACE=" + json.dumps(str(workspace)) + "}",
     ]
-    if args.session:
+    if args.session and not args.require_isolated_host:
         config += ["-c", 'approval_policy="never"', "-c", 'sandbox_mode="workspace-write"']
     command = ["codex.cmd", "exec"]
     if args.session:
         command += ["resume", args.session]
     command += [
-        "--ignore-user-config",
+        *([] if args.require_isolated_host else ["--ignore-user-config"]),
+        *(
+            ["--strict-config", "-c", 'default_permissions="rob2-rsi"']
+            if args.require_isolated_host
+            else []
+        ),
         "--skip-git-repo-check",
         "--json",
         "--model",
@@ -99,40 +190,50 @@ def main() -> None:
         "--disable",
         "remote_plugin",
         "--output-last-message",
-        str(args.run_dir / f"phase-{args.phase}.last-message.txt"),
+        str(run_dir / f"phase-{args.phase}.last-message.txt"),
         "-",
     ]
     if not args.session:
-        command[command.index("-"):command.index("-")] = [
-            "--approve-for-me",
-            "-C",
-            str(workspace),
-        ]
-    trace = args.run_dir / f"phase-{args.phase}.jsonl"
-    stderr = args.run_dir / f"phase-{args.phase}.stderr.txt"
+        command[command.index("-") : command.index("-")] = (
+            ["-C", str(workspace)]
+            if args.require_isolated_host
+            else ["--approve-for-me", "-C", str(workspace)]
+        )
+    trace = run_dir / f"phase-{args.phase}.jsonl"
+    stderr = run_dir / f"phase-{args.phase}.stderr.txt"
     metadata = {
         "model": args.model,
         "effort": args.effort,
         "kit_commit": subprocess.check_output(
             ["git", "rev-parse", "HEAD"], cwd=repository, text=True
         ).strip(),
+        "build_sha256": build_digest.hexdigest(),
         "skill_sha256": skill_digest.hexdigest(),
-        "trial": args.input.name,
+        "trial": run_inputs["trial"],
         "phase": args.phase,
         "session": args.session,
-        "prompt_file": str(args.prompt.resolve()),
+        "prompt_file": str(prompt_file),
+        "prompt_sha256": hashlib.sha256(prompt_file.read_bytes()).hexdigest(),
+        "run_inputs_sha256": hashlib.sha256(
+            json.dumps(run_inputs, sort_keys=True, separators=(",", ":")).encode("utf-8")
+        ).hexdigest(),
         "command": command,
+        "host_isolation": {
+            "required": args.require_isolated_host,
+            "policy": "deny-by-default" if args.require_isolated_host else "legacy-workspace-write",
+        },
     }
-    (args.run_dir / f"phase-{args.phase}.meta.json").write_text(json.dumps(metadata, indent=2))
+    (run_dir / f"phase-{args.phase}.meta.json").write_text(json.dumps(metadata, indent=2))
     environment = os.environ.copy()
     environment["CODEX_HOME"] = str(codex_home)
     environment["ROB2_WORKSPACE"] = str(workspace)
     try:
+        shutil.copyfile(auth_source, auth_copy)
         with trace.open("wb") as output, stderr.open("wb") as errors:
             completed = subprocess.run(
                 command,
                 cwd=workspace,
-                input=args.prompt.read_bytes(),
+                input=prompt_file.read_bytes(),
                 stdout=output,
                 stderr=errors,
                 env=environment,

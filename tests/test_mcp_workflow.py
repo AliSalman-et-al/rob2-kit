@@ -161,7 +161,7 @@ def test_domain_questions_include_typed_premise_rules_and_shortcuts(tmp_path: Pa
         assert pack_question.guidance.operational.evidence_needed == tuple(
             question["evidence_needed"]
         )
-        assert {option["official_answer"] for option in question["options"]} == {
+        assert set(question["options"]) == {
             answer.value for answer in pack_question.allowed_answers
         }
         assert (
@@ -187,7 +187,7 @@ def test_domain_questions_include_typed_premise_rules_and_shortcuts(tmp_path: Pa
                 item for item in SCIENTIFIC_PACK.questions if item.id == question_id
             ).allowed_answers
         }
-        assert all(option["official_answer"] in allowed for option in guidance["options"])
+        assert all(option in allowed for option in guidance["options"])
 
 
 def test_domain_query_suggestions_include_executable_alternative_wording(tmp_path: Path) -> None:
@@ -385,25 +385,28 @@ def test_fastmcp_resolves_text_and_figure_evidence_handles(tmp_path: Path) -> No
             "end_line": 1,
         },
     )["data"]["evidence"]
-    render = _call(
+    rendered = _call(
         workspace,
         "render_page",
         {"trial_id": "trial", "source_id": figure_source["id"], "page": 1},
-    )["data"]["render"]
+    )
+    assert len(rendered["_image_content"]) == 1
     figure_selection = _call(
         workspace,
         "select_visual_evidence",
         {
             "trial_id": "trial",
             "source_id": figure_source["id"],
-            "render_identity": render["identity"],
+            "delivery_receipt": rendered["data"]["delivery_receipt"],
             "transcription": "Unrelated figure plot",
             "region": [0.1, 0.1, 0.9, 0.9],
         },
     )["data"]["evidence"]
+    assert figure_selection["delivery_receipt"] == rendered["data"]["delivery_receipt"]
+    assert figure_selection["provenance"] == "host_visual"
     result = _result(narrative)
     typed = _call(workspace, "save_proposal", _proposal_args(workspace, [result]))
-    assert typed["outcome"] == "review_required"
+    assert typed["outcome"] == "review_required", typed
     stored = _state(workspace)["review"]["candidate"]["proposal"]["results"][0]
     stored_handles = {item["handle"] for item in stored["evidence"]}
     assert narrative["handle"] in stored_handles

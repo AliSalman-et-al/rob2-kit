@@ -23,19 +23,22 @@ def test_public_output_surface_is_closed_and_within_budget() -> None:
     assert tuple(tool.name for tool in tools) == (
         "prepare_batch",
         "get_status",
+        "save_working_checkpoint",
         "list_sources",
         "search_sources",
+        "search_sources_batch",
         "read_pages",
         "select_text_evidence",
         "render_page",
         "select_visual_evidence",
-        "reason_proposal",
+        "validate_proposal",
         "save_proposal",
         "request_proposal_approval",
         "get_domain_context",
-        "reason_domain_assessment",
+        "validate_domain_assessment",
         "save_domain_judgment",
-        "request_trial_terminal",
+        "review_trial",
+        "close_trial",
         "finalize_batch",
     )
     schemas = [tool.output_schema for tool in tools]
@@ -69,11 +72,10 @@ def test_public_output_surface_is_closed_and_within_budget() -> None:
         for tool, schema in zip(tools, closed_schemas, strict=True)
     )
     # This is a ceiling, not a target. Smaller closed schemas are better.
-    # SearchHit candidate-truncation and recovery fields, mandatory Proposal
-    # and Domain reasoning receipts, explicit per-file intake conditions, and
-    # bounded source navigation add schema surface; the current combined
-    # surface is 413,004 bytes without adding a public tool.
-    assert total_bytes < 414_000
+    # Search and recovery guidance, reasoning receipts, bounded source
+    # navigation, independent batched search, and the explicit Trial review
+    # and closure operations add schema surface; working checkpoints are bounded.
+    assert total_bytes < 560_000
 
     by_name = {tool.name: tool for tool in tools}
     search_annotations = by_name["search_sources"].annotations
@@ -84,10 +86,12 @@ def test_public_output_surface_is_closed_and_within_budget() -> None:
     assert visual_annotations is not None and visual_annotations.read_only_hint is False
 
     search_description = by_name["search_sources"].description or ""
+    batch_search_description = by_name["search_sources_batch"].description or ""
     search_parameters = by_name["search_sources"].parameters
     search_mode_description = search_parameters["properties"]["mode"]["description"]
     read_description = by_name["read_pages"].description or ""
     read_parameters = by_name["read_pages"].parameters
+    source_parameters = by_name["list_sources"].parameters
     select_description = by_name["select_text_evidence"].description or ""
     assert "1-based source indexes" in search_description
     assert "Required: trial_id, query, mode" in search_description
@@ -96,15 +100,29 @@ def test_public_output_surface_is_closed_and_within_budget() -> None:
     assert "Required lexical intent" in search_mode_description
     assert "all=every token on one page" in search_mode_description
     assert "phrase=known contiguous wording" in search_mode_description
-    assert "Other narrow misses return an any broadening action" in search_description
+    assert "Every zero-hit response describes what its issued mode matched" in search_description
+    assert "does not prescribe a different mode" in search_description
+    assert "item must satisfy the request schema before the call" in batch_search_description
+    assert "item-level stale cursor or unavailable Source condition" in batch_search_description
+    assert "dependent reformulation" in batch_search_description
+    assert "does not require any number of searches" in batch_search_description
+    batch_requests = by_name["search_sources_batch"].parameters["properties"]["requests"]
+    assert batch_requests["maxItems"] == 8
+    assert batch_requests["minItems"] == 1
     assert search_parameters["properties"]["query"]["examples"] == ["central randomization"]
     source_scope = search_parameters["properties"]["source_id"]
     assert source_scope["default"] is None
     assert source_scope["anyOf"][0]["pattern"] == r"^sh_[0-9a-f]{16}$"
+    source_limit = source_parameters["properties"]["limit"]
+    assert source_limit["le"] == 12
+    assert "default is 12" in source_limit["description"]
     assert "not printed labels" in read_description
     assert "numbered lines" in read_description
     assert "data.remaining_windows" in read_description
     assert "single oversized line is returned intact" in read_description
+    assert "there is no top-level end_line" in read_description
+    assert "data.pages[].numbered_text" in read_description
+    assert "data.remaining_windows" in read_description
     assert "required for every read" in read_parameters["properties"]["trial_id"]["description"]
     assert "integer source-page indexes" in read_parameters["properties"]["pages"]["description"]
     assert read_parameters["properties"]["pages"]["examples"] == [[1, 3]]
@@ -121,7 +139,7 @@ def test_public_output_surface_is_closed_and_within_budget() -> None:
         in read_window["properties"]["source_id"]["description"]
     )
     assert "One-based Source-page index" in read_window["properties"]["page"]["description"]
-    domain_tool = by_name["reason_domain_assessment"]
+    domain_tool = by_name["validate_domain_assessment"]
     save_tool = by_name["save_domain_judgment"]
     context_tool = by_name["get_domain_context"]
     assert "current checkpoint" in (context_tool.description or "")
@@ -147,14 +165,21 @@ def test_public_output_surface_is_closed_and_within_budget() -> None:
     assert "Before saving a Domain" in (domain_tool.description or "")
     assert "counterevidence and unresolved facts" in (domain_tool.description or "")
     answer_schema = domain_tool.parameters["properties"]["answers"]["items"]
-    assert set(answer_schema["required"]) >= {"question_id", "option_id", "bases"}
+    assert set(answer_schema["required"]) >= {"question_id", "answer", "bases"}
     assert "active answer" in answer_schema["properties"]["justification"]["description"]
     assert "inactive branch answers" in answer_schema["properties"]["unknowns"]["description"]
     assert "exact Domain draft stored" in (save_tool.description or "")
     multiple_concerns = domain_tool.parameters["properties"]["multiple_concerns"]
     assert "supply only when requested" in multiple_concerns["description"]
+    assert by_name["validate_proposal"].title == "Validate Proposal draft"
     approval_description = by_name["request_proposal_approval"].description or ""
     assert "has no approval arguments" in approval_description
+    assert "with {}" in approval_description
+    assert "Call get_status" in approval_description
+    review_tool = by_name["review_trial"]
+    assert "With no request" in (review_tool.description or "")
+    review_request = review_tool.parameters["properties"]["request"]
+    assert review_request["examples"][0]["disposition"] == "needs_input"
 
 
 def test_server_and_resource_metadata_are_explicit() -> None:
@@ -169,7 +194,7 @@ def test_server_and_resource_metadata_are_explicit() -> None:
     # exposing the initialize result through its in-process client.
     assert initialization is None
     assert mcp.name == "rob2-kit"
-    assert mcp.version == "0.8.0"
+    assert mcp.version == "0.9.0"
     assert mcp.website_url == "https://github.com/AliSalman-et-al/rob2-kit"
     assert len(resources) == 1
     resource = resources[0]
@@ -179,7 +204,7 @@ def test_server_and_resource_metadata_are_explicit() -> None:
     assert (resource.description or "").strip()
 
 
-def test_required_skill_references_match_handle_only_proposal_contract() -> None:
+def test_required_skill_references_match_receipt_only_proposal_contract() -> None:
     skill_root = Path("src/rob2_kit/skills/rob2-assess")
     skill = (skill_root / "SKILL.md").read_text(encoding="utf-8")
     evidence = (skill_root / "references/evidence.md").read_text(encoding="utf-8")
@@ -187,7 +212,9 @@ def test_required_skill_references_match_handle_only_proposal_contract() -> None
     required_instructions = "\n".join((skill, evidence, result))
     normalized_instructions = " ".join(required_instructions.split())
 
-    assert "Do not send an `evidence` field" in evidence
+    assert "Do not place Evidence objects in `reported`" in evidence
+    assert "live `validate_proposal` schema" in normalized_instructions
+    assert "`save_proposal` consumes the receipt returned by that call" in normalized_instructions
     assert "not printed page labels" in required_instructions
     assert "never reconstruct PDF text" in required_instructions
     assert "one selection on each page" in normalized_instructions

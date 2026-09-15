@@ -357,6 +357,16 @@ def test_selected_evidence_catalog_is_closed_and_source_bound() -> None:
         "trial_id": "trial",
         "source_id": source_id,
         "render": render,
+        "delivery_receipt": _identity(
+            {
+                "trial_id": "trial",
+                "source_id": source_id,
+                "render_identity": render["identity"],
+                "png_sha256": render["png_sha256"],
+                "channel": "mcp_image_content",
+                "mime_type": "image/png",
+            }
+        ),
         "transcription": "Figure evidence",
         "region": [0.1, 0.1, 0.9, 0.9],
         "provenance": "host_visual",
@@ -365,6 +375,27 @@ def test_selected_evidence_catalog_is_closed_and_source_bound() -> None:
     figure["handle"] = "eh_" + figure["identity"].removeprefix("sha256:")[:16]
     assert _valid_selected_evidence(figure, sources, _identity)
     assert standalone_valid_selected_evidence(figure, sources, _identity)
+    figure["delivery_receipt"] = "sha256:" + "4" * 64
+    figure["identity"] = _identity(
+        {key: value for key, value in figure.items() if key not in {"identity", "handle"}}
+    )
+    figure["handle"] = "eh_" + figure["identity"].removeprefix("sha256:")[:16]
+    assert not _valid_selected_evidence(figure, sources, _identity)
+    assert not standalone_valid_selected_evidence(figure, sources, _identity)
+    figure["delivery_receipt"] = _identity(
+        {
+            "trial_id": "trial",
+            "source_id": source_id,
+            "render_identity": render["identity"],
+            "png_sha256": render["png_sha256"],
+            "channel": "mcp_image_content",
+            "mime_type": "image/png",
+        }
+    )
+    figure["identity"] = _identity(
+        {key: value for key, value in figure.items() if key not in {"identity", "handle"}}
+    )
+    figure["handle"] = "eh_" + figure["identity"].removeprefix("sha256:")[:16]
     figure["render"]["png_sha256"] = "invented"
     figure["identity"] = _identity(
         {key: value for key, value in figure.items() if key not in {"identity", "handle"}}
@@ -509,6 +540,99 @@ def test_domain_answers_tampering_fails_both_bundle_verifiers(tmp_path: Path) ->
     _rehashed_domain_tamper(artifact, tampered, tamper)
     assert not verify_bundle(tampered)
     assert _standalone_verify(tampered).returncode == 1
+
+
+def test_rehashed_trial_review_and_closure_tampering_fails_both_verifiers(
+    tmp_path: Path,
+) -> None:
+    artifact = _assessed_artifact(_workspace(tmp_path))
+
+    def reseal(record: dict[str, Any]) -> None:
+        record["identity"] = _identity(
+            {key: value for key, value in record.items() if key != "identity"}
+        )
+
+    def detach_review_result(canonical: dict[str, Any]) -> None:
+        review = canonical["trial_reviews"]["trial"]
+        review["result_identity"] = "sha256:" + "0" * 64
+        reseal(review)
+
+    def detach_closure(canonical: dict[str, Any]) -> None:
+        closure = canonical["trial_closures"]["trial"]
+        closure["review_identity"] = "sha256:" + "0" * 64
+        reseal(closure)
+
+    cases = (
+        lambda canonical: canonical.pop("trial_reviews"),
+        lambda canonical: canonical["trial_closures"].pop("trial"),
+        detach_review_result,
+        detach_closure,
+    )
+    for index, mutate in enumerate(cases):
+        tampered = tmp_path / f"trial-review-closure-{index}.rob2.zip"
+        _rehashed_full_tamper(artifact, tampered, mutate)
+        assert not verify_bundle(tampered)
+        assert _standalone_verify(tampered).returncode == 1
+
+
+def test_historical_bundle_without_trial_closure_fields_stays_verifiable(
+    tmp_path: Path,
+) -> None:
+    artifact = _assessed_artifact(_workspace(tmp_path))
+    with zipfile.ZipFile(artifact) as archive:
+        files = {item.filename: archive.read(item) for item in archive.infolist()}
+    canonical = json.loads(files["canonical.json"])
+    canonical.pop("trial_reviews")
+    canonical.pop("trial_closures")
+    files["canonical.json"] = json.dumps(
+        canonical, sort_keys=True, separators=(",", ":"), ensure_ascii=False
+    ).encode()
+    dispositions = canonical["dispositions"]
+    counts = {
+        name: sum(value == name for value in dispositions.values())
+        for name in ("assessed", "needs_input", "failed", "pending")
+    }
+    total = len(dispositions)
+    wording = (
+        "Batch finalized. No RoB 2 assessments were completed."
+        if not counts["assessed"]
+        else "Batch finalized. "
+        f"RoB 2 assessments completed for {counts['assessed']}/{total} Trials. "
+        f"{counts['needs_input']} Trials need input; {counts['failed']} Trials failed."
+    )
+    claims = json.loads(files["claims.json"])
+    claims["counts"] = counts
+    claims["authoritative_wording"] = wording
+    files["claims.json"] = json.dumps(
+        claims, sort_keys=True, separators=(",", ":"), ensure_ascii=False
+    ).encode()
+    files["report.html"] = (
+        "<html><body><h1>Batch finalized</h1><pre>"
+        + json.dumps(claims, sort_keys=True)
+        + "</pre></body></html>"
+    ).encode()
+    manifest = json.loads(files["manifest.json"])
+    manifest["identity"] = _identity({"schema": "rob2-kit.bundle.v0.3", "canonical": canonical})
+    verification = json.loads(files["verification.json"])
+    verification["manifest_identity"] = manifest["identity"]
+    files["verification.json"] = json.dumps(
+        verification, sort_keys=True, separators=(",", ":"), ensure_ascii=False
+    ).encode()
+    for row in manifest["files"]:
+        row["sha256"] = "sha256:" + hashlib.sha256(files[row["path"]]).hexdigest()
+    files["manifest.json"] = json.dumps(
+        manifest, sort_keys=True, separators=(",", ":"), ensure_ascii=False
+    ).encode()
+    historical = tmp_path / "legacy-without-trial-closures.rob2.zip"
+    with zipfile.ZipFile(historical, "w", compression=zipfile.ZIP_DEFLATED) as archive:
+        for name in sorted(files):
+            info = zipfile.ZipInfo(name, date_time=(1980, 1, 1, 0, 0, 0))
+            info.compress_type = zipfile.ZIP_DEFLATED
+            info.external_attr = 0o644 << 16
+            archive.writestr(info, files[name])
+
+    assert verify_bundle(historical)
+    assert _standalone_verify(historical).returncode == 0
 
 
 def test_bundle_path_policy_allows_escaped_text_and_rejects_platform_paths(

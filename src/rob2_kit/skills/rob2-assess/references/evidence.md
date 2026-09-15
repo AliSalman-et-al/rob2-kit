@@ -2,24 +2,54 @@
 
 Use this reference while locating Result support and answering Domain questions.
 
+## Receipt and continuation recovery
+
+Most MCP calls return their typed result in `structuredContent`. Keep the full
+receipt, including `head`, `data`, and any `next_action`, `recovery`, or cursor.
+When `structuredContent` is absent, inspect the text in `content`. If the result
+is an error or a validation error, use the named schema path to correct the
+argument and retry the call. A structured `outcome:"repair"` lists paths in
+`repairs`; fix those paths in the complete draft and resubmit it. Increase a
+host output limit only after the host reports truncation. A missing receipt is
+not a no-hit result.
+
+Context pages use `data.context_page.next_cursor`. Pass that value unchanged
+until it is null. If a cursor is invalid, recapture the preceding page. If a
+cursor is stale, restart the first scoped request. Read each page in a separate
+host-visible output when the host can truncate a combined transcript.
+
+## Keep returned handles distinct
+
+The prefixes identify different values. `eh_` is a passage Evidence handle,
+`sh_` is a captured Source handle, `sr_` is a search receipt handle, and
+`sha256:` is a content identity. Copy each value directly from the response.
+Use an `eh_` value only after inspecting the complete returned passage. If a
+handle is rejected, reread or relist the exact returned object and correct every
+occurrence. Never replace one prefix with another or retype an opaque value.
+
 ## Reuse inspected passage handles
 
 `search_sources` locates candidate pages. Copy each returned `source_id` exactly
-and use it with the same `trial_id`. A hit is navigation, not scientific
-proof, but its `passage_ref` already identifies the exact returned passage.
+and use it with the same `trial_id`. Each `data.hits[]` item returns a
+`passage_ref` for its exact displayed window. A hit is a discovery candidate,
+not retained Evidence, until you inspect the complete passage and select it.
 Choose short Source wording or a returned query suggestion. Use `all` for every
 token on one page, `phrase` for contiguous wording, `any` for broad discovery,
 and `prefix` for token prefixes. Suggestions are alternatives, not a checklist.
 To inspect further candidates, pass `next_cursor` as `cursor` with the same
 query, mode, Source scope, and limit. A truncated batch is not the full ranking.
-A zero-hit receipt establishes only that the issued lexical query matched
-nothing. For a Source-scoped miss, inspect the returned navigation entries and
+A zero-hit response states what its explicit lexical mode matched and only
+establishes that the issued query matched no captured text. It does not establish
+that the method or fact is absent. Compare the complete-query page count with
+the per-term counts; individual terms do not imply co-occurrence or a phrase
+match. For a Source-scoped miss, inspect the returned navigation entries and
 read relevant pages; use the progressive `list_sources` action only when more
-entries remain. For other eligible initial multi-token `all` or `phrase`
-no-hits, broaden once with the returned `mode:"any"` action and inspect the
-passages. If retrieval remains unhelpful, inspect the relevant section of an
-available Source and other relevant Sources before recording an unresolved
-limitation. One widening step is not adequate discovery by itself.
+entries remain. Use the observed gap and wording from inspected Sources to
+choose whether to reformulate or read the relevant section directly. The
+`search_sources_batch` tool accepts up to eight independent requests, each with
+its own mode, outcome, and continuation cursor; use it only when all query
+inputs are already known, and wait for a result before choosing a dependent
+reformulation. No fixed number of queries proves completeness.
 Use `term_feedback` after an unhelpful combined search to distinguish absent
 query vocabulary from terms present somewhere in a Source despite no full-query
 match. It reports bounded distinct matching-page counts by Source and the count
@@ -60,33 +90,50 @@ footnote. A heading or list-introducing lead-in alone is incomplete.
 ## Use visual Evidence for visual meaning
 
 Call `render_page` when layout, axes, columns, symbols, or footnotes affect the
-meaning. Inspect the returned pixels, then call `select_visual_evidence` with a
-normalized region and a literal, self-contained transcription. Include every
-applicable title, axis, series, label, value, unit, uncertainty, denominator, and
-footnote visible in the region.
+meaning. Inspect the returned pixels, then call `select_visual_evidence` with the
+`delivery_receipt` from the same response, a normalized region, and a literal,
+self-contained transcription. A receipt is issued only when the response includes
+an MCP `ImageContent` block; `inline=false` returns metadata without a receipt and
+cannot support visual Evidence. Include every applicable title, axis, series,
+label, value, unit, uncertainty, denominator, and footnote visible in the region.
 
-The server owns the render identity and assigns `text_corroborated` or
-`host_visual` provenance. Host-visual Evidence can support only literal visible
-labels, endpoint text, values, axes, arm labels, and stated timing. Use narrative
-or text-corroborated Evidence for population, analysis or measurement methods,
-prespecification, and conduct. Put interpretation in the Result rationale or
-Domain justification, not in the transcription.
+The server binds the receipt to the exact Trial, Source, render, and PNG hash.
+It records that it returned the image block; the receipt does not establish that a
+person or model inspected or understood it. The host supplies the transcription;
+`text_corroborated` means the complete-page transcription also occurs in extracted
+Source text, while `host_visual` means it is grounded in the delivered pixels.
+Host-visual Evidence can support only literal visible labels, endpoint text,
+values, axes, arm labels, and stated timing. Use narrative or text-corroborated
+Evidence for population, analysis or measurement methods, prespecification, and
+conduct. Put interpretation in the Result rationale or Domain justification,
+not in the transcription.
 
 ## Ground a Result
 
-Do not send an `evidence` field at the top level of an assessable Result card,
-or place Evidence objects in `reported`. Use `passage_refs` for Result support
-and `applicability.evidence` for design support. The server retains supporting
-Evidence and derives canonical bindings.
+Use `passage_refs` for ordinary Result support and `applicability.evidence` for
+design support. Do not place Evidence objects in `reported`. The only structured
+top-level `evidence` form is `table_multispan`, for a table whose literal title
+or definition, header, quantitative row, unit, or footnote were selected as
+separate passages. Give each selection its actual role and handle. Those spans
+remain separate citations: do not concatenate their text, assume they are
+adjacent, or claim that they scientifically belong together merely because they
+are used by one Result.
 
 Every Source-owned reported leaf must have exact or normalization-equivalent
 support. Caller-owned target interpretation, timing and arm assignments do not
-need duplicate source quotations. Comparison-group IDs and structural
-`category_axis_names` do not need them either. Source-owned endpoint labels,
+need duplicate source quotations. Comparison-group IDs do not need them either.
+For a categorical profile, `category_axis_names` names the ordered non-treatment
+dimensions; it does not replace Evidence for source-reported category labels or
+cells. Source-owned endpoint labels,
 definitions, group or category labels, quantities, units, and denominators do.
 
-At least one Evidence item must contain `reported.endpoint.name` and a complete
-quantitative tuple. Follow the tuple rules in [Specify the Result](result.md).
+For ordinary narrative, table, or figure Evidence, at least one item must contain
+`reported.endpoint.name` and a complete quantitative tuple. A multi-span table
+instead needs a cited header and quantitative-row span; the endpoint must occur
+in its cited title/definition or header, and each tuple value must occur in one
+of the cited header, row, unit, or footnote spans. `Total`, `Overall`, or a
+similar aggregate label is not an endpoint name. Follow the tuple rules in
+[Specify the Result](result.md).
 Repair unsupported leaves with exact Source wording and better Evidence; a
 support defect does not make the Result unavailable.
 
@@ -126,6 +173,48 @@ State inferred conclusions in the answer's `justification`, with the source
 facts and any unresolved link. The server checks Evidence identity and structure;
 you judge whether those facts support the answer.
 
+## Build a Domain answer
+
+Read this section before the first `validate_domain_assessment` call. Submit
+one object for each question on the dependency-closed active path. The object
+needs `question_id`, the exact permitted `answer`, at least one `bases` item,
+`justification`, `unknowns`, and `counterevidence` for an active question.
+Use the question card's `options`; the example values are fictional.
+
+```json
+{
+	"question_id": "sq:randomization:sequence",
+	"answer": "probably_yes",
+	"bases": [
+		{"kind": "context", "evidence": "eh_0123456789abcdef"},
+		{
+			"kind": "limitation",
+			"text": "The report does not state who generated the allocation sequence.",
+			"search_receipt": "sr_0123456789abcdef"
+		}
+	],
+	"justification": "The inspected passage states that a computer generated random allocations. The report does not identify who generated the sequence.",
+	"unknowns": ["The report does not identify the sequence generator."],
+	"counterevidence": [
+		{"basis_index": 1, "implication": "The unresolved generator limits confidence in the answer."}
+	]
+}
+```
+
+Use these exact shapes for the three basis forms:
+
+```json
+{"kind": "context", "evidence": "eh_0123456789abcdef"}
+{"kind": "absence", "search_receipt": "sr_0123456789abcdef"}
+{"kind": "limitation", "text": "The captured reports leave this premise unresolved.", "search_receipt": "sr_0123456789abcdef"}
+```
+
+`context`, `direct_support`, `indirect_support`, `contradiction`, and
+`inference` use a selected `evidence` handle. `absence` uses an untruncated
+zero-hit `search_receipt`. `limitation` uses concise text and a current-Trial
+untruncated `search_receipt`. A basis kind describes how the premise is used;
+it does not add facts to the cited passage.
+
 ## Recover an unresolved premise
 
 Use this gap-directed Reason–Act loop when inspected Evidence leaves a material
@@ -141,23 +230,27 @@ cursors.
 2. Act. Inspect the active comparison card's complete `passage_groups` inventory
    when one is returned; call `list_sources` only when no complete inventory is
    present. Every captured Source remains listed in the inventory even when it
-   has no selected passages; use its `source_id`, `page_count`, and
-   `logical_path` to navigate it. A supplement, `other` document, or combined
+   has no selected passages; the inventory also exposes intake conditions and
+   declared omissions. Use its `source_id`, `page_count`, and `logical_path` to
+   navigate it. Source navigation identifies pages with no extracted text; those
+   pages may contain visual or otherwise unextracted material. A supplement,
+   `other` document, or combined
    protocol can contain the needed plan or participant-flow detail. A Source
    role is a routing hint, never evidence about its contents or applicability.
 3. Search the likely Source with concrete study wording. Use a methodological
-   label only to supplement that wording. If the query is a multi-token `all`
-   or `phrase` no-hit, use the one returned `any` widening action and inspect
-   its passages. If the returned batch is truncated or has a continuation
-   cursor, continue that same query when deeper cached results could resolve
-   the premise. For a Source-scoped miss, inspect the navigation entries. Use
+   label only to supplement that wording. Use a no-hit's exact mode and
+   per-term counts to decide whether another explicit query or direct section
+   read could resolve the premise. If a result is truncated and has a
+   `next_cursor`, continue the same query first when deeper ranked passages
+   could resolve the premise. Use the final untruncated receipt. Change the
+   query only when its wording or the premise warrants a change. For a
+   Source-scoped miss, inspect the navigation entries. Use
    the unresolved fact, Trial context, term feedback, and literal Source wording
-   to choose one or two short alternate queries when needed. Read the relevant
-   returned pages. Continue navigation only if the displayed entries do not
-   identify a useful page or query. Navigation entries guide inspection; cite
-   Evidence from the inspected passage. Other narrow no-hits may use the
-   returned `any` broadening action. Do not treat a no-hit or an uninspected hit
-   as scientific absence.
+   to choose whether another query or direct section read could resolve it. Read
+   relevant returned pages. Continue navigation when the displayed entries do
+   not identify a useful page or query. Navigation entries guide inspection;
+   cite Evidence from the inspected passage. Do not treat a no-hit or an
+   uninspected hit as scientific absence.
 4. After each search or read, update the fact to exactly one state: supported,
    contradicted, or still unknown. A hit remains a candidate until you inspect
    the complete passage.
@@ -165,12 +258,11 @@ cursors.
    of the likely Source, including its contents or front-matter pages when
    needed, before recording a limitation. Exhausted query results or ranking
    pages are not an inspected section. If that section does not resolve the
-   fact, repeat one bounded search with the same concrete wording over the
-   relevant captured Sources. Do not run every query suggestion or read every
-   appendix by default.
+   fact, use another relevant search or read when it could narrow the unresolved
+   premise. Do not run every query suggestion or read every appendix by default.
 6. Investigate the upstream premise first. If it remains unknown, preserve that
    uncertainty and follow the question card's activation rules. Before
-   `reason_domain_assessment` and `save_domain_judgment`, revisit every
+   `validate_domain_assessment` and `save_domain_judgment`, revisit every
    still-material unknown against the Source inventory. Record the relevant
    section inspected and the facts that remain unavailable. If a fact
    remains discoverable within captured Sources and bounded cursor or page

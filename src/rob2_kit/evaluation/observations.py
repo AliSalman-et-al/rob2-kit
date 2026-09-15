@@ -21,21 +21,27 @@ SUPPORTED_SERVERS = frozenset({"rob2"})
 DOCUMENTED_TOOLS = frozenset(
     {
         "finalize_batch",
+        "close_trial",
         "get_domain_context",
         "get_status",
         "list_sources",
         "prepare_batch",
         "read_pages",
         "render_page",
+        "review_trial",
         "reason_domain_assessment",
         "reason_proposal",
         "request_proposal_approval",
         "request_trial_terminal",
         "save_domain_judgment",
+        "save_working_checkpoint",
         "save_proposal",
         "search_sources",
+        "search_sources_batch",
         "select_text_evidence",
         "select_visual_evidence",
+        "validate_domain_assessment",
+        "validate_proposal",
     }
 )
 SEARCH_MODES = frozenset({"all", "phrase", "any", "prefix"})

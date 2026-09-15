@@ -204,7 +204,32 @@ def _proposal_shape_repairs(
                         "detail": "; ".join(parts),
                     }
                 )
+                if missing and isinstance(result.reported, GroupBoundValuesResult):
+                    result_repairs.append(
+                        {
+                            "path": reported_path,
+                            "code": "incomplete_comparative_result",
+                            "detail": (
+                                "Group-bound values without a value for every randomized group "
+                                "cannot enter comparative RoB 2 assessment. Preserve the exact "
+                                "report passage as Evidence and submit an unavailable Result "
+                                "with the missing group result as a concrete missing fact."
+                            ),
+                        }
+                    )
         elif isinstance(result.reported, CategoryProfileResult):
+            result_repairs.append(
+                {
+                    "path": f"{path}/reported",
+                    "code": "single_group_result_not_comparative",
+                    "detail": (
+                        "A one-group descriptive profile cannot support a RoB 2 comparative "
+                        "assessment. Preserve its exact source passage as Evidence and submit "
+                        "an unavailable Result with a missing_comparator_result fact based on "
+                        "that Evidence."
+                    ),
+                }
+            )
             target_ids = {group.id for group in result.target.comparison_groups}
             if result.reported.group_id not in target_ids:
                 result_repairs.append(
@@ -260,34 +285,36 @@ def _canonical_result(
     # records retain the materialized Evidence items, not the caller's
     # navigation list.
     raw.pop("passage_refs", None)
-    evidence: list[dict[str, Any]] = []
-    selected_for_trial = sorted(
-        (
-            item
-            for item in catalog.values()
-            if item.get("trial_id") == result.trial_id
-            and item.get("kind") in {"narrative", "figure"}
-            and isinstance(item.get("handle"), str)
-            and (not result.passage_refs or item.get("handle") in set(result.passage_refs))
-        ),
-        key=lambda item: (str(item.get("identity", "")), str(item["handle"])),
-    )
-    for selected in selected_for_trial:
-        handle = selected["handle"]
-        if selected.get("kind") == "figure":
-            render = selected.get("render", {})
-            evidence.append(
-                {
-                    "kind": "figure",
-                    "handle": handle,
-                    "render_identity": render.get("identity"),
-                    "region": selected.get("region"),
-                    "transcription": selected.get("transcription"),
-                    "provenance": selected.get("provenance"),
-                }
-            )
-        else:
-            evidence.append({"kind": "narrative", "handle": handle})
+    evidence = raw.pop("evidence", [])
+    if not evidence:
+        selected_for_trial = sorted(
+            (
+                item
+                for item in catalog.values()
+                if item.get("trial_id") == result.trial_id
+                and item.get("kind") in {"narrative", "figure"}
+                and isinstance(item.get("handle"), str)
+                and (not result.passage_refs or item.get("handle") in set(result.passage_refs))
+            ),
+            key=lambda item: (str(item.get("identity", "")), str(item["handle"])),
+        )
+        for selected in selected_for_trial:
+            handle = selected["handle"]
+            if selected.get("kind") == "figure":
+                render = selected.get("render", {})
+                evidence.append(
+                    {
+                        "kind": "figure",
+                        "handle": handle,
+                        "render_identity": render.get("identity"),
+                        "delivery_receipt": selected.get("delivery_receipt"),
+                        "region": selected.get("region"),
+                        "transcription": selected.get("transcription"),
+                        "provenance": selected.get("provenance"),
+                    }
+                )
+            else:
+                evidence.append({"kind": "narrative", "handle": handle})
     raw["evidence"] = evidence
     raw["clarity"] = {
         key: "specified"
@@ -333,6 +360,7 @@ def _canonical_result(
         item.update(
             {
                 "render_identity": render.get("identity"),
+                "delivery_receipt": selected.get("delivery_receipt"),
                 "region": selected.get("region"),
                 "transcription": selected.get("transcription"),
                 "provenance": selected.get("provenance"),
@@ -494,6 +522,90 @@ def _validate_evidence(
                     }
                 )
             continue
+        if kind == "table_multispan":
+            spans = item.get("spans", [])
+            materials: list[str] = []
+            valid_spans = True
+            for span_index, span in enumerate(spans):
+                handle = span.get("handle") if isinstance(span, dict) else None
+                selected = _selected(catalog, handle) if isinstance(handle, str) else None
+                if isinstance(handle, str):
+                    handles.add(handle)
+                required_kind = "narrative" if item.get("basis") == "text" else "figure"
+                if selected is None or selected.get("kind") != required_kind:
+                    defects.append(
+                        {
+                            "path": f"{prefix}/spans/{span_index}/handle",
+                            "code": "evidence_kind_mismatch",
+                            "detail": (
+                                "table_multispan handles must resolve to selected server "
+                                "evidence of the declared basis"
+                            ),
+                        }
+                    )
+                    valid_spans = False
+                    continue
+                if selected.get("trial_id") != result["trial_id"]:
+                    defects.append(
+                        {
+                            "path": f"{prefix}/spans/{span_index}/handle",
+                            "code": "cross_trial_evidence",
+                            "detail": "table_multispan evidence must come from this Trial",
+                        }
+                    )
+                    valid_spans = False
+                    continue
+                materials.append(str(selected.get("quote", selected.get("transcription", ""))))
+            fields = (
+                [item[key] for key in ("title", "scope", "cohort", "row")]
+                + item["columns"]
+                + item["group_or_category_axes"]
+                + item["cells"]
+                + item["units"]
+                + item["denominators"]
+                + item["footnotes"]
+            )
+            if valid_spans and any(
+                not any(_result_value_contains(material, value) for material in materials)
+                for value in fields
+            ):
+                defects.append(
+                    {
+                        "path": prefix,
+                        "code": "table_material_mismatch",
+                        "detail": (
+                            "each multi-span table field must occur in one cited span; "
+                            "the server does not join spans into a continuous quotation"
+                        ),
+                    }
+                )
+            groups = {group["id"] for group in result["target"]["comparison_groups"]}
+            if groups & set(item["group_or_category_axes"]):
+                defects.append(
+                    {
+                        "path": prefix,
+                        "code": "table_category_axis_is_group",
+                        "detail": (
+                            "group_or_category_axes must identify categories, not "
+                            "comparison-group IDs"
+                        ),
+                    }
+                )
+            endpoint = result.get("reported", {}).get("endpoint", {})
+            endpoint_name = endpoint.get("name") if isinstance(endpoint, dict) else None
+            if isinstance(endpoint_name, str) and _is_generic_table_endpoint(endpoint_name):
+                defects.append(
+                    {
+                        "path": f"{result_path}/reported/endpoint/name",
+                        "code": "generic_table_endpoint",
+                        "detail": (
+                            "a generic table label such as 'Total' cannot stand in for the "
+                            "reported endpoint name; use the endpoint stated in a cited span"
+                        ),
+                    }
+                )
+            continue
+
         selected = _selected(catalog, item["handle"])
         handles.add(item["handle"])
         required_kind = {
@@ -563,6 +675,7 @@ def _validate_evidence(
             render = selected.get("render", {})
             if (
                 item["render_identity"] != render.get("identity")
+                or item.get("delivery_receipt") != selected.get("delivery_receipt")
                 or item["region"] != selected.get("region")
                 or item["transcription"] != selected.get("transcription")
                 or item.get("provenance") != selected.get("provenance")
@@ -582,8 +695,8 @@ def _validate_evidence(
                         "path": prefix,
                         "code": "figure_material_mismatch",
                         "detail": (
-                            "server-owned render_identity, region, and transcription "
-                            "must match the selected figure handle"
+                            "server-owned render identity, delivery receipt, region, and "
+                            "transcription must match the selected figure handle"
                         ),
                     }
                 )
@@ -606,6 +719,19 @@ def _supports_leaf(
             return leaf == str(item["value"]) and _derived_value(item) == leaf
         except (InvalidOperation, ValueError, ZeroDivisionError):
             return False
+    if kind == "table_multispan":
+        return any(
+            isinstance(span, dict)
+            and isinstance(span.get("handle"), str)
+            and isinstance((span_selected := _selected(catalog, span["handle"])), dict)
+            and span_selected.get("trial_id") == result["trial_id"]
+            and _result_value_contains(
+                str(span_selected.get("quote", span_selected.get("transcription", ""))),
+                leaf,
+                field_path,
+            )
+            for span in item.get("spans", [])
+        )
     selected = _selected(catalog, item.get("handle", ""))
     if selected is None or selected.get("trial_id") != result["trial_id"]:
         return False
@@ -622,6 +748,13 @@ def _supports_leaf(
     if kind == "figure":
         return _result_value_contains(str(item.get("transcription", "")), leaf, field_path)
     return False
+
+
+def _is_generic_table_endpoint(value: str) -> bool:
+    """Reject aggregation labels where an endpoint name is required."""
+
+    normalized = " ".join(value.casefold().split())
+    return normalized in {"total", "overall", "all", "all patients", "all participants"}
 
 
 def _host_visual_leaf_allowed(path: str) -> bool:
@@ -688,10 +821,51 @@ def _coherent_anchor_indices(
     endpoint_name = reported["endpoint"]["name"]
 
     quantitative_tuples = _reported_quantitative_paths(reported)
+
+    def multi_span_anchor(item: dict[str, Any]) -> bool:
+        """Check each cited fragment without treating them as one quotation."""
+
+        spans = item.get("spans", [])
+        roles = {
+            span.get("role")
+            for span in spans
+            if isinstance(span, dict) and isinstance(span.get("role"), str)
+        }
+        if {"header", "quantitative_row"} - roles or _is_generic_table_endpoint(endpoint_name):
+            return False
+
+        def supports_roles(value: Any, accepted_roles: set[str], field_path: str) -> bool:
+            return any(
+                isinstance(span, dict)
+                and span.get("role") in accepted_roles
+                and _supports_leaf(value, {**item, "spans": [span]}, result, catalog, field_path)
+                for span in spans
+            )
+
+        return supports_roles(
+            endpoint_name,
+            {"title_or_definition", "header"},
+            "/reported/endpoint/name",
+        ) and any(
+            all(
+                supports_roles(
+                    value,
+                    {"header", "quantitative_row", "unit", "footnote"},
+                    field_path,
+                )
+                for field_path, value in quantitative
+            )
+            for quantitative in quantitative_tuples
+        )
+
     anchors = [
         index
         for index, item in enumerate(result["evidence"])
-        if _supports_leaf(endpoint_name, item, result, catalog, "/reported/endpoint/name")
+        if (
+            multi_span_anchor(item)
+            if item.get("kind") == "table_multispan"
+            else _supports_leaf(endpoint_name, item, result, catalog, "/reported/endpoint/name")
+        )
         and any(
             all(
                 _supports_leaf(value, item, result, catalog, field_path)
@@ -1020,6 +1194,13 @@ def _bind_result(
         if item.get("kind") in {"narrative", "figure", "table"}
     }
     handles.update(
+        span["handle"]
+        for item in result["evidence"]
+        if item.get("kind") == "table_multispan"
+        for span in item.get("spans", [])
+        if isinstance(span, dict) and isinstance(span.get("handle"), str)
+    )
+    handles.update(
         input_item["handle"]
         for item in result["evidence"]
         if item.get("kind") == "derived"
@@ -1043,6 +1224,12 @@ def _result_handles(result: dict[str, Any], catalog: dict[str, dict[str, Any]]) 
         handle = item.get("handle")
         if isinstance(handle, str):
             handles.add(handle)
+        if item.get("kind") == "table_multispan":
+            handles.update(
+                span["handle"]
+                for span in item.get("spans", [])
+                if isinstance(span, dict) and isinstance(span.get("handle"), str)
+            )
         if item.get("kind") == "derived":
             handles.update(
                 input_item["handle"]
@@ -1160,6 +1347,15 @@ def save_proposal(
         and state["review"].get("purpose") == "proposal"
         and isinstance(prior_proposal, dict)
     )
+    revision_base = state.get("proposal_revision_base")
+    revising_approved = (
+        not pending_review
+        and state.get("phase") in {"assessment", "ready_to_finalize"}
+        and isinstance(prior_proposal, dict)
+        and isinstance(state.get("proposal_acknowledgment"), dict)
+    )
+    revision_in_progress = isinstance(revision_base, dict)
+    merging_proposal = pending_review or revising_approved or revision_in_progress
     read_gaps = main_report_read_gaps(
         root,
         batch.get("trials", []) if isinstance(batch, dict) else [],
@@ -1175,8 +1371,9 @@ def save_proposal(
                     "code": "main_report_reading_required",
                     "detail": (
                         "Finish the required bounded text pass before submitting the Proposal. "
-                        "Call get_status, read the returned main_report_reading.required_ranges "
-                        "with read_pages, then retry save_proposal."
+                        "Call get_status, read data.main_report_reading[trial_id].required_ranges "
+                        "with read_pages, then resubmit the complete Result cards and assessments "
+                        "to validate_proposal. Save only after validation succeeds."
                     ),
                 }
             ],
@@ -1189,7 +1386,7 @@ def save_proposal(
         return _result("repair", state, repairs=shape_defects + draft_defects)
     raw = {"results": canonical_results}
     defects: list[dict[str, Any]] = []
-    if not pending_review and {item["trial_id"] for item in raw["results"]} != expected_trials:
+    if not merging_proposal and {item["trial_id"] for item in raw["results"]} != expected_trials:
         defects.append(
             {
                 "path": "/results",
@@ -1238,8 +1435,15 @@ def save_proposal(
             )
     if canonical_defects:
         return _result("repair", state, repairs=canonical_defects)
-    if pending_review:
-        prior_payload = prior_proposal.get("payload", {})
+    if merging_proposal:
+        merge_base = (
+            prior_proposal
+            if pending_review
+            else revision_base
+            if isinstance(revision_base, dict)
+            else prior_proposal
+        )
+        prior_payload = merge_base.get("payload", {}) if isinstance(merge_base, dict) else {}
         prior_results = prior_payload.get("results", []) if isinstance(prior_payload, dict) else []
         prior_by_trial = {
             item["trial_id"]: item
@@ -1270,13 +1474,13 @@ def save_proposal(
         canonical_by_trial = {item["trial_id"]: item for item in canonical}
         raw["results"] = [canonical_by_trial[trial_id] for trial_id in expected_trials_in_order]
     identity = _identity(raw)
-    if state.get("phase") != "proposal":
+    if state.get("phase") != "proposal" and not revising_approved and not revision_in_progress:
         raise ValueError("proposal is not the current operation")
     if (state.get("proposal") or {}).get("identity") == identity:
         return _result("success", state, proposal_identity=identity, retry=True)
     if draft.expected_revision != state.get("revision", 0):
         raise WorkflowConflict(draft.expected_revision, int(state.get("revision", 0)))
-    if pending_review:
+    if merging_proposal:
         used = set().union(*(_result_handles(result, catalog) for result in raw["results"]))
     bound = _bound_proposal_evidence(catalog, used, prior_proposal)
     if validate_only:
@@ -1288,6 +1492,68 @@ def save_proposal(
             proposal_identity=identity,
         )
     proposal_record = {"identity": identity, "payload": raw, "evidence": bound}
+    revised_state = state
+    if revising_approved or revision_in_progress:
+        baseline = revision_base if isinstance(revision_base, dict) else prior_proposal
+        baseline_payload = baseline.get("payload") if isinstance(baseline, dict) else None
+        baseline_results = (
+            baseline_payload.get("results", []) if isinstance(baseline_payload, dict) else []
+        )
+        baseline_by_trial = {
+            item["trial_id"]: item
+            for item in baseline_results
+            if isinstance(item, dict) and isinstance(item.get("trial_id"), str)
+        }
+        changed_trial_ids = {
+            trial_id
+            for trial_id, result in ((item["trial_id"], item) for item in raw["results"])
+            if baseline_by_trial.get(trial_id) != result
+        }
+        previously_changed = state.get("proposal_revision_trial_ids", [])
+        if isinstance(previously_changed, list):
+            changed_trial_ids.update(item for item in previously_changed if isinstance(item, str))
+        dispositions = dict(state.get("trial_dispositions", {}))
+        closed_trial_ids = {
+            trial_id
+            for trial_id, disposition in dispositions.items()
+            if disposition in {"assessed", "needs_input", "unsupported_design", "failed"}
+        }
+        if changed_trial_ids & closed_trial_ids:
+            return _result(
+                "condition",
+                state,
+                condition={
+                    "code": "trial_closed",
+                    "detail": (
+                        "a closed Trial is immutable; prepare a new Batch to replace its Result."
+                    ),
+                },
+            )
+        domain_records = dict(state.get("domain_records", {}))
+        snapshots = dict(state.get("snapshots", {}))
+        terminals = dict(state.get("terminals", {}))
+        trial_reviews = dict(state.get("trial_reviews", {}))
+        for trial_id in changed_trial_ids:
+            if trial_id in expected_trials:
+                dispositions[trial_id] = "pending"
+                snapshots.pop(trial_id, None)
+                trial_reviews.pop(trial_id, None)
+            for key in [key for key in domain_records if key.startswith(f"{trial_id}:")]:
+                domain_records.pop(key, None)
+            for identity_key, terminal in list(terminals.items()):
+                if isinstance(terminal, dict) and terminal.get("trial_id") == trial_id:
+                    terminals.pop(identity_key, None)
+        revised_state = {
+            **state,
+            "phase": "proposal",
+            "trial_dispositions": dispositions,
+            "domain_records": domain_records,
+            "snapshots": snapshots,
+            "terminals": terminals,
+            "trial_reviews": trial_reviews,
+            "proposal_revision_base": baseline,
+            "proposal_revision_trial_ids": sorted(changed_trial_ids),
+        }
     review = {
         "kind": "review",
         "purpose": "proposal",
@@ -1297,7 +1563,7 @@ def save_proposal(
     review["identity"] = _identity(review)
     state = _commit_records(
         root,
-        {**state, "proposal": proposal_record, "review": review},
+        {**revised_state, "proposal": proposal_record, "review": review},
         draft.expected_revision,
         {"proposal": proposal_record, f"review:{review['identity']}": review},
     )
@@ -1309,7 +1575,7 @@ def save_proposal(
     )
 
 
-def reason_proposal(
+def validate_proposal(
     workspace: str | Path, draft: dict[str, Any] | ProposalReasoningDraft
 ) -> dict[str, Any]:
     """Validate and persist one source-bound Proposal reasoning record."""

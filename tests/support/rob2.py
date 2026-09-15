@@ -17,7 +17,6 @@ from typing import Any
 from fastmcp import Client
 
 from rob2_kit.application._state import _identity
-from rob2_kit.application.domains import _answer_option
 from rob2_kit.application.evidence import _search_receipt
 from rob2_kit.application.finalization import verify_bundle
 from rob2_kit.interfaces.mcp.server import mcp
@@ -57,7 +56,7 @@ def _call(
                 cached = _REASONING_RECEIPTS.get(cache_key)
                 if cached is None:
                     reasoned = await client.call_tool(
-                        "reason_proposal",
+                        "validate_proposal",
                         {
                             "results": request["results"],
                             "assessments": _proposal_assessments(request["results"]),
@@ -108,7 +107,7 @@ def _call(
                             }
                         )
                     reasoned = await client.call_tool(
-                        "reason_domain_assessment",
+                        "validate_domain_assessment",
                         {
                             **request,
                             "answers": reasoning_answers,
@@ -197,6 +196,20 @@ def _proposal_assessments(results: object) -> list[dict[str, object]]:
                 item for item in applicability.get("evidence", []) if isinstance(item, str)
             )
         handles.extend(item for item in result.get("passage_refs", []) if isinstance(item, str))
+        handles.extend(
+            item["handle"]
+            for item in result.get("evidence", [])
+            if isinstance(item, dict)
+            and item.get("kind") == "figure"
+            and isinstance(item.get("handle"), str)
+        )
+        handles.extend(
+            span["handle"]
+            for item in result.get("evidence", [])
+            if isinstance(item, dict) and item.get("kind") == "table_multispan"
+            for span in item.get("spans", [])
+            if isinstance(span, dict) and isinstance(span.get("handle"), str)
+        )
         for missing_fact in result.get("missing_facts", []):
             if not isinstance(missing_fact, dict):
                 continue
@@ -321,15 +334,11 @@ def _answers(domain_id: str) -> dict[str, str]:
     return values
 
 
-def _option_for(question_id: str, answer: str) -> str:
+def _answer_value(question_id: str, answer: str) -> str:
     question = next(item for item in SCIENTIFIC_PACK.questions if item.id == question_id)
-    selected = next(
-        option
-        for candidate in question.allowed_answers
-        for option in (_answer_option(question, candidate),)
-        if option["official_answer"] == answer
-    )
-    return str(selected["id"])
+    if answer not in {candidate.value for candidate in question.allowed_answers}:
+        raise ValueError(f"{answer!r} is not allowed for {question_id}")
+    return answer
 
 
 def _domain_draft(
@@ -362,7 +371,7 @@ def _domain_draft(
         "answers": [
             {
                 "question_id": question_id,
-                "option_id": _option_for(question_id, answer),
+                "answer": answer,
                 "bases": list(bases),
             }
             for question_id, answer in _answers(domain_id).items()
@@ -401,7 +410,7 @@ def _assessment_workspace(tmp_path: Path) -> tuple[Path, dict[str, Any], int]:
     revision = int(_call(workspace, "get_status", {})["head"]["state_revision"])
     reasoned = _call(
         workspace,
-        "reason_proposal",
+        "validate_proposal",
         {
             "results": [_result(evidence)],
             "assessments": [
@@ -431,8 +440,43 @@ def _assessment_workspace(tmp_path: Path) -> tuple[Path, dict[str, Any], int]:
 
 
 def _finalize_assessment(workspace: Path, expected_revision: int) -> dict[str, Any]:
-    """Automatically freeze the completed assessment and create its artifact."""
-    finalized = _call(workspace, "finalize_batch", {"expected_revision": expected_revision})
+    """Review and close finished Trials, then create the Batch artifact."""
+    status = _call(workspace, "get_status", {})
+    assert int(status["head"]["state_revision"]) == expected_revision
+    while True:
+        action = status["head"]["next_action"]
+        assert isinstance(action, dict)
+        operation = action.get("operation")
+        if operation == "review_trial":
+            receipt = _call(
+                workspace,
+                "review_trial",
+                {
+                    "trial_id": action["trial_id"],
+                    "expected_revision": action["expected_revision"],
+                },
+            )
+        elif operation == "close_trial":
+            receipt = _call(
+                workspace,
+                "close_trial",
+                {
+                    "trial_id": action["trial_id"],
+                    "expected_revision": action["expected_revision"],
+                    "review_reference": action["review_reference"],
+                },
+            )
+        elif operation == "finalize_batch":
+            break
+        else:
+            raise AssertionError(f"cannot finalize while next action is {operation!r}")
+        assert receipt["outcome"] == "success", receipt
+        status = _call(workspace, "get_status", {})
+    finalized = _call(
+        workspace,
+        "finalize_batch",
+        {"expected_revision": status["head"]["state_revision"]},
+    )
     assert finalized["outcome"] == "success"
     return finalized
 
@@ -532,9 +576,7 @@ def _absence_assessed_artifact(workspace: Path) -> Path:
                 (item for item in question.allowed_answers if item.value == "no_information"),
                 None,
             )
-            if no_information is not None and answer["option_id"] == _option_for(
-                answer["question_id"], "no_information"
-            ):
+            if no_information is not None and answer["answer"] == "no_information":
                 answer["bases"] = [{"kind": "absence", "search_receipt": receipt["handle"]}]
             else:
                 answer["bases"] = [

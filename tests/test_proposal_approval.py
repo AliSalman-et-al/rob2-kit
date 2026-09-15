@@ -141,6 +141,9 @@ def test_request_proposal_approval_accepts_exact_review(tmp_path: Path) -> None:
     assert result["data"]["acknowledgment_record"]["review_identity"] == review_reference
     assert result["data"]["acknowledgment_record"]["caller"] == "researcher"
     assert result["data"]["acknowledgment_record"]["method"] == "mcp_elicitation"
+    status = _call(workspace, "get_status", {})
+    assert status["head"]["phase"] == "assessment"
+    assert status["head"]["next_action"]["operation"] == "get_domain_context"
 
 
 def test_modern_proposal_approval_binds_input_request_to_exact_review(

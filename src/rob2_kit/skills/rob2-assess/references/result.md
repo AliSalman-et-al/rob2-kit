@@ -1,12 +1,12 @@
 # Specify the Result
 
 Use this reference while choosing and constructing each Proposal Result. Use the
-live `reason_proposal` schema for field shapes; `save_proposal` consumes the
+live `validate_proposal` schema for field shapes; `save_proposal` consumes the
 receipt returned by that call.
 
 ## Construct the request
 
-This fictional example shows the shape of one complete `reason_proposal` request
+This fictional example shows the shape of one complete `validate_proposal` request
 for an assessable comparative Result. It assumes supporting Evidence has already
 been selected. Replace every example fact and identifier with information from
 the current Trial. Use the current `expected_revision` from `get_status` and
@@ -67,7 +67,7 @@ Evidence support or scientific correctness.
 }
 ```
 
-After a successful reasoning call, save only its receipt. Copy the exact
+After a successful validation call, save only its receipt. Copy the exact
 `reasoning_id` and `expected_revision` returned by that call; do not invent or
 recalculate either value, and do not resend the Result cards:
 
@@ -86,28 +86,6 @@ its own source string:
 	"group_values": [
 		{"group_id": "practice", "statistic": "mean", "value": "18.4", "unit": "points"},
 		{"group_id": "review", "statistic": "mean", "value": "16.1", "unit": "points"}
-	]
-}
-```
-
-For a complete one-arm categorical profile, keep every randomized group in the
-target but report only the supported arm. Include every source-reported category
-cell in the required `categories` array; each cell has only `category_axes` and
-`value`. Put Evidence handles in the enclosing Result's `passage_refs`, never
-inside a category cell, and do not invent comparator categories:
-
-```json
-{
-	"form": "single_group_category_profile",
-	"analysis_population": "Learners randomized to spaced practice with quiz results at day 15.",
-	"endpoint": {"name": "Course quiz performance categories"},
-	"group_id": "practice",
-	"denominator_basis": "Learners randomized to spaced practice with quiz results at day 15.",
-	"category_axis_names": ["Score band"],
-	"categories": [
-		{"category_axes": ["0-9 points"], "value": "4 learners"},
-		{"category_axes": ["10-19 points"], "value": "11 learners"},
-		{"category_axes": ["20-30 points"], "value": "7 learners"}
 	]
 }
 ```
@@ -179,8 +157,9 @@ establishing the design and unit of randomization.
 ## Choose the closest complete Result
 
 Choose an exact assessable Result first. If none exists, choose the closest
-complete non-exact assessable candidate or profile. Use unavailable only when no
-complete assessable candidate exists.
+complete non-exact assessable candidate. Use unavailable when no comparative
+Result is reported for the requested outcome and the missing premise is
+supported by selected Evidence.
 
 Inventory complete main-article candidates and any materially competing
 candidates in other Sources. Compare:
@@ -193,9 +172,9 @@ candidates in other Sources. Compare:
 
 Prefer the candidate that directly covers the requested construct with the
 fewest added criteria. For an umbrella or composite request, prefer a complete
-reported family or profile over an isolated component when available. A first
-hit, familiar label, important clinical result, or identical number is not a
-scientific correspondence rule.
+reported family over an isolated component when available. A first hit, familiar
+label, important clinical result, or identical number is not a scientific
+correspondence rule.
 
 Submit one best candidate per Trial. Competing candidates inform the choice;
 they are not Proposal alternatives. Replace the complete Trial card if later
@@ -233,13 +212,11 @@ even when their scientific scope is equivalent.
 
 ## Preserve the Source-owned quantities
 
-Choose one reported form:
+Choose one reported form for a comparative Result:
 
 - `comparative_effect` for a between-group estimate;
 - `group_bound_values` for one complete statistic, value, and unit per randomized
-  group;
-- `single_group_category_profile` for a complete category profile reported for
-  one randomized group.
+  group.
 
 Use the Source endpoint label in `endpoint.name`. Include
 `endpoint.definition` only when one selected passage explicitly ties the exact
@@ -251,6 +228,17 @@ statistic/value/unit group value, or complete category axes plus cell value.
 Precision is supported separately. Do not splice an endpoint name from one
 passage with all quantities from another.
 
+For a continued or split table, use top-level `evidence` with one
+`table_multispan` object instead. Select each literal fragment separately and
+give it one role: `title_or_definition`, `header`, `quantitative_row`, `unit`,
+or `footnote`. It needs at least distinct `header` and `quantitative_row`
+handles; include a `unit` or `footnote` span when those values are used. The
+server retains every selected Evidence identity and coordinate. It does not
+create a continuous quote or infer that the cited fragments form one table, so
+state only the source facts those individual spans establish. Use the actual
+endpoint from a cited title, definition, or header; do not substitute a generic
+row label such as `Total`.
+
 Keep quantities as Source strings. Put a comparative estimate's reported
 interval in `precision`. Keep a group statistic's label, value, and unit in
 their separate fields. Do not invent statistics or units. For a
@@ -258,17 +246,15 @@ comparative effect, omit optional `group_values` unless the Source states one
 unambiguous statistic and unit for every target group. Reported group IDs are
 structural references and must match target group IDs.
 
-## Keep one-arm category profiles assessable
+## Keep one-arm descriptions out of comparative assessment
 
-Missing comparator values do not make a fully reported one-arm categorical
-profile unavailable. Use `single_group_category_profile`, retain all randomized
-arms in the target, and point `reported.group_id` to the supported arm.
-
-Set `category_axis_names` to the ordered non-treatment dimensions. Each cell's
-`category_axes` contains one exact Source label for every dimension, in that
-order. Put the shared population or denominator in `denominator_basis`. Preserve
-each opaque cell value, including a combined count and percentage. Never invent
-comparator cells.
+A complete descriptive profile for one randomized group is not a comparative
+effect or a complete pair of group values. Do not send it into RoB 2 assessment.
+Keep the exact source passage selected as Evidence and use an unavailable Result
+whose `missing_facts` names the unreported comparative result. Use
+`missing_reporting` with that Evidence as the basis. Do not invent comparator
+values or category cells. Labels such as mITT, per-protocol, and as-treated do
+not make an otherwise comparative Result ineligible by themselves.
 
 ## Use unavailable only for a real missing premise
 
@@ -280,10 +266,11 @@ basis:
 - `intake_condition` with `code:"no_supported_sources"` for a captured Trial
   with zero Sources and that exact Intake condition.
 
-A related endpoint, missing comparator for a complete one-arm profile, or a
-repairable draft does not establish unavailability. If the requested label is
-absent but a complete related candidate exists, submit it with a non-exact
-relation for Proposal Review.
+A related endpoint or a repairable draft does not establish unavailability. If
+the requested label is absent but a complete comparative candidate exists,
+submit it with a non-exact relation for Proposal Review. A one-arm descriptive
+report cannot establish a comparative effect; retain its exact passage as
+Evidence and identify the missing comparator result.
 
-Completion: every Trial has one internally coherent assessable Result or one
+Completion: every Trial has one internally coherent comparative Result or one
 unavailable disposition grounded in concrete missing facts.

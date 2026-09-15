@@ -21,10 +21,12 @@ from ._state import (
 )
 from .contracts import WorkflowConflict
 from .evidence import (
+    _associated_search_evidence,
     _associated_search_ranks,
     _evidence_catalog,
     _evidence_for_handles,
     _search_continuation,
+    _search_evidence_identities,
     _search_receipt,
     main_report_reading_status,
 )
@@ -34,7 +36,7 @@ _DOMAIN_RECOVERABLE_NARRATIVE_TEXT_BUDGET = 12_288
 
 
 def _domain_context_delivery(
-    root: Path, trial_id: str, domain_id: str, state_revision: int
+    root: Path, trial_id: str, domain_id: str, state_revision: int | None
 ) -> dict[str, Any] | None:
     state = _state(root)
     batch = state.get("batch")
@@ -42,13 +44,22 @@ def _domain_context_delivery(
     if not isinstance(batch_id, str):
         return None
     with _db(root, "derivative.sqlite3") as connection:
-        row = connection.execute(
-            "SELECT batch_id,trial_id,domain_id,state_revision,digest,page_size,page_count,"
-            "next_index,next_cursor,complete,snapshot,preview_scope "
-            "FROM domain_context_delivery "
-            "WHERE batch_id=? AND trial_id=? AND domain_id=? AND state_revision=?",
-            (batch_id, trial_id, domain_id, state_revision),
-        ).fetchone()
+        if state_revision is None:
+            row = connection.execute(
+                "SELECT batch_id,trial_id,domain_id,state_revision,digest,page_size,page_count,"
+                "next_index,next_cursor,complete,snapshot,preview_scope,basis_identity "
+                "FROM domain_context_delivery WHERE batch_id=? AND trial_id=? AND domain_id=? "
+                "ORDER BY state_revision DESC LIMIT 1",
+                (batch_id, trial_id, domain_id),
+            ).fetchone()
+        else:
+            row = connection.execute(
+                "SELECT batch_id,trial_id,domain_id,state_revision,digest,page_size,page_count,"
+                "next_index,next_cursor,complete,snapshot,preview_scope,basis_identity "
+                "FROM domain_context_delivery "
+                "WHERE batch_id=? AND trial_id=? AND domain_id=? AND state_revision=?",
+                (batch_id, trial_id, domain_id, state_revision),
+            ).fetchone()
     if row is None:
         return None
     delivery = {key: row[key] for key in row.keys()}
@@ -96,6 +107,7 @@ def _record_domain_context_delivery(
     page_index: int,
     next_cursor: str | None,
     cursor: str | None,
+    basis_identity: str,
     snapshot: dict[str, Any] | None = None,
     preview_scope: list[dict[str, Any]] | None = None,
 ) -> None:
@@ -107,7 +119,7 @@ def _record_domain_context_delivery(
     with _db(root, "derivative.sqlite3") as connection:
         row = connection.execute(
             "SELECT digest,page_size,page_count,next_index,next_cursor,complete,snapshot,"
-            "preview_scope "
+            "preview_scope,basis_identity "
             "FROM domain_context_delivery WHERE batch_id=? AND trial_id=? AND domain_id=? "
             "AND state_revision=?",
             (batch_id, trial_id, domain_id, state_revision),
@@ -124,14 +136,15 @@ def _record_domain_context_delivery(
                 and int(row["page_count"]) == page_count
                 and row["snapshot"] is not None
                 and row["preview_scope"] == preview_payload
+                and row["basis_identity"] == basis_identity
             ):
                 return
-            # Keep one frozen payload per active Domain. Old cursors are
-            # intentionally expired when a newer first page replaces it.
+            # Result, pack, preview, or same-Domain changes invalidate prior
+            # snapshots; unrelated workflow revisions keep their own chains.
             connection.execute(
                 "DELETE FROM domain_context_delivery WHERE batch_id=? AND trial_id=? "
-                "AND domain_id=? AND state_revision<>?",
-                (batch_id, trial_id, domain_id, state_revision),
+                "AND domain_id=? AND basis_identity<>?",
+                (batch_id, trial_id, domain_id, basis_identity),
             )
             snapshot_payload = (
                 canonical_json_bytes(snapshot) if isinstance(snapshot, dict) else None
@@ -139,8 +152,8 @@ def _record_domain_context_delivery(
             connection.execute(
                 "INSERT OR REPLACE INTO domain_context_delivery "
                 "(batch_id,trial_id,domain_id,state_revision,digest,page_size,page_count,"
-                "next_index,next_cursor,complete,snapshot,preview_scope) "
-                "VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",
+                "next_index,next_cursor,complete,snapshot,preview_scope,basis_identity) "
+                "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)",
                 (
                     batch_id,
                     trial_id,
@@ -154,6 +167,7 @@ def _record_domain_context_delivery(
                     int(page_index + 1 >= page_count),
                     snapshot_payload,
                     preview_payload,
+                    basis_identity,
                 ),
             )
             return
@@ -163,6 +177,7 @@ def _record_domain_context_delivery(
             row["digest"] != digest
             or int(row["page_size"]) != page_size
             or int(row["page_count"]) != page_count
+            or row["basis_identity"] != basis_identity
         ):
             if bool(row["complete"]):
                 return
@@ -427,7 +442,7 @@ def _compact_domain_evidence(context: dict[str, Any]) -> dict[str, Any]:
     workspace = context.get("evidence_workspace")
     if isinstance(workspace, dict):
         workspace = dict(workspace)
-        workspace["selection_policy_version"] = "rob2-kit.domain-projection.v0.6"
+        workspace["selection_policy_version"] = "rob2-kit.domain-projection.v0.7"
         workspace["recoverable_narrative_text_budget"] = _DOMAIN_RECOVERABLE_NARRATIVE_TEXT_BUDGET
         workspace["recoverable_narrative_text_bytes"] = recoverable_narrative_bytes
         workspace["omitted_narrative_text_bytes"] = omitted
@@ -454,8 +469,9 @@ _DOMAIN_GUIDANCE = (
     "A definitive yes or no needs direct_support, indirect_support, or contradiction; "
     "a limitation or absence alone supports uncertainty, not a definitive answer.",
     "Evaluate activation against your draft answers. If you cannot reliably resolve the "
-    "complete active path, answer every returned Domain question using current card option IDs "
-    "and supported bases. Submit the complete set in one save. The server commits only "
+    "complete active path, answer each question on that active path using an allowed official "
+    "answer value and supported bases. Submit the complete active set in one validation call. "
+    "The server commits only "
     "active answers.",
     "Apply every reported repair and retain other drafted answers. Add missing questions to "
     "the existing answer set. Resolve further activation from the repaired answers before "
@@ -502,103 +518,6 @@ _RESPONSE_FRAMEWORK = ResponseFramework(
         "possible to support the answer."
     ),
 )
-
-
-_OPTION_SEMANTICS_VERSION = "rob2-kit.answer-option.v0.6"
-
-
-def _answer_option(question: Any, answer: Any) -> dict[str, Any]:
-    """Build one exact, self-describing option from the current scientific pack."""
-    value = answer.value
-    if value in {"yes", "no"}:
-        proposition, certainty = ("true" if value == "yes" else "false"), "certain"
-    elif value in {"probably_yes", "probably_no"}:
-        proposition, certainty = ("true" if value == "probably_yes" else "false"), "probable"
-    else:
-        proposition, certainty = "unknown", "unknown"
-    decision_table_value = (
-        "yes"
-        if value in {"yes", "probably_yes"}
-        else "no"
-        if value in {"no", "probably_no"}
-        else "no_information"
-    )
-    anchor_answer = (
-        next(
-            candidate
-            for candidate in question.allowed_answers
-            if candidate.value == ("yes" if value == "probably_yes" else "no")
-        )
-        if value in {"probably_yes", "probably_no"}
-        else answer
-    )
-    anchor = (
-        question.guidance.operational.no_information_rule
-        if value == "no_information"
-        else next(
-            item.text
-            for item in question.guidance.operational.answer_anchors
-            if item.answer == anchor_answer
-        )
-    )
-    if certainty == "probable":
-        anchor = "Probable judgment from the reported facts and trial circumstances: " + anchor
-    elif value == "no_information":
-        anchor = (
-            "Use only when neither probable answer is reasonable from the available facts "
-            "and trial circumstances. " + anchor
-        )
-    dependents = tuple(
-        candidate.id
-        for candidate in SCIENTIFIC_PACK.questions
-        if candidate.domain_id == question.domain_id
-        and candidate.activation.kind == "rule"
-        and any(
-            predicate.question_id == question.id and answer in predicate.accepted_answers
-            for predicate in candidate.activation.predicates
-        )
-    )
-    consequence = (
-        f"The Domain decision table treats this as {decision_table_value}. "
-        + (
-            "Check the full activation rules for dependent questions: "
-            + ", ".join(dependents)
-            + "."
-            if dependents
-            else "This option satisfies no dependent-question predicate."
-        )
-        + " The Domain judgment is derived only from the complete active answer path."
-    )
-    payload = {
-        "semantics_version": _OPTION_SEMANTICS_VERSION,
-        "pack_version": SCIENTIFIC_PACK.version,
-        "question_id": question.id,
-        "question_wording": question.wording,
-        "official_answer": value,
-        "anchor": anchor,
-        "proposition": proposition,
-        "certainty": certainty,
-        "decision_table_value": decision_table_value,
-        "activates": dependents,
-    }
-    return {
-        "id": "opt_" + _identity(payload).removeprefix("sha256:")[:24],
-        "official_answer": value,
-        "proposition": proposition,
-        "certainty": certainty,
-        "decision_table_value": decision_table_value,
-        "meaning": (
-            "The exact question proposition is unknown."
-            if certainty == "unknown"
-            else (
-                "The exact question proposition is "
-                f"{('probably ' if certainty == 'probable' else '')}{proposition}."
-            )
-        ),
-        "activates": dependents,
-        "anchor": anchor,
-        "consequence": consequence,
-    }
 
 
 def _comparison_cards(
@@ -1026,6 +945,48 @@ def _ids(values: list[str]) -> str:
     return ", ".join(values) if values else "none"
 
 
+def _approved_result(state: dict[str, Any], trial_id: str) -> dict[str, Any]:
+    results = (state.get("proposal") or {}).get("payload", {}).get("results", [])
+    result = next(
+        (item for item in results if isinstance(item, dict) and item.get("trial_id") == trial_id),
+        None,
+    )
+    if not isinstance(result, dict):
+        raise ValueError("approved Result is unavailable")
+    return result
+
+
+def _domain_context_basis_identity(
+    state: dict[str, Any],
+    trial_id: str,
+    domain_id: str,
+    preview_missing_data: list[dict[str, Any]] | None,
+) -> str:
+    batch = state.get("batch")
+    current = (state.get("domain_records") or {}).get(f"{trial_id}:{domain_id}")
+    return _identity(
+        {
+            "batch_identity": batch.get("identity") if isinstance(batch, dict) else None,
+            "trial_id": trial_id,
+            "domain_id": domain_id,
+            "result_identity": _identity(_approved_result(state, trial_id)),
+            "pack_identity": _pack_identity(),
+            "checkpoint_identity": current.get("identity") if isinstance(current, dict) else None,
+            "preview_identity": _identity(preview_missing_data or []),
+        }
+    )
+
+
+def _pack_identity() -> str:
+    return _identity(
+        {
+            "id": SCIENTIFIC_PACK.id,
+            "version": SCIENTIFIC_PACK.version,
+            "content_hash": SCIENTIFIC_PACK.content_hash,
+        }
+    )
+
+
 def _domain_identity(record: dict[str, Any]) -> str:
     fields = (
         "trial_id",
@@ -1039,6 +1000,8 @@ def _domain_identity(record: dict[str, Any]) -> str:
         "judgment",
         "trace",
     )
+    if "result_identity" in record:
+        fields = (*fields, "result_identity")
     return _identity({key: record[key] for key in fields})
 
 
@@ -1093,8 +1056,10 @@ def save_domain_judgment(
     )
     disposition = state.get("trial_dispositions", {}).get(parsed.trial_id)
     if disposition == "assessed" and (is_revision or not existing_domain):
-        raise ValueError("Trial AssessmentSnapshot is final; Domain revisions are closed")
-    active_trial, active_domain = _active_trial_and_domain(state)
+        raise ValueError("Trial is closed; Domain revisions are not allowed")
+    if disposition == "reviewable" and not existing_domain:
+        raise ValueError("Trial is ready for review; all required Domain checkpoints already exist")
+    active_trial, _ = _active_trial_and_domain(state)
     if not existing_domain and parsed.trial_id != active_trial:
         return _result(
             "repair",
@@ -1107,19 +1072,7 @@ def save_domain_judgment(
                 )
             ],
         )
-    if not existing_domain and parsed.domain_id != active_domain:
-        return _result(
-            "repair",
-            state,
-            repairs=[
-                _repair(
-                    "/domain_id",
-                    "domain_out_of_sequence",
-                    f"complete Domain '{active_domain}' before Domain '{parsed.domain_id}'",
-                )
-            ],
-        )
-    if disposition not in {"pending", "assessed"}:
+    if disposition not in {"pending", "reviewable", "assessed"}:
         raise ValueError("Trial is not available for Domain assessment")
     if state.get("phase") == "assessment" and not trial_has_checkpoint:
         recovery = _main_report_recovery(root, state, parsed.trial_id)
@@ -1147,15 +1100,10 @@ def save_domain_judgment(
         for question in SCIENTIFIC_PACK.questions
         if question.domain_id == parsed.domain_id
     }
-    option_cards = {
-        question.id: tuple(_answer_option(question, answer) for answer in question.allowed_answers)
+    allowed = {
+        question.id: {answer.value for answer in question.allowed_answers}
         for question in questions_by_id.values()
     }
-    option_tables = {
-        question_id: {option["id"]: option["official_answer"] for option in options}
-        for question_id, options in option_cards.items()
-    }
-    allowed = {question_id: set(options.values()) for question_id, options in option_tables.items()}
     answer_items = list(parsed.answers)
     items_by_question: dict[str, list[tuple[int, Any]]] = {}
     for index, item in enumerate(answer_items):
@@ -1163,6 +1111,20 @@ def save_domain_judgment(
     repairs: list[dict[str, Any]] = []
     for question_id, items in items_by_question.items():
         if question_id in questions_by_id:
+            permitted = allowed[question_id]
+            for index, item in items:
+                if item.answer.value not in permitted:
+                    repairs.append(
+                        _repair(
+                            f"/answers/{index}/answer",
+                            "invalid_answer",
+                            f"Submitted answer '{item.answer.value}' is not allowed for question "
+                            f"'{question_id}'. Current choices are: "
+                            f"{', '.join(sorted(permitted))}. "
+                            "Choose only if supported by your evidence; this repair does not alter "
+                            "the submitted proposition.",
+                        )
+                    )
             continue
         for index, _item in items:
             repairs.append(
@@ -1197,20 +1159,8 @@ def save_domain_judgment(
             if not items:
                 continue
             index, item = items[0]
-            resolved = option_tables[question_id].get(item.option_id)
-            if resolved is None:
-                permitted = "; ".join(
-                    f"{option['id']}={option['official_answer']} ({option['meaning']})"
-                    for option in option_cards[question_id]
-                )
-                repairs.append(
-                    _repair(
-                        f"/answers/{index}/option_id",
-                        "invalid_answer_option",
-                        f"option '{item.option_id}' is not current for question '{question_id}'. "
-                        f"Use one current card option: {permitted}",
-                    )
-                )
+            resolved = item.answer.value
+            if resolved not in allowed[question_id]:
                 continue
             answers[question_id] = resolved
     active = [question_id for question_id in active_questions(answers) if question_id in allowed]
@@ -1264,10 +1214,6 @@ def save_domain_judgment(
     search_accounts: dict[str, dict[str, Any]] = {}
     for answer_index, answer_item in active_answer_items:
         answer = answer_item.model_dump(mode="json", exclude_none=True)
-        # Canonical checkpoints retain the standard official RoB code. The
-        # compact option identity is a transport selection, not a second
-        # scientific field in the artifact.
-        answer.pop("option_id", None)
         answer["answer"] = answers[answer_item.question_id]
         if answer_item.missing_data is not None:
             # Keep the caller's typed rows small and source-oriented, while
@@ -1322,8 +1268,10 @@ def save_domain_judgment(
                         raise ValueError("search receipt is outside the Trial")
                     if receipt.get("truncated") is not False:
                         raise ValueError(
-                            "limitation requires a non-truncated search; refine the search "
-                            "before using its receipt"
+                            "limitation requires a non-truncated search. Continue the returned "
+                            "next_cursor first when deeper ranked passages could resolve the "
+                            "premise; use the final receipt and change the query only when its "
+                            "wording or the premise warrants it."
                         )
                     uncertainty_basis = True
                     basis["search_receipt"] = receipt["identity"]
@@ -1350,8 +1298,10 @@ def save_domain_judgment(
                         or receipt.get("condition") != "no_hits"
                     ):
                         raise ValueError(
-                            "absence requires an untruncated no-hit search; refine the search "
-                            "and confirm total_matches=0 before using it"
+                            "absence requires an untruncated no-hit search with total_matches=0. "
+                            "Continue the returned next_cursor first when deeper ranked passages "
+                            "could resolve the premise; change the query only when its wording "
+                            "or the premise warrants it."
                         )
                     uncertainty_basis = True
                     # Keep the disposable handle at the MCP boundary only.
@@ -1410,9 +1360,8 @@ def save_domain_judgment(
                     "answer_requires_direct_basis",
                     f"question '{answer_item.question_id}' has definitive answer "
                     f"'{answer['answer']}', which needs a direct, indirect, or contradictory "
-                    "Evidence basis; use probably_yes/probably_no or no_information when the "
-                    "question card allows it, with a limitation, valid scoped no-hit receipt, "
-                    "or exact context/inference premise for uncertainty.",
+                    "Evidence basis. The submitted answer is unchanged; add the required "
+                    "support or reconsider the answer from the evidence.",
                 )
             )
         elif answer["answer"] in {"probably_yes", "probably_no"} and not (
@@ -1422,9 +1371,9 @@ def save_domain_judgment(
                 _repair(
                     f"/answers/{answer_index}/bases",
                     "answer_requires_uncertainty_basis",
-                    "a probable answer needs direct evidence, a limitation, a valid scoped no-hit "
-                    "receipt, or an exact context/inference premise; use no_information when "
-                    "the question card allows it.",
+                    f"the submitted probable answer '{answer['answer']}' needs direct evidence, "
+                    "a limitation, a valid scoped no-hit receipt, or an exact context/inference "
+                    "premise. The submitted answer is unchanged.",
                 )
             )
         answer["bases"] = bases
@@ -1514,6 +1463,7 @@ def save_domain_judgment(
     record = {
         "trial_id": parsed.trial_id,
         "domain_id": parsed.domain_id,
+        "result_identity": _identity(_approved_result(state, parsed.trial_id)),
         "answers": canonical_answers,
         "supersedes": parsed.supersedes,
         "revision_basis": revision_basis,
@@ -1613,7 +1563,25 @@ def save_domain_judgment(
             record["observed_at"] = prior_observed_at
         if rows.get(key, {}).get("identity") == record["identity"]:
             return _result("success", state, checkpoint=rows[key], retry=True)
-    if parsed.expected_revision != state.get("revision", 0):
+    current_revision = int(state.get("revision", 0))
+    proposal_review = state.get("proposal_review")
+    proposal_basis = (
+        proposal_review.get("workflow_basis") if isinstance(proposal_review, dict) else None
+    )
+    if (
+        validate_only
+        and isinstance(proposal_basis, int)
+        and parsed.expected_revision < proposal_basis
+    ):
+        return _result(
+            "condition",
+            state,
+            condition={
+                "code": "result_scope_stale",
+                "detail": "Reload this Domain context after the approved Result changed.",
+            },
+        )
+    if parsed.expected_revision != current_revision:
         raise WorkflowConflict(parsed.expected_revision, int(state.get("revision", 0)))
 
     if validate_only:
@@ -1636,6 +1604,9 @@ def save_domain_judgment(
         "domain_history": history,
         "domain_history_records": history_records,
     }
+    trial_reviews = dict(state.get("trial_reviews", {}))
+    trial_reviews.pop(parsed.trial_id, None)
+    state["trial_reviews"] = trial_reviews
     snapshot: dict[str, Any] | None = None
     if all(f"{parsed.trial_id}:{item.id}" in rows for item in SCIENTIFIC_PACK.domains):
         checkpoints = [
@@ -1647,6 +1618,7 @@ def save_domain_judgment(
         }
         snapshot = {
             "trial_id": parsed.trial_id,
+            "result_identity": _identity(_approved_result(state, parsed.trial_id)),
             "checkpoints": checkpoints,
             "provisional": False,
             "domain_judgments": judgments,
@@ -1687,12 +1659,12 @@ def save_domain_judgment(
             "snapshot_history_records": snapshot_history_records,
             "trial_dispositions": {
                 **state.get("trial_dispositions", {}),
-                parsed.trial_id: "assessed",
+                parsed.trial_id: "reviewable",
             },
         }
     current_dispositions = state.get("trial_dispositions")
     dispositions = current_dispositions if isinstance(current_dispositions, dict) else {}
-    if not any(value == "pending" for value in dispositions.values()):
+    if not any(value in {"pending", "reviewable"} for value in dispositions.values()):
         state = {**state, "phase": "ready_to_finalize"}
     promoted_evidence = {
         item["identity"]: item
@@ -1711,12 +1683,12 @@ def save_domain_judgment(
         "success",
         state,
         checkpoint=record,
-        trial_completed=snapshot is not None,
+        trial_ready_for_review=snapshot is not None,
         continuation=_continuation(state),
     )
 
 
-def reason_domain_assessment(
+def validate_domain_assessment(
     workspace: str | Path, draft: dict[str, Any] | DomainReasoningDraft
 ) -> dict[str, Any]:
     """Validate and persist one mandatory, source-bound Domain reasoning record."""
@@ -1737,7 +1709,7 @@ def reason_domain_assessment(
     records = state.get("reasoning_records")
     prior = records.get(reasoning_id) if isinstance(records, dict) else None
     if isinstance(prior, dict):
-        if prior.get("save_revision") != state.get("revision"):
+        if not _domain_reasoning_matches_current(root, prior, state):
             return _result(
                 "condition",
                 state,
@@ -1748,11 +1720,30 @@ def reason_domain_assessment(
             )
         return _reasoning_receipt(state, prior)
 
-    if parsed.expected_revision != state.get("revision", 0):
+    current_revision = int(state.get("revision", 0))
+    if parsed.expected_revision != current_revision:
         raise WorkflowConflict(parsed.expected_revision, int(state.get("revision", 0)))
-    delivery = _domain_context_delivery(
-        root, parsed.trial_id, parsed.domain_id, parsed.expected_revision
-    )
+    delivery = _domain_context_delivery(root, parsed.trial_id, parsed.domain_id, None)
+    if delivery is not None:
+        preview_scope = delivery.get("preview_scope")
+        current_basis = _domain_context_basis_identity(
+            state,
+            parsed.trial_id,
+            parsed.domain_id,
+            preview_scope if isinstance(preview_scope, list) else None,
+        )
+        if delivery.get("basis_identity") != current_basis:
+            return _result(
+                "condition",
+                state,
+                condition={
+                    "code": "domain_context_delivery_stale",
+                    "detail": (
+                        "The approved Result, RoB 2 pack, current Domain checkpoint, or preview "
+                        "changed. Restart get_domain_context before validating this assessment."
+                    ),
+                },
+            )
     if delivery is not None and not bool(delivery.get("complete")):
         next_cursor = delivery.get("next_cursor")
         if not isinstance(next_cursor, str) or not next_cursor:
@@ -1788,6 +1779,7 @@ def reason_domain_assessment(
     checkpoint = validation.get("checkpoint")
     if not isinstance(checkpoint, dict):
         raise ValueError("validated Domain reasoning is missing its checkpoint")
+    predecessor = (state.get("domain_records") or {}).get(f"{parsed.trial_id}:{parsed.domain_id}")
     active_ids = set(checkpoint.get("active_questions", ()))
     reasoning_repairs: list[dict[str, Any]] = []
     for answer_index, answer in enumerate(parsed.answers):
@@ -1855,17 +1847,22 @@ def reason_domain_assessment(
         "domain_id": parsed.domain_id,
         "draft": payload,
         "checkpoint_identity": checkpoint["identity"],
+        "predecessor_identity": (
+            predecessor.get("identity") if isinstance(predecessor, dict) else None
+        ),
+        "result_identity": checkpoint["result_identity"],
+        "pack_identity": _pack_identity(),
         "active_question_ids": list(checkpoint["active_questions"]),
         "validation_scope": "structure_and_references_only",
-        "created_revision": state.get("revision", 0),
-        "save_revision": int(state.get("revision", 0)) + 1,
+        "created_revision": current_revision,
+        "save_revision": current_revision + 1,
     }
     reasoning_records = dict(records) if isinstance(records, dict) else {}
     reasoning_records[reasoning_id] = record
     committed = _commit_records(
         root,
         {**state, "reasoning_records": reasoning_records},
-        parsed.expected_revision,
+        current_revision,
         {f"reasoning:{reasoning_id}": record},
     )
     return _reasoning_receipt(committed, record)
@@ -1875,7 +1872,7 @@ def _reasoning_receipt(state: dict[str, Any], record: dict[str, Any]) -> dict[st
     next_action = {
         "trial_id": record["trial_id"],
         "domain_id": record["domain_id"],
-        "expected_revision": state.get("revision", 0),
+        "expected_revision": record["save_revision"],
         "reasoning_id": record["identity"],
     }
     continuation = {
@@ -1896,11 +1893,50 @@ def _reasoning_receipt(state: dict[str, Any], record: dict[str, Any]) -> dict[st
     )
 
 
+def _domain_reasoning_matches_current(
+    root: Path, record: dict[str, Any], state: dict[str, Any] | None = None
+) -> bool:
+    draft = record.get("draft")
+    if (
+        not isinstance(draft, dict)
+        or record.get("pack_identity") != _pack_identity()
+        or record.get("result_identity") is None
+    ):
+        return False
+    state = state if state is not None else _state(root)
+    current = (state.get("domain_records") or {}).get(
+        f"{record.get('trial_id')}:{record.get('domain_id')}"
+    )
+    current_identity = current.get("identity") if isinstance(current, dict) else None
+    if current_identity not in {
+        record.get("predecessor_identity"),
+        record.get("checkpoint_identity"),
+    }:
+        return False
+    if _identity(_approved_result(state, str(record["trial_id"]))) != record["result_identity"]:
+        return False
+    if int(state.get("revision", 0)) == record.get("save_revision"):
+        return True
+
+    draft = {**draft, "expected_revision": int(state.get("revision", 0))}
+    validation = save_domain_judgment(root, draft, validate_only=True)
+    checkpoint = validation.get("checkpoint")
+    if (
+        validation.get("outcome") != "success"
+        or not isinstance(checkpoint, dict)
+        or checkpoint.get("identity") != record.get("checkpoint_identity")
+        or checkpoint.get("result_identity") != record.get("result_identity")
+    ):
+        return False
+    return True
+
+
 def get_domain_context(
     workspace: str | Path,
     trial_id: str | None = None,
     domain_id: str | None = None,
     preview_missing_data: list[dict[str, Any]] | None = None,
+    include_candidates: bool = False,
 ) -> dict[str, Any]:
     root = _root(workspace)
     _ensure(root)
@@ -1913,25 +1949,13 @@ def get_domain_context(
     if trial_id is not None and trial_id != active_trial:
         raise ValueError(f"complete Trial '{active_trial}' before Trial '{trial_id}'")
     trial_id = active_trial
-    records = state.get("domain_records") or {}
     if domain_id is None:
         domain_id = active_domain
-    elif domain_id != active_domain and f"{trial_id}:{domain_id}" not in records:
-        raise ValueError(f"complete Domain '{active_domain}' before Domain '{domain_id}'")
     if domain_id is None:
         raise ValueError("no Domain is available")
     if domain_id not in {item.id for item in SCIENTIFIC_PACK.domains}:
         raise ValueError("unknown Domain")
-    result = next(
-        (
-            item
-            for item in (state.get("proposal") or {}).get("payload", {}).get("results", [])
-            if item.get("trial_id") == trial_id
-        ),
-        None,
-    )
-    if not isinstance(result, dict):
-        raise ValueError("approved Result is unavailable")
+    result = _approved_result(state, trial_id)
     trial_sources = next(
         (
             item.get("sources", [])
@@ -1990,6 +2014,25 @@ def get_domain_context(
         for input_item in item.get("inputs", [])
         if isinstance(input_item, dict) and isinstance(input_item.get("handle"), str)
     )
+    result_handles.update(
+        span.get("handle")
+        for item in result.get("evidence", [])
+        if isinstance(item, dict) and item.get("kind") == "table_multispan"
+        for span in item.get("spans", [])
+        if isinstance(span, dict) and isinstance(span.get("handle"), str)
+    )
+    applicability = result.get("applicability")
+    if isinstance(applicability, dict):
+        result_handles.update(
+            handle for handle in applicability.get("evidence", []) if isinstance(handle, str)
+        )
+    result_handles.update(
+        basis.get("evidence")
+        for fact in result.get("missing_facts", [])
+        if isinstance(fact, dict)
+        and isinstance((basis := fact.get("basis")), dict)
+        and isinstance(basis.get("evidence"), str)
+    )
     handles.update(result_handles)
     checkpoint_answers = [
         answer
@@ -2022,21 +2065,30 @@ def get_domain_context(
     # added below as a separate non-competing tier.
     disposable = _evidence_catalog(root, trial_id=trial_id, limit=None)
     associated_ranks = _associated_search_ranks(root, trial_id, domain_id)
+    # Search rank/session are disposable discovery associations.  Evidence
+    # records intentionally never carry them: selecting the same Source span
+    # through another query must retain its exact Evidence identity.
+    associated_rows = _associated_search_evidence(root, trial_id, domain_id)
+    associated_identities = {identity for identity, _session, _rank in associated_rows}
+    search_evidence_identities = _search_evidence_identities(root, trial_id)
     explicit_carry_forward = [
         value
         for value in disposable.values()
         if isinstance(value, dict)
-        and not isinstance(value.get("search_session"), str)
+        and value.get("identity") not in associated_identities
+        and value.get("identity") not in search_evidence_identities
         and value.get("handle") not in result_handles
         and value.get("identity") not in checkpoint_identities
     ]
     associated = [
-        value
-        for value in disposable.values()
-        if isinstance(value, dict)
-        and isinstance(value.get("search_session"), str)
-        and isinstance(value.get("candidate_rank"), int)
-        and (value["search_session"], value["candidate_rank"]) in associated_ranks
+        {
+            **value,
+            "search_session": session_identity,
+            "candidate_rank": rank,
+        }
+        for identity, session_identity, rank in associated_rows
+        for value in (disposable.get(identity),)
+        if isinstance(value, dict) and (session_identity, rank) in associated_ranks
     ]
     # Handles selected explicitly through the existing Evidence boundary do
     # not carry a search association. Preserve those manual selections when
@@ -2065,34 +2117,32 @@ def get_domain_context(
     # Repeated searches can materialize the same exact passage under distinct
     # disposable session identities. Keep one visible copy without merging
     # partial overlaps or changing any source-bound quote.
+    def exact_span_key(value: dict[str, Any]) -> tuple[Any, ...]:
+        """Deduplicate only a source-versioned raw span, never a line window."""
+
+        if value.get("kind") == "narrative" and all(
+            value.get(key) is not None
+            for key in ("source_id", "source_version", "page", "start", "end")
+        ):
+            return (
+                "narrative",
+                value["source_id"],
+                value["source_version"],
+                value["page"],
+                value["start"],
+                value["end"],
+            )
+        return ("identity", value.get("identity"))
+
     seen_coordinates: set[tuple[Any, ...]] = {
-        (
-            value.get("source_id"),
-            value.get("page"),
-            value.get("start_line"),
-            value.get("end_line"),
-        )
-        for value in proposal_catalog.values()
-        if all(
-            value.get(key) is not None for key in ("source_id", "page", "start_line", "end_line")
-        )
+        exact_span_key(value) for value in proposal_catalog.values() if isinstance(value, dict)
     }
 
     def unique_passages(values: list[dict[str, Any]]) -> tuple[list[dict[str, Any]], int]:
         unique: list[dict[str, Any]] = []
         duplicates = 0
         for value in values:
-            coordinate = (
-                value.get("source_id"),
-                value.get("page"),
-                value.get("start_line"),
-                value.get("end_line"),
-            )
-            key = (
-                coordinate
-                if all(item is not None for item in coordinate)
-                else ("identity", value.get("identity"))
-            )
+            key = exact_span_key(value)
             if key in seen_coordinates:
                 duplicates += 1
                 continue
@@ -2121,11 +2171,17 @@ def get_domain_context(
     unrecoverable_explicit = [
         value for value in explicit_carry_forward if not has_exact_read_recovery(value)
     ]
-    selected_recoverable_explicit = recoverable_explicit[:projection_budget]
+    selected_recoverable_explicit = (
+        recoverable_explicit[:projection_budget] if include_candidates else []
+    )
     selected_explicit = [*unrecoverable_explicit, *selected_recoverable_explicit]
     remaining_budget = projection_budget - len(selected_recoverable_explicit)
-    selected_candidates = associated[:remaining_budget]
-    omitted_explicit = recoverable_explicit[len(selected_recoverable_explicit) :]
+    selected_candidates = associated[:remaining_budget] if include_candidates else []
+    omitted_explicit = (
+        recoverable_explicit[len(selected_recoverable_explicit) :]
+        if include_candidates
+        else recoverable_explicit
+    )
     included_candidate_ranks = {
         (value["search_session"], value["candidate_rank"]) for value in selected_candidates
     }
@@ -2348,6 +2404,38 @@ def get_domain_context(
             if evidence_item.get("kind") == "derived":
                 references.append(dict(evidence_item))
                 continue
+            if evidence_item.get("kind") == "table_multispan":
+                spans = []
+                for span in evidence_item.get("spans", []):
+                    if not isinstance(span, dict) or not isinstance(span.get("handle"), str):
+                        raise ValueError("Result multi-span table Evidence is malformed")
+                    selected = next(
+                        (item for item in catalog.values() if item.get("handle") == span["handle"]),
+                        None,
+                    )
+                    if not isinstance(selected, dict):
+                        raise ValueError("Result multi-span table Evidence handle is unavailable")
+                    spans.append(
+                        {
+                            "role": span.get("role"),
+                            "handle": span["handle"],
+                            "identity": selected["identity"],
+                            "source_id": selected["source_id"],
+                            "page": selected.get("page", selected.get("render", {}).get("page")),
+                            "start": selected.get("start", 0),
+                            "end": selected.get("end", 0),
+                            "start_line": selected.get("start_line"),
+                            "end_line": selected.get("end_line"),
+                        }
+                    )
+                references.append(
+                    {
+                        "kind": "table_multispan",
+                        "basis": evidence_item.get("basis"),
+                        "spans": spans,
+                    }
+                )
+                continue
             handle = evidence_item.get("handle")
             selected = next(
                 (item for item in catalog.values() if item.get("handle") == handle), None
@@ -2379,7 +2467,7 @@ def get_domain_context(
         }
 
     continuation: dict[str, Any] = {
-        "operation": "reason_domain_assessment",
+        "operation": "validate_domain_assessment",
         "authority": "host",
         "trial_id": trial_id,
         "domain_id": domain_id,
@@ -2406,6 +2494,11 @@ def get_domain_context(
         "outcome": "success",
         "trial_id": trial_id,
         "domain_id": domain_id,
+        "pack": {
+            "id": SCIENTIFIC_PACK.id,
+            "version": SCIENTIFIC_PACK.version,
+            "content_hash": SCIENTIFIC_PACK.content_hash,
+        },
         "state_revision": state.get("revision", 0),
         "result": result_projection(result),
         "evidence": list(catalog.values()),
@@ -2428,7 +2521,7 @@ def get_domain_context(
             {
                 "id": item.id,
                 "wording": item.wording,
-                "options": [_answer_option(item, answer) for answer in item.allowed_answers],
+                "options": [answer.value for answer in item.allowed_answers],
                 "activation_status": (
                     "always_active"
                     if item.activation.kind == "always"
@@ -2463,12 +2556,21 @@ def get_domain_context(
             "Inactive extras are ignored."
         ),
         "evidence_workspace": {
-            "selection_policy_version": "rob2-kit.domain-projection.v0.6",
+            "selection_policy_version": "rob2-kit.domain-projection.v0.7",
             "groups": workspace_groups,
-            "omitted_count": omitted_evidence_count,
-            "omitted_by_category": omitted_by_category,
-            "continuation": evidence_continuation,
-            "continuations": evidence_continuations,
+            "omitted_count": omitted_evidence_count if include_candidates else 0,
+            "omitted_by_category": omitted_by_category
+            if include_candidates
+            else {
+                "result": 0,
+                "checkpoint": 0,
+                "contradiction": 0,
+                "active_domain_candidate": 0,
+                "explicit_carry_forward": 0,
+                "deduplicated": 0,
+            },
+            "continuation": evidence_continuation if include_candidates else None,
+            "continuations": evidence_continuations if include_candidates else [],
         },
         "comparison_cards": _comparison_cards(
             domain_id,
@@ -2489,4 +2591,8 @@ def get_domain_context(
         ),
         "continuation": continuation,
     }
-    return _compact_domain_evidence(context)
+    projected = _compact_domain_evidence(context)
+    projected["_context_basis_identity"] = _domain_context_basis_identity(
+        state, trial_id, domain_id, preview_missing_data
+    )
+    return projected

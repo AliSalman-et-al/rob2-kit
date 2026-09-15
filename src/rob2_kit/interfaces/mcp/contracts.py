@@ -66,8 +66,8 @@ class SaveProposalAction(PublicModel):
     reasoning_id: Identity
 
 
-class ReasonProposalAction(PublicModel):
-    operation: Literal["reason_proposal"]
+class ValidateProposalAction(PublicModel):
+    operation: Literal["validate_proposal"]
     authority: Literal["host"]
     expected_revision: NonNegativeInt
     caller_inputs: tuple[Literal["results", "assessments"], ...]
@@ -95,23 +95,10 @@ class SaveDomainJudgmentAction(PublicModel):
     expected_revision: NonNegativeInt
     caller_inputs: tuple[Literal["reasoning_id"], ...]
     reasoning_id: Identity
-    # Present only when the current Domain has a committed checkpoint that a
-    # model-owned correction must replace.  The continuation names that exact
-    # content identity; callers must not infer it from the unbounded history.
-    supersedes: Identity | None = Field(
-        default=None,
-        description="Checkpoint replaced by this correction; omit otherwise.",
-    )
-
-    @model_validator(mode="after")
-    def caller_inputs_match_phase(self) -> SaveDomainJudgmentAction:
-        if self.caller_inputs != ("reasoning_id",) or self.supersedes is not None:
-            raise ValueError("caller_inputs must name exactly the fields required by this save")
-        return self
 
 
-class ReasonDomainAssessmentAction(PublicModel):
-    operation: Literal["reason_domain_assessment"]
+class ValidateDomainAssessmentAction(PublicModel):
+    operation: Literal["validate_domain_assessment"]
     authority: Literal["host"]
     trial_id: TrialId
     domain_id: DomainId
@@ -126,6 +113,59 @@ class FinalizeBatchAction(PublicModel):
     expected_revision: NonNegativeInt
 
 
+class ReviewTrialAction(PublicModel):
+    model_config = ConfigDict(title="Trial review")
+
+    operation: Literal["review_trial"]
+    authority: Literal["host"]
+    trial_id: TrialId
+    expected_revision: NonNegativeInt
+    caller_inputs: tuple[Literal["request"], ...] | None = None
+
+    @model_validator(mode="after")
+    def caller_inputs_are_complete(self) -> ReviewTrialAction:
+        if self.caller_inputs not in (None, ("request",)):
+            raise ValueError("review_trial caller_inputs must be omitted or [request]")
+        return self
+
+
+class CloseTrialAction(PublicModel):
+    model_config = ConfigDict(title="Closure")
+
+    operation: Literal["close_trial"]
+    authority: Literal["host"]
+    trial_id: TrialId
+    expected_revision: NonNegativeInt
+    review_reference: Identity
+
+
+class TrialReviewAction(PublicModel):
+    """Compatibility validator for the former combined review/close action."""
+
+    operation: Literal["review_trial", "close_trial"]
+    authority: Literal["host"]
+    trial_id: TrialId
+    expected_revision: NonNegativeInt
+    caller_inputs: tuple[Literal["request"], ...] | None = Field(
+        default=None,
+        description=(
+            "Omit for a normal review or an automatically terminal unavailable or unsupported "
+            'Result. Use ["request"] only for a genuine needs_input or failed blocker.'
+        ),
+        examples=[None, ["request"]],
+    )
+    review_reference: Identity | None = None
+
+    @model_validator(mode="after")
+    def match_action_inputs(self) -> TrialReviewAction:
+        if self.operation == "review_trial":
+            if self.review_reference is not None or self.caller_inputs not in (None, ("request",)):
+                raise ValueError("review_trial accepts no fields or caller_inputs=request only")
+        elif self.caller_inputs is not None or self.review_reference is None:
+            raise ValueError("close_trial requires its review_reference only")
+        return self
+
+
 class ResearcherReviewAction(PublicModel):
     operation: Literal["researcher_review"]
     authority: Literal["researcher"]
@@ -136,10 +176,12 @@ class ResearcherReviewAction(PublicModel):
 NextAction = Annotated[
     PrepareBatchAction
     | SaveProposalAction
-    | ReasonProposalAction
+    | ValidateProposalAction
     | GetDomainContextAction
-    | ReasonDomainAssessmentAction
+    | ValidateDomainAssessmentAction
     | SaveDomainJudgmentAction
+    | ReviewTrialAction
+    | CloseTrialAction
     | FinalizeBatchAction
     | ResearcherReviewAction,
     Field(discriminator="operation"),
@@ -265,19 +307,22 @@ def _receipt(
 _RECEIPT_OPTIONS: Final = {
     "prepare_batch": {"conflict": True},
     "get_status": {},
+    "save_working_checkpoint": {},
     "list_sources": {},
     "search_sources": {},
+    "search_sources_batch": {},
     "read_pages": {},
     "select_text_evidence": {},
     "render_page": {},
     "select_visual_evidence": {},
-    "reason_proposal": {"repair": True, "conflict": True},
+    "validate_proposal": {"repair": True, "conflict": True},
     "save_proposal": {"review": True, "repair": True, "conflict": True},
     "request_proposal_approval": {},
     "get_domain_context": {},
-    "reason_domain_assessment": {"repair": True, "conflict": True},
+    "validate_domain_assessment": {"repair": True, "conflict": True},
     "save_domain_judgment": {"repair": True, "conflict": True},
-    "request_trial_terminal": {"conflict": True},
+    "review_trial": {"conflict": True},
+    "close_trial": {"conflict": True},
     "finalize_batch": {"conflict": True},
 }
 
@@ -373,16 +418,22 @@ class PrepareData(PublicModel):
 class TerminalCounts(PublicModel):
     assessed: NonNegativeInt
     needs_input: NonNegativeInt
+    unsupported_design: NonNegativeInt
     failed: NonNegativeInt
     pending: NonNegativeInt
+    reviewable: NonNegativeInt
 
 
 class SelectedNarrativeEvidence(PublicModel):
     kind: Literal["narrative"]
-    handle: str = Field(pattern=r"^eh_[0-9a-f]{16}$")
+    handle: EvidenceHandle = Field(description="Exact selected passage handle from this Trial.")
     identity: Identity
     trial_id: TrialId
     source_id: SourceHandle
+    source_version: Identity | None = Field(
+        default=None,
+        description="Captured Source projection version used to derive this exact text span.",
+    )
     page: PageNumber
     # Exact line bounds are emitted for new search- and read-derived passages.
     # They remain optional for canonical evidence created by an older contract.
@@ -443,11 +494,12 @@ class RenderProjection(PublicModel):
 
 class SelectedFigureEvidence(PublicModel):
     kind: Literal["figure"]
-    handle: str = Field(pattern=r"^eh_[0-9a-f]{16}$")
+    handle: EvidenceHandle = Field(description="Exact selected figure handle from this Trial.")
     identity: Identity
     trial_id: TrialId
     source_id: SourceHandle
     render: RenderProjection
+    delivery_receipt: Identity
     transcription: str = Field(min_length=1)
     provenance: Literal["text_corroborated", "host_visual"]
     region: tuple[
@@ -506,12 +558,98 @@ class MainReportReadingStatus(PublicModel):
     unread_range_count: NonNegativeInt = 0
 
 
+class WorkingSourceRangeData(PublicModel):
+    source_id: SourceHandle
+    page: PageNumber
+    start_line: NonNegativeInt
+    end_line: NonNegativeInt
+
+
+class WorkingSourceBindingData(PublicModel):
+    source_id: SourceHandle
+    projection_hash: Identity
+
+
+class WorkingNoteData(PublicModel):
+    text: str = Field(min_length=1, max_length=4_000)
+    sources: tuple[WorkingSourceRangeData, ...] = Field(min_length=1, max_length=8)
+    domain_id: DomainId | None = None
+    question_id: QuestionId | None = None
+
+
+class WorkingTermData(PublicModel):
+    term: str = Field(min_length=1, max_length=256)
+    meaning: str = Field(min_length=1, max_length=2_000)
+    sources: tuple[WorkingSourceRangeData, ...] = Field(min_length=1, max_length=8)
+
+
+class WorkingDraftData(PublicModel):
+    domain_id: DomainId
+    question_id: QuestionId
+    answer: Answer | None = None
+    text: str = Field(min_length=1, max_length=4_000)
+    sources: tuple[WorkingSourceRangeData, ...] = Field(min_length=1, max_length=8)
+
+
+class WorkingCheckpointData(PublicModel):
+    identity: Identity
+    batch_id: Identity
+    trial_id: TrialId
+    result_identity: Identity | None = None
+    source_scope: tuple[WorkingSourceBindingData, ...]
+    observations: tuple[WorkingNoteData, ...]
+    interpretations: tuple[WorkingNoteData, ...]
+    terminology: tuple[WorkingTermData, ...]
+    unread_ranges: tuple[WorkingSourceRangeData, ...]
+    open_questions: tuple[WorkingNoteData, ...]
+    drafts: tuple[WorkingDraftData, ...]
+    next_action: str | None = None
+
+
+class WorkingCheckpointStatus(PublicModel):
+    status: Literal["absent", "current", "stale"]
+    reason: (
+        Literal[
+            "no_active_trial", "no_active_batch", "not_saved", "result_changed", "source_changed"
+        ]
+        | None
+    )
+    trial_id: TrialId | None = None
+    checkpoint_identity: Identity | None = None
+    checkpoint: WorkingCheckpointData | None = None
+    recovery: Literal["reorient_from_sources", "resume_from_checkpoint"]
+
+
+class TrialReviewSummary(PublicModel):
+    identity: Identity
+    trial_id: TrialId
+    result_identity: Identity
+    checkpoint_ids: tuple[Identity, ...]
+    disposition: Literal["assessed", "needs_input", "unsupported_design", "failed"]
+    reason: str | None = None
+    facts: tuple[str, ...] = ()
+
+
 class StatusData(PublicModel):
-    trial_dispositions: dict[TrialId, Literal["pending", "assessed", "needs_input", "failed"]]
+    trial_dispositions: dict[
+        TrialId,
+        Literal["pending", "reviewable", "assessed", "needs_input", "unsupported_design", "failed"],
+    ]
     terminal_counts: TerminalCounts
     selected_evidence: tuple[SelectedEvidence, ...]
+    working_checkpoint: WorkingCheckpointStatus
+    trial_review: TrialReviewSummary | None = None
     main_report_reading: dict[TrialId, MainReportReadingStatus] = {}
     conditions: tuple[IntakeCondition, ...] = ()
+
+
+class SaveWorkingCheckpointData(PublicModel):
+    checkpoint_identity: Identity
+    trial_id: TrialId
+    result_identity: Identity | None = None
+    source_count: NonNegativeInt
+    authoritative: StrictBool
+    next_action: str = Field(min_length=1)
 
 
 class SourceNavigationEntry(PublicModel):
@@ -547,6 +685,12 @@ class SourceNavigationData(PublicModel):
             "agent reading or comprehension."
         )
     )
+    pages_without_text_projection: tuple[PageNumber, ...] = Field(
+        description=(
+            "Source pages with no extracted text in the captured text projection. Such a page "
+            "may contain visual or otherwise unextracted material and requires direct inspection."
+        )
+    )
     truncated: StrictBool
     next_cursor: str | None = None
     condition: Literal["no_text_projection"] | None = None
@@ -554,6 +698,8 @@ class SourceNavigationData(PublicModel):
 
 class SourcesData(PublicModel):
     sources: tuple[PublicSource, ...]
+    conditions: tuple[IntakeCondition, ...] = ()
+    omissions: tuple[OmissionDecision, ...] = ()
     navigation: SourceNavigationData | None = None
 
 
@@ -574,9 +720,8 @@ class SearchHit(PublicModel):
         description="Last line of the displayed and citable source window."
     )
     preview: str = Field(min_length=1, description="Exact source text identified by passage_ref.")
-    passage_ref: str = Field(
-        pattern=r"^eh_[0-9a-f]{16}$",
-        description="Passage reference.",
+    passage_ref: EvidenceHandle = Field(
+        description="Exact returned passage handle for this displayed search window."
     )
     candidate_truncated: StrictBool = Field(
         description=(
@@ -602,7 +747,7 @@ class SearchReceipt(PublicModel):
     """Full receipt retained only inside durable checkpoints."""
 
     identity: Identity
-    handle: str = Field(pattern=r"^sr_[0-9a-f]{16}$")
+    handle: SearchReceiptHandle = Field(description="Exact search receipt handle.")
     trial_id: TrialId
     query: str = Field(min_length=1)
     mode: Literal["all", "phrase", "any", "prefix"]
@@ -662,7 +807,8 @@ SearchRecoveryAction = Annotated[
 class SearchDiagnostic(PublicModel):
     """Observable retrieval advice; it is never a scientific conclusion."""
 
-    code: Literal["broad_any_truncated", "narrow_no_hits"]
+    code: Literal["broad_any_truncated", "no_hits"]
+    mode: Literal["all", "phrase", "any", "prefix"]
     normalized_term_count: PositiveInt
     total_matches: NonNegativeInt
     candidate_count: NonNegativeInt
@@ -738,10 +884,59 @@ class SearchData(PublicModel):
     diagnostic: SearchDiagnostic | None = None
 
 
+class SearchBatchRequest(PublicModel):
+    trial_id: TrialId = Field(description="Captured Trial to search.")
+    query: StrictStr = Field(min_length=1, description="One independent lexical query.")
+    mode: Literal["all", "phrase", "any", "prefix"] = Field(
+        description="The explicit lexical intent for this query."
+    )
+    source_id: SourceHandle | None = Field(
+        default=None,
+        description="Optional source_id from the same Trial.",
+    )
+    limit: Annotated[
+        StrictInt,
+        Field(ge=1, le=100, description="Maximum passages returned for this query (1-100)."),
+    ] = 10
+    cursor: StrictStr | None = Field(
+        default=None,
+        description="Continuation cursor for this query only.",
+    )
+
+
+class SearchBatchSuccess(PublicModel):
+    outcome: Literal["success"]
+    data: SearchData
+
+
+class SearchBatchCondition(PublicModel):
+    outcome: Literal["condition"]
+    condition: ConditionData
+
+
+SearchBatchResult = Annotated[
+    SearchBatchSuccess | SearchBatchCondition,
+    Field(discriminator="outcome"),
+]
+
+
+class SearchBatchItem(PublicModel):
+    index: NonNegativeInt
+    query: StrictStr
+    mode: Literal["all", "phrase", "any", "prefix"]
+    result: SearchBatchResult
+
+
+class SearchBatchData(PublicModel):
+    results: tuple[SearchBatchItem, ...] = Field(min_length=1, max_length=8)
+
+
 class PageData(PublicModel):
-    source_id: SourceHandle = Field(description="Source handle.")
+    source_id: SourceHandle = Field(description="Exact Source handle for this returned page.")
     page: PageNumber
-    numbered_text: str
+    numbered_text: str = Field(
+        description="Returned Source text with each line prefixed by its 1-based line number."
+    )
     line_count: NonNegativeInt
     returned_start_line: PageNumber
     returned_end_line: NonNegativeInt
@@ -751,10 +946,9 @@ class PageData(PublicModel):
     )
     truncated: StrictBool
     next_start_line: PageNumber | None = None
-    passage_ref: str | None = Field(
+    passage_ref: EvidenceHandle | None = Field(
         default=None,
-        pattern=r"^eh_[0-9a-f]{16}$",
-        description="Evidence ref, when non-empty.",
+        description="Exact returned passage handle when this page contains nonblank text.",
     )
 
 
@@ -776,6 +970,7 @@ class VisualEvidenceData(PublicModel):
 
 class RenderData(PublicModel):
     render: RenderProjection
+    delivery_receipt: Identity | None = None
 
 
 class ProposalData(PublicModel):
@@ -788,7 +983,7 @@ class ReasoningProposalSaveAction(PublicModel):
     reasoning_id: Identity
 
 
-class ReasonProposalData(PublicModel):
+class ValidateProposalData(PublicModel):
     reasoning_id: Identity
     validation_scope: Literal["structure_and_references_only"]
     repairs: tuple[RepairDefect, ...] = ()
@@ -868,29 +1063,15 @@ QuestionActivation = Annotated[
 ]
 
 
-class CompactAnswerOption(PublicModel):
-    """Lossless option semantics without repeated generated prose."""
-
-    id: str = Field(pattern=r"^opt_[0-9a-f]{24}$")
-    official_answer: Answer
-    proposition: Literal["true", "false", "unknown"]
-    certainty: Literal["certain", "probable", "unknown"]
-    decision_table_value: Literal["yes", "no", "no_information"]
-    anchor: str = Field(min_length=1)
-    activates: tuple[str, ...] = Field(
-        default=(),
-        description="Dependent questions to check against their full activation rules.",
-    )
-    meaning: str | None = None
-    consequence: str | None = None
-
-
 class DomainQuestionCard(PublicModel):
     """Compact model-facing card for one scientific-pack question."""
 
     id: QuestionId
     wording: str = Field(min_length=1)
-    options: tuple[CompactAnswerOption, ...] = Field(min_length=1)
+    options: tuple[Answer, ...] = Field(
+        min_length=1,
+        description="Official answer values permitted for this question.",
+    )
     activation_status: Literal[
         "always_active",
         "dependent_on_draft_answers",
@@ -924,7 +1105,7 @@ class DomainQuestionCard(PublicModel):
 
 class DomainTableEvidence(PublicModel):
     kind: Literal["table"]
-    handle: str = Field(pattern=r"^eh_[0-9a-f]{16}$")
+    handle: EvidenceHandle = Field(description="Exact selected table passage handle.")
     basis: Literal["text", "visual"]
     title: str = Field(min_length=1)
     scope: str = Field(min_length=1)
@@ -938,8 +1119,30 @@ class DomainTableEvidence(PublicModel):
     footnotes: tuple[str, ...] = ()
 
 
+class DomainTableEvidenceSpan(PublicModel):
+    """A separately selected table fragment retained without joining its text."""
+
+    role: Literal["title_or_definition", "header", "quantitative_row", "unit", "footnote"]
+    handle: EvidenceHandle = Field(description="Exact selected table-fragment handle.")
+    identity: Identity
+    source_id: SourceHandle
+    page: PageNumber
+    start: NonNegativeInt
+    end: NonNegativeInt
+    start_line: PageNumber | None = None
+    end_line: PageNumber | None = None
+
+
+class DomainMultiSpanTableEvidenceReference(PublicModel):
+    """Proof locations for a table Result; the spans do not imply continuity."""
+
+    kind: Literal["table_multispan"]
+    basis: Literal["text"]
+    spans: tuple[DomainTableEvidenceSpan, ...] = Field(min_length=2)
+
+
 class DomainDerivedInput(PublicModel):
-    handle: str = Field(pattern=r"^eh_[0-9a-f]{16}$")
+    handle: EvidenceHandle = Field(description="Exact selected Evidence handle for this value.")
     value: str = Field(min_length=1)
 
 
@@ -954,10 +1157,11 @@ class DomainNarrativeEvidence(PublicModel):
     """Domain-only narrative projection; canonical selected Evidence stays strict."""
 
     kind: Literal["narrative"]
-    handle: str = Field(pattern=r"^eh_[0-9a-f]{16}$")
+    handle: EvidenceHandle = Field(description="Exact selected narrative handle.")
     identity: Identity
     trial_id: TrialId
     source_id: SourceHandle
+    source_version: Identity | None = None
     page: PageNumber
     # Canonical Evidence from older checkpoints may have a complete quote but
     # no line coordinates.  Coordinates are required only when text is omitted
@@ -1021,12 +1225,12 @@ class DomainResultEvidenceReference(PublicModel):
     """The compact Evidence identity needed while answering a Domain."""
 
     kind: Literal["narrative", "table", "figure"]
-    handle: str = Field(pattern=r"^eh_[0-9a-f]{16}$")
+    handle: EvidenceHandle = Field(description="Exact selected Evidence handle.")
     identity: Identity
 
 
 DomainResultEvidence = Annotated[
-    DomainResultEvidenceReference | DomainDerivedEvidence,
+    DomainResultEvidenceReference | DomainMultiSpanTableEvidenceReference | DomainDerivedEvidence,
     Field(discriminator="kind"),
 ]
 
@@ -1128,7 +1332,7 @@ class EvidenceWorkspaceGroup(PublicModel):
 
 
 class EvidenceWorkspace(PublicModel):
-    selection_policy_version: Literal["rob2-kit.domain-projection.v0.6"]
+    selection_policy_version: Literal["rob2-kit.domain-projection.v0.7"]
     groups: tuple[EvidenceWorkspaceGroup, ...]
     omitted_count: NonNegativeInt = 0
     omitted_by_category: OmittedEvidenceCounts = OmittedEvidenceCounts()
@@ -1176,9 +1380,18 @@ class EvidenceWorkspace(PublicModel):
     )
 
 
+class DomainPack(PublicModel):
+    id: str = Field(min_length=1)
+    version: str = Field(min_length=1)
+    content_hash: Identity
+
+
 class DomainContextData(PublicModel):
     trial_id: TrialId
     domain_id: DomainId
+    pack: DomainPack = Field(
+        description="Exact scientific pack identity and version used for this Domain context."
+    )
     result: DomainResultChoice
     evidence: tuple[DomainEvidence, ...]
     answers: tuple[CheckpointAnswer, ...]
@@ -1212,7 +1425,12 @@ class DomainContextData(PublicModel):
 class DomainContextPage(PublicModel):
     trial_id: TrialId
     domain_id: DomainId
-    state_revision: NonNegativeInt
+    state_revision: NonNegativeInt = Field(
+        description=(
+            "Frozen workflow revision used to bind every page in this context-page sequence; "
+            "it may differ from the current head revision after unrelated changes."
+        )
+    )
     index: NonNegativeInt
     count: PositiveInt
     section: Literal["complete", "questions", "comparison_cards", "evidence"]
@@ -1224,7 +1442,7 @@ class DomainContextPage(PublicModel):
 
 
 class ComparisonPassageRef(PublicModel):
-    handle: str = Field(pattern=r"^eh_[0-9a-f]{16}$")
+    handle: EvidenceHandle = Field(description="Exact selected passage handle.")
     source_id: SourceHandle
     page: PageNumber
     start_line: PageNumber
@@ -1360,6 +1578,7 @@ class Checkpoint(PublicModel):
     identity: Identity
     trial_id: TrialId
     domain_id: DomainId
+    result_identity: Identity | None = None
     answers: tuple[CheckpointAnswer, ...]
     judgment: Judgment
     active_questions: tuple[str, ...]
@@ -1380,11 +1599,11 @@ class DomainCheckpointSummary(PublicModel):
 
 class DomainJudgmentData(PublicModel):
     checkpoint: DomainCheckpointSummary
-    trial_completed: StrictBool = Field(
+    trial_ready_for_review: StrictBool = Field(
         default=False,
         description=(
-            "True only when this save completed the fifth Domain and froze the Trial's final "
-            "AssessmentSnapshot."
+            "True only when this save completed the fifth Domain; the Trial remains correctable "
+            "until it is explicitly closed."
         ),
     )
     retry: StrictBool = False
@@ -1397,7 +1616,7 @@ class ReasoningSaveAction(PublicModel):
     reasoning_id: Identity
 
 
-class ReasonDomainAssessmentData(PublicModel):
+class ValidateDomainAssessmentData(PublicModel):
     reasoning_id: Identity
     active_question_ids: tuple[QuestionId, ...]
     validation_scope: Literal["structure_and_references_only"]
@@ -1405,30 +1624,20 @@ class ReasonDomainAssessmentData(PublicModel):
     next_action: ReasoningSaveAction
 
 
-class NeedsInputTerminalData(PublicModel):
+class ReviewTrialData(PublicModel):
+    review: TrialReviewSummary
+    retry: StrictBool = False
+
+
+class TrialClosureSummary(PublicModel):
     identity: Identity
     trial_id: TrialId
-    disposition: Literal["needs_input"]
-    reason: str = Field(min_length=1)
-    missing_facts: tuple[str, ...] = Field(min_length=1)
+    review_identity: Identity
+    disposition: Literal["assessed", "needs_input", "unsupported_design", "failed"]
 
 
-class FailedTerminalData(PublicModel):
-    identity: Identity
-    trial_id: TrialId
-    disposition: Literal["failed"]
-    reason: str = Field(min_length=1)
-    facts: tuple[str, ...] = Field(min_length=1)
-
-
-TerminalData = Annotated[
-    NeedsInputTerminalData | FailedTerminalData,
-    Field(discriminator="disposition"),
-]
-
-
-class TerminalReceiptData(PublicModel):
-    terminal: TerminalData
+class CloseTrialData(PublicModel):
+    closure: TrialClosureSummary
     retry: StrictBool = False
 
 
@@ -1452,7 +1661,10 @@ class AssessmentSummary(PublicModel):
 
 class FinalizeData(PublicModel):
     artifact: Artifact
-    trial_dispositions: dict[TrialId, Literal["pending", "assessed", "needs_input", "failed"]] = {}
+    trial_dispositions: dict[
+        TrialId,
+        Literal["pending", "reviewable", "assessed", "needs_input", "unsupported_design", "failed"],
+    ] = {}
     assessment_summary: dict[TrialId, AssessmentSummary]
     retry: StrictBool = False
 
@@ -1460,26 +1672,30 @@ class FinalizeData(PublicModel):
 DataByTool: Final = {
     "prepare_batch": PrepareData,
     "get_status": StatusData,
+    "save_working_checkpoint": SaveWorkingCheckpointData,
     "list_sources": SourcesData,
     "search_sources": SearchData,
+    "search_sources_batch": SearchBatchData,
     "read_pages": PagesData,
     "select_text_evidence": TextEvidenceData,
     "render_page": RenderData,
     "select_visual_evidence": VisualEvidenceData,
     "save_proposal": ProposalData,
-    "reason_proposal": ReasonProposalData,
+    "validate_proposal": ValidateProposalData,
     "request_proposal_approval": ProposalApprovalData,
     "get_domain_context": DomainContextData,
-    "reason_domain_assessment": ReasonDomainAssessmentData,
+    "validate_domain_assessment": ValidateDomainAssessmentData,
     "save_domain_judgment": DomainJudgmentData,
-    "request_trial_terminal": TerminalReceiptData,
+    "review_trial": ReviewTrialData,
+    "close_trial": CloseTrialData,
     "finalize_batch": FinalizeData,
 }
 ConditionByTool: Final = {
     "search_sources": SearchCursorCondition,
+    "search_sources_batch": ConditionData,
     "finalize_batch": ConditionData,
     "request_proposal_approval": ProposalApprovalCondition,
-    "reason_domain_assessment": DomainContextDeliveryCondition,
+    "validate_domain_assessment": DomainContextDeliveryCondition,
     "save_domain_judgment": DomainContextDeliveryCondition,
 }
 
@@ -1507,6 +1723,7 @@ def _head(value: dict[str, Any]) -> dict[str, Any]:
                         "expected_revision",
                         "trial_id",
                         "domain_id",
+                        "review_reference",
                         "caller_inputs",
                         "supersedes",
                         "reasoning_id",
@@ -1544,8 +1761,13 @@ def _clean_public(value: dict[str, Any]) -> dict[str, Any]:
     head = value.get("head")
     if isinstance(head, dict):
         action = head.get("next_action")
-        if isinstance(action, dict) and action.get("supersedes") is None:
-            action.pop("supersedes", None)
+        if isinstance(action, dict):
+            if action.get("supersedes") is None:
+                action.pop("supersedes", None)
+            if action.get("operation") in {"review_trial", "close_trial"}:
+                for key in ("caller_inputs", "review_reference"):
+                    if action.get(key) is None:
+                        action.pop(key, None)
     data = value.get("data")
     if isinstance(data, dict) and data.get("current_checkpoint") is None:
         data.pop("current_checkpoint", None)
@@ -1565,6 +1787,8 @@ _META_KEYS = {
     "continuation",
     "trial_dispositions",
     "terminal_counts",
+    "trial_review",
+    "closure",
     "review_required",
     "selected_evidence",
     "authority_required",
@@ -1572,27 +1796,9 @@ _META_KEYS = {
 }
 
 
-def _payload(tool: str, value: dict[str, Any]) -> dict[str, Any]:
-    if tool == "get_status":
-        return {
-            key: value[key]
-            for key in (
-                "trial_dispositions",
-                "terminal_counts",
-                "selected_evidence",
-                "main_report_reading",
-                "conditions",
-            )
-            if key in value
-        }
-    if tool == "finalize_batch":
-        return {
-            key: value[key]
-            for key in ("artifact", "trial_dispositions", "assessment_summary", "retry")
-            if key in value
-        }
+def _search_data_payload(value: dict[str, Any]) -> dict[str, Any]:
     data = {key: item for key, item in value.items() if key not in _META_KEYS}
-    if tool == "search_sources" and isinstance(data.get("hits"), list):
+    if isinstance(data.get("hits"), list):
         data["condition"] = value.get("condition")
         data["hits"] = [
             {
@@ -1615,6 +1821,45 @@ def _payload(tool: str, value: dict[str, Any]) -> dict[str, Any]:
             }
             for item in data["hits"]
         ]
+    receipt = data.get("search_receipt")
+    if isinstance(receipt, dict):
+        data["search_receipt"] = receipt["handle"]
+    return data
+
+
+def _payload(tool: str, value: dict[str, Any]) -> dict[str, Any]:
+    if tool == "get_status":
+        return {
+            key: value[key]
+            for key in (
+                "trial_dispositions",
+                "terminal_counts",
+                "selected_evidence",
+                "working_checkpoint",
+                "main_report_reading",
+                "conditions",
+                "trial_review",
+            )
+            if key in value
+        }
+    if tool == "finalize_batch":
+        return {
+            key: value[key]
+            for key in ("artifact", "trial_dispositions", "assessment_summary", "retry")
+            if key in value
+        }
+    if tool == "review_trial":
+        return {key: value[key] for key in ("review", "retry") if key in value}
+    if tool == "close_trial":
+        return {key: value[key] for key in ("closure", "retry") if key in value}
+    if tool == "search_sources":
+        return _search_data_payload(value)
+    data = {key: item for key, item in value.items() if key not in _META_KEYS}
+    if tool == "search_sources_batch" and isinstance(data.get("results"), list):
+        for item in data["results"]:
+            result = item.get("result") if isinstance(item, dict) else None
+            if isinstance(result, dict) and result.get("outcome") == "success":
+                result["data"] = _search_data_payload(result["data"])
     if isinstance(data.get("search_receipt"), dict):
         receipt = data["search_receipt"]
         data["search_receipt"] = receipt["handle"]
@@ -1647,11 +1892,6 @@ def normalize(tool: str, value: dict[str, Any]) -> dict[str, Any]:
     head = PublicHead.model_validate(_head(value)).model_dump(mode="json")
     if outcome in {"success", "review_required"}:
         payload = _payload(tool, value)
-        if tool == "request_trial_terminal" and isinstance(payload.get("terminal"), dict):
-            terminal = dict(payload["terminal"])
-            if terminal.get("disposition") == "failed":
-                terminal["facts"] = terminal.pop("missing_facts", [])
-            payload["terminal"] = terminal
         data = TypeAdapter(DataByTool[tool]).validate_python(payload).model_dump(mode="json")
         if outcome == "review_required":
             return _clean_public(

@@ -14,10 +14,11 @@ import pymupdf
 import pytest
 from pydantic import ValidationError
 from support.rob2 import (
+    _answer_value,
+    _assessed_artifact,
     _assessment_workspace,
     _call,
     _domain_draft,
-    _option_for,
     _prepared_evidence,
     _proposal_args,
     _read_required_main_reports,
@@ -69,9 +70,37 @@ def _rewrite_rehashed(source: Path, target: Path, mutate: Callable[[dict[str, An
 
 def _artifact(workspace: Path) -> Path:
     _workspace, _evidence, revision = _complete_assessment(workspace)
+    revision = _close_trials(workspace, revision)
     result = finalization.finalize_batch(workspace, revision)
     assert result["outcome"] == "success", result
     return workspace / result["artifact"]["path"]
+
+
+def _close_trials(workspace: Path, expected_revision: int) -> int:
+    status = _call(workspace, "get_status", {})
+    assert status["head"]["state_revision"] == expected_revision
+    while True:
+        action = status["head"]["next_action"]
+        assert isinstance(action, dict)
+        operation = action.get("operation")
+        if operation == "finalize_batch":
+            return int(status["head"]["state_revision"])
+        if operation == "review_trial":
+            request = {
+                "trial_id": action["trial_id"],
+                "expected_revision": action["expected_revision"],
+            }
+        elif operation == "close_trial":
+            request = {
+                "trial_id": action["trial_id"],
+                "expected_revision": action["expected_revision"],
+                "review_reference": action["review_reference"],
+            }
+        else:
+            raise AssertionError(f"cannot close Trials while next action is {operation!r}")
+        receipt = _call(workspace, operation, request)
+        assert receipt["outcome"] == "success", receipt
+        status = _call(workspace, "get_status", {})
 
 
 def _convert_group_bound_result_to_legacy(canonical: dict[str, Any]) -> None:
@@ -97,6 +126,81 @@ def _convert_group_bound_result_to_legacy(canonical: dict[str, Any]) -> None:
     acknowledgment["identity"] = _identity(
         {key: value for key, value in acknowledgment.items() if key != "identity"}
     )
+    proposal_history = canonical.get("proposal_history")
+    if isinstance(proposal_history, list) and proposal_history:
+        latest = proposal_history[-1]
+        latest_proposal = latest["proposal"]
+        latest_proposal["payload"] = payload
+        latest_proposal["identity"] = proposal["identity"]
+        latest["review"] = json.loads(json.dumps(review))
+        latest["acknowledgment"] = json.loads(json.dumps(acknowledgment))
+    _strip_result_bound_domain_lineage(canonical)
+
+
+def _strip_result_bound_domain_lineage(canonical: dict[str, Any]) -> None:
+    """Model pre-v0.8 records, which predate Result-bound Domain identities."""
+    domain_fields = (
+        "trial_id",
+        "domain_id",
+        "answers",
+        "supersedes",
+        "revision_basis",
+        "search_accounts",
+        "active_questions",
+        "inactive_questions",
+        "judgment",
+        "trace",
+    )
+    identity_map: dict[str, str] = {}
+    for key, records in canonical["domain_history_records"].items():
+        legacy_records = []
+        for record in records:
+            old_identity = record["identity"]
+            record.pop("result_identity", None)
+            record["identity"] = _identity({field: record[field] for field in domain_fields})
+            identity_map[old_identity] = record["identity"]
+            legacy_records.append(record)
+        canonical["domain_history_records"][key] = legacy_records
+        canonical["domain_history"][key] = [
+            identity_map.get(identity, identity) for identity in canonical["domain_history"][key]
+        ]
+        canonical["domain_records"][key] = legacy_records[-1]
+
+    snapshot_identity_map: dict[str, str] = {}
+    for trial_id, records in canonical["snapshot_history_records"].items():
+        for snapshot in records:
+            old_identity = snapshot["identity"]
+            snapshot["checkpoints"] = [
+                identity_map.get(identity, identity) for identity in snapshot["checkpoints"]
+            ]
+            snapshot.pop("result_identity", None)
+            snapshot["identity"] = _identity(
+                {field: value for field, value in snapshot.items() if field != "identity"}
+            )
+            snapshot_identity_map[old_identity] = snapshot["identity"]
+        canonical["snapshot_history"][trial_id] = [
+            snapshot_identity_map.get(identity, identity)
+            for identity in canonical["snapshot_history"][trial_id]
+        ]
+        canonical["snapshot_history_records"][trial_id] = records
+        canonical["snapshots"][trial_id] = records[-1]
+
+    current_results = {
+        result["trial_id"]: result for result in canonical["proposal"]["payload"]["results"]
+    }
+    for trial_id, review in canonical.get("trial_reviews", {}).items():
+        review["result_identity"] = _identity(current_results[trial_id])
+        review["checkpoint_ids"] = [
+            identity_map.get(checkpoint, checkpoint) for checkpoint in review["checkpoint_ids"]
+        ]
+        review["identity"] = _identity(
+            {key: value for key, value in review.items() if key != "identity"}
+        )
+        closure = canonical["trial_closures"][trial_id]
+        closure["review_identity"] = review["identity"]
+        closure["identity"] = _identity(
+            {key: value for key, value in closure.items() if key != "identity"}
+        )
 
 
 def test_search_receipt_verifiers_accept_global_bm25_order(tmp_path: Path) -> None:
@@ -194,7 +298,7 @@ def test_probable_limitation_domain_basis_finalizes_after_derivative_restart(
     assert len({(hit["source_id"], hit["page"]) for hit in search["hits"]}) == 1
     receipt = search["search_receipt"]
     first = _domain_draft("trial", "domain:randomization", revision, search_receipt=receipt)
-    first["answers"][0]["option_id"] = _option_for(
+    first["answers"][0]["answer"] = _answer_value(
         first["answers"][0]["question_id"], "probably_yes"
     )
     first["answers"][0]["bases"] = [
@@ -225,6 +329,7 @@ def test_probable_limitation_domain_basis_finalizes_after_derivative_restart(
         revision = int(saved["head"]["state_revision"])
 
     (workspace / ".rob2-kit" / "derivative.sqlite3").unlink()
+    revision = _close_trials(workspace, revision)
     finalized = _call(workspace, "finalize_batch", {"expected_revision": revision})
     assert finalized["outcome"] == "success", finalized
     artifact = workspace / finalized["data"]["artifact"]["path"]
@@ -291,7 +396,7 @@ def test_rehashed_historical_probable_basis_tampering_fails_both_verifiers(
         workspace, "search_sources", {"trial_id": "trial", "query": "not-in-source", "mode": "any"}
     )["data"]["search_receipt"]
     initial = _domain_draft("trial", "domain:randomization", revision, search_receipt=receipt)
-    initial["answers"][0]["option_id"] = _option_for(
+    initial["answers"][0]["answer"] = _answer_value(
         initial["answers"][0]["question_id"], "probably_yes"
     )
     initial["answers"][0]["bases"] = [
@@ -307,6 +412,12 @@ def test_rehashed_historical_probable_basis_tampering_fails_both_verifiers(
     assert saved["outcome"] == "success", saved
     revision = int(saved["head"]["state_revision"])
     current = _state(workspace)["domain_records"]["trial:domain:randomization"]
+    refreshed = _call(
+        workspace,
+        "get_domain_context",
+        {"trial_id": "trial", "domain_id": "domain:randomization"},
+    )
+    assert refreshed["outcome"] == "success", refreshed
     revised = _domain_draft("trial", "domain:randomization", revision, evidence)
     revised["supersedes"] = current["identity"]
     revised["revision_basis"] = {
@@ -332,7 +443,7 @@ def test_rehashed_historical_probable_basis_tampering_fails_both_verifiers(
     finalized = _call(
         workspace,
         "finalize_batch",
-        {"expected_revision": revision},
+        {"expected_revision": _close_trials(workspace, revision)},
     )
     assert finalized["outcome"] == "success", finalized
     artifact = workspace / finalized["data"]["artifact"]["path"]
@@ -438,10 +549,18 @@ def test_finalization_retry_rebuilds_identical_bytes(tmp_path: Path) -> None:
     assert retry["artifact"]["identity"]
 
 
+def test_finalize_requires_an_explicit_trial_closure(tmp_path: Path) -> None:
+    workspace, _evidence, revision = _complete_assessment(tmp_path)
+
+    with pytest.raises(ValueError, match="current review and closure"):
+        finalization.finalize_batch(workspace, revision)
+
+
 def test_finalize_response_projects_frozen_assessment_summary_and_retry(
     tmp_path: Path,
 ) -> None:
     _workspace, _evidence, revision = _complete_assessment(tmp_path)
+    revision = _close_trials(tmp_path, revision)
     first = _call(tmp_path, "finalize_batch", {"expected_revision": revision})
     assert first["outcome"] == "success", first
     snapshot = _state(tmp_path)["snapshots"]["trial"]
@@ -466,9 +585,17 @@ def test_finalize_response_projects_frozen_assessment_summary_and_retry(
 
 
 def test_finalized_bundle_binds_the_scientific_contract(tmp_path: Path) -> None:
-    artifact = _artifact(tmp_path)
+    artifact = _assessed_artifact(_workspace(tmp_path))
     with zipfile.ZipFile(artifact) as archive:
         canonical = json.loads(archive.read("canonical.json"))
+
+    assert set(canonical["trial_reviews"]) == {"trial"}
+    assert set(canonical["trial_closures"]) == {"trial"}
+    assert (
+        canonical["trial_closures"]["trial"]["review_identity"]
+        == canonical["trial_reviews"]["trial"]["identity"]
+    )
+    assert canonical["trial_closures"]["trial"]["disposition"] == "assessed"
 
     descriptor = canonical["scientific_pack"]
     official_sources = {
@@ -724,6 +851,7 @@ def test_finalization_conflict_removes_new_artifact(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     _workspace, _evidence, revision = _complete_assessment(tmp_path)
+    revision = _close_trials(tmp_path, revision)
     monkeypatch.setattr(
         finalization,
         "_commit_records",
@@ -739,6 +867,7 @@ def test_finalization_conflict_removes_new_artifact(
 @pytest.mark.parametrize("field", ("proposal_review", "proposal_acknowledgment"))
 def test_finalization_requires_direct_proposal_authorization(tmp_path: Path, field: str) -> None:
     workspace, _evidence, revision = _complete_assessment(tmp_path)
+    revision = _close_trials(workspace, revision)
     state = _state(workspace)
     state.pop(field)
     state = _commit_records(workspace, state, revision, {})

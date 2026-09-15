@@ -5,6 +5,7 @@ from ..packs import SCIENTIFIC_PACK
 from ._state import _ensure, _result, _root, _state
 from .contracts import COUNTERS
 from .evidence import _evidence_catalog, main_report_reading_status
+from .working import working_checkpoint_status
 
 _STATUS_RECOVERABLE_NARRATIVE_TEXT_BUDGET = 12_288
 
@@ -65,6 +66,7 @@ def _selected_evidence(workspace: Path) -> list[dict[str, Any]]:
                 "transcription",
                 "region",
                 "render",
+                "delivery_receipt",
                 "provenance",
             )
         else:
@@ -78,7 +80,14 @@ def presentation(state: dict[str, Any]) -> dict[str, Any]:
     dispositions = dict(state.get("trial_dispositions", {}))
     counts = {
         disposition: sum(value == disposition for value in dispositions.values())
-        for disposition in ("assessed", "needs_input", "failed", "pending")
+        for disposition in (
+            "assessed",
+            "needs_input",
+            "unsupported_design",
+            "failed",
+            "pending",
+            "reviewable",
+        )
     }
     phase = str(state.get("phase", "empty"))
     total = len(dispositions)
@@ -88,7 +97,9 @@ def presentation(state: dict[str, Any]) -> dict[str, Any]:
             if not counts["assessed"]
             else "Batch finalized. "
             f"RoB 2 assessments completed for {counts['assessed']}/{total} Trials. "
-            f"{counts['needs_input']} Trials need input; {counts['failed']} Trials failed."
+            f"{counts['needs_input']} Trials need information; "
+            f"{counts['unsupported_design']} have unsupported designs; "
+            f"{counts['failed']} Trials failed."
         )
     elif phase == "ready_to_finalize":
         wording = (
@@ -98,9 +109,9 @@ def presentation(state: dict[str, Any]) -> dict[str, Any]:
     elif phase == "assessment":
         wording = (
             f"Batch incomplete: {counts['assessed']}/{total} Trials completed; "
-            f"{counts['pending']} pending. Continue now with head.next_action. Never stop at a "
-            "Trial boundary, ask whether to continue, infer pending Trial judgments, or reduce "
-            "rigor for token or context limits."
+            f"{counts['pending']} pending; {counts['reviewable']} ready for review and closure. "
+            "Continue now with head.next_action. Never stop at a Trial boundary, ask whether to "
+            "continue, infer pending Trial judgments, or reduce rigor for token or context limits."
         )
     elif counts["needs_input"] or counts["failed"]:
         wording = (
@@ -140,6 +151,7 @@ def get_status(workspace: str | Path) -> dict[str, Any]:
     _ensure(root)
     state = _state(root)
     dispositions = dict(state.get("trial_dispositions", {}))
+    active_trial, _active_domain = _active_trial_and_domain(state)
     public = presentation(state)
     batch_value = state.get("batch")
     batch = batch_value if isinstance(batch_value, dict) else {}
@@ -190,6 +202,8 @@ def get_status(workspace: str | Path) -> dict[str, Any]:
         trial_dispositions=dispositions,
         terminal_counts=public["counts"],
         continuation=_continuation(state),
+        working_checkpoint=working_checkpoint_status(root, state, active_trial),
+        trial_review=_current_trial_review(state),
         selected_evidence=_selected_evidence(root) if state.get("phase") == "proposal" else [],
         main_report_reading=main_report_reading,
         conditions=conditions,
@@ -212,15 +226,36 @@ def get_status_head(workspace: str | Path) -> dict[str, Any]:
 
 
 def _active_trial_and_domain(state: dict[str, Any]) -> tuple[str | None, str | None]:
-    """Return the one pending Trial and Domain that may advance."""
+    """Return the first open Trial in captured Batch order and its next Domain."""
     records = state.get("domain_records") or {}
-    for trial_id, disposition in state.get("trial_dispositions", {}).items():
-        if disposition != "pending":
+    dispositions = state.get("trial_dispositions", {})
+    batch = state.get("batch")
+    trials = batch.get("trials") if isinstance(batch, dict) else None
+    trial_ids = (
+        [trial.get("id") for trial in trials if isinstance(trial, dict)]
+        if isinstance(trials, list)
+        else list(dispositions)
+        if isinstance(dispositions, dict)
+        else []
+    )
+    for trial_id in trial_ids:
+        disposition = dispositions.get(trial_id) if isinstance(dispositions, dict) else None
+        if disposition not in {"pending", "reviewable"}:
             continue
+        if disposition == "reviewable":
+            return trial_id, None
         for domain in SCIENTIFIC_PACK.domains:
             if f"{trial_id}:{domain.id}" not in records:
                 return trial_id, domain.id
+        return trial_id, None
     return None, None
+
+
+def _current_trial_review(state: dict[str, Any]) -> dict[str, Any] | None:
+    trial_id, _ = _active_trial_and_domain(state)
+    reviews = state.get("trial_reviews")
+    review = reviews.get(trial_id) if trial_id is not None and isinstance(reviews, dict) else None
+    return review if isinstance(review, dict) else None
 
 
 def _continuation(state: dict[str, Any]) -> dict[str, Any] | None:
@@ -242,21 +277,41 @@ def _continuation(state: dict[str, Any]) -> dict[str, Any] | None:
         }
     if phase == "proposal":
         return {
-            "operation": "reason_proposal",
+            "operation": "validate_proposal",
             "authority": "host",
             "expected_revision": int(state.get("revision", 0)),
             "caller_inputs": ["results", "assessments"],
         }
     if phase == "assessment":
         trial_id, domain_id = _active_trial_and_domain(state)
-        if trial_id is not None and domain_id is not None:
+        if trial_id is None:
+            return {
+                "operation": "finalize_batch",
+                "authority": "host",
+                "expected_revision": int(state.get("revision", 0)),
+            }
+        review = _current_trial_review(state)
+        if review is not None:
+            return {
+                "operation": "close_trial",
+                "authority": "host",
+                "trial_id": trial_id,
+                "review_reference": review["identity"],
+                "expected_revision": int(state.get("revision", 0)),
+            }
+        if domain_id is not None:
             return {
                 "operation": "get_domain_context",
                 "authority": "host",
                 "trial_id": trial_id,
                 "domain_id": domain_id,
             }
-        return None
+        return {
+            "operation": "review_trial",
+            "authority": "host",
+            "trial_id": trial_id,
+            "expected_revision": int(state.get("revision", 0)),
+        }
     if phase == "ready_to_finalize":
         return {
             "operation": "finalize_batch",

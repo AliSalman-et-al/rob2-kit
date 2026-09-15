@@ -18,7 +18,11 @@ from support.rob2 import (
 )
 
 from rob2_kit.application.contracts import COUNTERS
-from rob2_kit.application.evidence import render_page, select_visual_evidence
+from rob2_kit.application.evidence import (
+    record_visual_delivery,
+    render_page,
+    select_visual_evidence,
+)
 from rob2_kit.application.source_archive import archive_sources, verify_source_archive
 from rob2_kit.packs import SCIENTIFIC_PACK
 from rob2_kit.workflow_models import FigureEvidence
@@ -116,14 +120,22 @@ def test_visual_transcription_rejects_blank_at_model_and_application_boundaries(
         expected_revision=0,
     )
     source = list_sources(tmp_path, "trial")["sources"][0]
-    rendered = render_page(tmp_path, "trial", source["id"], 1)["render"]
+    rendered = render_page(tmp_path, "trial", source["id"], 1)
+    receipt = record_visual_delivery(
+        tmp_path,
+        "trial",
+        source["id"],
+        rendered["render"]["identity"],
+        rendered["_png_bytes"],
+    )
 
     with pytest.raises(ValidationError):
         FigureEvidence.model_validate(
             {
                 "kind": "figure",
                 "handle": "eh_" + "a" * 16,
-                "render_identity": rendered["identity"],
+                "render_identity": rendered["render"]["identity"],
+                "delivery_receipt": receipt,
                 "region": (0.0, 0.0, 1.0, 1.0),
                 "transcription": "   ",
             }
@@ -133,7 +145,7 @@ def test_visual_transcription_rejects_blank_at_model_and_application_boundaries(
             tmp_path,
             "trial",
             source["id"],
-            rendered["identity"],
+            receipt,
             "   ",
             [0.0, 0.0, 1.0, 1.0],
         )

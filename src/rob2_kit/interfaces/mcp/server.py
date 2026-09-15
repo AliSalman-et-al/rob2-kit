@@ -28,19 +28,23 @@ from rob2_kit.application._state import _root, _state
 from rob2_kit.application.contracts import TOOL_NAMES, WorkflowConflict
 from rob2_kit.application.domains import (
     _domain_context_delivery,
+    _domain_reasoning_matches_current,
     _record_domain_context_delivery,
 )
 from rob2_kit.application.domains import (
     get_domain_context as _get_domain_context,
 )
-from rob2_kit.application.domains import (
-    reason_domain_assessment as _reason_domain_assessment,
-)
 from rob2_kit.application.domains import save_domain_judgment as _save_domain_judgment
+from rob2_kit.application.domains import (
+    validate_domain_assessment as _validate_domain_assessment,
+)
 from rob2_kit.application.evidence import list_sources as _list_sources
 from rob2_kit.application.evidence import read_pages as _read_pages
 from rob2_kit.application.evidence import (
     record_read_coverage_batch as _record_read_coverage_batch,
+)
+from rob2_kit.application.evidence import (
+    record_visual_delivery as _record_visual_delivery,
 )
 from rob2_kit.application.evidence import render_page as _render_page
 from rob2_kit.application.evidence import search_sources as _search_sources
@@ -52,8 +56,8 @@ from rob2_kit.application.finalization import finalize_batch as _finalize_batch
 from rob2_kit.application.intake import approve_review as _approve_review
 from rob2_kit.application.intake import prepare_batch_for_outcome as _prepare_batch
 from rob2_kit.application.intake import proposal_approval_context as _proposal_approval_context
-from rob2_kit.application.proposal import reason_proposal as _reason_proposal
 from rob2_kit.application.proposal import save_proposal as _save_proposal
+from rob2_kit.application.proposal import validate_proposal as _validate_proposal
 from rob2_kit.application.source_handles import (
     public_source_references as _public_source_references,
 )
@@ -62,7 +66,9 @@ from rob2_kit.application.source_handles import (
 )
 from rob2_kit.application.status import get_status as _get_status
 from rob2_kit.application.status import get_status_head as _get_status_head
-from rob2_kit.application.trials import request_trial_terminal as _request_trial_terminal
+from rob2_kit.application.trials import close_trial as _close_trial
+from rob2_kit.application.trials import review_trial as _review_trial
+from rob2_kit.application.working import save_working_checkpoint as _save_working_checkpoint
 from rob2_kit.workflow_models import (
     DomainDraft,
     DomainId,
@@ -80,12 +86,14 @@ from rob2_kit.workflow_models import (
     SourceHandle,
     StrictModel,
     TerminalRequest,
-    TerminalRequestEnvelope,
+    TrialClosureRequest,
     TrialId,
+    TrialReviewRequest,
     VisualTranscription,
+    WorkingCheckpointDraft,
 )
 
-from .contracts import normalize, output_schema, validate_output
+from .contracts import SearchBatchRequest, normalize, output_schema, validate_output
 
 mcp = FastMCP(
     "rob2-kit",
@@ -134,27 +142,19 @@ _DOMAIN_CONTEXT_PAGE_SECTIONS = ("questions", "comparison_cards", "evidence")
 
 
 def _compact_domain_context_transport(value: dict[str, Any]) -> dict[str, Any]:
-    """Order high-signal context first and drop redundant option prose."""
+    """Order high-signal context first without dropping pack guidance."""
 
     encoded = json.dumps(value, ensure_ascii=False, separators=(",", ":"))
     copied = json.loads(encoded)
     data = copied.get("data")
     if not isinstance(data, dict):
         return copied
-    questions = data.get("questions")
-    if isinstance(questions, list):
-        for card in questions:
-            if not isinstance(card, dict) or not isinstance(card.get("options"), list):
-                continue
-            for option in card["options"]:
-                if isinstance(option, dict):
-                    option.pop("meaning", None)
-                    option.pop("consequence", None)
     ordered = {
         key: data[key]
         for key in (
             "trial_id",
             "domain_id",
+            "pack",
             "result",
             "reading_recovery",
             "answers",
@@ -208,6 +208,7 @@ def _decode_domain_context_cursor(cursor: str) -> dict[str, Any]:
             ("page_index", int),
             ("page_size", int),
             ("digest", str),
+            ("basis_identity", str),
         )
     ):
         raise ValueError("domain_context_cursor_invalid: incomplete cursor")
@@ -255,6 +256,8 @@ def _paginate_domain_context_transport(
     value: dict[str, Any],
     cursor: str | None,
     requested_page_size: int | None,
+    basis_identity: str,
+    context_state_revision: int,
     preview_missing_data: list[dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
     data = value.get("data")
@@ -263,11 +266,12 @@ def _paginate_domain_context_transport(
         return value
     trial_id = data.get("trial_id")
     domain_id = data.get("domain_id")
-    state_revision = head.get("state_revision")
+    state_revision = context_state_revision
     if (
         not isinstance(trial_id, str)
         or not isinstance(domain_id, str)
         or not isinstance(state_revision, int)
+        or not isinstance(basis_identity, str)
     ):
         return value
     digest = _domain_context_digest(data)
@@ -282,6 +286,7 @@ def _paginate_domain_context_transport(
             or decoded["domain_id"] != domain_id
             or decoded["state_revision"] != state_revision
             or decoded["digest"] != digest
+            or decoded["basis_identity"] != basis_identity
         ):
             raise ValueError("domain_context_cursor_stale: context identity or projection changed")
         if requested_page_size is not None and requested_page_size != decoded["page_size"]:
@@ -311,6 +316,7 @@ def _paginate_domain_context_transport(
             "page_index": 999_999,
             "page_size": page_size,
             "digest": digest,
+            "basis_identity": basis_identity,
             "missing_data": preview_missing_data,
         }
     )
@@ -414,6 +420,7 @@ def _paginate_domain_context_transport(
                 "page_index": page_index,
                 "page_size": page_size,
                 "digest": digest,
+                "basis_identity": basis_identity,
                 "missing_data": preview_missing_data,
             }
         )
@@ -429,6 +436,7 @@ def _paginate_domain_context_transport(
                 "page_index": page_index + 1,
                 "page_size": page_size,
                 "digest": digest,
+                "basis_identity": basis_identity,
                 "missing_data": preview_missing_data,
             }
         )
@@ -546,6 +554,7 @@ def _content(
     tool: str,
     value: dict[str, Any],
     *,
+    render_trial_id: str | None = None,
     domain_cursor: str | None = None,
     domain_page_size: int | None = None,
     domain_preview_missing_data: list[dict[str, Any]] | None = None,
@@ -553,11 +562,17 @@ def _content(
     # Pixel bytes are transport content, never part of the typed JSON receipt.
     png_bytes = value.get("_png_bytes")
     read_coverage = value.get("_read_coverage")
+    render_value = value.get("render") if tool == "render_page" else None
+    render_source_id = render_value.get("source_id") if isinstance(render_value, dict) else None
+    domain_context_basis_identity = (
+        value.pop("_context_basis_identity", None) if tool == "get_domain_context" else None
+    )
     value = {
         key: item for key, item in value.items() if key not in {"_png_bytes", "_read_coverage"}
     }
     domain_context_digest: str | None = None
     domain_context_snapshot: dict[str, Any] | None = None
+    domain_context_state_revision: int | None = None
     value = _public_source_references(value)
     if tool != "get_status":
         current = _get_status_head(_workspace())
@@ -571,12 +586,18 @@ def _content(
     normalized = validate_output(tool, normalize(tool, value))
     if tool == "get_domain_context":
         # Validate the compact public variant as well as the application
-        # projection while allowing the transport-only option prose omission.
+        # projection while preserving every question and pack-guidance field.
         normalized = _compact_domain_context_transport(normalized)
         data = normalized.get("data")
         if isinstance(data, dict):
+            if not isinstance(domain_context_basis_identity, str):
+                raise ValueError("domain_context_delivery_unavailable: assessment basis is missing")
             domain_context_digest = _domain_context_digest(data)
         domain_context_snapshot = normalized
+        normalized_head = normalized.get("head")
+        if isinstance(normalized_head, dict):
+            revision = normalized_head.get("state_revision")
+            domain_context_state_revision = revision if isinstance(revision, int) else None
         if domain_cursor is not None:
             cursor_scope = _decode_domain_context_cursor(domain_cursor)
             current_data = normalized.get("data")
@@ -586,22 +607,26 @@ def _content(
                 or not isinstance(current_head, dict)
                 or current_data.get("trial_id") != cursor_scope["trial_id"]
                 or current_data.get("domain_id") != cursor_scope["domain_id"]
-                or current_head.get("state_revision") != cursor_scope["state_revision"]
+                or domain_context_basis_identity != cursor_scope["basis_identity"]
                 or cursor_scope.get("missing_data") != domain_preview_missing_data
             ):
-                raise ValueError("domain_context_cursor_stale: context scope or revision changed")
+                raise ValueError(
+                    "domain_context_cursor_stale: context scope or assessment basis changed"
+                )
             delivery = _domain_context_delivery(
                 _root(_workspace()),
                 cursor_scope["trial_id"],
                 cursor_scope["domain_id"],
                 cursor_scope["state_revision"],
             )
-            if (
-                delivery is None
-                or delivery.get("digest") != cursor_scope["digest"]
-                or delivery.get("preview_scope") != cursor_scope.get("missing_data")
-            ):
+            if delivery is None:
                 raise ValueError("domain_context_cursor_stale: context snapshot was replaced")
+            if delivery.get("digest") != cursor_scope["digest"]:
+                raise ValueError("domain_context_cursor_stale: context projection changed")
+            if delivery.get("preview_scope") != cursor_scope.get("missing_data"):
+                raise ValueError("domain_context_cursor_stale: preview scope changed")
+            if delivery.get("basis_identity") != cursor_scope["basis_identity"]:
+                raise ValueError("domain_context_cursor_stale: assessment basis changed")
             stored_snapshot = delivery.get("snapshot")
             if not isinstance(stored_snapshot, dict):
                 raise ValueError("domain_context_cursor_stale: context snapshot has expired")
@@ -617,8 +642,14 @@ def _content(
             ):
                 raise ValueError("domain_context_cursor_stale: context snapshot is invalid")
             domain_context_snapshot = stored_snapshot
-            normalized = stored_snapshot
+            normalized = {
+                **stored_snapshot,
+                **normalized,
+                "data": stored_data,
+                "head": current_head,
+            }
             domain_context_digest = cursor_scope["digest"]
+            domain_context_state_revision = cursor_scope["state_revision"]
         if (
             domain_cursor is not None
             or domain_page_size is not None
@@ -628,6 +659,8 @@ def _content(
                 normalized,
                 domain_cursor,
                 domain_page_size,
+                str(domain_context_basis_identity),
+                domain_context_state_revision if domain_context_state_revision is not None else 0,
                 domain_preview_missing_data,
             )
         validate_output(tool, normalized)
@@ -636,19 +669,24 @@ def _content(
         head = normalized.get("head")
         page = data.get("context_page") if isinstance(data, dict) else None
         state_revision = head.get("state_revision") if isinstance(head, dict) else None
-        if isinstance(data, dict) and isinstance(state_revision, int):
+        if (
+            isinstance(data, dict)
+            and isinstance(state_revision, int)
+            and isinstance(domain_context_basis_identity, str)
+        ):
             if isinstance(page, dict):
                 _record_domain_context_delivery(
                     _root(_workspace()),
                     str(data["trial_id"]),
                     str(data["domain_id"]),
-                    state_revision,
+                    int(page["state_revision"]),
                     domain_context_digest,
                     int(page["page_size"]),
                     int(page["count"]),
                     int(page["index"]),
                     page.get("next_cursor") if isinstance(page.get("next_cursor"), str) else None,
                     domain_cursor,
+                    domain_context_basis_identity,
                     domain_context_snapshot,
                     domain_preview_missing_data,
                 )
@@ -664,6 +702,7 @@ def _content(
                     0,
                     None,
                     None,
+                    domain_context_basis_identity,
                     domain_context_snapshot,
                     domain_preview_missing_data,
                 )
@@ -671,26 +710,41 @@ def _content(
         _record_read_coverage_batch(_workspace(), read_coverage)
     if tool != "render_page":
         return ToolResult(content=[], structured_content=normalized)
-    serialized = json.dumps(
-        normalized,
-        ensure_ascii=False,
-        separators=(",", ":"),
-        sort_keys=tool != "get_domain_context",
-    )
+    image_content = None
+    data = normalized.get("data")
+    if isinstance(data, dict) and isinstance(data.get("render"), dict):
+        render = data["render"]
+        receipt = None
+        if isinstance(png_bytes, bytes):
+            image_content = ImageContent(
+                type="image",
+                data=base64.b64encode(png_bytes).decode("ascii"),
+                mime_type="image/png",
+            )
+            if render_trial_id is None or not isinstance(render.get("identity"), str):
+                raise ValueError("render delivery has no verified Trial or render identity")
+            if not isinstance(render_source_id, str):
+                raise ValueError("render delivery has no verified Source")
+            receipt = _record_visual_delivery(
+                _workspace(),
+                render_trial_id,
+                render_source_id,
+                render["identity"],
+                png_bytes,
+            )
+        normalized = validate_output(
+            tool,
+            {**normalized, "data": {**data, "delivery_receipt": receipt}},
+        )
+    serialized = json.dumps(normalized, ensure_ascii=False, separators=(",", ":"), sort_keys=True)
     content: list[TextContent | ImageContent] = [
         TextContent(
             type="text",
             text=serialized,
         )
     ]
-    if isinstance(png_bytes, bytes):
-        content.append(
-            ImageContent(
-                type="image",
-                data=base64.b64encode(png_bytes).decode("ascii"),
-                mime_type="image/png",
-            )
-        )
+    if image_content is not None:
+        content.append(image_content)
     return ToolResult(content=content, structured_content=normalized)
 
 
@@ -698,6 +752,7 @@ def _invoke(
     tool: str,
     operation: Any,
     *,
+    render_trial_id: str | None = None,
     domain_cursor: str | None = None,
     domain_page_size: int | None = None,
     domain_preview_missing_data: list[dict[str, Any]] | None = None,
@@ -706,6 +761,7 @@ def _invoke(
         return _content(
             tool,
             operation(),
+            render_trial_id=render_trial_id,
             domain_cursor=domain_cursor,
             domain_page_size=domain_page_size,
             domain_preview_missing_data=domain_preview_missing_data,
@@ -858,9 +914,10 @@ def _invoke(
                 )
         if tool in {
             "get_domain_context",
-            "reason_domain_assessment",
+            "validate_domain_assessment",
             "save_domain_judgment",
-            "request_trial_terminal",
+            "review_trial",
+            "close_trial",
             "finalize_batch",
         }:
             # Application operations own lifecycle enforcement. Inspect status
@@ -961,13 +1018,44 @@ def get_status() -> ToolResult:
 
 
 @mcp.tool(
+    name="save_working_checkpoint",
+    title="Save working checkpoint",
+    description=(
+        "Replace the current Trial's small, source-linked working notes: observations, "
+        "interpretations, terminology, unread ranges, open questions, and unfinished drafts. "
+        "Each note must cite exact source page and line ranges, or 0,0 for a whole-page visual "
+        "locator. These notes are resumable working "
+        "memory; they do not become Evidence, answer a question, change a Result, or commit a "
+        "Domain. get_status returns them only while the captured source scope and Trial Result "
+        "still match; otherwise reorient from the current sources. Re-read cited passages before "
+        "relying on them. Saving replaces the prior checkpoint for this Trial."
+    ),
+    annotations=_MUTATION,
+    output_schema=output_schema("save_working_checkpoint"),
+)
+def save_working_checkpoint(
+    checkpoint: Annotated[
+        WorkingCheckpointDraft,
+        Field(description="Bounded source-linked notes for resuming the current Trial."),
+    ],
+) -> ToolResult:
+    return _invoke(
+        "save_working_checkpoint",
+        lambda: _save_working_checkpoint(_workspace(), checkpoint),
+    )
+
+
+@mcp.tool(
     name="list_sources",
     title="List Trial sources",
     description=(
         "List captured sources and their short source_id handles. Requires a Trial ID for "
         "multi-Trial batches. Copy a returned source_id exactly and use it with the same trial_id. "
+        "The inventory includes captured intake conditions and declared omissions for this Trial, "
+        "so unsupported or unreadable dossier files remain visible. "
         "For source-scoped navigation, pass source_id and optionally cursor to receive bounded "
-        "literal heading candidates and leading page excerpts from the persisted text projection. "
+        "literal heading candidates and leading page excerpts from the persisted text projection, "
+        "including page numbers with no extracted text. "
         "Navigation is a routing aid, not Evidence; read the cited pages before relying on them."
     ),
     annotations=_READ_ONLY,
@@ -989,7 +1077,12 @@ def list_sources(
     ] = None,
     limit: Annotated[
         SourceNavigationLimit,
-        Field(description="Maximum navigation entries returned; default 12."),
+        Field(
+            description=(
+                "Maximum navigation entries returned. Use an integer from 1 through 12; "
+                "the default is 12. Follow cursor when more entries remain."
+            )
+        ),
     ] = 12,
     cursor: Annotated[
         StrictStr | None,
@@ -1026,7 +1119,8 @@ def list_sources(
         "Choose all for every token, phrase for known contiguous wording, any when at least one "
         "query term on a page is enough for broad discovery, or prefix for token-prefix matching. "
         "Prefer wording from an inspected Source; if none is available, use the question-card "
-        "wording as a fallback. Results carry passage_refs and a stable global BM25 ranking "
+        "wording as a fallback. Each data.hits[] item carries a passage_ref for its exact "
+        "displayed window and a stable global BM25 ranking "
         "with deterministic Source/page tie-breakers. "
         "Pass next_cursor as cursor with the same query, mode, Source scope, and limit to "
         "continue that ranking; counts and truncation show whether the batch is complete. "
@@ -1037,15 +1131,16 @@ def list_sources(
         "the issued mode; inspect passages because counts do not establish co-occurrence or "
         "phrase adjacency. The response marks omitted query units or Source rows with the "
         "corresponding *_truncated field. "
-        "An initial multi-token narrow no-hit returns recovery guidance. A Source-scoped miss "
-        "includes bounded literal navigation entries and, when more entries remain, a "
-        "list_sources continuation. Other narrow misses return an any broadening action. Broad "
-        "truncated any results include refinement advice. "
-        "Use literal wording from navigation entries for at most two short alternate searches; "
-        "related terms guide inspection but do not establish a method or scientific conclusion. "
-        "Inspect passages before citing them. Zero hits establish only that the issued lexical "
-        "query matched no captured text. Copy a returned source_id exactly and use it with the "
-        "same trial_id. Search updates Evidence."
+        "Every zero-hit response describes what its issued mode matched and what it did not "
+        "establish. It does not prescribe a different mode; use the observation and inspected "
+        "Source wording to choose whether to reformulate or navigate directly. A Source-scoped "
+        "miss includes bounded literal navigation entries and, when more entries remain, a "
+        "list_sources continuation. A broad truncated any response offers only continuation of "
+        "that same query and mode. "
+        "Inspect passages before citing them. A hit is a discovery candidate until its complete "
+        "passage is inspected and selected as retained Evidence. Zero hits establish only that "
+        "the issued lexical query matched no captured text. Copy a returned source_id exactly "
+        "and use it with the same trial_id. Select an inspected passage to retain Evidence."
     ),
     annotations=_READ_ONLY,
     output_schema=output_schema("search_sources"),
@@ -1109,16 +1204,91 @@ def search_sources(
 
 
 @mcp.tool(
+    name="search_sources_batch",
+    title="Search independent Trial queries",
+    description=(
+        "Run 1 to 8 independent search requests in one call. Each item has its own explicit "
+        "query mode, Source scope, page limit, cursor, outcome, feedback, and next_cursor. One "
+        "item must satisfy the request schema before the call. After validation, an item-level "
+        "stale cursor or unavailable Source condition does not prevent other items from returning. "
+        "Cursors continue only the "
+        "corresponding item's query; each ranking and BM25 order remain independent. Use this "
+        "only when all query inputs are already known; wait for a result before choosing a "
+        "dependent reformulation. The batch bound does not require any number of searches."
+    ),
+    annotations=_READ_ONLY,
+    output_schema=output_schema("search_sources_batch"),
+)
+def search_sources_batch(
+    requests: Annotated[
+        list[SearchBatchRequest],
+        Field(
+            min_length=1,
+            max_length=8,
+            description="One to eight independent query requests with their own cursors.",
+        ),
+    ],
+) -> ToolResult:
+    results: list[dict[str, Any]] = []
+    for index, request in enumerate(requests):
+        try:
+            source_id = (
+                _resolve_source_handle(_workspace(), request.trial_id, request.source_id)
+                if request.source_id is not None
+                else None
+            )
+            data = _search_sources(
+                _workspace(),
+                request.trial_id,
+                request.query,
+                request.mode,
+                request.limit,
+                source_id,
+                request.cursor,
+            )
+            result = {"outcome": "success", "data": data}
+        except ValueError as error:
+            detail = str(error)
+            if detail.startswith("search_cursor_stale:"):
+                code = "search_cursor_stale"
+                detail = detail.removeprefix("search_cursor_stale:")
+            elif detail.startswith("search_cursor_expired:"):
+                code = "search_cursor_expired"
+                detail = detail.removeprefix("search_cursor_expired:")
+            else:
+                code = "invalid_request"
+            result = {"outcome": "condition", "condition": {"code": code, "detail": detail}}
+        results.append(
+            {
+                "index": index,
+                "query": request.query,
+                "mode": request.mode,
+                "result": result,
+            }
+        )
+    return _content("search_sources_batch", {"outcome": "success", "results": results})
+
+
+@mcp.tool(
     name="read_pages",
     title="Read source pages",
     description=(
         "Read source text as numbered lines. Pages are 1-based source indexes, not printed "
         "labels. Use windows across sources; each item preserves its source and line bounds. "
+        "The single-source form uses trial_id, source_id, pages, and optional start_line; "
+        "start_line applies to every page and there is no top-level end_line. The windows form "
+        "uses trial_id and windows only, with source_id, page, start_line, and end_line in "
+        'each window. For example, use {"trial_id":"trial-a","source_id":'
+        '"sh_0123456789abcdef","pages":[2],"start_line":10} or '
+        '{"trial_id":"trial-a","windows":[{"source_id":'
+        '"sh_0123456789abcdef","page":2,"start_line":10,"end_line":20}]}. '
         "Each page includes page_remainder for unread physical lines after returned_end_line; "
         "truncated, next_start_line, and remaining_windows retain requested-window semantics. "
         "To finish a partial batch, call read_pages with the same trial_id and windows set to "
         "data.remaining_windows, omitting source_id, pages, and start_line. Repeat until no "
-        "windows remain. Returned numbered text normally fits 24000 characters; a single "
+        "windows remain. Returned text is in data.pages[].numbered_text. If "
+        "data.remaining_windows is nonempty, send that exact list as the next windows value. "
+        "Returned numbered text normally fits 24000 characters; a single "
         "oversized line is returned intact. JSON metadata is additional. Copy a returned "
         "source_id exactly and use it with the same trial_id."
     ),
@@ -1134,8 +1304,10 @@ def read_pages(
         SourceHandle | None,
         Field(
             description=(
-                "source_id from this Trial for a single-source read; copy the returned "
-                "source_id exactly. Use it with the same trial_id."
+                "source_id from this Trial for the source_id+pages form. Copy the returned "
+                "source_id exactly and use it with the same trial_id. Example: "
+                '{"trial_id":"trial-a","source_id":"sh_0123456789abcdef",'
+                '"pages":[2],"start_line":10}.'
             )
         ),
     ] = None,
@@ -1163,7 +1335,10 @@ def read_pages(
             max_length=20,
             description=(
                 "Independent Source-page windows with their own line bounds. Supply trial_id "
-                "and windows without source_id, pages, or top-level start_line."
+                "and windows without source_id, pages, or top-level start_line. Every window "
+                "owns source_id, page, start_line, and end_line. Example: "
+                '{"trial_id":"trial-a","windows":[{"source_id":'
+                '"sh_0123456789abcdef","page":2,"start_line":10,"end_line":20}]}.'
             ),
         ),
     ] = None,
@@ -1338,8 +1513,9 @@ def read_pages(
         "passage_ref when its boundaries already cover the premise. Use the "
         "1-based source page and line numbers exactly as issued; split a page-boundary passage "
         "into one selection per page; never reconstruct text from a preview. "
-        "The server stores the exact unnumbered source text. Use visual Evidence when layout, "
-        "symbols, or figure structure carry the meaning."
+        "The server stores the exact unnumbered source text and Source version; a query never "
+        "changes that Evidence identity. Select split table fragments separately. "
+        "Use visual Evidence when layout, symbols, or figure structure carry the meaning."
     ),
     annotations=_MUTATION,
     output_schema=output_schema("select_text_evidence"),
@@ -1418,6 +1594,7 @@ def render_page(
             page,
             inline,
         ),
+        render_trial_id=trial_id,
     )
 
 
@@ -1427,7 +1604,8 @@ def render_page(
     description=(
         "Record visual Evidence from a rendered page. Transcription must be one exact, "
         "self-contained account containing every applicable title, axis, series, label, value, "
-        "unit, uncertainty, denominator, and footnote."
+        "unit, uncertainty, denominator, and footnote. Select only with the delivery_receipt "
+        "returned alongside an ImageContent block by render_page."
     ),
     annotations=_MUTATION,
     output_schema=output_schema("select_visual_evidence"),
@@ -1438,8 +1616,14 @@ def select_visual_evidence(
         SourceHandle,
         Field(description="Copy the returned source_id exactly. Use it with the same trial_id."),
     ],
-    render_identity: Annotated[
-        Identity, Field(description="Render identity returned by render_page.")
+    delivery_receipt: Annotated[
+        Identity,
+        Field(
+            description=(
+                "Delivery receipt returned with the ImageContent block by render_page. "
+                "Metadata-only renders do not issue a receipt."
+            )
+        ),
     ],
     transcription: Annotated[
         VisualTranscription,
@@ -1463,7 +1647,7 @@ def select_visual_evidence(
             _workspace(),
             trial_id,
             _resolve_source_handle(_workspace(), trial_id, source_id),
-            render_identity,
+            delivery_receipt,
             transcription,
             list(region),
         ),
@@ -1471,8 +1655,8 @@ def select_visual_evidence(
 
 
 @mcp.tool(
-    name="reason_proposal",
-    title="Assess Proposal reasoning",
+    name="validate_proposal",
+    title="Validate Proposal draft",
     description=(
         "Before saving a Proposal, submit its Result cards and a brief evidence-based assessment "
         "for each submitted Trial. Explain why the reported result supports the target relation "
@@ -1483,9 +1667,9 @@ def select_visual_evidence(
         "the returned reasoning_id."
     ),
     annotations=_MUTATION,
-    output_schema=output_schema("reason_proposal"),
+    output_schema=output_schema("validate_proposal"),
 )
-def reason_proposal(
+def validate_proposal(
     results: Annotated[
         list[ResultChoiceDraft],
         Field(min_length=1, description="The exact Result cards for this Proposal save."),
@@ -1506,16 +1690,16 @@ def reason_proposal(
         "assessments": [item.model_dump(mode="json") for item in assessments],
         "expected_revision": expected_revision,
     }
-    return _invoke("reason_proposal", lambda: _reason_proposal(_workspace(), draft))
+    return _invoke("validate_proposal", lambda: _validate_proposal(_workspace(), draft))
 
 
 @mcp.tool(
     name="save_proposal",
     title="Save Result proposal",
     description=(
-        "Commit the exact Result cards stored by reason_proposal. Supply its reasoning_id and "
+        "Commit the exact Result cards stored by validate_proposal. Supply its reasoning_id and "
         "returned revision; do not resend Result cards. To change the draft, repeat "
-        "reason_proposal with the revised cards and assessments."
+        "validate_proposal with the revised cards and assessments."
     ),
     annotations=_MUTATION,
     output_schema=output_schema("save_proposal"),
@@ -1523,11 +1707,11 @@ def reason_proposal(
 def save_proposal(
     expected_revision: Annotated[
         ExpectedRevision,
-        Field(description="Revision returned by reason_proposal."),
+        Field(description="Revision returned by validate_proposal."),
     ],
     reasoning_id: Annotated[
         Identity,
-        Field(description="Exact reasoning_id returned by reason_proposal."),
+        Field(description="Exact reasoning_id returned by validate_proposal."),
     ],
 ) -> ToolResult:
     root = _root(_workspace())
@@ -1614,8 +1798,10 @@ class ProposalApprovalDecision(StrictModel):
     title="Request Proposal approval",
     description=(
         "After the researcher explicitly approves the current Proposal Review in conversation, "
-        "ask the client to confirm that exact immutable Review. This tool has no approval "
-        "arguments: only a directly accepted elicitation with approved=true commits it. "
+        "present that exact immutable Review, then call request_proposal_approval with {} to "
+        "record the approval through elicitation. Call get_status after the approval succeeds. "
+        "This tool has no approval arguments: only a directly accepted elicitation with "
+        "approved=true commits it. "
         "For corrections, inspect Sources and replace each corrected Trial's complete Result "
         "card with save_proposal."
     ),
@@ -1807,7 +1993,8 @@ async def request_proposal_approval(ctx: Context) -> ToolResult:
     description=(
         "Read the approved Result, current checkpoint, Evidence workspace, comparison cards, "
         "and questions for a Domain. Question cards contain scientific guidance, activation "
-        "predicates, a scoped activation_status, server-issued answer options, and executable "
+        "predicates, a scoped activation_status, question-scoped official answer values, "
+        "and executable "
         "search suggestions. Unconditional cards are always active; unsaved conditional cards "
         "depend on draft answers; saved-checkpoint statuses are scoped to that checkpoint. "
         "When reading_recovery.status is required, read its windows before scientific work. "
@@ -1821,7 +2008,7 @@ async def request_proposal_approval(ctx: Context) -> ToolResult:
         "For a D3 count preview, pass missing_data; the call does not commit those rows. "
         "If omitted Evidence is unfamiliar or uncertain after a restart or compaction, call "
         "read_pages with recovery.trial_id and recovery.windows. Use the returned revision and "
-        "option IDs when saving active answers. When the full structured receipt "
+        "official answer values when saving active answers. When the full structured receipt "
         "exceeds 32 KB, the server returns bounded context_page responses; fetch every "
         "context_page.next_cursor before deciding or saving. A pending save returns the "
         "exact cursor to continue. Delivery completion records successful response generation "
@@ -1831,8 +2018,11 @@ async def request_proposal_approval(ctx: Context) -> ToolResult:
         "explicit unrecoverable condition when it exceeds the maximum page size. "
         "Pagination bounds each server response. When `data.context_page.next_cursor` is non-null, "
         "pass it unchanged to `get_domain_context` until it is null. Existing cursors preserve the "
-        "original context snapshot across Evidence work at the same revision. Inspect subsequent "
-        "tool responses for updates; Evidence work alone does not require re-traversal. A fresh "
+        "original context snapshot across searches and unrelated Domain commits. It is bound to "
+        "the approved Result, pack, same-Domain checkpoint, and preview. Optional discovery "
+        "candidates are omitted by default; request `include_candidates=true` for a fresh view. "
+        "Inspect subsequent tool responses for updates; Evidence work alone does not require "
+        "re-traversal. A fresh "
         "no-cursor request may replace the snapshot; finish any returned pages before saving. Do "
         "not claim delivery proves host or model comprehension. Recover "
         "premise Evidence with read_pages and keep render_page image blocks separate."
@@ -1843,15 +2033,16 @@ async def request_proposal_approval(ctx: Context) -> ToolResult:
 def get_domain_context(
     trial_id: Annotated[
         TrialId | None,
-        Field(
-            description=(
-                "Exact Trial whose approved Result and current Domain checkpoint this call reads."
-            )
-        ),
+        Field(description=("Exact active Trial whose approved Result this call reads.")),
     ] = None,
     domain_id: Annotated[
         DomainId | None,
-        Field(description="RoB 2 Domain ID; omit to receive the current active Domain."),
+        Field(
+            description=(
+                "RoB 2 Domain ID; omit to receive the next uncommitted Domain, or specify any "
+                "Domain in the active Trial for lookahead or review."
+            )
+        ),
     ] = None,
     missing_data: Annotated[
         list[MissingDataRow] | None,
@@ -1866,13 +2057,25 @@ def get_domain_context(
             )
         ),
     ] = None,
+    include_candidates: Annotated[
+        StrictBool,
+        Field(
+            description=(
+                "Include optional recoverable search and explicitly carried Evidence candidates. "
+                "The default includes the approved Result and saved checkpoint Evidence without "
+                "discovery candidates."
+            )
+        ),
+    ] = False,
     cursor: Annotated[
         StrictStr | None,
         Field(
             default=None,
             description=(
                 "Opaque context_page.next_cursor from the immediately preceding page. It is "
-                "bound to the same Trial, Domain, revision, and page_size."
+                "bound to the same Trial, Domain, approved Result, pack, current Domain "
+                "checkpoint, preview, and page_size. Searches and unrelated Domain commits do "
+                "not change this frozen page sequence."
             ),
         ),
     ] = None,
@@ -1922,6 +2125,7 @@ def get_domain_context(
             [row.model_dump(mode="json", exclude_none=True) for row in missing_data]
             if missing_data is not None
             else None,
+            include_candidates,
         ),
         domain_cursor=cursor,
         domain_page_size=page_size,
@@ -1930,7 +2134,7 @@ def get_domain_context(
 
 
 @mcp.tool(
-    name="reason_domain_assessment",
+    name="validate_domain_assessment",
     title="Check Domain reasoning",
     description=(
         "Before saving a Domain, submit the complete draft. For each active answer, briefly "
@@ -1943,9 +2147,9 @@ def get_domain_context(
         "returned reasoning_id."
     ),
     annotations=_MUTATION,
-    output_schema=output_schema("reason_domain_assessment"),
+    output_schema=output_schema("validate_domain_assessment"),
 )
-def reason_domain_assessment(
+def validate_domain_assessment(
     trial_id: Annotated[TrialId, Field(description="Trial being assessed.")],
     domain_id: Annotated[DomainId, Field(description="RoB 2 Domain being assessed.")],
     expected_revision: Annotated[
@@ -1961,6 +2165,34 @@ def reason_domain_assessment(
                 "basis_index values refer to this answer's bases; inactive branch answers may "
                 "omit those reasoning fields."
             ),
+            examples=[
+                [
+                    {
+                        "question_id": "sq:randomization:sequence",
+                        "answer": "probably_yes",
+                        "bases": [
+                            {"kind": "context", "evidence": "eh_0123456789abcdef"},
+                            {
+                                "kind": "limitation",
+                                "text": "The sequence generator is not reported.",
+                                "search_receipt": "sr_0123456789abcdef",
+                            },
+                        ],
+                        "justification": (
+                            "The inspected passage states that a computer generated random "
+                            "allocations. The report does not identify who generated the "
+                            "sequence."
+                        ),
+                        "unknowns": ["The report does not identify the sequence generator."],
+                        "counterevidence": [
+                            {
+                                "basis_index": 1,
+                                "implication": "The unresolved generator limits confidence.",
+                            }
+                        ],
+                    }
+                ]
+            ],
         ),
     ],
     multiple_concerns: Annotated[
@@ -1990,8 +2222,8 @@ def reason_domain_assessment(
         ),
     }
     return _invoke(
-        "reason_domain_assessment",
-        lambda: _reason_domain_assessment(_workspace(), draft),
+        "validate_domain_assessment",
+        lambda: _validate_domain_assessment(_workspace(), draft),
     )
 
 
@@ -1999,12 +2231,12 @@ def reason_domain_assessment(
     name="save_domain_judgment",
     title="Save Domain judgment",
     description=(
-        "Commit the exact Domain draft stored by reason_domain_assessment. Supply its "
+        "Commit the exact Domain draft stored by validate_domain_assessment. Supply its "
         "reasoning_id and returned revision; do not resend answers. To change the draft, repeat "
-        "reason_domain_assessment with the revised draft. Complete the post-approval bounded "
+        "validate_domain_assessment with the revised draft. Complete the post-approval bounded "
         "main-report text pass and every Domain context page before reasoning. "
-        "The fifth accepted Domain freezes the Trial snapshot and advances "
-        "next_action; no separate Trial-finalization call is required."
+        "The fifth accepted Domain makes the Trial ready for review; it remains correctable "
+        "until close_trial commits the exact current review."
     ),
     annotations=_MUTATION,
     output_schema=output_schema("save_domain_judgment"),
@@ -2013,10 +2245,10 @@ def save_domain_judgment(
     trial_id: Annotated[TrialId, Field(description="Trial being assessed.")],
     domain_id: Annotated[DomainId, Field(description="RoB 2 Domain being assessed.")],
     expected_revision: Annotated[
-        ExpectedRevision, Field(description="Revision returned by reason_domain_assessment.")
+        ExpectedRevision, Field(description="Revision returned by validate_domain_assessment.")
     ],
     reasoning_id: Annotated[
-        Identity, Field(description="Exact reasoning_id returned by reason_domain_assessment.")
+        Identity, Field(description="Exact reasoning_id returned by validate_domain_assessment.")
     ],
 ) -> ToolResult:
     root = _root(_workspace())
@@ -2052,87 +2284,95 @@ def save_domain_judgment(
                 ),
             },
         )
-    if record.get("save_revision") != expected_revision or expected_revision != current_revision:
-        current = (state.get("domain_records") or {}).get(f"{trial_id}:{domain_id}")
-        if not isinstance(current, dict) or current.get("identity") != record.get(
-            "checkpoint_identity"
-        ):
-            return _content(
-                "save_domain_judgment",
-                {
-                    "outcome": "condition",
-                    "code": "reasoning_stale",
-                    "condition": "The reasoning_id is stale; request a new reasoning record.",
-                },
-            )
-        expected_revision = current_revision
+    if expected_revision != record.get("save_revision") or not _domain_reasoning_matches_current(
+        root, record, state
+    ):
+        return _content(
+            "save_domain_judgment",
+            {
+                "outcome": "condition",
+                "code": "reasoning_stale",
+                "condition": "The reasoning_id is stale; request a new reasoning record.",
+            },
+        )
+    expected_revision = current_revision
     draft = DomainDraft.model_validate({**stored_draft, "expected_revision": expected_revision})
-    head = _get_status_head(_workspace())
-    if expected_revision == head.get("state_revision"):
-        delivery = _domain_context_delivery(root, trial_id, domain_id, expected_revision)
-        if delivery is not None and not bool(delivery.get("complete")):
-            next_cursor = delivery.get("next_cursor")
-            if not isinstance(next_cursor, str) or not next_cursor:
-                return _content(
-                    "save_domain_judgment",
-                    {
-                        "outcome": "condition",
-                        "code": "domain_context_delivery_invalid",
-                        "condition": (
-                            "Domain context delivery state is corrupt; restart the Domain."
-                        ),
-                    },
-                )
-            return _content(
-                "save_domain_judgment",
-                {
-                    "outcome": "condition",
-                    "condition": {
-                        "code": "domain_context_delivery_pending",
-                        "detail": ("Fetch the next Domain context page before saving, then retry."),
-                        "recovery": {
-                            "operation": "get_domain_context",
-                            "arguments": {
-                                "trial_id": trial_id,
-                                "domain_id": domain_id,
-                                "cursor": next_cursor,
-                                "page_size": delivery["page_size"],
-                            },
-                        },
-                    },
-                },
-            )
     return _invoke("save_domain_judgment", lambda: _save_domain_judgment(_workspace(), draft))
 
 
 @mcp.tool(
-    name="request_trial_terminal",
-    title="Request Trial terminal",
+    name="review_trial",
+    title="Review Trial",
     description=(
-        "Request a needs_input or failed terminal only when the Trial cannot continue after "
-        "ordinary conservative Domain work. Do not use it for missing direct evidence, repairs, "
-        "unfinished source review, context or token limits, or uncertainty answerable as "
-        "probably_yes, probably_no, or no_information under the question card."
+        "Prepare an exact current Trial review before closure. With no request, all five current "
+        "Domains are reviewed as assessed; an approved unavailable or unsupported-design Result "
+        "produces its typed unassessed outcome. For another genuine blocker, supply a needs_input "
+        "or failed terminal request. Repairs, unfinished source review, context limits, ordinary "
+        "missing Evidence, and uncertainty answerable with an allowed answer are not blockers. "
+        "A review is not closure: inspect its Result and checkpoint "
+        "identities, correct any Domain if needed, then close using the exact review reference."
     ),
     annotations=_MUTATION,
-    output_schema=output_schema("request_trial_terminal"),
+    output_schema=output_schema("review_trial"),
 )
-def request_trial_terminal(
+def review_trial(
+    trial_id: Annotated[TrialId, Field(description="Current Trial being reviewed.")],
+    expected_revision: Annotated[
+        ExpectedRevision, Field(description="Current revision from get_status.")
+    ],
     request: Annotated[
-        TerminalRequest,
+        TerminalRequest | None,
         Field(
             description=(
-                "Typed terminal for a Trial that cannot continue after ordinary conservative "
-                "Domain work; not a shortcut for evidence or workflow incompleteness."
-            )
+                "Optional typed needs_input or failed request for a genuine blocker. Omit for "
+                "a normal review or an automatically terminal unavailable or unsupported Result."
+            ),
+            examples=[
+                {
+                    "disposition": "needs_input",
+                    "trial_id": "trial-a",
+                    "reason": (
+                        "The approved Result is supported, but the review export is unavailable."
+                    ),
+                    "missing_facts": ["Review export"],
+                }
+            ],
         ),
-    ],
-    expected_revision: Annotated[ExpectedRevision, Field(description="Revision from get_status.")],
+    ] = None,
 ) -> ToolResult:
-    envelope = TerminalRequestEnvelope(request=request, expected_revision=expected_revision)
-    return _invoke(
-        "request_trial_terminal", lambda: _request_trial_terminal(_workspace(), envelope)
+    review_request = TrialReviewRequest(
+        trial_id=trial_id, expected_revision=expected_revision, request=request
     )
+    return _invoke("review_trial", lambda: _review_trial(_workspace(), review_request))
+
+
+@mcp.tool(
+    name="close_trial",
+    title="Close Trial",
+    description=(
+        "Close the Trial against the exact current review reference returned by review_trial. "
+        "This makes the Trial immutable and advances to the next Trial, or to Batch finalization. "
+        "A stale reference is rejected after any Result or Domain correction; searches alone do "
+        "not change the reference. Retry the same closure safely with its returned reference."
+    ),
+    annotations=_MUTATION,
+    output_schema=output_schema("close_trial"),
+)
+def close_trial(
+    trial_id: Annotated[TrialId, Field(description="Trial to close.")],
+    expected_revision: Annotated[
+        ExpectedRevision, Field(description="Current revision from get_status.")
+    ],
+    review_reference: Annotated[
+        Identity, Field(description="Exact current review identity returned by review_trial.")
+    ],
+) -> ToolResult:
+    closure_request = TrialClosureRequest(
+        trial_id=trial_id,
+        expected_revision=expected_revision,
+        review_reference=review_reference,
+    )
+    return _invoke("close_trial", lambda: _close_trial(_workspace(), closure_request))
 
 
 @mcp.tool(

@@ -100,7 +100,16 @@ def test_first_proposal_save_requires_bounded_main_report_read(tmp_path: Path) -
 
     blocked = _call(workspace, "save_proposal", _proposal_args(workspace, [_result(evidence)]))
     assert blocked["outcome"] == "repair", blocked
-    assert any(repair["code"] == "main_report_reading_required" for repair in blocked["repairs"])
+    reading_repairs = [
+        repair for repair in blocked["repairs"] if repair["code"] == "main_report_reading_required"
+    ]
+    assert reading_repairs
+    detail = reading_repairs[0]["detail"]
+    assert "get_status" in detail
+    assert "required_ranges" in detail
+    assert "read_pages" in detail
+    assert "validate_proposal" in detail
+    assert "save_proposal" not in detail
     _call(
         workspace,
         "read_pages",

@@ -12,7 +12,7 @@ import time
 import tomllib
 import unicodedata
 import zipfile
-from contextlib import contextmanager
+from contextlib import closing, contextmanager
 from pathlib import Path
 from typing import Any
 from xml.etree import ElementTree
@@ -25,6 +25,7 @@ from .contracts import COUNTERS, WorkflowConflict
 
 _SEARCH_DERIVATIVE_VERSION = "rob2-kit.search-projection.v6"
 _PAGE_PROJECTION_VERSION = "rob2-kit.page-projection.v4"
+_WORKSPACE_CONTRACT_VERSION = "0.6.0"
 
 # A physical source line can be arbitrarily long (for example, compact JSON
 # returned by a registry API).  Keep the persisted page projection readable so
@@ -258,7 +259,37 @@ def _ensure(root: Path) -> None:
     internal = internal_path(root)
     legacy = internal / "active-batch.sqlite3"
     if legacy.exists():
-        raise ValueError("contract_version_unsupported")
+        raise ValueError(
+            "workspace_contract_unsupported: this active workspace uses a legacy contract; "
+            "start a new empty workspace to use v0.9.0. The existing workspace is left intact, "
+            "and finalized bundles remain independently verifiable."
+        )
+    canonical = internal_path(root, "canonical.sqlite3")
+    if canonical.exists():
+        with closing(sqlite3.connect(f"{canonical.as_uri()}?mode=ro", uri=True)) as probe:
+            tables = {
+                str(row[0])
+                for row in probe.execute(
+                    "SELECT name FROM sqlite_master WHERE type='table'"
+                ).fetchall()
+            }
+            if tables:
+                if "meta" not in tables:
+                    raise ValueError(
+                        "workspace_contract_unsupported: this active workspace has no supported "
+                        "contract marker; start a new empty workspace to use v0.9.0. The existing "
+                        "workspace is left intact, and finalized bundles remain independently "
+                        "verifiable."
+                    )
+                current = probe.execute("SELECT value FROM meta WHERE name='contract'").fetchone()
+                if current is None or current[0] != _WORKSPACE_CONTRACT_VERSION:
+                    found = current[0] if current is not None else "an unmarked contract"
+                    raise ValueError(
+                        "workspace_contract_unsupported: this active workspace uses contract "
+                        f"{found}, while v0.9.0 requires {_WORKSPACE_CONTRACT_VERSION}; start a "
+                        "new empty workspace to use v0.9.0. The existing workspace is left intact, "
+                        "and finalized bundles remain independently verifiable."
+                    )
     with _db(root, "canonical.sqlite3") as connection:
         # ``records`` is the integrity-checked head projection used for cheap
         # lookups; ``canonical_records`` is the immutable content ledger.
@@ -281,9 +312,15 @@ def _ensure(root: Path) -> None:
         )
         current = connection.execute("SELECT value FROM meta WHERE name='contract'").fetchone()
         if current is None:
-            connection.execute("INSERT INTO meta VALUES ('contract','0.5.0')")
-        elif current[0] != "0.5.0":
-            raise ValueError("contract_version_unsupported")
+            connection.execute(
+                "INSERT INTO meta VALUES ('contract',?)", (_WORKSPACE_CONTRACT_VERSION,)
+            )
+        elif current[0] != _WORKSPACE_CONTRACT_VERSION:
+            raise ValueError(
+                "workspace_contract_unsupported: the active workspace contract changed while "
+                "opening it; start a new empty workspace to use v0.9.0. The existing workspace "
+                "is left intact, and finalized bundles remain independently verifiable."
+            )
         page_recipe = connection.execute(
             "SELECT value FROM meta WHERE name='page_projection'"
         ).fetchone()
@@ -321,6 +358,11 @@ def _ensure(root: Path) -> None:
             "CREATE TABLE IF NOT EXISTS renders (identity TEXT PRIMARY KEY, "
             "payload BLOB NOT NULL, png BLOB NOT NULL)"
         )
+        connection.execute(
+            "CREATE TABLE IF NOT EXISTS visual_deliveries (identity TEXT PRIMARY KEY, "
+            "trial_id TEXT NOT NULL, source_id TEXT NOT NULL, render_identity TEXT NOT NULL, "
+            "png_sha256 TEXT NOT NULL)"
+        )
         # Handles are disposable navigation projections.  They deliberately do
         # not enter the canonical ledger until a proposal or Domain checkpoint
         # binds them as scientific evidence.
@@ -345,8 +387,13 @@ def _ensure(root: Path) -> None:
         connection.execute(
             "CREATE TABLE IF NOT EXISTS search_domain_associations ("
             "session_identity TEXT NOT NULL, rank INTEGER NOT NULL, domain_id TEXT NOT NULL, "
-            "trial_id TEXT, "
+            "trial_id TEXT, evidence_identity TEXT, "
             "PRIMARY KEY(session_identity,rank,domain_id))"
+        )
+        connection.execute(
+            "CREATE TABLE IF NOT EXISTS search_evidence_provenance ("
+            "session_identity TEXT NOT NULL, rank INTEGER NOT NULL, trial_id TEXT NOT NULL, "
+            "evidence_identity TEXT NOT NULL, PRIMARY KEY(session_identity,rank))"
         )
         connection.execute(
             "CREATE TABLE IF NOT EXISTS page_reads ("
@@ -361,7 +408,7 @@ def _ensure(root: Path) -> None:
             "state_revision INTEGER NOT NULL, digest TEXT NOT NULL, page_size INTEGER NOT NULL, "
             "page_count INTEGER NOT NULL, next_index INTEGER NOT NULL, "
             "next_cursor TEXT, complete INTEGER NOT NULL, snapshot BLOB, "
-            "preview_scope BLOB, "
+            "preview_scope BLOB, basis_identity TEXT, "
             "PRIMARY KEY(batch_id,trial_id,domain_id,state_revision))"
         )
         delivery_columns = {
@@ -371,12 +418,18 @@ def _ensure(root: Path) -> None:
             connection.execute("ALTER TABLE domain_context_delivery ADD COLUMN snapshot BLOB")
         if "preview_scope" not in delivery_columns:
             connection.execute("ALTER TABLE domain_context_delivery ADD COLUMN preview_scope BLOB")
+        if "basis_identity" not in delivery_columns:
+            connection.execute("ALTER TABLE domain_context_delivery ADD COLUMN basis_identity TEXT")
         association_columns = {
             str(row[1])
             for row in connection.execute("PRAGMA table_info(search_domain_associations)")
         }
         if "trial_id" not in association_columns:
             connection.execute("ALTER TABLE search_domain_associations ADD COLUMN trial_id TEXT")
+        if "evidence_identity" not in association_columns:
+            connection.execute(
+                "ALTER TABLE search_domain_associations ADD COLUMN evidence_identity TEXT"
+            )
         missing_owners = connection.execute(
             "SELECT DISTINCT session_identity FROM search_domain_associations "
             "WHERE trial_id IS NULL"
@@ -397,6 +450,12 @@ def _ensure(root: Path) -> None:
                     "WHERE session_identity=? AND trial_id IS NULL",
                     (trial_id, session_identity),
                 )
+    with _db(root, "working.sqlite3") as connection:
+        connection.execute(
+            "CREATE TABLE IF NOT EXISTS working_checkpoints ("
+            "batch_id TEXT NOT NULL, trial_id TEXT NOT NULL, identity TEXT NOT NULL, "
+            "payload BLOB NOT NULL, PRIMARY KEY(batch_id,trial_id))"
+        )
     _rebuild_derivative_if_needed(root)
 
 

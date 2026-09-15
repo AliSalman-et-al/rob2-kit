@@ -258,7 +258,7 @@ def test_domain_context_pages_retain_scope_and_all_conditional_questions(
     assert len(pages) > 1
     assert [page["data"]["context_page"]["index"] for page in pages] == list(range(len(pages)))
     assert all(page["data"]["context_page"]["count"] == len(pages) for page in pages)
-    assert pages[-1]["head"]["next_action"]["operation"] == "reason_domain_assessment"
+    assert pages[-1]["head"]["next_action"]["operation"] == "validate_domain_assessment"
     question_ids = {question["id"] for page in pages for question in page["data"]["questions"]}
     expected_ids = {
         question.id
@@ -313,7 +313,15 @@ def test_domain_context_cursor_rejects_revision_change(tmp_path: Path) -> None:
 def test_domain_context_cursor_keeps_snapshot_after_search_changes_evidence(
     tmp_path: Path,
 ) -> None:
-    workspace, _evidence, _revision = _pending_assessment_workspace(tmp_path)
+    workspace = _workspace(tmp_path)
+    (workspace / "input" / "trial" / "methods.txt").write_text(
+        "A separate searchable methods note was preserved.\n",
+        encoding="utf-8",
+    )
+    evidence = _prepared_evidence(workspace)
+    _call(workspace, "save_proposal", _proposal_args(workspace, [_result(evidence)]))
+    _review(workspace)
+    _read_required_main_reports(workspace)
     original, _transport_bytes = _wire_context(workspace)
     first, _transport_bytes = _wire_context(workspace, {"page_size": 16_384}, drain=False)
     first_page = first["data"]["context_page"]
@@ -324,9 +332,10 @@ def test_domain_context_cursor_keeps_snapshot_after_search_changes_evidence(
     searched = _call(
         workspace,
         "search_sources",
-        {"trial_id": "trial", "query": "randomized", "mode": "any"},
+        {"trial_id": "trial", "query": "searchable methods note", "mode": "any"},
     )
     assert searched["outcome"] == "success"
+    assert searched["data"]["total_matches"] > 0
 
     pages = [first]
     while cursor is not None:
@@ -343,9 +352,49 @@ def test_domain_context_cursor_keeps_snapshot_after_search_changes_evidence(
 
     replaced, _transport_bytes = _wire_context(workspace, {"page_size": 16_384}, drain=False)
     assert replaced["data"]["context_page"]["index"] == 0
-    expired, _transport_bytes = _wire_context(workspace, {"cursor": first_cursor}, drain=False)
-    assert expired["outcome"] == "condition"
-    assert expired["condition"]["code"] == "domain_context_cursor_stale"
+    continued, _transport_bytes = _wire_context(workspace, {"cursor": first_cursor}, drain=False)
+    assert continued["outcome"] == "success", continued
+    assert continued["data"]["context_page"]["index"] == 1
+    assert continued["head"]["state_revision"] == first["head"]["state_revision"]
+    assert continued["data"]["context_page"]["state_revision"] == first_page["state_revision"]
+
+    fresh_candidates, _transport_bytes = _wire_context(workspace, {"include_candidates": True})
+    assert any(
+        item.get("inclusion_reason") == "active_domain_candidate"
+        for item in fresh_candidates["data"]["evidence"]
+    ), fresh_candidates["data"]["evidence_workspace"]
+
+
+def test_domain_context_cursor_survives_unrelated_domain_commit(tmp_path: Path) -> None:
+    workspace, evidence, revision = _assessment_workspace(tmp_path)
+    scope: dict[str, object] = {"trial_id": "trial", "domain_id": "domain:deviations"}
+    original, _transport_bytes = _wire_context(workspace, scope)
+    first, _transport_bytes = _wire_context(workspace, {**scope, "page_size": 16_384}, drain=False)
+    first_page = first["data"]["context_page"]
+    cursor = first_page["next_cursor"]
+    assert cursor is not None
+
+    saved = _call(
+        workspace,
+        "save_domain_judgment",
+        _domain_draft("trial", "domain:randomization", revision, evidence),
+    )
+    assert saved["outcome"] == "success"
+
+    pages = [first]
+    while cursor is not None:
+        page, _transport_bytes = _wire_context(workspace, {"cursor": cursor}, drain=False)
+        assert page["outcome"] == "success"
+        pages.append(page)
+        cursor = page["data"]["context_page"]["next_cursor"]
+
+    assert pages[-1]["head"]["state_revision"] > first["head"]["state_revision"]
+    assert pages[-1]["data"]["context_page"]["state_revision"] == first_page["state_revision"]
+    reconstructed = dict(pages[0]["data"])
+    for section in ("questions", "comparison_cards", "evidence"):
+        reconstructed[section] = [item for page in pages for item in page["data"].get(section, [])]
+    reconstructed.pop("context_page")
+    assert reconstructed == original["data"]
 
 
 def test_search_then_complete_domain_context_snapshot_save_succeeds(
@@ -547,11 +596,15 @@ def test_domain_context_pagination_rejects_oversized_unicode_evidence(
     with pytest.raises(
         ValueError, match="domain_context_item_oversized: section=evidence"
     ) as error:
-        _paginate_domain_context_transport(value, None, 32_768)
+        _paginate_domain_context_transport(
+            value, None, 32_768, "test-basis", value["head"]["state_revision"]
+        )
     required_match = re.search(r"required_page_size=(\d+)", str(error.value))
     assert required_match is not None
     required = int(required_match.group(1))
-    page = _paginate_domain_context_transport(value, None, required)
+    page = _paginate_domain_context_transport(
+        value, None, required, "test-basis", value["head"]["state_revision"]
+    )
     assert page["data"]["context_page"]["page_size"] == required
 
 
@@ -583,8 +636,26 @@ def test_domain_context_text_is_compact_and_ordered(tmp_path: Path) -> None:
     keys = list(data)
     assert keys.index("result") < keys.index("questions") < keys.index("evidence")
     assert keys.index("comparison_cards") < keys.index("evidence")
-    assert "meaning" not in data["questions"][0]["options"][0]
-    assert "consequence" not in data["questions"][0]["options"][0]
+    assert data["pack"]["version"] == SCIENTIFIC_PACK.version
+    assert data["pack"]["content_hash"] == SCIENTIFIC_PACK.content_hash
+    question = data["questions"][0]
+    assert {
+        "wording",
+        "options",
+        "activation_status",
+        "activation",
+        "official_guidance",
+        "source_locator",
+        "decision_rule",
+        "evidence_needed",
+        "no_information_rule",
+        "considerations",
+        "invalid_shortcuts",
+        "query_suggestions",
+    } <= question.keys()
+    assert question["decision_rule"]
+    assert question["official_guidance"]
+    assert question["query_suggestions"]
     assert (
         data["evidence_workspace"]["recoverable_narrative_text_bytes"]
         <= _DOMAIN_RECOVERABLE_NARRATIVE_TEXT_BUDGET
@@ -776,6 +847,7 @@ def test_non_narrative_evidence_stays_valid_in_compact_projection() -> None:
         "identity": "sha256:" + "1" * 64,
         "trial_id": "trial",
         "source_id": source_id,
+        "delivery_receipt": "sha256:" + "5" * 64,
         "render": {
             "identity": "sha256:" + "3" * 64,
             "source_id": source_id,
@@ -834,6 +906,7 @@ def test_nonrecoverable_explicit_evidence_does_not_disappear_at_item_limit(
             "identity": "sha256:" + f"{index:064x}",
             "trial_id": "trial",
             "source_id": source_id,
+            "delivery_receipt": "sha256:" + f"{index + 300:064x}",
             "render": {
                 "identity": "sha256:" + f"{index + 100:064x}",
                 "source_id": source_id,

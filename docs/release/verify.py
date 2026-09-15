@@ -34,24 +34,27 @@ def _load_contract() -> dict[str, Any]:
         "examples",
     }:
         raise ValueError("public contract shape differs")
-    if value["contract_version"] != "0.8.0":
+    if value["contract_version"] != "0.9.0":
         raise ValueError("public contract version differs")
     expected_order = [
         "prepare_batch",
         "get_status",
+        "save_working_checkpoint",
         "list_sources",
         "search_sources",
+        "search_sources_batch",
         "read_pages",
         "select_text_evidence",
         "render_page",
         "select_visual_evidence",
-        "reason_proposal",
+        "validate_proposal",
         "save_proposal",
         "request_proposal_approval",
         "get_domain_context",
-        "reason_domain_assessment",
+        "validate_domain_assessment",
         "save_domain_judgment",
-        "request_trial_terminal",
+        "review_trial",
+        "close_trial",
         "finalize_batch",
     ]
     if [item["name"] for item in value["tools"]] != expected_order:
@@ -356,6 +359,44 @@ async def _verify_proposal(client: Client) -> None:
     rows = sources.get("sources")
     if not isinstance(rows, list) or len(rows) != 1:
         raise ValueError("acceptance source catalog differs")
+    if not isinstance(sources.get("conditions"), list) or not isinstance(
+        sources.get("omissions"), list
+    ):
+        raise ValueError("acceptance source inventory omitted intake conditions or omissions")
+    navigated = await _call(
+        client,
+        "list_sources",
+        {"trial_id": "trial", "source_id": rows[0]["id"]},
+    )
+    navigation = navigated.get("navigation")
+    if (
+        not isinstance(navigation, dict)
+        or navigation.get("source_id") != rows[0]["id"]
+        or not isinstance(navigation.get("entries"), list)
+        or not navigation["entries"]
+        or not isinstance(navigation.get("pages_without_text_projection"), list)
+    ):
+        raise ValueError("acceptance direct Source navigation differs")
+    batched = await _call(
+        client,
+        "search_sources_batch",
+        {
+            "requests": [
+                {"trial_id": "trial", "query": "requested outcome", "mode": "all"},
+                {"trial_id": "trial", "query": "absent phrase", "mode": "phrase"},
+            ]
+        },
+    )
+    batch_results = batched.get("results")
+    if (
+        not isinstance(batch_results, list)
+        or len(batch_results) != 2
+        or batch_results[0].get("result", {}).get("outcome") != "success"
+        or not batch_results[0]["result"].get("data", {}).get("hits")
+        or batch_results[1].get("result", {}).get("outcome") != "success"
+        or batch_results[1]["result"].get("data", {}).get("condition") != "no_hits"
+    ):
+        raise ValueError(f"acceptance independent search batch differs: {batched}")
     await _call(
         client, "read_pages", {"trial_id": "trial", "source_id": rows[0]["id"], "pages": [1]}
     )
@@ -376,7 +417,7 @@ async def _verify_proposal(client: Client) -> None:
     result = _acceptance_result(evidence)
     reasoned = await _call(
         client,
-        "reason_proposal",
+        "validate_proposal",
         {
             "results": [result],
             "assessments": [
@@ -429,24 +470,15 @@ def _domain_answers(
         options = question.get("options", [])
         if not isinstance(options, list):
             raise ValueError("acceptance Domain question options are malformed")
-        selected = next(
-            (
-                option
-                for option in options
-                if isinstance(option, dict) and option.get("official_answer") == "no_information"
-            ),
-            next(
-                (
-                    option
-                    for option in options
-                    if isinstance(option, dict) and option.get("official_answer") == "probably_no"
-                ),
-                None,
-            ),
+        answer = (
+            "no_information"
+            if "no_information" in options
+            else "probably_no"
+            if "probably_no" in options
+            else None
         )
-        if not isinstance(selected, dict) or not isinstance(selected.get("id"), str):
+        if not isinstance(answer, str):
             raise ValueError("acceptance Domain question has no usable uncertainty option")
-        answer = selected["official_answer"]
         basis = (
             {
                 "kind": "limitation",
@@ -462,7 +494,7 @@ def _domain_answers(
         answers.append(
             {
                 "question_id": question["id"],
-                "option_id": selected["id"],
+                "answer": answer,
                 "bases": [basis],
                 "justification": "The cited basis supports the selected uncertainty option.",
                 "unknowns": [],
@@ -502,7 +534,8 @@ async def _verify_domains(client: Client, evidence: dict[str, Any], domains: lis
     navigation = diagnostic.get("navigation") if isinstance(diagnostic, dict) else None
     if (
         not isinstance(diagnostic, dict)
-        or diagnostic.get("code") != "narrow_no_hits"
+        or diagnostic.get("code") != "no_hits"
+        or diagnostic.get("mode") != "all"
         or not isinstance(navigation, dict)
         or navigation.get("source_id") != source_id
         or not isinstance(navigation.get("entries"), list)
@@ -541,33 +574,14 @@ async def _verify_domains(client: Client, evidence: dict[str, Any], domains: lis
         },
     )
     unscoped_diagnostic = unscoped.get("diagnostic")
-    expected_action = {
-        "kind": "refine",
-        "operation": "search_sources",
-        "trial_id": "trial",
-        "query": "release acceptance eligible lexical",
-        "mode": "any",
-        "source_id": None,
-        "limit": 2,
-        "cursor": None,
-    }
     if (
         not isinstance(unscoped_diagnostic, dict)
-        or unscoped_diagnostic.get("code") != "narrow_no_hits"
-        or unscoped_diagnostic.get("next_action") != expected_action
+        or unscoped_diagnostic.get("code") != "no_hits"
+        or unscoped_diagnostic.get("mode") != "all"
+        or unscoped_diagnostic.get("next_action") is not None
+        or "do not establish" not in unscoped_diagnostic.get("detail", "")
     ):
         raise ValueError(f"acceptance unscoped narrow-search differs: {unscoped_diagnostic}")
-    widened = await _call(
-        client,
-        "search_sources",
-        {key: value for key, value in expected_action.items() if key not in {"kind", "operation"}},
-    )
-    if (
-        widened.get("outcome") != "success"
-        or widened.get("mode") != "any"
-        or not isinstance(widened.get("search_receipt"), str)
-    ):
-        raise ValueError(f"acceptance narrow-search action execution differs: {widened}")
     for domain_id in domains:
         context = await _call(
             client,
@@ -601,7 +615,7 @@ async def _verify_domains(client: Client, evidence: dict[str, Any], domains: lis
         for _attempt in range(5):
             reasoned = await _call(
                 client,
-                "reason_domain_assessment",
+                "validate_domain_assessment",
                 {
                     "trial_id": "trial",
                     "domain_id": domain_id,
@@ -934,10 +948,36 @@ def verify(wheel: Path | None = None, bundle: Path | None = None) -> None:
             async with Client(transport) as client:
                 await _verify_client(client, contract)
                 status = await _call(client, "get_status", {})
-                if status.get("phase") != "ready_to_finalize":
-                    raise ValueError("wheel process restart did not reach finalization")
+                action = status.get("head", {}).get("next_action")
+                if not isinstance(action, dict) or action.get("operation") != "review_trial":
+                    raise ValueError("wheel process restart did not reach Trial review")
+                reviewed = await _call(
+                    client,
+                    "review_trial",
+                    {
+                        "trial_id": action["trial_id"],
+                        "expected_revision": action["expected_revision"],
+                    },
+                )
+                action = reviewed.get("head", {}).get("next_action")
+                if not isinstance(action, dict) or action.get("operation") != "close_trial":
+                    raise ValueError("wheel Trial review did not require explicit closure")
+                closed = await _call(
+                    client,
+                    "close_trial",
+                    {
+                        "trial_id": action["trial_id"],
+                        "expected_revision": action["expected_revision"],
+                        "review_reference": action["review_reference"],
+                    },
+                )
+                action = closed.get("head", {}).get("next_action")
+                if not isinstance(action, dict) or action.get("operation") != "finalize_batch":
+                    raise ValueError("closed Trial did not advance to Batch finalization")
                 finalized = await _call(
-                    client, "finalize_batch", {"expected_revision": status["state_revision"]}
+                    client,
+                    "finalize_batch",
+                    {"expected_revision": action["expected_revision"]},
                 )
                 if finalized.get("outcome") != "success":
                     raise ValueError(f"wheel finalization failed: {finalized}")

@@ -8,10 +8,11 @@ from typing import Any
 
 import pytest
 from support.rob2 import (
+    _answer_value,
     _assessment_workspace,
     _call,
     _domain_draft,
-    _option_for,
+    _finalize_assessment,
     _prepared_evidence,
     _proposal_args,
     _result,
@@ -81,14 +82,94 @@ def test_declined_review_names_the_answer_it_received(
     assert _state(workspace)["review"] is not None
 
 
-def test_finalization_auto_freezes_without_assessment_review(tmp_path: Path) -> None:
-    workspace, _evidence, revision = _complete_assessment(tmp_path)
-    finalized = _call(workspace, "finalize_batch", {"expected_revision": revision})
+def test_trial_requires_review_and_explicit_closure_before_finalization(tmp_path: Path) -> None:
+    workspace, evidence, revision = _complete_assessment(tmp_path)
+    premature = _call(workspace, "finalize_batch", {"expected_revision": revision})
+    assert premature["outcome"] == "condition"
+    assert _state(workspace)["trial_dispositions"] == {"trial": "reviewable"}
+
+    reviewed = _call(
+        workspace,
+        "review_trial",
+        {"trial_id": "trial", "expected_revision": revision},
+    )
+    assert reviewed["outcome"] == "success", reviewed
+    assert reviewed["data"]["review"]["disposition"] == "assessed"
+    assert len(reviewed["data"]["review"]["checkpoint_ids"]) == 5
+    old_review_reference = reviewed["data"]["review"]["identity"]
+
+    searched = _call(
+        workspace,
+        "search_sources",
+        {"trial_id": "trial", "query": "risk ratio", "mode": "any"},
+    )
+    assert searched["outcome"] == "success"
+    refreshed = _call(
+        workspace,
+        "get_domain_context",
+        {"trial_id": "trial", "domain_id": SCIENTIFIC_PACK.domains[0].id},
+    )
+    assert refreshed["outcome"] == "success", refreshed
+    checkpoint = _state(workspace)["domain_records"]["trial:domain:randomization"]
+    correction = _domain_draft(
+        "trial",
+        SCIENTIFIC_PACK.domains[0].id,
+        int(reviewed["head"]["state_revision"]),
+        evidence,
+    )
+    correction["answers"][0]["answer"] = _answer_value(
+        correction["answers"][0]["question_id"], "probably_yes"
+    )
+    correction["supersedes"] = checkpoint["identity"]
+    correction["revision_basis"] = {
+        "kind": "self_correction",
+        "rationale": "The revised answer changes the reviewed Domain checkpoint.",
+    }
+    corrected = _call(workspace, "save_domain_judgment", correction)
+    assert corrected["outcome"] == "success", corrected
+    assert _state(workspace).get("trial_reviews", {}).get("trial") is None
+
+    stale_close = _call(
+        workspace,
+        "close_trial",
+        {
+            "trial_id": "trial",
+            "expected_revision": corrected["head"]["state_revision"],
+            "review_reference": old_review_reference,
+        },
+    )
+    assert stale_close["outcome"] == "condition"
+    assert stale_close["condition"]["code"] == "trial_review_stale"
+    reviewed = _call(
+        workspace,
+        "review_trial",
+        {"trial_id": "trial", "expected_revision": corrected["head"]["state_revision"]},
+    )
+    assert reviewed["outcome"] == "success", reviewed
+    assert reviewed["data"]["review"]["identity"] != old_review_reference
+    revision = int(reviewed["head"]["state_revision"])
+    closed = _call(
+        workspace,
+        "close_trial",
+        {
+            "trial_id": "trial",
+            "expected_revision": revision,
+            "review_reference": reviewed["data"]["review"]["identity"],
+        },
+    )
+    assert closed["outcome"] == "success", closed
+
+    finalized = _call(
+        workspace,
+        "finalize_batch",
+        {"expected_revision": int(closed["head"]["state_revision"])},
+    )
     assert finalized["outcome"] == "success", finalized
     assert finalized["data"]["artifact"]["identity"]
     state = _state(workspace)
     assert state["review"] is None
     assert state["phase"] == "finalized"
+    assert state["trial_closures"]["trial"]["identity"] == closed["data"]["closure"]["identity"]
     assert not any(item.get("purpose") == "assessment" for item in state.get("acknowledgments", []))
 
 
@@ -103,9 +184,15 @@ def test_domain_revision_requires_lineage_and_preserves_history(tmp_path: Path) 
     revision = int(first["head"]["state_revision"])
     key = "trial:domain:randomization"
     prior = _state(workspace)["domain_records"][key]
+    refreshed = _call(
+        workspace,
+        "get_domain_context",
+        {"trial_id": "trial", "domain_id": SCIENTIFIC_PACK.domains[0].id},
+    )
+    assert refreshed["outcome"] == "success", refreshed
 
     changed = _domain_draft("trial", SCIENTIFIC_PACK.domains[0].id, revision, evidence)
-    changed["answers"][0]["option_id"] = _option_for(
+    changed["answers"][0]["answer"] = _answer_value(
         changed["answers"][0]["question_id"], "probably_yes"
     )
     refused = _call(workspace, "save_domain_judgment", changed)
@@ -141,11 +228,7 @@ def test_domain_revision_requires_lineage_and_preserves_history(tmp_path: Path) 
         assert saved["outcome"] == "success", saved
         revision = int(saved["head"]["state_revision"])
 
-    finalized = _call(
-        workspace,
-        "finalize_batch",
-        {"expected_revision": revision},
-    )
+    finalized = _finalize_assessment(workspace, revision)
     assert finalized["outcome"] == "success", finalized
 
 
@@ -174,7 +257,7 @@ def test_domain_continuation_names_only_current_checkpoint(tmp_path: Path) -> No
     assert context["data"]["current_checkpoint"] == checkpoint
     action = context["head"]["next_action"]
     assert action["supersedes"] == checkpoint
-    assert action["operation"] == "reason_domain_assessment"
+    assert action["operation"] == "validate_domain_assessment"
     assert action["caller_inputs"] == ["answers", "multiple_concerns", "revision_basis"]
 
 
@@ -210,6 +293,12 @@ def test_new_evidence_revision_must_use_novel_evidence(tmp_path: Path) -> None:
             "end_line": 1,
         },
     )["data"]["evidence"]
+    refreshed = _call(
+        workspace,
+        "get_domain_context",
+        {"trial_id": "trial", "domain_id": SCIENTIFIC_PACK.domains[0].id},
+    )
+    assert refreshed["outcome"] == "success", refreshed
     changed = _domain_draft("trial", SCIENTIFIC_PACK.domains[0].id, revision, evidence)
     changed["supersedes"] = prior["identity"]
     changed["revision_basis"] = {
@@ -248,11 +337,7 @@ def test_new_evidence_revision_must_use_novel_evidence(tmp_path: Path) -> None:
         assert saved["outcome"] == "success", saved
         revision = int(saved["head"]["state_revision"])
 
-    finalized = _call(
-        workspace,
-        "finalize_batch",
-        {"expected_revision": revision},
-    )
+    finalized = _finalize_assessment(workspace, revision)
     assert finalized["outcome"] == "success", finalized
     artifact = workspace / finalized["data"]["artifact"]["path"]
     standalone = subprocess.run(
@@ -266,7 +351,7 @@ def test_new_evidence_revision_must_use_novel_evidence(tmp_path: Path) -> None:
 
 def test_researcher_cli_discard_is_idempotent_and_restartable(tmp_path: Path) -> None:
     workspace, _evidence, revision = _complete_assessment(tmp_path)
-    finalized = _call(workspace, "finalize_batch", {"expected_revision": revision})
+    finalized = _finalize_assessment(workspace, revision)
     artifact = workspace / finalized["data"]["artifact"]["path"]
     assert artifact.is_file()
 

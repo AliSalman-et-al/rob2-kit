@@ -10,8 +10,11 @@ wheels/
 # Virtual environments
 .venv
 
-# Private local evaluation corpus
-eval/reference/
+# Evaluation source corpus and provisional labels are local-only; the public
+# catalog records trial identifiers and outcome-level denominators.
+eval/reference/*
+!eval/reference/catalog/
+eval/reference/catalog/provisional-labels/
 eval/runs/
 eval/private/
 

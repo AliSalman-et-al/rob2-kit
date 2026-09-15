@@ -5,6 +5,7 @@ import hashlib
 import json
 import os
 import sqlite3
+from contextlib import closing
 from pathlib import Path
 from typing import Any
 
@@ -18,6 +19,7 @@ from rob2_kit.application.evidence import (
     _search_receipt,
     list_sources,
     read_pages,
+    record_visual_delivery,
     render_page,
     search_sources,
     select_text_evidence,
@@ -262,12 +264,19 @@ def test_rehashed_visual_handle_cannot_replace_cached_render_projection(tmp_path
         expected_revision=0,
     )
     source = list_sources(tmp_path, "trial")["sources"][0]
-    rendered = render_page(tmp_path, "trial", str(source["id"]), 1)["render"]
+    rendered = render_page(tmp_path, "trial", str(source["id"]), 1)
+    receipt = record_visual_delivery(
+        tmp_path,
+        "trial",
+        str(source["id"]),
+        str(rendered["render"]["identity"]),
+        rendered["_png_bytes"],
+    )
     evidence = select_visual_evidence(
         tmp_path,
         "trial",
         str(source["id"]),
-        str(rendered["identity"]),
+        receipt,
         "Overall survival",
         [0.1, 0.1, 0.9, 0.9],
     )["evidence"]
@@ -278,7 +287,7 @@ def test_rehashed_visual_handle_cannot_replace_cached_render_projection(tmp_path
     tampered["handle"] = "eh_" + str(tampered["identity"]).removeprefix("sha256:")[:16]
     _replace_evidence(tmp_path, tampered)
 
-    with pytest.raises(ValueError, match="cached render projection"):
+    with pytest.raises(ValueError, match="figure Evidence projection is corrupt"):
         _evidence_catalog(tmp_path)
 
 
@@ -296,24 +305,51 @@ def test_coordinated_cached_render_and_visual_evidence_tampering_fails(tmp_path:
         expected_revision=0,
     )
     source = list_sources(tmp_path, "trial")["sources"][0]
-    rendered = render_page(tmp_path, "trial", str(source["id"]), 1)["render"]
+    rendered = render_page(tmp_path, "trial", str(source["id"]), 1)
+    receipt = record_visual_delivery(
+        tmp_path,
+        "trial",
+        str(source["id"]),
+        str(rendered["render"]["identity"]),
+        rendered["_png_bytes"],
+    )
     evidence = select_visual_evidence(
         tmp_path,
         "trial",
         str(source["id"]),
-        str(rendered["identity"]),
+        receipt,
         "Overall survival",
         [0.1, 0.1, 0.9, 0.9],
     )["evidence"]
     fabricated_png = b"fabricated-png"
     fabricated_hash = "sha256:" + hashlib.sha256(fabricated_png).hexdigest()
-    tampered_render = {**rendered, "png_sha256": fabricated_hash}
+    render = rendered["render"]
+    tampered_render = {**render, "png_sha256": fabricated_hash}
+    tampered_receipt = _identity(
+        {
+            "trial_id": "trial",
+            "source_id": source["id"],
+            "render_identity": render["identity"],
+            "png_sha256": fabricated_hash,
+            "channel": "mcp_image_content",
+            "mime_type": "image/png",
+        }
+    )
     with sqlite3.connect(tmp_path / ".rob2-kit" / "derivative.sqlite3") as connection:
         connection.execute(
             "UPDATE renders SET payload=?,png=? WHERE identity=?",
-            (canonical_json_bytes(tampered_render), fabricated_png, rendered["identity"]),
+            (canonical_json_bytes(tampered_render), fabricated_png, render["identity"]),
         )
-    tampered = {**evidence, "render": tampered_render, "transcription": "Fabricated result"}
+        connection.execute(
+            "UPDATE visual_deliveries SET identity=?,png_sha256=? WHERE identity=?",
+            (tampered_receipt, fabricated_hash, receipt),
+        )
+    tampered = {
+        **evidence,
+        "render": tampered_render,
+        "delivery_receipt": tampered_receipt,
+        "transcription": "Fabricated result",
+    }
     tampered["identity"] = _identity(
         {key: value for key, value in tampered.items() if key not in {"identity", "handle"}}
     )
@@ -322,3 +358,44 @@ def test_coordinated_cached_render_and_visual_evidence_tampering_fails(tmp_path:
 
     with pytest.raises(ValueError, match="captured PDF render"):
         _evidence_catalog(tmp_path)
+
+
+def test_cached_render_rejects_replaced_pixels_before_delivery(tmp_path: Path) -> None:
+    trial = tmp_path / "input" / "trial"
+    trial.mkdir(parents=True)
+    document = pymupdf.open()
+    document.new_page().insert_text((72, 72), "First page")
+    document.new_page().insert_text((72, 72), "Second page")
+    (trial / "main.pdf").write_bytes(document.tobytes())
+    document.close()
+    prepare_batch(
+        tmp_path,
+        [TrialDeclaration(id="trial", label="trial", requested_outcome="overall survival")],
+        expected_revision=0,
+    )
+    source = list_sources(tmp_path, "trial")["sources"][0]
+    first = render_page(tmp_path, "trial", str(source["id"]), 1)
+    second = render_page(tmp_path, "trial", str(source["id"]), 2)
+    first_render = first["render"]
+    second_png = second["_png_bytes"]
+    tampered_render = {
+        **first_render,
+        "png_sha256": "sha256:" + hashlib.sha256(second_png).hexdigest(),
+    }
+    with closing(sqlite3.connect(tmp_path / ".rob2-kit" / "derivative.sqlite3")) as connection:
+        with connection:
+            connection.execute(
+                "UPDATE renders SET payload=?,png=? WHERE identity=?",
+                (canonical_json_bytes(tampered_render), second_png, first_render["identity"]),
+            )
+
+    with pytest.raises(ValueError, match="cached render pixels"):
+        render_page(tmp_path, "trial", str(source["id"]), 1)
+    with pytest.raises(ValueError, match="cached render pixels"):
+        record_visual_delivery(
+            tmp_path,
+            "trial",
+            str(source["id"]),
+            str(first_render["identity"]),
+            second_png,
+        )

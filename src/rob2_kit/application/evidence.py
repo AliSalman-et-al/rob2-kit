@@ -41,8 +41,17 @@ _SOURCE_NAVIGATION_VERSION = "rob2-kit.source-navigation.v0.1"
 _SOURCE_NAVIGATION_MAX_ENTRIES = 12
 _SOURCE_NAVIGATION_MAX_TEXT = 512
 
-_SEARCH_SESSION_VERSION = "rob2-kit.search-session.v0.7"
-_SEARCH_CANDIDATE_VERSION = "rob2-kit.search-candidates.v0.7"
+_SEARCH_SESSION_VERSION = "rob2-kit.search-session.v0.8"
+_SEARCH_CANDIDATE_VERSION = "rob2-kit.search-candidates.v0.8"
+_SEARCH_NORMALIZATION_VERSION = "rob2-kit.search-normalization.v1"
+_SEARCH_RANKING_VERSION = "fts5-bm25-scoped-page-source-tiebreak.v1"
+
+# These counters expose whether a request rebuilt and persisted a full scoped
+# ranking. They are deliberately local to Evidence's disposable search cache.
+COUNTERS.setdefault("search_ranking_builds", 0)
+COUNTERS.setdefault("search_ranking_cache_writes", 0)
+COUNTERS.setdefault("search_ranking_validations", 0)
+COUNTERS.setdefault("search_cache_writes", 0)
 
 
 def list_sources(
@@ -80,7 +89,17 @@ def list_sources(
             cursor=cursor,
             limit=limit,
         )
-    result: dict[str, Any] = {"outcome": "success", "sources": sources}
+    conditions = [
+        condition
+        for condition in batch.get("conditions", [])
+        if condition.get("trial_id") == trial["id"]
+    ]
+    result: dict[str, Any] = {
+        "outcome": "success",
+        "sources": sources,
+        "conditions": conditions,
+        "omissions": trial.get("omissions", []),
+    }
     if navigation is not None:
         result["navigation"] = navigation
     return result
@@ -119,6 +138,9 @@ def _source_navigation(
         "entries": selected,
         "page_count": len(pages),
         "pages_examined": len(pages),
+        "pages_without_text_projection": [
+            page for page, text in enumerate(pages, 1) if not text.strip()
+        ],
         "truncated": has_more,
         "next_cursor": (_source_navigation_cursor(source, next_offset) if has_more else None),
         "condition": "no_text_projection" if not entries else None,
@@ -332,91 +354,64 @@ def _broad_search_diagnostic(
     terms = tuple(term for term in normalized_query.split() if term)
     if mode != "any" or not truncated or not total_matches:
         return None
-    if len(terms) > 1:
-        action = {
-            "kind": "refine",
-            "operation": "search_sources",
-            "trial_id": trial_id,
-            "query": normalized_query,
-            "mode": "all",
-            "source_id": source_id,
-            "limit": limit,
-            "cursor": None,
-        }
-        detail = (
-            "This multi-term any search is broad and truncated; refine with all to require "
-            "every normalized term on a page, then inspect the returned hits."
-        )
-    else:
-        action = {
-            "kind": "continue",
-            "operation": "search_sources",
-            "trial_id": trial_id,
-            "query": normalized_query,
-            "mode": "any",
-            "source_id": source_id,
-            "limit": limit,
-            "cursor": next_cursor,
-        }
-        detail = (
-            "This any search is truncated; continue the issued cursor before drawing a "
-            "conclusion from the displayed ranking."
-        )
+    action = {
+        "kind": "continue",
+        "operation": "search_sources",
+        "trial_id": trial_id,
+        "query": normalized_query,
+        "mode": "any",
+        "source_id": source_id,
+        "limit": limit,
+        "cursor": next_cursor,
+    }
     return {
         "code": "broad_any_truncated",
+        "mode": mode,
         "normalized_term_count": len(terms),
         "total_matches": total_matches,
         "candidate_count": candidate_count,
         "returned_count": returned_count,
-        "detail": detail,
+        "detail": (
+            "This any search matched the reported pages and its ranking is truncated. "
+            "Continue this same query and mode if more ranked passages could resolve the "
+            "current question, then inspect the passages."
+        ),
         "next_action": action,
     }
 
 
-def _narrow_no_hits_diagnostic(
+def _no_hits_diagnostic(
     *,
-    trial_id: str,
-    query: str,
     normalized_query: str,
     mode: str,
-    source_id: str | None,
-    limit: int,
     total_matches: int,
     returned_count: int,
-    cursor: str | None,
 ) -> dict[str, Any] | None:
-    """Offer one observable, caller-executed widening for an initial narrow miss."""
+    """Report the exact lexical condition that produced an initial zero-hit result."""
 
-    if (
-        mode not in {"all", "phrase"}
-        or len(normalized_query.split()) < 2
-        or cursor is not None
-        or total_matches != 0
-        or returned_count != 0
-    ):
+    if total_matches != 0 or returned_count != 0:
         return None
+    descriptions = {
+        "all": "every normalized query term on the same page",
+        "phrase": "the normalized query terms as one contiguous phrase",
+        "any": "at least one normalized query term on a page",
+        "prefix": "a page containing a token that starts with a normalized query term",
+    }
     return {
-        "code": "narrow_no_hits",
+        "code": "no_hits",
+        "mode": mode,
         "normalized_term_count": len(normalized_query.split()),
         "total_matches": total_matches,
         "candidate_count": 0,
         "returned_count": returned_count,
         "detail": (
-            "This initial multi-token narrow search matched nothing. Zero hits establish only "
-            "that the issued lexical query matched nothing; broaden once with any and inspect "
-            "the returned passages. The broader search is not evidence of relevance, scientific "
-            "completeness, or a preferred answer."
+            f"This {mode} query matched no captured text: no page satisfied "
+            f"{descriptions[mode]}. Zero hits establish only that this issued lexical "
+            "query matched nothing; they do not establish that the underlying method or fact "
+            "is absent. Compare per-term counts with the complete-query count, inspect the "
+            "relevant Source section, or reformulate using wording found in the Source."
         ),
-        "next_action": {
-            "kind": "refine",
-            "operation": "search_sources",
-            "trial_id": trial_id,
-            "query": query,
-            "mode": "any",
-            "source_id": source_id,
-            "limit": limit,
-            "cursor": None,
-        },
+        "next_action": None,
     }
 
 
@@ -429,12 +424,7 @@ def _source_navigation_diagnostic(
 ) -> dict[str, Any] | None:
     """Attach literal source navigation to a scoped lexical miss."""
 
-    if (
-        diagnostic is None
-        or diagnostic.get("code") != "narrow_no_hits"
-        or source is None
-        or pages is None
-    ):
+    if diagnostic is None or diagnostic.get("code") != "no_hits" or source is None or pages is None:
         return diagnostic
     navigation = _source_navigation(
         source,
@@ -456,10 +446,10 @@ def _source_navigation_diagnostic(
         else None
     )
     diagnostic["detail"] = (
-        "This scoped multi-token narrow search matched nothing. Inspect the literal heading "
-        "and leading-page navigation entries below, then read the cited Source pages or "
-        "reformulate with wording found there. Zero hits establish only that the issued "
-        "lexical query matched no captured text."
+        f"This scoped {diagnostic['mode']} query matched no captured text. Inspect the "
+        "literal heading and leading-page navigation entries below, then read the cited "
+        "Source pages or reformulate with wording found there. Zero hits establish only "
+        "that the issued lexical query matched no captured text."
     )
     return diagnostic
 
@@ -501,12 +491,14 @@ def search_sources(
         session_spec = {
             "version": _SEARCH_SESSION_VERSION,
             "candidate_version": _SEARCH_CANDIDATE_VERSION,
+            "normalization": _SEARCH_NORMALIZATION_VERSION,
+            "ranking_version": _SEARCH_RANKING_VERSION,
             "trial_id": trial_id,
             "sources": [],
             "query": " ".join(terms),
             "normalized_query": " ".join(terms),
             "mode": mode,
-            "ranking": "fts5-bm25-global-page-source-tiebreak",
+            "ranking": _SEARCH_RANKING_VERSION,
         }
         session_identity = _identity(session_spec)
         session_handle = _session_handle(session_identity)
@@ -517,12 +509,15 @@ def search_sources(
             "matching_page_count": 0,
             "candidate_count": 0,
             "complete": True,
+            "ranked_pages": [],
+            "term_feedback": [],
         }
         with _db(root, "derivative.sqlite3") as connection:
-            connection.execute(
-                "INSERT OR REPLACE INTO search_sessions VALUES (?,?)",
+            inserted = connection.execute(
+                "INSERT OR IGNORE INTO search_sessions VALUES (?,?)",
                 (session_identity, canonical_json_bytes(session_payload)),
-            )
+            ).rowcount
+        COUNTERS["search_cache_writes"] += inserted
         receipt = {
             "trial_id": trial_id,
             "sources": [],
@@ -550,20 +545,16 @@ def search_sources(
         receipt["identity"] = _identity(receipt)
         receipt["handle"] = "sr_" + receipt["identity"].removeprefix("sha256:")[:16]
         with _db(root, "derivative.sqlite3") as connection:
-            connection.execute(
-                "INSERT OR REPLACE INTO search_receipts VALUES (?,?)",
+            inserted = connection.execute(
+                "INSERT OR IGNORE INTO search_receipts VALUES (?,?)",
                 (receipt["identity"], canonical_json_bytes(receipt)),
-            )
-        diagnostic = _narrow_no_hits_diagnostic(
-            trial_id=trial_id,
-            query=query,
+            ).rowcount
+        COUNTERS["search_cache_writes"] += inserted
+        diagnostic = _no_hits_diagnostic(
             normalized_query=" ".join(terms),
             mode=mode,
-            source_id=requested_source_id,
-            limit=bounded_limit,
             total_matches=0,
             returned_count=0,
-            cursor=cursor,
         )
         return {
             "outcome": "success",
@@ -608,25 +599,11 @@ def search_sources(
             raise ValueError("text search projection is corrupt")
     page_map = {source_id: verified[(trial_id, source_id)][1] for source_id in ordered_source_ids}
     feedback_terms = list(dict.fromkeys(terms))
-    term_feedback_truncated = len(feedback_terms) > _TERM_FEEDBACK_MAX_TERMS
-    all_pairs, term_pages = _recomputed_search_projection(
-        page_map,
-        normalized_query,
-        mode,
-        ordered_source_ids,
-        tuple(feedback_terms[:_TERM_FEEDBACK_MAX_TERMS]),
-    )
-    term_feedback = _term_page_feedback(
-        page_map,
-        feedback_terms[:_TERM_FEEDBACK_MAX_TERMS],
-        feedback_source_ids,
-        all_pairs,
-        term_pages,
-    )
-    total_matches = len(all_pairs)
     session_spec = {
         "version": _SEARCH_SESSION_VERSION,
         "candidate_version": _SEARCH_CANDIDATE_VERSION,
+        "normalization": _SEARCH_NORMALIZATION_VERSION,
+        "ranking_version": _SEARCH_RANKING_VERSION,
         "trial_id": trial_id,
         "sources": [
             {"id": source["id"], "projection_hash": source["projection_hash"]}
@@ -635,7 +612,7 @@ def search_sources(
         "query": " ".join(terms),
         "normalized_query": " ".join(terms),
         "mode": mode,
-        "ranking": "fts5-bm25-global-page-source-tiebreak",
+        "ranking": _SEARCH_RANKING_VERSION,
     }
     session_identity = _identity(session_spec)
     session_handle = _session_handle(session_identity)
@@ -644,10 +621,36 @@ def search_sources(
             "SELECT payload FROM search_sessions WHERE identity=?", (session_identity,)
         ).fetchone()
     candidates: list[dict[str, Any]] = []
+    all_pairs: list[tuple[str, int]] = []
+    term_feedback: list[dict[str, Any]] = []
+    term_feedback_truncated = len(feedback_terms) > _TERM_FEEDBACK_MAX_TERMS
+    term_feedback_sources_truncated = len(ordered_source_ids) > _TERM_FEEDBACK_MAX_SOURCES
     if existing_session is not None:
         try:
             stored = json.loads(bytes(existing_session[0]))
-            if stored.get("spec") != session_spec:
+            if (
+                not isinstance(stored, dict)
+                or set(stored)
+                != {
+                    "identity",
+                    "handle",
+                    "spec",
+                    "matching_page_count",
+                    "candidate_count",
+                    "complete",
+                    "ranked_pages",
+                    "term_feedback",
+                }
+                or stored.get("spec") != session_spec
+                or stored.get("identity") != session_identity
+                or stored.get("handle") != session_handle
+                or stored.get("complete") is not True
+                or not isinstance(stored.get("matching_page_count"), int)
+                or isinstance(stored.get("matching_page_count"), bool)
+                or not isinstance(stored.get("candidate_count"), int)
+                or isinstance(stored.get("candidate_count"), bool)
+                or not isinstance(stored.get("term_feedback"), list)
+            ):
                 raise ValueError("search session configuration is stale")
             with _db(root, "derivative.sqlite3") as connection:
                 candidate_rows = connection.execute(
@@ -655,9 +658,76 @@ def search_sources(
                     (session_identity,),
                 ).fetchall()
             candidates = [json.loads(bytes(row[0])) for row in candidate_rows]
+            term_feedback = stored["term_feedback"]
+            if len(candidates) != stored["candidate_count"]:
+                raise ValueError("search session candidate count is stale")
+            ranked_pages = stored["ranked_pages"]
+            if (
+                not isinstance(ranked_pages, list)
+                or len(ranked_pages) != stored["matching_page_count"]
+            ):
+                raise ValueError("search session ranking is incomplete")
+            all_pairs = []
+            for page_entry in ranked_pages:
+                if (
+                    not isinstance(page_entry, dict)
+                    or set(page_entry) != {"source_id", "page"}
+                    or not isinstance(page_entry.get("source_id"), str)
+                    or page_entry["source_id"] not in page_map
+                    or not isinstance(page_entry.get("page"), int)
+                    or isinstance(page_entry.get("page"), bool)
+                    or not 1 <= page_entry["page"] <= len(page_map[page_entry["source_id"]])
+                ):
+                    raise ValueError("search session ranking is corrupt")
+                all_pairs.append((page_entry["source_id"], page_entry["page"]))
+            if len(all_pairs) != len(set(all_pairs)):
+                raise ValueError("search session ranking contains duplicate pages")
+            # Derivative sessions are disposable and may be edited or lost;
+            # independently rederive their ranking before exposing a warm hit.
+            COUNTERS["search_ranking_validations"] += 1
+            expected_all_pairs, expected_term_pages = _recomputed_search_projection(
+                page_map,
+                normalized_query,
+                mode,
+                ordered_source_ids,
+                tuple(feedback_terms[:_TERM_FEEDBACK_MAX_TERMS]),
+            )
+            if all_pairs != expected_all_pairs:
+                raise ValueError("search session ranking is stale or corrupt")
+            expected_term_feedback = _term_page_feedback(
+                page_map,
+                feedback_terms[:_TERM_FEEDBACK_MAX_TERMS],
+                feedback_source_ids,
+                expected_all_pairs,
+                expected_term_pages,
+            )
+            if term_feedback != expected_term_feedback:
+                raise ValueError("search session term feedback is stale or corrupt")
+            expected_candidates = _session_candidates(
+                page_map, normalized_query, mode, ordered_source_ids, expected_all_pairs
+            )
+            if candidates != expected_candidates:
+                raise ValueError("search session candidates are stale or corrupt")
         except (UnicodeDecodeError, json.JSONDecodeError, KeyError) as error:
             raise ValueError("search session derivative is corrupt; restart the search") from error
-    if not candidates:
+        except (TypeError, AttributeError) as error:
+            raise ValueError("search session derivative is corrupt; restart the search") from error
+    else:
+        COUNTERS["search_ranking_builds"] += 1
+        all_pairs, term_pages = _recomputed_search_projection(
+            page_map,
+            normalized_query,
+            mode,
+            ordered_source_ids,
+            tuple(feedback_terms[:_TERM_FEEDBACK_MAX_TERMS]),
+        )
+        term_feedback = _term_page_feedback(
+            page_map,
+            feedback_terms[:_TERM_FEEDBACK_MAX_TERMS],
+            feedback_source_ids,
+            all_pairs,
+            term_pages,
+        )
         candidates = _session_candidates(
             page_map, normalized_query, mode, ordered_source_ids, all_pairs
         )
@@ -665,9 +735,13 @@ def search_sources(
             "identity": session_identity,
             "handle": session_handle,
             "spec": session_spec,
-            "matching_page_count": total_matches,
+            "matching_page_count": len(all_pairs),
             "candidate_count": len(candidates),
             "complete": True,
+            "ranked_pages": [
+                {"source_id": source_id, "page": page} for source_id, page in all_pairs
+            ],
+            "term_feedback": term_feedback,
         }
         with _db(root, "derivative.sqlite3") as connection:
             connection.execute(
@@ -684,6 +758,9 @@ def search_sources(
                     for item in candidates
                 ],
             )
+        COUNTERS["search_ranking_cache_writes"] += 1
+        COUNTERS["search_cache_writes"] += 1
+    total_matches = len(all_pairs)
     # Candidate rank is the one public ordering. It is persisted so receipts,
     # cursors, cached rows, and displayed hits cannot disagree about ranks 1..N.
     presentation = candidates
@@ -756,11 +833,14 @@ def search_sources(
                 "start": quote_start,
                 "end": quote_end,
                 "quote": page_text[quote_start:quote_end],
-                "search_session": session_identity,
-                "candidate_rank": candidate["rank"],
+                "source_version": verified[(trial_id, source_id)][0]["projection_hash"],
                 "start_line": passage_start_line,
                 "end_line": passage_end_line,
             },
+        )
+        _associate_search_evidence(root, session_identity, candidate["rank"], passage["identity"])
+        _record_search_evidence(
+            root, session_identity, candidate["rank"], trial_id, passage["identity"]
         )
         hits.append(
             {
@@ -839,10 +919,11 @@ def search_sources(
     receipt["identity"] = _identity(receipt)
     receipt["handle"] = "sr_" + receipt["identity"].removeprefix("sha256:")[:16]
     with _db(root, "derivative.sqlite3") as connection:
-        connection.execute(
-            "INSERT OR REPLACE INTO search_receipts VALUES (?,?)",
+        inserted = connection.execute(
+            "INSERT OR IGNORE INTO search_receipts VALUES (?,?)",
             (receipt["identity"], canonical_json_bytes(receipt)),
-        )
+        ).rowcount
+    COUNTERS["search_cache_writes"] += inserted
     diagnostic = _broad_search_diagnostic(
         trial_id=trial_id,
         normalized_query=" ".join(terms),
@@ -856,16 +937,11 @@ def search_sources(
         next_cursor=receipt["next_cursor"],
     )
     if diagnostic is None:
-        diagnostic = _narrow_no_hits_diagnostic(
-            trial_id=trial_id,
-            query=query,
+        diagnostic = _no_hits_diagnostic(
             normalized_query=" ".join(terms),
             mode=mode,
-            source_id=requested_source_id,
-            limit=bounded_limit,
             total_matches=total_matches,
             returned_count=len(selected_candidates),
-            cursor=cursor,
         )
     if requested_source_id is not None and diagnostic is not None:
         source = next(
@@ -1678,12 +1754,23 @@ def _search_receipt(root: Path, handle: SearchReceiptHandle) -> dict[str, Any]:
         "query": receipt["normalized_query"],
         "normalized_query": receipt["normalized_query"],
         "mode": mode,
-        "ranking": "fts5-bm25-global-page-source-tiebreak",
+        "normalization": _SEARCH_NORMALIZATION_VERSION,
+        "ranking_version": _SEARCH_RANKING_VERSION,
+        "ranking": _SEARCH_RANKING_VERSION,
     }
     if (
         not isinstance(session, dict)
         or set(session)
-        != {"identity", "handle", "spec", "matching_page_count", "candidate_count", "complete"}
+        != {
+            "identity",
+            "handle",
+            "spec",
+            "matching_page_count",
+            "candidate_count",
+            "complete",
+            "ranked_pages",
+            "term_feedback",
+        }
         or spec != expected_spec
         or session.get("identity") != session_identity
         or session.get("identity") != _identity(spec)
@@ -2104,14 +2191,20 @@ def main_report_reading_status(
 def _evidence(
     root: Path, trial_id: str, source_id: str, kind: str, payload: dict[str, Any]
 ) -> dict[str, Any]:
+    # Discovery is recorded in search_domain_associations.  It must never be
+    # folded into an Evidence record: the immutable claim is only this exact
+    # captured Source version and its exact selected span.
+    if {"search_session", "candidate_rank"} & set(payload):
+        raise ValueError("discovery metadata cannot be part of Evidence identity")
     item = {"kind": kind, "trial_id": trial_id, "source_id": source_id, **payload}
     item["identity"] = _identity(item)
     item["handle"] = "eh_" + item["identity"].removeprefix("sha256:")[:16]
     with _db(root, "derivative.sqlite3") as connection:
-        connection.execute(
-            "INSERT OR REPLACE INTO evidence_handles VALUES (?,?)",
+        inserted = connection.execute(
+            "INSERT OR IGNORE INTO evidence_handles VALUES (?,?)",
             (item["identity"], canonical_json_bytes(item)),
-        )
+        ).rowcount
+    COUNTERS["search_cache_writes"] += inserted
     return item
 
 
@@ -2131,6 +2224,31 @@ def _associate_search_candidate(
         )
 
 
+def _associate_search_evidence(
+    root: Path, session_identity: str, rank: int, evidence_identity: str
+) -> None:
+    """Keep discovery rank linked to canonical Evidence outside its identity."""
+    with _db(root, "derivative.sqlite3") as connection:
+        connection.execute(
+            "UPDATE search_domain_associations SET evidence_identity=? "
+            "WHERE session_identity=? AND rank=?",
+            (evidence_identity, session_identity, rank),
+        )
+
+
+def _record_search_evidence(
+    root: Path, session_identity: str, rank: int, trial_id: str, evidence_identity: str
+) -> None:
+    """Record search provenance even when no Domain association exists yet."""
+
+    with _db(root, "derivative.sqlite3") as connection:
+        connection.execute(
+            "INSERT OR REPLACE INTO search_evidence_provenance "
+            "(session_identity,rank,trial_id,evidence_identity) VALUES (?,?,?,?)",
+            (session_identity, rank, trial_id, evidence_identity),
+        )
+
+
 def _associated_search_ranks(root: Path, trial_id: str, domain_id: str) -> set[tuple[str, int]]:
     """Return associations owned by exactly one Trial, including lost sessions."""
     with _db(root, "derivative.sqlite3") as connection:
@@ -2140,6 +2258,37 @@ def _associated_search_ranks(root: Path, trial_id: str, domain_id: str) -> set[t
             (domain_id, trial_id),
         ).fetchall()
     return {(str(session_identity), int(rank)) for session_identity, rank in rows}
+
+
+def _associated_search_evidence(
+    root: Path, trial_id: str, domain_id: str
+) -> list[tuple[str, str, int]]:
+    """Return canonical Evidence identities with their separate discovery rank."""
+    with _db(root, "derivative.sqlite3") as connection:
+        rows = connection.execute(
+            "SELECT evidence_identity,session_identity,rank FROM search_domain_associations "
+            "WHERE domain_id=? AND trial_id=? AND evidence_identity IS NOT NULL "
+            "ORDER BY rank,session_identity,evidence_identity",
+            (domain_id, trial_id),
+        ).fetchall()
+    return [
+        (str(identity), str(session_identity), int(rank))
+        for identity, session_identity, rank in rows
+    ]
+
+
+def _search_evidence_identities(root: Path, trial_id: str) -> set[str]:
+    """Return every Evidence identity materialized by search in this Trial."""
+
+    with _db(root, "derivative.sqlite3") as connection:
+        rows = connection.execute(
+            "SELECT DISTINCT evidence_identity FROM search_domain_associations "
+            "WHERE trial_id=? AND evidence_identity IS NOT NULL "
+            "UNION SELECT DISTINCT evidence_identity FROM search_evidence_provenance "
+            "WHERE trial_id=?",
+            (trial_id, trial_id),
+        ).fetchall()
+    return {str(row[0]) for row in rows if isinstance(row[0], str)}
 
 
 def _search_continuation(
@@ -2199,26 +2348,10 @@ def _search_continuation(
                 (session_identity,),
             ).fetchall()
         candidates = [json.loads(bytes(candidate[0])) for candidate in candidate_rows]
-        by_source: dict[str, list[dict[str, Any]]] = {}
-        for candidate in candidates:
-            by_source.setdefault(candidate["source_id"], []).append(candidate)
-        source_order = [
-            item["id"]
-            for item in sources
-            if isinstance(item, dict) and isinstance(item.get("id"), str)
-        ]
-        presentation: list[dict[str, Any]] = []
-        depth = 0
-        while len(presentation) < len(candidates):
-            added = False
-            for source in source_order:
-                values = by_source.get(source, [])
-                if depth < len(values):
-                    presentation.append(values[depth])
-                    added = True
-            if not added:
-                break
-            depth += 1
+        # ``rank`` is the frozen global BM25 order persisted by search_sources.
+        # Reconstructing a round-robin order by Source silently changed cursors
+        # for multi-Source sessions and could skip or repeat lower-ranked hits.
+        presentation = sorted(candidates, key=lambda candidate: candidate["rank"])
         offset = next(
             (
                 index
@@ -2273,6 +2406,7 @@ def _validate_selected_evidence(
             "trial_id",
             "source_id",
             "render",
+            "delivery_receipt",
             "transcription",
             "region",
             "provenance",
@@ -2282,11 +2416,17 @@ def _validate_selected_evidence(
         if kind == "figure"
         else set()
     )
-    if kind == "narrative" and "search_session" in item:
-        expected = expected | {"search_session", "candidate_rank"}
-    if kind == "narrative" and {"start_line", "end_line"}.issubset(item):
-        expected = expected | {"start_line", "end_line"}
-    if not expected or set(item) != expected:
+    allowed_shapes = {frozenset(expected)}
+    if kind == "narrative":
+        for source_version in (False, True):
+            for line_bounds in (False, True):
+                shape = set(expected)
+                if source_version:
+                    shape.add("source_version")
+                if line_bounds:
+                    shape.update({"start_line", "end_line"})
+                allowed_shapes.add(frozenset(shape))
+    if not expected or frozenset(item) not in allowed_shapes:
         raise ValueError("evidence handle shape is corrupt")
     if (
         not isinstance(item.get("trial_id"), str)
@@ -2312,16 +2452,12 @@ def _validate_selected_evidence(
             raise ValueError("evidence handle source is outside the active Trial")
     source, pages = source_data
     if kind == "narrative":
+        if "source_version" in item and item["source_version"] != source.get("projection_hash"):
+            raise ValueError("narrative Evidence Source version is stale")
         page = item.get("page")
         start = item.get("start")
         end = item.get("end")
         quote = item.get("quote")
-        if "search_session" in item and (
-            not isinstance(item.get("candidate_rank"), int)
-            or isinstance(item.get("candidate_rank"), bool)
-            or item["candidate_rank"] < 1
-        ):
-            raise ValueError("search candidate rank is corrupt")
         if (
             not isinstance(page, int)
             or isinstance(page, bool)
@@ -2371,6 +2507,18 @@ def _validate_selected_evidence(
         or not isinstance(item.get("transcription"), str)
         or not item["transcription"].strip()
         or item["transcription"] != item["transcription"].strip()
+        or not isinstance(item.get("delivery_receipt"), str)
+        or item["delivery_receipt"]
+        != _identity(
+            {
+                "trial_id": item["trial_id"],
+                "source_id": item["source_id"],
+                "render_identity": render.get("identity"),
+                "png_sha256": render.get("png_sha256"),
+                "channel": "mcp_image_content",
+                "mime_type": "image/png",
+            }
+        )
         or item.get("provenance") not in {"text_corroborated", "host_visual"}
         or not isinstance(region, list)
         or len(region) != 4
@@ -2399,6 +2547,19 @@ def _validate_selected_evidence(
         or stored_render.get("png_sha256") != "sha256:" + hashlib.sha256(png).hexdigest()
     ):
         raise ValueError("figure Evidence does not match the cached render projection")
+    with _db(root, "derivative.sqlite3") as connection:
+        delivery = connection.execute(
+            "SELECT trial_id,source_id,render_identity,png_sha256 "
+            "FROM visual_deliveries WHERE identity=?",
+            (item["delivery_receipt"],),
+        ).fetchone()
+    if delivery is None or tuple(delivery) != (
+        item["trial_id"],
+        item["source_id"],
+        render["identity"],
+        render["png_sha256"],
+    ):
+        raise ValueError("figure Evidence has no matching ImageContent delivery")
     canonical_png = _render_page_png(root, item["trial_id"], item["source_id"], render["page"])
     canonical_png_sha256 = "sha256:" + hashlib.sha256(canonical_png).hexdigest()
     if render["png_sha256"] != canonical_png_sha256:
@@ -2840,6 +3001,7 @@ def select_text_evidence(
                 "start": start,
                 "end": end,
                 "quote": text[start:end],
+                "source_version": source["projection_hash"],
                 "start_line": start_line,
                 "end_line": end_line,
             },
@@ -2897,6 +3059,7 @@ def select_text_evidence_by_lines(
                 "start": start,
                 "end": end,
                 "quote": quote,
+                "source_version": source["projection_hash"],
                 "start_line": selected_start_line,
                 "end_line": selected_end_line,
             },
@@ -2904,7 +3067,9 @@ def select_text_evidence_by_lines(
     }
 
 
-def _render_page_png(root: Path, trial_id: str, source_id: str, page: int) -> bytes:
+def _render_page_png(
+    root: Path, trial_id: str, source_id: str, page: int, *, count: bool = True
+) -> bytes:
     """Render one canonical captured PDF page using the fixed recipe."""
     path = internal_path(root, "sources", trial_id, f"{source_id}.bin")
     data = path.read_bytes()
@@ -2917,8 +3082,53 @@ def _render_page_png(root: Path, trial_id: str, source_id: str, page: int) -> by
         )
     finally:
         document.close()
-    COUNTERS["render_bytes"] += len(png)
+    if count:
+        COUNTERS["render_bytes"] += len(png)
     return png
+
+
+def _validated_cached_render(
+    root: Path,
+    trial_id: str,
+    source_id: str,
+    source: dict[str, Any],
+    render_identity: str,
+    payload_bytes: bytes,
+    png_bytes: bytes,
+) -> tuple[dict[str, Any], bytes]:
+    """Validate a derivative render against both its Source and fixed recipe."""
+
+    try:
+        payload = json.loads(payload_bytes)
+        cached_png = bytes(png_bytes)
+    except (TypeError, ValueError, UnicodeDecodeError, json.JSONDecodeError) as error:
+        raise ValueError("cached render payload is corrupt") from error
+    expected_keys = {"identity", "source_id", "page", "png_sha256", "recipe"}
+    if (
+        not isinstance(payload, dict)
+        or set(payload) != expected_keys
+        or payload.get("identity") != render_identity
+        or payload.get("source_id") != source_id
+        or not isinstance(payload.get("page"), int)
+        or isinstance(payload.get("page"), bool)
+        or not 1 <= payload["page"] <= int(source["page_count"])
+        or payload.get("recipe") != "pymupdf-1.5"
+        or payload.get("png_sha256") != "sha256:" + hashlib.sha256(cached_png).hexdigest()
+        or render_identity
+        != _identity(
+            {
+                "source_id": source_id,
+                "source_sha256": source["sha256"],
+                "page": payload["page"],
+                "recipe": payload["recipe"],
+            }
+        )
+    ):
+        raise ValueError("cached render is corrupt or outside the requested Source")
+    canonical_png = _render_page_png(root, trial_id, source_id, payload["page"], count=False)
+    if canonical_png != cached_png:
+        raise ValueError("cached render pixels do not match the captured Source")
+    return payload, cached_png
 
 
 def render_page(
@@ -2927,7 +3137,12 @@ def render_page(
     root = _root(workspace)
     _ensure(root)
     source = _find_source(root, trial_id, source_id)
-    if page > int(source["page_count"]):
+    if (
+        not isinstance(page, int)
+        or isinstance(page, bool)
+        or page < 1
+        or page > int(source["page_count"])
+    ):
         raise ValueError("page is outside Source")
     identity = _identity(
         {
@@ -2942,11 +3157,15 @@ def render_page(
             "SELECT payload,png FROM renders WHERE identity=?", (identity,)
         ).fetchone()
     if cached is not None:
-        payload = json.loads(bytes(cached[0]))
+        payload, cached_png = _validated_cached_render(
+            root, trial_id, source_id, source, identity, cached[0], cached[1]
+        )
+        if payload["page"] != page:
+            raise ValueError("cached render is corrupt or outside the requested Source")
         return {
             "outcome": "success",
             "render": payload,
-            "_png_bytes": bytes(cached[1]) if inline else None,
+            "_png_bytes": cached_png if inline else None,
         }
     png = _render_page_png(root, trial_id, source_id, page)
     payload = {
@@ -2970,11 +3189,63 @@ def render_page(
     }
 
 
-def select_visual_evidence(
+def record_visual_delivery(
     workspace: str | Path,
     trial_id: str,
     source_id: str,
     render_identity: str,
+    png_bytes: bytes,
+) -> str:
+    """Record the exact PNG returned as an MCP ImageContent block."""
+    root = _root(workspace)
+    _ensure(root)
+    source = _find_source(root, trial_id, source_id)
+    with _db(root, "derivative.sqlite3") as connection:
+        row = connection.execute(
+            "SELECT payload,png FROM renders WHERE identity=?", (render_identity,)
+        ).fetchone()
+    if row is None:
+        raise ValueError("visual Evidence requires an emitted render")
+    render, cached_png = _validated_cached_render(
+        root, trial_id, source_id, source, render_identity, row[0], row[1]
+    )
+    if png_bytes != cached_png:
+        raise ValueError("render delivery does not match the captured Source")
+    receipt = _identity(
+        {
+            "trial_id": trial_id,
+            "source_id": source_id,
+            "render_identity": render_identity,
+            "png_sha256": render["png_sha256"],
+            "channel": "mcp_image_content",
+            "mime_type": "image/png",
+        }
+    )
+    with _db(root, "derivative.sqlite3") as connection:
+        connection.execute(
+            "INSERT OR IGNORE INTO visual_deliveries VALUES (?,?,?,?,?)",
+            (receipt, trial_id, source_id, render_identity, render["png_sha256"]),
+        )
+        stored = connection.execute(
+            "SELECT trial_id,source_id,render_identity,png_sha256 "
+            "FROM visual_deliveries WHERE identity=?",
+            (receipt,),
+        ).fetchone()
+    if stored is None or tuple(stored) != (
+        trial_id,
+        source_id,
+        render_identity,
+        render["png_sha256"],
+    ):
+        raise ValueError("visual delivery receipt is corrupt")
+    return receipt
+
+
+def select_visual_evidence(
+    workspace: str | Path,
+    trial_id: str,
+    source_id: str,
+    delivery_receipt: str,
     transcription: str,
     region: list[float],
 ) -> dict[str, Any]:
@@ -2985,28 +3256,34 @@ def select_visual_evidence(
         raise ValueError("visual transcription must contain non-whitespace text")
     source = _find_source(root, trial_id, source_id)
     with _db(root, "derivative.sqlite3") as connection:
+        delivery = connection.execute(
+            "SELECT trial_id,source_id,render_identity,png_sha256 "
+            "FROM visual_deliveries WHERE identity=?",
+            (delivery_receipt,),
+        ).fetchone()
+    if delivery is None:
+        raise ValueError("visual Evidence requires a delivered ImageContent receipt")
+    if tuple(delivery[:2]) != (trial_id, source_id):
+        raise ValueError("visual Evidence delivery receipt belongs to another Source")
+    render_identity = str(delivery[2])
+    with _db(root, "derivative.sqlite3") as connection:
         row = connection.execute(
             "SELECT payload,png FROM renders WHERE identity=?", (render_identity,)
         ).fetchone()
     if row is None:
         raise ValueError("verified render is unavailable")
-    render = json.loads(bytes(row[0]))
-    png = bytes(row[1])
-    if (
-        not isinstance(render, dict)
-        or render.get("identity") != render_identity
-        or render.get("source_id") != source_id
-        or render.get("page", 0) < 1
-        or render.get("png_sha256") != "sha256:" + hashlib.sha256(png).hexdigest()
-        or render_identity
-        != _identity(
-            {
-                "source_id": source_id,
-                "source_sha256": source["sha256"],
-                "page": render.get("page"),
-                "recipe": render.get("recipe"),
-            }
-        )
+    render, png = _validated_cached_render(
+        root, trial_id, source_id, source, render_identity, row[0], row[1]
+    )
+    if render.get("png_sha256") != delivery[3] or delivery_receipt != _identity(
+        {
+            "trial_id": trial_id,
+            "source_id": source_id,
+            "render_identity": render_identity,
+            "png_sha256": render.get("png_sha256"),
+            "channel": "mcp_image_content",
+            "mime_type": "image/png",
+        }
     ):
         raise ValueError("cached render is corrupt or outside the requested Source")
     if len(region) != 4 or not all(math.isfinite(value) for value in region):
@@ -3030,6 +3307,7 @@ def select_visual_evidence(
             "figure",
             {
                 "render": render,
+                "delivery_receipt": delivery_receipt,
                 "transcription": transcription,
                 "region": region,
                 "provenance": provenance,
