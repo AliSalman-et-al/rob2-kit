@@ -390,4 +390,7 @@ then continue the same session with `Continue.` as described in
 [`docs/evaluation/rsi.md`](docs/evaluation/rsi.md). Verify the resulting
 `.rob2.zip` with `scripts/verify_bundle.py`. A successful smoke test confirms
 that the model-facing contract completes without schema or Pydantic repair
-loops; it is an operational check, not a population accuracy estimate.
+loops; it is an operational check, not a population accuracy estimate. On
+Windows, ordinary evals run with an unelevated workspace-write sandbox and
+never request UAC. The optional strict isolation flag is rejected on Windows
+because it would require an elevated backend.
