@@ -249,6 +249,14 @@ def test_required_host_isolation_records_a_deny_by_default_profile(
         command[index : index + 2] == ["-c", 'sandbox_mode="workspace-write"']
         for index in range(len(command) - 1)
     )
+    assert not any(
+        command[index : index + 2] == ["-c", 'approval_policy="on-request"']
+        for index in range(len(command) - 1)
+    )
+    assert not any(
+        command[index : index + 2] == ["-c", 'approvals_reviewer="auto_review"']
+        for index in range(len(command) - 1)
+    )
 
 
 def test_ordinary_windows_run_uses_unelevated_noninteractive_profile(
@@ -259,9 +267,12 @@ def test_ordinary_windows_run_uses_unelevated_noninteractive_profile(
     )
 
     command = metadata["command"]
-    assert "--approve-for-me" not in command
     assert any(
-        command[index : index + 2] == ["-c", 'approval_policy="never"']
+        command[index : index + 2] == ["-c", 'approval_policy="on-request"']
+        for index in range(len(command) - 1)
+    )
+    assert any(
+        command[index : index + 2] == ["-c", 'approvals_reviewer="auto_review"']
         for index in range(len(command) - 1)
     )
     assert any(
@@ -377,9 +388,12 @@ def test_ordinary_windows_continuation_keeps_unelevated_profile(
 
     assert error.value.code == 17
     command = next(command for command in calls if "codex.cmd" in command)
-    assert "--approve-for-me" not in command
     assert any(
-        command[index : index + 2] == ["-c", 'approval_policy="never"']
+        command[index : index + 2] == ["-c", 'approval_policy="on-request"']
+        for index in range(len(command) - 1)
+    )
+    assert any(
+        command[index : index + 2] == ["-c", 'approvals_reviewer="auto_review"']
         for index in range(len(command) - 1)
     )
     assert any(

@@ -177,11 +177,16 @@ def main() -> None:
         'mcp_servers.rob2.args=["mcp"]',
         "-c",
         "mcp_servers.rob2.env={ROB2_WORKSPACE=" + json.dumps(str(workspace)) + "}",
-        "-c",
-        'approval_policy="never"',
     ]
     if not args.require_isolated_host:
-        config += ["-c", 'sandbox_mode="workspace-write"']
+        config += [
+            "-c",
+            'approval_policy="on-request"',
+            "-c",
+            'approvals_reviewer="auto_review"',
+            "-c",
+            'sandbox_mode="workspace-write"',
+        ]
         if IS_WINDOWS:
             config += ["-c", 'windows.sandbox="unelevated"']
     command = ["codex.cmd", "exec"]
