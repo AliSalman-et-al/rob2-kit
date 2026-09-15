@@ -32,7 +32,7 @@ def test_structured_domain_uses_and_search_receipts(tmp_path: Path) -> None:
     domain_id = SCIENTIFIC_PACK.domains[0].id
     context = _call(workspace, "get_domain_context", {"trial_id": "trial", "domain_id": domain_id})
     assert context["head"]["next_action"] == {
-        "operation": "reason_domain_assessment",
+        "operation": "validate_domain_assessment",
         "authority": "host",
         "trial_id": "trial",
         "domain_id": domain_id,
@@ -211,20 +211,21 @@ def test_batch_domains_cannot_advance_a_later_trial(tmp_path: Path) -> None:
 
     skipped_terminal = _call(
         tmp_path,
-        "request_trial_terminal",
+        "review_trial",
         {
+            "trial_id": "trial-b",
+            "expected_revision": int(context["head"]["state_revision"]),
             "request": {
                 "disposition": "needs_input",
                 "trial_id": "trial-b",
                 "reason": "Researcher clarification is required.",
                 "missing_facts": ["Clarification."],
             },
-            "expected_revision": int(context["head"]["state_revision"]),
         },
     )
     assert skipped_terminal["outcome"] == "condition"
     assert skipped_terminal["condition"]["detail"] == (
-        "complete Trial 'trial-a' before Trial 'trial-b'"
+        "review Trial 'trial-a' before Trial 'trial-b'"
     )
 
     revision = int(context["head"]["state_revision"])
@@ -236,25 +237,63 @@ def test_batch_domains_cannot_advance_a_later_trial(tmp_path: Path) -> None:
         )
         assert saved["outcome"] == "success"
         revision = int(saved["head"]["state_revision"])
-    assert saved["data"]["trial_completed"] is True
-    assert _state(tmp_path)["trial_dispositions"]["trial-a"] == "assessed"
+    assert saved["data"]["trial_ready_for_review"] is True
+    assert _state(tmp_path)["trial_dispositions"]["trial-a"] == "reviewable"
 
     first_checkpoint = _state(tmp_path)["domain_records"]["trial-a:domain:randomization"]
-    closed_revision = _domain_draft(
+    refreshed = _call(
+        tmp_path,
+        "get_domain_context",
+        {"trial_id": "trial-a", "domain_id": SCIENTIFIC_PACK.domains[0].id},
+    )
+    assert refreshed["outcome"] == "success", refreshed
+    corrected = _domain_draft(
         "trial-a",
         SCIENTIFIC_PACK.domains[0].id,
         revision,
         evidence_by_trial["trial-a"],
     )
-    closed_revision["supersedes"] = first_checkpoint["identity"]
-    closed_revision["revision_basis"] = {
+    corrected["answers"][0]["answer"] = _answer_value(
+        corrected["answers"][0]["question_id"], "probably_yes"
+    )
+    corrected["supersedes"] = first_checkpoint["identity"]
+    corrected["revision_basis"] = {
         "kind": "self_correction",
-        "rationale": "This attempted correction occurs after Trial completion.",
+        "rationale": "A corrected answer changes the fifth-Domain review basis.",
     }
-    refused_revision = _call(tmp_path, "save_domain_judgment", closed_revision)
+    revised = _call(tmp_path, "save_domain_judgment", corrected)
+    assert revised["outcome"] == "success", revised
+    assert revised["data"]["trial_ready_for_review"] is True
+    revision = int(revised["head"]["state_revision"])
+
+    reviewed = _call(
+        tmp_path,
+        "review_trial",
+        {"trial_id": "trial-a", "expected_revision": revision},
+    )
+    assert reviewed["outcome"] == "success", reviewed
+    refreshed = _call(
+        tmp_path,
+        "get_domain_context",
+        {"trial_id": "trial-a", "domain_id": SCIENTIFIC_PACK.domains[0].id},
+    )
+    assert refreshed["outcome"] == "success", refreshed
+    closed = _call(
+        tmp_path,
+        "close_trial",
+        {
+            "trial_id": "trial-a",
+            "expected_revision": reviewed["head"]["state_revision"],
+            "review_reference": reviewed["data"]["review"]["identity"],
+        },
+    )
+    assert closed["outcome"] == "success", closed
+
+    corrected["expected_revision"] = int(closed["head"]["state_revision"])
+    refused_revision = _call(tmp_path, "save_domain_judgment", corrected)
     assert refused_revision["outcome"] == "condition"
     assert refused_revision["condition"]["detail"] == (
-        "Trial AssessmentSnapshot is final; Domain revisions are closed"
+        "Trial is closed; Domain revisions are not allowed"
     )
 
     status = _call(tmp_path, "get_status", {})
@@ -322,6 +361,12 @@ def test_real_fastmcp_assessed_path_restart_derivative_rebuild_and_freeze(tmp_pa
         assert saved["outcome"] == "success"
         revision = int(saved["head"]["state_revision"])
 
+    refreshed = _call(
+        workspace,
+        "get_domain_context",
+        {"trial_id": "trial", "domain_id": SCIENTIFIC_PACK.domains[0].id},
+    )
+    assert refreshed["outcome"] == "success", refreshed
     corrected = _call(
         workspace,
         "save_domain_judgment",
@@ -552,11 +597,61 @@ def test_unavailable_result_requires_researcher_review(
     # The model-facing boundary cannot approve this candidate.  Only the
     # explicit researcher seam can move it to a preapproval terminal.
     _review(workspace)
-    finalized = _finalize_assessment(
+    status = _call(workspace, "get_status", {})
+    action = status["head"]["next_action"]
+    assert action == {
+        "operation": "review_trial",
+        "authority": "host",
+        "trial_id": "trial",
+        "expected_revision": status["head"]["state_revision"],
+    }
+    reviewed = _call(
         workspace,
-        int(_call(workspace, "get_status", {})["head"]["state_revision"]),
+        action["operation"],
+        {key: action[key] for key in ("trial_id", "expected_revision")},
     )
+    assert reviewed["data"]["review"]["disposition"] == "needs_input"
+    finalized = _finalize_assessment(workspace, int(reviewed["head"]["state_revision"]))
     assert finalized["data"]["trial_dispositions"] == {"trial": "needs_input"}
+
+
+def test_unsupported_result_review_continuation_omits_request(tmp_path: Path) -> None:
+    workspace = _workspace(tmp_path)
+    evidence = _prepared_evidence(workspace)
+    result = _result(evidence)
+    result["applicability"]["design"] = "cluster_randomized"
+    result["applicability"]["rationale"] = "The report assigns groups by clinic."
+
+    saved = _call(workspace, "save_proposal", _proposal_args(workspace, [result]))
+    assert saved["outcome"] == "review_required", saved
+    _review(workspace)
+    _read_required_main_reports(workspace)
+
+    status = _call(workspace, "get_status", {})
+    action = status["head"]["next_action"]
+    assert action == {
+        "operation": "review_trial",
+        "authority": "host",
+        "trial_id": "trial",
+        "expected_revision": status["head"]["state_revision"],
+    }
+    reviewed = _call(
+        workspace,
+        action["operation"],
+        {key: action[key] for key in ("trial_id", "expected_revision")},
+    )
+    assert reviewed["data"]["review"]["disposition"] == "unsupported_design"
+    close_action = reviewed["head"]["next_action"]
+    closed = _call(
+        workspace,
+        close_action["operation"],
+        {
+            "trial_id": close_action["trial_id"],
+            "expected_revision": close_action["expected_revision"],
+            "review_reference": close_action["review_reference"],
+        },
+    )
+    assert closed["data"]["closure"]["disposition"] == "unsupported_design"
 
 
 def test_terminal_records_must_match_each_disposition_exactly(tmp_path: Path) -> None:
@@ -649,29 +744,41 @@ def test_adverse_event_grades_are_categories_and_grade_five_is_retained(tmp_path
             "end_line": 1,
         },
     )
-    saved = _call(workspace, "save_proposal", _proposal_args(workspace, [result]))
+    repair = _call(workspace, "save_proposal", _proposal_args(workspace, [result]))
+    assert repair["outcome"] == "repair", repair
+    assert any(item["code"] == "single_group_result_not_comparative" for item in repair["repairs"])
+    assert _state(workspace).get("proposal") is None
+
+    unavailable = _unavailable_result(
+        evidence,
+        "The comparative result for the other randomized group is not reported.",
+    )
+    saved = _call(workspace, "save_proposal", _proposal_args(workspace, [unavailable]))
     assert saved["outcome"] == "review_required", saved
     stored = _state(workspace)["review"]["candidate"]["proposal"]["results"][0]
-    categories = stored["reported"]["categories"]
-    assert [item["category_axes"] for item in categories] == [
-        ["Any event", "grade_1"],
-        ["Any event", "grade_2"],
-        ["Any event", "grade_3"],
-        ["Any event", "grade_4"],
-        ["Any event", "grade_5"],
-    ]
-    assert [item["value"] for item in categories[:2]] == ["65", "49"]
-    assert all(item["category_axes"] != ["treatment_effect"] for item in categories)
-
-    result["reported"]["group_id"] = "phantom-group"
-    invalid = _call(workspace, "save_proposal", _proposal_args(workspace, [result]))
-    assert invalid["outcome"] == "repair"
-    assert any(item["code"] == "reported_group_id_not_in_target" for item in invalid["repairs"])
+    assert stored["kind"] == "unavailable"
+    assert stored["missing_facts"][0]["basis"]["source"] == evidence["quote"]
 
     _review(workspace)
-    context = _call(workspace, "get_domain_context", {})
-    reported = context["data"]["result"]["reported"]
-    assert reported["categories"] == categories
+    status = _call(workspace, "get_status", {})
+    assert status["data"]["trial_dispositions"]["trial"] == "reviewable"
+    assert status["head"]["phase"] == "assessment"
+    reviewed = _call(
+        workspace,
+        "review_trial",
+        {"trial_id": "trial", "expected_revision": status["head"]["state_revision"]},
+    )
+    assert reviewed["data"]["review"]["disposition"] == "needs_input"
+    closed = _call(
+        workspace,
+        "close_trial",
+        {
+            "trial_id": "trial",
+            "expected_revision": reviewed["head"]["state_revision"],
+            "review_reference": reviewed["data"]["review"]["identity"],
+        },
+    )
+    assert closed["data"]["closure"]["disposition"] == "needs_input"
 
 
 def test_non_exact_result_binds_source_facts_but_not_caller_owned_target_leaves(
@@ -756,7 +863,38 @@ def test_mixed_batch_has_authoritative_needs_input_and_assessed_dispositions(
     _review(workspace)
     _read_required_main_reports(workspace)
     status = _call(workspace, "get_status", {})
-    assert status["data"]["trial_dispositions"] == {"trial": "needs_input", "trial-2": "pending"}
+    assert status["data"]["trial_dispositions"] == {
+        "trial": "reviewable",
+        "trial-2": "pending",
+    }
+    assert status["head"]["next_action"]["operation"] == "review_trial"
+    assert status["head"]["next_action"] == {
+        "operation": "review_trial",
+        "authority": "host",
+        "trial_id": "trial",
+        "expected_revision": status["head"]["state_revision"],
+    }
+    first_review = _call(
+        workspace,
+        status["head"]["next_action"]["operation"],
+        {
+            "trial_id": status["head"]["next_action"]["trial_id"],
+            "expected_revision": status["head"]["next_action"]["expected_revision"],
+        },
+    )
+    assert first_review["data"]["review"]["disposition"] == "needs_input"
+    first_closed = _call(
+        workspace,
+        "close_trial",
+        {
+            "trial_id": "trial",
+            "expected_revision": first_review["head"]["state_revision"],
+            "review_reference": first_review["data"]["review"]["identity"],
+        },
+    )
+    assert first_closed["outcome"] == "success", first_closed
+    _read_required_main_reports(workspace)
+    status = _call(workspace, "get_status", {})
     assert status["head"]["next_action"]["operation"] == "get_domain_context"
     revision = int(
         _call(workspace, "get_domain_context", {"trial_id": "trial-2"})["head"]["state_revision"]
@@ -767,7 +905,7 @@ def test_mixed_batch_has_authoritative_needs_input_and_assessed_dispositions(
             "save_domain_judgment",
             _domain_draft("trial-2", domain.id, revision, evidence["trial-2"]),
         )
-        assert saved_domain["outcome"] == "success"
+        assert saved_domain["outcome"] == "success", saved_domain
         revision = int(saved_domain["head"]["state_revision"])
     finalized = _finalize_assessment(workspace, revision)
     assert finalized["data"]["trial_dispositions"] == {

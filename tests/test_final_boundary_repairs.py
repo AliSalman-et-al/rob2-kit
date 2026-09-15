@@ -18,7 +18,7 @@ from test_assessment_review_gate import _complete_assessment
 
 from rob2_kit.application._state import _commit_records, _identity, _state
 from rob2_kit.application.intake import discard_workspace
-from rob2_kit.application.trials import request_trial_terminal
+from rob2_kit.application.trials import review_trial
 from rob2_kit.interfaces.mcp.contracts import (
     SearchHit,
     SearchReceipt,
@@ -34,9 +34,9 @@ from rob2_kit.workflow_models import (
     QuestionId,
     SelfCorrectionRevision,
     SourceId,
-    TerminalRequestEnvelope,
     TrialDeclaration,
     TrialId,
+    TrialReviewRequest,
 )
 
 
@@ -62,7 +62,8 @@ def test_public_discriminator_tags_are_required() -> None:
         "save_proposal",
         "get_domain_context",
         "save_domain_judgment",
-        "request_trial_terminal",
+        "review_trial",
+        "close_trial",
         "finalize_batch",
     ):
         for definition in _all_schema_objects(output_schema(tool)):
@@ -181,7 +182,8 @@ def test_terminal_request_cannot_mutate_before_proposal_gate(tmp_path: Path) -> 
             "expected_revision": 0,
         },
     )
-    envelope = TerminalRequestEnvelope(
+    request = TrialReviewRequest(
+        trial_id="trial",
         request=NeedsInputTerminalRequest(
             disposition="needs_input",
             trial_id="trial",
@@ -191,7 +193,7 @@ def test_terminal_request_cannot_mutate_before_proposal_gate(tmp_path: Path) -> 
         expected_revision=prepared["head"]["state_revision"],
     )
     with pytest.raises(ValueError, match="approved Proposal Review"):
-        request_trial_terminal(workspace, envelope)
+        review_trial(workspace, request)
     state = _state(workspace)
     assert state["phase"] == "proposal"
     assert state["trial_dispositions"] == {"trial": "pending"}
@@ -210,7 +212,8 @@ def test_terminal_request_rejects_rehashed_acknowledgment_basis_tampering(
     )
     state["proposal_acknowledgment"] = acknowledgment
     committed = _commit_records(workspace, state, revision, {})
-    envelope = TerminalRequestEnvelope(
+    request = TrialReviewRequest(
+        trial_id="trial",
         request=NeedsInputTerminalRequest(
             disposition="needs_input",
             trial_id="trial",
@@ -220,14 +223,15 @@ def test_terminal_request_rejects_rehashed_acknowledgment_basis_tampering(
         expected_revision=committed["revision"],
     )
     with pytest.raises(ValueError, match="approved Proposal Review"):
-        request_trial_terminal(workspace, envelope)
+        review_trial(workspace, request)
     assert _state(workspace).get("terminals", {}) == {}
 
 
 def test_new_terminal_request_cannot_replace_ready_assessment(tmp_path: Path) -> None:
     workspace, _evidence, revision = _complete_assessment(tmp_path)
     before = _state(workspace)
-    envelope = TerminalRequestEnvelope(
+    request = TrialReviewRequest(
+        trial_id="trial",
         request=NeedsInputTerminalRequest(
             disposition="needs_input",
             trial_id="trial",
@@ -237,8 +241,8 @@ def test_new_terminal_request_cannot_replace_ready_assessment(tmp_path: Path) ->
         expected_revision=revision,
     )
 
-    with pytest.raises(ValueError, match="not the current operation"):
-        request_trial_terminal(workspace, envelope)
+    with pytest.raises(ValueError, match="complete Domain set already determines review"):
+        review_trial(workspace, request)
     assert _state(workspace) == before
 
 

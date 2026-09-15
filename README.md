@@ -15,10 +15,10 @@ assessment bundles.
 
 ## Install
 
-The v0.8 workflow requires a fresh assessment workspace. Finish an active
+The v0.9 workflow requires a fresh assessment workspace. Finish an active
 assessment with the version that created it, or start a new workspace from the
-original inputs. Historical finalized v0.5, v0.6, and v0.7 bundles still verify
-unchanged. See the [v0.8 upgrade boundary](docs/adr/0031-v0-4-evidence-first-interaction.md#v0-8-release-amendment).
+original inputs. Historical finalized v0.5 through v0.8 bundles still verify
+unchanged. See the [v0.9 upgrade boundary](docs/adr/0031-v0-4-evidence-first-interaction.md#v0-9-release-amendment).
 
 Install the command from a source checkout with `uv`:
 
@@ -29,14 +29,14 @@ rob2 --help
 
 If `rob2` is not found, run `uv tool update-shell`, open a new terminal, and
 try `rob2 --help` again. The installed package contains the `rob2` command, the
-16-tool MCP server, and the portable `rob2-assess` skill. The v0.8 boundary
+19-tool MCP server, and the portable `rob2-assess` skill. The v0.9 boundary
 returns one structured JSON result for MCP hosts; `render_page` may additionally
 return image content.
 
 To install a built release artifact instead, replace `.` with the wheel path:
 
 ```powershell
-uv tool install --force dist/rob2_kit-0.8.0-py3-none-any.whl
+uv tool install --force dist/rob2_kit-0.9.0-py3-none-any.whl
 ```
 
 ## Prepare the workspace
@@ -93,6 +93,29 @@ lines such as `protocolSection.identificationModule.nctId: "NCT01234567"`;
 the captured bytes and content identity remain unchanged. Replace `<NCT-ID>` with an authorized identifier
 before you run the command. Do not declare an identifier unless that network
 lookup is authorized. All other source capture is local.
+
+For a controlled replay, put the retained response in the Trial directory and
+declare its identity under `[registry]` instead of making a new request:
+
+```toml
+[registry]
+nct = "NCT01234567"
+replay = "registry.json"
+captured_at = "2026-08-01T12:30:00Z"
+sha256 = "<SHA-256 of registry.json>"
+provenance = "captured response retained from baseline"
+```
+
+The replay is validated against the NCT and hash, then exposed through the
+same `registry/NCT...json` Source, sorted JSON leaf paths, search index, page
+reader, navigation, and Evidence selectors. The original capture time is
+preserved and no network lookup is made.
+
+Evaluation case manifests may live below `eval/runs` while reusing a retained
+source or registry capture below `eval/reference`. The RSI workspace preparer
+allows those relative paths only within the repository's `eval` root, then
+copies the listed bytes into the fresh workspace. It never copies an existing
+assessment workspace.
 
 ## Connect the host
 
@@ -153,6 +176,12 @@ skip the bounded cross-source check.
 
 Search results are navigation only. `read_pages` returns numbered source lines,
 and the host selects one contiguous range on one source page as evidence.
+`list_sources` shows every captured Source and any intake conditions or
+declared omissions; pass a `source_id` to get literal heading and page-excerpt
+navigation without running a search first. When several query inputs are
+already known, `search_sources_batch` runs up to eight independent searches
+with separate outcomes and cursors. A dependent reformulation waits for the
+previous result.
 Every `search_sources` call declares its lexical intent: `all` requires every
 term, `phrase` checks known contiguous wording, `any` performs broad OR
 discovery, and `prefix` matches token prefixes. A broad, truncated `any`
@@ -171,11 +200,17 @@ captured bytes remain the source authority. Figures, tables, and CONSORT
 diagrams can be selected as visual evidence; text corroboration is preferred
 when available.
 
-Before saving a Proposal, the host calls `reason_proposal` with the complete
+Before saving a Proposal, the host calls `validate_proposal` with the complete
 Result cards and one concise evidence assessment for each Trial. The host then
 calls receipt-only `save_proposal` with the returned `reasoning_id` and
-revision. To change a draft, repeat `reason_proposal`; do not resend cards to
+revision. To change a draft, repeat `validate_proposal`; do not resend cards to
 `save_proposal`.
+
+Only a comparative Result or complete group-bound values for both comparison
+groups support assessment. A one-group profile is descriptive: retain its exact
+passage as Evidence, report the missing comparator or estimate, and propose an
+unavailable Result. Labels such as mITT, per-protocol, and as-treated do not by
+themselves make an otherwise comparative Result ineligible.
 
 When the proposal is ready, the host pauses at the only researcher gate and
 presents the proposed Result mapping. Respond in the same Claude Code, Codex,
@@ -203,23 +238,27 @@ rob2 review --workspace C:/path/to/my-assessment
 
 After approval, the host owns signaling answers for supported trial designs and
 follows the server through all five domains and finalization. Before every
-Domain save, the host calls `reason_domain_assessment` with the complete active
+Domain save, the host calls `validate_domain_assessment` with the complete active
 draft and then calls receipt-only `save_domain_judgment` with its returned
 `reasoning_id` and revision. The server checks structure, references, and
 workflow requirements. A successful reasoning receipt does not establish
-scientific correctness. Unsupported or
-unresolved designs remain unassessed: they require the appropriate pack or source
-information establishing the design, respectively. Do not direct individual
-signaling answers.
-The workflow completes one Trial at a time, in captured Batch order, and one
-Domain at a time within that Trial. The server rejects attempts to start a
-later Trial or new Domain before the current one is complete. Accepting the
-fifth Domain automatically freezes that Trial's AssessmentSnapshot and marks
-the Trial `assessed`; the next action then advances to the next Trial. No
-separate Trial-finalization tool or host decision exists. `finalize_batch` only
-packages the already-terminal Trial records. Every Trial in a Batch shares the
-one outcome concept supplied to `prepare_batch`; a Batch cannot mix different
-requested outcomes across Trials.
+scientific correctness. Known designs outside the installed pack close as
+`unsupported_design`; unresolved designs remain `needs_input` until source
+information establishes the design and unit of randomization. Do not direct
+individual signaling answers. Each question card lists the official answer values allowed
+for that question. Submit the selected value directly as `answers[].answer`; the
+server rejects values not permitted for the stated question. Repairs preserve
+the submitted proposition and explain the unmet requirement without choosing a
+replacement answer.
+The workflow completes one Trial at a time in captured Batch order. Within the
+current Trial, Domains can be assessed independently; the server rejects work
+on a later Trial. The fifth Domain makes the Trial ready for review while
+keeping its checkpoints correctable. `review_trial` binds the current approved
+Result and exact checkpoint set; `close_trial` makes that reviewed outcome
+immutable and advances to the next Trial or Batch finalization.
+`finalize_batch` packages only closed Trial records. Every Trial in a Batch
+shares the outcome concept supplied to `prepare_batch`; a Batch cannot mix
+different requested outcomes across Trials.
 
 The host reads main-report text at two checkpoints: before Proposal submission,
 then after approval before the Trial's first Domain save. Each pass covers the
@@ -237,6 +276,14 @@ delivery, not retained context; it does not trigger a full report reread for
 every Domain. Low remaining context must never cause the host to infer unfinished
 judgments or finalize early.
 
+For an open Trial, `save_working_checkpoint` stores one replaceable, bounded
+set of source-linked observations, interpretations, terminology, unread ranges,
+open questions, and unfinished drafts. `get_status` returns those notes only
+while the Trial's captured Source scope and exact Result still match. Missing
+or stale notes require reorientation from the current sources. Re-read cited
+passages before relying on them; working notes never become Evidence or commit
+a Domain.
+
 For each active question, the host performs a bounded, question-specific search
 across the relevant sources before it claims that information is absent. A
 current Result Evidence set is not proof that no other relevant evidence exists.
@@ -246,12 +293,20 @@ query text, lexical mode, an optional recommended Source role, and purpose. Sugg
 are retrieval vocabulary and alternatives, not a mandatory sequence; for
 example, an exact-phrase `intention-to-treat` search is paired with the
 independently executable `all randomized patients` wording.
+Each Domain receipt also identifies the exact pack ID, version, and content hash.
+Context cursors preserve the approved Result, pack, question view, preview, and
+requested Domain checkpoint; searches and unrelated Domain commits do not stale
+the existing page chain. Recoverable discovery candidates are omitted by default.
+Use `include_candidates=true` on a fresh `get_domain_context` request to include
+them, while the existing cursor continues its original snapshot.
 The host computes the complete active branch from answers in the same reasoning
 call; the server ignores extra inactive branch answers.
-While the current Trial remains pending, the host may revise one of its committed
+While the current Trial remains open, the host may revise one of its committed
 Domain checkpoints when new evidence or a documented self-correction requires
-it; the immutable history is retained. Once the fifth Domain freezes the Trial,
-its AssessmentSnapshot is final.
+it; the immutable history is retained. Saving the fifth Domain makes the Trial
+ready for review, but it stays correctable. `review_trial` binds
+the current approved Result and exact checkpoint set; `close_trial` accepts only
+that review and then makes the outcome immutable.
 
 Use these researcher commands for recovery and verification:
 
@@ -283,11 +338,12 @@ rob2 verify-sources C:/path/to/archive.sources.zip
 
 The server exposes exactly these strictly typed FastMCP tools:
 
-`prepare_batch`, `get_status`, `list_sources`, `search_sources`, `read_pages`,
+`prepare_batch`, `get_status`, `save_working_checkpoint`, `list_sources`,
+`search_sources`, `search_sources_batch`, `read_pages`,
 `select_text_evidence`, `render_page`, `select_visual_evidence`,
-`reason_proposal`, `save_proposal`, `request_proposal_approval`,
-`get_domain_context`, `reason_domain_assessment`, `save_domain_judgment`,
-`request_trial_terminal`, and `finalize_batch`.
+`validate_proposal`, `save_proposal`, `request_proposal_approval`,
+`get_domain_context`, `validate_domain_assessment`, `save_domain_judgment`,
+`review_trial`, `close_trial`, and `finalize_batch`.
 
 The live `rob2://current-batch` resource is the restart-safe status projection.
 Researcher authority enters through a directly accepted MCP elicitation or the
@@ -308,10 +364,30 @@ wheel verification.
 
 ```powershell
 uv sync --frozen
-./scripts/verify_v08.ps1
+./scripts/verify_v09.ps1
 ```
 
 The verification script runs Ruff, ty, the four-worker pytest suite, runtime
 contract checks, wheel construction, and independent verification of the built
 wheel. Pytest uses four workers through the repository configuration; use
 `uv run pytest -n 0` only when debugging a test that requires serial output.
+
+## Verify an RSI workflow
+
+The qualification harness can run one frozen case through a paid model in two
+phases. For example, a smoke test can use Luna at medium reasoning effort:
+
+```powershell
+uv run --no-project python scripts/run_rsi_case.py `
+  --case eval/reference/qualification-cases/TRIAL-A.json `
+  --prompt eval/runs/example/prompt.txt `
+  --run-dir eval/runs/example-luna-medium `
+  --phase 1 --model gpt-5.6-luna --effort medium
+```
+
+Approve the Proposal Review with the researcher-only `rob2 review` command,
+then continue the same session with `Continue.` as described in
+[`docs/evaluation/rsi.md`](docs/evaluation/rsi.md). Verify the resulting
+`.rob2.zip` with `scripts/verify_bundle.py`. A successful smoke test confirms
+that the model-facing contract completes without schema or Pydantic repair
+loops; it is an operational check, not a population accuracy estimate.

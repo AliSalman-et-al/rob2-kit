@@ -87,6 +87,7 @@ def test_public_figure_evidence_rejects_string_coordinates() -> None:
                 "identity": "sha256:" + "0" * 64,
                 "trial_id": "trial",
                 "source_id": "source_" + "0" * 64,
+                "delivery_receipt": "sha256:" + "3" * 64,
                 "render": {
                     "identity": "sha256:" + "1" * 64,
                     "source_id": "source_" + "0" * 64,
@@ -162,6 +163,27 @@ def test_fastmcp_requires_search_mode_at_public_boundary() -> None:
                 )
 
     asyncio.run(search_without_mode())
+
+
+def test_fastmcp_validates_the_entire_search_batch_before_execution() -> None:
+    async def malformed_batch() -> Any:
+        async with Client(mcp) as client:
+            return await client.call_tool(
+                "search_sources_batch",
+                {
+                    "requests": [
+                        {"trial_id": "trial", "query": "missing mode", "limit": 1},
+                        {"trial_id": "trial", "query": "valid", "mode": "any", "limit": 1},
+                    ]
+                },
+                raise_on_error=False,
+            )
+
+    result = asyncio.run(malformed_batch())
+    assert result.is_error is True
+    assert result.structured_content is None
+    assert result.content
+    assert "mode" in result.content[0].text
 
 
 def test_current_batch_resource_matches_get_status_receipt(tmp_path: Path) -> None:

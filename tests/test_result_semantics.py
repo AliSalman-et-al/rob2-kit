@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import json
+import sqlite3
 from pathlib import Path
 from typing import Any
 
@@ -9,12 +11,14 @@ from support.rob2 import (
     _assessment_workspace,
     _call,
     _domain_draft,
+    _finalize_assessment,
     _prepared_evidence,
     _proposal_args,
     _read_required_main_reports,
     _result,
     _review,
     _standalone_verify,
+    _unavailable_result,
     _workspace,
 )
 
@@ -23,6 +27,160 @@ from rob2_kit.application.domains import reconcile_missing_data
 from rob2_kit.application.finalization import verify_bundle
 from rob2_kit.packs import SCIENTIFIC_PACK
 from rob2_kit.workflow_models import AssessableResultDraft, ResultApplicability
+
+
+def test_one_group_description_requires_unavailable_result_with_exact_evidence(
+    tmp_path: Path,
+) -> None:
+    workspace = _workspace(tmp_path)
+    passage = (
+        "requested outcome; Treatment-emergent events by grade; group a; randomized participants; "
+        "Any event; grade_1; 65."
+    )
+    (workspace / "input" / "trial" / "main.txt").write_text(passage, encoding="utf-8")
+    evidence = _prepared_evidence(workspace)
+    result = _result(evidence)
+    result["reported"] = {
+        "form": "single_group_category_profile",
+        "analysis_population": "Randomized participants in group a.",
+        "endpoint": {"name": "Treatment-emergent events by grade"},
+        "group_id": "a",
+        "denominator_basis": "Randomized participants in group a.",
+        "category_axis_names": ["event", "grade"],
+        "categories": [{"category_axes": ["Any event", "grade_1"], "value": "65"}],
+    }
+
+    repair = _call(workspace, "save_proposal", _proposal_args(workspace, [result]))
+
+    assert repair["outcome"] == "repair", repair
+    assert any(item["code"] == "single_group_result_not_comparative" for item in repair["repairs"])
+    assert _state(workspace).get("proposal") is None
+
+    unavailable = _unavailable_result(
+        evidence,
+        "The comparative result for the other randomized group is not reported.",
+    )
+    saved = _call(workspace, "save_proposal", _proposal_args(workspace, [unavailable]))
+    assert saved["outcome"] == "review_required", saved
+    stored = _state(workspace)["review"]["candidate"]["proposal"]["results"][0]
+    assert stored["kind"] == "unavailable"
+    assert stored["missing_facts"][0]["basis"]["source"] == evidence["quote"]
+
+    _review(workspace)
+    status = _call(workspace, "get_status", {})
+    assert status["data"]["trial_dispositions"]["trial"] == "reviewable"
+    assert status["head"]["phase"] == "assessment"
+    reviewed = _call(
+        workspace,
+        "review_trial",
+        {"trial_id": "trial", "expected_revision": status["head"]["state_revision"]},
+    )
+    assert reviewed["data"]["review"]["disposition"] == "needs_input"
+    closed = _call(
+        workspace,
+        "close_trial",
+        {
+            "trial_id": "trial",
+            "expected_revision": reviewed["head"]["state_revision"],
+            "review_reference": reviewed["data"]["review"]["identity"],
+        },
+    )
+    assert closed["data"]["closure"]["disposition"] == "needs_input"
+
+
+@pytest.mark.parametrize("population", ("mITT", "per-protocol", "as-treated"))
+def test_comparative_result_population_labels_are_not_eligibility_gates(
+    tmp_path: Path, population: str
+) -> None:
+    workspace = _workspace(tmp_path)
+    evidence = _prepared_evidence(workspace)
+    result = _result(evidence)
+    result["reported"]["analysis_population"] = population
+
+    saved = _call(workspace, "save_proposal", _proposal_args(workspace, [result]))
+
+    assert saved["outcome"] == "review_required", saved
+
+
+def test_corrected_approved_result_requires_renewed_review_and_fresh_domains(
+    tmp_path: Path,
+) -> None:
+    workspace, evidence, revision = _assessment_workspace(tmp_path)
+    for domain in SCIENTIFIC_PACK.domains:
+        saved = _call(
+            workspace,
+            "save_domain_judgment",
+            _domain_draft("trial", domain.id, revision, evidence),
+        )
+        assert saved["outcome"] == "success", saved
+        revision = int(saved["head"]["state_revision"])
+
+    approved_state = _state(workspace)
+    prior_proposal = approved_state["proposal"]
+    prior_review = approved_state["proposal_review"]
+    prior_acknowledgment = approved_state["proposal_acknowledgment"]
+    prior_snapshot = approved_state["snapshots"]["trial"]
+    prior_checkpoints = tuple(
+        approved_state["domain_records"][f"trial:{domain.id}"]["identity"]
+        for domain in SCIENTIFIC_PACK.domains
+    )
+    revised = _result(evidence)
+    revised["target"]["time_point_or_window"]["description"] = "a corrected follow-up window"
+
+    saved = _call(workspace, "save_proposal", _proposal_args(workspace, [revised]))
+
+    assert saved["outcome"] == "review_required", saved
+    pending = _state(workspace)
+    assert pending["phase"] == "proposal"
+    assert pending["trial_dispositions"]["trial"] == "pending"
+    assert not any(key.startswith("trial:") for key in pending["domain_records"])
+    assert "trial" not in pending["snapshots"]
+    assert pending["proposal_revision_trial_ids"] == ["trial"]
+
+    connection = sqlite3.connect(workspace / ".rob2-kit" / "canonical.sqlite3")
+    try:
+        archived = connection.execute(
+            "SELECT payload FROM canonical_records WHERE identity=? AND kind='proposal'",
+            (prior_proposal["identity"],),
+        ).fetchone()
+        prior_review_record = connection.execute(
+            "SELECT payload FROM canonical_records WHERE identity=? AND kind='review'",
+            (prior_review["identity"],),
+        ).fetchone()
+        prior_ack_record = connection.execute(
+            "SELECT payload FROM canonical_records WHERE identity=? AND kind='acknowledgment'",
+            (prior_acknowledgment["identity"],),
+        ).fetchone()
+    finally:
+        connection.close()
+    assert archived is not None and json.loads(archived[0]) == prior_proposal
+    assert prior_review_record is not None
+    assert prior_ack_record is not None
+    retained_checkpoints = tuple(
+        pending["domain_history"][f"trial:{domain.id}"][-1] for domain in SCIENTIFIC_PACK.domains
+    )
+    assert retained_checkpoints == prior_checkpoints
+    assert pending["snapshot_history"]["trial"][-1] == prior_snapshot["identity"]
+
+    _review(workspace)
+    resumed = _state(workspace)
+    assert resumed["phase"] == "assessment"
+    assert resumed["proposal_review"]["identity"] != prior_review["identity"]
+    assert (
+        resumed["proposal_acknowledgment"]["review_identity"]
+        == resumed["proposal_review"]["identity"]
+    )
+    assert resumed["domain_records"] == {}
+    assert resumed["snapshots"] == {}
+    first_domain = SCIENTIFIC_PACK.domains[0]
+    fresh_revision = int(_call(workspace, "get_domain_context", {})["head"]["state_revision"])
+    fresh = _call(
+        workspace,
+        "save_domain_judgment",
+        _domain_draft("trial", first_domain.id, fresh_revision, evidence),
+    )
+    assert fresh["outcome"] == "success", fresh
+    assert fresh["data"]["checkpoint"]["identity"] != prior_checkpoints[0]
 
 
 def test_result_draft_accepts_each_applicability_contract() -> None:
@@ -75,7 +233,7 @@ def test_result_draft_rejects_removed_status_and_missing_known_design_evidence()
     "design",
     ("cluster_randomized", "crossover", "unclear"),
 )
-def test_approval_closes_unsupported_applicability_as_needs_input_without_unavailable_result(
+def test_approval_routes_unsupported_applicability_to_typed_trial_review(
     tmp_path: Path, design: str
 ) -> None:
     workspace = _workspace(tmp_path)
@@ -95,14 +253,29 @@ def test_approval_closes_unsupported_applicability_as_needs_input_without_unavai
 
     state = _state(workspace)
     status_receipt = _call(workspace, "get_status", {})
-    assert status_receipt["data"]["trial_dispositions"]["trial"] == "needs_input"
-    assert status_receipt["head"]["phase"] == "ready_to_finalize"
-    assert status_receipt["head"]["next_action"]["operation"] == "finalize_batch"
+    assert status_receipt["data"]["trial_dispositions"]["trial"] == "reviewable"
+    assert status_receipt["head"]["phase"] == "assessment"
+    assert status_receipt["head"]["next_action"]["operation"] == "review_trial"
     assert state["proposal"]["payload"]["results"][0]["kind"] == "assessable"
-    assert any(
-        terminal.get("trial_id") == "trial" and terminal.get("disposition") == "needs_input"
-        for terminal in state.get("terminals", {}).values()
+    reviewed = _call(
+        workspace,
+        "review_trial",
+        {"trial_id": "trial", "expected_revision": status_receipt["head"]["state_revision"]},
     )
+    expected = "needs_input" if design == "unclear" else "unsupported_design"
+    assert reviewed["data"]["review"]["disposition"] == expected
+    closed = _call(
+        workspace,
+        "close_trial",
+        {
+            "trial_id": "trial",
+            "expected_revision": reviewed["head"]["state_revision"],
+            "review_reference": reviewed["data"]["review"]["identity"],
+        },
+    )
+    assert closed["data"]["closure"]["disposition"] == expected
+    assert state["proposal"]["payload"]["results"][0]["kind"] == "assessable"
+    assert _state(workspace)["trial_dispositions"]["trial"] == expected
 
     blocked = _call(workspace, "get_domain_context", {})
     assert blocked["outcome"] == "condition"
@@ -257,7 +430,7 @@ def test_result_and_applicability_evidence_survive_review_replacement_and_deriva
         revision = int(saved["head"]["state_revision"])
 
     (workspace / ".rob2-kit" / "derivative.sqlite3").unlink()
-    finalized = _call(workspace, "finalize_batch", {"expected_revision": revision})
+    finalized = _finalize_assessment(workspace, revision)
     assert finalized["outcome"] == "success", finalized
     artifact = workspace / str(finalized["data"]["artifact"]["path"])
     assert verify_bundle(artifact)

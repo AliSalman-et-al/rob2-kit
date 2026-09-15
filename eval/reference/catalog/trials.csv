@@ -1,0 +1,11 @@
+trial_label,trial_slug,source_directory,nct_number,outcomes
+ARASENS,ARASENS,eval/reference/sources/ARASENS,NCT02799602,Overall Survival;Progression-Free Survival;Adverse Events
+ARCHES,ARCHES,eval/reference/sources/ARCHES,NCT02677896,Overall Survival;Progression-Free Survival;Adverse Events
+CHAARTED,CHAARTED,eval/reference/sources/CHAARTED,NCT00309985,Overall Survival;Progression-Free Survival
+ENZAMET,ENZAMET,eval/reference/sources/ENZAMET,NCT02446405,Overall Survival;Progression-Free Survival;Adverse Events
+GETUG-AFU 15,GETUG-AFU-15,eval/reference/sources/GETUG-AFU-15,NCT00104715,Overall Survival;Progression-Free Survival
+LATITUDE,LATITUDE,eval/reference/sources/LATITUDE,NCT01715285,Overall Survival;Progression-Free Survival;Adverse Events
+PEACE-1,PEACE-1,eval/reference/sources/PEACE-1,NCT01957436,Overall Survival;Progression-Free Survival;Adverse Events
+STAMPEDE,STAMPEDE,eval/reference/sources/STAMPEDE,NCT00268476,Overall Survival;Progression-Free Survival;Adverse Events
+SWOG-1216,SWOG-1216,eval/reference/sources/SWOG-1216,NCT01809691,Overall Survival;Progression-Free Survival;Adverse Events
+TITAN,TITAN,eval/reference/sources/TITAN,NCT02489318,Overall Survival;Progression-Free Survival;Adverse Events

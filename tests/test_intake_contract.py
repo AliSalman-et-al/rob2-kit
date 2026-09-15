@@ -24,17 +24,19 @@ from support.rob2 import (
 
 from rob2_kit.application._state import _state
 from rob2_kit.application.contracts import TOOL_NAMES
-from rob2_kit.application.domains import get_domain_context
 from rob2_kit.application.status import presentation
 from rob2_kit.interfaces.mcp.contracts import (
+    CloseTrialAction,
     ResearcherReviewAction,
+    ReviewTrialAction,
     SelectedNarrativeEvidence,
-    normalize,
+    TrialReviewAction,
     output_schema,
     validate_output,
 )
 from rob2_kit.interfaces.mcp.server import mcp
 from rob2_kit.models import sha256
+from rob2_kit.workflow_models import TrialClosureRequest, TrialReviewRequest
 
 
 def test_researcher_review_purpose_is_closed() -> None:
@@ -49,6 +51,62 @@ def test_researcher_review_purpose_is_closed() -> None:
         )
 
 
+def test_trial_review_actions_have_callable_normal_and_blocker_forms() -> None:
+    identity = "sha256:" + "0" * 64
+    normal = ReviewTrialAction.model_validate(
+        {
+            "operation": "review_trial",
+            "authority": "host",
+            "trial_id": "trial-a",
+            "expected_revision": 5,
+        }
+    )
+    assert normal.caller_inputs is None
+    TrialReviewRequest.model_validate(
+        {
+            "trial_id": "trial-a",
+            "expected_revision": 5,
+            "request": {
+                "disposition": "needs_input",
+                "trial_id": "trial-a",
+                "reason": "The unit of randomization is not reported.",
+                "missing_facts": ["Unit of randomization"],
+            },
+        }
+    )
+    blocker = ReviewTrialAction.model_validate(
+        {
+            "operation": "review_trial",
+            "authority": "host",
+            "trial_id": "trial-a",
+            "expected_revision": 5,
+            "caller_inputs": ["request"],
+        }
+    )
+    assert blocker.caller_inputs == ("request",)
+    close = CloseTrialAction.model_validate(
+        {
+            "operation": "close_trial",
+            "authority": "host",
+            "trial_id": "trial-a",
+            "expected_revision": 5,
+            "review_reference": identity,
+        }
+    )
+    assert close.review_reference == identity
+    TrialClosureRequest.model_validate(
+        {
+            "trial_id": "trial-a",
+            "expected_revision": 5,
+            "review_reference": identity,
+        }
+    )
+
+    # Keep the old combined model importable for callers that still validate
+    # persisted/public projections outside the NextAction schema.
+    assert TrialReviewAction.model_validate(close.model_dump()).review_reference == identity
+
+
 def test_domain_context_preserves_nullable_endpoint_definition_in_receipt(tmp_path: Path) -> None:
     """Required nullable endpoint definitions survive public receipt serialization."""
 
@@ -60,11 +118,17 @@ def test_domain_context_preserves_nullable_endpoint_definition_in_receipt(tmp_pa
     assert saved["outcome"] == "review_required", saved
     _review(workspace)
 
-    raw = get_domain_context(workspace, "trial", "domain:randomization")
-    receipt = normalize("get_domain_context", raw)
+    receipt = workflow_call(
+        workspace,
+        "get_domain_context",
+        {"trial_id": "trial", "domain_id": "domain:randomization"},
+    )
     assert receipt["data"]["result"]["reported"]["endpoint"]["definition"] is None
     assert "current_checkpoint" not in receipt["data"]
-    assert validate_output("get_domain_context", receipt) == receipt
+    validated = dict(receipt)
+    validated.pop("_image_content", None)
+    checked = validate_output("get_domain_context", validated)
+    assert checked["data"]["result"]["reported"]["endpoint"]["definition"] is None
 
 
 def _prepare_schema() -> dict[str, object]:
@@ -164,18 +228,21 @@ def test_every_public_tool_publishes_closed_input_and_output_schemas() -> None:
             "get_status": 2,
             "list_sources": 2,
             "search_sources": 2,
+            "search_sources_batch": 2,
             "read_pages": 2,
             "select_text_evidence": 2,
             "render_page": 2,
             "select_visual_evidence": 2,
             "get_domain_context": 2,
+            "save_working_checkpoint": 2,
             "prepare_batch": 3,
-            "reason_proposal": 4,
+            "validate_proposal": 4,
             "save_proposal": 5,
             "request_proposal_approval": 2,
-            "reason_domain_assessment": 4,
+            "validate_domain_assessment": 4,
             "save_domain_judgment": 4,
-            "request_trial_terminal": 3,
+            "review_trial": 3,
+            "close_trial": 3,
             "finalize_batch": 3,
         }
         assert len(output["oneOf"]) == expected_outcomes[tool.name]
@@ -500,7 +567,7 @@ def test_receipt_head_uses_authoritative_post_operation_status(tmp_path: Path) -
     }
     assert prepared["head"]["phase"] == "proposal"
     assert prepared["head"]["next_action"] == {
-        "operation": "reason_proposal",
+        "operation": "validate_proposal",
         "authority": "host",
         "expected_revision": prepared["head"]["state_revision"],
         "caller_inputs": ["results", "assessments"],
@@ -515,11 +582,13 @@ def test_next_action_is_operation_discriminated_and_closed() -> None:
     assert next_action["discriminator"] == {
         "mapping": {
             "prepare_batch": "#/$defs/PrepareBatchAction",
-            "reason_proposal": "#/$defs/ReasonProposalAction",
+            "validate_proposal": "#/$defs/ValidateProposalAction",
             "save_proposal": "#/$defs/SaveProposalAction",
             "get_domain_context": "#/$defs/GetDomainContextAction",
-            "reason_domain_assessment": "#/$defs/ReasonDomainAssessmentAction",
+            "validate_domain_assessment": "#/$defs/ValidateDomainAssessmentAction",
             "save_domain_judgment": "#/$defs/SaveDomainJudgmentAction",
+            "review_trial": "#/$defs/ReviewTrialAction",
+            "close_trial": "#/$defs/CloseTrialAction",
             "finalize_batch": "#/$defs/FinalizeBatchAction",
             "researcher_review": "#/$defs/ResearcherReviewAction",
         },
@@ -527,15 +596,24 @@ def test_next_action_is_operation_discriminated_and_closed() -> None:
     }
     for name in (
         "SaveProposalAction",
-        "ReasonProposalAction",
+        "ValidateProposalAction",
         "PrepareBatchAction",
         "GetDomainContextAction",
-        "ReasonDomainAssessmentAction",
+        "ValidateDomainAssessmentAction",
         "SaveDomainJudgmentAction",
+        "ReviewTrialAction",
+        "CloseTrialAction",
         "FinalizeBatchAction",
         "ResearcherReviewAction",
     ):
         assert definitions[name]["additionalProperties"] is False
+    review_definition = definitions["ReviewTrialAction"]
+    assert "review_reference" not in review_definition["properties"]
+    assert "review_reference" not in review_definition["required"]
+    close_definition = definitions["CloseTrialAction"]
+    assert "caller_inputs" not in close_definition["properties"]
+    assert "review_reference" in close_definition["required"]
+    assert "supersedes" not in definitions["SaveDomainJudgmentAction"]["properties"]
 
     with pytest.raises(ValidationError):
         validate_output(
@@ -556,8 +634,10 @@ def test_next_action_is_operation_discriminated_and_closed() -> None:
                     "terminal_counts": {
                         "assessed": 0,
                         "needs_input": 0,
+                        "unsupported_design": 0,
                         "failed": 0,
                         "pending": 0,
+                        "reviewable": 0,
                     },
                     "review_required": False,
                     "authority_required": "host",
@@ -586,11 +666,14 @@ def test_status_counts_a_completed_trial_before_batch_finalization() -> None:
     assert status["counts"] == {
         "assessed": 1,
         "needs_input": 0,
+        "unsupported_design": 0,
         "failed": 0,
         "pending": 1,
+        "reviewable": 0,
     }
     assert status["wording"] == (
-        "Batch incomplete: 1/2 Trials completed; 1 pending. Continue now with head.next_action. "
+        "Batch incomplete: 1/2 Trials completed; 1 pending; 0 ready for review and closure. "
+        "Continue now with head.next_action. "
         "Never stop at a Trial boundary, ask whether to continue, infer pending Trial "
         "judgments, or reduce rigor for token or context limits."
     )
@@ -634,11 +717,11 @@ def test_assessment_skill_preserves_result_choice_and_completion_guards() -> Non
     )
 
     assert "an exact assessable Result" in instructions
-    assert "closest complete non-exact assessable candidate or profile" in instructions
-    assert "unavailable Result only when no complete assessable candidate exists" in instructions
-    assert "Missing comparator values do not make" in instructions
-    assert "single_group_category_profile" in instructions
-    assert "Never invent comparator cells" in instructions
+    assert "closest complete non-exact comparative candidate" in instructions
+    assert "unavailable Result when no complete comparative candidate can proceed" in instructions
+    assert "A one-arm category profile is descriptive, not comparative" in instructions
+    assert "one-arm category profile" in instructions
+    assert "Do not invent comparator values or category cells" in instructions
     for comparison in (
         "event set",
         "time origin or window",
@@ -658,11 +741,11 @@ def test_assessment_skill_preserves_result_choice_and_completion_guards() -> Non
     assert "request_proposal_approval` with the empty arguments object `{}`" in instructions
     assert "data.remaining_windows" in instructions
     assert "Draft every active question in the dependency-closed path" in instructions
-    assert "Include inactive answers only when they are already available" in instructions
+    assert "Include an inactive answer when it is already available" in instructions
     assert "For 5.3, identify both the eligible alternatives" in instructions
     assert '"kind": "quantified"' in instructions
     assert '"15 days after randomization"' in instructions
-    assert "fifth accepted checkpoint freezes the Trial snapshot" in instructions
+    assert "Trial ready for review" in instructions
     assert "`ready_to_finalize` is not completion" in instructions
     assert "`probably_no` or `no`" in instructions
     assert "Do not fabricate direct support" in instructions
@@ -670,10 +753,10 @@ def test_assessment_skill_preserves_result_choice_and_completion_guards() -> Non
     assert "progress confirmation" in instructions
     assert "Was allocation concealed until participants were enrolled and assigned?" in instructions
 
-    terminal_description = _tool_description("request_trial_terminal")
-    assert "missing direct evidence" in terminal_description.lower()
-    assert "unfinished source review" in terminal_description
-    assert "probably_yes" in terminal_description
+    trial_review_description = _tool_description("review_trial")
+    assert "ordinary missing Evidence" in trial_review_description
+    assert "unfinished source review" in trial_review_description
+    assert "allowed answer" in trial_review_description
 
 
 def test_assessment_skill_preserves_rigor_across_context_compaction() -> None:
@@ -687,14 +770,14 @@ def test_assessment_skill_preserves_rigor_across_context_compaction() -> None:
     assert "Use `get_domain_context` to restore Domain Evidence" in normalized
     assert "Do not recreate completed work from memory" in normalized
     assert "Save each Domain before moving on" in normalized
-    assert "fifth accepted checkpoint freezes the Trial snapshot" in normalized
+    assert "fifth accepted checkpoint makes the Trial ready for review" in normalized
     assert (
         "When `head.next_action.operation` is `finalize_batch`, call it immediately" in normalized
     )
 
 
 def test_result_relation_schema_has_only_visible_non_exact_categories() -> None:
-    schema = _tool_schema("reason_proposal")
+    schema = _tool_schema("validate_proposal")
     result_items = cast(dict[str, Any], schema["properties"]["results"]["items"])
     assessable = cast(dict[str, Any], result_items["oneOf"][0])
     relation = cast(dict[str, Any], assessable["properties"]["relation"])
@@ -707,12 +790,12 @@ def test_result_relation_schema_has_only_visible_non_exact_categories() -> None:
     assert "matching numbers do not prove equivalence" in relation_description
     assert "alternatives" not in relation_description
     assert "clinical salience" in result_items["description"]
-    assert "complete non-exact candidate" in result_items["description"]
+    assert "complete non-exact comparative candidate" in result_items["description"]
     assert "broader is a superset" in result_items["description"]
     assert "subset or has additional restrictions" in result_items["description"]
     results_description = cast(dict[str, Any], schema["properties"]["results"])["description"]
     assert results_description == "The exact Result cards for this Proposal save."
-    tool_description = _tool_description("reason_proposal")
+    tool_description = _tool_description("validate_proposal")
     assert "brief evidence-based assessment" in tool_description
     assert "conflicting evidence and unresolved facts" in tool_description
 
@@ -769,6 +852,7 @@ def test_search_contract_exposes_match_summary_and_render_defaults_to_pixels() -
     search_description = _tool_description("search_sources")
     assert "counts" in search_description
     assert "broad truncated any" in search_description.lower()
+    assert "same query and mode" in search_description
     assert "at least one query term on a page" in search_description
     assert "co-occurrence" in search_description
     render_schema = _tool_schema("render_page")
@@ -785,7 +869,7 @@ def test_search_contract_exposes_match_summary_and_render_defaults_to_pixels() -
 
 
 def test_save_proposal_schema_is_closed_and_discriminated() -> None:
-    schema = _tool_schema("reason_proposal")
+    schema = _tool_schema("validate_proposal")
     assert schema["additionalProperties"] is False
     assert schema["required"] == ["results", "assessments", "expected_revision"]
     assert "proposal" not in schema["properties"]
@@ -793,7 +877,7 @@ def test_save_proposal_schema_is_closed_and_discriminated() -> None:
     assert "assessments" in schema["properties"]
     result_items = cast(dict[str, Any], schema["properties"]["results"]["items"])
     assert "exact assessable first" in result_items["description"]
-    assert "Missing comparator values" in result_items["description"]
+    assert "one-arm descriptive category profile" in result_items["description"]
     assert [item["properties"]["kind"]["const"] for item in result_items["oneOf"]] == [
         "assessable",
         "unavailable",
@@ -817,7 +901,15 @@ def test_save_proposal_schema_is_closed_and_discriminated() -> None:
     assert "bindings" not in assessable["properties"]
     assert "clarity" not in assessable["properties"]
     assert "alternatives" not in assessable["properties"]
-    assert "evidence" not in assessable["properties"]
+    assert "evidence" in assessable["properties"]
+    evidence_items = assessable["properties"]["evidence"]["items"]
+    assert [item["properties"]["kind"]["const"] for item in evidence_items["oneOf"]] == [
+        "narrative",
+        "table",
+        "table_multispan",
+        "figure",
+        "derived",
+    ]
     assert "relation_rationale" in assessable["required"]
     target = cast(dict[str, Any], assessable["properties"]["target"])
     assert "effect_of_interest" not in target["properties"]
@@ -865,8 +957,8 @@ def test_save_proposal_schema_is_closed_and_discriminated() -> None:
     # schema, including design applicability, compact enough for one definition.
     # Reasoning assessments add a bounded source-bound structure to the Result
     # cards while keeping the constructible request below one definition.
-    assert len(json.dumps(schema, separators=(",", ":")).encode()) < 19000
-    assert len(_walk_schema(schema)) <= 23
+    assert len(json.dumps(schema, separators=(",", ":")).encode()) < 30000
+    assert len(_walk_schema(schema)) <= 40
     save_schema = _tool_schema("save_proposal")
     assert save_schema["required"] == ["expected_revision", "reasoning_id"]
     assert set(save_schema["properties"]) == {"expected_revision", "reasoning_id"}
@@ -882,7 +974,7 @@ def test_save_domain_judgment_schema_is_closed_and_typed() -> None:
         "expected_revision",
         "reasoning_id",
     }
-    draft = _tool_schema("reason_domain_assessment")
+    draft = _tool_schema("validate_domain_assessment")
     assert draft["additionalProperties"] is False
     assert "multiple_concerns" in draft["properties"]
     assert draft["required"] == ["trial_id", "domain_id", "expected_revision", "answers"]
@@ -890,13 +982,20 @@ def test_save_domain_judgment_schema_is_closed_and_typed() -> None:
     assert answers["additionalProperties"] is False
     assert set(answers["properties"]) == {
         "question_id",
-        "option_id",
+        "answer",
         "bases",
         "justification",
         "missing_data",
         "unknowns",
         "counterevidence",
     }
+    assert answers["properties"]["answer"]["enum"] == [
+        "yes",
+        "probably_yes",
+        "probably_no",
+        "no",
+        "no_information",
+    ]
     variants = cast(dict[str, Any], answers["properties"]["bases"]["items"])["oneOf"]
     assert len(variants) == 3
     assert all(variant["additionalProperties"] is False for variant in variants)

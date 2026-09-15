@@ -4,10 +4,10 @@ import subprocess
 import sys
 from pathlib import Path
 
-from support.rob2 import _read_required_main_reports
+from support.rob2 import _call, _read_required_main_reports
 
 from rob2_kit.application._state import _state
-from rob2_kit.application.finalization import finalize_batch, verify_bundle
+from rob2_kit.application.finalization import verify_bundle
 from rob2_kit.application.intake import approve_review, prepare_batch_for_outcome
 from rob2_kit.application.proposal import save_proposal
 from rob2_kit.workflow_models import ProposalDraft, UnavailableResult
@@ -52,11 +52,33 @@ def test_zero_source_trial_reaches_needs_input_and_finalizes(tmp_path: Path) -> 
     approved = approve_review(tmp_path, proposal["review"]["reference"])
     assert approved["outcome"] == "success"
     state = _state(tmp_path)
-    assert state["phase"] == "ready_to_finalize"
-    assert state["trial_dispositions"] == {"trial": "needs_input"}
+    assert state["phase"] == "assessment"
+    assert state["trial_dispositions"] == {"trial": "reviewable"}
 
-    finalized = finalize_batch(tmp_path, state["revision"])
-    artifact = tmp_path / finalized["artifact"]["path"]
+    reviewed = _call(
+        tmp_path,
+        "review_trial",
+        {"trial_id": "trial", "expected_revision": state["revision"]},
+    )
+    assert reviewed["outcome"] == "success", reviewed
+    assert reviewed["data"]["review"]["disposition"] == "needs_input"
+    closed = _call(
+        tmp_path,
+        "close_trial",
+        {
+            "trial_id": "trial",
+            "expected_revision": reviewed["head"]["state_revision"],
+            "review_reference": reviewed["data"]["review"]["identity"],
+        },
+    )
+    assert closed["outcome"] == "success", closed
+    finalized = _call(
+        tmp_path,
+        "finalize_batch",
+        {"expected_revision": closed["head"]["state_revision"]},
+    )
+    assert finalized["outcome"] == "success", finalized
+    artifact = tmp_path / finalized["data"]["artifact"]["path"]
     assert verify_bundle(artifact)
     standalone = subprocess.run(
         [sys.executable, "scripts/verify_bundle.py", str(artifact)],

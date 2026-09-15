@@ -49,8 +49,14 @@ class _RegistryCapture:
     content: bytes | None = None
 
 
-def _registry_record(nct: object) -> _RegistryCapture:
+def _registry_record(
+    nct: object,
+    replay: bytes | None = None,
+    captured_at: object = None,
+) -> _RegistryCapture:
     """Normalize the registry boundary into one closed, persisted outcome."""
+    if replay is not None:
+        return _replayed_registry_record(nct, replay, captured_at)
     # Manifest data may identify the requested registry record, but it cannot
     # supply a provider outcome.  In particular, ``kind=matched`` and a
     # hand-written title are not evidence of a ClinicalTrials.gov match.
@@ -68,6 +74,102 @@ def _registry_record(nct: object) -> _RegistryCapture:
     # dossier.  Resolve it through the provider and fail closed when the
     # provider cannot supply a complete record.
     return _fetch_registry_record(nct)
+
+
+def _replayed_registry_record(nct: object, data: bytes, captured_at: object) -> _RegistryCapture:
+    """Validate a retained provider response without making a new request."""
+
+    if not isinstance(nct, str) or not re.fullmatch(r"NCT\d{8}", nct):
+        return _RegistryCapture(
+            {
+                "kind": "not_found",
+                "query": str(nct or "undeclared"),
+                "retrieved_at": str(captured_at),
+            }
+        )
+    if not isinstance(captured_at, str):
+        return _RegistryCapture(
+            {
+                "kind": "unavailable",
+                "query": nct,
+                "reason": "replayed registry capture has no capture timestamp",
+                "retrieved_at": datetime.now(UTC).isoformat(),
+            }
+        )
+    try:
+        timestamp = datetime.fromisoformat(captured_at.replace("Z", "+00:00"))
+    except ValueError:
+        return _RegistryCapture(
+            {
+                "kind": "unavailable",
+                "query": nct,
+                "reason": "replayed registry capture timestamp is invalid",
+                "retrieved_at": datetime.now(UTC).isoformat(),
+            }
+        )
+    if timestamp.tzinfo is None:
+        return _RegistryCapture(
+            {
+                "kind": "unavailable",
+                "query": nct,
+                "reason": "replayed registry capture timestamp has no timezone",
+                "retrieved_at": datetime.now(UTC).isoformat(),
+            }
+        )
+    try:
+        payload = json.loads(data)
+    except (UnicodeDecodeError, json.JSONDecodeError):
+        return _RegistryCapture(
+            {
+                "kind": "unavailable",
+                "query": nct,
+                "reason": "replayed registry capture is invalid JSON",
+                "retrieved_at": captured_at,
+            }
+        )
+    if not isinstance(payload, dict):
+        return _RegistryCapture(
+            {
+                "kind": "unavailable",
+                "query": nct,
+                "reason": "replayed registry capture is not an object",
+                "retrieved_at": captured_at,
+            }
+        )
+    protocol = payload.get("protocolSection")
+    identification = protocol.get("identificationModule") if isinstance(protocol, dict) else None
+    registry_id = identification.get("nctId") if isinstance(identification, dict) else None
+    title = identification.get("officialTitle") if isinstance(identification, dict) else None
+    if not isinstance(title, str) or not title.strip():
+        title = identification.get("briefTitle") if isinstance(identification, dict) else None
+    if not isinstance(registry_id, str) or not registry_id.strip() or not isinstance(title, str):
+        return _RegistryCapture(
+            {
+                "kind": "unavailable",
+                "query": nct,
+                "reason": "replayed registry record is missing identity or title",
+                "retrieved_at": captured_at,
+            }
+        )
+    if registry_id.upper() != nct:
+        return _RegistryCapture(
+            {
+                "kind": "contradiction",
+                "registry_id": registry_id,
+                "facts": [f"replayed registry returned {registry_id} for requested {nct}"],
+                "retrieved_at": captured_at,
+            }
+        )
+    return _RegistryCapture(
+        {
+            "kind": "matched",
+            "registry_id": nct,
+            "title": title,
+            "url": f"https://clinicaltrials.gov/study/{nct}",
+            "retrieved_at": captured_at,
+        },
+        data,
+    )
 
 
 def _fetch_registry_record(nct: str) -> _RegistryCapture:
@@ -174,7 +276,18 @@ def _manifest_registry_identifier(config: dict[str, Any]) -> str | None:
         if key in config:
             declarations.append((key, config[key]))
     if isinstance(registry, dict):
-        unsupported = sorted(set(registry) - {"nct", "nct_id", "registry_id"})
+        unsupported = sorted(
+            set(registry)
+            - {
+                "nct",
+                "nct_id",
+                "registry_id",
+                "replay",
+                "captured_at",
+                "sha256",
+                "provenance",
+            }
+        )
         if unsupported:
             raise ValueError("sources.toml registry may contain only an authoritative identifier")
         for key in ("nct", "nct_id", "registry_id"):
@@ -186,6 +299,42 @@ def _manifest_registry_identifier(config: dict[str, Any]) -> str | None:
         names = ", ".join(name for name, _value in declarations)
         raise ValueError(f"ambiguous registry identifier declarations: {names}")
     return None if not declarations else str(declarations[0][1])
+
+
+def _manifest_registry_replay(config: dict[str, Any]) -> dict[str, str] | None:
+    """Return validated retained-registry metadata, if this dossier replays it."""
+
+    registry = config.get("registry")
+    if not isinstance(registry, dict) or "replay" not in registry:
+        return None
+    required = {"replay", "captured_at", "sha256", "provenance"}
+    if not required <= set(registry):
+        raise ValueError(
+            "sources.toml registry replay requires replay, captured_at, sha256, provenance"
+        )
+    replay = registry["replay"]
+    if (
+        not isinstance(replay, str)
+        or not replay
+        or Path(replay).is_absolute()
+        or ".." in Path(replay).parts
+    ):
+        raise ValueError("sources.toml registry replay path must be relative")
+    captured_at = registry["captured_at"]
+    if not isinstance(captured_at, str) or not captured_at.strip():
+        raise ValueError("sources.toml registry captured_at must be a non-empty string")
+    sha256 = registry["sha256"]
+    if not isinstance(sha256, str) or re.fullmatch(r"[0-9a-fA-F]{64}", sha256) is None:
+        raise ValueError("sources.toml registry sha256 must be a hexadecimal SHA-256")
+    provenance = registry["provenance"]
+    if not isinstance(provenance, str) or not provenance.strip():
+        raise ValueError("sources.toml registry provenance must be a non-empty string")
+    return {
+        "replay": replay,
+        "captured_at": captured_at,
+        "sha256": sha256.lower(),
+        "provenance": provenance,
+    }
 
 
 def _is_contained_source(directory: Path, path: Path) -> bool:
@@ -430,6 +579,19 @@ def prepare_batch(
             for item in omissions
         ]
         nct = _manifest_registry_identifier(config)
+        registry_replay = _manifest_registry_replay(config)
+        replay_relative = registry_replay["replay"] if registry_replay is not None else None
+        replay_data: bytes | None = None
+        if replay_relative is not None:
+            assert registry_replay is not None
+            replay_path = directory / replay_relative
+            if replay_relative in omission_paths or replay_path.name in omission_paths:
+                raise ValueError("replayed registry source cannot be omitted")
+            if not _is_contained_source(directory, replay_path) or not replay_path.is_file():
+                raise ValueError("replayed registry source is missing from the Trial directory")
+            replay_data = replay_path.read_bytes()
+            if hashlib.sha256(replay_data).hexdigest() != registry_replay["sha256"]:
+                raise ValueError("replayed registry bytes do not match sources.toml sha256")
         records: list[dict[str, Any]] = []
         seen_ordinary_paths: set[str] = set()
         for path in sorted(directory.rglob("*"), key=lambda item: item.as_posix().casefold()):
@@ -443,6 +605,8 @@ def prepare_batch(
             if any(part.startswith(".") for part in Path(relative).parts):
                 continue
             seen_ordinary_paths.add(relative)
+            if replay_relative == relative:
+                continue
             role, declared_role = roles_for(relative)
             if relative in omission_paths or path.name in omission_paths:
                 continue
@@ -588,11 +752,16 @@ def prepare_batch(
                         "sha256": None,
                     }
                 )
-        registry_capture = _registry_record(nct)
+        registry_capture = _registry_record(
+            nct,
+            replay_data,
+            registry_replay["captured_at"] if registry_replay is not None else None,
+        )
         registry_record = registry_capture.outcome
         if registry_capture.content is not None:
             relative = f"registry/{nct}.json"
-            data = registry_capture.content
+            data = replay_data if replay_data is not None else registry_capture.content
+            assert data is not None
             digest = "sha256:" + hashlib.sha256(data).hexdigest()
             source_id = _source_id(trial_id, relative, digest)
             pages = _pages(Path(relative), data)
@@ -778,12 +947,20 @@ def _clear_discarded_derivatives(root: Path) -> None:
             "pages",
             "evidence_handles",
             "search_receipts",
+            "search_sessions",
+            "search_candidates",
+            "search_domain_associations",
+            "search_evidence_provenance",
             "renders",
+            "visual_deliveries",
             "page_reads",
             "domain_context_delivery",
         ):
             connection.execute(f"DELETE FROM {table}")
         connection.execute("DELETE FROM pages_fts")
+        connection.execute("DELETE FROM search_projection_meta")
+    with _db(root, "working.sqlite3") as connection:
+        connection.execute("DELETE FROM working_checkpoints")
 
 
 @dataclass(frozen=True)
@@ -848,9 +1025,18 @@ def approve_review(
     }
     acknowledgment = ReviewAcknowledgment.model_validate(acknowledgment).model_dump(mode="json")
     if state.get("phase") == "proposal":
+        proposal_history = state.get("proposal_history", [])
+        if not isinstance(proposal_history, list):
+            raise ValueError("approved Proposal history is invalid")
+        proposal_history = [
+            *proposal_history,
+            {
+                "proposal": state["proposal"],
+                "review": review,
+                "acknowledgment": acknowledgment,
+            },
+        ]
         disposition = dict(state.get("trial_dispositions", {}))
-        terminals = dict(state.get("terminals", {}))
-        terminal_records: dict[str, dict[str, Any]] = {}
         for result in state["proposal"]["payload"]["results"]:
             applicability = result.get("applicability")
             design = applicability.get("design") if isinstance(applicability, dict) else None
@@ -860,44 +1046,10 @@ def approve_review(
                 "unclear",
             }
             if result.get("kind") == "unavailable" or unsupported_design:
-                if unsupported_design:
-                    rationale = str(applicability.get("rationale", "")).strip()
-                    reason = (
-                        "The captured Trial design is unsupported by the installed "
-                        f"parallel-assignment pack ({design})."
-                        if design in {"cluster_randomized", "crossover"}
-                        else "The captured Trial design could not be established for the installed "
-                        f"parallel-assignment pack ({design})."
-                    )
-                    missing_facts = (
-                        "A RoB 2 pack supporting the documented Trial design is required."
-                        if design in {"cluster_randomized", "crossover"}
-                        else (
-                            "Source information establishing the Trial design and unit of "
-                            "randomization is required."
-                        ),
-                    )
-                    if rationale:
-                        missing_facts = (f"Applicability rationale: {rationale}", *missing_facts)
-                else:
-                    reason = "The requested Result is not assessable from the captured Sources."
-                    missing_facts = tuple(
-                        item.get("fact", "") if isinstance(item, dict) else item
-                        for item in result.get("missing_facts", [])
-                    )
-                terminal = {
-                    "trial_id": result["trial_id"],
-                    "disposition": "needs_input",
-                    "reason": reason,
-                    "missing_facts": list(missing_facts),
-                }
-                terminal["identity"] = _identity(terminal)
-                terminals[terminal["identity"]] = terminal
-                terminal_records[f"terminal:{terminal['identity']}"] = terminal
-                disposition[result["trial_id"]] = "needs_input"
+                disposition[result["trial_id"]] = "reviewable"
         phase = (
             "ready_to_finalize"
-            if not any(value == "pending" for value in disposition.values())
+            if not any(value in {"pending", "reviewable"} for value in disposition.values())
             else "assessment"
         )
         state = {
@@ -907,7 +1059,10 @@ def approve_review(
             "review": None,
             "proposal_review": review,
             "proposal_acknowledgment": acknowledgment,
-            "terminals": terminals,
+            "proposal_history": proposal_history,
+            "proposal_revision_base": None,
+            "proposal_revision_trial_ids": [],
+            "trial_reviews": {},
             "acknowledgments": [*state.get("acknowledgments", []), acknowledgment],
             "domain_index": {
                 trial_id: [] for trial_id, value in disposition.items() if value == "pending"
@@ -920,7 +1075,7 @@ def approve_review(
             root,
             state,
             approval_revision,
-            {f"acknowledgment:{acknowledgment['identity']}": acknowledgment, **terminal_records},
+            {f"acknowledgment:{acknowledgment['identity']}": acknowledgment},
         )
     return _result(
         "success",

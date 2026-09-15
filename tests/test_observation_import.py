@@ -93,7 +93,13 @@ def test_import_is_deterministic_and_keeps_observations_structural() -> None:
 
 
 def test_documented_tools_match_the_public_contract() -> None:
-    assert DOCUMENTED_TOOLS == frozenset(TOOL_NAMES)
+    public_tools = frozenset(TOOL_NAMES)
+    assert public_tools <= DOCUMENTED_TOOLS
+    assert DOCUMENTED_TOOLS - public_tools == {
+        "reason_domain_assessment",
+        "reason_proposal",
+        "request_trial_terminal",
+    }
 
 
 def test_duplicate_operation_identity_is_rejected_without_payload_echo() -> None:

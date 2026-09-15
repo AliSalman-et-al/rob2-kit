@@ -1021,8 +1021,12 @@ def _valid_selected_evidence(
             return False
         if "search_session" in item:
             expected |= {"search_session", "candidate_rank"}
+        if "source_version" in item:
+            expected.add("source_version")
         if has_line_coordinates:
             expected |= {"start_line", "end_line"}
+    elif kind == "figure" and "delivery_receipt" in item:
+        expected.add("delivery_receipt")
     if set(item) != expected:
         return False
     source = sources.get(str(item.get("source_id")))
@@ -1049,6 +1053,10 @@ def _valid_selected_evidence(
             and isinstance(item.get("quote"), str)
             and bool(item["quote"])
             and item["end"] - item["start"] == len(item["quote"])
+            and (
+                "source_version" not in item
+                or item["source_version"] == source.get("projection_hash")
+            )
             and (
                 "start_line" not in item
                 or (
@@ -1088,6 +1096,20 @@ def _valid_selected_evidence(
         and bool(item["transcription"])
         and item["transcription"] == item["transcription"].strip()
         and item.get("provenance") in {"text_corroborated", "host_visual"}
+        and (
+            "delivery_receipt" not in item
+            or item.get("delivery_receipt")
+            == identity(
+                {
+                    "trial_id": item.get("trial_id"),
+                    "source_id": item.get("source_id"),
+                    "render_identity": render.get("identity"),
+                    "png_sha256": render.get("png_sha256"),
+                    "channel": "mcp_image_content",
+                    "mime_type": "image/png",
+                }
+            )
+        )
         and (item.get("provenance") != "text_corroborated" or region == [0.0, 0.0, 1.0, 1.0])
         and isinstance(region, list)
         and len(region) == 4
@@ -1392,6 +1414,28 @@ def _reported_result_has_coherent_anchor(
     def supports(
         value: object, reference: dict[str, object], field_path: str | None = None
     ) -> bool:
+        if reference.get("kind") == "table_multispan":
+            spans = reference.get("spans")
+            if not isinstance(spans, list):
+                return False
+            return any(
+                isinstance(span, dict)
+                and isinstance((selected := by_handle.get(str(span.get("handle")))), dict)
+                and selected.get("trial_id") == result["trial_id"]
+                and (
+                    _result_value_contains(
+                        str(selected.get("quote", selected.get("transcription", ""))),
+                        str(value),
+                        field_path,
+                    )
+                    if strict_numeric
+                    else _normalized_contains(
+                        str(selected.get("quote", selected.get("transcription", ""))),
+                        str(value),
+                    )
+                )
+                for span in spans
+            )
         selected = by_handle.get(str(reference.get("handle")))
         if not isinstance(selected, dict) or selected.get("trial_id") != result["trial_id"]:
             return False
@@ -1449,14 +1493,59 @@ def _reported_result_has_coherent_anchor(
             )
             for index, item in enumerate(reported["categories"])
         ]
+
+    def multispan_anchor(reference: dict[str, object]) -> bool:
+        spans = reference.get("spans")
+        if not isinstance(spans, list):
+            return False
+        roles = {
+            span.get("role")
+            for span in spans
+            if isinstance(span, dict) and isinstance(span.get("role"), str)
+        }
+        if {"header", "quantitative_row"} - roles or _is_generic_table_endpoint(endpoint_name):
+            return False
+
+        def supports_roles(value: object, accepted_roles: set[str], field_path: str) -> bool:
+            return any(
+                isinstance(span, dict)
+                and span.get("role") in accepted_roles
+                and supports(value, {**reference, "spans": [span]}, field_path)
+                for span in spans
+            )
+
+        return supports_roles(
+            endpoint_name, {"title_or_definition", "header"}, "/reported/endpoint/name"
+        ) and any(
+            all(
+                supports_roles(value, {"header", "quantitative_row", "unit", "footnote"}, path)
+                for path, value in quantitative
+            )
+            for quantitative in quantitative_tuples
+        )
+
     return any(
-        supports(endpoint_name, reference, "/reported/endpoint/name")
+        (
+            multispan_anchor(reference)
+            if reference.get("kind") == "table_multispan"
+            else supports(endpoint_name, reference, "/reported/endpoint/name")
+        )
         and any(
             all(supports(value, reference, field_path) for field_path, value in quantitative)
             for quantitative in quantitative_tuples
         )
         for reference in evidence
     )
+
+
+def _is_generic_table_endpoint(value: object) -> bool:
+    return isinstance(value, str) and " ".join(value.casefold().split()) in {
+        "total",
+        "overall",
+        "all",
+        "all patients",
+        "all participants",
+    }
 
 
 def _valid_no_supported_sources_basis(batch: object, trial_id: str) -> bool:
@@ -1627,6 +1716,21 @@ def _verify_result_evidence(
                 "denominators",
                 "footnotes",
             },
+            "table_multispan": {
+                "kind",
+                "basis",
+                "spans",
+                "title",
+                "scope",
+                "cohort",
+                "row",
+                "columns",
+                "group_or_category_axes",
+                "cells",
+                "units",
+                "denominators",
+                "footnotes",
+            },
             "figure": {
                 "kind",
                 "handle",
@@ -1637,7 +1741,12 @@ def _verify_result_evidence(
             },
             "derived": {"kind", "operation", "inputs", "value"},
         }
-        if kind not in expected_keys or set(reference) != expected_keys[kind]:
+        expected = expected_keys.get(kind)
+        if expected is None or frozenset(reference) not in (
+            {frozenset(expected), frozenset(expected | {"delivery_receipt"})}
+            if kind == "figure"
+            else {frozenset(expected)}
+        ):
             return False
         if kind == "derived":
             inputs = reference.get("inputs")
@@ -1683,6 +1792,77 @@ def _verify_result_evidence(
                     str(item.get("value", "")),
                 )
                 for item in inputs
+            ):
+                return False
+            continue
+        if kind == "table_multispan":
+            spans = reference.get("spans")
+            if (
+                reference.get("basis") != "text"
+                or not isinstance(spans, list)
+                or len(spans) < 2
+                or len(
+                    {
+                        span.get("handle")
+                        for span in spans
+                        if isinstance(span, dict) and isinstance(span.get("handle"), str)
+                    }
+                )
+                < 2
+                or any(
+                    not isinstance(span, dict)
+                    or set(span) != {"role", "handle"}
+                    or span.get("role")
+                    not in {"title_or_definition", "header", "quantitative_row", "unit", "footnote"}
+                    or not isinstance((selected := by_handle.get(span.get("handle"))), dict)
+                    or selected.get("kind") != "narrative"
+                    or selected.get("trial_id") != result["trial_id"]
+                    for span in spans
+                )
+            ):
+                return False
+            roles = {span["role"] for span in spans}
+            if {"header", "quantitative_row"} - roles:
+                return False
+            scalar_fields = [reference.get(key) for key in ("title", "scope", "cohort", "row")]
+            array_fields = {
+                key: reference.get(key)
+                for key in (
+                    "columns",
+                    "group_or_category_axes",
+                    "cells",
+                    "units",
+                    "denominators",
+                    "footnotes",
+                )
+            }
+            required_array_fields = {
+                key: values for key, values in array_fields.items() if key != "footnotes"
+            }
+            if (
+                any(not isinstance(value, str) or not value.strip() for value in scalar_fields)
+                or any(
+                    not isinstance(values, list) or not values
+                    for values in required_array_fields.values()
+                )
+                or not isinstance(array_fields["footnotes"], list)
+                or any(
+                    not isinstance(value, str) or not value.strip()
+                    for values in array_fields.values()
+                    for value in values
+                )
+                or groups & set(reference.get("group_or_category_axes", []))
+                or _is_generic_table_endpoint(endpoint.get("name"))
+            ):
+                return False
+            materials = [str(by_handle[span["handle"]].get("quote", "")) for span in spans]
+            values = [
+                *scalar_fields,
+                *[value for items in array_fields.values() for value in items],
+            ]
+            if any(
+                not any(supports_material(material, value) for material in materials)
+                for value in values
             ):
                 return False
             continue
@@ -1767,6 +1947,7 @@ def _verify_result_evidence(
                 )
                 or not (0 <= region[0] < region[2] <= 1 and 0 <= region[1] < region[3] <= 1)
                 or reference.get("render_identity") != render.get("identity")
+                or reference.get("delivery_receipt") != selected.get("delivery_receipt")
                 or reference.get("transcription") != selected.get("transcription")
                 or reference.get("provenance") != selected.get("provenance")
                 or region != selected.get("region")
@@ -1842,6 +2023,15 @@ def _verify_result_evidence(
                 )
             ),
             value,
+        ):
+            return False
+        if reference["kind"] == "table_multispan" and not any(
+            supports_material(
+                str(by_handle[span["handle"]].get("quote", "")),
+                value,
+                path,
+            )
+            for span in reference["spans"]
         ):
             return False
         if reference["kind"] == "figure":
@@ -2028,11 +2218,6 @@ def _verify_domain_lineage(
         "judgment",
         "trace",
     )
-    record_shape = {
-        *identity_fields,
-        "observed_at",
-        "identity",
-    }
     for key, history in domain_history.items():
         records = domain_history_records.get(key)
         active = domain_records.get(key)
@@ -2047,15 +2232,25 @@ def _verify_domain_lineage(
             return False
         prior: dict[str, Any] | None = None
         for index, (checkpoint, record) in enumerate(zip(history, records, strict=True)):
+            record_identity_fields = (
+                (*identity_fields, "result_identity")
+                if isinstance(record, dict) and "result_identity" in record
+                else identity_fields
+            )
+            record_shape = {*record_identity_fields, "observed_at", "identity"}
             if (
                 not isinstance(checkpoint, str)
                 or not isinstance(record, dict)
                 or set(record) != record_shape
                 or record.get("identity") != checkpoint
                 or record.get("identity")
-                != identity({key: record.get(key) for key in identity_fields})
+                != identity({key: record.get(key) for key in record_identity_fields})
                 or key != f"{record.get('trial_id')}:{record.get('domain_id')}"
                 or not _valid_timestamp(record.get("observed_at"))
+                or (
+                    "result_identity" in record
+                    and not isinstance(record.get("result_identity"), str)
+                )
             ):
                 return False
             supersedes = record.get("supersedes")
@@ -2064,34 +2259,40 @@ def _verify_domain_lineage(
                 if supersedes is not None or basis is not None:
                     return False
             else:
-                if not isinstance(prior, dict) or supersedes != prior.get("identity"):
+                if not isinstance(prior, dict):
                     return False
-                if not isinstance(basis, dict) or basis.get("kind") not in {
-                    "new_evidence",
-                    "self_correction",
-                }:
-                    return False
-                if basis.get("kind") == "self_correction":
-                    if (
-                        set(basis) != {"kind", "rationale"}
-                        or not str(basis.get("rationale", "")).strip()
-                    ):
+                if record.get("result_identity") != prior.get("result_identity"):
+                    if supersedes is not None or basis is not None:
                         return False
                 else:
-                    if (
-                        set(basis) != {"kind", "evidence", "rationale"}
-                        or not isinstance(basis.get("evidence"), str)
-                        or not str(basis.get("rationale", "")).strip()
-                    ):
+                    if supersedes != prior.get("identity"):
                         return False
-                    evidence_item = evidence.get(basis["evidence"])
-                    if (
-                        not isinstance(evidence_item, dict)
-                        or evidence_item.get("trial_id") != record.get("trial_id")
-                        or basis["evidence"] in _domain_evidence_ids(prior)
-                        or basis["evidence"] not in _domain_evidence_ids(record)
-                    ):
+                    if not isinstance(basis, dict) or basis.get("kind") not in {
+                        "new_evidence",
+                        "self_correction",
+                    }:
                         return False
+                    if basis.get("kind") == "self_correction":
+                        if (
+                            set(basis) != {"kind", "rationale"}
+                            or not str(basis.get("rationale", "")).strip()
+                        ):
+                            return False
+                    else:
+                        if (
+                            set(basis) != {"kind", "evidence", "rationale"}
+                            or not isinstance(basis.get("evidence"), str)
+                            or not str(basis.get("rationale", "")).strip()
+                        ):
+                            return False
+                        evidence_item = evidence.get(basis["evidence"])
+                        if (
+                            not isinstance(evidence_item, dict)
+                            or evidence_item.get("trial_id") != record.get("trial_id")
+                            or basis["evidence"] in _domain_evidence_ids(prior)
+                            or basis["evidence"] not in _domain_evidence_ids(record)
+                        ):
+                            return False
             prior = record
     return True
 
@@ -2185,13 +2386,178 @@ def _assessment_summary(state: dict[str, Any]) -> dict[str, dict[str, Any]]:
     }
 
 
+def _valid_trial_review_closures(
+    trial_reviews: object,
+    trial_closures: object,
+    terminals: object,
+    dispositions: dict[str, Any],
+    batch_trial_ids: set[str],
+    current_results: dict[str, dict[str, Any]],
+    domain_records: dict[str, Any],
+    identity: Callable[[object], str],
+) -> bool:
+    """Verify every Trial's explicit review, closure, and optional terminal."""
+    if (
+        not isinstance(trial_reviews, dict)
+        or not isinstance(trial_closures, dict)
+        or not isinstance(terminals, dict)
+        or set(trial_reviews) != batch_trial_ids
+        or set(trial_closures) != batch_trial_ids
+        or set(dispositions) != batch_trial_ids
+    ):
+        return False
+
+    review_dispositions = {"assessed", "needs_input", "unsupported_design", "failed"}
+    terminal_by_trial: dict[str, dict[str, Any]] = {}
+    for terminal_identity, terminal in terminals.items():
+        if (
+            not isinstance(terminal_identity, str)
+            or not isinstance(terminal, dict)
+            or set(terminal)
+            != {"identity", "trial_id", "disposition", "reason", "facts", "review_identity"}
+            or terminal.get("identity") != terminal_identity
+            or terminal.get("disposition") not in {"needs_input", "unsupported_design", "failed"}
+            or not isinstance(terminal.get("trial_id"), str)
+            or not isinstance(terminal.get("reason"), str)
+            or not terminal["reason"].strip()
+            or not isinstance(terminal.get("facts"), list)
+            or not terminal["facts"]
+            or any(not isinstance(fact, str) or not fact.strip() for fact in terminal["facts"])
+            or not isinstance(terminal.get("review_identity"), str)
+            or identity({key: value for key, value in terminal.items() if key != "identity"})
+            != terminal_identity
+        ):
+            return False
+        trial_id = terminal["trial_id"]
+        if trial_id not in batch_trial_ids or trial_id in terminal_by_trial:
+            return False
+        terminal_by_trial[trial_id] = terminal
+
+    for trial_id in batch_trial_ids:
+        review = trial_reviews[trial_id]
+        closure = trial_closures[trial_id]
+        disposition = dispositions[trial_id]
+        result = current_results.get(trial_id)
+        if (
+            not isinstance(review, dict)
+            or set(review)
+            != {
+                "identity",
+                "trial_id",
+                "result_identity",
+                "checkpoint_ids",
+                "disposition",
+                "reason",
+                "facts",
+            }
+            or review.get("trial_id") != trial_id
+            or review.get("disposition") not in review_dispositions
+            or review.get("disposition") != disposition
+            or not isinstance(review.get("result_identity"), str)
+            or not isinstance(result, dict)
+            or review["result_identity"] != identity(result)
+            or (
+                review.get("reason") is not None
+                and (not isinstance(review.get("reason"), str) or not review["reason"].strip())
+            )
+            or not isinstance(review.get("facts"), list)
+            or any(not isinstance(fact, str) or not fact.strip() for fact in review["facts"])
+            or review.get("identity")
+            != identity({key: value for key, value in review.items() if key != "identity"})
+            or not isinstance(closure, dict)
+            or set(closure) != {"identity", "trial_id", "review_identity", "disposition"}
+            or closure.get("trial_id") != trial_id
+            or closure.get("review_identity") != review.get("identity")
+            or closure.get("disposition") != disposition
+            or closure.get("identity")
+            != identity({key: value for key, value in closure.items() if key != "identity"})
+        ):
+            return False
+
+        checkpoint_ids: list[str] = []
+        for domain in SCIENTIFIC_PACK.domains:
+            record = domain_records.get(f"{trial_id}:{domain.id}")
+            if record is not None:
+                if not isinstance(record, dict) or not isinstance(record.get("identity"), str):
+                    return False
+                checkpoint_ids.append(record["identity"])
+        if review.get("checkpoint_ids") != checkpoint_ids:
+            return False
+        if disposition == "assessed" and len(checkpoint_ids) != len(SCIENTIFIC_PACK.domains):
+            return False
+        if disposition == "assessed":
+            if review.get("reason") is not None or review.get("facts"):
+                return False
+        elif (
+            not isinstance(review.get("reason"), str)
+            or not review["reason"].strip()
+            or not review.get("facts")
+        ):
+            return False
+
+        result_kind = result.get("kind")
+        applicability = result.get("applicability")
+        design = applicability.get("design") if isinstance(applicability, dict) else None
+        unsupported_design = design in {"cluster_randomized", "crossover"}
+        if (
+            (result_kind == "unavailable" and disposition != "needs_input")
+            or (design == "unclear" and disposition != "needs_input")
+            or (unsupported_design and disposition != "unsupported_design")
+            or (disposition == "unsupported_design" and not unsupported_design)
+            or (
+                disposition == "assessed"
+                and (result_kind != "assessable" or design != "individual_parallel")
+            )
+        ):
+            return False
+
+        terminal = terminal_by_trial.get(trial_id)
+        if disposition == "assessed":
+            if terminal is not None:
+                return False
+        elif (
+            terminal is None
+            or terminal.get("disposition") != disposition
+            or terminal.get("review_identity") != review.get("identity")
+            or terminal.get("reason") != review.get("reason")
+            or terminal.get("facts") != review.get("facts")
+        ):
+            return False
+        if result_kind == "unavailable":
+            missing_facts = result.get("missing_facts")
+            if not isinstance(missing_facts, list) or terminal_by_trial.get(trial_id, {}).get(
+                "facts"
+            ) != [item.get("fact") for item in missing_facts if isinstance(item, dict)]:
+                return False
+    return set(terminal_by_trial) == {
+        trial_id for trial_id, disposition in dispositions.items() if disposition != "assessed"
+    }
+
+
 def _bundle(root: Path, state: dict[str, Any]) -> dict[str, Any]:
     final_root = internal_path(root, "finalized")
     proposal = state.get("proposal")
     if not isinstance(proposal, dict) or not isinstance(proposal.get("evidence"), dict):
         raise ValueError("finalized bundle requires an approved proposal evidence catalog")
     proposal_review, proposal_acknowledgment = _proposal_authorization(root, state)
+    proposal_history = state.get("proposal_history")
+    if not isinstance(proposal_history, list) or not proposal_history:
+        proposal_history = [
+            {
+                "proposal": proposal,
+                "review": proposal_review,
+                "acknowledgment": proposal_acknowledgment,
+            }
+        ]
     evidence = dict(proposal["evidence"])
+    for version in proposal_history:
+        prior_proposal = version.get("proposal") if isinstance(version, dict) else None
+        prior_evidence = (
+            prior_proposal.get("evidence") if isinstance(prior_proposal, dict) else None
+        )
+        if not isinstance(prior_evidence, dict):
+            raise ValueError("approved Proposal history has an invalid evidence catalog")
+        evidence.update(prior_evidence)
     domain_evidence_ids: set[str] = set()
     historical_records = state.get("domain_history_records")
     records_to_scan = (
@@ -2273,6 +2639,7 @@ def _bundle(root: Path, state: dict[str, Any]) -> dict[str, Any]:
         "proposal": canonical_proposal,
         "proposal_review": proposal_review,
         "proposal_acknowledgment": proposal_acknowledgment,
+        "proposal_history": proposal_history,
         "dispositions": state.get("trial_dispositions", {}),
         "snapshots": state.get("snapshots", {}),
         "domain_records": state.get("domain_records", {}),
@@ -2283,8 +2650,30 @@ def _bundle(root: Path, state: dict[str, Any]) -> dict[str, Any]:
         "terminals": state.get("terminals", {}),
         "scientific_pack": _scientific_contract_descriptor(),
     }
+    has_trial_reviews = "trial_reviews" in state
+    has_trial_closures = "trial_closures" in state
+    if has_trial_reviews != has_trial_closures:
+        raise ValueError("Trial review and closure state must appear together")
+    if has_trial_reviews:
+        canonical["trial_reviews"] = state["trial_reviews"]
+        canonical["trial_closures"] = state["trial_closures"]
     identity = _identity({"schema": "rob2-kit.bundle.v0.3", "canonical": canonical})
     public = presentation(state)
+    if not has_trial_reviews:
+        dispositions = state.get("trial_dispositions", {})
+        counts = {
+            name: sum(value == name for value in dispositions.values())
+            for name in ("assessed", "needs_input", "failed", "pending")
+        }
+        total = len(dispositions)
+        wording = (
+            "Batch finalized. No RoB 2 assessments were completed."
+            if not counts["assessed"]
+            else "Batch finalized. "
+            f"RoB 2 assessments completed for {counts['assessed']}/{total} Trials. "
+            f"{counts['needs_input']} Trials need input; {counts['failed']} Trials failed."
+        )
+        public = {"counts": counts, "wording": wording}
     claims = {
         "trial_dispositions": state.get("trial_dispositions", {}),
         "counts": public["counts"],
@@ -2434,6 +2823,33 @@ def finalize_batch(workspace: str | Path, expected_revision: ExpectedRevision) -
     snapshots = dict(state.get("snapshots", {}))
     if any(value == "pending" for value in dispositions.values()):
         raise ValueError("all Trials must have a terminal disposition")
+    batch_trial_ids = {
+        trial["id"]
+        for trial in (state.get("batch") or {}).get("trials", [])
+        if isinstance(trial, dict) and isinstance(trial.get("id"), str)
+    }
+    proposal_payload = (state.get("proposal") or {}).get("payload", {})
+    results = proposal_payload.get("results") if isinstance(proposal_payload, dict) else None
+    current_results = (
+        {
+            result["trial_id"]: result
+            for result in results
+            if isinstance(result, dict) and isinstance(result.get("trial_id"), str)
+        }
+        if isinstance(results, list)
+        else {}
+    )
+    if not _valid_trial_review_closures(
+        state.get("trial_reviews"),
+        state.get("trial_closures"),
+        state.get("terminals"),
+        dispositions,
+        batch_trial_ids,
+        current_results,
+        state.get("domain_records", {}),
+        _identity,
+    ):
+        raise ValueError("every Trial must have a current review and closure before finalization")
     if any(
         value == "assessed"
         and (
@@ -2454,6 +2870,9 @@ def finalize_batch(workspace: str | Path, expected_revision: ExpectedRevision) -
     artifact = _bundle(root, final_state)
     artifact_path = root / artifact["path"]
     final_state["artifact"] = artifact
+    trial_closures = state.get("trial_closures")
+    if not isinstance(trial_closures, dict):
+        trial_closures = {}
     # The frozen snapshot is an immutable Canonical record, not merely a
     # mutable field in the current-state projection.
     try:
@@ -2463,11 +2882,15 @@ def finalize_batch(workspace: str | Path, expected_revision: ExpectedRevision) -
             expected_revision,
             {
                 f"snapshot:{snapshot['identity']}": snapshot
-                for disposition, snapshot in (
-                    (final_dispositions.get(trial_id), snapshots.get(trial_id))
-                    for trial_id in final_dispositions
+                for trial_id, disposition in final_dispositions.items()
+                for snapshot in (snapshots.get(trial_id),)
+                for closure in (trial_closures.get(trial_id),)
+                if (
+                    disposition == "assessed"
+                    and isinstance(closure, dict)
+                    and closure.get("disposition") == "assessed"
+                    and isinstance(snapshot, dict)
                 )
-                if disposition == "assessed" and isinstance(snapshot, dict)
             },
         )
     except Exception:
@@ -2664,7 +3087,7 @@ def verify_bundle(path: str | Path) -> bool:
                         return False
             canonical = archive.read("canonical.json")
             canonical_value = json.loads(canonical)
-            if not isinstance(canonical_value, dict) or set(canonical_value) != {
+            legacy_canonical_fields = {
                 "batch",
                 "proposal",
                 "proposal_review",
@@ -2678,7 +3101,32 @@ def verify_bundle(path: str | Path) -> bool:
                 "snapshot_history_records",
                 "terminals",
                 "scientific_pack",
-            }:
+            }
+            has_trial_reviews = (
+                "trial_reviews" in canonical_value if isinstance(canonical_value, dict) else False
+            )
+            has_trial_closures = (
+                "trial_closures" in canonical_value if isinstance(canonical_value, dict) else False
+            )
+            if has_trial_reviews != has_trial_closures:
+                return False
+            canonical_shapes = {
+                frozenset(legacy_canonical_fields),
+                frozenset(legacy_canonical_fields | {"proposal_history"}),
+            }
+            if has_trial_reviews:
+                new_trial_fields = {"trial_reviews", "trial_closures"}
+                canonical_shapes.update(
+                    {
+                        frozenset(legacy_canonical_fields | new_trial_fields),
+                        frozenset(
+                            legacy_canonical_fields | new_trial_fields | {"proposal_history"}
+                        ),
+                    }
+                )
+            if not isinstance(canonical_value, dict) or set(canonical_value) not in (
+                *canonical_shapes,
+            ):
                 return False
             scientific_pack = canonical_value.get("scientific_pack")
             if not _valid_scientific_contract_descriptor(scientific_pack):
@@ -2703,50 +3151,93 @@ def verify_bundle(path: str | Path) -> bool:
                 or not isinstance(terminals, dict)
             ):
                 return False
-            if any(
-                value not in {"assessed", "needs_input", "failed"}
-                for value in dispositions.values()
-            ):
+            valid_dispositions = {"assessed", "needs_input", "failed"}
+            if has_trial_reviews:
+                valid_dispositions.add("unsupported_design")
+            if any(value not in valid_dispositions for value in dispositions.values()):
                 return False
             batch_trial_ids = {trial["id"] for trial in canonical_value["batch"]["trials"]}
+            current_proposal = canonical_value.get("proposal")
+            current_payload = (
+                current_proposal.get("payload") if isinstance(current_proposal, dict) else None
+            )
+            current_result_identities: dict[str, str] = {}
+            current_results: dict[str, dict[str, Any]] = {}
+            if isinstance(current_payload, dict) and isinstance(
+                current_payload.get("results"), list
+            ):
+                current_results = {
+                    result["trial_id"]: result
+                    for result in current_payload["results"]
+                    if isinstance(result, dict) and isinstance(result.get("trial_id"), str)
+                }
+                current_result_identities = {
+                    result["trial_id"]: independent_identity(result)
+                    for result in current_results.values()
+                }
+            proposal_versions = [current_proposal]
+            raw_proposal_history = canonical_value.get("proposal_history")
+            if isinstance(raw_proposal_history, list):
+                proposal_versions.extend(
+                    version.get("proposal")
+                    for version in raw_proposal_history
+                    if isinstance(version, dict)
+                )
+            approved_result_identities: dict[str, set[str]] = {}
+            for proposal_version in proposal_versions:
+                version_payload = (
+                    proposal_version.get("payload") if isinstance(proposal_version, dict) else None
+                )
+                results = (
+                    version_payload.get("results") if isinstance(version_payload, dict) else None
+                )
+                if not isinstance(results, list):
+                    continue
+                for result in results:
+                    if not isinstance(result, dict) or not isinstance(result.get("trial_id"), str):
+                        continue
+                    approved_result_identities.setdefault(result["trial_id"], set()).add(
+                        independent_identity(result)
+                    )
             if set(dispositions) != batch_trial_ids:
                 return False
             terminal_trials: dict[str, int] = {}
-            for identity, terminal in terminals.items():
-                if (
-                    not isinstance(identity, str)
-                    or not isinstance(terminal, dict)
-                    or set(terminal)
-                    != {"trial_id", "disposition", "reason", "missing_facts", "identity"}
-                    or terminal.get("identity") != identity
-                    or terminal.get("disposition") not in {"needs_input", "failed"}
-                    or not isinstance(terminal.get("trial_id"), str)
-                    or not isinstance(terminal.get("reason"), str)
-                    or not terminal["reason"].strip()
-                    or not isinstance(terminal.get("missing_facts"), list)
-                    or not terminal["missing_facts"]
-                    or any(
-                        not isinstance(fact, str) or not fact.strip()
-                        for fact in terminal["missing_facts"]
-                    )
-                    or independent_identity(
-                        {key: value for key, value in terminal.items() if key != "identity"}
-                    )
-                    != identity
-                ):
-                    return False
-                trial_id = terminal["trial_id"]
-                if (
-                    trial_id not in dispositions
-                    or terminal.get("disposition") != dispositions[trial_id]
-                    or trial_id in terminal_trials
-                ):
-                    return False
-                terminal_trials[trial_id] = 1
-            for trial_id, disposition in dispositions.items():
-                has_terminal = trial_id in terminal_trials
-                if (disposition in {"needs_input", "failed"}) != has_terminal:
-                    return False
+            if not has_trial_reviews:
+                for identity, terminal in terminals.items():
+                    if (
+                        not isinstance(identity, str)
+                        or not isinstance(terminal, dict)
+                        or set(terminal)
+                        != {"trial_id", "disposition", "reason", "missing_facts", "identity"}
+                        or terminal.get("identity") != identity
+                        or terminal.get("disposition") not in {"needs_input", "failed"}
+                        or not isinstance(terminal.get("trial_id"), str)
+                        or not isinstance(terminal.get("reason"), str)
+                        or not terminal["reason"].strip()
+                        or not isinstance(terminal.get("missing_facts"), list)
+                        or not terminal["missing_facts"]
+                        or any(
+                            not isinstance(fact, str) or not fact.strip()
+                            for fact in terminal["missing_facts"]
+                        )
+                        or independent_identity(
+                            {key: value for key, value in terminal.items() if key != "identity"}
+                        )
+                        != identity
+                    ):
+                        return False
+                    trial_id = terminal["trial_id"]
+                    if (
+                        trial_id not in dispositions
+                        or terminal.get("disposition") != dispositions[trial_id]
+                        or trial_id in terminal_trials
+                    ):
+                        return False
+                    terminal_trials[trial_id] = 1
+                for trial_id, disposition in dispositions.items():
+                    has_terminal = trial_id in terminal_trials
+                    if (disposition in {"needs_input", "failed"}) != has_terminal:
+                        return False
             domain_identity_fields = (
                 "trial_id",
                 "domain_id",
@@ -2759,6 +3250,15 @@ def verify_bundle(path: str | Path) -> bool:
                 "judgment",
                 "trace",
             )
+
+            def domain_identity_payload(record: dict[str, Any]) -> dict[str, Any]:
+                fields = (
+                    (*domain_identity_fields, "result_identity")
+                    if "result_identity" in record
+                    else domain_identity_fields
+                )
+                return {field: record.get(field) for field in fields}
+
             proposal_evidence = (canonical_value.get("proposal") or {}).get("evidence", {})
             evidence_by_identity = proposal_evidence if isinstance(proposal_evidence, dict) else {}
             batch_trials = {
@@ -2767,26 +3267,31 @@ def verify_bundle(path: str | Path) -> bool:
                 if isinstance(item, dict)
             }
             for record in domains.values():
+                record_identity_fields = (
+                    (*domain_identity_fields, "result_identity")
+                    if isinstance(record, dict) and "result_identity" in record
+                    else domain_identity_fields
+                )
                 if (
                     not isinstance(record, dict)
-                    or set(record)
-                    != {
-                        "trial_id",
-                        "domain_id",
-                        "answers",
-                        "supersedes",
-                        "revision_basis",
-                        "search_accounts",
-                        "active_questions",
-                        "inactive_questions",
-                        "judgment",
-                        "trace",
-                        "observed_at",
-                        "identity",
-                    }
+                    or set(record) != {*record_identity_fields, "observed_at", "identity"}
                     or record.get("identity")
                     != independent_identity(
-                        {key: record.get(key) for key in domain_identity_fields}
+                        {key: record.get(key) for key in record_identity_fields}
+                    )
+                    or (
+                        "result_identity" in record
+                        and (
+                            not isinstance(record.get("result_identity"), str)
+                            or record["result_identity"]
+                            not in approved_result_identities.get(record.get("trial_id"), set())
+                            or record["result_identity"]
+                            != current_result_identities.get(record.get("trial_id"))
+                        )
+                    )
+                    or (
+                        len(approved_result_identities.get(record.get("trial_id"), set())) > 1
+                        and "result_identity" not in record
                     )
                 ):
                     return False
@@ -3002,34 +3507,33 @@ def verify_bundle(path: str | Path) -> bool:
                 independent_identity,
             ):
                 return False
-            domain_record_shape = {
-                "trial_id",
-                "domain_id",
-                "answers",
-                "supersedes",
-                "revision_basis",
-                "search_accounts",
-                "active_questions",
-                "inactive_questions",
-                "judgment",
-                "trace",
-                "observed_at",
-                "identity",
-            }
             for key, historical in domain_history_records.items():
                 history = domain_history[key]
                 if not isinstance(history, list) or not history or not isinstance(historical, list):
                     return False
                 for item, digest in zip(historical, history, strict=True):
+                    item_identity_fields = (
+                        (*domain_identity_fields, "result_identity")
+                        if isinstance(item, dict) and "result_identity" in item
+                        else domain_identity_fields
+                    )
                     if (
                         not isinstance(item, dict)
-                        or set(item) != domain_record_shape
+                        or set(item) != {*item_identity_fields, "observed_at", "identity"}
                         or item.get("identity") != digest
                         or item.get("identity")
                         != independent_identity(
-                            {field: item.get(field) for field in domain_identity_fields}
+                            {field: item.get(field) for field in item_identity_fields}
                         )
                         or key != f"{item.get('trial_id')}:{item.get('domain_id')}"
+                        or (
+                            "result_identity" in item
+                            and (
+                                not isinstance(item.get("result_identity"), str)
+                                or item["result_identity"]
+                                not in approved_result_identities.get(item.get("trial_id"), set())
+                            )
+                        )
                         or not isinstance(item.get("answers"), list)
                         or not isinstance(item.get("active_questions"), list)
                         or not isinstance(item.get("inactive_questions"), list)
@@ -3228,6 +3732,8 @@ def verify_bundle(path: str | Path) -> bool:
                         "overall",
                         "identity",
                     }
+                    if isinstance(item, dict) and "result_identity" in item:
+                        expected_shape.add("result_identity")
                     if (
                         not isinstance(item, dict)
                         or set(item) != expected_shape
@@ -3235,6 +3741,18 @@ def verify_bundle(path: str | Path) -> bool:
                         or item.get("identity") != digest
                         or item.get("trial_id") != trial_id
                         or item.get("identity") != snapshot_identity(item)
+                        or (
+                            "result_identity" in item
+                            and (
+                                not isinstance(item.get("result_identity"), str)
+                                or item["result_identity"]
+                                not in approved_result_identities.get(trial_id, set())
+                            )
+                        )
+                        or (
+                            len(approved_result_identities.get(trial_id, set())) > 1
+                            and "result_identity" not in item
+                        )
                         or not isinstance(item.get("checkpoints"), list)
                         or len(item["checkpoints"]) != len(SCIENTIFIC_PACK.domains)
                         or not isinstance(item.get("domain_judgments"), dict)
@@ -3265,6 +3783,8 @@ def verify_bundle(path: str | Path) -> bool:
                         if not isinstance(matching, dict) or item["domain_judgments"].get(
                             domain.id
                         ) != matching.get("judgment"):
+                            return False
+                        if item.get("result_identity") != matching.get("result_identity"):
                             return False
                     judgments = item["domain_judgments"]
                     concerns = list(judgments.values()).count("some_concerns")
@@ -3301,9 +3821,7 @@ def verify_bundle(path: str | Path) -> bool:
                         not isinstance(item, dict)
                         or item.get("identity") != digest
                         or item.get("identity")
-                        != independent_identity(
-                            {field: item.get(field) for field in domain_identity_fields}
-                        )
+                        != independent_identity(domain_identity_payload(item))
                         for item, digest in zip(historical, history, strict=True)
                     )
                 ):
@@ -3337,11 +3855,22 @@ def verify_bundle(path: str | Path) -> bool:
                 if disposition == "assessed":
                     if snapshot.get("identity") != snapshot_identity(snapshot):
                         return False
+                    if (
+                        "result_identity" in snapshot
+                        and snapshot.get("result_identity")
+                        != current_result_identities.get(trial_id)
+                    ) or (
+                        len(approved_result_identities.get(trial_id, set())) > 1
+                        and "result_identity" not in snapshot
+                    ):
+                        return False
                     expected_checkpoints: list[str] = []
                     expected_judgments: dict[str, str] = {}
                     for domain in SCIENTIFIC_PACK.domains:
                         record = domains.get(f"{trial_id}:{domain.id}")
                         if not isinstance(record, dict) or record.get("domain_id") != domain.id:
+                            return False
+                        if record.get("result_identity") != snapshot.get("result_identity"):
                             return False
                         answers = record.get("answers")
                         if not isinstance(answers, list):
@@ -3408,6 +3937,17 @@ def verify_bundle(path: str | Path) -> bool:
                     ).judgment.value
                     if snapshot.get("overall") != overall:
                         return False
+            if has_trial_reviews and not _valid_trial_review_closures(
+                canonical_value.get("trial_reviews"),
+                canonical_value.get("trial_closures"),
+                terminals,
+                dispositions,
+                batch_trial_ids,
+                current_results,
+                domains,
+                independent_identity,
+            ):
+                return False
             expected_identity = independent_identity(
                 {"schema": "rob2-kit.bundle.v0.3", "canonical": canonical_value}
             )
@@ -3415,14 +3955,27 @@ def verify_bundle(path: str | Path) -> bool:
                 return False
             report = archive.read("report.html").decode("utf-8")
             claims = json.loads(archive.read("claims.json"))
+            if has_trial_reviews:
+                public = presentation({"phase": "finalized", "trial_dispositions": dispositions})
+            else:
+                legacy_counts = {
+                    name: sum(value == name for value in dispositions.values())
+                    for name in ("assessed", "needs_input", "failed", "pending")
+                }
+                total = len(dispositions)
+                legacy_wording = (
+                    "Batch finalized. No RoB 2 assessments were completed."
+                    if not legacy_counts["assessed"]
+                    else "Batch finalized. "
+                    f"RoB 2 assessments completed for {legacy_counts['assessed']}/{total} Trials. "
+                    f"{legacy_counts['needs_input']} Trials need input; "
+                    f"{legacy_counts['failed']} Trials failed."
+                )
+                public = {"counts": legacy_counts, "wording": legacy_wording}
             expected_claims = {
                 "trial_dispositions": dispositions,
-                "counts": presentation({"phase": "finalized", "trial_dispositions": dispositions})[
-                    "counts"
-                ],
-                "authoritative_wording": presentation(
-                    {"phase": "finalized", "trial_dispositions": dispositions}
-                )["wording"],
+                "counts": public["counts"],
+                "authoritative_wording": public["wording"],
                 "overall": {
                     trial_id: snapshot.get("overall")
                     for trial_id, snapshot in snapshots.items()
@@ -3458,6 +4011,61 @@ def verify_bundle(path: str | Path) -> bool:
                 )
             ):
                 return False
+            proposal_history = canonical_value.get("proposal_history")
+            if proposal_history is not None:
+                if not isinstance(proposal_history, list) or not proposal_history:
+                    return False
+                historical_proposal_ids: set[str] = set()
+                for version in proposal_history:
+                    if not isinstance(version, dict) or set(version) != {
+                        "proposal",
+                        "review",
+                        "acknowledgment",
+                    }:
+                        return False
+                    historical_proposal = version.get("proposal")
+                    historical_payload = (
+                        historical_proposal.get("payload")
+                        if isinstance(historical_proposal, dict)
+                        else None
+                    )
+                    historical_evidence = (
+                        historical_proposal.get("evidence")
+                        if isinstance(historical_proposal, dict)
+                        else None
+                    )
+                    if (
+                        not isinstance(historical_proposal, dict)
+                        or set(historical_proposal) != {"identity", "payload", "evidence"}
+                        or not isinstance(historical_payload, dict)
+                        or not isinstance(historical_payload.get("results"), list)
+                        or not isinstance(historical_evidence, dict)
+                        or historical_proposal.get("identity")
+                        != independent_identity(historical_payload)
+                        or not _valid_proposal_gate(
+                            version.get("review"),
+                            version.get("acknowledgment"),
+                            historical_proposal,
+                            independent_identity,
+                        )
+                        or historical_proposal["identity"] in historical_proposal_ids
+                    ):
+                        return False
+                    historical_proposal_ids.add(historical_proposal["identity"])
+                    if any(
+                        bound_catalog.get(identity) != item
+                        for identity, item in historical_evidence.items()
+                    ):
+                        return False
+                latest_version = proposal_history[-1]
+                latest_proposal = latest_version["proposal"]
+                if (
+                    latest_proposal.get("identity") != proposal.get("identity")
+                    or latest_proposal.get("payload") != payload
+                    or latest_version.get("review") != proposal_review
+                    or latest_version.get("acknowledgment") != proposal_acknowledgment
+                ):
+                    return False
             if (
                 semantics_version == _LEGACY_RESULT_SEMANTICS_VERSION
                 and not _valid_main_report_scopes(
@@ -3560,6 +4168,8 @@ def verify_bundle(path: str | Path) -> bool:
                 disposition = dispositions[trial_id]
                 if disposition == "assessed" and result.get("kind") != "assessable":
                     return False
+                if has_trial_reviews:
+                    continue
                 if result.get("kind") == "unavailable":
                     terminal = terminal_by_trial.get(trial_id)
                     facts = [item["fact"] for item in result["missing_facts"]]

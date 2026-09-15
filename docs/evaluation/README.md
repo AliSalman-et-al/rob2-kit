@@ -78,6 +78,22 @@ observation-capture slice in #295.
 
 ## Score and qualify a release
 
+After a frozen RSI wave, use the posthoc run analyzer described in
+[`rsi.md`](rsi.md#posthoc-run-analysis) to compute per-Domain and pooled
+agreement, all-expected denominators, Trial-clustered intervals, completion,
+cost, and audited failure causes. Keep its label/annotation input outside every
+run workspace and join it only after the uncoached runs are complete. The
+analyzer reports evidence for qualification; it does not invent a pass/fail
+threshold or make a scientific-accuracy claim.
+
+The public reference catalog under `eval/reference/catalog` contains trial
+source-directory mappings and separate counts for completed baselines and
+provisionally labelled cases. These are different denominators: some completed
+baseline sets have fewer cases than the matching labelled reference set, while
+other labelled sets are smaller. Score only cases with a reference label;
+report baseline completion against its own denominator. Source documents and
+provisional label rows remain local and are excluded from version control.
+
 The provider-independent scorer is rerunnable without paid model calls:
 
 ```powershell
@@ -122,12 +138,19 @@ bundle. It does not import proposal or presentation code from the product. The
 source-defined Result remains the researcher's choice, and the evaluator does
 not prescribe endpoint mappings, terminal dispositions, or RoB 2 labels.
 
-Keep each run in a fresh workspace outside the repository. Use neutral run
-labels such as `run A`, `run B`, and `run C`, then add one canary run. Give each
-workspace, project, server, and MCP connection a unique identity. Start with a
-zero-source attestation, use one attempt per run, and keep the captured source
-hashes identical across the runs. Repeat a run only after a documented external
+Keep each attempt in a fresh workspace outside the repository and give it a
+neutral identifier. Use one uncoached attempt per eligible Trial/Result for the
+first wave, keep captured source and registry hashes identical across matched
+runs, and retain every failure. Repeat the complete eligible set for a
+reliability study; retry an individual attempt only for a documented external
 interruption before product or host behavior.
+
+The RSI case preparer accepts a source path relative to the case manifest when
+the path resolves to a file under the same evaluation root. This supports a
+manifest in `eval/runs` or `eval/reference/qualification-cases` reusing the
+retained corpus in `eval/reference/sources`. It still copies only the files
+listed by the manifest into a new workspace and rejects paths outside that
+evaluation root.
 
 The workflow has one researcher gate. Review the exact Result mapping at
 `Proposal Review` before approval. After approval, resume the same host session;
@@ -139,12 +162,6 @@ after the gate. Use only this minimal continuation:
 Continue.
 ```
 
-For the restart run, stop after the Proposal Review record exists and before
-acknowledgment. After the host restarts, compare the Proposal Review, Batch, and
-Source-set identities. Retain a closed top-level `restart_proof` object with
-`passed: true`, the run ID, and equal before-and-after identity hashes for all
-three records.
-
 For every completed run, verify the bundle:
 
 ```powershell
@@ -152,28 +169,49 @@ uv run python scripts/verify_bundle.py <finalized-bundle.rob2.zip>
 ```
 
 The command checks the archive without importing the package or reading source
-documents. Do not coach Domain answers. Audit the final output, then retain the
-run receipt or discard it and restart without coaching.
+documents. Do not coach Domain answers. Audit and retain the final output with
+the attempt trace; if the run is incomplete, preserve the failure and its cause
+instead of replacing it with a selective retry.
 
-After the runs finish, validate the retained receipt:
+An operational smoke test used this workflow with `gpt-5.6-luna` at medium
+reasoning effort. The run approved one Result, finalized all five Domains, and
+passed independent bundle verification. Its trace contained semantic
+validation repairs for incomplete search or Result wording, but no Pydantic or
+tool-schema error loop. Treat this as a workflow and contract check; it does
+not estimate scientific accuracy from one model draw.
+
+The current Codex/Luna path closes a run with its phase metadata, retained
+JSONL/stderr/last-message files, approved-scope record, final status, and
+independently verified `.rob2.zip`. Analyze a frozen set of those attempts with
+`scripts/analyze_rsi_runs.py` as described in
+[`rsi.md`](rsi.md#posthoc-run-analysis). That analyzer is the current posthoc
+comparison surface; it does not require or emit the legacy Haiku receipt.
+
+## Historical retained-evidence receipt
+
+The following verifier is retained for historical `rob2-kit.retained-evidence.v0.4`
+artifacts only. It is not the current Codex/Luna qualification contract. Its
+schema intentionally requires three Claude Code Haiku finals, one Codex canary,
+and a Haiku restart proof; those requirements must not be presented as checks
+for a current Luna run.
 
 ```powershell
 uv run --no-sync python scripts/qualification_manifest.py validate eval/retained-evidence.json
 ```
 
-To close a run record, validate it and write the privacy-safe receipt without
-retaining its input location:
+To close a legacy run record, validate it and write the privacy-safe receipt
+without retaining its input location:
 
 ```powershell
 uv run --no-sync python scripts/qualification_manifest.py generate eval/run-record.json eval/retained-evidence.json
 uv run --no-sync python scripts/qualification_manifest.py validate eval/retained-evidence.json
 ```
 
-The `rob2-kit.retained-evidence.v0.4` receipt stores commit and wheel hashes,
-input identities, run metadata, bundle identities, verifier output, the
-restart proof, and supported CI evidence. It rejects paths, source content,
-prompts, credentials, and traces. A verdict of `all_green` requires every run,
-the canary, the restart proof, and the CI record to pass validation.
+The historical receipt stores commit and wheel hashes, input identities, run
+metadata, bundle identities, verifier output, the restart proof, and supported
+CI evidence. It rejects paths, source content, prompts, credentials, and
+traces. A verdict of `all_green` requires every legacy run, the canary, the
+restart proof, and the CI record to pass validation.
 
 Use a generic researcher prompt for each run. Replace only `{outcome}` with the
 outcome concept under test:

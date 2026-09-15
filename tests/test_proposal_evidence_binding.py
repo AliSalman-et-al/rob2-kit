@@ -13,6 +13,7 @@ from support.proposal import _state_proposal
 from support.rob2 import (
     _call,
     _domain_draft,
+    _finalize_assessment,
     _prepared_evidence,
     _proposal_args,
     _read_required_main_reports,
@@ -53,11 +54,11 @@ def test_figure_transcription_cannot_prove_invented_result_leaf(tmp_path: Path) 
         for item in _call(workspace, "list_sources", {"trial_id": "trial"})["data"]["sources"]
         if item["label"] == "figure.pdf"
     )
-    render = _call(
+    rendered = _call(
         workspace,
         "render_page",
         {"trial_id": "trial", "source_id": source["id"], "page": 1},
-    )["data"]["render"]
+    )
 
     def visual(root: Path, transcription: str) -> dict[str, Any]:
         return _call(
@@ -66,7 +67,7 @@ def test_figure_transcription_cannot_prove_invented_result_leaf(tmp_path: Path) 
             {
                 "trial_id": "trial",
                 "source_id": source["id"],
-                "render_identity": render["identity"],
+                "delivery_receipt": rendered["data"]["delivery_receipt"],
                 "transcription": transcription,
                 "region": [0.0, 0.0, 1.0, 1.0],
             },
@@ -98,14 +99,14 @@ def test_figure_transcription_cannot_prove_invented_result_leaf(tmp_path: Path) 
         invented_root,
         "render_page",
         {"trial_id": "trial", "source_id": invented_source["id"], "page": 1},
-    )["data"]["render"]
+    )
     invented_evidence = _call(
         invented_root,
         "select_visual_evidence",
         {
             "trial_id": "trial",
             "source_id": invented_source["id"],
-            "render_identity": invented_render["identity"],
+            "delivery_receipt": invented_render["data"]["delivery_receipt"],
             "transcription": page_text + " invented analysis method",
             "region": [0.0, 0.0, 1.0, 1.0],
         },
@@ -389,7 +390,7 @@ def test_revised_result_binds_reported_leaves_to_its_coherent_evidence_and_final
         )
         assert receipt["outcome"] == "success", receipt
         revision = int(receipt["head"]["state_revision"])
-    finalized = _call(workspace, "finalize_batch", {"expected_revision": revision})
+    finalized = _finalize_assessment(workspace, revision)
     assert finalized["outcome"] == "success", finalized
 
 
@@ -580,17 +581,37 @@ def test_replay_binding_accepts_repeated_values_in_table_and_figure(
         }
     else:
         source = sources[selected_item["source_id"]]
+        png_sha256 = "sha256:" + "0" * 64
+        render_identity = _identity(
+            {
+                "source_id": selected_item["source_id"],
+                "source_sha256": source["sha256"],
+                "page": 1,
+                "recipe": "test",
+            }
+        )
         render = {
+            "identity": render_identity,
             "source_id": selected_item["source_id"],
-            "source_sha256": source["sha256"],
             "page": 1,
+            "png_sha256": png_sha256,
             "recipe": "test",
         }
-        render_identity = _identity(render)
+        delivery_receipt = _identity(
+            {
+                "trial_id": "trial",
+                "source_id": selected_item["source_id"],
+                "render_identity": render_identity,
+                "png_sha256": png_sha256,
+                "channel": "mcp_image_content",
+                "mime_type": "image/png",
+            }
+        )
         selected_item.update(
             {
                 "kind": "figure",
-                "render": {**render, "identity": render_identity},
+                "render": render,
+                "delivery_receipt": delivery_receipt,
                 "region": [0.0, 0.0, 1.0, 1.0],
                 "transcription": material + " " + material,
                 "provenance": "text_corroborated",
@@ -600,6 +621,7 @@ def test_replay_binding_accepts_repeated_values_in_table_and_figure(
             "kind": "figure",
             "handle": handle,
             "render_identity": render_identity,
+            "delivery_receipt": delivery_receipt,
             "region": [0.0, 0.0, 1.0, 1.0],
             "transcription": selected_item["transcription"],
             "provenance": selected_item["provenance"],
@@ -827,7 +849,7 @@ def test_component_definition_is_repaired_but_nullable_definition_finalizes(
         )
         assert receipt["outcome"] == "success", receipt
         revision = int(receipt["head"]["state_revision"])
-    finalized = _call(workspace, "finalize_batch", {"expected_revision": revision})
+    finalized = _finalize_assessment(workspace, revision)
     assert finalized["outcome"] == "success", finalized
     artifact = workspace / str(finalized["data"]["artifact"]["path"])
     assert finalization.verify_bundle(artifact)

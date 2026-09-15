@@ -10,10 +10,10 @@ import pymupdf
 import pytest
 from fastmcp import Client
 from support.rob2 import (
+    _answer_value,
     _assessment_workspace,
     _call,
     _domain_draft,
-    _option_for,
     _prepared_evidence,
     _proposal_args,
     _read_required_main_reports,
@@ -48,7 +48,7 @@ def _call_raw(workspace: Path, arguments: dict[str, Any]) -> dict[str, Any]:
                 ],
             }
             result = await client.call_tool(
-                "reason_domain_assessment", reasoning, raise_on_error=False
+                "validate_domain_assessment", reasoning, raise_on_error=False
             )
             return dict(result.structured_content or {})
 
@@ -70,7 +70,7 @@ def test_domain_public_shape_is_flat_and_closed() -> None:
             tool = next(
                 tool
                 for tool in await client.list_tools()
-                if tool.name == "reason_domain_assessment"
+                if tool.name == "validate_domain_assessment"
             )
             return dict(tool.input_schema)
 
@@ -82,7 +82,7 @@ def test_domain_public_shape_is_flat_and_closed() -> None:
     answer = draft["properties"]["answers"]["items"]
     assert set(answer["properties"]) == {
         "question_id",
-        "option_id",
+        "answer",
         "bases",
         "justification",
         "missing_data",
@@ -118,16 +118,27 @@ def test_domain_public_shape_is_flat_and_closed() -> None:
     assert missing_row["properties"]["basis"]["items"]["pattern"] == r"^eh_[0-9a-f]{16}$"
 
 
-def test_option_id_repairs_are_atomic_and_valid_replay_is_idempotent(tmp_path: Path) -> None:
+def test_answer_scope_repairs_are_atomic_and_valid_replay_is_idempotent(tmp_path: Path) -> None:
     workspace, evidence, revision = _assessment_workspace(tmp_path)
-    domain_id = SCIENTIFIC_PACK.domains[0].id
+    for prior_domain in ("domain:randomization", "domain:deviations"):
+        prior = _call(
+            workspace,
+            "save_domain_judgment",
+            _domain_draft("trial", prior_domain, revision, evidence),
+        )
+        assert prior["outcome"] == "success", prior
+        revision = int(prior["head"]["state_revision"])
+    domain_id = "domain:missing"
     draft = _domain_draft("trial", domain_id, revision, evidence)
 
     invalid = {**draft, "answers": [dict(item) for item in draft["answers"]]}
-    invalid["answers"][0]["option_id"] = "opt:wrong-pack"
+    invalid_answer = next(
+        item for item in invalid["answers"] if item["question_id"] == "sq:missing:evidence-unbiased"
+    )
+    invalid_answer["answer"] = "no_information"
     repaired = _call(workspace, "save_domain_judgment", invalid)
     assert repaired["outcome"] == "repair"
-    assert any(item["code"] == "invalid_answer_option" for item in repaired["repairs"])
+    assert any(item["code"] == "invalid_answer" for item in repaired["repairs"])
     assert _state(workspace)["revision"] == revision
 
     saved = _call(workspace, "save_domain_judgment", draft)
@@ -137,7 +148,7 @@ def test_option_id_repairs_are_atomic_and_valid_replay_is_idempotent(tmp_path: P
     assert retry["data"]["retry"] is True
 
 
-def test_stale_inactive_option_and_evidence_are_ignored(tmp_path: Path) -> None:
+def test_inactive_answer_and_evidence_are_ignored(tmp_path: Path) -> None:
     workspace, evidence, revision = _assessment_workspace(tmp_path)
     first = _call(
         workspace,
@@ -156,9 +167,9 @@ def test_stale_inactive_option_and_evidence_are_ignored(tmp_path: Path) -> None:
         "sq:deviations:participants-aware",
         "sq:deviations:personnel-aware",
     ):
-        by_question[question_id]["option_id"] = _option_for(question_id, "no")
+        by_question[question_id]["answer"] = _answer_value(question_id, "no")
     inactive = by_question["sq:deviations:context-deviations"]
-    inactive["option_id"] = "opt_stale_inactive_option"
+    inactive["answer"] = "no"
     inactive["bases"] = [{"kind": "direct_support", "evidence": "eh_0000000000000000"}]
 
     saved = _call(workspace, "save_domain_judgment", draft)
@@ -234,11 +245,7 @@ def test_all_question_submission_resolves_dependent_path_once(
     draft["answers"] = [
         {
             "question_id": card["id"],
-            "option_id": next(
-                option["id"]
-                for option in card["options"]
-                if option["official_answer"] == answers[card["id"]]
-            ),
+            "answer": next(option for option in card["options"] if option == answers[card["id"]]),
             "bases": [{"kind": "direct_support", "evidence": evidence["handle"]}],
         }
         for card in cards
@@ -264,7 +271,7 @@ def test_missing_data_is_typed_and_only_allowed_for_domain_3_1() -> None:
     parsed = DomainAnswer.model_validate(
         {
             "question_id": "sq:missing:data-available",
-            "option_id": _option_for("sq:missing:data-available", "probably_no"),
+            "answer": _answer_value("sq:missing:data-available", "probably_no"),
             "bases": [{"kind": "context", "evidence": "eh_0123456789abcdef"}],
             "missing_data": [row],
         }
@@ -275,7 +282,7 @@ def test_missing_data_is_typed_and_only_allowed_for_domain_3_1() -> None:
         DomainAnswer.model_validate(
             {
                 "question_id": "sq:missing:data-available",
-                "option_id": _option_for("sq:missing:data-available", "probably_no"),
+                "answer": _answer_value("sq:missing:data-available", "probably_no"),
                 "bases": [{"kind": "context", "evidence": "eh_0123456789abcdef"}],
                 "missing_data": [row | {"basis": ["copied quote"]}],
             }
@@ -284,7 +291,7 @@ def test_missing_data_is_typed_and_only_allowed_for_domain_3_1() -> None:
         DomainAnswer.model_validate(
             {
                 "question_id": "sq:missing:evidence-unbiased",
-                "option_id": _option_for("sq:missing:evidence-unbiased", "no"),
+                "answer": _answer_value("sq:missing:evidence-unbiased", "no"),
                 "bases": [{"kind": "context", "evidence": "eh_0123456789abcdef"}],
                 "missing_data": [row],
             }
@@ -383,7 +390,7 @@ def test_domain_context_recovers_uncommitted_trial_evidence(tmp_path: Path) -> N
         },
     )["data"]["evidence"]
 
-    context = _call(workspace, "get_domain_context", {})["data"]
+    context = _call(workspace, "get_domain_context", {"include_candidates": True})["data"]
 
     recovered = {item["handle"]: item for item in context["evidence"]}
     assert recovered[domain_evidence["handle"]]["quote"] == domain_evidence["quote"]
@@ -435,7 +442,7 @@ def test_domain_context_recovers_prior_checkpoint_evidence_after_cache_loss(
     context = _call(
         workspace,
         "get_domain_context",
-        {"domain_id": "domain:randomization"},
+        {"domain_id": "domain:randomization", "include_candidates": True},
     )["data"]
 
     recovered = {item["identity"]: item for item in context["evidence"]}
@@ -501,7 +508,7 @@ def test_domain_context_scopes_candidates_before_applying_the_budget(tmp_path: P
     context = _call(
         workspace,
         "get_domain_context",
-        {"domain_id": "domain:randomization"},
+        {"domain_id": "domain:randomization", "include_candidates": True},
     )["data"]
     candidates = {
         item["handle"]: item
@@ -547,7 +554,7 @@ def test_proposal_search_candidates_do_not_leak_into_first_domain(tmp_path: Path
     _review(workspace)
     _read_required_main_reports(workspace)
 
-    context = _call(workspace, "get_domain_context", {})["data"]
+    context = _call(workspace, "get_domain_context", {"include_candidates": True})["data"]
 
     assert proposal_candidate["passage_ref"] not in {item["handle"] for item in context["evidence"]}
 
@@ -585,7 +592,7 @@ def test_domain_context_continuation_reaches_omissions_across_sessions(tmp_path:
         )["data"]
         assert len(search["hits"]) == 33
 
-    context = _call(workspace, "get_domain_context", {})["data"]
+    context = _call(workspace, "get_domain_context", {"include_candidates": True})["data"]
     evidence_workspace = context["evidence_workspace"]
     assert evidence_workspace["omitted_count"] == 2
     assert evidence_workspace["omitted_by_category"]["active_domain_candidate"] == 2
@@ -672,7 +679,7 @@ def test_domain_context_continuation_reaches_unreturned_session_candidates(
     )["data"]
     assert first["candidate_count"] == 70
 
-    context = _call(workspace, "get_domain_context", {})["data"]
+    context = _call(workspace, "get_domain_context", {"include_candidates": True})["data"]
     evidence_workspace = context["evidence_workspace"]
     assert evidence_workspace["omitted_by_category"]["active_domain_candidate"] == 69
     action = dict(evidence_workspace["continuation"])
@@ -720,7 +727,7 @@ def test_domain_context_reports_unavailable_search_session_after_cache_loss(
             "UPDATE search_domain_associations SET trial_id=NULL WHERE session_identity=?",
             (search["session_id"],),
         )
-    _call(workspace, "get_domain_context", {})
+    _call(workspace, "get_domain_context", {"include_candidates": True})
     with sqlite3.connect(derivative) as connection:
         owner = connection.execute(
             "SELECT DISTINCT trial_id FROM search_domain_associations WHERE session_identity=?",
@@ -729,7 +736,9 @@ def test_domain_context_reports_unavailable_search_session_after_cache_loss(
         assert owner == ("trial",)
         connection.execute("DELETE FROM search_sessions WHERE identity=?", (search["session_id"],))
 
-    evidence_workspace = _call(workspace, "get_domain_context", {})["data"]["evidence_workspace"]
+    evidence_workspace = _call(workspace, "get_domain_context", {"include_candidates": True})[
+        "data"
+    ]["evidence_workspace"]
     assert evidence_workspace["continuation"] is None
     assert evidence_workspace["continuations"] == [
         {
@@ -777,7 +786,7 @@ def test_explicit_carry_forward_has_budget_priority_and_exact_read_continuation(
         )
         assert selected["outcome"] == "success"
 
-    context = _call(workspace, "get_domain_context", {})["data"]
+    context = _call(workspace, "get_domain_context", {"include_candidates": True})["data"]
     workspace_data = context["evidence_workspace"]
     explicit = next(
         group
@@ -850,7 +859,11 @@ def test_domain_context_does_not_expose_another_trials_uncommitted_evidence(
         },
     )["data"]["evidence"]
 
-    context = _call(workspace, "get_domain_context", {"trial_id": "trial"})["data"]
+    context = _call(
+        workspace,
+        "get_domain_context",
+        {"trial_id": "trial", "include_candidates": True},
+    )["data"]
 
     exposed = {item["handle"] for item in context["evidence"]}
     assert selected["trial"]["handle"] in exposed
@@ -989,7 +1002,7 @@ def test_probable_answers_accept_limitation_but_firm_answers_require_direct_evid
         workspace, "search_sources", {"trial_id": "trial", "query": "not-in-source", "mode": "any"}
     )["data"]["search_receipt"]
     probable = _domain_draft("trial", "domain:randomization", revision, search_receipt=receipt)
-    probable["answers"][0]["option_id"] = _option_for("sq:randomization:sequence", probable_answer)
+    probable["answers"][0]["answer"] = _answer_value("sq:randomization:sequence", probable_answer)
     probable["answers"][0]["bases"] = [
         {
             "kind": "limitation",
@@ -1006,14 +1019,15 @@ def test_probable_answers_accept_limitation_but_firm_answers_require_direct_evid
         accepted["head"]["state_revision"],
         search_receipt=receipt,
     )
-    firm["answers"][0]["option_id"] = _option_for("sq:deviations:participants-aware", firm_answer)
+    firm["answers"][0]["answer"] = _answer_value("sq:deviations:participants-aware", firm_answer)
     repaired = _call_raw(workspace, firm)
     _assert_repairs(repaired)
     repair = next(
         item for item in repaired["repairs"] if item["code"] == "answer_requires_direct_basis"
     )
     assert "question 'sq:deviations:participants-aware'" in repair["detail"]
-    assert "probably_yes/probably_no" in repair["detail"]
+    assert f"'{firm_answer}'" in repair["detail"]
+    assert "probably_yes/probably_no" not in repair["detail"]
 
 
 @pytest.mark.parametrize("appropriate_answer", ["yes", "probably_yes"])
@@ -1069,7 +1083,7 @@ def test_domain_two_judgment_with_itt_premise_advances_to_domain_three(
             "sq:deviations:personnel-aware",
             "sq:deviations:context-deviations",
         }:
-            answer["option_id"] = _option_for(answer["question_id"], "no_information")
+            answer["answer"] = _answer_value(answer["question_id"], "no_information")
             answer["bases"] = [
                 {
                     "kind": "limitation",
@@ -1078,7 +1092,7 @@ def test_domain_two_judgment_with_itt_premise_advances_to_domain_three(
                 }
             ]
         elif answer["question_id"] == "sq:deviations:appropriate-analysis":
-            answer["option_id"] = _option_for(answer["question_id"], appropriate_answer)
+            answer["answer"] = _answer_value(answer["question_id"], appropriate_answer)
             answer["bases"] = [
                 {
                     "kind": "direct_support",
@@ -1136,7 +1150,7 @@ def test_d3_activation_status_scopes_unsaved_and_saved_cards(tmp_path: Path) -> 
 
     draft = _domain_draft("trial", "domain:missing", revision, evidence)
     for answer in draft["answers"]:
-        answer["option_id"] = _option_for(
+        answer["answer"] = _answer_value(
             answer["question_id"],
             {
                 "sq:missing:data-available": "no",

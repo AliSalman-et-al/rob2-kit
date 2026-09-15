@@ -68,8 +68,9 @@ def test_source_handles_round_trip_across_source_tools_and_recovery(tmp_path: Pa
     rendered = _call(
         workspace,
         "render_page",
-        {"trial_id": "trial", "source_id": source_handle, "page": 1, "inline": False},
+        {"trial_id": "trial", "source_id": source_handle, "page": 1},
     )
+    assert len(rendered["_image_content"]) == 1
     assert rendered["data"]["render"]["source_id"] == source_handle
     visual = _call(
         workspace,
@@ -77,7 +78,7 @@ def test_source_handles_round_trip_across_source_tools_and_recovery(tmp_path: Pa
         {
             "trial_id": "trial",
             "source_id": source_handle,
-            "render_identity": rendered["data"]["render"]["identity"],
+            "delivery_receipt": rendered["data"]["delivery_receipt"],
             "transcription": "alpha beta",
             "region": [0.0, 0.0, 1.0, 1.0],
         },

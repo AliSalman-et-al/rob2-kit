@@ -1,4 +1,4 @@
-# v0.8 public release contract
+# v0.9 public release contract
 
 `public-contract.json` is generated from the typed application models exposed by
 the production FastMCP adapter. It records the ordered tool catalog, annotation
@@ -31,16 +31,15 @@ checks the local boundary or a supplied wheel. For a wheel it installs into a
 fresh virtual environment and queries the real stdio process, so a packaged
 catalog, schema, resource, or console-entry-point drift fails closed.
 
-The v0.8 workflow requires a fresh assessment workspace because Proposal and
-Domain saves now consume source-bound reasoning receipts. Historical v0.5,
-v0.6, and v0.7 finalized bundles remain verifiable. The internal workspace
-database contract remains `0.5.0`; that value describes storage compatibility,
-not the public package or MCP contract version.
+The v0.9 workflow requires a fresh assessment workspace because the public
+contract and Trial lifecycle changed. The internal workspace database contract
+is `0.6.0`; v0.8 active workspaces cannot be migrated. Historical finalized
+v0.5 through v0.8 bundles remain verifiable.
 
 Run the complete release check with:
 
 ```powershell
-./scripts/verify_v08.ps1
+./scripts/verify_v09.ps1
 ```
 
 That script regenerates the public contract, runs lint, type checks, and the
@@ -50,7 +49,7 @@ The lower-level commands remain available for isolated contract work:
 ```powershell
 uv run python docs/release/verify.py
 uv build --wheel --out-dir dist
-uv run python docs/release/verify.py --wheel dist/rob2_kit-0.8.0-py3-none-any.whl
+uv run python docs/release/verify.py --wheel dist/rob2_kit-0.9.0-py3-none-any.whl
 ```
 
 See `docs/adr/0031-v0-4-evidence-first-interaction.md` for the public input

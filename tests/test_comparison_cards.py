@@ -47,7 +47,7 @@ def test_deviation_card_exposes_provenance_without_classifying_prose(tmp_path: P
         matching_questions = questions_by_id.get(comparison_card["question_id"], [])
         assert len(matching_questions) == 1
     first_question = questions_by_id[first_card["question_id"]][0]
-    assert {option["official_answer"] for option in first_question["options"]} == {
+    assert set(first_question["options"]) == {
         "yes",
         "probably_yes",
         "probably_no",

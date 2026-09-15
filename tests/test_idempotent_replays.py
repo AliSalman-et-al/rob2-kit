@@ -4,12 +4,13 @@ import asyncio
 import os
 import sqlite3
 from pathlib import Path
-from typing import Any, cast
+from typing import Any
 
 import pytest
 from fastmcp import Client
 from support.rob2 import (
     _call,
+    _finalize_assessment,
     _proposal_args,
     _result,
     _review,
@@ -78,7 +79,7 @@ def test_save_proposal_exact_stale_retry(tmp_path: Path) -> None:
     assert retry["data"]["retry"] is True
 
 
-def test_pending_proposal_can_be_replaced_but_approved_proposal_is_locked(
+def test_pending_proposal_can_be_replaced_and_approved_retry_is_idempotent(
     tmp_path: Path,
 ) -> None:
     workspace = _workspace(tmp_path)
@@ -120,9 +121,14 @@ def test_pending_proposal_can_be_replaced_but_approved_proposal_is_locked(
     assert approved["outcome"] == "success"
     assert _state(workspace)["phase"] == "assessment"
 
-    locked = _call(workspace, "save_proposal", _proposal_args(workspace, [revised_result]))
-    assert locked["outcome"] == "condition"
-    assert "proposal is not the current operation" in locked["condition"]["detail"]
+    retry = _call(workspace, "save_proposal", _proposal_args(workspace, [revised_result]))
+    assert retry["outcome"] == "success"
+    assert retry["data"]["retry"] is True
+    assert _state(workspace)["proposal"]["identity"] == state["proposal"]["identity"]
+    assert (
+        _state(workspace)["proposal_acknowledgment"]["identity"]
+        == approved["acknowledgment_record"]["identity"]
+    )
 
     with sqlite3.connect(workspace / ".rob2-kit" / "canonical.sqlite3") as connection:
         proposal_count = connection.execute(
@@ -170,7 +176,7 @@ def test_domain_and_finalization_tools_stop_at_pending_proposal_review(tmp_path:
     assert finalized["condition"]["detail"] == detail
 
 
-def test_terminal_exact_stale_retry(tmp_path: Path) -> None:
+def test_trial_review_and_closure_exact_stale_retry(tmp_path: Path) -> None:
     workspace = _workspace(tmp_path)
     from support.rob2 import _prepared_evidence
 
@@ -178,23 +184,32 @@ def test_terminal_exact_stale_retry(tmp_path: Path) -> None:
     _call(workspace, "save_proposal", _proposal_args(workspace, [_result(evidence)]))
     _review(workspace)
     revision = int(_call(workspace, "get_status", {})["head"]["state_revision"])
-    request = cast(
-        dict[str, object],
-        {
-            "request": {
-                "disposition": "needs_input",
-                "trial_id": "trial",
-                "reason": "A required fact is not reported.",
-                "missing_facts": ["The required fact."],
-            },
-            "expected_revision": revision,
+    request: dict[str, object] = {
+        "trial_id": "trial",
+        "expected_revision": revision,
+        "request": {
+            "disposition": "needs_input",
+            "trial_id": "trial",
+            "reason": "A required fact is not reported.",
+            "missing_facts": ["The required fact."],
         },
-    )
-    first = _call(workspace, "request_trial_terminal", request)
+    }
+    first = _call(workspace, "review_trial", request)
     assert first["outcome"] == "success"
-    retry = _call(workspace, "request_trial_terminal", request)
+    retry = _call(workspace, "review_trial", request)
     assert retry["outcome"] == "success"
     assert retry["data"]["retry"] is True
+    close_request = {
+        "trial_id": "trial",
+        "expected_revision": int(first["head"]["state_revision"]),
+        "review_reference": first["data"]["review"]["identity"],
+    }
+    closed = _call(workspace, "close_trial", close_request)
+    close_retry = _call(workspace, "close_trial", close_request)
+    assert closed["outcome"] == "success"
+    assert close_retry["outcome"] == "success"
+    assert close_retry["data"]["retry"] is True
+    assert close_retry["head"]["state_revision"] == closed["head"]["state_revision"]
 
 
 def test_finalize_exact_stale_retry(tmp_path: Path) -> None:
@@ -212,7 +227,7 @@ def test_finalize_exact_stale_retry(tmp_path: Path) -> None:
     )
     _review(workspace)
     revision = int(_call(workspace, "get_status", {})["head"]["state_revision"])
-    first = _call(workspace, "finalize_batch", {"expected_revision": revision})
+    first = _finalize_assessment(workspace, revision)
     retry = _call(workspace, "finalize_batch", {"expected_revision": revision})
     assert first["outcome"] == "success"
     assert retry["outcome"] == "success"

@@ -36,13 +36,26 @@ interruption.
 The `read_pages` arguments have this shape; replace the example identifiers
 and range with the returned recovery values:
 
+For a single-source read, use `source_id` and `pages` together. The top-level
+`start_line` applies to every page, and `read_pages` has no top-level
+`end_line`:
+
 ```json
-{"trial_id": "fictional_trial", "windows": [{"source_id": "sh_0123456789abcdef", "page": 1, "start_line": 1, "end_line": 40}]}
+{"trial_id": "fictional_trial", "source_id": "sh_0123456789abcdef", "pages": [2], "start_line": 10}
+```
+
+For independent windows, put the Source handle and both line bounds in every
+window:
+
+```json
+{"trial_id": "fictional_trial", "windows": [{"source_id": "sh_0123456789abcdef", "page": 2, "start_line": 10, "end_line": 20}]}
 ```
 
 For an independent read using `source_id` and `pages`, split page lists longer
-than 10 into separate calls. For recovery, use the returned `windows` and
-`remaining_windows` continuation instead.
+than 10 into separate calls. Do not combine `source_id`, `pages`, or
+top-level `start_line` with `windows`. Read text from
+`data.pages[].numbered_text`. If `data.remaining_windows` is nonempty, send
+that exact list as the next `windows` value and repeat until it is empty.
 
 `read_pages` packs windows into bounded responses and preserves whole lines.
 A single line larger than its ordinary transport budget is returned intact.

@@ -28,7 +28,7 @@ from pydantic import (
 )
 from pydantic.functional_validators import AfterValidator
 
-from .models import canonical_json_bytes
+from .models import Answer, canonical_json_bytes
 
 
 class StrictModel(BaseModel):
@@ -90,6 +90,115 @@ PageNumber = Annotated[StrictInt, BeforeValidator(_strict_json_int), Field(ge=1)
 NormalizedCoordinate = Annotated[StrictFloat, Field(ge=0, le=1)]
 ExpectedRevision = Annotated[StrictInt, BeforeValidator(_strict_json_int), Field(ge=0)]
 NonNegativeInt = Annotated[StrictInt, Field(ge=0)]
+
+
+class WorkingSourceRange(StrictModel):
+    """One exact, recoverable source location kept in a derivative checkpoint."""
+
+    source_id: SourceHandle = Field(description="Source handle from the current Trial.")
+    page: PageNumber = Field(description="1-based page index in the captured Source.")
+    start_line: NonNegativeInt = Field(
+        description="First cited line; use 0 only with end_line 0 for a whole-page visual locator."
+    )
+    end_line: NonNegativeInt = Field(
+        description="Last cited line; use 0 only with start_line 0 for a whole-page visual locator."
+    )
+
+    @model_validator(mode="after")
+    def ordered_lines(self) -> WorkingSourceRange:
+        if (self.start_line == 0) != (self.end_line == 0):
+            raise ValueError("source range must use 0,0 or positive line coordinates")
+        if self.start_line and self.end_line < self.start_line:
+            raise ValueError("source range end_line must not precede start_line")
+        return self
+
+
+class WorkingNote(StrictModel):
+    text: NonBlankText = Field(
+        max_length=4_000, description="Concise observation, interpretation, or open question."
+    )
+    sources: tuple[WorkingSourceRange, ...] = Field(
+        min_length=1, max_length=8, description="Exact Trial source locations for this note."
+    )
+    domain_id: DomainId | None = Field(
+        default=None, description="Related RoB 2 Domain, when known."
+    )
+    question_id: QuestionId | None = Field(
+        default=None, description="Related pack question, when known."
+    )
+
+
+class WorkingTerm(StrictModel):
+    term: NonBlankText = Field(max_length=256, description="Term found in the captured Sources.")
+    meaning: NonBlankText = Field(
+        max_length=2_000, description="Source-grounded meaning retained for resumption."
+    )
+    sources: tuple[WorkingSourceRange, ...] = Field(
+        min_length=1, max_length=8, description="Exact Trial source locations supporting meaning."
+    )
+
+
+class WorkingDraft(StrictModel):
+    domain_id: DomainId = Field(description="Domain containing the unfinished draft.")
+    question_id: QuestionId = Field(description="Pack question containing the unfinished draft.")
+    answer: Answer | None = Field(
+        default=None, description="Provisional answer option; not a saved Domain answer."
+    )
+    text: NonBlankText = Field(
+        max_length=4_000, description="Unfinished answer text; not a committed judgment."
+    )
+    sources: tuple[WorkingSourceRange, ...] = Field(
+        min_length=1, max_length=8, description="Exact Trial source locations for this draft."
+    )
+
+
+class WorkingCheckpointDraft(StrictModel):
+    trial_id: TrialId = Field(description="Current open Trial that owns these notes.")
+    observations: tuple[WorkingNote, ...] = Field(
+        default=(), max_length=16, description="Source-located facts observed in the Sources."
+    )
+    interpretations: tuple[WorkingNote, ...] = Field(
+        default=(), max_length=16, description="Source-located tentative interpretations."
+    )
+    terminology: tuple[WorkingTerm, ...] = Field(
+        default=(), max_length=16, description="Source terms and their retained meanings."
+    )
+    unread_ranges: tuple[WorkingSourceRange, ...] = Field(
+        default=(), max_length=32, description="Exact Trial source ranges not yet inspected."
+    )
+    open_questions: tuple[WorkingNote, ...] = Field(
+        default=(), max_length=16, description="Unresolved questions with their source context."
+    )
+    drafts: tuple[WorkingDraft, ...] = Field(
+        default=(), max_length=16, description="Unfinished, non-authoritative Domain answer drafts."
+    )
+    next_action: NonBlankText | None = Field(
+        default=None, max_length=2_000, description="Next source-review step, when useful."
+    )
+
+
+class WorkingSourceBinding(StrictModel):
+    source_id: SourceId
+    projection_hash: Identity
+
+
+class WorkingCheckpoint(StrictModel):
+    identity: Identity | None = None
+    batch_id: Identity
+    trial_id: TrialId
+    result_identity: Identity | None = None
+    source_scope: tuple[WorkingSourceBinding, ...]
+    observations: tuple[WorkingNote, ...]
+    interpretations: tuple[WorkingNote, ...]
+    terminology: tuple[WorkingTerm, ...]
+    unread_ranges: tuple[WorkingSourceRange, ...]
+    open_questions: tuple[WorkingNote, ...]
+    drafts: tuple[WorkingDraft, ...]
+    next_action: NonBlankText | None = None
+
+    @model_validator(mode="after")
+    def identity_matches(self) -> WorkingCheckpoint:
+        return _identity(self, self.identity)
 
 
 class MissingDataRow(StrictModel):
@@ -666,13 +775,17 @@ class CategoryProfileResult(StrictModel):
     """A complete categorical profile reported for one supported randomized arm.
 
     Use this form when a source fully reports category cells for one arm even
-    if comparator values are absent. Keep every randomized arm in the target,
-    set ``group_id`` to the supported arm, and do not invent comparator cells.
-    A complete assessable profile is preferred to an unavailable result.
+    if comparator values are absent. This descriptive profile cannot proceed to
+    comparative RoB 2 assessment without the other randomized group's result.
+    The type remains in the canonical result union so existing records can be
+    independently verified.
     """
 
     form: Literal["single_group_category_profile"] = Field(
-        description="A complete source-reported category profile for one randomized group.",
+        description=(
+            "A source-reported descriptive category profile for one randomized group; it cannot "
+            "proceed to comparative RoB 2 assessment without the comparator result."
+        ),
     )
     analysis_population: NonBlankText = Field(
         description=(
@@ -771,14 +884,16 @@ class NarrativeEvidence(StrictModel):
     selected passage (or use typed Derived Evidence).
     """
 
-    kind: Literal["narrative"]
-    handle: EvidenceHandle
+    kind: Literal["narrative"] = Field(description="A selected narrative Evidence passage.")
+    handle: EvidenceHandle = Field(description="Exact selected passage handle from this Trial.")
 
 
 class TableEvidence(StrictModel):
-    kind: Literal["table"]
-    handle: EvidenceHandle
-    basis: Literal["text", "visual"]
+    kind: Literal["table"] = Field(description="Structured evidence from one selected table.")
+    handle: EvidenceHandle = Field(description="Selected table passage handle from this Trial.")
+    basis: Literal["text", "visual"] = Field(
+        description="Whether the selected table material is text or visual."
+    )
     title: NonBlankText = Field(
         description="Exact or normalization-equivalent title copied from selected table material.",
     )
@@ -836,46 +951,118 @@ class TableEvidence(StrictModel):
     )
 
 
+class TableEvidenceSpan(StrictModel):
+    """One literal table fragment, with its purpose kept explicit."""
+
+    role: Literal["title_or_definition", "header", "quantitative_row", "unit", "footnote"] = Field(
+        description="The part of the table represented by this selected fragment."
+    )
+    handle: EvidenceHandle = Field(description="Exact selected table-fragment handle.")
+
+
+class MultiSpanTableEvidence(StrictModel):
+    """Table evidence assembled from distinct cited fragments.
+
+    The spans are separate Source selections.  Their roles describe only how a
+    Result field was located; they do not assert that the fragments are
+    adjacent, part of one scientific table, or one continuous quotation.
+    """
+
+    kind: Literal["table_multispan"] = Field(
+        description="Structured evidence assembled from separate table fragments."
+    )
+    basis: Literal["text"] = Field(description="Multi-span table evidence uses selected text.")
+    spans: tuple[TableEvidenceSpan, ...] = Field(
+        min_length=2,
+        max_length=8,
+        description="Selected fragments and the table role each fragment supports.",
+    )
+    title: NonBlankText = Field(description="Exact or normalized table title or definition.")
+    scope: NonBlankText = Field(description="Exact or normalized scope represented by the table.")
+    cohort: NonBlankText = Field(description="Exact or normalized cohort label.")
+    row: NonBlankText = Field(description="Exact or normalized quantitative row label.")
+    columns: tuple[NonBlankText, ...] = Field(
+        min_length=1, description="Complete ordered column labels."
+    )
+    group_or_category_axes: tuple[NonBlankText, ...] = Field(
+        min_length=1, description="Complete ordered category or series labels."
+    )
+    cells: tuple[NonBlankText, ...] = Field(min_length=1, description="Reported table cells.")
+    units: tuple[NonBlankText, ...] = Field(min_length=1, description="Reported units.")
+    denominators: tuple[NonBlankText, ...] = Field(
+        min_length=1, description="Reported denominators."
+    )
+    footnotes: tuple[NonBlankText, ...] = Field(
+        default=(), description="Applicable table footnotes."
+    )
+
+    @model_validator(mode="after")
+    def distinct_explicit_spans(self) -> MultiSpanTableEvidence:
+        roles = {span.role for span in self.spans}
+        if {"header", "quantitative_row"} - roles:
+            raise ValueError("multi-span table evidence requires header and quantitative_row spans")
+        if len({span.handle for span in self.spans}) < 2:
+            raise ValueError("multi-span table evidence requires at least two distinct selections")
+        if self.footnotes and "footnote" not in roles:
+            raise ValueError("table footnotes require a footnote span")
+        if self.units and "unit" not in roles:
+            raise ValueError("table units require a unit span")
+        return self
+
+
 class FigureEvidence(StrictModel):
-    kind: Literal["figure"]
-    handle: EvidenceHandle
-    render_identity: Identity
+    kind: Literal["figure"] = Field(description="Evidence selected from a rendered figure.")
+    handle: EvidenceHandle = Field(description="Exact selected figure handle from this Trial.")
+    render_identity: Identity = Field(description="Identity of the rendered source page.")
+    delivery_receipt: Identity = Field(description="Receipt for delivering the rendered pixels.")
     region: tuple[
         NormalizedCoordinate,
         NormalizedCoordinate,
         NormalizedCoordinate,
         NormalizedCoordinate,
-    ]
-    transcription: VisualTranscription
-    provenance: Literal["text_corroborated", "host_visual"]
+    ] = Field(description="Selected figure region as normalized x0, y0, x1, y1 coordinates.")
+    transcription: VisualTranscription = Field(
+        description="Visible text transcribed from the selected figure region."
+    )
+    provenance: Literal["text_corroborated", "host_visual"] = Field(
+        description="Whether the transcription has text corroboration or host visual review."
+    )
 
 
 class FigureEvidenceDraft(StrictModel):
     """A server-owned figure projection selected by handle."""
 
-    kind: Literal["figure"]
-    handle: EvidenceHandle
+    kind: Literal["figure"] = Field(description="A server-owned selected figure reference.")
+    handle: EvidenceHandle = Field(description="Exact selected figure handle from this Trial.")
 
 
 class DerivedEvidence(StrictModel):
-    kind: Literal["derived"]
-    operation: Literal["difference", "ratio", "sum"]
-    inputs: tuple[DerivedInput, ...] = Field(min_length=1)
-    value: NonBlankText
+    kind: Literal["derived"] = Field(description="A calculation over selected source values.")
+    operation: Literal["difference", "ratio", "sum"] = Field(
+        description="The operation used to derive the reported value."
+    )
+    inputs: tuple[DerivedInput, ...] = Field(
+        min_length=1, description="Selected source values used by the calculation."
+    )
+    value: NonBlankText = Field(description="Calculated value with units when applicable.")
 
 
 class DerivedInput(StrictModel):
-    handle: EvidenceHandle
-    value: NonBlankText
+    handle: EvidenceHandle = Field(description="Exact selected source-value handle.")
+    value: NonBlankText = Field(description="Source value used in the calculation.")
 
 
 ResultEvidence = Annotated[
-    NarrativeEvidence | TableEvidence | FigureEvidence | DerivedEvidence,
+    NarrativeEvidence | TableEvidence | MultiSpanTableEvidence | FigureEvidence | DerivedEvidence,
     Field(discriminator="kind"),
 ]
 
 ResultEvidenceDraft = Annotated[
-    NarrativeEvidence | TableEvidence | FigureEvidenceDraft | DerivedEvidence,
+    NarrativeEvidence
+    | TableEvidence
+    | MultiSpanTableEvidence
+    | FigureEvidenceDraft
+    | DerivedEvidence,
     Field(discriminator="kind"),
 ]
 
@@ -961,16 +1148,25 @@ class AssessableResultDraft(StrictModel):
             discriminator="form",
             description=(
                 "One reported-result object with required form, alongside target in the "
-                "Result card. For example, a minimal "
-                "comparative object has form, effect_measure, estimate, and endpoint.name. "
-                "Never place selected Evidence, an Evidence handle, a render, table metadata, "
-                "or a figure object here."
+                "Result card. Comparative effects and complete group-bound values can proceed "
+                "to assessment. A one-arm category profile is descriptive only: preserve its "
+                "exact passage as Evidence and submit an unavailable Result with the missing "
+                "comparator result as a concrete missing fact. Never place selected Evidence, "
+                "an Evidence handle, a render, table metadata, or a figure object here."
             ),
         ),
     ]
     passage_refs: tuple[EvidenceHandle, ...] = Field(
         default=(),
         description="Inspected passage_ref handles from search_sources or read_pages, when needed.",
+    )
+    evidence: tuple[ResultEvidenceDraft, ...] = Field(
+        default=(),
+        description=(
+            "Optional typed Result Evidence. Use table_multispan when a title or definition, "
+            "header, quantitative row, unit, or footnote were selected separately. Its spans "
+            "remain separate citations and never form a reconstructed quote."
+        ),
     )
 
 
@@ -1050,12 +1246,16 @@ class UnavailableResult(StrictModel):
 class UnavailableResultDraft(StrictModel):
     """Unavailable proposal fields; use only when no complete assessable candidate exists.
 
-    Missing comparator values alone do not make a complete one-arm category profile
-    unavailable. Choose by event, time, population, measurement, and state criteria.
+    A complete one-arm category profile is descriptive and cannot proceed to comparative
+    RoB assessment. Preserve the exact source passage as Evidence and name the missing
+    comparator result as a concrete missing fact.
     """
 
     kind: Literal["unavailable"] = Field(
-        description="Use only when no complete assessable Result candidate exists.",
+        description=(
+            "Use when no complete comparative Result can proceed to RoB assessment, including "
+            "when a one-arm descriptive profile lacks the comparator result."
+        ),
     )
     trial_id: TrialId = Field(description="Server-issued Trial ID for this Result card.")
     relation: Literal[TargetRelation.AMBIGUOUS, TargetRelation.UNAVAILABLE] = Field(
@@ -1063,7 +1263,11 @@ class UnavailableResultDraft(StrictModel):
     )
     missing_facts: tuple[UnavailableMissingFactDraft, ...] = Field(
         min_length=1,
-        description="Every fact whose absence prevents a complete assessable Result.",
+        description=(
+            "Every fact whose absence prevents comparative RoB assessment. For a one-arm "
+            "descriptive profile, state the missing comparator result and ground it in the "
+            "preserved source passage."
+        ),
     )
 
 
@@ -1076,9 +1280,10 @@ ResultChoiceDraft = Annotated[
         discriminator="kind",
         description=(
             "Choose exact assessable first, then the closest complete non-exact "
-            "candidate or profile; use unavailable only when none exists. Do not rank by clinical "
-            "salience. Missing comparator "
-            "values do not invalidate a complete one-arm category profile. Compare event, time, "
+            "comparative candidate; use unavailable when no result can proceed to comparative "
+            "RoB assessment. A one-arm descriptive category profile cannot proceed: preserve its "
+            "exact source passage as Evidence and report the missing comparator result as a "
+            "concrete missing fact. Do not rank by clinical salience. Compare event, time, "
             "population, measurement, and state criteria. Relations are relative to the target: "
             "broader is a superset; narrower is a subset or has additional restrictions; "
             "component is one constituent; related is other overlap."
@@ -1178,11 +1383,10 @@ class DomainCounterevidence(StrictModel):
 
 class DomainAnswer(StrictModel):
     question_id: QuestionId = Field(description="Question ID from the current Domain card.")
-    option_id: str = Field(
-        min_length=1,
+    answer: Answer = Field(
         description=(
-            "Copy one options[].id from the current question card character for character. "
-            "This is an opaque identity, not an answer code."
+            "Official RoB 2 answer value from this question card's options. The server checks "
+            "that this value is allowed for the stated question."
         ),
     )
     bases: tuple[DomainBasis, ...] = Field(
@@ -1245,11 +1449,10 @@ class DomainAnswer(StrictModel):
 
 class DomainSaveAnswer(StrictModel):
     question_id: QuestionId = Field(description="Question ID from the current Domain card.")
-    option_id: str = Field(
-        min_length=1,
+    answer: Answer = Field(
         description=(
-            "Copy one options[].id from the current question card character for character. "
-            "This is an opaque identity, not an answer code."
+            "Official RoB 2 answer value from this question card's options. The server checks "
+            "that this value is allowed for the stated question."
         ),
     )
     bases: tuple[DomainBasis, ...] = Field(
@@ -1510,9 +1713,22 @@ class ProposalReasoningDraft(StrictModel):
     expected_revision: ExpectedRevision
 
 
-class TerminalRequestEnvelope(StrictModel):
-    request: TerminalRequest
+class TrialReviewRequest(StrictModel):
+    trial_id: TrialId
     expected_revision: ExpectedRevision
+    request: TerminalRequest | None = None
+
+    @model_validator(mode="after")
+    def request_matches_trial(self) -> TrialReviewRequest:
+        if self.request is not None and self.request.trial_id != self.trial_id:
+            raise ValueError("terminal request Trial must match the reviewed Trial")
+        return self
+
+
+class TrialClosureRequest(StrictModel):
+    trial_id: TrialId
+    expected_revision: ExpectedRevision
+    review_reference: Identity
 
 
 __all__ = [name for name in globals() if not name.startswith("_")]
