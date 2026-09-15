@@ -1,4 +1,4 @@
-"""Run one isolated Codex/rob2 diagnostic phase and retain its full JSONL trace."""
+"""Run one Codex/rob2 diagnostic phase and retain its full JSONL trace."""
 
 from __future__ import annotations
 
@@ -11,6 +11,8 @@ import subprocess
 from pathlib import Path
 
 from prepare_rsi_workspace import approved_scope_record, prepare_workspace
+
+IS_WINDOWS = os.name == "nt"
 
 
 def main() -> None:
@@ -25,11 +27,19 @@ def main() -> None:
     parser.add_argument(
         "--require-isolated-host",
         action="store_true",
-        help="Use a deny-by-default filesystem profile for qualification runs",
+        help=(
+            "Use a deny-by-default filesystem profile for qualification runs; "
+            "rejected on Windows to avoid an elevated UAC sandbox"
+        ),
     )
     args = parser.parse_args()
     if args.phase < 1 or (args.phase > 1) != bool(args.session):
         parser.error("phase 1 starts a session; later phases require --session")
+    if args.require_isolated_host and IS_WINDOWS:
+        parser.error(
+            "--require-isolated-host is unavailable on Windows; refusing to start "
+            "the elevated sandbox so evals never trigger UAC"
+        )
     run_dir = args.run_dir.resolve()
     prompt_file = args.prompt.resolve(strict=True)
     case_file = args.case.resolve(strict=True) if args.case is not None else None
@@ -131,8 +141,6 @@ def main() -> None:
         ):
             profile.append(f"{json.dumps(path.as_posix())} = {json.dumps(access)}")
         profile.extend(["", "[permissions.rob2-rsi.network]", "enabled = false"])
-        if os.name == "nt":
-            profile[2:2] = ["[windows]", 'sandbox = "elevated"', ""]
         (codex_home / "config.toml").write_text("\n".join(profile) + "\n", encoding="utf-8")
     skill_digest = hashlib.sha256()
     for member in sorted(path for path in skill.rglob("*") if path.is_file()):
@@ -169,9 +177,13 @@ def main() -> None:
         'mcp_servers.rob2.args=["mcp"]',
         "-c",
         "mcp_servers.rob2.env={ROB2_WORKSPACE=" + json.dumps(str(workspace)) + "}",
+        "-c",
+        'approval_policy="never"',
     ]
-    if args.session and not args.require_isolated_host:
-        config += ["-c", 'approval_policy="never"', "-c", 'sandbox_mode="workspace-write"']
+    if not args.require_isolated_host:
+        config += ["-c", 'sandbox_mode="workspace-write"']
+        if IS_WINDOWS:
+            config += ["-c", 'windows.sandbox="unelevated"']
     command = ["codex.cmd", "exec"]
     if args.session:
         command += ["resume", args.session]
@@ -194,11 +206,7 @@ def main() -> None:
         "-",
     ]
     if not args.session:
-        command[command.index("-") : command.index("-")] = (
-            ["-C", str(workspace)]
-            if args.require_isolated_host
-            else ["--approve-for-me", "-C", str(workspace)]
-        )
+        command[command.index("-") : command.index("-")] = ["-C", str(workspace)]
     trace = run_dir / f"phase-{args.phase}.jsonl"
     stderr = run_dir / f"phase-{args.phase}.stderr.txt"
     metadata = {
@@ -220,7 +228,9 @@ def main() -> None:
         "command": command,
         "host_isolation": {
             "required": args.require_isolated_host,
-            "policy": "deny-by-default" if args.require_isolated_host else "legacy-workspace-write",
+            "policy": (
+                "deny-by-default" if args.require_isolated_host else "workspace-write-unelevated"
+            ),
         },
     }
     (run_dir / f"phase-{args.phase}.meta.json").write_text(json.dumps(metadata, indent=2))

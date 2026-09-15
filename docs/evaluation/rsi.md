@@ -22,10 +22,14 @@ The [evaluation contract](README.md) defines the observation limits.
    auth copy after each phase. For qualification, add
    `--require-isolated-host`; this creates a deny-by-default Codex permission
    profile with write access only to the run workspace, run artifacts, and the
-   MCP runtime. On Windows it requires the elevated Codex sandbox backend; a
-   run that cannot start under that profile fails instead of silently claiming
-   label isolation. Keep raw traces restricted because they contain source
-   text and host-visible agent messages or justifications.
+   MCP runtime. This strict profile is unavailable on Windows: the runner rejects
+   it before creating artifacts rather than starting an elevated backend or
+   triggering UAC. Ordinary Windows evals explicitly use `approval_policy =
+   "never"`, `sandbox_mode = "workspace-write"`, and
+   `windows.sandbox = "unelevated"`; that prevents prompts while preserving
+   workspace write access, but it does not prove deny-by-default label isolation.
+   Keep raw traces restricted because they contain source text and host-visible
+   agent messages or justifications.
 
    The case manifest has this shape; source paths resolve relative to the
    manifest and only listed files enter `workspace/input`:
