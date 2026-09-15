@@ -24,10 +24,12 @@ The [evaluation contract](README.md) defines the observation limits.
    profile with write access only to the run workspace, run artifacts, and the
    MCP runtime. This strict profile is unavailable on Windows: the runner rejects
    it before creating artifacts rather than starting an elevated backend or
-   triggering UAC. Ordinary Windows evals explicitly use `approval_policy =
-   "never"`, `sandbox_mode = "workspace-write"`, and
-   `windows.sandbox = "unelevated"`; that prevents prompts while preserving
-   workspace write access, but it does not prove deny-by-default label isolation.
+   triggering UAC. Ordinary evals use `approval_policy = "on-request"` with
+   `approvals_reviewer = "auto_review"`, plus `sandbox_mode = "workspace-write"`.
+   On Windows they also set `windows.sandbox = "unelevated"`. The automatic
+   reviewer permits rob2's required MCP mutations without an interactive
+   approval prompt, while the unelevated backend prevents UAC; this does not
+   prove deny-by-default label isolation.
    Keep raw traces restricted because they contain source text and host-visible
    agent messages or justifications.
 
