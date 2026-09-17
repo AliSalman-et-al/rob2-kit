@@ -2355,6 +2355,20 @@ def _valid_scientific_contract_descriptor(value: object) -> bool:
         "content_hash": expected["content_hash"],
         "official_source": expected["official_source"],
     }
+    former_current_pack_previous_proof = {
+        "id": "rob2.parallel.assignment",
+        "version": "2019.1",
+        "result_semantics_version": _PREVIOUS_RESULT_SEMANTICS_VERSION,
+        "content_hash": "sha256:6d15307ced2cede1044b19507871c3b334c783868093f2015d372fb7b89f5a31",
+        "official_source": expected["official_source"],
+    }
+    former_current_pack_previous_proof_legacy = {
+        "id": "rob2.parallel.assignment",
+        "version": "2019.1",
+        "result_semantics_version": _PREVIOUS_RESULT_SEMANTICS_VERSION,
+        "content_hash": "sha256:f1cc5e7e0c06a26b351e455797d8936256b01388fdb446c1ef7cc926ab29613b",
+        "official_source": expected["official_source"],
+    }
     previous = {
         "id": "rob2.parallel.assignment",
         "version": "2019.1",
@@ -2369,7 +2383,15 @@ def _valid_scientific_contract_descriptor(value: object) -> bool:
         "content_hash": "sha256:3ef492b34a81c19e3f75d72fea2b92c40aebde80c06e24e44c36cd76dc4cf3d4",
         "official_source": expected["official_source"],
     }
-    return value in (historical, legacy, current_pack_previous_proof, previous, older_v07)
+    return value in (
+        historical,
+        legacy,
+        current_pack_previous_proof,
+        former_current_pack_previous_proof,
+        former_current_pack_previous_proof_legacy,
+        previous,
+        older_v07,
+    )
 
 
 def _assessment_summary(state: dict[str, Any]) -> dict[str, dict[str, Any]]:
@@ -2438,18 +2460,18 @@ def _valid_trial_review_closures(
         closure = trial_closures[trial_id]
         disposition = dispositions[trial_id]
         result = current_results.get(trial_id)
+        review_shape = {
+            "identity",
+            "trial_id",
+            "result_identity",
+            "checkpoint_ids",
+            "disposition",
+            "reason",
+            "facts",
+        }
         if (
             not isinstance(review, dict)
-            or set(review)
-            != {
-                "identity",
-                "trial_id",
-                "result_identity",
-                "checkpoint_ids",
-                "disposition",
-                "reason",
-                "facts",
-            }
+            or set(review) != review_shape
             or review.get("trial_id") != trial_id
             or review.get("disposition") not in review_dispositions
             or review.get("disposition") != disposition
@@ -2854,7 +2876,7 @@ def finalize_batch(workspace: str | Path, expected_revision: ExpectedRevision) -
         value == "assessed"
         and (
             not isinstance(snapshots.get(trial), dict)
-            or snapshots[trial].get("provisional") is not False
+            or snapshots[trial].get("overall") not in {"low", "some_concerns", "high"}
         )
         for trial, value in dispositions.items()
     ):
@@ -3726,9 +3748,7 @@ def verify_bundle(path: str | Path) -> bool:
                     expected_shape = {
                         "trial_id",
                         "checkpoints",
-                        "provisional",
                         "domain_judgments",
-                        "multiple_concerns",
                         "overall",
                         "identity",
                     }
@@ -3737,7 +3757,6 @@ def verify_bundle(path: str | Path) -> bool:
                     if (
                         not isinstance(item, dict)
                         or set(item) != expected_shape
-                        or item.get("provisional") is not False
                         or item.get("identity") != digest
                         or item.get("trial_id") != trial_id
                         or item.get("identity") != snapshot_identity(item)
@@ -3787,26 +3806,7 @@ def verify_bundle(path: str | Path) -> bool:
                         if item.get("result_identity") != matching.get("result_identity"):
                             return False
                     judgments = item["domain_judgments"]
-                    concerns = list(judgments.values()).count("some_concerns")
-                    multiple = item.get("multiple_concerns")
-                    if "high" in judgments.values() or concerns < 2:
-                        if multiple is not None:
-                            return False
-                        combined = None
-                    elif (
-                        not isinstance(multiple, dict)
-                        or set(multiple) != {"raises_overall_to_high", "rationale"}
-                        or not isinstance(multiple["raises_overall_to_high"], bool)
-                        or not isinstance(multiple["rationale"], str)
-                        or not multiple["rationale"]
-                    ):
-                        return False
-                    else:
-                        combined = multiple["raises_overall_to_high"]
-                    if (
-                        item.get("overall")
-                        != evaluate_overall(judgments, combined_concerns=combined).judgment.value
-                    ):
+                    if item.get("overall") != evaluate_overall(judgments).judgment.value:
                         return False
             for key, record in domains.items():
                 history = domain_history.get(key)
@@ -3847,9 +3847,9 @@ def verify_bundle(path: str | Path) -> bool:
                 snapshot = snapshots.get(trial_id)
                 if disposition == "assessed" and (
                     not isinstance(snapshot, dict)
-                    or snapshot.get("provisional") is not False
                     or not isinstance(snapshot.get("domain_judgments"), dict)
                     or len(snapshot["domain_judgments"]) != len(SCIENTIFIC_PACK.domains)
+                    or snapshot.get("overall") not in {"low", "some_concerns", "high"}
                 ):
                     return False
                 if disposition == "assessed":
@@ -3915,26 +3915,7 @@ def verify_bundle(path: str | Path) -> bool:
                         or snapshot.get("domain_judgments") != expected_judgments
                     ):
                         return False
-                    domain_values = list(expected_judgments.values())
-                    concerns = domain_values.count("some_concerns")
-                    multiple = snapshot.get("multiple_concerns")
-                    if "high" in domain_values or concerns < 2:
-                        if multiple is not None:
-                            return False
-                        combined = None
-                    else:
-                        if (
-                            not isinstance(multiple, dict)
-                            or set(multiple) != {"raises_overall_to_high", "rationale"}
-                            or not isinstance(multiple["raises_overall_to_high"], bool)
-                            or not isinstance(multiple["rationale"], str)
-                            or not multiple["rationale"]
-                        ):
-                            return False
-                        combined = multiple["raises_overall_to_high"]
-                    overall = evaluate_overall(
-                        expected_judgments, combined_concerns=combined
-                    ).judgment.value
+                    overall = evaluate_overall(expected_judgments).judgment.value
                     if snapshot.get("overall") != overall:
                         return False
             if has_trial_reviews and not _valid_trial_review_closures(

@@ -7,6 +7,8 @@ import binascii
 import hashlib
 import json
 import os
+import re
+import uuid
 from typing import Annotated, Any, Literal
 
 import mcp_types
@@ -24,12 +26,14 @@ from pydantic import ConfigDict, Field, StrictBool, StrictInt, StrictStr, model_
 from pydantic.functional_validators import AfterValidator, BeforeValidator
 
 from rob2_kit import __version__
-from rob2_kit.application._state import _root, _state
+from rob2_kit.application._state import _db, _identity, _root, _state
 from rob2_kit.application.contracts import TOOL_NAMES, WorkflowConflict
 from rob2_kit.application.domains import (
     _domain_context_delivery,
+    _domain_context_view,
     _domain_reasoning_matches_current,
     _record_domain_context_delivery,
+    _record_domain_context_view,
 )
 from rob2_kit.application.domains import (
     get_domain_context as _get_domain_context,
@@ -37,6 +41,9 @@ from rob2_kit.application.domains import (
 from rob2_kit.application.domains import save_domain_judgment as _save_domain_judgment
 from rob2_kit.application.domains import (
     validate_domain_assessment as _validate_domain_assessment,
+)
+from rob2_kit.application.evidence import (
+    _cursor_handle,
 )
 from rob2_kit.application.evidence import list_sources as _list_sources
 from rob2_kit.application.evidence import read_pages as _read_pages
@@ -47,7 +54,9 @@ from rob2_kit.application.evidence import (
     record_visual_delivery as _record_visual_delivery,
 )
 from rob2_kit.application.evidence import render_page as _render_page
-from rob2_kit.application.evidence import search_sources as _search_sources
+from rob2_kit.application.evidence import (
+    search_sources as _search_sources,
+)
 from rob2_kit.application.evidence import (
     select_text_evidence_by_lines as _select_text_evidence_by_lines,
 )
@@ -69,6 +78,7 @@ from rob2_kit.application.status import get_status_head as _get_status_head
 from rob2_kit.application.trials import close_trial as _close_trial
 from rob2_kit.application.trials import review_trial as _review_trial
 from rob2_kit.application.working import save_working_checkpoint as _save_working_checkpoint
+from rob2_kit.models import canonical_json_bytes
 from rob2_kit.workflow_models import (
     DomainDraft,
     DomainId,
@@ -77,7 +87,6 @@ from rob2_kit.workflow_models import (
     ExpectedRevision,
     Identity,
     MissingDataRow,
-    MultipleConcernsDecision,
     NormalizedCoordinate,
     PageNumber,
     ProposalDraft,
@@ -132,7 +141,8 @@ _INTAKE = ToolAnnotations(
 # Keep every read_pages response small enough for clients with conservative
 # tool-result limits.  The application still owns the complete captured
 # projection; this is only a transport window.
-_READ_PAGES_RESPONSE_CHARS = 24_000
+_READ_PAGES_RESPONSE_BYTES = 24_000
+_SEARCH_BATCH_RESPONSE_BYTES = 32_000
 _DOMAIN_CONTEXT_DEFAULT_PAGE_BYTES = 32_768
 _DOMAIN_CONTEXT_MIN_PAGE_BYTES = 4_096
 _DOMAIN_CONTEXT_MAX_PAGE_BYTES = 131_072
@@ -175,6 +185,14 @@ def _compact_domain_context_transport(value: dict[str, Any]) -> dict[str, Any]:
 
 
 def _domain_context_cursor(payload: dict[str, Any]) -> str:
+    view_id = payload.get("view_id")
+    if isinstance(view_id, str):
+        if not re.fullmatch(r"[0-9a-f]{32}", view_id):
+            raise ValueError("domain_context_cursor_invalid: malformed view handle")
+        page_index = payload.get("page_index")
+        if not isinstance(page_index, int) or page_index < 0:
+            raise ValueError("domain_context_cursor_invalid: invalid cursor position")
+        return f"dcp2.{view_id}.{page_index}"
     encoded = json.dumps(payload, ensure_ascii=False, separators=(",", ":")).encode("utf-8")
     return "dcp1." + base64.urlsafe_b64encode(encoded).decode("ascii").rstrip("=")
 
@@ -185,6 +203,11 @@ def _domain_context_digest(data: dict[str, Any]) -> str:
 
 
 def _decode_domain_context_cursor(cursor: str) -> dict[str, Any]:
+    if cursor.startswith("dcp2."):
+        match = re.fullmatch(r"dcp2\.([0-9a-f]{32})\.(\d+)", cursor)
+        if match is None:
+            raise ValueError("domain_context_cursor_invalid: malformed cursor")
+        return {"view_id": match.group(1), "page_index": int(match.group(2))}
     if not cursor.startswith("dcp1."):
         raise ValueError("domain_context_cursor_invalid: unsupported cursor")
     encoded = cursor.removeprefix("dcp1.")
@@ -229,6 +252,45 @@ def _domain_context_transport_bytes(value: dict[str, Any]) -> int:
     return len(json.dumps(envelope, ensure_ascii=False, separators=(",", ":")).encode("utf-8"))
 
 
+def _read_pages_transport_bytes(value: dict[str, Any], head: dict[str, Any]) -> int:
+    """Measure the serialized envelope that the read_pages caller receives."""
+
+    visible = {key: item for key, item in value.items() if key != "_read_coverage"}
+    enriched = {
+        **visible,
+        "phase": head.get("phase", "empty"),
+        "state_revision": head.get("state_revision", 0),
+        "continuation": visible.get(
+            "continuation", head.get("continuation", head.get("next_action"))
+        ),
+        "authoritative_wording": head.get("authoritative_wording"),
+    }
+    normalized = validate_output("read_pages", normalize("read_pages", enriched))
+    return len(
+        json.dumps(
+            {"content": [], "structured_content": normalized},
+            ensure_ascii=False,
+            separators=(",", ":"),
+        ).encode("utf-8")
+    )
+
+
+def _compact_read_window_fields(value: Any) -> None:
+    """Keep zero/default fragment coordinates out of ordinary public windows."""
+
+    if isinstance(value, dict):
+        if all(key in value for key in ("source_id", "page", "start_line", "end_line")):
+            if value.get("start_char") in (None, 0):
+                value.pop("start_char", None)
+            if value.get("end_char") is None:
+                value.pop("end_char", None)
+        for item in value.values():
+            _compact_read_window_fields(item)
+    elif isinstance(value, list):
+        for item in value:
+            _compact_read_window_fields(item)
+
+
 def _domain_context_page_data(
     data: dict[str, Any],
     section: str,
@@ -259,6 +321,7 @@ def _paginate_domain_context_transport(
     basis_identity: str,
     context_state_revision: int,
     preview_missing_data: list[dict[str, Any]] | None = None,
+    view_id: str | None = None,
 ) -> dict[str, Any]:
     data = value.get("data")
     head = value.get("head")
@@ -281,6 +344,15 @@ def _paginate_domain_context_transport(
         page_index = 0
     else:
         decoded = _decode_domain_context_cursor(cursor)
+        if isinstance(decoded.get("view_id"), str):
+            view = _domain_context_view(_root(_workspace()), decoded["view_id"])
+            if view is None:
+                raise ValueError("domain_context_cursor_expired: context view is unavailable")
+            decoded = {
+                **view,
+                "page_index": decoded["page_index"],
+                "missing_data": view.get("preview_scope"),
+            }
         if (
             decoded["trial_id"] != trial_id
             or decoded["domain_id"] != domain_id
@@ -291,8 +363,13 @@ def _paginate_domain_context_transport(
             raise ValueError("domain_context_cursor_stale: context identity or projection changed")
         if requested_page_size is not None and requested_page_size != decoded["page_size"]:
             raise ValueError("domain_context_cursor_invalid: page size differs from cursor")
-        page_size = decoded["page_size"]
-        page_index = decoded["page_index"]
+        decoded_page_size = decoded.get("page_size")
+        decoded_page_index = decoded.get("page_index")
+        if not isinstance(decoded_page_size, int) or not isinstance(decoded_page_index, int):
+            raise ValueError("domain_context_cursor_invalid: incomplete cursor")
+        page_size = decoded_page_size
+        page_index = decoded_page_index
+        view_id = decoded.get("view_id")
 
     data_template = dict(data)
     sections: list[tuple[str, list[dict[str, Any]]]] = []
@@ -308,18 +385,19 @@ def _paginate_domain_context_transport(
     # Leave room for page metadata and the opaque cursor in the structured
     # envelope. Items remain indivisible.
     working_budget = page_size - _DOMAIN_CONTEXT_PAGE_HEADROOM_BYTES
-    cursor_placeholder = _domain_context_cursor(
-        {
-            "trial_id": trial_id,
-            "domain_id": domain_id,
-            "state_revision": state_revision,
-            "page_index": 999_999,
-            "page_size": page_size,
-            "digest": digest,
-            "basis_identity": basis_identity,
-            "missing_data": preview_missing_data,
-        }
-    )
+    cursor_payload = {
+        "trial_id": trial_id,
+        "domain_id": domain_id,
+        "state_revision": state_revision,
+        "page_index": 999_999,
+        "page_size": page_size,
+        "digest": digest,
+        "basis_identity": basis_identity,
+        "missing_data": preview_missing_data,
+    }
+    if view_id is not None:
+        cursor_payload["view_id"] = view_id
+    cursor_placeholder = _domain_context_cursor(cursor_payload)
     header_probe = _domain_context_page_data(
         _domain_context_page_template(data_template, 0),
         "complete",
@@ -414,14 +492,8 @@ def _paginate_domain_context_transport(
     current_cursor = (
         _domain_context_cursor(
             {
-                "trial_id": trial_id,
-                "domain_id": domain_id,
-                "state_revision": state_revision,
+                **cursor_payload,
                 "page_index": page_index,
-                "page_size": page_size,
-                "digest": digest,
-                "basis_identity": basis_identity,
-                "missing_data": preview_missing_data,
             }
         )
         if page_index
@@ -430,14 +502,8 @@ def _paginate_domain_context_transport(
     next_cursor = (
         _domain_context_cursor(
             {
-                "trial_id": trial_id,
-                "domain_id": domain_id,
-                "state_revision": state_revision,
+                **cursor_payload,
                 "page_index": page_index + 1,
-                "page_size": page_size,
-                "digest": digest,
-                "basis_identity": basis_identity,
-                "missing_data": preview_missing_data,
             }
         )
         if page_index + 1 < page_count
@@ -525,11 +591,29 @@ class ReadWindow(StrictModel):
     end_line: StrictInt | None = Field(
         default=None, ge=1, description="Last one-based numbered line to return, inclusive."
     )
+    start_char: StrictInt = Field(
+        ge=0,
+        default=0,
+        description="Start character offset within start_line for a split line.",
+    )
+    end_char: StrictInt | None = Field(
+        default=None,
+        ge=0,
+        description="Optional exclusive end offset within the final line.",
+    )
 
     @model_validator(mode="after")
     def line_range_is_ordered(self) -> ReadWindow:
         if self.end_line is not None and self.end_line < self.start_line:
             raise ValueError("end_line must be greater than or equal to start_line")
+        if self.end_char is not None and self.end_line is None:
+            raise ValueError("end_char requires end_line")
+        if (
+            self.end_line == self.start_line
+            and self.end_char is not None
+            and self.end_char < self.start_char
+        ):
+            raise ValueError("end_char must be greater than or equal to start_char")
         return self
 
 
@@ -573,6 +657,7 @@ def _content(
     domain_context_digest: str | None = None
     domain_context_snapshot: dict[str, Any] | None = None
     domain_context_state_revision: int | None = None
+    domain_context_view_id: str | None = None
     value = _public_source_references(value)
     if tool != "get_status":
         current = _get_status_head(_workspace())
@@ -587,6 +672,11 @@ def _content(
     if tool == "get_domain_context":
         # Validate the compact public variant as well as the application
         # projection while preserving every question and pack-guidance field.
+        # Read-window defaults are omitted from the public shape before the
+        # digest is issued.  Otherwise the persisted dcp2 snapshot would hash
+        # a pre-compaction value while the stored snapshot contains the
+        # compacted value, making the first continuation look stale.
+        _compact_read_window_fields(normalized)
         normalized = _compact_domain_context_transport(normalized)
         data = normalized.get("data")
         if isinstance(data, dict):
@@ -599,33 +689,62 @@ def _content(
             revision = normalized_head.get("state_revision")
             domain_context_state_revision = revision if isinstance(revision, int) else None
         if domain_cursor is not None:
-            cursor_scope = _decode_domain_context_cursor(domain_cursor)
+            decoded_cursor = _decode_domain_context_cursor(domain_cursor)
+            domain_context_view = None
+            if isinstance(decoded_cursor.get("view_id"), str):
+                domain_context_view_id = decoded_cursor["view_id"]
+                domain_context_view = _domain_context_view(
+                    _root(_workspace()), domain_context_view_id
+                )
+                if domain_context_view is None:
+                    raise ValueError("domain_context_cursor_expired: context view is unavailable")
+                cursor_scope = {
+                    **domain_context_view,
+                    "page_index": decoded_cursor["page_index"],
+                    "missing_data": domain_context_view.get("preview_scope"),
+                }
+            else:
+                cursor_scope = decoded_cursor
+            cursor_trial_id = cursor_scope.get("trial_id")
+            cursor_domain_id = cursor_scope.get("domain_id")
+            cursor_state_revision = cursor_scope.get("state_revision")
+            cursor_digest = cursor_scope.get("digest")
+            cursor_basis_identity = cursor_scope.get("basis_identity")
+            if (
+                not isinstance(cursor_trial_id, str)
+                or not isinstance(cursor_domain_id, str)
+                or not isinstance(cursor_state_revision, int)
+                or not isinstance(cursor_digest, str)
+                or not isinstance(cursor_basis_identity, str)
+            ):
+                raise ValueError("domain_context_cursor_invalid: incomplete cursor")
             current_data = normalized.get("data")
             current_head = normalized.get("head")
             if (
                 not isinstance(current_data, dict)
                 or not isinstance(current_head, dict)
-                or current_data.get("trial_id") != cursor_scope["trial_id"]
-                or current_data.get("domain_id") != cursor_scope["domain_id"]
-                or domain_context_basis_identity != cursor_scope["basis_identity"]
+                or current_data.get("trial_id") != cursor_trial_id
+                or current_data.get("domain_id") != cursor_domain_id
+                or domain_context_basis_identity != cursor_basis_identity
                 or cursor_scope.get("missing_data") != domain_preview_missing_data
             ):
                 raise ValueError(
                     "domain_context_cursor_stale: context scope or assessment basis changed"
                 )
-            delivery = _domain_context_delivery(
+            delivery = domain_context_view or _domain_context_delivery(
                 _root(_workspace()),
-                cursor_scope["trial_id"],
-                cursor_scope["domain_id"],
-                cursor_scope["state_revision"],
+                cursor_trial_id,
+                cursor_domain_id,
+                cursor_state_revision,
+                prefer_views=False,
             )
             if delivery is None:
                 raise ValueError("domain_context_cursor_stale: context snapshot was replaced")
-            if delivery.get("digest") != cursor_scope["digest"]:
+            if delivery.get("digest") != cursor_digest:
                 raise ValueError("domain_context_cursor_stale: context projection changed")
             if delivery.get("preview_scope") != cursor_scope.get("missing_data"):
                 raise ValueError("domain_context_cursor_stale: preview scope changed")
-            if delivery.get("basis_identity") != cursor_scope["basis_identity"]:
+            if delivery.get("basis_identity") != cursor_basis_identity:
                 raise ValueError("domain_context_cursor_stale: assessment basis changed")
             stored_snapshot = delivery.get("snapshot")
             if not isinstance(stored_snapshot, dict):
@@ -635,10 +754,13 @@ def _content(
             if (
                 not isinstance(stored_data, dict)
                 or not isinstance(stored_head, dict)
-                or stored_data.get("trial_id") != cursor_scope["trial_id"]
-                or stored_data.get("domain_id") != cursor_scope["domain_id"]
-                or stored_head.get("state_revision") != cursor_scope["state_revision"]
-                or _domain_context_digest(stored_data) != cursor_scope["digest"]
+                or stored_data.get("trial_id") != cursor_trial_id
+                or stored_data.get("domain_id") != cursor_domain_id
+                or (
+                    not domain_context_view
+                    and stored_head.get("state_revision") != cursor_state_revision
+                )
+                or _domain_context_digest(stored_data) != cursor_digest
             ):
                 raise ValueError("domain_context_cursor_stale: context snapshot is invalid")
             domain_context_snapshot = stored_snapshot
@@ -648,8 +770,8 @@ def _content(
                 "data": stored_data,
                 "head": current_head,
             }
-            domain_context_digest = cursor_scope["digest"]
-            domain_context_state_revision = cursor_scope["state_revision"]
+            domain_context_digest = cursor_digest
+            domain_context_state_revision = cursor_state_revision
         if (
             domain_cursor is not None
             or domain_page_size is not None
@@ -662,8 +784,23 @@ def _content(
                 str(domain_context_basis_identity),
                 domain_context_state_revision if domain_context_state_revision is not None else 0,
                 domain_preview_missing_data,
+                domain_context_view_id
+                if domain_context_view_id is not None
+                else (uuid.uuid4().hex if domain_cursor is None else None),
             )
         validate_output(tool, normalized)
+    _compact_read_window_fields(normalized)
+    if tool == "read_pages":
+        data = normalized.get("data")
+        pages = data.get("pages") if isinstance(data, dict) else None
+        if isinstance(pages, list):
+            for page in pages:
+                if isinstance(page, dict) and not page.get("line_fragment"):
+                    # Keep the legacy page shape compact; character coordinates
+                    # are meaningful only for a physical-line fragment.
+                    page.pop("returned_start_char", None)
+                    page.pop("next_start_char", None)
+                    page.pop("line_fragment", None)
     if tool == "get_domain_context" and domain_context_digest is not None:
         data = normalized.get("data")
         head = normalized.get("head")
@@ -675,21 +812,66 @@ def _content(
             and isinstance(domain_context_basis_identity, str)
         ):
             if isinstance(page, dict):
-                _record_domain_context_delivery(
-                    _root(_workspace()),
-                    str(data["trial_id"]),
-                    str(data["domain_id"]),
-                    int(page["state_revision"]),
-                    domain_context_digest,
-                    int(page["page_size"]),
-                    int(page["count"]),
-                    int(page["index"]),
-                    page.get("next_cursor") if isinstance(page.get("next_cursor"), str) else None,
-                    domain_cursor,
-                    domain_context_basis_identity,
-                    domain_context_snapshot,
-                    domain_preview_missing_data,
-                )
+                page_cursor = page.get("next_cursor") or page.get("cursor")
+                if domain_context_view_id is None and isinstance(page_cursor, str):
+                    decoded_page_cursor = _decode_domain_context_cursor(page_cursor)
+                    domain_context_view_id = decoded_page_cursor.get("view_id")
+                if domain_context_view_id is not None:
+                    _record_domain_context_view(
+                        _root(_workspace()),
+                        domain_context_view_id,
+                        str(data["trial_id"]),
+                        str(data["domain_id"]),
+                        int(page["state_revision"]),
+                        domain_context_digest,
+                        int(page["page_size"]),
+                        int(page["count"]),
+                        int(page["index"]),
+                        page.get("next_cursor")
+                        if isinstance(page.get("next_cursor"), str)
+                        else None,
+                        domain_cursor,
+                        domain_context_basis_identity,
+                        domain_context_snapshot,
+                        domain_preview_missing_data,
+                    )
+                    # Preserve the legacy projection for existing clients and
+                    # diagnostics; its state is not authoritative for dcp2.
+                    _record_domain_context_delivery(
+                        _root(_workspace()),
+                        str(data["trial_id"]),
+                        str(data["domain_id"]),
+                        int(page["state_revision"]),
+                        domain_context_digest,
+                        int(page["page_size"]),
+                        int(page["count"]),
+                        int(page["index"]),
+                        page.get("next_cursor")
+                        if isinstance(page.get("next_cursor"), str)
+                        else None,
+                        None,
+                        domain_context_basis_identity,
+                        domain_context_snapshot,
+                        domain_preview_missing_data,
+                    )
+                else:
+                    _record_domain_context_delivery(
+                        _root(_workspace()),
+                        str(data["trial_id"]),
+                        str(data["domain_id"]),
+                        int(page["state_revision"]),
+                        domain_context_digest,
+                        int(page["page_size"]),
+                        int(page["count"]),
+                        int(page["index"]),
+                        page.get("next_cursor")
+                        if isinstance(page.get("next_cursor"), str)
+                        else None,
+                        domain_cursor,
+                        domain_context_basis_identity,
+                        domain_context_snapshot,
+                        domain_preview_missing_data,
+                    )
             else:
                 _record_domain_context_delivery(
                     _root(_workspace()),
@@ -706,6 +888,19 @@ def _content(
                     domain_context_snapshot,
                     domain_preview_missing_data,
                 )
+    if tool == "read_pages":
+        envelope_bytes = len(
+            json.dumps(
+                {"content": [], "structured_content": normalized},
+                ensure_ascii=False,
+                separators=(",", ":"),
+            ).encode("utf-8")
+        )
+        if envelope_bytes > _READ_PAGES_RESPONSE_BYTES:
+            raise ValueError(
+                "read_pages_response_oversized: serialized response exceeds "
+                f"{_READ_PAGES_RESPONSE_BYTES} UTF-8 bytes"
+            )
     if tool == "read_pages" and isinstance(read_coverage, list):
         _record_read_coverage_batch(_workspace(), read_coverage)
     if tool != "render_page":
@@ -830,6 +1025,15 @@ def _invoke(
                     "outcome": "condition",
                     "code": "domain_context_cursor_stale",
                     "condition": condition.removeprefix("domain_context_cursor_stale:"),
+                },
+            )
+        if condition.startswith("domain_context_cursor_expired:"):
+            return _content(
+                tool,
+                {
+                    "outcome": "condition",
+                    "code": "domain_context_cursor_expired",
+                    "condition": condition.removeprefix("domain_context_cursor_expired:"),
                 },
             )
         if condition.startswith("domain_context_cursor_invalid:"):
@@ -1021,14 +1225,14 @@ def get_status() -> ToolResult:
     name="save_working_checkpoint",
     title="Save working checkpoint",
     description=(
-        "Replace the current Trial's small, source-linked working notes: observations, "
-        "interpretations, terminology, unread ranges, open questions, and unfinished drafts. "
+        "Replace the current Trial's small, source-linked working notes. Use notes for "
+        "observations, interpretations, terminology, unread ranges, open questions, and drafts. "
         "Each note must cite exact source page and line ranges, or 0,0 for a whole-page visual "
         "locator. These notes are resumable working "
         "memory; they do not become Evidence, answer a question, change a Result, or commit a "
         "Domain. get_status returns them only while the captured source scope and Trial Result "
-        "still match; otherwise reorient from the current sources. Re-read cited passages before "
-        "relying on them. Saving replaces the prior checkpoint for this Trial."
+        "still match. If cited content is missing or uncertain in the current context, recover the "
+        "passage before relying on it. Saving replaces the prior checkpoint for this Trial."
     ),
     annotations=_MUTATION,
     output_schema=output_schema("save_working_checkpoint"),
@@ -1115,32 +1319,10 @@ def list_sources(
     name="search_sources",
     title="Search Trial sources",
     description=(
-        "Search captured source pages (1-based source indexes). Required: trial_id, query, mode. "
-        "Choose all for every token, phrase for known contiguous wording, any when at least one "
-        "query term on a page is enough for broad discovery, or prefix for token-prefix matching. "
-        "Prefer wording from an inspected Source; if none is available, use the question-card "
-        "wording as a fallback. Each data.hits[] item carries a passage_ref for its exact "
-        "displayed window and a stable global BM25 ranking "
-        "with deterministic Source/page tie-breakers. "
-        "Pass next_cursor as cursor with the same query, mode, Source scope, and limit to "
-        "continue that ranking; counts and truncation show whether the batch is complete. "
-        "Each response includes bounded per-term page counts by Source, the total Source page "
-        "count, and the pages matching the complete query; these are distinct lexical page "
-        "counts, not occurrence counts or scientific conclusions. Compare term counts with "
-        "the complete-query count to distinguish term presence from full-query matches under "
-        "the issued mode; inspect passages because counts do not establish co-occurrence or "
-        "phrase adjacency. The response marks omitted query units or Source rows with the "
-        "corresponding *_truncated field. "
-        "Every zero-hit response describes what its issued mode matched and what it did not "
-        "establish. It does not prescribe a different mode; use the observation and inspected "
-        "Source wording to choose whether to reformulate or navigate directly. A Source-scoped "
-        "miss includes bounded literal navigation entries and, when more entries remain, a "
-        "list_sources continuation. A broad truncated any response offers only continuation of "
-        "that same query and mode. "
-        "Inspect passages before citing them. A hit is a discovery candidate until its complete "
-        "passage is inspected and selected as retained Evidence. Zero hits establish only that "
-        "the issued lexical query matched no captured text. Copy a returned source_id exactly "
-        "and use it with the same trial_id. Select an inspected passage to retain Evidence."
+        "Search captured Trial sources. Provide trial_id, query, and mode. "
+        "Use a returned cursor with the same search arguments to continue. Inspect a returned "
+        "passage before selecting it as Evidence. A zero-hit receipt describes only the issued "
+        "lexical query."
     ),
     annotations=_READ_ONLY,
     output_schema=output_schema("search_sources"),
@@ -1203,18 +1385,181 @@ def search_sources(
     )
 
 
+def _search_batch_transport_bytes(results: list[dict[str, Any]]) -> int:
+    """Measure the complete structured envelope before returning a search batch."""
+
+    current = _get_status_head(_workspace())
+    value = _public_source_references(
+        {
+            "outcome": "success",
+            "results": results,
+            "phase": current.get("phase", "empty"),
+            "state_revision": current.get("state_revision", 0),
+            "continuation": current.get("continuation"),
+            "authoritative_wording": current.get("authoritative_wording"),
+        }
+    )
+    normalized = normalize("search_sources_batch", value)
+    return len(
+        json.dumps(
+            {"content": [], "structured_content": normalized},
+            ensure_ascii=False,
+            separators=(",", ":"),
+        ).encode("utf-8")
+    )
+
+
+def _set_search_batch_display_limit(data: dict[str, Any], keep: int) -> None:
+    """Trim only displayed hits while retaining the frozen ranking cursor."""
+
+    hits = list(data.get("hits", []))
+    if keep >= len(hits):
+        return
+    retained = hits[:keep]
+    data["hits"] = retained
+    if retained:
+        first_rank = int(retained[0]["rank"])
+        last_rank = int(retained[-1]["rank"])
+        data["returned_rank_start"] = first_rank
+        data["returned_rank_end"] = last_rank
+        data["next_cursor"] = _cursor_handle(str(data["session_id"]), last_rank)
+        data["exhausted"] = False
+        data["truncated"] = True
+        for hit in retained:
+            hit["range"] = {"start": first_rank, "end": last_rank}
+        return
+    raise ValueError("search batch cannot discard the only hit for an independent result")
+
+
+def _mark_search_batch_item_oversized(item: dict[str, Any]) -> None:
+    """Keep a compact item-level condition when one result cannot fit the batch."""
+
+    item["result"] = {
+        "outcome": "condition",
+        "condition": {
+            "code": "search_batch_item_oversized",
+            "detail": (
+                "This independent search result could not fit the aggregate batch response. "
+                "Retry the same query separately, or with a smaller limit; other batch items "
+                "remain independent and are not affected."
+            ),
+        },
+    }
+
+
+def _refresh_search_batch_receipt(data: dict[str, Any]) -> None:
+    """Persist the receipt that exactly describes the displayed batch prefix."""
+
+    receipt = data.get("search_receipt")
+    hits = data.get("hits")
+    if not isinstance(receipt, dict) or not isinstance(hits, list):
+        return
+    receipt = dict(receipt)
+    receipt["hits"] = [
+        {"source_id": hit["source_id"], "page": hit["page"]}
+        for hit in hits
+        if isinstance(hit, dict)
+    ]
+    ranks = {
+        int(hit["rank"])
+        for hit in hits
+        if isinstance(hit, dict) and isinstance(hit.get("rank"), int)
+    }
+    receipt["returned_candidates"] = [
+        item
+        for item in receipt.get("returned_candidates", [])
+        if isinstance(item, dict) and item.get("rank") in ranks
+    ]
+    receipt["returned_rank_start"] = min(ranks) if ranks else None
+    receipt["returned_rank_end"] = max(ranks) if ranks else None
+    receipt["returned_material"] = len(hits)
+    receipt["truncated"] = bool(data.get("truncated"))
+    receipt["exhausted"] = bool(data.get("exhausted"))
+    receipt["next_cursor"] = data.get("next_cursor")
+    receipt["identity"] = _identity(
+        {key: value for key, value in receipt.items() if key not in {"identity", "handle"}}
+    )
+    receipt["handle"] = "sr_" + receipt["identity"].removeprefix("sha256:")[:16]
+    data["search_receipt"] = receipt
+    with _db(_root(_workspace()), "derivative.sqlite3") as connection:
+        connection.execute(
+            "INSERT OR IGNORE INTO search_receipts VALUES (?,?)",
+            (receipt["identity"], canonical_json_bytes(receipt)),
+        )
+
+
+def _bound_search_batch(results: list[dict[str, Any]]) -> None:
+    """Fit a batch without rerunning any item or losing its continuation."""
+
+    if _search_batch_transport_bytes(results) <= _SEARCH_BATCH_RESPONSE_BYTES:
+        return
+    # Feedback and no-hit navigation are useful, but neither has a continuation
+    # of its own.  Drop these optional expansions only when the complete batch
+    # would otherwise exceed the transport contract.
+    for item in results:
+        result = item.get("result")
+        data = result.get("data") if isinstance(result, dict) else None
+        if not isinstance(data, dict):
+            continue
+        if isinstance(data.get("term_feedback"), list):
+            data["term_feedback"] = []
+            data["term_feedback_sources_truncated"] = True
+        data["diagnostic"] = None
+
+    while _search_batch_transport_bytes(results) > _SEARCH_BATCH_RESPONSE_BYTES:
+        candidates = [
+            (len(result["data"].get("hits", [])), index)
+            for index, item in enumerate(results)
+            if isinstance((result := item.get("result")), dict)
+            and result.get("outcome") == "success"
+            and isinstance(result.get("data"), dict)
+            and len(result["data"].get("hits", [])) > 1
+        ]
+        if candidates:
+            _count, index = max(candidates)
+            result = results[index]["result"]
+            _set_search_batch_display_limit(result["data"], len(result["data"]["hits"]) - 1)
+            continue
+        success_items = [
+            (index, item)
+            for index, item in enumerate(results)
+            if isinstance(item.get("result"), dict) and item["result"].get("outcome") == "success"
+        ]
+        if not success_items:
+            raise ValueError(
+                "search_batch_response_oversized: independent result metadata exceeds "
+                f"the {_SEARCH_BATCH_RESPONSE_BYTES} UTF-8 byte budget"
+            )
+        # A one-hit result may still be too large to carry alongside its
+        # siblings. Replace only that item with an actionable condition so
+        # successful independent results survive the aggregate bound.
+        index, _item = max(
+            success_items,
+            key=lambda pair: len(
+                json.dumps(pair[1], ensure_ascii=False, separators=(",", ":")).encode("utf-8")
+            ),
+        )
+        _mark_search_batch_item_oversized(results[index])
+    for item in results:
+        result = item.get("result")
+        data = result.get("data") if isinstance(result, dict) else None
+        if isinstance(data, dict):
+            _refresh_search_batch_receipt(data)
+
+
 @mcp.tool(
     name="search_sources_batch",
     title="Search independent Trial queries",
     description=(
-        "Run 1 to 8 independent search requests in one call. Each item has its own explicit "
+        "Run 1 to 8 independent search requests in one call. Validate every request before "
+        "running it. Each item has its own explicit "
         "query mode, Source scope, page limit, cursor, outcome, feedback, and next_cursor. One "
         "item must satisfy the request schema before the call. After validation, an item-level "
         "stale cursor or unavailable Source condition does not prevent other items from returning. "
         "Cursors continue only the "
         "corresponding item's query; each ranking and BM25 order remain independent. Use this "
         "only when all query inputs are already known; wait for a result before choosing a "
-        "dependent reformulation. The batch bound does not require any number of searches."
+        "dependent reformulation. The response byte budget includes metadata."
     ),
     annotations=_READ_ONLY,
     output_schema=output_schema("search_sources_batch"),
@@ -1266,6 +1611,17 @@ def search_sources_batch(
                 "result": result,
             }
         )
+    try:
+        _bound_search_batch(results)
+    except ValueError as error:
+        return _content(
+            "search_sources_batch",
+            {
+                "outcome": "condition",
+                "code": "search_batch_response_oversized",
+                "condition": str(error),
+            },
+        )
     return _content("search_sources_batch", {"outcome": "success", "results": results})
 
 
@@ -1288,8 +1644,10 @@ def search_sources_batch(
         "data.remaining_windows, omitting source_id, pages, and start_line. Repeat until no "
         "windows remain. Returned text is in data.pages[].numbered_text. If "
         "data.remaining_windows is nonempty, send that exact list as the next windows value. "
-        "Returned numbered text normally fits 24000 characters; a single "
-        "oversized line is returned intact. JSON metadata is additional. Copy a returned "
+        "Returned numbered text normally fits the 24000-byte serialized UTF-8 bound; a single "
+        "oversized physical line is returned across lossless character fragments until complete. "
+        "A partial fragment has no passage_ref or selectable Evidence handle. JSON metadata is "
+        "additional. Copy a returned "
         "source_id exactly and use it with the same trial_id."
     ),
     annotations=_READ_ONLY,
@@ -1328,6 +1686,21 @@ def read_pages(
             examples=[1],
         ),
     ] = 1,
+    start_char: Annotated[
+        StrictInt,
+        Field(
+            ge=0,
+            description="Start character offset within start_line for a split line.",
+        ),
+    ] = 0,
+    end_char: Annotated[
+        StrictInt | None,
+        Field(
+            default=None,
+            ge=0,
+            description="Optional exclusive end offset within the final line.",
+        ),
+    ] = None,
     windows: Annotated[
         list[ReadWindow] | None,
         Field(
@@ -1348,9 +1721,15 @@ def read_pages(
             raise ValueError("trial_id is required")
         if windows is None and (source_id is None or pages is None):
             raise ValueError("source_id and pages are required unless windows is supplied")
-        requests = [(trial_id, source_id, pages, start_line, None)]
+        requests = [(trial_id, source_id, pages, start_line, None, start_char, end_char)]
         if windows:
-            if source_id is not None or pages is not None or start_line != 1:
+            if (
+                source_id is not None
+                or pages is not None
+                or start_line != 1
+                or start_char != 0
+                or end_char is not None
+            ):
                 raise ValueError("use windows alone for independent reads")
             requests = [
                 (
@@ -1359,6 +1738,8 @@ def read_pages(
                     [item.page],
                     item.start_line,
                     item.end_line,
+                    item.start_char,
+                    item.end_char,
                 )
                 for item in windows
             ]
@@ -1370,11 +1751,21 @@ def read_pages(
                     pages,
                     start_line,
                     None,
+                    start_char,
+                    end_char,
                 )
             ]
         raw_pages: list[dict[str, Any]] = []
         include_source = True
-        for request_trial, request_source, request_pages, request_start, request_end in requests:
+        for (
+            request_trial,
+            request_source,
+            request_pages,
+            request_start,
+            request_end,
+            request_start_char,
+            request_end_char,
+        ) in requests:
             assert request_trial is not None and request_source is not None
             result = _read_pages(_workspace(), request_trial, request_source, request_pages)
             raw_pages.extend(
@@ -1383,118 +1774,371 @@ def read_pages(
                     **({"source_id": request_source} if include_source else {}),
                     "requested_start": request_start,
                     "requested_end": request_end,
+                    "requested_start_char": request_start_char,
+                    "requested_end_char": request_end_char,
                 }
                 for item in result["pages"]
             )
-        numbered_pages = []
+        numbered_pages: list[dict[str, Any]] = []
         read_coverage: list[tuple[str, str, int, int, int]] = []
         remaining_windows: list[dict[str, Any]] = []
-        used_response_chars = 0
-        for item in raw_pages:
-            lines = item["text"].splitlines()
-            requested_start = item["requested_start"]
-            requested_end = item["requested_end"]
-            if not lines:
-                read_coverage.append((request_trial, item["source_id"], item["page"], 0, 0))
-                numbered_pages.append(
-                    {
-                        **({"source_id": item["source_id"]} if include_source else {}),
-                        "page": item["page"],
-                        "numbered_text": "",
-                        "line_count": 0,
-                        "returned_start_line": requested_start,
-                        "returned_end_line": 0,
-                        "page_remainder": None,
-                        "truncated": False,
-                        "next_start_line": None,
-                        "passage_ref": None,
-                    }
+        transport_head = _get_status_head(_workspace())
+
+        def window_record(
+            item: dict[str, Any],
+            start: int,
+            end: int,
+            *,
+            start_char: int = 0,
+            end_char: int | None = None,
+        ) -> dict[str, Any]:
+            # EvidenceReadWindow is intentionally line-addressable.  The
+            # PageData next_start_char field carries a continuation inside a
+            # physical line without pretending the line is complete.  Keep
+            # the ordinary line-window shape compact; a nonzero offset is
+            # required to resume a split line losslessly.
+            record = {
+                "source_id": item["source_id"],
+                "page": item["page"],
+                "start_line": start,
+                "end_line": end,
+            }
+            if start_char:
+                record["start_char"] = start_char
+            if end_char is not None:
+                record["end_char"] = end_char
+            return record
+
+        def pending_windows(
+            index: int, current: dict[str, Any] | None = None
+        ) -> list[dict[str, Any]]:
+            def window_end(future: dict[str, Any]) -> int:
+                lines = future["text"].splitlines()
+                start = max(1, int(future["requested_start"]))
+                requested_end = future["requested_end"]
+                available = len(lines) or start
+                return max(
+                    start,
+                    min(
+                        available,
+                        int(requested_end) if requested_end is not None else available,
+                    ),
                 )
+
+            pending = [*remaining_windows]
+            if current is not None:
+                pending.append(current)
+            pending.extend(
+                window_record(
+                    future,
+                    int(future["requested_start"]),
+                    window_end(future),
+                    start_char=int(future.get("requested_start_char", 0)),
+                    end_char=future.get("requested_end_char"),
+                )
+                for future in raw_pages[index + 1 :]
+            )
+            return pending
+
+        def page_record(
+            item: dict[str, Any],
+            lines: list[str],
+            requested_start: int,
+            end_line: int,
+            returned: list[str],
+            *,
+            fragment: bool,
+            returned_start_char: int,
+            next_char: int | None,
+            truncated: bool,
+        ) -> dict[str, Any]:
+            next_line = end_line if fragment and next_char is not None else end_line + 1
+            return {
+                **({"source_id": item["source_id"]} if include_source else {}),
+                "page": item["page"],
+                "numbered_text": "\n".join(returned),
+                "line_count": len(lines),
+                "returned_start_line": requested_start,
+                "returned_end_line": end_line,
+                "page_remainder": (
+                    {
+                        "source_id": item["source_id"],
+                        "page": item["page"],
+                        "start_line": (
+                            end_line if fragment and next_char is not None else end_line + 1
+                        ),
+                        "end_line": len(lines),
+                        **({"start_char": next_char} if fragment and next_char is not None else {}),
+                    }
+                    if end_line < len(lines) or (fragment and next_char is not None)
+                    else None
+                ),
+                "truncated": truncated,
+                "next_start_line": next_line if truncated else None,
+                "returned_start_char": returned_start_char if fragment else None,
+                "next_start_char": next_char if truncated and fragment else None,
+                "line_fragment": fragment,
+                "passage_ref": None,
+            }
+
+        def fits(pages: list[dict[str, Any]], pending: list[dict[str, Any]]) -> bool:
+            return (
+                _read_pages_transport_bytes(
+                    {
+                        "outcome": "success",
+                        "pages": pages,
+                        "remaining_windows": pending,
+                    },
+                    transport_head,
+                )
+                <= _READ_PAGES_RESPONSE_BYTES
+            )
+
+        for index, item in enumerate(raw_pages):
+            lines = item["text"].splitlines()
+            requested_start = int(item["requested_start"])
+            requested_end = item["requested_end"]
+            requested_start_char = int(item.get("requested_start_char", 0))
+            requested_end_char = item.get("requested_end_char")
+            if not lines:
+                empty_page = {
+                    **({"source_id": item["source_id"]} if include_source else {}),
+                    "page": item["page"],
+                    "numbered_text": "",
+                    "line_count": 0,
+                    "returned_start_line": requested_start,
+                    "returned_end_line": 0,
+                    "page_remainder": None,
+                    "truncated": False,
+                    "next_start_line": None,
+                    "returned_start_char": None,
+                    "next_start_char": None,
+                    "line_fragment": False,
+                    "passage_ref": None,
+                }
+                if not fits([*numbered_pages, empty_page], pending_windows(index)):
+                    remaining_windows.extend(
+                        pending_windows(
+                            index,
+                            window_record(
+                                item,
+                                requested_start,
+                                max(
+                                    requested_start,
+                                    int(requested_end)
+                                    if requested_end is not None
+                                    else requested_start,
+                                ),
+                                start_char=requested_start_char,
+                                end_char=requested_end_char,
+                            ),
+                        )
+                    )
+                    break
+                numbered_pages.append(empty_page)
+                read_coverage.append((trial_id, item["source_id"], item["page"], 0, 0))
                 continue
             if requested_start > len(lines):
                 raise ValueError(
                     f"start_line {requested_start} is outside page {item['page']}; "
                     f"choose 1 <= start_line <= {len(lines)}"
                 )
-            returned: list[str] = []
-            end_line = requested_start - 1
+            if requested_start_char > len(lines[requested_start - 1]):
+                raise ValueError(
+                    f"start_char {requested_start_char} is outside line {requested_start}; "
+                    f"choose 0 <= start_char <= {len(lines[requested_start - 1])}"
+                )
+            if requested_end is not None and requested_end < requested_start:
+                raise ValueError("end_line must not precede start_line")
             available_end = min(
                 len(lines), requested_end if requested_end is not None else len(lines)
             )
-            for line_number in range(requested_start, len(lines) + 1):
-                if line_number > available_end:
-                    break
-                numbered = f"{line_number}|{lines[line_number - 1]}"
-                additional = len(numbered) + (1 if returned else 0)
-                remaining = _READ_PAGES_RESPONSE_CHARS - used_response_chars
-                if additional > remaining:
-                    # A single line larger than the ordinary budget still needs
-                    # to make progress.  Emit it only when this response has
-                    # no text yet; later requests continue in the next call.
-                    if returned or used_response_chars:
+            if requested_end_char is not None:
+                final_line = lines[available_end - 1]
+                if requested_end_char > len(final_line):
+                    raise ValueError(
+                        f"end_char {requested_end_char} is outside line {available_end}; "
+                        f"choose 0 <= end_char <= {len(final_line)}"
+                    )
+            returned: list[str] = []
+            end_line = requested_start - 1
+            fragment = False
+            next_char: int | None = None
+            last_complete_line = requested_start - 1
+            stopped = False
+            for line_number in range(requested_start, available_end + 1):
+                line = lines[line_number - 1]
+                line_start_char = requested_start_char if line_number == requested_start else 0
+                line_end_char = (
+                    requested_end_char
+                    if requested_end_char is not None and line_number == available_end
+                    else len(line)
+                )
+                if line_end_char < line_start_char:
+                    raise ValueError("end_char must not precede start_char on the same line")
+                candidate_text = line[line_start_char:line_end_char]
+                candidate_fragment = fragment or line_start_char > 0 or line_end_char < len(line)
+                explicit_end = requested_end_char is not None and line_number == available_end
+                transport_truncated = line_end_char < len(line) and not explicit_end
+                candidate_truncated = transport_truncated or line_number < available_end
+                candidate_next_char = line_end_char if transport_truncated else None
+                candidate_end_line = line_number
+                candidate_numbered = f"{line_number}|{candidate_text}"
+                candidate_returned = [*returned, candidate_numbered]
+                candidate_page = page_record(
+                    item,
+                    lines,
+                    requested_start,
+                    candidate_end_line,
+                    candidate_returned,
+                    fragment=candidate_fragment,
+                    returned_start_char=requested_start_char,
+                    next_char=candidate_next_char,
+                    truncated=candidate_truncated,
+                )
+                if not candidate_fragment and any(
+                    line.strip() for line in lines[requested_start - 1 : candidate_end_line]
+                ):
+                    # A complete range receives a deterministic Evidence handle below.
+                    # Reserve its fixed-width transport representation while packing so
+                    # adding that handle cannot make the final envelope oversize.
+                    candidate_page["passage_ref"] = "eh_" + ("0" * 16)
+                current_pending = (
+                    window_record(
+                        item,
+                        line_number if candidate_next_char is not None else line_number + 1,
+                        available_end,
+                        start_char=(candidate_next_char or 0),
+                        end_char=requested_end_char,
+                    )
+                    if candidate_truncated
+                    else None
+                )
+                if fits(
+                    [*numbered_pages, candidate_page],
+                    pending_windows(index, current_pending),
+                ):
+                    returned = candidate_returned
+                    end_line = candidate_end_line
+                    fragment = candidate_fragment
+                    next_char = candidate_next_char
+                    if not candidate_fragment:
+                        last_complete_line = line_number
+                    if candidate_truncated and candidate_next_char is not None:
+                        stopped = True
                         break
-                returned.append(numbered)
-                used_response_chars += additional
+                    continue
+                if returned:
+                    stopped = True
+                    break
+
+                # Even the first physical line may exceed the bound. Find the
+                # largest UTF-8-safe character prefix that fits the complete
+                # serialized envelope, then let the caller continue by offset.
+                low, high = line_start_char, line_end_char
+                best: tuple[int, dict[str, Any]] | None = None
+                while low < high:
+                    middle = (low + high + 1) // 2
+                    partial_page = page_record(
+                        item,
+                        lines,
+                        requested_start,
+                        line_number,
+                        [f"{line_number}|{line[line_start_char:middle]}"],
+                        fragment=True,
+                        returned_start_char=requested_start_char,
+                        next_char=middle,
+                        truncated=True,
+                    )
+                    if fits(
+                        [*numbered_pages, partial_page],
+                        pending_windows(
+                            index,
+                            window_record(
+                                item,
+                                line_number,
+                                available_end,
+                                start_char=middle,
+                                end_char=requested_end_char,
+                            ),
+                        ),
+                    ):
+                        best = (middle, partial_page)
+                        low = middle
+                    else:
+                        high = middle - 1
+                if best is None:
+                    if numbered_pages:
+                        # The current page can be recovered on the next call;
+                        # do not turn a full response into an unrecoverable
+                        # error merely because its metadata no longer fits.
+                        stopped = True
+                        end_line = requested_start - 1
+                        break
+                    raise ValueError(
+                        "read_pages_item_unrecoverable: one physical line cannot fit the "
+                        "serialized response envelope"
+                    )
                 end_line = line_number
-            truncated = end_line < available_end
-            passage_ref = None
-            if end_line >= requested_start and any(
-                line.strip() for line in lines[requested_start - 1 : end_line]
-            ):
-                passage = _select_text_evidence_by_lines(
-                    _workspace(),
-                    request_trial,
-                    item["source_id"],
-                    item["page"],
+                returned = best[1]["numbered_text"].split("\n")
+                fragment = True
+                next_char = best[0]
+                stopped = True
+                break
+
+            if returned:
+                page = page_record(
+                    item,
+                    lines,
                     requested_start,
                     end_line,
+                    returned,
+                    fragment=fragment,
+                    returned_start_char=requested_start_char,
+                    next_char=next_char,
+                    truncated=stopped or end_line < available_end,
                 )
-                passage_ref = passage.get("evidence", {}).get("handle")
-            if returned:
-                numbered_pages.append(
-                    {
-                        **({"source_id": item["source_id"]} if include_source else {}),
-                        "page": item["page"],
-                        "numbered_text": "\n".join(returned),
-                        "line_count": len(lines),
-                        "returned_start_line": requested_start,
-                        "returned_end_line": end_line,
-                        "page_remainder": (
-                            {
-                                "source_id": item["source_id"],
-                                "page": item["page"],
-                                "start_line": end_line + 1,
-                                "end_line": len(lines),
-                            }
-                            if end_line < len(lines)
-                            else None
-                        ),
-                        "truncated": truncated,
-                        "next_start_line": end_line + 1 if truncated else None,
-                        "passage_ref": passage_ref,
-                    }
-                )
-            if truncated:
-                remaining_windows.append(
-                    {
-                        "source_id": item["source_id"],
-                        "page": item["page"],
-                        "start_line": (
-                            end_line + 1 if end_line >= requested_start else requested_start
-                        ),
-                        "end_line": available_end,
-                    }
-                )
-            if end_line >= requested_start:
-                read_coverage.append(
-                    (
-                        request_trial,
+                if not fragment and any(
+                    line.strip() for line in lines[requested_start - 1 : end_line]
+                ):
+                    passage = _select_text_evidence_by_lines(
+                        _workspace(),
+                        trial_id,
                         item["source_id"],
                         item["page"],
                         requested_start,
                         end_line,
                     )
+                    page["passage_ref"] = passage.get("evidence", {}).get("handle")
+                numbered_pages.append(page)
+                if not fragment:
+                    read_coverage.append(
+                        (
+                            trial_id,
+                            item["source_id"],
+                            item["page"],
+                            requested_start,
+                            last_complete_line,
+                        )
+                    )
+
+            if stopped or end_line < available_end:
+                remaining_windows.extend(
+                    pending_windows(
+                        index,
+                        window_record(
+                            item,
+                            end_line if fragment and next_char is not None else end_line + 1,
+                            available_end,
+                            start_char=next_char or 0,
+                            end_char=requested_end_char,
+                        ),
+                    )
                 )
+                # Every later raw page is already represented in the pending
+                # windows. Defer it to the next call so it cannot be emitted
+                # twice or consume the current response budget.
+                break
         return {
             "outcome": "success",
             "pages": numbered_pages,
@@ -1725,7 +2369,8 @@ def save_proposal(
                 "outcome": "condition",
                 "code": "reasoning_stale",
                 "condition": (
-                    "The reasoning_id is unknown or stale; request a new reasoning record."
+                    "Resolve this receipt's condition or recovery action first. Otherwise follow "
+                    "head.next_action."
                 ),
             },
         )
@@ -1738,7 +2383,8 @@ def save_proposal(
                 "outcome": "condition",
                 "code": "reasoning_stale",
                 "condition": (
-                    "The stored reasoning draft is unavailable; request a new reasoning record."
+                    "Resolve this receipt's condition or recovery action first. Otherwise follow "
+                    "head.next_action."
                 ),
             },
         )
@@ -1752,7 +2398,10 @@ def save_proposal(
                 {
                     "outcome": "condition",
                     "code": "reasoning_stale",
-                    "condition": "The reasoning_id is stale; request a new reasoning record.",
+                    "condition": (
+                        "Resolve this receipt's condition or recovery action first. Otherwise "
+                        "follow head.next_action."
+                    ),
                 },
             )
         expected_revision = current_revision
@@ -1770,7 +2419,8 @@ def save_proposal(
                 "outcome": "condition",
                 "code": "reasoning_stale",
                 "condition": (
-                    "The stored reasoning draft is unavailable; request a new reasoning record."
+                    "Resolve this receipt's condition or recovery action first. Otherwise follow "
+                    "head.next_action."
                 ),
             },
         )
@@ -1991,41 +2641,11 @@ async def request_proposal_approval(ctx: Context) -> ToolResult:
     name="get_domain_context",
     title="Get Domain context",
     description=(
-        "Read the approved Result, current checkpoint, Evidence workspace, comparison cards, "
-        "and questions for a Domain. Question cards contain scientific guidance, activation "
-        "predicates, a scoped activation_status, question-scoped official answer values, "
-        "and executable "
-        "search suggestions. Unconditional cards are always active; unsaved conditional cards "
-        "depend on draft answers; saved-checkpoint statuses are scoped to that checkpoint. "
-        "When reading_recovery.status is required, read its windows before scientific work. "
-        "Use get_status to recover further required ranges until complete or budget_limited. "
-        "The post-approval pass must finish before the first Domain answer. At budget_limited, "
-        "inspect omitted passages when needed for an unresolved premise. "
-        "Reuse adequate Evidence. Search unresolved premises with wording from inspected Sources. "
-        "For a D1 or D4 scoped search miss, use list_sources with the returned source_id to "
-        "inspect literal headings and leading page excerpts, then read the cited pages; "
-        "navigation text is not Evidence. "
-        "For a D3 count preview, pass missing_data; the call does not commit those rows. "
-        "If omitted Evidence is unfamiliar or uncertain after a restart or compaction, call "
-        "read_pages with recovery.trial_id and recovery.windows. Use the returned revision and "
-        "official answer values when saving active answers. When the full structured receipt "
-        "exceeds 32 KB, the server returns bounded context_page responses; fetch every "
-        "context_page.next_cursor before deciding or saving. A pending save returns the "
-        "exact cursor to continue. Delivery completion records successful response generation "
-        "only; verify host-visible delivery and inspect Evidence as needed. Keep the Trial, "
-        "Domain, and revision from each page "
-        "bound together; an item larger than the budget returns a retry condition, or an "
-        "explicit unrecoverable condition when it exceeds the maximum page size. "
-        "Pagination bounds each server response. When `data.context_page.next_cursor` is non-null, "
-        "pass it unchanged to `get_domain_context` until it is null. Existing cursors preserve the "
-        "original context snapshot across searches and unrelated Domain commits. It is bound to "
-        "the approved Result, pack, same-Domain checkpoint, and preview. Optional discovery "
-        "candidates are omitted by default; request `include_candidates=true` for a fresh view. "
-        "Inspect subsequent tool responses for updates; Evidence work alone does not require "
-        "re-traversal. A fresh "
-        "no-cursor request may replace the snapshot; finish any returned pages before saving. Do "
-        "not claim delivery proves host or model comprehension. Recover "
-        "premise Evidence with read_pages and keep render_page image blocks separate."
+        "Read the approved Result, current Domain checkpoint, Evidence, comparison cards, and "
+        "question cards. Complete required reading before answering. Use the returned revision "
+        "and official answer values when validating. Follow context_page.next_cursor until it is "
+        "null. If a cursor is stale, restart without a cursor. If cited content is missing or "
+        "uncertain, recover the passage before relying on it."
     ),
     annotations=_READ_ONLY,
     output_schema=output_schema("get_domain_context"),
@@ -2101,6 +2721,22 @@ def get_domain_context(
             # _invoke will return the typed cursor condition after the normal
             # workflow operation has supplied its current head.
             cursor_scope = None
+    if cursor_scope is not None and isinstance(cursor_scope.get("view_id"), str):
+        view = _domain_context_view(_root(_workspace()), cursor_scope["view_id"])
+        if view is not None:
+            cursor_scope = {**view, "page_index": cursor_scope["page_index"]}
+        else:
+            return _content(
+                "get_domain_context",
+                {
+                    "outcome": "condition",
+                    "code": "domain_context_cursor_expired",
+                    "condition": (
+                        "The frozen context view is unavailable. Restart get_domain_context "
+                        "without a cursor and complete the new page chain."
+                    ),
+                },
+            )
     if cursor_scope is not None:
         trial_id = trial_id or cursor_scope["trial_id"]
         domain_id = domain_id or cursor_scope["domain_id"]
@@ -2108,6 +2744,13 @@ def get_domain_context(
             try:
                 missing_data = [
                     MissingDataRow.model_validate(row) for row in cursor_scope["missing_data"]
+                ]
+            except (TypeError, ValueError):
+                missing_data = None
+        if missing_data is None and isinstance(cursor_scope.get("preview_scope"), list):
+            try:
+                missing_data = [
+                    MissingDataRow.model_validate(row) for row in cursor_scope["preview_scope"]
                 ]
             except (TypeError, ValueError):
                 missing_data = None
@@ -2195,10 +2838,6 @@ def validate_domain_assessment(
             ],
         ),
     ],
-    multiple_concerns: Annotated[
-        MultipleConcernsDecision | None,
-        Field(description="Existing multiple-concerns decision; supply only when requested."),
-    ] = None,
     supersedes: Annotated[
         Identity | None,
         Field(description="Exact prior checkpoint identity when revising a Domain."),
@@ -2213,9 +2852,6 @@ def validate_domain_assessment(
         "domain_id": domain_id,
         "expected_revision": expected_revision,
         "answers": [answer.model_dump(mode="json") for answer in answers],
-        "multiple_concerns": (
-            multiple_concerns.model_dump(mode="json") if multiple_concerns is not None else None
-        ),
         "supersedes": supersedes,
         "revision_basis": (
             revision_basis.model_dump(mode="json") if revision_basis is not None else None
@@ -2267,7 +2903,8 @@ def save_domain_judgment(
                 "outcome": "condition",
                 "code": "reasoning_stale",
                 "condition": (
-                    "The reasoning_id is unknown or stale; request a new reasoning record."
+                    "Resolve this receipt's condition or recovery action first. Otherwise follow "
+                    "head.next_action."
                 ),
             },
         )
@@ -2280,7 +2917,8 @@ def save_domain_judgment(
                 "outcome": "condition",
                 "code": "reasoning_stale",
                 "condition": (
-                    "The stored reasoning draft is unavailable; request a new reasoning record."
+                    "Resolve this receipt's condition or recovery action first. Otherwise follow "
+                    "head.next_action."
                 ),
             },
         )
@@ -2292,7 +2930,10 @@ def save_domain_judgment(
             {
                 "outcome": "condition",
                 "code": "reasoning_stale",
-                "condition": "The reasoning_id is stale; request a new reasoning record.",
+                "condition": (
+                    "Resolve this receipt's condition or recovery action first. Otherwise follow "
+                    "head.next_action."
+                ),
             },
         )
     expected_revision = current_revision
@@ -2309,8 +2950,11 @@ def save_domain_judgment(
         "produces its typed unassessed outcome. For another genuine blocker, supply a needs_input "
         "or failed terminal request. Repairs, unfinished source review, context limits, ordinary "
         "missing Evidence, and uncertainty answerable with an allowed answer are not blockers. "
-        "A review is not closure: inspect its Result and checkpoint "
-        "identities, correct any Domain if needed, then close using the exact review reference."
+        "The overall judgment follows the deterministic Cochrane-style rule: any High Domain, "
+        "or at least two Some concerns Domains with no High Domain, makes the Trial High; one "
+        "Some concerns Domain makes it Some concerns; all Low Domains make it Low. A review is "
+        "not closure: inspect its Result and checkpoint identities, correct any Domain if needed, "
+        "then close using the exact review reference."
     ),
     annotations=_MUTATION,
     output_schema=output_schema("review_trial"),
@@ -2332,16 +2976,18 @@ def review_trial(
                     "disposition": "needs_input",
                     "trial_id": "trial-a",
                     "reason": (
-                        "The approved Result is supported, but the review export is unavailable."
+                        "The report does not establish whether the outcome assessor was blinded."
                     ),
-                    "missing_facts": ["Review export"],
+                    "missing_facts": ["Outcome-assessor blinding"],
                 }
             ],
         ),
     ] = None,
 ) -> ToolResult:
     review_request = TrialReviewRequest(
-        trial_id=trial_id, expected_revision=expected_revision, request=request
+        trial_id=trial_id,
+        expected_revision=expected_revision,
+        request=request,
     )
     return _invoke("review_trial", lambda: _review_trial(_workspace(), review_request))
 
@@ -2379,9 +3025,10 @@ def close_trial(
     name="finalize_batch",
     title="Finalize batch",
     description=(
-        "Package the already-final Trial records into the verified Batch artifact. Call only "
-        "when get_status reports next_action.operation=finalize_batch; this operation does "
-        "not complete an individual Trial."
+        "Package the already-final Trial records into the verified Batch artifact. Call when "
+        "get_status reports next_action.operation=finalize_batch. If the final receipt is "
+        "unavailable, replay the call with the current revision to recover the artifact and "
+        "summary."
     ),
     annotations=_MUTATION,
     output_schema=output_schema("finalize_batch"),

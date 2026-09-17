@@ -102,21 +102,17 @@ def presentation(state: dict[str, Any]) -> dict[str, Any]:
             f"{counts['failed']} Trials failed."
         )
     elif phase == "ready_to_finalize":
-        wording = (
-            "Batch incomplete. Continue now with head.next_action to finalize the Batch. Never "
-            "stop, summarize, or ask whether to continue before finalization."
-        )
+        wording = "Batch incomplete. Follow head.next_action to finalize the Batch."
     elif phase == "assessment":
         wording = (
             f"Batch incomplete: {counts['assessed']}/{total} Trials completed; "
             f"{counts['pending']} pending; {counts['reviewable']} ready for review and closure. "
-            "Continue now with head.next_action. Never stop at a Trial boundary, ask whether to "
-            "continue, infer pending Trial judgments, or reduce rigor for token or context limits."
+            "Follow head.next_action. Resolve its condition before continuing, and keep pending "
+            "Trials unresolved until their own evidence is assessed."
         )
     elif counts["needs_input"] or counts["failed"]:
         wording = (
-            "Batch incomplete. Continue now with head.next_action. Never stop, summarize, ask "
-            "whether to continue, or infer pending Trial judgments."
+            "Batch incomplete. Follow head.next_action. Resolve its condition before continuing."
         )
     elif phase == "proposal":
         if isinstance(state.get("review"), dict):

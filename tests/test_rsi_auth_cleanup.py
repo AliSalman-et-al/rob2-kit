@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 import runpy
 import subprocess
 import sys
@@ -223,6 +224,7 @@ def test_runner_resolves_relative_run_directory(
     assert Path(metadata["command"][metadata["command"].index("-C") + 1]).is_absolute()
 
 
+@pytest.mark.skipif(os.name == "nt", reason="strict host isolation requires a POSIX host")
 def test_required_host_isolation_records_a_deny_by_default_profile(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -239,6 +241,7 @@ def test_required_host_isolation_records_a_deny_by_default_profile(
     }
 
 
+@pytest.mark.skipif(os.name == "nt", reason="strict host isolation requires a POSIX host")
 def test_continuation_cannot_downgrade_required_host_isolation(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -268,3 +271,33 @@ def test_continuation_cannot_downgrade_required_host_isolation(
         runner["main"]()
 
     assert error.value.code == 2
+
+
+def test_required_host_isolation_rejects_windows_without_uac(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(os, "name", "nt")
+    prompt = tmp_path / "prompt.txt"
+    prompt.write_text("Continue.\n", encoding="utf-8")
+    run_dir = tmp_path / "attempt"
+    runner = runpy.run_path(str(RUNNER_PATH))
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            str(RUNNER_PATH),
+            "--prompt",
+            str(prompt),
+            "--run-dir",
+            str(run_dir),
+            "--phase",
+            "1",
+            "--require-isolated-host",
+        ],
+    )
+
+    with pytest.raises(SystemExit) as error:
+        runner["main"]()
+
+    assert error.value.code == 2
+    assert not run_dir.exists()

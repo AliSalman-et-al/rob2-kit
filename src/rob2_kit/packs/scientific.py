@@ -264,7 +264,7 @@ _GUIDANCE: dict[str, QuestionGuidance] = {
     "sq:deviations:affected-outcome": _guidance(
         "Full guidance p. 28, Box 6, signalling question 2.4",
         "Whether context-caused protocol-inconsistent deviations were likely to affect the outcome.",
-        "Answer yes or probably yes when the identified deviations could affect the intervention effect estimate through this outcome; answer no or probably no when they would not affect the outcome.",
+        "Answer yes or probably yes when the identified deviations were likely to affect the intervention effect estimate through this outcome; answer no or probably no when they were not likely to affect the outcome.",
         (
             "A direct link between the identified context-caused deviation and this outcome or its effect estimate.",
         ),
@@ -501,7 +501,7 @@ _GUIDANCE: dict[str, QuestionGuidance] = {
     "sq:measurement:assessor-aware": _guidance(
         "Full guidance p. 54, Box 10, signalling question 4.3",
         "Whether outcome assessors were aware of the intervention received, when 4.1 and 4.2 are not yes/probably yes. Identify who determines the approved outcome at the relevant time point and distinguish that assessor from someone who merely records it.",
-        "Answer no when outcome assessors were blinded to intervention status. For participant-reported outcomes, the participant is the outcome assessor. This question is applicable only after the stated activation conditions.",
+        "Answer no when the outcome assessor was blinded to intervention status. For participant-reported outcomes, the participant is the outcome assessor, so participant blinding can determine this answer. This question is applicable only after the stated activation conditions.",
         ("Who assessed the outcome and whether that assessor was blinded to intervention status.",),
         "Use no_information when assessor awareness cannot be determined; do not infer blinding from an objective endpoint or from blinding elsewhere in the trial.",
         (
@@ -513,7 +513,7 @@ _GUIDANCE: dict[str, QuestionGuidance] = {
             "an objective endpoint",
             "a blinded statistician",
             "participant completion of treatment",
-            "blinding of participants only",
+            "participant blinding without identifying the outcome assessor",
         ),
     ),
     "sq:measurement:influence-possible": _guidance(
@@ -537,7 +537,7 @@ _GUIDANCE: dict[str, QuestionGuidance] = {
         (
             "an objective endpoint label",
             "assessor awareness without outcome type",
-            "blinding of participants only",
+            "participant blinding without identifying the outcome assessor",
         ),
     ),
     "sq:measurement:influence-likely": _guidance(

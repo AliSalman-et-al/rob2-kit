@@ -201,6 +201,7 @@ def approved_scope_record(workspace: Path, requested_scope: str | None) -> dict[
     """Return scope fingerprints only after the exact Proposal Review was approved."""
     from rob2_kit.application._state import _identity, _root, _state
     from rob2_kit.application.finalization import _valid_proposal_gate
+    from rob2_kit.workflow_models import UnavailableMissingFact
 
     state = _state(_root(workspace))
     proposal = state.get("proposal")
@@ -221,6 +222,47 @@ def approved_scope_record(workspace: Path, requested_scope: str | None) -> dict[
         or any(not isinstance(result, dict) for result in results)
     ):
         raise ValueError("approved Proposal has no Result records")
+    approved_results: list[dict[str, Any]] = []
+    for result in results:
+        kind = result.get("kind")
+        if kind == "assessable":
+            if not isinstance(result.get("target"), dict) or not isinstance(
+                result.get("reported"), dict
+            ):
+                raise ValueError("assessable Result is missing target or reported scope")
+            approved_results.append(
+                {
+                    "identity": _identity(result),
+                    "trial_id": result["trial_id"],
+                    "kind": kind,
+                    "target_scope_identity": _identity(result["target"]),
+                    "reported_scope_identity": _identity(result["reported"]),
+                }
+            )
+            continue
+        if kind == "unavailable":
+            missing_facts = result.get("missing_facts")
+            if not isinstance(missing_facts, list) or not missing_facts:
+                raise ValueError("unavailable Result has no missing facts")
+            try:
+                validated_missing_facts = [
+                    UnavailableMissingFact.model_validate(item) for item in missing_facts
+                ]
+            except ValueError as error:
+                raise ValueError("unavailable Result has malformed missing facts") from error
+            approved_results.append(
+                {
+                    "identity": _identity(result),
+                    "trial_id": result["trial_id"],
+                    "kind": kind,
+                    "relation": result.get("relation"),
+                    "missing_facts": [
+                        item.model_dump(mode="json") for item in validated_missing_facts
+                    ],
+                }
+            )
+            continue
+        raise ValueError(f"approved Proposal contains unsupported Result kind: {kind!r}")
     return {
         "schema": "rob2-kit.rsi-approved-scope.v1",
         "case_requested_scope": requested_scope,
@@ -228,16 +270,7 @@ def approved_scope_record(workspace: Path, requested_scope: str | None) -> dict[
         "review_identity": review["identity"],
         "approval_identity": acknowledgment["identity"],
         "approved_at": acknowledgment["observed_at"],
-        "results": [
-            {
-                "identity": _identity(result),
-                "trial_id": result["trial_id"],
-                "kind": result["kind"],
-                "target_scope_identity": _identity(result["target"]),
-                "reported_scope_identity": _identity(result["reported"]),
-            }
-            for result in results
-        ],
+        "results": approved_results,
     }
 
 

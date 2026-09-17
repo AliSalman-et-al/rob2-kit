@@ -24,10 +24,11 @@ investigation, but do not establish a shared cause or prove that the kit is wron
 
 The references contain 101 Low, 24 Some Concerns, and no High labels. Six initial
 Result proposals needed scope correction. Agreement is therefore conditional on
-approved scope and is not independently adjudicated scientific accuracy. An
-overall score can change under a different aggregation policy without any
-change to D1-D5. Neither overall agreement nor fewer High predictions is the
-optimization target.
+approved scope and is not independently adjudicated scientific accuracy. The
+overall Trial label follows the deterministic Cochrane convention: all five
+Low is Low; one Some concerns and no High is Some concerns; any High or at
+least two Some concerns is High. Overall and Domain agreement remain separate;
+neither overall agreement nor fewer High predictions is the optimization target.
 
 ## Solution
 
@@ -102,7 +103,7 @@ especially D3 and D5, and test both their benefits and their regressions.
 - **D5.** Inspect actual answers to 5.1-5.3 before attributing the repeated AE judgment. Match plan content, population, comparison, endpoint, analysis, timing, and captured version. A posting/update/retrieval date does not automatically establish plan finalization. Audit restrictions against official contextual judgments without assuming a plan's existence proves correspondence. Separate eligible measurements, eligible analyses, and actual results-based selection.
 - **D4.** Present the assessor, measurement method, detection opportunities, awareness, susceptibility, and circumstances supporting likely influence. Do not require direct empirical proof of bias where methodological circumstances suffice. Do not make open-label AE automatically High or OS automatically Low.
 - **D1/D2.** Test allocation invariance only when the randomized comparison, cohort, and Sources are unchanged. Reuse source facts rather than prior labels. Keep sequence generation and concealment separate. For D2, inspect actual exclusions and grouping, trial-context deviations, and missing versus available-but-excluded outcomes; a customary safety set does not change the assignment-effect target.
-- **Domain validity and trial review.** Decouple unchanged Domain receipt validity from combined-concerns requirements caused by other Domains. Put the overall decision at whole-Trial review if needed, preserving its established semantics and rationale. Keep exact retries, stale scientific-dependency rejection, and immutable history. Extend existing review with concise answers, decisive justifications, unknowns, counterevidence, and Evidence expansion. Reinvestigate concrete tensions; do not add a compulsory second assessment or endless critic loop.
+- **Domain validity and Trial review.** Decouple unchanged Domain receipt validity from requirements caused by other Domains. Compute the overall decision at the fifth Domain checkpoint with the deterministic Cochrane convention above; do not ask the researcher to override or explain the aggregation. Keep exact retries, stale scientific-dependency rejection, and immutable history. Extend existing review with concise answers, decisive justifications, unknowns, counterevidence, and Evidence expansion. Reinvestigate concrete tensions; do not add a compulsory second assessment or endless critic loop.
 - **Transport.** Budget complete serialized UTF-8 responses, including metadata, cursors, and errors. Use lossless fragment continuation for oversized physical lines with truthful line/character extents. Preserve successful independent batch items and continuations for undisplayed content. Never let a partial handle certify unseen text. Keep search-ranking exhaustion distinct from delivery completeness.
 - **Frozen context.** Replace encoded snapshot payloads with short opaque server-bound references to existing frozen views. Preserve Trial, Source, Result, pack, preview, and relevant checkpoint binding. Unrelated discovery must not make a valid frozen page chain unusable. Expired or genuinely stale references need actionable recovery without silently adopting a different scientific basis.
 - **Visual Evidence.** Align tool descriptions and skills with supported host-observed methodological transcription. Require actual image delivery and exact Source/page/region/render provenance. Keep host observations distinct from machine-verified text and preserve uncertainty and contradictions.
@@ -126,7 +127,7 @@ especially D3 and D5, and test both their benefits and their regressions.
 
 ## Out of Scope
 
-- Optimizing overall aggregation, forcing Suster-label agreement, suppressing High judgments, or trial-specific/model-specific scientific policy.
+- Optimizing the published overall aggregation beyond the deterministic Cochrane convention, forcing Suster-label agreement, suppressing High judgments, or trial-specific/model-specific scientific policy.
 - A second production assessor, human answer/adjudication gate, new judgment override, or conversational answer coaching after Proposal approval.
 - Additional trial designs/effects, runtime acquisition of other documents, unseen historical registry versions, or silent OCR authority.
 - Vector databases, neural rerankers, fine-tuning, self-evolving memory, generic agent frameworks, private reasoning transcripts, and mandatory Claude qualification.

@@ -65,5 +65,6 @@ modified or closed. The local approved drafts and exact publication bodies remai
 available with the publication manifest for audit and restart recovery.
 
 Publication verification checked every issue's title, full body, open state,
-ready-for-agent label, and exact native blocker set. No code implementation or
-paid evaluation was performed during this handoff.
+ready-for-agent label, and exact native blocker set. That verification describes
+the publication handoff only. Implementation and qualification occurred after
+publication on the `optimize/agentic-overhaul` branch.

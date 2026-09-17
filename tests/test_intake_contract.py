@@ -673,9 +673,8 @@ def test_status_counts_a_completed_trial_before_batch_finalization() -> None:
     }
     assert status["wording"] == (
         "Batch incomplete: 1/2 Trials completed; 1 pending; 0 ready for review and closure. "
-        "Continue now with head.next_action. "
-        "Never stop at a Trial boundary, ask whether to continue, infer pending Trial "
-        "judgments, or reduce rigor for token or context limits."
+        "Follow head.next_action. Resolve its condition before continuing, and keep pending "
+        "Trials unresolved until their own evidence is assessed."
     )
 
 
@@ -686,10 +685,7 @@ def test_status_keeps_incomplete_batch_authoritative_until_finalization() -> Non
             "trial_dispositions": {"trial-a": "assessed", "trial-b": "needs_input"},
         }
     )
-    assert status["wording"] == (
-        "Batch incomplete. Continue now with head.next_action to finalize the Batch. Never stop, "
-        "summarize, or ask whether to continue before finalization."
-    )
+    assert status["wording"] == ("Batch incomplete. Follow head.next_action to finalize the Batch.")
 
 
 def test_assessment_skill_spells_out_intake_mapping() -> None:
@@ -772,7 +768,8 @@ def test_assessment_skill_preserves_rigor_across_context_compaction() -> None:
     assert "Save each Domain before moving on" in normalized
     assert "fifth accepted checkpoint makes the Trial ready for review" in normalized
     assert (
-        "When `head.next_action.operation` is `finalize_batch`, call it immediately" in normalized
+        "When `head.next_action.operation` is `finalize_batch`, call it with the current revision"
+        in normalized
     )
 
 
@@ -849,12 +846,6 @@ def test_search_contract_exposes_match_summary_and_render_defaults_to_pixels() -
         "range",
     }
     assert data_objects[0]["properties"]["search_receipt"]["pattern"] == r"^sr_[0-9a-f]{16}$"
-    search_description = _tool_description("search_sources")
-    assert "counts" in search_description
-    assert "broad truncated any" in search_description.lower()
-    assert "same query and mode" in search_description
-    assert "at least one query term on a page" in search_description
-    assert "co-occurrence" in search_description
     render_schema = _tool_schema("render_page")
     assert render_schema["properties"]["inline"]["default"] is True
     assert "pixels as ImageContent by default" in _tool_description("render_page")
@@ -976,7 +967,7 @@ def test_save_domain_judgment_schema_is_closed_and_typed() -> None:
     }
     draft = _tool_schema("validate_domain_assessment")
     assert draft["additionalProperties"] is False
-    assert "multiple_concerns" in draft["properties"]
+    assert "multiple_concerns" not in draft["properties"]
     assert draft["required"] == ["trial_id", "domain_id", "expected_revision", "answers"]
     answers = cast(dict[str, Any], draft["properties"]["answers"])["items"]
     assert answers["additionalProperties"] is False

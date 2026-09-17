@@ -92,7 +92,9 @@ def test_evidence_reference_contains_valid_complete_domain_answer_examples() -> 
     assert len(examples) == 2
     answer = json.loads(examples[0])
     DomainReasoningAnswer.model_validate(answer)
-    assert {item["kind"] for item in answer["bases"]} == {"context", "limitation"}
+    assert {item["kind"] for item in answer["bases"]} == {"direct_support"}
+    assert answer["unknowns"] == []
+    assert answer["counterevidence"] == []
     basis_shapes = [json.loads(line) for line in examples[1].splitlines()]
     assert {item["kind"] for item in basis_shapes} == {"context", "absence", "limitation"}
     for item in basis_shapes:

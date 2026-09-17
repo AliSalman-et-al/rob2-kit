@@ -4,9 +4,11 @@ import asyncio
 import csv
 import hashlib
 import json
+import os
 import runpy
 from pathlib import Path
 
+import pytest
 from fastmcp import Client
 from support.rob2 import (
     _call,
@@ -29,6 +31,14 @@ approved_scope_record = _rsi_helpers["approved_scope_record"]
 _structured_response = runpy.run_path(
     str(Path(__file__).parents[1] / "scripts" / "summarize_rsi_case.py")
 )["_structured_response"]
+
+
+def test_strict_isolation_rejects_windows_without_uac(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(os, "name", "nt")
+    monkeypatch.syspath_prepend(str(Path(__file__).parents[1] / "scripts"))
+    runner_helpers = runpy.run_path(str(Path(__file__).parents[1] / "scripts" / "run_rsi_case.py"))
+    with pytest.raises(RuntimeError, match="without UAC"):
+        runner_helpers["_preflight_isolation"](Path("codex"), True)
 
 
 def _receipt() -> dict[str, object]:

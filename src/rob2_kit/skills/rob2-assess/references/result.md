@@ -156,6 +156,10 @@ establishing the design and unit of randomization.
 
 ## Choose the closest complete Result
 
+Before selecting, inventory the complete set of materially plausible candidates
+and apply the same comparison convention to each candidate. Do not enumerate
+every endpoint in the Source: show one competing candidate when ambiguity could
+change the selected Result, and record why the chosen candidate wins on scope.
 Choose an exact assessable Result first. If none exists, choose the closest
 complete non-exact assessable candidate. Use unavailable when no comparative
 Result is reported for the requested outcome and the missing premise is

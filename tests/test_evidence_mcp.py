@@ -1578,12 +1578,9 @@ def test_read_pages_late_failure_does_not_commit_prior_coverage(
 
 def test_read_pages_returns_bounded_line_windows_with_continuation(tmp_path: Path) -> None:
     workspace = _workspace(tmp_path)
-    # The application projection wraps this valid but unusually long source
-    # line.  The MCP response must still be bounded and line-addressable.
-    (workspace / "input" / "trial" / "main.txt").write_text(
-        "word " * 20_000,
-        encoding="utf-8",
-    )
+    source_lines = [f"line {index}: " + " ".join(["word"] * 120) for index in range(100)]
+    source_text = "\n".join(source_lines)
+    (workspace / "input" / "trial" / "main.txt").write_text(source_text, encoding="utf-8")
     _call(
         workspace,
         "prepare_batch",
@@ -1600,7 +1597,8 @@ def test_read_pages_returns_bounded_line_windows_with_continuation(tmp_path: Pat
     page = first["data"]["pages"][0]
     assert len(first["data"]["pages"]) == 1
     assert len(page["numbered_text"]) <= 24_000
-    assert page["line_count"] > page["returned_end_line"]
+    assert page["line_count"] == len(source_lines)
+    assert page["returned_end_line"] < page["line_count"]
     assert page["page_remainder"] == {
         "source_id": source["id"],
         "page": 1,
@@ -1608,21 +1606,44 @@ def test_read_pages_returns_bounded_line_windows_with_continuation(tmp_path: Pat
         "end_line": page["line_count"],
     }
     assert page["truncated"] is True
+    assert "line_fragment" not in page
+    assert "returned_start_char" not in page
+    assert "next_start_char" not in page
     assert page["next_start_line"] == page["returned_end_line"] + 1
+    assert page["passage_ref"] is not None
 
-    second = _call(
+    returned_lines = page["numbered_text"].splitlines()
+    remaining = first["data"]["remaining_windows"]
+    while remaining:
+        continued = _call(
+            workspace,
+            "read_pages",
+            {
+                "trial_id": "trial",
+                "windows": remaining,
+            },
+        )
+        for next_page in continued["data"]["pages"]:
+            returned_lines.extend(next_page["numbered_text"].splitlines())
+            assert "line_fragment" not in next_page
+            assert "returned_start_char" not in next_page
+            assert "next_start_char" not in next_page
+        remaining = continued["data"]["remaining_windows"]
+
+    assert [line.split("|", 1)[1] for line in returned_lines] == source_lines
+    selected = _call(
         workspace,
-        "read_pages",
+        "select_text_evidence",
         {
             "trial_id": "trial",
             "source_id": source["id"],
-            "pages": [1],
-            "start_line": page["next_start_line"],
+            "page": 1,
+            "start_line": 1,
+            "end_line": len(source_lines),
         },
     )
-    next_page = second["data"]["pages"][0]
-    assert next_page["returned_start_line"] == page["next_start_line"]
-    assert next_page["numbered_text"].startswith(f"{next_page['returned_start_line']}|")
+    assert selected["outcome"] == "success"
+    assert selected["data"]["evidence"]["quote"] == source_text
 
 
 def test_read_pages_packs_request_order_and_returns_remaining_windows(tmp_path: Path) -> None:
@@ -1665,7 +1686,7 @@ def test_read_pages_packs_request_order_and_returns_remaining_windows(tmp_path: 
     pages = first["data"]["pages"]
     assert [page["source_id"] for page in pages] == [main["id"], supplement["id"]]
     supplement_page = pages[1]
-    assert len(supplement_page["numbered_text"]) > 12_000
+    assert len(supplement_page["numbered_text"]) > 11_000
     assert sum(len(page["numbered_text"]) for page in pages) <= 24_000
     remaining = first["data"]["remaining_windows"]
     assert remaining == [
@@ -1701,7 +1722,9 @@ def test_read_pages_packs_request_order_and_returns_remaining_windows(tmp_path: 
     assert seen == list(range(1, 1_001))
 
 
-def test_read_pages_oversized_single_line_makes_progress(tmp_path: Path) -> None:
+def test_read_pages_oversized_single_line_makes_progress(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     workspace = _workspace(tmp_path)
     (workspace / "input" / "trial" / "main.txt").write_text("x" * 30_000, encoding="utf-8")
     _call(
@@ -1710,14 +1733,49 @@ def test_read_pages_oversized_single_line_makes_progress(tmp_path: Path) -> None
         {"requested_outcome": "requested outcome", "expected_revision": 0},
     )
     source = _call(workspace, "list_sources", {"trial_id": "trial"})["data"]["sources"][0]
+
+    oversized_text = "x" * 30_000
+
+    def fake_read_pages(
+        _workspace_path: Path, _trial_id: str, _source_id: str, _pages: list[int]
+    ) -> dict[str, Any]:
+        return {"pages": [{"page": 1, "text": oversized_text}]}
+
+    monkeypatch.setattr(mcp_server, "_read_pages", fake_read_pages)
     result = _call(
         workspace,
         "read_pages",
         {"trial_id": "trial", "source_id": source["id"], "pages": [1]},
     )
     page = result["data"]["pages"][0]
-    assert page["returned_end_line"] >= 1
-    assert page["passage_ref"] is not None
+    assert page["line_count"] == page["returned_end_line"] == 1
+    assert page["line_fragment"] is True
+    assert page["returned_start_char"] == 0
+    assert page["next_start_char"] > 0
+    assert page["passage_ref"] is None
+
+    chunks = [page["numbered_text"].split("|", 1)[1]]
+    next_start_char = page["next_start_char"]
+    while next_start_char is not None:
+        continued = _call(
+            workspace,
+            "read_pages",
+            {
+                "trial_id": "trial",
+                "source_id": source["id"],
+                "pages": [1],
+                "start_line": 1,
+                "start_char": next_start_char,
+            },
+        )
+        next_page = continued["data"]["pages"][0]
+        chunks.append(next_page["numbered_text"].split("|", 1)[1])
+        assert next_page["returned_start_line"] == 1
+        assert next_page["returned_start_char"] == next_start_char
+        assert next_page["passage_ref"] is None
+        next_start_char = next_page["next_start_char"]
+
+    assert "".join(chunks) == oversized_text
 
 
 @pytest.mark.parametrize(

@@ -1,5 +1,8 @@
 # Use an evidence-first v0.4 interaction without new workflow tools
 
+Historical design record. For current fields, tools, and recovery rules, use
+`CONTEXT.md` and the generated `docs/release/public-contract.json`.
+
 Status: accepted
 
 Amended for the v0.5 successor contract by issues 283-286, 288, 290, and 291.

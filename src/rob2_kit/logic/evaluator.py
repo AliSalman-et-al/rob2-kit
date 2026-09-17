@@ -159,9 +159,9 @@ def evaluate_domain(domain_id: str, answers: Mapping[str, Answer | str]) -> Eval
     raise AssertionError("unreachable")
 
 
-def evaluate_overall(
-    judgments: Mapping[str, Judgment | str], *, combined_concerns: bool | None = None
-) -> OverallEvaluation:
+def evaluate_overall(judgments: Mapping[str, Judgment | str]) -> OverallEvaluation:
+    """Apply the deterministic Cochrane-style overall RoB 2 rule."""
+
     values = {key: Judgment(value) for key, value in judgments.items()}
     expected = {d.id for d in SCIENTIFIC_PACK.domains}
     if set(values) != expected:
@@ -170,11 +170,9 @@ def evaluate_overall(
         return OverallEvaluation(judgment=Judgment.HIGH, trace=("overall.any_high",))
     concerns = sum(value == Judgment.SOME_CONCERNS for value in values.values())
     if concerns >= 2:
-        if combined_concerns is None:
-            raise ValueError("combined_concerns is required for multiple Some concerns domains")
         return OverallEvaluation(
-            judgment=Judgment.HIGH if combined_concerns else Judgment.SOME_CONCERNS,
-            trace=("overall.combined_concerns",),
+            judgment=Judgment.HIGH,
+            trace=("overall.multiple_some_concerns_high",),
         )
     if concerns:
         return OverallEvaluation(judgment=Judgment.SOME_CONCERNS, trace=("overall.any_concerns",))

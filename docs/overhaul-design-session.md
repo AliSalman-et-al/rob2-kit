@@ -1,5 +1,9 @@
 # Overhaul design session
 
+Historical planning record. For current behavior and release status, use
+[`README.md`](../README.md), [`CONTEXT.md`](../CONTEXT.md), and the current
+release documentation.
+
 The 2026-09-14 grilling session examines `rob2-kit-final-overhaul-plan.md`.
 The plan is proposed design, not implementation authorization. Repository HEAD
 at the start is `862353658d54f2b115d6d081134f403326de6d8f`.

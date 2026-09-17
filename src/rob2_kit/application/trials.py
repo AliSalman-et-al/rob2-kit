@@ -33,6 +33,106 @@ def _checkpoint_ids(state: dict[str, Any], trial_id: str) -> list[str]:
     ]
 
 
+def _review_domain_findings(
+    root: Path, state: dict[str, Any], trial_id: str
+) -> list[dict[str, Any]]:
+    """Project current checkpoint support without creating a second answer authority."""
+
+    from .evidence import _evidence_catalog
+
+    try:
+        evidence_by_identity = _evidence_catalog(root, trial_id=trial_id)
+    except ValueError:
+        # Review remains useful when a disposable handle cache is damaged; the
+        # checkpoint identities and answer text are still authoritative, while
+        # the missing expansion is left for the ordinary recovery path.
+        evidence_by_identity = {}
+    records = state.get("domain_records") or {}
+    findings: list[dict[str, Any]] = []
+    for domain in SCIENTIFIC_PACK.domains:
+        record = records.get(f"{trial_id}:{domain.id}")
+        if not isinstance(record, dict) or not isinstance(record.get("identity"), str):
+            continue
+        answer_findings: list[dict[str, Any]] = []
+        for answer in record.get("answers", []):
+            if not isinstance(answer, dict) or not isinstance(answer.get("question_id"), str):
+                continue
+            references: list[dict[str, Any]] = []
+            expansions: list[dict[str, Any]] = []
+            seen_evidence: set[str] = set()
+            for basis in answer.get("bases", []):
+                if not isinstance(basis, dict) or not isinstance(basis.get("evidence"), str):
+                    continue
+                evidence_identity = basis["evidence"]
+                if evidence_identity in seen_evidence:
+                    continue
+                seen_evidence.add(evidence_identity)
+                evidence = evidence_by_identity.get(evidence_identity)
+                if not isinstance(evidence, dict) or not isinstance(evidence.get("handle"), str):
+                    continue
+                handle = evidence["handle"]
+                references.append({"handle": handle, "identity": evidence_identity})
+                source_id = evidence.get("source_id")
+                page = evidence.get("page")
+                if (
+                    evidence.get("kind") in {"narrative", "table"}
+                    and isinstance(source_id, str)
+                    and isinstance(page, int)
+                    and isinstance(evidence.get("start_line"), int)
+                    and isinstance(evidence.get("end_line"), int)
+                ):
+                    expansions.append(
+                        {
+                            "operation": "read_pages",
+                            "evidence": handle,
+                            "trial_id": trial_id,
+                            "windows": [
+                                {
+                                    "source_id": source_id,
+                                    "page": page,
+                                    "start_line": evidence["start_line"],
+                                    "end_line": evidence["end_line"],
+                                }
+                            ],
+                        }
+                    )
+                elif (
+                    evidence.get("kind") == "figure"
+                    and isinstance(source_id, str)
+                    and isinstance(page, int)
+                ):
+                    expansions.append(
+                        {
+                            "operation": "render_page",
+                            "evidence": handle,
+                            "trial_id": trial_id,
+                            "source_id": source_id,
+                            "page": page,
+                        }
+                    )
+            answer_findings.append(
+                {
+                    "question_id": answer["question_id"],
+                    "answer": answer.get("answer"),
+                    "justification": answer.get("justification"),
+                    "unknowns": list(answer.get("unknowns") or []),
+                    "counterevidence": list(answer.get("counterevidence") or []),
+                    "evidence": references,
+                    "evidence_expansions": expansions,
+                }
+            )
+        if answer_findings:
+            findings.append(
+                {
+                    "domain_id": domain.id,
+                    "checkpoint_identity": record["identity"],
+                    "judgment": record.get("judgment"),
+                    "answers": answer_findings,
+                }
+            )
+    return findings
+
+
 def _automatic_terminal(result: dict[str, Any]) -> tuple[str, str, list[str]] | None:
     if result.get("kind") == "unavailable":
         return (
@@ -138,6 +238,7 @@ def review_trial(
                 "success",
                 state,
                 review=current_review,
+                domain_findings=_review_domain_findings(root, state, request.trial_id),
                 retry=True,
             )
         raise ValueError("Trial is not available for review")
@@ -148,8 +249,10 @@ def review_trial(
     checkpoint_ids = _checkpoint_ids(state, request.trial_id)
     terminal = _automatic_terminal(result)
     if request.request is not None:
-        if len(checkpoint_ids) == len(SCIENTIFIC_PACK.domains) or terminal is not None:
-            raise ValueError("the current Result or complete Domain set already determines review")
+        if len(checkpoint_ids) == len(SCIENTIFIC_PACK.domains):
+            raise ValueError("all five Domain checkpoints are complete; omit request")
+        if terminal is not None:
+            raise ValueError("the current Result already determines review; omit request")
         terminal_request = request.request
         disposition = terminal_request.disposition
         reason = terminal_request.reason
@@ -160,6 +263,9 @@ def review_trial(
         )
     elif len(checkpoint_ids) == len(SCIENTIFIC_PACK.domains):
         disposition, reason, facts = "assessed", None, []
+        snapshot = (state.get("snapshots") or {}).get(request.trial_id)
+        if not isinstance(snapshot, dict):
+            raise ValueError("the Trial AssessmentSnapshot is unavailable")
     elif terminal is not None:
         disposition, reason, facts = terminal
     else:
@@ -182,22 +288,26 @@ def review_trial(
             "success",
             state,
             review=existing,
+            domain_findings=_review_domain_findings(root, state, request.trial_id),
             retry=True,
         )
     if request.expected_revision != state.get("revision", 0):
         raise WorkflowConflict(request.expected_revision, int(state.get("revision", 0)))
     reviews = dict(state.get("trial_reviews", {}))
     reviews[request.trial_id] = review
+    next_state = {**state, "trial_reviews": reviews}
+    records: dict[str, dict[str, Any]] = {f"trial_review:{review['identity']}": review}
     state = _commit_records(
         root,
-        {**state, "trial_reviews": reviews},
+        next_state,
         request.expected_revision,
-        {f"trial_review:{review['identity']}": review},
+        records,
     )
     return _result(
         "success",
         state,
         review=review,
+        domain_findings=_review_domain_findings(root, state, request.trial_id),
         continuation=_continuation(state),
     )
 

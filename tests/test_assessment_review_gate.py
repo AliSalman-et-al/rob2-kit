@@ -258,7 +258,7 @@ def test_domain_continuation_names_only_current_checkpoint(tmp_path: Path) -> No
     action = context["head"]["next_action"]
     assert action["supersedes"] == checkpoint
     assert action["operation"] == "validate_domain_assessment"
-    assert action["caller_inputs"] == ["answers", "multiple_concerns", "revision_basis"]
+    assert action["caller_inputs"] == ["answers", "revision_basis"]
 
 
 def test_new_evidence_revision_must_use_novel_evidence(tmp_path: Path) -> None:

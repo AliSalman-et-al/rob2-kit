@@ -1,12 +1,12 @@
 # Domain Docs
 
-## Before exploring, read these
+## Before changing domain terms or decisions, read these
 
 - Root `CONTEXT.md`, if present
 - Root `CONTEXT-MAP.md`, if present, followed by relevant context documents
 - Relevant ADRs under `docs/adr/`
 
-If these files do not exist, proceed silently. The domain-modeling workflow creates them lazily when terminology or decisions are resolved.
+Read these files only for domain-modeling work. If a referenced file does not exist, continue without it.
 
 ## File structure
 

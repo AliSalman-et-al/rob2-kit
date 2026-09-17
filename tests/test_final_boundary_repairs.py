@@ -241,7 +241,7 @@ def test_new_terminal_request_cannot_replace_ready_assessment(tmp_path: Path) ->
         expected_revision=revision,
     )
 
-    with pytest.raises(ValueError, match="complete Domain set already determines review"):
+    with pytest.raises(ValueError, match="all five Domain checkpoints are complete; omit request"):
         review_trial(workspace, request)
     assert _state(workspace) == before
 

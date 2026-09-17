@@ -285,10 +285,10 @@ finalized artifacts cannot be revised. The researcher cannot invoke this mechani
 to coach an answer; disagreement requires discard and a fresh run.
 
 Five active Domain checkpoints produce an **AssessmentSnapshot** and make the
-Trial `reviewable`; the Trial is still correctable until closed. Where multiple
-`some_concerns` judgments require an overall decision, the model must submit the
-typed `multiple_concerns` decision requested by the server before that fifth
-checkpoint can be accepted. `review_trial` binds the approved Result and
+Trial `reviewable`; the Trial is still correctable until closed. The server
+computes the overall judgment at the fifth checkpoint using the deterministic
+Cochrane rule; the model does not submit or override that aggregation.
+`review_trial` binds the approved Result and
 pack-ordered checkpoint identities to an assessed or typed terminal outcome.
 The server rejects closure when that review is stale. `close_trial` accepts only
 the exact current review identity, makes the outcome immutable, and advances to
@@ -350,8 +350,10 @@ Visual Evidence requires a `delivery_receipt` issued with a returned MCP
 it attests that the server returned image pixels, not that a host inspected or
 understood them. Metadata-only renders do not issue a receipt.
 
-The 14-tool v0.5 surface and v0.7 Result semantics are historical contract
-notes. Their finalized bundles remain independently verifiable.
+Historical v0.5 through v0.8 surfaces and Result semantics are contract notes.
+Their finalized bundles remain independently verifiable. The live tool list and
+schemas are generated from `src/rob2_kit/interfaces/mcp/server.py`; regenerate
+`docs/release/public-contract.json` to inspect them.
 
 Input and output schemas are closed Pydantic unions. Tool descriptions state the
 single operation, required caller inputs, and server-owned fields. The live
@@ -359,6 +361,7 @@ single operation, required caller inputs, and server-owned fields. The live
 one portable, progressive-disclosure `rob2-assess` skill shared by Codex and
 Claude Code.
 
-The successor interaction and field ownership are recorded in ADR 0031. Actual
+The successor interaction and field ownership are recorded in ADR 0031. Its
+historical sections are superseded by the live contract above. Actual
 host delivery is tracked separately in `docs/acceptance/v0-4-host-matrix.md`;
 unrun or unobservable checks remain explicitly incomplete.

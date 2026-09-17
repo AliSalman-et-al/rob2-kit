@@ -620,7 +620,7 @@ def test_finalized_bundle_binds_the_scientific_contract(tmp_path: Path) -> None:
 @pytest.mark.parametrize(
     "content_hash",
     (
-        "sha256:f1cc5e7e0c06a26b351e455797d8936256b01388fdb446c1ef7cc926ab29613b",
+        "sha256:6d15307ced2cede1044b19507871c3b334c783868093f2015d372fb7b89f5a31",
         "sha256:9c293fbfaf1b10b82682a90d2e90986c3283fa1412f2c8b62a4d82a14a795dc8",
         "sha256:3ef492b34a81c19e3f75d72fea2b92c40aebde80c06e24e44c36cd76dc4cf3d4",
     ),

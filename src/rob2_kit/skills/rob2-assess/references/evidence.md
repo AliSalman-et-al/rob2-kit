@@ -50,6 +50,11 @@ choose whether to reformulate or read the relevant section directly. The
 its own mode, outcome, and continuation cursor; use it only when all query
 inputs are already known, and wait for a result before choosing a dependent
 reformulation. No fixed number of queries proves completeness.
+Each item has its own success, condition, error, and continuation state. A
+bounded aggregate may return successful items alongside an omitted or
+continuable item; keep those successes and resume only the affected item with
+its own cursor. Do not treat an aggregate size condition as failure of every
+query or retry the complete batch blindly.
 Use `term_feedback` after an unhelpful combined search to distinguish absent
 query vocabulary from terms present somewhere in a Source despite no full-query
 match. It reports bounded distinct matching-page counts by Source and the count
@@ -60,6 +65,12 @@ Per-term searches remain optional.
 `read_pages` likewise prepares a `passage_ref` for each non-empty window. After
 you inspect a complete passage, reuse that handle in Proposal `passage_refs` or
 Domain `bases`; no separate text-selection call is required.
+If the serialized UTF-8 response bound splits one physical line, the returned
+fragment includes exact character offsets and `next_start_char` but has no
+`passage_ref` or selectable Evidence handle. Continue from that offset until
+the complete line or passage is delivered; only then can the complete window
+be cited. A page-boundary continuation uses the returned line continuation in
+the same way.
 
 ## Recover omitted Evidence
 
@@ -119,9 +130,10 @@ remain separate citations: do not concatenate their text, assume they are
 adjacent, or claim that they scientifically belong together merely because they
 are used by one Result.
 
-Every Source-owned reported leaf must have exact or normalization-equivalent
-support. Caller-owned target interpretation, timing and arm assignments do not
-need duplicate source quotations. Comparison-group IDs do not need them either.
+Preserve exact Source labels and quantities, or values equivalent after normalization.
+For `analysis_population`, a supported summary may combine passages when it preserves
+the reported inclusion criteria and exclusions. Caller-owned target interpretation,
+timing, and arm assignments do not need duplicate source quotations.
 For a categorical profile, `category_axis_names` names the ordered non-treatment
 dimensions; it does not replace Evidence for source-reported category labels or
 cells. Source-owned endpoint labels,
@@ -184,22 +196,17 @@ Use the question card's `options`; the example values are fictional.
 ```json
 {
 	"question_id": "sq:randomization:sequence",
-	"answer": "probably_yes",
+	"answer": "yes",
 	"bases": [
-		{"kind": "context", "evidence": "eh_0123456789abcdef"},
-		{
-			"kind": "limitation",
-			"text": "The report does not state who generated the allocation sequence.",
-			"search_receipt": "sr_0123456789abcdef"
-		}
+		{"kind": "direct_support", "evidence": "eh_0123456789abcdef"}
 	],
-	"justification": "The inspected passage states that a computer generated random allocations. The report does not identify who generated the sequence.",
-	"unknowns": ["The report does not identify the sequence generator."],
-	"counterevidence": [
-		{"basis_index": 1, "implication": "The unresolved generator limits confidence in the answer."}
-	]
+	"justification": "The inspected passage states that a computer generated random allocations.",
+	"unknowns": [],
+	"counterevidence": []
 }
 ```
+
+Use a limitation basis separately when the source leaves a premise unresolved.
 
 Use these exact shapes for the three basis forms:
 

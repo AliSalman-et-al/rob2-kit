@@ -57,9 +57,10 @@ Use balanced fictional contrasts and source-grounded review to test general
 improvements. Report existing-set agreement separately from defensibility,
 completion, and efficiency; do not claim independent scientific validation.
 
-D1-D5 accuracy is the objective. Overall judgments are auxiliary because
-different aggregation policies can produce different overall judgments from the
-same Domain inputs. Distinguish kit weaknesses from possible model limitations;
+D1-D5 accuracy is the objective. Overall judgments remain separately reported,
+but the published Trial label is now deterministic: all five Low is Low, one
+Some concerns with no High is Some concerns, and any High or at least two Some
+concerns is High. Distinguish kit weaknesses from possible model limitations;
 do not infer a model ceiling from the current evaluation. Scientifically
 defensible differences from Suster labels are acceptable. Consider context,
 tools, MCP contracts, metadata, skills, recovery, and ergonomics together when

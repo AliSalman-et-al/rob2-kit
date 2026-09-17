@@ -155,13 +155,23 @@ _SCIENTIFIC_PACK = {
     "id": "rob2.parallel.assignment",
     "version": "2019.1",
     "result_semantics_version": "rob2-kit.result-semantics.v0.8",
-    "content_hash": "sha256:f1cc5e7e0c06a26b351e455797d8936256b01388fdb446c1ef7cc926ab29613b",
+    "content_hash": "sha256:86ad209ba3504bbe353049245b44cebf3b7d83862b2b3e475c431c6fec0a581f",
     "official_source": {
         "version": "22 August 2019",
         "source_sha256": "A9E9C4FDC4BE2D29B5C0A1A6B828E09F2014A34F6D5C302A532F6153EA0FD670",
     },
 }
 _CURRENT_PACK_PREVIOUS_PROOF = {
+    "id": "rob2.parallel.assignment",
+    "version": "2019.1",
+    "result_semantics_version": "rob2-kit.result-semantics.v0.7",
+    "content_hash": "sha256:6d15307ced2cede1044b19507871c3b334c783868093f2015d372fb7b89f5a31",
+    "official_source": {
+        "version": "22 August 2019",
+        "source_sha256": "A9E9C4FDC4BE2D29B5C0A1A6B828E09F2014A34F6D5C302A532F6153EA0FD670",
+    },
+}
+_FORMER_CURRENT_PACK_PREVIOUS_PROOF = {
     "id": "rob2.parallel.assignment",
     "version": "2019.1",
     "result_semantics_version": "rob2-kit.result-semantics.v0.7",
@@ -1717,6 +1727,14 @@ def _snapshot_identity(snapshot: dict[str, object]) -> str:
     return identity({key: value for key, value in snapshot.items() if key != "identity"})
 
 
+def _overall_judgment(judgments: dict[str, str]) -> str:
+    if "high" in judgments.values() or list(judgments.values()).count("some_concerns") >= 2:
+        return "high"
+    if "some_concerns" in judgments.values():
+        return "some_concerns"
+    return "low"
+
+
 def _relation_name(value: object) -> str:
     if not isinstance(value, str):
         return ""
@@ -3125,6 +3143,7 @@ def verify(path: Path) -> tuple[bool, str]:
             if scientific_pack not in (
                 _SCIENTIFIC_PACK,
                 _CURRENT_PACK_PREVIOUS_PROOF,
+                _FORMER_CURRENT_PACK_PREVIOUS_PROOF,
                 _PREVIOUS_SCIENTIFIC_PACK,
                 _LEGACY_SCIENTIFIC_PACK,
                 _HISTORICAL_SCIENTIFIC_PACK,
@@ -3917,9 +3936,7 @@ def verify(path: Path) -> tuple[bool, str]:
                     expected_shape = {
                         "trial_id",
                         "checkpoints",
-                        "provisional",
                         "domain_judgments",
-                        "multiple_concerns",
                         "overall",
                         "identity",
                     }
@@ -3928,7 +3945,6 @@ def verify(path: Path) -> tuple[bool, str]:
                     if (
                         not isinstance(item, dict)
                         or set(item) != expected_shape
-                        or item.get("provisional") is not False
                         or item.get("identity") != digest
                         or item.get("trial_id") != trial_id
                         or item.get("identity") != _snapshot_identity(item)
@@ -3957,29 +3973,7 @@ def verify(path: Path) -> tuple[bool, str]:
                     ):
                         return False, "snapshot history semantics are invalid"
                     judgments = item["domain_judgments"]
-                    concerns = list(judgments.values()).count("some_concerns")
-                    multiple = item.get("multiple_concerns")
-                    if "high" in judgments.values() or concerns < 2:
-                        if multiple is not None:
-                            return False, "snapshot multiple-concerns decision is inapplicable"
-                        combined = None
-                    elif (
-                        not isinstance(multiple, dict)
-                        or set(multiple) != {"raises_overall_to_high", "rationale"}
-                        or not isinstance(multiple["raises_overall_to_high"], bool)
-                        or not isinstance(multiple["rationale"], str)
-                        or not multiple["rationale"]
-                    ):
-                        return False, "snapshot multiple-concerns decision is malformed"
-                    else:
-                        combined = multiple["raises_overall_to_high"]
-                    expected_overall = (
-                        "high"
-                        if "high" in judgments.values() or (concerns >= 2 and combined)
-                        else "some_concerns"
-                        if concerns
-                        else "low"
-                    )
+                    expected_overall = _overall_judgment(judgments)
                     if item.get("overall") != expected_overall:
                         return False, "snapshot history overall is invalid"
                     for domain_id, checkpoint in zip(
@@ -4098,28 +4092,7 @@ def verify(path: Path) -> tuple[bool, str]:
                         return False, f"snapshot Domain coverage is incomplete: {trial_id}"
                     if expected_judgments != snapshot_judgments:
                         return False, f"snapshot Domain judgments mismatch: {trial_id}"
-                    values = list(expected_judgments.values())
-                    concerns = values.count("some_concerns")
-                    multiple = snapshot.get("multiple_concerns")
-                    if "high" in values or concerns < 2:
-                        if multiple is not None:
-                            return False, f"inapplicable multiple-concerns decision: {trial_id}"
-                        overall = (
-                            "high" if "high" in values else "some_concerns" if concerns else "low"
-                        )
-                    else:
-                        if (
-                            not isinstance(multiple, dict)
-                            or set(multiple) != {"raises_overall_to_high", "rationale"}
-                            or not isinstance(multiple["raises_overall_to_high"], bool)
-                            or not isinstance(multiple["rationale"], str)
-                            or not multiple["rationale"]
-                        ):
-                            return (
-                                False,
-                                f"multiple-concerns decision is missing or malformed: {trial_id}",
-                            )
-                        overall = "high" if multiple["raises_overall_to_high"] else "some_concerns"
+                    overall = _overall_judgment(expected_judgments)
                     if snapshot.get("overall") != overall:
                         return False, f"overall judgment mismatch: {trial_id}"
             if has_trial_reviews and not _valid_trial_review_closures(
