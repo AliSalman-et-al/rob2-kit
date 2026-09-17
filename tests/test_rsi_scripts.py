@@ -35,7 +35,9 @@ _structured_response = runpy.run_path(
 def test_strict_isolation_rejects_windows_without_uac(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.syspath_prepend(str(Path(__file__).parents[1] / "scripts"))
     runner_helpers = runpy.run_path(str(Path(__file__).parents[1] / "scripts" / "run_rsi_case.py"))
-    monkeypatch.setitem(runner_helpers, "_is_windows", lambda: True)
+    monkeypatch.setitem(
+        runner_helpers["_preflight_isolation"].__globals__, "_is_windows", lambda: True
+    )
     with pytest.raises(RuntimeError, match="without UAC"):
         runner_helpers["_preflight_isolation"](Path("codex"), True)
 

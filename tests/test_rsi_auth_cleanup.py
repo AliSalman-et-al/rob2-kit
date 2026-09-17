@@ -44,6 +44,8 @@ def _invoke_failed_run(
     (repo / "uv.lock").write_text("version = 1\n", encoding="utf-8")
     executable.parent.mkdir(parents=True)
     executable.write_bytes(b"fake rob2 executable")
+    codex_executable = repo / "codex"
+    codex_executable.write_bytes(b"fake codex executable")
 
     run_dir = tmp_path / "attempt"
     case = tmp_path / "unused-case.json"
@@ -55,6 +57,7 @@ def _invoke_failed_run(
     auth_source.parent.mkdir(parents=True)
     auth_source.write_text('{"fake":"test-only"}', encoding="utf-8")
     monkeypatch.setattr(Path, "home", classmethod(lambda _cls: fake_home))
+    monkeypatch.setenv("CODEX_EXECUTABLE", str(codex_executable))
     if relative_run_dir:
         monkeypatch.chdir(tmp_path)
 
@@ -281,7 +284,7 @@ def test_required_host_isolation_rejects_windows_without_uac(
     run_dir = tmp_path / "attempt"
     monkeypatch.syspath_prepend(str(SCRIPTS))
     runner = runpy.run_path(str(RUNNER_PATH))
-    monkeypatch.setitem(runner, "_is_windows", lambda: True)
+    monkeypatch.setitem(runner["main"].__globals__, "_is_windows", lambda: True)
     monkeypatch.setattr(
         sys,
         "argv",
