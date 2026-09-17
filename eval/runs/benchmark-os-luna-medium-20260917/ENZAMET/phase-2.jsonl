@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a0abf2-7d35-78f0-8912-dd48720ff3e4"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"The Proposal Review is approved by your “Continue” instruction. I’m recording that approval and will proceed through the domain checkpoints in the server’s required order."}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"I’m blocked because the rob2 assessment tools disappeared from the active session immediately after approval, so I cannot safely record approval or assess domains. Please retry “Continue” in a fresh turn/session."}}
+{"type":"turn.completed","usage":{"input_tokens":1948250,"cached_input_tokens":1822208,"cache_write_input_tokens":0,"output_tokens":5685,"reasoning_output_tokens":1540}}

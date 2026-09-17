@@ -2,5 +2,9 @@
 reference/sources/
 reference/catalog/provisional-labels/
 
-# Materialized rob2-kit projects and their ledgers/artifacts.
-runs/
+# Materialized rob2-kit projects and their ledgers/artifacts. Keep JSONL
+# results trackable at any nesting depth.
+runs/**
+!runs/**/
+!runs/**/*.jsonl
+runs/**/codex-home/

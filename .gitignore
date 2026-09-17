@@ -15,7 +15,11 @@ wheels/
 eval/reference/*
 !eval/reference/catalog/
 eval/reference/catalog/provisional-labels/
-eval/runs/
+# Keep evaluation runs local except for JSONL results at any nesting depth.
+eval/runs/**
+!eval/runs/**/
+!eval/runs/**/*.jsonl
+eval/runs/**/codex-home/
 eval/private/
 
 # Local calibration and rendering artifacts

@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a0abf2-7d35-78f0-8912-dd48720ff3e4"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"I’m retrying the active rob2 workflow from its current server state and will resume at the exact next checkpoint."}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"The rob2 tools remain unavailable in this session, so I cannot continue the canonical assessment safely. Please start a fresh session and rerun the ENZAMET request."}}
+{"type":"turn.completed","usage":{"input_tokens":2139120,"cached_input_tokens":1924096,"cache_write_input_tokens":0,"output_tokens":5930,"reasoning_output_tokens":1682}}

@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a0abed-2764-7ad2-bf9c-251156c2c376"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"The proposal is approved. I’m activating the TITAN assessment and will now complete each RoB 2 domain in the server’s required order, using the live question wording and evidence."}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"I’m unable to continue because the rob2 assessment tools are not exposed in this continuation. Please send “Continue” again to re-establish the assessment session."}}
+{"type":"turn.completed","usage":{"input_tokens":1725255,"cached_input_tokens":1549312,"cache_write_input_tokens":0,"output_tokens":5715,"reasoning_output_tokens":1490}}

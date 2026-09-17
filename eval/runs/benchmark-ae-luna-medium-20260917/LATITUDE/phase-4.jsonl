@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a0abf2-85d1-7f50-a57d-232cff12966a"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"The replacement Proposal is saved and the request to continue authorizes moving past Proposal Review. I’ll submit the approval, then recover the approved Result and complete the required second reading pass before starting the first Domain."}}
+{"type":"error","message":"You've hit your usage limit. Upgrade to Pro (https://chatgpt.com/explore/pro), visit https://chatgpt.com/codex/settings/usage to purchase more credits or try again at 4:23 AM."}
+{"type":"turn.failed","error":{"message":"You've hit your usage limit. Upgrade to Pro (https://chatgpt.com/explore/pro), visit https://chatgpt.com/codex/settings/usage to purchase more credits or try again at 4:23 AM."}}
