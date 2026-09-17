@@ -405,3 +405,8 @@ loops; it is an operational check, not a population accuracy estimate.
 For the full evaluation protocol, frozen case format, batch runner, scorer, and
 denominator rules, see the [evaluation guide](docs/evaluation/README.md) and
 [recursive assessment improvement guide](docs/evaluation/rsi.md).
+
+On Windows, ordinary evaluation runs use Codex's automatic approval reviewer
+with an unelevated workspace-write sandbox, so rob2's required MCP mutations do
+not trigger interactive UAC prompts. The optional strict isolation flag is
+rejected on Windows because it requires an elevated backend.

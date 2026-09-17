@@ -388,8 +388,17 @@ def main() -> None:
         "-c",
         "mcp_servers.rob2.env={ROB2_WORKSPACE=" + json.dumps(str(workspace)) + "}",
     ]
-    if args.session and not args.require_isolated_host:
-        config += ["-c", 'approval_policy="never"', "-c", 'sandbox_mode="workspace-write"']
+    if not args.require_isolated_host:
+        config += [
+            "-c",
+            'approval_policy="on-request"',
+            "-c",
+            'approvals_reviewer="auto_review"',
+            "-c",
+            'sandbox_mode="workspace-write"',
+        ]
+        if _is_windows():
+            config += ["-c", 'windows.sandbox="unelevated"']
     command = [str(codex_command), "exec"]
     if args.session:
         command += ["resume", args.session]
@@ -412,11 +421,7 @@ def main() -> None:
         "-",
     ]
     if not args.session:
-        command[command.index("-") : command.index("-")] = (
-            ["-C", str(workspace)]
-            if args.require_isolated_host
-            else ["--approve-for-me", "-C", str(workspace)]
-        )
+        command[command.index("-") : command.index("-")] = ["-C", str(workspace)]
     trace = run_dir / f"phase-{args.phase}.jsonl"
     stderr = run_dir / f"phase-{args.phase}.stderr.txt"
     metadata = {

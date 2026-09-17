@@ -25,10 +25,14 @@ The [evaluation contract](README.md) defines the observation limits.
    auth copy after each phase. For qualification, add
    `--require-isolated-host`; this creates a deny-by-default Codex permission
    profile with write access only to the run workspace, run artifacts, and the
-   MCP runtime. The strict profile is unavailable on Windows without UAC and
-   fails explicitly before a run is created; ordinary Windows runs remain
-   documented as non-strict workspace-write runs. Keep raw traces restricted because they contain source
-   text and host-visible agent messages or justifications.
+   MCP runtime. The strict profile is unavailable on Windows without UAC and fails
+   explicitly before a run is created. Ordinary Windows runs use
+   `approval_policy = "on-request"` with `approvals_reviewer = "auto_review"`,
+   plus `sandbox_mode = "workspace-write"` and
+   `windows.sandbox = "unelevated"`; this permits required MCP mutations
+   without interactive UAC prompts but does not prove deny-by-default label
+   isolation. Keep raw traces restricted because they contain source text and
+   host-visible agent messages or justifications.
 
    The case manifest has this shape; source paths resolve relative to the
    manifest and only listed files enter `workspace/input`:
