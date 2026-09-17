@@ -26,6 +26,7 @@ eval/private/
 tmp/
 
 # AI Agents
+.agents/
 .claude/
 .claude-config/
 .codex/
