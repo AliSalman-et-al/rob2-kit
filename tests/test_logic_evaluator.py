@@ -2,7 +2,7 @@ from itertools import product
 from typing import Any, cast
 
 import pytest
-from oracle.rob2_parallel import QIDS, cases, judgment, overall
+from oracle.rob2_parallel import QIDS, cases, judgment
 from pydantic import ValidationError
 
 from rob2_kit.logic import active_questions, evaluate_domain, evaluate_overall
@@ -23,7 +23,7 @@ def test_pack_ids_wording_provenance_and_hashes():
     ) == ("sha256:96ff2d1a649d6b40f40fe7fa73c3127c5eb1725e8392b8728f9d25f951338425")
     assert SCIENTIFIC_PACK.questions[16].wording.startswith("If N/PN/NI to 4.1 and 4.2")
     assert SCIENTIFIC_PACK.content_hash == (
-        "sha256:f1cc5e7e0c06a26b351e455797d8936256b01388fdb446c1ef7cc926ab29613b"
+        "sha256:86ad209ba3504bbe353049245b44cebf3b7d83862b2b3e475c431c6fec0a581f"
     )
     assert "not attributed to Cochrane" in MAINTAINER_POLICY_PACK.attribution
     assert MAINTAINER_POLICY_PACK.id != SCIENTIFIC_PACK.id
@@ -67,13 +67,13 @@ def test_all_overall_combinations_against_independent_oracle():
     domain_ids = tuple(QIDS)
     for values in product(("low", "some_concerns", "high"), repeat=5):
         judgments = dict(zip(domain_ids, values, strict=True))
-        if values.count("some_concerns") >= 2 and "high" not in values:
-            for combined in (False, True):
-                assert evaluate_overall(
-                    judgments, combined_concerns=combined
-                ).judgment.value == overall(list(values), combined)
+        if "high" in values or values.count("some_concerns") >= 2:
+            expected = "high"
+        elif "some_concerns" in values:
+            expected = "some_concerns"
         else:
-            assert evaluate_overall(judgments).judgment.value == overall(list(values))
+            expected = "low"
+        assert evaluate_overall(judgments).judgment.value == expected
 
 
 def test_corrected_domain_four_no_information_paths():

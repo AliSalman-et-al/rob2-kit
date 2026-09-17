@@ -13,6 +13,12 @@ own source interpretation, Result selection, Evidence selection, and signalling
 answers. Proposal Review is the only researcher gate. After approval, continue
 without asking for signalling answers, progress confirmation, or final approval.
 
+Overall risk is deterministic: all five Low Domains produce Low overall; one
+Some concerns Domain with no High produces Some concerns overall; any High
+Domain, or at least two Some concerns Domains with no High Domain, produces
+High overall. The server applies this Cochrane-style aggregation at the Trial
+snapshot; no researcher decision is requested for it.
+
 ## Read one complete MCP receipt
 
 Most tools return the typed receipt in `structuredContent`. Keep the complete
@@ -29,76 +35,11 @@ using the published schema, and retry the corrected call. When the result has
 Raise the output limit only when the host explicitly reports truncation. Do
 not treat a missing structured receipt as a no-hit or absence result.
 
-Use this Codex probe to inspect either a receipt or an error:
-
-```javascript
-// @exec: {"max_output_tokens": 20000}
-const status = await tools.mcp__rob2__get_status();
-const head = status?.structuredContent?.head;
-if (!head?.next_action || head.next_action.operation !== "get_domain_context") {
-  text(status?.structuredContent ?? status?.content ?? []);
-  throw new Error("get_status did not return a get_domain_context action");
-}
-const r = await tools.mcp__rob2__get_domain_context({
-  trial_id: head.next_action.trial_id,
-  domain_id: head.next_action.domain_id,
-});
-const receipt = r?.structuredContent ?? null;
-if (receipt) {
-  text(receipt);
-} else {
-  text(r?.content ?? []);
-}
-```
-
-For pagination, cursor recovery, and output-size handling, read
-[Receipt and continuation recovery](references/evidence.md#receipt-and-continuation-recovery).
-Keep the first page and every continuation in separate host-visible outputs.
-Pass each returned cursor unchanged. Do not assess from page zero while a
-continuation remains.
-
-Use separate `functions.exec` calls when the host renders each page alone. The
-first call stores the returned cursor:
-
-```javascript
-// First functions.exec call: use Trial/Domain from head.next_action.
-const status = await tools.mcp__rob2__get_status();
-const head = status?.structuredContent?.head;
-if (!head?.next_action || head.next_action.operation !== "get_domain_context") {
-  text(status?.structuredContent ?? status?.content ?? []);
-  throw new Error("get_status did not return a get_domain_context action");
-}
-const r = await tools.mcp__rob2__get_domain_context({
-  trial_id: head.next_action.trial_id,
-  domain_id: head.next_action.domain_id,
-});
-const page = r?.structuredContent ?? null;
-if (!page) {
-  text(r?.content ?? []);
-} else if (page.outcome !== "success") {
-  text(page);
-} else {
-  text(page);
-  store("domain-next-cursor", page.data?.context_page?.next_cursor ?? null);
-}
-```
-
-```javascript
-// Separate functions.exec call: load and pass the cursor unchanged.
-const cursor = load("domain-next-cursor");
-if (!cursor) {
-  text("No continuation cursor is stored.");
-} else {
-  const r = await tools.mcp__rob2__get_domain_context({ cursor });
-  const page = r?.structuredContent ?? null;
-  if (page?.outcome !== "success" || !page?.data?.context_page) {
-    text(page ?? r?.content ?? []);
-  } else {
-    text(page);
-    store("domain-next-cursor", page.data.context_page.next_cursor ?? null);
-  }
-}
-```
+For Codex host receipt inspection and separate-page cursor storage, read
+[Codex receipt snippets](references/codex.md). Use the common
+[Receipt and continuation recovery](references/evidence.md#receipt-and-continuation-recovery)
+procedure for every host. Keep every page host-visible, pass each cursor unchanged,
+and wait for a null cursor before assessing.
 
 ## Follow the workflow
 
@@ -155,6 +96,10 @@ For a source-scoped miss, inspect its literal navigation entries, use term
 feedback and captured wording to choose whether to reformulate or read the
 relevant section directly. Batch searches only when their query inputs are
 already known; wait for a result before choosing a dependent reformulation.
+Each batch item remains an independent success or condition. The aggregate
+serialized response is bounded; continue an item's own cursor or retry that
+query separately when its displayed material was reduced, and do not treat
+another item's failure as failure of the whole batch.
 Continue navigation when the displayed entries do not identify a useful page
 or query. Stop when the premise is resolved or the captured material has been
 inspected enough to state what remains unavailable; no fixed search count
@@ -194,7 +139,9 @@ the rest.
 For an assessable Result, the server reconstructs the captured outcome and
 closed effect of interest, then derives clarity, retained Evidence, and bindings.
 Do not send those derived fields or put Evidence objects inside `reported`.
-Every Source-owned reported field needs exact or normalization-equivalent support.
+Preserve exact Source labels and quantities, or values equivalent after normalization.
+For `analysis_population`, a supported summary may combine passages when it preserves
+the reported inclusion criteria and exclusions.
 
 For an unavailable Result, give each concrete missing fact its closed basis:
 selected missing-reporting Evidence, or `no_supported_sources` only for a
@@ -236,6 +183,10 @@ operational guidance, as authoritative. Domain receipts remain usable while you
 investigate or commit another Domain in the same Trial, provided the approved
 Result, pack, preview, and requested Domain checkpoint stay unchanged. Search
 results and unrelated Domain commits do not invalidate an existing page chain.
+Continuation cursors are short, opaque, server-bound handles. Treat explicit
+stale, expired, or out-of-order conditions as recovery signals; never copy a
+context payload into a cursor or silently continue from a different Trial,
+Result, pack, preview, Source set, or checkpoint.
 Recoverable discovery candidates are omitted by default; use
 `include_candidates:true` on a fresh request when those candidates are needed.
 Revalidate after changing an assessment dependency. Treat each returned
@@ -264,7 +215,11 @@ truncation. Keep each page host-visible and reconstruct the complete question,
 comparison, Evidence, and recovery fields before deciding. If the server
 returns a header or item oversized condition, retry the same explicit scope
 with the larger `required_page_size`; an unrecoverable condition requires
-review without dropping a field. Recover the Evidence needed for each premise
+review without dropping a field. `read_pages` is bounded by the complete
+serialized UTF-8 response, and an oversized physical line is returned through
+lossless character fragments. A fragment has no `passage_ref` or Evidence
+authority; continue its exact `next_start_char` window until the complete line
+is returned before selecting or citing it. Recover the Evidence needed for each premise
 with `read_pages`, and render `render_page` image blocks separately when layout
 matters. Inspect the actual image block and pass its `delivery_receipt` to
 `select_visual_evidence` before using a transcription.
@@ -357,6 +312,22 @@ Evidence as row provenance and performs only scope-matched arithmetic.
 For an optional count preview before saving D3, follow
 [Reconcile availability](references/missing.md#reconcile-availability).
 
+Keep the high-yield decision boundaries explicit while answering the cards:
+
+- D3 separates randomized, observed, analysed, imputed, and excluded counts;
+  censoring or analysis membership is not observed follow-up, and availability,
+  possible dependence, and likely dependence are different propositions.
+- D4 separates the measurement method, assessor awareness, circumstances that
+  could influence measurement, and evidence that influence was likely. Open-label
+  conduct alone is not a likely-influence answer.
+- D5 separates whether an analysis was planned before unblinding, which eligible
+  measurements and analyses were possible, and whether the reported result was
+  selected from them. A plan's existence or a posting date alone does not prove
+  correspondence or timing.
+- D1 keeps sequence generation, allocation concealment, and baseline imbalance
+  distinct. D2 assesses trial-context deviations and their effect on the
+  assignment comparison, not adherence or treatment differences in isolation.
+
 Commit the exact draft stored by `validate_domain_assessment`. Supply its
 returned `reasoning_id` and revision to `save_domain_judgment`. To change the
 draft, call `validate_domain_assessment` again with the complete revised draft.
@@ -366,9 +337,9 @@ questions to the existing answer set. Resubmit the complete resulting active
 path. Keep an inactive answer when it is already available and has valid
 reasoning. Do not invent inactive questions or reasoning. The server ignores
 inactive answers.
-When the final Domain triggers a `multiple_concerns` Repair, supply the
-requested object and rationale. Do not
-send that field otherwise.
+The server computes the whole-Trial overall judgment from the five Domain
+judgments when the fifth checkpoint is saved; do not add an overall override or
+wait for a researcher decision.
 
 ### 7. Review and close every Trial
 
@@ -379,11 +350,15 @@ revision. With all five checkpoints, review it as assessed. Unavailable Results
 and unsupported designs receive their specific unassessed outcome. For a real
 blocker on a supported Trial, provide a typed `needs_input` or `failed` request.
 
-Inspect the review's exact Result and checkpoint identities. If a Domain or
-Result needs correction, make the correction and request a fresh review. Search
-and reading activity alone does not invalidate it. Close the Trial with the
-exact `review_reference` and current revision returned by status. Closure is
-immutable and advances to the next Trial or Batch finalization; do not skip it.
+Inspect the review's exact Result, checkpoint identities, and compact
+`domain_findings` projection. Use its decisive justifications, material
+unknowns, counterevidence, and exact Evidence expansion actions to reconcile
+concrete contradictions or unsupported links in one bounded pass. Correct only
+the affected Domain; do not force a second assessment or change an answer just
+to make the projection consistent. Search and reading activity alone does not
+invalidate the review. Close the Trial with the exact `review_reference` and
+current revision returned by status. Closure is immutable and advances to the
+next Trial or Batch finalization; do not skip it.
 
 Normal review and an automatic unavailable or unsupported-design review use the
 same callable request. Omit `request`:
@@ -392,20 +367,15 @@ same callable request. Omit `request`:
 {"trial_id":"trial-a","expected_revision":12}
 ```
 
-For a genuine post-approval blocker on a supported Trial, include one complete
-typed request. Missing or unestablished design facts belong in the Proposal;
-they trigger the automatic unsupported-design review and must use the normal
-request with `request` omitted. Use an explicit blocker only when the current
-supported Result and completed Domains cannot be reviewed because a separate
-operational fact is unavailable:
+For an incomplete supported Trial, include one complete typed `needs_input` request
+when a missing fact blocks the next Domain or review step:
 
 ```json
-{"trial_id":"trial-a","expected_revision":12,"request":{"disposition":"needs_input","trial_id":"trial-a","reason":"The approved Result is supported, but the review export is unavailable.","missing_facts":["Review export"]}}
+{"trial_id":"trial-a","expected_revision":12,"request":{"disposition":"needs_input","trial_id":"trial-a","reason":"The report does not establish whether the outcome assessor was blinded.","missing_facts":["Outcome-assessor blinding"]}}
 ```
 
-Use the current `trial_id` and `expected_revision` from `head.next_action` for
-both forms. Do not send `request` when the Result or five completed Domains
-already determines the review.
+Use the current `trial_id` and `expected_revision` from `head.next_action`.
+With all five checkpoints, omit `request` and review the Trial normally.
 
 After a successful review, close with the exact returned review identity:
 
@@ -418,10 +388,10 @@ Use the current revision from the review receipt and copy
 
 ### 8. Finalize and report
 
-When `head.next_action.operation` is `finalize_batch`, call it immediately with
-the current revision. `ready_to_finalize` is not completion. Report results only
-after `head.phase:"finalized"`, copying judgments from
-`data.assessment_summary` without reconstructing them.
+When `head.next_action.operation` is `finalize_batch`, call it with the current revision.
+If the final receipt is unavailable, replay `finalize_batch` with that revision to recover
+the artifact and `data.assessment_summary`. `ready_to_finalize` is not completion.
+Report results only after `head.phase:"finalized"`.
 
 ## Recover from interruptions
 
@@ -430,11 +400,13 @@ after `head.phase:"finalized"`, copying judgments from
   restore Domain Evidence and the active checkpoint. Do not recreate completed
   work from memory.
 - If `data.working_checkpoint.status` is `current`, use its source-located
-  notes to resume the investigation, then reread each cited passage before
-  relying on it. Preserve recorded uncertainty. A draft answer is not a saved
-  answer, and these notes are not Evidence or a Domain checkpoint. If the status
-  is `absent` or `stale`, reorient from current Sources and do not transfer old
-  drafts across a Result change.
+  notes to resume the investigation without repeating the mandatory report
+  pass solely because the process restarted. Preserve recorded uncertainty. A
+  draft answer is not a saved answer, and these notes are not Evidence or a
+  Domain checkpoint; recover or reread an exact passage only when its content is
+  needed and is not present in current context. If the status is `absent` or
+  `stale`, reorient from current Sources and do not transfer old drafts across
+  a Result change.
 - Before a long delay or context compaction, call `save_working_checkpoint` for
   an open Trial when useful observations, interpretations, terminology, unread
   ranges, open questions, or unfinished drafts would otherwise be lost. Cite

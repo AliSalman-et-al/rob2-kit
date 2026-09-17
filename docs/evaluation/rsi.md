@@ -9,7 +9,10 @@ The [evaluation contract](README.md) defines the observation limits.
    or holdout partition. An overall judgment is not the optimization target.
 2. Freeze the prompt, dossier bytes, registry capture, approved Result scope,
    model/version, reasoning effort, tool and skill revision, and evaluation
-   rule. Describe the source allowlist and scope in a frozen `rob2-kit.rsi-case.v1`
+   rule. The overall Trial label uses the deterministic Cochrane convention:
+   all five Low is Low; one Some concerns and no High is Some concerns; any
+   High or at least two Some concerns is High. Describe the source allowlist
+   and scope in a frozen `rob2-kit.rsi-case.v1`
    JSON manifest. Each source entry names one relative path, its assessment
    filename, and role. A captured registry entry also records its original
    capture time, SHA-256, and provenance. Start an empty run directory. Use
@@ -22,16 +25,14 @@ The [evaluation contract](README.md) defines the observation limits.
    auth copy after each phase. For qualification, add
    `--require-isolated-host`; this creates a deny-by-default Codex permission
    profile with write access only to the run workspace, run artifacts, and the
-   MCP runtime. This strict profile is unavailable on Windows: the runner rejects
-   it before creating artifacts rather than starting an elevated backend or
-   triggering UAC. Ordinary evals use `approval_policy = "on-request"` with
-   `approvals_reviewer = "auto_review"`, plus `sandbox_mode = "workspace-write"`.
-   On Windows they also set `windows.sandbox = "unelevated"`. The automatic
-   reviewer permits rob2's required MCP mutations without an interactive
-   approval prompt, while the unelevated backend prevents UAC; this does not
-   prove deny-by-default label isolation.
-   Keep raw traces restricted because they contain source text and host-visible
-   agent messages or justifications.
+   MCP runtime. The strict profile is unavailable on Windows without UAC and fails
+   explicitly before a run is created. Ordinary Windows runs use
+   `approval_policy = "on-request"` with `approvals_reviewer = "auto_review"`,
+   plus `sandbox_mode = "workspace-write"` and
+   `windows.sandbox = "unelevated"`; this permits required MCP mutations
+   without interactive UAC prompts but does not prove deny-by-default label
+   isolation. Keep raw traces restricted because they contain source text and
+   host-visible agent messages or justifications.
 
    The case manifest has this shape; source paths resolve relative to the
    manifest and only listed files enter `workspace/input`:
@@ -144,10 +145,15 @@ collapsed to each case's best result.
 
 The input uses `rob2-kit.rsi-run-analysis.v1`. Labels use `low`,
 `some_concerns`, and `high`; `D1` through `D5` follow the order in the retained
-reference. Eligible cases require all five adjudicated labels. `scope_uncertain`
-and `ineligible` cases are reported separately and excluded from agreement
-denominators. Omit absent model outputs from `observed`; they still count in the
-all-expected denominator. A minimal posthoc record is:
+reference. Eligible cases contribute one operational expected output for each
+Domain, while `reference_available` records whether that Domain has an
+adjudicated label and `scope_comparable` records whether the observed Result
+has the same approved scope. A missing reference or non-comparable scope is
+reported and excluded from the scored denominator; it is not converted into a
+missing model output. `scope_uncertain` and `ineligible` cases are reported
+separately and excluded from agreement denominators. Omit absent model outputs
+from `observed`; they still count in operational expected and all-expected
+denominators. A minimal posthoc record is:
 
 ```json
 {
@@ -180,15 +186,25 @@ Run the analyzer only after the run records and posthoc annotations are frozen:
 uv run python scripts/analyze_rsi_runs.py eval/restricted/rsi-wave.json --output eval/restricted/rsi-analysis.json
 ```
 
-It reports per-Domain and pooled three-class exact agreement and binary Low vs
-non-Low agreement, confusion matrices, false positives/negatives, ordinal
-overcalls/undercalls, completion, missing-output and all-expected denominators,
-and known versus unavailable run cost. It computes deterministic percentile
+It reports per-Domain, pooled, and per-outcome three-class exact agreement and
+binary Low vs non-Low agreement, confusion matrices, false
+positives/negatives, ordinal overcalls/undercalls, operational expected
+outputs, reference-labelled opportunities, observed outputs, comparable
+pairs, completion, missing-output and all-expected denominators, and known
+versus unavailable cost and latency. It computes deterministic percentile
 intervals by resampling whole Trials, so Domains and repeated draws from one
 Trial stay clustered. With fewer than two Trial clusters, an interval is
 unavailable. High-class sensitivity is `null` and explicitly marked
 unestimable when no reference High cases exist; predicted High counts and the
 High confusion-matrix cells remain visible.
+
+When a case has retries, every attempt contributes to attempt count, cost,
+latency, and failure accounting. Only the explicitly selected attempt (or the
+documented first-attempt fallback) contributes observed labels to the scored
+comparison; the analyzer never chooses a best retry. The diagnostic ledger
+retains attempt identities and the earliest supported stage, and distinguishes
+an unresolved cause from a defensible agreement. These joins are diagnostic
+metadata, not model-facing input.
 
 Failure causes are posthoc review annotations, not inferred from agreement or
 tool-call counts. Use `passage_not_found` when the needed passage was not

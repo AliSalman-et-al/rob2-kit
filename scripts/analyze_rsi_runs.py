@@ -58,6 +58,18 @@ def _validate_input(value: object) -> list[dict[str, Any]]:
             "observed",
             "cost_usd",
             "failure_causes",
+            "reference_available",
+            "reference_availability",
+            "scope_comparable",
+            "scope_comparability",
+            "latency_ms",
+            "attempts",
+            "selected_attempt_id",
+            "diagnostic",
+            "trace",
+            "artifacts",
+            "result_identity",
+            "source_versions",
         }
         if set(row) - allowed:
             raise ValueError(f"{location} contains unsupported fields")
@@ -77,8 +89,6 @@ def _validate_input(value: object) -> list[dict[str, Any]]:
             raise ValueError(f"{location}.expected and observed must be objects")
         if set(expected) - set(DOMAINS) or set(observed) - set(DOMAINS):
             raise ValueError(f"{location} contains an unknown Domain")
-        if row["scope"] == "eligible" and set(expected) != set(DOMAINS):
-            raise ValueError(f"{location}.expected must contain D1 through D5 for eligible cases")
         for field_name, answers in (("expected", expected), ("observed", observed)):
             for domain, label in answers.items():
                 if not isinstance(label, str) or label not in LABELS:
@@ -91,14 +101,304 @@ def _validate_input(value: object) -> list[dict[str, Any]]:
             or cost < 0
         ):
             raise ValueError(f"{location}.cost_usd must be non-negative or null")
+        latency = row.get("latency_ms")
+        if latency is not None and (
+            isinstance(latency, bool)
+            or not isinstance(latency, (int, float))
+            or not math.isfinite(latency)
+            or latency < 0
+        ):
+            raise ValueError(f"{location}.latency_ms must be non-negative or null")
         causes = row.get("failure_causes", {})
         if not isinstance(causes, dict) or set(causes) - set(DOMAINS):
             raise ValueError(f"{location}.failure_causes must map Domain IDs to causes")
         for domain, cause in causes.items():
             if not isinstance(cause, str) or cause not in FAILURE_CAUSES:
                 raise ValueError(f"{location}.failure_causes.{domain} is invalid")
+        for field_name in (
+            "reference_available",
+            "reference_availability",
+            "scope_comparable",
+            "scope_comparability",
+        ):
+            mapping = row.get(field_name)
+            if mapping is None:
+                continue
+            if not isinstance(mapping, dict) or set(mapping) - set(DOMAINS):
+                raise ValueError(f"{location}.{field_name} must map Domain IDs")
+            for domain, flag in mapping.items():
+                if type(flag) is not bool:
+                    raise ValueError(f"{location}.{field_name}.{domain} must be boolean")
+        attempts = row.get("attempts")
+        if attempts is not None:
+            if not isinstance(attempts, list) or not attempts:
+                raise ValueError(f"{location}.attempts must be a non-empty list")
+            attempt_ids: set[str] = set()
+            selected_count = 0
+            selected_ids: set[str] = set()
+            for attempt_index, attempt in enumerate(attempts):
+                attempt_location = f"{location}.attempts[{attempt_index}]"
+                if not isinstance(attempt, dict):
+                    raise ValueError(f"{attempt_location} must be an object")
+                allowed_attempt_fields = {
+                    "attempt_id",
+                    "observed",
+                    "cost_usd",
+                    "latency_ms",
+                    "completion",
+                    "status",
+                    "selected",
+                    "failure_causes",
+                    "exit_code",
+                }
+                if set(attempt) - allowed_attempt_fields:
+                    raise ValueError(f"{attempt_location} contains unsupported fields")
+                attempt_id = attempt.get("attempt_id")
+                if not isinstance(attempt_id, str) or not attempt_id.strip():
+                    raise ValueError(f"{attempt_location}.attempt_id must be non-empty text")
+                if attempt_id in attempt_ids:
+                    raise ValueError(f"{attempt_location}.attempt_id is duplicated")
+                attempt_ids.add(attempt_id)
+                attempt_observed = attempt.get("observed", {})
+                if not isinstance(attempt_observed, dict) or set(attempt_observed) - set(DOMAINS):
+                    raise ValueError(f"{attempt_location}.observed must map known Domains")
+                for domain, label in attempt_observed.items():
+                    if not isinstance(label, str) or label not in LABELS:
+                        raise ValueError(f"{attempt_location}.observed.{domain} is invalid")
+                for numeric_name in ("cost_usd", "latency_ms"):
+                    numeric = attempt.get(numeric_name)
+                    if numeric is not None and (
+                        isinstance(numeric, bool)
+                        or not isinstance(numeric, (int, float))
+                        or not math.isfinite(numeric)
+                        or numeric < 0
+                    ):
+                        raise ValueError(
+                            f"{attempt_location}.{numeric_name} must be non-negative or null"
+                        )
+                if "completion" in attempt and (
+                    not isinstance(attempt["completion"], str)
+                    or attempt["completion"] not in COMPLETION
+                ):
+                    raise ValueError(f"{attempt_location}.completion is invalid")
+                if "selected" in attempt:
+                    if type(attempt["selected"]) is not bool:
+                        raise ValueError(f"{attempt_location}.selected must be boolean")
+                    if attempt["selected"]:
+                        selected_count += 1
+                        selected_ids.add(attempt_id)
+            if selected_count > 1:
+                raise ValueError(f"{location}.attempts must select at most one attempt")
+            selected_id = row.get("selected_attempt_id")
+            if selected_id is not None and (
+                not isinstance(selected_id, str) or selected_id not in attempt_ids
+            ):
+                raise ValueError(f"{location}.selected_attempt_id is not present in attempts")
+            if selected_id is not None and selected_ids and selected_id not in selected_ids:
+                raise ValueError(f"{location}.selected_attempt_id disagrees with attempts.selected")
+        elif row.get("selected_attempt_id") is not None:
+            raise ValueError(f"{location}.selected_attempt_id requires attempts")
         validated.append(row)
     return validated
+
+
+def _domain_flags(row: dict[str, Any], field: str, domains: tuple[str, ...]) -> dict[str, bool]:
+    aliases = {
+        "reference_available": ("reference_available", "reference_availability"),
+        "scope_comparable": ("scope_comparable", "scope_comparability"),
+    }
+    mapping = next(
+        (row.get(name) for name in aliases[field] if isinstance(row.get(name), dict)),
+        None,
+    )
+    expected = row.get("expected", {})
+    if not isinstance(expected, dict):
+        expected = {}
+    default = field == "reference_available"
+    result = {
+        domain: bool(mapping[domain])
+        if isinstance(mapping, dict) and domain in mapping
+        else (domain in expected if default else True)
+        for domain in domains
+    }
+    return result
+
+
+def _selected_attempt(row: dict[str, Any]) -> tuple[dict[str, str], str | None]:
+    attempts = row.get("attempts")
+    if not isinstance(attempts, list) or not attempts:
+        observed = row.get("observed", {})
+        return (dict(observed) if isinstance(observed, dict) else {}, None)
+    selected_id = row.get("selected_attempt_id")
+    selected = next(
+        (
+            attempt
+            for attempt in attempts
+            if isinstance(attempt, dict)
+            and (
+                attempt.get("attempt_id") == selected_id
+                or (selected_id is None and attempt.get("selected") is True)
+            )
+        ),
+        None,
+    )
+    if selected is None:
+        selected = attempts[0]
+    attempt_observed = selected.get("observed", {}) if isinstance(selected, dict) else {}
+    if not attempt_observed and isinstance(row.get("observed"), dict):
+        attempt_observed = row["observed"]
+    return (
+        dict(attempt_observed),
+        str(selected.get("attempt_id")) if isinstance(selected, dict) else None,
+    )
+
+
+def _attempt_accounting(rows: list[dict[str, Any]]) -> dict[str, Any]:
+    attempts: list[dict[str, Any]] = []
+    for row in rows:
+        row_attempts = row.get("attempts")
+        if isinstance(row_attempts, list):
+            for attempt in row_attempts:
+                if isinstance(attempt, dict):
+                    attempts.append(attempt)
+        else:
+            attempts.append(
+                {
+                    "attempt_id": row.get("case_id"),
+                    "cost_usd": row.get("cost_usd"),
+                    "latency_ms": row.get("latency_ms"),
+                }
+            )
+    known_costs = [
+        float(attempt["cost_usd"])
+        for attempt in attempts
+        if isinstance(attempt.get("cost_usd"), (int, float))
+        and not isinstance(attempt.get("cost_usd"), bool)
+    ]
+    latencies = [
+        float(attempt["latency_ms"])
+        for attempt in attempts
+        if isinstance(attempt.get("latency_ms"), (int, float))
+        and not isinstance(attempt.get("latency_ms"), bool)
+    ]
+    return {
+        "attempt_count": len(attempts),
+        "retry_count": max(0, len(attempts) - len(rows)),
+        "known_attempt_cost_count": len(known_costs),
+        "unknown_attempt_cost_count": len(attempts) - len(known_costs),
+        "known_attempt_cost_total": sum(known_costs) if known_costs else None,
+        "known_attempt_latency_count": len(latencies),
+        "unknown_attempt_latency_count": len(attempts) - len(latencies),
+        "known_attempt_latency_total_ms": sum(latencies) if latencies else None,
+    }
+
+
+_DIAGNOSTIC_STAGES = (
+    "approved_result",
+    "source_version",
+    "delivered_passage",
+    "selected_evidence",
+    "justification",
+    "answer",
+    "revisions",
+    "rule",
+)
+_FAILURE_STAGE = {
+    "passage_not_found": "delivered_passage",
+    "passage_not_delivered": "delivered_passage",
+    "citation_incomplete": "selected_evidence",
+    "interpretation_error": "justification",
+    "scope_error": "approved_result",
+    "workflow_incomplete": "answer",
+    "infrastructure": "answer",
+}
+
+
+def _diagnostic_ledger(rows: list[dict[str, Any]]) -> dict[str, Any]:
+    """Project retained joins without copying source-bearing private traces."""
+
+    cases: list[dict[str, Any]] = []
+    for row in rows:
+        trace = row.get("diagnostic")
+        if not isinstance(trace, dict):
+            trace = row.get("trace") if isinstance(row.get("trace"), dict) else {}
+        artifacts = row.get("artifacts") if isinstance(row.get("artifacts"), dict) else {}
+        selected_id = _selected_attempt(row)[1]
+        domains: dict[str, Any] = {}
+        for domain in DOMAINS:
+            domain_trace = trace.get(domain) if isinstance(trace.get(domain), dict) else trace
+            cause = row.get("failure_causes", {}).get(domain)
+            stages: dict[str, dict[str, Any]] = {}
+            missing_stage: str | None = None
+            for stage in _DIAGNOSTIC_STAGES:
+                raw = domain_trace.get(stage) if isinstance(domain_trace, dict) else None
+                if isinstance(raw, dict):
+                    available = bool(
+                        raw.get("available", raw.get("status") in {"present", "complete"})
+                    )
+                    stage_identity = raw.get("identity")
+                else:
+                    available = bool(raw) if isinstance(raw, bool) else raw is not None
+                    stage_identity = (
+                        raw if isinstance(raw, str) and raw.startswith("sha256:") else None
+                    )
+                if stage == "approved_result" and row.get("result_identity") is not None:
+                    available = True
+                    stage_identity = row.get("result_identity")
+                if stage == "source_version" and isinstance(row.get("source_versions"), dict):
+                    available = domain in row["source_versions"]
+                    stage_identity = row["source_versions"].get(domain)
+                stages[stage] = {
+                    "status": "present" if available else "missing",
+                    "identity": stage_identity if isinstance(stage_identity, str) else None,
+                }
+                if missing_stage is None and not available:
+                    missing_stage = stage
+            if cause in _FAILURE_STAGE:
+                earliest = _FAILURE_STAGE[cause]
+                classification = cause
+            elif cause == "other":
+                earliest = missing_stage
+                classification = "unresolved"
+            elif missing_stage is not None:
+                earliest = missing_stage
+                classification = "unresolved"
+            else:
+                earliest = None
+                classification = "defensible_or_agreement"
+            domains[domain] = {
+                "stages": stages,
+                "earliest_failure_stage": earliest,
+                "classification": classification,
+                "reference_available": _domain_flags(row, "reference_available", (domain,))[domain],
+                "scope_comparable": _domain_flags(row, "scope_comparable", (domain,))[domain],
+            }
+        cases.append(
+            {
+                "case_id": row["case_id"],
+                "trial_id": row["trial_id"],
+                "outcome": row["outcome"],
+                "result_identity": row.get("result_identity"),
+                "selected_attempt_id": selected_id,
+                "attempt_ids": [
+                    attempt.get("attempt_id")
+                    for attempt in row.get("attempts", [])
+                    if isinstance(attempt, dict)
+                ]
+                or [row["case_id"]],
+                "domains": domains,
+                "artifact_identities": {
+                    key: value
+                    for key, value in artifacts.items()
+                    if key.endswith("_identity") and isinstance(value, str)
+                },
+            }
+        )
+    return {
+        "version": "rob2-kit.rsi-diagnostic-ledger.v1",
+        "stage_order": list(_DIAGNOSTIC_STAGES),
+        "cases": cases,
+    }
 
 
 def _rate(numerator: int, denominator: int) -> float | None:
@@ -149,12 +449,14 @@ def _score_group(
     rng: random.Random,
     replicates: int,
 ) -> dict[str, Any]:
-    expected_count = observed_count = scored_count = exact_matches = binary_matches = 0
+    expected_count = labelled_count = observed_count = scored_count = 0
+    exact_matches = binary_matches = 0
     exact_matrix: Counter[tuple[str, str]] = Counter()
     binary_matrix: Counter[tuple[str, str]] = Counter()
     exact_scored_by_trial: Counter[str] = Counter()
     exact_expected_by_trial: Counter[str] = Counter()
     exact_trial_expected: Counter[str] = Counter()
+    comparable_trial_expected: Counter[str] = Counter()
     binary_scored_by_trial: Counter[str] = Counter()
     binary_expected_by_trial: Counter[str] = Counter()
     binary_trial_expected: Counter[str] = Counter()
@@ -167,25 +469,33 @@ def _score_group(
     for row in rows:
         trial_id = row["trial_id"]
         expected = row.get("expected", {})
-        observed = row.get("observed", {})
+        observed, _selected_attempt_id = _selected_attempt(row)
         if row["scope"] != "eligible":
             continue
+        reference_flags = _domain_flags(row, "reference_available", domains)
+        comparable_flags = _domain_flags(row, "scope_comparable", domains)
         for domain in domains:
-            actual = expected[domain]
+            actual = expected.get(domain)
             prediction = observed.get(domain)
             expected_count += 1
             exact_trial_expected[trial_id] += 1
             binary_trial_expected[trial_id] += 1
-            if actual == "high":
+            has_reference = reference_flags[domain] and actual in LABELS
+            if has_reference:
+                labelled_count += 1
+            if has_reference and actual == "high":
                 high_actual += 1
             if prediction is None:
                 causes[row.get("failure_causes", {}).get(domain, "delivery_unknown")] += 1
                 continue
             observed_count += 1
-            exact_expected_by_trial[trial_id] += int(actual == prediction)
-            binary_expected_by_trial[trial_id] += int((actual == "low") == (prediction == "low"))
             if prediction == "high":
                 high_predicted += 1
+            if not has_reference or not comparable_flags[domain]:
+                continue
+            comparable_trial_expected[trial_id] += 1
+            exact_expected_by_trial[trial_id] += int(actual == prediction)
+            binary_expected_by_trial[trial_id] += int((actual == "low") == (prediction == "low"))
             scored_count += 1
             is_exact = actual == prediction
             is_binary = (actual == "low") == (prediction == "low")
@@ -216,13 +526,7 @@ def _score_group(
     exact_scored_trials = {
         trial: (
             exact_scored_by_trial[trial],
-            sum(
-                1
-                for row in rows
-                if row["scope"] == "eligible" and row["trial_id"] == trial
-                for domain in domains
-                if domain in row.get("observed", {})
-            ),
+            comparable_trial_expected[trial],
         )
         for trial in exact_trial_expected
     }
@@ -240,12 +544,16 @@ def _score_group(
     }
     return {
         "expected_outputs": expected_count,
+        "operational_expected_outputs": expected_count,
+        "labelled_opportunities": labelled_count,
         "observed_outputs": observed_count,
+        "comparable_pairs": scored_count,
         "scored_outputs": scored_count,
         "exact_agreement": {
             "matches": exact_matches,
             "scored_rate": _rate(exact_matches, scored_count),
             "all_expected_rate": _rate(exact_matches, expected_count),
+            "labelled_rate": _rate(exact_matches, labelled_count),
             "trial_clustered_95ci_scored": _cluster_interval(exact_scored_trials, rng, replicates),
             "trial_clustered_95ci_all_expected": _cluster_interval(
                 exact_all_trials, rng, replicates
@@ -255,6 +563,7 @@ def _score_group(
             "matches": binary_matches,
             "scored_rate": _rate(binary_matches, scored_count),
             "all_expected_rate": _rate(binary_matches, expected_count),
+            "labelled_rate": _rate(binary_matches, labelled_count),
             "trial_clustered_95ci_scored": _cluster_interval(binary_scored_trials, rng, replicates),
             "trial_clustered_95ci_all_expected": _cluster_interval(
                 binary_all_trials, rng, replicates
@@ -300,10 +609,67 @@ def analyze(value: object, *, bootstrap_replicates: int = 2000, seed: int = 0) -
         domain: _score_group(eligible, (domain,), rng, bootstrap_replicates) for domain in DOMAINS
     }
     pooled = _score_group(eligible, DOMAINS, rng, bootstrap_replicates)
-    known_costs = [row["cost_usd"] for row in rows if row.get("cost_usd") is not None]
+    per_outcome = {
+        outcome: _score_group(
+            [row for row in eligible if row["outcome"] == outcome],
+            DOMAINS,
+            rng,
+            bootstrap_replicates,
+        )
+        for outcome in sorted({row["outcome"] for row in eligible})
+    }
+    attempt_metrics = _attempt_accounting(rows)
+    has_extended_metadata = any(
+        any(
+            key in row
+            for key in (
+                "reference_available",
+                "reference_availability",
+                "scope_comparable",
+                "scope_comparability",
+                "attempts",
+                "selected_attempt_id",
+                "diagnostic",
+                "trace",
+                "artifacts",
+                "result_identity",
+                "source_versions",
+                "latency_ms",
+            )
+        )
+        for row in rows
+    )
+    if has_extended_metadata:
+        provisional_rows = [
+            {
+                **row,
+                "reference_available": {domain: True for domain in DOMAINS},
+                "scope_comparable": {domain: True for domain in DOMAINS},
+            }
+            for row in eligible
+        ]
+        provisional_per_domain = {
+            domain: _score_group(provisional_rows, (domain,), rng, bootstrap_replicates)
+            for domain in DOMAINS
+        }
+        provisional_pooled = _score_group(provisional_rows, DOMAINS, rng, bootstrap_replicates)
+    else:
+        provisional_per_domain = None
+        provisional_pooled = None
+    if any(isinstance(row.get("attempts"), list) for row in rows):
+        known_run_count = attempt_metrics["known_attempt_cost_count"]
+        unknown_run_count = attempt_metrics["unknown_attempt_cost_count"]
+        known_total = attempt_metrics["known_attempt_cost_total"]
+        mean_known = known_total / known_run_count if known_run_count else None
+    else:
+        known_costs = [row["cost_usd"] for row in rows if row.get("cost_usd") is not None]
+        known_run_count = len(known_costs)
+        unknown_run_count = len(rows) - len(known_costs)
+        known_total = sum(known_costs) if known_costs else None
+        mean_known = known_total / len(known_costs) if known_costs else None
     finalized = sum(row["completion"] == "finalized" for row in eligible)
     completion_counts = dict(sorted(Counter(row["completion"] for row in rows).items()))
-    return {
+    result = {
         "schema": "rob2-kit.rsi-run-analysis-result.v1",
         "scope": {
             "all_runs": len(rows),
@@ -324,11 +690,20 @@ def analyze(value: object, *, bootstrap_replicates: int = 2000, seed: int = 0) -
         "per_domain": per_domain,
         "pooled_domains": pooled,
         "cost_usd": {
-            "known_run_count": len(known_costs),
-            "unknown_run_count": len(rows) - len(known_costs),
-            "known_total": sum(known_costs) if known_costs else None,
-            "mean_known_per_run": sum(known_costs) / len(known_costs) if known_costs else None,
+            "known_run_count": known_run_count,
+            "unknown_run_count": unknown_run_count,
+            "known_total": known_total,
+            "mean_known_per_run": mean_known,
         },
+        "attempts": {
+            **attempt_metrics,
+            "selection": (
+                "explicit selected_attempt_id, selected=true, otherwise first in input order"
+            ),
+            "selected_attempts": {row["case_id"]: _selected_attempt(row)[1] for row in rows},
+        },
+        "per_outcome": per_outcome,
+        "diagnostics": _diagnostic_ledger(rows),
         "bootstrap": {
             "method": "percentile bootstrap resampling whole Trials with replacement",
             "replicates": bootstrap_replicates,
@@ -336,9 +711,28 @@ def analyze(value: object, *, bootstrap_replicates: int = 2000, seed: int = 0) -
         },
         "qualification": (
             "provisional label agreement only; not an estimate of scientific accuracy; "
-            "no automatic pass/fail threshold"
+            "no automatic pass/fail threshold; exposed-cohort evidence is not a holdout "
+            "and does not establish generalization or repeatability"
         ),
     }
+    latency_summary = {
+        "known_run_count": attempt_metrics["known_attempt_latency_count"],
+        "unknown_run_count": attempt_metrics["unknown_attempt_latency_count"],
+        "known_total_ms": attempt_metrics["known_attempt_latency_total_ms"],
+        "mean_known_per_run_ms": (
+            attempt_metrics["known_attempt_latency_total_ms"]
+            / attempt_metrics["known_attempt_latency_count"]
+            if attempt_metrics["known_attempt_latency_count"]
+            else None
+        ),
+    }
+    result["latency_ms"] = latency_summary
+    if any(isinstance(row.get("attempts"), list) for row in rows):
+        result["cost_usd"]["attempts"] = attempt_metrics
+    if has_extended_metadata:
+        result["provisional_per_domain"] = provisional_per_domain
+        result["provisional_pooled_domains"] = provisional_pooled
+    return result
 
 
 def main() -> int:

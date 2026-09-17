@@ -37,7 +37,7 @@ def test_structured_domain_uses_and_search_receipts(tmp_path: Path) -> None:
         "trial_id": "trial",
         "domain_id": domain_id,
         "expected_revision": revision,
-        "caller_inputs": ["answers", "multiple_concerns"],
+        "caller_inputs": ["answers"],
     }
     draft = _domain_draft("trial", domain_id, revision, evidence)
     saved = _call(workspace, "save_domain_judgment", draft)

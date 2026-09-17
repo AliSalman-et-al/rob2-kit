@@ -103,7 +103,7 @@ class ValidateDomainAssessmentAction(PublicModel):
     trial_id: TrialId
     domain_id: DomainId
     expected_revision: NonNegativeInt
-    caller_inputs: tuple[Literal["answers", "multiple_concerns", "revision_basis"], ...]
+    caller_inputs: tuple[Literal["answers", "revision_basis"], ...]
     supersedes: Identity | None = None
 
 
@@ -520,6 +520,26 @@ class EvidenceReadWindow(PublicModel):
     page: PageNumber
     start_line: PageNumber
     end_line: PageNumber
+    start_char: NonNegativeInt = Field(
+        default=0,
+        description="Start character offset for a continued physical line.",
+    )
+    end_char: NonNegativeInt | None = Field(
+        default=None,
+        description="Optional exclusive end offset within the final line.",
+    )
+
+    @model_validator(mode="after")
+    def character_bounds_are_valid(self) -> EvidenceReadWindow:
+        if self.end_line < self.start_line:
+            raise ValueError("end_line must not precede start_line")
+        if (
+            self.end_line == self.start_line
+            and self.end_char is not None
+            and self.end_char < self.start_char
+        ):
+            raise ValueError("end_char must not precede start_char")
+        return self
 
 
 class EvidenceRecovery(PublicModel):
@@ -946,10 +966,37 @@ class PageData(PublicModel):
     )
     truncated: StrictBool
     next_start_line: PageNumber | None = None
+    returned_start_char: NonNegativeInt | None = Field(
+        default=None,
+        description="Start offset of the returned line fragment.",
+    )
+    next_start_char: NonNegativeInt | None = Field(
+        default=None,
+        description="Next offset for continuing the same physical line.",
+    )
+    line_fragment: StrictBool = Field(
+        default=False,
+        description="Whether this page contains a physical-line fragment.",
+    )
     passage_ref: EvidenceHandle | None = Field(
         default=None,
-        description="Exact returned passage handle when this page contains nonblank text.",
+        description=(
+            "Exact returned passage handle for complete nonblank text. Physical-line fragments "
+            "have no passage_ref."
+        ),
     )
+
+    @model_validator(mode="after")
+    def fragment_provenance_is_truthful(self) -> PageData:
+        if not self.line_fragment and (
+            self.returned_start_char is not None or self.next_start_char is not None
+        ):
+            raise ValueError("character extents require line_fragment=true")
+        if self.line_fragment and self.passage_ref is not None:
+            raise ValueError("a partial physical line cannot receive a passage_ref")
+        if self.next_start_char is not None and not self.truncated:
+            raise ValueError("a fragment continuation requires truncated=true")
+        return self
 
 
 class PagesData(PublicModel):
@@ -1063,6 +1110,11 @@ QuestionActivation = Annotated[
 ]
 
 
+class AnswerAnchor(PublicModel):
+    answer: Answer
+    text: str = Field(min_length=1)
+
+
 class DomainQuestionCard(PublicModel):
     """Compact model-facing card for one scientific-pack question."""
 
@@ -1089,9 +1141,20 @@ class DomainQuestionCard(PublicModel):
     )
     official_guidance: str = Field(min_length=1)
     source_locator: str = Field(min_length=1)
+    bias_construct: str = Field(
+        min_length=1,
+        description="The causal bias construct assessed by this signalling question.",
+    )
     decision_rule: str = Field(min_length=1)
     evidence_needed: tuple[str, ...] = Field(min_length=1)
     no_information_rule: str = Field(min_length=1)
+    answer_anchors: tuple[AnswerAnchor, ...] = Field(
+        min_length=1,
+        description=(
+            "Operational examples for interpreting each answer. Anchors clarify semantics; "
+            "they are not a whitelist of acceptable evidence."
+        ),
+    )
     considerations: tuple[str, ...] = Field(
         min_length=1,
         description=(
@@ -1602,7 +1665,7 @@ class DomainJudgmentData(PublicModel):
     trial_ready_for_review: StrictBool = Field(
         default=False,
         description=(
-            "True only when this save completed the fifth Domain; the Trial remains correctable "
+            "True after the save qualifies the Trial for review; the Trial remains correctable "
             "until it is explicitly closed."
         ),
     )
@@ -1624,8 +1687,57 @@ class ValidateDomainAssessmentData(PublicModel):
     next_action: ReasoningSaveAction
 
 
+class ReviewEvidenceReference(PublicModel):
+    """One exact Evidence identity retained by a reviewed answer."""
+
+    handle: EvidenceHandle
+    identity: Identity
+
+
+class ReviewReadEvidenceAction(PublicModel):
+    operation: Literal["read_pages"]
+    evidence: EvidenceHandle
+    trial_id: TrialId
+    windows: tuple[EvidenceReadWindow, ...] = Field(min_length=1, max_length=1)
+
+
+class ReviewRenderEvidenceAction(PublicModel):
+    operation: Literal["render_page"]
+    evidence: EvidenceHandle
+    trial_id: TrialId
+    source_id: SourceHandle
+    page: PageNumber
+
+
+ReviewEvidenceExpansion = Annotated[
+    ReviewReadEvidenceAction | ReviewRenderEvidenceAction,
+    Field(discriminator="operation"),
+]
+
+
+class ReviewAnswerFinding(PublicModel):
+    question_id: QuestionId
+    answer: Answer
+    justification: str | None = None
+    unknowns: tuple[str, ...] = ()
+    counterevidence: tuple[DomainCounterevidence, ...] = ()
+    evidence: tuple[ReviewEvidenceReference, ...] = ()
+    evidence_expansions: tuple[ReviewEvidenceExpansion, ...] = ()
+
+
+class ReviewDomainFinding(PublicModel):
+    domain_id: DomainId
+    checkpoint_identity: Identity
+    judgment: Judgment
+    answers: tuple[ReviewAnswerFinding, ...] = Field(min_length=1)
+
+
 class ReviewTrialData(PublicModel):
     review: TrialReviewSummary
+    domain_findings: tuple[ReviewDomainFinding, ...] = Field(
+        default=(),
+        description="Current checkpoint support and exact Evidence expansion actions for review.",
+    )
     retry: StrictBool = False
 
 
@@ -1849,7 +1961,7 @@ def _payload(tool: str, value: dict[str, Any]) -> dict[str, Any]:
             if key in value
         }
     if tool == "review_trial":
-        return {key: value[key] for key in ("review", "retry") if key in value}
+        return {key: value[key] for key in ("review", "domain_findings", "retry") if key in value}
     if tool == "close_trial":
         return {key: value[key] for key in ("closure", "retry") if key in value}
     if tool == "search_sources":

@@ -26,9 +26,14 @@ def test_public_question_card_uses_readable_question_scoped_answer_values() -> N
             activation=question.activation.model_dump(mode="python"),
             official_guidance=question.guidance.official.source_excerpt,
             source_locator=question.guidance.official.source_locator,
+            bias_construct=question.guidance.operational.bias_construct,
             decision_rule=question.guidance.operational.decision_rule,
             evidence_needed=question.guidance.operational.evidence_needed,
             no_information_rule=question.guidance.operational.no_information_rule,
+            answer_anchors=tuple(
+                anchor.model_dump(mode="python")
+                for anchor in question.guidance.operational.answer_anchors
+            ),
             considerations=question.guidance.operational.considerations,
             invalid_shortcuts=question.guidance.operational.invalid_shortcuts,
             query_suggestions=question.guidance.operational.query_suggestions,

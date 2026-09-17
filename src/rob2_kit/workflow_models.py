@@ -19,7 +19,6 @@ from pydantic import (
     BeforeValidator,
     ConfigDict,
     Field,
-    StrictBool,
     StrictFloat,
     StrictInt,
     StringConstraints,
@@ -1327,23 +1326,6 @@ class DomainLimitationBasis(StrictModel):
         return value
 
 
-class MultipleConcernsDecision(StrictModel):
-    raises_overall_to_high: StrictBool = Field(
-        description="Whether Some concerns across Domains together raise overall risk to high.",
-    )
-    rationale: str = Field(
-        min_length=1,
-        description="Concise reason for the combined-concerns decision.",
-    )
-
-    @field_validator("rationale")
-    @classmethod
-    def rationale_is_meaningful(cls, value: str) -> str:
-        if not value.strip():
-            raise ValueError("rationale must contain non-whitespace text")
-        return value
-
-
 class DirectEvidenceUse(StrictModel):
     kind: Literal["direct_support", "indirect_support", "contradiction", "context", "inference"] = (
         Field(description="How the selected Evidence bears on this question answer.")
@@ -1533,7 +1515,6 @@ class DomainDraft(StrictModel):
     domain_id: DomainId
     expected_revision: ExpectedRevision
     answers: tuple[DomainAnswer, ...]
-    multiple_concerns: MultipleConcernsDecision | None = None
     supersedes: Identity | None = None
     revision_basis: DomainRevisionBasis | None = None
 
@@ -1567,7 +1548,6 @@ class DomainReasoningDraft(StrictModel):
     domain_id: DomainId
     expected_revision: ExpectedRevision
     answers: tuple[DomainReasoningAnswer, ...]
-    multiple_concerns: MultipleConcernsDecision | None = None
     supersedes: Identity | None = None
     revision_basis: DomainRevisionBasis | None = None
 

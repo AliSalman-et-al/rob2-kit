@@ -57,9 +57,12 @@ top-level `start_line` with `windows`. Read text from
 `data.pages[].numbered_text`. If `data.remaining_windows` is nonempty, send
 that exact list as the next `windows` value and repeat until it is empty.
 
-`read_pages` packs windows into bounded responses and preserves whole lines.
-A single line larger than its ordinary transport budget is returned intact.
-The transport budget does not change the source-byte ceiling for either pass.
+`read_pages` packs windows into a bounded serialized UTF-8 response and
+preserves physical-line coordinates. A physical line larger than the transport
+budget is returned as lossless character fragments with `next_start_char` until
+the line is complete. Fragments are not Evidence and do not receive a
+`passage_ref`; continue the returned window before citing the passage. The
+transport budget does not change the source-byte ceiling for either pass.
 
 Inspect each returned window. `budget_limited` does not mean the full report was
 read. Recorded delivery does not establish comprehension.

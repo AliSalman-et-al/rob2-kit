@@ -33,15 +33,16 @@ If something can be simple, make it simple.
 
 ### Issue tracker
 
-Issues are tracked in this repository's GitHub Issues. See `docs/agents/issue-tracker.md`.
+When a task names a tracked issue, use the repository's GitHub Issue rules in
+`docs/agents/issue-tracker.md`.
 
 ### Triage labels
 
-The default five-role triage vocabulary is used. See `docs/agents/triage-labels.md`.
+When triaging an issue, use the five-role vocabulary in `docs/agents/triage-labels.md`.
 
 ### Domain docs
 
-This repository uses a single-context domain-doc layout. See `docs/agents/domain.md`.
+When a task changes domain terminology or decisions, follow `docs/agents/domain.md`.
 
 
 # Codex project instructions

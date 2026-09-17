@@ -209,7 +209,7 @@ def test_cli_reads_posthoc_input_and_writes_aggregate_receipt(tmp_path: Path) ->
 @pytest.mark.parametrize(
     "mutate",
     [
-        lambda row: row.update(expected={"D1": "high"}),
+        lambda row: row.update(expected={"D1": "maybe"}),
         lambda row: row.update(observed={"D1": "maybe"}),
         lambda row: row.update(cost_usd=float("nan")),
         lambda row: row.update(failure_causes={"D1": "delivered_and_understood"}),

@@ -260,6 +260,16 @@ immutable and advances to the next Trial or Batch finalization.
 shares the outcome concept supplied to `prepare_batch`; a Batch cannot mix
 different requested outcomes across Trials.
 
+The server computes the overall Trial label after the fifth Domain. It applies
+this deterministic Cochrane rule:
+
+- All five Domains are Low: the Trial is Low.
+- Exactly one Domain is Some concerns and none is High: the Trial is Some concerns.
+- Any High Domain, or at least two Some concerns Domains: the Trial is High.
+
+The model and the researcher do not submit or override this aggregation. Review
+the five Domain labels when you need the reasoning behind the Trial label.
+
 The host reads main-report text at two checkpoints: before Proposal submission,
 then after approval before the Trial's first Domain save. Each pass covers the
 same prefix of the full captured Source, up to 65,536 UTF-8 source-text bytes per
@@ -390,8 +400,13 @@ then continue the same session with `Continue.` as described in
 [`docs/evaluation/rsi.md`](docs/evaluation/rsi.md). Verify the resulting
 `.rob2.zip` with `scripts/verify_bundle.py`. A successful smoke test confirms
 that the model-facing contract completes without schema or Pydantic repair
-loops; it is an operational check, not a population accuracy estimate. On
-Windows, ordinary evals use the automatic approval reviewer with an unelevated
-workspace-write sandbox, so rob2's required MCP mutations can run without
-interactive UAC prompts. The optional strict isolation flag is rejected on
-Windows because it would require an elevated backend.
+loops; it is an operational check, not a population accuracy estimate.
+
+For the full evaluation protocol, frozen case format, batch runner, scorer, and
+denominator rules, see the [evaluation guide](docs/evaluation/README.md) and
+[recursive assessment improvement guide](docs/evaluation/rsi.md).
+
+On Windows, ordinary evaluation runs use Codex's automatic approval reviewer
+with an unelevated workspace-write sandbox, so rob2's required MCP mutations do
+not trigger interactive UAC prompts. The optional strict isolation flag is
+rejected on Windows because it requires an elevated backend.

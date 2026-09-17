@@ -75,7 +75,7 @@ def test_public_output_surface_is_closed_and_within_budget() -> None:
     # Search and recovery guidance, reasoning receipts, bounded source
     # navigation, independent batched search, and the explicit Trial review
     # and closure operations add schema surface; working checkpoints are bounded.
-    assert total_bytes < 560_000
+    assert total_bytes < 570_000
 
     by_name = {tool.name: tool for tool in tools}
     search_annotations = by_name["search_sources"].annotations
@@ -93,19 +93,16 @@ def test_public_output_surface_is_closed_and_within_budget() -> None:
     read_parameters = by_name["read_pages"].parameters
     source_parameters = by_name["list_sources"].parameters
     select_description = by_name["select_text_evidence"].description or ""
-    assert "1-based source indexes" in search_description
-    assert "Required: trial_id, query, mode" in search_description
+    assert "captured Trial sources" in search_description
+    assert all(name in search_parameters["required"] for name in ("trial_id", "query", "mode"))
     assert "mode" in search_parameters["required"]
     assert "broad discovery" in search_mode_description
     assert "Required lexical intent" in search_mode_description
     assert "all=every token on one page" in search_mode_description
     assert "phrase=known contiguous wording" in search_mode_description
-    assert "Every zero-hit response describes what its issued mode matched" in search_description
-    assert "does not prescribe a different mode" in search_description
-    assert "item must satisfy the request schema before the call" in batch_search_description
-    assert "item-level stale cursor or unavailable Source condition" in batch_search_description
-    assert "dependent reformulation" in batch_search_description
-    assert "does not require any number of searches" in batch_search_description
+    assert "zero-hit receipt describes only the issued lexical query" in search_description
+    assert "Validate every request" in batch_search_description
+    assert "byte budget includes metadata" in batch_search_description
     batch_requests = by_name["search_sources_batch"].parameters["properties"]["requests"]
     assert batch_requests["maxItems"] == 8
     assert batch_requests["minItems"] == 1
@@ -119,7 +116,10 @@ def test_public_output_surface_is_closed_and_within_budget() -> None:
     assert "not printed labels" in read_description
     assert "numbered lines" in read_description
     assert "data.remaining_windows" in read_description
-    assert "single oversized line is returned intact" in read_description
+    assert (
+        "oversized physical line is returned across lossless character fragments"
+        in read_description
+    )
     assert "there is no top-level end_line" in read_description
     assert "data.pages[].numbered_text" in read_description
     assert "data.remaining_windows" in read_description
@@ -142,8 +142,8 @@ def test_public_output_surface_is_closed_and_within_budget() -> None:
     domain_tool = by_name["validate_domain_assessment"]
     save_tool = by_name["save_domain_judgment"]
     context_tool = by_name["get_domain_context"]
-    assert "current checkpoint" in (context_tool.description or "")
-    assert "recovery.trial_id and recovery.windows" in (context_tool.description or "")
+    assert "current Domain checkpoint" in (context_tool.description or "")
+    assert "restart without a cursor" in (context_tool.description or "")
     workspace_schema = next(
         node
         for node in _walk(context_tool.output_schema)
@@ -169,8 +169,7 @@ def test_public_output_surface_is_closed_and_within_budget() -> None:
     assert "active answer" in answer_schema["properties"]["justification"]["description"]
     assert "inactive branch answers" in answer_schema["properties"]["unknowns"]["description"]
     assert "exact Domain draft stored" in (save_tool.description or "")
-    multiple_concerns = domain_tool.parameters["properties"]["multiple_concerns"]
-    assert "supply only when requested" in multiple_concerns["description"]
+    assert "multiple_concerns" not in domain_tool.parameters["properties"]
     assert by_name["validate_proposal"].title == "Validate Proposal draft"
     approval_description = by_name["request_proposal_approval"].description or ""
     assert "has no approval arguments" in approval_description
@@ -178,6 +177,7 @@ def test_public_output_surface_is_closed_and_within_budget() -> None:
     assert "Call get_status" in approval_description
     review_tool = by_name["review_trial"]
     assert "With no request" in (review_tool.description or "")
+    assert "deterministic Cochrane" in (review_tool.description or "")
     review_request = review_tool.parameters["properties"]["request"]
     assert review_request["examples"][0]["disposition"] == "needs_input"
 
@@ -218,7 +218,7 @@ def test_required_skill_references_match_receipt_only_proposal_contract() -> Non
     assert "not printed page labels" in required_instructions
     assert "never reconstruct PDF text" in required_instructions
     assert "one selection on each page" in normalized_instructions
-    assert "timing and arm assignments" in normalized_instructions
+    assert "timing, and arm assignments" in normalized_instructions
     assert "do not need duplicate source quotations" in normalized_instructions
     for deleted_instruction in (
         "Use Table Evidence",

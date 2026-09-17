@@ -76,11 +76,13 @@ try {
     $prompt = "/rob2-assess Assess risk of bias for $RequestedOutcome across $trialPrompt in input."
     $allowedTools = @('Read', 'ToolSearch', 'mcp__rob2__*')
     $toolNames = @(
-        'mcp__rob2__prepare_batch', 'mcp__rob2__get_status', 'mcp__rob2__list_sources',
-        'mcp__rob2__search_sources', 'mcp__rob2__read_pages', 'mcp__rob2__select_text_evidence',
-        'mcp__rob2__render_page', 'mcp__rob2__select_visual_evidence', 'mcp__rob2__save_proposal',
+        'mcp__rob2__prepare_batch', 'mcp__rob2__get_status', 'mcp__rob2__save_working_checkpoint',
+        'mcp__rob2__list_sources', 'mcp__rob2__search_sources', 'mcp__rob2__search_sources_batch',
+        'mcp__rob2__read_pages', 'mcp__rob2__select_text_evidence',
+        'mcp__rob2__render_page', 'mcp__rob2__select_visual_evidence', 'mcp__rob2__validate_proposal',
+        'mcp__rob2__save_proposal',
         'mcp__rob2__request_proposal_approval', 'mcp__rob2__get_domain_context',
-        'mcp__rob2__save_domain_judgment',
+        'mcp__rob2__validate_domain_assessment', 'mcp__rob2__save_domain_judgment',
         'mcp__rob2__review_trial', 'mcp__rob2__close_trial', 'mcp__rob2__finalize_batch'
     )
     $runConfig = [ordered]@{

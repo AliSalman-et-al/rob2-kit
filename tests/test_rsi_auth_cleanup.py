@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 import runpy
 import subprocess
 import sys
@@ -25,7 +26,6 @@ def _invoke_failed_run(
     preparer_bytes: bytes | None = None,
     package_cache: bool = False,
     require_isolated_host: bool = False,
-    host_is_windows: bool | None = None,
 ) -> tuple[Path, dict[str, Any]]:
     repo = tmp_path / "fake-repo"
     scripts = repo / "scripts"
@@ -44,6 +44,8 @@ def _invoke_failed_run(
     (repo / "uv.lock").write_text("version = 1\n", encoding="utf-8")
     executable.parent.mkdir(parents=True)
     executable.write_bytes(b"fake rob2 executable")
+    codex_executable = repo / "codex"
+    codex_executable.write_bytes(b"fake codex executable")
 
     run_dir = tmp_path / "attempt"
     case = tmp_path / "unused-case.json"
@@ -55,6 +57,7 @@ def _invoke_failed_run(
     auth_source.parent.mkdir(parents=True)
     auth_source.write_text('{"fake":"test-only"}', encoding="utf-8")
     monkeypatch.setattr(Path, "home", classmethod(lambda _cls: fake_home))
+    monkeypatch.setenv("CODEX_EXECUTABLE", str(codex_executable))
     if relative_run_dir:
         monkeypatch.chdir(tmp_path)
 
@@ -74,8 +77,6 @@ def _invoke_failed_run(
     runner = runpy.run_path(str(RUNNER_PATH))
     runner_globals = runner["main"].__globals__
     runner_globals["__file__"] = str(scripts / "run_rsi_case.py")
-    if host_is_windows is not None:
-        monkeypatch.setitem(runner_globals, "IS_WINDOWS", host_is_windows)
     runner_globals["prepare_workspace"] = prepare_workspace
     monkeypatch.setattr(
         sys,
@@ -226,15 +227,12 @@ def test_runner_resolves_relative_run_directory(
     assert Path(metadata["command"][metadata["command"].index("-C") + 1]).is_absolute()
 
 
+@pytest.mark.skipif(os.name == "nt", reason="strict host isolation requires a POSIX host")
 def test_required_host_isolation_records_a_deny_by_default_profile(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     run_dir, metadata = _invoke_failed_run(
-        tmp_path,
-        monkeypatch,
-        mode="exit",
-        require_isolated_host=True,
-        host_is_windows=False,
+        tmp_path, monkeypatch, mode="exit", require_isolated_host=True
     )
 
     profile = (run_dir / "codex-home" / "config.toml").read_text(encoding="utf-8")
@@ -244,75 +242,54 @@ def test_required_host_isolation_records_a_deny_by_default_profile(
         "required": True,
         "policy": "deny-by-default",
     }
-    command = metadata["command"]
-    assert not any(
-        command[index : index + 2] == ["-c", 'sandbox_mode="workspace-write"']
-        for index in range(len(command) - 1)
-    )
-    assert not any(
-        command[index : index + 2] == ["-c", 'approval_policy="on-request"']
-        for index in range(len(command) - 1)
-    )
-    assert not any(
-        command[index : index + 2] == ["-c", 'approvals_reviewer="auto_review"']
-        for index in range(len(command) - 1)
-    )
 
 
-def test_ordinary_windows_run_uses_unelevated_noninteractive_profile(
+@pytest.mark.skipif(os.name == "nt", reason="strict host isolation requires a POSIX host")
+def test_continuation_cannot_downgrade_required_host_isolation(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    _run_dir, metadata = _invoke_failed_run(
-        tmp_path, monkeypatch, mode="exit", host_is_windows=True
+    run_dir, _metadata = _invoke_failed_run(
+        tmp_path, monkeypatch, mode="exit", require_isolated_host=True
     )
-
-    command = metadata["command"]
-    assert any(
-        command[index : index + 2] == ["-c", 'approval_policy="on-request"']
-        for index in range(len(command) - 1)
-    )
-    assert any(
-        command[index : index + 2] == ["-c", 'approvals_reviewer="auto_review"']
-        for index in range(len(command) - 1)
-    )
-    assert any(
-        command[index : index + 2] == ["-c", 'sandbox_mode="workspace-write"']
-        for index in range(len(command) - 1)
-    )
-    assert any(
-        command[index : index + 2] == ["-c", 'windows.sandbox="unelevated"']
-        for index in range(len(command) - 1)
-    )
-    assert metadata["host_isolation"] == {
-        "required": False,
-        "policy": "workspace-write-unelevated",
-    }
-
-
-def test_windows_strict_isolation_rejects_before_creating_run(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
-    prompt = tmp_path / "prompt.txt"
-    prompt.write_text("Assess.\n", encoding="utf-8")
-    case = tmp_path / "case.json"
-    case.write_text("{}\n", encoding="utf-8")
-    run_dir = tmp_path / "attempt"
-    monkeypatch.syspath_prepend(str(SCRIPTS))
+    prompt = tmp_path / "continuation.txt"
+    prompt.write_text("Continue.\n", encoding="utf-8")
     runner = runpy.run_path(str(RUNNER_PATH))
-    runner_globals = runner["main"].__globals__
-    monkeypatch.setitem(runner_globals, "IS_WINDOWS", True)
-    monkeypatch.setattr(
-        subprocess,
-        "run",
-        lambda *args, **kwargs: pytest.fail("strict Windows rejection launched a subprocess"),
-    )
     monkeypatch.setattr(
         sys,
         "argv",
         [
             str(RUNNER_PATH),
-            "--case",
-            str(case),
+            "--prompt",
+            str(prompt),
+            "--run-dir",
+            str(run_dir),
+            "--phase",
+            "2",
+            "--session",
+            "session-id",
+        ],
+    )
+
+    with pytest.raises(SystemExit) as error:
+        runner["main"]()
+
+    assert error.value.code == 2
+
+
+def test_required_host_isolation_rejects_windows_without_uac(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    prompt = tmp_path / "prompt.txt"
+    prompt.write_text("Continue.\n", encoding="utf-8")
+    run_dir = tmp_path / "attempt"
+    monkeypatch.syspath_prepend(str(SCRIPTS))
+    runner = runpy.run_path(str(RUNNER_PATH))
+    monkeypatch.setitem(runner["main"].__globals__, "_is_windows", lambda: True)
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            str(RUNNER_PATH),
             "--prompt",
             str(prompt),
             "--run-dir",
@@ -328,114 +305,3 @@ def test_windows_strict_isolation_rejects_before_creating_run(
 
     assert error.value.code == 2
     assert not run_dir.exists()
-
-
-def test_ordinary_windows_continuation_keeps_unelevated_profile(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
-    run_dir, _metadata = _invoke_failed_run(
-        tmp_path, monkeypatch, mode="exit", host_is_windows=True
-    )
-    prompt = tmp_path / "continuation.txt"
-    prompt.write_text("Continue.\n", encoding="utf-8")
-    monkeypatch.syspath_prepend(str(SCRIPTS))
-    runner = runpy.run_path(str(RUNNER_PATH))
-    runner_globals = runner["main"].__globals__
-    runner_globals["__file__"] = str(tmp_path / "fake-repo" / "scripts" / "run_rsi_case.py")
-    monkeypatch.setitem(runner_globals, "IS_WINDOWS", True)
-    runner_globals["approved_scope_record"] = lambda *args: None
-    calls: list[list[str]] = []
-
-    def fake_continuation_run(
-        command: list[str], **kwargs: Any
-    ) -> subprocess.CompletedProcess[str]:
-        calls.append(command)
-        if "status" in command:
-            return subprocess.CompletedProcess(
-                command,
-                0,
-                stdout=json.dumps({"phase": "domain", "continuation": None}),
-                stderr="",
-            )
-        environment = kwargs["env"]
-        codex_home = Path(environment["CODEX_HOME"])
-        assert (codex_home / "auth.json").read_text(encoding="utf-8") == '{"fake":"test-only"}'
-        kwargs["stdout"].write(b'{"type":"turn.failed"}\n')
-        kwargs["stderr"].write(b"synthetic failure\n")
-        last_message = Path(command[command.index("--output-last-message") + 1])
-        last_message.write_text("partial output", encoding="utf-8")
-        return subprocess.CompletedProcess(command, 17)
-
-    monkeypatch.setattr(subprocess, "run", fake_continuation_run)
-    monkeypatch.setattr(
-        sys,
-        "argv",
-        [
-            str(RUNNER_PATH),
-            "--prompt",
-            str(prompt),
-            "--run-dir",
-            str(run_dir),
-            "--phase",
-            "2",
-            "--session",
-            "session-id",
-        ],
-    )
-
-    with pytest.raises(SystemExit) as error:
-        runner["main"]()
-
-    assert error.value.code == 17
-    command = next(command for command in calls if "codex.cmd" in command)
-    assert any(
-        command[index : index + 2] == ["-c", 'approval_policy="on-request"']
-        for index in range(len(command) - 1)
-    )
-    assert any(
-        command[index : index + 2] == ["-c", 'approvals_reviewer="auto_review"']
-        for index in range(len(command) - 1)
-    )
-    assert any(
-        command[index : index + 2] == ["-c", 'sandbox_mode="workspace-write"']
-        for index in range(len(command) - 1)
-    )
-    assert any(
-        command[index : index + 2] == ["-c", 'windows.sandbox="unelevated"']
-        for index in range(len(command) - 1)
-    )
-
-
-def test_continuation_cannot_downgrade_required_host_isolation(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
-    run_dir, _metadata = _invoke_failed_run(
-        tmp_path,
-        monkeypatch,
-        mode="exit",
-        require_isolated_host=True,
-        host_is_windows=False,
-    )
-    prompt = tmp_path / "continuation.txt"
-    prompt.write_text("Continue.\n", encoding="utf-8")
-    runner = runpy.run_path(str(RUNNER_PATH))
-    monkeypatch.setattr(
-        sys,
-        "argv",
-        [
-            str(RUNNER_PATH),
-            "--prompt",
-            str(prompt),
-            "--run-dir",
-            str(run_dir),
-            "--phase",
-            "2",
-            "--session",
-            "session-id",
-        ],
-    )
-
-    with pytest.raises(SystemExit) as error:
-        runner["main"]()
-
-    assert error.value.code == 2

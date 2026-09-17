@@ -52,6 +52,15 @@ COUNTERS.setdefault("search_ranking_builds", 0)
 COUNTERS.setdefault("search_ranking_cache_writes", 0)
 COUNTERS.setdefault("search_ranking_validations", 0)
 COUNTERS.setdefault("search_cache_writes", 0)
+COUNTERS.setdefault("search_ranking_cache_hits", 0)
+COUNTERS.setdefault("search_ranking_recomputations", 0)
+
+# The SQLite rows are the durable derivative, but rebuilding the scoped FTS
+# ranking and every candidate on each warm request is needless work.  This
+# process-local cache is deliberately keyed by the workspace and immutable
+# session identity: a restart still validates and rebuilds from the durable
+# rows, while repeated calls in one host process reuse the verified result.
+_SEARCH_RANKING_CACHE: dict[tuple[str, str], dict[str, Any]] = {}
 
 
 def list_sources(
@@ -616,6 +625,7 @@ def search_sources(
     }
     session_identity = _identity(session_spec)
     session_handle = _session_handle(session_identity)
+    cache_key = (str(root), session_identity)
     with _db(root, "derivative.sqlite3") as connection:
         existing_session = connection.execute(
             "SELECT payload FROM search_sessions WHERE identity=?", (session_identity,)
@@ -682,32 +692,52 @@ def search_sources(
                 all_pairs.append((page_entry["source_id"], page_entry["page"]))
             if len(all_pairs) != len(set(all_pairs)):
                 raise ValueError("search session ranking contains duplicate pages")
-            # Derivative sessions are disposable and may be edited or lost;
-            # independently rederive their ranking before exposing a warm hit.
+            cached_projection = _SEARCH_RANKING_CACHE.get(cache_key)
             COUNTERS["search_ranking_validations"] += 1
-            expected_all_pairs, expected_term_pages = _recomputed_search_projection(
-                page_map,
-                normalized_query,
-                mode,
-                ordered_source_ids,
-                tuple(feedback_terms[:_TERM_FEEDBACK_MAX_TERMS]),
-            )
-            if all_pairs != expected_all_pairs:
-                raise ValueError("search session ranking is stale or corrupt")
-            expected_term_feedback = _term_page_feedback(
-                page_map,
-                feedback_terms[:_TERM_FEEDBACK_MAX_TERMS],
-                feedback_source_ids,
-                expected_all_pairs,
-                expected_term_pages,
-            )
-            if term_feedback != expected_term_feedback:
-                raise ValueError("search session term feedback is stale or corrupt")
-            expected_candidates = _session_candidates(
-                page_map, normalized_query, mode, ordered_source_ids, expected_all_pairs
-            )
-            if candidates != expected_candidates:
-                raise ValueError("search session candidates are stale or corrupt")
+            if cached_projection is not None:
+                cached_pairs = cached_projection["all_pairs"]
+                cached_feedback = cached_projection["term_feedback"]
+                cached_candidates = cached_projection["candidates"]
+                if all_pairs != cached_pairs:
+                    raise ValueError("search session ranking is stale or corrupt")
+                if term_feedback != cached_feedback:
+                    raise ValueError("search session term feedback is stale or corrupt")
+                if candidates != cached_candidates:
+                    raise ValueError("search session candidates are stale or corrupt")
+                COUNTERS["search_ranking_cache_hits"] += 1
+            else:
+                # A process restart drops only this disposable cache.  Rebuild
+                # from the verified durable session and source projections,
+                # then repopulate it without changing the session identity.
+                COUNTERS["search_ranking_recomputations"] += 1
+                expected_all_pairs, expected_term_pages = _recomputed_search_projection(
+                    page_map,
+                    normalized_query,
+                    mode,
+                    ordered_source_ids,
+                    tuple(feedback_terms[:_TERM_FEEDBACK_MAX_TERMS]),
+                )
+                if all_pairs != expected_all_pairs:
+                    raise ValueError("search session ranking is stale or corrupt")
+                expected_term_feedback = _term_page_feedback(
+                    page_map,
+                    feedback_terms[:_TERM_FEEDBACK_MAX_TERMS],
+                    feedback_source_ids,
+                    expected_all_pairs,
+                    expected_term_pages,
+                )
+                if term_feedback != expected_term_feedback:
+                    raise ValueError("search session term feedback is stale or corrupt")
+                expected_candidates = _session_candidates(
+                    page_map, normalized_query, mode, ordered_source_ids, expected_all_pairs
+                )
+                if candidates != expected_candidates:
+                    raise ValueError("search session candidates are stale or corrupt")
+                _SEARCH_RANKING_CACHE[cache_key] = {
+                    "all_pairs": list(all_pairs),
+                    "term_feedback": json.loads(json.dumps(term_feedback)),
+                    "candidates": json.loads(json.dumps(candidates)),
+                }
         except (UnicodeDecodeError, json.JSONDecodeError, KeyError) as error:
             raise ValueError("search session derivative is corrupt; restart the search") from error
         except (TypeError, AttributeError) as error:
@@ -758,6 +788,11 @@ def search_sources(
                     for item in candidates
                 ],
             )
+        _SEARCH_RANKING_CACHE[cache_key] = {
+            "all_pairs": list(all_pairs),
+            "term_feedback": json.loads(json.dumps(term_feedback)),
+            "candidates": json.loads(json.dumps(candidates)),
+        }
         COUNTERS["search_ranking_cache_writes"] += 1
         COUNTERS["search_cache_writes"] += 1
     total_matches = len(all_pairs)

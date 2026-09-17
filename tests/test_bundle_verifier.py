@@ -141,7 +141,7 @@ def test_standalone_verifier_rejects_targeted_claim_tampering(tmp_path: Path) ->
 
     canonical = json.loads(original_canonical)
     snapshot = canonical["snapshots"]["trial"]
-    snapshot["provisional"] = True
+    snapshot["overall"] = "low"
     changed_canonical = json.dumps(canonical, sort_keys=True, separators=(",", ":")).encode()
     changed_manifest = _update_manifest_hash(original_manifest, "canonical.json", changed_canonical)
     snapshot_tamper = tmp_path / "snapshot-tamper.zip"

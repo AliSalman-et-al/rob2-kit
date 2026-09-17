@@ -134,6 +134,8 @@ def test_domain_questions_include_typed_premise_rules_and_shortcuts(tmp_path: Pa
         "id",
         "wording",
         "options",
+        "bias_construct",
+        "answer_anchors",
         "activation_status",
         "activation",
         "official_guidance",

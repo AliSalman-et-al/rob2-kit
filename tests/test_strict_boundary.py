@@ -4,7 +4,7 @@ import asyncio
 import json
 import os
 from pathlib import Path
-from typing import Any, cast
+from typing import Any
 
 import pytest
 from fastmcp import Client
@@ -15,7 +15,6 @@ from rob2_kit.interfaces.mcp.contracts import PublicHead, SelectedFigureEvidence
 from rob2_kit.interfaces.mcp.server import mcp
 from rob2_kit.workflow_models import (
     ExpectedRevision,
-    MultipleConcernsDecision,
     NormalizedCoordinate,
     PageNumber,
 )
@@ -28,11 +27,6 @@ from rob2_kit.workflow_models import (
 def test_workflow_scalar_aliases_reject_string_numerics(annotation: Any, value: str) -> None:
     with pytest.raises(ValidationError):
         TypeAdapter(annotation).validate_python(value)
-
-
-def test_multiple_concerns_rejects_string_boolean() -> None:
-    with pytest.raises(ValidationError):
-        MultipleConcernsDecision(raises_overall_to_high=cast(Any, "true"), rationale="reason")
 
 
 def test_public_head_rejects_string_revision() -> None:
@@ -131,12 +125,8 @@ def test_fastmcp_rejects_string_numeric_and_boolean_scalars() -> None:
                     {
                         "trial_id": "trial",
                         "domain_id": "domain",
-                        "expected_revision": 0,
+                        "expected_revision": "0",
                         "answers": [],
-                        "multiple_concerns": {
-                            "raises_overall_to_high": "true",
-                            "rationale": "reason",
-                        },
                     },
                 ),
             )

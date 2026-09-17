@@ -1715,7 +1715,10 @@ def validate_proposal(
                 state,
                 condition={
                     "code": "reasoning_stale",
-                    "detail": "The reasoning record is stale; request a new reasoning record.",
+                    "detail": (
+                        "The Proposal receipt is stale. Revalidate the Proposal, then save the "
+                        "returned receipt."
+                    ),
                 },
             )
         return _reasoning_proposal_receipt(state, prior)

@@ -31,12 +31,18 @@ from .evidence import (
     main_report_reading_status,
 )
 from .status import _active_trial_and_domain, _continuation
+from .working import working_checkpoint_status
 
 _DOMAIN_RECOVERABLE_NARRATIVE_TEXT_BUDGET = 12_288
 
 
 def _domain_context_delivery(
-    root: Path, trial_id: str, domain_id: str, state_revision: int | None
+    root: Path,
+    trial_id: str,
+    domain_id: str,
+    state_revision: int | None,
+    *,
+    prefer_views: bool = True,
 ) -> dict[str, Any] | None:
     state = _state(root)
     batch = state.get("batch")
@@ -44,6 +50,17 @@ def _domain_context_delivery(
     if not isinstance(batch_id, str):
         return None
     with _db(root, "derivative.sqlite3") as connection:
+        if prefer_views:
+            view_row = connection.execute(
+                "SELECT view_id,batch_id,trial_id,domain_id,state_revision,digest,page_size,"
+                "page_count,"
+                "next_index,next_cursor,complete,snapshot,preview_scope,basis_identity "
+                "FROM domain_context_views WHERE batch_id=? AND trial_id=? AND domain_id=? "
+                "AND (? IS NULL OR state_revision=?) ORDER BY complete DESC,rowid DESC LIMIT 1",
+                (batch_id, trial_id, domain_id, state_revision, state_revision),
+            ).fetchone()
+            if view_row is not None:
+                return _decode_domain_context_delivery_row(view_row)
         if state_revision is None:
             row = connection.execute(
                 "SELECT batch_id,trial_id,domain_id,state_revision,digest,page_size,page_count,"
@@ -62,6 +79,10 @@ def _domain_context_delivery(
             ).fetchone()
     if row is None:
         return None
+    return _decode_domain_context_delivery_row(row)
+
+
+def _decode_domain_context_delivery_row(row: Any) -> dict[str, Any]:
     delivery = {key: row[key] for key in row.keys()}
     raw_snapshot = delivery.get("snapshot")
     if raw_snapshot is None:
@@ -94,6 +115,99 @@ def _domain_context_delivery(
             raise ValueError("domain_context_delivery_unavailable: preview scope is corrupt")
         delivery["preview_scope"] = preview
     return delivery
+
+
+def _domain_context_view(root: Path, view_id: str) -> dict[str, Any] | None:
+    with _db(root, "derivative.sqlite3") as connection:
+        row = connection.execute(
+            "SELECT view_id,batch_id,trial_id,domain_id,state_revision,digest,page_size,page_count,"
+            "next_index,next_cursor,complete,snapshot,preview_scope,basis_identity "
+            "FROM domain_context_views WHERE view_id=?",
+            (view_id,),
+        ).fetchone()
+    return _decode_domain_context_delivery_row(row) if row is not None else None
+
+
+def _record_domain_context_view(
+    root: Path,
+    view_id: str,
+    trial_id: str,
+    domain_id: str,
+    state_revision: int,
+    digest: str,
+    page_size: int,
+    page_count: int,
+    page_index: int,
+    next_cursor: str | None,
+    cursor: str | None,
+    basis_identity: str,
+    snapshot: dict[str, Any] | None = None,
+    preview_scope: list[dict[str, Any]] | None = None,
+) -> None:
+    """Persist one opaque context view without sharing a cursor chain."""
+
+    state = _state(root)
+    batch = state.get("batch")
+    batch_id = batch.get("identity") if isinstance(batch, dict) else None
+    if not isinstance(batch_id, str):
+        raise ValueError("domain_context_delivery_unavailable: Batch identity is missing")
+    with _db(root, "derivative.sqlite3") as connection:
+        row = connection.execute(
+            "SELECT digest,page_size,page_count,next_index,next_cursor,complete "
+            "FROM domain_context_views WHERE view_id=?",
+            (view_id,),
+        ).fetchone()
+        if cursor is None:
+            if row is not None:
+                return
+            connection.execute(
+                "INSERT INTO domain_context_views "
+                "(view_id,batch_id,trial_id,domain_id,state_revision,digest,page_size,page_count,"
+                "next_index,next_cursor,complete,snapshot,preview_scope,basis_identity) "
+                "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                (
+                    view_id,
+                    batch_id,
+                    trial_id,
+                    domain_id,
+                    state_revision,
+                    digest,
+                    page_size,
+                    page_count,
+                    page_index + 1,
+                    next_cursor,
+                    int(page_index + 1 >= page_count),
+                    canonical_json_bytes(snapshot) if isinstance(snapshot, dict) else None,
+                    canonical_json_bytes(preview_scope)
+                    if isinstance(preview_scope, list)
+                    else None,
+                    basis_identity,
+                ),
+            )
+            return
+        if row is None:
+            raise ValueError("domain_context_cursor_expired: context view is unavailable")
+        if (
+            row["digest"] != digest
+            or int(row["page_size"]) != page_size
+            or int(row["page_count"]) != page_count
+        ):
+            raise ValueError("domain_context_cursor_stale: context view changed")
+        expected_index = int(row["next_index"])
+        if page_index > expected_index:
+            raise ValueError(
+                f"domain_context_delivery_out_of_order: expected_cursor={row['next_cursor']}"
+            )
+        if page_index < expected_index:
+            return
+        if row["next_cursor"] != cursor:
+            raise ValueError(
+                f"domain_context_delivery_out_of_order: expected_cursor={row['next_cursor']}"
+            )
+        connection.execute(
+            "UPDATE domain_context_views SET next_index=?,next_cursor=?,complete=? WHERE view_id=?",
+            (page_index + 1, next_cursor, int(page_index + 1 >= page_count), view_id),
+        )
 
 
 def _record_domain_context_delivery(
@@ -1075,7 +1189,12 @@ def save_domain_judgment(
     if disposition not in {"pending", "reviewable", "assessed"}:
         raise ValueError("Trial is not available for Domain assessment")
     if state.get("phase") == "assessment" and not trial_has_checkpoint:
-        recovery = _main_report_recovery(root, state, parsed.trial_id)
+        notes = working_checkpoint_status(root, state, parsed.trial_id)
+        recovery = (
+            None
+            if notes.get("status") == "current"
+            else _main_report_recovery(root, state, parsed.trial_id)
+        )
         if recovery is not None:
             return _result(
                 "repair",
@@ -1415,51 +1534,6 @@ def save_domain_judgment(
             revision_basis["evidence"] = basis_evidence["identity"]
     if existing_record is not None and not isinstance(existing_record, dict):
         raise ValueError("Domain checkpoint ledger is corrupt")
-    existing_judgments = {
-        domain.id: existing_rows[f"{parsed.trial_id}:{domain.id}"]["judgment"]
-        for domain in SCIENTIFIC_PACK.domains
-        if f"{parsed.trial_id}:{domain.id}" in existing_rows
-    }
-    proposed_judgments = {**existing_judgments, parsed.domain_id: evaluation.judgment.value}
-    all_domains_proposed = len(proposed_judgments) == len(SCIENTIFIC_PACK.domains)
-    multiple_concerns = None
-    if all_domains_proposed:
-        concern_count = sum(value == "some_concerns" for value in proposed_judgments.values())
-        has_high = "high" in proposed_judgments.values()
-        if concern_count >= 2 and not has_high:
-            if parsed.multiple_concerns is None:
-                concerned = [
-                    domain.id
-                    for domain in SCIENTIFIC_PACK.domains
-                    if proposed_judgments[domain.id] == "some_concerns"
-                ]
-                return _result(
-                    "repair",
-                    state,
-                    repairs=[
-                        _repair(
-                            "/multiple_concerns",
-                            "multiple_concerns_decision_required",
-                            "Provide raises_overall_to_high and a concise rationale for the "
-                            "multiple Some concerns Domains: " + ", ".join(concerned) + ".",
-                        )
-                    ],
-                )
-            multiple_concerns = parsed.multiple_concerns.model_dump(mode="json")
-        elif parsed.multiple_concerns is not None:
-            return _result(
-                "repair",
-                state,
-                repairs=[
-                    _repair(
-                        "/multiple_concerns",
-                        "multiple_concerns_decision_not_applicable",
-                        "The decision applies only when at least two Domains are "
-                        "some_concerns and none is high; remove it for the proposed "
-                        "Domain judgments.",
-                    )
-                ],
-            )
     record = {
         "trial_id": parsed.trial_id,
         "domain_id": parsed.domain_id,
@@ -1480,21 +1554,6 @@ def save_domain_judgment(
         record["observed_at"] = prior_observed_at
     rows = dict(state.get("domain_records", {}))
     if rows.get(key, {}).get("identity") == record["identity"]:
-        current_snapshot = (state.get("snapshots") or {}).get(parsed.trial_id)
-        if isinstance(current_snapshot, dict) and current_snapshot.get("multiple_concerns") != (
-            parsed.multiple_concerns.model_dump(mode="json") if parsed.multiple_concerns else None
-        ):
-            return _result(
-                "condition",
-                state,
-                condition={
-                    "code": "domain_revision_basis_required",
-                    "detail": (
-                        "this Domain checkpoint is already committed; a different save must "
-                        "name its exact superseded identity and a closed revision basis."
-                    ),
-                },
-            )
         return _result("success", state, checkpoint=rows[key], retry=True)
     if existing_record is not None:
         if parsed.supersedes != existing_record.get("identity"):
@@ -1620,18 +1679,9 @@ def save_domain_judgment(
             "trial_id": parsed.trial_id,
             "result_identity": _identity(_approved_result(state, parsed.trial_id)),
             "checkpoints": checkpoints,
-            "provisional": False,
             "domain_judgments": judgments,
-            "multiple_concerns": multiple_concerns,
+            "overall": evaluate_overall(judgments).judgment.value,
         }
-        snapshot["overall"] = evaluate_overall(
-            judgments,
-            combined_concerns=(
-                multiple_concerns["raises_overall_to_high"]
-                if multiple_concerns is not None
-                else None
-            ),
-        ).judgment.value
         snapshot["identity"] = _identity(snapshot)
         current_snapshots = state.get("snapshots")
         snapshots: dict[str, Any] = (
@@ -1715,7 +1765,10 @@ def validate_domain_assessment(
                 state,
                 condition={
                     "code": "reasoning_stale",
-                    "detail": "the reasoning record is stale; request a new reasoning record.",
+                    "detail": (
+                        "The Domain context is stale. Refresh the scoped Domain context and "
+                        "revalidate the draft."
+                    ),
                 },
             )
         return _reasoning_receipt(state, prior)
@@ -1752,7 +1805,7 @@ def validate_domain_assessment(
                 state,
                 condition={
                     "code": "domain_context_delivery_invalid",
-                    "detail": "Domain context delivery state is corrupt; restart the Domain.",
+                    "detail": "The Domain context delivery is unrecoverable. Report the failure.",
                 },
             )
         return _result(
@@ -2472,7 +2525,7 @@ def get_domain_context(
         "trial_id": trial_id,
         "domain_id": domain_id,
         "expected_revision": int(state.get("revision", 0)),
-        "caller_inputs": ["answers", "multiple_concerns"],
+        "caller_inputs": ["answers"],
     }
     # A correction continuation names the exact active checkpoint to replace.
     # The model therefore never has to infer a parent from the historical
@@ -2482,7 +2535,6 @@ def get_domain_context(
         continuation["supersedes"] = existing["identity"]
         continuation["caller_inputs"] = [
             "answers",
-            "multiple_concerns",
             "revision_basis",
         ]
     canonical_preview = (
@@ -2536,9 +2588,14 @@ def get_domain_context(
                 "activation": item.activation.model_dump(mode="json"),
                 "official_guidance": item.guidance.official.source_excerpt,
                 "source_locator": item.guidance.official.source_locator,
+                "bias_construct": item.guidance.operational.bias_construct,
                 "decision_rule": item.guidance.operational.decision_rule,
                 "evidence_needed": item.guidance.operational.evidence_needed,
                 "no_information_rule": item.guidance.operational.no_information_rule,
+                "answer_anchors": tuple(
+                    anchor.model_dump(mode="json")
+                    for anchor in item.guidance.operational.answer_anchors
+                ),
                 "considerations": item.guidance.operational.considerations,
                 "invalid_shortcuts": item.guidance.operational.invalid_shortcuts,
                 "query_suggestions": tuple(
@@ -2585,7 +2642,11 @@ def get_domain_context(
             trial_registry if isinstance(trial_registry, dict) else None,
         ),
         "reading_recovery": (
-            _main_report_recovery(root, state, trial_id, include_budget=True)
+            (
+                None
+                if working_checkpoint_status(root, state, trial_id).get("status") == "current"
+                else _main_report_recovery(root, state, trial_id, include_budget=True)
+            )
             if not trial_has_checkpoint
             else None
         ),

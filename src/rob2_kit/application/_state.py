@@ -411,6 +411,14 @@ def _ensure(root: Path) -> None:
             "preview_scope BLOB, basis_identity TEXT, "
             "PRIMARY KEY(batch_id,trial_id,domain_id,state_revision))"
         )
+        connection.execute(
+            "CREATE TABLE IF NOT EXISTS domain_context_views ("
+            "view_id TEXT PRIMARY KEY, batch_id TEXT NOT NULL, trial_id TEXT NOT NULL, "
+            "domain_id TEXT NOT NULL, state_revision INTEGER NOT NULL, digest TEXT NOT NULL, "
+            "page_size INTEGER NOT NULL, page_count INTEGER NOT NULL, next_index INTEGER NOT NULL, "
+            "next_cursor TEXT, complete INTEGER NOT NULL, snapshot BLOB, preview_scope BLOB, "
+            "basis_identity TEXT NOT NULL)"
+        )
         delivery_columns = {
             str(row[1]) for row in connection.execute("PRAGMA table_info(domain_context_delivery)")
         }
