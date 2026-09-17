@@ -276,11 +276,12 @@ def test_continuation_cannot_downgrade_required_host_isolation(
 def test_required_host_isolation_rejects_windows_without_uac(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    monkeypatch.setattr(os, "name", "nt")
     prompt = tmp_path / "prompt.txt"
     prompt.write_text("Continue.\n", encoding="utf-8")
     run_dir = tmp_path / "attempt"
+    monkeypatch.syspath_prepend(str(SCRIPTS))
     runner = runpy.run_path(str(RUNNER_PATH))
+    monkeypatch.setitem(runner, "_is_windows", lambda: True)
     monkeypatch.setattr(
         sys,
         "argv",

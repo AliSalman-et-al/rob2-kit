@@ -60,10 +60,14 @@ def _preflight_executable(executable: Path, label: str) -> str:
     raise RuntimeError(f"{label} preflight failed")
 
 
+def _is_windows() -> bool:
+    return os.name == "nt"
+
+
 def _preflight_isolation(codex_command: Path, required: bool) -> dict[str, object]:
     if not required:
         return {"requested": False, "supported": True, "sentinel": "not_requested"}
-    if os.name == "nt":
+    if _is_windows():
         raise RuntimeError(
             "requested strict host isolation is unsupported on Windows without UAC; "
             "use a POSIX host or run the documented non-strict Windows profile"
@@ -195,7 +199,7 @@ def main() -> None:
     args = parser.parse_args()
     if args.phase < 1 or (args.phase > 1) != bool(args.session):
         parser.error("phase 1 starts a session; later phases require --session")
-    if args.require_isolated_host and os.name == "nt":
+    if args.require_isolated_host and _is_windows():
         parser.error(
             "requested strict host isolation is unsupported on Windows without UAC; "
             "use a POSIX host or run the documented non-strict Windows profile"
