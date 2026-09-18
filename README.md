@@ -174,6 +174,15 @@ behind many article pages.
 This order is a discovery default, not an evidence hierarchy or permission to
 skip the bounded cross-source check.
 
+Ordinary searches use the versioned `porter-unicode61-v1` profile. Use
+`literal` when exact contiguous normalized wording matters; it does not stem,
+fuzz, or rewrite the query. Eligible unmatched words may receive up to three
+source-scoped spelling suggestions in `all` or `any` mode. Suggestions
+are optional next actions and include an exact source example; they never change
+the search that produced them. Omit search purpose for Trial-level discovery.
+With `include_candidates=true`, `get_domain_context` recovers those discoveries
+without attributing them to the current Domain and exposes bounded continuation.
+
 Search results are navigation only. `read_pages` returns numbered source lines,
 and the host selects one contiguous range on one source page as evidence.
 `list_sources` shows every captured Source and any intake conditions or
@@ -270,12 +279,13 @@ this deterministic Cochrane rule:
 The model and the researcher do not submit or override this aggregation. Review
 the five Domain labels when you need the reasoning behind the Trial label.
 
-The host reads main-report text at two checkpoints: before Proposal submission,
-then after approval before the Trial's first Domain save. Each pass covers the
-same prefix of the full captured Source, up to 65,536 UTF-8 source-text bytes per
-report at whole-line boundaries. Longer reports retain explicit partial coverage
-and navigation to unread material. The host uses targeted reads to resolve
-relevant premises beyond that prefix.
+The host reads main-report text before Proposal submission and recovers the
+post-approval prefix only when no current source-bound working checkpoint can
+orient the active Trial. Each pass covers the same prefix of the full captured
+Source, up to 65,536 UTF-8 source-text bytes per report at whole-line boundaries.
+Longer reports retain explicit partial coverage and navigation to unread
+material. The host uses targeted reads to resolve relevant premises beyond that
+prefix.
 
 rob2-kit stores approved Proposals and Domain checkpoints durably. After
 compaction, the host calls `get_status` and recovers the approved Result and
@@ -405,6 +415,11 @@ loops; it is an operational check, not a population accuracy estimate.
 For the full evaluation protocol, frozen case format, batch runner, scorer, and
 denominator rules, see the [evaluation guide](docs/evaluation/README.md) and
 [recursive assessment improvement guide](docs/evaluation/rsi.md).
+
+The current issue audit, focused verification, and benchmark metrics are in
+[`issues-387-404-audit.md`](docs/evaluation/issues-387-404-audit.md). The audit
+records held qualification gaps instead of treating passing server tests as
+proof of installed-host scientific performance.
 
 On Windows, ordinary evaluation runs use Codex's automatic approval reviewer
 with an unelevated workspace-write sandbox, so rob2's required MCP mutations do

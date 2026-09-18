@@ -24,6 +24,7 @@ from .evidence import (
     _result_value_contains,
     main_report_read_gaps,
 )
+from .working import working_checkpoint_status
 
 
 def _leaves(value: Any, path: str) -> dict[str, Any]:
@@ -757,17 +758,6 @@ def _is_generic_table_endpoint(value: str) -> bool:
     return normalized in {"total", "overall", "all", "all patients", "all participants"}
 
 
-def _host_visual_leaf_allowed(path: str) -> bool:
-    """Keep image-only proof limited to facts literally visible in the image."""
-
-    return (
-        path in {"/reported/endpoint/name", "/reported/endpoint/definition"}
-        or path.startswith("/reported/")
-        or (path.startswith("/target/comparison_groups/") and path.endswith("/assignment"))
-        or path.startswith("/target/time_point_or_window/")
-    )
-
-
 def _reported_quantitative_paths(
     reported: dict[str, Any],
 ) -> list[tuple[tuple[str, Any], ...]]:
@@ -930,15 +920,7 @@ def _derive_bindings(
     coherent_anchor_indices = _coherent_anchor_indices(result, catalog)
 
     def supports_eligible(value: object, item: dict[str, Any], leaf_path: str) -> bool:
-        if not _supports_leaf(value, item, result, catalog, leaf_path):
-            return False
-        selected = _selected(catalog, item.get("handle", ""))
-        return not (
-            isinstance(selected, dict)
-            and selected.get("kind") == "figure"
-            and selected.get("provenance") == "host_visual"
-            and not _host_visual_leaf_allowed(leaf_path)
-        )
+        return _supports_leaf(value, item, result, catalog, leaf_path)
 
     def preferred_indices(leaf_path: str) -> list[int]:
         """Use the endpoint-and-tuple item before generic historical material."""
@@ -974,21 +956,6 @@ def _derive_bindings(
         if eligible_index is not None:
             bound_evidence.add(eligible_index)
             continue
-        if any(
-            _supports_leaf(protected_value, item, result, catalog, protected_path)
-            for item in result["evidence"]
-        ):
-            result.setdefault("_binding_defects", []).append(
-                {
-                    "path": f"{path}{protected_path}",
-                    "code": "result_value_not_supported",
-                    "detail": (
-                        f"leaf {protected_path} value {protected_value!r} occurs only in "
-                        "host_visual transcription; select text-corroborated or narrative "
-                        "Evidence for analysis method or intended population"
-                    ),
-                }
-            )
     endpoint_values = {
         "/reported/endpoint/name": result["reported"]["endpoint"]["name"],
     }
@@ -1037,11 +1004,6 @@ def _derive_bindings(
             None,
         )
         if evidence_index is None:
-            tier_blocked = any(
-                _supports_leaf(value, item, result, catalog, leaf_path)
-                and not supports_eligible(value, item, leaf_path)
-                for item in result["evidence"]
-            )
             if not any(
                 defect.get("code") in {"evidence_kind_mismatch", "cross_trial_evidence"}
                 for defect in result.get("_evidence_defects", [])
@@ -1050,15 +1012,9 @@ def _derive_bindings(
                     "path": f"{path}{leaf_path}",
                     "code": "result_value_not_supported",
                     "detail": (
-                        f"leaf {leaf_path} value {value!r} occurs only in host_visual "
-                        "transcription and requires text-corroborated or narrative Evidence; "
-                        "select Evidence containing it"
-                        if tier_blocked
-                        else (
-                            f"leaf {leaf_path} value {value!r} is not supported: no selected "
-                            "Evidence contains it after normalization; copy the source wording "
-                            "exactly or select Evidence containing it"
-                        )
+                        f"leaf {leaf_path} value {value!r} is not supported: no selected "
+                        "Evidence contains it after normalization; copy the source wording "
+                        "exactly or select Evidence containing it"
                     ),
                 }
                 if leaf_path.startswith("/reported/categories/"):
@@ -1361,7 +1317,18 @@ def save_proposal(
         batch.get("trials", []) if isinstance(batch, dict) else [],
         phase="proposal",
     )
-    if read_gaps:
+    # The approved Result and a current source-bound checkpoint already provide
+    # the post-approval orientation needed to revise that proposal.  Requiring
+    # the proposal-phase pass again here creates a duplicate reread gate.  Keep
+    # the gate for missing/stale notes, and for initial proposal submission.
+    current_working_context = (
+        revising_approved
+        and all(
+            working_checkpoint_status(root, state, trial_id).get("status") == "current"
+            for trial_id in {gap["trial_id"] for gap in read_gaps}
+        )
+    )
+    if read_gaps and not current_working_context:
         return _result(
             "repair",
             state,
@@ -1716,8 +1683,10 @@ def validate_proposal(
                 condition={
                     "code": "reasoning_stale",
                     "detail": (
-                        "The Proposal receipt is stale. Revalidate the Proposal, then save the "
-                        "returned receipt."
+                        "The Proposal receipt is stale. Call get_status. If work remains active, "
+                        "submit complete replacement Result cards and matching assessments to "
+                        "validate_proposal, then save its returned receipt. Otherwise follow "
+                        "head.next_action."
                     ),
                 },
             )

@@ -828,6 +828,11 @@ def test_search_contract_exposes_match_summary_and_render_defaults_to_pixels() -
         "term_feedback_truncated",
         "term_feedback_sources_truncated",
         "diagnostic",
+        "profile",
+        "spelling_suggestions",
+        "spelling_suggestions_incomplete",
+        "purpose_domain_id",
+        "purpose_question_id",
     }
     hit_schema = data_objects[0]["properties"]["hits"]["items"]
     assert set(hit_schema["properties"]) == {

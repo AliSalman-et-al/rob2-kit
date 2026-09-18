@@ -32,6 +32,12 @@ COUNTERS = {
     "render_bytes": 0,
     "search_ranking_validations": 0,
     "elapsed_ms": 0.0,
+    "source_bytes_hashed": 0,
+    "projection_rows_read": 0,
+    "fts_rows_read": 0,
+    "search_fts_rows_built": 0,
+    "candidate_reconstructions": 0,
+    "response_bytes": 0,
 }
 
 

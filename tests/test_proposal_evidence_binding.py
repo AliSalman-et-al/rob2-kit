@@ -31,7 +31,7 @@ from rob2_kit.packs import SCIENTIFIC_PACK
 from rob2_kit.workflow_models import ProposalDraft
 
 
-def test_figure_transcription_cannot_prove_invented_result_leaf(tmp_path: Path) -> None:
+def test_delivered_host_visual_transcription_can_support_result_leaf(tmp_path: Path) -> None:
     workspace = _workspace(tmp_path)
     page_text = (
         "requested outcome; death ascertainment; end of follow-up; assigned to intervention; "
@@ -116,12 +116,7 @@ def test_figure_transcription_cannot_prove_invented_result_leaf(tmp_path: Path) 
     repaired_args = _proposal_args(invented_root, [invented])
     repaired_args["expected_revision"] = 1
     repaired = _call(invented_root, "save_proposal", repaired_args)
-    assert repaired["outcome"] == "repair"
-    assert any(
-        repair["code"] == "result_value_not_supported"
-        and "invented analysis method" in repair["detail"]
-        for repair in repaired["repairs"]
-    )
+    assert repaired["outcome"] == "review_required", repaired
 
 
 def test_reported_result_rejects_cross_evidence_endpoint_numeric_splice(tmp_path: Path) -> None:

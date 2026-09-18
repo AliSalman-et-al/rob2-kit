@@ -10,6 +10,7 @@ dependencies = [
     "mcp==2.1.1",
     "pydantic==2.13.4",
     "pymupdf==1.28.2",
+    "rapidfuzz>=3.0,<4.0",
 ]
 
 [project.scripts]

@@ -10,6 +10,7 @@ from typing import Any
 
 SCHEMA = "rob2-kit.held-out-evaluation.v0.5"
 MANIFEST_SCHEMA = "rob2-kit.evaluation-manifest.v0.5"
+COMPARISON_SCHEMA = "rob2-kit.evaluation-comparisons.v0.1"
 CELL_FIELDS = (
     "trial_id",
     "result_identity",
@@ -59,6 +60,86 @@ PRIVATE_FIELDS = {
     "source_text",
     "text",
 }
+
+_COMPARISON_ARM_FIELDS = {
+    "id", "intervention_id", "retrieval", "spelling", "context", "guidance", "evidence"
+}
+_COMPARISON_PAIR_FIELDS = {"id", "left", "right", "diagnostic"}
+_COMPARISON_VALUES = {
+    "retrieval": {"free_search", "supplied_decisive_evidence"},
+    "spelling": {"porter_only", "optional_spelling"},
+    "context": {"baseline", "compact", "expanded"},
+    "guidance": {"baseline", "retrieval_neutral", "context_neutral"},
+}
+
+
+def validate_comparison_config(config: Any, interventions: dict[str, str]) -> None:
+    """Validate a predeclared comparison design without model-facing coaching."""
+    if not isinstance(config, dict) or set(config) != {"schema", "arms", "pairs"}:
+        raise ValueError("comparison_config has an unclosed field set")
+    if not isinstance(interventions, dict):
+        raise ValueError("comparison interventions must be an object")
+    if config["schema"] != COMPARISON_SCHEMA:
+        raise ValueError("comparison_config schema is invalid")
+    arms = config["arms"]
+    if not isinstance(arms, list) or not arms:
+        raise ValueError("comparison_config arms must be a non-empty list")
+    arm_ids: set[str] = set()
+    for arm in arms:
+        if not isinstance(arm, dict) or set(arm) != _COMPARISON_ARM_FIELDS:
+            raise ValueError("comparison arm has an unclosed field set")
+        arm_id = arm["id"]
+        if not isinstance(arm_id, str) or not arm_id or arm_id in arm_ids:
+            raise ValueError("comparison arm ids must be unique non-empty strings")
+        arm_ids.add(arm_id)
+        intervention_id = arm["intervention_id"]
+        if not isinstance(intervention_id, str) or intervention_id not in interventions:
+            raise ValueError("comparison arm intervention is undeclared")
+        for field, allowed in _COMPARISON_VALUES.items():
+            if not isinstance(arm[field], str) or arm[field] not in allowed:
+                raise ValueError(f"comparison arm {field} is invalid")
+        evidence = arm["evidence"]
+        if not isinstance(evidence, dict) or set(evidence) != {
+            "mode", "passages", "labels", "answers"
+        }:
+            raise ValueError("comparison evidence policy is invalid")
+        neutral = {
+            "mode": "none", "passages": "not_supplied",
+            "labels": "forbidden", "answers": "forbidden",
+        }
+        decisive = {
+            "mode": "decisive", "passages": "complete_relevant",
+            "labels": "forbidden", "answers": "forbidden",
+        }
+        if evidence not in (neutral, decisive):
+            raise ValueError("comparison evidence must be neutral or decisive without coaching")
+        if arm["retrieval"] == "supplied_decisive_evidence" and evidence != decisive:
+            raise ValueError("supplied-evidence arm must declare decisive passages")
+        if arm["retrieval"] == "free_search" and evidence != neutral:
+            raise ValueError("free-search arm cannot receive supplied evidence")
+    pairs = config["pairs"]
+    if not isinstance(pairs, list) or not pairs:
+        raise ValueError("comparison_config pairs must be a non-empty list")
+    pair_ids: set[str] = set()
+    for pair in pairs:
+        if not isinstance(pair, dict) or set(pair) != _COMPARISON_PAIR_FIELDS:
+            raise ValueError("comparison pair has an unclosed field set")
+        pair_id = pair["id"]
+        left = pair["left"]
+        right = pair["right"]
+        if (
+            not isinstance(pair_id, str)
+            or not pair_id
+            or pair_id in pair_ids
+            or not isinstance(left, str)
+            or not isinstance(right, str)
+            or left not in arm_ids
+            or right not in arm_ids
+            or left == right
+            or pair["diagnostic"] is not True
+        ):
+            raise ValueError("comparison pair is invalid")
+        pair_ids.add(pair_id)
 
 
 def _hash(value: Any) -> str:
@@ -192,7 +273,8 @@ def validate_manifest(manifest: dict[str, Any]) -> None:
         "cost_limit",
         "attempt_ids",
     }
-    _closed(manifest, fields, "manifest")
+    if set(manifest) not in (fields, fields | {"comparison_config"}):
+        raise ValueError("manifest has an unclosed field set")
     if manifest["schema"] != MANIFEST_SCHEMA:
         raise ValueError("evaluation manifest schema is invalid")
     for key in (
@@ -243,6 +325,8 @@ def validate_manifest(manifest: dict[str, Any]) -> None:
         or not all(isinstance(item, str) and item for item in manifest["attempt_ids"])
     ):
         raise ValueError("manifest attempt_ids are invalid")
+    if "comparison_config" in manifest:
+        validate_comparison_config(manifest["comparison_config"], manifest["interventions"])
     validate_split_isolation(manifest)
 
 

@@ -225,6 +225,82 @@ def test_rehashed_no_hit_search_receipt_cannot_gain_a_result(tmp_path: Path) -> 
         _search_receipt(workspace, str(tampered["handle"]))
 
 
+def test_legacy_search_receipt_replays_with_its_recorded_tokenizer(tmp_path: Path) -> None:
+    trial = tmp_path / "input" / "trial"
+    trial.mkdir(parents=True)
+    (trial / "main.txt").write_text("Allocation was concealed.\n", encoding="utf-8")
+    prepare_batch(
+        tmp_path,
+        [TrialDeclaration(id="trial", label="trial", requested_outcome="allocation")],
+        expected_revision=0,
+    )
+    current = search_sources(tmp_path, "trial", "concealment")["search_receipt"]
+    assert current["hits"]
+    derivative = tmp_path / ".rob2-kit" / "derivative.sqlite3"
+    with sqlite3.connect(derivative) as connection:
+        session_row = connection.execute(
+            "SELECT payload FROM search_sessions WHERE identity=?", (current["session_id"],)
+        ).fetchone()
+        assert session_row is not None
+        session = json.loads(bytes(session_row[0]))
+        legacy_spec = {key: value for key, value in session["spec"].items() if key != "profile"}
+        legacy_identity = _identity(legacy_spec)
+        legacy_session = {
+            "identity": legacy_identity,
+            "handle": "ss_" + legacy_identity.removeprefix("sha256:")[:16],
+            "spec": legacy_spec,
+            "matching_page_count": 0,
+            "candidate_count": 0,
+            "complete": True,
+            "ranked_pages": [],
+            "term_feedback": [
+                {
+                    **row,
+                    "query_matching_page_count": 0,
+                    "term_page_counts": [
+                        {**item, "matching_page_count": 0}
+                        for item in row["term_page_counts"]
+                    ],
+                }
+                for row in session["term_feedback"]
+            ],
+        }
+        connection.execute(
+            "INSERT INTO search_sessions VALUES (?,?)",
+            (legacy_identity, canonical_json_bytes(legacy_session)),
+        )
+    legacy = {
+        key: value
+        for key, value in current.items()
+        if key not in {"profile", "purpose_domain_id", "purpose_question_id"}
+    }
+    legacy.update(
+        {
+            "hits": [],
+            "total_matches": 0,
+            "truncated": False,
+            "condition": "no_hits",
+            "session_id": legacy_identity,
+            "session_handle": legacy_session["handle"],
+            "candidate_count": 0,
+            "matching_page_count": 0,
+            "returned_rank_start": None,
+            "returned_rank_end": None,
+            "next_cursor": None,
+            "exhausted": True,
+            "returned_material": 0,
+            "returned_candidates": [],
+        }
+    )
+    legacy["identity"] = _identity(
+        {key: value for key, value in legacy.items() if key not in {"identity", "handle"}}
+    )
+    legacy["handle"] = "sr_" + legacy["identity"].removeprefix("sha256:")[:16]
+    _replace_search_receipt(tmp_path, legacy)
+
+    assert _search_receipt(tmp_path, legacy["handle"]) == legacy
+
+
 def test_search_receipt_rejects_a_rehashed_or_missing_session(tmp_path: Path) -> None:
     workspace, _source = _workspace(tmp_path)
     receipt = search_sources(workspace, "trial", "absent term")["search_receipt"]

@@ -226,8 +226,9 @@ def save_working_checkpoint(workspace: str | Path, draft: WorkingCheckpointDraft
         source_count=len(checkpoint.source_scope),
         authoritative=False,
         next_action=(
-            "Resume from these source-linked notes, then verify each cited passage with "
-            "read_pages before relying on it. These notes do not answer or commit any Domain."
+            "Resume from these source-linked notes. Recover cited text with read_pages only when "
+            "it is missing or uncertain; use render_page for a whole-page visual locator. These "
+            "notes are not Evidence or saved Domain answers."
         ),
     )
 

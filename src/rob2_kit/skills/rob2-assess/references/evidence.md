@@ -18,6 +18,14 @@ until it is null. If a cursor is invalid, recapture the preceding page. If a
 cursor is stale, restart the first scoped request. Read each page in a separate
 host-visible output when the host can truncate a combined transcript.
 
+Branch on the result before retrying:
+
+- When a tool requests input or elicitation, let the host complete that interaction. Do not treat it as missing scientific data.
+- When proposal approval is declined or cancelled, leave the Review pending and wait for researcher direction.
+- When the host does not support elicitation, report that capability condition. Repeating the same call cannot add the capability.
+- When a condition reports corrupt canonical or Source state, stop the affected operation and report the condition. Do not fabricate handles or resubmit the same request.
+- When Domain context reports an oversized header, item, or page, restart the same explicit Trial and Domain scope with the returned larger `page_size`. This is different from following a valid cursor.
+
 ## Keep returned handles distinct
 
 The prefixes identify different values. `eh_` is a passage Evidence handle,
@@ -34,8 +42,10 @@ and use it with the same `trial_id`. Each `data.hits[]` item returns a
 `passage_ref` for its exact displayed window. A hit is a discovery candidate,
 not retained Evidence, until you inspect the complete passage and select it.
 Choose short Source wording or a returned query suggestion. Use `all` for every
-token on one page, `phrase` for contiguous wording, `any` for broad discovery,
-and `prefix` for token prefixes. Suggestions are alternatives, not a checklist.
+token on one page, `phrase` for contiguous token matching under the tokenizer,
+`literal` for contiguous wording after presentation normalization without
+stemming, `any` for broad discovery, and `prefix` for token prefixes.
+Suggestions are alternatives, not a checklist.
 To inspect further candidates, pass `next_cursor` as `cursor` with the same
 query, mode, Source scope, and limit. A truncated batch is not the full ranking.
 A zero-hit response states what its explicit lexical mode matched and only
@@ -67,10 +77,11 @@ you inspect a complete passage, reuse that handle in Proposal `passage_refs` or
 Domain `bases`; no separate text-selection call is required.
 If the serialized UTF-8 response bound splits one physical line, the returned
 fragment includes exact character offsets and `next_start_char` but has no
-`passage_ref` or selectable Evidence handle. Continue from that offset until
-the complete line or passage is delivered; only then can the complete window
-be cited. A page-boundary continuation uses the returned line continuation in
-the same way.
+`passage_ref` or selectable Evidence handle. Receive every fragment, inspect
+the full line, then select text Evidence with the original page and inclusive
+line bounds. For Evidence already selected, retain its original handle; do not
+replace it with a fragment handle. A page-boundary continuation uses the
+returned line continuation in the same way.
 
 ## Recover omitted Evidence
 
@@ -122,13 +133,13 @@ not in the transcription.
 ## Ground a Result
 
 Use `passage_refs` for ordinary Result support and `applicability.evidence` for
-design support. Do not place Evidence objects in `reported`. The only structured
-top-level `evidence` form is `table_multispan`, for a table whose literal title
-or definition, header, quantitative row, unit, or footnote were selected as
-separate passages. Give each selection its actual role and handle. Those spans
-remain separate citations: do not concatenate their text, assume they are
-adjacent, or claim that they scientifically belong together merely because they
-are used by one Result.
+design support. Do not place Evidence objects in `reported`. Use ordinary
+selected Evidence for a single passage; use `table_multispan` only when a table
+title or definition, header, quantitative row, unit, or footnote was selected
+as separate passages. Give each selection its actual role and handle. Those
+spans remain separate citations: do not concatenate their text, assume they
+are adjacent, or claim that they scientifically belong together merely because
+they are used by one Result.
 
 Preserve exact Source labels and quantities, or values equivalent after normalization.
 For `analysis_population`, a supported summary may combine passages when it preserves
@@ -159,23 +170,25 @@ Attach each basis to the active question it informs:
 - `context`: the passage fixes scope or meaning;
 - `inference`: the passage supplies facts from which you draw a stated conclusion;
 - `absence`: an untruncated scoped search found no hits;
-- `limitation`: a concise unresolved information limit plus an untruncated
-  current-Trial search receipt.
+- `limitation`: an explicit unresolved premise and stopping rationale, with an
+  optional current-Trial search receipt when retrieval provenance is useful.
 
 Non-absence Evidence relationships use a selected Evidence handle, except
-`limitation`, which uses text and a search receipt. An `absence` receipt must
+`limitation`, which uses an unresolved premise and a stopping rationale. A
+directly read passage does not require a search receipt. An
+`absence` receipt must
 report `truncated:false`, `total_matches:0`, and `condition:"no_hits"`. A
-positive untruncated search may support a limitation after you inspect the
+positive search may support a limitation after you inspect the
 relevant material, but it cannot support absence.
 
 For example:
 
 ```json
-{"kind":"limitation","text":"The report leaves the outcome ascertainment process unresolved after scoped discovery.","search_receipt":"sr_0123456789abcdef"}
+{"kind":"limitation","unresolved_premise":"The report leaves the outcome ascertainment process unresolved after scoped discovery.","stopping_rationale":"Relevant captured Sources were reviewed, but the premise remains unresolved.","search_receipt":"sr_0123456789abcdef"}
 ```
 
-Use the actual returned untruncated search receipt for the current Trial; the
-handle above is fictional.
+If you include a search receipt, use the actual receipt returned for the
+current Trial. The handle above is fictional.
 
 A relationship label never expands what the passage says. Keep plans separate
 from conduct, analysis populations from observed outcomes, endpoint definitions
@@ -213,13 +226,15 @@ Use these exact shapes for the three basis forms:
 ```json
 {"kind": "context", "evidence": "eh_0123456789abcdef"}
 {"kind": "absence", "search_receipt": "sr_0123456789abcdef"}
-{"kind": "limitation", "text": "The captured reports leave this premise unresolved.", "search_receipt": "sr_0123456789abcdef"}
+{"kind": "limitation", "unresolved_premise": "The captured reports leave this premise unresolved.", "stopping_rationale": "Relevant retrieval was reviewed, but the premise remains unresolved.", "search_receipt": "sr_0123456789abcdef"}
+{"kind": "limitation", "unresolved_premise": "The captured reports leave this premise unresolved.", "stopping_rationale": "The relevant section was read, but the premise remains unresolved."}
 ```
 
 `context`, `direct_support`, `indirect_support`, `contradiction`, and
 `inference` use a selected `evidence` handle. `absence` uses an untruncated
-zero-hit `search_receipt`. `limitation` uses concise text and a current-Trial
-untruncated `search_receipt`. A basis kind describes how the premise is used;
+zero-hit `search_receipt`. `limitation` uses an explicit `unresolved_premise`
+and `stopping_rationale`. Its current-Trial `search_receipt` is optional and
+may be truncated. A basis kind describes how the premise is used;
 it does not add facts to the cited passage.
 
 ## Recover an unresolved premise
@@ -235,11 +250,11 @@ cursors.
    Prefer wording from an inspected passage over a methodological label from
    the question card.
 2. Act. Inspect the active comparison card's complete `passage_groups` inventory
-   when one is returned; call `list_sources` only when no complete inventory is
-   present. Every captured Source remains listed in the inventory even when it
-   has no selected passages; the inventory also exposes intake conditions and
-   declared omissions. Use its `source_id`, `page_count`, and `logical_path` to
-   navigate it. Source navigation identifies pages with no extracted text; those
+   when one is returned. `passage_groups` navigate captured Sources; they do
+   not contain every intake condition. For declared omissions or file-level
+   intake conditions, inspect `get_status.data.conditions` or call
+   `list_sources(trial_id)`. Use each group's `source_id`, `page_count`, and
+   `logical_path` to navigate it. Source navigation identifies pages with no extracted text; those
    pages may contain visual or otherwise unextracted material. A supplement,
    `other` document, or combined
    protocol can contain the needed plan or participant-flow detail. A Source
@@ -249,7 +264,8 @@ cursors.
    per-term counts to decide whether another explicit query or direct section
    read could resolve the premise. If a result is truncated and has a
    `next_cursor`, continue the same query first when deeper ranked passages
-   could resolve the premise. Use the final untruncated receipt. Change the
+   could resolve the premise. Use the final untruncated receipt when recording
+   `absence`; a limitation may keep a truncated receipt or omit it. Change the
    query only when its wording or the premise warrants a change. For a
    Source-scoped miss, inspect the navigation entries. Use
    the unresolved fact, Trial context, term feedback, and literal Source wording
@@ -274,10 +290,10 @@ cursors.
    section inspected and the facts that remain unavailable. If a fact
    remains discoverable within captured Sources and bounded cursor or page
    windows, make the next relevant search or read. Otherwise record a concise
-   limitation with a current-Trial, untruncated search receipt. Stop as soon as
-   an inspected passage contains the complete premise and select its exact
-   boundaries. The limitation documents the information reached, not absence
-   of the fact.
+   limitation with an explicit stopping rationale and, when applicable, the
+   current-Trial search receipt. Stop as soon as an inspected passage contains
+   the complete premise and select its exact boundaries. The limitation
+   documents the information reached, not absence of the fact.
 
 An unreported result does not show that participant outcomes were unobserved.
 Missing reporting alone does not establish differential measurement or result-based

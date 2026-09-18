@@ -47,19 +47,19 @@ describes intent; check the report for what was actually done.
 If the plan is unavailable after bounded source-specific discovery, record that
 information limit. Missing plans do not prove selective reporting.
 Keep unknown dates and historical applicability explicit. Use captured versions
-and exact recovery windows. Obtain historical material only through a supported
-source-capture action; a current record cannot stand in for an unseen past version.
+and exact recovery windows. Use only captured Sources for this assessment. A
+current record cannot stand in for an unseen past version.
 
 For an unresolved plan premise, search with concrete wording from the report or
 plan (for example, the endpoint label, analysis population, time point, or
-section heading). If the likely Source has no useful hit, use one bounded
-broadened query and then widen to the relevant captured Sources; continue an
-existing cursor before changing wording when deeper cached results may contain
-the plan. Read the complete returned window, including its date and cohort
-context, before treating it as a plan passage. Stop on a complete applicable
-comparison or document the bounded information limit with an untruncated
-receipt. A Source role or an empty passage list cannot establish either plan
-presence or plan absence.
+section heading). Continue an existing cursor when deeper cached results may
+contain the plan. Issue another bounded query or widen the Source scope only
+when it could resolve the premise. Read the complete returned window, including
+its date and cohort context, before treating it as a plan passage. Stop on a
+complete applicable comparison or document the bounded information limit with
+an explicit stopping rationale and, when useful, the current search receipt. A
+Source role or an empty passage list cannot establish either plan presence or
+plan absence.
 
 ## Separate the two selection mechanisms
 

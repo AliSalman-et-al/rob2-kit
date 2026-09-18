@@ -112,8 +112,13 @@ def test_domain_public_shape_is_flat_and_closed() -> None:
     limitation = next(
         item for item in bases if item["properties"]["kind"].get("const") == "limitation"
     )
-    assert set(limitation["properties"]) == {"kind", "text", "search_receipt"}
-    assert limitation["properties"]["search_receipt"]["pattern"] == r"^sr_[0-9a-f]{16}$"
+    assert set(limitation["properties"]) == {
+        "kind", "unresolved_premise", "stopping_rationale", "search_receipt"
+    }
+    receipt_schema = limitation["properties"]["search_receipt"]
+    receipt_options = receipt_schema.get("anyOf", [receipt_schema])
+    assert any(option.get("pattern") == r"^sr_[0-9a-f]{16}$" for option in receipt_options)
+    assert "search_receipt" not in limitation.get("required", [])
     missing_row = answer["properties"]["missing_data"]["anyOf"][0]["items"]
     assert missing_row["properties"]["basis"]["items"]["pattern"] == r"^eh_[0-9a-f]{16}$"
 
@@ -480,9 +485,10 @@ def test_domain_context_scopes_candidates_before_applying_the_budget(tmp_path: P
         {
             "trial_id": "trial",
             "source_id": source["id"],
-            "query": "decisive randomization detail",
-            "mode": "all",
-            "limit": 1,
+                "query": "decisive randomization detail",
+                "mode": "all",
+                "limit": 1,
+                "purpose_domain_id": "domain:randomization",
         },
     )["data"]["hits"][0]
     revision = int(_call(workspace, "get_domain_context", {})["head"]["state_revision"])
@@ -559,6 +565,124 @@ def test_proposal_search_candidates_do_not_leak_into_first_domain(tmp_path: Path
     assert proposal_candidate["passage_ref"] not in {item["handle"] for item in context["evidence"]}
 
 
+def test_replayed_proposal_search_becomes_assessment_discovery_after_approval(
+    tmp_path: Path,
+) -> None:
+    workspace = _workspace(tmp_path)
+    (workspace / "input" / "trial" / "assessment-only.txt").write_text(
+        "assessment-only discovery passage\n", encoding="utf-8"
+    )
+    proposal_evidence = _prepared_evidence(workspace)
+    assessment_source = next(
+        item
+        for item in _call(workspace, "list_sources", {"trial_id": "trial"})["data"]["sources"]
+        if item["label"] == "assessment-only.txt"
+    )
+    first = _call(
+        workspace,
+        "search_sources",
+        {
+            "trial_id": "trial",
+            "source_id": assessment_source["id"],
+            "query": "assessment-only discovery",
+            "mode": "any",
+        },
+    )["data"]
+    _call(workspace, "save_proposal", _proposal_args(workspace, [_result(proposal_evidence)]))
+    _review(workspace)
+    _read_required_main_reports(workspace)
+
+    second = _call(
+        workspace,
+        "search_sources",
+        {
+            "trial_id": "trial",
+            "source_id": assessment_source["id"],
+            "query": "assessment-only discovery",
+            "mode": "any",
+        },
+    )["data"]
+
+    assert second["session_id"] == first["session_id"]
+    with sqlite3.connect(workspace / ".rob2-kit" / "derivative.sqlite3") as connection:
+        phase = connection.execute(
+            "SELECT phase FROM search_evidence_provenance WHERE session_identity=? AND rank=?",
+            (second["session_id"], second["hits"][0]["rank"]),
+        ).fetchone()
+    assert phase == ("assessment",)
+    context = _call(
+        workspace,
+        "get_domain_context",
+        {"domain_id": "domain:randomization", "include_candidates": True},
+    )["data"]
+    assert any(
+        item.get("inclusion_reason") == "trial_discovery"
+        and item["handle"] == second["hits"][0]["passage_ref"]
+        for item in context["evidence"]
+    )
+
+
+def test_unassigned_search_discovery_is_recoverable_without_domain_attribution(
+    tmp_path: Path,
+) -> None:
+    workspace = _workspace(tmp_path)
+    document = pymupdf.open()
+    for index in range(70):
+        page = document.new_page()
+        page.insert_text((72, 72), f"unassigned discovery {index}")
+    (workspace / "input" / "trial" / "discoveries.pdf").write_bytes(document.tobytes())
+    document.close()
+
+    proposal_evidence = _prepared_evidence(workspace)
+    _call(workspace, "save_proposal", _proposal_args(workspace, [_result(proposal_evidence)]))
+    _review(workspace)
+    _read_required_main_reports(workspace)
+    source = next(
+        item
+        for item in _call(workspace, "list_sources", {"trial_id": "trial"})["data"]["sources"]
+        if item["label"] == "discoveries.pdf"
+    )
+    search = _call(
+        workspace,
+        "search_sources",
+        {
+            "trial_id": "trial",
+            "source_id": source["id"],
+            "query": "unassigned discovery",
+            "mode": "all",
+            "limit": 100,
+        },
+    )["data"]
+    assert len(search["hits"]) == 70
+
+    context = _call(
+        workspace,
+        "get_domain_context",
+        {"domain_id": "domain:randomization", "include_candidates": True},
+    )["data"]
+    discoveries = [
+        item for item in context["evidence"] if item.get("inclusion_reason") == "trial_discovery"
+    ]
+    assert len(discoveries) == 64
+    assert all(item.get("domain_id") is None for item in discoveries)
+    group = next(
+        item
+        for item in context["evidence_workspace"]["groups"]
+        if item["inclusion_reason"] == "trial_discovery"
+    )
+    assert group["question_ids"] == []
+    assert context["evidence_workspace"]["omitted_by_category"]["trial_discovery"] == 6
+    action = next(
+        item
+        for item in context["evidence_workspace"]["continuations"]
+        if item["operation"] == "search_sources"
+    )
+    assert "purpose_domain_id" not in action
+    continued = _call(workspace, action.pop("operation"), action)
+    assert continued["outcome"] == "success", continued
+    assert continued["data"]["hits"]
+
+
 def test_domain_context_continuation_reaches_omissions_across_sessions(tmp_path: Path) -> None:
     workspace = _workspace(tmp_path)
     document = pymupdf.open()
@@ -588,6 +712,7 @@ def test_domain_context_continuation_reaches_omissions_across_sessions(tmp_path:
                 "query": query,
                 "mode": "all",
                 "limit": 100,
+                "purpose_domain_id": "domain:randomization",
             },
         )["data"]
         assert len(search["hits"]) == 33
@@ -675,6 +800,7 @@ def test_domain_context_continuation_reaches_unreturned_session_candidates(
             "query": "deep candidate",
             "mode": "all",
             "limit": 1,
+            "purpose_domain_id": "domain:randomization",
         },
     )["data"]
     assert first["candidate_count"] == 70
@@ -719,6 +845,7 @@ def test_domain_context_reports_unavailable_search_session_after_cache_loss(
             "query": "lost candidate",
             "mode": "all",
             "limit": 1,
+            "purpose_domain_id": "domain:randomization",
         },
     )["data"]
     derivative = workspace / ".rob2-kit" / "derivative.sqlite3"
@@ -1008,7 +1135,8 @@ def test_probable_answers_accept_limitation_but_firm_answers_require_direct_evid
     probable["answers"][0]["bases"] = [
         {
             "kind": "limitation",
-            "text": circumstance,
+            "unresolved_premise": circumstance,
+            "stopping_rationale": "The relevant retrieved material does not resolve this premise.",
             "search_receipt": receipt,
         }
     ]
@@ -1089,7 +1217,10 @@ def test_domain_two_judgment_with_itt_premise_advances_to_domain_three(
             answer["bases"] = [
                 {
                     "kind": "limitation",
-                    "text": "The report does not describe this circumstance.",
+                    "unresolved_premise": "The report does not describe this circumstance.",
+                    "stopping_rationale": (
+                        "The relevant retrieved material does not resolve this premise."
+                    ),
                     "search_receipt": limitation_receipt,
                 }
             ]
@@ -1214,7 +1345,7 @@ def test_domain_absence_basis_resolves_server_receipt_handle(tmp_path: Path) -> 
     ]
 
 
-def test_domain_limitation_requires_and_stores_nontruncated_receipt(tmp_path: Path) -> None:
+def test_domain_limitation_requires_and_stores_receipt_provenance(tmp_path: Path) -> None:
     workspace, _evidence, revision = _assessment_workspace(tmp_path)
     search = _call(
         workspace, "search_sources", {"trial_id": "trial", "query": "not-in-source", "mode": "any"}
@@ -1228,7 +1359,10 @@ def test_domain_limitation_requires_and_stores_nontruncated_receipt(tmp_path: Pa
     draft["answers"][0]["bases"] = [
         {
             "kind": "limitation",
-            "text": "The report does not describe this circumstance.",
+                    "unresolved_premise": "The report does not describe this circumstance.",
+            "stopping_rationale": (
+                "The relevant retrieved material does not resolve this premise."
+            ),
             "search_receipt": search["data"]["search_receipt"],
         }
     ]
@@ -1239,7 +1373,8 @@ def test_domain_limitation_requires_and_stores_nontruncated_receipt(tmp_path: Pa
     assert checkpoint["answers"][0]["bases"] == [
         {
             "kind": "limitation",
-            "text": draft["answers"][0]["bases"][0]["text"],
+            "unresolved_premise": draft["answers"][0]["bases"][0]["unresolved_premise"],
+            "stopping_rationale": draft["answers"][0]["bases"][0]["stopping_rationale"],
             "search_receipt": receipt["identity"],
         }
     ]
@@ -1271,12 +1406,12 @@ def test_domain_limitation_requires_and_stores_nontruncated_receipt(tmp_path: Pa
     }
 
 
-def test_domain_limitation_accepts_positive_nontruncated_receipt(tmp_path: Path) -> None:
+def test_domain_limitation_accepts_positive_receipt(tmp_path: Path) -> None:
     workspace, _evidence, revision = _assessment_workspace(tmp_path)
     search = _call(
         workspace,
         "search_sources",
-        {"trial_id": "trial", "query": "requested outcome", "mode": "any"},
+        {"trial_id": "trial", "query": "requested outcome", "mode": "any", "limit": 1},
     )
     assert search["data"]["total_matches"] > 0
     assert search["data"]["truncated"] is False
@@ -1286,7 +1421,8 @@ def test_domain_limitation_accepts_positive_nontruncated_receipt(tmp_path: Path)
     draft["answers"][0]["bases"] = [
         {
             "kind": "limitation",
-            "text": "The selected positive passage does not settle this question.",
+            "unresolved_premise": "The selected positive passage does not settle this question.",
+            "stopping_rationale": "The relevant retrieved material does not resolve this premise.",
             "search_receipt": search["data"]["search_receipt"],
         }
     ]
@@ -1294,17 +1430,19 @@ def test_domain_limitation_accepts_positive_nontruncated_receipt(tmp_path: Path)
     assert accepted["outcome"] == "success", accepted
 
 
-def test_domain_limitation_without_receipt_is_repaired(tmp_path: Path) -> None:
-    workspace, _evidence, revision = _assessment_workspace(tmp_path)
-    draft = _domain_draft(
-        "trial", "domain:randomization", revision, search_receipt="sr_" + "0" * 16
-    )
+def test_domain_limitation_without_receipt_is_accepted_after_direct_read(tmp_path: Path) -> None:
+    workspace, evidence, revision = _assessment_workspace(tmp_path)
+    draft = _domain_draft("trial", "domain:randomization", revision, evidence=evidence)
     draft["answers"][0]["bases"] = [
-        {"kind": "limitation", "text": "Not reported.", "search_receipt": "sr_" + "0" * 16}
+        {
+            "kind": "limitation",
+            "unresolved_premise": "Not reported.",
+            "stopping_rationale": "The relevant retrieved material does not resolve this premise.",
+        }
     ]
-    repaired = _call_raw(workspace, draft)
-    _assert_repairs(repaired)
-    assert any(item["code"] == "invalid_search_receipt" for item in repaired["repairs"])
+    accepted = _call(workspace, "save_domain_judgment", draft)
+    assert accepted["outcome"] == "success", accepted
+    assert _stored_checkpoint(workspace)["search_accounts"] == []
 
 
 def test_domain_rejects_truncated_search_as_absence_basis(tmp_path: Path) -> None:
@@ -1340,6 +1478,23 @@ def test_domain_rejects_truncated_search_as_absence_basis(tmp_path: Path) -> Non
     assert "question 'sq:randomization:sequence'" in repair["detail"]
     assert "exact search_receipt handle" in repair["detail"]
     assert "truncated" in repair["detail"]
+
+    limitation = _domain_draft(
+        "trial", "domain:randomization", revision, search_receipt=search["data"]["search_receipt"]
+    )
+    limitation["answers"][0]["bases"] = [
+        {
+            "kind": "limitation",
+            "unresolved_premise": "The report does not resolve this premise.",
+            "stopping_rationale": (
+                "The bounded search was stopped because the available material remains "
+                "inconclusive."
+            ),
+            "search_receipt": search["data"]["search_receipt"],
+        }
+    ]
+    accepted = _call(workspace, "save_domain_judgment", limitation)
+    assert accepted["outcome"] == "success", accepted
 
 
 def test_domain_duplicate_nested_basis_is_repaired_without_mutating_state(tmp_path: Path) -> None:

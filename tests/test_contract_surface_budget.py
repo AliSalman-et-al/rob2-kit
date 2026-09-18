@@ -72,10 +72,11 @@ def test_public_output_surface_is_closed_and_within_budget() -> None:
         for tool, schema in zip(tools, closed_schemas, strict=True)
     )
     # This is a ceiling, not a target. Smaller closed schemas are better.
-    # Search and recovery guidance, reasoning receipts, bounded source
-    # navigation, independent batched search, and the explicit Trial review
-    # and closure operations add schema surface; working checkpoints are bounded.
-    assert total_bytes < 570_000
+    # Search recovery, Porter/literal profiles, explicit search purpose,
+    # spelling feedback, bounded source navigation, independent batched search,
+    # review attribution, and closure operations add schema surface; working
+    # checkpoints remain bounded.
+    assert total_bytes < 590_000
 
     by_name = {tool.name: tool for tool in tools}
     search_annotations = by_name["search_sources"].annotations
@@ -179,7 +180,8 @@ def test_public_output_surface_is_closed_and_within_budget() -> None:
     assert "With no request" in (review_tool.description or "")
     assert "deterministic Cochrane" in (review_tool.description or "")
     review_request = review_tool.parameters["properties"]["request"]
-    assert review_request["examples"][0]["disposition"] == "needs_input"
+    assert "examples" not in review_request
+    assert "permitted uncertainty answer" in review_request["description"]
 
 
 def test_server_and_resource_metadata_are_explicit() -> None:

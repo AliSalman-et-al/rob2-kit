@@ -359,7 +359,7 @@ def test_domain_context_cursor_keeps_snapshot_after_search_changes_evidence(
     assert continued["data"]["context_page"]["state_revision"] == first_page["state_revision"]
 
     fresh_candidates, _transport_bytes = _wire_context(workspace, {"include_candidates": True})
-    assert any(
+    assert not any(
         item.get("inclusion_reason") == "active_domain_candidate"
         for item in fresh_candidates["data"]["evidence"]
     ), fresh_candidates["data"]["evidence_workspace"]

@@ -4,6 +4,26 @@ Use this development loop for one trial and one approved Result at a time. It is
 diagnostic work, separate from release qualification and its held-out score.
 The [evaluation contract](README.md) defines the observation limits.
 
+## Predeclared retrieval comparisons
+
+The existing held-out manifest may include an optional `comparison_config` with
+schema `rob2-kit.evaluation-comparisons.v0.1`. It declares named arms and
+diagnostic pairs before runs begin, using only these dimensions: `free_search`
+or `supplied_decisive_evidence`; `porter_only` or `optional_spelling`; and
+`baseline`, `compact`, or `expanded` context with neutral guidance variants.
+The supplied-Evidence arm may provide complete relevant passages, but its
+policy must explicitly forbid labels and answers. The manifest validator
+rejects undeclared interventions, duplicate arms/pairs, coaching fields, and
+non-diagnostic pairs. Observation manifests additionally require an explicit,
+independent session per comparison arm; missing or unrun attempts remain
+`unknown`/incomplete.
+
+These comparisons reuse the normal attempt attribution and evidence-stage
+metrics. Evidence recovery, premise support, scientific labels, completion,
+latency, and cost remain separate measures. Supplied Evidence is diagnostic of
+the combined discovery/context burden, not production accuracy or a model
+ceiling, and no candidate cohort is implied by declaring the configuration.
+
 1. Rank assessed rows by **D1–D5** agreement, then choose a failure with a
    testable mechanism. Keep all outcomes from the same trial in one development
    or holdout partition. An overall judgment is not the optimization target.

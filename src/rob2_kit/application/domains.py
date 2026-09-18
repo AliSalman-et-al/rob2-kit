@@ -28,6 +28,8 @@ from .evidence import (
     _search_continuation,
     _search_evidence_identities,
     _search_receipt,
+    _unassigned_search_continuation,
+    _unassigned_search_evidence,
     main_report_reading_status,
 )
 from .status import _active_trial_and_domain, _continuation
@@ -495,6 +497,7 @@ def _compact_domain_evidence(context: dict[str, Any]) -> dict[str, Any]:
         "contradiction": 2,
         "explicit_carry_forward": 3,
         "active_domain_candidate": 4,
+        "trial_discovery": 4,
         "question_candidate": 4,
     }
     indexed = list(enumerate(evidence))
@@ -567,12 +570,16 @@ def _compact_domain_evidence(context: dict[str, Any]) -> dict[str, Any]:
 
 
 _DOMAIN_GUIDANCE = (
-    "For each active question, review the inspected passages against its exact proposition "
+    "Evaluate activated questions in question order. Submit every activated question with a "
+    "justification, unknowns, and counterevidence. Review the inspected passages against its "
+    "exact proposition "
     "and check material contradictions. Reuse adequate Evidence. When a premise remains "
-    "unresolved, use bounded discovery across relevant Sources, including a protocol or SAP "
-    "when relevant. Inspect returned passages before using them. A limitation requires a "
-    "Trial-scoped, untruncated search receipt. Absence requires a scoped untruncated "
-    "no-hit receipt.",
+    "unresolved, state the unresolved premise and why you stopped, and use bounded discovery "
+    "across relevant Sources, including a protocol or SAP when relevant. Inspect returned "
+    "passages before using them. A limitation requires that explicit premise and stopping "
+    "rationale; include a Trial-scoped search receipt when retrieval provenance is useful, "
+    "but a direct read does not require a search receipt. Absence "
+    "requires a scoped untruncated no-hit receipt.",
     "Cite complete premises for the active question. One passage may support several facts. "
     "When an answer depends on separate passages, cite each with its own boundaries. "
     "A relationship kind describes the use of Evidence; it adds no scientific fact.",
@@ -582,11 +589,10 @@ _DOMAIN_GUIDANCE = (
     "you judge whether the cited facts support the answer.",
     "A definitive yes or no needs direct_support, indirect_support, or contradiction; "
     "a limitation or absence alone supports uncertainty, not a definitive answer.",
-    "Evaluate activation against your draft answers. If you cannot reliably resolve the "
-    "complete active path, answer each question on that active path using an allowed official "
-    "answer value and supported bases. Submit the complete active set in one validation call. "
-    "The server commits only "
-    "active answers.",
+    "Evaluate activation against your draft answers. If validation reports missing active "
+    "question IDs, add those questions with allowed answer values and supported bases, then "
+    "resubmit the complete active set in one validation call. The server commits only active "
+    "answers.",
     "Apply every reported repair and retain other drafted answers. Add missing questions to "
     "the existing answer set. Resolve further activation from the repaired answers before "
     "resubmitting. The server ignores inactive answers.",
@@ -1381,31 +1387,26 @@ def save_domain_judgment(
             basis = basis_model.model_dump(mode="json", exclude_none=True)
             path = f"/answers/{answer_index}/bases/{basis_index}"
             if basis["kind"] == "limitation":
-                try:
-                    receipt = _search_receipt(root, basis["search_receipt"])
-                    if receipt.get("trial_id") != parsed.trial_id:
-                        raise ValueError("search receipt is outside the Trial")
-                    if receipt.get("truncated") is not False:
-                        raise ValueError(
-                            "limitation requires a non-truncated search. Continue the returned "
-                            "next_cursor first when deeper ranked passages could resolve the "
-                            "premise; use the final receipt and change the query only when its "
-                            "wording or the premise warrants it."
+                uncertainty_basis = True
+                if basis.get("search_receipt") is not None:
+                    try:
+                        receipt = _search_receipt(root, basis["search_receipt"])
+                        if receipt.get("trial_id") != parsed.trial_id:
+                            raise ValueError("search receipt is outside the Trial")
+                        basis["search_receipt"] = receipt["identity"]
+                        search_accounts[receipt["identity"]] = receipt
+                    except (KeyError, ValueError) as error:
+                        repairs.append(
+                            _repair(
+                                f"{path}/search_receipt",
+                                "invalid_search_receipt",
+                                f"question '{answer_item.question_id}' has an invalid "
+                                "search receipt "
+                                f"for Trial '{parsed.trial_id}': {error}. Attach the exact "
+                                "search_receipt handle returned by the scoped search for this "
+                                "question; do not reuse a stale or mismatched receipt.",
+                            )
                         )
-                    uncertainty_basis = True
-                    basis["search_receipt"] = receipt["identity"]
-                    search_accounts[receipt["identity"]] = receipt
-                except (KeyError, ValueError) as error:
-                    repairs.append(
-                        _repair(
-                            f"{path}/search_receipt",
-                            "invalid_search_receipt",
-                            f"question '{answer_item.question_id}' has an invalid search receipt "
-                            f"for Trial '{parsed.trial_id}': {error}. Attach the exact "
-                            "search_receipt handle returned by the scoped search for this "
-                            "question; do not reuse a stale or mismatched receipt.",
-                        )
-                    )
             elif basis["kind"] == "absence":
                 try:
                     receipt = _search_receipt(root, basis["search_receipt"])
@@ -1575,8 +1576,8 @@ def save_domain_judgment(
                 condition={
                     "code": "domain_revision_basis_required",
                     "detail": (
-                        "a changed Domain save requires revision_basis kind 'new_evidence' "
-                        "or 'self_correction'."
+                        "a changed Domain save requires a revision_basis of kind "
+                        "'new_evidence', 'self_correction', or 'mechanical_repair'."
                     ),
                 },
             )
@@ -1766,8 +1767,9 @@ def validate_domain_assessment(
                 condition={
                     "code": "reasoning_stale",
                     "detail": (
-                        "The Domain context is stale. Refresh the scoped Domain context and "
-                        "revalidate the draft."
+                        "The Domain receipt is stale. Refresh the explicit Trial and Domain, "
+                        "complete every returned context page, revalidate the complete draft, "
+                        "and save the returned receipt. Otherwise follow head.next_action."
                     ),
                 },
             )
@@ -2123,6 +2125,7 @@ def get_domain_context(
     # through another query must retain its exact Evidence identity.
     associated_rows = _associated_search_evidence(root, trial_id, domain_id)
     associated_identities = {identity for identity, _session, _rank in associated_rows}
+    unassigned_rows = _unassigned_search_evidence(root, trial_id)
     search_evidence_identities = _search_evidence_identities(root, trial_id)
     explicit_carry_forward = [
         value
@@ -2142,6 +2145,16 @@ def get_domain_context(
         for identity, session_identity, rank in associated_rows
         for value in (disposable.get(identity),)
         if isinstance(value, dict) and (session_identity, rank) in associated_ranks
+    ]
+    unassigned = [
+        {
+            **value,
+            "search_session": session_identity,
+            "candidate_rank": rank,
+        }
+        for identity, session_identity, rank in unassigned_rows
+        for value in (disposable.get(identity),)
+        if isinstance(value, dict)
     ]
     # Handles selected explicitly through the existing Evidence boundary do
     # not carry a search association. Preserve those manual selections when
@@ -2163,6 +2176,16 @@ def get_domain_context(
             int(value.get("page", 0)),
             int(value.get("start_line", 0)),
             int(value.get("end_line", 0)),
+            str(value.get("identity")),
+        )
+    )
+    unassigned.sort(
+        key=lambda value: (
+            str(value.get("search_session")),
+            int(value.get("candidate_rank", 2**31 - 1)),
+            str(value.get("source_id")),
+            int(value.get("page", 0)),
+            int(value.get("start", 0)),
             str(value.get("identity")),
         )
     )
@@ -2205,6 +2228,7 @@ def get_domain_context(
 
     associated, associated_duplicates = unique_passages(associated)
     explicit_carry_forward, explicit_duplicates = unique_passages(explicit_carry_forward)
+    unassigned, unassigned_duplicates = unique_passages(unassigned)
     projection_budget = 64
 
     # Recoverable explicit selections take priority over search candidates
@@ -2230,26 +2254,42 @@ def get_domain_context(
     selected_explicit = [*unrecoverable_explicit, *selected_recoverable_explicit]
     remaining_budget = projection_budget - len(selected_recoverable_explicit)
     selected_candidates = associated[:remaining_budget] if include_candidates else []
+    remaining_budget -= len(selected_candidates)
+    selected_discoveries = unassigned[:remaining_budget] if include_candidates else []
     omitted_explicit = (
         recoverable_explicit[len(selected_recoverable_explicit) :]
         if include_candidates
         else recoverable_explicit
     )
+    omitted_discoveries = (
+        unassigned[len(selected_discoveries) :]
+        if include_candidates
+        else unassigned
+    )
     included_candidate_ranks = {
         (value["search_session"], value["candidate_rank"]) for value in selected_candidates
     }
+    unassigned_ranks = {
+        (session_identity, rank) for _identity, session_identity, rank in unassigned_rows
+    }
+    included_discovery_ranks = {
+        (value["search_session"], value["candidate_rank"]) for value in selected_discoveries
+    }
     omitted_candidate_ranks = associated_ranks - included_candidate_ranks
-    omitted_evidence_count = len(omitted_candidate_ranks) + len(omitted_explicit)
+    omitted_evidence_count = (
+        len(omitted_candidate_ranks) + len(omitted_explicit) + len(omitted_discoveries)
+    )
     omitted_by_category = {
         "result": 0,
         "checkpoint": 0,
         "contradiction": 0,
         "active_domain_candidate": len(omitted_candidate_ranks),
         "explicit_carry_forward": len(omitted_explicit),
-        "deduplicated": associated_duplicates + explicit_duplicates,
+        "trial_discovery": len(omitted_discoveries),
+        "deduplicated": associated_duplicates + explicit_duplicates + unassigned_duplicates,
     }
     catalog = dict(proposal_catalog)
-    for value in [*selected_candidates, *selected_explicit]:
+    for value in [*selected_candidates, *selected_discoveries, *selected_explicit]:
         catalog[value["identity"]] = value
     missing_handles = {
         handle
@@ -2304,6 +2344,13 @@ def get_domain_context(
             value.setdefault("inclusion_reason", "active_domain_candidate")
             value.setdefault("domain_id", domain_id)
             value.setdefault("returned_previously", True)
+        elif (
+            isinstance(value.get("search_session"), str)
+            and isinstance(value.get("candidate_rank"), int)
+            and (value["search_session"], value["candidate_rank"]) in unassigned_ranks
+        ):
+            value.setdefault("inclusion_reason", "trial_discovery")
+            value.setdefault("returned_previously", True)
         elif not isinstance(value.get("search_session"), str):
             value.setdefault("inclusion_reason", "explicit_carry_forward")
             value.setdefault("domain_id", domain_id)
@@ -2337,6 +2384,14 @@ def get_domain_context(
         projection_budget,
     )
     evidence_continuations.extend(search_continuations)
+    evidence_continuations.extend(
+        _unassigned_search_continuation(
+            root,
+            trial_id,
+            included_discovery_ranks,
+            projection_budget,
+        )
+    )
     if omitted_explicit:
         windows: list[dict[str, Any]] = []
         seen_windows: set[tuple[str, int, int, int]] = set()
@@ -2395,6 +2450,7 @@ def get_domain_context(
         "checkpoint",
         "contradiction",
         "active_domain_candidate",
+        "trial_discovery",
         "explicit_carry_forward",
     ):
         if reason == "result":
@@ -2624,6 +2680,7 @@ def get_domain_context(
                 "contradiction": 0,
                 "active_domain_candidate": 0,
                 "explicit_carry_forward": 0,
+                "trial_discovery": 0,
                 "deduplicated": 0,
             },
             "continuation": evidence_continuation if include_candidates else None,

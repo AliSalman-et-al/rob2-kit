@@ -151,7 +151,7 @@ def test_public_mutation_models_reject_whitespace_only_text(model: Any, trial_fi
         }
         payload[trial_field] = " "
     elif model is DomainLimitationBasis:
-        payload = {"kind": "limitation", "text": "\t"}
+        payload = {"kind": "limitation", "unresolved_premise": "\t", "stopping_rationale": "\t"}
     elif model is SelfCorrectionRevision:
         payload = {"kind": "self_correction", "rationale": "\n"}
     elif model is NeedsInputTerminalRequest:

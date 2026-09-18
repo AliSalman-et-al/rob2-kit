@@ -30,8 +30,8 @@ list-introducing sentence alone does not answer these questions.
 When a randomization premise remains unresolved, use the active Source
 inventory to include appendices, supplements, or combined documents that may
 describe the actual sequence or concealment procedure. Search with concrete
-study wording from the report, then use one bounded broadened query or a
-continued cursor when the initial result batch is insufficient. Read the full
+study wording from the report. Continue a cursor, issue another bounded query,
+or widen the Source scope when it could resolve the premise. Read the full
 procedure before selecting Evidence. Stop when the complete premise is
-supported or record the bounded information limit; Source role, an unopened
+supported or record the bounded information limit. Source role, an unopened
 document, and a no-hit query do not establish how allocation was performed.
