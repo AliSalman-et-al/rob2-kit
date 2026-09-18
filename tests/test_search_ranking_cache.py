@@ -11,6 +11,7 @@ from rob2_kit.application._state import _SEARCH_DERIVATIVE_VERSION, _SEARCH_PROF
 from rob2_kit.application.contracts import COUNTERS
 from rob2_kit.application.evidence import (
     _SEARCH_CORPUS_CACHE_MAX,
+    _SEARCH_CORPUS_LEASES,
     _evidence_for_handles,
     _recomputed_search_projection,
     _release_search_corpus,
@@ -49,6 +50,7 @@ def test_warm_search_reuses_complete_ranking_and_evidence_identity(tmp_path: Pat
         "alpha beta one\nunrelated\nalpha beta two\nunrelated\nalpha beta three\n",
     )
     _reset_search_counters()
+    leases_before = _SEARCH_CORPUS_LEASES.copy()
 
     cold = search_sources(workspace, "trial", "alpha beta", mode="any", limit=1)
     cold_evidence = _evidence_for_handles(workspace, {cold["hits"][0]["passage_ref"]})
@@ -71,6 +73,7 @@ def test_warm_search_reuses_complete_ranking_and_evidence_identity(tmp_path: Pat
     assert COUNTERS["search_cache_writes"] == after_cold["search_cache_writes"]
     assert after_cold["source_projection_verifications"] == 2
     assert COUNTERS["source_projection_verifications"] == 4
+    assert _SEARCH_CORPUS_LEASES == leases_before
 
 
 def test_cursor_continuation_and_restart_use_frozen_ranking(tmp_path: Path) -> None:

@@ -884,16 +884,21 @@ def search_sources(
                     _SEARCH_RANKING_CACHE[cache_key] = cached_projection
             COUNTERS["search_ranking_validations"] += 1
             if cached_projection is not None:
-                cached_pairs = cached_projection["all_pairs"]
-                cached_feedback = cached_projection["term_feedback"]
-                cached_candidates = cached_projection["candidates"]
-                if all_pairs != cached_pairs:
-                    raise ValueError("search session ranking is stale or corrupt")
-                if term_feedback != cached_feedback:
-                    raise ValueError("search session term feedback is stale or corrupt")
-                if candidates != cached_candidates:
-                    raise ValueError("search session candidates are stale or corrupt")
-                COUNTERS["search_ranking_cache_hits"] += 1
+                try:
+                    cached_pairs = cached_projection["all_pairs"]
+                    cached_feedback = cached_projection["term_feedback"]
+                    cached_candidates = cached_projection["candidates"]
+                    if all_pairs != cached_pairs:
+                        raise ValueError("search session ranking is stale or corrupt")
+                    if term_feedback != cached_feedback:
+                        raise ValueError("search session term feedback is stale or corrupt")
+                    if candidates != cached_candidates:
+                        raise ValueError("search session candidates are stale or corrupt")
+                    COUNTERS["search_ranking_cache_hits"] += 1
+                finally:
+                    # A warm ranking hit does not enter the recomputation
+                    # helper, so release the corpus lease here.
+                    _release_search_corpus(search_corpus)
             else:
                 # A process restart drops only this disposable cache.  Rebuild
                 # from the verified durable session and source projections,
