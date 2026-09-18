@@ -2967,9 +2967,9 @@ def save_domain_judgment(
                 "outcome": "condition",
                 "code": "reasoning_stale",
                 "condition": (
-                    "Call get_status. If work remains active, refresh the explicit Trial and Domain, "
-                    "complete context delivery, revalidate, and save its returned receipt. Otherwise "
-                    "follow head.next_action."
+                    "Call get_status. If work remains active, refresh the explicit Trial and "
+                    "Domain, complete context delivery, revalidate, and save its returned receipt. "
+                    "Otherwise follow head.next_action."
                 ),
             },
         )
@@ -2982,9 +2982,9 @@ def save_domain_judgment(
                 "outcome": "condition",
                 "code": "reasoning_stale",
                 "condition": (
-                    "Call get_status. If work remains active, refresh the explicit Trial and Domain, "
-                    "complete context delivery, revalidate, and save its returned receipt. Otherwise "
-                    "follow head.next_action."
+                    "Call get_status. If work remains active, refresh the explicit Trial and "
+                    "Domain, complete context delivery, revalidate, and save its returned receipt. "
+                    "Otherwise follow head.next_action."
                 ),
             },
         )
