@@ -103,11 +103,15 @@ def _manifest_attempts(manifest: Mapping[str, Any]) -> list[dict[str, Any]]:
         raise ObservationImportError("manifest: attempts must be a non-empty list")
     seen: set[str] = set()
     comparison = manifest.get("comparison_config")
-    arm_ids: set[str] = {
-        arm["id"]
-        for arm in comparison.get("arms", [])
-        if isinstance(arm, dict) and isinstance(arm.get("id"), str)
-    } if isinstance(comparison, dict) else set()
+    arm_ids: set[str] = (
+        {
+            arm["id"]
+            for arm in comparison.get("arms", [])
+            if isinstance(arm, dict) and isinstance(arm.get("id"), str)
+        }
+        if isinstance(comparison, dict)
+        else set()
+    )
     sessions_by_arm: dict[str, set[str]] = {}
     result: list[dict[str, Any]] = []
     for index, raw in enumerate(attempts, 1):
@@ -190,9 +194,7 @@ def _transcript_specs(manifest: Mapping[str, Any]) -> dict[str, dict[str, Any]]:
     if any(phase is not None for phase in phases) and any(phase is None for phase in phases):
         raise ObservationImportError("manifest transcripts: phase must be declared for all or none")
     if manifest.get("comparison_config") is not None:
-        arm_by_attempt = {
-            attempt["attempt_id"]: attempt["comparison_arm"] for attempt in attempts
-        }
+        arm_by_attempt = {attempt["attempt_id"]: attempt["comparison_arm"] for attempt in attempts}
         sessions_by_arm: dict[str, set[str]] = {}
         for transcript_id, spec in specs.items():
             session_id = spec.get("session_id", transcript_id)
@@ -658,32 +660,32 @@ def import_observations(
         ]
         accepted_commits = [row for row in attempted_mutations if row["accepted"]]
         output_attempt = {
-                "attempt_id": attempt_id,
-                "trial_id": _id(attempt.get("trial_id")),
-                "result_id": _opaque(
-                    attempt.get("result_id") or attempt.get("approved_result_identity")
-                ),
-                "intervention_id": _id(attempt.get("intervention_id")),
-                "model": {
-                    "family": _id((attempt.get("model") or {}).get("family"))
-                    if isinstance(attempt.get("model"), dict)
-                    else None,
-                    "version": _id((attempt.get("model") or {}).get("version"))
-                    if isinstance(attempt.get("model"), dict)
-                    else None,
-                },
-                "kit_revision": _id(attempt.get("kit_revision")),
-                "capture_status": capture_status,
-                "terminal_disposition": terminal,
-                "reconciliation": {
-                    "operations": len(operations),
-                    "searches": search_count,
-                    "assessment_searches": assessment_search_count,
-                },
-                "attempted_mutations": attempted_mutations,
-                "accepted_commits": accepted_commits,
-                "operations": operations,
-            }
+            "attempt_id": attempt_id,
+            "trial_id": _id(attempt.get("trial_id")),
+            "result_id": _opaque(
+                attempt.get("result_id") or attempt.get("approved_result_identity")
+            ),
+            "intervention_id": _id(attempt.get("intervention_id")),
+            "model": {
+                "family": _id((attempt.get("model") or {}).get("family"))
+                if isinstance(attempt.get("model"), dict)
+                else None,
+                "version": _id((attempt.get("model") or {}).get("version"))
+                if isinstance(attempt.get("model"), dict)
+                else None,
+            },
+            "kit_revision": _id(attempt.get("kit_revision")),
+            "capture_status": capture_status,
+            "terminal_disposition": terminal,
+            "reconciliation": {
+                "operations": len(operations),
+                "searches": search_count,
+                "assessment_searches": assessment_search_count,
+            },
+            "attempted_mutations": attempted_mutations,
+            "accepted_commits": accepted_commits,
+            "operations": operations,
+        }
         if manifest.get("comparison_config") is not None:
             output_attempt["comparison_arm"] = _id(attempt.get("comparison_arm"))
             output_attempt["session_id"] = _id(attempt.get("session_id"))

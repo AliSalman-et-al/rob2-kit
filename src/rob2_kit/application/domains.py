@@ -2262,9 +2262,7 @@ def get_domain_context(
         else recoverable_explicit
     )
     omitted_discoveries = (
-        unassigned[len(selected_discoveries) :]
-        if include_candidates
-        else unassigned
+        unassigned[len(selected_discoveries) :] if include_candidates else unassigned
     )
     included_candidate_ranks = {
         (value["search_session"], value["candidate_rank"]) for value in selected_candidates

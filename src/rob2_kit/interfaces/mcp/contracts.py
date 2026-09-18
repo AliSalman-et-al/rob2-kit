@@ -643,13 +643,13 @@ class WorkingCheckpointStatus(PublicModel):
 
 class TrialDomainAttribution(PublicModel):
     domain_id: DomainId = Field(description="Canonical Domain represented by this review row.")
-    attribution: Literal[
-        "new_evidence", "self_correction", "mechanical_repair", "unchanged"
-    ] = Field(
-        description=(
-            "Observable basis of the current Domain checkpoint: a cited new Evidence item, "
-            "the model's correction of its earlier interpretation, a mechanical repair, or no "
-            "revision."
+    attribution: Literal["new_evidence", "self_correction", "mechanical_repair", "unchanged"] = (
+        Field(
+            description=(
+                "Observable basis of the current Domain checkpoint: a cited new Evidence item, "
+                "the model's correction of its earlier interpretation, a mechanical repair, or no "
+                "revision."
+            )
         )
     )
     checkpoint_identity: Identity = Field(
@@ -817,8 +817,7 @@ class SearchReceipt(PublicModel):
     purpose_domain_id: DomainId | None = Field(
         default=None,
         description=(
-            "Optional Domain whose workflow issued this search; omitted means unassigned "
-            "discovery."
+            "Optional Domain whose workflow issued this search; omitted means unassigned discovery."
         ),
     )
     purpose_question_id: QuestionId | None = Field(
@@ -1902,6 +1901,7 @@ class ReviewEvidenceReference(PublicModel):
 
 class ReviewReadEvidenceAction(PublicModel):
     """A review expansion containing read operation and evidence metadata."""
+
     operation: Literal["read_pages"]
     evidence: EvidenceHandle
     trial_id: TrialId
@@ -1910,6 +1910,7 @@ class ReviewReadEvidenceAction(PublicModel):
 
 class ReviewRenderEvidenceAction(PublicModel):
     """A review expansion containing render operation and evidence metadata."""
+
     operation: Literal["render_page"]
     evidence: EvidenceHandle
     trial_id: TrialId

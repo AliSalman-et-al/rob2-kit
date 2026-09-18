@@ -113,7 +113,10 @@ def test_domain_public_shape_is_flat_and_closed() -> None:
         item for item in bases if item["properties"]["kind"].get("const") == "limitation"
     )
     assert set(limitation["properties"]) == {
-        "kind", "unresolved_premise", "stopping_rationale", "search_receipt"
+        "kind",
+        "unresolved_premise",
+        "stopping_rationale",
+        "search_receipt",
     }
     receipt_schema = limitation["properties"]["search_receipt"]
     receipt_options = receipt_schema.get("anyOf", [receipt_schema])
@@ -485,10 +488,10 @@ def test_domain_context_scopes_candidates_before_applying_the_budget(tmp_path: P
         {
             "trial_id": "trial",
             "source_id": source["id"],
-                "query": "decisive randomization detail",
-                "mode": "all",
-                "limit": 1,
-                "purpose_domain_id": "domain:randomization",
+            "query": "decisive randomization detail",
+            "mode": "all",
+            "limit": 1,
+            "purpose_domain_id": "domain:randomization",
         },
     )["data"]["hits"][0]
     revision = int(_call(workspace, "get_domain_context", {})["head"]["state_revision"])
@@ -1359,7 +1362,7 @@ def test_domain_limitation_requires_and_stores_receipt_provenance(tmp_path: Path
     draft["answers"][0]["bases"] = [
         {
             "kind": "limitation",
-                    "unresolved_premise": "The report does not describe this circumstance.",
+            "unresolved_premise": "The report does not describe this circumstance.",
             "stopping_rationale": (
                 "The relevant retrieved material does not resolve this premise."
             ),

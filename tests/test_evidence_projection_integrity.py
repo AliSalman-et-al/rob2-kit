@@ -258,8 +258,7 @@ def test_legacy_search_receipt_replays_with_its_recorded_tokenizer(tmp_path: Pat
                     **row,
                     "query_matching_page_count": 0,
                     "term_page_counts": [
-                        {**item, "matching_page_count": 0}
-                        for item in row["term_page_counts"]
+                        {**item, "matching_page_count": 0} for item in row["term_page_counts"]
                     ],
                 }
                 for row in session["term_feedback"]

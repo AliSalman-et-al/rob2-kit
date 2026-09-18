@@ -62,7 +62,13 @@ PRIVATE_FIELDS = {
 }
 
 _COMPARISON_ARM_FIELDS = {
-    "id", "intervention_id", "retrieval", "spelling", "context", "guidance", "evidence"
+    "id",
+    "intervention_id",
+    "retrieval",
+    "spelling",
+    "context",
+    "guidance",
+    "evidence",
 }
 _COMPARISON_PAIR_FIELDS = {"id", "left", "right", "diagnostic"}
 _COMPARISON_VALUES = {
@@ -100,16 +106,23 @@ def validate_comparison_config(config: Any, interventions: dict[str, str]) -> No
                 raise ValueError(f"comparison arm {field} is invalid")
         evidence = arm["evidence"]
         if not isinstance(evidence, dict) or set(evidence) != {
-            "mode", "passages", "labels", "answers"
+            "mode",
+            "passages",
+            "labels",
+            "answers",
         }:
             raise ValueError("comparison evidence policy is invalid")
         neutral = {
-            "mode": "none", "passages": "not_supplied",
-            "labels": "forbidden", "answers": "forbidden",
+            "mode": "none",
+            "passages": "not_supplied",
+            "labels": "forbidden",
+            "answers": "forbidden",
         }
         decisive = {
-            "mode": "decisive", "passages": "complete_relevant",
-            "labels": "forbidden", "answers": "forbidden",
+            "mode": "decisive",
+            "passages": "complete_relevant",
+            "labels": "forbidden",
+            "answers": "forbidden",
         }
         if evidence not in (neutral, decisive):
             raise ValueError("comparison evidence must be neutral or decisive without coaching")

@@ -11,25 +11,37 @@ from rob2_kit.interfaces.mcp.contracts import SearchBatchRequest, SearchData
 
 def _config() -> dict[str, object]:
     neutral = {
-        "mode": "none", "passages": "not_supplied",
-        "labels": "forbidden", "answers": "forbidden",
+        "mode": "none",
+        "passages": "not_supplied",
+        "labels": "forbidden",
+        "answers": "forbidden",
     }
     decisive = {
-        "mode": "decisive", "passages": "complete_relevant",
-        "labels": "forbidden", "answers": "forbidden",
+        "mode": "decisive",
+        "passages": "complete_relevant",
+        "labels": "forbidden",
+        "answers": "forbidden",
     }
     return {
         "schema": "rob2-kit.evaluation-comparisons.v0.1",
         "arms": [
             {
-                "id": "free", "intervention_id": "free", "retrieval": "free_search",
-                "spelling": "porter_only", "context": "baseline", "guidance": "baseline",
+                "id": "free",
+                "intervention_id": "free",
+                "retrieval": "free_search",
+                "spelling": "porter_only",
+                "context": "baseline",
+                "guidance": "baseline",
                 "evidence": neutral,
             },
             {
-                "id": "oracle", "intervention_id": "oracle",
-                "retrieval": "supplied_decisive_evidence", "spelling": "porter_only",
-                "context": "baseline", "guidance": "baseline", "evidence": decisive,
+                "id": "oracle",
+                "intervention_id": "oracle",
+                "retrieval": "supplied_decisive_evidence",
+                "spelling": "porter_only",
+                "context": "baseline",
+                "guidance": "baseline",
+                "evidence": decisive,
             },
         ],
         "pairs": [{"id": "retrieval", "left": "free", "right": "oracle", "diagnostic": True}],
@@ -42,11 +54,14 @@ def test_comparison_schema_predeclares_diagnostic_arms() -> None:
     )
 
 
-@pytest.mark.parametrize("change", [
-    lambda config: config["arms"][1]["evidence"].update({"labels": "provided"}),
-    lambda config: config["arms"][0].update({"retrieval": "supplied_decisive_evidence"}),
-    lambda config: config["pairs"][0].update({"diagnostic": False}),
-])
+@pytest.mark.parametrize(
+    "change",
+    [
+        lambda config: config["arms"][1]["evidence"].update({"labels": "provided"}),
+        lambda config: config["arms"][0].update({"retrieval": "supplied_decisive_evidence"}),
+        lambda config: config["pairs"][0].update({"diagnostic": False}),
+    ],
+)
 def test_comparison_schema_rejects_coaching_or_non_diagnostic_design(change) -> None:
     config = deepcopy(_config())
     change(config)
@@ -117,11 +132,15 @@ def test_observation_comparison_arms_cannot_share_a_session() -> None:
         "comparison_config": _config(),
         "attempts": [
             {
-                "attempt_id": "a", "comparison_arm": "free", "session_id": "shared",
+                "attempt_id": "a",
+                "comparison_arm": "free",
+                "session_id": "shared",
                 "transcripts": ["a"],
             },
             {
-                "attempt_id": "b", "comparison_arm": "oracle", "session_id": "shared",
+                "attempt_id": "b",
+                "comparison_arm": "oracle",
+                "session_id": "shared",
                 "transcripts": ["b"],
             },
         ],

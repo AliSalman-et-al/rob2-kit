@@ -516,9 +516,7 @@ def _rebuild_derivative_if_needed(root: Path) -> None:
         )
     rebuild_pages = not existing
     rebuild_search = (
-        not fts_valid
-        or version_row is None
-        or version_row[0] != _SEARCH_DERIVATIVE_VERSION
+        not fts_valid or version_row is None or version_row[0] != _SEARCH_DERIVATIVE_VERSION
     )
     if existing and indexed and not rebuild_search:
         return
@@ -562,9 +560,7 @@ def _rebuild_derivative_if_needed(root: Path) -> None:
             connection.execute(f"DROP TABLE IF EXISTS {replacement}")
             _create_search_fts(connection, replacement)
             connection.executemany(f"INSERT INTO {replacement} VALUES (?,?,?,?)", search_rows)
-            built_count = connection.execute(
-                f"SELECT COUNT(*) FROM {replacement}"
-            ).fetchone()[0]
+            built_count = connection.execute(f"SELECT COUNT(*) FROM {replacement}").fetchone()[0]
             if built_count != len(search_rows):
                 raise ValueError("rebuilt text search projection has an invalid row count")
             expected_search_rows = sorted(search_rows, key=lambda row: (row[0], row[1]))

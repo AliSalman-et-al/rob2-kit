@@ -795,9 +795,10 @@ def _valid_search_account(
     }
     modern_keys = legacy_keys | {"profile"}
     purpose_keys = {"purpose_domain_id", "purpose_question_id"}
-    if (
-        not isinstance(account, dict)
-        or set(account) not in (legacy_keys, modern_keys, modern_keys | purpose_keys)
+    if not isinstance(account, dict) or set(account) not in (
+        legacy_keys,
+        modern_keys,
+        modern_keys | purpose_keys,
     ):
         return False
     modern = "profile" in account
@@ -922,7 +923,8 @@ def _valid_search_account(
             else _canonical_query_text(query)
         )
         or not isinstance(account.get("mode"), str)
-        or account["mode"] not in (
+        or account["mode"]
+        not in (
             {"all", "phrase", "any", "prefix", "literal"}
             if modern
             else {"all", "phrase", "any", "prefix"}
@@ -931,7 +933,8 @@ def _valid_search_account(
         or (
             set(account) == modern_keys | purpose_keys
             and (
-                account.get("purpose_domain_id") not in {
+                account.get("purpose_domain_id")
+                not in {
                     None,
                     *(domain.id for domain in SCIENTIFIC_PACK.domains),
                 }
@@ -2355,9 +2358,8 @@ def _verify_domain_lineage(
                             return False
                         repair_id = basis.get("repair_id")
                         codes = basis.get("codes")
-                        if (
-                            repair_id is not None
-                            and (not isinstance(repair_id, str) or not repair_id.strip())
+                        if repair_id is not None and (
+                            not isinstance(repair_id, str) or not repair_id.strip()
                         ):
                             return False
                         if (

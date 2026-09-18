@@ -1321,12 +1321,9 @@ def save_proposal(
     # the post-approval orientation needed to revise that proposal.  Requiring
     # the proposal-phase pass again here creates a duplicate reread gate.  Keep
     # the gate for missing/stale notes, and for initial proposal submission.
-    current_working_context = (
-        revising_approved
-        and all(
-            working_checkpoint_status(root, state, trial_id).get("status") == "current"
-            for trial_id in {gap["trial_id"] for gap in read_gaps}
-        )
+    current_working_context = revising_approved and all(
+        working_checkpoint_status(root, state, trial_id).get("status") == "current"
+        for trial_id in {gap["trial_id"] for gap in read_gaps}
     )
     if read_gaps and not current_working_context:
         return _result(

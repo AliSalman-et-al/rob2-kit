@@ -111,7 +111,10 @@ def test_host_visual_methods_and_population_can_bind_and_replay() -> None:
             "clarity": {
                 key: "specified"
                 for key in (
-                    "outcome_definition", "measurement", "time_point", "analysis_population",
+                    "outcome_definition",
+                    "measurement",
+                    "time_point",
+                    "analysis_population",
                     "comparison_groups",
                     "effect_measure",
                     "source_table_meaning",

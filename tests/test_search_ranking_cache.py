@@ -211,8 +211,7 @@ def test_stale_search_projection_is_rebuilt_into_the_current_porter_shape(
         with connection:
             connection.execute("DROP TABLE pages_fts")
             connection.execute(
-                "CREATE VIRTUAL TABLE pages_fts USING fts5("
-                "source_id, page UNINDEXED, raw_text)"
+                "CREATE VIRTUAL TABLE pages_fts USING fts5(source_id, page UNINDEXED, raw_text)"
             )
             connection.execute(
                 "INSERT INTO pages_fts VALUES (?,?,?)",
@@ -227,20 +226,27 @@ def test_stale_search_projection_is_rebuilt_into_the_current_porter_shape(
 
     assert result["hits"][0]["source_id"] == source_id
     with closing(sqlite3.connect(database)) as connection:
-        columns = {
-            row[1] for row in connection.execute("PRAGMA table_info(pages_fts)").fetchall()
-        }
+        columns = {row[1] for row in connection.execute("PRAGMA table_info(pages_fts)").fetchall()}
         assert columns == {"source_id", "page", "raw_text", "normalized_text"}
-        assert connection.execute(
-            "SELECT value FROM search_projection_meta WHERE name='version'"
-        ).fetchone()[0] == _SEARCH_DERIVATIVE_VERSION
-        assert connection.execute(
-            "SELECT value FROM search_projection_meta WHERE name='profile'"
-        ).fetchone()[0] == _SEARCH_PROFILE
-        assert connection.execute(
-            "SELECT name FROM sqlite_master "
-            "WHERE name IN ('pages_fts_rebuild', 'pages_fts_previous')"
-        ).fetchall() == []
+        assert (
+            connection.execute(
+                "SELECT value FROM search_projection_meta WHERE name='version'"
+            ).fetchone()[0]
+            == _SEARCH_DERIVATIVE_VERSION
+        )
+        assert (
+            connection.execute(
+                "SELECT value FROM search_projection_meta WHERE name='profile'"
+            ).fetchone()[0]
+            == _SEARCH_PROFILE
+        )
+        assert (
+            connection.execute(
+                "SELECT name FROM sqlite_master "
+                "WHERE name IN ('pages_fts_rebuild', 'pages_fts_previous')"
+            ).fetchall()
+            == []
+        )
 
 
 def test_evicted_fts_corpus_stays_open_until_its_query_releases_it(tmp_path: Path) -> None:
@@ -251,9 +257,7 @@ def test_evicted_fts_corpus_stays_open_until_its_query_releases_it(tmp_path: Pat
     for index in range(_SEARCH_CORPUS_CACHE_MAX + 1):
         source_id = f"source-{index + 1}"
         other_sources = [{"id": source_id, "projection_hash": "sha256:" + f"{index + 1:064d}"}]
-        _other_key, other = _search_corpus(
-            tmp_path, other_sources, {source_id: ("alpha",)}
-        )
+        _other_key, other = _search_corpus(tmp_path, other_sources, {source_id: ("alpha",)})
         _release_search_corpus(other)
 
     pairs, _term_pages = _recomputed_search_projection(
@@ -320,7 +324,8 @@ def test_spelling_alternatives_replace_one_repeated_query_unit(tmp_path: Path) -
     result = search_sources(workspace, "trial", "concealmet and concealmet", mode="any")
 
     queries = {
-        item["next_action"]["query"] for item in result["spelling_suggestions"]
+        item["next_action"]["query"]
+        for item in result["spelling_suggestions"]
         if item["suggested_term"] == "concealment"
     }
     assert queries == {

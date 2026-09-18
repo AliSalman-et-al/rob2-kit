@@ -114,8 +114,7 @@ def validate(report: object) -> list[str]:
     identity_fields = {"build", "pack", "skill", "source", "config"}
     if _closed(frozen, identity_fields, "identity", errors):
         if any(
-            not isinstance(frozen[key], str) or not _HASH.fullmatch(frozen[key])
-            for key in frozen
+            not isinstance(frozen[key], str) or not _HASH.fullmatch(frozen[key]) for key in frozen
         ):
             errors.append("frozen identities are invalid")
 
@@ -242,8 +241,10 @@ def validate(report: object) -> list[str]:
     if errors:
         expected_promotion = "hold"
     elif (
-        any(not check["observed"] or check["status"] in {"failure", "regression", "concern"}
-            for check in mechanical)
+        any(
+            not check["observed"] or check["status"] in {"failure", "regression", "concern"}
+            for check in mechanical
+        )
         or any(
             row["observable"] is not True
             or row["status"] in {"failure", "regression", "concern", "scope_correction"}

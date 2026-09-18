@@ -44,11 +44,16 @@ def _domain_attribution(state: dict[str, Any], trial_id: str) -> list[dict[str, 
             continue
         basis = record.get("revision_basis")
         kind = basis.get("kind") if isinstance(basis, dict) else None
-        attribution = kind if kind in {
-            "new_evidence",
-            "self_correction",
-            "mechanical_repair",
-        } else "unchanged"
+        attribution = (
+            kind
+            if kind
+            in {
+                "new_evidence",
+                "self_correction",
+                "mechanical_repair",
+            }
+            else "unchanged"
+        )
         item: dict[str, Any] = {
             "domain_id": domain.id,
             "attribution": attribution,

@@ -373,15 +373,9 @@ def _source_navigation_entries(pages: tuple[str, ...]) -> list[dict[str, Any]]:
         unique.values(), key=lambda item: (item["page"], item["start_line"], item["kind"])
     )
     metadata = [
-        item
-        for item in ordered
-        if item["kind"] not in {"heading_candidate", "page_excerpt"}
+        item for item in ordered if item["kind"] not in {"heading_candidate", "page_excerpt"}
     ]
-    ordinary = [
-        item
-        for item in ordered
-        if item["kind"] in {"heading_candidate", "page_excerpt"}
-    ]
+    ordinary = [item for item in ordered if item["kind"] in {"heading_candidate", "page_excerpt"}]
     selected = (metadata + ordinary)[:_SOURCE_NAVIGATION_MAX_ENTRIES]
     return sorted(selected, key=lambda item: (item["page"], item["start_line"], item["kind"]))
 
@@ -628,9 +622,13 @@ def search_sources(
         raise ValueError("search limit must be between 1 and 100")
     if purpose_domain_id is not None and (
         not isinstance(purpose_domain_id, str)
-        or purpose_domain_id not in {
-        "domain:randomization", "domain:deviations", "domain:missing",
-        "domain:measurement", "domain:selection",
+        or purpose_domain_id
+        not in {
+            "domain:randomization",
+            "domain:deviations",
+            "domain:missing",
+            "domain:measurement",
+            "domain:selection",
         }
     ):
         raise ValueError("unknown search purpose Domain")
@@ -651,7 +649,8 @@ def search_sources(
             raise ValueError("search purpose question is outside the selected Domain")
     normalized_query = (
         _canonical_search_text(query).casefold()
-        if mode == "literal" else _canonical_query_text(query)
+        if mode == "literal"
+        else _canonical_query_text(query)
     )
     terms = [term for term in normalized_query.split() if term]
     if not terms:
@@ -995,10 +994,19 @@ def search_sources(
         COUNTERS["search_cache_writes"] += 1
     spelling_catalogue = _spelling_catalogue(scope_key, page_map, ordered_source_ids)
     spelling_suggestions, spelling_suggestions_incomplete = _spelling_suggestions(
-        page_map, terms, mode, ordered_source_ids, term_feedback,
-        trial_id, requested_source_id, bounded_limit,
-        purpose_domain_id, purpose_question_id, query,
-        term_feedback_truncated, term_feedback_sources_truncated,
+        page_map,
+        terms,
+        mode,
+        ordered_source_ids,
+        term_feedback,
+        trial_id,
+        requested_source_id,
+        bounded_limit,
+        purpose_domain_id,
+        purpose_question_id,
+        query,
+        term_feedback_truncated,
+        term_feedback_sources_truncated,
         spelling_catalogue,
     )
     total_matches = len(all_pairs)
@@ -1901,8 +1909,9 @@ def _osa_distance(left: str, right: str, cutoff: int) -> int:
     for i, left_char in enumerate(left, 1):
         current = [i]
         for j, right_char in enumerate(right, 1):
-            value = min(current[-1] + 1, previous[j] + 1,
-                        previous[j - 1] + (left_char != right_char))
+            value = min(
+                current[-1] + 1, previous[j] + 1, previous[j - 1] + (left_char != right_char)
+            )
             if i > 1 and j > 1 and left_char == right[j - 2] and left[i - 2] == right_char:
                 value = min(value, before[j - 2] + 1)
             current.append(value)
@@ -1911,11 +1920,18 @@ def _osa_distance(left: str, right: str, cutoff: int) -> int:
 
 
 def _spelling_suggestions(
-    pages: dict[str, tuple[str, ...]], terms: list[str], mode: str,
-    source_order: list[str], term_feedback: list[dict[str, Any]],
-    trial_id: str, source_id: str | None, limit: int,
-    purpose_domain_id: str | None, purpose_question_id: str | None,
-    original_query: str, term_feedback_truncated: bool,
+    pages: dict[str, tuple[str, ...]],
+    terms: list[str],
+    mode: str,
+    source_order: list[str],
+    term_feedback: list[dict[str, Any]],
+    trial_id: str,
+    source_id: str | None,
+    limit: int,
+    purpose_domain_id: str | None,
+    purpose_question_id: str | None,
+    original_query: str,
+    term_feedback_truncated: bool,
     term_feedback_sources_truncated: bool,
     catalogue: tuple[dict[str, int], dict[str, int], dict[str, dict[str, Any]]] | None = None,
 ) -> tuple[list[dict[str, Any]], bool]:
@@ -1972,11 +1988,7 @@ def _spelling_suggestions(
         examples = catalogue[2]
     suggestions: list[dict[str, Any]] = []
     for term_index, term in enumerate(terms):
-        if (
-            term not in zero
-            or term in uppercase_terms
-            or not re.fullmatch(r"[a-z]{5,40}", term)
-        ):
+        if term not in zero or term in uppercase_terms or not re.fullmatch(r"[a-z]{5,40}", term):
             continue
         cutoff = 1 if len(term) <= 9 else 2
         candidates = []
@@ -1989,21 +2001,28 @@ def _spelling_suggestions(
                 word if index == term_index else item for index, item in enumerate(terms)
             ]
             next_action = {
-                "kind": "refine", "operation": "search_sources", "trial_id": trial_id,
-                "query": " ".join(replacement), "mode": mode, "source_id": source_id,
-                "limit": limit, "cursor": None,
+                "kind": "refine",
+                "operation": "search_sources",
+                "trial_id": trial_id,
+                "query": " ".join(replacement),
+                "mode": mode,
+                "source_id": source_id,
+                "limit": limit,
+                "cursor": None,
             }
             if purpose_domain_id is not None:
                 next_action["purpose_domain_id"] = purpose_domain_id
                 next_action["purpose_question_id"] = purpose_question_id
-            suggestions.append({
-                "query_unit": term,
-                "query_unit_index": term_index,
-                "suggested_term": word,
-                "surface_page_count": page_counts[word],
-                "example": examples.get(word),
-                "next_action": next_action,
-            })
+            suggestions.append(
+                {
+                    "query_unit": term,
+                    "query_unit_index": term_index,
+                    "suggested_term": word,
+                    "surface_page_count": page_counts[word],
+                    "example": examples.get(word),
+                    "next_action": next_action,
+                }
+            )
             if len(suggestions) >= 8:
                 return suggestions, True
     return suggestions, incomplete
@@ -2029,10 +2048,12 @@ def _native_fts_match_spans(
     )
     if markers is None:
         raise ValueError("search match localization failed: no safe highlight markers")
+
     def highlighted_row(current: sqlite3.Connection) -> sqlite3.Row | tuple[object, ...] | None:
         return current.execute(
             "SELECT highlight(pages_fts,2,?,?), highlight(pages_fts,3,?,?) "
-            "FROM pages_fts WHERE pages_fts MATCH ?", (*markers, *markers, expression)
+            "FROM pages_fts WHERE pages_fts MATCH ?",
+            (*markers, *markers, expression),
         ).fetchone()
 
     try:
@@ -2123,9 +2144,7 @@ def _all_search_match_spans(
         for term in dict.fromkeys(terms):
             occurrences.extend(
                 (start, end, term.casefold())
-                for start, end in _native_fts_match_spans(
-                    text, term, "any", connection=connection
-                )
+                for start, end in _native_fts_match_spans(text, term, "any", connection=connection)
             )
     if not occurrences:
         return _native_fts_match_spans(text, query, mode)
@@ -2355,7 +2374,8 @@ def _search_receipt(root: Path, handle: SearchReceiptHandle) -> dict[str, Any]:
             if mode == "literal"
             else _canonical_query_text(query)
         )
-        or mode not in (
+        or mode
+        not in (
             {"all", "phrase", "any", "prefix", "literal"}
             if modern
             else {"all", "phrase", "any", "prefix"}
@@ -2982,8 +3002,7 @@ def _record_search_evidence(
             (session_identity, rank, trial_id, evidence_identity, phase),
         )
         current = connection.execute(
-            "SELECT phase FROM search_evidence_provenance "
-            "WHERE session_identity=? AND rank=?",
+            "SELECT phase FROM search_evidence_provenance WHERE session_identity=? AND rank=?",
             (session_identity, rank),
         ).fetchone()
         if current is not None and _SEARCH_PHASE_ORDER.get(phase, -1) > _SEARCH_PHASE_ORDER.get(
@@ -2993,8 +3012,7 @@ def _record_search_evidence(
             # the durable discovery eligible for the later assessment phase
             # instead of freezing the first proposal replay forever.
             connection.execute(
-                "UPDATE search_evidence_provenance SET phase=? "
-                "WHERE session_identity=? AND rank=?",
+                "UPDATE search_evidence_provenance SET phase=? WHERE session_identity=? AND rank=?",
                 (phase, session_identity, rank),
             )
 

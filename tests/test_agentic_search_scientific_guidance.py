@@ -52,8 +52,8 @@ def test_question_context_keeps_official_fields_options_and_activation_operation
 
 def test_comparison_cards_keep_premise_specific_slots_and_question_bindings() -> None:
     expected = {
-            "domain:deviations": (
-                "sq:deviations:context-deviations",
+        "domain:deviations": (
+            "sq:deviations:context-deviations",
             {
                 "intended_intervention",
                 "observed_conduct",
