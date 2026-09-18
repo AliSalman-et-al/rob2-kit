@@ -17,7 +17,8 @@ from rob2_kit.evaluation.harness import (
     validate_manifest as _validate_evaluation_manifest,
 )
 
-SCHEMA = "rob2-kit.retained-evidence.v0.4"
+SCHEMA = "rob2-kit.retained-evidence.v0.5"
+LEGACY_SCHEMA = "rob2-kit.retained-evidence.v0.4"
 EVALUATION_SCHEMA = MANIFEST_SCHEMA
 SHA256 = re.compile(r"^sha256:[0-9a-f]{64}$")
 FORBIDDEN = {
@@ -56,6 +57,17 @@ RESTART_PROOF = {
     "after_source_set_identity",
     "passed",
 }
+QUALIFICATION = {
+    "executable",
+    "pack",
+    "skill",
+    "tools",
+    "schemas",
+    "protocol",
+    "runtime",
+    "host_checks",
+}
+HOST_CHECK = {"host", "attempt_id", "success", "repairable_error", "observable"}
 
 
 def validate_evaluation_manifest(manifest: object) -> list[str]:
@@ -94,7 +106,7 @@ def validate(manifest: object) -> list[str]:
     if not isinstance(manifest, dict):
         return ["manifest must be an object"]
     errors = _private(manifest)
-    if set(manifest) != {
+    base_fields = {
         "schema",
         "commit",
         "wheel_sha256",
@@ -104,10 +116,11 @@ def validate(manifest: object) -> list[str]:
         "restart_proof",
         "ci",
         "verdict",
-    }:
+    }
+    if set(manifest) not in (base_fields, base_fields | {"qualification"}):
         return errors + ["manifest has an unclosed field set"]
     if (
-        manifest["schema"] != SCHEMA
+        manifest["schema"] not in {LEGACY_SCHEMA, SCHEMA}
         or not isinstance(manifest["commit"], str)
         or not re.fullmatch(r"[0-9a-f]{40}", manifest["commit"])
     ):
@@ -251,6 +264,54 @@ def validate(manifest: object) -> list[str]:
         errors.append("complete supported OS/Python CI evidence is required")
     if manifest["verdict"] not in {"all_green", "incomplete"}:
         errors.append("verdict is invalid")
+    qualification = manifest.get("qualification")
+    if manifest["schema"] == SCHEMA and not isinstance(qualification, dict):
+        errors.append("v0.5 qualification identity and host checks are required")
+    if qualification is not None:
+        if not isinstance(qualification, dict) or set(qualification) != QUALIFICATION:
+            errors.append("qualification has an unclosed field set")
+        else:
+            if any(
+                not isinstance(qualification[key], str) or not SHA256.fullmatch(qualification[key])
+                for key in QUALIFICATION - {"host_checks"}
+            ):
+                errors.append("qualification identities are malformed")
+            host_checks = qualification["host_checks"]
+            if not isinstance(host_checks, list) or not host_checks:
+                errors.append("qualification host checks are required")
+            else:
+                check_rows: dict[tuple[str, str], list[dict[str, Any]]] = {}
+                for check in host_checks:
+                    if not isinstance(check, dict) or set(check) != HOST_CHECK:
+                        errors.append("qualification host check has an unclosed field set")
+                        continue
+                    key = (check.get("host"), check.get("attempt_id"))
+                    check_rows.setdefault(key, []).append(check)
+                    if (
+                        not isinstance(check["host"], str)
+                        or not check["host"]
+                        or not isinstance(check["attempt_id"], str)
+                        or not check["attempt_id"]
+                        or type(check["success"]) is not bool
+                        or type(check["repairable_error"]) is not bool
+                        or type(check["observable"]) is not bool
+                    ):
+                        errors.append("qualification host check is malformed")
+                declared_pairs = {
+                    (run.get("host"), run.get("id")) for run in runs if isinstance(run, dict)
+                }
+                for pair in declared_pairs:
+                    checks = check_rows.get(pair, [])
+                    if not any(
+                        row.get("success") is True and row.get("observable") is True
+                        for row in checks
+                    ):
+                        errors.append("successful installed-host check is missing")
+                    if not any(
+                        row.get("repairable_error") is True and row.get("observable") is True
+                        for row in checks
+                    ):
+                        errors.append("repairable installed-host check is missing")
     if manifest["verdict"] == "all_green" and errors:
         errors.append("all_green requires complete valid external evidence")
     return errors

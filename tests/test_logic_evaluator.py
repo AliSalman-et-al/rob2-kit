@@ -23,7 +23,7 @@ def test_pack_ids_wording_provenance_and_hashes():
     ) == ("sha256:96ff2d1a649d6b40f40fe7fa73c3127c5eb1725e8392b8728f9d25f951338425")
     assert SCIENTIFIC_PACK.questions[16].wording.startswith("If N/PN/NI to 4.1 and 4.2")
     assert SCIENTIFIC_PACK.content_hash == (
-        "sha256:ebd2b62a377e1a4275d886040eaf9c002394842d435ce7b5c10d7db820fc38d2"
+        "sha256:d0d55f1381b9a2a19e670dca92bd34eec60dc09abe554012f09f7ce972e7f82c"
     )
     assert "not attributed to Cochrane" in MAINTAINER_POLICY_PACK.attribution
     assert MAINTAINER_POLICY_PACK.id != SCIENTIFIC_PACK.id
@@ -206,3 +206,56 @@ def test_allowed_answer_restrictions_still_apply_to_active_questions():
                 "sq:missing:evidence-unbiased": "no_information",
             },
         )
+
+
+def test_assignment_analysis_quality_is_separate_from_potential_impact():
+    mitt = {
+        "sq:deviations:participants-aware": "no",
+        "sq:deviations:personnel-aware": "no",
+        "sq:deviations:appropriate-analysis": "yes",
+    }
+    assert evaluate_domain("domain:deviations", mitt).judgment is Judgment.LOW
+
+    excluded = {
+        **mitt,
+        "sq:deviations:appropriate-analysis": "no",
+        "sq:deviations:substantial-impact": "no",
+    }
+    assert evaluate_domain("domain:deviations", excluded).judgment is Judgment.SOME_CONCERNS
+    excluded["sq:deviations:substantial-impact"] = "yes"
+    assert evaluate_domain("domain:deviations", excluded).judgment is Judgment.HIGH
+
+
+def test_measurement_evaluation_keeps_awareness_possible_and_likely_influence_distinct():
+    possible_not_likely = {
+        "sq:measurement:method-inappropriate": "no",
+        "sq:measurement:differential": "no",
+        "sq:measurement:assessor-aware": "yes",
+        "sq:measurement:influence-possible": "yes",
+        "sq:measurement:influence-likely": "no",
+    }
+    assert (
+        evaluate_domain("domain:measurement", possible_not_likely).judgment
+        is Judgment.SOME_CONCERNS
+    )
+
+    likely = {**possible_not_likely, "sq:measurement:influence-likely": "yes"}
+    assert evaluate_domain("domain:measurement", likely).judgment is Judgment.HIGH
+
+    detection_difference = {
+        "sq:measurement:method-inappropriate": "no",
+        "sq:measurement:differential": "yes",
+    }
+    assert evaluate_domain("domain:measurement", detection_difference).judgment is Judgment.HIGH
+
+
+def test_selection_uncertainty_is_not_observed_results_driven_selection():
+    unresolved = {
+        "sq:selection:prespecified-analysis": "yes",
+        "sq:selection:multiple-measurements": "no_information",
+        "sq:selection:multiple-analyses": "no",
+    }
+    assert evaluate_domain("domain:selection", unresolved).judgment is Judgment.SOME_CONCERNS
+
+    selected = {**unresolved, "sq:selection:multiple-measurements": "yes"}
+    assert evaluate_domain("domain:selection", selected).judgment is Judgment.HIGH

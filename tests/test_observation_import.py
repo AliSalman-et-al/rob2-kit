@@ -92,6 +92,52 @@ def test_import_is_deterministic_and_keeps_observations_structural() -> None:
         second_destination.unlink(missing_ok=True)
 
 
+def test_import_projects_validation_repairs_as_mechanical_events() -> None:
+    raw = (
+        json.dumps(
+            {
+                "type": "item.completed",
+                "item": {
+                    "id": "repair-call",
+                    "type": "mcp_tool_call",
+                    "server": "rob2",
+                    "tool": "validate_domain_assessment",
+                    "arguments": {"trial_id": "trial-a", "domain_id": "domain:missing"},
+                    "result": {
+                        "structured_content": {
+                            "outcome": "repair",
+                            "repairs": [
+                                {
+                                    "path": "/answers/0/answer",
+                                    "code": "invalid_answer",
+                                    "detail": "private detail omitted",
+                                },
+                                {
+                                    "path": "/answers",
+                                    "code": "missing_active_question",
+                                    "detail": "private detail omitted",
+                                },
+                            ],
+                        }
+                    },
+                },
+            }
+        )
+        + "\n"
+    ).encode()
+
+    artifact = import_observations(_manifest(), {"session-a": raw})
+    operation = artifact["attempts"][0]["operations"][0]
+
+    assert operation["repair"] == {
+        "kind": "mechanical_validation",
+        "count": 2,
+        "codes": ["invalid_answer", "missing_active_question"],
+        "paths": ["/answers", "/answers/0/answer"],
+    }
+    assert "private detail omitted" not in json.dumps(artifact)
+
+
 def test_documented_tools_match_the_public_contract() -> None:
     public_tools = frozenset(TOOL_NAMES)
     assert public_tools <= DOCUMENTED_TOOLS
@@ -348,6 +394,11 @@ def test_malicious_nested_fields_are_not_emitted_and_enums_are_closed() -> None:
         "committed_evidence_ids",
         "submitted_option_ids",
         "committed_option_ids",
+        "repair",
+        "kind",
+        "count",
+        "codes",
+        "paths",
     }
 
     def keys(value: object) -> set[str]:
@@ -499,3 +550,123 @@ def test_committed_save_uses_canonical_option_and_evidence_only() -> None:
     assert mutation["committed_evidence_ids"] == ["eh_2222222222222222"]
     commit = artifact["attempts"][0]["accepted_commits"][0]
     assert commit["committed_option_ids"] == ["opt_active123456789"]
+
+
+def test_revision_projection_retains_before_after_state_without_scientific_prose() -> None:
+    first_identity = "sha256:" + "6" * 64
+    second_identity = "sha256:" + "7" * 64
+    transcript = (
+        json.dumps(
+            {
+                "type": "item.completed",
+                "item": {
+                    "id": "first",
+                    "type": "mcp_tool_call",
+                    "server": "rob2",
+                    "tool": "save_domain_judgment",
+                    "arguments": {"trial_id": "trial-a", "domain_id": "domain:randomization"},
+                    "result": {
+                        "structured_content": {
+                            "outcome": "success",
+                            "data": {
+                                "checkpoint": {
+                                    "identity": first_identity,
+                                    "answers": [
+                                        {
+                                            "question_id": "sq:randomization:sequence",
+                                            "answer": "no_information",
+                                            "justification": "Initial private justification.",
+                                            "unknowns": ["Initial private unknown."],
+                                            "counterevidence": [],
+                                            "bases": [
+                                                {
+                                                    "kind": "direct_support",
+                                                    "evidence": "eh_3333333333333333",
+                                                    "source_id": "source_aaaaaaaaaaaaaaaa",
+                                                    "page": 2,
+                                                    "start_line": 4,
+                                                    "end_line": 6,
+                                                }
+                                            ],
+                                        }
+                                    ],
+                                }
+                            },
+                        }
+                    },
+                },
+            }
+        )
+        + "\n"
+        + json.dumps(
+            {
+                "type": "item.completed",
+                "item": {
+                    "id": "second",
+                    "type": "mcp_tool_call",
+                    "server": "rob2",
+                    "tool": "save_domain_judgment",
+                    "arguments": {"trial_id": "trial-a", "domain_id": "domain:randomization"},
+                    "result": {
+                        "structured_content": {
+                            "outcome": "success",
+                            "data": {
+                                "checkpoint": {
+                                    "identity": second_identity,
+                                    "supersedes": first_identity,
+                                    "revision_basis": {
+                                        "kind": "self_correction",
+                                        "rationale": "Private revision rationale.",
+                                    },
+                                    "answers": [
+                                        {
+                                            "question_id": "sq:randomization:sequence",
+                                            "answer": "probably_no",
+                                            "justification": "Updated private justification.",
+                                            "unknowns": [],
+                                            "counterevidence": ["Updated private counterpoint."],
+                                            "bases": [
+                                                {
+                                                    "kind": "direct_support",
+                                                    "evidence": "eh_3333333333333333",
+                                                    "source_id": "source_aaaaaaaaaaaaaaaa",
+                                                    "page": 2,
+                                                    "start_line": 4,
+                                                    "end_line": 6,
+                                                }
+                                            ],
+                                        }
+                                    ],
+                                }
+                            },
+                        }
+                    },
+                },
+            }
+        )
+    ).encode()
+
+    artifact = import_observations(_manifest(), {"session-a": transcript})
+    operations = artifact["attempts"][0]["operations"]
+    revision = next(
+        operation["mutation"]["revision"]
+        for operation in operations
+        if operation["call_id"] == "second"
+    )
+
+    assert revision["before_identity"] == first_identity
+    assert revision["after_identity"] == second_identity
+    assert revision["before"][0]["answer"] == "no_information"
+    assert revision["after"][0]["answer"] == "probably_no"
+    assert revision["before"][0]["evidence_locators"][0]["page"] == 2
+    assert revision["revision_reason"]["kind"] == "self_correction"
+    assert revision["revision_reason"]["rationale_bytes"] > 0
+    encoded = json.dumps(artifact, sort_keys=True)
+    for forbidden in (
+        "Initial private justification",
+        "Initial private unknown",
+        "Updated private justification",
+        "Updated private counterpoint",
+        "Private revision rationale",
+    ):
+        assert forbidden not in encoded

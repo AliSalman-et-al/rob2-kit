@@ -609,6 +609,35 @@ _DOMAIN_TRAPS = (
     "Stratification does not prove allocation concealment.",
 )
 
+
+def _official_guidance_recovery(domain_id: str) -> dict[str, Any]:
+    """Expose the captured official rubric without generating a replacement summary."""
+
+    sections = [
+        {
+            "question_ids": (question.id,),
+            "source_version": question.guidance.official.version,
+            "source_sha256": question.guidance.official.source_sha256,
+            "source_locator": question.guidance.official.source_locator,
+            "excerpt": question.guidance.official.source_excerpt,
+        }
+        for question in SCIENTIFIC_PACK.questions
+        if question.domain_id == domain_id
+    ]
+    if not sections:
+        raise ValueError("official guidance is unavailable for Domain")
+    return {
+        "pack": {
+            "id": SCIENTIFIC_PACK.id,
+            "version": SCIENTIFIC_PACK.version,
+            "content_hash": SCIENTIFIC_PACK.content_hash,
+        },
+        "sections": sections,
+        "complete": True,
+        "next_cursor": None,
+    }
+
+
 _RESPONSE_FRAMEWORK = ResponseFramework(
     version="22 August 2019",
     source_locator="Full guidance p. 3, sections 1.1 and 1.1.1",
@@ -2605,6 +2634,7 @@ def get_domain_context(
             "version": SCIENTIFIC_PACK.version,
             "content_hash": SCIENTIFIC_PACK.content_hash,
         },
+        "official_guidance": _official_guidance_recovery(domain_id),
         "state_revision": state.get("revision", 0),
         "result": result_projection(result),
         "evidence": list(catalog.values()),

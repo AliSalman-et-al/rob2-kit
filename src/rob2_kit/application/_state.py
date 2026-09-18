@@ -411,6 +411,19 @@ def _ensure(root: Path) -> None:
             "evidence_identity TEXT NOT NULL, phase TEXT NOT NULL DEFAULT 'proposal', "
             "PRIMARY KEY(session_identity,rank))"
         )
+        # Keep the phase and investigative purpose of every delivery.  The
+        # compact table above remains the current-row index for old readers;
+        # this append-only projection prevents a later Domain search from
+        # erasing the original unassigned discovery history.
+        connection.execute(
+            "CREATE TABLE IF NOT EXISTS search_evidence_provenance_history ("
+            "session_identity TEXT NOT NULL, rank INTEGER NOT NULL, trial_id TEXT NOT NULL, "
+            "evidence_identity TEXT NOT NULL, phase TEXT NOT NULL, "
+            "purpose_domain_id TEXT NOT NULL DEFAULT '', "
+            "purpose_question_id TEXT NOT NULL DEFAULT '', "
+            "PRIMARY KEY(session_identity,rank,evidence_identity,phase,"
+            "purpose_domain_id,purpose_question_id))"
+        )
         provenance_columns = {
             str(row[1])
             for row in connection.execute("PRAGMA table_info(search_evidence_provenance)")
@@ -420,6 +433,12 @@ def _ensure(root: Path) -> None:
                 "ALTER TABLE search_evidence_provenance ADD COLUMN phase TEXT NOT NULL "
                 "DEFAULT 'proposal'"
             )
+        connection.execute(
+            "INSERT OR IGNORE INTO search_evidence_provenance_history "
+            "(session_identity,rank,trial_id,evidence_identity,phase) "
+            "SELECT session_identity,rank,trial_id,evidence_identity,phase "
+            "FROM search_evidence_provenance"
+        )
         connection.execute(
             "CREATE TABLE IF NOT EXISTS page_reads ("
             "batch_id TEXT NOT NULL, phase TEXT NOT NULL, "

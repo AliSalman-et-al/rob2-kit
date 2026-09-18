@@ -11,6 +11,7 @@ from typing import Any
 SCHEMA = "rob2-kit.held-out-evaluation.v0.5"
 MANIFEST_SCHEMA = "rob2-kit.evaluation-manifest.v0.5"
 COMPARISON_SCHEMA = "rob2-kit.evaluation-comparisons.v0.1"
+COMPARISON_RUN_SCHEMA = "rob2-kit.evaluation-comparison-run.v0.1"
 CELL_FIELDS = (
     "trial_id",
     "result_identity",
@@ -71,17 +72,56 @@ _COMPARISON_ARM_FIELDS = {
     "evidence",
 }
 _COMPARISON_PAIR_FIELDS = {"id", "left", "right", "diagnostic"}
+_COMPARISON_CONFIG_FIELDS = {"schema", "arms", "pairs"}
+_COMPARISON_PLAN_FIELDS = {
+    "cases",
+    "host",
+    "model",
+    "retry_policy",
+    "scoring",
+    "budget",
+}
+_COMPARISON_CASE_FIELDS = {"case_id", "trial_id", "outcome_id", "domain_ids"}
+_COMPARISON_HOST_FIELDS = {"provider", "interface", "version", "prompt_identity"}
+_COMPARISON_MODEL_FIELDS = {"family", "version", "effort"}
+_COMPARISON_RETRY_FIELDS = {"max_attempts", "rule"}
+_COMPARISON_SCORING_FIELDS = {"primary_metric", "metrics", "class_recall"}
+_COMPARISON_BUDGET_FIELDS = {
+    "max_attempts",
+    "max_cost",
+    "max_context_bytes",
+    "max_tool_calls",
+}
 _COMPARISON_VALUES = {
     "retrieval": {"free_search", "supplied_decisive_evidence"},
     "spelling": {"porter_only", "optional_spelling"},
     "context": {"baseline", "compact", "expanded"},
     "guidance": {"baseline", "retrieval_neutral", "context_neutral"},
 }
+_COMPARISON_ATTEMPT_FIELDS = {
+    "attempt_id",
+    "arm_id",
+    "cell_id",
+    "session_id",
+    "status",
+    "prediction",
+    "support",
+    "completion",
+    "latency_ms",
+    "cost",
+    "context_bytes",
+    "tool_calls",
+}
+_COMPARISON_STATUSES = frozenset({"assessed", "needs_input", "failed", "draw", "scope_correction"})
+_COMPARISON_SUPPORT = frozenset({"full", "partial", "unsupported", "conflicted", "unavailable"})
 
 
 def validate_comparison_config(config: Any, interventions: dict[str, str]) -> None:
     """Validate a predeclared comparison design without model-facing coaching."""
-    if not isinstance(config, dict) or set(config) != {"schema", "arms", "pairs"}:
+    if not isinstance(config, dict) or set(config) not in (
+        _COMPARISON_CONFIG_FIELDS,
+        _COMPARISON_CONFIG_FIELDS | {"plan"},
+    ):
         raise ValueError("comparison_config has an unclosed field set")
     if not isinstance(interventions, dict):
         raise ValueError("comparison interventions must be an object")
@@ -153,6 +193,262 @@ def validate_comparison_config(config: Any, interventions: dict[str, str]) -> No
         ):
             raise ValueError("comparison pair is invalid")
         pair_ids.add(pair_id)
+    if "plan" in config:
+        _validate_comparison_plan(config["plan"])
+
+
+def _validate_comparison_plan(plan: Any) -> None:
+    if not isinstance(plan, dict) or set(plan) != _COMPARISON_PLAN_FIELDS:
+        raise ValueError("comparison plan has an unclosed field set")
+    cases = plan["cases"]
+    if not isinstance(cases, list) or not cases:
+        raise ValueError("comparison plan cases must be a non-empty list")
+    case_ids: set[str] = set()
+    for case in cases:
+        if not isinstance(case, dict) or set(case) != _COMPARISON_CASE_FIELDS:
+            raise ValueError("comparison plan case has an unclosed field set")
+        case_id = case["case_id"]
+        if not isinstance(case_id, str) or not case_id or case_id in case_ids:
+            raise ValueError("comparison plan case ids must be unique non-empty strings")
+        case_ids.add(case_id)
+        if any(
+            not isinstance(case[key], str) or not case[key] for key in ("trial_id", "outcome_id")
+        ):
+            raise ValueError("comparison plan case target is invalid")
+        domains = case["domain_ids"]
+        if (
+            not isinstance(domains, list)
+            or not domains
+            or any(not isinstance(domain, str) or not domain for domain in domains)
+            or len(set(domains)) != len(domains)
+        ):
+            raise ValueError("comparison plan case domains are invalid")
+
+    _closed_plan_object(plan["host"], _COMPARISON_HOST_FIELDS, "host")
+    host = plan["host"]
+    if any(not isinstance(host[key], str) or not host[key] for key in _COMPARISON_HOST_FIELDS):
+        raise ValueError("comparison plan host settings are invalid")
+    if SHA.match(host["prompt_identity"]) is None:
+        raise ValueError("comparison plan prompt identity is invalid")
+
+    _closed_plan_object(plan["model"], _COMPARISON_MODEL_FIELDS, "model")
+    model = plan["model"]
+    if any(not isinstance(model[key], str) or not model[key] for key in _COMPARISON_MODEL_FIELDS):
+        raise ValueError("comparison plan model settings are invalid")
+
+    _closed_plan_object(plan["retry_policy"], _COMPARISON_RETRY_FIELDS, "retry policy")
+    retry_policy = plan["retry_policy"]
+    if (
+        type(retry_policy["max_attempts"]) is not int
+        or not 1 <= retry_policy["max_attempts"] <= 8
+        or retry_policy["rule"] != "infrastructure_only"
+    ):
+        raise ValueError("comparison plan retry policy is invalid")
+
+    _closed_plan_object(plan["scoring"], _COMPARISON_SCORING_FIELDS, "scoring")
+    scoring = plan["scoring"]
+    metrics = scoring["metrics"]
+    if (
+        not isinstance(scoring["primary_metric"], str)
+        or not scoring["primary_metric"]
+        or not isinstance(metrics, list)
+        or not metrics
+        or any(not isinstance(metric, str) or not metric for metric in metrics)
+        or len(set(metrics)) != len(metrics)
+        or "support" not in metrics
+        or "completion" not in metrics
+        or "latency" not in metrics
+        or "cost" not in metrics
+        or type(scoring["class_recall"]) is not bool
+    ):
+        raise ValueError("comparison plan scoring is invalid")
+
+    _closed_plan_object(plan["budget"], _COMPARISON_BUDGET_FIELDS, "budget")
+    budget = plan["budget"]
+    if (
+        type(budget["max_attempts"]) is not int
+        or budget["max_attempts"] < len(cases)
+        or type(budget["max_cost"]) not in (int, float)
+        or isinstance(budget["max_cost"], bool)
+        or budget["max_cost"] < 0
+        or type(budget["max_context_bytes"]) is not int
+        or budget["max_context_bytes"] < 0
+        or type(budget["max_tool_calls"]) is not int
+        or budget["max_tool_calls"] < 0
+    ):
+        raise ValueError("comparison plan budget is invalid")
+
+
+def _closed_plan_object(value: Any, fields: set[str], name: str) -> None:
+    if not isinstance(value, dict) or set(value) != fields:
+        raise ValueError(f"comparison plan {name} has an unclosed field set")
+
+
+def run_comparison(
+    config: dict[str, Any],
+    interventions: dict[str, str],
+    outcomes: list[dict[str, Any]],
+    labels: dict[str, str] | None = None,
+) -> dict[str, Any]:
+    """Retain and score preregistered comparison outcomes without choosing a winner.
+
+    Model execution stays outside this deterministic module.  The runner accepts
+    only privacy-safe structural rows, keeps every attempt (including failures,
+    draws, and scope corrections), and computes support/completion/cost metrics
+    separately from optional scientific labels.
+    """
+
+    validate_comparison_config(config, interventions)
+    plan = config.get("plan")
+    if plan is None:
+        raise ValueError("comparison runs require a predeclared plan")
+    _validate_comparison_plan(plan)
+    if not isinstance(outcomes, list) or not outcomes:
+        raise ValueError("comparison outcomes must be a non-empty list")
+    arm_ids = {arm["id"] for arm in config["arms"]}
+    case_ids = {case["case_id"] for case in plan["cases"]}
+    retry_limit = plan["retry_policy"]["max_attempts"]
+    budget = plan["budget"]
+    seen_attempts: set[str] = set()
+    attempts_by_cell: Counter[tuple[str, str]] = Counter()
+    sessions_by_arm: dict[str, set[str]] = defaultdict(set)
+    rows: list[dict[str, Any]] = []
+    for index, outcome in enumerate(outcomes):
+        row = _closed(outcome, _COMPARISON_ATTEMPT_FIELDS, f"comparison outcome[{index}]")
+        if (
+            not all(
+                isinstance(row[key], str) and row[key]
+                for key in ("attempt_id", "arm_id", "cell_id", "session_id", "prediction")
+            )
+            or row["arm_id"] not in arm_ids
+            or row["attempt_id"] in seen_attempts
+            or row["cell_id"] not in case_ids
+            or row["status"] not in _COMPARISON_STATUSES
+            or row["support"] not in _COMPARISON_SUPPORT
+            or type(row["completion"]) is not bool
+            or any(
+                not isinstance(row[key], (int, float)) or isinstance(row[key], bool) or row[key] < 0
+                for key in ("latency_ms", "cost", "context_bytes", "tool_calls")
+            )
+        ):
+            raise ValueError(f"comparison outcome[{index}] is invalid")
+        seen_attempts.add(row["attempt_id"])
+        attempt_key = (row["arm_id"], row["cell_id"])
+        attempts_by_cell[attempt_key] += 1
+        if attempts_by_cell[attempt_key] > retry_limit:
+            raise ValueError("comparison retry policy was exceeded")
+        sessions_by_arm[row["arm_id"]].add(row["session_id"])
+        rows.append(dict(row))
+    if len(rows) > budget["max_attempts"]:
+        raise ValueError("comparison usage budget was exceeded")
+    if sum(row["cost"] for row in rows) > budget["max_cost"]:
+        raise ValueError("comparison cost budget was exceeded")
+    if sum(row["context_bytes"] for row in rows) > budget["max_context_bytes"]:
+        raise ValueError("comparison context budget was exceeded")
+    if sum(row["tool_calls"] for row in rows) > budget["max_tool_calls"]:
+        raise ValueError("comparison tool budget was exceeded")
+    all_sessions = [session for sessions in sessions_by_arm.values() for session in sessions]
+    if len(all_sessions) != len(set(all_sessions)):
+        raise ValueError("comparison arms require independent sessions")
+    if labels is not None:
+        if not isinstance(labels, dict) or any(
+            not isinstance(cell, str) or not cell or not isinstance(label, str) or not label
+            for cell, label in labels.items()
+        ):
+            raise ValueError("comparison labels must be a non-empty string mapping")
+
+    def metrics(arm_id: str, arm_rows: list[dict[str, Any]]) -> dict[str, Any]:
+        scored = [
+            row
+            for row in arm_rows
+            if row["status"] == "assessed" and row["cell_id"] in (labels or {})
+        ]
+        correct = (
+            sum(row["prediction"] == labels[row["cell_id"]] for row in scored) if labels else 0
+        )
+        class_recall = None
+        if labels is not None:
+            classes = sorted({labels[row["cell_id"]] for row in scored})
+            class_recall = {
+                label: _rate(
+                    sum(
+                        row["prediction"] == label and labels[row["cell_id"]] == label
+                        for row in scored
+                    ),
+                    sum(labels[row["cell_id"]] == label for row in scored),
+                )
+                for label in classes
+            }
+        return {
+            "attempts": len(arm_rows),
+            "completion": _rate(sum(row["completion"] for row in arm_rows), len(arm_rows)),
+            "scientific_accuracy": _rate(correct, len(scored)) if labels is not None else None,
+            "class_recall": class_recall,
+            "support": dict(Counter(row["support"] for row in arm_rows)),
+            "statuses": dict(Counter(row["status"] for row in arm_rows)),
+            "latency_ms": sum(row["latency_ms"] for row in arm_rows),
+            "cost": sum(row["cost"] for row in arm_rows),
+            "context_bytes": sum(row["context_bytes"] for row in arm_rows),
+            "tool_calls": sum(row["tool_calls"] for row in arm_rows),
+        }
+
+    by_arm = {
+        arm_id: metrics(arm_id, [row for row in rows if row["arm_id"] == arm_id])
+        for arm_id in sorted(arm_ids)
+    }
+    pair_metrics: dict[str, Any] = {}
+    for pair in config["pairs"]:
+        left: dict[str, list[dict[str, Any]]] = defaultdict(list)
+        right: dict[str, list[dict[str, Any]]] = defaultdict(list)
+        for row in rows:
+            if row["arm_id"] == pair["left"]:
+                left[row["cell_id"]].append(row)
+            elif row["arm_id"] == pair["right"]:
+                right[row["cell_id"]].append(row)
+        matched = sorted(set(left) & set(right))
+        comparable = [cell for cell in matched if len(left[cell]) == len(right[cell]) == 1]
+        labeled_comparable = [cell for cell in comparable if labels and cell in labels]
+        pair_metrics[pair["id"]] = {
+            "left": pair["left"],
+            "right": pair["right"],
+            "matched_cells": len(matched),
+            "ambiguous_cells": len(matched) - len(comparable),
+            "same_prediction": sum(
+                left[cell][0]["prediction"] == right[cell][0]["prediction"] for cell in comparable
+            ),
+            "different_prediction": sum(
+                left[cell][0]["prediction"] != right[cell][0]["prediction"] for cell in comparable
+            ),
+            "left_accuracy": (
+                _rate(
+                    sum(left[cell][0]["prediction"] == labels[cell] for cell in labeled_comparable),
+                    len(labeled_comparable),
+                )
+                if labels is not None
+                else None
+            ),
+            "right_accuracy": (
+                _rate(
+                    sum(
+                        right[cell][0]["prediction"] == labels[cell] for cell in labeled_comparable
+                    ),
+                    len(labeled_comparable),
+                )
+                if labels is not None
+                else None
+            ),
+        }
+    return privacy_safe_receipt(
+        {
+            "schema": COMPARISON_RUN_SCHEMA,
+            "config_identity": _hash(config),
+            "plan_identity": _hash(plan),
+            "interventions": dict(interventions),
+            "outcomes": rows,
+            "metrics": {"arms": by_arm, "pairs": pair_metrics},
+            "retained_outcome_count": len(rows),
+        }
+    )
 
 
 def _hash(value: Any) -> str:

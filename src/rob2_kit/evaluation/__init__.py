@@ -1,10 +1,12 @@
 """Provider-independent, privacy-safe held-out evaluation utilities."""
 
 from .harness import (
+    COMPARISON_RUN_SCHEMA,
     COMPARISON_SCHEMA,
     EVENT_TYPES,
     SCHEMA,
     evaluate_fixture,
+    run_comparison,
     validate_comparison_config,
     validate_split_isolation,
 )
@@ -27,11 +29,13 @@ from .qualification_report import validate as validate_qualification_report
 __all__ = [
     "EVENT_TYPES",
     "COMPARISON_SCHEMA",
+    "COMPARISON_RUN_SCHEMA",
     "SCHEMA",
     "OBSERVATION_MANIFEST_SCHEMA",
     "ObservationImportError",
     "dump_observations",
     "evaluate_fixture",
+    "run_comparison",
     "import_observations",
     "load_manifest",
     "validate_split_isolation",

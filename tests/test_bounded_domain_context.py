@@ -662,6 +662,25 @@ def test_domain_context_text_is_compact_and_ordered(tmp_path: Path) -> None:
     )
 
 
+def test_domain_context_recovers_complete_pack_bound_official_guidance(tmp_path: Path) -> None:
+    workspace, _evidence, _revision = _assessment_workspace(tmp_path)
+    context, _transport_bytes = _wire_context(workspace)
+    data = context["data"]
+    recovery = data["official_guidance"]
+
+    assert recovery["complete"] is True
+    assert recovery["next_cursor"] is None
+    assert recovery["pack"] == data["pack"]
+    question_ids = {
+        question_id for section in recovery["sections"] for question_id in section["question_ids"]
+    }
+    expected = {question["id"] for question in data["questions"]}
+    assert question_ids == expected
+    assert all(section["source_sha256"] for section in recovery["sections"])
+    assert all(section["source_locator"] for section in recovery["sections"])
+    assert all(section["excerpt"] for section in recovery["sections"])
+
+
 def test_oversized_narrative_has_exact_read_recovery_and_utf8_accounting() -> None:
     quote = "é" * (_DOMAIN_RECOVERABLE_NARRATIVE_TEXT_BUDGET // 2 + 1)
     item = {

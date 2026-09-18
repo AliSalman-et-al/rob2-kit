@@ -326,6 +326,7 @@ _GUIDANCE: dict[str, QuestionGuidance] = {
         (
             "The question is about effect of assignment, so grouping must follow randomized assignment.",
             "Assess what the analysis actually did, not the label attached to it: ITT/mITT/as-treated terminology is a description to verify against assignment, grouping, and exclusions.",
+            "Never-treated participants are not automatically participants with no adverse event or unavailable outcome. Recover the documented eligibility, outcome availability, and exclusion reason before judging the approved assignment-effect estimand.",
         ),
         (
             "an endpoint definition",
@@ -351,7 +352,10 @@ _GUIDANCE: dict[str, QuestionGuidance] = {
                 "The wrong-group analysis or exclusions could not substantially affect the result.",
             ),
         ),
-        ("This is conditional on an inappropriate or uncertain analysis in 2.6.",),
+        (
+            "This is conditional on an inappropriate or uncertain analysis in 2.6.",
+            "Assess potential impact only after deciding whether 2.6 was appropriate; a small or balanced exclusion can have low impact without making an inappropriate analysis appropriate.",
+        ),
         ("a small percentage alone", "an ITT analysis", "a group label without exclusion counts"),
     ),
     "sq:missing:data-available": _guidance(
@@ -361,6 +365,7 @@ _GUIDANCE: dict[str, QuestionGuidance] = {
         (
             "For yes or probably yes, actual outcome-availability evidence can be comparable observed-outcome counts, arm-specific loss-to-follow-up or censoring accounting, or an explicit complete/nearly-complete ascertainment statement.",
             "Compare the approved outcome/time point across participant-flow and outcome-data passages. For each comparable arm or unit distinguish randomized, observed, analysed, and imputed counts, plus exclusions and reasons. A missing count or an explicit complete-ascertainment statement is valid source information; do not substitute an analysis denominator for observed data. Calculate randomized minus observed only when population, arm, unit, and time point are the same. Imputed data count as missing.",
+            "Keep outcome availability separate from mitigation quality: a sensitivity analysis or imputation does not change the observed count, and observed cannot be inferred as analysed minus imputed unless the source establishes the same population, time window, and mutually exclusive counts.",
         ),
         "Only answer no_information when the report provides no information about the extent of missing outcome data.",
         (
@@ -410,7 +415,10 @@ _GUIDANCE: dict[str, QuestionGuidance] = {
                 "The available evidence does not show that the result was free from missing-data bias.",
             ),
         ),
-        ("Imputation alone is not evidence that missing outcome data did not bias the result.",),
+        (
+            "Imputation alone is not evidence that missing outcome data did not bias the result.",
+            "Availability and mitigation are separate premises: a familiar method name or numerically stable estimate is not enough; the sensitivity analysis must span plausible assumptions relevant to the documented missingness mechanism.",
+        ),
         (
             "an ITT analysis",
             "last observation carried forward",
@@ -634,6 +642,7 @@ _GUIDANCE: dict[str, QuestionGuidance] = {
         (
             "Use the review's prespecified outcome-domain eligibility criteria, not only the reported Result, and compare the reported measurement with all eligible alternatives.",
             "An applicable plan's correspondence and chronology are relevant context but do not themselves establish results-driven selection. The approved Result fixes the target being assessed; it does not erase other eligible measurements in the outcome domain or make their selection an observed fact.",
+            "If eligible alternatives remain unresolved, preserve no_information rather than treating the absence of documented selection as no/probably no. Eligibility is defined independently of which result was reported.",
         ),
         (
             "an endpoint definition",
@@ -668,6 +677,7 @@ _GUIDANCE: dict[str, QuestionGuidance] = {
             "Use the review's prespecified outcome-domain eligibility criteria, not only the reported Result, and compare the reported analysis with the complete eligible set.",
             "An applicable plan's correspondence and chronology are distinct checks. The approved Result fixes the target being assessed; it does not erase eligible alternative analyses or turn an unresolved alternative into an observed selection.",
             "Reporting several analyses together establishes multiplicity, not result-based selection. Inability to rule out selection does not establish that it probably occurred.",
+            "When the plan is insufficiently detailed and eligible analyses remain possible but unresolved, use no_information; do not turn an unobserved selection into no/probably no merely because the report names one analysis.",
         ),
         (
             "an endpoint definition",

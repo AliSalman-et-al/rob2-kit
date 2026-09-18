@@ -6,6 +6,7 @@ from pathlib import Path
 
 from support.rob2 import (
     _call,
+    _domain_draft,
     _prepared_evidence,
     _proposal_args,
     _result,
@@ -151,6 +152,27 @@ def test_current_notes_avoid_duplicate_read_gate_on_approved_proposal_retry(
 
     assert retry["outcome"] == "success", retry
     assert retry["data"].get("retry") is True
+
+
+def test_working_checkpoint_yields_to_a_newer_canonical_domain_commit(tmp_path: Path) -> None:
+    workspace = _workspace(tmp_path)
+    evidence = _proposal_waiting_for_review(workspace)
+    _call(workspace, "save_working_checkpoint", {"checkpoint": _checkpoint(evidence["source_id"])})
+    _review(workspace)
+    revision = int(_call(workspace, "get_domain_context", {})["head"]["state_revision"])
+
+    saved = _call(
+        workspace,
+        "save_domain_judgment",
+        _domain_draft("trial", SCIENTIFIC_PACK.domains[0].id, revision, evidence),
+    )
+
+    assert saved["outcome"] == "success", saved
+    status = _call(workspace, "get_status", {})["data"]["working_checkpoint"]
+    assert status["status"] == "stale"
+    assert status["reason"] == "canonical_newer"
+    assert status["checkpoint"] is None
+    assert status["recovery"] == "resume_from_canonical_checkpoint"
 
 
 def test_working_checkpoint_is_hidden_after_result_replacement(tmp_path: Path) -> None:

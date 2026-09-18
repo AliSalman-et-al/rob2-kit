@@ -617,6 +617,7 @@ class WorkingCheckpointData(PublicModel):
     batch_id: Identity
     trial_id: TrialId
     result_identity: Identity | None = None
+    domain_checkpoint_identities: tuple[Identity, ...] | None = None
     source_scope: tuple[WorkingSourceBindingData, ...]
     observations: tuple[WorkingNoteData, ...]
     interpretations: tuple[WorkingNoteData, ...]
@@ -631,14 +632,23 @@ class WorkingCheckpointStatus(PublicModel):
     status: Literal["absent", "current", "stale"]
     reason: (
         Literal[
-            "no_active_trial", "no_active_batch", "not_saved", "result_changed", "source_changed"
+            "no_active_trial",
+            "no_active_batch",
+            "not_saved",
+            "result_changed",
+            "source_changed",
+            "canonical_newer",
         ]
         | None
     )
     trial_id: TrialId | None = None
     checkpoint_identity: Identity | None = None
     checkpoint: WorkingCheckpointData | None = None
-    recovery: Literal["reorient_from_sources", "resume_from_checkpoint"]
+    recovery: Literal[
+        "reorient_from_sources",
+        "resume_from_checkpoint",
+        "resume_from_canonical_checkpoint",
+    ]
 
 
 class TrialDomainAttribution(PublicModel):
@@ -1617,11 +1627,37 @@ class DomainPack(PublicModel):
     content_hash: Identity
 
 
+class OfficialGuidanceSection(PublicModel):
+    """One exact, pack-bound official excerpt available for recovery."""
+
+    question_ids: tuple[QuestionId, ...] = Field(min_length=1)
+    source_version: str = Field(min_length=1)
+    source_sha256: str = Field(pattern=r"^[A-F0-9]{64}$")
+    source_locator: str = Field(min_length=1)
+    excerpt: str = Field(min_length=1)
+
+
+class OfficialGuidanceRecovery(PublicModel):
+    """Complete bounded official guidance for the selected Domain."""
+
+    pack: DomainPack
+    sections: tuple[OfficialGuidanceSection, ...] = Field(min_length=1)
+    complete: StrictBool
+    next_cursor: str | None = None
+
+
 class DomainContextData(PublicModel):
     trial_id: TrialId
     domain_id: DomainId
     pack: DomainPack = Field(
         description="Exact scientific pack identity and version used for this Domain context."
+    )
+    official_guidance: OfficialGuidanceRecovery | None = Field(
+        default=None,
+        description=(
+            "Exact, pack-bound official excerpts for the selected Domain. Complete is false "
+            "only when a bounded continuation is supplied."
+        ),
     )
     result: DomainResultChoice
     evidence: tuple[DomainEvidence, ...]

@@ -41,6 +41,19 @@ COUNTERS = {
 }
 
 
+def reset_counters() -> None:
+    """Reset process-local observability counters for one measured run."""
+
+    for key in COUNTERS:
+        COUNTERS[key] = 0.0 if key == "elapsed_ms" else 0
+
+
+def counter_snapshot() -> dict[str, int | float]:
+    """Return a detached counter receipt suitable for a performance artifact."""
+
+    return dict(COUNTERS)
+
+
 class WorkflowConflict(RuntimeError):
     def __init__(self, expected: int, actual: int) -> None:
         super().__init__(f"workflow_conflict: expected revision {expected}, current {actual}")
