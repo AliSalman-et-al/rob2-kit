@@ -2,6 +2,8 @@
 
 Use these snippets only when `functions.exec` renders each host output separately.
 The shared receipt and pagination rules live in [Receipt and continuation recovery](evidence.md#receipt-and-continuation-recovery).
+Keep each result's `isError` flag beside `content` when structured content is
+absent. Treat the flag as transport status, not as scientific evidence.
 
 ## Inspect a receipt or error
 
@@ -27,18 +29,18 @@ const r = await tools.mcp__rob2__get_domain_context({ trial_id, domain_id });
 const page = r?.structuredContent ?? null;
 text(page ?? r?.content ?? []);
 if (page?.outcome === "success") {
-  store("domain-next-cursor", page.data?.context_page?.next_cursor ?? null);
+  store(`domain-next-cursor:${trial_id}:${domain_id}`, page.data?.context_page?.next_cursor ?? null);
 }
 ```
 
 ## Pass a cursor
 
 ```javascript
-const cursor = load("domain-next-cursor");
+const cursor = load(`domain-next-cursor:${trial_id}:${domain_id}`);
 const r = await tools.mcp__rob2__get_domain_context({ cursor });
 const page = r?.structuredContent ?? null;
 text(page ?? r?.content ?? []);
 if (page?.outcome === "success") {
-  store("domain-next-cursor", page.data?.context_page?.next_cursor ?? null);
+  store(`domain-next-cursor:${trial_id}:${domain_id}`, page.data?.context_page?.next_cursor ?? null);
 }
 ```

@@ -28,6 +28,7 @@ from ..workflow_models import (
 from ._state import (
     _canonical_evidence_records,
     _canonical_query_text,
+    _canonical_search_text,
     _commit_records,
     _db,
     _ensure,
@@ -97,6 +98,40 @@ def _valid_reasoning_annotations(answer: dict[str, Any]) -> bool:
         for index, basis in enumerate(answer.get("bases", []))
         if isinstance(basis, dict)
     )
+
+
+def _valid_limitation_basis(
+    basis: object, accounts: dict[str, dict[str, Any]], trial_id: str
+) -> bool:
+    """Accept current limitation provenance and replay the legacy receipt gate."""
+    if not isinstance(basis, dict):
+        return False
+    if set(basis) == {"kind", "text", "search_receipt"}:
+        handle = basis.get("search_receipt")
+        account = accounts.get(handle) if isinstance(handle, str) else None
+        return (
+            basis.get("kind") == "limitation"
+            and _nonblank(basis.get("text"))
+            and isinstance(account, dict)
+            and account.get("trial_id") == trial_id
+            and account.get("truncated") is False
+        )
+    if set(basis) not in (
+        {"kind", "unresolved_premise", "stopping_rationale"},
+        {"kind", "unresolved_premise", "stopping_rationale", "search_receipt"},
+    ):
+        return False
+    if (
+        basis.get("kind") != "limitation"
+        or not _nonblank(basis.get("unresolved_premise"))
+        or not _nonblank(basis.get("stopping_rationale"))
+    ):
+        return False
+    if "search_receipt" not in basis:
+        return True
+    handle = basis.get("search_receipt")
+    account = accounts.get(handle) if isinstance(handle, str) else None
+    return isinstance(account, dict) and account.get("trial_id") == trial_id
 
 
 def _valid_missing_data(
@@ -286,14 +321,6 @@ def _source_bound_leaves(value: object, path: str) -> dict[str, object]:
             or leaf_path.startswith("/reported/category_axis_names/")
         )
     }
-
-
-def _host_visual_leaf_allowed(path: str) -> bool:
-    return (
-        path.startswith("/reported/")
-        or (path.startswith("/target/comparison_groups/") and path.endswith("/assignment"))
-        or path.startswith("/target/time_point_or_window/")
-    )
 
 
 def _relation_name(value: object) -> str:
@@ -740,7 +767,7 @@ def _valid_search_account(
     authoritative: dict[str, dict[str, object]],
     identity: Callable[[object], str],
 ) -> bool:
-    required_keys = {
+    legacy_keys = {
         "trial_id",
         "sources",
         "query",
@@ -766,12 +793,15 @@ def _valid_search_account(
         "identity",
         "handle",
     }
-    if (
-        not isinstance(account, dict)
-        or not required_keys.issubset(account)
-        or set(account) != required_keys
+    modern_keys = legacy_keys | {"profile"}
+    purpose_keys = {"purpose_domain_id", "purpose_question_id"}
+    if not isinstance(account, dict) or set(account) not in (
+        legacy_keys,
+        modern_keys,
+        modern_keys | purpose_keys,
     ):
         return False
+    modern = "profile" in account
     query = account.get("query")
     sources = account.get("sources")
     hits = account.get("hits")
@@ -886,9 +916,41 @@ def _valid_search_account(
         or not query.strip()
         or not isinstance(account.get("normalized_query"), str)
         or not account["normalized_query"].strip()
-        or account["normalized_query"] != _canonical_query_text(query)
+        or account["normalized_query"]
+        != (
+            _canonical_search_text(query).casefold()
+            if account.get("mode") == "literal"
+            else _canonical_query_text(query)
+        )
         or not isinstance(account.get("mode"), str)
-        or account["mode"] not in {"all", "phrase", "any", "prefix"}
+        or account["mode"]
+        not in (
+            {"all", "phrase", "any", "prefix", "literal"}
+            if modern
+            else {"all", "phrase", "any", "prefix"}
+        )
+        or (modern and account.get("profile") != "porter-unicode61-v1")
+        or (
+            set(account) == modern_keys | purpose_keys
+            and (
+                account.get("purpose_domain_id")
+                not in {
+                    None,
+                    *(domain.id for domain in SCIENTIFIC_PACK.domains),
+                }
+                or (
+                    account.get("purpose_question_id") is not None
+                    and (
+                        account.get("purpose_domain_id") is None
+                        or not any(
+                            question.id == account.get("purpose_question_id")
+                            and question.domain_id == account.get("purpose_domain_id")
+                            for question in SCIENTIFIC_PACK.questions
+                        )
+                    )
+                )
+            )
+        )
         or not isinstance(limit, int)
         or isinstance(limit, bool)
         or not 1 <= limit <= 100
@@ -2035,9 +2097,6 @@ def _verify_result_evidence(
         ):
             return False
         if reference["kind"] == "figure":
-            selected = by_handle[reference["handle"]]
-            if selected.get("provenance") == "host_visual" and not _host_visual_leaf_allowed(path):
-                return False
             figure_material = str(reference.get("transcription", ""))
             if not supports_material(figure_material, value, path):
                 return False
@@ -2270,6 +2329,7 @@ def _verify_domain_lineage(
                     if not isinstance(basis, dict) or basis.get("kind") not in {
                         "new_evidence",
                         "self_correction",
+                        "mechanical_repair",
                     }:
                         return False
                     if basis.get("kind") == "self_correction":
@@ -2278,7 +2338,7 @@ def _verify_domain_lineage(
                             or not str(basis.get("rationale", "")).strip()
                         ):
                             return False
-                    else:
+                    elif basis.get("kind") == "new_evidence":
                         if (
                             set(basis) != {"kind", "evidence", "rationale"}
                             or not isinstance(basis.get("evidence"), str)
@@ -2291,6 +2351,22 @@ def _verify_domain_lineage(
                             or evidence_item.get("trial_id") != record.get("trial_id")
                             or basis["evidence"] in _domain_evidence_ids(prior)
                             or basis["evidence"] not in _domain_evidence_ids(record)
+                        ):
+                            return False
+                    else:
+                        if set(basis) != {"kind", "repair_id", "codes"}:
+                            return False
+                        repair_id = basis.get("repair_id")
+                        codes = basis.get("codes")
+                        if repair_id is not None and (
+                            not isinstance(repair_id, str) or not repair_id.strip()
+                        ):
+                            return False
+                        if (
+                            not isinstance(codes, list)
+                            or len(codes) != len(set(codes))
+                            or any(not isinstance(code, str) or not code.strip() for code in codes)
+                            or (repair_id is None and not codes)
                         ):
                             return False
             prior = record
@@ -2348,6 +2424,20 @@ def _valid_scientific_contract_descriptor(value: object) -> bool:
         "content_hash": "sha256:3ef492b34a81c19e3f75d72fea2b92c40aebde80c06e24e44c36cd76dc4cf3d4",
         "official_source": expected["official_source"],
     }
+    current_pack_legacy_proof = {
+        "id": "rob2.parallel.assignment",
+        "version": "2019.1",
+        "result_semantics_version": _RESULT_SEMANTICS_VERSION,
+        "content_hash": "sha256:86ad209ba3504bbe353049245b44cebf3b7d83862b2b3e475c431c6fec0a581f",
+        "official_source": expected["official_source"],
+    }
+    current_pack_prior_guidance = {
+        "id": "rob2.parallel.assignment",
+        "version": "2019.1",
+        "result_semantics_version": _RESULT_SEMANTICS_VERSION,
+        "content_hash": "sha256:5c49411aedccf4cae2e3e97a955760ed83bd00283ff5a0ae5041272d13439b60",
+        "official_source": expected["official_source"],
+    }
     current_pack_previous_proof = {
         "id": "rob2.parallel.assignment",
         "version": "2019.1",
@@ -2384,6 +2474,8 @@ def _valid_scientific_contract_descriptor(value: object) -> bool:
         "official_source": expected["official_source"],
     }
     return value in (
+        current_pack_legacy_proof,
+        current_pack_prior_guidance,
         historical,
         legacy,
         current_pack_previous_proof,
@@ -2469,9 +2561,10 @@ def _valid_trial_review_closures(
             "reason",
             "facts",
         }
+        review_shape_with_attribution = review_shape | {"domain_attribution"}
         if (
             not isinstance(review, dict)
-            or set(review) != review_shape
+            or set(review) not in (review_shape, review_shape_with_attribution)
             or review.get("trial_id") != trial_id
             or review.get("disposition") not in review_dispositions
             or review.get("disposition") != disposition
@@ -2505,6 +2598,41 @@ def _valid_trial_review_closures(
                 checkpoint_ids.append(record["identity"])
         if review.get("checkpoint_ids") != checkpoint_ids:
             return False
+        if "domain_attribution" in review:
+            attribution = review.get("domain_attribution")
+            if not isinstance(attribution, list) or len(attribution) != len(checkpoint_ids):
+                return False
+            for domain, item in zip(
+                (
+                    domain
+                    for domain in SCIENTIFIC_PACK.domains
+                    if f"{trial_id}:{domain.id}" in domain_records
+                ),
+                attribution,
+                strict=True,
+            ):
+                record = domain_records.get(f"{trial_id}:{domain.id}")
+                if not isinstance(item, dict) or not isinstance(record, dict):
+                    return False
+                basis = record.get("revision_basis")
+                expected_attribution = (
+                    basis.get("kind")
+                    if isinstance(basis, dict)
+                    and basis.get("kind")
+                    in {"new_evidence", "self_correction", "mechanical_repair"}
+                    else "unchanged"
+                )
+                expected = {
+                    "domain_id": domain.id,
+                    "attribution": expected_attribution,
+                    "checkpoint_identity": record.get("identity"),
+                }
+                if isinstance(record.get("supersedes"), str):
+                    expected["supersedes"] = record["supersedes"]
+                if expected_attribution != "unchanged":
+                    expected["revision_basis"] = basis
+                if item != expected:
+                    return False
         if disposition == "assessed" and len(checkpoint_ids) != len(SCIENTIFIC_PACK.domains):
             return False
         if disposition == "assessed":
@@ -3447,15 +3575,9 @@ def verify_bundle(path: str | Path) -> bool:
                         }:
                             direct_basis = True
                         if use.get("kind") == "limitation":
-                            if (
-                                set(use) != {"kind", "text", "search_receipt"}
-                                or not use["text"].strip()
-                                or not isinstance(use["search_receipt"], str)
-                                or use["search_receipt"] not in account_by_identity
+                            if not _valid_limitation_basis(
+                                use, account_by_identity, record.get("trial_id")
                             ):
-                                return False
-                            account = account_by_identity[use["search_receipt"]]
-                            if account.get("truncated") is not False:
                                 return False
                             uncertainty_basis = True
                             continue
@@ -3684,15 +3806,9 @@ def verify_bundle(path: str | Path) -> bool:
                             }:
                                 direct_basis = True
                             if use.get("kind") == "limitation":
-                                if (
-                                    set(use) != {"kind", "text", "search_receipt"}
-                                    or not use["text"].strip()
-                                    or not isinstance(use["search_receipt"], str)
-                                    or use["search_receipt"] not in history_account_by_identity
+                                if not _valid_limitation_basis(
+                                    use, history_account_by_identity, item.get("trial_id")
                                 ):
-                                    return False
-                                account = history_account_by_identity[use["search_receipt"]]
-                                if account.get("truncated") is not False:
                                     return False
                                 uncertainty_basis = True
                                 continue

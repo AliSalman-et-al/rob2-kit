@@ -7,8 +7,18 @@ from pathlib import Path
 
 import pytest
 
+from rob2_kit.application._state import _SEARCH_DERIVATIVE_VERSION, _SEARCH_PROFILE
 from rob2_kit.application.contracts import COUNTERS
-from rob2_kit.application.evidence import _evidence_for_handles, search_sources
+from rob2_kit.application.evidence import (
+    _SEARCH_CORPUS_CACHE_MAX,
+    _SEARCH_CORPUS_LEASES,
+    _evidence_for_handles,
+    _recomputed_search_projection,
+    _release_search_corpus,
+    _search_continuation,
+    _search_corpus,
+    search_sources,
+)
 from rob2_kit.application.intake import prepare_batch
 from rob2_kit.models import canonical_json_bytes
 from rob2_kit.workflow_models import TrialDeclaration
@@ -40,6 +50,7 @@ def test_warm_search_reuses_complete_ranking_and_evidence_identity(tmp_path: Pat
         "alpha beta one\nunrelated\nalpha beta two\nunrelated\nalpha beta three\n",
     )
     _reset_search_counters()
+    leases_before = _SEARCH_CORPUS_LEASES.copy()
 
     cold = search_sources(workspace, "trial", "alpha beta", mode="any", limit=1)
     cold_evidence = _evidence_for_handles(workspace, {cold["hits"][0]["passage_ref"]})
@@ -62,6 +73,7 @@ def test_warm_search_reuses_complete_ranking_and_evidence_identity(tmp_path: Pat
     assert COUNTERS["search_cache_writes"] == after_cold["search_cache_writes"]
     assert after_cold["source_projection_verifications"] == 2
     assert COUNTERS["source_projection_verifications"] == 4
+    assert _SEARCH_CORPUS_LEASES == leases_before
 
 
 def test_cursor_continuation_and_restart_use_frozen_ranking(tmp_path: Path) -> None:
@@ -191,3 +203,160 @@ def test_warm_search_rejects_incomplete_cached_ranking(tmp_path: Path) -> None:
 
     with pytest.raises(ValueError, match="search session ranking is stale or corrupt"):
         search_sources(workspace, "trial", "alpha beta", mode="any", limit=1)
+
+
+def test_stale_search_projection_is_rebuilt_into_the_current_porter_shape(
+    tmp_path: Path,
+) -> None:
+    workspace, source_id = _workspace(tmp_path, "Allocation was concealed.")
+    database = workspace / ".rob2-kit" / "derivative.sqlite3"
+    with closing(sqlite3.connect(database)) as connection:
+        with connection:
+            connection.execute("DROP TABLE pages_fts")
+            connection.execute(
+                "CREATE VIRTUAL TABLE pages_fts USING fts5(source_id, page UNINDEXED, raw_text)"
+            )
+            connection.execute(
+                "INSERT INTO pages_fts VALUES (?,?,?)",
+                (source_id, 1, "stale search text"),
+            )
+            connection.execute(
+                "UPDATE search_projection_meta SET value='legacy' "
+                "WHERE name IN ('version', 'profile')"
+            )
+
+    result = search_sources(workspace, "trial", "concealment", mode="any")
+
+    assert result["hits"][0]["source_id"] == source_id
+    with closing(sqlite3.connect(database)) as connection:
+        columns = {row[1] for row in connection.execute("PRAGMA table_info(pages_fts)").fetchall()}
+        assert columns == {"source_id", "page", "raw_text", "normalized_text"}
+        assert (
+            connection.execute(
+                "SELECT value FROM search_projection_meta WHERE name='version'"
+            ).fetchone()[0]
+            == _SEARCH_DERIVATIVE_VERSION
+        )
+        assert (
+            connection.execute(
+                "SELECT value FROM search_projection_meta WHERE name='profile'"
+            ).fetchone()[0]
+            == _SEARCH_PROFILE
+        )
+        assert (
+            connection.execute(
+                "SELECT name FROM sqlite_master "
+                "WHERE name IN ('pages_fts_rebuild', 'pages_fts_previous')"
+            ).fetchall()
+            == []
+        )
+
+
+def test_evicted_fts_corpus_stays_open_until_its_query_releases_it(tmp_path: Path) -> None:
+    pages: dict[str, tuple[str, ...]] = {"source-0": ("alpha",)}
+    sources = [{"id": "source-0", "projection_hash": "sha256:" + "0" * 64}]
+    _key, in_use = _search_corpus(tmp_path, sources, pages)
+
+    for index in range(_SEARCH_CORPUS_CACHE_MAX + 1):
+        source_id = f"source-{index + 1}"
+        other_sources = [{"id": source_id, "projection_hash": "sha256:" + f"{index + 1:064d}"}]
+        _other_key, other = _search_corpus(tmp_path, other_sources, {source_id: ("alpha",)})
+        _release_search_corpus(other)
+
+    pairs, _term_pages = _recomputed_search_projection(
+        pages,
+        "alpha",
+        "any",
+        ["source-0"],
+        (),
+        connection=in_use,
+    )
+
+    assert pairs == [("source-0", 1)]
+    with pytest.raises(sqlite3.ProgrammingError, match="closed"):
+        in_use.execute("SELECT 1")
+
+
+def test_domain_continuation_preserves_an_unambiguous_question_purpose(tmp_path: Path) -> None:
+    workspace, _ = _workspace(
+        tmp_path,
+        "alpha one\nnoise\nnoise\nalpha two\nnoise\nnoise\nalpha three\n",
+    )
+    result = search_sources(
+        workspace,
+        "trial",
+        "alpha",
+        mode="any",
+        limit=1,
+        purpose_domain_id="domain:randomization",
+        purpose_question_id="sq:randomization:sequence",
+    )
+
+    actions = _search_continuation(
+        workspace,
+        "trial",
+        "domain:randomization",
+        {(result["session_id"], 1)},
+        1,
+    )
+
+    assert actions[0]["purpose_domain_id"] == "domain:randomization"
+    assert actions[0]["purpose_question_id"] == "sq:randomization:sequence"
+
+
+def test_spelling_feedback_is_source_grounded_and_keeps_the_original_search_unchanged(
+    tmp_path: Path,
+) -> None:
+    workspace, _ = _workspace(tmp_path, "Allocation concealment was documented.\n")
+
+    result = search_sources(workspace, "trial", "concealmet", mode="any")
+
+    assert result["total_matches"] == 0
+    assert result["spelling_suggestions"][0]["query_unit"] == "concealmet"
+    assert result["spelling_suggestions"][0]["query_unit_index"] == 0
+    assert result["spelling_suggestions"][0]["suggested_term"] == "concealment"
+    assert result["spelling_suggestions"][0]["next_action"]["query"] == "concealment"
+    assert result["spelling_suggestions"][0]["example"]["page"] == 1
+    assert result["spelling_suggestions"][0]["example"]["start_line"] == 1
+    assert result["search_receipt"]["query"] == "concealmet"
+
+
+def test_spelling_alternatives_replace_one_repeated_query_unit(tmp_path: Path) -> None:
+    workspace, _ = _workspace(tmp_path, "Allocation concealment was documented.\n")
+
+    result = search_sources(workspace, "trial", "concealmet and concealmet", mode="any")
+
+    queries = {
+        item["next_action"]["query"]
+        for item in result["spelling_suggestions"]
+        if item["suggested_term"] == "concealment"
+    }
+    assert queries == {
+        "concealment and concealmet",
+        "concealmet and concealment",
+    }
+
+
+def test_spelling_feedback_is_disabled_for_uppercase_prefix_and_literal_search(
+    tmp_path: Path,
+) -> None:
+    workspace, _ = _workspace(tmp_path, "Allocation concealment was documented.\n")
+
+    uppercase = search_sources(workspace, "trial", "CONCEALMET", mode="any")
+    prefix = search_sources(workspace, "trial", "concealmet", mode="prefix")
+    literal = search_sources(workspace, "trial", "concealmet", mode="literal")
+
+    assert uppercase["spelling_suggestions"] == []
+    assert prefix["spelling_suggestions"] == []
+    assert literal["spelling_suggestions"] == []
+
+
+@pytest.mark.parametrize("mode", ("any", "prefix", "literal"))
+def test_search_ignores_unlocatable_dehyphenated_catalogue_fragments(
+    tmp_path: Path, mode: str
+) -> None:
+    workspace, _ = _workspace(tmp_path, "Allocation conceal-\nment was documented.\n")
+
+    result = search_sources(workspace, "trial", "concealmet", mode=mode)
+
+    assert result["outcome"] == "success"

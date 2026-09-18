@@ -272,7 +272,7 @@ def test_d3_availability_suggestions_find_unknown_mortality_status_in_supplement
     assert result["data"]["hits"][0]["source_id"] != evidence["source_id"]
 
 
-def test_domain_query_suggestions_execute_alternative_wording_after_exact_no_hit(
+def test_domain_query_suggestions_execute_alternative_wording_after_literal_no_hit(
     tmp_path: Path,
 ) -> None:
     workspace = _workspace(tmp_path)
@@ -305,10 +305,18 @@ def test_domain_query_suggestions_execute_alternative_wording_after_exact_no_hit
     exact = next(item for item in suggestions if item["query"] == "intention-to-treat")
     alternative = next(item for item in suggestions if item["query"] == "intent-to-treat")
 
-    no_hit = _call(
+    porter_match = _call(
         workspace,
         "search_sources",
         {"trial_id": "trial", "query": exact["query"], "mode": exact["mode"]},
+    )
+    assert porter_match["outcome"] == "success"
+    assert porter_match["data"]["hits"]
+
+    no_hit = _call(
+        workspace,
+        "search_sources",
+        {"trial_id": "trial", "query": exact["query"], "mode": "literal"},
     )
     assert no_hit["outcome"] == "success"
     assert no_hit["data"]["condition"] == "no_hits"
@@ -316,7 +324,7 @@ def test_domain_query_suggestions_execute_alternative_wording_after_exact_no_hit
     visible = _call(
         workspace,
         "search_sources",
-        {"trial_id": "trial", "query": alternative["query"], "mode": alternative["mode"]},
+        {"trial_id": "trial", "query": alternative["query"], "mode": "literal"},
     )
     assert visible["outcome"] == "success"
     assert visible["data"]["hits"]

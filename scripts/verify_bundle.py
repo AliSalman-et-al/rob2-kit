@@ -155,7 +155,27 @@ _SCIENTIFIC_PACK = {
     "id": "rob2.parallel.assignment",
     "version": "2019.1",
     "result_semantics_version": "rob2-kit.result-semantics.v0.8",
+    "content_hash": "sha256:ebd2b62a377e1a4275d886040eaf9c002394842d435ce7b5c10d7db820fc38d2",
+    "official_source": {
+        "version": "22 August 2019",
+        "source_sha256": "A9E9C4FDC4BE2D29B5C0A1A6B828E09F2014A34F6D5C302A532F6153EA0FD670",
+    },
+}
+_CURRENT_PACK_LEGACY_PROOF = {
+    "id": "rob2.parallel.assignment",
+    "version": "2019.1",
+    "result_semantics_version": "rob2-kit.result-semantics.v0.8",
     "content_hash": "sha256:86ad209ba3504bbe353049245b44cebf3b7d83862b2b3e475c431c6fec0a581f",
+    "official_source": {
+        "version": "22 August 2019",
+        "source_sha256": "A9E9C4FDC4BE2D29B5C0A1A6B828E09F2014A34F6D5C302A532F6153EA0FD670",
+    },
+}
+_CURRENT_PACK_PRIOR_GUIDANCE = {
+    "id": "rob2.parallel.assignment",
+    "version": "2019.1",
+    "result_semantics_version": "rob2-kit.result-semantics.v0.8",
+    "content_hash": "sha256:5c49411aedccf4cae2e3e97a955760ed83bd00283ff5a0ae5041272d13439b60",
     "official_source": {
         "version": "22 August 2019",
         "source_sha256": "A9E9C4FDC4BE2D29B5C0A1A6B828E09F2014A34F6D5C302A532F6153EA0FD670",
@@ -645,7 +665,7 @@ def _valid_search_account(
     authoritative: dict[str, dict[str, object]],
     identity_fn,
 ) -> bool:
-    required_keys = {
+    legacy_keys = {
         "trial_id",
         "sources",
         "query",
@@ -671,8 +691,14 @@ def _valid_search_account(
         "identity",
         "handle",
     }
-    if not isinstance(account, dict) or set(account) != required_keys:
+    modern_keys = legacy_keys | {"profile"}
+    purpose_keys = {"purpose_domain_id", "purpose_question_id"}
+    if (
+        not isinstance(account, dict)
+        or set(account) not in (legacy_keys, modern_keys, modern_keys | purpose_keys)
+    ):
         return False
+    modern = "profile" in account
     query = account.get("query")
     sources = account.get("sources")
     hits = account.get("hits")
@@ -691,7 +717,11 @@ def _valid_search_account(
     )
     returned_candidates = account.get("returned_candidates")
     candidate_pairs = (
-        [(item.get("source_id"), item.get("page")) for item in returned_candidates]
+        [
+            (item.get("source_id"), item.get("page"))
+            for item in returned_candidates
+            if isinstance(item, dict)
+        ]
         if isinstance(returned_candidates, list)
         else []
     )
@@ -709,6 +739,20 @@ def _valid_search_account(
         and re.fullmatch(r"ss_[0-9a-f]{16}", session_handle) is not None
         and session_handle == "ss_" + session_id.removeprefix("sha256:")[:16]
     )
+    purpose_valid = True
+    if set(account) == modern_keys | purpose_keys:
+        purpose_domain_id = account.get("purpose_domain_id")
+        purpose_question_id = account.get("purpose_question_id")
+        purpose_valid = purpose_domain_id is None or (
+            isinstance(purpose_domain_id, str) and purpose_domain_id in _EXPECTED_DOMAIN_IDS
+        )
+        if purpose_question_id is not None:
+            purpose_valid = purpose_valid and (
+                isinstance(purpose_domain_id, str)
+                and isinstance(purpose_question_id, str)
+                and purpose_question_id
+                in _DOMAIN_QUESTION_IDS.get(purpose_domain_id, set())
+            )
     scalar_optional_valid = (
         all(
             (
@@ -787,9 +831,20 @@ def _valid_search_account(
         or not query.strip()
         or not isinstance(account.get("normalized_query"), str)
         or not account["normalized_query"].strip()
-        or account["normalized_query"] != _canonical_query_text(query)
+        or account["normalized_query"]
+        != (
+            _canonical_search_text(query).casefold()
+            if account.get("mode") == "literal"
+            else _canonical_query_text(query)
+        )
         or not isinstance(account.get("mode"), str)
-        or account["mode"] not in {"all", "phrase", "any", "prefix"}
+        or account["mode"] not in (
+            {"all", "phrase", "any", "prefix", "literal"}
+            if modern
+            else {"all", "phrase", "any", "prefix"}
+        )
+        or (modern and account.get("profile") != "porter-unicode61-v1")
+        or not purpose_valid
         or not isinstance(limit, int)
         or isinstance(limit, bool)
         or not 1 <= limit <= 100
@@ -1360,6 +1415,40 @@ def _valid_reasoning_annotations(answer: dict[str, Any]) -> bool:
     )
 
 
+def _valid_limitation_basis(
+    basis: object, accounts: dict[str, dict[str, object]], trial_id: str
+) -> bool:
+    """Accept current limitation provenance and replay the legacy receipt gate."""
+    if not isinstance(basis, dict):
+        return False
+    if set(basis) == {"kind", "text", "search_receipt"}:
+        handle = basis.get("search_receipt")
+        account = accounts.get(handle) if isinstance(handle, str) else None
+        return (
+            basis.get("kind") == "limitation"
+            and _nonblank(basis.get("text"))
+            and isinstance(account, dict)
+            and account.get("trial_id") == trial_id
+            and account.get("truncated") is False
+        )
+    if set(basis) not in (
+        {"kind", "unresolved_premise", "stopping_rationale"},
+        {"kind", "unresolved_premise", "stopping_rationale", "search_receipt"},
+    ):
+        return False
+    if (
+        basis.get("kind") != "limitation"
+        or not _nonblank(basis.get("unresolved_premise"))
+        or not _nonblank(basis.get("stopping_rationale"))
+    ):
+        return False
+    if "search_receipt" not in basis:
+        return True
+    handle = basis.get("search_receipt")
+    account = accounts.get(handle) if isinstance(handle, str) else None
+    return isinstance(account, dict) and account.get("trial_id") == trial_id
+
+
 def _valid_missing_data(
     value: object,
     question_id: object,
@@ -1696,6 +1785,7 @@ def _valid_domain_lineage(
                     if not isinstance(basis, dict) or basis.get("kind") not in {
                         "new_evidence",
                         "self_correction",
+                        "mechanical_repair",
                     }:
                         return False
                     if basis.get("kind") == "self_correction":
@@ -1704,20 +1794,38 @@ def _valid_domain_lineage(
                             or not str(basis.get("rationale", "")).strip()
                         ):
                             return False
-                    elif (
-                        set(basis) != {"kind", "evidence", "rationale"}
-                        or not isinstance(basis.get("evidence"), str)
-                        or not str(basis.get("rationale", "")).strip()
-                        or basis["evidence"] not in evidence
-                        or basis["evidence"] in _domain_evidence_ids(prior)
-                        or basis["evidence"] not in _domain_evidence_ids(record)
-                    ):
-                        return False
+                    elif basis.get("kind") == "new_evidence":
+                        if (
+                            set(basis) != {"kind", "evidence", "rationale"}
+                            or not isinstance(basis.get("evidence"), str)
+                            or not str(basis.get("rationale", "")).strip()
+                            or basis["evidence"] not in evidence
+                            or basis["evidence"] in _domain_evidence_ids(prior)
+                            or basis["evidence"] not in _domain_evidence_ids(record)
+                        ):
+                            return False
+                        else:
+                            evidence_item = evidence.get(basis["evidence"])
+                            if not isinstance(evidence_item, dict) or evidence_item.get(
+                                "trial_id"
+                            ) != record.get("trial_id"):
+                                return False
                     else:
-                        evidence_item = evidence.get(basis["evidence"])
-                        if not isinstance(evidence_item, dict) or evidence_item.get(
-                            "trial_id"
-                        ) != record.get("trial_id"):
+                        if set(basis) != {"kind", "repair_id", "codes"}:
+                            return False
+                        repair_id = basis.get("repair_id")
+                        codes = basis.get("codes")
+                        if (
+                            repair_id is not None
+                            and (not isinstance(repair_id, str) or not repair_id.strip())
+                        ):
+                            return False
+                        if (
+                            not isinstance(codes, list)
+                            or any(not isinstance(code, str) or not code.strip() for code in codes)
+                            or len(codes) != len(set(codes))
+                            or (repair_id is None and not codes)
+                        ):
                             return False
             prior = record
     return True
@@ -1944,14 +2052,6 @@ def _source_bound_leaves(value: object, path: str) -> dict[str, object]:
             or leaf_path.startswith("/reported/category_axis_names/")
         )
     }
-
-
-def _host_visual_leaf_allowed(path: str) -> bool:
-    return (
-        path.startswith("/reported/")
-        or (path.startswith("/target/comparison_groups/") and path.endswith("/assignment"))
-        or path.startswith("/target/time_point_or_window/")
-    )
 
 
 def _decimal(value: object) -> Decimal:
@@ -2849,9 +2949,6 @@ def _valid_result_evidence(
         ):
             return False
         if item_kind == "figure":
-            selected = by_handle[reference["handle"]]
-            if selected.get("provenance") == "host_visual" and not _host_visual_leaf_allowed(path):
-                return False
             figure_material = str(reference.get("transcription", ""))
             if not supports_material(figure_material, value, path):
                 return False
@@ -2956,18 +3053,19 @@ def _valid_trial_review_closures(
         closure = trial_closures[trial_id]
         disposition = dispositions[trial_id]
         result = current_results.get(trial_id)
+        review_shape = {
+            "identity",
+            "trial_id",
+            "result_identity",
+            "checkpoint_ids",
+            "disposition",
+            "reason",
+            "facts",
+        }
+        review_shape_with_attribution = review_shape | {"domain_attribution"}
         if (
             not isinstance(review, dict)
-            or set(review)
-            != {
-                "identity",
-                "trial_id",
-                "result_identity",
-                "checkpoint_ids",
-                "disposition",
-                "reason",
-                "facts",
-            }
+            or set(review) not in (review_shape, review_shape_with_attribution)
             or review.get("trial_id") != trial_id
             or review.get("disposition") not in allowed
             or review.get("disposition") != disposition
@@ -3001,6 +3099,38 @@ def _valid_trial_review_closures(
                 checkpoint_ids.append(record["identity"])
         if review.get("checkpoint_ids") != checkpoint_ids:
             return False
+        if "domain_attribution" in review:
+            attribution = review.get("domain_attribution")
+            if not isinstance(attribution, list) or len(attribution) != len(checkpoint_ids):
+                return False
+            domain_ids = [
+                domain_id
+                for domain_id in _EXPECTED_DOMAIN_ORDER
+                if f"{trial_id}:{domain_id}" in domain_records
+            ]
+            for domain_id, item in zip(domain_ids, attribution, strict=True):
+                record = domain_records.get(f"{trial_id}:{domain_id}")
+                if not isinstance(item, dict) or not isinstance(record, dict):
+                    return False
+                basis = record.get("revision_basis")
+                expected_attribution = (
+                    basis.get("kind")
+                    if isinstance(basis, dict)
+                    and basis.get("kind")
+                    in {"new_evidence", "self_correction", "mechanical_repair"}
+                    else "unchanged"
+                )
+                expected = {
+                    "domain_id": domain_id,
+                    "attribution": expected_attribution,
+                    "checkpoint_identity": record.get("identity"),
+                }
+                if isinstance(record.get("supersedes"), str):
+                    expected["supersedes"] = record["supersedes"]
+                if expected_attribution != "unchanged":
+                    expected["revision_basis"] = basis
+                if item != expected:
+                    return False
         if disposition == "assessed" and len(checkpoint_ids) != len(_EXPECTED_DOMAIN_ORDER):
             return False
         if disposition == "assessed":
@@ -3142,6 +3272,8 @@ def verify(path: Path) -> tuple[bool, str]:
             scientific_pack = canonical.get("scientific_pack")
             if scientific_pack not in (
                 _SCIENTIFIC_PACK,
+                _CURRENT_PACK_LEGACY_PROOF,
+                _CURRENT_PACK_PRIOR_GUIDANCE,
                 _CURRENT_PACK_PREVIOUS_PROOF,
                 _FORMER_CURRENT_PACK_PREVIOUS_PROOF,
                 _PREVIOUS_SCIENTIFIC_PACK,
@@ -3633,16 +3765,10 @@ def verify(path: Path) -> tuple[bool, str]:
                         }:
                             direct_basis = True
                         if use.get("kind") == "limitation":
-                            if (
-                                set(use) != {"kind", "text", "search_receipt"}
-                                or not use["text"].strip()
-                                or not isinstance(use["search_receipt"], str)
-                                or use["search_receipt"] not in account_by_identity
+                            if not _valid_limitation_basis(
+                                use, account_by_identity, record.get("trial_id")
                             ):
                                 return False, "Domain limitation basis is malformed"
-                            account = account_by_identity[use["search_receipt"]]
-                            if account.get("truncated") is not False:
-                                return False, "Domain limitation search is truncated"
                             uncertainty_basis = True
                             continue
                         if use.get("kind") == "absence":
@@ -3870,16 +3996,10 @@ def verify(path: Path) -> tuple[bool, str]:
                             }:
                                 direct_basis = True
                             if use.get("kind") == "limitation":
-                                if (
-                                    set(use) != {"kind", "text", "search_receipt"}
-                                    or not use["text"].strip()
-                                    or not isinstance(use["search_receipt"], str)
-                                    or use["search_receipt"] not in account_by_identity
+                                if not _valid_limitation_basis(
+                                    use, account_by_identity, item.get("trial_id")
                                 ):
                                     return False, "Domain history limitation is malformed"
-                                account = account_by_identity[use["search_receipt"]]
-                                if account.get("truncated") is not False:
-                                    return False, "Domain history limitation search is truncated"
                                 uncertainty_basis = True
                                 continue
                             if use.get("kind") == "absence":

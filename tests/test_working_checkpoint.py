@@ -139,6 +139,20 @@ def test_working_checkpoint_replaces_notes_without_changing_assessment_and_survi
     assert resumed["checkpoint_identity"] == replaced["data"]["checkpoint_identity"]
 
 
+def test_current_notes_avoid_duplicate_read_gate_on_approved_proposal_retry(
+    tmp_path: Path,
+) -> None:
+    workspace = _workspace(tmp_path)
+    evidence = _proposal_waiting_for_review(workspace)
+    _call(workspace, "save_working_checkpoint", {"checkpoint": _checkpoint(evidence["source_id"])})
+    _review(workspace)
+
+    retry = _call(workspace, "save_proposal", _proposal_args(workspace, [_result(evidence)]))
+
+    assert retry["outcome"] == "success", retry
+    assert retry["data"].get("retry") is True
+
+
 def test_working_checkpoint_is_hidden_after_result_replacement(tmp_path: Path) -> None:
     workspace = _workspace(tmp_path)
     evidence = _proposal_waiting_for_review(workspace)

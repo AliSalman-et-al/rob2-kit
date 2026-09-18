@@ -196,9 +196,16 @@ def main() -> None:
         action="store_true",
         help="Use a deny-by-default filesystem profile for qualification runs",
     )
+    parser.add_argument(
+        "--proposal-correction",
+        action="store_true",
+        help="Resume a pending Proposal Review to request a replacement Result",
+    )
     args = parser.parse_args()
     if args.phase < 1 or (args.phase > 1) != bool(args.session):
         parser.error("phase 1 starts a session; later phases require --session")
+    if args.proposal_correction and (args.phase == 1 or not args.session):
+        parser.error("Proposal corrections require a continuation phase and session")
     if args.require_isolated_host and _is_windows():
         parser.error(
             "requested strict host isolation is unsupported on Windows without UAC; "
@@ -307,14 +314,19 @@ def main() -> None:
         )
         status_data = json.loads(status.stdout)
         continuation = status_data.get("continuation") or {}
-        if (
+        proposal_review_pending = (
             status_data.get("phase") == "proposal"
             and continuation.get("authority") == "researcher"
             and continuation.get("operation") == "researcher_review"
-        ):
+        )
+        if proposal_review_pending and not args.proposal_correction:
             parser.error(
                 "Proposal Review is still pending; acknowledge it with rob2 review "
                 "before resuming the Codex session"
+            )
+        if args.proposal_correction and not proposal_review_pending:
+            parser.error(
+                "Proposal correction requires a pending researcher Proposal Review"
             )
         approved_scope = approved_scope_record(workspace, run_inputs.get("approved_scope"))
         if approved_scope is not None:
@@ -434,6 +446,11 @@ def main() -> None:
         "skill_sha256": skill_digest.hexdigest(),
         "trial": run_inputs["trial"],
         "phase": args.phase,
+        "phase_kind": (
+            "proposal_correction"
+            if args.proposal_correction
+            else ("initial" if args.phase == 1 else "continuation")
+        ),
         "session": args.session,
         "prompt_file": str(prompt_file),
         "prompt_sha256": hashlib.sha256(prompt_file.read_bytes()).hexdigest(),

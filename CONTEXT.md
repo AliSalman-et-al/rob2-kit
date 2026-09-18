@@ -1,5 +1,21 @@
 # RoB 2 Assessment
 
+## Investigation vocabulary
+
+**Search purpose**: The question or Domain motivating a discovery action. It is
+distinct from the Sources searched and from the questions that may eventually
+use the discovered Evidence.
+
+**Scientific sufficiency**: The host's judgment that inspected Evidence supports
+an answer or that a material unresolved premise has been honestly bounded. A
+search receipt does not establish scientific sufficiency.
+
+**Scientific limitation**: A material unresolved premise together with the
+reason the investigation stopped. It is not proof that the relevant fact is
+absent from the captured Sources.
+
+## Existing workflow contract
+
 `rob2-kit` is a model-free FastMCP boundary for evidence-grounded Cochrane
 Risk of Bias 2 assessment. Codex or Claude Code supplies the only model loop.
 The server owns durable workflow state, source capture, evidence identity,

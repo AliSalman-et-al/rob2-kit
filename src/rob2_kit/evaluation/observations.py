@@ -44,7 +44,7 @@ DOCUMENTED_TOOLS = frozenset(
         "validate_proposal",
     }
 )
-SEARCH_MODES = frozenset({"all", "phrase", "any", "prefix"})
+SEARCH_MODES = frozenset({"all", "phrase", "any", "prefix", "literal"})
 _PHASES = frozenset({"proposal", "assessment", "correction"})
 _ACCEPTED_OUTCOMES = frozenset({"success", "review_required"})
 _RESPONSE_OUTCOMES = frozenset(
@@ -102,6 +102,17 @@ def _manifest_attempts(manifest: Mapping[str, Any]) -> list[dict[str, Any]]:
     if not isinstance(attempts, list) or not attempts:
         raise ObservationImportError("manifest: attempts must be a non-empty list")
     seen: set[str] = set()
+    comparison = manifest.get("comparison_config")
+    arm_ids: set[str] = (
+        {
+            arm["id"]
+            for arm in comparison.get("arms", [])
+            if isinstance(arm, dict) and isinstance(arm.get("id"), str)
+        }
+        if isinstance(comparison, dict)
+        else set()
+    )
+    sessions_by_arm: dict[str, set[str]] = {}
     result: list[dict[str, Any]] = []
     for index, raw in enumerate(attempts, 1):
         row = _obj(raw, f"manifest.attempts[{index}]")
@@ -110,6 +121,25 @@ def _manifest_attempts(manifest: Mapping[str, Any]) -> list[dict[str, Any]]:
             raise _fail(f"manifest.attempts[{index}].attempt_id", "invalid opaque identity")
         if attempt_id in seen:
             raise _fail(f"manifest.attempts[{index}].attempt_id", "duplicate identity")
+        if comparison is not None:
+            arm = row.get("comparison_arm")
+            session = row.get("session_id")
+            if (
+                not isinstance(arm, str)
+                or arm not in arm_ids
+                or not isinstance(session, str)
+                or not session
+            ):
+                raise _fail(
+                    f"manifest.attempts[{index}]", "comparison arm and session are required"
+                )
+            for other_arm, sessions in sessions_by_arm.items():
+                if other_arm != arm and session in sessions:
+                    raise _fail(
+                        f"manifest.attempts[{index}].session_id",
+                        "comparison arms require independent sessions",
+                    )
+            sessions_by_arm.setdefault(arm, set()).add(session)
         seen.add(attempt_id)
         result.append(row)
     return result
@@ -163,6 +193,21 @@ def _transcript_specs(manifest: Mapping[str, Any]) -> dict[str, dict[str, Any]]:
     phases = [spec.get("phase") for spec in specs.values()]
     if any(phase is not None for phase in phases) and any(phase is None for phase in phases):
         raise ObservationImportError("manifest transcripts: phase must be declared for all or none")
+    if manifest.get("comparison_config") is not None:
+        arm_by_attempt = {attempt["attempt_id"]: attempt["comparison_arm"] for attempt in attempts}
+        sessions_by_arm: dict[str, set[str]] = {}
+        for transcript_id, spec in specs.items():
+            session_id = spec.get("session_id", transcript_id)
+            if not isinstance(session_id, str) or not session_id:
+                raise _fail(f"manifest transcript {transcript_id}", "session_id is required")
+            arm = arm_by_attempt[spec["attempt_id"]]
+            for other_arm, sessions in sessions_by_arm.items():
+                if other_arm != arm and session_id in sessions:
+                    raise _fail(
+                        f"manifest transcript {transcript_id}.session_id",
+                        "comparison arms require independent sessions",
+                    )
+            sessions_by_arm.setdefault(arm, set()).add(session_id)
     return specs
 
 
@@ -614,35 +659,37 @@ def import_observations(
             if "mutation" in row
         ]
         accepted_commits = [row for row in attempted_mutations if row["accepted"]]
-        output_attempts.append(
-            {
-                "attempt_id": attempt_id,
-                "trial_id": _id(attempt.get("trial_id")),
-                "result_id": _opaque(
-                    attempt.get("result_id") or attempt.get("approved_result_identity")
-                ),
-                "intervention_id": _id(attempt.get("intervention_id")),
-                "model": {
-                    "family": _id((attempt.get("model") or {}).get("family"))
-                    if isinstance(attempt.get("model"), dict)
-                    else None,
-                    "version": _id((attempt.get("model") or {}).get("version"))
-                    if isinstance(attempt.get("model"), dict)
-                    else None,
-                },
-                "kit_revision": _id(attempt.get("kit_revision")),
-                "capture_status": capture_status,
-                "terminal_disposition": terminal,
-                "reconciliation": {
-                    "operations": len(operations),
-                    "searches": search_count,
-                    "assessment_searches": assessment_search_count,
-                },
-                "attempted_mutations": attempted_mutations,
-                "accepted_commits": accepted_commits,
-                "operations": operations,
-            }
-        )
+        output_attempt = {
+            "attempt_id": attempt_id,
+            "trial_id": _id(attempt.get("trial_id")),
+            "result_id": _opaque(
+                attempt.get("result_id") or attempt.get("approved_result_identity")
+            ),
+            "intervention_id": _id(attempt.get("intervention_id")),
+            "model": {
+                "family": _id((attempt.get("model") or {}).get("family"))
+                if isinstance(attempt.get("model"), dict)
+                else None,
+                "version": _id((attempt.get("model") or {}).get("version"))
+                if isinstance(attempt.get("model"), dict)
+                else None,
+            },
+            "kit_revision": _id(attempt.get("kit_revision")),
+            "capture_status": capture_status,
+            "terminal_disposition": terminal,
+            "reconciliation": {
+                "operations": len(operations),
+                "searches": search_count,
+                "assessment_searches": assessment_search_count,
+            },
+            "attempted_mutations": attempted_mutations,
+            "accepted_commits": accepted_commits,
+            "operations": operations,
+        }
+        if manifest.get("comparison_config") is not None:
+            output_attempt["comparison_arm"] = _id(attempt.get("comparison_arm"))
+            output_attempt["session_id"] = _id(attempt.get("session_id"))
+        output_attempts.append(output_attempt)
     # The assessment search count is the issue's diagnostic count when phases are
     # declared; otherwise all observed search calls are the only available count.
     searches = phase_searches if any(spec.get("phase") for spec in specs.values()) else all_searches

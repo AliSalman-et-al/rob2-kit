@@ -33,6 +33,40 @@ def _checkpoint_ids(state: dict[str, Any], trial_id: str) -> list[str]:
     ]
 
 
+def _domain_attribution(state: dict[str, Any], trial_id: str) -> list[dict[str, Any]]:
+    """Summarize the stored basis of each current Domain checkpoint."""
+
+    records = state.get("domain_records") or {}
+    summary: list[dict[str, Any]] = []
+    for domain in SCIENTIFIC_PACK.domains:
+        record = records.get(f"{trial_id}:{domain.id}")
+        if not isinstance(record, dict) or not isinstance(record.get("identity"), str):
+            continue
+        basis = record.get("revision_basis")
+        kind = basis.get("kind") if isinstance(basis, dict) else None
+        attribution = (
+            kind
+            if kind
+            in {
+                "new_evidence",
+                "self_correction",
+                "mechanical_repair",
+            }
+            else "unchanged"
+        )
+        item: dict[str, Any] = {
+            "domain_id": domain.id,
+            "attribution": attribution,
+            "checkpoint_identity": record["identity"],
+        }
+        if isinstance(record.get("supersedes"), str):
+            item["supersedes"] = record["supersedes"]
+        if isinstance(basis, dict) and attribution != "unchanged":
+            item["revision_basis"] = dict(basis)
+        summary.append(item)
+    return summary
+
+
 def _review_domain_findings(
     root: Path, state: dict[str, Any], trial_id: str
 ) -> list[dict[str, Any]]:
@@ -185,6 +219,7 @@ def _review_payload(
         "trial_id": trial_id,
         "result_identity": _identity(_approved_result(state, trial_id)),
         "checkpoint_ids": _checkpoint_ids(state, trial_id),
+        "domain_attribution": _domain_attribution(state, trial_id),
         "disposition": disposition,
         "reason": reason,
         "facts": facts,
@@ -202,9 +237,35 @@ def _review_record_is_current(state: dict[str, Any], review: dict[str, Any]) -> 
         )
     except (KeyError, TypeError, ValueError):
         return False
-    return review.get("identity") == _identity(payload) and all(
+    current = review.get("identity") == _identity(payload) and all(
         review.get(key) == value for key, value in payload.items()
     )
+    if current:
+        return True
+    # Reviews written before domain attribution was added remain valid when
+    # their original payload still matches the current Result and checkpoints.
+    legacy = dict(payload)
+    legacy.pop("domain_attribution", None)
+    return review.get("identity") == _identity(legacy) and all(
+        review.get(key) == value for key, value in legacy.items()
+    )
+
+
+def _review_output(review: dict[str, Any]) -> dict[str, Any]:
+    """Return the immutable review, including its workflow provenance rows."""
+
+    output = dict(review)
+    attribution = output.get("domain_attribution")
+    if isinstance(attribution, list):
+        output["domain_attribution"] = [
+            {
+                key: item[key]
+                for key in ("domain_id", "attribution", "checkpoint_identity")
+                if isinstance(item, dict) and key in item
+            }
+            for item in attribution
+        ]
+    return output
 
 
 def review_trial(
@@ -237,7 +298,7 @@ def review_trial(
             return _result(
                 "success",
                 state,
-                review=current_review,
+                review=_review_output(current_review),
                 domain_findings=_review_domain_findings(root, state, request.trial_id),
                 retry=True,
             )
@@ -287,7 +348,7 @@ def review_trial(
         return _result(
             "success",
             state,
-            review=existing,
+            review=_review_output(existing),
             domain_findings=_review_domain_findings(root, state, request.trial_id),
             retry=True,
         )
@@ -306,7 +367,7 @@ def review_trial(
     return _result(
         "success",
         state,
-        review=review,
+        review=_review_output(review),
         domain_findings=_review_domain_findings(root, state, request.trial_id),
         continuation=_continuation(state),
     )

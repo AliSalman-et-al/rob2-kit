@@ -189,6 +189,11 @@ def _strip_result_bound_domain_lineage(canonical: dict[str, Any]) -> None:
         result["trial_id"]: result for result in canonical["proposal"]["payload"]["results"]
     }
     for trial_id, review in canonical.get("trial_reviews", {}).items():
+        # Trial attribution was introduced after the v0.7 bundle contract.
+        # Remove it when converting a current artifact into a historical
+        # fixture so its checkpoint references do not outlive the legacy
+        # identity rewrite below.
+        review.pop("domain_attribution", None)
         review["result_identity"] = _identity(current_results[trial_id])
         review["checkpoint_ids"] = [
             identity_map.get(checkpoint, checkpoint) for checkpoint in review["checkpoint_ids"]
@@ -304,10 +309,11 @@ def test_probable_limitation_domain_basis_finalizes_after_derivative_restart(
     first["answers"][0]["bases"] = [
         {
             "kind": "limitation",
-            "text": (
+            "unresolved_premise": (
                 "The report describes an apparently adequate process but omits enough detail "
                 "for a definitive judgment."
             ),
+            "stopping_rationale": "The relevant retrieved material does not resolve this premise.",
             "search_receipt": receipt,
         }
     ]
@@ -402,9 +408,10 @@ def test_rehashed_historical_probable_basis_tampering_fails_both_verifiers(
     initial["answers"][0]["bases"] = [
         {
             "kind": "limitation",
-            "text": (
+            "unresolved_premise": (
                 "The report suggests an adequate process but omits enough detail for certainty."
             ),
+            "stopping_rationale": "The relevant retrieved material does not resolve this premise.",
             "search_receipt": receipt,
         }
     ]
@@ -615,6 +622,20 @@ def test_finalized_bundle_binds_the_scientific_contract(tmp_path: Path) -> None:
         "result_semantics_version": "rob2-kit.result-semantics.v0.8",
     }
     assert _standalone_verify(artifact).returncode == 0
+
+
+def test_prior_v08_scientific_pack_remains_verifiable(tmp_path: Path) -> None:
+    source = _artifact(tmp_path / "source")
+
+    def use_prior_guidance(canonical: dict[str, Any]) -> None:
+        canonical["scientific_pack"]["content_hash"] = (
+            "sha256:5c49411aedccf4cae2e3e97a955760ed83bd00283ff5a0ae5041272d13439b60"
+        )
+
+    prior = tmp_path / "prior-v08-guidance.rob2.zip"
+    _rewrite_rehashed(source, prior, use_prior_guidance)
+    assert verify_bundle(prior)
+    assert _standalone_verify(prior).returncode == 0
 
 
 @pytest.mark.parametrize(

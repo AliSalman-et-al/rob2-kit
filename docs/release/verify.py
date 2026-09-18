@@ -482,7 +482,11 @@ def _domain_answers(
         basis = (
             {
                 "kind": "limitation",
-                "text": "The release acceptance source does not report this fact.",
+                "unresolved_premise": "The release acceptance source does not report this fact.",
+                "stopping_rationale": (
+                    "The captured acceptance source was reviewed, but the premise remains "
+                    "unresolved."
+                ),
                 "search_receipt": search_receipt,
             }
             if answer == "no_information"

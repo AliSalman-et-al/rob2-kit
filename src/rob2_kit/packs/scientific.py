@@ -127,6 +127,7 @@ _GUIDANCE: dict[str, QuestionGuidance] = {
         ),
         (
             "Minimization should generally be considered random when it includes a random element.",
+            "Sequence generation asks how the allocation sequence was produced; concealment asks whether forthcoming assignments were hidden before enrolment and assignment; baseline imbalance asks whether the resulting groups suggest a randomization problem. Evidence for one does not answer the others.",
             "The baseline-imbalance answer must not change this answer.",
             "Use the returned query suggestions or wording from the report to locate the sequence method. A truncated search does not establish that the method is absent.",
         ),
@@ -157,6 +158,7 @@ _GUIDANCE: dict[str, QuestionGuidance] = {
         ),
         (
             "Allocation concealment concerns the process before assignment, not blinding after assignment.",
+            "Keep concealment separate from sequence generation (how the sequence was made) and baseline imbalance (what the randomized groups look like). A random sequence or balanced baseline table does not establish concealment.",
             "The reported sequence-generation method does not establish concealment.",
             "Use the returned query suggestions or wording from the report to locate the allocation safeguards. A truncated search does not establish that concealment details are absent.",
         ),
@@ -187,6 +189,7 @@ _GUIDANCE: dict[str, QuestionGuidance] = {
         ),
         (
             "A few statistically significant differences at the conventional 0.05 threshold are usually compatible with chance.",
+            "This is a question about baseline imbalance suggesting a randomization problem, not about how the sequence was generated or whether allocation was concealed. Do not use the baseline table to backfill either process question.",
             "This answer must not alter answers about sequence generation or concealment.",
         ),
         (
@@ -302,10 +305,10 @@ _GUIDANCE: dict[str, QuestionGuidance] = {
     ),
     "sq:deviations:appropriate-analysis": _guidance(
         "Full guidance p. 29, Box 6, signalling question 2.6",
-        "Whether an appropriate analysis estimated the effect of assignment to intervention. Compare randomized assignment with the population and groups actually analysed, including exclusions, reassignment, and reasons; an ITT label alone does not establish this.",
+        "Whether an appropriate analysis estimated the effect of assignment to intervention. Compare randomized assignment with the actual analysis population, grouping, reassignment, and exclusions, including their reasons; an ITT, modified ITT, or as-treated label alone does not establish this.",
         "Consider ITT and modified ITT excluding participants with missing outcome data appropriate. Consider naive per-protocol, as-treated, and post-randomization exclusion of eligible participants inappropriate; post-randomization exclusion of ineligible participants may be appropriate when eligibility could not have been influenced by assignment.",
         (
-            "The analysis population and grouping rule, including whether participants remained grouped by assignment and which post-randomization exclusions occurred.",
+            "The actual analysis population and grouping rule: who was assigned, who was analysed in each group, who was excluded or reassigned after randomization, and why.",
         ),
         "Use no_information only after considering direct facts, indirect evidence, and trial circumstances; "
         "an incomplete analysis description alone is insufficient when those facts support a probable judgment "
@@ -322,6 +325,7 @@ _GUIDANCE: dict[str, QuestionGuidance] = {
         ),
         (
             "The question is about effect of assignment, so grouping must follow randomized assignment.",
+            "Assess what the analysis actually did, not the label attached to it: ITT/mITT/as-treated terminology is a description to verify against assignment, grouping, and exclusions.",
         ),
         (
             "an endpoint definition",
@@ -427,6 +431,7 @@ _GUIDANCE: dict[str, QuestionGuidance] = {
         ),
         (
             "For time-to-event outcomes, inspect censoring reasons and timing to identify missing follow-up. A common administrative cutoff does not by itself establish outcome-dependent missingness.",
+            "Separate observed outcome data, analysed membership, follow-up availability, and the missingness mechanism. This question asks whether the missingness mechanism could depend on the true value; it is not a question about analysis membership.",
         ),
         (
             "complete follow-up claims",
@@ -451,6 +456,7 @@ _GUIDANCE: dict[str, QuestionGuidance] = {
         ),
         (
             "Possible dependence in 3.3 does not establish likely dependence in 3.4. Judge likelihood from missingness reasons and trial circumstances; absent contrary evidence alone does not establish likelihood.",
+            "Keep the stages distinct: observed outcome data and follow-up availability describe what was obtained; 3.3 asks whether missingness could depend on the true value; 3.4 asks whether that dependence was likely. Do not promote possible dependence to likely dependence without supporting evidence.",
         ),
         ("different group sizes alone", "an ITT analysis", "a generic loss-to-follow-up statement"),
     ),
@@ -469,7 +475,10 @@ _GUIDANCE: dict[str, QuestionGuidance] = {
             ),
             _anchor(Answer.NO, "The measurement method is appropriate for this outcome."),
         ),
-        ("For pre-specified outcomes the answer will usually be no or probably no.",),
+        (
+            "For pre-specified outcomes the answer will usually be no or probably no.",
+            "Measurement susceptibility concerns whether the method can validly and sensitively measure this outcome. It is distinct from assessor awareness, detection opportunity, and whether knowledge of intervention likely influenced assessment.",
+        ),
         (
             "a surrogate or proxy label",
             "an endpoint definition",
@@ -495,6 +504,7 @@ _GUIDANCE: dict[str, QuestionGuidance] = {
         ),
         (
             "Compare actual methods and detection opportunities. Assessor awareness or possible reporting influence alone does not establish a between-group method difference; assess awareness and influence in 4.3 to 4.5.",
+            "Detection opportunity is the chance an outcome could be identified or recorded, including passive ascertainment or intervention-related visits. Keep it separate from measurement susceptibility (4.1) and from who knew the assignment (4.3).",
         ),
         ("a common endpoint label", "an equal number randomized", "an ITT analysis"),
     ),
@@ -508,7 +518,10 @@ _GUIDANCE: dict[str, QuestionGuidance] = {
             _anchor(Answer.NO, "Outcome assessors were blinded to intervention status."),
             _anchor(Answer.YES, "Outcome assessors knew the intervention received."),
         ),
-        ("The assessor can be a participant, intervention provider, or independent observer.",),
+        (
+            "The assessor can be a participant, intervention provider, or independent observer.",
+            "This asks only whether the relevant assessor knew assignment. It does not establish that the measurement was susceptible to bias, that detection opportunities differed, or that knowledge likely changed the assessment; those are separate questions.",
+        ),
         (
             "an objective endpoint",
             "a blinded statistician",
@@ -533,6 +546,7 @@ _GUIDANCE: dict[str, QuestionGuidance] = {
         ),
         (
             "Assess whether knowledge could influence this outcome. Evidence that influence actually occurred belongs to 4.5; its absence does not resolve 4.4.",
+            "Possible influence requires a judgement or reporting pathway through which assessor awareness could matter. Awareness alone is not a measurement difference, and a susceptible outcome does not by itself show that influence was possible in this assessment.",
         ),
         (
             "an objective endpoint label",
@@ -557,6 +571,7 @@ _GUIDANCE: dict[str, QuestionGuidance] = {
         ),
         (
             "Possible influence without evidence it occurred maps differently from likely influence.",
+            "Likely influence requires more than assessor awareness or a possible pathway: look for evidence it occurred, or strong beliefs and a real judgement opportunity. Keep this conclusion separate from measurement susceptibility and detection opportunity.",
         ),
         ("assessor awareness alone", "an objective endpoint label", "an ITT analysis"),
     ),
@@ -583,7 +598,9 @@ _GUIDANCE: dict[str, QuestionGuidance] = {
             ),
         ),
         (
-            "Assess the plan against the exact result, not merely whether a protocol or registry exists.",
+            "Assess correspondence between the applicable plan and the exact approved Result: outcome, time point, population, effect measure, and analysis must be compared.",
+            "Establish chronology separately: plan finalization must precede availability of unblinded outcome data; a source creation date, registry date, amendment date, or retrieval date is not automatically the relevant trial chronology.",
+            "Results-driven selection is a separate concern from whether a plan exists or whether its chronology is known. Do not infer selection merely from an amendment or from a mismatch without evidence that the choice was driven by results.",
         ),
         (
             "an objective definition",
@@ -614,7 +631,10 @@ _GUIDANCE: dict[str, QuestionGuidance] = {
                 "Measurement intentions are insufficiently reported despite multiple possible measurements.",
             ),
         ),
-        ("Restrict the assessment to measurements eligible for the reviewer's synthesis.",),
+        (
+            "Use the review's prespecified outcome-domain eligibility criteria, not only the reported Result, and compare the reported measurement with all eligible alternatives.",
+            "An applicable plan's correspondence and chronology are relevant context but do not themselves establish results-driven selection. The approved Result fixes the target being assessed; it does not erase other eligible measurements in the outcome domain or make their selection an observed fact.",
+        ),
         (
             "an endpoint definition",
             "a single reported time point",
@@ -645,7 +665,8 @@ _GUIDANCE: dict[str, QuestionGuidance] = {
             ),
         ),
         (
-            "Restrict the assessment to analyses eligible for the reviewer's synthesis.",
+            "Use the review's prespecified outcome-domain eligibility criteria, not only the reported Result, and compare the reported analysis with the complete eligible set.",
+            "An applicable plan's correspondence and chronology are distinct checks. The approved Result fixes the target being assessed; it does not erase eligible alternative analyses or turn an unresolved alternative into an observed selection.",
             "Reporting several analyses together establishes multiplicity, not result-based selection. Inability to rule out selection does not establish that it probably occurred.",
         ),
         (

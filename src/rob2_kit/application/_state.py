@@ -23,7 +23,9 @@ from ..models import canonical_json_bytes, sha256
 from ..workflow_models import SourceRole
 from .contracts import COUNTERS, WorkflowConflict
 
-_SEARCH_DERIVATIVE_VERSION = "rob2-kit.search-projection.v6"
+_SEARCH_DERIVATIVE_VERSION = "rob2-kit.search-projection.v7-porter-unicode61"
+_SEARCH_PROFILE = "porter-unicode61-v1"
+_SEARCH_FTS_TOKENIZER = "porter unicode61"
 _PAGE_PROJECTION_VERSION = "rob2-kit.page-projection.v4"
 _WORKSPACE_CONTRACT_VERSION = "0.6.0"
 
@@ -32,6 +34,24 @@ _WORKSPACE_CONTRACT_VERSION = "0.6.0"
 # MCP line coordinates remain useful and bounded without changing the captured
 # source bytes.
 _MAX_PROJECTED_LINE_LENGTH = 2_000
+
+
+def _create_search_fts(
+    connection: sqlite3.Connection,
+    table_name: str = "pages_fts",
+    *,
+    if_not_exists: bool = False,
+) -> None:
+    """Create the one tokenizer/profile definition used by persisted and temp FTS."""
+
+    if not re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", table_name):
+        raise ValueError("invalid search FTS table name")
+    existence = "IF NOT EXISTS " if if_not_exists else ""
+    connection.execute(
+        f"CREATE VIRTUAL TABLE {existence}{table_name} USING fts5("
+        "source_id UNINDEXED, page UNINDEXED, raw_text, normalized_text, "
+        f"tokenize='{_SEARCH_FTS_TOKENIZER}')"
+    )
 
 
 class InvalidJSONSourceError(ValueError):
@@ -341,15 +361,10 @@ def _ensure(root: Path) -> None:
             "CREATE TABLE IF NOT EXISTS pages (source_id TEXT, page INTEGER, text TEXT, "
             "PRIMARY KEY(source_id,page))"
         )
-        fts_columns = {
-            str(row[1]) for row in connection.execute("PRAGMA table_info(pages_fts)").fetchall()
-        }
-        if fts_columns and fts_columns != {"source_id", "page", "raw_text", "normalized_text"}:
-            connection.execute("DROP TABLE pages_fts")
-        connection.execute(
-            "CREATE VIRTUAL TABLE IF NOT EXISTS pages_fts USING fts5("
-            "source_id, page UNINDEXED, raw_text, normalized_text)"
-        )
+        # Leave an old or damaged derivative in place until the rebuild below
+        # has constructed and verified its replacement.  Dropping it here
+        # would turn a recoverable cache miss into data loss on a failed build.
+        _create_search_fts(connection, if_not_exists=True)
         connection.execute(
             "CREATE TABLE IF NOT EXISTS search_projection_meta ("
             "name TEXT PRIMARY KEY, value TEXT NOT NULL)"
@@ -393,8 +408,18 @@ def _ensure(root: Path) -> None:
         connection.execute(
             "CREATE TABLE IF NOT EXISTS search_evidence_provenance ("
             "session_identity TEXT NOT NULL, rank INTEGER NOT NULL, trial_id TEXT NOT NULL, "
-            "evidence_identity TEXT NOT NULL, PRIMARY KEY(session_identity,rank))"
+            "evidence_identity TEXT NOT NULL, phase TEXT NOT NULL DEFAULT 'proposal', "
+            "PRIMARY KEY(session_identity,rank))"
         )
+        provenance_columns = {
+            str(row[1])
+            for row in connection.execute("PRAGMA table_info(search_evidence_provenance)")
+        }
+        if "phase" not in provenance_columns:
+            connection.execute(
+                "ALTER TABLE search_evidence_provenance ADD COLUMN phase TEXT NOT NULL "
+                "DEFAULT 'proposal'"
+            )
         connection.execute(
             "CREATE TABLE IF NOT EXISTS page_reads ("
             "batch_id TEXT NOT NULL, phase TEXT NOT NULL, "
@@ -478,8 +503,21 @@ def _rebuild_derivative_if_needed(root: Path) -> None:
         version_row = connection.execute(
             "SELECT value FROM search_projection_meta WHERE name='version'"
         ).fetchone()
+        fts_columns = {
+            str(row[1]) for row in connection.execute("PRAGMA table_info(pages_fts)").fetchall()
+        }
+        profile_row = connection.execute(
+            "SELECT value FROM search_projection_meta WHERE name='profile'"
+        ).fetchone()
+        fts_valid = (
+            fts_columns == {"source_id", "page", "raw_text", "normalized_text"}
+            and profile_row is not None
+            and profile_row[0] == _SEARCH_PROFILE
+        )
     rebuild_pages = not existing
-    rebuild_search = version_row is None or version_row[0] != _SEARCH_DERIVATIVE_VERSION
+    rebuild_search = (
+        not fts_valid or version_row is None or version_row[0] != _SEARCH_DERIVATIVE_VERSION
+    )
     if existing and indexed and not rebuild_search:
         return
     COUNTERS["derivative_rebuilds"] += 1
@@ -493,6 +531,7 @@ def _rebuild_derivative_if_needed(root: Path) -> None:
             if not path.is_file():
                 raise ValueError("captured Source bytes are unavailable")
             data = path.read_bytes()
+            COUNTERS["source_bytes_hashed"] += len(data)
             if "sha256:" + hashlib.sha256(data).hexdigest() != source.get("sha256"):
                 raise ValueError("captured Source bytes do not match Canonical identity")
             if source["id"] != _source_id(trial["id"], source["logical_path"], source["sha256"]):
@@ -517,12 +556,41 @@ def _rebuild_derivative_if_needed(root: Path) -> None:
         if rebuild_pages:
             connection.executemany("INSERT OR REPLACE INTO pages VALUES (?,?,?)", rows)
         if rebuild_search:
-            connection.execute("DELETE FROM pages_fts")
-            connection.executemany("INSERT INTO pages_fts VALUES (?,?,?,?)", search_rows)
+            replacement = "pages_fts_rebuild"
+            connection.execute(f"DROP TABLE IF EXISTS {replacement}")
+            _create_search_fts(connection, replacement)
+            connection.executemany(f"INSERT INTO {replacement} VALUES (?,?,?,?)", search_rows)
+            built_count = connection.execute(f"SELECT COUNT(*) FROM {replacement}").fetchone()[0]
+            if built_count != len(search_rows):
+                raise ValueError("rebuilt text search projection has an invalid row count")
+            expected_search_rows = sorted(search_rows, key=lambda row: (row[0], row[1]))
+            actual_search_rows = [
+                tuple(row)
+                for row in connection.execute(
+                    f"SELECT source_id,page,raw_text,normalized_text FROM {replacement} "
+                    "ORDER BY source_id,page"
+                ).fetchall()
+            ]
+            if actual_search_rows != expected_search_rows:
+                raise ValueError("rebuilt text search projection does not match Source bytes")
+            current = connection.execute(
+                "SELECT 1 FROM sqlite_master WHERE type='table' AND name='pages_fts'"
+            ).fetchone()
+            connection.execute("DROP TABLE IF EXISTS pages_fts_previous")
+            if current is not None:
+                connection.execute("ALTER TABLE pages_fts RENAME TO pages_fts_previous")
+            connection.execute("ALTER TABLE pages_fts_rebuild RENAME TO pages_fts")
+            if current is not None:
+                connection.execute("DROP TABLE pages_fts_previous")
             connection.execute(
                 "INSERT OR REPLACE INTO search_projection_meta(name,value) VALUES ('version',?)",
                 (_SEARCH_DERIVATIVE_VERSION,),
             )
+            connection.execute(
+                "INSERT OR REPLACE INTO search_projection_meta(name,value) VALUES ('profile',?)",
+                (_SEARCH_PROFILE,),
+            )
+            COUNTERS["search_fts_rows_built"] += len(search_rows)
         connection.executemany(
             "INSERT OR REPLACE INTO source_index(source_id,batch_id,trial_id,payload) "
             "VALUES (?,?,?,?)",

@@ -714,7 +714,7 @@ def test_search_cursor_conditions_are_typed_and_source_scope_is_bound(tmp_path: 
     assert expired["condition"]["code"] == "search_cursor_expired"
 
 
-def test_search_candidate_identity_is_invariant_across_active_domains(tmp_path: Path) -> None:
+def test_search_candidate_identity_is_invariant_and_purpose_is_explicit(tmp_path: Path) -> None:
     from support.rob2 import _assessment_workspace, _domain_draft
 
     workspace, evidence, revision = _assessment_workspace(tmp_path)
@@ -751,6 +751,33 @@ def test_search_candidate_identity_is_invariant_across_active_domains(tmp_path: 
         hit["passage_ref"] for hit in missing["hits"]
     ]
     rank = randomization["hits"][0]["rank"]
+    assert (randomization["session_id"], rank) not in _associated_search_ranks(
+        workspace, "trial", "domain:randomization"
+    )
+    assert (randomization["session_id"], rank) not in _associated_search_ranks(
+        workspace, "trial", "domain:deviations"
+    )
+    randomization = _call(
+        workspace,
+        "search_sources",
+        {
+            "trial_id": "trial",
+            "query": "requested outcome",
+            "mode": "any",
+            "purpose_domain_id": "domain:randomization",
+        },
+    )["data"]
+    deviations = _call(
+        workspace,
+        "search_sources",
+        {
+            "trial_id": "trial",
+            "query": "requested outcome",
+            "mode": "any",
+            "purpose_domain_id": "domain:deviations",
+        },
+    )["data"]
+    assert randomization["session_id"] == deviations["session_id"]
     assert (randomization["session_id"], rank) in _associated_search_ranks(
         workspace, "trial", "domain:randomization"
     )

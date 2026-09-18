@@ -447,6 +447,7 @@ class SelectedNarrativeEvidence(PublicModel):
             "result",
             "checkpoint",
             "active_domain_candidate",
+            "trial_discovery",
             "question_candidate",
             "contradiction",
             "explicit_carry_forward",
@@ -640,6 +641,22 @@ class WorkingCheckpointStatus(PublicModel):
     recovery: Literal["reorient_from_sources", "resume_from_checkpoint"]
 
 
+class TrialDomainAttribution(PublicModel):
+    domain_id: DomainId = Field(description="Canonical Domain represented by this review row.")
+    attribution: Literal["new_evidence", "self_correction", "mechanical_repair", "unchanged"] = (
+        Field(
+            description=(
+                "Observable basis of the current Domain checkpoint: a cited new Evidence item, "
+                "the model's correction of its earlier interpretation, a mechanical repair, or no "
+                "revision."
+            )
+        )
+    )
+    checkpoint_identity: Identity = Field(
+        description="Identity of the current Domain checkpoint used by this Trial review."
+    )
+
+
 class TrialReviewSummary(PublicModel):
     identity: Identity
     trial_id: TrialId
@@ -648,6 +665,13 @@ class TrialReviewSummary(PublicModel):
     disposition: Literal["assessed", "needs_input", "unsupported_design", "failed"]
     reason: str | None = None
     facts: tuple[str, ...] = ()
+    domain_attribution: tuple[TrialDomainAttribution, ...] = Field(
+        default=(),
+        description=(
+            "Per-Domain attribution of the current checkpoints used by this review. "
+            "This records workflow provenance, not a scientific judgment."
+        ),
+    )
 
 
 class StatusData(PublicModel):
@@ -684,7 +708,21 @@ class SourceNavigationEntry(PublicModel):
     page: PageNumber
     start_line: PageNumber
     end_line: PageNumber
-    kind: Literal["heading_candidate", "page_excerpt"]
+    kind: Literal[
+        "heading_candidate",
+        "page_excerpt",
+        "contents_lead",
+        "version_lead",
+        "date_lead",
+        "cross_reference_lead",
+    ]
+    date_kind: Literal["capture", "version", "amendment", "cutoff", "template"] | None = Field(
+        default=None,
+        description=(
+            "Explicit date context copied from the Source when it is lexically present; "
+            "null means no date classification was made."
+        ),
+    )
 
     @model_validator(mode="after")
     def line_order(self) -> SourceNavigationEntry:
@@ -770,7 +808,22 @@ class SearchReceipt(PublicModel):
     handle: SearchReceiptHandle = Field(description="Exact search receipt handle.")
     trial_id: TrialId
     query: str = Field(min_length=1)
-    mode: Literal["all", "phrase", "any", "prefix"]
+    mode: Literal["all", "phrase", "any", "prefix", "literal"]
+    profile: str = Field(
+        default="historical",
+        min_length=1,
+        description="Tokenizer and normalization profile bound to this search receipt.",
+    )
+    purpose_domain_id: DomainId | None = Field(
+        default=None,
+        description=(
+            "Optional Domain whose workflow issued this search; omitted means unassigned discovery."
+        ),
+    )
+    purpose_question_id: QuestionId | None = Field(
+        default=None,
+        description="Optional scientific question whose wording motivated this search.",
+    )
     total_matches: NonNegativeInt
     truncated: StrictBool
     condition: str | None
@@ -785,6 +838,12 @@ class SearchReceipt(PublicModel):
     exhausted: StrictBool
     returned_material: NonNegativeInt
 
+    @model_validator(mode="after")
+    def purpose_requires_domain(self) -> SearchReceipt:
+        if self.purpose_question_id is not None and self.purpose_domain_id is None:
+            raise ValueError("question purpose requires a Domain")
+        return self
+
 
 class SearchNextAction(PublicModel):
     """One executable recovery refinement or continuation for a search response."""
@@ -793,8 +852,18 @@ class SearchNextAction(PublicModel):
     operation: Literal["search_sources"]
     trial_id: TrialId
     query: str = Field(min_length=1)
-    mode: Literal["all", "phrase", "any", "prefix"]
+    mode: Literal["all", "phrase", "any", "prefix", "literal"]
     source_id: SourceHandle | None = None
+    purpose_domain_id: DomainId | None = Field(
+        default=None,
+        exclude_if=lambda value: value is None,
+        description="Optional Domain purpose to preserve when refining or continuing a search.",
+    )
+    purpose_question_id: QuestionId | None = Field(
+        default=None,
+        exclude_if=lambda value: value is None,
+        description="Optional question purpose paired with purpose_domain_id.",
+    )
     limit: PositiveInt
     cursor: str | None = None
 
@@ -804,6 +873,8 @@ class SearchNextAction(PublicModel):
             raise ValueError("continuation action requires a cursor")
         if self.kind == "refine" and self.cursor is not None:
             raise ValueError("refinement action cannot carry a cursor")
+        if self.purpose_question_id is not None and self.purpose_domain_id is None:
+            raise ValueError("question purpose requires a Domain")
         return self
 
 
@@ -828,7 +899,11 @@ class SearchDiagnostic(PublicModel):
     """Observable retrieval advice; it is never a scientific conclusion."""
 
     code: Literal["broad_any_truncated", "no_hits"]
-    mode: Literal["all", "phrase", "any", "prefix"]
+    mode: Literal["all", "phrase", "any", "prefix", "literal"]
+    profile: str = Field(
+        min_length=1,
+        description="Tokenizer and normalization profile used for the diagnostic counts.",
+    )
     normalized_term_count: PositiveInt
     total_matches: NonNegativeInt
     candidate_count: NonNegativeInt
@@ -836,6 +911,48 @@ class SearchDiagnostic(PublicModel):
     detail: str = Field(min_length=1)
     next_action: SearchRecoveryAction | None = None
     navigation: SourceNavigationData | None = None
+
+
+class SearchSpellingExample(PublicModel):
+    """One exact Source span showing a suggested captured spelling."""
+
+    source_id: SourceHandle
+    page: PageNumber
+    start: NonNegativeInt
+    end: NonNegativeInt
+    start_line: PageNumber
+    end_line: PageNumber
+
+    @model_validator(mode="after")
+    def span_is_ordered(self) -> SearchSpellingExample:
+        if self.end <= self.start:
+            raise ValueError("spelling example end must follow start")
+        if self.end_line < self.start_line:
+            raise ValueError("spelling example end_line must not precede start_line")
+        return self
+
+
+class SearchSpellingSuggestion(PublicModel):
+    query_unit: str = Field(
+        min_length=1,
+        description="Normalized query unit with zero matching pages under the issued search.",
+    )
+    query_unit_index: NonNegativeInt = Field(
+        description="Zero-based query-unit position replaced by this executable alternative."
+    )
+    suggested_term: str = Field(
+        min_length=1,
+        description="Captured-source term within the bounded edit-distance suggestion policy.",
+    )
+    surface_page_count: NonNegativeInt = Field(
+        description="Distinct captured pages containing the suggested surface term."
+    )
+    example: SearchSpellingExample = Field(
+        description="Exact captured Source span showing the suggested surface term."
+    )
+    next_action: SearchNextAction = Field(
+        description="Executable refinement that replaces only this query unit."
+    )
 
 
 class SearchTermPageCount(PublicModel):
@@ -874,7 +991,11 @@ class SearchSourceTermFeedback(PublicModel):
 class SearchData(PublicModel):
     hits: tuple[SearchHit, ...]
     query: str = Field(min_length=1)
-    mode: Literal["all", "phrase", "any", "prefix"]
+    mode: Literal["all", "phrase", "any", "prefix", "literal"]
+    profile: str = Field(
+        min_length=1,
+        description="Tokenizer and normalization profile used for this search ranking.",
+    )
     total_matches: NonNegativeInt
     truncated: StrictBool
     condition: Literal["no_hits"] | None
@@ -902,17 +1023,41 @@ class SearchData(PublicModel):
         )
     )
     diagnostic: SearchDiagnostic | None = None
+    spelling_suggestions: tuple[SearchSpellingSuggestion, ...] = ()
+    spelling_suggestions_incomplete: StrictBool = False
+    purpose_domain_id: DomainId | None = Field(
+        default=None,
+        description="Optional Domain purpose; omitted searches remain unassigned discovery.",
+    )
+    purpose_question_id: QuestionId | None = Field(
+        default=None,
+        description="Optional question purpose paired with purpose_domain_id.",
+    )
+
+    @model_validator(mode="after")
+    def purpose_requires_domain(self) -> SearchData:
+        if self.purpose_question_id is not None and self.purpose_domain_id is None:
+            raise ValueError("question purpose requires a Domain")
+        return self
 
 
 class SearchBatchRequest(PublicModel):
     trial_id: TrialId = Field(description="Captured Trial to search.")
     query: StrictStr = Field(min_length=1, description="One independent lexical query.")
-    mode: Literal["all", "phrase", "any", "prefix"] = Field(
+    mode: Literal["all", "phrase", "any", "prefix", "literal"] = Field(
         description="The explicit lexical intent for this query."
     )
     source_id: SourceHandle | None = Field(
         default=None,
         description="Optional source_id from the same Trial.",
+    )
+    purpose_domain_id: DomainId | None = Field(
+        default=None,
+        description="Optional Domain purpose; it controls attribution only, not ranking identity.",
+    )
+    purpose_question_id: QuestionId | None = Field(
+        default=None,
+        description="Optional question purpose within the selected Domain.",
     )
     limit: Annotated[
         StrictInt,
@@ -922,6 +1067,12 @@ class SearchBatchRequest(PublicModel):
         default=None,
         description="Continuation cursor for this query only.",
     )
+
+    @model_validator(mode="after")
+    def purpose_requires_domain(self) -> SearchBatchRequest:
+        if self.purpose_question_id is not None and self.purpose_domain_id is None:
+            raise ValueError("question purpose requires a Domain")
+        return self
 
 
 class SearchBatchSuccess(PublicModel):
@@ -943,7 +1094,7 @@ SearchBatchResult = Annotated[
 class SearchBatchItem(PublicModel):
     index: NonNegativeInt
     query: StrictStr
-    mode: Literal["all", "phrase", "any", "prefix"]
+    mode: Literal["all", "phrase", "any", "prefix", "literal"]
     result: SearchBatchResult
 
 
@@ -1239,6 +1390,7 @@ class DomainNarrativeEvidence(PublicModel):
             "result",
             "checkpoint",
             "active_domain_candidate",
+            "trial_discovery",
             "question_candidate",
             "contradiction",
             "explicit_carry_forward",
@@ -1342,10 +1494,24 @@ class SearchEvidenceContinuation(PublicModel):
     operation: Literal["search_sources"]
     trial_id: TrialId
     query: str = Field(min_length=1)
-    mode: Literal["all", "phrase", "any", "prefix"]
+    mode: Literal["all", "phrase", "any", "prefix", "literal"]
     source_id: SourceHandle | None = None
+    purpose_domain_id: DomainId | None = Field(
+        default=None,
+        description="Optional Domain purpose to preserve while continuing a search.",
+    )
+    purpose_question_id: QuestionId | None = Field(
+        default=None,
+        description="Optional question purpose paired with purpose_domain_id.",
+    )
     limit: PositiveInt
     cursor: str = Field(pattern=r"^sc_[0-9a-f]{16}_[0-9]+$")
+
+    @model_validator(mode="after")
+    def purpose_requires_domain(self) -> SearchEvidenceContinuation:
+        if self.purpose_question_id is not None and self.purpose_domain_id is None:
+            raise ValueError("question purpose requires a Domain")
+        return self
 
 
 class ReadEvidenceContinuation(PublicModel):
@@ -1379,6 +1545,7 @@ class OmittedEvidenceCounts(PublicModel):
     contradiction: NonNegativeInt = 0
     active_domain_candidate: NonNegativeInt = 0
     explicit_carry_forward: NonNegativeInt = 0
+    trial_discovery: NonNegativeInt = 0
     deduplicated: NonNegativeInt = 0
 
 
@@ -1388,6 +1555,7 @@ class EvidenceWorkspaceGroup(PublicModel):
         "checkpoint",
         "contradiction",
         "active_domain_candidate",
+        "trial_discovery",
         "explicit_carry_forward",
     ]
     question_ids: tuple[QuestionId, ...] = ()
@@ -1561,8 +1729,21 @@ class AbsenceCheckpointEvidenceUse(PublicModel):
 
 class LimitationCheckpointBasis(PublicModel):
     kind: Literal["limitation"]
-    text: str = Field(min_length=1)
-    search_receipt: Identity
+    unresolved_premise: str = Field(
+        min_length=1,
+        description="Specific premise that the captured Sources did not establish.",
+    )
+    stopping_rationale: str = Field(
+        min_length=1,
+        description="Why the bounded search/read effort stopped without establishing that premise.",
+    )
+    search_receipt: Identity | None = Field(
+        default=None,
+        description=(
+            "Optional identity of the bounded search receipt supporting this limitation; a "
+            "directly read passage does not require a search receipt."
+        ),
+    )
 
 
 CheckpointEvidenceUse = Annotated[
@@ -1627,8 +1808,32 @@ class SelfCorrectionRevision(PublicModel):
     rationale: str = Field(min_length=1)
 
 
+class MechanicalRepairRevision(PublicModel):
+    kind: Literal["mechanical_repair"]
+    repair_id: str | None = Field(
+        default=None,
+        min_length=1,
+        description="Stable repair identifier when the correction came from a recorded repair.",
+    )
+    codes: tuple[str, ...] = Field(
+        default=(),
+        description=(
+            "Mechanical repair codes that explain this rewrite without changing the scientific "
+            "claim."
+        ),
+    )
+
+    @model_validator(mode="after")
+    def has_repair_reference(self) -> MechanicalRepairRevision:
+        if self.repair_id is None and not self.codes:
+            raise ValueError("mechanical_repair requires repair_id or codes")
+        if len(self.codes) != len(set(self.codes)):
+            raise ValueError("mechanical_repair codes must be unique")
+        return self
+
+
 CheckpointRevisionBasis = Annotated[
-    NewEvidenceRevision | SelfCorrectionRevision,
+    NewEvidenceRevision | SelfCorrectionRevision | MechanicalRepairRevision,
     Field(discriminator="kind"),
 ]
 
@@ -1695,6 +1900,8 @@ class ReviewEvidenceReference(PublicModel):
 
 
 class ReviewReadEvidenceAction(PublicModel):
+    """A review expansion containing read operation and evidence metadata."""
+
     operation: Literal["read_pages"]
     evidence: EvidenceHandle
     trial_id: TrialId
@@ -1702,6 +1909,8 @@ class ReviewReadEvidenceAction(PublicModel):
 
 
 class ReviewRenderEvidenceAction(PublicModel):
+    """A review expansion containing render operation and evidence metadata."""
+
     operation: Literal["render_page"]
     evidence: EvidenceHandle
     trial_id: TrialId
@@ -1870,12 +2079,26 @@ def _head(value: dict[str, Any]) -> dict[str, Any]:
 def _clean_public(value: dict[str, Any]) -> dict[str, Any]:
     """Drop only context fields that are inapplicable in this projection."""
 
+    def clean_search_actions(node: object) -> None:
+        if isinstance(node, dict):
+            if node.get("operation") == "search_sources" and node.get("purpose_domain_id") is None:
+                node.pop("purpose_domain_id", None)
+                node.pop("purpose_question_id", None)
+            for child in node.values():
+                clean_search_actions(child)
+        elif isinstance(node, list):
+            for child in node:
+                clean_search_actions(child)
+
     head = value.get("head")
     if isinstance(head, dict):
         action = head.get("next_action")
         if isinstance(action, dict):
             if action.get("supersedes") is None:
                 action.pop("supersedes", None)
+            if action.get("purpose_domain_id") is None:
+                action.pop("purpose_domain_id", None)
+                action.pop("purpose_question_id", None)
             if action.get("operation") in {"review_trial", "close_trial"}:
                 for key in ("caller_inputs", "review_reference"):
                     if action.get(key) is None:
@@ -1883,6 +2106,7 @@ def _clean_public(value: dict[str, Any]) -> dict[str, Any]:
     data = value.get("data")
     if isinstance(data, dict) and data.get("current_checkpoint") is None:
         data.pop("current_checkpoint", None)
+    clean_search_actions(data)
     return value
 
 
@@ -1939,10 +2163,27 @@ def _search_data_payload(value: dict[str, Any]) -> dict[str, Any]:
     return data
 
 
+def _public_review(value: object) -> object:
+    if not isinstance(value, dict):
+        return value
+    review = dict(value)
+    attribution = review.get("domain_attribution")
+    if isinstance(attribution, list):
+        review["domain_attribution"] = [
+            {
+                key: item[key]
+                for key in ("domain_id", "attribution", "checkpoint_identity")
+                if isinstance(item, dict) and key in item
+            }
+            for item in attribution
+        ]
+    return review
+
+
 def _payload(tool: str, value: dict[str, Any]) -> dict[str, Any]:
     if tool == "get_status":
         return {
-            key: value[key]
+            key: _public_review(value[key]) if key == "trial_review" else value[key]
             for key in (
                 "trial_dispositions",
                 "terminal_counts",
@@ -1961,7 +2202,11 @@ def _payload(tool: str, value: dict[str, Any]) -> dict[str, Any]:
             if key in value
         }
     if tool == "review_trial":
-        return {key: value[key] for key in ("review", "domain_findings", "retry") if key in value}
+        return {
+            key: _public_review(value[key]) if key == "review" else value[key]
+            for key in ("review", "domain_findings", "retry")
+            if key in value
+        }
     if tool == "close_trial":
         return {key: value[key] for key in ("closure", "retry") if key in value}
     if tool == "search_sources":

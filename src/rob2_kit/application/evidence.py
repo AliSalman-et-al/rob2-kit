@@ -7,18 +7,22 @@ import re
 import sqlite3
 import unicodedata
 from bisect import bisect_right
-from collections import Counter
+from collections import Counter, OrderedDict
 from functools import lru_cache
 from pathlib import Path
+from threading import RLock
 from typing import Any, cast
 
 import pymupdf
+from rapidfuzz.distance import OSA
 
 from ..models import canonical_json_bytes
 from ..workflow_models import SearchReceiptHandle
 from ._state import (
+    _SEARCH_PROFILE,
     _canonical_query_text,
     _canonical_search_text,
+    _create_search_fts,
     _db,
     _ensure,
     _identity,
@@ -45,6 +49,10 @@ _SEARCH_SESSION_VERSION = "rob2-kit.search-session.v0.8"
 _SEARCH_CANDIDATE_VERSION = "rob2-kit.search-candidates.v0.8"
 _SEARCH_NORMALIZATION_VERSION = "rob2-kit.search-normalization.v1"
 _SEARCH_RANKING_VERSION = "fts5-bm25-scoped-page-source-tiebreak.v1"
+_LEGACY_SEARCH_PROFILE = "legacy-default-v1"
+_SEARCH_CORPUS_CACHE_MAX = 8
+_SEARCH_RANKING_CACHE_MAX = 64
+_SEARCH_PHASE_ORDER = {"proposal": 0, "assessment": 1, "ready_to_finalize": 2}
 
 # These counters expose whether a request rebuilt and persisted a full scoped
 # ranking. They are deliberately local to Evidence's disposable search cache.
@@ -54,13 +62,28 @@ COUNTERS.setdefault("search_ranking_validations", 0)
 COUNTERS.setdefault("search_cache_writes", 0)
 COUNTERS.setdefault("search_ranking_cache_hits", 0)
 COUNTERS.setdefault("search_ranking_recomputations", 0)
+COUNTERS.setdefault("search_fts_corpus_builds", 0)
+COUNTERS.setdefault("search_fts_corpus_cache_hits", 0)
+COUNTERS.setdefault("search_spelling_catalogue_builds", 0)
+COUNTERS.setdefault("search_spelling_catalogue_cache_hits", 0)
 
 # The SQLite rows are the durable derivative, but rebuilding the scoped FTS
 # ranking and every candidate on each warm request is needless work.  This
 # process-local cache is deliberately keyed by the workspace and immutable
 # session identity: a restart still validates and rebuilds from the durable
 # rows, while repeated calls in one host process reuse the verified result.
-_SEARCH_RANKING_CACHE: dict[tuple[str, str], dict[str, Any]] = {}
+_SEARCH_RANKING_CACHE: OrderedDict[tuple[str, str], dict[str, Any]] = OrderedDict()
+_SEARCH_CORPUS_CACHE: OrderedDict[
+    tuple[str, str, tuple[tuple[str, str], ...]], sqlite3.Connection
+] = OrderedDict()
+_SEARCH_SPELLING_CATALOGUE_CACHE: OrderedDict[
+    tuple[str, str, tuple[tuple[str, str], ...]],
+    tuple[dict[str, int], dict[str, int], dict[str, dict[str, Any]]],
+] = OrderedDict()
+_SEARCH_CORPUS_LOCK = RLock()
+_SEARCH_CORPUS_LEASES: dict[int, int] = {}
+_SEARCH_CORPUS_KEYS: dict[int, tuple[str, str, tuple[tuple[str, str], ...]]] = {}
+_SEARCH_CORPUS_RETIRED: dict[int, sqlite3.Connection] = {}
 
 
 def list_sources(
@@ -190,7 +213,7 @@ def _decode_source_navigation_cursor(cursor: str) -> dict[str, Any]:
 
 
 def _source_navigation_entries(pages: tuple[str, ...]) -> list[dict[str, Any]]:
-    """Index literal headings and leading text without inferring section meaning."""
+    """Index literal headings, leads, and cross-references without inferring meaning."""
 
     page_lines = [page.splitlines() for page in pages]
     first_lines = [
@@ -200,12 +223,34 @@ def _source_navigation_entries(pages: tuple[str, ...]) -> list[dict[str, Any]]:
     repeated_furniture = {line for line, count in repeated.items() if count >= 2}
     page_marker = re.compile(r"^(?:page\s+\d+(?:\s+of\s+\d+)?|version\s+\S+)$", re.I)
     numbered_heading = re.compile(r"^(?:\d+[.)]\s*|\d+(?:\.\d+)+\s+)[A-Z][^.!?:;]{0,119}$")
+    contents_row = re.compile(r"^.{2,180}?\.{2,}\s*\d{1,4}\s*$")
+    date_pattern = re.compile(
+        r"\b(?:\d{1,2}[/-]\d{1,2}[/-]\d{2,4}|\d{4}[/-]\d{1,2}[/-]\d{1,2}|"
+        r"\d{1,2}\s+(?:January|February|March|April|May|June|July|August|September|"
+        r"October|November|December)\s+\d{4}|(?:January|February|March|April|May|June|"
+        r"July|August|September|October|November|December)\s+\d{1,2},\s+\d{4})\b",
+        re.I,
+    )
+    cross_reference = re.compile(
+        r"\b(?:see|refer\s+to|described\s+in|reported\s+in|according\s+to)\s+"
+        r"(?:section|subsection|appendix|table|figure|page|pages|the\s+protocol|the\s+sap)\b",
+        re.I,
+    )
+    version_lead = re.compile(
+        r"\b(?:version|revision|edition|amendment|protocol\s+version|sap\s+version)\b|"
+        r"\bv\d+(?:\.\d+)*\b",
+        re.I,
+    )
     entries: list[dict[str, Any]] = []
     for page_number, lines in enumerate(page_lines, 1):
         useful: list[tuple[int, str]] = []
         for line_number, raw in enumerate(lines, 1):
             text = raw.strip()
-            if not text or page_marker.fullmatch(text) or text in repeated_furniture:
+            if (
+                not text
+                or (page_marker.fullmatch(text) and version_lead.search(text) is None)
+                or text in repeated_furniture
+            ):
                 continue
             useful.append((line_number, text))
         if useful:
@@ -230,6 +275,70 @@ def _source_navigation_entries(pages: tuple[str, ...]) -> list[dict[str, Any]]:
                 }
             )
         for line_number, text in useful:
+            lowered = text.casefold()
+            is_contents = (
+                lowered in {"contents", "table of contents"}
+                or contents_row.fullmatch(text) is not None
+            )
+            is_version = version_lead.search(text) is not None
+            is_cross_reference = cross_reference.search(text) is not None
+            date_match = date_pattern.search(text)
+            if is_contents:
+                entries.append(
+                    {
+                        "text": text,
+                        "page": page_number,
+                        "start_line": line_number,
+                        "end_line": line_number,
+                        "kind": "contents_lead",
+                    }
+                )
+            if is_version:
+                entries.append(
+                    {
+                        "text": text,
+                        "page": page_number,
+                        "start_line": line_number,
+                        "end_line": line_number,
+                        "kind": "version_lead",
+                    }
+                )
+            if date_match is not None:
+                date_kind = next(
+                    (
+                        kind
+                        for words, kind in (
+                            (("capture", "captured"), "capture"),
+                            (("version", "revision", "edition"), "version"),
+                            (("amend", "amended"), "amendment"),
+                            (("cutoff", "cut-off", "last data"), "cutoff"),
+                            (("template", "form"), "template"),
+                        )
+                        if any(word in lowered for word in words)
+                    ),
+                    None,
+                )
+                item = {
+                    "text": text,
+                    "page": page_number,
+                    "start_line": line_number,
+                    "end_line": line_number,
+                    "kind": "date_lead",
+                }
+                if date_kind is not None:
+                    item["date_kind"] = date_kind
+                entries.append(item)
+            if is_cross_reference:
+                entries.append(
+                    {
+                        "text": text,
+                        "page": page_number,
+                        "start_line": line_number,
+                        "end_line": line_number,
+                        "kind": "cross_reference_lead",
+                    }
+                )
+        for line_number, text in useful:
             if len(text) > 120 or text.endswith((".", ":", ";", "?", "!")):
                 continue
             if "@" in text or ";" in text:
@@ -250,8 +359,25 @@ def _source_navigation_entries(pages: tuple[str, ...]) -> list[dict[str, Any]]:
                     "kind": "heading_candidate",
                 }
             )
-    entries.sort(key=lambda item: (item["page"], item["start_line"], item["kind"]))
-    return entries
+    unique: dict[tuple[Any, ...], dict[str, Any]] = {}
+    for item in entries:
+        key = (
+            item["page"],
+            item["start_line"],
+            item["end_line"],
+            item["kind"],
+            item["text"],
+        )
+        unique.setdefault(key, item)
+    ordered = sorted(
+        unique.values(), key=lambda item: (item["page"], item["start_line"], item["kind"])
+    )
+    metadata = [
+        item for item in ordered if item["kind"] not in {"heading_candidate", "page_excerpt"}
+    ]
+    ordinary = [item for item in ordered if item["kind"] in {"heading_candidate", "page_excerpt"}]
+    selected = (metadata + ordinary)[:_SOURCE_NAVIGATION_MAX_ENTRIES]
+    return sorted(selected, key=lambda item: (item["page"], item["start_line"], item["kind"]))
 
 
 def _verified_source_projections(
@@ -314,12 +440,14 @@ def _verified_source_projections(
         if not path.is_file():
             raise ValueError("captured Source bytes are unavailable")
         data = path.read_bytes()
+        COUNTERS["source_bytes_hashed"] += len(data)
         if "sha256:" + hashlib.sha256(data).hexdigest() != source["sha256"]:
             raise ValueError("captured Source bytes do not match Canonical identity")
         # Intake (or an explicit derivative rebuild) owns extraction.  Normal
         # Evidence operations verify the persisted projection instead of
         # reopening and parsing the captured PDF on every call.
         source_pages = pages_by_source.get(source_id, [])
+        COUNTERS["projection_rows_read"] += len(source_pages)
         page_numbers = tuple(row[1] for row in source_pages)
         if any(not isinstance(row[2], str) for row in source_pages):
             raise ValueError("captured Source page text is corrupt")
@@ -357,6 +485,8 @@ def _broad_search_diagnostic(
     returned_count: int,
     truncated: bool,
     next_cursor: str | None,
+    purpose_domain_id: str | None = None,
+    purpose_question_id: str | None = None,
 ) -> dict[str, Any] | None:
     """Describe only observable breadth/truncation facts and one next call."""
 
@@ -373,9 +503,13 @@ def _broad_search_diagnostic(
         "limit": limit,
         "cursor": next_cursor,
     }
+    if purpose_domain_id is not None:
+        action["purpose_domain_id"] = purpose_domain_id
+        action["purpose_question_id"] = purpose_question_id
     return {
         "code": "broad_any_truncated",
         "mode": mode,
+        "profile": _SEARCH_PROFILE,
         "normalized_term_count": len(terms),
         "total_matches": total_matches,
         "candidate_count": candidate_count,
@@ -405,10 +539,12 @@ def _no_hits_diagnostic(
         "phrase": "the normalized query terms as one contiguous phrase",
         "any": "at least one normalized query term on a page",
         "prefix": "a page containing a token that starts with a normalized query term",
+        "literal": "the exact contiguous presentation-normalized wording",
     }
     return {
         "code": "no_hits",
         "mode": mode,
+        "profile": _SEARCH_PROFILE,
         "normalized_term_count": len(normalized_query.split()),
         "total_matches": total_matches,
         "candidate_count": 0,
@@ -471,16 +607,54 @@ def search_sources(
     limit: int = 10,
     source_id: str | None = None,
     cursor: str | None = None,
+    purpose_domain_id: str | None = None,
+    purpose_question_id: str | None = None,
 ) -> dict[str, Any]:
     root = _root(workspace)
     _ensure(root)
     requested_source_id = source_id
-    normalized_query = _canonical_query_text(query)
+    valid_modes = {"all", "phrase", "any", "prefix", "literal"}
+    if not isinstance(query, str):
+        raise ValueError("query must be a string")
+    if not isinstance(mode, str) or mode not in valid_modes:
+        raise ValueError("unknown lexical mode")
+    if not isinstance(limit, int) or isinstance(limit, bool) or not 1 <= limit <= 100:
+        raise ValueError("search limit must be between 1 and 100")
+    if purpose_domain_id is not None and (
+        not isinstance(purpose_domain_id, str)
+        or purpose_domain_id
+        not in {
+            "domain:randomization",
+            "domain:deviations",
+            "domain:missing",
+            "domain:measurement",
+            "domain:selection",
+        }
+    ):
+        raise ValueError("unknown search purpose Domain")
+    if purpose_question_id is not None and (
+        not isinstance(purpose_question_id, str)
+        or re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}", purpose_question_id) is None
+    ):
+        raise ValueError("invalid search purpose question")
+    if purpose_question_id is not None and purpose_domain_id is None:
+        raise ValueError("question search purpose requires a Domain")
+    if purpose_question_id is not None:
+        from ..packs.scientific import SCIENTIFIC_PACK
+
+        question = next(
+            (item for item in SCIENTIFIC_PACK.questions if item.id == purpose_question_id), None
+        )
+        if question is None or question.domain_id != purpose_domain_id:
+            raise ValueError("search purpose question is outside the selected Domain")
+    normalized_query = (
+        _canonical_search_text(query).casefold()
+        if mode == "literal"
+        else _canonical_query_text(query)
+    )
     terms = [term for term in normalized_query.split() if term]
     if not terms:
         raise ValueError("query must not be empty")
-    if mode not in {"all", "phrase", "any", "prefix"}:
-        raise ValueError("unknown lexical mode")
     sources = list_sources(workspace, trial_id)["sources"]
     if source_id is not None:
         sources = [source for source in sources if source["id"] == source_id]
@@ -507,6 +681,7 @@ def search_sources(
             "query": " ".join(terms),
             "normalized_query": " ".join(terms),
             "mode": mode,
+            "profile": _SEARCH_PROFILE,
             "ranking": _SEARCH_RANKING_VERSION,
         }
         session_identity = _identity(session_spec)
@@ -533,6 +708,9 @@ def search_sources(
             "query": query,
             "normalized_query": " ".join(terms),
             "mode": mode,
+            "profile": _SEARCH_PROFILE,
+            "purpose_domain_id": purpose_domain_id,
+            "purpose_question_id": purpose_question_id,
             "hits": [],
             "limit": bounded_limit,
             "total_matches": 0,
@@ -570,6 +748,7 @@ def search_sources(
             "hits": [],
             "query": query,
             "mode": mode,
+            "profile": _SEARCH_PROFILE,
             "total_matches": 0,
             "truncated": False,
             "condition": "no_hits",
@@ -587,6 +766,10 @@ def search_sources(
             "term_feedback_truncated": False,
             "term_feedback_sources_truncated": False,
             "diagnostic": diagnostic,
+            "purpose_domain_id": purpose_domain_id,
+            "purpose_question_id": purpose_question_id,
+            "spelling_suggestions": [],
+            "spelling_suggestions_incomplete": False,
         }
     ordered_sources = _ordered_sources(sources)
     ordered_source_ids = [str(source["id"]) for source in ordered_sources]
@@ -599,6 +782,7 @@ def search_sources(
             f"WHERE source_id IN ({placeholders}) ORDER BY source_id,page",
             tuple(sorted(allowed)),
         ).fetchall()
+        COUNTERS["fts_rows_read"] += len(cached_rows)
         expected_rows = [
             (source_id, page, *_discovery_search_derivative(text))
             for source_id in sorted(allowed)
@@ -607,6 +791,7 @@ def search_sources(
         if [tuple(row) for row in cached_rows] != expected_rows:
             raise ValueError("text search projection is corrupt")
     page_map = {source_id: verified[(trial_id, source_id)][1] for source_id in ordered_source_ids}
+    scope_key, search_corpus = _search_corpus(root, ordered_sources, page_map)
     feedback_terms = list(dict.fromkeys(terms))
     session_spec = {
         "version": _SEARCH_SESSION_VERSION,
@@ -621,6 +806,7 @@ def search_sources(
         "query": " ".join(terms),
         "normalized_query": " ".join(terms),
         "mode": mode,
+        "profile": _SEARCH_PROFILE,
         "ranking": _SEARCH_RANKING_VERSION,
     }
     session_identity = _identity(session_spec)
@@ -692,19 +878,27 @@ def search_sources(
                 all_pairs.append((page_entry["source_id"], page_entry["page"]))
             if len(all_pairs) != len(set(all_pairs)):
                 raise ValueError("search session ranking contains duplicate pages")
-            cached_projection = _SEARCH_RANKING_CACHE.get(cache_key)
+            with _SEARCH_CORPUS_LOCK:
+                cached_projection = _SEARCH_RANKING_CACHE.pop(cache_key, None)
+                if cached_projection is not None:
+                    _SEARCH_RANKING_CACHE[cache_key] = cached_projection
             COUNTERS["search_ranking_validations"] += 1
             if cached_projection is not None:
-                cached_pairs = cached_projection["all_pairs"]
-                cached_feedback = cached_projection["term_feedback"]
-                cached_candidates = cached_projection["candidates"]
-                if all_pairs != cached_pairs:
-                    raise ValueError("search session ranking is stale or corrupt")
-                if term_feedback != cached_feedback:
-                    raise ValueError("search session term feedback is stale or corrupt")
-                if candidates != cached_candidates:
-                    raise ValueError("search session candidates are stale or corrupt")
-                COUNTERS["search_ranking_cache_hits"] += 1
+                try:
+                    cached_pairs = cached_projection["all_pairs"]
+                    cached_feedback = cached_projection["term_feedback"]
+                    cached_candidates = cached_projection["candidates"]
+                    if all_pairs != cached_pairs:
+                        raise ValueError("search session ranking is stale or corrupt")
+                    if term_feedback != cached_feedback:
+                        raise ValueError("search session term feedback is stale or corrupt")
+                    if candidates != cached_candidates:
+                        raise ValueError("search session candidates are stale or corrupt")
+                    COUNTERS["search_ranking_cache_hits"] += 1
+                finally:
+                    # A warm ranking hit does not enter the recomputation
+                    # helper, so release the corpus lease here.
+                    _release_search_corpus(search_corpus)
             else:
                 # A process restart drops only this disposable cache.  Rebuild
                 # from the verified durable session and source projections,
@@ -716,6 +910,7 @@ def search_sources(
                     mode,
                     ordered_source_ids,
                     tuple(feedback_terms[:_TERM_FEEDBACK_MAX_TERMS]),
+                    connection=search_corpus,
                 )
                 if all_pairs != expected_all_pairs:
                     raise ValueError("search session ranking is stale or corrupt")
@@ -733,11 +928,14 @@ def search_sources(
                 )
                 if candidates != expected_candidates:
                     raise ValueError("search session candidates are stale or corrupt")
-                _SEARCH_RANKING_CACHE[cache_key] = {
-                    "all_pairs": list(all_pairs),
-                    "term_feedback": json.loads(json.dumps(term_feedback)),
-                    "candidates": json.loads(json.dumps(candidates)),
-                }
+                with _SEARCH_CORPUS_LOCK:
+                    _SEARCH_RANKING_CACHE[cache_key] = {
+                        "all_pairs": list(all_pairs),
+                        "term_feedback": json.loads(json.dumps(term_feedback)),
+                        "candidates": json.loads(json.dumps(candidates)),
+                    }
+                    while len(_SEARCH_RANKING_CACHE) > _SEARCH_RANKING_CACHE_MAX:
+                        _SEARCH_RANKING_CACHE.popitem(last=False)
         except (UnicodeDecodeError, json.JSONDecodeError, KeyError) as error:
             raise ValueError("search session derivative is corrupt; restart the search") from error
         except (TypeError, AttributeError) as error:
@@ -750,6 +948,7 @@ def search_sources(
             mode,
             ordered_source_ids,
             tuple(feedback_terms[:_TERM_FEEDBACK_MAX_TERMS]),
+            connection=search_corpus,
         )
         term_feedback = _term_page_feedback(
             page_map,
@@ -788,13 +987,33 @@ def search_sources(
                     for item in candidates
                 ],
             )
-        _SEARCH_RANKING_CACHE[cache_key] = {
-            "all_pairs": list(all_pairs),
-            "term_feedback": json.loads(json.dumps(term_feedback)),
-            "candidates": json.loads(json.dumps(candidates)),
-        }
+        with _SEARCH_CORPUS_LOCK:
+            _SEARCH_RANKING_CACHE[cache_key] = {
+                "all_pairs": list(all_pairs),
+                "term_feedback": json.loads(json.dumps(term_feedback)),
+                "candidates": json.loads(json.dumps(candidates)),
+            }
+            while len(_SEARCH_RANKING_CACHE) > _SEARCH_RANKING_CACHE_MAX:
+                _SEARCH_RANKING_CACHE.popitem(last=False)
         COUNTERS["search_ranking_cache_writes"] += 1
         COUNTERS["search_cache_writes"] += 1
+    spelling_catalogue = _spelling_catalogue(scope_key, page_map, ordered_source_ids)
+    spelling_suggestions, spelling_suggestions_incomplete = _spelling_suggestions(
+        page_map,
+        terms,
+        mode,
+        ordered_source_ids,
+        term_feedback,
+        trial_id,
+        requested_source_id,
+        bounded_limit,
+        purpose_domain_id,
+        purpose_question_id,
+        query,
+        term_feedback_truncated,
+        term_feedback_sources_truncated,
+        spelling_catalogue,
+    )
     total_matches = len(all_pairs)
     # Candidate rank is the one public ordering. It is persisted so receipts,
     # cursors, cached rows, and displayed hits cannot disagree about ranks 1..N.
@@ -812,17 +1031,9 @@ def search_sources(
     selected_candidates = presentation[offset : offset + bounded_limit]
     candidate_truncated = offset + len(selected_candidates) < len(presentation)
     source_by_id = {str(source["id"]): source for source in ordered_sources}
-    # Import lazily: status projects search data, while search needs only its
-    # authoritative workflow selector here.
-    from .status import _active_trial_and_domain
-
-    state = _read(root, "state") or {}
-    active_trial_id, active_domain_id = _active_trial_and_domain(state)
-    if (
-        state.get("phase") == "assessment"
-        and active_trial_id == trial_id
-        and active_domain_id is not None
-    ):
+    # An omitted purpose is an unassigned Trial discovery.  Never infer an
+    # association from whichever Domain happens to be active in the workflow.
+    if purpose_domain_id is not None:
         # Associate the complete immutable ranking with the Domain that issued
         # the search. Lower-ranked candidates may not be materialized yet, but
         # context continuation must still reach them without rerunning retrieval.
@@ -831,7 +1042,7 @@ def search_sources(
                 root,
                 session_identity,
                 candidate["rank"],
-                active_domain_id,
+                purpose_domain_id,
                 trial_id,
             )
     hits = []
@@ -920,6 +1131,9 @@ def search_sources(
         "query": query,
         "normalized_query": " ".join(terms),
         "mode": mode,
+        "profile": _SEARCH_PROFILE,
+        "purpose_domain_id": purpose_domain_id,
+        "purpose_question_id": purpose_question_id,
         "hits": [{"source_id": item["source_id"], "page": item["page"]} for item in hits],
         "limit": bounded_limit,
         "total_matches": total_matches,
@@ -970,6 +1184,8 @@ def search_sources(
         returned_count=len(selected_candidates),
         truncated=candidate_truncated,
         next_cursor=receipt["next_cursor"],
+        purpose_domain_id=purpose_domain_id,
+        purpose_question_id=purpose_question_id,
     )
     if diagnostic is None:
         diagnostic = _no_hits_diagnostic(
@@ -994,6 +1210,7 @@ def search_sources(
         "hits": hits,
         "query": query,
         "mode": mode,
+        "profile": _SEARCH_PROFILE,
         "total_matches": total_matches,
         "truncated": candidate_truncated,
         "condition": condition,
@@ -1011,6 +1228,10 @@ def search_sources(
         "term_feedback_truncated": term_feedback_truncated,
         "term_feedback_sources_truncated": term_feedback_sources_truncated,
         "diagnostic": diagnostic,
+        "purpose_domain_id": purpose_domain_id,
+        "purpose_question_id": purpose_question_id,
+        "spelling_suggestions": spelling_suggestions,
+        "spelling_suggestions_incomplete": spelling_suggestions_incomplete,
     }
 
 
@@ -1031,6 +1252,146 @@ def _search_expression(query: str, mode: str) -> str:
     if mode == "prefix":
         return " OR ".join(f"{quoted(term)}*" for term in terms)
     return " AND ".join(quoted(term) for term in terms)
+
+
+def _create_search_fts_for_profile(
+    connection: sqlite3.Connection, profile: str, table_name: str = "pages_fts"
+) -> None:
+    """Create the tokenizer used by a current or historical search receipt."""
+    if profile == _SEARCH_PROFILE:
+        _create_search_fts(connection, table_name)
+        return
+    if profile == _LEGACY_SEARCH_PROFILE:
+        if not re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", table_name):
+            raise ValueError("invalid search FTS table name")
+        connection.execute(
+            f"CREATE VIRTUAL TABLE {table_name} USING fts5("
+            "source_id, page UNINDEXED, raw_text, normalized_text)"
+        )
+        return
+    raise ValueError("unknown search tokenizer profile")
+
+
+def _search_scope_key(
+    root: Path,
+    sources: list[dict[str, Any]],
+    profile: str = _SEARCH_PROFILE,
+) -> tuple[str, str, tuple[tuple[str, str], ...]]:
+    return (
+        str(root),
+        profile,
+        tuple((str(source["id"]), str(source["projection_hash"])) for source in sources),
+    )
+
+
+def _search_corpus(
+    root: Path,
+    sources: list[dict[str, Any]],
+    pages: dict[str, tuple[str, ...]],
+    profile: str = _SEARCH_PROFILE,
+) -> tuple[tuple[str, str, tuple[tuple[str, str], ...]], sqlite3.Connection]:
+    """Reuse one verified, scope-bound FTS corpus across warm query ranks."""
+    key = _search_scope_key(root, sources, profile)
+    with _SEARCH_CORPUS_LOCK:
+        cached = _SEARCH_CORPUS_CACHE.pop(key, None)
+        if cached is not None:
+            _SEARCH_CORPUS_CACHE[key] = cached
+            _SEARCH_CORPUS_LEASES[id(cached)] = _SEARCH_CORPUS_LEASES.get(id(cached), 0) + 1
+            _SEARCH_CORPUS_KEYS[id(cached)] = key
+            COUNTERS["search_fts_corpus_cache_hits"] += 1
+            return key, cached
+        connection = sqlite3.connect(":memory:", check_same_thread=False)
+        _create_search_fts_for_profile(connection, profile)
+        source_order = [str(source["id"]) for source in sources]
+        rows = [
+            (source_id, page, *_discovery_search_derivative(text))
+            for source_id in source_order
+            for page, text in enumerate(pages[source_id], 1)
+        ]
+        connection.executemany("INSERT INTO pages_fts VALUES (?,?,?,?)", rows)
+        _SEARCH_CORPUS_CACHE[key] = connection
+        _SEARCH_CORPUS_LEASES[id(connection)] = 1
+        _SEARCH_CORPUS_KEYS[id(connection)] = key
+        COUNTERS["search_fts_corpus_builds"] += 1
+        while len(_SEARCH_CORPUS_CACHE) > _SEARCH_CORPUS_CACHE_MAX:
+            _old_key, old_connection = _SEARCH_CORPUS_CACHE.popitem(last=False)
+            old_id = id(old_connection)
+            if _SEARCH_CORPUS_LEASES.get(old_id, 0):
+                # A caller may have received this connection just before this
+                # eviction. Retire it, then close it after the caller releases
+                # its lease instead of invalidating an active query.
+                _SEARCH_CORPUS_RETIRED[old_id] = old_connection
+            else:
+                old_connection.close()
+                _SEARCH_CORPUS_KEYS.pop(old_id, None)
+            _SEARCH_SPELLING_CATALOGUE_CACHE.pop(_old_key, None)
+        return key, connection
+
+
+def _release_search_corpus(connection: sqlite3.Connection) -> None:
+    """Release a corpus lease and close an evicted connection when safe."""
+
+    connection_id = id(connection)
+    with _SEARCH_CORPUS_LOCK:
+        lease_count = _SEARCH_CORPUS_LEASES.get(connection_id)
+        if lease_count is None:
+            return
+        if lease_count > 1:
+            _SEARCH_CORPUS_LEASES[connection_id] = lease_count - 1
+            return
+        _SEARCH_CORPUS_LEASES.pop(connection_id, None)
+        retired = _SEARCH_CORPUS_RETIRED.pop(connection_id, None)
+        if retired is not None:
+            retired.close()
+            _SEARCH_CORPUS_KEYS.pop(connection_id, None)
+
+
+def _spelling_catalogue(
+    key: tuple[str, str, tuple[tuple[str, str], ...]],
+    pages: dict[str, tuple[str, ...]],
+    source_order: list[str],
+) -> tuple[dict[str, int], dict[str, int], dict[str, dict[str, Any]]]:
+    """Cache bounded counts and one exact captured-source example per word."""
+    with _SEARCH_CORPUS_LOCK:
+        cached = _SEARCH_SPELLING_CATALOGUE_CACHE.pop(key, None)
+        if cached is not None:
+            _SEARCH_SPELLING_CATALOGUE_CACHE[key] = cached
+            COUNTERS["search_spelling_catalogue_cache_hits"] += 1
+            return cached
+        words: Counter[str] = Counter()
+        page_counts: Counter[str] = Counter()
+        examples: dict[str, dict[str, Any]] = {}
+        for source_id in source_order:
+            for page_number, page in enumerate(pages[source_id], 1):
+                found = set(re.findall(r"(?<![\w])[A-Za-z]{5,40}(?![\w])", page.casefold()))
+                for word in found:
+                    spans = _literal_match_spans(page, word)
+                    if not spans:
+                        # A raw fragment can be split by line-ending
+                        # dehyphenation in the normalized projection. It is
+                        # not an exact captured-source word, so omit it from
+                        # the spelling catalogue rather than inventing a
+                        # locator or crashing the search.
+                        continue
+                    words[word] += 1
+                    page_counts[word] += 1
+                    if word not in examples:
+                        start, end = spans[0]
+                        start_line, end_line, _line_start, _line_end = _line_bounds(
+                            page, start, end
+                        )
+                        examples[word] = {
+                            "source_id": source_id,
+                            "page": page_number,
+                            "start": start,
+                            "end": end,
+                            "start_line": start_line,
+                            "end_line": end_line,
+                        }
+        result = (dict(words), dict(page_counts), examples)
+        _SEARCH_SPELLING_CATALOGUE_CACHE[key] = result
+        COUNTERS["search_spelling_catalogue_builds"] += 1
+        return result
 
 
 @lru_cache(maxsize=2048)
@@ -1063,7 +1424,12 @@ def _search_result_order(
     return rank, source_order[source_id], page
 
 
-def _search_match_spans(text: str, query: str, mode: str) -> list[tuple[int, int]]:
+def _search_match_spans(
+    text: str,
+    query: str,
+    mode: str,
+    profile: str = _SEARCH_PROFILE,
+) -> list[tuple[int, int]]:
     """Return raw spans for the normalized match selected by one search mode."""
     terms = [item.casefold() for item in query.split() if item]
     if not terms:
@@ -1123,7 +1489,11 @@ def _search_match_spans(text: str, query: str, mode: str) -> list[tuple[int, int
             if found:
                 candidates.append((found[0][0], found, spans))
     if not candidates:
-        return _fts_token_match_spans(text, query, mode)
+        return (
+            _fts_token_match_spans(text, query, mode)
+            if profile == _LEGACY_SEARCH_PROFILE
+            else _native_fts_match_spans(text, query, mode)
+        )
     _start, matches, spans = min(candidates, key=lambda item: item[0])
     raw_spans = [
         (spans[start][0], spans[min(start + length - 1, len(spans) - 1)][1])
@@ -1324,12 +1694,23 @@ def _recomputed_search_summary(
     span_cache: dict[tuple[str, int], list[tuple[int, int]]] | None = None,
 ) -> tuple[list[tuple[str, int]], int]:
     """Recompute bounded hits and the complete scoped match count."""
+    if mode == "literal":
+        ordered_sources = source_order or sorted(pages)
+        all_pairs = [
+            (source_id, page)
+            for source_id in ordered_sources
+            for page, text in enumerate(pages[source_id], 1)
+            if _literal_match_spans(text, query)
+        ]
+        bounded_limit = max(1, min(limit, 100))
+        selected = all_pairs[:bounded_limit]
+        if span_cache is not None:
+            for pair in selected:
+                span_cache[pair] = _literal_match_spans(pages[pair[0]][pair[1] - 1], query)
+        return selected, len(all_pairs)
     expression = _search_expression(query, mode)
     with sqlite3.connect(":memory:") as connection:
-        connection.execute(
-            "CREATE VIRTUAL TABLE pages_fts USING fts5("
-            "source_id, page UNINDEXED, raw_text, normalized_text)"
-        )
+        _create_search_fts(connection)
         rows = [
             (source_id, page, *_discovery_search_derivative(text))
             for source_id in (source_order or sorted(pages))
@@ -1340,6 +1721,7 @@ def _recomputed_search_summary(
             "SELECT source_id,page,bm25(pages_fts) FROM pages_fts WHERE pages_fts MATCH ?",
             (expression,),
         ).fetchall()
+        COUNTERS["fts_rows_read"] += len(hits)
     order = {source_id: index for index, source_id in enumerate(source_order or sorted(pages))}
     hits.sort(key=lambda row: _search_result_order(str(row[0]), int(row[1]), float(row[2]), order))
     all_pairs = [(str(row[0]), int(row[1])) for row in hits]
@@ -1376,9 +1758,16 @@ def _recomputed_search_summary(
 
 
 def _recomputed_all_pairs(
-    pages: dict[str, tuple[str, ...]], query: str, mode: str, source_order: list[str]
+    pages: dict[str, tuple[str, ...]],
+    query: str,
+    mode: str,
+    source_order: list[str],
+    profile: str = _SEARCH_PROFILE,
+    connection: sqlite3.Connection | None = None,
 ) -> list[tuple[str, int]]:
-    all_pairs, _feedback = _recomputed_search_projection(pages, query, mode, source_order, ())
+    all_pairs, _feedback = _recomputed_search_projection(
+        pages, query, mode, source_order, (), profile=profile, connection=connection
+    )
     return all_pairs
 
 
@@ -1388,20 +1777,35 @@ def _recomputed_search_projection(
     mode: str,
     source_order: list[str],
     feedback_terms: tuple[str, ...],
+    profile: str = _SEARCH_PROFILE,
+    connection: sqlite3.Connection | None = None,
 ) -> tuple[list[tuple[str, int]], dict[str, dict[str, set[int]]]]:
+    if mode == "literal":
+        pairs = [
+            (source_id, page)
+            for source_id in source_order
+            for page, text in enumerate(pages[source_id], 1)
+            if _literal_match_spans(text, query)
+        ]
+        return pairs, {
+            term: {source_id: set() for source_id in source_order} for term in feedback_terms
+        }
     expression = _search_expression(query, mode)
-    with sqlite3.connect(":memory:") as connection:
-        connection.execute(
-            "CREATE VIRTUAL TABLE pages_fts USING fts5("
-            "source_id,page UNINDEXED,raw_text,normalized_text)"
-        )
+    owns_connection = connection is None
+    current = connection or sqlite3.connect(":memory:")
+    if not owns_connection:
+        _SEARCH_CORPUS_LOCK.acquire()
+    try:
+        if owns_connection:
+            _create_search_fts_for_profile(current, profile)
         rows = [
             (source_id, page, *_discovery_search_derivative(text))
             for source_id in source_order
             for page, text in enumerate(pages[source_id], 1)
         ]
-        connection.executemany("INSERT INTO pages_fts VALUES (?,?,?,?)", rows)
-        hits = connection.execute(
+        if owns_connection:
+            current.executemany("INSERT INTO pages_fts VALUES (?,?,?,?)", rows)
+        hits = current.execute(
             "SELECT source_id,page,bm25(pages_fts) FROM pages_fts WHERE pages_fts MATCH ?",
             (expression,),
         ).fetchall()
@@ -1411,12 +1815,19 @@ def _recomputed_search_projection(
         term_mode = "prefix" if mode == "prefix" else "any"
         for term in feedback_terms:
             term_expression = _search_expression(term, term_mode)
-            term_rows = connection.execute(
+            term_rows = current.execute(
                 "SELECT DISTINCT source_id,page FROM pages_fts WHERE pages_fts MATCH ?",
                 (term_expression,),
             ).fetchall()
+            COUNTERS["fts_rows_read"] += len(term_rows)
             for source_id, page in term_rows:
                 term_pages[term][str(source_id)].add(int(page))
+    finally:
+        if not owns_connection:
+            _release_search_corpus(current)
+            _SEARCH_CORPUS_LOCK.release()
+        else:
+            current.close()
     order = {source_id: index for index, source_id in enumerate(source_order)}
     hits.sort(key=lambda row: _search_result_order(str(row[0]), int(row[1]), float(row[2]), order))
     return [(str(row[0]), int(row[1])) for row in hits], term_pages
@@ -1449,47 +1860,299 @@ def _term_page_feedback(
     ]
 
 
-def _all_search_match_spans(text: str, query: str, mode: str) -> list[tuple[int, int]]:
+def _literal_match_spans(text: str, query: str) -> list[tuple[int, int]]:
+    """Find contiguous presentation-normalized wording without stemming."""
+    needle = _canonical_search_text(query)
+    if not needle:
+        return []
+    searchable, character_spans = _canonical_search_text_with_spans(text)
+    result: list[tuple[int, int]] = []
+    start = searchable.find(needle)
+    while start >= 0:
+        end = start + len(needle)
+        if (
+            (start == 0 or not searchable[start - 1].isalnum())
+            and (end == len(searchable) or not searchable[end].isalnum())
+            and character_spans
+            and end <= len(character_spans)
+        ):
+            result.append((character_spans[start][0], character_spans[end - 1][1]))
+        start = searchable.find(needle, start + 1)
+    return result
+
+
+def _canonical_search_text_with_spans(value: str) -> tuple[str, list[tuple[int, int]]]:
+    """Canonicalize whitespace while retaining one raw span per output character."""
+
+    normalized, spans = _normalized_text_with_spans(value)
+    output: list[str] = []
+    output_spans: list[tuple[int, int]] = []
+    for character, span in zip(normalized, spans, strict=True):
+        if character.isspace():
+            if not output:
+                continue
+            if output[-1] == " ":
+                output_spans[-1] = (output_spans[-1][0], span[1])
+            else:
+                output.append(" ")
+                output_spans.append(span)
+            continue
+        output.append(character)
+        output_spans.append(span)
+    if output and output[-1] == " ":
+        output.pop()
+        output_spans.pop()
+    return "".join(output), output_spans
+
+
+def _osa_distance(left: str, right: str, cutoff: int) -> int:
+    """Bounded optimal-string-alignment distance for spelling feedback."""
+    if abs(len(left) - len(right)) > cutoff:
+        return cutoff + 1
+    previous = list(range(len(right) + 1))
+    before = [0] * (len(right) + 1)
+    for i, left_char in enumerate(left, 1):
+        current = [i]
+        for j, right_char in enumerate(right, 1):
+            value = min(
+                current[-1] + 1, previous[j] + 1, previous[j - 1] + (left_char != right_char)
+            )
+            if i > 1 and j > 1 and left_char == right[j - 2] and left[i - 2] == right_char:
+                value = min(value, before[j - 2] + 1)
+            current.append(value)
+        before, previous = previous, current
+    return previous[-1]
+
+
+def _spelling_suggestions(
+    pages: dict[str, tuple[str, ...]],
+    terms: list[str],
+    mode: str,
+    source_order: list[str],
+    term_feedback: list[dict[str, Any]],
+    trial_id: str,
+    source_id: str | None,
+    limit: int,
+    purpose_domain_id: str | None,
+    purpose_question_id: str | None,
+    original_query: str,
+    term_feedback_truncated: bool,
+    term_feedback_sources_truncated: bool,
+    catalogue: tuple[dict[str, int], dict[str, int], dict[str, dict[str, Any]]] | None = None,
+) -> tuple[list[dict[str, Any]], bool]:
+    if mode in {"literal", "prefix", "phrase"} or not pages:
+        return [], False
+    incomplete = term_feedback_truncated or term_feedback_sources_truncated
+    if incomplete:
+        zero: set[str] = set()
+    else:
+        counts_by_term: dict[str, list[int]] = {term: [] for term in terms}
+        for row in term_feedback:
+            for item in row["term_page_counts"]:
+                if item["term"] in counts_by_term:
+                    counts_by_term[item["term"]].append(item["matching_page_count"])
+        zero = {
+            term
+            for term, counts in counts_by_term.items()
+            if counts and all(count == 0 for count in counts)
+        }
+    uppercase_terms = {
+        re.sub(r"^\W+|\W+$", "", raw).casefold()
+        for raw in original_query.split()
+        if any(character.isalpha() for character in raw) and raw.isupper()
+    }
+    if catalogue is None:
+        words: Counter[str] = Counter()
+        page_counts: Counter[str] = Counter()
+        examples: dict[str, dict[str, Any]] = {}
+        for current_source in source_order:
+            for page_number, page in enumerate(pages[current_source], 1):
+                found = set(re.findall(r"(?<![\w])[A-Za-z]{5,40}(?![\w])", page.casefold()))
+                for word in found:
+                    spans = _literal_match_spans(page, word)
+                    if not spans:
+                        continue
+                    words[word] += 1
+                    page_counts[word] += 1
+                    if word not in examples:
+                        start, end = spans[0]
+                        start_line, end_line, _line_start, _line_end = _line_bounds(
+                            page, start, end
+                        )
+                        examples[word] = {
+                            "source_id": current_source,
+                            "page": page_number,
+                            "start": start,
+                            "end": end,
+                            "start_line": start_line,
+                            "end_line": end_line,
+                        }
+    else:
+        words = Counter(catalogue[0])
+        page_counts = Counter(catalogue[1])
+        examples = catalogue[2]
+    suggestions: list[dict[str, Any]] = []
+    for term_index, term in enumerate(terms):
+        if term not in zero or term in uppercase_terms or not re.fullmatch(r"[a-z]{5,40}", term):
+            continue
+        cutoff = 1 if len(term) <= 9 else 2
+        candidates = []
+        for word in words:
+            distance = OSA.distance(term, word, score_cutoff=cutoff)
+            if distance <= cutoff and word != term:
+                candidates.append((distance, distance / len(term), -page_counts[word], word))
+        for _distance, _normalized, _frequency, word in sorted(candidates)[:3]:
+            replacement = [
+                word if index == term_index else item for index, item in enumerate(terms)
+            ]
+            next_action = {
+                "kind": "refine",
+                "operation": "search_sources",
+                "trial_id": trial_id,
+                "query": " ".join(replacement),
+                "mode": mode,
+                "source_id": source_id,
+                "limit": limit,
+                "cursor": None,
+            }
+            if purpose_domain_id is not None:
+                next_action["purpose_domain_id"] = purpose_domain_id
+                next_action["purpose_question_id"] = purpose_question_id
+            suggestions.append(
+                {
+                    "query_unit": term,
+                    "query_unit_index": term_index,
+                    "suggested_term": word,
+                    "surface_page_count": page_counts[word],
+                    "example": examples.get(word),
+                    "next_action": next_action,
+                }
+            )
+            if len(suggestions) >= 8:
+                return suggestions, True
+    return suggestions, incomplete
+
+
+def _native_fts_match_spans(
+    text: str,
+    query: str,
+    mode: str,
+    connection: sqlite3.Connection | None = None,
+) -> list[tuple[int, int]]:
+    """Use SQLite highlight as the authority for Porter token boundaries."""
+    expression = _search_expression(query, mode)
+    normalized_text = _canonical_search_text(text)
+    marker_pairs = (("\x01", "\x02"), ("\ue000", "\ue001"), ("\u241e", "\u241f"))
+    markers = next(
+        (
+            pair
+            for pair in marker_pairs
+            if all(marker not in text and marker not in normalized_text for marker in pair)
+        ),
+        None,
+    )
+    if markers is None:
+        raise ValueError("search match localization failed: no safe highlight markers")
+
+    def highlighted_row(current: sqlite3.Connection) -> sqlite3.Row | tuple[object, ...] | None:
+        return current.execute(
+            "SELECT highlight(pages_fts,2,?,?), highlight(pages_fts,3,?,?) "
+            "FROM pages_fts WHERE pages_fts MATCH ?",
+            (*markers, *markers, expression),
+        ).fetchone()
+
+    try:
+        if connection is None:
+            with sqlite3.connect(":memory:") as current:
+                _create_search_fts(current)
+                current.execute(
+                    "INSERT INTO pages_fts VALUES (?,?,?,?)",
+                    ("source", 1, text, normalized_text),
+                )
+                row = highlighted_row(current)
+        else:
+            row = highlighted_row(connection)
+    except sqlite3.Error as error:
+        raise ValueError("search match localization failed: FTS highlight unavailable") from error
+    if row is None:
+        return []
+
+    def ranges(value: str, expected: str) -> list[tuple[int, int]]:
+        output: list[tuple[int, int]] = []
+        plain = 0
+        opened: int | None = None
+        plain_characters: list[str] = []
+        for character in value:
+            if character == markers[0]:
+                if opened is not None:
+                    raise ValueError("search match localization failed: nested highlight markers")
+                opened = plain
+            elif character == markers[1]:
+                if opened is None:
+                    raise ValueError("search match localization failed: unmatched highlight marker")
+                output.append((opened, plain))
+                opened = None
+            else:
+                plain += 1
+                plain_characters.append(character)
+        if opened is not None or "".join(plain_characters) != expected:
+            raise ValueError("search match localization failed: highlighted text mapping mismatch")
+        return output
+
+    raw = ranges(str(row[0]), text)
+    normalized = ranges(str(row[1]), normalized_text)
+    _normalized, character_spans = _canonical_search_text_with_spans(text)
+    if any(not 0 <= start < end <= len(character_spans) for start, end in normalized):
+        raise ValueError("search match localization failed: normalized span is unmappable")
+    mapped_normalized = [
+        (character_spans[start][0], character_spans[end - 1][1]) for start, end in normalized
+    ]
+    # FTS indexes both the captured wording and its presentation-normalized
+    # derivative. A query can match one occurrence in each representation, so
+    # returning the first non-empty column would silently lose recoverable
+    # Source spans.
+    return sorted(set(raw) | set(mapped_normalized))
+
+
+def _all_search_match_spans(
+    text: str,
+    query: str,
+    mode: str,
+    profile: str = _SEARCH_PROFILE,
+) -> list[tuple[int, int]]:
     """Map every lexical occurrence to raw projection coordinates.
 
     The older helper intentionally returned one anchor for a page. Sessions
     retain all local anchors so a page with separated match clusters can be
     traversed without changing the authoritative quote coordinates.
     """
+    if mode == "literal":
+        return _literal_match_spans(text, query)
+    if profile == _LEGACY_SEARCH_PROFILE:
+        return _search_match_spans(text, query, mode, profile=profile)
     terms = [term for term in _canonical_search_text(query).split() if term]
-    searchable, character_spans = _normalized_text_with_spans(text)
-    if not terms or not character_spans:
+    if not terms:
         return []
+    if mode in {"phrase", "any", "prefix"}:
+        # Native highlight is authoritative for Porter token boundaries. A
+        # regex occurrence is only a presentation coincidence for a stemmed
+        # or prefix query and can point at characters SQLite did not match.
+        return _native_fts_match_spans(text, query, mode)
+
     occurrences: list[tuple[int, int, str]] = []
-    if mode == "phrase":
-        phrases = tuple(dict.fromkeys((" ".join(terms), " ".join(terms).replace("-", ""))))
-        for phrase in phrases:
-            for match in re.finditer(
-                rf"(?<!\w){re.escape(phrase)}(?!\w)", searchable, re.IGNORECASE
-            ):
-                occurrences.append(
-                    (
-                        character_spans[match.start()][0],
-                        character_spans[min(match.end() - 1, len(character_spans) - 1)][1],
-                        " ".join(terms),
-                    )
-                )
-    else:
-        for term in terms:
-            suffix = "" if mode == "prefix" else r"(?!\w)"
-            for variant in tuple(
-                dict.fromkeys((term, term.replace("-", ""), term.replace("-", " ")))
-            ):
-                for match in re.finditer(
-                    rf"(?<!\w){re.escape(variant)}{suffix}", searchable, re.IGNORECASE
-                ):
-                    occurrences.append(
-                        (
-                            character_spans[match.start()][0],
-                            character_spans[min(match.end() - 1, len(character_spans) - 1)][1],
-                            term.casefold(),
-                        )
-                    )
+    with sqlite3.connect(":memory:") as connection:
+        _create_search_fts(connection)
+        connection.execute(
+            "INSERT INTO pages_fts VALUES (?,?,?,?)",
+            ("source", 1, text, _canonical_search_text(text)),
+        )
+        for term in dict.fromkeys(terms):
+            occurrences.extend(
+                (start, end, term.casefold())
+                for start, end in _native_fts_match_spans(text, term, "any", connection=connection)
+            )
+    if not occurrences:
+        return _native_fts_match_spans(text, query, mode)
     if mode == "all":
         # Enumerate minimal co-occurrence windows, then keep the narrowest
         # non-overlapping windows. This retains repeated local clusters on one
@@ -1515,8 +2178,10 @@ def _all_search_match_spans(text: str, query: str, mode: str) -> list[tuple[int,
             if any(candidate[0] < end and candidate[1] > start for start, end in selected):
                 continue
             selected.append(candidate)
-        return sorted(selected)
-    return [(start, end) for start, end, _term in sorted(set(occurrences))]
+        return sorted(selected) if selected else _native_fts_match_spans(text, query, mode)
+    if occurrences:
+        return [(start, end) for start, end, _term in sorted(set(occurrences))]
+    return _native_fts_match_spans(text, query, mode)
 
 
 def _line_bounds(text: str, start: int, end: int) -> tuple[int, int, int, int]:
@@ -1536,16 +2201,20 @@ def _session_candidates(
     mode: str,
     ordered_source_ids: list[str],
     all_pairs: list[tuple[str, int]],
+    profile: str = _SEARCH_PROFILE,
 ) -> list[dict[str, Any]]:
+    COUNTERS["candidate_reconstructions"] += 1
     by_page_rank = {pair: index + 1 for index, pair in enumerate(all_pairs)}
     candidates: list[dict[str, Any]] = []
     for source_id, page in all_pairs:
         text = pages[source_id][page - 1]
-        spans = _all_search_match_spans(text, query, mode)
+        spans = _all_search_match_spans(text, query, mode, profile=profile)
         if not spans:
-            spans = _search_match_spans(text, query, mode)
+            spans = _search_match_spans(text, query, mode, profile=profile)
         if not spans:
-            continue
+            raise ValueError(
+                "search match localization failed: FTS hit has no recoverable Source span"
+            )
         # One local line window per cluster; adjacent windows merge, but the
         # raw coordinates remain the exact boundaries of the merged quote.
         windows: list[tuple[int, int]] = []
@@ -1630,7 +2299,7 @@ def _search_receipt(root: Path, handle: SearchReceiptHandle) -> dict[str, Any]:
     if not matches:
         raise ValueError("search receipt is unavailable")
     receipt = matches[0]
-    base_keys = {
+    legacy_keys = {
         "trial_id",
         "sources",
         "query",
@@ -1656,10 +2325,31 @@ def _search_receipt(root: Path, handle: SearchReceiptHandle) -> dict[str, Any]:
         "identity",
         "handle",
     }
+    modern_keys = legacy_keys | {"profile"}
+    purpose_keys = {"purpose_domain_id", "purpose_question_id"}
+    has_purpose = isinstance(receipt, dict) and set(receipt) == modern_keys | purpose_keys
+    purpose_valid = True
+    if has_purpose:
+        purpose_domain_id = receipt.get("purpose_domain_id")
+        purpose_question_id = receipt.get("purpose_question_id")
+        valid_domains = {
+            "domain:randomization",
+            "domain:deviations",
+            "domain:missing",
+            "domain:measurement",
+            "domain:selection",
+        }
+        purpose_valid = purpose_domain_id is None or purpose_domain_id in valid_domains
+        if purpose_question_id is not None:
+            from ..packs.scientific import SCIENTIFIC_PACK
+
+            purpose_valid = purpose_valid and any(
+                question.id == purpose_question_id and question.domain_id == purpose_domain_id
+                for question in SCIENTIFIC_PACK.questions
+            )
     if (
         not isinstance(receipt, dict)
-        or set(receipt) != base_keys
-        or not base_keys.issubset(receipt)
+        or set(receipt) not in (legacy_keys, modern_keys, modern_keys | purpose_keys)
         or handle != receipt.get("handle")
         or receipt.get("identity")
         != _identity(
@@ -1669,6 +2359,7 @@ def _search_receipt(root: Path, handle: SearchReceiptHandle) -> dict[str, Any]:
         != "sr_" + str(receipt.get("identity")).removeprefix("sha256:")[:16]
     ):
         raise ValueError("search receipt identity is corrupt")
+    modern = "profile" in receipt
     batch = _read(root, "batch") or {}
     trial_id = receipt.get("trial_id")
     query = receipt.get("query")
@@ -1682,8 +2373,20 @@ def _search_receipt(root: Path, handle: SearchReceiptHandle) -> dict[str, Any]:
         not isinstance(trial_id, str)
         or not isinstance(query, str)
         or not query.strip()
-        or receipt.get("normalized_query") != _canonical_query_text(query)
-        or mode not in {"all", "phrase", "any", "prefix"}
+        or receipt.get("normalized_query")
+        != (
+            _canonical_search_text(query).casefold()
+            if mode == "literal"
+            else _canonical_query_text(query)
+        )
+        or mode
+        not in (
+            {"all", "phrase", "any", "prefix", "literal"}
+            if modern
+            else {"all", "phrase", "any", "prefix"}
+        )
+        or (modern and receipt.get("profile") != _SEARCH_PROFILE)
+        or (has_purpose and not purpose_valid)
         or not isinstance(limit, int)
         or isinstance(limit, bool)
         or not 1 <= limit <= 100
@@ -1793,6 +2496,8 @@ def _search_receipt(root: Path, handle: SearchReceiptHandle) -> dict[str, Any]:
         "ranking_version": _SEARCH_RANKING_VERSION,
         "ranking": _SEARCH_RANKING_VERSION,
     }
+    if modern:
+        expected_spec["profile"] = _SEARCH_PROFILE
     if (
         not isinstance(session, dict)
         or set(session)
@@ -1814,9 +2519,27 @@ def _search_receipt(root: Path, handle: SearchReceiptHandle) -> dict[str, Any]:
     ):
         raise ValueError("search session configuration is stale or corrupt")
     pages = {source_id: verified[(trial_id, source_id)][1] for source_id in source_ids}
-    all_pairs = _recomputed_all_pairs(pages, receipt["normalized_query"], mode, source_ids)
+    corpus_sources = [
+        {"id": source_id, "projection_hash": authoritative[source_id]["projection_hash"]}
+        for source_id in source_ids
+    ]
+    profile = _SEARCH_PROFILE if modern else _LEGACY_SEARCH_PROFILE
+    _scope_key, search_corpus = _search_corpus(root, corpus_sources, pages, profile)
+    all_pairs = _recomputed_all_pairs(
+        pages,
+        receipt["normalized_query"],
+        mode,
+        source_ids,
+        profile=profile,
+        connection=search_corpus,
+    )
     expected_candidates = _session_candidates(
-        pages, receipt["normalized_query"], mode, source_ids, all_pairs
+        pages,
+        receipt["normalized_query"],
+        mode,
+        source_ids,
+        all_pairs,
+        profile=profile,
     )
     if candidates != expected_candidates:
         raise ValueError("search session candidates are stale or corrupt")
@@ -2276,12 +2999,27 @@ def _record_search_evidence(
 ) -> None:
     """Record search provenance even when no Domain association exists yet."""
 
+    phase = str(_state(root).get("phase", "proposal"))
     with _db(root, "derivative.sqlite3") as connection:
         connection.execute(
-            "INSERT OR REPLACE INTO search_evidence_provenance "
-            "(session_identity,rank,trial_id,evidence_identity) VALUES (?,?,?,?)",
-            (session_identity, rank, trial_id, evidence_identity),
+            "INSERT OR IGNORE INTO search_evidence_provenance "
+            "(session_identity,rank,trial_id,evidence_identity,phase) VALUES (?,?,?,?,?)",
+            (session_identity, rank, trial_id, evidence_identity, phase),
         )
+        current = connection.execute(
+            "SELECT phase FROM search_evidence_provenance WHERE session_identity=? AND rank=?",
+            (session_identity, rank),
+        ).fetchone()
+        if current is not None and _SEARCH_PHASE_ORDER.get(phase, -1) > _SEARCH_PHASE_ORDER.get(
+            str(current[0]), -1
+        ):
+            # A purpose-neutral ranking can be reused after approval. Keep
+            # the durable discovery eligible for the later assessment phase
+            # instead of freezing the first proposal replay forever.
+            connection.execute(
+                "UPDATE search_evidence_provenance SET phase=? WHERE session_identity=? AND rank=?",
+                (phase, session_identity, rank),
+            )
 
 
 def _associated_search_ranks(root: Path, trial_id: str, domain_id: str) -> set[tuple[str, int]]:
@@ -2312,6 +3050,28 @@ def _associated_search_evidence(
     ]
 
 
+def _unassigned_search_evidence(root: Path, trial_id: str) -> list[tuple[str, str, int]]:
+    """Return Trial discoveries that have not been assigned to a Domain."""
+
+    with _db(root, "derivative.sqlite3") as connection:
+        rows = connection.execute(
+            "SELECT provenance.evidence_identity,provenance.session_identity,provenance.rank "
+            "FROM search_evidence_provenance AS provenance "
+            "WHERE provenance.trial_id=? AND provenance.phase IN "
+            "('assessment','ready_to_finalize') "
+            "AND NOT EXISTS ("
+            "SELECT 1 FROM search_domain_associations AS association "
+            "WHERE association.session_identity=provenance.session_identity "
+            "AND association.rank=provenance.rank) "
+            "ORDER BY provenance.session_identity,provenance.rank,provenance.evidence_identity",
+            (trial_id,),
+        ).fetchall()
+    return [
+        (str(identity), str(session_identity), int(rank))
+        for identity, session_identity, rank in rows
+    ]
+
+
 def _search_evidence_identities(root: Path, trial_id: str) -> set[str]:
     """Return every Evidence identity materialized by search in this Trial."""
 
@@ -2326,21 +3086,46 @@ def _search_evidence_identities(root: Path, trial_id: str) -> set[str]:
     return {str(row[0]) for row in rows if isinstance(row[0], str)}
 
 
-def _search_continuation(
+def _search_session_question_purpose(
+    root: Path, session_identity: str, domain_id: str
+) -> str | None:
+    """Recover one unambiguous question purpose for a Domain continuation."""
+
+    question_ids: set[str] = set()
+    has_unqualified_receipt = False
+    with _db(root, "derivative.sqlite3") as connection:
+        rows = connection.execute("SELECT payload FROM search_receipts").fetchall()
+    for row in rows:
+        try:
+            receipt = json.loads(bytes(row[0]))
+        except (UnicodeDecodeError, json.JSONDecodeError, TypeError):
+            continue
+        if (
+            not isinstance(receipt, dict)
+            or receipt.get("session_id") != session_identity
+            or receipt.get("purpose_domain_id") != domain_id
+        ):
+            continue
+        question_id = receipt.get("purpose_question_id")
+        if isinstance(question_id, str):
+            question_ids.add(question_id)
+        else:
+            has_unqualified_receipt = True
+    if has_unqualified_receipt or len(question_ids) != 1:
+        return None
+    return next(iter(question_ids))
+
+
+def _search_continuation_for_rows(
     root: Path,
     trial_id: str,
-    domain_id: str,
+    rows: list[tuple[str, int]],
     included: set[tuple[str, int]],
     limit: int,
+    domain_id: str | None,
 ) -> list[dict[str, Any]]:
     """Return one fully bound action for each session with omitted candidates."""
     continuations: list[dict[str, Any]] = []
-    with _db(root, "derivative.sqlite3") as connection:
-        rows = connection.execute(
-            "SELECT session_identity,rank FROM search_domain_associations "
-            "WHERE domain_id=? AND trial_id=? ORDER BY session_identity,rank",
-            (domain_id, trial_id),
-        ).fetchall()
     by_session: dict[str, list[int]] = {}
     for session_identity, rank in rows:
         by_session.setdefault(str(session_identity), []).append(int(rank))
@@ -2397,6 +3182,11 @@ def _search_continuation(
         )
         if offset is None:
             raise ValueError("search session candidate is corrupt")
+        question_id = (
+            _search_session_question_purpose(root, session_identity, domain_id)
+            if domain_id is not None
+            else None
+        )
         continuations.append(
             {
                 "operation": "search_sources",
@@ -2406,9 +3196,67 @@ def _search_continuation(
                 "source_id": source_id,
                 "limit": limit,
                 "cursor": _cursor_handle(session_identity, offset),
+                **({"purpose_domain_id": domain_id} if domain_id is not None else {}),
+                **({"purpose_question_id": question_id} if question_id is not None else {}),
             }
         )
     return continuations
+
+
+def _search_continuation(
+    root: Path,
+    trial_id: str,
+    domain_id: str,
+    included: set[tuple[str, int]],
+    limit: int,
+) -> list[dict[str, Any]]:
+    """Return one fully bound action for each Domain search with omitted candidates."""
+
+    with _db(root, "derivative.sqlite3") as connection:
+        rows = connection.execute(
+            "SELECT session_identity,rank FROM search_domain_associations "
+            "WHERE domain_id=? AND trial_id=? ORDER BY session_identity,rank",
+            (domain_id, trial_id),
+        ).fetchall()
+    return _search_continuation_for_rows(
+        root,
+        trial_id,
+        [(str(session_identity), int(rank)) for session_identity, rank in rows],
+        included,
+        limit,
+        domain_id,
+    )
+
+
+def _unassigned_search_continuation(
+    root: Path,
+    trial_id: str,
+    included: set[tuple[str, int]],
+    limit: int,
+) -> list[dict[str, Any]]:
+    """Return one unassigned search continuation for each omitted Trial discovery."""
+
+    with _db(root, "derivative.sqlite3") as connection:
+        rows = connection.execute(
+            "SELECT provenance.session_identity,provenance.rank "
+            "FROM search_evidence_provenance AS provenance "
+            "WHERE provenance.trial_id=? AND provenance.phase IN "
+            "('assessment','ready_to_finalize') "
+            "AND NOT EXISTS ("
+            "SELECT 1 FROM search_domain_associations AS association "
+            "WHERE association.session_identity=provenance.session_identity "
+            "AND association.rank=provenance.rank) "
+            "ORDER BY provenance.session_identity,provenance.rank",
+            (trial_id,),
+        ).fetchall()
+    return _search_continuation_for_rows(
+        root,
+        trial_id,
+        [(str(session_identity), int(rank)) for session_identity, rank in rows],
+        included,
+        limit,
+        None,
+    )
 
 
 def _validate_selected_evidence(

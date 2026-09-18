@@ -359,7 +359,10 @@ def _domain_draft(
         else [
             {
                 "kind": "limitation",
-                "text": "Not reported.",
+                "unresolved_premise": "The report does not resolve this premise.",
+                "stopping_rationale": (
+                    "Relevant retrieval was reviewed and the premise remains unresolved."
+                ),
                 **({"search_receipt": search_receipt} if search_receipt is not None else {}),
             }
         ]

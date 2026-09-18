@@ -876,11 +876,9 @@ ReportedResult = Annotated[
 class NarrativeEvidence(StrictModel):
     """A server-selected narrative passage.
 
-    The handle already resolves to an immutable, page-preserving quote.  Do not
-    make the model copy that quote into a second set of clauses or author
-    source-to-result mappings: those duplicates created a second, weaker proof
-    surface at Proposal time.  Structured Result values must occur in the
-    selected passage (or use typed Derived Evidence).
+    The handle resolves to an immutable, page-preserving quote. Use that quote
+    as the source for structured Result values, or use typed Derived Evidence.
+    Do not copy the quote into extra clauses or source-to-result mappings.
     """
 
     kind: Literal["narrative"] = Field(description="A selected narrative Evidence passage.")
@@ -1307,22 +1305,34 @@ class RenderIdentity(StrictModel):
 class DomainLimitationBasis(StrictModel):
     kind: Literal["limitation"] = Field(
         description=(
-            "An unresolved information limit after scoped discovery. Supply only kind, text, "
-            "and search_receipt. Put any cited Evidence in a separate bases item."
+            "An unresolved information limit after scoped discovery. Supply kind, the unresolved "
+            "premise, and a stopping rationale. Include search_receipt when retrieval provenance "
+            "is useful; a direct read does not require a search receipt. Put any cited "
+            "Evidence in a separate bases item."
         ),
     )
-    text: str = Field(
-        min_length=1, description="What remains unresolved for this question after discovery."
+    unresolved_premise: str = Field(
+        min_length=1, description="The material premise that remains unresolved for this question."
     )
-    search_receipt: SearchReceiptHandle = Field(
-        description="Current-Trial untruncated search receipt supporting this information limit.",
+    stopping_rationale: str = Field(
+        min_length=1,
+        description=(
+            "Why investigation stopped without claiming that the premise is scientifically absent."
+        ),
+    )
+    search_receipt: SearchReceiptHandle | None = Field(
+        default=None,
+        description=(
+            "Optional current-Trial search receipt recording retrieval provenance. Its absence "
+            "is valid when the cited Evidence came from a direct read."
+        ),
     )
 
-    @field_validator("text")
+    @field_validator("unresolved_premise", "stopping_rationale")
     @classmethod
     def text_is_meaningful(cls, value: str) -> str:
         if not value.strip():
-            raise ValueError("limitation text must contain non-whitespace text")
+            raise ValueError("limitation fields must contain non-whitespace text")
         return value
 
 
@@ -1335,7 +1345,10 @@ class DirectEvidenceUse(StrictModel):
 
 class AbsenceEvidenceUse(StrictModel):
     kind: Literal["absence"] = Field(
-        description="Use for an untruncated scoped search with zero hits, not irrelevant hits.",
+        description=(
+            "Use only for a scoped zero-hit search; this describes the lexical query, not "
+            "scientific absence."
+        ),
     )
     search_receipt: SearchReceiptHandle = Field(
         description="No-hit search receipt scoped to this question and Trial.",
@@ -1349,7 +1362,12 @@ DomainBasis = Annotated[
 
 
 class DomainCounterevidence(StrictModel):
-    basis_index: NonNegativeInt = Field(description="Zero-based index into this answer's bases.")
+    basis_index: NonNegativeInt = Field(
+        description=(
+            "Zero-based index into this answer's original saved bases, not the returned "
+            "deduplicated evidence list."
+        )
+    )
     implication: str = Field(
         min_length=1,
         description="How this cited counterpoint limits or challenges the answer.",
@@ -1504,8 +1522,45 @@ class SelfCorrectionRevision(StrictModel):
         return value
 
 
+class MechanicalRepairRevision(StrictModel):
+    """Record a mechanical repair without claiming that the science changed."""
+
+    kind: Literal["mechanical_repair"] = Field(
+        description="Use when repairing identifiers or structure without changing the claim."
+    )
+    repair_id: str | None = Field(
+        default=None,
+        min_length=1,
+        description="Optional identity of the repair operation or receipt.",
+    )
+    codes: tuple[str, ...] = Field(
+        default=(),
+        description="Codes describing the mechanical repairs applied.",
+    )
+
+    @field_validator("repair_id")
+    @classmethod
+    def repair_id_is_meaningful(cls, value: str | None) -> str | None:
+        if value is not None and not value.strip():
+            raise ValueError("repair_id must contain non-whitespace text")
+        return value
+
+    @field_validator("codes")
+    @classmethod
+    def codes_are_meaningful(cls, value: tuple[str, ...]) -> tuple[str, ...]:
+        if any(not code.strip() for code in value):
+            raise ValueError("repair codes must contain non-whitespace text")
+        return _unique(value, "repair codes")
+
+    @model_validator(mode="after")
+    def has_repair_reference(self) -> MechanicalRepairRevision:
+        if self.repair_id is None and not self.codes:
+            raise ValueError("mechanical_repair requires repair_id or codes")
+        return self
+
+
 DomainRevisionBasis = Annotated[
-    NewEvidenceRevision | SelfCorrectionRevision,
+    NewEvidenceRevision | SelfCorrectionRevision | MechanicalRepairRevision,
     Field(discriminator="kind"),
 ]
 

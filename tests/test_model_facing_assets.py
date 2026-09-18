@@ -73,12 +73,23 @@ def test_evidence_reference_contains_closed_limitation_example() -> None:
         encoding="utf-8"
     )
     examples = re.findall(r"```json\s*(.*?)\s*```", reference, flags=re.DOTALL)
-    limitation = next(
-        json.loads(example) for example in examples if '"kind":"limitation"' in example
-    )
-    assert set(limitation) == {"kind", "text", "search_receipt"}
-    DomainLimitationBasis.model_validate(limitation)
-    assert "actual returned untruncated search receipt" in reference
+    limitations = [
+        json.loads(line)
+        for example in examples
+        for line in example.splitlines()
+        if '"kind":"limitation"' in line or '"kind": "limitation"' in line
+    ]
+    assert len(limitations) >= 2
+    assert {"search_receipt" in limitation for limitation in limitations} >= {True, False}
+    for limitation in limitations:
+        assert set(limitation) <= {
+            "kind",
+            "unresolved_premise",
+            "stopping_rationale",
+            "search_receipt",
+        }
+        DomainLimitationBasis.model_validate(limitation)
+    assert "actual receipt returned" in reference
 
 
 def test_evidence_reference_contains_valid_complete_domain_answer_examples() -> None:
@@ -137,12 +148,14 @@ def test_skill_review_examples_validate_as_tool_requests() -> None:
         for payload in payloads
         if "request" not in payload and "review_reference" not in payload
     )
-    blocker = next(payload for payload in payloads if "request" in payload)
     close = next(payload for payload in payloads if "review_reference" in payload)
 
     TrialReviewRequest.model_validate(normal)
-    TrialReviewRequest.model_validate(blocker)
     TrialClosureRequest.model_validate(close)
+    assert "permitted uncertainty answer" in skill
+    assert "terminal request" in skill
+    assert "supported workflow" in skill
+    assert "cannot continue" in skill
 
 
 def test_result_reference_contains_valid_reasoning_and_receipt_examples() -> None:

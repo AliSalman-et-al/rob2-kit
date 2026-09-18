@@ -4,7 +4,9 @@ Read each Trial's main report at two checkpoints:
 
 1. Before choosing its Result and submitting the Proposal.
 2. After approval, when that Trial becomes active, before answering its first
-   Domain. Recover the approved Result first, then repeat the bounded reading.
+   Domain. Recover the approved Result first. If a current source-bound
+   working checkpoint is available, use it for orientation and continue the
+   unfinished read only; otherwise complete the bounded post-approval pass.
 
 Use the same full captured Source for both reads. Copy the returned `source_id`
 exactly. Use it with the same `trial_id`. Both passes
@@ -74,8 +76,11 @@ inspection is needed.
 For facts taken from an image, follow
 [Use visual Evidence](evidence.md#use-visual-evidence-for-visual-meaning).
 
-If either pass is interrupted before its required prefix is covered, recover the
-remaining required ranges before the next scientific save. When no main article
+If either required pass is interrupted before its required prefix is covered, recover the
+remaining required ranges before the next scientific save. A current working
+checkpoint can replace repeating a completed post-approval orientation after a
+restart, but does not replace exact passage recovery when a passage is needed.
+When no main article
 was captured, inspect the available Sources and any Intake conditions. Preserve
 the missing report as a limitation rather than a completed reading.
 If a repair reports incomplete reading, call `get_status` and read the Trial's

@@ -27,7 +27,7 @@ from pydantic.functional_validators import AfterValidator, BeforeValidator
 
 from rob2_kit import __version__
 from rob2_kit.application._state import _db, _identity, _root, _state
-from rob2_kit.application.contracts import TOOL_NAMES, WorkflowConflict
+from rob2_kit.application.contracts import COUNTERS, TOOL_NAMES, WorkflowConflict
 from rob2_kit.application.domains import (
     _domain_context_delivery,
     _domain_context_view,
@@ -91,6 +91,7 @@ from rob2_kit.workflow_models import (
     PageNumber,
     ProposalDraft,
     ProposalReasoningAssessment,
+    QuestionId,
     ResultChoiceDraft,
     SourceHandle,
     StrictModel,
@@ -904,6 +905,11 @@ def _content(
     if tool == "read_pages" and isinstance(read_coverage, list):
         _record_read_coverage_batch(_workspace(), read_coverage)
     if tool != "render_page":
+        COUNTERS["response_bytes"] += len(
+            json.dumps(
+                normalized, ensure_ascii=False, separators=(",", ":"), sort_keys=True
+            ).encode("utf-8")
+        )
         return ToolResult(content=[], structured_content=normalized)
     image_content = None
     data = normalized.get("data")
@@ -932,6 +938,9 @@ def _content(
             {**normalized, "data": {**data, "delivery_receipt": receipt}},
         )
     serialized = json.dumps(normalized, ensure_ascii=False, separators=(",", ":"), sort_keys=True)
+    COUNTERS["response_bytes"] += len(serialized.encode("utf-8"))
+    if image_content is not None and isinstance(png_bytes, bytes):
+        COUNTERS["response_bytes"] += len(base64.b64encode(png_bytes))
     content: list[TextContent | ImageContent] = [
         TextContent(
             type="text",
@@ -1228,11 +1237,12 @@ def get_status() -> ToolResult:
         "Replace the current Trial's small, source-linked working notes. Use notes for "
         "observations, interpretations, terminology, unread ranges, open questions, and drafts. "
         "Each note must cite exact source page and line ranges, or 0,0 for a whole-page visual "
-        "locator. These notes are resumable working "
-        "memory; they do not become Evidence, answer a question, change a Result, or commit a "
+        "locator. These notes are resumable working memory; they do not become Evidence, answer "
+        "a question, change a Result, or commit a "
         "Domain. get_status returns them only while the captured source scope and Trial Result "
-        "still match. If cited content is missing or uncertain in the current context, recover the "
-        "passage before relying on it. Saving replaces the prior checkpoint for this Trial."
+        "still match. If cited content is missing or uncertain, recover the passage with "
+        "read_pages; use render_page for a whole-page visual locator. Saving replaces the prior "
+        "checkpoint for this Trial."
     ),
     annotations=_MUTATION,
     output_schema=output_schema("save_working_checkpoint"),
@@ -1340,12 +1350,13 @@ def search_sources(
         ),
     ],
     mode: Annotated[
-        Literal["all", "phrase", "any", "prefix"],
+        Literal["all", "phrase", "any", "prefix", "literal"],
         Field(
             description=(
                 "Required lexical intent: all=every token on one page; phrase=known contiguous "
                 "wording; any=at least one query term on a page for broad discovery; "
-                "prefix=token prefix."
+                "prefix=token prefix; literal=exact contiguous presentation-normalized wording "
+                "without stemming."
             )
         ),
     ],
@@ -1355,6 +1366,23 @@ def search_sources(
             description=(
                 "Optional source_id from this Trial; copy the returned source_id exactly. "
                 "Use it with the same trial_id. Omit to search all captured Sources for this Trial."
+            )
+        ),
+    ] = None,
+    purpose_domain_id: Annotated[
+        DomainId | None,
+        Field(
+            description=(
+                "Optional Domain purpose for attribution; omit it for unassigned Trial discovery."
+            )
+        ),
+    ] = None,
+    purpose_question_id: Annotated[
+        QuestionId | None,
+        Field(
+            description=(
+                "Optional scientific question purpose within purpose_domain_id; it affects "
+                "attribution only, not the frozen ranking session."
             )
         ),
     ] = None,
@@ -1381,6 +1409,8 @@ def search_sources(
                 else None
             ),
             cursor,
+            purpose_domain_id,
+            purpose_question_id,
         ),
     )
 
@@ -1553,9 +1583,10 @@ def _bound_search_batch(results: list[dict[str, Any]]) -> None:
     description=(
         "Run 1 to 8 independent search requests in one call. Validate every request before "
         "running it. Each item has its own explicit "
-        "query mode, Source scope, page limit, cursor, outcome, feedback, and next_cursor. One "
-        "item must satisfy the request schema before the call. After validation, an item-level "
-        "stale cursor or unavailable Source condition does not prevent other items from returning. "
+        "query mode, Source scope, passage limit, cursor, outcome, feedback, and next_cursor. "
+        "Every item must satisfy the request schema before the call. After validation, each item "
+        "returns its own success or condition; an item-level stale cursor or unavailable Source "
+        "condition does not prevent other items from returning. "
         "Cursors continue only the "
         "corresponding item's query; each ranking and BM25 order remain independent. Use this "
         "only when all query inputs are already known; wait for a result before choosing a "
@@ -1590,6 +1621,8 @@ def search_sources_batch(
                 request.limit,
                 source_id,
                 request.cursor,
+                request.purpose_domain_id,
+                request.purpose_question_id,
             )
             result = {"outcome": "success", "data": data}
         except ValueError as error:
@@ -1644,10 +1677,10 @@ def search_sources_batch(
         "data.remaining_windows, omitting source_id, pages, and start_line. Repeat until no "
         "windows remain. Returned text is in data.pages[].numbered_text. If "
         "data.remaining_windows is nonempty, send that exact list as the next windows value. "
-        "Returned numbered text normally fits the 24000-byte serialized UTF-8 bound; a single "
+        "The complete structured response, including metadata, is bounded to 24000 UTF-8 bytes. "
+        "Returned numbered text normally fits within that bound; a single "
         "oversized physical line is returned across lossless character fragments until complete. "
-        "A partial fragment has no passage_ref or selectable Evidence handle. JSON metadata is "
-        "additional. Copy a returned "
+        "A partial fragment has no passage_ref or selectable Evidence handle. Copy a returned "
         "source_id exactly and use it with the same trial_id."
     ),
     annotations=_READ_ONLY,
@@ -2343,7 +2376,8 @@ def validate_proposal(
     description=(
         "Commit the exact Result cards stored by validate_proposal. Supply its reasoning_id and "
         "returned revision; do not resend Result cards. To change the draft, repeat "
-        "validate_proposal with the revised cards and assessments."
+        "validate_proposal with complete replacement cards and matching assessments, then pass "
+        "its reasoning_id and revision here."
     ),
     annotations=_MUTATION,
     output_schema=output_schema("save_proposal"),
@@ -2369,8 +2403,9 @@ def save_proposal(
                 "outcome": "condition",
                 "code": "reasoning_stale",
                 "condition": (
-                    "Resolve this receipt's condition or recovery action first. Otherwise follow "
-                    "head.next_action."
+                    "Call get_status. If work remains active, submit complete replacement Result "
+                    "cards and matching assessments to validate_proposal, then save its returned "
+                    "receipt. Otherwise follow head.next_action."
                 ),
             },
         )
@@ -2383,8 +2418,9 @@ def save_proposal(
                 "outcome": "condition",
                 "code": "reasoning_stale",
                 "condition": (
-                    "Resolve this receipt's condition or recovery action first. Otherwise follow "
-                    "head.next_action."
+                    "Call get_status. If work remains active, submit complete replacement Result "
+                    "cards and matching assessments to validate_proposal, then save its returned "
+                    "receipt. Otherwise follow head.next_action."
                 ),
             },
         )
@@ -2399,8 +2435,9 @@ def save_proposal(
                     "outcome": "condition",
                     "code": "reasoning_stale",
                     "condition": (
-                        "Resolve this receipt's condition or recovery action first. Otherwise "
-                        "follow head.next_action."
+                        "Call get_status. If work remains active, submit complete replacement "
+                        "Result cards and matching assessments to validate_proposal, then save "
+                        "its returned receipt. Otherwise follow head.next_action."
                     ),
                 },
             )
@@ -2419,8 +2456,9 @@ def save_proposal(
                 "outcome": "condition",
                 "code": "reasoning_stale",
                 "condition": (
-                    "Resolve this receipt's condition or recovery action first. Otherwise follow "
-                    "head.next_action."
+                    "Call get_status. If work remains active, submit complete replacement Result "
+                    "cards and matching assessments to validate_proposal, then save its returned "
+                    "receipt. Otherwise follow head.next_action."
                 ),
             },
         )
@@ -2448,12 +2486,14 @@ class ProposalApprovalDecision(StrictModel):
     title="Request Proposal approval",
     description=(
         "After the researcher explicitly approves the current Proposal Review in conversation, "
-        "present that exact immutable Review, then call request_proposal_approval with {} to "
+        "present that exact immutable Review, obtain explicit approval, then call "
+        "request_proposal_approval with {} to "
         "record the approval through elicitation. Call get_status after the approval succeeds. "
         "This tool has no approval arguments: only a directly accepted elicitation with "
         "approved=true commits it. "
-        "For corrections, inspect Sources and replace each corrected Trial's complete Result "
-        "card with save_proposal."
+        "For corrections, inspect Sources, submit complete replacement Result cards and matching "
+        "assessments to validate_proposal, then pass its reasoning_id and revision to "
+        "save_proposal before presenting the fresh Review."
     ),
     annotations=_MUTATION,
     output_schema=output_schema("request_proposal_approval"),
@@ -2805,7 +2845,8 @@ def validate_domain_assessment(
             description=(
                 "Complete answers for the current Domain path. Every active answer requires a "
                 "nonblank justification, an unknowns array, and a counterevidence array whose "
-                "basis_index values refer to this answer's bases; inactive branch answers may "
+                "basis_index values refer to the answer's original bases, not the returned "
+                "deduplicated Evidence list; inactive branch answers may "
                 "omit those reasoning fields."
             ),
             examples=[
@@ -2817,7 +2858,11 @@ def validate_domain_assessment(
                             {"kind": "context", "evidence": "eh_0123456789abcdef"},
                             {
                                 "kind": "limitation",
-                                "text": "The sequence generator is not reported.",
+                                "unresolved_premise": "The sequence generator is not reported.",
+                                "stopping_rationale": (
+                                    "Relevant captured Sources were reviewed, but the premise "
+                                    "remains unresolved."
+                                ),
                                 "search_receipt": "sr_0123456789abcdef",
                             },
                         ],
@@ -2844,7 +2889,11 @@ def validate_domain_assessment(
     ] = None,
     revision_basis: Annotated[
         DomainRevisionBasis | None,
-        Field(description="Closed new_evidence or self_correction basis for a revision."),
+        Field(
+            description=(
+                "Closed new_evidence, self_correction, or mechanical_repair basis for a revision."
+            )
+        ),
     ] = None,
 ) -> ToolResult:
     draft = {
@@ -2903,7 +2952,8 @@ def save_domain_judgment(
                 "outcome": "condition",
                 "code": "reasoning_stale",
                 "condition": (
-                    "Resolve this receipt's condition or recovery action first. Otherwise follow "
+                    "Call get_status. If work remains active, submit the complete Domain draft to "
+                    "validate_domain_assessment, then save its returned receipt. Otherwise follow "
                     "head.next_action."
                 ),
             },
@@ -2917,8 +2967,9 @@ def save_domain_judgment(
                 "outcome": "condition",
                 "code": "reasoning_stale",
                 "condition": (
-                    "Resolve this receipt's condition or recovery action first. Otherwise follow "
-                    "head.next_action."
+                    "Call get_status. If work remains active, refresh the explicit Trial and "
+                    "Domain, complete context delivery, revalidate, and save its returned receipt. "
+                    "Otherwise follow head.next_action."
                 ),
             },
         )
@@ -2931,8 +2982,9 @@ def save_domain_judgment(
                 "outcome": "condition",
                 "code": "reasoning_stale",
                 "condition": (
-                    "Resolve this receipt's condition or recovery action first. Otherwise follow "
-                    "head.next_action."
+                    "Call get_status. If work remains active, refresh the explicit Trial and "
+                    "Domain, complete context delivery, revalidate, and save its returned receipt. "
+                    "Otherwise follow head.next_action."
                 ),
             },
         )
@@ -2953,8 +3005,10 @@ def save_domain_judgment(
         "The overall judgment follows the deterministic Cochrane-style rule: any High Domain, "
         "or at least two Some concerns Domains with no High Domain, makes the Trial High; one "
         "Some concerns Domain makes it Some concerns; all Low Domains make it Low. A review is "
-        "not closure: inspect its Result and checkpoint identities, correct any Domain if needed, "
-        "then close using the exact review reference."
+        "not closure: inspect its Result and checkpoint identities, correct any Domain if needed. "
+        "Review expansion objects contain operation and Evidence metadata, not direct tool "
+        "arguments; pass only each operation's declared arguments. Then close using the exact "
+        "review reference."
     ),
     annotations=_MUTATION,
     output_schema=output_schema("review_trial"),
@@ -2969,18 +3023,11 @@ def review_trial(
         Field(
             description=(
                 "Optional typed needs_input or failed request for a genuine blocker. Omit for "
-                "a normal review or an automatically terminal unavailable or unsupported Result."
+                "a normal review or an automatically terminal unavailable or unsupported Result. "
+                "For uncertainty answerable by the active question card, submit its permitted "
+                "uncertainty answer and record the limitation; reserve a terminal request for a "
+                "supported workflow that cannot continue."
             ),
-            examples=[
-                {
-                    "disposition": "needs_input",
-                    "trial_id": "trial-a",
-                    "reason": (
-                        "The report does not establish whether the outcome assessor was blinded."
-                    ),
-                    "missing_facts": ["Outcome-assessor blinding"],
-                }
-            ],
         ),
     ] = None,
 ) -> ToolResult:
