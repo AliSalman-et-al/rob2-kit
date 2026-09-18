@@ -250,7 +250,7 @@ def test_stale_search_projection_is_rebuilt_into_the_current_porter_shape(
 
 
 def test_evicted_fts_corpus_stays_open_until_its_query_releases_it(tmp_path: Path) -> None:
-    pages = {"source-0": ("alpha",)}
+    pages: dict[str, tuple[str, ...]] = {"source-0": ("alpha",)}
     sources = [{"id": "source-0", "projection_hash": "sha256:" + "0" * 64}]
     _key, in_use = _search_corpus(tmp_path, sources, pages)
 

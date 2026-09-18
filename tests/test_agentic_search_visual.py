@@ -1,13 +1,13 @@
 from __future__ import annotations
 
+from typing import Any
+
 from rob2_kit.application._state import _identity
 from rob2_kit.application.finalization import _verify_result_evidence
 from rob2_kit.application.proposal import _bind_result
 
 
-def _visual_case() -> tuple[
-    dict[str, object], dict[str, dict[str, object]], dict[str, dict[str, object]]
-]:
+def _visual_case() -> tuple[dict[str, Any], dict[str, Any], dict[str, Any]]:
     source = {
         "id": "source-1",
         "trial_id": "trial-1",
