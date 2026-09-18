@@ -186,6 +186,10 @@ class WorkingCheckpoint(StrictModel):
     batch_id: Identity
     trial_id: TrialId
     result_identity: Identity | None = None
+    # ``None`` means a checkpoint written before this field existed.  An
+    # explicit empty tuple is meaningful: it records that no Domain checkpoint
+    # existed when the notes were saved.
+    domain_checkpoint_identities: tuple[Identity, ...] | None = None
     source_scope: tuple[WorkingSourceBinding, ...]
     observations: tuple[WorkingNote, ...]
     interpretations: tuple[WorkingNote, ...]

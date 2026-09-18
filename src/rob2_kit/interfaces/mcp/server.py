@@ -166,6 +166,7 @@ def _compact_domain_context_transport(value: dict[str, Any]) -> dict[str, Any]:
             "trial_id",
             "domain_id",
             "pack",
+            "official_guidance",
             "result",
             "reading_recovery",
             "answers",

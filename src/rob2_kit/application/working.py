@@ -74,6 +74,24 @@ def _result_identity(state: dict[str, Any], trial_id: str) -> str | None:
     return _digest(result) if isinstance(result, dict) else None
 
 
+def _domain_checkpoint_identities(state: dict[str, Any], trial_id: str) -> tuple[str, ...]:
+    """Snapshot current Domain heads so stale notes cannot outrank a commit."""
+
+    records = state.get("domain_records")
+    if not isinstance(records, dict):
+        return ()
+    return tuple(
+        sorted(
+            str(record["identity"])
+            for key, record in records.items()
+            if isinstance(key, str)
+            and key.startswith(f"{trial_id}:")
+            and isinstance(record, dict)
+            and isinstance(record.get("identity"), str)
+        )
+    )
+
+
 def _ranges(draft: WorkingCheckpointDraft) -> tuple[WorkingSourceRange, ...]:
     values: list[WorkingSourceRange] = list(draft.unread_ranges)
     for group in (draft.observations, draft.interpretations, draft.open_questions, draft.drafts):
@@ -178,6 +196,7 @@ def save_working_checkpoint(workspace: str | Path, draft: WorkingCheckpointDraft
         "batch_id": batch_id,
         "trial_id": trial_id,
         "result_identity": _result_identity(state, trial_id),
+        "domain_checkpoint_identities": _domain_checkpoint_identities(state, trial_id),
         "source_scope": [item.model_dump(mode="json") for item in _source_scope(state, trial_id)],
         **draft.model_dump(mode="json", exclude={"trial_id"}),
     }
@@ -287,6 +306,19 @@ def working_checkpoint_status(
         reason = "result_changed"
     elif checkpoint.source_scope != _source_scope(state, trial_id):
         reason = "source_changed"
+    elif (
+        checkpoint.domain_checkpoint_identities is not None
+        and checkpoint.domain_checkpoint_identities
+        != _domain_checkpoint_identities(state, trial_id)
+    ):
+        return {
+            "status": "stale",
+            "reason": "canonical_newer",
+            "trial_id": trial_id,
+            "checkpoint_identity": checkpoint.identity,
+            "checkpoint": None,
+            "recovery": "resume_from_canonical_checkpoint",
+        }
     if reason is not None:
         return {
             "status": "stale",

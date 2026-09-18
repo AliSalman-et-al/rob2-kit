@@ -390,12 +390,58 @@ def _committed_options(response: Mapping[str, Any] | None) -> list[str] | None:
     return options or None
 
 
+def _answer_observations(checkpoint: Mapping[str, Any] | None) -> list[dict[str, Any]]:
+    """Project revision-relevant facts without retaining scientific prose."""
+    if not isinstance(checkpoint, Mapping):
+        return []
+    observations: list[dict[str, Any]] = []
+    for answer in checkpoint.get("answers", []):
+        if not isinstance(answer, Mapping) or not isinstance(answer.get("question_id"), str):
+            continue
+        locators: list[dict[str, Any]] = []
+        bases = answer.get("bases", [])
+        for basis in bases if isinstance(bases, list) else []:
+            if not isinstance(basis, Mapping):
+                continue
+            locator = {
+                key: basis[key]
+                for key in ("evidence", "source_id", "page", "start_line", "end_line")
+                if key in basis
+            }
+            if locator:
+                locators.append(locator)
+        justification = answer.get("justification")
+        unknowns = answer.get("unknowns")
+        unknowns = unknowns if isinstance(unknowns, list) else []
+        counterevidence = answer.get("counterevidence")
+        counterevidence = counterevidence if isinstance(counterevidence, list) else []
+        observations.append(
+            {
+                "question_id": answer["question_id"],
+                "answer": answer.get("answer"),
+                "justification_digest": (
+                    _digest(justification) if isinstance(justification, str) else None
+                ),
+                "justification_bytes": len(justification.encode("utf-8"))
+                if isinstance(justification, str)
+                else 0,
+                "unknown_count": len(unknowns),
+                "unknowns_digest": _digest(unknowns),
+                "counterevidence_count": len(counterevidence),
+                "counterevidence_digest": _digest(counterevidence),
+                "evidence_locators": locators,
+            }
+        )
+    return observations
+
+
 def _operation(
     item: Mapping[str, Any],
     transcript_id: str,
     session_id: str,
     observed_options: set[str],
     observed_evidence: set[str],
+    committed_checkpoints: dict[str, Mapping[str, Any]],
 ) -> dict[str, Any]:
     arguments = item.get("arguments")
     arguments = arguments if isinstance(arguments, dict) else {}
@@ -486,6 +532,31 @@ def _operation(
     if tool in {"select_text_evidence", "select_visual_evidence"}:
         refs = _evidence_refs(response) if status == "accepted" else []
         operation["selection"] = refs or None
+    if outcome == "repair":
+        raw_repairs = response.get("repairs") if isinstance(response, dict) else None
+        repair_rows = raw_repairs if isinstance(raw_repairs, list) else []
+        codes = sorted(
+            {
+                item["code"]
+                for item in repair_rows
+                if isinstance(item, Mapping) and isinstance(item.get("code"), str) and item["code"]
+            }
+        )
+        paths = sorted(
+            {
+                item["path"]
+                for item in repair_rows
+                if isinstance(item, Mapping)
+                and isinstance(item.get("path"), str)
+                and item["path"].startswith("/")
+            }
+        )
+        operation["repair"] = {
+            "kind": "mechanical_validation",
+            "count": len(repair_rows),
+            "codes": codes,
+            "paths": paths,
+        }
     if tool.startswith("save_") or tool in {
         "request_proposal_approval",
         "request_trial_terminal",
@@ -498,7 +569,7 @@ def _operation(
         checkpoint = checkpoint if isinstance(checkpoint, dict) else {}
         identity = _opaque(checkpoint.get("identity"))
         supersedes = _opaque(checkpoint.get("supersedes"))
-        operation["mutation"] = {
+        mutation: dict[str, Any] = {
             "accepted": status == "accepted",
             "checkpoint_identity": identity,
             "supersedes": supersedes,
@@ -508,6 +579,31 @@ def _operation(
             "submitted_option_ids": sorted(_answer_options(arguments) & observed_options) or None,
             "committed_option_ids": _committed_options(response),
         }
+        operation["mutation"] = mutation
+        checkpoint = (
+            response.get("data", {}).get("checkpoint") if isinstance(response, dict) else None
+        )
+        if isinstance(checkpoint, dict) and isinstance(checkpoint.get("supersedes"), str):
+            basis = checkpoint.get("revision_basis")
+            revision_basis = dict(basis) if isinstance(basis, dict) else None
+            if revision_basis is not None:
+                rationale = revision_basis.pop("rationale", None)
+                if isinstance(rationale, str):
+                    revision_basis["rationale_digest"] = _digest(rationale)
+                    revision_basis["rationale_bytes"] = len(rationale.encode("utf-8"))
+            mutation["revision"] = {
+                "before_identity": checkpoint["supersedes"],
+                "after_identity": checkpoint.get("identity"),
+                "before": _answer_observations(committed_checkpoints.get(checkpoint["supersedes"])),
+                "after": _answer_observations(checkpoint),
+                "revision_reason": revision_basis,
+            }
+        if (
+            status == "accepted"
+            and isinstance(checkpoint, dict)
+            and isinstance(checkpoint.get("identity"), str)
+        ):
+            committed_checkpoints[checkpoint["identity"]] = checkpoint
     observed_options.update(response_options)
     observed_evidence.update(response_evidence)
     return operation
@@ -599,6 +695,7 @@ def import_observations(
         attempt_id = attempt["attempt_id"]
         observed_options: set[str] = set()
         observed_evidence: set[str] = set()
+        committed_checkpoints: dict[str, Mapping[str, Any]] = {}
         search_count = 0
         assessment_search_count = 0
         operations: list[dict[str, Any]] = []
@@ -619,6 +716,7 @@ def import_observations(
                     session_id,
                     observed_options,
                     observed_evidence,
+                    committed_checkpoints,
                 )
                 operations.append(operation)
                 if operation["tool"] == "search_sources":
@@ -654,6 +752,7 @@ def import_observations(
                 "committed_evidence_ids": row["mutation"]["committed_evidence_ids"],
                 "submitted_option_ids": row["mutation"]["submitted_option_ids"],
                 "committed_option_ids": row["mutation"]["committed_option_ids"],
+                "revision": row["mutation"].get("revision"),
             }
             for row in operations
             if "mutation" in row

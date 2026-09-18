@@ -155,7 +155,7 @@ _SCIENTIFIC_PACK = {
     "id": "rob2.parallel.assignment",
     "version": "2019.1",
     "result_semantics_version": "rob2-kit.result-semantics.v0.8",
-    "content_hash": "sha256:ebd2b62a377e1a4275d886040eaf9c002394842d435ce7b5c10d7db820fc38d2",
+    "content_hash": "sha256:d0d55f1381b9a2a19e670dca92bd34eec60dc09abe554012f09f7ce972e7f82c",
     "official_source": {
         "version": "22 August 2019",
         "source_sha256": "A9E9C4FDC4BE2D29B5C0A1A6B828E09F2014A34F6D5C302A532F6153EA0FD670",
@@ -693,9 +693,10 @@ def _valid_search_account(
     }
     modern_keys = legacy_keys | {"profile"}
     purpose_keys = {"purpose_domain_id", "purpose_question_id"}
-    if (
-        not isinstance(account, dict)
-        or set(account) not in (legacy_keys, modern_keys, modern_keys | purpose_keys)
+    if not isinstance(account, dict) or set(account) not in (
+        legacy_keys,
+        modern_keys,
+        modern_keys | purpose_keys,
     ):
         return False
     modern = "profile" in account
@@ -750,8 +751,7 @@ def _valid_search_account(
             purpose_valid = purpose_valid and (
                 isinstance(purpose_domain_id, str)
                 and isinstance(purpose_question_id, str)
-                and purpose_question_id
-                in _DOMAIN_QUESTION_IDS.get(purpose_domain_id, set())
+                and purpose_question_id in _DOMAIN_QUESTION_IDS.get(purpose_domain_id, set())
             )
     scalar_optional_valid = (
         all(
@@ -838,7 +838,8 @@ def _valid_search_account(
             else _canonical_query_text(query)
         )
         or not isinstance(account.get("mode"), str)
-        or account["mode"] not in (
+        or account["mode"]
+        not in (
             {"all", "phrase", "any", "prefix", "literal"}
             if modern
             else {"all", "phrase", "any", "prefix"}
@@ -1815,9 +1816,8 @@ def _valid_domain_lineage(
                             return False
                         repair_id = basis.get("repair_id")
                         codes = basis.get("codes")
-                        if (
-                            repair_id is not None
-                            and (not isinstance(repair_id, str) or not repair_id.strip())
+                        if repair_id is not None and (
+                            not isinstance(repair_id, str) or not repair_id.strip()
                         ):
                             return False
                         if (

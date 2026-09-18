@@ -7,6 +7,7 @@ import subprocess
 import sys
 from copy import deepcopy
 from pathlib import Path
+from typing import Any, cast
 
 import pytest
 
@@ -114,6 +115,48 @@ def test_restart_proof_requires_pre_ack_identity_equality(tmp_path: Path) -> Non
     assert any(
         "Proposal, Batch, and Source identities must be equal" in error
         for error in _module().validate(manifest)
+    )
+
+
+def test_v05_manifest_requires_frozen_qualification_and_both_host_delivery_paths() -> None:
+    module = _module()
+    manifest = cast(dict[str, Any], _manifest())
+    manifest["schema"] = module.SCHEMA
+    qualification: dict[str, Any] = {
+        key: _hash(f"qualification-{key}")
+        for key in (
+            "executable",
+            "pack",
+            "skill",
+            "tools",
+            "schemas",
+            "protocol",
+            "runtime",
+        )
+    }
+    manifest["qualification"] = qualification
+    qualification["host_checks"] = [
+        {
+            "host": run["host"],
+            "attempt_id": run["id"],
+            "success": success,
+            "repairable_error": repairable_error,
+            "observable": True,
+        }
+        for run in manifest["runs"]
+        for success, repairable_error in ((True, False), (False, True))
+    ]
+
+    assert module.validate(manifest) == []
+
+    missing = deepcopy(manifest)
+    missing["qualification"]["host_checks"] = [
+        row
+        for row in missing["qualification"]["host_checks"]
+        if not (row["attempt_id"] == "haiku-1" and row["repairable_error"])
+    ]
+    assert any(
+        "repairable installed-host check is missing" in error for error in module.validate(missing)
     )
 
 

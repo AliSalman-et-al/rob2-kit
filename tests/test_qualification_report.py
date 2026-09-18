@@ -120,6 +120,71 @@ def test_observation_host_must_match_its_attempt() -> None:
     assert promotion_decision(report) == "hold"
 
 
+def test_extended_host_delivery_matrix_requires_success_and_repairable_error() -> None:
+    report = _report()
+    report["identity"] = {
+        **report["identity"],
+        **{
+            name: identity({"name": name, "revision": 2})
+            for name in ("executable", "tools", "schemas", "protocol", "runtime")
+        },
+    }
+    report["qualification"] = dict(report["identity"])
+    observations = []
+    for kind in ("text", "image", "guidance", "schema", "continuation"):
+        base = _observation(kind, f"{kind}-success")
+        base.update(
+            {
+                "delivery": "success",
+                "payload_digest": identity({"kind": kind, "delivery": "success"}),
+                "error_code": None,
+            }
+        )
+        observations.append(base)
+        error = _observation(kind, f"{kind}-error")
+        error.update(
+            {
+                "status": "context",
+                "delivery": "repairable_error",
+                "payload_digest": identity({"kind": kind, "delivery": "error"}),
+                "error_code": "retryable_host_error",
+            }
+        )
+        observations.append(error)
+    report["observations"] = observations
+
+    assert validate(report) == []
+
+    missing = deepcopy(report)
+    missing["observations"] = [
+        row
+        for row in missing["observations"]
+        if not (row["kind"] == "image" and row["delivery"] == "repairable_error")
+    ]
+    errors = validate(missing)
+    assert any("repairable-error host observation is missing" in error for error in errors)
+    assert promotion_decision(missing) == "hold"
+
+
+def test_qualification_identities_must_match_the_frozen_report_identity() -> None:
+    report = _report()
+    report["identity"] = {
+        **report["identity"],
+        **{
+            name: identity({"name": name, "revision": 2})
+            for name in ("executable", "tools", "schemas", "protocol", "runtime")
+        },
+    }
+    report["qualification"] = dict(report["identity"])
+    assert validate(report) == []
+
+    report["qualification"]["pack"] = identity({"pack": "different"})
+    errors = validate(report)
+
+    assert "qualification identities do not match frozen identities" in errors
+    assert promotion_decision(report) == "hold"
+
+
 @pytest.mark.parametrize(
     "mutate",
     (

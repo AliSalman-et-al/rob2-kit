@@ -86,6 +86,25 @@ _SEARCH_CORPUS_KEYS: dict[int, tuple[str, str, tuple[tuple[str, str], ...]]] = {
 _SEARCH_CORPUS_RETIRED: dict[int, sqlite3.Connection] = {}
 
 
+def reset_search_caches() -> None:
+    """Drop disposable process-local search caches without touching durable data."""
+
+    with _SEARCH_CORPUS_LOCK:
+        connections = {
+            id(connection): connection
+            for connection in (*_SEARCH_CORPUS_CACHE.values(), *_SEARCH_CORPUS_RETIRED.values())
+        }
+        _SEARCH_RANKING_CACHE.clear()
+        _SEARCH_SPELLING_CATALOGUE_CACHE.clear()
+        _SEARCH_CORPUS_CACHE.clear()
+        _SEARCH_CORPUS_RETIRED.clear()
+        _SEARCH_CORPUS_LEASES.clear()
+        _SEARCH_CORPUS_KEYS.clear()
+        for connection in connections.values():
+            connection.close()
+    _cached_normalized_search_text.cache_clear()
+
+
 def list_sources(
     workspace: str | Path,
     trial_id: str | None = None,
@@ -360,6 +379,12 @@ def _source_navigation_entries(pages: tuple[str, ...]) -> list[dict[str, Any]]:
                 }
             )
     unique: dict[tuple[Any, ...], dict[str, Any]] = {}
+    metadata_kinds = {
+        "contents_lead",
+        "version_lead",
+        "date_lead",
+        "cross_reference_lead",
+    }
     for item in entries:
         key = (
             item["page"],
@@ -372,6 +397,23 @@ def _source_navigation_entries(pages: tuple[str, ...]) -> list[dict[str, Any]]:
     ordered = sorted(
         unique.values(), key=lambda item: (item["page"], item["start_line"], item["kind"])
     )
+    metadata_locations = {
+        (item["page"], item["start_line"], item["end_line"], item["text"])
+        for item in ordered
+        if item["kind"] in metadata_kinds
+    }
+    ordered = [
+        item
+        for item in ordered
+        if item["kind"] != "page_excerpt"
+        or (
+            item["page"],
+            item["start_line"],
+            item["end_line"],
+            item["text"],
+        )
+        not in metadata_locations
+    ]
     metadata = [
         item for item in ordered if item["kind"] not in {"heading_candidate", "page_excerpt"}
     ]
@@ -1086,7 +1128,13 @@ def search_sources(
         )
         _associate_search_evidence(root, session_identity, candidate["rank"], passage["identity"])
         _record_search_evidence(
-            root, session_identity, candidate["rank"], trial_id, passage["identity"]
+            root,
+            session_identity,
+            candidate["rank"],
+            trial_id,
+            passage["identity"],
+            purpose_domain_id,
+            purpose_question_id,
         )
         hits.append(
             {
@@ -1862,17 +1910,28 @@ def _term_page_feedback(
 
 def _literal_match_spans(text: str, query: str) -> list[tuple[int, int]]:
     """Find contiguous presentation-normalized wording without stemming."""
-    needle = _canonical_search_text(query)
+    # Keep literal matching independent of the caller's query preparation. In
+    # particular, casefold can expand a source character (``ß`` -> ``ss``),
+    # while ``character_spans`` still maps every folded character back to the
+    # authoritative source extent.
+    needle = _canonical_search_text(query).casefold()
     if not needle:
         return []
     searchable, character_spans = _canonical_search_text_with_spans(text)
+
+    def is_endpoint(value: str, index: int) -> bool:
+        return index == 0 or not value[index - 1].isalnum()
+
+    def is_end_endpoint(value: str, index: int) -> bool:
+        return index == len(value) or not value[index].isalnum()
+
     result: list[tuple[int, int]] = []
     start = searchable.find(needle)
     while start >= 0:
         end = start + len(needle)
         if (
-            (start == 0 or not searchable[start - 1].isalnum())
-            and (end == len(searchable) or not searchable[end].isalnum())
+            is_endpoint(searchable, start)
+            and is_end_endpoint(searchable, end)
             and character_spans
             and end <= len(character_spans)
         ):
@@ -2995,12 +3054,32 @@ def _associate_search_evidence(
 
 
 def _record_search_evidence(
-    root: Path, session_identity: str, rank: int, trial_id: str, evidence_identity: str
+    root: Path,
+    session_identity: str,
+    rank: int,
+    trial_id: str,
+    evidence_identity: str,
+    purpose_domain_id: str | None = None,
+    purpose_question_id: str | None = None,
 ) -> None:
-    """Record search provenance even when no Domain association exists yet."""
+    """Record search provenance without overwriting investigative history."""
 
     phase = str(_state(root).get("phase", "proposal"))
     with _db(root, "derivative.sqlite3") as connection:
+        connection.execute(
+            "INSERT OR IGNORE INTO search_evidence_provenance_history "
+            "(session_identity,rank,trial_id,evidence_identity,phase,"
+            "purpose_domain_id,purpose_question_id) VALUES (?,?,?,?,?,?,?)",
+            (
+                session_identity,
+                rank,
+                trial_id,
+                evidence_identity,
+                phase,
+                purpose_domain_id or "",
+                purpose_question_id or "",
+            ),
+        )
         connection.execute(
             "INSERT OR IGNORE INTO search_evidence_provenance "
             "(session_identity,rank,trial_id,evidence_identity,phase) VALUES (?,?,?,?,?)",
@@ -3056,7 +3135,7 @@ def _unassigned_search_evidence(root: Path, trial_id: str) -> list[tuple[str, st
     with _db(root, "derivative.sqlite3") as connection:
         rows = connection.execute(
             "SELECT provenance.evidence_identity,provenance.session_identity,provenance.rank "
-            "FROM search_evidence_provenance AS provenance "
+            "FROM search_evidence_provenance_history AS provenance "
             "WHERE provenance.trial_id=? AND provenance.phase IN "
             "('assessment','ready_to_finalize') "
             "AND NOT EXISTS ("
@@ -3066,10 +3145,12 @@ def _unassigned_search_evidence(root: Path, trial_id: str) -> list[tuple[str, st
             "ORDER BY provenance.session_identity,provenance.rank,provenance.evidence_identity",
             (trial_id,),
         ).fetchall()
-    return [
-        (str(identity), str(session_identity), int(rank))
-        for identity, session_identity, rank in rows
-    ]
+    return list(
+        dict.fromkeys(
+            (str(identity), str(session_identity), int(rank))
+            for identity, session_identity, rank in rows
+        )
+    )
 
 
 def _search_evidence_identities(root: Path, trial_id: str) -> set[str]:
@@ -3079,7 +3160,7 @@ def _search_evidence_identities(root: Path, trial_id: str) -> set[str]:
         rows = connection.execute(
             "SELECT DISTINCT evidence_identity FROM search_domain_associations "
             "WHERE trial_id=? AND evidence_identity IS NOT NULL "
-            "UNION SELECT DISTINCT evidence_identity FROM search_evidence_provenance "
+            "UNION SELECT DISTINCT evidence_identity FROM search_evidence_provenance_history "
             "WHERE trial_id=?",
             (trial_id, trial_id),
         ).fetchall()
@@ -3239,7 +3320,7 @@ def _unassigned_search_continuation(
     with _db(root, "derivative.sqlite3") as connection:
         rows = connection.execute(
             "SELECT provenance.session_identity,provenance.rank "
-            "FROM search_evidence_provenance AS provenance "
+            "FROM search_evidence_provenance_history AS provenance "
             "WHERE provenance.trial_id=? AND provenance.phase IN "
             "('assessment','ready_to_finalize') "
             "AND NOT EXISTS ("

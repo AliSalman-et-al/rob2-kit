@@ -50,6 +50,42 @@ def test_question_context_keeps_official_fields_options_and_activation_operation
     assert conditional.guidance.operational.query_suggestions
 
 
+def test_controlled_guidance_cases_do_not_collapse_distinct_premises() -> None:
+    cases = {
+        "sq:missing:data-available": (
+            "randomized",
+            "same population, time window, and mutually exclusive",
+        ),
+        "sq:missing:evidence-unbiased": (
+            "plausible assumptions",
+            "missingness mechanism",
+        ),
+        "sq:deviations:appropriate-analysis": (
+            "never-treated",
+            "no adverse event",
+        ),
+        "sq:selection:multiple-measurements": (
+            "eligible alternatives",
+            "no_information",
+        ),
+        "sq:selection:multiple-analyses": (
+            "eligible analyses",
+            "unresolved",
+        ),
+        "sq:measurement:influence-possible": (
+            "assessor awareness",
+            "judgement",
+        ),
+        "sq:measurement:influence-likely": (
+            "strong beliefs",
+            "likely influence",
+        ),
+    }
+    for question_id, terms in cases.items():
+        text = _guidance_text((question_id,))
+        assert all(term.lower() in text for term in terms), question_id
+
+
 def test_comparison_cards_keep_premise_specific_slots_and_question_bindings() -> None:
     expected = {
         "domain:deviations": (

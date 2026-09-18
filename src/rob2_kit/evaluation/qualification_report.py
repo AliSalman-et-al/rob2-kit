@@ -51,6 +51,7 @@ _PRIVATE = frozenset(
         "transcripts",
     }
 )
+_DELIVERIES = frozenset({"success", "repairable_error", "unobservable"})
 
 
 def _canonical(value: Any) -> bytes:
@@ -69,7 +70,7 @@ def _private(value: Any, location: str = "$") -> list[str]:
             for key in value
             if isinstance(key, str)
             and key.casefold() in _PRIVATE
-            and not (location == "$.identity" and key == "source")
+            and not (location in {"$.identity", "$.qualification"} and key == "source")
         ]
         return errors + [
             error for key, child in value.items() for error in _private(child, f"{location}.{key}")
@@ -106,17 +107,44 @@ def validate(report: object) -> list[str]:
         return ["report must be an object"]
     errors = _private(report)
     fields = {"schema", "identity", "mechanical", "observations", "attempts", "promotion"}
-    if not _closed(report, fields, "report", errors):
+    if set(report) not in (fields, fields | {"qualification"}):
+        errors.append("report has an unclosed field set")
         return errors
     if report["schema"] != SCHEMA:
         errors.append("report schema is invalid")
     frozen = report["identity"]
     identity_fields = {"build", "pack", "skill", "source", "config"}
-    if _closed(frozen, identity_fields, "identity", errors):
+    extended_identity_fields = identity_fields | {
+        "executable",
+        "tools",
+        "schemas",
+        "protocol",
+        "runtime",
+    }
+    if not isinstance(frozen, dict) or set(frozen) not in (
+        identity_fields,
+        extended_identity_fields,
+    ):
+        errors.append("identity has an unclosed field set")
+    elif isinstance(frozen, dict):
         if any(
             not isinstance(frozen[key], str) or not _HASH.fullmatch(frozen[key]) for key in frozen
         ):
             errors.append("frozen identities are invalid")
+    qualification = report.get("qualification")
+    if qualification is not None:
+        qualification_fields = extended_identity_fields
+        if not isinstance(frozen, dict) or set(frozen) != extended_identity_fields:
+            errors.append("qualification requires the extended frozen identity set")
+        if _closed(qualification, qualification_fields, "qualification", errors):
+            if any(
+                not isinstance(qualification[key], str) or not _HASH.fullmatch(qualification[key])
+                for key in qualification
+            ):
+                errors.append("qualification identities are invalid")
+            elif isinstance(frozen, dict) and set(frozen) == extended_identity_fields:
+                if any(qualification[key] != frozen[key] for key in qualification_fields):
+                    errors.append("qualification identities do not match frozen identities")
 
     mechanical = report["mechanical"]
     mechanical_ids: set[str] = set()
@@ -151,12 +179,24 @@ def validate(report: object) -> list[str]:
     else:
         for index, observation in enumerate(observations):
             location = f"observations[{index}]"
-            if not _closed(
-                observation,
-                {"observation_id", "attempt_id", "host", "kind", "status", "observable"},
-                location,
-                errors,
+            observation_fields = {
+                "observation_id",
+                "attempt_id",
+                "host",
+                "kind",
+                "status",
+                "observable",
+            }
+            extended_observation_fields = observation_fields | {
+                "delivery",
+                "payload_digest",
+                "error_code",
+            }
+            if not isinstance(observation, dict) or set(observation) not in (
+                observation_fields,
+                extended_observation_fields,
             ):
+                errors.append(f"{location} has an unclosed field set")
                 continue
             observation_rows.append(observation)
             observation_id = observation["observation_id"]
@@ -180,10 +220,44 @@ def validate(report: object) -> list[str]:
                 and observation["observable"] is not None
             ):
                 errors.append(f"{location}.observable is invalid")
+            if "delivery" in observation and observation["delivery"] not in _DELIVERIES:
+                errors.append(f"{location}.delivery is invalid")
+            if "payload_digest" in observation and (
+                observation["payload_digest"] is not None
+                and (
+                    not isinstance(observation["payload_digest"], str)
+                    or not _HASH.fullmatch(observation["payload_digest"])
+                )
+            ):
+                errors.append(f"{location}.payload_digest is invalid")
+            if "error_code" in observation and (
+                observation["error_code"] is not None
+                and (
+                    not isinstance(observation["error_code"], str)
+                    or not _valid_id(observation["error_code"])
+                )
+            ):
+                errors.append(f"{location}.error_code is invalid")
+            delivery = observation.get("delivery")
+            if delivery == "success" and (
+                observation.get("observable") is not True
+                or not isinstance(observation.get("payload_digest"), str)
+                or observation.get("error_code") is not None
+            ):
+                errors.append(f"{location}.successful delivery is incomplete")
+            if delivery == "repairable_error" and (
+                observation.get("observable") is not True
+                or not isinstance(observation.get("payload_digest"), str)
+                or not isinstance(observation.get("error_code"), str)
+            ):
+                errors.append(f"{location}.repairable delivery is incomplete")
+            if delivery == "unobservable" and observation.get("observable") is True:
+                errors.append(f"{location}.unobservable delivery is contradictory")
 
     attempts = report["attempts"]
     attempt_ids: set[str] = set()
     attempt_hosts: dict[str, str] = {}
+    attempt_statuses: dict[str, str] = {}
     if not isinstance(attempts, list) or not attempts:
         errors.append("attempts must be a non-empty list")
     else:
@@ -200,6 +274,8 @@ def validate(report: object) -> list[str]:
                 attempt_ids.add(attempt_id)
                 if _valid_id(attempt["host"]):
                     attempt_hosts[attempt_id] = attempt["host"]
+                if isinstance(attempt.get("status"), str):
+                    attempt_statuses[attempt_id] = attempt["status"]
             if not _valid_id(attempt["host"]) or not _valid_status(attempt["status"]):
                 errors.append(f"{location} host or status is invalid")
 
@@ -217,26 +293,44 @@ def validate(report: object) -> list[str]:
                 errors.append(f"observations[{index}] host does not match its attempt")
 
     if attempt_hosts:
-        observed_hosts = {
-            row["host"] for row in observation_rows if row.get("host") in attempt_hosts.values()
-        }
-        observed_by_host = {
-            host: {
-                row["kind"]
+        rows_by_attempt = {
+            (attempt_id, host): [
+                row
                 for row in observation_rows
-                if row.get("host") == host
-                and isinstance(row.get("kind"), str)
-                and row["kind"] in OBSERVATION_KINDS
-            }
-            for host in observed_hosts
+                if row.get("attempt_id") == attempt_id and row.get("host") == host
+            ]
+            for attempt_id, host in attempt_hosts.items()
         }
-        for host, observed_kinds in sorted(observed_by_host.items()):
+        extended_delivery = any("delivery" in row for row in observation_rows)
+        for (attempt_id, host), attempt_rows in sorted(rows_by_attempt.items()):
+            if attempt_statuses.get(attempt_id) == "failure":
+                continue
+            observed_kinds = {
+                row["kind"]
+                for row in attempt_rows
+                if isinstance(row.get("kind"), str) and row["kind"] in OBSERVATION_KINDS
+            }
             missing = OBSERVATION_KINDS - observed_kinds
             if missing:
                 errors.append(
-                    f"required host observations are missing for {host}: "
+                    f"required host observations are missing for {host} ({attempt_id}): "
                     + ", ".join(sorted(missing))
                 )
+            if extended_delivery:
+                for kind in sorted(OBSERVATION_KINDS):
+                    deliveries = {
+                        row.get("delivery") for row in attempt_rows if row.get("kind") == kind
+                    }
+                    if "success" not in deliveries:
+                        errors.append(
+                            "successful host observation is missing for "
+                            f"{host} ({attempt_id}): {kind}"
+                        )
+                    if "repairable_error" not in deliveries:
+                        errors.append(
+                            "repairable-error host observation is missing for "
+                            f"{host} ({attempt_id}): {kind}"
+                        )
     expected_promotion = "promote"
     if errors:
         expected_promotion = "hold"

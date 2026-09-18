@@ -192,6 +192,38 @@ independently verified `.rob2.zip`. Analyze a frozen set of those attempts with
 [`rsi.md`](rsi.md#posthoc-run-analysis). That analyzer is the current posthoc
 comparison surface; it does not require or emit the legacy Haiku receipt.
 
+For a controlled diagnostic comparison, add the closed `plan` described in
+[`rsi.md`](rsi.md#predeclared-retrieval-comparisons) and run:
+
+```powershell
+uv run python scripts/run_comparison.py `
+  --config comparison-config.json `
+  --interventions interventions.json `
+  --outcomes outcomes.json `
+  --labels labels.json `
+  --output comparison-receipt.json
+```
+
+The receipt retains all privacy-safe attempt rows, including failed, drawn, and
+scope-corrected attempts. It reports support, completion, label accuracy,
+class recall, latency, cost, context bytes, and tool calls separately. It does
+not infer a failure cause, choose a retry, or treat supplied decisive Evidence
+as a production accuracy result.
+
+The current search-work probe is similarly explicit:
+
+```powershell
+uv run python scripts/benchmark_search_cache.py `
+  --workspace <workspace> --trial <trial> `
+  --source-id <verified-source-id> `
+  --query "endpoint query" --query "event term" `
+  --output search-cache-benchmark.json
+```
+
+Each phase retains before/after counter snapshots and deltas. Inspect actual
+work and latency across cold, warm, new-query, and restart phases; do not
+promote a cache change from hit counts alone.
+
 ## Historical retained-evidence receipt
 
 The following verifier is retained for historical `rob2-kit.retained-evidence.v0.4`

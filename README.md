@@ -371,7 +371,9 @@ Researcher authority enters through a directly accepted MCP elicitation or the
 The scientific pack retains each question's full nested official and operational
 guidance. `get_domain_context` returns a compact typed question-card projection
 with the complete official excerpt and locator plus the actionable operational
-fields needed for answering. Operational safeguards supplement the official
+fields needed for answering. Its `official_guidance` recovery object repeats
+those pack-bound sections with their version, source digest, locator, and an
+explicit completion cursor. Operational safeguards supplement the official
 source; they never replace it. Domain answers reference selected Evidence by
 handle, and the server writes the exact stored quote or transcription into the
 auditable checkpoint.
@@ -411,6 +413,24 @@ then continue the same session with `Continue.` as described in
 `.rob2.zip` with `scripts/verify_bundle.py`. A successful smoke test confirms
 that the model-facing contract completes without schema or Pydantic repair
 loops; it is an operational check, not a population accuracy estimate.
+
+### Measure search work and controlled comparisons
+
+Use `scripts/benchmark_search_cache.py` to retain cold, warm-repeat,
+new-query, and restart measurements. Pass `--source-id` when the benchmark
+should measure one verified Source rather than the whole Trial scope. Each
+phase records before/after counters and deltas for hashing, projection reads,
+FTS work, candidate reconstruction, database work, response bytes, and
+latency; the artifact reports unchanged or increased work instead of assuming
+that a cache hit is a speedup.
+
+Use `scripts/run_comparison.py` for preregistered diagnostic arms. Its
+`comparison_config.plan` freezes cases, host and model, retry policy, scoring,
+and budgets before outcomes are supplied. The runner retains every attempt,
+including failures, draws, and scope corrections, and reports Evidence
+support, completion, latency, cost, label accuracy, and class recall
+separately. A supplied-decisive-Evidence arm is a discovery/context diagnostic,
+not a production accuracy ceiling.
 
 For the full evaluation protocol, frozen case format, batch runner, scorer, and
 denominator rules, see the [evaluation guide](docs/evaluation/README.md) and

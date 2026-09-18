@@ -6,10 +6,10 @@ The [evaluation contract](README.md) defines the observation limits.
 
 ## Predeclared retrieval comparisons
 
-The existing held-out manifest may include an optional `comparison_config` with
-schema `rob2-kit.evaluation-comparisons.v0.1`. It declares named arms and
-diagnostic pairs before runs begin, using only these dimensions: `free_search`
-or `supplied_decisive_evidence`; `porter_only` or `optional_spelling`; and
+The existing held-out manifest may include a `comparison_config` with schema
+`rob2-kit.evaluation-comparisons.v0.1`. It declares named arms and diagnostic
+pairs before runs begin, using only these dimensions: `free_search` or
+`supplied_decisive_evidence`; `porter_only` or `optional_spelling`; and
 `baseline`, `compact`, or `expanded` context with neutral guidance variants.
 The supplied-Evidence arm may provide complete relevant passages, but its
 policy must explicitly forbid labels and answers. The manifest validator
@@ -17,6 +17,17 @@ rejects undeclared interventions, duplicate arms/pairs, coaching fields, and
 non-diagnostic pairs. Observation manifests additionally require an explicit,
 independent session per comparison arm; missing or unrun attempts remain
 `unknown`/incomplete.
+
+An executable comparison also declares a closed `plan` object. `cases` names
+the exact Trial, outcome, and Domains; `host` freezes the provider, interface,
+version, and prompt identity; `model` freezes family, version, and effort;
+`retry_policy` permits only bounded infrastructure retries; `scoring` names the
+primary metric and separate support, completion, latency, cost, and optional
+class-recall metrics; and `budget` limits attempts, cost, context bytes, and
+tool calls. `scripts/run_comparison.py` rejects an outcome file without this
+plan, retains every attempt, and does not select a winning retry. Historical
+configs without a plan remain readable for manifest compatibility, but they are
+not executable comparison runs.
 
 These comparisons reuse the normal attempt attribution and evidence-stage
 metrics. Evidence recovery, premise support, scientific labels, completion,
