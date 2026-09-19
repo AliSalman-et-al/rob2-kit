@@ -325,9 +325,7 @@ def main() -> None:
                 "before resuming the Codex session"
             )
         if args.proposal_correction and not proposal_review_pending:
-            parser.error(
-                "Proposal correction requires a pending researcher Proposal Review"
-            )
+            parser.error("Proposal correction requires a pending researcher Proposal Review")
         approved_scope = approved_scope_record(workspace, run_inputs.get("approved_scope"))
         if approved_scope is not None:
             (run_dir / "approved-scope.json").write_text(

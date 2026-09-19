@@ -8,6 +8,7 @@ import sqlite3
 import unicodedata
 from bisect import bisect_right
 from collections import Counter, OrderedDict
+from collections.abc import Callable
 from functools import lru_cache
 from pathlib import Path
 from threading import RLock
@@ -1039,7 +1040,6 @@ def search_sources(
                 _SEARCH_RANKING_CACHE.popitem(last=False)
         COUNTERS["search_ranking_cache_writes"] += 1
         COUNTERS["search_cache_writes"] += 1
-    spelling_catalogue = _spelling_catalogue(scope_key, page_map, ordered_source_ids)
     spelling_suggestions, spelling_suggestions_incomplete = _spelling_suggestions(
         page_map,
         terms,
@@ -1054,7 +1054,7 @@ def search_sources(
         query,
         term_feedback_truncated,
         term_feedback_sources_truncated,
-        spelling_catalogue,
+        lambda: _spelling_catalogue(scope_key, page_map, ordered_source_ids),
     )
     total_matches = len(all_pairs)
     # Candidate rank is the one public ordering. It is persisted so receipts,
@@ -1409,25 +1409,32 @@ def _spelling_catalogue(
         words: Counter[str] = Counter()
         page_counts: Counter[str] = Counter()
         examples: dict[str, dict[str, Any]] = {}
+        word_pattern = re.compile(r"(?<![\w])[A-Za-z]{5,40}(?![\w])")
         for source_id in source_order:
             for page_number, page in enumerate(pages[source_id], 1):
-                found = set(re.findall(r"(?<![\w])[A-Za-z]{5,40}(?![\w])", page.casefold()))
+                canonical_page, canonical_spans = _canonical_search_text_with_spans(page)
+                locatable_words: dict[str, tuple[int, int]] = {}
+                for match in word_pattern.finditer(canonical_page):
+                    start, end = match.span()
+                    locatable_words.setdefault(
+                        match.group(),
+                        (canonical_spans[start][0], canonical_spans[end - 1][1]),
+                    )
+                found = set(word_pattern.findall(page.casefold()))
+                line_starts = _line_starts(page)
                 for word in found:
-                    spans = _literal_match_spans(page, word)
-                    if not spans:
-                        # A raw fragment can be split by line-ending
-                        # dehyphenation in the normalized projection. It is
-                        # not an exact captured-source word, so omit it from
-                        # the spelling catalogue rather than inventing a
-                        # locator or crashing the search.
+                    span = locatable_words.get(word)
+                    if span is None:
+                        # Preserve the old rule: raw word fragments that are
+                        # not exact words in the canonical projection are not
+                        # valid spelling examples.
                         continue
                     words[word] += 1
                     page_counts[word] += 1
                     if word not in examples:
-                        start, end = spans[0]
-                        start_line, end_line, _line_start, _line_end = _line_bounds(
-                            page, start, end
-                        )
+                        start, end = span
+                        start_line = bisect_right(line_starts, start)
+                        end_line = bisect_right(line_starts, max(start, end - 1))
                         examples[word] = {
                             "source_id": source_id,
                             "page": page_number,
@@ -1846,12 +1853,11 @@ def _recomputed_search_projection(
     try:
         if owns_connection:
             _create_search_fts_for_profile(current, profile)
-        rows = [
-            (source_id, page, *_discovery_search_derivative(text))
-            for source_id in source_order
-            for page, text in enumerate(pages[source_id], 1)
-        ]
-        if owns_connection:
+            rows = [
+                (source_id, page, *_discovery_search_derivative(text))
+                for source_id in source_order
+                for page, text in enumerate(pages[source_id], 1)
+            ]
             current.executemany("INSERT INTO pages_fts VALUES (?,?,?,?)", rows)
         hits = current.execute(
             "SELECT source_id,page,bm25(pages_fts) FROM pages_fts WHERE pages_fts MATCH ?",
@@ -1997,7 +2003,11 @@ def _spelling_suggestions(
     original_query: str,
     term_feedback_truncated: bool,
     term_feedback_sources_truncated: bool,
-    catalogue: tuple[dict[str, int], dict[str, int], dict[str, dict[str, Any]]] | None = None,
+    catalogue: (
+        tuple[dict[str, int], dict[str, int], dict[str, dict[str, Any]]]
+        | Callable[[], tuple[dict[str, int], dict[str, int], dict[str, dict[str, Any]]]]
+        | None
+    ) = None,
 ) -> tuple[list[dict[str, Any]], bool]:
     if mode in {"literal", "prefix", "phrase"} or not pages:
         return [], False
@@ -2020,39 +2030,23 @@ def _spelling_suggestions(
         for raw in original_query.split()
         if any(character.isalpha() for character in raw) and raw.isupper()
     }
+    eligible_terms = {
+        term
+        for term in terms
+        if term in zero and term not in uppercase_terms and re.fullmatch(r"[a-z]{5,40}", term)
+    }
+    if not eligible_terms:
+        return [], incomplete
+    if callable(catalogue):
+        catalogue = catalogue()
     if catalogue is None:
-        words: Counter[str] = Counter()
-        page_counts: Counter[str] = Counter()
-        examples: dict[str, dict[str, Any]] = {}
-        for current_source in source_order:
-            for page_number, page in enumerate(pages[current_source], 1):
-                found = set(re.findall(r"(?<![\w])[A-Za-z]{5,40}(?![\w])", page.casefold()))
-                for word in found:
-                    spans = _literal_match_spans(page, word)
-                    if not spans:
-                        continue
-                    words[word] += 1
-                    page_counts[word] += 1
-                    if word not in examples:
-                        start, end = spans[0]
-                        start_line, end_line, _line_start, _line_end = _line_bounds(
-                            page, start, end
-                        )
-                        examples[word] = {
-                            "source_id": current_source,
-                            "page": page_number,
-                            "start": start,
-                            "end": end,
-                            "start_line": start_line,
-                            "end_line": end_line,
-                        }
-    else:
-        words = Counter(catalogue[0])
-        page_counts = Counter(catalogue[1])
-        examples = catalogue[2]
+        return [], incomplete
+    words = Counter(catalogue[0])
+    page_counts = Counter(catalogue[1])
+    examples = catalogue[2]
     suggestions: list[dict[str, Any]] = []
     for term_index, term in enumerate(terms):
-        if term not in zero or term in uppercase_terms or not re.fullmatch(r"[a-z]{5,40}", term):
+        if term not in eligible_terms:
             continue
         cutoff = 1 if len(term) <= 9 else 2
         candidates = []
@@ -2243,15 +2237,23 @@ def _all_search_match_spans(
     return _native_fts_match_spans(text, query, mode)
 
 
-def _line_bounds(text: str, start: int, end: int) -> tuple[int, int, int, int]:
+def _line_starts(text: str) -> list[int]:
     starts = [0]
     offset = 0
     for line in text.splitlines(keepends=True):
         offset += len(line)
         starts.append(offset)
+    return starts
+
+
+def _line_bounds_from_starts(starts: list[int], start: int, end: int) -> tuple[int, int, int, int]:
     first = bisect_right(starts, start)
     last = bisect_right(starts, max(start, end - 1))
-    return first, last, starts[first - 1], starts[last] if last < len(starts) else len(text)
+    return first, last, starts[first - 1], starts[last] if last < len(starts) else starts[-1]
+
+
+def _line_bounds(text: str, start: int, end: int) -> tuple[int, int, int, int]:
+    return _line_bounds_from_starts(_line_starts(text), start, end)
 
 
 def _session_candidates(
@@ -2267,6 +2269,7 @@ def _session_candidates(
     candidates: list[dict[str, Any]] = []
     for source_id, page in all_pairs:
         text = pages[source_id][page - 1]
+        starts = _line_starts(text)
         spans = _all_search_match_spans(text, query, mode, profile=profile)
         if not spans:
             spans = _search_match_spans(text, query, mode, profile=profile)
@@ -2278,7 +2281,7 @@ def _session_candidates(
         # raw coordinates remain the exact boundaries of the merged quote.
         windows: list[tuple[int, int]] = []
         for start, end in spans:
-            first, last, _raw_start, _raw_end = _line_bounds(text, start, end)
+            first, last, _raw_start, _raw_end = _line_bounds_from_starts(starts, start, end)
             windows.append((first, last))
         windows.sort()
         merged: list[tuple[int, int]] = []
@@ -2288,11 +2291,6 @@ def _session_candidates(
             else:
                 merged.append((first, last))
         for cluster, (first, last) in enumerate(merged):
-            starts = [0]
-            offset = 0
-            for line in text.splitlines(keepends=True):
-                offset += len(line)
-                starts.append(offset)
             raw_start = starts[max(0, first - 1)]
             raw_end = starts[min(last, len(starts) - 1)]
             while raw_end > raw_start and text[raw_end - 1] in "\r\n":

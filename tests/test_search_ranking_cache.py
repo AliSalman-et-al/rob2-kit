@@ -42,6 +42,8 @@ def _reset_search_counters() -> None:
     COUNTERS["search_ranking_validations"] = 0
     COUNTERS["search_cache_writes"] = 0
     COUNTERS["source_projection_verifications"] = 0
+    COUNTERS["search_spelling_catalogue_builds"] = 0
+    COUNTERS["search_spelling_catalogue_cache_hits"] = 0
 
 
 def test_warm_search_reuses_complete_ranking_and_evidence_identity(tmp_path: Path) -> None:
@@ -319,6 +321,25 @@ def test_spelling_feedback_is_source_grounded_and_keeps_the_original_search_unch
     assert result["spelling_suggestions"][0]["example"]["page"] == 1
     assert result["spelling_suggestions"][0]["example"]["start_line"] == 1
     assert result["search_receipt"]["query"] == "concealmet"
+
+
+def test_spelling_catalogue_is_lazy_until_an_unmatched_term_needs_feedback(
+    tmp_path: Path,
+) -> None:
+    workspace, _ = _workspace(tmp_path, "Allocation concealment was documented.\n")
+    _reset_search_counters()
+
+    search_sources(workspace, "trial", "concealment", mode="any")
+    search_sources(workspace, "trial", "concealmet", mode="phrase")
+    search_sources(workspace, "trial", "concealmet", mode="prefix")
+    search_sources(workspace, "trial", "concealmet", mode="literal")
+
+    assert COUNTERS["search_spelling_catalogue_builds"] == 0
+
+    result = search_sources(workspace, "trial", "concealmet", mode="any")
+
+    assert result["spelling_suggestions"][0]["suggested_term"] == "concealment"
+    assert COUNTERS["search_spelling_catalogue_builds"] == 1
 
 
 def test_spelling_alternatives_replace_one_repeated_query_unit(tmp_path: Path) -> None:

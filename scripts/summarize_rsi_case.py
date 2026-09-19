@@ -109,9 +109,7 @@ def main() -> None:
                         mcp_payload["domain_context_max_text_bytes"],
                         _text_bytes(raw_result) if isinstance(raw_result, dict) else 0,
                     )
-                    if "Warning: truncated output" in json.dumps(
-                        raw_result, ensure_ascii=False
-                    ):
+                    if "Warning: truncated output" in json.dumps(raw_result, ensure_ascii=False):
                         mcp_payload["domain_context_result_truncation_markers"] += 1
                 if tool == "prepare_batch" and response.get("outcome") == "success":
                     for trial in data.get("trials", []):
@@ -158,9 +156,7 @@ def main() -> None:
         "searches": dict(sorted(searches.items())),
         "successful_reads_by_role": dict(sorted(reads.items())),
         "mcp_payload": mcp_payload,
-        "source_hashes": {
-            source["label"]: source["sha256"] for source in source_by_id.values()
-        },
+        "source_hashes": {source["label"]: source["sha256"] for source in source_by_id.values()},
     }
     print(json.dumps(result, indent=2))
 
