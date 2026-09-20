@@ -121,6 +121,7 @@ def _invoke_failed_run(
 
     monkeypatch.setattr(subprocess, "run", fake_run)
     monkeypatch.setattr(subprocess, "check_output", lambda *args, **kwargs: "fake-commit")
+
     class FakePopen:
         def __init__(self, command: list[str], **kwargs: Any) -> None:
             nonlocal calls

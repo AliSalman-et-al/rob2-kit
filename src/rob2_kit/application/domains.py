@@ -1066,8 +1066,7 @@ def _source_coverage(
             for item in catalog.values()
             if isinstance(item, dict)
             and item.get("source_id") == source_id
-            and item.get("inclusion_reason")
-            in {"active_domain_candidate", "trial_discovery"}
+            and item.get("inclusion_reason") in {"active_domain_candidate", "trial_discovery"}
         ]
         search_state = "unsearched"
         searched_match = False
@@ -1079,9 +1078,7 @@ def _source_coverage(
             if not isinstance(account, dict) or account.get("trial_id") != trial_id:
                 continue
             scoped_sources = {
-                item.get("id")
-                for item in account.get("sources", [])
-                if isinstance(item, dict)
+                item.get("id") for item in account.get("sources", []) if isinstance(item, dict)
             }
             if source_id not in scoped_sources:
                 continue
@@ -1097,8 +1094,7 @@ def _source_coverage(
             complete = _search_session_complete(accounts)
             search_incomplete = search_incomplete or not complete
             hit_for_source = any(
-                isinstance(hit, dict)
-                and hit.get("source_id") == source_id
+                isinstance(hit, dict) and hit.get("source_id") == source_id
                 for account in accounts
                 for hit in account.get("hits", [])
             )
@@ -3033,9 +3029,7 @@ def get_domain_context(
         "evidence": list(catalog.values()),
         "answers": answer_rows,
         "evidence_sufficiency": (
-            existing.get("evidence_sufficiency")
-            if isinstance(existing, dict)
-            else None
+            existing.get("evidence_sufficiency") if isinstance(existing, dict) else None
         ),
         "current_checkpoint": checkpoint_identity,
         "guidance": [
@@ -3135,9 +3129,7 @@ def get_domain_context(
                 {
                     item.get("identity"): item
                     for item in (
-                        existing.get("search_accounts", [])
-                        if isinstance(existing, dict)
-                        else []
+                        existing.get("search_accounts", []) if isinstance(existing, dict) else []
                     )
                     if isinstance(item, dict) and isinstance(item.get("identity"), str)
                 },

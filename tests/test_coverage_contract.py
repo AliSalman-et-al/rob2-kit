@@ -45,9 +45,7 @@ def test_no_hit_does_not_claim_scientific_absence() -> None:
 
 
 def test_incomplete_retrieval_is_distinct_from_an_exhausted_no_hit() -> None:
-    record = CoverageRecord(
-        "source-a", "retrieval_incomplete", search="retrieval_incomplete"
-    )
+    record = CoverageRecord("source-a", "retrieval_incomplete", search="retrieval_incomplete")
     assert record.absence_claim is False
 
 

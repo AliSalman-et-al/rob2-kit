@@ -2573,8 +2573,7 @@ def _valid_overall_receipt(
             or status not in {"evaluated", "requires_reassessment"}
             or domain_id not in valid_domains
             or not isinstance(question_id, str)
-            or from_answer
-            not in {"yes", "probably_yes", "probably_no", "no", "no_information"}
+            or from_answer not in {"yes", "probably_yes", "probably_no", "no", "no_information"}
             or to_answer not in {"probably_yes", "probably_no"}
             or key in observed_keys
         ):
@@ -2612,8 +2611,10 @@ def _valid_overall_receipt(
                 for key in ("hypothetical_domain_judgment", "hypothetical_overall")
             ):
                 return False
-            if "reason" in alternative and alternative["reason"] is not None and not _nonblank(
-                alternative["reason"]
+            if (
+                "reason" in alternative
+                and alternative["reason"] is not None
+                and not _nonblank(alternative["reason"])
             ):
                 return False
             has_pending = True
@@ -2633,10 +2634,7 @@ def _valid_overall_receipt(
             status != "evaluated"
             or set(alternative)
             not in (expected_alternative_keys, expected_alternative_keys | {"reason"})
-            or (
-                "reason" in alternative
-                and alternative["reason"] is not None
-            )
+            or ("reason" in alternative and alternative["reason"] is not None)
             or alternative.get("hypothetical_domain_judgment") != hypothetical_domain
             or alternative.get("hypothetical_overall") != hypothetical_overall
         ):
@@ -3794,6 +3792,7 @@ def verify_bundle(path: str | Path) -> bool:
                     has_terminal = trial_id in terminal_trials
                     if (disposition in {"needs_input", "failed"}) != has_terminal:
                         return False
+
             def domain_identity_payload(record: dict[str, Any]) -> dict[str, Any]:
                 fields = _domain_identity_fields(record, legacy_semantics=legacy_semantics)
                 return {field: record.get(field) for field in fields}
@@ -4025,8 +4024,7 @@ def verify_bundle(path: str | Path) -> bool:
                         or set(summary) != {"claims", "identity"}
                         or not isinstance(claims, list)
                         or not claims
-                        or summary.get("identity")
-                        != independent_identity({"claims": claims})
+                        or summary.get("identity") != independent_identity({"claims": claims})
                     ):
                         return False
                     claim_ids: list[str] = []
@@ -4382,8 +4380,7 @@ def verify_bundle(path: str | Path) -> bool:
                         and item["overall_trace"] != list(expected_overall.trace)
                     ) or (
                         "overall_driver_domains" in item
-                        and item["overall_driver_domains"]
-                        != list(expected_overall.driver_domains)
+                        and item["overall_driver_domains"] != list(expected_overall.driver_domains)
                     ):
                         return False
                     historical_records: dict[str, Any] = {}
@@ -4412,7 +4409,7 @@ def verify_bundle(path: str | Path) -> bool:
                         not legacy_semantics
                         and "overall_receipt" in item
                         and not _valid_overall_receipt(
-                        item["overall_receipt"], item, historical_records, expected_overall
+                            item["overall_receipt"], item, historical_records, expected_overall
                         )
                     ):
                         return False
@@ -4527,20 +4524,24 @@ def verify_bundle(path: str | Path) -> bool:
                         return False
                     expected_overall = evaluate_overall(expected_judgments)
                     if (
-                        "overall_trace" in snapshot
-                        and snapshot["overall_trace"] != list(expected_overall.trace)
-                    ) or (
-                        "overall_driver_domains" in snapshot
-                        and snapshot["overall_driver_domains"]
-                        != list(expected_overall.driver_domains)
-                    ) or (
-                        not legacy_semantics
-                        and "overall_receipt" in snapshot
-                        and not _valid_overall_receipt(
-                            snapshot["overall_receipt"],
-                            snapshot,
-                            domains,
-                            expected_overall,
+                        (
+                            "overall_trace" in snapshot
+                            and snapshot["overall_trace"] != list(expected_overall.trace)
+                        )
+                        or (
+                            "overall_driver_domains" in snapshot
+                            and snapshot["overall_driver_domains"]
+                            != list(expected_overall.driver_domains)
+                        )
+                        or (
+                            not legacy_semantics
+                            and "overall_receipt" in snapshot
+                            and not _valid_overall_receipt(
+                                snapshot["overall_receipt"],
+                                snapshot,
+                                domains,
+                                expected_overall,
+                            )
                         )
                     ):
                         return False

@@ -32,12 +32,9 @@ def normalize_missing_data_row(row: MissingDataRow | Mapping[str, Any]) -> dict[
             raise ValueError("basis must contain Evidence handles or canonical identities")
     payload = parsed.model_dump(mode="json", exclude_none=True)
     normalized = {
-        key: payload.get(key)
-        for key in ("randomized", "observed", "analyzed", "imputed")
+        key: payload.get(key) for key in ("randomized", "observed", "analyzed", "imputed")
     }
-    normalized["scope"] = {
-        key: payload[key] for key in ("arm", "population", "unit", "time_point")
-    }
+    normalized["scope"] = {key: payload[key] for key in ("arm", "population", "unit", "time_point")}
     normalized["exclusions"] = payload.get("exclusions", [])
     normalized["basis"] = list(basis)
     if "semantics" in payload:
