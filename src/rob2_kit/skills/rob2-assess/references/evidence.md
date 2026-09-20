@@ -72,6 +72,13 @@ for the complete query under its mode; counts do not establish relevance,
 co-occurrence, or phrase adjacency. Reformulate with inspected study wording or
 inspect the likely Source section when the counts guide the next query or read.
 Per-term searches remain optional.
+The Domain context may expose per-Source `coverage`. Use it to distinguish an
+unsearched Source, a surfaced candidate, a searched no-hit, an incomplete
+retrieval, and a read/selected passage. A protocol, SAP, or supplement shown as
+`unsearched` or `candidate_only` is a recovery opportunity, not evidence that a
+premise was not reported. `searched_no_match` remains a lexical fact and never
+supports a scientific absence claim. Render delivery records pixels only; it
+does not establish visual inspection or comprehension.
 `read_pages` likewise prepares a `passage_ref` for each non-empty window. After
 you inspect a complete passage, reuse that handle in Proposal `passage_refs` or
 Domain `bases`; no separate text-selection call is required.
@@ -300,6 +307,12 @@ Missing reporting alone does not establish differential measurement or result-ba
 selection. This loop separates four observations: a page was retrieved, a useful
 candidate was surfaced, a complete source window was read, and the premise was
 actually supported. Only the last two can ground a Domain answer.
+
+The Domain context also reports source-specific retrieval coverage. A match in a
+multi-Source search belongs only to the Source that returned it. A paginated
+session remains `retrieval_incomplete` until a terminal receipt closes a gap-free
+rank sequence; a completed no-hit Source is a retrieval observation, not a
+scientific absence claim.
 
 Completion: each Source-owned assessable Result leaf has exact support, and each
 active Domain answer has a valid basis for its stated premise and uncertainty.

@@ -237,6 +237,13 @@ retains attempt identities and the earliest supported stage, and distinguishes
 an unresolved cause from a defensible agreement. These joins are diagnostic
 metadata, not model-facing input.
 
+Optional expert adjudications are stored as immutable sidecars under a case's
+`adjudication.json` or `adjudications/*.json`. Each sidecar is bound to the
+verified run, Result, current Domain checkpoint, question, Source identities,
+and model label before collection. The analyzer reports adjudication classes
+separately from provisional-label agreement; they never rewrite scores or act
+as model-facing feedback.
+
 Failure causes are posthoc review annotations, not inferred from agreement or
 tool-call counts. Use `passage_not_found` when the needed passage was not
 discovered in the captured Sources, `passage_not_delivered` when it was useful

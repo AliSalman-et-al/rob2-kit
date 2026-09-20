@@ -15,6 +15,7 @@ from ._state import (
     _db,
     _ensure,
     _identity,
+    _ordered_sources,
     _result,
     _root,
     _state,
@@ -32,6 +33,7 @@ from .evidence import (
     _unassigned_search_evidence,
     main_report_reading_status,
 )
+from .missing_data import reconcile_missing_data as reconcile_typed_missing_data
 from .status import _active_trial_and_domain, _continuation
 from .working import working_checkpoint_status
 
@@ -966,64 +968,221 @@ def _comparison_cards(
     ]
 
 
-def reconcile_missing_data(rows: list[dict[str, Any]]) -> dict[str, Any]:
-    """Reconcile comparable participant-flow reports without guessing scope.
+def _coverage_search_accounts(
+    root: Path,
+    trial_id: str,
+    domain_id: str,
+    existing: dict[str, dict[str, Any]],
+) -> dict[str, dict[str, Any]]:
+    """Include validated receipt history in the context coverage projection."""
 
-    This bounded clerical helper is deliberately not a scientific classifier.
-    A difference is calculated only for rows sharing arm, population, unit,
-    and time-point scope. Unknown values, imputation, overlapping exclusions,
-    and conflicting reports remain visible for the host to interpret.
-    """
-    normalized: list[dict[str, Any]] = []
-    conflicts: list[dict[str, Any]] = []
-    seen: dict[tuple[Any, ...], dict[str, Any]] = {}
+    accounts = dict(existing)
+    with _db(root, "derivative.sqlite3") as connection:
+        rows = connection.execute(
+            "SELECT payload FROM search_receipts ORDER BY identity"
+        ).fetchall()
     for row in rows:
-        if not isinstance(row, dict):
+        try:
+            payload = json.loads(bytes(row[0]))
+        except (TypeError, UnicodeDecodeError, json.JSONDecodeError):
             continue
-        scope = tuple(row.get(key) for key in ("arm", "population", "unit", "time_point"))
-        randomized = row.get("randomized")
-        observed = row.get("observed")
-        item = {
-            "scope": {
-                "arm": scope[0],
-                "population": scope[1],
-                "unit": scope[2],
-                "time_point": scope[3],
-            },
-            "randomized": randomized,
-            "observed": observed,
-            "analyzed": row.get("analyzed"),
-            "imputed": row.get("imputed"),
-            "exclusions": (
-                list(row.get("exclusions", []))
-                if isinstance(row.get("exclusions", []), list)
-                else []
-            ),
-            "basis": list(row.get("basis", [])) if isinstance(row.get("basis", []), list) else [],
-        }
-        key = scope
-        prior = seen.get(key)
-        compared_fields = ("randomized", "observed", "analyzed", "imputed", "exclusions")
-        if prior is not None and tuple(prior[field] for field in compared_fields) != tuple(
-            item[field] for field in compared_fields
-        ):
-            conflicts.append({"scope": item["scope"], "reports": [prior, item]})
+        if not isinstance(payload, dict) or payload.get("trial_id") != trial_id:
+            continue
+        purpose = payload.get("purpose_domain_id")
+        if purpose not in (None, domain_id):
+            continue
+        handle = payload.get("handle")
+        if not isinstance(handle, str):
+            continue
+        try:
+            receipt = _search_receipt(root, handle)
+        except (KeyError, ValueError):
+            continue
+        identity = receipt.get("identity")
+        if isinstance(identity, str):
+            accounts.setdefault(identity, receipt)
+    return accounts
+
+
+def _search_session_complete(accounts: list[dict[str, Any]]) -> bool:
+    """Return whether a receipt session delivered every ranked candidate."""
+
+    terminal = [
+        account
+        for account in accounts
+        if account.get("truncated") is False
+        and account.get("next_cursor") is None
+        and account.get("exhausted", True) is True
+    ]
+    if not terminal:
+        return False
+    ranks = {
+        candidate.get("rank")
+        for account in accounts
+        for candidate in account.get("returned_candidates", [])
+        if isinstance(candidate, dict) and isinstance(candidate.get("rank"), int)
+    }
+    expected_count = max(
+        (
+            account.get("candidate_count")
+            for account in terminal
+            if isinstance(account.get("candidate_count"), int)
+        ),
+        default=max(ranks, default=0),
+    )
+    return ranks == set(range(1, expected_count + 1))
+
+
+def _source_coverage(
+    trial_id: str,
+    sources: list[dict[str, Any]],
+    catalog: dict[str, dict[str, Any]],
+    search_accounts: dict[str, dict[str, Any]],
+) -> list[dict[str, Any]]:
+    """Project bounded retrieval state without making a scientific claim.
+
+    Search receipts are scoped to the captured Source inventory.  Selected
+    Evidence proves that a passage was delivered and chosen, while search
+    candidates only prove that a navigator surfaced a location.  Unopened
+    Sources stay explicitly visible so a relevant protocol or SAP is not
+    mistaken for an absent premise.
+    """
+
+    result: list[dict[str, Any]] = []
+    for source in _ordered_sources(sources):
+        source_id = source.get("id")
+        if not isinstance(source_id, str):
+            continue
+        selected = [
+            item
+            for item in catalog.values()
+            if isinstance(item, dict)
+            and item.get("source_id") == source_id
+            and item.get("inclusion_reason")
+            in {"result", "checkpoint", "contradiction", "explicit_carry_forward"}
+        ]
+        candidates = [
+            item
+            for item in catalog.values()
+            if isinstance(item, dict)
+            and item.get("source_id") == source_id
+            and item.get("inclusion_reason")
+            in {"active_domain_candidate", "trial_discovery"}
+        ]
+        search_state = "unsearched"
+        searched_match = False
+        searched_no_match = False
+        searched_any = False
+        search_incomplete = False
+        sessions: dict[str, list[dict[str, Any]]] = {}
+        for account in search_accounts.values():
+            if not isinstance(account, dict) or account.get("trial_id") != trial_id:
+                continue
+            scoped_sources = {
+                item.get("id")
+                for item in account.get("sources", [])
+                if isinstance(item, dict)
+            }
+            if source_id not in scoped_sources:
+                continue
+            session_id = account.get("session_id")
+            session_key = (
+                session_id
+                if isinstance(session_id, str)
+                else f"receipt:{account.get('identity', len(sessions))}"
+            )
+            sessions.setdefault(session_key, []).append(account)
+        for accounts in sessions.values():
+            searched_any = True
+            complete = _search_session_complete(accounts)
+            search_incomplete = search_incomplete or not complete
+            hit_for_source = any(
+                isinstance(hit, dict)
+                and hit.get("source_id") == source_id
+                for account in accounts
+                for hit in account.get("hits", [])
+            )
+            if hit_for_source:
+                searched_match = True
+            elif complete:
+                # The session exhausted every ranked candidate across its
+                # Source set; no hit for this Source is not a match borrowed
+                # from another Source.
+                searched_no_match = True
+        if searched_match:
+            search_state = "searched_match"
+        elif search_incomplete:
+            search_state = "retrieval_incomplete"
+        elif searched_no_match:
+            search_state = "searched_no_match"
+        elif searched_any:
+            search_state = "searched_match"
+
+        # Selecting one passage proves that a passage was inspected, not that
+        # the entire Source was read.  Keep this conservative until an
+        # explicit source-wide read receipt exists.
+        read_state = "partially_read" if selected else "unread"
+        render_state = (
+            "render_delivered"
+            if any(item.get("kind") == "figure" for item in selected)
+            else "not_delivered"
+        )
+        recovery: list[dict[str, Any]] = []
+        for item in candidates[:20]:
+            if all(isinstance(item.get(key), int) for key in ("page", "start_line", "end_line")):
+                recovery.append(
+                    {
+                        "operation": "read_pages",
+                        "trial_id": trial_id,
+                        "windows": [
+                            {
+                                "source_id": source_id,
+                                "page": item["page"],
+                                "start_line": item["start_line"],
+                                "end_line": item["end_line"],
+                            }
+                        ],
+                    }
+                )
+        if render_state == "render_delivered":
+            status = "render_delivered"
+        elif read_state == "partially_read":
+            status = "partially_read"
+        elif search_incomplete:
+            status = "retrieval_incomplete"
+        elif candidates:
+            status = "candidate_only"
+        elif search_state == "searched_match":
+            status = "candidate_only"
+        elif search_state == "searched_no_match":
+            status = "searched_no_match"
         else:
-            seen[key] = item
-        if (
-            isinstance(randomized, int)
-            and not isinstance(randomized, bool)
-            and isinstance(observed, int)
-            and not isinstance(observed, bool)
-            and randomized >= observed >= 0
-        ):
-            item["missing"] = randomized - observed
-            item["missing_fraction"] = (randomized - observed) / randomized if randomized else 0.0
-        else:
-            item["missing"] = None
-            item["missing_fraction"] = None
-        normalized.append(item)
-    return {"rows": normalized, "conflicts": conflicts}
+            status = "unsearched"
+        result.append(
+            {
+                "source_id": source_id,
+                "source_role": source.get("role", "other"),
+                "page_count": source.get("page_count", 1),
+                "status": status,
+                "search": (
+                    "retrieval_incomplete"
+                    if search_incomplete
+                    else "candidate_only"
+                    if candidates
+                    else search_state
+                ),
+                "read": read_state,
+                "render": render_state,
+                "recovery": recovery,
+            }
+        )
+    return result
+
+
+def reconcile_missing_data(rows: list[dict[str, Any]]) -> dict[str, Any]:
+    """Reconcile endpoint-availability facts at the domain boundary."""
+
+    return reconcile_typed_missing_data(rows)
 
 
 def _canonical_preview_rows(
@@ -1148,10 +1307,222 @@ def _domain_identity(record: dict[str, Any]) -> str:
         "inactive_questions",
         "judgment",
         "trace",
+        "driver_questions",
+        "evidence_sufficiency",
     )
     if "result_identity" in record:
         fields = (*fields, "result_identity")
     return _identity({key: record[key] for key in fields})
+
+
+def _evidence_sufficiency(
+    answers: list[dict[str, Any]], search_accounts: dict[str, dict[str, Any]]
+) -> dict[str, Any]:
+    """Derive durable claim support without changing scientific evaluation."""
+    claims: list[dict[str, Any]] = []
+    for answer in answers:
+        evidence: list[str] = []
+        receipts: list[str] = []
+        unresolved: list[str] = []
+        kinds: set[str] = set()
+        incomplete = False
+        for basis in answer.get("bases", []):
+            if not isinstance(basis, dict):
+                continue
+            kind = basis.get("kind")
+            if isinstance(kind, str):
+                kinds.add(kind)
+            reference = basis.get("evidence")
+            if isinstance(reference, str):
+                evidence.append(reference)
+            receipt = basis.get("search_receipt")
+            if isinstance(receipt, str):
+                receipts.append(receipt)
+                account = search_accounts.get(receipt, {})
+                incomplete = incomplete or bool(
+                    account.get("truncated")
+                    or not account.get("ranking_complete", True)
+                    or account.get("next_cursor")
+                    or not account.get("exhausted", True)
+                )
+            if kind == "limitation":
+                premise = basis.get("unresolved_premise")
+                if isinstance(premise, str) and premise.strip():
+                    unresolved.append(premise)
+        if "contradiction" in kinds:
+            status = "contradicted"
+        elif incomplete:
+            status = "retrieval_incomplete"
+        elif "limitation" in kinds:
+            status = "unresolved"
+        elif "absence" in kinds:
+            # A no-hit query is evidence about the query, not proof that the
+            # trial did not report the premise. Keep that distinction durable
+            # so downstream aggregation cannot silently turn retrieval limits
+            # into a scientific absence claim.
+            status = "unresolved"
+        elif "indirect_support" in kinds:
+            status = "indirect"
+        elif "direct_support" in kinds:
+            status = "supported"
+        else:
+            status = "unresolved"
+        claims.append(
+            {
+                "question_id": answer["question_id"],
+                "status": status,
+                "evidence": tuple(dict.fromkeys(evidence)),
+                "search_receipts": tuple(dict.fromkeys(receipts)),
+                "unresolved_premises": tuple(dict.fromkeys(unresolved)),
+            }
+        )
+    summary = {"claims": tuple(claims)}
+    summary["identity"] = _identity(summary)
+    return summary
+
+
+def _overall_receipt(
+    trial_id: str,
+    records: dict[str, Any],
+    judgments: dict[str, str],
+    overall_evaluation: Any,
+) -> dict[str, Any]:
+    """Build a diagnostic aggregation receipt without changing the saved labels.
+
+    The receipt deliberately references Domain checkpoint identities and keeps
+    hypothetical answer changes separate from the official deterministic
+    evaluation.  It is therefore useful for audit and calibration without
+    becoming a second decision table.
+    """
+
+    driver_rows: list[dict[str, Any]] = []
+    for domain in SCIENTIFIC_PACK.domains:
+        if domain.id not in overall_evaluation.driver_domains:
+            continue
+        record = records.get(f"{trial_id}:{domain.id}")
+        if not isinstance(record, dict):
+            continue
+        answers = {
+            item.get("question_id"): item
+            for item in record.get("answers", [])
+            if isinstance(item, dict) and isinstance(item.get("question_id"), str)
+        }
+        driver_questions = [
+            question_id
+            for question_id in record.get("driver_questions", [])
+            if isinstance(question_id, str)
+        ]
+        driver_rows.append(
+            {
+                "domain_id": domain.id,
+                "checkpoint": record.get("identity"),
+                "judgment": record.get("judgment"),
+                "trace": list(record.get("trace", [])),
+                "driver_questions": driver_questions,
+                "driver_answers": [
+                    {
+                        "question_id": question_id,
+                        "answer": answers[question_id].get("answer"),
+                    }
+                    for question_id in driver_questions
+                    if question_id in answers
+                ],
+                "evidence_sufficiency": record.get("evidence_sufficiency"),
+            }
+        )
+
+    alternatives: list[dict[str, Any]] = []
+    for domain in SCIENTIFIC_PACK.domains:
+        record = records.get(f"{trial_id}:{domain.id}")
+        if not isinstance(record, dict):
+            continue
+        answer_items = {
+            item.get("question_id"): item
+            for item in record.get("answers", [])
+            if isinstance(item, dict) and isinstance(item.get("question_id"), str)
+        }
+        sufficiency = record.get("evidence_sufficiency")
+        claims = sufficiency.get("claims", []) if isinstance(sufficiency, dict) else []
+        claim_status = {
+            claim.get("question_id"): claim.get("status")
+            for claim in claims
+            if isinstance(claim, dict) and isinstance(claim.get("question_id"), str)
+        }
+        for question_id, answer_item in answer_items.items():
+            if answer_item.get("answer") != "no_information" and claim_status.get(
+                question_id
+            ) not in {"unresolved", "retrieval_incomplete", "not_reported"}:
+                continue
+            for replacement in ("probably_yes", "probably_no"):
+                alternative_answers = {
+                    key: value.get("answer")
+                    for key, value in answer_items.items()
+                    if isinstance(value.get("answer"), str)
+                }
+                alternative_answers[question_id] = replacement
+                alternative: dict[str, Any] = {
+                    "domain_id": domain.id,
+                    "question_id": question_id,
+                    "from_answer": answer_item.get("answer"),
+                    "to_answer": replacement,
+                    "diagnostic_only": True,
+                    "hypothetical_domain_judgment": None,
+                    "hypothetical_overall": None,
+                }
+                try:
+                    domain_evaluation = evaluate_domain(domain.id, alternative_answers)
+                    domain_question_ids = {
+                        question.id
+                        for question in SCIENTIFIC_PACK.questions
+                        if question.domain_id == domain.id
+                    }
+                    alternative_active = tuple(
+                        item
+                        for item in active_questions(alternative_answers)
+                        if item in domain_question_ids
+                    )
+                    if alternative_active != tuple(record.get("active_questions", ())):
+                        alternative["status"] = "requires_reassessment"
+                        alternative["reason"] = None
+                    else:
+                        hypothetical_judgments = dict(judgments)
+                        hypothetical_judgments[domain.id] = domain_evaluation.judgment.value
+                        alternative["status"] = "evaluated"
+                        alternative["reason"] = None
+                        alternative["hypothetical_domain_judgment"] = (
+                            domain_evaluation.judgment.value
+                        )
+                        alternative["hypothetical_overall"] = evaluate_overall(
+                            hypothetical_judgments
+                        ).judgment.value
+                except (KeyError, TypeError, ValueError) as error:
+                    alternative["status"] = "requires_reassessment"
+                    alternative["reason"] = str(error)
+                alternatives.append(alternative)
+
+    evaluated_overalls = {
+        item.get("hypothetical_overall")
+        for item in alternatives
+        if item.get("status") == "evaluated"
+    }
+    has_pending = any(item.get("status") == "requires_reassessment" for item in alternatives)
+    current_overall = overall_evaluation.judgment.value
+    if not alternatives:
+        stability = "not_assessed"
+    elif any(value != current_overall for value in evaluated_overalls):
+        stability = "sensitive"
+    elif has_pending:
+        stability = "requires_reassessment"
+    else:
+        stability = "stable"
+    return {
+        "rule": overall_evaluation.trace[0],
+        "driver_domains": list(overall_evaluation.driver_domains),
+        "drivers": driver_rows,
+        "alternatives": alternatives,
+        "stability": stability,
+        "diagnostic_only": True,
+    }
 
 
 def _canonical_observed_at(root: Path, identity: str) -> str | None:
@@ -1525,6 +1896,17 @@ def save_domain_judgment(
                     "premise. The submitted answer is unchanged.",
                 )
             )
+        if answer["answer"] in {"yes", "no"} and any(
+            item.get("kind") == "limitation" for item in bases
+        ):
+            repairs.append(
+                _repair(
+                    f"/answers/{answer_index}/bases",
+                    "complete_claim_has_unresolved_premise",
+                    "a definitive claim cannot be saved while a required premise is unresolved; "
+                    "use a probable answer or resolve the limitation first.",
+                )
+            )
         answer["bases"] = bases
         canonical_answers.append(answer)
     if repairs:
@@ -1576,8 +1958,10 @@ def save_domain_judgment(
         "inactive_questions": [key for key in allowed if key not in active],
         "judgment": evaluation.judgment.value,
         "trace": list(evaluation.trace),
+        "driver_questions": list(evaluation.driver_questions),
         "observed_at": datetime.now(UTC).isoformat(),
     }
+    record["evidence_sufficiency"] = _evidence_sufficiency(canonical_answers, search_accounts)
     record["identity"] = _domain_identity(record)
     prior_observed_at = _canonical_observed_at(root, record["identity"])
     if prior_observed_at is not None:
@@ -1705,12 +2089,21 @@ def save_domain_judgment(
             item.id: rows[f"{parsed.trial_id}:{item.id}"]["judgment"]
             for item in SCIENTIFIC_PACK.domains
         }
+        overall_evaluation = evaluate_overall(judgments)
         snapshot = {
             "trial_id": parsed.trial_id,
             "result_identity": _identity(_approved_result(state, parsed.trial_id)),
             "checkpoints": checkpoints,
             "domain_judgments": judgments,
-            "overall": evaluate_overall(judgments).judgment.value,
+            "overall": overall_evaluation.judgment.value,
+            "overall_trace": list(overall_evaluation.trace),
+            "overall_driver_domains": list(overall_evaluation.driver_domains),
+            "overall_receipt": _overall_receipt(
+                parsed.trial_id,
+                rows,
+                judgments,
+                overall_evaluation,
+            ),
         }
         snapshot["identity"] = _identity(snapshot)
         current_snapshots = state.get("snapshots")
@@ -2639,6 +3032,11 @@ def get_domain_context(
         "result": result_projection(result),
         "evidence": list(catalog.values()),
         "answers": answer_rows,
+        "evidence_sufficiency": (
+            existing.get("evidence_sufficiency")
+            if isinstance(existing, dict)
+            else None
+        ),
         "current_checkpoint": checkpoint_identity,
         "guidance": [
             (
@@ -2725,6 +3123,25 @@ def get_domain_context(
             if domain_id == "domain:selection"
             else None,
             trial_registry if isinstance(trial_registry, dict) else None,
+        ),
+        "coverage": _source_coverage(
+            trial_id,
+            trial_sources,
+            catalog,
+            _coverage_search_accounts(
+                root,
+                trial_id,
+                domain_id,
+                {
+                    item.get("identity"): item
+                    for item in (
+                        existing.get("search_accounts", [])
+                        if isinstance(existing, dict)
+                        else []
+                    )
+                    if isinstance(item, dict) and isinstance(item.get("identity"), str)
+                },
+            ),
         ),
         "reading_recovery": (
             (

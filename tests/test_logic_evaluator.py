@@ -76,6 +76,119 @@ def test_all_overall_combinations_against_independent_oracle():
         assert evaluate_overall(judgments).judgment.value == expected
 
 
+def test_domain_driver_questions_follow_pack_order_and_are_empty_for_low():
+    high = evaluate_domain(
+        "domain:randomization",
+        {
+            "sq:randomization:sequence": "no",
+            "sq:randomization:concealment": "yes",
+            "sq:randomization:baseline-imbalance": "no",
+        },
+    )
+    assert high.driver_questions == ("sq:randomization:sequence",)
+
+    low = evaluate_domain(
+        "domain:randomization",
+        {
+            "sq:randomization:sequence": "yes",
+            "sq:randomization:concealment": "yes",
+            "sq:randomization:baseline-imbalance": "no",
+        },
+    )
+    assert low.driver_questions == ()
+
+
+def test_overall_driver_domains_follow_pack_order_for_each_rule():
+    assert evaluate_overall({domain_id: "low" for domain_id in QIDS}).driver_domains == ()
+    assert evaluate_overall(
+        {
+            "domain:randomization": "some_concerns",
+            "domain:deviations": "low",
+            "domain:missing": "high",
+            "domain:measurement": "some_concerns",
+            "domain:selection": "low",
+        }
+    ).driver_domains == ("domain:missing",)
+    assert evaluate_overall(
+        {
+            "domain:randomization": "some_concerns",
+            "domain:deviations": "low",
+            "domain:missing": "low",
+            "domain:measurement": "some_concerns",
+            "domain:selection": "low",
+        }
+    ).driver_domains == ("domain:randomization", "domain:measurement")
+
+
+def test_overall_drivers_follow_each_aggregation_category_in_pack_order():
+    domain_ids = tuple(QIDS)
+    low = {domain_id: Judgment.LOW for domain_id in domain_ids}
+    assert evaluate_overall(low).driver_domains == ()
+
+    one_concern = {**low, domain_ids[3]: Judgment.SOME_CONCERNS}
+    assert evaluate_overall(one_concern).driver_domains == (domain_ids[3],)
+
+    multiple_concerns = {
+        **low,
+        domain_ids[4]: Judgment.SOME_CONCERNS,
+        domain_ids[1]: Judgment.SOME_CONCERNS,
+    }
+    assert evaluate_overall(multiple_concerns).driver_domains == (domain_ids[1], domain_ids[4])
+
+    high = {
+        **low,
+        domain_ids[4]: Judgment.HIGH,
+        domain_ids[0]: Judgment.HIGH,
+        domain_ids[2]: Judgment.SOME_CONCERNS,
+    }
+    result = evaluate_overall(high)
+    assert result.judgment is Judgment.HIGH
+    assert result.trace == ("overall.any_high",)
+    assert result.driver_domains == (domain_ids[0], domain_ids[4])
+
+
+def test_domain_drivers_are_exact_and_pack_ordered_without_changing_rule_trace():
+    randomization = evaluate_domain(
+        "domain:randomization",
+        {
+            "sq:randomization:sequence": "no",
+            "sq:randomization:concealment": "no_information",
+            "sq:randomization:baseline-imbalance": "yes",
+        },
+    )
+    assert randomization.judgment is Judgment.HIGH
+    assert randomization.trace == ("randomization.unknown_concealment_and_imbalance",)
+    assert randomization.driver_questions == (
+        "sq:randomization:concealment",
+        "sq:randomization:baseline-imbalance",
+    )
+
+    measurement = evaluate_domain(
+        "domain:measurement",
+        {
+            "sq:measurement:method-inappropriate": "no",
+            "sq:measurement:differential": "no_information",
+            "sq:measurement:assessor-aware": "yes",
+            "sq:measurement:influence-possible": "no",
+        },
+    )
+    assert measurement.judgment is Judgment.SOME_CONCERNS
+    assert measurement.trace == ("measurement.some_concerns",)
+    assert measurement.driver_questions == ("sq:measurement:differential",)
+
+    low = evaluate_domain(
+        "domain:selection",
+        {
+            "sq:selection:prespecified-analysis": "yes",
+            "sq:selection:multiple-measurements": "no",
+            "sq:selection:multiple-analyses": "no",
+        },
+    )
+    assert low.judgment is Judgment.LOW
+    assert low.trace == ("selection.low",)
+    assert low.driver_questions == ()
+
+
 def test_corrected_domain_four_no_information_paths():
     assert (
         evaluate_domain(

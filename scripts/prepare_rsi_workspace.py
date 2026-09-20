@@ -61,7 +61,11 @@ def _source_path(base: Path, value: object) -> Path:
     # ``eval/reference/sources``. Allow that evaluation root, but keep the
     # default temporary-case behavior scoped to the manifest directory.
     evaluation_root = next(
-        (parent / "eval" for parent in (base, *base.parents) if (parent / "eval").is_dir()),
+        (
+            parent / "eval"
+            for parent in (base, *base.parents)
+            if (parent / "eval").is_dir() and resolved.is_relative_to(parent / "eval")
+        ),
         base,
     )
     if not resolved.is_file() or not resolved.is_relative_to(evaluation_root):

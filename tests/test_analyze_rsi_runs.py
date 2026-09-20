@@ -4,9 +4,13 @@ import json
 import runpy
 import subprocess
 import sys
+from datetime import UTC, datetime
 from pathlib import Path
 
 import pytest
+
+from rob2_kit.evaluation.adjudication import SCHEMA as ADJUDICATION_SCHEMA
+from rob2_kit.evaluation.adjudication import AdjudicationSidecar
 
 _script = runpy.run_path(str(Path(__file__).parents[1] / "scripts" / "analyze_rsi_runs.py"))
 analyze = _script["analyze"]
@@ -147,6 +151,45 @@ def test_scope_uncertain_cases_are_reported_separately_and_cost_unknown_stays_un
         "known_total": 2.0,
         "mean_known_per_run": 2.0,
     }
+
+
+def test_adjudication_sidecars_are_reported_without_rewriting_scores() -> None:
+    case = _case("case-a", "trial-a")
+    sidecar = AdjudicationSidecar.model_validate(
+        {
+            "schema": ADJUDICATION_SCHEMA,
+            "run_identity": "run-1",
+            "case_identity": "case-a",
+            "result_identity": "sha256:" + "1" * 64,
+            "domain_identity": "domain-1",
+            "question_identity": "question-1",
+            "checkpoint_identity": "sha256:" + "2" * 64,
+            "source_identities": ("source-1",),
+            "reference_label": "low",
+            "model_label": "some_concerns",
+            "provisional_label": "some_concerns",
+            "classification": "defensible_deviation",
+            "evidence": (),
+            "rationale": "The source supports a scientifically defensible deviation.",
+            "reviewer_identity": "reviewer-1",
+            "reviewer_role": "adjudicator",
+            "adjudication_version": "2026-09-20",
+            "reviewed_at": datetime(2026, 9, 20, 12, 0, tzinfo=UTC),
+            "confidence": 0.75,
+        }
+    )
+    result = analyze(
+        {
+            **_input(case),
+            "adjudications": [sidecar.model_dump(mode="json", by_alias=True)],
+        }
+    )
+
+    assert result["adjudication"]["schema"] == ADJUDICATION_SCHEMA
+    assert result["adjudication"]["record_count"] == 1
+    assert result["adjudication"]["case_count"] == 1
+    assert result["adjudication"]["by_classification"] == {"defensible_deviation": 1}
+    assert result["per_domain"]["D1"]["exact_agreement"]["matches"] == 1
 
 
 def test_failure_attribution_keeps_delivery_citation_and_interpretation_distinct() -> None:

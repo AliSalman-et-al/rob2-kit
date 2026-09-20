@@ -2,9 +2,8 @@
 reference/sources/
 reference/catalog/provisional-labels/
 
-# Materialized rob2-kit projects and their ledgers/artifacts. Keep JSONL
-# results trackable at any nesting depth.
-runs/**
-!runs/**/
-!runs/**/*.jsonl
+# Generated evaluation run workspaces are local-only. Historical files that
+# are already tracked remain tracked; new runs can be force-added deliberately
+# when a curated artifact is worth publishing.
+runs/
 runs/**/codex-home/

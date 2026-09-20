@@ -258,8 +258,10 @@ class Evaluation(StrictModel):
     domain_id: str
     judgment: Judgment
     trace: tuple[str, ...] = Field(min_length=1)
+    driver_questions: tuple[str, ...] = ()
 
 
 class OverallEvaluation(StrictModel):
     judgment: Judgment
     trace: tuple[str, ...] = Field(min_length=1)
+    driver_domains: tuple[str, ...] = ()
