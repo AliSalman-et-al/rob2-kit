@@ -97,6 +97,15 @@ extract counts or sum grouped departures. Keep unknown observed counts unknown.
 Skip the preview when an explicit ascertainment statement resolves availability
 without arithmetic.
 
+When a row includes typed `semantics`, treat it as scope metadata, not as a
+shortcut to a signalling answer. `event_count` is an event numerator and never
+means that every participant's outcome was observed. `analyzed`, `safety`, and
+`per_protocol` roles are denominators or populations, not availability. Keep
+administrative censoring, loss to follow-up, treatment change, imputation, and
+post-randomization exclusions as distinct facts. The server preserves these
+fields and only derives `randomized - observed`; it does not decide whether a
+censored participant is informative.
+
 ## Assess bias from missingness
 
 If data were not available for all or nearly all participants, ask in sequence:

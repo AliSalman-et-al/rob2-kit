@@ -7,6 +7,7 @@ import subprocess
 import sys
 import zipfile
 from collections.abc import Callable
+from copy import deepcopy
 from pathlib import Path
 from typing import Any
 
@@ -33,9 +34,10 @@ from rob2_kit.application import finalization
 from rob2_kit.application._state import _commit_records, _identity, _state
 from rob2_kit.application.contracts import WorkflowConflict
 from rob2_kit.application.evidence import search_sources
-from rob2_kit.application.finalization import verify_bundle
+from rob2_kit.application.finalization import _valid_overall_receipt, verify_bundle
 from rob2_kit.application.intake import prepare_batch
 from rob2_kit.interfaces.mcp.contracts import validate_output
+from rob2_kit.logic.evaluator import evaluate_overall
 from rob2_kit.packs import SCIENTIFIC_PACK
 from rob2_kit.workflow_models import TrialDeclaration
 
@@ -575,6 +577,9 @@ def test_finalize_response_projects_frozen_assessment_summary_and_retry(
         "trial": {
             "overall": snapshot["overall"],
             "domains": snapshot["domain_judgments"],
+            "overall_trace": snapshot["overall_trace"],
+            "overall_driver_domains": snapshot["overall_driver_domains"],
+            "overall_receipt": snapshot["overall_receipt"],
         }
     }
     assert first["data"]["assessment_summary"] == expected
@@ -589,6 +594,25 @@ def test_finalize_response_projects_frozen_assessment_summary_and_retry(
     malformed["data"]["assessment_summary"]["trial"]["domains"].pop("domain:selection")
     with pytest.raises(ValidationError):
         validate_output("finalize_batch", malformed)
+
+
+def test_overall_receipt_recomputes_driver_questions_from_checkpoint_answers(
+    tmp_path: Path,
+) -> None:
+    artifact = _artifact(tmp_path)
+    with zipfile.ZipFile(artifact) as archive:
+        canonical = json.loads(archive.read("canonical.json"))
+    snapshot = canonical["snapshots"]["trial"]
+    receipt = deepcopy(snapshot["overall_receipt"])
+    assert receipt["drivers"]
+    receipt["drivers"][0]["driver_questions"] = []
+
+    assert not _valid_overall_receipt(
+        receipt,
+        snapshot,
+        canonical["domain_records"],
+        evaluate_overall(snapshot["domain_judgments"]),
+    )
 
 
 def test_finalized_bundle_binds_the_scientific_contract(tmp_path: Path) -> None:

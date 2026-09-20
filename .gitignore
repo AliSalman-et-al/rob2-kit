@@ -1,29 +1,58 @@
 # Python-generated files
 __pycache__/
-*.py[oc]
+*.py[cod]
+*$py.class
 .coverage
+.coverage.*
+htmlcov/
+.pytest_cache/
+.hypothesis/
+.ruff_cache/
+.mypy_cache/
+.pytype/
+.tox/
+.nox/
 build/
 dist/
 wheels/
 *.egg-info
+*.whl
 
-# Virtual environments
-.venv
+# Virtual environments and package-manager caches
+.venv/
+venv/
+ENV/
+env/
+.uv-cache/
+__pypackages__/
+
+# OS and local tooling
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+.release-dist/
 
 # Evaluation source corpus and provisional labels are local-only; the public
 # catalog records trial identifiers and outcome-level denominators.
 eval/reference/*
 !eval/reference/catalog/
 eval/reference/catalog/provisional-labels/
-# Keep evaluation runs local except for JSONL results at any nesting depth.
-eval/runs/**
-!eval/runs/**/
-!eval/runs/**/*.jsonl
-eval/runs/**/codex-home/
 eval/private/
 
-# Local calibration and rendering artifacts
+# Local benchmark analysis, calibration, and rendering artifacts
+analysis/
 tmp/
+.Rhistory
+.RData
+.Rproj.user/
+renv/library/
+renv/staging/
+
+# Local secrets and environment overrides
+.env
+.env.*
+!.env.example
 
 # AI Agents
 .agents/

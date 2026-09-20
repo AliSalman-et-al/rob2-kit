@@ -1467,8 +1467,78 @@ def _valid_missing_data(
     ):
         return False
 
+    def valid_semantics(value: object) -> bool:
+        if not isinstance(value, dict):
+            return False
+        allowed = {
+            "population_role",
+            "outcome_status",
+            "event_count",
+            "event_definition",
+            "post_randomization_exclusions",
+            "censoring",
+        }
+        if set(value) - allowed:
+            return False
+        if value.get("population_role") is not None and value.get("population_role") not in {
+            "randomized",
+            "safety",
+            "analyzed",
+            "per_protocol",
+            "follow_up",
+            "unknown",
+        }:
+            return False
+        if value.get("outcome_status") is not None and value.get("outcome_status") not in {
+            "observed",
+            "missing",
+            "imputed",
+            "unknown",
+            "not_reported",
+        }:
+            return False
+        event_count = value.get("event_count")
+        event_definition = value.get("event_definition")
+        if event_count is not None and (
+            isinstance(event_count, bool) or not isinstance(event_count, int) or event_count < 0
+        ):
+            return False
+        if event_count is not None and not _nonblank(event_definition):
+            return False
+        if event_count is None and event_definition is not None:
+            return False
+        exclusions = value.get("post_randomization_exclusions", [])
+        if not isinstance(exclusions, list) or any(not _nonblank(item) for item in exclusions):
+            return False
+        censoring = value.get("censoring")
+        if censoring is not None:
+            if not isinstance(censoring, dict) or set(censoring) - {
+                "kind",
+                "count",
+                "timing",
+                "reason",
+            }:
+                return False
+            if censoring.get("kind") not in {
+                "administrative",
+                "loss_to_follow_up",
+                "withdrawal",
+                "treatment_change",
+                "unknown",
+            }:
+                return False
+            count = censoring.get("count")
+            if count is not None and (
+                isinstance(count, bool) or not isinstance(count, int) or count < 0
+            ):
+                return False
+            for key in ("timing", "reason"):
+                if censoring.get(key) is not None and not _nonblank(censoring[key]):
+                    return False
+        return True
+
     def valid_row(row: object) -> bool:
-        if not isinstance(row, dict) or set(row) != {
+        required = {
             "scope",
             "randomized",
             "observed",
@@ -1478,7 +1548,9 @@ def _valid_missing_data(
             "basis",
             "missing",
             "missing_fraction",
-        }:
+        }
+        optional = {"semantics"}
+        if not isinstance(row, dict) or set(row) - required - optional or not required <= set(row):
             return False
         scope = row["scope"]
         if (
@@ -1496,6 +1568,8 @@ def _valid_missing_data(
         if not isinstance(row["exclusions"], list) or not all(
             _nonblank(item) for item in row["exclusions"]
         ):
+            return False
+        if "semantics" in row and not valid_semantics(row["semantics"]):
             return False
         if (
             not isinstance(row["basis"], list)
@@ -1544,7 +1618,14 @@ def _valid_missing_data(
         for conflict in value["conflicts"]
     ):
         return False
-    compared_fields = ("randomized", "observed", "analyzed", "imputed", "exclusions")
+    compared_fields = (
+        "randomized",
+        "observed",
+        "analyzed",
+        "imputed",
+        "exclusions",
+        "semantics",
+    )
     expected_conflicts: list[dict[str, object]] = []
     seen: dict[tuple[object, ...], dict[str, object]] = {}
     for row in value["rows"]:
@@ -1582,9 +1663,10 @@ def _contains_forbidden_paths(value: object, field: str | None = None) -> bool:
     return False
 
 
-def _domain_identity(record: dict[str, object]) -> str:
-    """Recompute the identity of a Domain checkpoint without the runtime."""
-    fields = (
+def _domain_identity_fields(
+    record: dict[str, object], *, legacy_semantics: bool = False
+) -> tuple[str, ...]:
+    fields: list[str] = [
         "trial_id",
         "domain_id",
         "answers",
@@ -1595,9 +1677,20 @@ def _domain_identity(record: dict[str, object]) -> str:
         "inactive_questions",
         "judgment",
         "trace",
-    )
-    if "result_identity" in record:
-        fields = (*fields, "result_identity")
+    ]
+    if not legacy_semantics and "driver_questions" in record:
+        fields.append("driver_questions")
+    if not legacy_semantics and "evidence_sufficiency" in record:
+        fields.append("evidence_sufficiency")
+    if not legacy_semantics and "result_identity" in record:
+        fields.append("result_identity")
+    return tuple(fields)
+
+
+def _domain_identity(record: dict[str, object], *, legacy_semantics: bool = False) -> str:
+    """Recompute the identity of a Domain checkpoint without the runtime."""
+
+    fields = _domain_identity_fields(record, legacy_semantics=legacy_semantics)
     return identity({key: record.get(key) for key in fields})
 
 
@@ -1710,11 +1803,153 @@ def _domain_evidence_ids(record: object) -> set[str]:
     return answer_basis_ids | missing_data_ids
 
 
+def _valid_evidence_sufficiency(
+    summary: object,
+    answers: list[object],
+    accounts: dict[str, object],
+    evidence: dict[str, object],
+    trial_id: object,
+    *,
+    legacy_semantics: bool = False,
+) -> bool:
+    def expected_claims() -> list[dict[str, object]] | None:
+        derived: list[dict[str, object]] = []
+        for answer in answers:
+            if not isinstance(answer, dict) or not isinstance(answer.get("question_id"), str):
+                return None
+            bases = answer.get("bases", [])
+            if not isinstance(bases, list):
+                return None
+            evidence_ids: list[str] = []
+            receipt_ids: list[str] = []
+            unresolved: list[str] = []
+            kinds: set[str] = set()
+            incomplete = False
+            for basis in bases:
+                if not isinstance(basis, dict):
+                    return None
+                kind = basis.get("kind")
+                if isinstance(kind, str):
+                    kinds.add(kind)
+                evidence_id = basis.get("evidence")
+                if isinstance(evidence_id, str):
+                    evidence_ids.append(evidence_id)
+                receipt_id = basis.get("search_receipt")
+                if isinstance(receipt_id, str):
+                    receipt_ids.append(receipt_id)
+                    account = accounts.get(receipt_id)
+                    if not isinstance(account, dict):
+                        return None
+                    incomplete = incomplete or bool(
+                        account.get("truncated")
+                        or not account.get("ranking_complete", True)
+                        or account.get("next_cursor")
+                        or not account.get("exhausted", True)
+                    )
+                if kind == "limitation":
+                    premise = basis.get("unresolved_premise")
+                    if isinstance(premise, str) and premise.strip():
+                        unresolved.append(premise)
+            if "contradiction" in kinds:
+                status = "contradicted"
+            elif incomplete:
+                status = "retrieval_incomplete"
+            elif "limitation" in kinds or "absence" in kinds:
+                status = "unresolved"
+            elif "indirect_support" in kinds:
+                status = "indirect"
+            elif "direct_support" in kinds:
+                status = "supported"
+            else:
+                status = "unresolved"
+            derived.append(
+                {
+                    "question_id": answer["question_id"],
+                    "status": status,
+                    "evidence": list(dict.fromkeys(evidence_ids)),
+                    "search_receipts": list(dict.fromkeys(receipt_ids)),
+                    "unresolved_premises": list(dict.fromkeys(unresolved)),
+                }
+            )
+        return derived
+
+    if not isinstance(summary, dict) or set(summary) != {"claims", "identity"}:
+        return False
+    claims = summary.get("claims")
+    if (
+        not isinstance(claims, list)
+        or not claims
+        or summary.get("identity") != identity({"claims": claims})
+    ):
+        return False
+    answer_map = {
+        item.get("question_id"): item
+        for item in answers
+        if isinstance(item, dict) and isinstance(item.get("question_id"), str)
+    }
+    if len(answer_map) != len(answers):
+        return False
+    claim_ids: set[str] = set()
+    for claim in claims:
+        if (
+            not isinstance(claim, dict)
+            or set(claim)
+            != {
+                "question_id",
+                "status",
+                "evidence",
+                "search_receipts",
+                "unresolved_premises",
+            }
+            or not isinstance(claim.get("question_id"), str)
+            or claim["question_id"] in claim_ids
+            or claim["question_id"] not in answer_map
+            or claim.get("status")
+            not in {
+                "supported",
+                "contradicted",
+                "indirect",
+                "unresolved",
+                "not_reported",
+                "retrieval_incomplete",
+            }
+            or not isinstance(claim.get("evidence"), list)
+            or not isinstance(claim.get("search_receipts"), list)
+            or not isinstance(claim.get("unresolved_premises"), list)
+            or any(
+                not isinstance(value, str)
+                or value not in evidence
+                or not isinstance(evidence[value], dict)
+                or evidence[value].get("trial_id") != trial_id
+                for value in claim["evidence"]
+            )
+            or any(
+                not isinstance(value, str) or value not in accounts
+                for value in claim["search_receipts"]
+            )
+            or any(
+                not isinstance(value, str) or not value.strip()
+                for value in claim["unresolved_premises"]
+            )
+        ):
+            return False
+        claim_ids.add(claim["question_id"])
+    if claim_ids != set(answer_map):
+        return False
+    if not legacy_semantics:
+        derived = expected_claims()
+        if derived is None or claims != derived:
+            return False
+    return True
+
+
 def _valid_domain_lineage(
     history_by_key: object,
     records_by_key: object,
     active_by_key: object,
     evidence: dict[str, object],
+    *,
+    legacy_semantics: bool = False,
 ) -> bool:
     if not (
         isinstance(history_by_key, dict)
@@ -1723,18 +1958,6 @@ def _valid_domain_lineage(
         and set(history_by_key) == set(records_by_key) == set(active_by_key)
     ):
         return False
-    identity_fields = (
-        "trial_id",
-        "domain_id",
-        "answers",
-        "supersedes",
-        "revision_basis",
-        "search_accounts",
-        "active_questions",
-        "inactive_questions",
-        "judgment",
-        "trace",
-    )
     for key, history in history_by_key.items():
         records = records_by_key.get(key)
         active = active_by_key.get(key)
@@ -1750,11 +1973,14 @@ def _valid_domain_lineage(
         prior: dict[str, object] | None = None
         for index, (checkpoint, record) in enumerate(zip(history, records, strict=True)):
             record_identity_fields = (
-                (*identity_fields, "result_identity")
-                if isinstance(record, dict) and "result_identity" in record
-                else identity_fields
+                _domain_identity_fields(record, legacy_semantics=legacy_semantics)
+                if isinstance(record, dict)
+                else ()
             )
-            record_shape = {*record_identity_fields, "observed_at", "identity"}
+            record_shape_fields = (
+                _domain_identity_fields(record) if isinstance(record, dict) else ()
+            )
+            record_shape = {*record_shape_fields, "observed_at", "identity"}
             if (
                 not isinstance(checkpoint, str)
                 or not isinstance(record, dict)
@@ -1932,7 +2158,9 @@ def _domain_judgment(domain_id: str, answers: dict[str, str]) -> str:
     raise ValueError("unknown Domain")
 
 
-def _domain_question_sets(domain_id: object, answers: object) -> tuple[list[str], list[str]]:
+def _domain_question_sets(
+    domain_id: object, answers: object, *, require_complete: bool = True
+) -> tuple[list[str], list[str]]:
     """Recompute the exact active and inactive questions from canonical answers."""
 
     order = _DOMAIN_QUESTION_ORDER.get(domain_id)
@@ -1990,11 +2218,470 @@ def _domain_question_sets(domain_id: object, answers: object) -> tuple[list[str]
     elif domain_id == "domain:selection":
         active.update(order)
 
-    if set(answers) != active:
+    if require_complete and set(answers) != active:
         raise ValueError("answers do not match active questions")
     return [question_id for question_id in order if question_id in active], [
         question_id for question_id in order if question_id not in active
     ]
+
+
+def _domain_evaluation(
+    domain_id: object, answers: dict[str, str]
+) -> tuple[str, str, list[str]]:
+    """Replay the domain rule and its severity-driving questions independently."""
+
+    if not isinstance(domain_id, str):
+        raise ValueError("invalid Domain")
+    _domain_question_sets(domain_id, answers)
+    y = {"yes", "probably_yes"}
+    no = {"probably_no", "no"}
+    no_or_unknown = no | {"no_information"}
+
+    def result(
+        judgment: str, trace: str, drivers: set[str] | None = None
+    ) -> tuple[str, str, list[str]]:
+        ordered = [
+            question_id
+            for question_id in _DOMAIN_QUESTION_ORDER[domain_id]
+            if question_id in (drivers or set())
+        ]
+        return judgment, trace, ordered
+
+    if domain_id == "domain:randomization":
+        if answers["sq:randomization:concealment"] in no:
+            return result(
+                "high",
+                "randomization.concealment_failed",
+                {"sq:randomization:concealment"},
+            )
+        if (
+            answers["sq:randomization:concealment"] == "no_information"
+            and answers["sq:randomization:baseline-imbalance"] in y
+        ):
+            return result(
+                "high",
+                "randomization.unknown_concealment_and_imbalance",
+                {"sq:randomization:concealment", "sq:randomization:baseline-imbalance"},
+            )
+        drivers = {
+            question_id
+            for question_id, condition in (
+                ("sq:randomization:sequence", answers["sq:randomization:sequence"] in no),
+                (
+                    "sq:randomization:concealment",
+                    answers["sq:randomization:concealment"] == "no_information",
+                ),
+                (
+                    "sq:randomization:baseline-imbalance",
+                    answers["sq:randomization:baseline-imbalance"] in y,
+                ),
+            )
+            if condition
+        }
+        if drivers:
+            return result("some_concerns", "randomization.some_concerns", drivers)
+        return result("low", "randomization.low")
+
+    if domain_id == "domain:deviations":
+        if (
+            answers.get("sq:deviations:context-deviations") in y
+            and answers.get("sq:deviations:affected-outcome") in y | {"no_information"}
+            and answers.get("sq:deviations:balanced") in no_or_unknown
+        ):
+            return result(
+                "high",
+                "deviations.unbalanced_impact",
+                {
+                    "sq:deviations:context-deviations",
+                    "sq:deviations:affected-outcome",
+                    "sq:deviations:balanced",
+                },
+            )
+        if (
+            answers["sq:deviations:appropriate-analysis"] in no_or_unknown
+            and answers.get("sq:deviations:substantial-impact") in y | {"no_information"}
+        ):
+            return result(
+                "high",
+                "deviations.analysis_substantial_impact",
+                {"sq:deviations:appropriate-analysis", "sq:deviations:substantial-impact"},
+            )
+        drivers = {
+            question_id
+            for question_id, condition in (
+                (
+                    "sq:deviations:context-deviations",
+                    answers.get("sq:deviations:context-deviations") == "no_information",
+                ),
+                (
+                    "sq:deviations:affected-outcome",
+                    answers.get("sq:deviations:affected-outcome") in no,
+                ),
+                (
+                    "sq:deviations:balanced",
+                    answers.get("sq:deviations:balanced") in y,
+                ),
+                (
+                    "sq:deviations:substantial-impact",
+                    answers.get("sq:deviations:substantial-impact") in no,
+                ),
+            )
+            if condition
+        }
+        if drivers:
+            return result("some_concerns", "deviations.some_concerns", drivers)
+        return result("low", "deviations.low")
+
+    if domain_id == "domain:missing":
+        if (
+            answers["sq:missing:data-available"] in y
+            or answers.get("sq:missing:evidence-unbiased") in y
+            or answers.get("sq:missing:true-value-dependent") in no
+        ):
+            return result("low", "missing.low")
+        if answers.get("sq:missing:likely-dependent") in y | {"no_information"}:
+            return result("high", "missing.likely_dependent", {"sq:missing:likely-dependent"})
+        return result(
+            "some_concerns",
+            "missing.some_concerns",
+            {
+                "sq:missing:data-available",
+                "sq:missing:evidence-unbiased",
+                "sq:missing:true-value-dependent",
+                "sq:missing:likely-dependent",
+            },
+        )
+
+    if domain_id == "domain:measurement":
+        drivers = {
+            question_id
+            for question_id, condition in (
+                (
+                    "sq:measurement:method-inappropriate",
+                    answers["sq:measurement:method-inappropriate"] in y,
+                ),
+                (
+                    "sq:measurement:differential",
+                    answers["sq:measurement:differential"] in y,
+                ),
+            )
+            if condition
+        }
+        if drivers:
+            return result("high", "measurement.inappropriate_or_differential", drivers)
+        if answers.get("sq:measurement:influence-likely") in y | {"no_information"}:
+            return result(
+                "high", "measurement.likely_influenced", {"sq:measurement:influence-likely"}
+            )
+        drivers = {
+            question_id
+            for question_id, condition in (
+                (
+                    "sq:measurement:differential",
+                    answers["sq:measurement:differential"] == "no_information",
+                ),
+                (
+                    "sq:measurement:influence-likely",
+                    answers.get("sq:measurement:influence-likely") in no,
+                ),
+            )
+            if condition
+        }
+        if drivers:
+            return result("some_concerns", "measurement.some_concerns", drivers)
+        return result("low", "measurement.low")
+
+    if domain_id == "domain:selection":
+        drivers = {
+            question_id
+            for question_id, condition in (
+                (
+                    "sq:selection:multiple-measurements",
+                    answers["sq:selection:multiple-measurements"] in y,
+                ),
+                (
+                    "sq:selection:multiple-analyses",
+                    answers["sq:selection:multiple-analyses"] in y,
+                ),
+            )
+            if condition
+        }
+        if drivers:
+            return result("high", "selection.selective_choice", drivers)
+        drivers = {
+            question_id
+            for question_id, condition in (
+                (
+                    "sq:selection:prespecified-analysis",
+                    answers["sq:selection:prespecified-analysis"] in no_or_unknown,
+                ),
+                (
+                    "sq:selection:multiple-measurements",
+                    answers["sq:selection:multiple-measurements"] == "no_information",
+                ),
+                (
+                    "sq:selection:multiple-analyses",
+                    answers["sq:selection:multiple-analyses"] == "no_information",
+                ),
+            )
+            if condition
+        }
+        if drivers:
+            return result("some_concerns", "selection.some_concerns", drivers)
+        return result("low", "selection.low")
+    raise ValueError("unknown Domain")
+
+
+def _overall_evaluation(judgments: dict[str, str]) -> tuple[str, str, list[str]]:
+    if set(judgments) != _EXPECTED_DOMAIN_IDS:
+        raise ValueError("all five Domain judgments are required")
+    if "high" in judgments.values():
+        return (
+            "high",
+            "overall.any_high",
+            [domain_id for domain_id in _EXPECTED_DOMAIN_ORDER if judgments[domain_id] == "high"],
+        )
+    concerns = list(judgments.values()).count("some_concerns")
+    if concerns >= 2:
+        return (
+            "high",
+            "overall.multiple_some_concerns_high",
+            [
+                domain_id
+                for domain_id in _EXPECTED_DOMAIN_ORDER
+                if judgments[domain_id] == "some_concerns"
+            ],
+        )
+    if concerns:
+        return (
+            "some_concerns",
+            "overall.any_concerns",
+            [
+                domain_id
+                for domain_id in _EXPECTED_DOMAIN_ORDER
+                if judgments[domain_id] == "some_concerns"
+            ],
+        )
+    return "low", "overall.all_low", []
+
+
+def _valid_overall_receipt(
+    receipt: object,
+    snapshot: dict[str, object],
+    records: dict[str, object],
+) -> bool:
+    """Replay the diagnostic overall aggregation receipt independently."""
+
+    if not isinstance(receipt, dict) or set(receipt) != {
+        "rule",
+        "driver_domains",
+        "drivers",
+        "alternatives",
+        "stability",
+        "diagnostic_only",
+    }:
+        return False
+    judgments = snapshot.get("domain_judgments")
+    if not isinstance(judgments, dict):
+        return False
+    try:
+        expected_overall, expected_rule, expected_driver_domains = _overall_evaluation(judgments)
+    except (KeyError, TypeError, ValueError):
+        return False
+    if (
+        receipt.get("rule") != expected_rule
+        or receipt.get("driver_domains") != expected_driver_domains
+        or receipt.get("diagnostic_only") is not True
+        or receipt.get("stability")
+        not in {"stable", "sensitive", "not_assessed", "requires_reassessment"}
+        or not isinstance(receipt.get("drivers"), list)
+        or not isinstance(receipt.get("alternatives"), list)
+    ):
+        return False
+    trial_id = snapshot.get("trial_id")
+    if not isinstance(trial_id, str):
+        return False
+    drivers = receipt["drivers"]
+    if [item.get("domain_id") for item in drivers if isinstance(item, dict)] != (
+        expected_driver_domains
+    ):
+        return False
+    for item in drivers:
+        if not isinstance(item, dict) or set(item) != {
+            "domain_id",
+            "checkpoint",
+            "judgment",
+            "trace",
+            "driver_questions",
+            "driver_answers",
+            "evidence_sufficiency",
+        }:
+            return False
+        domain_id = item.get("domain_id")
+        record = records.get(f"{trial_id}:{domain_id}")
+        if not isinstance(record, dict):
+            return False
+        answers = {
+            answer.get("question_id"): answer.get("answer")
+            for answer in record.get("answers", [])
+            if isinstance(answer, dict)
+            and isinstance(answer.get("question_id"), str)
+            and isinstance(answer.get("answer"), str)
+        }
+        try:
+            expected_judgment, expected_trace, expected_questions = _domain_evaluation(
+                domain_id, answers
+            )
+        except (KeyError, TypeError, ValueError):
+            return False
+        if (
+            item.get("checkpoint") != record.get("identity")
+            or item.get("judgment") != record.get("judgment")
+            or item.get("judgment") != expected_judgment
+            or item.get("trace") != record.get("trace")
+            or item.get("trace") != [expected_trace]
+            or record.get("driver_questions") != expected_questions
+            or item.get("driver_questions") != expected_questions
+            or item.get("evidence_sufficiency") != record.get("evidence_sufficiency")
+            or not isinstance(item.get("driver_answers"), list)
+        ):
+            return False
+        expected_answers = {
+            answer.get("question_id"): answer.get("answer")
+            for answer in record.get("answers", [])
+            if isinstance(answer, dict)
+        }
+        if item["driver_answers"] != [
+            {"question_id": question_id, "answer": expected_answers[question_id]}
+            for question_id in expected_questions
+        ]:
+            return False
+
+    expected_keys: set[tuple[str, str, str, str]] = set()
+    observed_keys: set[tuple[str, str, str, str]] = set()
+    evaluated_overalls: set[str] = set()
+    has_pending = False
+    required = {
+        "domain_id",
+        "question_id",
+        "from_answer",
+        "to_answer",
+        "diagnostic_only",
+        "status",
+    }
+    for domain_id in _EXPECTED_DOMAIN_ORDER:
+        record = records.get(f"{trial_id}:{domain_id}")
+        if not isinstance(record, dict):
+            return False
+        answers = {
+            answer.get("question_id"): answer.get("answer")
+            for answer in record.get("answers", [])
+            if isinstance(answer, dict)
+            and isinstance(answer.get("question_id"), str)
+            and isinstance(answer.get("answer"), str)
+        }
+        sufficiency = record.get("evidence_sufficiency")
+        claims = sufficiency.get("claims", []) if isinstance(sufficiency, dict) else []
+        statuses = {
+            claim.get("question_id"): claim.get("status")
+            for claim in claims
+            if isinstance(claim, dict)
+        }
+        for question_id, answer in answers.items():
+            if answer != "no_information" and statuses.get(question_id) not in {
+                "unresolved",
+                "retrieval_incomplete",
+                "not_reported",
+            }:
+                continue
+            for replacement in ("probably_yes", "probably_no"):
+                expected_keys.add((domain_id, question_id, answer, replacement))
+
+    for alternative in receipt["alternatives"]:
+        if not isinstance(alternative, dict) or not required.issubset(alternative):
+            return False
+        status = alternative.get("status")
+        domain_id = alternative.get("domain_id")
+        question_id = alternative.get("question_id")
+        from_answer = alternative.get("from_answer")
+        to_answer = alternative.get("to_answer")
+        key = (domain_id, question_id, from_answer, to_answer)
+        if (
+            alternative.get("diagnostic_only") is not True
+            or status not in {"evaluated", "requires_reassessment"}
+            or domain_id not in _EXPECTED_DOMAIN_IDS
+            or not isinstance(question_id, str)
+            or from_answer not in _ANSWER_VALUES
+            or to_answer not in {"probably_yes", "probably_no"}
+            or key in observed_keys
+        ):
+            return False
+        record = records.get(f"{trial_id}:{domain_id}")
+        if not isinstance(record, dict):
+            return False
+        answers = {
+            answer.get("question_id"): answer.get("answer")
+            for answer in record.get("answers", [])
+            if isinstance(answer, dict)
+            and isinstance(answer.get("question_id"), str)
+            and isinstance(answer.get("answer"), str)
+        }
+        if question_id not in answers or answers[question_id] != from_answer:
+            return False
+        observed_keys.add(key)
+        alternative_answers = dict(answers)
+        alternative_answers[question_id] = to_answer
+        try:
+            expected_active, _ = _domain_question_sets(
+                domain_id, alternative_answers, require_complete=False
+            )
+        except (KeyError, TypeError, ValueError):
+            return False
+        if expected_active != record.get("active_questions"):
+            if status != "requires_reassessment" or any(
+                alternative.get(key) is not None
+                for key in ("hypothetical_domain_judgment", "hypothetical_overall")
+            ):
+                return False
+            if "reason" in alternative and alternative["reason"] is not None and (
+                not isinstance(alternative["reason"], str) or not alternative["reason"].strip()
+            ):
+                return False
+            has_pending = True
+            continue
+        try:
+            hypothetical_domain, _, _ = _domain_evaluation(domain_id, alternative_answers)
+            hypothetical_judgments = dict(judgments)
+            hypothetical_judgments[domain_id] = hypothetical_domain
+            hypothetical_overall, _, _ = _overall_evaluation(hypothetical_judgments)
+        except (KeyError, TypeError, ValueError):
+            return False
+        expected_alternative_keys = required | {
+            "hypothetical_domain_judgment",
+            "hypothetical_overall",
+        }
+        if (
+            status != "evaluated"
+            or set(alternative)
+            not in (expected_alternative_keys, expected_alternative_keys | {"reason"})
+            or ("reason" in alternative and alternative["reason"] is not None)
+            or alternative.get("hypothetical_domain_judgment") != hypothetical_domain
+            or alternative.get("hypothetical_overall") != hypothetical_overall
+        ):
+            return False
+        evaluated_overalls.add(hypothetical_overall)
+
+    if observed_keys != expected_keys:
+        return False
+    if not receipt["alternatives"]:
+        expected_stability = "not_assessed"
+    elif any(value != expected_overall for value in evaluated_overalls):
+        expected_stability = "sensitive"
+    elif has_pending:
+        expected_stability = "requires_reassessment"
+    else:
+        expected_stability = "stable"
+    return receipt.get("stability") == expected_stability
 
 
 def _leaves(value: object, path: str) -> dict[str, object]:
@@ -3287,6 +3974,10 @@ def verify(path: Path) -> tuple[bool, str]:
                 if isinstance(scientific_pack, dict)
                 else "rob2-kit.result-semantics.v0.5"
             )
+            legacy_semantics = semantics_version in {
+                "rob2-kit.result-semantics.v0.6",
+                "rob2-kit.result-semantics.v0.7",
+            }
             batch = canonical.get("batch")
             dispositions = canonical.get("dispositions")
             snapshots = canonical.get("snapshots")
@@ -3622,10 +4313,17 @@ def verify(path: Path) -> tuple[bool, str]:
                 }
                 if isinstance(record, dict) and "result_identity" in record:
                     expected_domain_fields.add("result_identity")
+                if isinstance(record, dict):
+                    expected_domain_fields.update(
+                        key
+                        for key in ("driver_questions", "evidence_sufficiency")
+                        if key in record
+                    )
                 if (
                     not isinstance(record, dict)
                     or set(record) != expected_domain_fields
-                    or record.get("identity") != _domain_identity(record)
+                    or record.get("identity")
+                    != _domain_identity(record, legacy_semantics=legacy_semantics)
                     or (
                         "result_identity" in record
                         and (
@@ -3817,6 +4515,15 @@ def verify(path: Path) -> tuple[bool, str]:
                         direct_basis or uncertainty_basis
                     ):
                         return False, "confident Domain answer lacks a direct basis"
+                if "evidence_sufficiency" in record and not _valid_evidence_sufficiency(
+                    record["evidence_sufficiency"],
+                    answers,
+                    account_by_identity,
+                    proposal_evidence,
+                    record.get("trial_id"),
+                    legacy_semantics=legacy_semantics,
+                ):
+                    return False, "Domain evidence sufficiency is invalid"
             domain_history = canonical.get("domain_history")
             domain_history_records = canonical.get("domain_history_records")
             snapshot_history = canonical.get("snapshot_history")
@@ -3840,6 +4547,7 @@ def verify(path: Path) -> tuple[bool, str]:
                 domain_history_records,
                 domains,
                 proposal_evidence,
+                legacy_semantics=legacy_semantics,
             ):
                 return False, "Domain revision lineage is invalid"
             for key, historical in domain_history_records.items():
@@ -3863,11 +4571,18 @@ def verify(path: Path) -> tuple[bool, str]:
                     }
                     if isinstance(item, dict) and "result_identity" in item:
                         item_expected_fields.add("result_identity")
+                    if isinstance(item, dict):
+                        item_expected_fields.update(
+                            key
+                            for key in ("driver_questions", "evidence_sufficiency")
+                            if key in item
+                        )
                     if (
                         not isinstance(item, dict)
                         or set(item) != item_expected_fields
                         or item.get("identity") != digest
-                        or item.get("identity") != _domain_identity(item)
+                        or item.get("identity")
+                        != _domain_identity(item, legacy_semantics=legacy_semantics)
                         or key != f"{item.get('trial_id')}:{item.get('domain_id')}"
                         or (
                             "result_identity" in item
@@ -4048,6 +4763,15 @@ def verify(path: Path) -> tuple[bool, str]:
                             direct_basis or uncertainty_basis
                         ):
                             return False, "Domain history confident answer lacks a basis"
+                    if "evidence_sufficiency" in item and not _valid_evidence_sufficiency(
+                        item["evidence_sufficiency"],
+                        item["answers"],
+                        account_by_identity,
+                        proposal_evidence,
+                        item.get("trial_id"),
+                        legacy_semantics=legacy_semantics,
+                    ):
+                        return False, "Domain history evidence sufficiency is invalid"
             for trial_id, historical in snapshot_history_records.items():
                 history = snapshot_history[trial_id]
                 if not isinstance(history, list) or not history or not isinstance(historical, list):
@@ -4062,6 +4786,16 @@ def verify(path: Path) -> tuple[bool, str]:
                     }
                     if isinstance(item, dict) and "result_identity" in item:
                         expected_shape.add("result_identity")
+                    if isinstance(item, dict):
+                        expected_shape.update(
+                            key
+                            for key in (
+                                "overall_trace",
+                                "overall_driver_domains",
+                                "overall_receipt",
+                            )
+                            if key in item
+                        )
                     if (
                         not isinstance(item, dict)
                         or set(item) != expected_shape
@@ -4093,9 +4827,25 @@ def verify(path: Path) -> tuple[bool, str]:
                     ):
                         return False, "snapshot history semantics are invalid"
                     judgments = item["domain_judgments"]
-                    expected_overall = _overall_judgment(judgments)
+                    try:
+                        (
+                            expected_overall,
+                            expected_rule,
+                            expected_driver_domains,
+                        ) = _overall_evaluation(judgments)
+                    except (KeyError, TypeError, ValueError):
+                        return False, "snapshot history overall inputs are invalid"
                     if item.get("overall") != expected_overall:
                         return False, "snapshot history overall is invalid"
+                    if (
+                        "overall_trace" in item
+                        and item["overall_trace"] != [expected_rule]
+                    ) or (
+                        "overall_driver_domains" in item
+                        and item["overall_driver_domains"] != expected_driver_domains
+                    ):
+                        return False, "snapshot history overall metadata is invalid"
+                    historical_records: dict[str, object] = {}
                     for domain_id, checkpoint in zip(
                         _EXPECTED_DOMAIN_ORDER, item["checkpoints"], strict=True
                     ):
@@ -4116,6 +4866,15 @@ def verify(path: Path) -> tuple[bool, str]:
                             return False, "snapshot history judgment does not match checkpoint"
                         if item.get("result_identity") != matching.get("result_identity"):
                             return False, "snapshot history Result does not match checkpoint"
+                        historical_records[f"{trial_id}:{domain_id}"] = matching
+                    if (
+                        not legacy_semantics
+                        and "overall_receipt" in item
+                        and not _valid_overall_receipt(
+                            item["overall_receipt"], item, historical_records
+                        )
+                    ):
+                        return False, "snapshot history overall receipt is invalid"
             for key, record in domains.items():
                 history = domain_history.get(key)
                 historical = domain_history_records.get(key)
@@ -4128,7 +4887,8 @@ def verify(path: Path) -> tuple[bool, str]:
                     or any(
                         not isinstance(item, dict)
                         or item.get("identity") != digest
-                        or item.get("identity") != _domain_identity(item)
+                        or item.get("identity")
+                        != _domain_identity(item, legacy_semantics=legacy_semantics)
                         for item, digest in zip(historical, history, strict=True)
                     )
                 ):
@@ -4212,7 +4972,28 @@ def verify(path: Path) -> tuple[bool, str]:
                         return False, f"snapshot Domain coverage is incomplete: {trial_id}"
                     if expected_judgments != snapshot_judgments:
                         return False, f"snapshot Domain judgments mismatch: {trial_id}"
-                    overall = _overall_judgment(expected_judgments)
+                    try:
+                        overall, expected_rule, expected_driver_domains = _overall_evaluation(
+                            expected_judgments
+                        )
+                    except (KeyError, TypeError, ValueError):
+                        return False, f"overall inputs are invalid: {trial_id}"
+                    if (
+                        "overall_trace" in snapshot
+                        and snapshot["overall_trace"] != [expected_rule]
+                    ) or (
+                        "overall_driver_domains" in snapshot
+                        and snapshot["overall_driver_domains"] != expected_driver_domains
+                    ):
+                        return False, f"overall metadata mismatch: {trial_id}"
+                    if (
+                        not legacy_semantics
+                        and "overall_receipt" in snapshot
+                        and not _valid_overall_receipt(
+                            snapshot["overall_receipt"], snapshot, domains
+                        )
+                    ):
+                        return False, f"overall receipt mismatch: {trial_id}"
                     if snapshot.get("overall") != overall:
                         return False, f"overall judgment mismatch: {trial_id}"
             if has_trial_reviews and not _valid_trial_review_closures(

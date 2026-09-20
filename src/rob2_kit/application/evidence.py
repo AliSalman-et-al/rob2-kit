@@ -2037,13 +2037,18 @@ def _spelling_suggestions(
     }
     if not eligible_terms:
         return [], incomplete
-    if callable(catalogue):
-        catalogue = catalogue()
     if catalogue is None:
         return [], incomplete
-    words = Counter(catalogue[0])
-    page_counts = Counter(catalogue[1])
-    examples = catalogue[2]
+    if callable(catalogue):
+        catalogue_value = cast(
+            Callable[[], tuple[dict[str, int], dict[str, int], dict[str, dict[str, Any]]]],
+            catalogue,
+        )()
+    else:
+        catalogue_value = catalogue
+    words = Counter(catalogue_value[0])
+    page_counts = Counter(catalogue_value[1])
+    examples = catalogue_value[2]
     suggestions: list[dict[str, Any]] = []
     for term_index, term in enumerate(terms):
         if term not in eligible_terms:

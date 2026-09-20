@@ -204,6 +204,81 @@ class WorkingCheckpoint(StrictModel):
         return _identity(self, self.identity)
 
 
+MissingDataPopulationRole = Literal[
+    "randomized",
+    "safety",
+    "analyzed",
+    "per_protocol",
+    "follow_up",
+    "unknown",
+]
+MissingDataOutcomeStatus = Literal[
+    "observed",
+    "missing",
+    "imputed",
+    "unknown",
+    "not_reported",
+]
+MissingDataCensoringKind = Literal[
+    "administrative",
+    "loss_to_follow_up",
+    "withdrawal",
+    "treatment_change",
+    "unknown",
+]
+
+
+class MissingDataCensoring(StrictModel):
+    """Metadata about why and when a time-to-event observation stopped."""
+
+    kind: MissingDataCensoringKind = Field(description="Censoring or follow-up-stop category.")
+    count: NonNegativeInt | None = Field(
+        default=None, description="Number of participants represented by this censoring fact."
+    )
+    timing: NonBlankText | None = Field(
+        default=None, description="Time or window when censoring occurred, when reported."
+    )
+    reason: NonBlankText | None = Field(
+        default=None, description="Reported reason for censoring, when available."
+    )
+
+
+class MissingDataSemantics(StrictModel):
+    """Optional typed meaning for a participant-flow row.
+
+    These fields are deliberately orthogonal: an event numerator, an analysis
+    denominator, or a safety population is not an observation-availability
+    claim. Availability is represented only by ``outcome_status``.
+    """
+
+    population_role: MissingDataPopulationRole | None = Field(
+        default=None, description="Role of the population represented by the row."
+    )
+    outcome_status: MissingDataOutcomeStatus | None = Field(
+        default=None, description="Explicit status of outcome availability, when reported."
+    )
+    event_count: NonNegativeInt | None = Field(
+        default=None, description="Event numerator; never a participant availability count."
+    )
+    event_definition: NonBlankText | None = Field(
+        default=None, description="Definition or severity threshold for the event count."
+    )
+    post_randomization_exclusions: tuple[NonBlankText, ...] = Field(
+        default=(), description="Reported exclusions kept separate from missing outcomes."
+    )
+    censoring: MissingDataCensoring | None = Field(
+        default=None, description="Censoring metadata kept separate from outcome availability."
+    )
+
+    @model_validator(mode="after")
+    def event_count_has_definition(self) -> MissingDataSemantics:
+        if self.event_count is not None and self.event_definition is None:
+            raise ValueError("event_count requires event_definition")
+        if self.event_count is None and self.event_definition is not None:
+            raise ValueError("event_definition requires event_count")
+        return self
+
+
 class MissingDataRow(StrictModel):
     """One scope-matched participant-flow count supplied for Domain 3."""
 
@@ -234,6 +309,13 @@ class MissingDataRow(StrictModel):
             "Evidence handles supporting this row. When saving an answer, omit to reuse "
             "all Evidence handles attached to that answer. A get_domain_context preview "
             "requires explicit current-Trial Evidence handles for every row."
+        ),
+    )
+    semantics: MissingDataSemantics | None = Field(
+        default=None,
+        description=(
+            "Optional typed meaning of the quantities in this row. Omitted for legacy rows; "
+            "event, analysis, and safety counts never establish outcome availability."
         ),
     )
 
@@ -1451,6 +1533,37 @@ class DomainAnswer(StrictModel):
         return self
 
 
+EvidenceSufficiencyStatus = Literal[
+    "supported",
+    "contradicted",
+    "indirect",
+    "unresolved",
+    "not_reported",
+    "retrieval_incomplete",
+]
+
+
+class ClaimTrace(StrictModel):
+    """Deterministic provenance summary for one saved Domain claim."""
+
+    question_id: QuestionId
+    status: EvidenceSufficiencyStatus
+    evidence: tuple[Identity, ...] = ()
+    search_receipts: tuple[Identity, ...] = ()
+    unresolved_premises: tuple[NonBlankText, ...] = ()
+
+
+class EvidenceSufficiencySummary(StrictModel):
+    """Stable server-derived claim/premise support summary."""
+
+    claims: tuple[ClaimTrace, ...] = Field(min_length=1)
+    identity: Identity | None = None
+
+    @model_validator(mode="after")
+    def identity_matches(self) -> EvidenceSufficiencySummary:
+        return _identity(self, self.identity)
+
+
 class DomainSaveAnswer(StrictModel):
     question_id: QuestionId = Field(description="Question ID from the current Domain card.")
     answer: Answer = Field(
@@ -1616,6 +1729,7 @@ class DomainContext(StrictModel):
     domain_id: DomainId
     result: ResultChoice
     evidence: tuple[ResultEvidence, ...] = ()
+    evidence_sufficiency: EvidenceSufficiencySummary | None = None
     prior_digests: tuple[Identity, ...] = ()
     active_questions: tuple[QuestionId, ...]
     guidance: tuple[str, ...] = ()

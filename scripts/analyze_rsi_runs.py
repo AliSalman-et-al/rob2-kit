@@ -12,6 +12,8 @@ from collections import Counter
 from pathlib import Path
 from typing import Any
 
+from rob2_kit.evaluation.adjudication import validate_sidecars
+
 SCHEMA = "rob2-kit.rsi-run-analysis.v1"
 DOMAINS = ("D1", "D2", "D3", "D4", "D5")
 LABELS = ("low", "some_concerns", "high")
@@ -200,6 +202,45 @@ def _validate_input(value: object) -> list[dict[str, Any]]:
             raise ValueError(f"{location}.selected_attempt_id requires attempts")
         validated.append(row)
     return validated
+
+
+def _validated_adjudications(
+    value: object, case_ids: set[str]
+) -> list[dict[str, Any]]:
+    """Validate optional evidence-grounded labels without joining them to scores."""
+
+    raw = value.get("adjudications", []) if isinstance(value, dict) else []
+    if raw is None:
+        return []
+    if not isinstance(raw, list):
+        raise ValueError("adjudications must be a list")
+    try:
+        records = validate_sidecars(raw)
+    except (TypeError, ValueError) as error:
+        raise ValueError(f"adjudications are invalid: {error}") from error
+    if any(record.case_identity not in case_ids for record in records):
+        raise ValueError("adjudication references an unknown benchmark case")
+    return [record.model_dump(mode="json", by_alias=True) for record in records]
+
+
+def _adjudication_summary(records: list[dict[str, Any]]) -> dict[str, Any]:
+    """Summarize reviewer classifications; never turn them into corrected labels."""
+
+    classifications = Counter(
+        record["classification"] for record in records if isinstance(record, dict)
+    )
+    return {
+        "schema": "rob2-kit.adjudication-sidecar.v1",
+        "record_count": len(records),
+        "case_count": len(
+            {record["case_identity"] for record in records if isinstance(record, dict)}
+        ),
+        "by_classification": dict(sorted(classifications.items())),
+        "qualification": (
+            "reviewer classifications are reported separately from provisional-label agreement; "
+            "they do not correct observed labels or estimate scientific accuracy"
+        ),
+    }
 
 
 def _domain_flags(row: dict[str, Any], field: str, domains: tuple[str, ...]) -> dict[str, bool]:
@@ -601,6 +642,7 @@ def analyze(value: object, *, bootstrap_replicates: int = 2000, seed: int = 0) -
     if isinstance(seed, bool) or not isinstance(seed, int):
         raise ValueError("seed must be an integer")
     rows = _validate_input(value)
+    adjudications = _validated_adjudications(value, {row["case_id"] for row in rows})
     eligible = [row for row in rows if row["scope"] == "eligible"]
     uncertain = [row for row in rows if row["scope"] == "scope_uncertain"]
     ineligible = [row for row in rows if row["scope"] == "ineligible"]
@@ -704,6 +746,7 @@ def analyze(value: object, *, bootstrap_replicates: int = 2000, seed: int = 0) -
         },
         "per_outcome": per_outcome,
         "diagnostics": _diagnostic_ledger(rows),
+        "adjudication": _adjudication_summary(adjudications),
         "bootstrap": {
             "method": "percentile bootstrap resampling whole Trials with replacement",
             "replicates": bootstrap_replicates,

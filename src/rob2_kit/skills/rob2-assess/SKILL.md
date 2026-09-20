@@ -277,6 +277,13 @@ in `justification`. Missing explicit text alone does not establish
 available evidence does not demonstrate freedom from missing-data bias; do not
 invent affirmative Evidence.
 
+After a Domain is saved, use the returned `evidence_sufficiency` summary as an
+audit receipt. Its statuses distinguish supported, contradicted, indirect,
+unresolved, not-reported, and retrieval-incomplete claims. It is derived
+provenance, not a semantic replacement for the signalling answer: treat
+`retrieval_incomplete` and `unresolved` as prompts to recover or state the gap,
+never as scientific absence or an automatic downgrade.
+
 ### 6. Audit and commit the Domain once
 
 Draft every active question in the dependency-closed path implied by the drafted
@@ -378,7 +385,11 @@ Use the current revision from the review receipt and copy
 When `head.next_action.operation` is `finalize_batch`, call it with the current revision.
 If the final receipt is unavailable, replay `finalize_batch` with that revision to recover
 the artifact and `data.assessment_summary`. `ready_to_finalize` is not completion.
-Report results only after `head.phase:"finalized"`.
+Report results only after `head.phase:"finalized"`. When present, retain the
+assessment summary's `overall_receipt`: it names the exact aggregation rule and
+triggering Domains and may include diagnostic one-step alternatives. Those
+alternatives are explicitly conditional audit information and never override
+the saved overall judgment.
 
 ## Recover from interruptions
 

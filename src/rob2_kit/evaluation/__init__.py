@@ -1,5 +1,13 @@
 """Provider-independent, privacy-safe held-out evaluation utilities."""
 
+from .adjudication import (
+    AdjudicationClassification,
+    AdjudicationSidecar,
+    read_sidecar,
+    validate_sidecar,
+    write_sidecar,
+)
+from .coverage import CoverageRecord, PremiseCoverage, RecoveryAction, RecoveryWindow
 from .harness import (
     COMPARISON_RUN_SCHEMA,
     COMPARISON_SCHEMA,
@@ -44,4 +52,13 @@ __all__ = [
     "qualification_identity",
     "promotion_decision",
     "validate_qualification_report",
+    "AdjudicationClassification",
+    "AdjudicationSidecar",
+    "read_sidecar",
+    "validate_sidecar",
+    "write_sidecar",
+    "CoverageRecord",
+    "PremiseCoverage",
+    "RecoveryAction",
+    "RecoveryWindow",
 ]

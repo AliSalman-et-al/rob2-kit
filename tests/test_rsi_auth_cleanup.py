@@ -121,6 +121,43 @@ def _invoke_failed_run(
 
     monkeypatch.setattr(subprocess, "run", fake_run)
     monkeypatch.setattr(subprocess, "check_output", lambda *args, **kwargs: "fake-commit")
+
+    class FakePopen:
+        def __init__(self, command: list[str], **kwargs: Any) -> None:
+            nonlocal calls
+            calls += 1
+            self.command = command
+            self.kwargs = kwargs
+            self.returncode: int | None = None
+
+        def communicate(self, input: bytes | None = None) -> tuple[bytes, bytes]:
+            del input
+            environment = self.kwargs["env"]
+            codex_home = Path(environment["CODEX_HOME"])
+            assert codex_home.is_absolute()
+            isolated_auth = codex_home / "auth.json"
+            assert isolated_auth.read_text(encoding="utf-8") == '{"fake":"test-only"}'
+            (codex_home / "session-state.db").write_bytes(b"fake session state")
+            self.kwargs["stdout"].write(b'{"type":"turn.failed"}\n')
+            self.kwargs["stderr"].write(b"synthetic failure\n")
+            last_message = Path(self.command[self.command.index("--output-last-message") + 1])
+            last_message.write_text("partial output", encoding="utf-8")
+            if mode == "raise":
+                raise OSError("synthetic Codex launch failure")
+            self.returncode = 17
+            return b"", b""
+
+        def poll(self) -> int | None:
+            return self.returncode
+
+        def kill(self) -> None:
+            self.returncode = -9
+
+        def wait(self) -> int | None:
+            return self.returncode
+
+    monkeypatch.setattr(subprocess, "Popen", FakePopen)
+    runner["main"].__globals__["_windows_job_guard"] = lambda _process: None
     if mode == "raise":
         with pytest.raises(OSError, match="synthetic Codex launch failure"):
             runner["main"]()

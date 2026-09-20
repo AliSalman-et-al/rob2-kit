@@ -74,9 +74,12 @@ def test_public_output_surface_is_closed_and_within_budget() -> None:
     # This is a ceiling, not a target. Smaller closed schemas are better.
     # Search recovery, Porter/literal profiles, explicit search purpose,
     # spelling feedback, bounded source navigation, independent batched search,
-    # review attribution, and closure operations add schema surface; working
-    # checkpoints remain bounded.
-    assert total_bytes < 590_000
+    # review attribution, closure operations, evidence-sufficiency receipts,
+    # and overall aggregation receipts add schema surface. Keep a small explicit
+    # ceiling above the measured contract rather than silently dropping typed
+    # provenance from the public output. D3 semantics and Source coverage are
+    # deliberate additions to that surface.
+    assert total_bytes < 625_000
 
     by_name = {tool.name: tool for tool in tools}
     search_annotations = by_name["search_sources"].annotations

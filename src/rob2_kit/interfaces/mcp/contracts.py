@@ -32,6 +32,7 @@ from rob2_kit.workflow_models import (
     EvidenceHandle,
     GroupBoundValuesResult,
     Identity,
+    MissingDataSemantics,
     NormalizedCoordinate,
     OmissionDecision,
     QuestionId,
@@ -1662,6 +1663,7 @@ class DomainContextData(PublicModel):
     result: DomainResultChoice
     evidence: tuple[DomainEvidence, ...]
     answers: tuple[CheckpointAnswer, ...]
+    evidence_sufficiency: EvidenceSufficiencySummary | None = None
     # Only the active checkpoint is needed to form a model-owned revision.
     # Complete revision history remains in the canonical bundle, not in the
     # model-facing continuation context.
@@ -1676,6 +1678,7 @@ class DomainContextData(PublicModel):
     completion_rule: str = Field(min_length=1)
     evidence_workspace: EvidenceWorkspace
     comparison_cards: tuple[ComparisonCard, ...] = ()
+    coverage: tuple[SourceCoverage, ...] = ()
     reading_recovery: MainReportRecovery | None = Field(
         default=None,
         description="Required read windows, or optional unread ranges when budget_limited.",
@@ -1731,6 +1734,39 @@ class ComparisonPassageGroup(PublicModel):
     registry_recovery: EvidenceRecovery | None = None
     registry_window_count: NonNegativeInt = 0
     passages: tuple[ComparisonPassageRef, ...] = ()
+
+
+class SourceCoverage(PublicModel):
+    """Bounded retrieval state for one captured Source.
+
+    This records delivery and navigation state only.  In particular,
+    ``searched_no_match`` is a lexical retrieval fact and never means that a
+    scientific premise was not reported.
+    """
+
+    source_id: SourceHandle
+    source_role: SourceRole
+    page_count: PageNumber
+    status: Literal[
+        "unsearched",
+        "candidate_only",
+        "searched_no_match",
+        "partially_read",
+        "read_complete",
+        "render_delivered",
+        "unavailable",
+        "retrieval_incomplete",
+    ]
+    search: Literal[
+        "unsearched",
+        "candidate_only",
+        "searched_no_match",
+        "searched_match",
+        "retrieval_incomplete",
+    ]
+    read: Literal["unread", "partially_read", "read_complete"]
+    render: Literal["not_delivered", "render_delivered"]
+    recovery: tuple[EvidenceRecovery, ...] = ()
 
 
 class ComparisonSlot(PublicModel):
@@ -1805,6 +1841,10 @@ class MissingDataReconciledRow(PublicModel):
     basis: tuple[Identity, ...] = Field(min_length=1)
     missing: StrictInt | None = Field(default=None, ge=0)
     missing_fraction: float | None = Field(default=None, ge=0)
+    semantics: MissingDataSemantics | None = Field(
+        default=None,
+        exclude_if=lambda value: value is None,
+    )
 
 
 class MissingDataConflict(PublicModel):
@@ -1828,6 +1868,62 @@ class CheckpointAnswer(PublicModel):
     )
     unknowns: tuple[str, ...] | None = None
     counterevidence: tuple[DomainCounterevidence, ...] | None = None
+
+
+class ClaimTrace(PublicModel):
+    question_id: QuestionId
+    status: Literal[
+        "supported",
+        "contradicted",
+        "indirect",
+        "unresolved",
+        "not_reported",
+        "retrieval_incomplete",
+    ]
+    evidence: tuple[Identity, ...] = ()
+    search_receipts: tuple[Identity, ...] = ()
+    unresolved_premises: tuple[str, ...] = ()
+
+
+class EvidenceSufficiencySummary(PublicModel):
+    claims: tuple[ClaimTrace, ...] = Field(min_length=1)
+    identity: Identity
+
+
+class DriverAnswer(PublicModel):
+    question_id: QuestionId
+    answer: Answer
+
+
+class OverallDriver(PublicModel):
+    domain_id: DomainId
+    checkpoint: Identity
+    judgment: Judgment
+    trace: tuple[str, ...] = Field(min_length=1)
+    driver_questions: tuple[QuestionId, ...] = ()
+    driver_answers: tuple[DriverAnswer, ...] = ()
+    evidence_sufficiency: EvidenceSufficiencySummary | None = None
+
+
+class OverallAlternative(PublicModel):
+    domain_id: DomainId
+    question_id: QuestionId
+    from_answer: Answer
+    to_answer: Answer
+    diagnostic_only: StrictBool = True
+    status: Literal["evaluated", "requires_reassessment"]
+    hypothetical_domain_judgment: Judgment | None = None
+    hypothetical_overall: Judgment | None = None
+    reason: str | None = None
+
+
+class OverallAggregationReceipt(PublicModel):
+    rule: str = Field(min_length=1)
+    driver_domains: tuple[DomainId, ...] = ()
+    drivers: tuple[OverallDriver, ...] = ()
+    alternatives: tuple[OverallAlternative, ...] = ()
+    stability: Literal["stable", "sensitive", "not_assessed", "requires_reassessment"]
+    diagnostic_only: StrictBool = True
 
 
 DomainContextData.model_rebuild()
@@ -1889,6 +1985,8 @@ class Checkpoint(PublicModel):
     inactive_questions: tuple[str, ...]
     search_accounts: tuple[CheckpointSearchAccount, ...]
     trace: tuple[str, ...]
+    driver_questions: tuple[QuestionId, ...] = ()
+    evidence_sufficiency: EvidenceSufficiencySummary | None = None
     observed_at: str = Field(min_length=1)
     supersedes: Identity | None = None
     revision_basis: CheckpointRevisionBasis | None = None
@@ -1899,6 +1997,8 @@ class DomainCheckpointSummary(PublicModel):
     trial_id: TrialId
     domain_id: DomainId
     judgment: Judgment
+    driver_questions: tuple[QuestionId, ...] = ()
+    evidence_sufficiency: EvidenceSufficiencySummary | None = None
 
 
 class DomainJudgmentData(PublicModel):
@@ -2008,6 +2108,9 @@ class Artifact(PublicModel):
 class AssessmentSummary(PublicModel):
     overall: Judgment
     domains: dict[DomainId, Judgment] = Field(min_length=5, max_length=5)
+    overall_trace: tuple[str, ...] = ()
+    overall_driver_domains: tuple[DomainId, ...] = ()
+    overall_receipt: OverallAggregationReceipt | None = None
 
     @model_validator(mode="after")
     def includes_every_domain(self) -> AssessmentSummary:
@@ -2142,6 +2245,8 @@ def _clean_public(value: dict[str, Any]) -> dict[str, Any]:
     data = value.get("data")
     if isinstance(data, dict) and data.get("current_checkpoint") is None:
         data.pop("current_checkpoint", None)
+    if isinstance(data, dict) and data.get("evidence_sufficiency") is None:
+        data.pop("evidence_sufficiency", None)
     clean_search_actions(data)
     return value
 
@@ -2259,7 +2364,15 @@ def _payload(tool: str, value: dict[str, Any]) -> dict[str, Any]:
     checkpoint = data.get("checkpoint")
     if tool == "save_domain_judgment" and isinstance(checkpoint, dict):
         data["checkpoint"] = {
-            key: checkpoint[key] for key in ("identity", "trial_id", "domain_id", "judgment")
+            key: checkpoint[key]
+            for key in (
+                "identity",
+                "trial_id",
+                "domain_id",
+                "judgment",
+                "driver_questions",
+                "evidence_sufficiency",
+            )
         }
     if tool == "prepare_batch" and "batch" in data:
         batch = data.pop("batch")

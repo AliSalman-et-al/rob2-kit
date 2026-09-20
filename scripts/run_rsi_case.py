@@ -3,14 +3,27 @@
 from __future__ import annotations
 
 import argparse
+import errno
 import hashlib
 import json
 import os
+import runpy
 import shutil
 import subprocess
 import sys
 import tempfile
+from datetime import UTC, datetime
 from pathlib import Path
+
+try:
+    import fcntl
+except ImportError:  # pragma: no cover - Windows uses msvcrt below.
+    fcntl = None
+
+if os.name == "nt":
+    import msvcrt
+else:  # pragma: no cover - exercised only on Windows.
+    msvcrt = None
 
 from prepare_rsi_workspace import approved_scope_record, prepare_workspace
 
@@ -182,6 +195,631 @@ def _add_digest_member(digest: hashlib._Hash, path: Path, repository: Path) -> N
     digest.update(resolved.read_bytes())
 
 
+def _sha256_file(path: Path) -> str:
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def _trace_session_id(path: Path) -> str | None:
+    """Recover a Codex session identifier from a complete or partial JSONL trace."""
+
+    if not path.is_file():
+        return None
+    try:
+        for line in path.read_text(encoding="utf-8", errors="replace").splitlines():
+            try:
+                value = json.loads(line)
+            except json.JSONDecodeError:
+                continue
+            if not isinstance(value, dict):
+                continue
+            for key in ("session_id", "thread_id"):
+                session_id = value.get(key)
+                if isinstance(session_id, str) and session_id.strip():
+                    return session_id
+    except OSError:
+        return None
+    return None
+
+
+def _trace_artifact(run_dir: Path, phase: int) -> dict[str, object] | None:
+    """Recover a finalized artifact receipt from one or more Codex traces."""
+
+    def find(value: object) -> dict[str, object] | None:
+        if isinstance(value, dict):
+            candidate = value.get("artifact")
+            if (
+                isinstance(candidate, dict)
+                and isinstance(candidate.get("path"), str)
+                and isinstance(candidate.get("sha256"), str)
+            ):
+                return candidate
+            for child in value.values():
+                found = find(child)
+                if found is not None:
+                    return found
+        elif isinstance(value, list):
+            for child in value:
+                found = find(child)
+                if found is not None:
+                    return found
+        return None
+
+    for trace_phase in range(phase, 0, -1):
+        path = run_dir / f"phase-{trace_phase}.jsonl"
+        if not path.is_file():
+            continue
+        try:
+            lines = path.read_text(encoding="utf-8", errors="replace").splitlines()
+        except OSError:
+            continue
+        for line in reversed(lines):
+            try:
+                value = json.loads(line)
+            except json.JSONDecodeError:
+                continue
+            artifact = find(value)
+            if artifact is not None:
+                return artifact
+    return None
+
+
+def _atomic_json(path: Path, value: object) -> None:
+    """Replace a JSON record atomically, including on Windows."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    temporary = path.with_name(f".{path.name}.{os.getpid()}.tmp")
+    temporary.write_text(
+        json.dumps(value, indent=2, sort_keys=True, ensure_ascii=False) + "\n",
+        encoding="utf-8",
+    )
+    os.replace(temporary, path)
+
+
+_EXECUTION_LOCKS: dict[Path, int] = {}
+
+
+def _lock_descriptor(descriptor: int) -> None:
+    """Acquire a kernel-held, non-blocking lock on the first lock-file byte."""
+
+    if os.name == "nt":
+        assert msvcrt is not None
+        if os.fstat(descriptor).st_size == 0:
+            os.write(descriptor, b"\0")
+        os.lseek(descriptor, 0, os.SEEK_SET)
+        try:
+            msvcrt.locking(descriptor, msvcrt.LK_NBLCK, 1)
+        except OSError as error:
+            if error.errno in {errno.EACCES, errno.EDEADLK, errno.EAGAIN}:
+                raise ValueError(
+                    "execution is already running; duplicate launch refused"
+                ) from error
+            raise
+        return
+    if fcntl is None:  # pragma: no cover - every supported POSIX host has fcntl.
+        raise RuntimeError("execution locking is unavailable on this host")
+    try:
+        fcntl.flock(descriptor, fcntl.LOCK_EX | fcntl.LOCK_NB)
+    except OSError as error:
+        if error.errno in {errno.EACCES, errno.EAGAIN}:
+            raise ValueError("execution is already running; duplicate launch refused") from error
+        raise
+
+
+def _acquire_execution_lock(run_dir: Path) -> None:
+    """Own one case directory for the whole host invocation.
+
+    The descriptor remains open for the whole host invocation.  The operating
+    system releases the lock after a crash, so recovery never depends on a
+    racy PID probe or unlinking a file another process may just have opened.
+    """
+
+    lock_path = run_dir / "execution.lock"
+    run_dir.mkdir(parents=True, exist_ok=True)
+    if run_dir in _EXECUTION_LOCKS:
+        raise ValueError("execution is already running; duplicate launch refused")
+    descriptor = os.open(lock_path, os.O_CREAT | os.O_RDWR, 0o600)
+    try:
+        _lock_descriptor(descriptor)
+        os.ftruncate(descriptor, 0)
+        os.lseek(descriptor, 0, os.SEEK_SET)
+        os.write(
+            descriptor,
+            (
+                json.dumps(
+                    {
+                        "pid": os.getpid(),
+                        "started_at": datetime.now(UTC).isoformat(),
+                    },
+                    sort_keys=True,
+                )
+                + "\n"
+            ).encode("utf-8"),
+        )
+        os.fsync(descriptor)
+        _EXECUTION_LOCKS[run_dir] = descriptor
+    except BaseException:
+        try:
+            os.close(descriptor)
+        except OSError:
+            pass
+        raise
+
+
+def _release_execution_lock(run_dir: Path) -> None:
+    descriptor = _EXECUTION_LOCKS.pop(run_dir, None)
+    if descriptor is not None:
+        try:
+            if os.name == "nt":
+                assert msvcrt is not None
+                os.lseek(descriptor, 0, os.SEEK_SET)
+                msvcrt.locking(descriptor, msvcrt.LK_UNLCK, 1)
+            elif fcntl is not None:
+                fcntl.flock(descriptor, fcntl.LOCK_UN)
+        except OSError:
+            pass
+        try:
+            os.close(descriptor)
+        except OSError:
+            pass
+
+
+def _set_parent_death_signal() -> None:
+    """Make a POSIX Codex child exit when its launcher disappears."""
+
+    if not sys.platform.startswith("linux"):
+        return
+    try:
+        import ctypes
+        import signal
+
+        ctypes.CDLL(None).prctl(1, signal.SIGKILL)
+    except (AttributeError, OSError):
+        # The Windows path uses a Job Object; non-Linux POSIX hosts retain the
+        # process group boundary and normal wait/cleanup below.
+        return
+
+
+def _windows_job_guard(process: subprocess.Popen[bytes]) -> int | None:
+    """Attach a child to a kill-on-close Job Object on Windows."""
+
+    if os.name != "nt":
+        return None
+    import ctypes
+    from ctypes import wintypes
+
+    class BasicLimitInformation(ctypes.Structure):
+        _fields_ = [
+            ("PerProcessUserTimeLimit", ctypes.c_longlong),
+            ("PerJobUserTimeLimit", ctypes.c_longlong),
+            ("LimitFlags", wintypes.DWORD),
+            ("MinimumWorkingSetSize", ctypes.c_size_t),
+            ("MaximumWorkingSetSize", ctypes.c_size_t),
+            ("ActiveProcessLimit", wintypes.DWORD),
+            ("Affinity", ctypes.c_size_t),
+            ("PriorityClass", wintypes.DWORD),
+            ("SchedulingClass", wintypes.DWORD),
+        ]
+
+    class IoCounters(ctypes.Structure):
+        _fields_ = [
+            ("ReadOperationCount", ctypes.c_ulonglong),
+            ("WriteOperationCount", ctypes.c_ulonglong),
+            ("OtherOperationCount", ctypes.c_ulonglong),
+            ("ReadTransferCount", ctypes.c_ulonglong),
+            ("WriteTransferCount", ctypes.c_ulonglong),
+            ("OtherTransferCount", ctypes.c_ulonglong),
+        ]
+
+    class ExtendedLimitInformation(ctypes.Structure):
+        _fields_ = [
+            ("BasicLimitInformation", BasicLimitInformation),
+            ("IoInfo", IoCounters),
+            ("ProcessMemoryLimit", ctypes.c_size_t),
+            ("JobMemoryLimit", ctypes.c_size_t),
+            ("PeakProcessMemoryUsed", ctypes.c_size_t),
+            ("PeakJobMemoryUsed", ctypes.c_size_t),
+        ]
+
+    kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
+    kernel32.CreateJobObjectW.restype = wintypes.HANDLE
+    kernel32.SetInformationJobObject.argtypes = [
+        wintypes.HANDLE,
+        wintypes.INT,
+        ctypes.c_void_p,
+        wintypes.DWORD,
+    ]
+    kernel32.AssignProcessToJobObject.argtypes = [wintypes.HANDLE, wintypes.HANDLE]
+    kernel32.OpenProcess.argtypes = [wintypes.DWORD, wintypes.BOOL, wintypes.DWORD]
+    kernel32.OpenProcess.restype = wintypes.HANDLE
+    kernel32.CloseHandle.argtypes = [wintypes.HANDLE]
+    job = kernel32.CreateJobObjectW(None, None)
+    if not job:
+        raise ctypes.WinError(ctypes.get_last_error())
+    information = ExtendedLimitInformation()
+    information.BasicLimitInformation.LimitFlags = 0x2000  # JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE
+    if not kernel32.SetInformationJobObject(
+        job,
+        9,  # JobObjectExtendedLimitInformation
+        ctypes.byref(information),
+        ctypes.sizeof(information),
+    ):
+        error = ctypes.WinError(ctypes.get_last_error())
+        kernel32.CloseHandle(job)
+        raise error
+    child_handle = kernel32.OpenProcess(0x1F0FFF, False, process.pid)
+    if not child_handle:
+        error = ctypes.WinError(ctypes.get_last_error())
+        kernel32.CloseHandle(job)
+        raise error
+    assigned = kernel32.AssignProcessToJobObject(job, child_handle)
+    kernel32.CloseHandle(child_handle)
+    if not assigned:
+        error = ctypes.WinError(ctypes.get_last_error())
+        kernel32.CloseHandle(job)
+        raise error
+    return int(job.value if hasattr(job, "value") else job)
+
+
+def _close_windows_job_guard(job: int | None) -> None:
+    if job is None or os.name != "nt":
+        return
+    import ctypes
+
+    ctypes.WinDLL("kernel32", use_last_error=True).CloseHandle(job)
+
+
+def _run_owned_codex(
+    command: list[str],
+    *,
+    cwd: Path,
+    prompt: bytes,
+    trace: Path,
+    stderr: Path,
+    environment: dict[str, str],
+) -> int:
+    """Run Codex with launcher-death cleanup tied to the child lifetime."""
+
+    creation_flags = 0
+    if os.name == "nt":
+        creation_flags = subprocess.CREATE_NEW_PROCESS_GROUP
+    process: subprocess.Popen[bytes] | None = None
+    job: int | None = None
+    with trace.open("wb") as output, stderr.open("wb") as errors:
+        try:
+            process = subprocess.Popen(
+                command,
+                cwd=cwd,
+                stdin=subprocess.PIPE,
+                stdout=output,
+                stderr=errors,
+                env=environment,
+                creationflags=creation_flags,
+                start_new_session=os.name != "nt",
+                preexec_fn=_set_parent_death_signal if os.name != "nt" else None,
+            )
+            job = _windows_job_guard(process)
+            process.communicate(input=prompt)
+            return int(process.returncode)
+        except BaseException:
+            if process is not None and process.poll() is None:
+                process.kill()
+                process.wait()
+            raise
+        finally:
+            _close_windows_job_guard(job)
+
+
+def _recover_codex_session(run_dir: Path, record: dict[str, object]) -> str | None:
+    """Recover the authoritative session from a prior phase trace after a crash."""
+
+    recorded = record.get("codex_session_id")
+    if recorded is not None:
+        if not isinstance(recorded, str) or not recorded.strip():
+            raise ValueError("execution codex session binding is malformed")
+        return recorded
+    phases = record.get("phases")
+    if not isinstance(phases, list):
+        return None
+    for item in reversed(phases):
+        if not isinstance(item, dict) or not isinstance(item.get("phase"), int):
+            continue
+        session = _trace_session_id(run_dir / f"phase-{item['phase']}.jsonl")
+        if session is None:
+            continue
+        record["codex_session_id"] = session
+        item["codex_session_id"] = session
+        return session
+    return None
+
+
+def _execution_identity(run_dir: Path, run_inputs: dict[str, object]) -> dict[str, str]:
+    trial = str(run_inputs["trial"])
+    outcome = str(run_inputs.get("requested_outcome", ""))
+    campaign = run_dir.parents[1].name if len(run_dir.parents) > 1 else run_dir.parent.name
+    outcome_slug = "".join(c for c in outcome.casefold() if c.isalnum())
+    trial_slug = "".join(c for c in trial.casefold() if c.isalnum())
+    case = f"{campaign}-{outcome_slug}-{trial_slug}"
+    return {
+        "campaign_id": campaign,
+        "case_id": case,
+        "trial_id": trial,
+        "outcome": outcome,
+    }
+
+
+def _load_or_create_execution_record(
+    run_dir: Path,
+    identity: dict[str, str],
+    *,
+    run_inputs: dict[str, object],
+    case_file: Path | None,
+    prompt_file: Path,
+    phase: int,
+    session: str | None,
+    allow_stale_running: bool = False,
+) -> dict[str, object]:
+    path = run_dir / "execution.json"
+    now = datetime.now(UTC).isoformat()
+    if phase > 1 and not path.exists():
+        raise ValueError("continuation requires an existing execution.json")
+    if path.exists():
+        record = json.loads(path.read_text(encoding="utf-8"))
+        if not isinstance(record, dict) or record.get("identity") != identity:
+            raise ValueError("execution identity mismatch; refusing duplicate or moved launch")
+        if record.get("state") == "succeeded":
+            raise ValueError("execution already succeeded; refusing a duplicate launch")
+        phases = record.get("phases")
+        if not isinstance(phases, list):
+            raise ValueError("execution phases are malformed")
+        recorded_phases = {
+            item.get("phase")
+            for item in phases
+            if isinstance(item, dict) and isinstance(item.get("phase"), int)
+        }
+        if phase in recorded_phases:
+            raise ValueError(f"phase {phase} is already recorded; use a new phase number")
+        if phase > 1 and phase - 1 not in recorded_phases:
+            raise ValueError(
+                f"phase {phase} has no durable predecessor phase {phase - 1}; "
+                "resume from the last recorded checkpoint"
+            )
+        prior_session = _recover_codex_session(run_dir, record)
+        if phase > 1:
+            if not isinstance(prior_session, str):
+                raise ValueError(
+                    "continuation session binding is unavailable; recover the original "
+                    "Codex thread or start a new case"
+                )
+            if prior_session != session:
+                raise ValueError(
+                    "continuation session does not match the authoritative phase-1 session"
+                )
+    else:
+        record = {
+            "schema": "rob2-kit.rsi-execution.v1",
+            "identity": identity,
+            "state": "queued",
+            "attempt": 1,
+            "retry": 0,
+            "selected_attempt_rule": (
+                "select the declared attempt before execution; retain every attempt; "
+                "never select a best-scoring retry"
+            ),
+            "attempts": [],
+            "phases": [],
+            "created_at": now,
+        }
+    if record.get("state") == "running" and not allow_stale_running:
+        raise ValueError("execution is already running; duplicate launch refused")
+    if record.get("state") == "running":
+        record["recovered_from_running"] = True
+        record["recovered_at"] = now
+    prior_state = record.get("state")
+    retry_value = record.get("retry", 0)
+    retry = (retry_value if isinstance(retry_value, int) else 0) + (
+        1 if prior_state == "failed_infrastructure" else 0
+    )
+    continuation = record.get("continuation")
+    prior_lineage = (
+        continuation.get("lineage", [])
+        if isinstance(continuation, dict) and isinstance(continuation.get("lineage", []), list)
+        else []
+    )
+    run_input_sha256 = hashlib.sha256(
+        json.dumps(run_inputs, sort_keys=True, separators=(",", ":")).encode()
+    ).hexdigest()
+    prompt_sha256 = _sha256_file(prompt_file)
+    manifest_sha256 = _sha256_file(case_file) if case_file else None
+    if path.exists():
+        for field, current in (
+            ("run_input_sha256", run_input_sha256),
+            ("manifest_sha256", manifest_sha256),
+        ):
+            prior = record.get(field)
+            if prior is not None and current is not None and prior != current:
+                raise ValueError(f"continuation input mismatch for {field}")
+        if phase == 1 and record.get("prompt_sha256") not in {None, prompt_sha256}:
+            raise ValueError("initial prompt mismatch")
+    initial_prompt_sha256 = record.get("prompt_sha256", prompt_sha256)
+    if not isinstance(initial_prompt_sha256, str):
+        initial_prompt_sha256 = prompt_sha256
+    phase_prompt_hashes = record.get("prompt_sha256_by_phase", {})
+    if not isinstance(phase_prompt_hashes, dict):
+        raise ValueError("execution prompt provenance is malformed")
+    phase_prompt_hashes = {str(key): value for key, value in phase_prompt_hashes.items()}
+    phase_prompt_hashes[str(phase)] = prompt_sha256
+    record_update = {
+        "state": "running",
+        "retry": retry,
+        "updated_at": now,
+        "run_input_sha256": run_input_sha256,
+        "prompt_sha256": initial_prompt_sha256,
+        "prompt_sha256_by_phase": phase_prompt_hashes,
+        "manifest_sha256": (
+            manifest_sha256
+            if manifest_sha256 is not None
+            else record.get("manifest_sha256")
+        ),
+        "continuation": {
+            "session": session,
+            "parent_phase": phase - 1 if phase > 1 else None,
+            "lineage": [
+                *prior_lineage,
+                {"phase": phase, "session": session},
+            ],
+        },
+    }
+    record.update(
+        record_update
+    )
+    phases = record.setdefault("phases", [])
+    if not isinstance(phases, list):
+        raise ValueError("execution phases are malformed")
+    phases.append(
+        {
+            "phase": phase,
+            "session": session,
+            "retry": retry,
+            "prompt_sha256": prompt_sha256,
+            "started_at": now,
+        }
+    )
+    attempts = record.setdefault("attempts", [])
+    if not isinstance(attempts, list):
+        raise ValueError("execution attempts are malformed")
+    attempts.append(
+        {
+            "attempt": (
+                record.get("attempt", 1)
+                if isinstance(record.get("attempt", 1), int)
+                else 1
+            ),
+            "phase": phase,
+            "retry": retry,
+            "selected": True,
+        }
+    )
+    _atomic_json(path, record)
+    return record
+
+
+def _load_or_create_execution(
+    run_dir: Path,
+    identity: dict[str, str],
+    *,
+    run_inputs: dict[str, object],
+    case_file: Path | None,
+    prompt_file: Path,
+    phase: int,
+    session: str | None,
+) -> dict[str, object]:
+    _acquire_execution_lock(run_dir)
+    try:
+        allow_stale_running = False
+        execution_path = run_dir / "execution.json"
+        if execution_path.is_file():
+            try:
+                prior = json.loads(execution_path.read_text(encoding="utf-8"))
+            except (OSError, json.JSONDecodeError):
+                prior = None
+            allow_stale_running = isinstance(prior, dict) and prior.get("state") == "running"
+        return _load_or_create_execution_record(
+            run_dir,
+            identity,
+            run_inputs=run_inputs,
+            case_file=case_file,
+            prompt_file=prompt_file,
+            phase=phase,
+            session=session,
+            allow_stale_running=allow_stale_running,
+        )
+    except BaseException:
+        _release_execution_lock(run_dir)
+        raise
+
+
+def _finish_execution(
+    run_dir: Path,
+    record: dict[str, object],
+    phase: int,
+    exit_code: int,
+    *,
+    artifact: dict[str, object] | None = None,
+    waiting_for_user: bool = False,
+) -> None:
+    path = run_dir / "execution.json"
+    trace = run_dir / f"phase-{phase}.jsonl"
+    phases = record.get("phases")
+    phase_record = next(
+        (
+            item
+            for item in reversed(phases)
+            if isinstance(item, dict) and item.get("phase") == phase
+        ),
+        None,
+    ) if isinstance(phases, list) else None
+    if isinstance(phase_record, dict):
+        phase_record.update(
+            {
+                "finished_at": datetime.now(UTC).isoformat(),
+                "exit_code": exit_code,
+                "trace_sha256": _sha256_file(trace) if trace.is_file() else None,
+                "codex_session_id": _trace_session_id(trace),
+            }
+        )
+    session_id = _trace_session_id(trace)
+    if session_id is not None:
+        record["codex_session_id"] = session_id
+    if artifact and isinstance(artifact.get("path"), str):
+        artifact_path = run_dir / "workspace" / str(artifact["path"])
+        if artifact_path.is_file():
+            verified = False
+            verification_message = "bundle verification was not attempted"
+            try:
+                verifier = runpy.run_path(str(Path(__file__).with_name("verify_bundle.py")))
+                verified, verification_message = verifier["verify"](artifact_path)
+            except (OSError, KeyError, TypeError, ValueError) as error:
+                verification_message = f"bundle verification failed to run: {error}"
+            record["artifact"] = {
+                "path": str(artifact_path.relative_to(run_dir)),
+                "sha256": _sha256_file(artifact_path),
+                "identity": artifact.get("identity"),
+                "verified": bool(verified),
+                "verification": verification_message,
+            }
+    saved_artifact = record.get("artifact")
+    record["state"] = (
+        "waiting_for_user"
+        if waiting_for_user and exit_code == 0
+        else (
+            "succeeded"
+            if exit_code == 0
+            and isinstance(saved_artifact, dict)
+            and saved_artifact.get("verified") is True
+            else ("failed_infrastructure" if exit_code else "resumable")
+        )
+    )
+    record["child_exit_code"] = exit_code
+    record["updated_at"] = datetime.now(UTC).isoformat()
+    if isinstance(phases, list):
+        phase_record = next(
+            (
+                item
+                for item in reversed(phases)
+                if isinstance(item, dict) and item.get("phase") == phase
+            ),
+            None,
+        )
+        if isinstance(phase_record, dict):
+            phase_record["state"] = record["state"]
+            phase_record["artifact_sha256"] = (
+                saved_artifact.get("sha256") if isinstance(saved_artifact, dict) else None
+            )
+    try:
+        _atomic_json(path, record)
+    finally:
+        _release_execution_lock(run_dir)
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--case", type=Path, help="Frozen JSON source/scope manifest (phase 1)")
@@ -304,7 +942,6 @@ def main() -> None:
         parser.error("prepared workspace is missing")
 
     run_inputs = json.loads((run_dir / "run-inputs.json").read_text(encoding="utf-8"))
-
     if args.phase > 1:
         status = subprocess.run(
             [str(rob2_command), "status", "--workspace", str(workspace)],
@@ -331,6 +968,19 @@ def main() -> None:
             (run_dir / "approved-scope.json").write_text(
                 json.dumps(approved_scope, indent=2, sort_keys=True) + "\n", encoding="utf-8"
             )
+
+    try:
+        execution = _load_or_create_execution(
+            run_dir,
+            _execution_identity(run_dir, run_inputs),
+            run_inputs=run_inputs,
+            case_file=case_file,
+            prompt_file=prompt_file,
+            phase=args.phase,
+            session=args.session,
+        )
+    except (OSError, ValueError, json.JSONDecodeError) as error:
+        parser.error(str(error))
 
     codex_home = run_dir / "codex-home"
     codex_home.mkdir(exist_ok=True)
@@ -476,29 +1126,82 @@ def main() -> None:
         },
         "scorer": scorer_metadata,
     }
-    (run_dir / f"phase-{args.phase}.meta.json").write_text(
-        json.dumps(metadata, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
-    )
+    metadata_path = run_dir / f"phase-{args.phase}.meta.json"
+    _atomic_json(metadata_path, metadata)
     environment = os.environ.copy()
     environment["CODEX_HOME"] = str(codex_home)
     environment["ROB2_WORKSPACE"] = str(workspace)
     completed: subprocess.CompletedProcess[bytes] | None = None
     try:
         shutil.copyfile(auth_source, auth_copy)
-        with trace.open("wb") as output, stderr.open("wb") as errors:
-            completed = subprocess.run(
+        completed = subprocess.CompletedProcess(
+            command,
+            _run_owned_codex(
                 command,
                 cwd=workspace,
-                input=prompt_file.read_bytes(),
-                stdout=output,
-                stderr=errors,
-                env=environment,
-                check=False,
-            )
+                prompt=prompt_file.read_bytes(),
+                trace=trace,
+                stderr=stderr,
+                environment=environment,
+            ),
+        )
+    except BaseException:
+        _finish_execution(run_dir, execution, args.phase, 125)
+        raise
     finally:
         auth_copy.unlink(missing_ok=True)
     if completed is None:
         raise RuntimeError("Codex phase did not start")
+    artifact = None
+    waiting_for_user = False
+    if completed.returncode == 0:
+        try:
+            status = subprocess.run(
+                [str(rob2_command), "status", "--workspace", str(workspace)],
+                capture_output=True,
+                text=True,
+                check=True,
+            )
+            status_data = json.loads(status.stdout)
+            status_payload = status_data.get("data") if isinstance(status_data, dict) else None
+            artifact = (
+                status_data.get("artifact")
+                if isinstance(status_data, dict)
+                else None
+            )
+            if artifact is None and isinstance(status_payload, dict):
+                artifact = status_payload.get("artifact")
+            if artifact is None:
+                artifact = _trace_artifact(run_dir, args.phase)
+            continuation = (
+                status_data.get("continuation") if isinstance(status_data, dict) else None
+            )
+            waiting_for_user = bool(
+                isinstance(status_data, dict)
+                and status_data.get("phase") == "proposal"
+                and isinstance(continuation, dict)
+                and continuation.get("authority") == "researcher"
+            )
+        except (OSError, subprocess.CalledProcessError, json.JSONDecodeError):
+            artifact = None
+    _finish_execution(
+        run_dir,
+        execution,
+        args.phase,
+        completed.returncode,
+        artifact=artifact,
+        waiting_for_user=waiting_for_user,
+    )
+    metadata.update(
+        {
+            "finished_at": datetime.now(UTC).isoformat(),
+            "exit_code": completed.returncode,
+            "trace_sha256": _sha256_file(trace) if trace.is_file() else None,
+            "trace_complete": trace.is_file(),
+            "execution_state": execution.get("state"),
+        }
+    )
+    _atomic_json(metadata_path, metadata)
     print(json.dumps({"exit_code": completed.returncode, "trace": str(trace)}))
     if completed.returncode:
         raise SystemExit(completed.returncode)
