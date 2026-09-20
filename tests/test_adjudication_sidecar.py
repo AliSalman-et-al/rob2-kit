@@ -54,7 +54,7 @@ def test_valid_sidecar_is_frozen_and_cannot_mutate_assessment_labels() -> None:
     assert external["schema"] == SCHEMA
     assert "schema_" not in external
     with pytest.raises(ValidationError):
-        record.model_label = "changed"  # type: ignore[misc]
+        setattr(record, "model_label", "changed")
 
 
 def test_unknown_missing_stale_and_orphaned_records_reject() -> None:

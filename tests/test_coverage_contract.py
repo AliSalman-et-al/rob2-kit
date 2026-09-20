@@ -1,8 +1,11 @@
+from typing import cast
+
 import pytest
 
 from rob2_kit.application.domains import _source_coverage
 from rob2_kit.evaluation.coverage import (
     CoverageRecord,
+    CoverageStatus,
     PremiseCoverage,
     RecoveryAction,
     RecoveryWindow,
@@ -14,7 +17,7 @@ def test_status_validity_and_state_consistency() -> None:
     record = CoverageRecord("source-a", "searched_no_match", search="searched_no_match")
     assert record.status == "searched_no_match"
     with pytest.raises(ValueError):
-        CoverageRecord("source-a", "not-a-status")  # type: ignore[arg-type]
+        CoverageRecord("source-a", cast(CoverageStatus, "not-a-status"))
     with pytest.raises(ValueError):
         CoverageRecord("source-a", "read_complete", read="unread")  # type: ignore[arg-type]
 

@@ -7,6 +7,7 @@ import sys
 import zipfile
 from datetime import UTC, datetime
 from pathlib import Path
+from typing import Any
 
 import pytest
 
@@ -17,11 +18,11 @@ if str(SCRIPTS) not in sys.path:
     sys.path.insert(0, str(SCRIPTS))
 
 
-def _runner() -> dict[str, object]:
+def _runner() -> dict[str, Any]:
     return runpy.run_path(str(SCRIPTS / "run_rsi_case.py"))
 
 
-def _collector() -> dict[str, object]:
+def _collector() -> dict[str, Any]:
     return runpy.run_path(str(SCRIPTS / "collect_rsi_benchmark.py"))
 
 

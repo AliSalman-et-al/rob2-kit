@@ -1022,12 +1022,13 @@ def _search_session_complete(accounts: list[dict[str, Any]]) -> bool:
         for candidate in account.get("returned_candidates", [])
         if isinstance(candidate, dict) and isinstance(candidate.get("rank"), int)
     }
+    candidate_counts: list[int] = []
+    for account in terminal:
+        candidate_count = account.get("candidate_count")
+        if isinstance(candidate_count, int):
+            candidate_counts.append(candidate_count)
     expected_count = max(
-        (
-            account.get("candidate_count")
-            for account in terminal
-            if isinstance(account.get("candidate_count"), int)
-        ),
+        candidate_counts,
         default=max(ranks, default=0),
     )
     return ranks == set(range(1, expected_count + 1))
