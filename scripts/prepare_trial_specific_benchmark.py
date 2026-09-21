@@ -106,9 +106,11 @@ def main() -> None:
             + "\n",
             encoding="utf-8",
         )
+        definition = row["definition"].rstrip(". ")
+        effect_size = row["effect_size"].rstrip(". ")
         prompt = (
             f"/rob2-assess Assess risk of bias for {row['outcome']} defined as "
-            f"{row['definition']}, {row['effect_size']} in {row['trial']}."
+            f"{definition}, {effect_size} in {row['trial']}."
         )
         prompt_path.write_text(prompt + "\n", encoding="utf-8")
         index.append(
